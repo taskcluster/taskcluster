@@ -20,7 +20,7 @@ type (
 		// A simple list of purge-cache requests.
 		//
 		// See http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests
-		Requests []RequestsEntry `json:"requests"`
+		Requests []Var `json:"requests"`
 	}
 
 	// A list of currently open purge-cache requests.
@@ -36,7 +36,7 @@ type (
 		// A simple list of purge-cache requests.
 		//
 		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests
-		Requests []RequestsEntry1 `json:"requests"`
+		Requests []Var1 `json:"requests"`
 	}
 
 	// Request that a message be published to purge a specific cache.
@@ -53,7 +53,7 @@ type (
 	}
 
 	// See http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests/items
-	RequestsEntry struct {
+	Var struct {
 
 		// All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
 		//
@@ -77,7 +77,7 @@ type (
 	}
 
 	// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests/items
-	RequestsEntry1 struct {
+	Var1 struct {
 
 		// All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
 		//

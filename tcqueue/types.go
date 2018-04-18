@@ -41,7 +41,7 @@ type (
 	// for more information.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/actions.json#/items
-	Action1 struct {
+	Action struct {
 
 		// Actions have a "context" that is one of provisioner, worker-type, or worker, indicating
 		// which it applies to. `context` is used by the front-end to know where to display the action.
@@ -104,7 +104,7 @@ type (
 	// See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/actions.json#
-	Actions []Action1
+	Actions []Action
 
 	// Information about an artifact for the given `taskId` and `runId`.
 	//
@@ -549,7 +549,7 @@ type (
 		// List of tasks that have `taskId` in the `task.dependencies` property.
 		//
 		// See http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#/properties/tasks
-		Tasks []TaskDefinitionAndStatus1 `json:"tasks"`
+		Tasks []TaskDefinitionAndStatus `json:"tasks"`
 	}
 
 	// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#
@@ -1287,25 +1287,13 @@ type (
 
 	// Task Definition and task status structure.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/tasks/items
+	// See http://schemas.taskcluster.net/queue/v1/task-definition-and-status.json#
 	TaskDefinitionAndStatus struct {
 
-		// See http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/tasks/items/properties/status
+		// See http://schemas.taskcluster.net/queue/v1/task-definition-and-status.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
 
-		// See http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/tasks/items/properties/task
-		Task TaskDefinitionResponse `json:"task"`
-	}
-
-	// Task Definition and task status structure.
-	//
-	// See http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#/properties/tasks/items
-	TaskDefinitionAndStatus1 struct {
-
-		// See http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#/properties/tasks/items/properties/status
-		Status TaskStatusStructure `json:"status"`
-
-		// See http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#/properties/tasks/items/properties/task
+		// See http://schemas.taskcluster.net/queue/v1/task-definition-and-status.json#/properties/task
 		Task TaskDefinitionResponse `json:"task"`
 	}
 

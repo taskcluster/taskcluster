@@ -10,61 +10,6 @@ import (
 )
 
 type (
-	// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items
-	Entry1 struct {
-
-		// EC2 instance type
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/instanceType
-		InstanceType string `json:"instanceType,omitempty"`
-
-		// Amount of dollars for an hour of usage for this configuration
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/price
-		Price float64 `json:"price,omitempty"`
-
-		// EC2 region
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/region
-		Region string `json:"region,omitempty"`
-
-		// Possible values:
-		//   * "spot"
-		//   * "ondemand"
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/type
-		Type string `json:"type,omitempty"`
-
-		// EC2 availability zone identifier
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/zone
-		Zone string `json:"zone,omitempty"`
-	}
-
-	// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items
-	Entry3 struct {
-
-		// Possible values:
-		//   * "instanceType"
-		//   * "region"
-		//   * "price"
-		//   * "minPrice"
-		//   * "maxPrice"
-		//   * "zone"
-		//   * "type"
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/key
-		Key string `json:"key,omitempty"`
-
-		// One of:
-		//   * Var1
-		//   * Var2
-		//   * Var3
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction
-		Restriction json.RawMessage `json:"restriction,omitempty"`
-	}
-
 	// This method returns a list of errors.  It currently gives the error code only
 	// because we're not sure of the security implications of exposing the full
 	// message.  We do store complete error messages, but are figuring out how to
@@ -74,39 +19,7 @@ type (
 	Errors struct {
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors
-		Errors []ErrorsEntry `json:"errors,omitempty"`
-	}
-
-	// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items
-	ErrorsEntry struct {
-
-		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/az
-		Az string `json:"az,omitempty"`
-
-		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/code
-		Code string `json:"code,omitempty"`
-
-		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/instanceType
-		InstanceType string `json:"instanceType,omitempty"`
-
-		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/message
-		Message string `json:"message,omitempty"`
-
-		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/region
-		Region string `json:"region,omitempty"`
-
-		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/time
-		Time tcclient.Time `json:"time,omitempty"`
-
-		// Possible values:
-		//   * "instance-request"
-		//   * "termination"
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/type
-		Type string `json:"type,omitempty"`
-
-		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/workerType
-		WorkerType string `json:"workerType,omitempty"`
+		Errors []Var4 `json:"errors,omitempty"`
 	}
 
 	// This method provides a summary of the health in the EC2 account being managed.
@@ -117,15 +30,15 @@ type (
 	HealthOfTheEC2Account struct {
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth
-		RequestHealth []RequestHealthEntry `json:"requestHealth,omitempty"`
+		RequestHealth []Var1 `json:"requestHealth,omitempty"`
 
 		// An overview of currently running instances
 		//
 		// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running
-		Running []RunningEntry `json:"running,omitempty"`
+		Running []Var2 `json:"running,omitempty"`
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth
-		TerminationHealth []TerminationHealthEntry `json:"terminationHealth,omitempty"`
+		TerminationHealth []Var3 `json:"terminationHealth,omitempty"`
 	}
 
 	// This is an EC2-Manager specific wrapping of the request body for the
@@ -171,12 +84,12 @@ type (
 	// A list of prices for EC2
 	//
 	// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#
-	ListOfPrices []Entry1
+	ListOfPrices []Var5
 
 	// A list of prices for EC2
 	//
 	// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#
-	ListOfRestrictionsForPrices []Entry3
+	ListOfRestrictionsForPrices []Var9
 
 	// A list of names of worker types
 	//
@@ -275,7 +188,7 @@ type (
 	OverviewOfComputationalResources struct {
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending
-		Pending []PendingEntry `json:"pending,omitempty"`
+		Pending []Var `json:"pending,omitempty"`
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/running
 		Running []interface{} `json:"running,omitempty"`
@@ -288,6 +201,17 @@ type (
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#/properties/instances
 		Instances []interface{} `json:"instances,omitempty"`
+	}
+
+	// See http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#
+	SSHPublicKey struct {
+
+		// An OpenSSH format Public Key as described by tools.ietf.org/html/rfc4253#section-6.6
+		//
+		// Syntax:     ^(ssh-\S*)\s*(\S*)\s*(.*)$
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#/properties/pubkey
+		Pubkey string `json:"pubkey,omitempty"`
 	}
 
 	// Defined properties:
@@ -310,7 +234,7 @@ type (
 	// Additional properties allowed
 	//
 	// See http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items
-	PendingEntry json.RawMessage
+	Var json.RawMessage
 
 	// This is a list of outcomes for a specific region, availability zone and
 	// instance type.  These are calls to the EC2 runInstances method, which
@@ -372,10 +296,10 @@ type (
 	// Additional properties allowed
 	//
 	// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items
-	RequestHealthEntry json.RawMessage
+	Var1 json.RawMessage
 
 	// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items
-	RunningEntry struct {
+	Var2 struct {
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/az
 		Az string `json:"az,omitempty"`
@@ -390,17 +314,6 @@ type (
 		//
 		// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/running
 		Running int64 `json:"running,omitempty"`
-	}
-
-	// See http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#
-	SSHPublicKey struct {
-
-		// An OpenSSH format Public Key as described by tools.ietf.org/html/rfc4253#section-6.6
-		//
-		// Syntax:     ^(ssh-\S*)\s*(\S*)\s*(.*)$
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#/properties/pubkey
-		Pubkey string `json:"pubkey,omitempty"`
 	}
 
 	// This is a list of summaries of instances which have terminated
@@ -477,16 +390,103 @@ type (
 	// Additional properties allowed
 	//
 	// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items
-	TerminationHealthEntry json.RawMessage
+	Var3 json.RawMessage
+
+	// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items
+	Var4 struct {
+
+		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/az
+		Az string `json:"az,omitempty"`
+
+		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/code
+		Code string `json:"code,omitempty"`
+
+		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/instanceType
+		InstanceType string `json:"instanceType,omitempty"`
+
+		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/message
+		Message string `json:"message,omitempty"`
+
+		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/region
+		Region string `json:"region,omitempty"`
+
+		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/time
+		Time tcclient.Time `json:"time,omitempty"`
+
+		// Possible values:
+		//   * "instance-request"
+		//   * "termination"
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/type
+		Type string `json:"type,omitempty"`
+
+		// See http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/workerType
+		WorkerType string `json:"workerType,omitempty"`
+	}
+
+	// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items
+	Var5 struct {
+
+		// EC2 instance type
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/instanceType
+		InstanceType string `json:"instanceType,omitempty"`
+
+		// Amount of dollars for an hour of usage for this configuration
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/price
+		Price float64 `json:"price,omitempty"`
+
+		// EC2 region
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/region
+		Region string `json:"region,omitempty"`
+
+		// Possible values:
+		//   * "spot"
+		//   * "ondemand"
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/type
+		Type string `json:"type,omitempty"`
+
+		// EC2 availability zone identifier
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/zone
+		Zone string `json:"zone,omitempty"`
+	}
 
 	// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[0]
-	Var1 float64
+	Var6 float64
 
 	// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[1]
-	Var2 string
+	Var7 string
 
 	// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]
-	Var3 []string
+	Var8 []string
+
+	// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items
+	Var9 struct {
+
+		// Possible values:
+		//   * "instanceType"
+		//   * "region"
+		//   * "price"
+		//   * "minPrice"
+		//   * "maxPrice"
+		//   * "zone"
+		//   * "type"
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/key
+		Key string `json:"key,omitempty"`
+
+		// One of:
+		//   * Var6
+		//   * Var7
+		//   * Var8
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction
+		Restriction json.RawMessage `json:"restriction,omitempty"`
+	}
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
@@ -506,48 +506,48 @@ func (this *LaunchInfo) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
-// PendingEntry is of type json.RawMessage...
-func (this *PendingEntry) MarshalJSON() ([]byte, error) {
+// Var is of type json.RawMessage...
+func (this *Var) MarshalJSON() ([]byte, error) {
 	x := json.RawMessage(*this)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *PendingEntry) UnmarshalJSON(data []byte) error {
+func (this *Var) UnmarshalJSON(data []byte) error {
 	if this == nil {
-		return errors.New("PendingEntry: UnmarshalJSON on nil pointer")
+		return errors.New("Var: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
-// RequestHealthEntry is of type json.RawMessage...
-func (this *RequestHealthEntry) MarshalJSON() ([]byte, error) {
+// Var1 is of type json.RawMessage...
+func (this *Var1) MarshalJSON() ([]byte, error) {
 	x := json.RawMessage(*this)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *RequestHealthEntry) UnmarshalJSON(data []byte) error {
+func (this *Var1) UnmarshalJSON(data []byte) error {
 	if this == nil {
-		return errors.New("RequestHealthEntry: UnmarshalJSON on nil pointer")
+		return errors.New("Var1: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
-// TerminationHealthEntry is of type json.RawMessage...
-func (this *TerminationHealthEntry) MarshalJSON() ([]byte, error) {
+// Var3 is of type json.RawMessage...
+func (this *Var3) MarshalJSON() ([]byte, error) {
 	x := json.RawMessage(*this)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *TerminationHealthEntry) UnmarshalJSON(data []byte) error {
+func (this *Var3) UnmarshalJSON(data []byte) error {
 	if this == nil {
-		return errors.New("TerminationHealthEntry: UnmarshalJSON on nil pointer")
+		return errors.New("Var3: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil

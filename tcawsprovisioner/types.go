@@ -13,7 +13,7 @@ type (
 	// Availability zone configuration
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items
-	AvailabilityZonesEntry struct {
+	AvailabilityZoneConfiguration struct {
 
 		// The AWS availability zone being configured.  Example: eu-central-1b
 		//
@@ -54,7 +54,7 @@ type (
 	// Availability zone configuration
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items
-	AvailabilityZonesEntry1 struct {
+	AvailabilityZoneConfiguration1 struct {
 
 		// The AWS availability zone being configured.  Example: eu-central-1b
 		//
@@ -118,7 +118,7 @@ type (
 	CreateWorkerTypeRequest struct {
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones
-		AvailabilityZones []AvailabilityZonesEntry `json:"availabilityZones,omitempty"`
+		AvailabilityZones []AvailabilityZoneConfiguration `json:"availabilityZones,omitempty"`
 
 		// True if this worker type is allowed on demand instances.  Currently
 		// ignored
@@ -138,7 +138,7 @@ type (
 		Description string `json:"description"`
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes
-		InstanceTypes []InstanceTypesEntry `json:"instanceTypes"`
+		InstanceTypes []InstanceTypeConfiguration `json:"instanceTypes"`
 
 		// Launch Specification entries which are used in all regions and all instance types
 		//
@@ -181,7 +181,7 @@ type (
 		Owner string `json:"owner"`
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions
-		Regions []RegionsEntry `json:"regions"`
+		Regions []RegionConfiguration `json:"regions"`
 
 		// A scaling ratio of `0.2` means that the provisioner will attempt to keep
 		// the number of pending tasks around 20% of the provisioned capacity.
@@ -303,7 +303,7 @@ type (
 	GetWorkerTypeResponse struct {
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones
-		AvailabilityZones []AvailabilityZonesEntry1 `json:"availabilityZones,omitempty"`
+		AvailabilityZones []AvailabilityZoneConfiguration1 `json:"availabilityZones,omitempty"`
 
 		// True if this worker type is allowed on demand instances.  Currently
 		// ignored
@@ -323,7 +323,7 @@ type (
 		Description string `json:"description"`
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes
-		InstanceTypes []InstanceTypesEntry1 `json:"instanceTypes"`
+		InstanceTypes []InstanceTypeConfiguration1 `json:"instanceTypes"`
 
 		// ISO Date string (e.g. new Date().toISOString()) which represents the time
 		// when this worker type definition was last altered (inclusive of creation)
@@ -372,7 +372,7 @@ type (
 		Owner string `json:"owner"`
 
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions
-		Regions []RegionsEntry1 `json:"regions"`
+		Regions []RegionConfiguration1 `json:"regions"`
 
 		// A scaling ratio of `0.2` means that the provisioner will attempt to keep
 		// the number of pending tasks around 20% of the provisioned capacity.
@@ -438,7 +438,7 @@ type (
 	// Instance Type configuration
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items
-	InstanceTypesEntry struct {
+	InstanceTypeConfiguration struct {
 
 		// This number represents the number of tasks that this instance type
 		// is capable of running concurrently.  This is used by the provisioner
@@ -491,7 +491,7 @@ type (
 	// Instance Type configuration
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items
-	InstanceTypesEntry1 struct {
+	InstanceTypeConfiguration1 struct {
 
 		// This number represents the number of tasks that this instance type
 		// is capable of running concurrently.  This is used by the provisioner
@@ -584,7 +584,7 @@ type (
 	// Region configuration
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items
-	RegionsEntry struct {
+	RegionConfiguration struct {
 
 		// LaunchSpecification entries unique to this Region
 		//
@@ -639,7 +639,7 @@ type (
 	// Region configuration
 	//
 	// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items
-	RegionsEntry1 struct {
+	RegionConfiguration1 struct {
 
 		// LaunchSpecification entries unique to this Region
 		//
