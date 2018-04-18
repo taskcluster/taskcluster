@@ -40,6 +40,15 @@ let load = loader({
       credentials: cfg.taskcluster.credentials,
       mock: cfg.monitor.mock,
       process,
+      // Bug 1452611 - fingerprint SSL errors
+      sentryOptions: {
+        dataCallback: data => {
+          if (/SSL3_GET_RECORD:decryption failed or bad record mac/.test(data.message || '')) {
+            data.fingerprint = 'Bug 1452611';
+          }
+          return data;
+        },
+      },
     }),
   },
 
