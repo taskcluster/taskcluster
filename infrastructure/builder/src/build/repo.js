@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
-const git = require('simple-git/promise');
 const libDocs = require('taskcluster-lib-docs');
 const {gitClone, stampDir, dirStamped} = require('./utils');
 

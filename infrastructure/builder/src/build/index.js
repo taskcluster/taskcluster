@@ -8,7 +8,6 @@ const mkdirp = util.promisify(require('mkdirp'));
 const {ClusterSpec} = require('../formats/cluster-spec');
 const {TaskGraph} = require('console-taskgraph');
 const {gitClone} = require('./utils');
-const git = require('simple-git/promise');
 const generateRepoTasks = require('./repo');
 
 const _kindTaskGenerators = {

@@ -1,5 +1,7 @@
+const util = require('util');
 const _ = require('lodash');
-const git = require('simple-git/promise');
+const split = require('split');
+const exec = util.promisify(require('child_process').execFile);
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -53,25 +55,24 @@ exports.stampDir = ({dir, sources}) => {
  */
 exports.gitClone = async ({dir, url, sha, utils}) => {
   const [repo, ref = 'master'] = url.split('#');
+  const opts = {cwd: dir};
 
   if (!fs.existsSync(dir)) {
-    await git('/').clone(repo, dir, ['--depth=1', `-b${ref}`]);
-    const exactRev = (await git(dir).revparse(['HEAD'])).split(/\s+/)[0];
-    return {exactRev, changed: true};
+    await exec('git', ['clone', repo, dir, '--depth=1', '-b', ref]);
+    const exactRev = (await exec('git', ['rev-parse', 'HEAD'], opts)).stdout;
+    return {exactRev: exactRev.split(/\s+/)[0], changed: true};
   }
 
-  const existingRev = (await git(dir).revparse(['HEAD'])).split(/\s+/)[0];
-  // note: this is often empty -- https://github.com/steveukx/git-js/pull/252
-  const remoteRev = (await git(dir).listRemote([repo, ref])).split(/\s+/)[0];
+  const existingRev = (await exec('git', ['rev-parse', 'HEAD'], opts)).stdout.split(/\s+/)[0];
+  const remoteRev = (await exec('git', ['ls-remote', repo, ref])).stdout.split(/\s+/)[0];
 
   if (existingRev === remoteRev) {
     return {exactRev: existingRev, changed: false};
   }
 
-  await git(dir).fetch([repo, ref]);
-  await git(dir).reset(['--hard', 'FETCH_HEAD']);
-
-  const exactRev = (await git(dir).revparse(['HEAD'])).split(/\s+/)[0];
+  await exec('git', ['fetch', repo, ref], opts);
+  await exec('git', ['reset', '--hard', 'FETCH_HEAD'], opts);
+  const exactRev = (await exec('git', ['rev-parse', 'HEAD'], opts)).stdout.split(/\s+/)[0];
   return {exactRev, changed: true};
 };
 

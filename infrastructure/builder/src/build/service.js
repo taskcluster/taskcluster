@@ -6,7 +6,6 @@ const path = require('path');
 const split = require('split');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
-const git = require('simple-git/promise');
 const doT = require('dot');
 const {quote} = require('shell-quote');
 const yaml = require('js-yaml');
@@ -62,7 +61,7 @@ const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => 
       }
 
       if (requirements[`service-${name}-image-on-registry`]) {
-        throw new Error(`Image ${tag} already exists on the registry; not pushing`);
+        return utils.skip({});
       }
 
       await dockerPush({
@@ -71,8 +70,6 @@ const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => 
         utils,
         baseDir,
       });
-
-      return provides;
     },
   });
 };

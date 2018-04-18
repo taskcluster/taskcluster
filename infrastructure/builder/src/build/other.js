@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const split = require('split');
 const rimraf = util.promisify(require('rimraf'));
-const git = require('simple-git/promise');
 const doT = require('dot');
 const {quote} = require('shell-quote');
 const yaml = require('js-yaml');
