@@ -5,15 +5,9 @@ suite('Client.purgeExpired', function() {
 
   const CLIENT_ID = 'nobody/sds:ad_asd/df-sAdSfchsdfsdfs';
 
-  if (!helper.hasPulseCredentials()) {
-    setup(function() {
-      this.skip();
-    });
-  } else {
-    setup(async () => {
-      await helper.auth.deleteClient(CLIENT_ID);
-    });
-  }
+  setup(async () => {
+    await helper.auth.deleteClient(CLIENT_ID);
+  });
 
   const testClient = async ({expires, deleteOnExpiration}) => {
     await helper.auth.createClient(CLIENT_ID, {

@@ -20,6 +20,7 @@ const roleToJson = (role, context) => _.defaults(
 /** API end-point for version v1/ */
 var api = new API({
   title:      'Authentication API',
+  name:       'auth',
   description: [
     'Authentication related API end-points for Taskcluster and related',
     'services. These API end-points are of interest if you wish to:',
