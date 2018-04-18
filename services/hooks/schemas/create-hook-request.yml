@@ -6,10 +6,10 @@ type:                       object
 properties:
   hookGroupId:            {$const: hookGroupId}
   hookId:                 {$const: hookId}
-  metadata:               {$const: metadata}
+  metadata:               {$ref: "http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#"}
   schedule:
     # It would be prettier with:
-    # {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
+    # {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json#"}
     # but it breaks "default" handling, schema library is a bit sketchy when it
     # come to the "default" keyword.. I'm looking at an alernative that is
     # both faster and implements "default" correctly.
@@ -23,10 +23,10 @@ properties:
       title: "Cron Pattern"
       type: string
       description: |
-          Cron-like specification for when tasks should be created.  The pattern is
-          parsed in a UTC context.
-          See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
-          Note that tasks may not be created at exactly the time specified.
+        Cron-like specification for when tasks should be created.  The pattern is
+        parsed in a UTC context.
+        See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
+        Note that tasks may not be created at exactly the time specified.
     uniqueItems: true
     default: []
   expires:                {$const: expires}
@@ -39,7 +39,7 @@ properties:
       a task definition that is submitted to the Queue service.
     type:                 object
   triggerSchema:
-    type:                 'object'          
+    type:                 'object'
     default:              {type: "object", additionalProperties: false}
 additionalProperties:     false
 required:
