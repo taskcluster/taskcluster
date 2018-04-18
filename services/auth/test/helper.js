@@ -15,6 +15,7 @@ var Config      = require('typed-env-config');
 var azure       = require('fast-azure-storage');
 var containers  = require('../src/containers');
 var uuid        = require('uuid');
+var Exchanges = require('pulse-publisher');
 
 // Load configuration
 var cfg = Config({profile: 'test'});
@@ -38,11 +39,6 @@ helper.hasAzureCredentials = function() {
   return cfg.app.hasOwnProperty('azureAccounts') && cfg.app.azureAccounts;
 };
 
-// Configure PulseTestReceiver
-if (cfg.pulse.password) {
-  helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
-};
-
 // fake "Roles" container
 class FakeRoles {
   constructor() {
@@ -55,6 +51,51 @@ class FakeRoles {
 
   async modify(modifier) {
     await modifier(this.roles);
+  }
+}
+
+class FakePublisher {
+  constructor() {
+    this.calls= [];
+  }
+
+  async clientCreated({clientId}) {
+    if (this.calls.filter(call => call.method == 'clientCreated' && call.clientId == clientId).length  == 0) {
+      this.calls.push({method: 'clientCreated', clientId});
+    }
+    return Promise.resolve();
+  }
+
+  async clientUpdated({clientId}) {
+    this.calls.push({method:'clientUpdated', clientId});
+    return Promise.resolve();
+  }
+
+  async clientDeleted({clientId}) {
+    if (this.calls.filter(call => call.method == 'clientDeleted' && call.clientId == clientId).length  == 0) {
+      this.calls.push({method:'clientDeleted', clientId});
+    }
+    return Promise.resolve();
+  }
+
+  async roleUpdated({roleId}) {
+    this.calls.push({method:'roleUpdated', roleId});
+    return Promise.resolve();
+  }
+
+  async roleCreated({roleId}) {
+    if (this.calls.filter(call => call.method == 'roleCreated' && call.roleId == roleId).length  == 0) {
+      this.calls.push({method:'roleCreated', roleId});
+    }
+
+    return Promise.resolve();
+  }
+
+  async roleDeleted({roleId}) {
+    if (this.calls.filter(call => call.method == 'roleDeleted' && call.roleId == roleId).length  == 0) {
+      this.calls.push({method:'roleDeleted', roleId});
+    }
+    return Promise.resolve();
   }
 }
 
@@ -87,63 +128,61 @@ mocha.before(async () => {
     await helper.Roles.setup();
   }
 
-  if (!helper.hasPulseCredentials()) {
-    return;
-  } else {
-    overwrites.resolver = helper.resolver =
-      await serverLoad('resolver', overwrites);
+  overwrites.publisher = helper.publisher = new FakePublisher();
 
-    webServer = await serverLoad('server', overwrites);
-    webServer.setTimeout(3500); // >3s because Azure can be sloooow
+  overwrites.resolver = helper.resolver =
+    await serverLoad('resolver', overwrites);
 
-    // Create client for working with API
-    helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
-    var reference = v1.reference({baseUrl: helper.baseUrl});
-    helper.Auth = taskcluster.createClient(reference);
-    helper.scopes = (...scopes) => {
-      helper.auth = new helper.Auth({
-        baseUrl:          helper.baseUrl,
-        credentials: {
-          clientId:       'static/taskcluster/root',
-          accessToken:    helper.rootAccessToken,
-        },
-        authorizedScopes: scopes.length > 0 ? scopes : undefined,
-      });
-    };
-    helper.scopes();
+  overwrites.connection = new taskcluster.PulseConnection({fake: true});
 
-    // Create test server
-    let {
-      server:     testServer_,
-      reference:  testReference,
-      baseUrl:    testBaseUrl,
-      Client:     TestClient,
-      client:     testClient,
-    } = await testserver({
-      authBaseUrl: helper.baseUrl,
-      rootAccessToken: helper.rootAccessToken,
+  webServer = await serverLoad('server', overwrites);
+  webServer.setTimeout(3500); // >3s because Azure can be sloooow
+  helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
+
+  var reference = v1.reference({baseUrl: helper.baseUrl});
+  helper.Auth = taskcluster.createClient(reference);
+  helper.scopes = (...scopes) => {
+    helper.auth = new helper.Auth({
+      baseUrl:          helper.baseUrl,
+      credentials: {
+        clientId:       'static/taskcluster/root',
+        accessToken:    helper.rootAccessToken,
+      },
+      authorizedScopes: scopes.length > 0 ? scopes : undefined,
     });
+  };
+  helper.scopes();
 
-    testServer = testServer_;
-    helper.testReference  = testReference;
-    helper.testBaseUrl    = testBaseUrl;
-    helper.TestClient     = TestClient;
-    helper.testClient     = testClient;
+  // Create test server
+  let {
+    server:     testServer_,
+    reference:  testReference,
+    baseUrl:    testBaseUrl,
+    Client:     TestClient,
+    client:     testClient,
+  } = await testserver({
+    authBaseUrl: helper.baseUrl,
+    rootAccessToken: helper.rootAccessToken,
+  });
 
-    var exchangeReference = exchanges.reference({
-      exchangePrefix:   cfg.app.exchangePrefix,
-      credentials:      cfg.pulse,
-    });
-    helper.AuthEvents = taskcluster.createClient(exchangeReference);
-    helper.authEvents = new helper.AuthEvents();
-  }
+  testServer = testServer_;
+  helper.testReference  = testReference;
+  helper.testBaseUrl    = testBaseUrl;
+  helper.TestClient     = TestClient;
+  helper.testClient     = testClient;
+
+  var exchangeReference = exchanges.reference({
+    exchangePrefix:   cfg.app.exchangePrefix,
+    credentials:      {fake: true},
+  });
+  helper.AuthEvents = taskcluster.createClient(exchangeReference);
+  helper.authEvents = new helper.AuthEvents();
 });
 
 mocha.beforeEach(() => {
   // Setup client with all scopes
-  if (helper.hasPulseCredentials()) {
-    helper.scopes();
-  }
+  helper.scopes();
+  helper.publisher.calls = [];
 });
 
 // Cleanup after tests
@@ -164,9 +203,6 @@ mocha.after(async () => {
       // before the tests are complete, so we "leak" containers despite this effort to
       // clean them up.
     }
-  }
-  if (!helper.hasPulseCredentials()) {
-    return;
   }
   // Kill servers
   if (testServer) {

@@ -106,12 +106,6 @@ suite('testAuthenticate', function() {
 });
 
 suite('testAuthenticateGet', function() {
-  if (!helper.hasPulseCredentials()) {
-    setup(function() {
-      this.skip();
-    });
-  }
-
   let testAuthGet = (name, {config, errorCode}) => {
     test(name, async () => {
       let auth = new helper.Auth(config);

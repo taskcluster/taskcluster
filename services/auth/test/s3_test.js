@@ -9,12 +9,6 @@ suite('aws S3 (STS)', () => {
 
   var bucket = helper.cfg.test.testBucket;
 
-  if (!helper.hasPulseCredentials()) {
-    setup(function() {
-      this.skip();
-    });
-  }
-
   test('awsS3Credentials read-write folder1/folder2/', async () => {
     var id    = slugid.v4();
     var text  = slugid.v4();
