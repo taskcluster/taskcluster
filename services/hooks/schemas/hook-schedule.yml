@@ -4,7 +4,7 @@ description: |
   A description of when a hook's task will be created, and the next scheduled time
 type: object
 properties:
-  schedule: {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json"}
+  schedule: {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json#"}
   nextScheduledDate:
     description: |
       The next time this hook's task is scheduled to be created. This property
