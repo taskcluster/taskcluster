@@ -10,7 +10,7 @@ type (
 	// Information about the artifact that was created
 	//
 	// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact
-	ArtifactCreated1 struct {
+	Artifact struct {
 
 		// Mimetype for the artifact that was created.
 		//
@@ -54,7 +54,7 @@ type (
 		// Information about the artifact that was created
 		//
 		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact
-		Artifact ArtifactCreated1 `json:"artifact"`
+		Artifact Artifact `json:"artifact"`
 
 		// Id of the run on which artifact was created.
 		//
@@ -363,7 +363,7 @@ type (
 	// case this message will be sent again once it finishes.
 	//
 	// See http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#
-	TaskGroupResolved1 struct {
+	TaskGroupResolvedMessage struct {
 
 		// Identifier for the scheduler that created this task-group.
 		//

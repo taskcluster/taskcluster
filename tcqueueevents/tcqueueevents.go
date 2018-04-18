@@ -349,7 +349,7 @@ func (binding TaskGroupResolved) ExchangeName() string {
 }
 
 func (binding TaskGroupResolved) NewPayloadObject() interface{} {
-	return new(TaskGroupResolved1)
+	return new(TaskGroupResolvedMessage)
 }
 
 func generateRoutingKey(x interface{}) string {

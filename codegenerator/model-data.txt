@@ -1,4 +1,4 @@
-Generated: 1524068556
+Generated: 1524079314
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -26051,7 +26051,7 @@ properties:
       IS_REQUIRED: true
       PROPERTY_NAME: artifact
       SOURCE_URL: http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact
-      TYPE_NAME: ArtifactCreated1
+      TYPE_NAME: Artifact
       additionalProperties:
         Boolean: false
         Properties: null
@@ -26122,7 +26122,7 @@ properties:
       - name
       - expires
       - contentType
-      title: Artifact Created
+      title: Artifact
       type: object
     runId:
       IS_REQUIRED: true
@@ -26554,7 +26554,7 @@ http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/propertie
 IS_REQUIRED: true
 PROPERTY_NAME: artifact
 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/artifact
-TYPE_NAME: ArtifactCreated1
+TYPE_NAME: Artifact
 additionalProperties:
   Boolean: false
   Properties: null
@@ -26625,7 +26625,7 @@ required:
 - name
 - expires
 - contentType
-title: Artifact Created
+title: Artifact
 type: object
 
 
@@ -28364,7 +28364,7 @@ $schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#
-TYPE_NAME: TaskGroupResolved1
+TYPE_NAME: TaskGroupResolvedMessage
 additionalProperties:
   Boolean: false
   Properties: null
@@ -28418,7 +28418,7 @@ properties:
 required:
 - taskGroupId
 - schedulerId
-title: Task Group Resolved
+title: Task Group Resolved Message
 type: object
 
 
