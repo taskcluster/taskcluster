@@ -9,12 +9,6 @@ suite('Remote Signature Validation', function() {
   var taskcluster = require('taskcluster-client');
   var request     = require('superagent');
 
-  setup(function() {
-    if (!helper.hasPulseCredentials()) {
-      this.skip();
-    }
-  });
-
   var rootCredentials = {
     clientId: 'static/taskcluster/root',
     accessToken: helper.rootAccessToken,
