@@ -44,7 +44,9 @@ let load = loader({
       sentryOptions: {
         dataCallback: data => {
           if (/SSL3_GET_RECORD:decryption failed or bad record mac/.test(data.message || '')) {
-            data.fingerprint = 'Bug 1452611';
+            data.fingerprint = ['Bug 1452611'];
+          } else if (/SSL routines:ssl3_read_bytes:sslv3 alert bad record mac:/.test(data.message || '')) {
+            data.fingerprint = ['Bug 1452611'];
           }
           return data;
         },
