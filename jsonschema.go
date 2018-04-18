@@ -159,8 +159,11 @@ type (
 
 		// If this schema is a schema inside a `properties` map of strings to
 		// schemas of a parent json subschema, PropertyName will be the key
-		// used in that parent schema to refer to this schema. Otherwise,
-		// PropertyName will be an empty string.
+		// used in that parent schema to refer to this schema.
+		//
+		// If this schema is inside an array (under "items").
+		//
+		// Otherwise, PropertyName will be an empty string.
 		PropertyName string         `json:"PROPERTY_NAME"`
 		SourceURL    string         `json:"SOURCE_URL"`
 		RefSubSchema *JsonSubSchema `json:"REF_SUBSCHEMA,omitempty"`
@@ -470,10 +473,12 @@ func (p *Properties) postPopulate(job *Job) error {
 		propTypeNames := make(map[string]bool)
 		for _, j := range p.SortedPropertyNames {
 			p.MemberNames[j] = job.MemberNameGenerator(j, !job.HideStructMembers, members)
-			if job.DisableNestedStructs && p.Properties[j].Properties != nil {
-				job.add(p.Properties[j])
-			} else {
-				job.SetTypeName(p.Properties[j], propTypeNames)
+			if p.Properties[j].Properties != nil {
+				if job.DisableNestedStructs {
+					job.add(p.Properties[j])
+				} else {
+					job.SetTypeName(p.Properties[j], propTypeNames)
+				}
 			}
 			// subschemas also need to be triggered to postPopulate...
 			err := p.Properties[j].postPopulate(job)
@@ -486,6 +491,9 @@ func (p *Properties) postPopulate(job *Job) error {
 }
 
 func (job *Job) SetTypeName(subSchema *JsonSubSchema, blacklist map[string]bool) {
+	if subSchema.TypeName != "" {
+		return
+	}
 	// Type names only need to be set for objects and arrays, everything else is a primitive type
 	subSchema.TypeName = job.TypeNameGenerator(subSchema.TypeNameRaw(), job.ExportTypes, blacklist)
 	if subSchema.Items != nil {
