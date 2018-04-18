@@ -2,6 +2,7 @@ let Debug = require('debug');
 let crypto = require('crypto');
 let API = require('taskcluster-lib-api');
 let _ = require('lodash');
+let Entity = require('azure-entities');
 
 let debugPrefix = 'taskcluster-github:api';
 let debug = Debug(debugPrefix);
@@ -295,7 +296,7 @@ api.declare({
   stability:  'experimental',
   output:     'build-list.json#',
   query: {
-    continuationToken: /./,
+    continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
     organization: /^([a-zA-Z0-9-_%]*)$/,
     repository: /^([a-zA-Z0-9-_%]*)$/,
