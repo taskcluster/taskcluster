@@ -85,6 +85,7 @@ echo "Checking for any non-ideal type names..."
   grep -r '^\t[A-Z][a-zA-Z]*[1-9] ' . | grep -v '^Binary file'
   grep -r '^\tVar[1-9]*' . | grep -v '^Binary file'
   grep -r '^\t[A-Z][a-zA-Z0-9]*Entry' . | grep -v '^Binary file'
+  grep -r 'Defined properties:$' . | grep -v '^Binary file'
 } | sort -u
 
 # finally check that generated files have been committed, and that formatting
