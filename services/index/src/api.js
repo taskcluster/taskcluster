@@ -3,6 +3,7 @@ var debug       = require('debug')('routes:api:v1');
 var assert      = require('assert');
 var API         = require('taskcluster-lib-api');
 var helpers     = require('./helpers');
+var Entity      = require('azure-entities');
 
 /**
  * API end-point for version v1/
@@ -166,7 +167,7 @@ api.declare({
   method:         'get',
   route:          '/namespaces/:namespace?',
   query: {
-    continuationToken: /./,
+    continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
   name:           'listNamespaces',
@@ -244,7 +245,7 @@ api.declare({
   method:         'get',
   route:          '/tasks/:namespace?',
   query: {
-    continuationToken: /./,
+    continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
   name:           'listTasks',
