@@ -30,7 +30,7 @@ type (
 	// Min length: 1
 	// Max length: 510
 	//
-	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
 	IRCMessageText string
 
 	// Optional link that can be added as a button to the email.
