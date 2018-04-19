@@ -10,7 +10,7 @@
     "url": "https://github.com/taskcluster/taskcluster-login.git"
   },
   "scripts": {
-    "heroku-prebuild": "echo $SOURCE_VERSION > .git-revision",
+    "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
     "lint": "eslint src/*.js src/*/*.js test/*.js",
     "pretest": "yarn lint",
     "test": "mocha test/*_test.js"
