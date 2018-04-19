@@ -11,9 +11,7 @@ export default class Index extends Client {
     });
     this.findTask.entry = {type:'function',method:'get',route:'/task/<indexPath>',query:[],args:['indexPath'],name:'findTask',stability:'stable',output:true}; // eslint-disable-line
     this.listNamespaces.entry = {type:'function',method:'get',route:'/namespaces/<namespace>',query:['continuationToken','limit'],args:['namespace'],name:'listNamespaces',stability:'stable',output:true}; // eslint-disable-line
-    this.listNamespacesPost.entry = {type:'function',method:'post',route:'/namespaces/<namespace>',query:[],args:['namespace'],name:'listNamespacesPost',stability:'deprecated',input:true,output:true}; // eslint-disable-line
-    this.listTasks.entry = {type:'function',method:'post',route:'/tasks/<namespace>',query:['continuationToken','limit'],args:['namespace'],name:'listTasks',stability:'stable',output:true}; // eslint-disable-line
-    this.listTasksPost.entry = {type:'function',method:'post',route:'/tasks/<namespace>',query:[],args:['namespace'],name:'listTasksPost',stability:'deprecated',input:true,output:true}; // eslint-disable-line
+    this.listTasks.entry = {type:'function',method:'get',route:'/tasks/<namespace>',query:['continuationToken','limit'],args:['namespace'],name:'listTasks',stability:'stable',output:true}; // eslint-disable-line
     this.insertTask.entry = {type:'function',method:'put',route:'/task/<namespace>',query:[],args:['namespace'],name:'insertTask',stability:'stable',scopes:'index:insert-task:<namespace>',input:true,output:true}; // eslint-disable-line
     this.findArtifactFromTask.entry = {type:'function',method:'get',route:'/task/<indexPath>/artifacts/<name>',query:[],args:['indexPath','name'],name:'findArtifactFromTask',stability:'stable',scopes:{'if':'private',then:'queue:get-artifact:<name>'}}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
@@ -37,17 +35,6 @@ export default class Index extends Client {
     return this.request(this.listNamespaces.entry, args);
   }
 
-  // List the namespaces immediately under a given namespace.
-  // This endpoint
-  // lists up to 1000 namespaces. If more namespaces are present, a
-  // `continuationToken` will be returned, which can be given in the next
-  // request. For the initial request, the payload should be an empty JSON
-  // object.
-  listNamespacesPost(...args) {
-    this.validate(this.listNamespacesPost.entry, args);
-    return this.request(this.listNamespacesPost.entry, args);
-  }
-
   // List the tasks immediately under a given namespace.
   // This endpoint
   // lists up to 1000 tasks. If more tasks are present, a
@@ -59,19 +46,6 @@ export default class Index extends Client {
   listTasks(...args) {
     this.validate(this.listTasks.entry, args);
     return this.request(this.listTasks.entry, args);
-  }
-
-  // List the tasks immediately under a given namespace.
-  // This endpoint
-  // lists up to 1000 tasks. If more tasks are present, a
-  // `continuationToken` will be returned, which can be given in the next
-  // request. For the initial request, the payload should be an empty JSON
-  // object.
-  // **Remark**, this end-point is designed for humans browsing for tasks, not
-  // services, as that makes little sense.
-  listTasksPost(...args) {
-    this.validate(this.listTasksPost.entry, args);
-    return this.request(this.listTasksPost.entry, args);
   }
 
   // Insert a task into the index.  If the new rank is less than the existing rank

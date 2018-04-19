@@ -9,7 +9,7 @@ export default class Auth extends Client {
       exchangePrefix: '',
       ...options
     });
-    this.listClients.entry = {type:'function',method:'get',route:'/clients/',query:['prefix'],args:[],name:'listClients',stability:'stable',output:true}; // eslint-disable-line
+    this.listClients.entry = {type:'function',method:'get',route:'/clients/',query:['prefix','continuationToken','limit'],args:[],name:'listClients',stability:'stable',output:true}; // eslint-disable-line
     this.client.entry = {type:'function',method:'get',route:'/clients/<clientId>',query:[],args:['clientId'],name:'client',stability:'stable',output:true}; // eslint-disable-line
     this.createClient.entry = {type:'function',method:'put',route:'/clients/<clientId>',query:[],args:['clientId'],name:'createClient',stability:'stable',scopes:{AllOf:['auth:create-client:<clientId>',{'for':'scope','in':'scopes',each:'<scope>'}]},input:true,output:true}; // eslint-disable-line
     this.resetAccessToken.entry = {type:'function',method:'post',route:'/clients/<clientId>/reset',query:[],args:['clientId'],name:'resetAccessToken',stability:'stable',scopes:'auth:reset-access-token:<clientId>',output:true}; // eslint-disable-line
@@ -42,6 +42,12 @@ export default class Auth extends Client {
 
   // Get a list of all clients.  With `prefix`, only clients for which
   // it is a prefix of the clientId are returned.
+  // By default this end-point will try to return up to 1000 clients in one
+  // request. But it **may return less, even none**.
+  // It may also return a `continuationToken` even though there are no more
+  // results. However, you can only be sure to have seen all results if you
+  // keep calling `listClients` with the last `continuationToken` until you
+  // get a result without a `continuationToken`.
   listClients(...args) {
     this.validate(this.listClients.entry, args);
     return this.request(this.listClients.entry, args);

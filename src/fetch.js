@@ -64,6 +64,6 @@ export default (url, opts = {}) => {
             setTimeout(() => attempt(n + 1), delay);
           }
         });
-    }(options.retries));
+    }(1));
   });
 };

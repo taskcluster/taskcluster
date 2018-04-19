@@ -118,19 +118,9 @@ index.listNamespaces(namespace, options)
 ```
 
 ```js
-// index.listNamespacesPost :: (namespace -> payload) -> Promise Result
-index.listNamespacesPost(namespace, payload)
-```
-
-```js
 // index.listTasks :: (namespace -> [options]) -> Promise Result
 index.listTasks(namespace)
 index.listTasks(namespace, options)
-```
-
-```js
-// index.listTasksPost :: (namespace -> payload) -> Promise Result
-index.listTasksPost(namespace, payload)
 ```
 
 ```js
