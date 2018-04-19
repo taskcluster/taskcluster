@@ -5,7 +5,7 @@
   "description": "Collect all of the ways of notifying users into one place for other tc services.",
   "license": "MPL-2.0",
   "scripts": {
-    "heroku-prebuild": "echo $SOURCE_VERSION > .git-revision",
+    "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
     "test": "mocha test/*_test.js",
     "lint": "eslint src/*.js test/*.js",
     "pretest": "yarn lint"
