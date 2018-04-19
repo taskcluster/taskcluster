@@ -4,7 +4,7 @@
   "private": true,
   "main": "node src/server production",
   "scripts": {
-    "heroku-prebuild": "echo $SOURCE_VERSION > .git-revision",
+    "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
     "test": "mocha test/*_test.js",
     "lint": "eslint src/*.js test/*.js",
     "pretest": "yarn lint",
