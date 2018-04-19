@@ -33,7 +33,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/login/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 19 Apr 2018 at 02:21:00 UTC. The code was generated
+// Thu, 19 Apr 2018 at 14:21:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tclogin
 
