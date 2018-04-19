@@ -348,6 +348,12 @@ class TaskListener extends EventEmitter {
       }
 
       let supersederUrl = task.payload.supersederUrl;
+      if (!/^https?:\/\/[\x20-\x7e]*$/.test(supersederUrl)) {
+        this.runtime.log('not superseding', {taskId, message: 'invalid supersederUrl in payload'});
+        // validatPayload will fail for this task, giving hte user a helpful error message.
+        // The important thing is that we don't fetch this supersederUrl.
+        return [claim];
+      }
 
       let tasks = (await this.fetchSupersedingTasks(supersederUrl, taskId));
       if (!tasks || tasks.length == 0) {

@@ -93,7 +93,7 @@ suite('TaskListener.applySuperseding', function() {
     async function() {
       var task = makeTask(SUPERSEDER_URL);
       var claim = makeClaim('fakeTask', 1, task);
-      nock(SUPERSEDER_URL) .get('?taskId=fakeTask')
+      nock(SUPERSEDER_URL).get('?taskId=fakeTask')
         .reply(200, {'supersedes': []});
       assert.deepEqual(await listener.applySuperseding(claim), [claim]);
     });
