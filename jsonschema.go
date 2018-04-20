@@ -563,7 +563,7 @@ func (items *Items) postPopulate(job *Job) error {
 			return err
 		}
 		// add to schemas so we get a type generated for it in source code
-		job.add(j)
+		job.add(j.TargetSchema())
 	}
 	return nil
 }
