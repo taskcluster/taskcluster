@@ -453,6 +453,7 @@ func (p Properties) String() string {
 }
 
 func (p *Properties) postPopulate(job *Job) error {
+	log.Printf("In PROPERTIES postPopulate for %v", p.SourceURL)
 	// now all data should be loaded, let's sort the p.Properties
 	if p.Properties != nil {
 		p.SortedPropertyNames = make([]string, 0, len(p.Properties))
@@ -466,6 +467,7 @@ func (p *Properties) postPopulate(job *Job) error {
 		members := make(StringSet, len(p.SortedPropertyNames))
 		p.MemberNames = make(map[string]string, len(p.SortedPropertyNames))
 		for _, j := range p.SortedPropertyNames {
+			log.Printf("About to postPopulate %v/%v", j, p.Properties[j].SourceURL)
 			p.MemberNames[j] = job.MemberNameGenerator(j, !job.HideStructMembers, members)
 			// subschemas also need to be triggered to postPopulate...
 			err := p.Properties[j].postPopulate(job)
@@ -478,6 +480,8 @@ func (p *Properties) postPopulate(job *Job) error {
 				}
 			}
 		}
+	} else {
+		return fmt.Errorf("WEIRD - NO PROPERTIES in %v", p.SourceURL)
 	}
 	return nil
 }
@@ -617,6 +621,7 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
 	// Since setSourceURL(string) must be called before postPopulate(*Job), we
 	// can rely on subSchema.SourceURL being already set.
 	job.result.SchemaSet.all[subSchema.SourceURL] = subSchema
+	log.Printf("In postPopulate and added %v to 'all' schema sets", subSchema.SourceURL)
 
 	// If this subschema has Items (anyOf, oneOf, allOf) then we should "copy
 	// down" properties from this schema into them, since they inherit the
@@ -625,16 +630,21 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
 	subSchema.AnyOf.MergeIn(subSchema, map[string]bool{"AnyOf": true, "ID": true})
 	subSchema.OneOf.MergeIn(subSchema, map[string]bool{"OneOf": true, "ID": true})
 
-	// Call postPopulate on sub items of this schema...
-	for subPath, subItem := range map[string]canPopulate{
-		"/definitions": subSchema.Definitions,
-		"/allOf":       subSchema.AllOf,
-		"/anyOf":       subSchema.AnyOf,
-		"/oneOf":       subSchema.OneOf,
-		"/items":       subSchema.Items,
-		"/properties":  subSchema.Properties,
+	// Call postPopulate on sub items of this schema...  Use an ARRAY not a MAP
+	// so we can be sure subSchema.Definitions is processed before anything
+	// that might reference it
+	for _, s := range []struct {
+		subPath string
+		subItem canPopulate
+	}{
+		{"/definitions", subSchema.Definitions},
+		{"/allOf", subSchema.AllOf},
+		{"/anyOf", subSchema.AnyOf},
+		{"/oneOf", subSchema.OneOf},
+		{"/items", subSchema.Items},
+		{"/properties", subSchema.Properties},
 	} {
-		err = subSchema.postPopulateIfNotNil(subItem, job, subPath)
+		err = subSchema.postPopulateIfNotNil(s.subItem, job, s.subPath)
 		if err != nil {
 			return err
 		}
@@ -659,11 +669,19 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
 	// discover TypeName later when we generate the type definition
 	if ref := subSchema.Ref; ref != nil && *ref != "" {
 		// only need to cache a schema if it isn't relative to the current document
+		var fullyQualifiedRef string
 		if !strings.HasPrefix(*ref, "#") {
 			subSchema.RefSubSchema, err = job.cacheJsonSchema(*subSchema.Ref)
 			if err != nil {
 				return err
 			}
+			fullyQualifiedRef = sanitizeURL(*subSchema.Ref)
+		} else {
+			fullyQualifiedRef = subSchema.SourceURL[:strings.Index(subSchema.SourceURL, "#")] + *subSchema.Ref
+		}
+		subSchema.RefSubSchema = job.result.SchemaSet.all[fullyQualifiedRef]
+		if subSchema.RefSubSchema == nil {
+			return fmt.Errorf("Subschema %v not loaded when updating %v", fullyQualifiedRef, subSchema.SourceURL)
 		}
 	}
 
@@ -861,21 +879,6 @@ func (job *Job) Execute() (*Result, error) {
 		// since we don't want to add e.g. top level items if only
 		// definitions inside the schema are referenced
 		job.add(j.TargetSchema())
-	}
-
-	// link schemas (update cross references between schemas)
-	for _, j := range job.result.SchemaSet.all {
-		// if there is a referenced schema...
-		if j.Ref != nil && *j.Ref != "" {
-			// see if it is relative to current doc, or absolute reference
-			var fullyQualifiedRef string
-			if (*j.Ref)[0] == '#' {
-				fullyQualifiedRef = j.SourceURL[:strings.Index(j.SourceURL, "#")] + *j.Ref
-			} else {
-				fullyQualifiedRef = sanitizeURL(*j.Ref)
-			}
-			j.RefSubSchema = job.result.SchemaSet.all[fullyQualifiedRef]
-		}
 	}
 
 	var err error
