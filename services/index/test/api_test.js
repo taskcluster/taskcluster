@@ -50,7 +50,7 @@ suite('API', () => {
   });
 
   suite('listing things', function() {
-
+    var assume = require('assume');
     suiteSetup(async function() {
       const paths = [
         'abc', 'abc.def', 'abc.def2',
@@ -60,25 +60,53 @@ suite('API', () => {
         'cbc.def',
         'dbc.def2',
       ];
-      const taskId = slugid.v4();
+
+      const expired_paths = [
+        'pqr', 'pqr.stu', 'pqr.stu2',
+        'ppt', 'ppt.stu',    
+      ];
+
       const expires = expiry.toJSON();
+      var expired = new Date();
+      expired.setDate(expired.getDate() - 1);
+      const new_expires = expired.toJSON();
+      const taskId = slugid.v4();
 
       for (let path of paths) {
         await helper.index.insertTask(path, {taskId, rank: 13, data: {}, expires});
       }
+
+      for (let path of expired_paths) {
+        await helper.index.insertTask(path, {taskId, rank: 13, data: {}, expires: new_expires});
+      }
     });
+
+    var testValidNamespaces = function(list, VALID_PREFIXES=['abc', 'bbc', 'cbc']) {
+      let namespaces = [];
+      const INVALID_PREFIXES = ['pqr', 'ppt'];
+      list.forEach(function(ns) {
+        namespaces.push(ns.namespace);
+        assert(ns.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
+      });
+
+      VALID_PREFIXES.forEach(function(prefix) {
+        assume(namespaces).contains(prefix);
+      });
+
+      INVALID_PREFIXES.forEach(function(prefix) {
+        assume(namespaces).not.contains(prefix);
+      });
+    };
 
     test('list top-level namespaces', async function() {
       let result = await helper.index.listNamespaces('', {});
-      result.namespaces.forEach(function(ns) {
-        assert(ns.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
-      });
+      testValidNamespaces(result.namespaces, ['abc', 'bbc', 'cbc', 'dbc']);
     });
 
     test('list top-level namespaces with continuation', async function() {
       let opts = {limit: 1};
       let results = [];
-
+      
       while (1) {
         let result = await helper.index.listNamespaces('', opts);
         results = results.concat(result.namespaces);
@@ -87,26 +115,19 @@ suite('API', () => {
         }
         opts.continuationToken = result.continuationToken;
       }
-
       assert.equal(results.length, 6);
-      results.forEach(function(ns) {
-        assert(ns.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
-      });
+      testValidNamespaces(results, ['abc', 'bbc', 'cbc', 'dbc']);
     });
 
     test('list top-level namespaces (without auth)', async function() {
       var index = new helper.Index();
       let result = await index.listNamespaces('', {});
-      result.namespaces.forEach(function(ns) {
-        assert(ns.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
-      });
+      testValidNamespaces(result.namespaces, ['abc', 'bbc', 'cbc', 'dbc']);
     });
 
     test('list top-level tasks', async function() {
       let result = await helper.index.listTasks('', {});
-      result.tasks.forEach(function(task) {
-        assert(task.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
-      });
+      testValidNamespaces(result.tasks);
     });
 
     test('list top-level tasks with continuation', async function() {
@@ -123,17 +144,40 @@ suite('API', () => {
       }
 
       assert.equal(results.length, 3);
-      results.forEach(function(task) {
-        assert(task.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
-      });
+      testValidNamespaces(results);
     });
 
     test('list top-level tasks (without auth)', async function() {
       var index = new helper.Index();
       let result = await index.listTasks('', {});
-      result.tasks.forEach(function(task) {
-        assert(task.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
+      testValidNamespaces(result.tasks);
+    });
+
+    test('list top-level tasks', async function() {
+      let result = await helper.index.listTasks('', {});
+      testValidNamespaces(result.tasks);
+    });
+
+    test('findTask throws 404 for expired tasks', async function() {
+      var myns    = slugid.v4();
+      var taskId  = slugid.v4();
+      var expired = new Date();
+      expired.setDate(expired.getDate() - 1);
+      const new_expires = expired.toJSON();
+
+      await helper.index.insertTask(myns + '.my-task', {
+        taskId:     taskId,
+        rank:       41,
+        data:       {hello: 'world'},
+        expires:    new_expires,
       });
+
+      try {
+        await helper.index.findTask(myns + '.my-task');
+      } catch (err) {
+        assert(err.statusCode === 404, 'Should have returned 404');
+        return;
+      }
     });
   });
 
@@ -213,4 +257,3 @@ suite('API', () => {
     assert.equal(res.statusCode, 403, 'Expected 403 Forbidden');
   });
 });
-
