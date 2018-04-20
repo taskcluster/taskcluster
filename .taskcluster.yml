@@ -69,8 +69,8 @@ tasks:
       maxRunTime: 3600
       command:
         - set CGO_ENABLED=0
-        - set GOPATH=%CD%\gopath1.10
-        - set GOROOT=%CD%\go1.10\go
+        - set GOPATH=%CD%\gopath1.10.1
+        - set GOROOT=%CD%\go1.10.1\go
         - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
         - go version
@@ -110,15 +110,15 @@ tasks:
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-amd64.exe
-          path: gopath1.10\bin\generic-worker.exe
+          path: gopath1.10.1\bin\generic-worker.exe
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
         - cacheName: generic-worker-checkout
-          directory: gopath1.10\src
+          directory: gopath1.10.1\src
         - content:
-            url: https://storage.googleapis.com/golang/go1.10.windows-amd64.zip
-          directory: go1.10
+            url: https://storage.googleapis.com/golang/go1.10.1.windows-amd64.zip
+          directory: go1.10.1
           format: zip
         - content:
             url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
@@ -149,8 +149,8 @@ tasks:
       maxRunTime: 3600
       command:
         - set CGO_ENABLED=0
-        - set GOPATH=%CD%\gopath1.10
-        - set GOROOT=%CD%\go1.10\go
+        - set GOPATH=%CD%\gopath1.10.1
+        - set GOROOT=%CD%\go1.10.1\go
         - set PATH=%CD%\git\bin;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
         - go version
@@ -180,15 +180,15 @@ tasks:
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-386.exe
-          path: gopath1.10\bin\generic-worker.exe
+          path: gopath1.10.1\bin\generic-worker.exe
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
         - cacheName: generic-worker-checkout
-          directory: gopath1.10\src
+          directory: gopath1.10.1\src
         - content:
-            url: https://storage.googleapis.com/golang/go1.10.windows-386.zip
-          directory: go1.10
+            url: https://storage.googleapis.com/golang/go1.10.1.windows-386.zip
+          directory: go1.10.1
           format: zip
         - content:
             url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/Git-2.11.0.3-32-bit.tar.bz2
@@ -219,8 +219,8 @@ tasks:
       maxRunTime: 3600
       command:
         - set CGO_ENABLED=0
-        - set GOPATH=%CD%\gopath1.10
-        - set GOROOT=%CD%\go1.10\go
+        - set GOPATH=%CD%\gopath1.10.1
+        - set GOROOT=%CD%\go1.10.1\go
         - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
         - go version
@@ -260,15 +260,15 @@ tasks:
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-amd64.exe
-          path: gopath1.10\bin\generic-worker.exe
+          path: gopath1.10.1\bin\generic-worker.exe
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
         - cacheName: generic-worker-checkout
-          directory: gopath1.10\src
+          directory: gopath1.10.1\src
         - content:
-            url: https://storage.googleapis.com/golang/go1.10.windows-amd64.zip
-          directory: go1.10
+            url: https://storage.googleapis.com/golang/go1.10.1.windows-amd64.zip
+          directory: go1.10.1
           format: zip
         - content:
             url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
@@ -304,8 +304,8 @@ tasks:
           - -vxec
           - |
             export CGO_ENABLED=0
-            export GOROOT="$(pwd)/go1.10/go"
-            export GOPATH="$(pwd)/gopath1.10"
+            export GOROOT="$(pwd)/go1.10.1/go"
+            export GOPATH="$(pwd)/gopath1.10.1"
             export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
             go version
             go env
@@ -331,15 +331,15 @@ tasks:
             ineffassign .
       artifacts:
         - name: public/build/generic-worker-darwin-amd64
-          path: gopath1.10/bin/generic-worker
+          path: gopath1.10.1/bin/generic-worker
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
         - cacheName: generic-worker-checkout
-          directory: gopath1.10/src
+          directory: gopath1.10.1/src
         - content:
-            url: https://storage.googleapis.com/golang/go1.10.darwin-amd64.tar.gz
-          directory: go1.10
+            url: https://storage.googleapis.com/golang/go1.10.1.darwin-amd64.tar.gz
+          directory: go1.10.1
           format: tar.gz
 
 
@@ -375,8 +375,8 @@ tasks:
   #         - -vxec
   #         - |
   #           export CGO_ENABLED=0
-  #           export GOROOT="$(pwd)/go1.10/go"
-  #           export GOPATH="$(pwd)/gopath1.10"
+  #           export GOROOT="$(pwd)/go1.10.1/go"
+  #           export GOPATH="$(pwd)/gopath1.10.1"
   #           export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
   #           export CGO_ENABLED=0
   #           go version
@@ -402,15 +402,15 @@ tasks:
   #           ineffassign .
   #     artifacts:
   #       - name: public/build/generic-worker-linux-armv6l
-  #         path: gopath1.10/bin/generic-worker
+  #         path: gopath1.10.1/bin/generic-worker
   #         expires: "{{ '2 weeks' | $fromNow }}"
   #         type: file
   #     mounts:
   #       - cacheName: generic-worker-checkout
-  #         directory: gopath1.10/src
+  #         directory: gopath1.10.1/src
   #       - content:
-  #           url: https://storage.googleapis.com/golang/go1.10.linux-armv6l.tar.gz
-  #         directory: go1.10
+  #           url: https://storage.googleapis.com/golang/go1.10.1.linux-armv6l.tar.gz
+  #         directory: go1.10.1
   #         format: tar.gz
 
 
