@@ -17,8 +17,10 @@ type (
 		// See http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
-		// See http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/requests
-		Requests PurgeCacheRequests `json:"requests"`
+		// A list of Purge Cache requests that the Purge Cache service has previously received.
+		//
+		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
+		Requests []PurgeCacheRequestsEntry `json:"requests"`
 	}
 
 	// A list of currently open purge-cache requests.
@@ -31,8 +33,10 @@ type (
 		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/cacheHit
 		CacheHit bool `json:"cacheHit"`
 
-		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#/properties/requests
-		Requests PurgeCacheRequests `json:"requests"`
+		// A list of Purge Cache requests that the Purge Cache service has previously received.
+		//
+		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
+		Requests []PurgeCacheRequestsEntry `json:"requests"`
 	}
 
 	// Request that a message be published to purge a specific cache.
@@ -47,11 +51,6 @@ type (
 		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#/properties/cacheName
 		CacheName string `json:"cacheName"`
 	}
-
-	// A list of Purge Cache requests that the Purge Cache service has previously received.
-	//
-	// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
-	PurgeCacheRequests []PurgeCacheRequestsEntry
 
 	// An entry in a list of Purge Cache Requests that the Purge Cache service has previously received.
 	//

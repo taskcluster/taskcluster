@@ -147,7 +147,7 @@ type (
 	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#
 	JobDefinition struct {
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/buildMachine
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine
 		BuildMachine Machine `json:"buildMachine,omitempty"`
 
 		// The name of the build system that initiated this content.  Some examples
@@ -291,7 +291,7 @@ type (
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/retryId
 		RetryID int64 `json:"retryId,omitempty"`
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/runMachine
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine
 		RunMachine Machine `json:"runMachine,omitempty"`
 
 		// unscheduled: not yet scheduled

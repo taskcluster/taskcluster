@@ -64,7 +64,9 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/runId
 		RunID int64 `json:"runId"`
 
-		// See http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#/properties/status
+		// A representation of **task status** as known by the queue
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Message version
@@ -220,7 +222,9 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/runId
 		RunID int64 `json:"runId"`
 
-		// See http://schemas.taskcluster.net/queue/v1/task-completed-message.json#/properties/status
+		// A representation of **task status** as known by the queue
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Message version
@@ -256,7 +260,9 @@ type (
 	// See http://schemas.taskcluster.net/queue/v1/task-defined-message.json#
 	TaskDefinedMessage struct {
 
-		// See http://schemas.taskcluster.net/queue/v1/task-defined-message.json#/properties/status
+		// A representation of **task status** as known by the queue
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Message version
@@ -282,7 +288,9 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/runId
 		RunID int64 `json:"runId,omitempty"`
 
-		// See http://schemas.taskcluster.net/queue/v1/task-exception-message.json#/properties/status
+		// A representation of **task status** as known by the queue
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Message version
@@ -328,7 +336,9 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/runId
 		RunID int64 `json:"runId"`
 
-		// See http://schemas.taskcluster.net/queue/v1/task-failed-message.json#/properties/status
+		// A representation of **task status** as known by the queue
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Message version
@@ -403,7 +413,9 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/task-pending-message.json#/properties/runId
 		RunID int64 `json:"runId"`
 
-		// See http://schemas.taskcluster.net/queue/v1/task-pending-message.json#/properties/status
+		// A representation of **task status** as known by the queue
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Message version
@@ -428,7 +440,9 @@ type (
 		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/runId
 		RunID int64 `json:"runId"`
 
-		// See http://schemas.taskcluster.net/queue/v1/task-running-message.json#/properties/status
+		// A representation of **task status** as known by the queue
+		//
+		// See http://schemas.taskcluster.net/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Time at which the run expires and is resolved as `failed`, if the run

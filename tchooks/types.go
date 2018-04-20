@@ -68,7 +68,7 @@ type (
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/hookId
 		HookID string `json:"hookId,omitempty"`
 
-		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/metadata
+		// See http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
 		Metadata HookMetadata `json:"metadata"`
 
 		// Definition of the times at which a hook will result in creation of a task.
@@ -131,7 +131,7 @@ type (
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/hookId
 		HookID string `json:"hookId"`
 
-		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/metadata
+		// See http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
 		Metadata HookMetadata `json:"metadata"`
 
 		// Definition of the times at which a hook will result in creation of a task.
@@ -220,8 +220,15 @@ type (
 		// See http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#/properties/nextScheduledDate
 		NextScheduledDate tcclient.Time `json:"nextScheduledDate,omitempty"`
 
-		// See http://schemas.taskcluster.net/hooks/v1/hook-schedule.json#/properties/schedule
-		Schedule Schedule `json:"schedule"`
+		// A list of cron-style definitions to represent a set of moments in (UTC) time.
+		// If several patterns are specified, a given moment in time represented by
+		// more than one pattern is considered only to be counted once, in other words
+		// it is allowed for the cron patterns to overlap; duplicates are redundant.
+		//
+		// Default:    []
+		//
+		// See http://schemas.taskcluster.net/hooks/v1/schedule.json#
+		Schedule []string `json:"schedule"`
 	}
 
 	// A snapshot of the current status of a hook.
@@ -368,16 +375,6 @@ type (
 		// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/workerId
 		WorkerID string `json:"workerId,omitempty"`
 	}
-
-	// A list of cron-style definitions to represent a set of moments in (UTC) time.
-	// If several patterns are specified, a given moment in time represented by
-	// more than one pattern is considered only to be counted once, in other words
-	// it is allowed for the cron patterns to overlap; duplicates are redundant.
-	//
-	// Default:    []
-	//
-	// See http://schemas.taskcluster.net/hooks/v1/schedule.json#
-	Schedule []string
 
 	// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status
 	Status struct {

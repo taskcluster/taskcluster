@@ -30,7 +30,7 @@ type (
 	HealthOfTheEC2Account struct {
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth
-		RequestHealth []Var1 `json:"requestHealth,omitempty"`
+		RequestHealth []json.RawMessage `json:"requestHealth,omitempty"`
 
 		// An overview of currently running instances
 		//
@@ -38,7 +38,7 @@ type (
 		Running []Var2 `json:"running,omitempty"`
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth
-		TerminationHealth []Var3 `json:"terminationHealth,omitempty"`
+		TerminationHealth []json.RawMessage `json:"terminationHealth,omitempty"`
 	}
 
 	// This is an EC2-Manager specific wrapping of the request body for the
@@ -154,7 +154,7 @@ type (
 		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo
-		LaunchInfo LaunchInfo `json:"LaunchInfo,omitempty"`
+		LaunchInfo json.RawMessage `json:"LaunchInfo,omitempty"`
 
 		// The EC2 region in which this spot request is to be made.  This should be
 		// the lower case api-identifier.  For example `us-east-1`
@@ -188,7 +188,7 @@ type (
 	OverviewOfComputationalResources struct {
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending
-		Pending []Var `json:"pending,omitempty"`
+		Pending []json.RawMessage `json:"pending,omitempty"`
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/running
 		Running []interface{} `json:"running,omitempty"`

@@ -1,4 +1,4 @@
-Generated: 1524237714
+Generated: 1524244951
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -1980,7 +1980,7 @@ http://schemas.taskcluster.net/auth/v1/get-role-response.json#
 ==============================================================
 $schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
-PROPERTY_NAME: ""
+PROPERTY_NAME: ' entry'
 SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-role-response.json#
 TYPE_NAME: GetRoleResponse
 additionalProperties:
@@ -2330,11 +2330,11 @@ id: http://schemas.taskcluster.net/auth/v1/list-roles-response.json#
 items:
   $ref: http://schemas.taskcluster.net/auth/v1/get-role-response.json#
   IS_REQUIRED: false
-  PROPERTY_NAME: ' entry'
+  PROPERTY_NAME: ""
   REF_SUBSCHEMA:
     $schema: http://json-schema.org/draft-06/schema#
     IS_REQUIRED: false
-    PROPERTY_NAME: ""
+    PROPERTY_NAME: ' entry'
     SOURCE_URL: http://schemas.taskcluster.net/auth/v1/get-role-response.json#
     TYPE_NAME: GetRoleResponse
     additionalProperties:
@@ -2444,7 +2444,7 @@ items:
     title: Get Role Response
     type: object
   SOURCE_URL: http://schemas.taskcluster.net/auth/v1/list-roles-response.json#/items
-  TYPE_NAME: Entry
+  TYPE_NAME: ""
 title: List Roles Response
 type: array
 
@@ -5401,7 +5401,7 @@ items:
   IS_REQUIRED: false
   PROPERTY_NAME: ' entry'
   SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#/items
-  TYPE_NAME: Entry1
+  TYPE_NAME: Entry
   type: string
 title: List Worker Types
 type: array
@@ -5419,11 +5419,11 @@ id: http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summarie
 items:
   $ref: http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#
   IS_REQUIRED: false
-  PROPERTY_NAME: ' entry'
+  PROPERTY_NAME: ""
   REF_SUBSCHEMA:
     $schema: http://json-schema.org/draft-04/schema#
     IS_REQUIRED: false
-    PROPERTY_NAME: ""
+    PROPERTY_NAME: ' entry'
     SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#
     TYPE_NAME: WorkerTypeSummary
     additionalProperties:
@@ -5501,7 +5501,7 @@ items:
     title: Worker Type Summary
     type: object
   SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#/items
-  TYPE_NAME: Entry
+  TYPE_NAME: ""
 title: List Worker Type Summaries Response
 type: array
 uniqueItems: true
@@ -5511,7 +5511,7 @@ http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#
 ===========================================================================
 $schema: http://json-schema.org/draft-04/schema#
 IS_REQUIRED: false
-PROPERTY_NAME: ""
+PROPERTY_NAME: ' entry'
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#
 TYPE_NAME: WorkerTypeSummary
 additionalProperties:
@@ -7476,7 +7476,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/schedule.json#
-        TYPE_NAME: Schedule
+        TYPE_NAME: ""
         default: []
         description: |
           A list of cron-style definitions to represent a set of moments in (UTC) time.
@@ -7486,9 +7486,9 @@ properties:
         id: http://schemas.taskcluster.net/hooks/v1/schedule.json#
         items:
           IS_REQUIRED: false
-          PROPERTY_NAME: ' entry'
+          PROPERTY_NAME: ""
           SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/schedule.json#/items
-          TYPE_NAME: CronPattern
+          TYPE_NAME: ""
           description: |
             Cron-like specification for when tasks should be created.  The pattern is
             parsed in a UTC context.
@@ -8085,36 +8085,6 @@ required:
 - hooks
 title: Hook list
 type: object
-
-
-http://schemas.taskcluster.net/hooks/v1/schedule.json#
-======================================================
-$schema: http://json-schema.org/draft-06/schema#
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/schedule.json#
-TYPE_NAME: Schedule
-default: []
-description: |
-  A list of cron-style definitions to represent a set of moments in (UTC) time.
-  If several patterns are specified, a given moment in time represented by
-  more than one pattern is considered only to be counted once, in other words
-  it is allowed for the cron patterns to overlap; duplicates are redundant.
-id: http://schemas.taskcluster.net/hooks/v1/schedule.json#
-items:
-  IS_REQUIRED: false
-  PROPERTY_NAME: ' entry'
-  SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/schedule.json#/items
-  TYPE_NAME: CronPattern
-  description: |
-    Cron-like specification for when tasks should be created.  The pattern is
-    parsed in a UTC context.
-    See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
-  title: Cron Pattern
-  type: string
-title: Schedule
-type: array
-uniqueItems: true
 
 
 http://schemas.taskcluster.net/hooks/v1/task-status.json#
@@ -10301,7 +10271,7 @@ definitions:
       IS_REQUIRED: false
       PROPERTY_NAME: message
       SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-      TYPE_NAME: IRCMessageText
+      TYPE_NAME: ""
       description: |
         IRC message to send as plain text.
       maxLength: 510
@@ -10332,7 +10302,7 @@ oneOf:
           IS_REQUIRED: false
           PROPERTY_NAME: message
           SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-          TYPE_NAME: IRCMessageText
+          TYPE_NAME: ""
           description: |
             IRC message to send as plain text.
           maxLength: 510
@@ -10368,7 +10338,7 @@ oneOf:
             IS_REQUIRED: false
             PROPERTY_NAME: message
             SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-            TYPE_NAME: IRCMessageText
+            TYPE_NAME: ""
             description: |
               IRC message to send as plain text.
             maxLength: 510
@@ -10402,7 +10372,7 @@ oneOf:
           IS_REQUIRED: false
           PROPERTY_NAME: message
           SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-          TYPE_NAME: IRCMessageText
+          TYPE_NAME: ""
           description: |
             IRC message to send as plain text.
           maxLength: 510
@@ -10427,7 +10397,7 @@ oneOf:
             IS_REQUIRED: false
             PROPERTY_NAME: message
             SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-            TYPE_NAME: IRCMessageText
+            TYPE_NAME: ""
             description: |
               IRC message to send as plain text.
             maxLength: 510
@@ -10479,7 +10449,7 @@ definitions:
       IS_REQUIRED: false
       PROPERTY_NAME: message
       SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-      TYPE_NAME: IRCMessageText
+      TYPE_NAME: ""
       description: |
         IRC message to send as plain text.
       maxLength: 510
@@ -10515,7 +10485,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: message
         SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-        TYPE_NAME: IRCMessageText
+        TYPE_NAME: ""
         description: |
           IRC message to send as plain text.
         maxLength: 510
@@ -10553,7 +10523,7 @@ definitions:
       IS_REQUIRED: false
       PROPERTY_NAME: message
       SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-      TYPE_NAME: IRCMessageText
+      TYPE_NAME: ""
       description: |
         IRC message to send as plain text.
       maxLength: 510
@@ -10578,7 +10548,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: message
         SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-        TYPE_NAME: IRCMessageText
+        TYPE_NAME: ""
         description: |
           IRC message to send as plain text.
         maxLength: 510
@@ -10608,20 +10578,6 @@ required:
 - message
 title: Private Message
 type: object
-
-
-http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-=======================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: message
-SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-TYPE_NAME: IRCMessageText
-description: |
-  IRC message to send as plain text.
-maxLength: 510
-minLength: 1
-title: IRC Message Text
-type: string
 
 
 http://schemas.taskcluster.net/notify/v1/pulse-request.json#
@@ -10780,13 +10736,13 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
-        TYPE_NAME: PurgeCacheRequests
+        TYPE_NAME: ""
         description: |
           A list of Purge Cache requests that the Purge Cache service has previously received.
         id: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
         items:
           IS_REQUIRED: false
-          PROPERTY_NAME: ' entry'
+          PROPERTY_NAME: ""
           SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items
           TYPE_NAME: PurgeCacheRequestsEntry
           additionalProperties:
@@ -10892,13 +10848,13 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
-        TYPE_NAME: PurgeCacheRequests
+        TYPE_NAME: ""
         description: |
           A list of Purge Cache requests that the Purge Cache service has previously received.
         id: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
         items:
           IS_REQUIRED: false
-          PROPERTY_NAME: ' entry'
+          PROPERTY_NAME: ""
           SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items
           TYPE_NAME: PurgeCacheRequestsEntry
           additionalProperties:
@@ -11007,84 +10963,10 @@ title: Purge Cache Request
 type: object
 
 
-http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
-========================================================================
-$schema: http://json-schema.org/draft-06/schema#
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
-TYPE_NAME: PurgeCacheRequests
-description: |
-  A list of Purge Cache requests that the Purge Cache service has previously received.
-id: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
-items:
-  IS_REQUIRED: false
-  PROPERTY_NAME: ' entry'
-  SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items
-  TYPE_NAME: PurgeCacheRequestsEntry
-  additionalProperties:
-    Boolean: false
-    Properties: null
-  description: |
-    An entry in a list of Purge Cache Requests that the Purge Cache service has previously received.
-  properties:
-    MemberNames:
-      before: Before
-      cacheName: CacheName
-      provisionerId: ProvisionerID
-      workerType: WorkerType
-    Properties:
-      before:
-        IS_REQUIRED: true
-        PROPERTY_NAME: before
-        SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/before
-        TYPE_NAME: ""
-        description: |
-          All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
-        format: date-time
-        type: string
-      cacheName:
-        IS_REQUIRED: true
-        PROPERTY_NAME: cacheName
-        SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/cacheName
-        TYPE_NAME: ""
-        description: Name of cache to purge.
-        type: string
-      provisionerId:
-        IS_REQUIRED: true
-        PROPERTY_NAME: provisionerId
-        SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/provisionerId
-        TYPE_NAME: ""
-        description: ProvisionerId associated with the workerType.
-        type: string
-      workerType:
-        IS_REQUIRED: true
-        PROPERTY_NAME: workerType
-        SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/workerType
-        TYPE_NAME: ""
-        description: Workertype cache exists on.
-        type: string
-    SortedPropertyNames:
-    - before
-    - cacheName
-    - provisionerId
-    - workerType
-    SourceURL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties
-  required:
-  - provisionerId
-  - workerType
-  - cacheName
-  - before
-  title: Purge Cache Requests Entry
-  type: object
-title: Purge Cache Requests
-type: array
-
-
 http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items
 ==============================================================================
 IS_REQUIRED: false
-PROPERTY_NAME: ' entry'
+PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items
 TYPE_NAME: PurgeCacheRequestsEntry
 additionalProperties:
@@ -12103,166 +11985,10 @@ Entry 33    =
 This endpoint is used to check that the service is up.'
 
 
-http://schemas.taskcluster.net/queue/v1/actions.json#
-=====================================================
-$schema: http://json-schema.org/draft-06/schema#
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
-TYPE_NAME: Actions
-description: |
-  See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
-id: http://schemas.taskcluster.net/queue/v1/actions.json#
-items:
-  IS_REQUIRED: false
-  PROPERTY_NAME: ' entry'
-  SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items
-  TYPE_NAME: Action
-  additionalProperties:
-    Boolean: false
-    Properties: null
-  description: |
-    Actions provide a generic mechanism to expose additional features of a
-    provisioner, worker type, or worker to Taskcluster clients.
-
-    An action is comprised of metadata describing the feature it exposes,
-    together with a webhook for triggering it.
-
-    The Taskcluster tools site, for example, retrieves actions when displaying
-    provisioners, worker types and workers. It presents the provisioner/worker
-    type/worker specific actions to the user. When the user triggers an action,
-    the web client takes the registered webhook, substitutes parameters into the
-    URL (see `url`), signs the requests with the Taskcluster credentials of the
-    user operating the web interface, and issues the HTTP request.
-
-    The level to which the action relates (provisioner, worker type, worker) is
-    called the action context. All actions, regardless of the action contexts,
-    are registered against the provisioner when calling
-    `queue.declareProvisioner`.
-
-    The action context is used by the web client to determine where in the web
-    interface to present the action to the user as follows:
-
-    | `context`   | Tool where action is displayed |
-    |-------------|--------------------------------|
-    | provisioner | Provisioner Explorer           |
-    | worker-type | Workers Explorer               |
-    | worker      | Worker Explorer                |
-
-    See [actions docs](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions)
-    for more information.
-  properties:
-    MemberNames:
-      context: Context
-      description: Description
-      method: Method
-      name: Name
-      title: Title
-      url: URL
-    Properties:
-      context:
-        IS_REQUIRED: true
-        PROPERTY_NAME: context
-        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/context
-        TYPE_NAME: ""
-        description: |
-          Actions have a "context" that is one of provisioner, worker-type, or worker, indicating
-          which it applies to. `context` is used by the front-end to know where to display the action.
-
-          | `context`   | Page displayed        |
-          |-------------|-----------------------|
-          | provisioner | Provisioner Explorer  |
-          | worker-type | Workers Explorer      |
-          | worker      | Worker Explorer       |
-        enum:
-        - provisioner
-        - worker-type
-        - worker
-        title: Context
-        type: string
-      description:
-        IS_REQUIRED: true
-        PROPERTY_NAME: description
-        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/description
-        TYPE_NAME: ""
-        description: |
-          Description of the provisioner.
-        title: Description
-        type: string
-      method:
-        IS_REQUIRED: true
-        PROPERTY_NAME: method
-        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/method
-        TYPE_NAME: ""
-        description: |
-          Method to indicate the desired action to be performed for a given resource.
-        enum:
-        - POST
-        - PUT
-        - DELETE
-        - PATCH
-        title: Method
-        type: string
-      name:
-        IS_REQUIRED: true
-        PROPERTY_NAME: name
-        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/name
-        TYPE_NAME: ""
-        description: |
-          Short names for things like logging/error messages.
-        title: Name
-        type: string
-      title:
-        IS_REQUIRED: true
-        PROPERTY_NAME: title
-        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/title
-        TYPE_NAME: ""
-        description: |
-          Appropriate title for any sort of Modal prompt.
-        title: Title
-      url:
-        IS_REQUIRED: true
-        PROPERTY_NAME: url
-        SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/url
-        TYPE_NAME: ""
-        description: |
-          When an action is triggered, a request is made using the `url` and `method`.
-          Depending on the `context`, the following parameters will be substituted in the url:
-
-          | `context`   | Path parameters                                          |
-          |-------------|----------------------------------------------------------|
-          | provisioner | <provisionerId>                                          |
-          | worker-type | <provisionerId>, <workerType>                            |
-          | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
-
-          _Note: The request needs to be signed with the user's Taskcluster credentials._
-        title: URL
-        type: string
-    SortedPropertyNames:
-    - context
-    - description
-    - method
-    - name
-    - title
-    - url
-    SourceURL: http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties
-  required:
-  - name
-  - title
-  - context
-  - url
-  - method
-  - description
-  title: Action
-  type: object
-title: Actions
-type: array
-
-
 http://schemas.taskcluster.net/queue/v1/actions.json#/items
 ===========================================================
 IS_REQUIRED: false
-PROPERTY_NAME: ' entry'
+PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items
 TYPE_NAME: Action
 additionalProperties:
@@ -15977,13 +15703,13 @@ properties:
                 IS_REQUIRED: false
                 PROPERTY_NAME: ""
                 SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
-                TYPE_NAME: Actions
+                TYPE_NAME: ""
                 description: |
                   See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
                 id: http://schemas.taskcluster.net/queue/v1/actions.json#
                 items:
                   IS_REQUIRED: false
-                  PROPERTY_NAME: ' entry'
+                  PROPERTY_NAME: ""
                   SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items
                   TYPE_NAME: Action
                   additionalProperties:
@@ -16238,13 +15964,13 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
-        TYPE_NAME: Actions
+        TYPE_NAME: ""
         description: |
           See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
         id: http://schemas.taskcluster.net/queue/v1/actions.json#
         items:
           IS_REQUIRED: false
-          PROPERTY_NAME: ' entry'
+          PROPERTY_NAME: ""
           SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items
           TYPE_NAME: Action
           additionalProperties:
@@ -19336,6 +19062,7 @@ oneOf:
     - storageType
     - expires
     title: Blob Artifact Response
+    type: object
   - $schema: http://json-schema.org/draft-06/schema#
     IS_REQUIRED: false
     PROPERTY_NAME: ""
@@ -19667,6 +19394,7 @@ required:
 - storageType
 - expires
 title: Blob Artifact Response
+type: object
 
 
 http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items
@@ -19990,13 +19718,13 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
-        TYPE_NAME: Actions
+        TYPE_NAME: ""
         description: |
           See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
         id: http://schemas.taskcluster.net/queue/v1/actions.json#
         items:
           IS_REQUIRED: false
-          PROPERTY_NAME: ' entry'
+          PROPERTY_NAME: ""
           SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items
           TYPE_NAME: Action
           additionalProperties:
@@ -24305,13 +24033,13 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
-        TYPE_NAME: Actions
+        TYPE_NAME: ""
         description: |
           See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
         id: http://schemas.taskcluster.net/queue/v1/actions.json#
         items:
           IS_REQUIRED: false
-          PROPERTY_NAME: ' entry'
+          PROPERTY_NAME: ""
           SOURCE_URL: http://schemas.taskcluster.net/queue/v1/actions.json#/items
           TYPE_NAME: Action
           additionalProperties:

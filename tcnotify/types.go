@@ -21,17 +21,14 @@ type (
 		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/properties/channel
 		Channel string `json:"channel"`
 
-		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/properties/message
-		Message IRCMessageText `json:"message"`
+		// IRC message to send as plain text.
+		//
+		// Min length: 1
+		// Max length: 510
+		//
+		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+		Message string `json:"message"`
 	}
-
-	// IRC message to send as plain text.
-	//
-	// Min length: 1
-	// Max length: 510
-	//
-	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
-	IRCMessageText string
 
 	// Optional link that can be added as a button to the email.
 	//
@@ -89,8 +86,13 @@ type (
 	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]
 	PrivateMessage struct {
 
-		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/properties/message
-		Message IRCMessageText `json:"message"`
+		// IRC message to send as plain text.
+		//
+		// Min length: 1
+		// Max length: 510
+		//
+		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+		Message string `json:"message"`
 
 		// User to post the message to.
 		//

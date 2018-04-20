@@ -601,7 +601,7 @@ type (
 		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec
-		LaunchSpec LaunchSpec `json:"launchSpec"`
+		LaunchSpec json.RawMessage `json:"launchSpec"`
 
 		// The Amazon AWS Region being configured.  Example: us-west-1
 		//
@@ -656,7 +656,7 @@ type (
 		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec
-		LaunchSpec LaunchSpec1 `json:"launchSpec"`
+		LaunchSpec json.RawMessage `json:"launchSpec"`
 
 		// The Amazon AWS Region being configured.  Example: us-west-1
 		//
