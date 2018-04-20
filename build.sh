@@ -43,7 +43,7 @@ echo "${OUTPUT_ALL_PLATFORMS}"
 echo "${OUTPUT_TEST}"
 
 go get github.com/taskcluster/generic-worker/gw-codegen
-go generate ./...
+echo TEMPORARILY DISABLED GO GENERATE WHILE FIXING jsonschema2go
 
 function install {
   if [ "${1}" != 'native' ]; then

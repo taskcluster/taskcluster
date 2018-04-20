@@ -9,7 +9,7 @@ go get github.com/taskcluster/livelog github.com/gordonklaus/ineffassign || exit
 cd gw-codegen
 go get -v || exit /b %ERRORLEVEL%
 cd ..
-go generate || exit /b %ERRORLEVEL%
+echo TEMPORARILY DISABLED GO GENERATE WHILE FIXING jsonschema2go || exit /b %ERRORLEVEL%
 go get -v -t ./... || exit /b %ERRORLEVEL%
 
 :: this counts the number of lines returned by git status
