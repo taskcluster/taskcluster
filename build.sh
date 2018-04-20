@@ -80,15 +80,23 @@ go get github.com/golang/lint/golint
 go get github.com/gordonklaus/ineffassign
 "${GOPATH}/bin/ineffassign" .
 
+echo
 echo "Checking for any non-ideal type names..."
 {
   grep -r '^\t[A-Z][a-zA-Z]*[1-9] ' . | grep -v '^Binary file'
   grep -r '^\tVar[1-9]*' . | grep -v '^Binary file'
   grep -r '^\t[A-Z][a-zA-Z0-9]*Entry' . | grep -v '^Binary file'
   grep -r 'Defined properties:$' . | grep -v '^Binary file'
-} | sort -u
+} | grep 'types\.go' | grep -v 'codegenerator' | sort -u
+
+echo
+echo "Checking for json.RawMessage..."
+{
+  grep -r 'json\.RawMessage' . | grep -v '^Binary file'
+} | grep 'types\.go' | grep -v 'codegenerator' | sort -u
 
 # finally check that generated files have been committed, and that formatting
 # code resulted in no changes...
+echo
 git status
 "${NEW_TIMESTAMP}" || [ $(git status --porcelain | wc -l) == 0 ]
