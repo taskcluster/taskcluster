@@ -640,6 +640,21 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
 		}
 	}
 
+	// This is a bit naughty, we're going to set the type if it isn't set, but we can infer it
+	if subSchema.Type == nil {
+		var t string
+		switch {
+		case subSchema.Properties != nil:
+			t = "object"
+		case subSchema.Items != nil:
+			t = "array"
+		}
+		if t != "" {
+			log.Printf(`WARNING: Setting type="%v" for schema "%v"`, t, subSchema.SourceURL)
+			subSchema.Type = &t
+		}
+	}
+
 	// If we have a $ref pointing to another schema, keep a reference so we can
 	// discover TypeName later when we generate the type definition
 	if ref := subSchema.Ref; ref != nil && *ref != "" {
