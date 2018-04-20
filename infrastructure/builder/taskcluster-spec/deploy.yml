@@ -25,6 +25,7 @@ resources:
           containers:
           - name: ping
             image: {$eval: "service.dockerImage"}
+            imagePullPolicy: Always
             args: [web]
             resources:
               requests:
@@ -91,6 +92,7 @@ resources:
           containers:
           - name: tools
             image: {$eval: "service.dockerImage"}
+            imagePullPolicy: Always
             resources:
               requests:
                 cpu: 10m

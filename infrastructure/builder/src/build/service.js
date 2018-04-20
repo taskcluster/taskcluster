@@ -476,7 +476,7 @@ const toolsUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, 
         finish: pack => {
           pack.entry({name: 'Dockerfile'},
             TOOLS_UI_DOCKERFILE_TEMPLATE({}));
-          pack.entry({name: 'nginx-site.conf'}, dockerfile);
+          pack.entry({name: 'nginx-site.conf'}, fs.readFileSync(path.join(__dirname, 'tools-ui-nginx-site.conf')));
           pack.finalize();
         },
       });
