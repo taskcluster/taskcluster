@@ -430,8 +430,16 @@ api.declare({
 
   if (resp) {
     return res.reply(resp);
+  } else if (error.requestInfo && error.code) {
+    // handle errors from further API calls specially
+    return res.reportError(
+      'InputError',
+      `While calling queue.createTask: ${error.code}\n\n${error.message}`,
+      {createTask: error.requestInfo});
   } else {
-    return res.reportError('InputError', 'Could not create task: {{error}}',
+    return res.reportError(
+      'InputError',
+      'While firing hook:\n\n{{error}}',
       {error: (error || 'unknown').toString()});
   }
 });
