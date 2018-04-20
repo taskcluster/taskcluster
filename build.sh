@@ -83,11 +83,11 @@ go get github.com/gordonklaus/ineffassign
 echo
 echo "Checking for any non-ideal type names..."
 {
-  grep -r '^\t[A-Z][a-zA-Z]*[1-9] ' . | grep -v '^Binary file'
-  grep -r '^\tVar[1-9]*' . | grep -v '^Binary file'
-  grep -r '^\t[A-Z][a-zA-Z0-9]*Entry' . | grep -v '^Binary file'
-  grep -r 'Defined properties:$' . | grep -v '^Binary file'
-} | grep 'types\.go' | grep -v 'codegenerator' | sort -u
+  grep -r '^\t[A-Z][a-zA-Z]*[1-9] ' .
+  grep -r '^\tVar[1-9]*' .
+  grep -r '^\t[A-Z][a-zA-Z0-9]*Entry' . | grep -v 'PurgeCacheRequestsEntry' # this name is intended
+  grep -r 'Defined properties:$' .
+} | grep -v '^Binary file' | grep 'types\.go' | grep -v 'codegenerator' | sort -u
 
 echo
 echo "Checking for json.RawMessage..."
