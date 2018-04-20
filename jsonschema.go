@@ -92,6 +92,7 @@ import (
 	"go/format"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -265,6 +266,12 @@ func (subSchema JsonSubSchema) String() string {
 }
 
 func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel bool, extraPackages StringSet, rawMessageTypes StringSet) (comment, typ string) {
+	// Ignore all other properties if this has a $ref, and only redirect to the referened schema.
+	// See https://tools.ietf.org/html/draft-handrews-json-schema-01#section-8.3:
+	//   `All other properties in a "$ref" object MUST be ignored.`
+	if p := jsonSubSchema.RefSubSchema; p != nil {
+		return p.typeDefinition(disableNested, topLevel, extraPackages, rawMessageTypes)
+	}
 	comment = "\n"
 	if d := jsonSubSchema.Description; d != nil {
 		comment += text.Indent(*d, "// ")
@@ -324,19 +331,19 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel 
 	if allOf := jsonSubSchema.AllOf; allOf != nil {
 		metadata += "// All of:\n"
 		for _, o := range allOf.Items {
-			metadata += "//   * " + o.TypeName + "\n"
+			metadata += "//   * " + o.getTypeName() + "\n"
 		}
 	}
 	if anyOf := jsonSubSchema.AnyOf; anyOf != nil {
 		metadata += "// Any of:\n"
 		for _, o := range anyOf.Items {
-			metadata += "//   * " + o.TypeName + "\n"
+			metadata += "//   * " + o.getTypeName() + "\n"
 		}
 	}
 	if oneOf := jsonSubSchema.OneOf; oneOf != nil {
 		metadata += "// One of:\n"
 		for _, o := range oneOf.Items {
-			metadata += "//   * " + o.TypeName + "\n"
+			metadata += "//   * " + o.getTypeName() + "\n"
 		}
 	}
 	// Here we check if metadata was specified, and only create new
@@ -344,32 +351,16 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel 
 	if len(metadata) > 0 {
 		comment += "//\n" + metadata
 	}
-
 	typ = "json.RawMessage"
 	if p := jsonSubSchema.Type; p != nil {
 		typ = *p
 	}
-	if p := jsonSubSchema.RefSubSchema; p != nil {
-		typ = p.TypeName
-	}
 	switch typ {
 	case "array":
+		typ = "[]interface{}"
 		if jsonSubSchema.Items != nil {
-			if jsonSubSchema.Items.Type != nil {
-				var arrayType string
-				if disableNested && jsonSubSchema.Items.Properties != nil {
-					arrayType = jsonSubSchema.Items.TypeName
-				} else {
-					_, arrayType = jsonSubSchema.Items.typeDefinition(disableNested, false, extraPackages, rawMessageTypes)
-				}
-				typ = "[]" + arrayType
-			} else {
-				if refSubSchema := jsonSubSchema.Items.RefSubSchema; refSubSchema != nil {
-					typ = "[]" + refSubSchema.TypeName
-				}
-			}
-		} else {
-			typ = "[]interface{}"
+			_, arrayType := jsonSubSchema.Items.typeDefinition(disableNested, false, extraPackages, rawMessageTypes)
+			typ = "[]" + arrayType
 		}
 	case "object":
 		ap := jsonSubSchema.AdditionalProperties
@@ -377,7 +368,11 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel 
 		if noExtraProperties {
 			// If we are sure no additional properties are allowed, we can
 			// generate a struct with all allowed property names.
-			typ = jsonSubSchema.Properties.AsStruct(disableNested, extraPackages, rawMessageTypes)
+			if !topLevel && disableNested {
+				typ = jsonSubSchema.getTypeName()
+			} else {
+				typ = jsonSubSchema.Properties.AsStruct(disableNested, extraPackages, rawMessageTypes)
+			}
 		} else if ap != nil && ap.Properties != nil && jsonSubSchema.Properties == nil {
 			// In the special case no properties have been specified, but
 			// additionalProperties is an object, we can create a
@@ -470,20 +465,17 @@ func (p *Properties) postPopulate(job *Job) error {
 		sort.Strings(p.SortedPropertyNames)
 		members := make(StringSet, len(p.SortedPropertyNames))
 		p.MemberNames = make(map[string]string, len(p.SortedPropertyNames))
-		propTypeNames := make(map[string]bool)
 		for _, j := range p.SortedPropertyNames {
 			p.MemberNames[j] = job.MemberNameGenerator(j, !job.HideStructMembers, members)
-			if p.Properties[j].Properties != nil {
-				if job.DisableNestedStructs {
-					job.add(p.Properties[j])
-				} else {
-					job.SetTypeName(p.Properties[j], propTypeNames)
-				}
-			}
 			// subschemas also need to be triggered to postPopulate...
 			err := p.Properties[j].postPopulate(job)
 			if err != nil {
 				return err
+			}
+			if p.Properties[j].TargetSchema().Properties != nil {
+				if job.DisableNestedStructs {
+					job.add(p.Properties[j].TargetSchema())
+				}
 			}
 		}
 	}
@@ -491,13 +483,21 @@ func (p *Properties) postPopulate(job *Job) error {
 }
 
 func (job *Job) SetTypeName(subSchema *JsonSubSchema, blacklist map[string]bool) {
-	if subSchema.TypeName != "" {
+	if r := subSchema.RefSubSchema; r != nil {
+		log.Printf("Not setting type name for %v - has $ref to ", subSchema.SourceURL, r.SourceURL)
+		job.SetTypeName(r, blacklist)
 		return
 	}
+	if subSchema.TypeName != "" {
+		log.Printf("Type name already set to '%v' for %v", subSchema.TypeName, subSchema.SourceURL)
+		return
+	}
+	log.Printf("Setting type name for %v", subSchema.SourceURL)
 	// Type names only need to be set for objects and arrays, everything else is a primitive type
 	subSchema.TypeName = job.TypeNameGenerator(subSchema.TypeNameRaw(), job.ExportTypes, blacklist)
 	if subSchema.Items != nil {
-		subSchema.Items.PropertyName = subSchema.PropertyName + " entry"
+		log.Printf("Type %v is an array - will set type for items too...", subSchema.SourceURL)
+		subSchema.Items.TargetSchema().PropertyName = subSchema.PropertyName + " entry"
 		job.SetTypeName(subSchema.Items, blacklist)
 	}
 }
@@ -570,14 +570,14 @@ func (items *Items) postPopulate(job *Job) error {
 
 func (subSchema *JsonSubSchema) TypeNameRaw() string {
 	switch {
+	case subSchema.RefSubSchema != nil:
+		return subSchema.RefSubSchema.TypeNameRaw()
 	case subSchema.Title != nil && *subSchema.Title != "" && len(*subSchema.Title) < 40:
 		return *subSchema.Title
 	case subSchema.PropertyName != "" && len(subSchema.PropertyName) < 40:
 		return subSchema.PropertyName
 	case subSchema.Description != nil && *subSchema.Description != "" && len(*subSchema.Description) < 40:
 		return *subSchema.Description
-	case subSchema.RefSubSchema != nil && subSchema.RefSubSchema.TypeName != "":
-		return subSchema.RefSubSchema.TypeName
 	default:
 		return "var"
 	}
@@ -586,8 +586,10 @@ func (subSchema *JsonSubSchema) TypeNameRaw() string {
 func (job *Job) add(subSchema *JsonSubSchema) {
 	// if we have already included in the schema set, nothing to do...
 	if _, ok := job.result.SchemaSet.used[subSchema.SourceURL]; ok {
+		log.Printf("Not adding %v", subSchema.SourceURL)
 		return
 	}
+	log.Printf("Adding %v", subSchema.SourceURL)
 	job.result.SchemaSet.used[subSchema.SourceURL] = subSchema
 	job.SetTypeName(subSchema, job.TypeNameBlacklist)
 	job.result.SchemaSet.TypeNames[subSchema.TypeName] = true
@@ -661,12 +663,19 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
 		}
 	}
 
-	// If this subschema is an object, and nested structs are disabled, then add it to the top level types
-	if job.DisableNestedStructs && subSchema.Items != nil && subSchema.Items.Properties != nil {
-		job.add(subSchema.Items)
+	// If this subschema is an array of objects, and nested structs are disabled, then add it to the top level types
+	if job.DisableNestedStructs && subSchema.Items != nil && subSchema.Items.TargetSchema().Properties != nil {
+		job.add(subSchema.Items.TargetSchema())
 	}
 
 	return nil
+}
+
+func (subSchema *JsonSubSchema) TargetSchema() *JsonSubSchema {
+	if ref := subSchema.RefSubSchema; ref != nil {
+		return ref.TargetSchema()
+	}
+	return subSchema
 }
 
 // MergeIn copies attributes from subSchema into the subschemas in items.Items
@@ -796,10 +805,11 @@ func generateGoTypes(disableNested bool, schemaSet *SchemaSet) (string, StringSe
 	typeDefinitions := make(map[string]string)
 	typeNames := make([]string, 0, len(schemaSet.used))
 	for _, i := range schemaSet.used {
+		log.Printf("Type name: '%v' - %v", i.getTypeName(), i.SourceURL)
 		var newComment, newType string
 		newComment, newType = i.typeDefinition(disableNested, true, extraPackages, rawMessageTypes)
 		typeDefinitions[i.TypeName] = text.Indent(newComment+i.TypeName+" "+newType, "\t")
-		typeNames = append(typeNames, i.TypeName)
+		typeNames = append(typeNames, i.getTypeName())
 	}
 	sort.Strings(typeNames)
 	for _, t := range typeNames {
@@ -835,7 +845,7 @@ func (job *Job) Execute() (*Result, error) {
 		// note we don't add inside cacheJsonSchema/loadJsonSchema
 		// since we don't want to add e.g. top level items if only
 		// definitions inside the schema are referenced
-		job.add(j)
+		job.add(j.TargetSchema())
 	}
 
 	// link schemas (update cross references between schemas)
@@ -850,7 +860,6 @@ func (job *Job) Execute() (*Result, error) {
 				fullyQualifiedRef = sanitizeURL(*j.Ref)
 			}
 			j.RefSubSchema = job.result.SchemaSet.all[fullyQualifiedRef]
-			job.add(j.RefSubSchema)
 		}
 	}
 
@@ -930,9 +939,6 @@ func (s *Properties) AsStruct(disableNested bool, extraPackages StringSet, rawMe
 			var subComment, subType string
 			subMember := s.MemberNames[j]
 			subComment, subType = s.Properties[j].typeDefinition(disableNested, false, extraPackages, rawMessageTypes)
-			if disableNested && s.Properties[j].Properties != nil {
-				subType = s.Properties[j].TypeName
-			}
 			jsonStructTagOptions := ""
 			if !s.Properties[j].IsRequired {
 				jsonStructTagOptions = ",omitempty"
@@ -943,4 +949,11 @@ func (s *Properties) AsStruct(disableNested bool, extraPackages StringSet, rawMe
 	}
 	typ += "}"
 	return
+}
+
+func (jsonSubSchema *JsonSubSchema) getTypeName() string {
+	if jsonSubSchema.Ref != nil {
+		return jsonSubSchema.RefSubSchema.getTypeName()
+	}
+	return jsonSubSchema.TypeName
 }
