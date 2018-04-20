@@ -62,11 +62,12 @@ func generateTypes(input, constraint string) []byte {
 		log.Fatalf("Hit error: %v", err)
 	}
 	job := jsonschema2go.Job{
-		Package:           pkg.Name,
-		ExportTypes:       true,
-		HideStructMembers: false,
-		URLs:              []string{"file://" + file},
-		SkipCodeGen:       false,
+		Package:              pkg.Name,
+		ExportTypes:          true,
+		HideStructMembers:    false,
+		URLs:                 []string{"file://" + file},
+		SkipCodeGen:          false,
+		DisableNestedStructs: true,
 	}
 	result, err := job.Execute()
 	if err != nil {
