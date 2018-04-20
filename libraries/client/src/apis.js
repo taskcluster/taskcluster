@@ -9,12 +9,14 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Get a list of all clients.  With `prefix`, only clients for which\nit is a prefix of the clientId are returned.",
+          "description": "Get a list of all clients.  With `prefix`, only clients for which\nit is a prefix of the clientId are returned.\n\nBy default this end-point will try to return up to 1000 clients in one\nrequest. But it **may return less, even none**.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listClients` with the last `continuationToken` until you\nget a result without a `continuationToken`.",
           "method": "get",
           "name": "listClients",
           "output": "http://schemas.taskcluster.net/auth/v1/list-clients-response.json#",
           "query": [
-            "prefix"
+            "prefix",
+            "continuationToken",
+            "limit"
           ],
           "route": "/clients/",
           "stability": "stable",
