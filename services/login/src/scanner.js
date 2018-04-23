@@ -21,8 +21,17 @@ async function scanner(cfg, handlers) {
 
   const scan = async h => {
     const handler = handlers[h];
-    const clientResponse = await auth.listClients({prefix: `${handler.identityProviderId}/`});
-    const clients = _.get(clientResponse, 'clients', clientResponse);
+    let clients = [];
+    const query = {prefix: `${handler.identityProviderId}/`};
+    // get all Clients
+    while (true) {
+      const clientResponse = await helper.auth.listClients(query);
+      query.continuationToken = clientResponse.continuationToken;
+      clients = clients.concat(clientResponse.clients);
+      if (!query.continuationToken) {
+        break;
+      }
+    }
 
     // iterate through the clients, constructing a new User as necessary, comparing
     // the client's scopes to the User's scopes and disabling where necessary.
