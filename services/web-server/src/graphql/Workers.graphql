@@ -41,7 +41,7 @@ type Worker {
   quarantineUntil: DateTime
 
   # Date of the first time this worker claimed a task.
-  firstClaim: Date!
+  firstClaim: DateTime!
 
   # A list of actions exposed at the worker level.
   actions: [ProvisionerAction]!
