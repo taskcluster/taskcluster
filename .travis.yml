@@ -16,7 +16,7 @@ install:
 
 script:
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go get ./gw-codegen"
-  - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || echo TEMPORARILY DISABLED GO GENERATE WHILE FIXING jsonschema2go"
+  - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go generate"
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || git status"
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || test $(git status --porcelain | wc -l) == 0"
   - "go get -ldflags \"-X main.revision=$(git rev-parse HEAD)\" -v -t ./..."
