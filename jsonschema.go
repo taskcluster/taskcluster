@@ -167,6 +167,7 @@ type (
 		// Otherwise, PropertyName will be an empty string.
 		PropertyName string         `json:"PROPERTY_NAME"`
 		SourceURL    string         `json:"SOURCE_URL"`
+		RefSchemaURL string         `json:"REF_SCHEMA_URL,omitempty"`
 		RefSubSchema *JsonSubSchema `json:"REF_SUBSCHEMA,omitempty"`
 		IsRequired   bool           `json:"IS_REQUIRED"`
 	}
@@ -196,6 +197,7 @@ type (
 	canPopulate interface {
 		postPopulate(*Job) error
 		setSourceURL(string)
+		prepare(*Job) error
 	}
 
 	NameGenerator func(name string, exported bool, blacklist map[string]bool) (identifier string)
@@ -222,6 +224,7 @@ type (
 	SchemaSet struct {
 		all       map[string]*JsonSubSchema
 		used      map[string]*JsonSubSchema
+		populated []canPopulate
 		TypeNames StringSet
 	}
 
@@ -452,8 +455,21 @@ func (p Properties) String() string {
 	return result
 }
 
+func (p *Properties) prepare(job *Job) error {
+	log.Printf("In PREPARE (properties): %v", p.SourceURL)
+	for _, j := range p.SortedPropertyNames {
+		if p.Properties[j].TargetSchema().Properties != nil {
+			if job.DisableNestedStructs {
+				job.add(p.Properties[j].TargetSchema())
+			}
+		}
+	}
+	return nil
+}
+
 func (p *Properties) postPopulate(job *Job) error {
-	log.Printf("In PROPERTIES postPopulate for %v", p.SourceURL)
+	log.Printf("In POSTPOPULATE (properties): %v", p.SourceURL)
+	job.result.SchemaSet.populated = append(job.result.SchemaSet.populated, p)
 	// now all data should be loaded, let's sort the p.Properties
 	if p.Properties != nil {
 		p.SortedPropertyNames = make([]string, 0, len(p.Properties))
@@ -467,17 +483,11 @@ func (p *Properties) postPopulate(job *Job) error {
 		members := make(StringSet, len(p.SortedPropertyNames))
 		p.MemberNames = make(map[string]string, len(p.SortedPropertyNames))
 		for _, j := range p.SortedPropertyNames {
-			log.Printf("About to postPopulate %v/%v", j, p.Properties[j].SourceURL)
 			p.MemberNames[j] = job.MemberNameGenerator(j, !job.HideStructMembers, members)
 			// subschemas also need to be triggered to postPopulate...
 			err := p.Properties[j].postPopulate(job)
 			if err != nil {
 				return err
-			}
-			if p.Properties[j].TargetSchema().Properties != nil {
-				if job.DisableNestedStructs {
-					job.add(p.Properties[j].TargetSchema())
-				}
 			}
 		}
 	} else {
@@ -487,9 +497,9 @@ func (p *Properties) postPopulate(job *Job) error {
 }
 
 func (job *Job) SetTypeName(subSchema *JsonSubSchema, blacklist map[string]bool) {
-	if r := subSchema.RefSubSchema; r != nil {
-		log.Printf("Not setting type name for %v - has $ref to ", subSchema.SourceURL, r.SourceURL)
-		job.SetTypeName(r, blacklist)
+	if r := subSchema.Ref; r != nil {
+		log.Printf("Not setting type name for %v - has $ref to ", subSchema.SourceURL, subSchema.RefSubSchema.SourceURL)
+		job.SetTypeName(subSchema.RefSubSchema, blacklist)
 		return
 	}
 	if subSchema.TypeName != "" {
@@ -559,15 +569,24 @@ func (items Items) String() string {
 	return result
 }
 
+func (items *Items) prepare(job *Job) error {
+	log.Printf("In PREPARE (items): %v", items.SourceURL)
+	for _, j := range (*items).Items {
+		// add to schemas so we get a type generated for it in source code
+		job.add(j.TargetSchema())
+	}
+	return nil
+}
+
 func (items *Items) postPopulate(job *Job) error {
+	log.Printf("In POSTPOPULATE (items): %v", items.SourceURL)
+	job.result.SchemaSet.populated = append(job.result.SchemaSet.populated, items)
 	for i, j := range (*items).Items {
 		j.setSourceURL(items.SourceURL + "[" + strconv.Itoa(i) + "]")
 		err := j.postPopulate(job)
 		if err != nil {
 			return err
 		}
-		// add to schemas so we get a type generated for it in source code
-		job.add(j.TargetSchema())
 	}
 	return nil
 }
@@ -616,12 +635,21 @@ func (subSchema *JsonSubSchema) postPopulateIfNotNil(canPopulate canPopulate, jo
 	return nil
 }
 
-func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
+func (subSchema *JsonSubSchema) link(job *Job) (err error) {
+	if ref := subSchema.Ref; ref != nil && *ref != "" {
+		subSchema.RefSubSchema = job.result.SchemaSet.all[subSchema.RefSchemaURL]
+		if subSchema.RefSubSchema == nil {
+			return fmt.Errorf("Subschema %v not loaded when updating %v", subSchema.RefSchemaURL, subSchema.SourceURL)
+		}
+		log.Printf("Linked %v to %v", subSchema.SourceURL, subSchema.RefSchemaURL)
+	} else {
+		log.Printf("Nothing to link in %v", subSchema.SourceURL)
+	}
+	return nil
+}
 
-	// Since setSourceURL(string) must be called before postPopulate(*Job), we
-	// can rely on subSchema.SourceURL being already set.
-	job.result.SchemaSet.all[subSchema.SourceURL] = subSchema
-	log.Printf("In postPopulate and added %v to 'all' schema sets", subSchema.SourceURL)
+func (subSchema *JsonSubSchema) prepare(job *Job) (err error) {
+	log.Printf("In PREPARE (subschema): %v", subSchema.SourceURL)
 
 	// If this subschema has Items (anyOf, oneOf, allOf) then we should "copy
 	// down" properties from this schema into them, since they inherit the
@@ -629,6 +657,47 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
 	subSchema.AllOf.MergeIn(subSchema, map[string]bool{"AllOf": true, "ID": true})
 	subSchema.AnyOf.MergeIn(subSchema, map[string]bool{"AnyOf": true, "ID": true})
 	subSchema.OneOf.MergeIn(subSchema, map[string]bool{"OneOf": true, "ID": true})
+
+	// This is a bit naughty, we're going to set the type if it isn't set, but we can infer it
+	if subSchema.Type == nil {
+		var t string
+		switch {
+		case subSchema.Properties != nil:
+			t = "object"
+		case subSchema.Items != nil:
+			t = "array"
+		}
+		if t != "" {
+			log.Printf(`WARNING: Setting type="%v" for schema "%v"`, t, subSchema.SourceURL)
+			subSchema.Type = &t
+		}
+	}
+
+	// Mark subschema properties that are in required list as being required (IsRequired property)
+	for _, req := range subSchema.Required {
+		if subSchema.Properties != nil {
+			if subSubSchema, ok := subSchema.Properties.Properties[req]; ok {
+				subSubSchema.IsRequired = true
+			} else {
+				panic(fmt.Sprintf("Schema %v has a required property %v but this property definition cannot be found", subSchema.SourceURL, req))
+			}
+		}
+	}
+
+	// If this subschema is an array of objects, and nested structs are disabled, then add it to the top level types
+	if job.DisableNestedStructs && subSchema.Items != nil && subSchema.Items.TargetSchema().Properties != nil {
+		job.add(subSchema.Items.TargetSchema())
+	}
+	return nil
+}
+
+func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
+	log.Printf("In POSTPOPULATE (subschema): %v", subSchema.SourceURL)
+	job.result.SchemaSet.populated = append(job.result.SchemaSet.populated, subSchema)
+
+	// Since setSourceURL(string) must be called before postPopulate(*Job), we
+	// can rely on subSchema.SourceURL being already set.
+	job.result.SchemaSet.all[subSchema.SourceURL] = subSchema
 
 	// Call postPopulate on sub items of this schema...  Use an ARRAY not a MAP
 	// so we can be sure subSchema.Definitions is processed before anything
@@ -650,57 +719,20 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
 		}
 	}
 
-	// This is a bit naughty, we're going to set the type if it isn't set, but we can infer it
-	if subSchema.Type == nil {
-		var t string
-		switch {
-		case subSchema.Properties != nil:
-			t = "object"
-		case subSchema.Items != nil:
-			t = "array"
-		}
-		if t != "" {
-			log.Printf(`WARNING: Setting type="%v" for schema "%v"`, t, subSchema.SourceURL)
-			subSchema.Type = &t
-		}
-	}
-
 	// If we have a $ref pointing to another schema, keep a reference so we can
 	// discover TypeName later when we generate the type definition
 	if ref := subSchema.Ref; ref != nil && *ref != "" {
 		// only need to cache a schema if it isn't relative to the current document
-		var fullyQualifiedRef string
 		if !strings.HasPrefix(*ref, "#") {
 			subSchema.RefSubSchema, err = job.cacheJsonSchema(*subSchema.Ref)
 			if err != nil {
 				return err
 			}
-			fullyQualifiedRef = sanitizeURL(*subSchema.Ref)
+			subSchema.RefSchemaURL = sanitizeURL(*subSchema.Ref)
 		} else {
-			fullyQualifiedRef = subSchema.SourceURL[:strings.Index(subSchema.SourceURL, "#")] + *subSchema.Ref
-		}
-		subSchema.RefSubSchema = job.result.SchemaSet.all[fullyQualifiedRef]
-		if subSchema.RefSubSchema == nil {
-			return fmt.Errorf("Subschema %v not loaded when updating %v", fullyQualifiedRef, subSchema.SourceURL)
+			subSchema.RefSchemaURL = subSchema.SourceURL[:strings.Index(subSchema.SourceURL, "#")] + *subSchema.Ref
 		}
 	}
-
-	// Mark subschema properties that are in required list as being required (IsRequired property)
-	for _, req := range subSchema.Required {
-		if subSchema.Properties != nil {
-			if subSubSchema, ok := subSchema.Properties.Properties[req]; ok {
-				subSubSchema.IsRequired = true
-			} else {
-				panic(fmt.Sprintf("Schema %v has a required property %v but this property definition cannot be found", subSchema.SourceURL, req))
-			}
-		}
-	}
-
-	// If this subschema is an array of objects, and nested structs are disabled, then add it to the top level types
-	if job.DisableNestedStructs && subSchema.Items != nil && subSchema.Items.TargetSchema().Properties != nil {
-		job.add(subSchema.Items.TargetSchema())
-	}
-
 	return nil
 }
 
@@ -765,6 +797,7 @@ func (subSchema *JsonSubSchema) setSourceURL(url string) {
 }
 
 func (job *Job) loadJsonSchema(URL string) (subSchema *JsonSubSchema, err error) {
+	log.Printf("Loading %v", URL)
 	var body io.ReadCloser
 	if strings.HasPrefix(URL, "file://") {
 		body, err = os.Open(URL[7 : len(URL)-1]) // need to strip trailing '#'
@@ -821,6 +854,7 @@ func (job *Job) cacheJsonSchema(url string) (*JsonSubSchema, error) {
 	if _, ok := job.result.SchemaSet.all[sanitizedURL]; !ok {
 		return job.loadJsonSchema(sanitizedURL)
 	}
+	log.Printf("Schema already cached: %v", url)
 	return job.result.SchemaSet.SubSchema(sanitizedURL), nil
 }
 
@@ -859,6 +893,7 @@ func (job *Job) Execute() (*Result, error) {
 	job.result.SchemaSet = &SchemaSet{
 		all:       make(map[string]*JsonSubSchema),
 		used:      make(map[string]*JsonSubSchema),
+		populated: make([]canPopulate, 0, len(job.URLs)),
 		TypeNames: make(StringSet),
 	}
 	if job.TypeNameBlacklist == nil {
@@ -879,6 +914,18 @@ func (job *Job) Execute() (*Result, error) {
 		// since we don't want to add e.g. top level items if only
 		// definitions inside the schema are referenced
 		job.add(j.TargetSchema())
+	}
+	for _, subSchema := range job.result.SchemaSet.all {
+		err := subSchema.link(job)
+		if err != nil {
+			return nil, err
+		}
+	}
+	for _, cp := range job.result.SchemaSet.populated {
+		err := cp.prepare(job)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var err error
