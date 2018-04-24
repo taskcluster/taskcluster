@@ -42,7 +42,7 @@ are for hacking on the worker itself.
 
 ```
 # from the root of this repo) also see --help
-node --harmony bin/worker.js <config>
+node bin/worker.js <config>
 ```
 
 ### Configuration
@@ -337,7 +337,7 @@ into your environment. See
 
 Run the upload-schema.js script to update the schema:
 
-`babel-node --harmony bin/upload-schema.js`
+`babel-node bin/upload-schema.js`
 
 ### Post-Deployment Verification
 
