@@ -25,7 +25,7 @@ async function scanner(cfg, handlers) {
     const query = {prefix: `${handler.identityProviderId}/`};
     // get all Clients
     while (true) {
-      const clientResponse = await helper.auth.listClients(query);
+      const clientResponse = await auth.listClients(query);
       query.continuationToken = clientResponse.continuationToken;
       clients = clients.concat(clientResponse.clients);
       if (!query.continuationToken) {
