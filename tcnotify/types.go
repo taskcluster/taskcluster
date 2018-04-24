@@ -26,7 +26,7 @@ type (
 		// Min length: 1
 		// Max length: 510
 		//
-		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
 		Message string `json:"message"`
 	}
 
@@ -91,7 +91,7 @@ type (
 		// Min length: 1
 		// Max length: 510
 		//
-		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
 		Message string `json:"message"`
 
 		// User to post the message to.

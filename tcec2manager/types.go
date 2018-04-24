@@ -10,6 +10,61 @@ import (
 )
 
 type (
+	// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items
+	Entry1 struct {
+
+		// EC2 instance type
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/instanceType
+		InstanceType string `json:"instanceType,omitempty"`
+
+		// Amount of dollars for an hour of usage for this configuration
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/price
+		Price float64 `json:"price,omitempty"`
+
+		// EC2 region
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/region
+		Region string `json:"region,omitempty"`
+
+		// Possible values:
+		//   * "spot"
+		//   * "ondemand"
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/type
+		Type string `json:"type,omitempty"`
+
+		// EC2 availability zone identifier
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/zone
+		Zone string `json:"zone,omitempty"`
+	}
+
+	// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items
+	Entry2 struct {
+
+		// Possible values:
+		//   * "instanceType"
+		//   * "region"
+		//   * "price"
+		//   * "minPrice"
+		//   * "maxPrice"
+		//   * "zone"
+		//   * "type"
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/key
+		Key string `json:"key,omitempty"`
+
+		// One of:
+		//   * Var5
+		//   * Var6
+		//   * Var7
+		//
+		// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction
+		Restriction json.RawMessage `json:"restriction,omitempty"`
+	}
+
 	// This method returns a list of errors.  It currently gives the error code only
 	// because we're not sure of the security implications of exposing the full
 	// message.  We do store complete error messages, but are figuring out how to
@@ -84,12 +139,12 @@ type (
 	// A list of prices for EC2
 	//
 	// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#
-	ListOfPrices []Var5
+	ListOfPrices []Entry1
 
 	// A list of prices for EC2
 	//
 	// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#
-	ListOfRestrictionsForPrices []Var9
+	ListOfRestrictionsForPrices []Entry2
 
 	// A list of names of worker types
 	//
@@ -424,69 +479,14 @@ type (
 		WorkerType string `json:"workerType,omitempty"`
 	}
 
-	// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items
-	Var5 struct {
-
-		// EC2 instance type
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/instanceType
-		InstanceType string `json:"instanceType,omitempty"`
-
-		// Amount of dollars for an hour of usage for this configuration
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/price
-		Price float64 `json:"price,omitempty"`
-
-		// EC2 region
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/region
-		Region string `json:"region,omitempty"`
-
-		// Possible values:
-		//   * "spot"
-		//   * "ondemand"
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/type
-		Type string `json:"type,omitempty"`
-
-		// EC2 availability zone identifier
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/zone
-		Zone string `json:"zone,omitempty"`
-	}
-
 	// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[0]
-	Var6 float64
+	Var5 float64
 
 	// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[1]
-	Var7 string
+	Var6 string
 
 	// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]
-	Var8 []string
-
-	// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items
-	Var9 struct {
-
-		// Possible values:
-		//   * "instanceType"
-		//   * "region"
-		//   * "price"
-		//   * "minPrice"
-		//   * "maxPrice"
-		//   * "zone"
-		//   * "type"
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/key
-		Key string `json:"key,omitempty"`
-
-		// One of:
-		//   * Var6
-		//   * Var7
-		//   * Var8
-		//
-		// See http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction
-		Restriction json.RawMessage `json:"restriction,omitempty"`
-	}
+	Var7 []string
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since

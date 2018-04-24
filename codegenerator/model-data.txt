@@ -1,4 +1,4 @@
-Generated: 1524244951
+Generated: 1524590554
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -2118,6 +2118,7 @@ properties:
         $ref: http://schemas.taskcluster.net/auth/v1/get-client-response.json#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
+        REF_SCHEMA_URL: http://schemas.taskcluster.net/auth/v1/get-client-response.json#
         REF_SUBSCHEMA:
           $schema: http://json-schema.org/draft-06/schema#
           IS_REQUIRED: false
@@ -2331,6 +2332,7 @@ items:
   $ref: http://schemas.taskcluster.net/auth/v1/get-role-response.json#
   IS_REQUIRED: false
   PROPERTY_NAME: ""
+  REF_SCHEMA_URL: http://schemas.taskcluster.net/auth/v1/get-role-response.json#
   REF_SUBSCHEMA:
     $schema: http://json-schema.org/draft-06/schema#
     IS_REQUIRED: false
@@ -5420,6 +5422,7 @@ items:
   $ref: http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#
   IS_REQUIRED: false
   PROPERTY_NAME: ""
+  REF_SCHEMA_URL: http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#
   REF_SUBSCHEMA:
     $schema: http://json-schema.org/draft-04/schema#
     IS_REQUIRED: false
@@ -7060,6 +7063,7 @@ properties:
       $ref: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
       IS_REQUIRED: true
       PROPERTY_NAME: metadata
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -7252,6 +7256,7 @@ properties:
       $ref: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
       IS_REQUIRED: true
       PROPERTY_NAME: metadata
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -7471,6 +7476,7 @@ properties:
       $ref: http://schemas.taskcluster.net/hooks/v1/schedule.json#
       IS_REQUIRED: true
       PROPERTY_NAME: schedule
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/hooks/v1/schedule.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -7893,6 +7899,7 @@ properties:
         $ref: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
+        REF_SCHEMA_URL: http://schemas.taskcluster.net/hooks/v1/hook-definition.json#
         REF_SUBSCHEMA:
           $schema: http://json-schema.org/draft-06/schema#
           IS_REQUIRED: false
@@ -7956,6 +7963,7 @@ properties:
                 $ref: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
                 IS_REQUIRED: true
                 PROPERTY_NAME: metadata
+                REF_SCHEMA_URL: http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#
                 REF_SUBSCHEMA:
                   $schema: http://json-schema.org/draft-06/schema#
                   IS_REQUIRED: false
@@ -10270,7 +10278,7 @@ definitions:
     message:
       IS_REQUIRED: false
       PROPERTY_NAME: message
-      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
       TYPE_NAME: ""
       description: |
         IRC message to send as plain text.
@@ -10301,7 +10309,7 @@ oneOf:
         message:
           IS_REQUIRED: false
           PROPERTY_NAME: message
-          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
           TYPE_NAME: ""
           description: |
             IRC message to send as plain text.
@@ -10311,7 +10319,7 @@ oneOf:
           type: string
       SortedPropertyNames:
       - message
-      SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/definitions
+      SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions
     description: |
       Request to post a message on IRC.
     properties:
@@ -10334,10 +10342,11 @@ oneOf:
           $ref: '#/definitions/message'
           IS_REQUIRED: true
           PROPERTY_NAME: message
+          REF_SCHEMA_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
           REF_SUBSCHEMA:
             IS_REQUIRED: false
             PROPERTY_NAME: message
-            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
             TYPE_NAME: ""
             description: |
               IRC message to send as plain text.
@@ -10371,7 +10380,7 @@ oneOf:
         message:
           IS_REQUIRED: false
           PROPERTY_NAME: message
-          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+          SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
           TYPE_NAME: ""
           description: |
             IRC message to send as plain text.
@@ -10381,7 +10390,7 @@ oneOf:
           type: string
       SortedPropertyNames:
       - message
-      SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions
+      SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions
     description: |
       Request to post a message on IRC.
     properties:
@@ -10393,10 +10402,11 @@ oneOf:
           $ref: '#/definitions/message'
           IS_REQUIRED: true
           PROPERTY_NAME: message
+          REF_SCHEMA_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
           REF_SUBSCHEMA:
             IS_REQUIRED: false
             PROPERTY_NAME: message
-            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+            SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
             TYPE_NAME: ""
             description: |
               IRC message to send as plain text.
@@ -10448,7 +10458,7 @@ definitions:
     message:
       IS_REQUIRED: false
       PROPERTY_NAME: message
-      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
       TYPE_NAME: ""
       description: |
         IRC message to send as plain text.
@@ -10458,7 +10468,7 @@ definitions:
       type: string
   SortedPropertyNames:
   - message
-  SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/definitions
+  SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions
 description: |
   Request to post a message on IRC.
 properties:
@@ -10481,10 +10491,11 @@ properties:
       $ref: '#/definitions/message'
       IS_REQUIRED: true
       PROPERTY_NAME: message
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
       REF_SUBSCHEMA:
         IS_REQUIRED: false
         PROPERTY_NAME: message
-        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
         TYPE_NAME: ""
         description: |
           IRC message to send as plain text.
@@ -10522,7 +10533,7 @@ definitions:
     message:
       IS_REQUIRED: false
       PROPERTY_NAME: message
-      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+      SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
       TYPE_NAME: ""
       description: |
         IRC message to send as plain text.
@@ -10532,7 +10543,7 @@ definitions:
       type: string
   SortedPropertyNames:
   - message
-  SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions
+  SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions
 description: |
   Request to post a message on IRC.
 properties:
@@ -10544,10 +10555,11 @@ properties:
       $ref: '#/definitions/message'
       IS_REQUIRED: true
       PROPERTY_NAME: message
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
       REF_SUBSCHEMA:
         IS_REQUIRED: false
         PROPERTY_NAME: message
-        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/definitions/message
+        SOURCE_URL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
         TYPE_NAME: ""
         description: |
           IRC message to send as plain text.
@@ -10731,6 +10743,7 @@ properties:
       $ref: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
       IS_REQUIRED: true
       PROPERTY_NAME: requests
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -10843,6 +10856,7 @@ properties:
       $ref: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
       IS_REQUIRED: true
       PROPERTY_NAME: requests
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -12242,6 +12256,7 @@ properties:
               $ref: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
               IS_REQUIRED: true
               PROPERTY_NAME: credentials
+              REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
               REF_SUBSCHEMA:
                 $schema: http://json-schema.org/draft-06/schema#
                 IS_REQUIRED: false
@@ -12329,6 +12344,7 @@ properties:
               $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
               IS_REQUIRED: true
               PROPERTY_NAME: status
+              REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
               REF_SUBSCHEMA:
                 $schema: http://json-schema.org/draft-06/schema#
                 IS_REQUIRED: false
@@ -12702,6 +12718,7 @@ properties:
               $ref: http://schemas.taskcluster.net/queue/v1/task.json#
               IS_REQUIRED: true
               PROPERTY_NAME: task
+              REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task.json#
               REF_SUBSCHEMA:
                 $schema: http://json-schema.org/draft-06/schema#
                 IS_REQUIRED: false
@@ -12814,6 +12831,7 @@ properties:
                       $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
                       IS_REQUIRED: true
                       PROPERTY_NAME: metadata
+                      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
                       REF_SUBSCHEMA:
                         $schema: http://json-schema.org/draft-06/schema#
                         IS_REQUIRED: false
@@ -13196,6 +13214,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
       IS_REQUIRED: true
       PROPERTY_NAME: credentials
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -13283,6 +13302,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
       IS_REQUIRED: true
       PROPERTY_NAME: status
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -13656,6 +13676,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task.json#
       IS_REQUIRED: true
       PROPERTY_NAME: task
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -13768,6 +13789,7 @@ properties:
               $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
               IS_REQUIRED: true
               PROPERTY_NAME: metadata
+              REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
               REF_SUBSCHEMA:
                 $schema: http://json-schema.org/draft-06/schema#
                 IS_REQUIRED: false
@@ -14233,6 +14255,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
       IS_REQUIRED: true
       PROPERTY_NAME: metadata
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -14812,6 +14835,7 @@ properties:
         $ref: http://schemas.taskcluster.net/queue/v1/task-definition-and-status.json#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
+        REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-definition-and-status.json#
         REF_SUBSCHEMA:
           $schema: http://json-schema.org/draft-06/schema#
           IS_REQUIRED: false
@@ -14833,6 +14857,7 @@ properties:
                 $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
                 IS_REQUIRED: true
                 PROPERTY_NAME: status
+                REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
                 REF_SUBSCHEMA:
                   $schema: http://json-schema.org/draft-06/schema#
                   IS_REQUIRED: false
@@ -15196,6 +15221,7 @@ properties:
                 $ref: http://schemas.taskcluster.net/queue/v1/task.json#
                 IS_REQUIRED: true
                 PROPERTY_NAME: task
+                REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task.json#
                 REF_SUBSCHEMA:
                   $schema: http://json-schema.org/draft-06/schema#
                   IS_REQUIRED: false
@@ -15308,6 +15334,7 @@ properties:
                         $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
                         IS_REQUIRED: true
                         PROPERTY_NAME: metadata
+                        REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
                         REF_SUBSCHEMA:
                           $schema: http://json-schema.org/draft-06/schema#
                           IS_REQUIRED: false
@@ -15698,6 +15725,7 @@ properties:
               $ref: http://schemas.taskcluster.net/queue/v1/actions.json#
               IS_REQUIRED: true
               PROPERTY_NAME: actions
+              REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
               REF_SUBSCHEMA:
                 $schema: http://json-schema.org/draft-06/schema#
                 IS_REQUIRED: false
@@ -15959,6 +15987,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/actions.json#
       IS_REQUIRED: true
       PROPERTY_NAME: actions
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -16244,6 +16273,7 @@ properties:
         $ref: http://schemas.taskcluster.net/queue/v1/task-definition-and-status.json#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
+        REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-definition-and-status.json#
         REF_SUBSCHEMA:
           $schema: http://json-schema.org/draft-06/schema#
           IS_REQUIRED: false
@@ -16265,6 +16295,7 @@ properties:
                 $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
                 IS_REQUIRED: true
                 PROPERTY_NAME: status
+                REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
                 REF_SUBSCHEMA:
                   $schema: http://json-schema.org/draft-06/schema#
                   IS_REQUIRED: false
@@ -16628,6 +16659,7 @@ properties:
                 $ref: http://schemas.taskcluster.net/queue/v1/task.json#
                 IS_REQUIRED: true
                 PROPERTY_NAME: task
+                REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task.json#
                 REF_SUBSCHEMA:
                   $schema: http://json-schema.org/draft-06/schema#
                   IS_REQUIRED: false
@@ -16740,6 +16772,7 @@ properties:
                         $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
                         IS_REQUIRED: true
                         PROPERTY_NAME: metadata
+                        REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
                         REF_SUBSCHEMA:
                           $schema: http://json-schema.org/draft-06/schema#
                           IS_REQUIRED: false
@@ -17143,6 +17176,7 @@ properties:
               $ref: http://schemas.taskcluster.net/queue/v1/task-run.json#
               IS_REQUIRED: false
               PROPERTY_NAME: latestTask
+              REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#
               REF_SUBSCHEMA:
                 $schema: http://json-schema.org/draft-06/schema#
                 IS_REQUIRED: false
@@ -17288,6 +17322,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-run.json#
       IS_REQUIRED: false
       PROPERTY_NAME: latestTask
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -19713,6 +19748,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/actions.json#
       IS_REQUIRED: true
       PROPERTY_NAME: actions
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -20100,6 +20136,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
       IS_REQUIRED: true
       PROPERTY_NAME: credentials
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -20187,6 +20224,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
       IS_REQUIRED: true
       PROPERTY_NAME: status
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -20560,6 +20598,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task.json#
       IS_REQUIRED: true
       PROPERTY_NAME: task
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -20672,6 +20711,7 @@ properties:
               $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
               IS_REQUIRED: true
               PROPERTY_NAME: metadata
+              REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
               REF_SUBSCHEMA:
                 $schema: http://json-schema.org/draft-06/schema#
                 IS_REQUIRED: false
@@ -21119,6 +21159,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
       IS_REQUIRED: true
       PROPERTY_NAME: status
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -21482,6 +21523,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task.json#
       IS_REQUIRED: true
       PROPERTY_NAME: task
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -21594,6 +21636,7 @@ properties:
               $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
               IS_REQUIRED: true
               PROPERTY_NAME: metadata
+              REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
               REF_SUBSCHEMA:
                 $schema: http://json-schema.org/draft-06/schema#
                 IS_REQUIRED: false
@@ -22097,6 +22140,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
       IS_REQUIRED: true
       PROPERTY_NAME: credentials
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-credentials.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -22184,6 +22228,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
       IS_REQUIRED: true
       PROPERTY_NAME: status
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -22667,6 +22712,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
       IS_REQUIRED: true
       PROPERTY_NAME: status
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -23696,6 +23742,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
       IS_REQUIRED: true
       PROPERTY_NAME: metadata
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-metadata.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -24028,6 +24075,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/actions.json#
       IS_REQUIRED: false
       PROPERTY_NAME: actions
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/actions.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -24548,6 +24596,7 @@ properties:
         $ref: http://schemas.taskcluster.net/queue/v1/task-run.json#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
+        REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-run.json#
         REF_SUBSCHEMA:
           $schema: http://json-schema.org/draft-06/schema#
           IS_REQUIRED: false
@@ -25904,6 +25953,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
       IS_REQUIRED: true
       PROPERTY_NAME: status
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -26430,6 +26480,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
       IS_REQUIRED: true
       PROPERTY_NAME: status
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -26860,6 +26911,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
       IS_REQUIRED: true
       PROPERTY_NAME: status
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -27275,6 +27327,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
       IS_REQUIRED: true
       PROPERTY_NAME: status
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -27717,6 +27770,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
       IS_REQUIRED: true
       PROPERTY_NAME: status
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -28221,6 +28275,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
       IS_REQUIRED: true
       PROPERTY_NAME: status
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -28638,6 +28693,7 @@ properties:
       $ref: http://schemas.taskcluster.net/queue/v1/task-status.json#
       IS_REQUIRED: true
       PROPERTY_NAME: status
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/queue/v1/task-status.json#
       REF_SUBSCHEMA:
         $schema: http://json-schema.org/draft-06/schema#
         IS_REQUIRED: false
@@ -29959,6 +30015,7 @@ properties:
       $ref: '#/definitions/machine'
       IS_REQUIRED: false
       PROPERTY_NAME: buildMachine
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine
       REF_SUBSCHEMA:
         IS_REQUIRED: false
         PROPERTY_NAME: machine
@@ -30291,7 +30348,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items
-        TYPE_NAME: Var3
+        TYPE_NAME: Var1
         additionalProperties:
           Boolean: false
           Properties: null
@@ -30357,7 +30414,7 @@ properties:
                         IS_REQUIRED: false
                         PROPERTY_NAME: ""
                         SOURCE_URL: http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items
-                        TYPE_NAME: Var1
+                        TYPE_NAME: Var3
                         additionalProperties:
                           Boolean: false
                           Properties: null
@@ -30752,6 +30809,7 @@ properties:
       $ref: '#/definitions/machine'
       IS_REQUIRED: false
       PROPERTY_NAME: runMachine
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine
       REF_SUBSCHEMA:
         IS_REQUIRED: false
         PROPERTY_NAME: machine
@@ -31220,7 +31278,7 @@ http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/propert
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items
-TYPE_NAME: Var3
+TYPE_NAME: Var1
 additionalProperties:
   Boolean: false
   Properties: null
@@ -31286,7 +31344,7 @@ properties:
                 IS_REQUIRED: false
                 PROPERTY_NAME: ""
                 SOURCE_URL: http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items
-                TYPE_NAME: Var1
+                TYPE_NAME: Var3
                 additionalProperties:
                   Boolean: false
                   Properties: null
@@ -31431,7 +31489,7 @@ properties:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items
-        TYPE_NAME: Var1
+        TYPE_NAME: Var3
         additionalProperties:
           Boolean: false
           Properties: null
@@ -31533,7 +31591,7 @@ http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/propert
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items
-TYPE_NAME: Var1
+TYPE_NAME: Var3
 additionalProperties:
   Boolean: false
   Properties: null
@@ -32999,7 +33057,7 @@ items:
   IS_REQUIRED: false
   PROPERTY_NAME: ' entry'
   SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items
-  TYPE_NAME: Var9
+  TYPE_NAME: Entry2
   additionalProperties:
     Boolean: false
     Properties: null
@@ -33032,22 +33090,22 @@ items:
           - IS_REQUIRED: false
             PROPERTY_NAME: ""
             SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[0]
-            TYPE_NAME: Var6
+            TYPE_NAME: Var5
             type: number
           - IS_REQUIRED: false
             PROPERTY_NAME: ""
             SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[1]
-            TYPE_NAME: Var7
+            TYPE_NAME: Var6
             type: string
           - IS_REQUIRED: false
             PROPERTY_NAME: ""
             SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]
-            TYPE_NAME: Var8
+            TYPE_NAME: Var7
             items:
               IS_REQUIRED: false
               PROPERTY_NAME: ' entry'
               SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]/items
-              TYPE_NAME: Entry1
+              TYPE_NAME: Entry3
               type: string
             type: array
           SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf
@@ -33065,7 +33123,7 @@ http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items
 IS_REQUIRED: false
 PROPERTY_NAME: ' entry'
 SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items
-TYPE_NAME: Var9
+TYPE_NAME: Entry2
 additionalProperties:
   Boolean: false
   Properties: null
@@ -33098,22 +33156,22 @@ properties:
         - IS_REQUIRED: false
           PROPERTY_NAME: ""
           SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[0]
-          TYPE_NAME: Var6
+          TYPE_NAME: Var5
           type: number
         - IS_REQUIRED: false
           PROPERTY_NAME: ""
           SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[1]
-          TYPE_NAME: Var7
+          TYPE_NAME: Var6
           type: string
         - IS_REQUIRED: false
           PROPERTY_NAME: ""
           SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]
-          TYPE_NAME: Var8
+          TYPE_NAME: Var7
           items:
             IS_REQUIRED: false
             PROPERTY_NAME: ' entry'
             SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]/items
-            TYPE_NAME: Entry1
+            TYPE_NAME: Entry3
             type: string
           type: array
         SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf
@@ -33129,7 +33187,7 @@ http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/propert
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[0]
-TYPE_NAME: Var6
+TYPE_NAME: Var5
 type: number
 
 
@@ -33138,7 +33196,7 @@ http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/propert
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[1]
-TYPE_NAME: Var7
+TYPE_NAME: Var6
 type: string
 
 
@@ -33147,12 +33205,12 @@ http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/propert
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]
-TYPE_NAME: Var8
+TYPE_NAME: Var7
 items:
   IS_REQUIRED: false
   PROPERTY_NAME: ' entry'
   SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]/items
-  TYPE_NAME: Entry1
+  TYPE_NAME: Entry3
   type: string
 type: array
 
@@ -33171,7 +33229,7 @@ items:
   IS_REQUIRED: false
   PROPERTY_NAME: ' entry'
   SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items
-  TYPE_NAME: Var5
+  TYPE_NAME: Entry1
   additionalProperties:
     Boolean: false
     Properties: null
@@ -33237,7 +33295,7 @@ http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items
 IS_REQUIRED: false
 PROPERTY_NAME: ' entry'
 SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items
-TYPE_NAME: Var5
+TYPE_NAME: Entry1
 additionalProperties:
   Boolean: false
   Properties: null

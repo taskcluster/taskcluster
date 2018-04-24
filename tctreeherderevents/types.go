@@ -218,7 +218,7 @@ type (
 		Labels []string `json:"labels,omitempty"`
 
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs
-		Logs []Var3 `json:"logs,omitempty"`
+		Logs []Var1 `json:"logs,omitempty"`
 
 		// One of:
 		//   * HGPush
@@ -412,26 +412,42 @@ type (
 		URL string `json:"url"`
 	}
 
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items
+	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items
 	Var1 struct {
+
+		// If true, indicates that the number of errors in the log was too
+		// large and not all of those lines are indicated here.
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/errorsTruncated
+		ErrorsTruncated bool `json:"errorsTruncated,omitempty"`
+
+		// Min length: 1
+		// Max length: 50
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/name
+		Name string `json:"name"`
+
+		// This object defines what is seen in the Treeherder Log Viewer.
+		// These values can be submitted here, or they will be generated
+		// by Treeherder's internal log parsing process from the
+		// submitted log.  If this value is submitted, Treeherder will
+		// consider the log already parsed and skip parsing.
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps
+		Steps []Var2 `json:"steps,omitempty"`
 
 		// Min length: 1
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/line
-		Line string `json:"line,omitempty"`
-
-		// Mininum:    0
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/linenumber
-		Linenumber int64 `json:"linenumber,omitempty"`
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/url
+		URL string `json:"url"`
 	}
 
 	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items
 	Var2 struct {
 
 		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors
-		Errors []Var1 `json:"errors,omitempty"`
+		Errors []Var3 `json:"errors,omitempty"`
 
 		// Mininum:    0
 		//
@@ -466,34 +482,18 @@ type (
 		TimeStarted tcclient.Time `json:"timeStarted"`
 	}
 
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items
+	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items
 	Var3 struct {
-
-		// If true, indicates that the number of errors in the log was too
-		// large and not all of those lines are indicated here.
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/errorsTruncated
-		ErrorsTruncated bool `json:"errorsTruncated,omitempty"`
-
-		// Min length: 1
-		// Max length: 50
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/name
-		Name string `json:"name"`
-
-		// This object defines what is seen in the Treeherder Log Viewer.
-		// These values can be submitted here, or they will be generated
-		// by Treeherder's internal log parsing process from the
-		// submitted log.  If this value is submitted, Treeherder will
-		// consider the log already parsed and skip parsing.
-		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps
-		Steps []Var2 `json:"steps,omitempty"`
 
 		// Min length: 1
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/url
-		URL string `json:"url"`
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/line
+		Line string `json:"line,omitempty"`
+
+		// Mininum:    0
+		//
+		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/linenumber
+		Linenumber int64 `json:"linenumber,omitempty"`
 	}
 )
