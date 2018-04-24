@@ -34,7 +34,7 @@ var (
 )
 
 type (
-	Artifact interface {
+	TaskArtifact interface {
 		ProcessResponse(response interface{}, task *TaskRun) error
 		RequestObject() interface{}
 		ResponseObject() interface{}
@@ -266,8 +266,8 @@ func (s3Artifact *S3Artifact) String() string {
 
 // Returns the artifacts as listed in the payload of the task (note this does
 // not include log files)
-func (task *TaskRun) PayloadArtifacts() []Artifact {
-	artifacts := make([]Artifact, 0)
+func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
+	artifacts := make([]TaskArtifact, 0)
 	for _, artifact := range task.Payload.Artifacts {
 		basePath := artifact.Path
 		base := &BaseArtifact{
@@ -336,7 +336,7 @@ func (task *TaskRun) PayloadArtifacts() []Artifact {
 // ErrorArtifact, otherwise if it exists as a file, as
 // "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
-func resolve(base *BaseArtifact, artifactType string, path string) Artifact {
+func resolve(base *BaseArtifact, artifactType string, path string) TaskArtifact {
 	fullPath := filepath.Join(taskContext.TaskDir, path)
 	fileReader, err := os.Open(fullPath)
 	if err != nil {
@@ -422,7 +422,7 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 	)
 }
 
-func (task *TaskRun) uploadArtifact(artifact Artifact) *CommandExecutionError {
+func (task *TaskRun) uploadArtifact(artifact TaskArtifact) *CommandExecutionError {
 	task.Artifacts[artifact.Base().Name] = artifact
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {

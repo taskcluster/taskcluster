@@ -756,7 +756,7 @@ func ClaimWork() *TaskRun {
 			Definition:        taskResponse.Task,
 			Queue:             taskQueue,
 			TaskClaimResponse: tcqueue.TaskClaimResponse(taskResponse),
-			Artifacts:         map[string]Artifact{},
+			Artifacts:         map[string]TaskArtifact{},
 			featureArtifacts: map[string]string{
 				logName: "Native Log",
 			},

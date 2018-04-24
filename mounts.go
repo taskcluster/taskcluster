@@ -42,7 +42,9 @@ var (
 	lastQueriedPurgeCacheService time.Time
 )
 
-type CacheMap map[string]*Cache
+type (
+	CacheMap map[string]*Cache
+)
 
 func (cm CacheMap) SortedResources() Resources {
 	r := make(Resources, len(cm))
@@ -258,7 +260,7 @@ func (feature *MountsFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 }
 
 // Utility method to unmarshal a json blob and add it to the mounts in the TaskMount
-func (tm *TaskMount) Unmarshal(rm Mount, m MountEntry) {
+func (tm *TaskMount) Unmarshal(rm json.RawMessage, m MountEntry) {
 	// only update if nil, otherwise we could replace a previous error with nil
 	if tm.payloadError == nil {
 		tm.payloadError = json.Unmarshal(rm, m)
@@ -361,7 +363,7 @@ func (w *WritableDirectoryCache) RequiredScopes() []string {
 func (w *WritableDirectoryCache) FSContent() (FSContent, error) {
 	// no content if an empty cache folder, e.g. object directory
 	if w.Content != nil {
-		return w.Content.FSContent()
+		return FSContentFrom(w.Content)
 	}
 	return nil, nil
 }
@@ -375,7 +377,7 @@ func (r *ReadOnlyDirectory) RequiredScopes() []string {
 // Returns either a *URLContent or *ArtifactContent that is listed in the given
 // *ReadOnlyDirectory
 func (r *ReadOnlyDirectory) FSContent() (FSContent, error) {
-	return r.Content.FSContent()
+	return FSContentFrom(r.Content)
 }
 
 // No scopes directly required for a FileMount (scopes may be required for its
@@ -387,7 +389,7 @@ func (f *FileMount) RequiredScopes() []string {
 // Returns either a *URLContent or *ArtifactContent that is listed in the given
 // *FileMount
 func (f *FileMount) FSContent() (FSContent, error) {
-	return f.Content.FSContent()
+	return FSContentFrom(f.Content)
 }
 
 func (w *WritableDirectoryCache) Mount() error {
@@ -425,7 +427,7 @@ func (w *WritableDirectoryCache) Mount() error {
 	}
 	// preloaded content?
 	if w.Content != nil {
-		c, err := w.Content.FSContent()
+		c, err := FSContentFrom(w.Content)
 		if err != nil {
 			return fmt.Errorf("Not able to retrieve FSContent: %v", err)
 		}
@@ -458,7 +460,7 @@ func (w *WritableDirectoryCache) Unmount() error {
 }
 
 func (r *ReadOnlyDirectory) Mount() error {
-	c, err := r.Content.FSContent()
+	c, err := FSContentFrom(r.Content)
 	if err != nil {
 		return fmt.Errorf("Not able to retrieve FSContent: %v", err)
 	}
@@ -471,7 +473,7 @@ func (r *ReadOnlyDirectory) Unmount() error {
 }
 
 func (f *FileMount) Mount() error {
-	fsContent, err := f.Content.FSContent()
+	fsContent, err := FSContentFrom(f.Content)
 	if err != nil {
 		return err
 	}
@@ -559,7 +561,7 @@ func extract(fsContent FSContent, format string, dir string) error {
 
 // Returns either a *ArtifactContent or *URLContent based on the content
 // (json.RawMessage)
-func (c Content) FSContent() (FSContent, error) {
+func FSContentFrom(c json.RawMessage) (FSContent, error) {
 	// c must be one of:
 	//   * ArtifactContent
 	//   * URLContent
@@ -570,16 +572,16 @@ func (c Content) FSContent() (FSContent, error) {
 	}
 	switch {
 	case m["artifact"] != nil:
-		return c.Unmarshal(&ArtifactContent{})
+		return UnmarshalInto(c, &ArtifactContent{})
 	case m["url"] != nil:
-		return c.Unmarshal(&URLContent{})
+		return UnmarshalInto(c, &URLContent{})
 	}
 	return nil, errors.New("Unrecognised mount entry in payload")
 }
 
 // Utility method to unmarshal Content (json.RawMessage) into *ArtifactContent
 // or *URLContent (or anything that implements FSContent interface)
-func (c Content) Unmarshal(fsContent FSContent) (FSContent, error) {
+func UnmarshalInto(c json.RawMessage, fsContent FSContent) (FSContent, error) {
 	err := json.Unmarshal(c, fsContent)
 	return fsContent, err
 }

@@ -5,12 +5,60 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
 type (
+	Artifact struct {
+
+		// Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)
+		// is/are served over HTTP(S). If not provided (this property is optional) the worker will
+		// guess the content type of artifacts based on the filename extension of the file storing
+		// the artifact content. It does this by looking at the system filename-to-mimetype mappings
+		// defined in multiple `mime.types` files located under `/etc`. Note, setting `contentType`
+		// on a directory artifact will apply the same contentType to all files contained in the
+		// directory.
+		//
+		// See [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).
+		//
+		// Since: generic-worker 10.4.0
+		ContentType string `json:"contentType,omitempty"`
+
+		// Date when artifact should expire must be in the future, no earlier than task deadline, but
+		// no later than task expiry. If not set, defaults to task expiry.
+		//
+		// Since: generic-worker 1.0.0
+		Expires tcclient.Time `json:"expires,omitempty"`
+
+		// Name of the artifact, as it will be published. If not set, `path` will be used.
+		// Conventionally (although not enforced) path elements are forward slash separated. Example:
+		// `public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.
+		// Artifact names not beginning `public/` are scope-protected (caller requires scopes to
+		// download the artifact). See the Queue documentation for more information.
+		//
+		// Since: generic-worker 8.1.0
+		Name string `json:"name,omitempty"`
+
+		// Relative path of the file/directory from the task directory. Note this is not an absolute
+		// path as is typically used in docker-worker, since the absolute task directory name is not
+		// known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
+		// forward slashes or backslashes are used.
+		//
+		// Since: generic-worker 1.0.0
+		Path string `json:"path"`
+
+		// Artifacts can be either an individual `file` or a `directory` containing
+		// potentially multiple files with recursively included subdirectories.
+		//
+		// Since: generic-worker 1.0.0
+		//
+		// Possible values:
+		//   * "file"
+		//   * "directory"
+		Type string `json:"type"`
+	}
+
 	// Requires scope `queue:get-artifact:<artifact-name>`.
 	//
 	// Since: generic-worker 5.4.0
@@ -23,14 +71,33 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
-	Content json.RawMessage
+	// Feature flags enable additional functionality.
+	//
+	// Since: generic-worker 5.3.0
+	FeatureFlags struct {
+
+		// An artifact named `public/chainOfTrust.json.asc` should be generated
+		// which will include information for downstream tasks to build a level
+		// of trust for the artifacts produced by the task and the environment
+		// it ran in.
+		//
+		// Since: generic-worker 5.3.0
+		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
+
+		// The taskcluster proxy provides an easy and safe way to make authenticated
+		// taskcluster requests within the scope(s) of a particular task. See
+		// [the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.
+		//
+		// Since: generic-worker 10.6.0
+		TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
+	}
 
 	FileMount struct {
 
-		// Content of the file to be mounted.
-		//
-		// Since: generic-worker 5.4.0
-		Content Content `json:"content"`
+		// One of:
+		//   * ArtifactContent
+		//   * URLContent
+		Content json.RawMessage `json:"content"`
 
 		// The filesystem location to mount the file.
 		//
@@ -45,54 +112,7 @@ type (
 		// Artifacts to be published.
 		//
 		// Since: generic-worker 1.0.0
-		Artifacts []struct {
-
-			// Explicitly set the value of the HTTP `Content-Type` response header when the artifact(s)
-			// is/are served over HTTP(S). If not provided (this property is optional) the worker will
-			// guess the content type of artifacts based on the filename extension of the file storing
-			// the artifact content. It does this by looking at the system filename-to-mimetype mappings
-			// defined in multiple `mime.types` files located under `/etc`. Note, setting `contentType`
-			// on a directory artifact will apply the same contentType to all files contained in the
-			// directory.
-			//
-			// See [mime.TypeByExtension](https://godoc.org/mime#TypeByExtension).
-			//
-			// Since: generic-worker 10.4.0
-			ContentType string `json:"contentType,omitempty"`
-
-			// Date when artifact should expire must be in the future, no earlier than task deadline, but
-			// no later than task expiry. If not set, defaults to task expiry.
-			//
-			// Since: generic-worker 1.0.0
-			Expires tcclient.Time `json:"expires,omitempty"`
-
-			// Name of the artifact, as it will be published. If not set, `path` will be used.
-			// Conventionally (although not enforced) path elements are forward slash separated. Example:
-			// `public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.
-			// Artifact names not beginning `public/` are scope-protected (caller requires scopes to
-			// download the artifact). See the Queue documentation for more information.
-			//
-			// Since: generic-worker 8.1.0
-			Name string `json:"name,omitempty"`
-
-			// Relative path of the file/directory from the task directory. Note this is not an absolute
-			// path as is typically used in docker-worker, since the absolute task directory name is not
-			// known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
-			// forward slashes or backslashes are used.
-			//
-			// Since: generic-worker 1.0.0
-			Path string `json:"path"`
-
-			// Artifacts can be either an individual `file` or a `directory` containing
-			// potentially multiple files with recursively included subdirectories.
-			//
-			// Since: generic-worker 1.0.0
-			//
-			// Possible values:
-			//   * "file"
-			//   * "directory"
-			Type string `json:"type"`
-		} `json:"artifacts,omitempty"`
+		Artifacts []Artifact `json:"artifacts,omitempty"`
 
 		// One array per command (each command is an array of arguments). Several arrays
 		// for several commands.
@@ -116,23 +136,7 @@ type (
 		// Feature flags enable additional functionality.
 		//
 		// Since: generic-worker 5.3.0
-		Features struct {
-
-			// An artifact named `public/chainOfTrust.json.asc` should be generated
-			// which will include information for downstream tasks to build a level
-			// of trust for the artifacts produced by the task and the environment
-			// it ran in.
-			//
-			// Since: generic-worker 5.3.0
-			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
-
-			// The taskcluster proxy provides an easy and safe way to make authenticated
-			// taskcluster requests within the scope(s) of a particular task. See
-			// [the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.
-			//
-			// Since: generic-worker 10.6.0
-			TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
-		} `json:"features,omitempty"`
+		Features FeatureFlags `json:"features,omitempty"`
 
 		// Maximum time the task container can run in seconds.
 		//
@@ -145,7 +149,7 @@ type (
 		// Directories and/or files to be mounted.
 		//
 		// Since: generic-worker 5.4.0
-		Mounts []Mount `json:"mounts,omitempty"`
+		Mounts []json.RawMessage `json:"mounts,omitempty"`
 
 		// A list of OS Groups that the task user should be a member of. Requires
 		// scope `generic-worker:os-group:<os-group>` for each group listed.
@@ -165,14 +169,12 @@ type (
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
-	Mount json.RawMessage
-
 	ReadOnlyDirectory struct {
 
-		// Contents of read only directory.
-		//
-		// Since: generic-worker 5.4.0
-		Content Content `json:"content"`
+		// One of:
+		//   * ArtifactContent
+		//   * URLContent
+		Content json.RawMessage `json:"content"`
 
 		// The filesystem location to mount the directory volume.
 		//
@@ -202,12 +204,6 @@ type (
 		URL string `json:"url"`
 	}
 
-	Var FileMount
-
-	Var1 WritableDirectoryCache
-
-	Var2 ReadOnlyDirectory
-
 	WritableDirectoryCache struct {
 
 		// Implies a read/write cache directory volume. A unique name for the
@@ -218,11 +214,10 @@ type (
 		// Since: generic-worker 5.4.0
 		CacheName string `json:"cacheName"`
 
-		// Optional content to be preloaded when initially creating the cache
-		// (if set, `format` must also be provided).
-		//
-		// Since: generic-worker 5.4.0
-		Content Content `json:"content,omitempty"`
+		// One of:
+		//   * ArtifactContent
+		//   * URLContent
+		Content json.RawMessage `json:"content,omitempty"`
 
 		// The filesystem location to mount the directory volume.
 		//
@@ -241,38 +236,6 @@ type (
 		Format string `json:"format,omitempty"`
 	}
 )
-
-// MarshalJSON calls json.RawMessage method of the same name. Required since
-// Content is of type json.RawMessage...
-func (this *Content) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
-	return (&x).MarshalJSON()
-}
-
-// UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *Content) UnmarshalJSON(data []byte) error {
-	if this == nil {
-		return errors.New("Content: UnmarshalJSON on nil pointer")
-	}
-	*this = append((*this)[0:0], data...)
-	return nil
-}
-
-// MarshalJSON calls json.RawMessage method of the same name. Required since
-// Mount is of type json.RawMessage...
-func (this *Mount) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
-	return (&x).MarshalJSON()
-}
-
-// UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *Mount) UnmarshalJSON(data []byte) error {
-	if this == nil {
-		return errors.New("Mount: UnmarshalJSON on nil pointer")
-	}
-	*this = append((*this)[0:0], data...)
-	return nil
-}
 
 // Returns json schema for the payload part of the task definition. Please
 // note we use a go string and do not load an external file, since we want this

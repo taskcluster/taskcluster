@@ -11,13 +11,13 @@ import (
 	"github.com/taskcluster/generic-worker/gwconfig"
 )
 
-func toMountArray(t *testing.T, x interface{}) []Mount {
+func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
 	b, err := json.Marshal(x)
 	if err != nil {
 		t.Fatalf("Could not convert %v to json", x)
 	}
 
-	rawMessageArray := []Mount{}
+	rawMessageArray := []json.RawMessage{}
 	err = json.Unmarshal(b, &rawMessageArray)
 	if err != nil {
 		t.Fatalf("Could not convert json bytes to []json.RawMessage")
@@ -35,7 +35,7 @@ func TestMounts(t *testing.T) {
 		&FileMount{
 			File: filepath.Join("preloaded", "Mr X.txt"),
 			// Note: the task definition for taskId KTBKfEgxR5GdfIIREQIvFQ can be seen in the testdata/tasks directory
-			Content: Content(`{
+			Content: json.RawMessage(`{
 				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
 				"artifact": "SampleArtifacts/_/X.txt"
 			}`),
@@ -44,19 +44,19 @@ func TestMounts(t *testing.T) {
 		// file mounts from urls
 		&FileMount{
 			File: filepath.Join("preloaded", "check-shasums.sh"),
-			Content: Content(`{
+			Content: json.RawMessage(`{
 				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/db12070fc7ea6e5d21797bf943c0b9466fb4d65e/generic-worker/check-shasums.sh"
 			}`),
 		},
 		&FileMount{
 			File: filepath.Join("preloaded", "check-shasums.ps1"),
-			Content: Content(`{
+			Content: json.RawMessage(`{
 				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/db12070fc7ea6e5d21797bf943c0b9466fb4d65e/generic-worker/check-shasums.ps1"
 			}`),
 		},
 		&FileMount{
 			File: filepath.Join("preloaded", "shasums"),
-			Content: Content(`{
+			Content: json.RawMessage(`{
 				"url": "https://raw.githubusercontent.com/taskcluster/testrepo/db12070fc7ea6e5d21797bf943c0b9466fb4d65e/generic-worker/shasums"
 			}`),
 		},
@@ -72,7 +72,7 @@ func TestMounts(t *testing.T) {
 			CacheName: "unknown-issuer-app-cache",
 			Directory: filepath.Join("my-task-caches", "unknown_issuer_app_1"),
 			// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
-			Content: Content(`{
+			Content: json.RawMessage(`{
 				"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
 				"artifact": "public/build/unknown_issuer_app_1.zip"
 			}`),
@@ -83,7 +83,7 @@ func TestMounts(t *testing.T) {
 		&WritableDirectoryCache{
 			CacheName: "devtools-app",
 			Directory: filepath.Join("my-task-caches", "devtools-app"),
-			Content: Content(`{
+			Content: json.RawMessage(`{
 				"url": "https://github.com/mozilla/gecko-dev/raw/233f30f2377f3df0f3388721901681f432b813fb/devtools/client/webide/test/app.zip"
 			}`),
 			Format: "zip",
@@ -93,7 +93,7 @@ func TestMounts(t *testing.T) {
 		&ReadOnlyDirectory{
 			Directory: filepath.Join("my-task-caches", "mozharness"),
 			// Note: the task definition for taskId VESwp9JaRo-XkFN_bemBhw can be seen in the testdata/tasks directory
-			Content: Content(`{
+			Content: json.RawMessage(`{
 				"taskId":   "VESwp9JaRo-XkFN_bemBhw",
 				"artifact": "public/build/mozharness.zip"
 			}`),
@@ -103,7 +103,7 @@ func TestMounts(t *testing.T) {
 		// read only directory from url
 		&ReadOnlyDirectory{
 			Directory: filepath.Join("my-task-caches", "package"),
-			Content: Content(`{
+			Content: json.RawMessage(`{
 				"url": "https://github.com/taskcluster/logserver/raw/53134a5b9cbece05752c0ecc1a6c6d7c2fbf6580/node_modules/express/node_modules/connect/node_modules/multiparty/test/fixture/file/binaryfile.tar.gz"
 			}`),
 			Format: "tar.gz",
@@ -176,7 +176,7 @@ func TestMissingScopes(t *testing.T) {
 		&FileMount{
 			File: filepath.Join("preloaded", "Mr X.txt"),
 			// Note: the task definition for taskId KTBKfEgxR5GdfIIREQIvFQ can be seen in the testdata/tasks directory
-			Content: Content(`{
+			Content: json.RawMessage(`{
 				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
 				"artifact": "SampleArtifacts/_/X.txt"
 			}`),
@@ -278,7 +278,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 		&ReadOnlyDirectory{
 			Directory: filepath.Join("."),
 			// Note: the task definition for taskId KTBKfEgxR5GdfIIREQIvFQ can be seen in the testdata/tasks directory
-			Content: Content(`{
+			Content: json.RawMessage(`{
 				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
 				"artifact": "SampleArtifacts/_/X.txt"
 			}`),

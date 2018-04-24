@@ -88,7 +88,7 @@ tasks:
         - cd gw-codegen
         - go get -v -u
         - cd ..
-        - echo TEMPORARILY DISABLED GO GENERATE WHILE FIXING jsonschema2go
+        - go generate
         - |
           :: this counts the number of lines returned by git status
           :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
@@ -168,7 +168,7 @@ tasks:
         - cd gw-codegen
         - go get -v -u
         - cd ..
-        - echo TEMPORARILY DISABLED GO GENERATE WHILE FIXING jsonschema2go
+        - go generate
         # getting the real revision has proven difficult on win7 32 bit, so a fake one is good enough for these builds
         - set revision=0123456789012345678901234567890123456789
         - go get -ldflags "-X main.revision=%revision%" -v -u -t ./...
@@ -238,7 +238,7 @@ tasks:
         - cd gw-codegen
         - go get -v -u
         - cd ..
-        - echo TEMPORARILY DISABLED GO GENERATE WHILE FIXING jsonschema2go
+        - go generate
         - |
           :: this counts the number of lines returned by git status
           :: dump temp file a directory higher, otherwise git status reports the tmp1.txt file!
@@ -323,7 +323,7 @@ tasks:
             cd gw-codegen
             go get -v -u
             cd ..
-            echo TEMPORARILY DISABLED GO GENERATE WHILE FIXING jsonschema2go
+            go generate
             go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v -u -t ./...
             # output of wc command can contain spaces on darwin, so no quotes around expression
             test $(git status --porcelain | wc -l) == 0
@@ -395,7 +395,7 @@ tasks:
   #           cd gw-codegen
   #           go get -v -u
   #           cd ..
-  #           echo TEMPORARILY DISABLED GO GENERATE WHILE FIXING jsonschema2go
+  #           go generate
   #           go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v -u -t ./...
   #           test "$(git status --porcelain | wc -l)" == 0
   #           GORACE=history_size=7 go test -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
@@ -461,7 +461,7 @@ tasks:
           cd gw-codegen
           go get -v -u
           cd ..
-          echo TEMPORARILY DISABLED GO GENERATE WHILE FIXING jsonschema2go
+          go generate
           go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v -u -t ./...
           test "$(git status --porcelain | wc -l)" == 0
           GORACE=history_size=7 CGO_ENABLED=1 go test -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
