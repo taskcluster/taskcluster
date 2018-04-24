@@ -14,14 +14,7 @@ func TestResolveResolvedTask(t *testing.T) {
 	payload := GenericWorkerPayload{
 		Command:    goRun("resolvetask.go"),
 		MaxRunTime: 60,
-		Artifacts: []struct {
-			ContentType string        `json:"contentType,omitempty"`
-			Expires     tcclient.Time `json:"expires,omitempty"`
-			Name        string        `json:"name,omitempty"`
-			Path        string        `json:"path"`
-			Type        string        `json:"type"`
-		}{
-
+		Artifacts: []Artifact{
 			{
 				Type:    "file",
 				Path:    "resolvetask.go",
