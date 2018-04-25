@@ -1,5 +1,4 @@
 ---
-id: http://schemas.taskcluster.net/generic-worker/v1/payload.json#
 "$schema": http://json-schema.org/draft-04/schema#
 title: Generic worker payload
 description: |-
