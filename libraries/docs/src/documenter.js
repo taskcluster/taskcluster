@@ -32,7 +32,6 @@ async function documenter(options) {
   
   const rv = new Documenter(options);
   if (options.publish) {
-    console.log(rv);
     await rv.publish();
   }
   return rv;
@@ -61,15 +60,14 @@ class Documenter {
       let pack = require(path.join(rootdir.get(), 'package.json'));
       options.project = pack.name;
     }
-    delete options.publish;
-    Object.assign(this, options);
+    this.options = options;
   }
 
   /**
    * Get the URL for documentation for this service; used in error messages.
    */
   get documentationUrl() {
-    return this.referenceUrl + this.tier + '/' + this.project;
+    return this.options.referenceUrl + this.options.tier + '/' + this.options.project;
   }
 
   /**
@@ -88,9 +86,9 @@ class Documenter {
 
     let metadata = {
       version: 1,
-      project: this.project,
-      tier: this.tier,
-      menuIndex: this.menuIndex,
+      project: this.options.project,
+      tier: this.options.tier,
+      menuIndex: this.options.menuIndex,
     };
 
     tarball.entry(
@@ -98,12 +96,12 @@ class Documenter {
       JSON.stringify(metadata, null, 2)
     );
 
-    _.forEach(this.schemas, (schema, name) => tarball.entry(
+    _.forEach(this.options.schemas, (schema, name) => tarball.entry(
       headers(name, 'schemas'),
       schema
     ));
 
-    _.forEach(this.references, reference => tarball.entry(
+    _.forEach(this.options.references, reference => tarball.entry(
       headers(reference.name + '.json', 'references'),
       JSON.stringify(reference.reference, null, 2)
     ));
@@ -111,7 +109,7 @@ class Documenter {
     try {
       tarball.entry(
         headers('README.md'),
-        await fs.readFile(this.readme)
+        await fs.readFile(this.options.readme)
       );
     } catch (err) {
       if (err.code !== 'ENOENT') {
@@ -121,8 +119,8 @@ class Documenter {
     }
 
     try {
-      await Promise.all(recursiveReadSync(this.docsFolder).map(async file => {
-        let relativePath = path.relative(this.docsFolder, file);
+      await Promise.all(recursiveReadSync(this.options.docsFolder).map(async file => {
+        let relativePath = path.relative(this.options.docsFolder, file);
         tarball.entry(headers(relativePath, 'docs'), await fs.readFile(file, {encoding: 'utf8'}));
       }));
     } catch (err) {
@@ -177,24 +175,24 @@ class Documenter {
    * This is called automatically if options.publish is true.
    */
   async publish() {
-    let gz = this._tarballStream();
+    let gz = await this._tarballStream();
 
-    let creds = this.aws;
+    let creds = this.options.aws;
     if (!creds) {
       let auth = new client.Auth({
-        credentials: this.credentials,
-        baseUrl: this.authBaseUrl,
+        credentials: this.options.credentials,
+        baseUrl: this.options.authBaseUrl,
       });
 
-      creds = await auth.awsS3Credentials('read-write', this.bucket, this.project + '/');
+      creds = await auth.awsS3Credentials('read-write', this.options.bucket, this.options.project + '/');
     }
 
     let s3 = new aws.S3(creds.credentials);
-    let s3Stream = (this.S3UploadStream || S3UploadStream)(s3);
+    let s3Stream = new (this.options.S3UploadStream || S3UploadStream)(s3);
 
     let upload = s3Stream.upload({
-      Bucket: this.bucket,
-      Key: this.project + '/latest.tar.gz',
+      Bucket: this.options.bucket,
+      Key: this.options.project + '/latest.tar.gz',
     });
 
     // handle progress
@@ -217,7 +215,7 @@ class Documenter {
     });
 
     // pipe the incoming filestream through compression and up to s3
-    tgz.pipe(upload);
+    gz.pipe(upload);
     await uploadPromise;
   }
 }

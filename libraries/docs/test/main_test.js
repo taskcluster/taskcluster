@@ -11,7 +11,7 @@ const validator = require('taskcluster-lib-validate');
 const config = require('typed-env-config');
 const API = require('taskcluster-lib-api');
 const Exchanges = require('pulse-publisher');
-const mockS3UploadStream = require('./mockS3UploadStream');
+const MockS3UploadStream = require('./mockS3UploadStream');
 const awsMock = require('mock-aws-s3');
 const rimraf = require('rimraf');
 const tmp = require('tmp');
@@ -197,7 +197,7 @@ suite('documenter', () => {
     };
     if (mock) {
       options.aws = {accessKeyId: 'fake', secretAccessKey: 'fake'};
-      options.S3UploadStream = mockS3UploadStream;
+      options.S3UploadStream = MockS3UploadStream;
     } else {
       if (!credentials.clientId) {
         this.skip();
@@ -206,6 +206,10 @@ suite('documenter', () => {
     }
 
     const doc = await documenter(options);
+
+    if (mock) {
+      assert.deepEqual(MockS3UploadStream.uploads, [`${cfg.bucket}/docs-testing/latest.tar.gz`]);
+    }
   };
 
   test('test publish tarball (real)', function() {

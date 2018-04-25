@@ -4,12 +4,15 @@
 
 const Writable = require('stream').Writable;
 
+let uploads;
+
 class MockS3UploadStream {
   constructor(client) {
-    this.uploads = [];
+    MockS3UploadStream.uploads = [];
   }
 
-  upload(obj) {
+  upload({Key, Bucket}) {
+    MockS3UploadStream.uploads.push(`${Bucket}/${Key}`);
     let stream = new Writable();
 
     stream._write = function(chunk, encoding, done) {
