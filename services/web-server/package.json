@@ -41,6 +41,6 @@
     "sift": "^5.1.0",
     "source-map-support": "^0.5.4",
     "subscriptions-transport-ws": "^0.9.7",
-    "taskcluster-client": "^3.3.0"
+    "taskcluster-client": "^4.0.0"
   }
 }

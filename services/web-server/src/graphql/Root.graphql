@@ -28,7 +28,8 @@ union Node =
   Namespace |
   IndexedTask |
   CachePurge |
-  SecretListItem
+  SecretListItem |
+  Client
 
 interface Edge {
   cursor: String

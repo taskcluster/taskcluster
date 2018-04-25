@@ -1,17 +1,18 @@
 import DataLoader from 'dataloader';
 import sift from 'sift';
+import ConnectionLoader from '../ConnectionLoader';
 
 export default ({ auth }) => {
-  const clients = new DataLoader(queries =>
-    Promise.all(
-      queries.map(async ({ options, filter }) => {
-        const clients = options
-          ? await auth.listClients(options)
-          : await auth.listClients();
+  const clients = new ConnectionLoader(
+    async ({ filter, options, clientOptions }) => {
+      const raw = await auth.listClients({ ...clientOptions, ...options });
+      const clients = filter ? sift(filter, raw.clients) : raw.clients;
 
-        return filter ? sift(filter, clients) : clients;
-      })
-    )
+      return {
+        ...raw,
+        items: clients,
+      };
+    }
   );
   const client = new DataLoader(clientIds =>
     Promise.all(clientIds.map(clientId => auth.client(clientId)))

@@ -41,12 +41,22 @@ type CreatedClient {
   disabled: Boolean!
 }
 
+type ClientsConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [ClientsEdge]
+}
+
+type ClientsEdge implements Edge {
+  cursor: String
+  node: Client
+}
+
 input ClientsOptions {
   prefix: String
 }
 
 extend type Query {
-  clients(options: ClientsOptions, filter: JSON): [Client]
+  clients(clientOptions: ClientsOptions, connection: PageConnection, filter: JSON): ClientsConnection
   client(clientId: ID!): Client
 }
 
