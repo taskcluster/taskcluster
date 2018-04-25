@@ -442,7 +442,6 @@ func taskPayloadSchema() string {
     }
   },
   "description": "This schema defines the structure of the ` + "`" + `payload` + "`" + ` property referred to in a\nTaskcluster Task definition.",
-  "id": "http://schemas.taskcluster.net/generic-worker/v1/payload.json#",
   "properties": {
     "artifacts": {
       "description": "Artifacts to be published.\n\nSince: generic-worker 1.0.0",
