@@ -90,11 +90,11 @@ A scope expression can be evaluated against an array of scopes to determine if t
 scope expression is "satisfied" by the array of scopes. Satisfaction in this context
 means that the following clauses are satisfied:
 
-**AllOf:** All sub-expressions must be satisfied.
+**`AllOf: [..]`** All sub-expressions must be satisfied.
 
-**AnyOf:** At least one sub-expression must be satisfied.
+**`AnyOf: [..]`** At least one sub-expression must be satisfied.
 
-**"<scope>":** The `<scope>` is
+**`"<scope>"`:** The `<scope>` is
 [satisfied](https://docs.taskcluster.net/reference/platform/taskcluster-auth/docs/scopes) by the scope-set.
 
 
