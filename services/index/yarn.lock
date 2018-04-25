@@ -2421,9 +2421,9 @@ taskcluster-lib-app@^2.0.3:
     morgan-debug "^2.0.0"
     promise "^8.0.1"
 
-taskcluster-lib-docs@^4.2.1:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-docs/-/taskcluster-lib-docs-4.2.1.tgz#0b12fadb72ab751fac3588573a763430935ac2fb"
+taskcluster-lib-docs@^4.2.2:
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-docs/-/taskcluster-lib-docs-4.2.2.tgz#3b33ece87f7ea0ad84fe6398b00c706ee903d70e"
   dependencies:
     app-root-dir "^1.0.2"
     aws-sdk "^2.147.0"
