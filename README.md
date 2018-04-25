@@ -84,7 +84,8 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run:
 
 ```
-generic-worker
+generic-worker 10.7.9
+
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
 the taskcluster component that executes tasks. It requests tasks from the taskcluster queue,
@@ -112,7 +113,14 @@ and reports back results to the queue.
     install service                         This will install the generic worker as a
                                             Windows service running under the Local System
                                             account. This is the preferred way to run the
-                                            worker under Windows.
+                                            worker under Windows. Note, the service will
+                                            be configured to start automatically. If you
+                                            wish the service only to run when certain
+                                            preconditions have been met, it is recommended
+                                            to disable the automatic start of the service,
+                                            after you have installed the service, and
+                                            instead explicitly start the service when the
+                                            preconditions have been met.
     new-openpgp-keypair                     This will generate a fresh, new OpenPGP
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
@@ -306,6 +314,9 @@ and reports back results to the queue.
 
     0      Tasks completed successfully; no more tasks to run (see config setting
            numberOfTasksToRun).
+    64     Not able to load specified generic-worker config file.
+    65     Not able to install generic-worker on the system.
+    66     Not able to create an OpenPGP key pair.
     67     A task user has been created, and the generic-worker needs to reboot in order
            to log on as the new task user. Note, the reboot happens automatically unless
            config setting disableReboots is set to true - in either code this exit code will

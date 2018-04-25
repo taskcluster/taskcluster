@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -84,6 +85,8 @@ func readPrivateKey() (privateKey *packet.PrivateKey, err error) {
 	var privKeyFile *os.File
 	privKeyFile, err = os.Open(config.SigningKeyLocation)
 	if err != nil {
+		log.Printf("FATAL: Was not able to open chain of trust signing key file '%v'.", config.SigningKeyLocation)
+		log.Printf("The chain of trust signing key file location is configured in file '%v' in property 'signingKeyLocation'.", configFile)
 		return
 	}
 	defer privKeyFile.Close()

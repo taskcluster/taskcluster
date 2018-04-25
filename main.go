@@ -55,8 +55,26 @@ var (
 
 	version  = "10.7.9"
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
-	usage    = `
-generic-worker
+)
+
+type ExitCode int
+
+const (
+	TASKS_COMPLETE              ExitCode = 0
+	CANT_LOAD_CONFIG            ExitCode = 65
+	CANT_INSTALL_GENERIC_WORKER ExitCode = 65
+	CANT_CREATE_OPENPGP_KEYPAIR ExitCode = 66
+	REBOOT_REQUIRED             ExitCode = 67
+	IDLE_TIMEOUT                ExitCode = 68
+	INTERNAL_ERROR              ExitCode = 69
+	NONCURRENT_DEPLOYMENT_ID    ExitCode = 70
+	WORKER_STOPPED              ExitCode = 71
+	WORKER_SHUTDOWN             ExitCode = 72
+)
+
+func usage(versionName string) string {
+	return versionName + `
+
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
 the taskcluster component that executes tasks. It requests tasks from the taskcluster queue,
@@ -84,7 +102,14 @@ and reports back results to the queue.
     install service                         This will install the generic worker as a
                                             Windows service running under the Local System
                                             account. This is the preferred way to run the
-                                            worker under Windows.
+                                            worker under Windows. Note, the service will
+                                            be configured to start automatically. If you
+                                            wish the service only to run when certain
+                                            preconditions have been met, it is recommended
+                                            to disable the automatic start of the service,
+                                            after you have installed the service, and
+                                            instead explicitly start the service when the
+                                            preconditions have been met.
     new-openpgp-keypair                     This will generate a fresh, new OpenPGP
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
@@ -278,6 +303,9 @@ and reports back results to the queue.
 
     0      Tasks completed successfully; no more tasks to run (see config setting
            numberOfTasksToRun).
+    64     Not able to load specified generic-worker config file.
+    65     Not able to install generic-worker on the system.
+    66     Not able to create an OpenPGP key pair.
     67     A task user has been created, and the generic-worker needs to reboot in order
            to log on as the new task user. Note, the reboot happens automatically unless
            config setting disableReboots is set to true - in either code this exit code will
@@ -295,19 +323,7 @@ and reports back results to the queue.
     72     The worker is running on spot infrastructure in AWS EC2 and has been served a
            spot termination notice, and therefore has shut down.
 `
-)
-
-type ExitCode int
-
-const (
-	TASKS_COMPLETE           ExitCode = 0
-	REBOOT_REQUIRED          ExitCode = 67
-	IDLE_TIMEOUT             ExitCode = 68
-	INTERNAL_ERROR           ExitCode = 69
-	NONCURRENT_DEPLOYMENT_ID ExitCode = 70
-	WORKER_STOPPED           ExitCode = 71
-	WORKER_SHUTDOWN          ExitCode = 72
-)
+}
 
 func persistFeaturesState() (err error) {
 	for _, feature := range Features {
@@ -333,8 +349,10 @@ func initialiseFeatures() (err error) {
 	}
 	Features = append(Features, platformFeatures()...)
 	for _, feature := range Features {
+		log.Printf("Initialising task feature %v...", feature.Name())
 		err := feature.Initialise()
 		if err != nil {
+			log.Printf("FATAL: Initialisation of task feature %v failed!", feature.Name())
 			return err
 		}
 	}
@@ -347,7 +365,7 @@ func main() {
 	if revision != "" {
 		versionName += " [ revision: https://github.com/taskcluster/generic-worker/commits/" + revision + " ]"
 	}
-	arguments, err := docopt.Parse(usage, nil, true, versionName, false, true)
+	arguments, err := docopt.Parse(usage(versionName), nil, true, versionName, false, true)
 	if err != nil {
 		log.Println("Error parsing command line arguments!")
 		panic(err)
@@ -360,15 +378,22 @@ func main() {
 	case arguments["run"]:
 		configureForAws = arguments["--configure-for-aws"].(bool)
 		configFile = arguments["--config"].(string)
+		absConfigFile, err := filepath.Abs(configFile)
+		if err != nil {
+			log.Printf("Error resolving '%v' to an absolute path on the filesystem:", configFile)
+			log.Printf("%v", err)
+			os.Exit(int(CANT_LOAD_CONFIG))
+		}
+		configFile = absConfigFile
 		config, err = loadConfig(configFile, configureForAws)
 		// persist before checking for error, so we can see what the problem was...
 		if config != nil {
 			config.Persist(configFile)
 		}
 		if err != nil {
-			log.Printf("Error loading configuration from file '%v':\n", configFile)
-			log.Printf("%v\n", err)
-			os.Exit(64)
+			log.Printf("Error loading configuration from file '%v':", configFile)
+			log.Printf("%v", err)
+			os.Exit(int(CANT_LOAD_CONFIG))
 		}
 		exitCode := RunWorker()
 		log.Printf("Exiting worker with exit code %v", exitCode)
@@ -395,14 +420,14 @@ func main() {
 		if err != nil {
 			log.Println("Error installing generic worker:")
 			log.Printf("%#v\n", err)
-			os.Exit(65)
+			os.Exit(int(CANT_INSTALL_GENERIC_WORKER))
 		}
 	case arguments["new-openpgp-keypair"]:
 		err := generateOpenPGPKeypair(arguments["--file"].(string))
 		if err != nil {
 			log.Println("Error generating OpenPGP keypair for worker:")
 			log.Printf("%#v\n", err)
-			os.Exit(66)
+			os.Exit(int(CANT_CREATE_OPENPGP_KEYPAIR))
 		}
 	}
 }
