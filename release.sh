@@ -108,6 +108,7 @@ find . -name userdata | while read file; do
   inline_sed "${file}" "s:taskcluster/generic-worker/releases/download/v${OLD_VERSION//./\\.}/:taskcluster/generic-worker/releases/download/v${NEW_VERSION}/:g"
 done
 ./refresh_readme.sh
+git add README.md
 git commit -m "Version bump from ${OLD_VERSION} to ${NEW_VERSION}"
 git tag -s "v${NEW_VERSION}" -m "Making release ${NEW_VERSION}"
 # only ensure master is updated if it is a non-alpha release
