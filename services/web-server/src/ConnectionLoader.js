@@ -10,7 +10,9 @@ export default class ConnectionLoader {
         connections.map(async ({ connection, ...props }) => {
           const limit =
             connection && connection.limit
-              ? connection.limit > LIMIT ? LIMIT : connection.limit
+              ? connection.limit > LIMIT
+                ? LIMIT
+                : connection.limit
               : LIMIT;
           const continuationToken =
             connection && connection.cursor !== FIRST

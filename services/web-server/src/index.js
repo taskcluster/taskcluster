@@ -34,6 +34,9 @@ const load = () => {
   schema = createSchema({
     typeDefs,
     resolvers,
+    resolverValidationOptions: {
+      requireResolversForResolveType: false,
+    },
     validationRules: [depthLimit(10), createComplexityLimitRule(1000)],
   });
   context = createContext({ pulseEngine });
