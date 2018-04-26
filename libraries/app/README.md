@@ -4,7 +4,7 @@ TaskCluster-Lib-App
 This library supports TaskCluster microservices, providing a pre-built Express
 server based on a common configuration format.
 
-The usage is pretty simple.  It is generally invoked in a 
+The usage is pretty simple.  It is generally invoked in a
 [taskcluster-lib-loader](https://github.com/taskcluster/taskcluster-lib-loader)
 stanza named server, like this:
 
