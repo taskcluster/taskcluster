@@ -1,54 +1,54 @@
 [
     {
-        "url": "http://references.taskcluster.net/auth/v1/api.json",
+        "url": "https://references.taskcluster.net/auth/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/platform/auth/api-docs"
     }, {
-        "url": "http://references.taskcluster.net/auth/v1/exchanges.json",
+        "url": "https://references.taskcluster.net/auth/v1/exchanges.json",
         "docroot": "https://docs.taskcluster.net/reference/platform/auth/exchanges"
     }, {
-        "url": "http://references.taskcluster.net/aws-provisioner/v1/api.json",
+        "url": "https://references.taskcluster.net/aws-provisioner/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs"
     }, {
-        "url": "http://references.taskcluster.net/aws-provisioner/v1/exchanges.json",
+        "url": "https://references.taskcluster.net/aws-provisioner/v1/exchanges.json",
         "docroot": "https://docs.taskcluster.net/reference/core/aws-provisioner/exchanges"
     }, {
         "url": "https://references.taskcluster.net/ec2-manager/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/ec2-manager/api-docs"
     }, {
-        "url": "http://references.taskcluster.net/github/v1/api.json",
+        "url": "https://references.taskcluster.net/github/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/github/api-docs"
     }, {
-        "url": "http://references.taskcluster.net/github/v1/exchanges.json",
+        "url": "https://references.taskcluster.net/github/v1/exchanges.json",
         "docroot": "https://docs.taskcluster.net/reference/core/github/exchanges"
     }, {
-        "url": "http://references.taskcluster.net/hooks/v1/api.json",
+        "url": "https://references.taskcluster.net/hooks/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/hooks/api-docs"
     }, {
-        "url": "http://references.taskcluster.net/index/v1/api.json",
+        "url": "https://references.taskcluster.net/index/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/index/api-docs"
     }, {
-        "url": "http://references.taskcluster.net/login/v1/api.json",
+        "url": "https://references.taskcluster.net/login/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/login/api-docs"
     }, {
-        "url": "http://references.taskcluster.net/notify/v1/api.json",
+        "url": "https://references.taskcluster.net/notify/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/notify/api-docs"
     }, {
-        "url": "http://references.taskcluster.net/purge-cache/v1/api.json",
+        "url": "https://references.taskcluster.net/purge-cache/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/purge-cache/api-docs"
     }, {
-        "url": "http://references.taskcluster.net/purge-cache/v1/exchanges.json",
+        "url": "https://references.taskcluster.net/purge-cache/v1/exchanges.json",
         "docroot": "https://docs.taskcluster.net/reference/core/purge-cache/exchanges"
     }, {
-        "url": "http://references.taskcluster.net/queue/v1/api.json",
+        "url": "https://references.taskcluster.net/queue/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/platform/queue/api-docs"
     }, {
-        "url": "http://references.taskcluster.net/queue/v1/exchanges.json",
+        "url": "https://references.taskcluster.net/queue/v1/exchanges.json",
         "docroot": "https://docs.taskcluster.net/reference/platform/queue/exchanges"
     }, {
-        "url": "http://references.taskcluster.net/secrets/v1/api.json",
+        "url": "https://references.taskcluster.net/secrets/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/secrets/api-docs"
     }, {
-        "url": "http://references.taskcluster.net/taskcluster-treeherder/v1/exchanges.json",
+        "url": "https://references.taskcluster.net/taskcluster-treeherder/v1/exchanges.json",
         "docroot": "https://docs.taskcluster.net/reference/core/treeherder/exchanges"
     }
 ]
