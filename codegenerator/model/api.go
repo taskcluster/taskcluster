@@ -393,7 +393,7 @@ func (scopes *ScopeExpressionTemplate) String() string {
 	}
 }
 
-func (allOf *AllOf) String() string {
+func (allOf *Conjunction) String() string {
 	if allOf == nil {
 		return "WARNING: NIL AllOf"
 	}
@@ -413,7 +413,7 @@ func (allOf *AllOf) String() string {
 	return "All of:" + desc
 }
 
-func (anyOf *AnyOf) String() string {
+func (anyOf *Disjunction) String() string {
 	if len(anyOf.AnyOf) == 0 {
 		return "AnyOf empty set - INVALID"
 	}
@@ -430,11 +430,11 @@ func (anyOf *AnyOf) String() string {
 	return "Any of:" + desc
 }
 
-func (forEachIn *ForEachIn) String() string {
+func (forEachIn *ForAll) String() string {
 	return "For " + forEachIn.For + " in " + forEachIn.In + " each " + forEachIn.Each
 }
 
-func (ifThen *IfThen) String() string {
+func (ifThen *Conditional) String() string {
 	return "If " + ifThen.If + ":\n" + text.Indent(ifThen.Then.String(), "  ")
 }
 
@@ -472,22 +472,22 @@ func (this *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
 		}
 		if _, exists := t["AnyOf"]; exists {
 			this.Type = "AnyOf"
-			this.AnyOf = new(AnyOf)
+			this.AnyOf = new(Disjunction)
 			err = json.Unmarshal(j, this.AnyOf)
 		}
 		if _, exists := t["AllOf"]; exists {
 			this.Type = "AllOf"
-			this.AllOf = new(AllOf)
+			this.AllOf = new(Conjunction)
 			err = json.Unmarshal(j, this.AllOf)
 		}
 		if _, exists := t["if"]; exists {
 			this.Type = "IfThen"
-			this.IfThen = new(IfThen)
+			this.IfThen = new(Conditional)
 			err = json.Unmarshal(j, this.IfThen)
 		}
 		if _, exists := t["for"]; exists {
 			this.Type = "ForEachIn"
-			this.ForEachIn = new(ForEachIn)
+			this.ForEachIn = new(ForAll)
 			err = json.Unmarshal(j, this.ForEachIn)
 		}
 		if err != nil {
@@ -496,14 +496,14 @@ func (this *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
 	// for old style scopesets [][]string (normal disjunctive form)
 	case []interface{}:
 		this.Type = "AnyOf"
-		this.AnyOf = &AnyOf{
+		this.AnyOf = &Disjunction{
 			AnyOf: make([]ScopeExpressionTemplate, len(t), len(t)),
 		}
 		for i, j := range t {
 			allOf := j.([]interface{})
 			this.AnyOf.AnyOf[i] = ScopeExpressionTemplate{
 				Type: "AllOf",
-				AllOf: &AllOf{
+				AllOf: &Conjunction{
 					AllOf: make([]ScopeExpressionTemplate, len(allOf), len(allOf)),
 				},
 			}
@@ -516,7 +516,24 @@ func (this *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
 			}
 		}
 	default:
-		panic(fmt.Sprintf("Internal error: unrecognised type %T", t))
+		panic(fmt.Sprintf("Internal error: unrecognised type %T for json: %v", t, string(data)))
 	}
 	return nil
+}
+
+// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate
+type ScopeExpressionTemplate struct {
+	RawMessage json.RawMessage
+	// One of:
+	//   * "AllOf"
+	//   * "AnyOf"
+	//   * "ForEachIn"
+	//   * "IfThen"
+	//   * "RequiredScope"
+	Type          string
+	AllOf         *Conjunction
+	AnyOf         *Disjunction
+	ForEachIn     *ForAll
+	IfThen        *Conditional
+	RequiredScope *RequiredScope
 }
