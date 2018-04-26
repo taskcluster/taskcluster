@@ -18,7 +18,7 @@ A few additional utility tasks, such as to clone docker images, are added as nee
 
 ## Skipping
 
-Each task is expected to skip (`utils.skip(..)`) if its outputs are already available.
+Each task is expected to skip (`utils.skip({..})`) if its outputs are already available.
 This allows the build process to complete in just a few seconds when nothing has changed since the last run.
 
 To make this tractable, a task's outputs are not to be modified by any other tasks.

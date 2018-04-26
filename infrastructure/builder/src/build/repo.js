@@ -16,6 +16,7 @@ const generateRepoTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
       `repo-${name}-dir`, // full path of the repository
       `repo-${name}-exact-source`, // exact source URL for the repository
     ],
+    locks: ['git'],
     run: async (requirements, utils) => {
       const repoDir = path.join(baseDir, `repo-${name}`);
       const {exactRev, changed} = await gitClone({
@@ -33,7 +34,7 @@ const generateRepoTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
       if (changed) {
         return provides;
       } else {
-        return utils.skip(provides);
+        return utils.skip({provides});
       }
     },
   });
@@ -61,7 +62,7 @@ const generateRepoTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
       };
 
       if (dirStamped({dir: docsDir, sources: requirements[`repo-${name}-exact-source`]})) {
-        return utils.skip(provides);
+        return utils.skip({provides});
       }
 
       await rimraf(docsDir);

@@ -57,11 +57,11 @@ const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => 
       const tag = requirements[`service-${name}-docker-image`];
 
       if (!cmdOptions.push) {
-        return utils.skip({});
+        return utils.skip({provides: []});
       }
 
       if (requirements[`service-${name}-image-on-registry`]) {
-        return utils.skip({});
+        return utils.skip({provides: []});
       }
 
       await dockerPush({
@@ -86,6 +86,7 @@ const ensureDockerImage = (tasks, baseDir, image) => {
   ensureTask(tasks, {
     title: `Pull Docker Image ${image}`,
     requires: [],
+    locks: ['docker'],
     provides: [
       `docker-image-${image}`,
     ],
@@ -94,9 +95,9 @@ const ensureDockerImage = (tasks, baseDir, image) => {
       const exists = (await dockerImages({baseDir}))
         .some(i => i.RepoTags && i.RepoTags.indexOf(image) !== -1);
       if (exists) {
-        return utils.skip({
+        return utils.skip({provides: {
           [`docker-image-${image}`]: image,
-        });
+        }});
       }
 
       await dockerPull({image, utils, baseDir});
@@ -138,7 +139,7 @@ const herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repo
       if (changed) {
         return provides;
       } else {
-        return utils.skip(provides);
+        return utils.skip({provides});
       }
     },
   });
@@ -154,6 +155,7 @@ const herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repo
     provides: [
       `service-${name}-built-app-dir`,
     ],
+    locks: ['docker'],
     run: async (requirements, utils) => {
       const repoDir = requirements[`repo-${name}-dir`];
       const appDir = path.join(workDir, 'app');
@@ -165,7 +167,7 @@ const herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repo
 
       // if we've already built this appDir with this revision, we're done.
       if (dirStamped({dir: appDir, sources: requirements[`repo-${name}-exact-source`]})) {
-        return utils.skip(provides);
+        return utils.skip({provides});
       } else {
         await rimraf(appDir);
       }
@@ -254,6 +256,7 @@ const herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repo
       `service-${name}-docker-image`, // docker image tag
       `service-${name}-image-on-registry`, // true if the image already exists on registry
     ],
+    locks: ['docker'],
     run: async (requirements, utils) => {
       const appDir = requirements[`service-${name}-built-app-dir`];
       const headRef = requirements[`repo-${name}-exact-source`].split('#')[1];
@@ -273,9 +276,9 @@ const herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repo
       // bail out if we can, pulling the image if it's only available remotely
       if (!imageLocal && imageOnRegistry) {
         await dockerPull({image: tag, utils, baseDir});
-        return utils.skip(provides);
+        return utils.skip({provides});
       } else if (imageLocal) {
-        return utils.skip(provides);
+        return utils.skip({provides});
       }
 
       // build a tarfile containing the app directory and Dockerfile
@@ -313,6 +316,7 @@ const herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repo
       provides: [
         `docs-${name}-dir`,
       ],
+      locks: ['docker'],
       run: async (requirements, utils) => {
         const appDir = requirements[`service-${name}-built-app-dir`];
         // note that docs directory paths must have this form (${basedir}/docs is
@@ -324,7 +328,7 @@ const herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repo
 
         // if we've already built this docsDir with this revision, we're done.
         if (dirStamped({dir: docsDir, sources: requirements[`repo-${name}-exact-source`]})) {
-          return utils.skip(provides);
+          return utils.skip({provides});
         }
         await rimraf(docsDir);
         await mkdirp(path.dirname(docsDir));
@@ -368,6 +372,7 @@ const toolsUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, 
       `service-${name}-built-app-dir`,
       `service-${name}-build-dir`, // result of `yarn build`
     ],
+    locks: ['docker'],
     run: async (requirements, utils) => {
       const repoDir = requirements[`repo-${name}-dir`];
       const appDir = path.join(workDir, 'app');
@@ -380,7 +385,7 @@ const toolsUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, 
       };
 
       if (dirStamped({dir: appDir, sources})) {
-        return utils.skip(provides);
+        return utils.skip({provides});
       }
       await rimraf(appDir);
       await mkdirp(cacheDir);
@@ -437,6 +442,7 @@ const toolsUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, 
       `service-${name}-docker-image`, // docker image tag
       `service-${name}-image-on-registry`, // true if the image already exists on registry
     ],
+    locks: ['docker'],
     run: async (requirements, utils) => {
       const buildDir = requirements[`service-${name}-build-dir`];
       const headRef = requirements[`repo-${name}-exact-source`].split('#')[1];
@@ -456,9 +462,9 @@ const toolsUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, 
       // bail out if we can, pulling the image if it's only available remotely
       if (!imageLocal && imageOnRegistry) {
         await dockerPull({image: tag, utils, baseDir});
-        return utils.skip(provides);
+        return utils.skip({provides});
       } else if (imageLocal) {
-        return utils.skip(provides);
+        return utils.skip({provides});
       }
 
       // build a tarfile containing the build directory, Dockerfile, and ancillary files
@@ -519,6 +525,7 @@ const docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, wor
       `service-${name}-built-app-dir`,
       `service-${name}-static-dir`, // result of `gulp build-static`
     ],
+    locks: ['docker'],
     run: async (requirements, utils) => {
       const repoDir = requirements[`repo-${name}-dir`];
       const appDir = path.join(workDir, 'app');
@@ -531,7 +538,7 @@ const docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, wor
       };
 
       if (dirStamped({dir: appDir, sources})) {
-        return utils.skip(provides);
+        return utils.skip({provides});
       }
       await rimraf(appDir);
       await mkdirp(cacheDir);
@@ -602,6 +609,7 @@ const docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, wor
       `service-${name}-docker-image`, // docker image tag
       `service-${name}-image-on-registry`, // true if the image already exists on registry
     ],
+    locks: ['docker'],
     run: async (requirements, utils) => {
       const staticDir = requirements[`service-${name}-static-dir`];
       const headRef = requirements[`repo-${name}-exact-source`].split('#')[1];
@@ -621,9 +629,9 @@ const docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, wor
       // bail out if we can, pulling the image if it's only available remotely
       if (!imageLocal && imageOnRegistry) {
         await dockerPull({image: tag, utils, baseDir});
-        return utils.skip(provides);
+        return utils.skip({provides});
       } else if (imageLocal) {
-        return utils.skip(provides);
+        return utils.skip({provides});
       }
 
       // build a tarfile containing the build directory, Dockerfile, and ancillary files

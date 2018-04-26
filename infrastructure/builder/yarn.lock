@@ -389,9 +389,9 @@ concat-stream@~1.5.1:
     readable-stream "~2.0.0"
     typedarray "~0.0.5"
 
-console-taskgraph@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/console-taskgraph/-/console-taskgraph-1.0.0.tgz#cc90acd39320a5b1d2648608d23d9c4daf06d048"
+console-taskgraph@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/console-taskgraph/-/console-taskgraph-1.2.0.tgz#74bdb9f4772a2ec386bcd024caef93e333550ba4"
   dependencies:
     assert "^1.4.1"
     chalk "^2.3.2"

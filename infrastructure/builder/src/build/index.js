@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const os = require('os');
 const util = require('util');
 const fs = require('fs');
 const path = require('path');
@@ -6,7 +7,7 @@ const config = require('typed-env-config');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const {ClusterSpec} = require('../formats/cluster-spec');
-const {TaskGraph} = require('console-taskgraph');
+const {TaskGraph, Lock} = require('console-taskgraph');
 const {gitClone} = require('./utils');
 const generateRepoTasks = require('./repo');
 
@@ -69,7 +70,14 @@ class Build {
       });
     });
 
-    const taskgraph = new TaskGraph(tasks);
+    const taskgraph = new TaskGraph(tasks, {
+      locks: {
+        // limit ourselves to one docker process per CPU
+        docker: new Lock(os.cpus().length),
+        // and let's be sane about how many git clones we do..
+        git: new Lock(8),
+      },
+    });
     const context = await taskgraph.run();
 
     // fill in the cluster spec with the results of the build
