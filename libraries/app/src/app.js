@@ -143,7 +143,7 @@ var app = function(options) {
     let DOCS_HTML = `<html><body><p>You're lost, here's the way out.</p>
     <a href= "${link}" >Refer to the documentation</a></body></html>`;
     app.get('/', function(req, res) {
-      res.status(404).send(DOCS_HTML);
+      res.status(200).send(DOCS_HTML);
     });
   }
 
