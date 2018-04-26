@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// http://references.taskcluster.net/auth/v1/exchanges.json
+// https://references.taskcluster.net/auth/v1/exchanges.json
 
 // The auth service, typically available at `auth.taskcluster.net`
 // is responsible for storing credentials, managing assignment of scopes,

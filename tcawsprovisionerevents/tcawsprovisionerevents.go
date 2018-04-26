@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// http://references.taskcluster.net/aws-provisioner/v1/exchanges.json
+// https://references.taskcluster.net/aws-provisioner/v1/exchanges.json
 
 // Exchanges from the provisioner... more docs later
 //

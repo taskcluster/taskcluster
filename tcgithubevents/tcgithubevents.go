@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// http://references.taskcluster.net/github/v1/exchanges.json
+// https://references.taskcluster.net/github/v1/exchanges.json
 
 // The github service, typically available at
 // `github.taskcluster.net`, is responsible for publishing a pulse

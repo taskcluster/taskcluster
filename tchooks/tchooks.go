@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// http://references.taskcluster.net/hooks/v1/api.json
+// https://references.taskcluster.net/hooks/v1/api.json
 
 // Hooks are a mechanism for creating tasks in response to events.
 //
@@ -49,8 +49,8 @@
 // Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
-// http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 26 Apr 2018 at 14:22:00 UTC. The code was generated
+// https://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
+// Thu, 26 Apr 2018 at 18:09:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tchooks
 
@@ -102,8 +102,6 @@ func NewFromEnv() *Hooks {
 	}
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This endpoint will return a list of all hook groups with at least one hook.
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#listHookGroups
@@ -113,8 +111,6 @@ func (hooks *Hooks) ListHookGroups() (*HookGroups, error) {
 	return responseObject.(*HookGroups), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This endpoint will return a list of all the hook definitions within a
 // given hook group.
 //
@@ -125,8 +121,6 @@ func (hooks *Hooks) ListHooks(hookGroupId string) (*HookList, error) {
 	return responseObject.(*HookList), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This endpoint will return the hook definition for the given `hookGroupId`
 // and hookId.
 //
@@ -137,8 +131,6 @@ func (hooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, error) {
 	return responseObject.(*HookDefinition), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This endpoint will return the current status of the hook.  This represents a
 // snapshot in time and may vary from one call to the next.
 //
@@ -161,8 +153,6 @@ func (hooks *Hooks) GetHookSchedule(hookGroupId, hookId string) (*HookScheduleRe
 	return responseObject.(*HookScheduleResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This endpoint will create a new hook.
 //
 // The caller's credentials must include the role that will be used to
@@ -181,8 +171,6 @@ func (hooks *Hooks) CreateHook(hookGroupId, hookId string, payload *HookCreation
 	return responseObject.(*HookDefinition), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This endpoint will update an existing hook.  All fields except
 // `hookGroupId` and `hookId` can be modified.
 //
@@ -198,8 +186,6 @@ func (hooks *Hooks) UpdateHook(hookGroupId, hookId string, payload *HookCreation
 	return responseObject.(*HookDefinition), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This endpoint will remove a hook definition.
 //
 // Required scopes:
@@ -212,8 +198,6 @@ func (hooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 	return err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This endpoint will trigger the creation of a task from a hook definition.
 //
 // The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
@@ -224,14 +208,12 @@ func (hooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 //   hooks:trigger-hook:<hookGroupId>/<hookId>
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHook
-func (hooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerContext) (*TaskStatusStructure, error) {
+func (hooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerHookRequest) (*TaskStatusStructure, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger", new(TaskStatusStructure), nil)
 	return responseObject.(*TaskStatusStructure), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Retrieve a unique secret token for triggering the specified hook. This
 // token can be deactivated with `resetTriggerToken`.
 //
@@ -256,8 +238,6 @@ func (hooks *Hooks) GetTriggerToken_SignedURL(hookGroupId, hookId string, durati
 	return (&cd).SignedURL("/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/token", nil, duration)
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // Reset the token for triggering a given hook. This invalidates token that
 // may have been issued via getTriggerToken with a new token.
 //
@@ -271,8 +251,6 @@ func (hooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerToken
 	return responseObject.(*TriggerTokenResponse), err
 }
 
-// Stability: *** EXPERIMENTAL ***
-//
 // This endpoint triggers a defined hook with a valid token.
 //
 // The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
@@ -280,7 +258,7 @@ func (hooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerToken
 // task template.
 //
 // See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHookWithToken
-func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerContext) (*TaskStatusStructure, error) {
+func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerHookRequest) (*TaskStatusStructure, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger/"+url.QueryEscape(token), new(TaskStatusStructure), nil)
 	return responseObject.(*TaskStatusStructure), err

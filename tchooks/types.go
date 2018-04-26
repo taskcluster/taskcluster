@@ -499,12 +499,13 @@ type (
 		Status Status `json:"status"`
 	}
 
-	// Trigger context
+	// A request to trigger a hook.  The payload must be a JSON object, and is used as the context
+	// for a JSON-e rendering of the hook's task template, as described in "Firing Hooks".
 	//
 	// Additional properties allowed
 	//
-	// See http://schemas.taskcluster.net/hooks/v1/trigger-context.json#
-	TriggerContext json.RawMessage
+	// See http://schemas.taskcluster.net/hooks/v1/trigger-hook.json#
+	TriggerHookRequest json.RawMessage
 
 	// Secret token for a trigger
 	//
@@ -517,16 +518,16 @@ type (
 )
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
-// TriggerContext is of type json.RawMessage...
-func (this *TriggerContext) MarshalJSON() ([]byte, error) {
+// TriggerHookRequest is of type json.RawMessage...
+func (this *TriggerHookRequest) MarshalJSON() ([]byte, error) {
 	x := json.RawMessage(*this)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *TriggerContext) UnmarshalJSON(data []byte) error {
+func (this *TriggerHookRequest) UnmarshalJSON(data []byte) error {
 	if this == nil {
-		return errors.New("TriggerContext: UnmarshalJSON on nil pointer")
+		return errors.New("TriggerHookRequest: UnmarshalJSON on nil pointer")
 	}
 	*this = append((*this)[0:0], data...)
 	return nil

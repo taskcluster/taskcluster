@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// http://references.taskcluster.net/queue/v1/api.json
+// https://references.taskcluster.net/queue/v1/api.json
 
 // The queue, typically available at `queue.taskcluster.net`, is responsible
 // for accepting tasks and track their state as they are executed by
@@ -39,8 +39,8 @@
 // Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
-// http://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 26 Apr 2018 at 14:22:00 UTC. The code was generated
+// https://references.taskcluster.net/queue/v1/api.json together with the input and output schemas it references, downloaded on
+// Thu, 26 Apr 2018 at 18:09:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcqueue
 

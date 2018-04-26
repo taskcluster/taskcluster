@@ -1,9 +1,9 @@
-Generated: 1524752569
+Generated: 1524766175
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
-http://references.taskcluster.net/auth/v1/api.json
-==================================================
+https://references.taskcluster.net/auth/v1/api.json
+===================================================
 Version     = '0'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Authentication API'
@@ -2890,8 +2890,8 @@ title: Webhooktunnel Token Response
 type: object
 
 
-http://references.taskcluster.net/auth/v1/exchanges.json
-========================================================
+https://references.taskcluster.net/auth/v1/exchanges.json
+=========================================================
 Version         = '0'
 Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
 Title           = 'Auth Pulse Exchanges'
@@ -3076,8 +3076,8 @@ title: Role Message
 type: object
 
 
-http://references.taskcluster.net/aws-provisioner/v1/api.json
-=============================================================
+https://references.taskcluster.net/aws-provisioner/v1/api.json
+==============================================================
 Version     = '0'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'AWS Provisioner API Documentation'
@@ -5593,8 +5593,8 @@ title: Worker Type Summary
 type: object
 
 
-http://references.taskcluster.net/aws-provisioner/v1/exchanges.json
-===================================================================
+https://references.taskcluster.net/aws-provisioner/v1/exchanges.json
+====================================================================
 Version         = '0'
 Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
 Title           = 'AWS Provisioner Pulse Exchanges'
@@ -5722,8 +5722,1901 @@ title: Worker Type Message
 type: object
 
 
-http://references.taskcluster.net/github/v1/api.json
-====================================================
+https://references.taskcluster.net/ec2-manager/v1/api.json
+==========================================================
+Version     = '0'
+Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
+Title       = 'EC2 Instance Manager'
+Description = 'A taskcluster service which manages EC2 instances.  This service does not understand any taskcluster concepts intrinsicaly other than using the name `workerType` to refer to a group of associated instances.  Unless you are working on building a provisioner for AWS, you almost certainly do not want to use this service'
+Base URL    = 'localhost:5555/v1'
+Entry 0     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/worker-types'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'listWorkerTypes'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = ''
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/list-worker-types.json#'
+    Entry Title       = 'See the list of worker types which are known to be managed'
+    Entry Description = 'This method is only for debugging the ec2-manager'
+Entry 1     =
+    Entry Type        = 'function'
+    Entry Method      = 'put'
+    Entry Route       = '/worker-types/<workerType>/instance'
+    Entry Args        = '[workerType]'
+    Entry Query        = '[]'
+    Entry Name        = 'runInstance'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'ec2-manager:manage-resources:<workerType>'
+    Entry Input       = 'http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#'
+    Entry Output      = ''
+    Entry Title       = 'Run an instance'
+    Entry Description = 'Request an instance of a worker type'
+Entry 2     =
+    Entry Type        = 'function'
+    Entry Method      = 'delete'
+    Entry Route       = '/worker-types/<workerType>/resources'
+    Entry Args        = '[workerType]'
+    Entry Query        = '[]'
+    Entry Name        = 'terminateWorkerType'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'ec2-manager:manage-resources:<workerType>'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Terminate all resources from a worker type'
+    Entry Description = 'Terminate all instances for this worker type'
+Entry 3     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/worker-types/<workerType>/stats'
+    Entry Args        = '[workerType]'
+    Entry Query        = '[]'
+    Entry Name        = 'workerTypeStats'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = ''
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#'
+    Entry Title       = 'Look up the resource stats for a workerType'
+    Entry Description = 'Return an object which has a generic state description. This only contains counts of instances'
+Entry 4     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/worker-types/<workerType>/health'
+    Entry Args        = '[workerType]'
+    Entry Query        = '[]'
+    Entry Name        = 'workerTypeHealth'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = ''
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/health.json#'
+    Entry Title       = 'Look up the resource health for a workerType'
+    Entry Description = 'Return a view of the health of a given worker type'
+Entry 5     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/worker-types/<workerType>/errors'
+    Entry Args        = '[workerType]'
+    Entry Query        = '[]'
+    Entry Name        = 'workerTypeErrors'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = ''
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/errors.json#'
+    Entry Title       = 'Look up the most recent errors of a workerType'
+    Entry Description = 'Return a list of the most recent errors encountered by a worker type'
+Entry 6     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/worker-types/<workerType>/state'
+    Entry Args        = '[workerType]'
+    Entry Query        = '[]'
+    Entry Name        = 'workerTypeState'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = ''
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#'
+    Entry Title       = 'Look up the resource state for a workerType'
+    Entry Description = 'Return state information for a given worker type'
+Entry 7     =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/key-pairs/<name>'
+    Entry Args        = '[name]'
+    Entry Query        = '[]'
+    Entry Name        = 'ensureKeyPair'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'ec2-manager:manage-key-pairs:<name>'
+    Entry Input       = 'http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#'
+    Entry Output      = ''
+    Entry Title       = 'Ensure a KeyPair for a given worker type exists'
+    Entry Description = 'Idempotently ensure that a keypair of a given name exists'
+Entry 8     =
+    Entry Type        = 'function'
+    Entry Method      = 'delete'
+    Entry Route       = '/key-pairs/<name>'
+    Entry Args        = '[name]'
+    Entry Query        = '[]'
+    Entry Name        = 'removeKeyPair'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'ec2-manager:manage-key-pairs:<name>'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ensure a KeyPair for a given worker type does not exist'
+    Entry Description = 'Ensure that a keypair of a given name does not exist.'
+Entry 9     =
+    Entry Type        = 'function'
+    Entry Method      = 'delete'
+    Entry Route       = '/region/<region>/instance/<instanceId>'
+    Entry Args        = '[region instanceId]'
+    Entry Query        = '[]'
+    Entry Name        = 'terminateInstance'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'Any of:
+- ec2-manager:manage-instances:<region>:<instanceId>
+- ec2-manager:manage-resources:<workerType>'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Terminate an instance'
+    Entry Description = 'Terminate an instance in a specified region'
+Entry 10    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/prices'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'getPrices'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = ''
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/prices.json#'
+    Entry Title       = 'Request prices for EC2'
+    Entry Description = 'Return a list of possible prices for EC2'
+Entry 11    =
+    Entry Type        = 'function'
+    Entry Method      = 'post'
+    Entry Route       = '/prices'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'getSpecificPrices'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = ''
+    Entry Input       = 'http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#'
+    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/prices.json#'
+    Entry Title       = 'Request prices for EC2'
+    Entry Description = 'Return a list of possible prices for EC2'
+Entry 12    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/health'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'getHealth'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = ''
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/health.json#'
+    Entry Title       = 'Get EC2 account health metrics'
+    Entry Description = 'Give some basic stats on the health of our EC2 account'
+Entry 13    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/errors'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'getRecentErrors'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = ''
+    Entry Input       = ''
+    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/errors.json#'
+    Entry Title       = 'Look up the most recent errors in the provisioner across all worker types'
+    Entry Description = 'Return a list of recent errors encountered'
+Entry 14    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/internal/regions'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'regions'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'ec2-manager:internals'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'See the list of regions managed by this ec2-manager'
+    Entry Description = 'This method is only for debugging the ec2-manager'
+Entry 15    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/internal/ami-usage'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'amiUsage'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'ec2-manager:internals'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'See the list of AMIs and their usage'
+    Entry Description = 'List AMIs and their usage by returning a list of objects in the form:
+{
+region: string
+  volumetype: string
+  lastused: timestamp
+}'
+Entry 16    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/internal/ebs-usage'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'ebsUsage'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'ec2-manager:internals'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'See the current EBS volume usage list'
+    Entry Description = 'Lists current EBS volume usage by returning a list of objects
+that are uniquely defined by {region, volumetype, state} in the form:
+{
+region: string,
+  volumetype: string,
+  state: string,
+  totalcount: integer,
+  totalgb: integer,
+  touched: timestamp (last time that information was updated),
+}'
+Entry 17    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/internal/db-pool-stats'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'dbpoolStats'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'ec2-manager:internals'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Statistics on the Database client pool'
+    Entry Description = 'This method is only for debugging the ec2-manager'
+Entry 18    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/internal/all-state'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'allState'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'ec2-manager:internals'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'List out the entire internal state'
+    Entry Description = 'This method is only for debugging the ec2-manager'
+Entry 19    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/internal/sqs-stats'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'sqsStats'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'ec2-manager:internals'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Statistics on the sqs queues'
+    Entry Description = 'This method is only for debugging the ec2-manager'
+Entry 20    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/internal/purge-queues'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'purgeQueues'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = 'ec2-manager:internals'
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Purge the SQS queues'
+    Entry Description = 'This method is only for debugging the ec2-manager'
+Entry 21    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/internal/api-reference'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'apiReference'
+    Entry Stability   = 'experimental'
+    Entry Scopes      = ''
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'API Reference'
+    Entry Description = 'Generate an API reference for this service'
+Entry 22    =
+    Entry Type        = 'function'
+    Entry Method      = 'get'
+    Entry Route       = '/ping'
+    Entry Args        = '[]'
+    Entry Query        = '[]'
+    Entry Name        = 'ping'
+    Entry Stability   = 'stable'
+    Entry Scopes      = ''
+    Entry Input       = ''
+    Entry Output      = ''
+    Entry Title       = 'Ping Server'
+    Entry Description = 'Respond without doing anything.
+This endpoint is used to check that the service is up.'
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#
+===================================================================
+$schema: http://json-schema.org/draft-04/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#
+TYPE_NAME: SSHPublicKey
+additionalProperties:
+  Boolean: false
+  Properties: null
+id: http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#
+properties:
+  MemberNames:
+    pubkey: Pubkey
+  Properties:
+    pubkey:
+      IS_REQUIRED: false
+      PROPERTY_NAME: pubkey
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#/properties/pubkey
+      TYPE_NAME: ""
+      description: |
+        An OpenSSH format Public Key as described by tools.ietf.org/html/rfc4253#section-6.6
+      pattern: ^(ssh-\S*)\s*(\S*)\s*(.*)$
+      type: string
+  SortedPropertyNames:
+  - pubkey
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#/properties
+title: ssh public key
+type: object
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/errors.json#
+==========================================================
+$schema: http://json-schema.org/draft-04/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#
+TYPE_NAME: Errors
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: |
+  This method returns a list of errors.  It currently gives the error code only
+  because we're not sure of the security implications of exposing the full
+  message.  We do store complete error messages, but are figuring out how to
+  best expose them
+id: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#
+properties:
+  MemberNames:
+    errors: Errors
+  Properties:
+    errors:
+      IS_REQUIRED: false
+      PROPERTY_NAME: errors
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors
+      TYPE_NAME: ""
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items
+        TYPE_NAME: Var4
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        properties:
+          MemberNames:
+            az: Az
+            code: Code
+            instanceType: InstanceType
+            message: Message
+            region: Region
+            time: Time
+            type: Type
+            workerType: WorkerType
+          Properties:
+            az:
+              IS_REQUIRED: false
+              PROPERTY_NAME: az
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/az
+              TYPE_NAME: ""
+              type: string
+            code:
+              IS_REQUIRED: false
+              PROPERTY_NAME: code
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/code
+              TYPE_NAME: ""
+              type: string
+            instanceType:
+              IS_REQUIRED: false
+              PROPERTY_NAME: instanceType
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/instanceType
+              TYPE_NAME: ""
+              type: string
+            message:
+              IS_REQUIRED: false
+              PROPERTY_NAME: message
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/message
+              TYPE_NAME: ""
+              type: string
+            region:
+              IS_REQUIRED: false
+              PROPERTY_NAME: region
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/region
+              TYPE_NAME: ""
+              type: string
+            time:
+              IS_REQUIRED: false
+              PROPERTY_NAME: time
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/time
+              TYPE_NAME: ""
+              format: date-time
+              type: string
+            type:
+              IS_REQUIRED: false
+              PROPERTY_NAME: type
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/type
+              TYPE_NAME: ""
+              enum:
+              - instance-request
+              - termination
+              type: string
+            workerType:
+              IS_REQUIRED: false
+              PROPERTY_NAME: workerType
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/workerType
+              TYPE_NAME: ""
+              type: string
+          SortedPropertyNames:
+          - az
+          - code
+          - instanceType
+          - message
+          - region
+          - time
+          - type
+          - workerType
+          SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties
+        type: object
+      type: array
+  SortedPropertyNames:
+  - errors
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties
+title: Errors
+type: object
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items
+==================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items
+TYPE_NAME: Var4
+additionalProperties:
+  Boolean: false
+  Properties: null
+properties:
+  MemberNames:
+    az: Az
+    code: Code
+    instanceType: InstanceType
+    message: Message
+    region: Region
+    time: Time
+    type: Type
+    workerType: WorkerType
+  Properties:
+    az:
+      IS_REQUIRED: false
+      PROPERTY_NAME: az
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/az
+      TYPE_NAME: ""
+      type: string
+    code:
+      IS_REQUIRED: false
+      PROPERTY_NAME: code
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/code
+      TYPE_NAME: ""
+      type: string
+    instanceType:
+      IS_REQUIRED: false
+      PROPERTY_NAME: instanceType
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/instanceType
+      TYPE_NAME: ""
+      type: string
+    message:
+      IS_REQUIRED: false
+      PROPERTY_NAME: message
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/message
+      TYPE_NAME: ""
+      type: string
+    region:
+      IS_REQUIRED: false
+      PROPERTY_NAME: region
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/region
+      TYPE_NAME: ""
+      type: string
+    time:
+      IS_REQUIRED: false
+      PROPERTY_NAME: time
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/time
+      TYPE_NAME: ""
+      format: date-time
+      type: string
+    type:
+      IS_REQUIRED: false
+      PROPERTY_NAME: type
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/type
+      TYPE_NAME: ""
+      enum:
+      - instance-request
+      - termination
+      type: string
+    workerType:
+      IS_REQUIRED: false
+      PROPERTY_NAME: workerType
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/workerType
+      TYPE_NAME: ""
+      type: string
+  SortedPropertyNames:
+  - az
+  - code
+  - instanceType
+  - message
+  - region
+  - time
+  - type
+  - workerType
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties
+type: object
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/health.json#
+==========================================================
+$schema: http://json-schema.org/draft-04/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#
+TYPE_NAME: HealthOfTheEC2Account
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: |
+  This method provides a summary of the health in the EC2 account being managed.
+  Values for the overall account are provided, broken down by Region, Availability
+  Zone and Instance Type.
+id: http://schemas.taskcluster.net/ec2-manager/v1/health.json#
+properties:
+  MemberNames:
+    requestHealth: RequestHealth
+    running: Running
+    terminationHealth: TerminationHealth
+  Properties:
+    requestHealth:
+      IS_REQUIRED: false
+      PROPERTY_NAME: requestHealth
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth
+      TYPE_NAME: ""
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items
+        TYPE_NAME: Var1
+        description: |
+          This is a list of outcomes for a specific region, availability zone and
+          instance type.  These are calls to the EC2 runInstances method, which
+          is how we request instances.  If a call to this method is successful,
+          then we expect to get an instance to match
+        properties:
+          MemberNames:
+            az: Az
+            configuration_issue: Configuration_Issue
+            failed: Failed
+            instanceType: InstanceType
+            insufficient_capacity: Insufficient_Capacity
+            limit_exceeded: Limit_Exceeded
+            region: Region
+            successful: Successful
+            throttled_calls: Throttled_Calls
+          Properties:
+            az:
+              IS_REQUIRED: false
+              PROPERTY_NAME: az
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/az
+              TYPE_NAME: ""
+              type: string
+            configuration_issue:
+              IS_REQUIRED: false
+              PROPERTY_NAME: configuration_issue
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/configuration_issue
+              TYPE_NAME: ""
+              description: The number of calls failed due to a misconfiguration of
+                the worker type.  Due to the large number of error codes the EC2 API
+                might return, this is a best effort categorization.  It covers codes
+                which are like "Invalid%" using SQL pattern mattching on the codes
+                from https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html
+                It is not categorized by which field was invalid in this response
+              type: integer
+            failed:
+              IS_REQUIRED: false
+              PROPERTY_NAME: failed
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/failed
+              TYPE_NAME: ""
+              description: The total number of calls which failed, inrespective of
+                why
+              type: integer
+            instanceType:
+              IS_REQUIRED: false
+              PROPERTY_NAME: instanceType
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/instanceType
+              TYPE_NAME: ""
+              type: string
+            insufficient_capacity:
+              IS_REQUIRED: false
+              PROPERTY_NAME: insufficient_capacity
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/insufficient_capacity
+              TYPE_NAME: ""
+              description: |
+                Number of runInstances calls which have failed because there aren't
+                enough hosts for the resources to be allocated.
+              type: integer
+            limit_exceeded:
+              IS_REQUIRED: false
+              PROPERTY_NAME: limit_exceeded
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/limit_exceeded
+              TYPE_NAME: ""
+              description: |
+                The number of calls which failed due to a limit being exceeded.
+                Due to the large number of error codes the EC2 API might return,
+                this is a best effort categorization.  It covers codes which are
+                like "%LimitExceeded" using SQL pattern mattching, but not
+                RequestLimitExceeded on the codes from
+                https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html
+                It is not categorized by which limit was exceeded in this response
+              type: integer
+            region:
+              IS_REQUIRED: false
+              PROPERTY_NAME: region
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/region
+              TYPE_NAME: ""
+              type: string
+            successful:
+              IS_REQUIRED: false
+              PROPERTY_NAME: successful
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/successful
+              TYPE_NAME: ""
+              description: |
+                The number of instances which have been requested successfully
+              type: integer
+            throttled_calls:
+              IS_REQUIRED: false
+              PROPERTY_NAME: throttled_calls
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/throttled_calls
+              TYPE_NAME: ""
+              description: |
+                Number of calls which have been throttled in this region.  These
+                are errors with the code RequestLimitExceeded.
+              type: integer
+          SortedPropertyNames:
+          - az
+          - configuration_issue
+          - failed
+          - instanceType
+          - insufficient_capacity
+          - limit_exceeded
+          - region
+          - successful
+          - throttled_calls
+          SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties
+        type: object
+      type: array
+    running:
+      IS_REQUIRED: false
+      PROPERTY_NAME: running
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running
+      TYPE_NAME: ""
+      description: |
+        An overview of currently running instances
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items
+        TYPE_NAME: Var2
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        properties:
+          MemberNames:
+            az: Az
+            instanceType: InstanceType
+            region: Region
+            running: Running
+          Properties:
+            az:
+              IS_REQUIRED: false
+              PROPERTY_NAME: az
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/az
+              TYPE_NAME: ""
+              type: string
+            instanceType:
+              IS_REQUIRED: false
+              PROPERTY_NAME: instanceType
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/instanceType
+              TYPE_NAME: ""
+              type: string
+            region:
+              IS_REQUIRED: false
+              PROPERTY_NAME: region
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/region
+              TYPE_NAME: ""
+              type: string
+            running:
+              IS_REQUIRED: false
+              PROPERTY_NAME: running
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/running
+              TYPE_NAME: ""
+              description: |
+                The number of currently running instances in this configuration
+              type: integer
+          SortedPropertyNames:
+          - az
+          - instanceType
+          - region
+          - running
+          SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties
+        type: object
+      type: array
+    terminationHealth:
+      IS_REQUIRED: false
+      PROPERTY_NAME: terminationHealth
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth
+      TYPE_NAME: ""
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items
+        TYPE_NAME: Var3
+        description: |
+          This is a list of summaries of instances which have terminated
+        properties:
+          MemberNames:
+            az: Az
+            clean_shutdown: Clean_Shutdown
+            instanceType: InstanceType
+            insufficient_capacity: Insufficient_Capacity
+            missing_ami: Missing_Ami
+            no_code: No_Code
+            region: Region
+            spot_kill: Spot_Kill
+            startup_failed: Startup_Failed
+            unknown_code: Unknown_Code
+            volume_limit_exceeded: Volume_Limit_Exceeded
+          Properties:
+            az:
+              IS_REQUIRED: false
+              PROPERTY_NAME: az
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/az
+              TYPE_NAME: ""
+              type: string
+            clean_shutdown:
+              IS_REQUIRED: false
+              PROPERTY_NAME: clean_shutdown
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/clean_shutdown
+              TYPE_NAME: ""
+              description: |
+                A count of the instances which were shutdown cleanty.  For the
+                purposes of this API, a clean shutdown is one which was initiated
+                by us.  This includes API shutdowns or workers ending themselves.
+                It does not mean the actual workload ran successfully, rather that
+                we chose to terminate it
+              type: integer
+            instanceType:
+              IS_REQUIRED: false
+              PROPERTY_NAME: instanceType
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/instanceType
+              TYPE_NAME: ""
+              type: string
+            insufficient_capacity:
+              IS_REQUIRED: false
+              PROPERTY_NAME: insufficient_capacity
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/insufficient_capacity
+              TYPE_NAME: ""
+              description: |
+                The number of instances which were terminated due to a lack of
+                capacity.  More than likely, this will always be zero because the
+                new spot service is now synchronous, so runInstances calls should
+                fail
+              type: integer
+            missing_ami:
+              IS_REQUIRED: false
+              PROPERTY_NAME: missing_ami
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/missing_ami
+              TYPE_NAME: ""
+              description: |
+                The number of instances which were terminated due to not being able
+                to find the AMI
+              type: integer
+            no_code:
+              IS_REQUIRED: false
+              PROPERTY_NAME: no_code
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/no_code
+              TYPE_NAME: ""
+              description: |
+                The number of terminations which we cannot find a code.  This means
+                we cannot determine whether this should be classified as a good or
+                bad outcome.  The specific reason is that the code which polls for
+                termination reason was not able to run before the EC2 API dropped
+                the instance from its database
+              type: integer
+            region:
+              IS_REQUIRED: false
+              PROPERTY_NAME: region
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/region
+              TYPE_NAME: ""
+              type: string
+            spot_kill:
+              IS_REQUIRED: false
+              PROPERTY_NAME: spot_kill
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/spot_kill
+              TYPE_NAME: ""
+              description: |
+                The number of instances which were killed by the spot service
+              type: integer
+            startup_failed:
+              IS_REQUIRED: false
+              PROPERTY_NAME: startup_failed
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/startup_failed
+              TYPE_NAME: ""
+              description: |
+                The number of instances which failed to start, either because of an
+                error on our side or on the EC2 side
+              type: integer
+            unknown_code:
+              IS_REQUIRED: false
+              PROPERTY_NAME: unknown_code
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/unknown_code
+              TYPE_NAME: ""
+              description: |
+                The number of terminations which have a code which this code does
+                not recognize
+              type: integer
+            volume_limit_exceeded:
+              IS_REQUIRED: false
+              PROPERTY_NAME: volume_limit_exceeded
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/volume_limit_exceeded
+              TYPE_NAME: ""
+              description: |
+                The number of instances which were terminated due to exceeding the
+                limit for number of ebs volumes
+              type: integer
+          SortedPropertyNames:
+          - az
+          - clean_shutdown
+          - instanceType
+          - insufficient_capacity
+          - missing_ami
+          - no_code
+          - region
+          - spot_kill
+          - startup_failed
+          - unknown_code
+          - volume_limit_exceeded
+          SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties
+        type: object
+      type: array
+  SortedPropertyNames:
+  - requestHealth
+  - running
+  - terminationHealth
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties
+title: Health of the EC2 account
+type: object
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items
+=========================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items
+TYPE_NAME: Var1
+description: |
+  This is a list of outcomes for a specific region, availability zone and
+  instance type.  These are calls to the EC2 runInstances method, which
+  is how we request instances.  If a call to this method is successful,
+  then we expect to get an instance to match
+properties:
+  MemberNames:
+    az: Az
+    configuration_issue: Configuration_Issue
+    failed: Failed
+    instanceType: InstanceType
+    insufficient_capacity: Insufficient_Capacity
+    limit_exceeded: Limit_Exceeded
+    region: Region
+    successful: Successful
+    throttled_calls: Throttled_Calls
+  Properties:
+    az:
+      IS_REQUIRED: false
+      PROPERTY_NAME: az
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/az
+      TYPE_NAME: ""
+      type: string
+    configuration_issue:
+      IS_REQUIRED: false
+      PROPERTY_NAME: configuration_issue
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/configuration_issue
+      TYPE_NAME: ""
+      description: The number of calls failed due to a misconfiguration of the worker
+        type.  Due to the large number of error codes the EC2 API might return, this
+        is a best effort categorization.  It covers codes which are like "Invalid%"
+        using SQL pattern mattching on the codes from https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html
+        It is not categorized by which field was invalid in this response
+      type: integer
+    failed:
+      IS_REQUIRED: false
+      PROPERTY_NAME: failed
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/failed
+      TYPE_NAME: ""
+      description: The total number of calls which failed, inrespective of why
+      type: integer
+    instanceType:
+      IS_REQUIRED: false
+      PROPERTY_NAME: instanceType
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/instanceType
+      TYPE_NAME: ""
+      type: string
+    insufficient_capacity:
+      IS_REQUIRED: false
+      PROPERTY_NAME: insufficient_capacity
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/insufficient_capacity
+      TYPE_NAME: ""
+      description: |
+        Number of runInstances calls which have failed because there aren't
+        enough hosts for the resources to be allocated.
+      type: integer
+    limit_exceeded:
+      IS_REQUIRED: false
+      PROPERTY_NAME: limit_exceeded
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/limit_exceeded
+      TYPE_NAME: ""
+      description: |
+        The number of calls which failed due to a limit being exceeded.
+        Due to the large number of error codes the EC2 API might return,
+        this is a best effort categorization.  It covers codes which are
+        like "%LimitExceeded" using SQL pattern mattching, but not
+        RequestLimitExceeded on the codes from
+        https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html
+        It is not categorized by which limit was exceeded in this response
+      type: integer
+    region:
+      IS_REQUIRED: false
+      PROPERTY_NAME: region
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/region
+      TYPE_NAME: ""
+      type: string
+    successful:
+      IS_REQUIRED: false
+      PROPERTY_NAME: successful
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/successful
+      TYPE_NAME: ""
+      description: |
+        The number of instances which have been requested successfully
+      type: integer
+    throttled_calls:
+      IS_REQUIRED: false
+      PROPERTY_NAME: throttled_calls
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/throttled_calls
+      TYPE_NAME: ""
+      description: |
+        Number of calls which have been throttled in this region.  These
+        are errors with the code RequestLimitExceeded.
+      type: integer
+  SortedPropertyNames:
+  - az
+  - configuration_issue
+  - failed
+  - instanceType
+  - insufficient_capacity
+  - limit_exceeded
+  - region
+  - successful
+  - throttled_calls
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties
+type: object
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items
+===================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items
+TYPE_NAME: Var2
+additionalProperties:
+  Boolean: false
+  Properties: null
+properties:
+  MemberNames:
+    az: Az
+    instanceType: InstanceType
+    region: Region
+    running: Running
+  Properties:
+    az:
+      IS_REQUIRED: false
+      PROPERTY_NAME: az
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/az
+      TYPE_NAME: ""
+      type: string
+    instanceType:
+      IS_REQUIRED: false
+      PROPERTY_NAME: instanceType
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/instanceType
+      TYPE_NAME: ""
+      type: string
+    region:
+      IS_REQUIRED: false
+      PROPERTY_NAME: region
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/region
+      TYPE_NAME: ""
+      type: string
+    running:
+      IS_REQUIRED: false
+      PROPERTY_NAME: running
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/running
+      TYPE_NAME: ""
+      description: |
+        The number of currently running instances in this configuration
+      type: integer
+  SortedPropertyNames:
+  - az
+  - instanceType
+  - region
+  - running
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties
+type: object
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items
+=============================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items
+TYPE_NAME: Var3
+description: |
+  This is a list of summaries of instances which have terminated
+properties:
+  MemberNames:
+    az: Az
+    clean_shutdown: Clean_Shutdown
+    instanceType: InstanceType
+    insufficient_capacity: Insufficient_Capacity
+    missing_ami: Missing_Ami
+    no_code: No_Code
+    region: Region
+    spot_kill: Spot_Kill
+    startup_failed: Startup_Failed
+    unknown_code: Unknown_Code
+    volume_limit_exceeded: Volume_Limit_Exceeded
+  Properties:
+    az:
+      IS_REQUIRED: false
+      PROPERTY_NAME: az
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/az
+      TYPE_NAME: ""
+      type: string
+    clean_shutdown:
+      IS_REQUIRED: false
+      PROPERTY_NAME: clean_shutdown
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/clean_shutdown
+      TYPE_NAME: ""
+      description: |
+        A count of the instances which were shutdown cleanty.  For the
+        purposes of this API, a clean shutdown is one which was initiated
+        by us.  This includes API shutdowns or workers ending themselves.
+        It does not mean the actual workload ran successfully, rather that
+        we chose to terminate it
+      type: integer
+    instanceType:
+      IS_REQUIRED: false
+      PROPERTY_NAME: instanceType
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/instanceType
+      TYPE_NAME: ""
+      type: string
+    insufficient_capacity:
+      IS_REQUIRED: false
+      PROPERTY_NAME: insufficient_capacity
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/insufficient_capacity
+      TYPE_NAME: ""
+      description: |
+        The number of instances which were terminated due to a lack of
+        capacity.  More than likely, this will always be zero because the
+        new spot service is now synchronous, so runInstances calls should
+        fail
+      type: integer
+    missing_ami:
+      IS_REQUIRED: false
+      PROPERTY_NAME: missing_ami
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/missing_ami
+      TYPE_NAME: ""
+      description: |
+        The number of instances which were terminated due to not being able
+        to find the AMI
+      type: integer
+    no_code:
+      IS_REQUIRED: false
+      PROPERTY_NAME: no_code
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/no_code
+      TYPE_NAME: ""
+      description: |
+        The number of terminations which we cannot find a code.  This means
+        we cannot determine whether this should be classified as a good or
+        bad outcome.  The specific reason is that the code which polls for
+        termination reason was not able to run before the EC2 API dropped
+        the instance from its database
+      type: integer
+    region:
+      IS_REQUIRED: false
+      PROPERTY_NAME: region
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/region
+      TYPE_NAME: ""
+      type: string
+    spot_kill:
+      IS_REQUIRED: false
+      PROPERTY_NAME: spot_kill
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/spot_kill
+      TYPE_NAME: ""
+      description: |
+        The number of instances which were killed by the spot service
+      type: integer
+    startup_failed:
+      IS_REQUIRED: false
+      PROPERTY_NAME: startup_failed
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/startup_failed
+      TYPE_NAME: ""
+      description: |
+        The number of instances which failed to start, either because of an
+        error on our side or on the EC2 side
+      type: integer
+    unknown_code:
+      IS_REQUIRED: false
+      PROPERTY_NAME: unknown_code
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/unknown_code
+      TYPE_NAME: ""
+      description: |
+        The number of terminations which have a code which this code does
+        not recognize
+      type: integer
+    volume_limit_exceeded:
+      IS_REQUIRED: false
+      PROPERTY_NAME: volume_limit_exceeded
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/volume_limit_exceeded
+      TYPE_NAME: ""
+      description: |
+        The number of instances which were terminated due to exceeding the
+        limit for number of ebs volumes
+      type: integer
+  SortedPropertyNames:
+  - az
+  - clean_shutdown
+  - instanceType
+  - insufficient_capacity
+  - missing_ami
+  - no_code
+  - region
+  - spot_kill
+  - startup_failed
+  - unknown_code
+  - volume_limit_exceeded
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties
+type: object
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/list-worker-types.json#
+=====================================================================
+$schema: http://json-schema.org/draft-04/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/list-worker-types.json#
+TYPE_NAME: ListOfWorkerTypes
+description: |
+  A list of names of worker types
+id: http://schemas.taskcluster.net/ec2-manager/v1/list-worker-types.json#
+items:
+  IS_REQUIRED: false
+  PROPERTY_NAME: ' entry'
+  SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/list-worker-types.json#/items
+  TYPE_NAME: Entry
+  type: string
+  uniqueItems: true
+title: List of worker types
+type: array
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#
+==================================================================
+$schema: http://json-schema.org/draft-04/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#
+TYPE_NAME: ListOfRestrictionsForPrices
+description: |
+  A list of prices for EC2
+id: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#
+items:
+  IS_REQUIRED: false
+  PROPERTY_NAME: ' entry'
+  SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items
+  TYPE_NAME: Entry2
+  additionalProperties:
+    Boolean: false
+    Properties: null
+  properties:
+    MemberNames:
+      key: Key
+      restriction: Restriction
+    Properties:
+      key:
+        IS_REQUIRED: false
+        PROPERTY_NAME: key
+        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/key
+        TYPE_NAME: ""
+        enum:
+        - instanceType
+        - region
+        - price
+        - minPrice
+        - maxPrice
+        - zone
+        - type
+        type: string
+      restriction:
+        IS_REQUIRED: false
+        PROPERTY_NAME: restriction
+        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction
+        TYPE_NAME: ""
+        oneOf:
+          Items:
+          - IS_REQUIRED: false
+            PROPERTY_NAME: ""
+            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[0]
+            TYPE_NAME: Var5
+            type: number
+          - IS_REQUIRED: false
+            PROPERTY_NAME: ""
+            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[1]
+            TYPE_NAME: Var6
+            type: string
+          - IS_REQUIRED: false
+            PROPERTY_NAME: ""
+            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]
+            TYPE_NAME: Var7
+            items:
+              IS_REQUIRED: false
+              PROPERTY_NAME: ' entry'
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]/items
+              TYPE_NAME: Entry3
+              type: string
+            type: array
+          SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf
+    SortedPropertyNames:
+    - key
+    - restriction
+    SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties
+  type: object
+title: List of restrictions for prices
+type: array
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items
+========================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ' entry'
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items
+TYPE_NAME: Entry2
+additionalProperties:
+  Boolean: false
+  Properties: null
+properties:
+  MemberNames:
+    key: Key
+    restriction: Restriction
+  Properties:
+    key:
+      IS_REQUIRED: false
+      PROPERTY_NAME: key
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/key
+      TYPE_NAME: ""
+      enum:
+      - instanceType
+      - region
+      - price
+      - minPrice
+      - maxPrice
+      - zone
+      - type
+      type: string
+    restriction:
+      IS_REQUIRED: false
+      PROPERTY_NAME: restriction
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction
+      TYPE_NAME: ""
+      oneOf:
+        Items:
+        - IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[0]
+          TYPE_NAME: Var5
+          type: number
+        - IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[1]
+          TYPE_NAME: Var6
+          type: string
+        - IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]
+          TYPE_NAME: Var7
+          items:
+            IS_REQUIRED: false
+            PROPERTY_NAME: ' entry'
+            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]/items
+            TYPE_NAME: Entry3
+            type: string
+          type: array
+        SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf
+  SortedPropertyNames:
+  - key
+  - restriction
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties
+type: object
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[0]
+========================================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[0]
+TYPE_NAME: Var5
+type: number
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[1]
+========================================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[1]
+TYPE_NAME: Var6
+type: string
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]
+========================================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]
+TYPE_NAME: Var7
+items:
+  IS_REQUIRED: false
+  PROPERTY_NAME: ' entry'
+  SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]/items
+  TYPE_NAME: Entry3
+  type: string
+type: array
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/prices.json#
+==========================================================
+$schema: http://json-schema.org/draft-04/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#
+TYPE_NAME: ListOfPrices
+description: |
+  A list of prices for EC2
+id: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#
+items:
+  IS_REQUIRED: false
+  PROPERTY_NAME: ' entry'
+  SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items
+  TYPE_NAME: Entry1
+  additionalProperties:
+    Boolean: false
+    Properties: null
+  properties:
+    MemberNames:
+      instanceType: InstanceType
+      price: Price
+      region: Region
+      type: Type
+      zone: Zone
+    Properties:
+      instanceType:
+        IS_REQUIRED: false
+        PROPERTY_NAME: instanceType
+        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/instanceType
+        TYPE_NAME: ""
+        description: EC2 instance type
+        type: string
+      price:
+        IS_REQUIRED: false
+        PROPERTY_NAME: price
+        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/price
+        TYPE_NAME: ""
+        description: Amount of dollars for an hour of usage for this configuration
+        type: number
+      region:
+        IS_REQUIRED: false
+        PROPERTY_NAME: region
+        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/region
+        TYPE_NAME: ""
+        description: EC2 region
+        type: string
+      type:
+        IS_REQUIRED: false
+        PROPERTY_NAME: type
+        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/type
+        TYPE_NAME: ""
+        enum:
+        - spot
+        - ondemand
+        type: string
+      zone:
+        IS_REQUIRED: false
+        PROPERTY_NAME: zone
+        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/zone
+        TYPE_NAME: ""
+        description: EC2 availability zone identifier
+        type: string
+    SortedPropertyNames:
+    - instanceType
+    - price
+    - region
+    - type
+    - zone
+    SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties
+  type: object
+title: List of prices
+type: array
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items
+================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ' entry'
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items
+TYPE_NAME: Entry1
+additionalProperties:
+  Boolean: false
+  Properties: null
+properties:
+  MemberNames:
+    instanceType: InstanceType
+    price: Price
+    region: Region
+    type: Type
+    zone: Zone
+  Properties:
+    instanceType:
+      IS_REQUIRED: false
+      PROPERTY_NAME: instanceType
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/instanceType
+      TYPE_NAME: ""
+      description: EC2 instance type
+      type: string
+    price:
+      IS_REQUIRED: false
+      PROPERTY_NAME: price
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/price
+      TYPE_NAME: ""
+      description: Amount of dollars for an hour of usage for this configuration
+      type: number
+    region:
+      IS_REQUIRED: false
+      PROPERTY_NAME: region
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/region
+      TYPE_NAME: ""
+      description: EC2 region
+      type: string
+    type:
+      IS_REQUIRED: false
+      PROPERTY_NAME: type
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/type
+      TYPE_NAME: ""
+      enum:
+      - spot
+      - ondemand
+      type: string
+    zone:
+      IS_REQUIRED: false
+      PROPERTY_NAME: zone
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/zone
+      TYPE_NAME: ""
+      description: EC2 availability zone identifier
+      type: string
+  SortedPropertyNames:
+  - instanceType
+  - price
+  - region
+  - type
+  - zone
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties
+type: object
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#
+========================================================================
+$schema: http://json-schema.org/draft-04/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#
+TYPE_NAME: MakeASpotRequest
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: |
+  Presented here are the fields that are absolutely 100% required to make a
+  spot request.  The `LaunchSpecification` property is an opaque datastructure
+  from EC2, however the fields which we know are absolutely required are
+  described
+id: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#
+properties:
+  MemberNames:
+    ClientToken: ClientToken
+    LaunchInfo: LaunchInfo
+    Region: Region
+    RequestType: RequestType
+    SpotPrice: SpotPrice
+  Properties:
+    ClientToken:
+      IS_REQUIRED: false
+      PROPERTY_NAME: ClientToken
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/ClientToken
+      TYPE_NAME: ""
+      description: |
+        A ClientToken string per the implementation requirements of the EC2 api.
+        This string must be no more than 64 characters of ASCII.  We restrict the
+        client tokens further to alphanumeric ASCII with the addition of the `-`
+        and `_` characters
+      maxLength: 64
+      minLength: 1
+      pattern: ^[a-zA-Z0-0_-]{1,64}
+      type: string
+    LaunchInfo:
+      IS_REQUIRED: false
+      PROPERTY_NAME: LaunchInfo
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo
+      TYPE_NAME: LaunchInfo
+      description: |
+        This is an EC2-Manager specific wrapping of the request body for the
+        upstream EC2 API.  Values from this are passed through verbatim.  A small
+        number of checks are done on the data before making the call, as well as
+        having some schema keys set to ensure certain values are either present
+        or absent
+      properties:
+        MemberNames:
+          ImageId: ImageID
+          InstanceType: InstanceType
+          KeyName: KeyName
+          SecurityGroups: SecurityGroups
+        Properties:
+          ImageId:
+            IS_REQUIRED: false
+            PROPERTY_NAME: ImageId
+            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/ImageId
+            TYPE_NAME: ""
+            description: |
+              This is the AMI Identifier for this spot request.  This image must
+              already exist and must be in the region of the request.  Note that
+              AMI images are per-region, so you must copy or regenerate the image
+              for each region.
+            type: string
+          InstanceType:
+            IS_REQUIRED: false
+            PROPERTY_NAME: InstanceType
+            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/InstanceType
+            TYPE_NAME: ""
+            description: |
+              The instance type to use for this spot request
+            type: string
+          KeyName:
+            IS_REQUIRED: false
+            PROPERTY_NAME: KeyName
+            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/KeyName
+            TYPE_NAME: ""
+            description: |
+              A valid EC2 KeyPair name.  The KeyPair must already exist
+            type: string
+          SecurityGroups:
+            IS_REQUIRED: false
+            PROPERTY_NAME: SecurityGroups
+            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/SecurityGroups
+            TYPE_NAME: ""
+            description: |
+              This is a list of the security groups this image will use.  These
+              groups must already exist in the region.
+            items:
+              IS_REQUIRED: false
+              PROPERTY_NAME: ""
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/SecurityGroups/items
+              TYPE_NAME: ""
+              type: string
+            type: array
+        SortedPropertyNames:
+        - ImageId
+        - InstanceType
+        - KeyName
+        - SecurityGroups
+        SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties
+      type: object
+    Region:
+      IS_REQUIRED: false
+      PROPERTY_NAME: Region
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/Region
+      TYPE_NAME: ""
+      description: |
+        The EC2 region in which this spot request is to be made.  This should be
+        the lower case api-identifier.  For example `us-east-1`
+      type: string
+    RequestType:
+      IS_REQUIRED: false
+      PROPERTY_NAME: RequestType
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/RequestType
+      TYPE_NAME: ""
+      description: |
+        Specify whether to use a spot request or an on-demand instance.  This is
+        not inferred from the SpotPrice being set or not because we want to allow
+        for the default behaviour for spot prices, which is to use the spot
+        market with a default price of the on-demand price
+      enum:
+      - spot
+      - on-demand
+      type: string
+    SpotPrice:
+      IS_REQUIRED: false
+      PROPERTY_NAME: SpotPrice
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/SpotPrice
+      TYPE_NAME: ""
+      description: |
+        The actual price of the bid.  This is passed directly to the EC2 api and
+        so should not have any internal multipliers (e.g. capacity or utility)
+        applied
+      type: number
+  SortedPropertyNames:
+  - ClientToken
+  - LaunchInfo
+  - Region
+  - RequestType
+  - SpotPrice
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties
+title: Make a spot request
+type: object
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo
+==============================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: LaunchInfo
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo
+TYPE_NAME: LaunchInfo
+description: |
+  This is an EC2-Manager specific wrapping of the request body for the
+  upstream EC2 API.  Values from this are passed through verbatim.  A small
+  number of checks are done on the data before making the call, as well as
+  having some schema keys set to ensure certain values are either present
+  or absent
+properties:
+  MemberNames:
+    ImageId: ImageID
+    InstanceType: InstanceType
+    KeyName: KeyName
+    SecurityGroups: SecurityGroups
+  Properties:
+    ImageId:
+      IS_REQUIRED: false
+      PROPERTY_NAME: ImageId
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/ImageId
+      TYPE_NAME: ""
+      description: |
+        This is the AMI Identifier for this spot request.  This image must
+        already exist and must be in the region of the request.  Note that
+        AMI images are per-region, so you must copy or regenerate the image
+        for each region.
+      type: string
+    InstanceType:
+      IS_REQUIRED: false
+      PROPERTY_NAME: InstanceType
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/InstanceType
+      TYPE_NAME: ""
+      description: |
+        The instance type to use for this spot request
+      type: string
+    KeyName:
+      IS_REQUIRED: false
+      PROPERTY_NAME: KeyName
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/KeyName
+      TYPE_NAME: ""
+      description: |
+        A valid EC2 KeyPair name.  The KeyPair must already exist
+      type: string
+    SecurityGroups:
+      IS_REQUIRED: false
+      PROPERTY_NAME: SecurityGroups
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/SecurityGroups
+      TYPE_NAME: ""
+      description: |
+        This is a list of the security groups this image will use.  These
+        groups must already exist in the region.
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/SecurityGroups/items
+        TYPE_NAME: ""
+        type: string
+      type: array
+  SortedPropertyNames:
+  - ImageId
+  - InstanceType
+  - KeyName
+  - SecurityGroups
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties
+type: object
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#
+=========================================================================
+$schema: http://json-schema.org/draft-04/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#
+TYPE_NAME: OverviewOfComputationalResources
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: |
+  Overview of computational resources for a given worker type
+id: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#
+properties:
+  MemberNames:
+    pending: Pending
+    running: Running
+  Properties:
+    pending:
+      IS_REQUIRED: false
+      PROPERTY_NAME: pending
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending
+      TYPE_NAME: ""
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items
+        TYPE_NAME: Var
+        properties:
+          MemberNames:
+            count: Count
+            instanceType: InstanceType
+            type: Type
+          Properties:
+            count:
+              IS_REQUIRED: false
+              PROPERTY_NAME: count
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/count
+              TYPE_NAME: ""
+              type: number
+            instanceType:
+              IS_REQUIRED: false
+              PROPERTY_NAME: instanceType
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/instanceType
+              TYPE_NAME: ""
+              type: string
+            type:
+              IS_REQUIRED: false
+              PROPERTY_NAME: type
+              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/type
+              TYPE_NAME: ""
+              enum:
+              - instance
+              type: string
+          SortedPropertyNames:
+          - count
+          - instanceType
+          - type
+          SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties
+        type: object
+      type: array
+    running:
+      IS_REQUIRED: false
+      PROPERTY_NAME: running
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/running
+      TYPE_NAME: ""
+      type: array
+  SortedPropertyNames:
+  - pending
+  - running
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties
+title: Overview of computational resources
+type: object
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items
+==================================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items
+TYPE_NAME: Var
+properties:
+  MemberNames:
+    count: Count
+    instanceType: InstanceType
+    type: Type
+  Properties:
+    count:
+      IS_REQUIRED: false
+      PROPERTY_NAME: count
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/count
+      TYPE_NAME: ""
+      type: number
+    instanceType:
+      IS_REQUIRED: false
+      PROPERTY_NAME: instanceType
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/instanceType
+      TYPE_NAME: ""
+      type: string
+    type:
+      IS_REQUIRED: false
+      PROPERTY_NAME: type
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/type
+      TYPE_NAME: ""
+      enum:
+      - instance
+      type: string
+  SortedPropertyNames:
+  - count
+  - instanceType
+  - type
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties
+type: object
+
+
+http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#
+=====================================================================
+$schema: http://json-schema.org/draft-04/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#
+TYPE_NAME: OverviewOfComputationalResources1
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: |
+  Overview of computational resources for a given worker type
+id: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#
+properties:
+  MemberNames:
+    instances: Instances
+  Properties:
+    instances:
+      IS_REQUIRED: false
+      PROPERTY_NAME: instances
+      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#/properties/instances
+      TYPE_NAME: ""
+      type: array
+  SortedPropertyNames:
+  - instances
+  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#/properties
+title: Overview of computational resources
+type: object
+
+
+https://references.taskcluster.net/github/v1/api.json
+=====================================================
 Version     = '0'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Taskcluster GitHub API Documentation'
@@ -6362,8 +8255,8 @@ title: Repository Response
 type: object
 
 
-http://references.taskcluster.net/github/v1/exchanges.json
-==========================================================
+https://references.taskcluster.net/github/v1/exchanges.json
+===========================================================
 Version         = '0'
 Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
 Title           = 'Taskcluster-Github Exchanges'
@@ -6776,8 +8669,8 @@ title: GitHub Release Message
 type: object
 
 
-http://references.taskcluster.net/hooks/v1/api.json
-===================================================
+https://references.taskcluster.net/hooks/v1/api.json
+====================================================
 Version     = '0'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Hooks API Documentation'
@@ -6808,7 +8701,7 @@ Entry 0     =
     Entry Args        = '[]'
     Entry Query        = '[]'
     Entry Name        = 'listHookGroups'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = ''
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json'
@@ -6821,7 +8714,7 @@ Entry 1     =
     Entry Args        = '[hookGroupId]'
     Entry Query        = '[]'
     Entry Name        = 'listHooks'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = ''
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json'
@@ -6835,7 +8728,7 @@ Entry 2     =
     Entry Args        = '[hookGroupId hookId]'
     Entry Query        = '[]'
     Entry Name        = 'hook'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = ''
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json'
@@ -6849,7 +8742,7 @@ Entry 3     =
     Entry Args        = '[hookGroupId hookId]'
     Entry Query        = '[]'
     Entry Name        = 'getHookStatus'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = ''
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/hook-status.json'
@@ -6877,7 +8770,7 @@ Entry 5     =
     Entry Args        = '[hookGroupId hookId]'
     Entry Query        = '[]'
     Entry Name        = 'createHook'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = 'All of:
 * hooks:modify-hook:<hookGroupId>/<hookId>
 * assume:hook-id:<hookGroupId>/<hookId>'
@@ -6897,7 +8790,7 @@ Entry 6     =
     Entry Args        = '[hookGroupId hookId]'
     Entry Query        = '[]'
     Entry Name        = 'updateHook'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = 'All of:
 * hooks:modify-hook:<hookGroupId>/<hookId>
 * assume:hook-id:<hookGroupId>/<hookId>'
@@ -6913,7 +8806,7 @@ Entry 7     =
     Entry Args        = '[hookGroupId hookId]'
     Entry Query        = '[]'
     Entry Name        = 'removeHook'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = 'hooks:modify-hook:<hookGroupId>/<hookId>'
     Entry Input       = ''
     Entry Output      = ''
@@ -6926,9 +8819,9 @@ Entry 8     =
     Entry Args        = '[hookGroupId hookId]'
     Entry Query        = '[]'
     Entry Name        = 'triggerHook'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = 'hooks:trigger-hook:<hookGroupId>/<hookId>'
-    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/trigger-context.json'
+    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/trigger-hook.json'
     Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/task-status.json'
     Entry Title       = 'Trigger a hook'
     Entry Description = 'This endpoint will trigger the creation of a task from a hook definition.
@@ -6943,7 +8836,7 @@ Entry 9     =
     Entry Args        = '[hookGroupId hookId]'
     Entry Query        = '[]'
     Entry Name        = 'getTriggerToken'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = 'hooks:get-trigger-token:<hookGroupId>/<hookId>'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json'
@@ -6957,7 +8850,7 @@ Entry 10    =
     Entry Args        = '[hookGroupId hookId]'
     Entry Query        = '[]'
     Entry Name        = 'resetTriggerToken'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = 'hooks:reset-trigger-token:<hookGroupId>/<hookId>'
     Entry Input       = ''
     Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json'
@@ -6971,9 +8864,9 @@ Entry 11    =
     Entry Args        = '[hookGroupId hookId token]'
     Entry Query        = '[]'
     Entry Name        = 'triggerHookWithToken'
-    Entry Stability   = 'experimental'
+    Entry Stability   = 'stable'
     Entry Scopes      = ''
-    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/trigger-context.json'
+    Entry Input       = 'http://schemas.taskcluster.net/hooks/v1/trigger-hook.json'
     Entry Output      = 'http://schemas.taskcluster.net/hooks/v1/task-status.json'
     Entry Title       = 'Trigger a hook with a token'
     Entry Description = 'This endpoint triggers a defined hook with a valid token.
@@ -9000,17 +10893,18 @@ title: Run Information
 type: object
 
 
-http://schemas.taskcluster.net/hooks/v1/trigger-context.json#
-=============================================================
+http://schemas.taskcluster.net/hooks/v1/trigger-hook.json#
+==========================================================
 $schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/trigger-context.json#
-TYPE_NAME: TriggerContext
+SOURCE_URL: http://schemas.taskcluster.net/hooks/v1/trigger-hook.json#
+TYPE_NAME: TriggerHookRequest
 description: |
-  Trigger context
-id: http://schemas.taskcluster.net/hooks/v1/trigger-context.json#
-title: trigger context
+  A request to trigger a hook.  The payload must be a JSON object, and is used as the context
+  for a JSON-e rendering of the hook's task template, as described in "Firing Hooks".
+id: http://schemas.taskcluster.net/hooks/v1/trigger-hook.json#
+title: Trigger Hook Request
 type: object
 
 
@@ -9047,8 +10941,8 @@ title: trigger token response
 type: object
 
 
-http://references.taskcluster.net/index/v1/api.json
-===================================================
+https://references.taskcluster.net/index/v1/api.json
+====================================================
 Version     = '0'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Task Index API Documentation'
@@ -9817,8 +11711,8 @@ title: Task
 type: object
 
 
-http://references.taskcluster.net/login/v1/api.json
-===================================================
+https://references.taskcluster.net/login/v1/api.json
+====================================================
 Version     = '0'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Login API'
@@ -10005,8 +11899,8 @@ title: Taskcluster Credentials
 type: object
 
 
-http://references.taskcluster.net/notify/v1/api.json
-====================================================
+https://references.taskcluster.net/notify/v1/api.json
+=====================================================
 Version     = '0'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Notification Service'
@@ -10638,8 +12532,8 @@ title: Post Pulse Message Request
 type: object
 
 
-http://references.taskcluster.net/purge-cache/v1/api.json
-=========================================================
+https://references.taskcluster.net/purge-cache/v1/api.json
+==========================================================
 Version     = '0'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Purge Cache API Documentation'
@@ -11040,8 +12934,8 @@ title: Purge Cache Requests Entry
 type: object
 
 
-http://references.taskcluster.net/purge-cache/v1/exchanges.json
-===============================================================
+https://references.taskcluster.net/purge-cache/v1/exchanges.json
+================================================================
 Version         = '0'
 Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
 Title           = 'Purge-Cache Exchanges'
@@ -11157,8 +13051,8 @@ title: Purge Cache Message
 type: object
 
 
-http://references.taskcluster.net/queue/v1/api.json
-===================================================
+https://references.taskcluster.net/queue/v1/api.json
+====================================================
 Version     = '0'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Queue API Documentation'
@@ -25298,8 +27192,8 @@ title: Worker-type Action
 type: object
 
 
-http://references.taskcluster.net/queue/v1/exchanges.json
-=========================================================
+https://references.taskcluster.net/queue/v1/exchanges.json
+==========================================================
 Version         = '0'
 Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
 Title           = 'Queue AMQP Exchanges'
@@ -29721,8 +31615,8 @@ title: Run Information
 type: object
 
 
-http://references.taskcluster.net/secrets/v1/api.json
-=====================================================
+https://references.taskcluster.net/secrets/v1/api.json
+======================================================
 Version     = '0'
 Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'TaskCluster Secrets API Documentation'
@@ -29920,8 +31814,8 @@ title: Secret
 type: object
 
 
-http://references.taskcluster.net/taskcluster-treeherder/v1/exchanges.json
-==========================================================================
+https://references.taskcluster.net/taskcluster-treeherder/v1/exchanges.json
+===========================================================================
 Version         = '0'
 Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
 Title           = 'Taskcluster-treeherder Pulse Exchange'
@@ -31882,1899 +33776,6 @@ required:
 - project
 - revision
 title: Github Pull Request
-type: object
-
-
-https://references.taskcluster.net/ec2-manager/v1/api.json
-==========================================================
-Version     = '0'
-Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
-Title       = 'EC2 Instance Manager'
-Description = 'A taskcluster service which manages EC2 instances.  This service does not understand any taskcluster concepts intrinsicaly other than using the name `workerType` to refer to a group of associated instances.  Unless you are working on building a provisioner for AWS, you almost certainly do not want to use this service'
-Base URL    = 'localhost:5555/v1'
-Entry 0     =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/worker-types'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'listWorkerTypes'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/list-worker-types.json#'
-    Entry Title       = 'See the list of worker types which are known to be managed'
-    Entry Description = 'This method is only for debugging the ec2-manager'
-Entry 1     =
-    Entry Type        = 'function'
-    Entry Method      = 'put'
-    Entry Route       = '/worker-types/<workerType>/instance'
-    Entry Args        = '[workerType]'
-    Entry Query        = '[]'
-    Entry Name        = 'runInstance'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = 'ec2-manager:manage-resources:<workerType>'
-    Entry Input       = 'http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#'
-    Entry Output      = ''
-    Entry Title       = 'Run an instance'
-    Entry Description = 'Request an instance of a worker type'
-Entry 2     =
-    Entry Type        = 'function'
-    Entry Method      = 'delete'
-    Entry Route       = '/worker-types/<workerType>/resources'
-    Entry Args        = '[workerType]'
-    Entry Query        = '[]'
-    Entry Name        = 'terminateWorkerType'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = 'ec2-manager:manage-resources:<workerType>'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Terminate all resources from a worker type'
-    Entry Description = 'Terminate all instances for this worker type'
-Entry 3     =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/worker-types/<workerType>/stats'
-    Entry Args        = '[workerType]'
-    Entry Query        = '[]'
-    Entry Name        = 'workerTypeStats'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#'
-    Entry Title       = 'Look up the resource stats for a workerType'
-    Entry Description = 'Return an object which has a generic state description. This only contains counts of instances'
-Entry 4     =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/worker-types/<workerType>/health'
-    Entry Args        = '[workerType]'
-    Entry Query        = '[]'
-    Entry Name        = 'workerTypeHealth'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/health.json#'
-    Entry Title       = 'Look up the resource health for a workerType'
-    Entry Description = 'Return a view of the health of a given worker type'
-Entry 5     =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/worker-types/<workerType>/errors'
-    Entry Args        = '[workerType]'
-    Entry Query        = '[]'
-    Entry Name        = 'workerTypeErrors'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/errors.json#'
-    Entry Title       = 'Look up the most recent errors of a workerType'
-    Entry Description = 'Return a list of the most recent errors encountered by a worker type'
-Entry 6     =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/worker-types/<workerType>/state'
-    Entry Args        = '[workerType]'
-    Entry Query        = '[]'
-    Entry Name        = 'workerTypeState'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#'
-    Entry Title       = 'Look up the resource state for a workerType'
-    Entry Description = 'Return state information for a given worker type'
-Entry 7     =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/key-pairs/<name>'
-    Entry Args        = '[name]'
-    Entry Query        = '[]'
-    Entry Name        = 'ensureKeyPair'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = 'ec2-manager:manage-key-pairs:<name>'
-    Entry Input       = 'http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#'
-    Entry Output      = ''
-    Entry Title       = 'Ensure a KeyPair for a given worker type exists'
-    Entry Description = 'Idempotently ensure that a keypair of a given name exists'
-Entry 8     =
-    Entry Type        = 'function'
-    Entry Method      = 'delete'
-    Entry Route       = '/key-pairs/<name>'
-    Entry Args        = '[name]'
-    Entry Query        = '[]'
-    Entry Name        = 'removeKeyPair'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = 'ec2-manager:manage-key-pairs:<name>'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Ensure a KeyPair for a given worker type does not exist'
-    Entry Description = 'Ensure that a keypair of a given name does not exist.'
-Entry 9     =
-    Entry Type        = 'function'
-    Entry Method      = 'delete'
-    Entry Route       = '/region/<region>/instance/<instanceId>'
-    Entry Args        = '[region instanceId]'
-    Entry Query        = '[]'
-    Entry Name        = 'terminateInstance'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = 'Any of:
-- ec2-manager:manage-instances:<region>:<instanceId>
-- ec2-manager:manage-resources:<workerType>'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Terminate an instance'
-    Entry Description = 'Terminate an instance in a specified region'
-Entry 10    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/prices'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'getPrices'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/prices.json#'
-    Entry Title       = 'Request prices for EC2'
-    Entry Description = 'Return a list of possible prices for EC2'
-Entry 11    =
-    Entry Type        = 'function'
-    Entry Method      = 'post'
-    Entry Route       = '/prices'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'getSpecificPrices'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = ''
-    Entry Input       = 'http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#'
-    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/prices.json#'
-    Entry Title       = 'Request prices for EC2'
-    Entry Description = 'Return a list of possible prices for EC2'
-Entry 12    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/health'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'getHealth'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/health.json#'
-    Entry Title       = 'Get EC2 account health metrics'
-    Entry Description = 'Give some basic stats on the health of our EC2 account'
-Entry 13    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/errors'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'getRecentErrors'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry Output      = 'http://schemas.taskcluster.net/ec2-manager/v1/errors.json#'
-    Entry Title       = 'Look up the most recent errors in the provisioner across all worker types'
-    Entry Description = 'Return a list of recent errors encountered'
-Entry 14    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/internal/regions'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'regions'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = 'ec2-manager:internals'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'See the list of regions managed by this ec2-manager'
-    Entry Description = 'This method is only for debugging the ec2-manager'
-Entry 15    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/internal/ami-usage'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'amiUsage'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = 'ec2-manager:internals'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'See the list of AMIs and their usage'
-    Entry Description = 'List AMIs and their usage by returning a list of objects in the form:
-{
-region: string
-  volumetype: string
-  lastused: timestamp
-}'
-Entry 16    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/internal/ebs-usage'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'ebsUsage'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = 'ec2-manager:internals'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'See the current EBS volume usage list'
-    Entry Description = 'Lists current EBS volume usage by returning a list of objects
-that are uniquely defined by {region, volumetype, state} in the form:
-{
-region: string,
-  volumetype: string,
-  state: string,
-  totalcount: integer,
-  totalgb: integer,
-  touched: timestamp (last time that information was updated),
-}'
-Entry 17    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/internal/db-pool-stats'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'dbpoolStats'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = 'ec2-manager:internals'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Statistics on the Database client pool'
-    Entry Description = 'This method is only for debugging the ec2-manager'
-Entry 18    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/internal/all-state'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'allState'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = 'ec2-manager:internals'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'List out the entire internal state'
-    Entry Description = 'This method is only for debugging the ec2-manager'
-Entry 19    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/internal/sqs-stats'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'sqsStats'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = 'ec2-manager:internals'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Statistics on the sqs queues'
-    Entry Description = 'This method is only for debugging the ec2-manager'
-Entry 20    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/internal/purge-queues'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'purgeQueues'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = 'ec2-manager:internals'
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Purge the SQS queues'
-    Entry Description = 'This method is only for debugging the ec2-manager'
-Entry 21    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/internal/api-reference'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'apiReference'
-    Entry Stability   = 'experimental'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'API Reference'
-    Entry Description = 'Generate an API reference for this service'
-Entry 22    =
-    Entry Type        = 'function'
-    Entry Method      = 'get'
-    Entry Route       = '/ping'
-    Entry Args        = '[]'
-    Entry Query        = '[]'
-    Entry Name        = 'ping'
-    Entry Stability   = 'stable'
-    Entry Scopes      = ''
-    Entry Input       = ''
-    Entry Output      = ''
-    Entry Title       = 'Ping Server'
-    Entry Description = 'Respond without doing anything.
-This endpoint is used to check that the service is up.'
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#
-===================================================================
-$schema: http://json-schema.org/draft-04/schema#
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#
-TYPE_NAME: SSHPublicKey
-additionalProperties:
-  Boolean: false
-  Properties: null
-id: http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#
-properties:
-  MemberNames:
-    pubkey: Pubkey
-  Properties:
-    pubkey:
-      IS_REQUIRED: false
-      PROPERTY_NAME: pubkey
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#/properties/pubkey
-      TYPE_NAME: ""
-      description: |
-        An OpenSSH format Public Key as described by tools.ietf.org/html/rfc4253#section-6.6
-      pattern: ^(ssh-\S*)\s*(\S*)\s*(.*)$
-      type: string
-  SortedPropertyNames:
-  - pubkey
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#/properties
-title: ssh public key
-type: object
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/errors.json#
-==========================================================
-$schema: http://json-schema.org/draft-04/schema#
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#
-TYPE_NAME: Errors
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: |
-  This method returns a list of errors.  It currently gives the error code only
-  because we're not sure of the security implications of exposing the full
-  message.  We do store complete error messages, but are figuring out how to
-  best expose them
-id: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#
-properties:
-  MemberNames:
-    errors: Errors
-  Properties:
-    errors:
-      IS_REQUIRED: false
-      PROPERTY_NAME: errors
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors
-      TYPE_NAME: ""
-      items:
-        IS_REQUIRED: false
-        PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items
-        TYPE_NAME: Var4
-        additionalProperties:
-          Boolean: false
-          Properties: null
-        properties:
-          MemberNames:
-            az: Az
-            code: Code
-            instanceType: InstanceType
-            message: Message
-            region: Region
-            time: Time
-            type: Type
-            workerType: WorkerType
-          Properties:
-            az:
-              IS_REQUIRED: false
-              PROPERTY_NAME: az
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/az
-              TYPE_NAME: ""
-              type: string
-            code:
-              IS_REQUIRED: false
-              PROPERTY_NAME: code
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/code
-              TYPE_NAME: ""
-              type: string
-            instanceType:
-              IS_REQUIRED: false
-              PROPERTY_NAME: instanceType
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/instanceType
-              TYPE_NAME: ""
-              type: string
-            message:
-              IS_REQUIRED: false
-              PROPERTY_NAME: message
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/message
-              TYPE_NAME: ""
-              type: string
-            region:
-              IS_REQUIRED: false
-              PROPERTY_NAME: region
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/region
-              TYPE_NAME: ""
-              type: string
-            time:
-              IS_REQUIRED: false
-              PROPERTY_NAME: time
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/time
-              TYPE_NAME: ""
-              format: date-time
-              type: string
-            type:
-              IS_REQUIRED: false
-              PROPERTY_NAME: type
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/type
-              TYPE_NAME: ""
-              enum:
-              - instance-request
-              - termination
-              type: string
-            workerType:
-              IS_REQUIRED: false
-              PROPERTY_NAME: workerType
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/workerType
-              TYPE_NAME: ""
-              type: string
-          SortedPropertyNames:
-          - az
-          - code
-          - instanceType
-          - message
-          - region
-          - time
-          - type
-          - workerType
-          SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties
-        type: object
-      type: array
-  SortedPropertyNames:
-  - errors
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties
-title: Errors
-type: object
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items
-==================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items
-TYPE_NAME: Var4
-additionalProperties:
-  Boolean: false
-  Properties: null
-properties:
-  MemberNames:
-    az: Az
-    code: Code
-    instanceType: InstanceType
-    message: Message
-    region: Region
-    time: Time
-    type: Type
-    workerType: WorkerType
-  Properties:
-    az:
-      IS_REQUIRED: false
-      PROPERTY_NAME: az
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/az
-      TYPE_NAME: ""
-      type: string
-    code:
-      IS_REQUIRED: false
-      PROPERTY_NAME: code
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/code
-      TYPE_NAME: ""
-      type: string
-    instanceType:
-      IS_REQUIRED: false
-      PROPERTY_NAME: instanceType
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/instanceType
-      TYPE_NAME: ""
-      type: string
-    message:
-      IS_REQUIRED: false
-      PROPERTY_NAME: message
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/message
-      TYPE_NAME: ""
-      type: string
-    region:
-      IS_REQUIRED: false
-      PROPERTY_NAME: region
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/region
-      TYPE_NAME: ""
-      type: string
-    time:
-      IS_REQUIRED: false
-      PROPERTY_NAME: time
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/time
-      TYPE_NAME: ""
-      format: date-time
-      type: string
-    type:
-      IS_REQUIRED: false
-      PROPERTY_NAME: type
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/type
-      TYPE_NAME: ""
-      enum:
-      - instance-request
-      - termination
-      type: string
-    workerType:
-      IS_REQUIRED: false
-      PROPERTY_NAME: workerType
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties/workerType
-      TYPE_NAME: ""
-      type: string
-  SortedPropertyNames:
-  - az
-  - code
-  - instanceType
-  - message
-  - region
-  - time
-  - type
-  - workerType
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/errors.json#/properties/errors/items/properties
-type: object
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/health.json#
-==========================================================
-$schema: http://json-schema.org/draft-04/schema#
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#
-TYPE_NAME: HealthOfTheEC2Account
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: |
-  This method provides a summary of the health in the EC2 account being managed.
-  Values for the overall account are provided, broken down by Region, Availability
-  Zone and Instance Type.
-id: http://schemas.taskcluster.net/ec2-manager/v1/health.json#
-properties:
-  MemberNames:
-    requestHealth: RequestHealth
-    running: Running
-    terminationHealth: TerminationHealth
-  Properties:
-    requestHealth:
-      IS_REQUIRED: false
-      PROPERTY_NAME: requestHealth
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth
-      TYPE_NAME: ""
-      items:
-        IS_REQUIRED: false
-        PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items
-        TYPE_NAME: Var1
-        description: |
-          This is a list of outcomes for a specific region, availability zone and
-          instance type.  These are calls to the EC2 runInstances method, which
-          is how we request instances.  If a call to this method is successful,
-          then we expect to get an instance to match
-        properties:
-          MemberNames:
-            az: Az
-            configuration_issue: Configuration_Issue
-            failed: Failed
-            instanceType: InstanceType
-            insufficient_capacity: Insufficient_Capacity
-            limit_exceeded: Limit_Exceeded
-            region: Region
-            successful: Successful
-            throttled_calls: Throttled_Calls
-          Properties:
-            az:
-              IS_REQUIRED: false
-              PROPERTY_NAME: az
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/az
-              TYPE_NAME: ""
-              type: string
-            configuration_issue:
-              IS_REQUIRED: false
-              PROPERTY_NAME: configuration_issue
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/configuration_issue
-              TYPE_NAME: ""
-              description: The number of calls failed due to a misconfiguration of
-                the worker type.  Due to the large number of error codes the EC2 API
-                might return, this is a best effort categorization.  It covers codes
-                which are like "Invalid%" using SQL pattern mattching on the codes
-                from https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html
-                It is not categorized by which field was invalid in this response
-              type: integer
-            failed:
-              IS_REQUIRED: false
-              PROPERTY_NAME: failed
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/failed
-              TYPE_NAME: ""
-              description: The total number of calls which failed, inrespective of
-                why
-              type: integer
-            instanceType:
-              IS_REQUIRED: false
-              PROPERTY_NAME: instanceType
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/instanceType
-              TYPE_NAME: ""
-              type: string
-            insufficient_capacity:
-              IS_REQUIRED: false
-              PROPERTY_NAME: insufficient_capacity
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/insufficient_capacity
-              TYPE_NAME: ""
-              description: |
-                Number of runInstances calls which have failed because there aren't
-                enough hosts for the resources to be allocated.
-              type: integer
-            limit_exceeded:
-              IS_REQUIRED: false
-              PROPERTY_NAME: limit_exceeded
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/limit_exceeded
-              TYPE_NAME: ""
-              description: |
-                The number of calls which failed due to a limit being exceeded.
-                Due to the large number of error codes the EC2 API might return,
-                this is a best effort categorization.  It covers codes which are
-                like "%LimitExceeded" using SQL pattern mattching, but not
-                RequestLimitExceeded on the codes from
-                https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html
-                It is not categorized by which limit was exceeded in this response
-              type: integer
-            region:
-              IS_REQUIRED: false
-              PROPERTY_NAME: region
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/region
-              TYPE_NAME: ""
-              type: string
-            successful:
-              IS_REQUIRED: false
-              PROPERTY_NAME: successful
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/successful
-              TYPE_NAME: ""
-              description: |
-                The number of instances which have been requested successfully
-              type: integer
-            throttled_calls:
-              IS_REQUIRED: false
-              PROPERTY_NAME: throttled_calls
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/throttled_calls
-              TYPE_NAME: ""
-              description: |
-                Number of calls which have been throttled in this region.  These
-                are errors with the code RequestLimitExceeded.
-              type: integer
-          SortedPropertyNames:
-          - az
-          - configuration_issue
-          - failed
-          - instanceType
-          - insufficient_capacity
-          - limit_exceeded
-          - region
-          - successful
-          - throttled_calls
-          SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties
-        type: object
-      type: array
-    running:
-      IS_REQUIRED: false
-      PROPERTY_NAME: running
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running
-      TYPE_NAME: ""
-      description: |
-        An overview of currently running instances
-      items:
-        IS_REQUIRED: false
-        PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items
-        TYPE_NAME: Var2
-        additionalProperties:
-          Boolean: false
-          Properties: null
-        properties:
-          MemberNames:
-            az: Az
-            instanceType: InstanceType
-            region: Region
-            running: Running
-          Properties:
-            az:
-              IS_REQUIRED: false
-              PROPERTY_NAME: az
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/az
-              TYPE_NAME: ""
-              type: string
-            instanceType:
-              IS_REQUIRED: false
-              PROPERTY_NAME: instanceType
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/instanceType
-              TYPE_NAME: ""
-              type: string
-            region:
-              IS_REQUIRED: false
-              PROPERTY_NAME: region
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/region
-              TYPE_NAME: ""
-              type: string
-            running:
-              IS_REQUIRED: false
-              PROPERTY_NAME: running
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/running
-              TYPE_NAME: ""
-              description: |
-                The number of currently running instances in this configuration
-              type: integer
-          SortedPropertyNames:
-          - az
-          - instanceType
-          - region
-          - running
-          SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties
-        type: object
-      type: array
-    terminationHealth:
-      IS_REQUIRED: false
-      PROPERTY_NAME: terminationHealth
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth
-      TYPE_NAME: ""
-      items:
-        IS_REQUIRED: false
-        PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items
-        TYPE_NAME: Var3
-        description: |
-          This is a list of summaries of instances which have terminated
-        properties:
-          MemberNames:
-            az: Az
-            clean_shutdown: Clean_Shutdown
-            instanceType: InstanceType
-            insufficient_capacity: Insufficient_Capacity
-            missing_ami: Missing_Ami
-            no_code: No_Code
-            region: Region
-            spot_kill: Spot_Kill
-            startup_failed: Startup_Failed
-            unknown_code: Unknown_Code
-            volume_limit_exceeded: Volume_Limit_Exceeded
-          Properties:
-            az:
-              IS_REQUIRED: false
-              PROPERTY_NAME: az
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/az
-              TYPE_NAME: ""
-              type: string
-            clean_shutdown:
-              IS_REQUIRED: false
-              PROPERTY_NAME: clean_shutdown
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/clean_shutdown
-              TYPE_NAME: ""
-              description: |
-                A count of the instances which were shutdown cleanty.  For the
-                purposes of this API, a clean shutdown is one which was initiated
-                by us.  This includes API shutdowns or workers ending themselves.
-                It does not mean the actual workload ran successfully, rather that
-                we chose to terminate it
-              type: integer
-            instanceType:
-              IS_REQUIRED: false
-              PROPERTY_NAME: instanceType
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/instanceType
-              TYPE_NAME: ""
-              type: string
-            insufficient_capacity:
-              IS_REQUIRED: false
-              PROPERTY_NAME: insufficient_capacity
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/insufficient_capacity
-              TYPE_NAME: ""
-              description: |
-                The number of instances which were terminated due to a lack of
-                capacity.  More than likely, this will always be zero because the
-                new spot service is now synchronous, so runInstances calls should
-                fail
-              type: integer
-            missing_ami:
-              IS_REQUIRED: false
-              PROPERTY_NAME: missing_ami
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/missing_ami
-              TYPE_NAME: ""
-              description: |
-                The number of instances which were terminated due to not being able
-                to find the AMI
-              type: integer
-            no_code:
-              IS_REQUIRED: false
-              PROPERTY_NAME: no_code
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/no_code
-              TYPE_NAME: ""
-              description: |
-                The number of terminations which we cannot find a code.  This means
-                we cannot determine whether this should be classified as a good or
-                bad outcome.  The specific reason is that the code which polls for
-                termination reason was not able to run before the EC2 API dropped
-                the instance from its database
-              type: integer
-            region:
-              IS_REQUIRED: false
-              PROPERTY_NAME: region
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/region
-              TYPE_NAME: ""
-              type: string
-            spot_kill:
-              IS_REQUIRED: false
-              PROPERTY_NAME: spot_kill
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/spot_kill
-              TYPE_NAME: ""
-              description: |
-                The number of instances which were killed by the spot service
-              type: integer
-            startup_failed:
-              IS_REQUIRED: false
-              PROPERTY_NAME: startup_failed
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/startup_failed
-              TYPE_NAME: ""
-              description: |
-                The number of instances which failed to start, either because of an
-                error on our side or on the EC2 side
-              type: integer
-            unknown_code:
-              IS_REQUIRED: false
-              PROPERTY_NAME: unknown_code
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/unknown_code
-              TYPE_NAME: ""
-              description: |
-                The number of terminations which have a code which this code does
-                not recognize
-              type: integer
-            volume_limit_exceeded:
-              IS_REQUIRED: false
-              PROPERTY_NAME: volume_limit_exceeded
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/volume_limit_exceeded
-              TYPE_NAME: ""
-              description: |
-                The number of instances which were terminated due to exceeding the
-                limit for number of ebs volumes
-              type: integer
-          SortedPropertyNames:
-          - az
-          - clean_shutdown
-          - instanceType
-          - insufficient_capacity
-          - missing_ami
-          - no_code
-          - region
-          - spot_kill
-          - startup_failed
-          - unknown_code
-          - volume_limit_exceeded
-          SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties
-        type: object
-      type: array
-  SortedPropertyNames:
-  - requestHealth
-  - running
-  - terminationHealth
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties
-title: Health of the EC2 account
-type: object
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items
-=========================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items
-TYPE_NAME: Var1
-description: |
-  This is a list of outcomes for a specific region, availability zone and
-  instance type.  These are calls to the EC2 runInstances method, which
-  is how we request instances.  If a call to this method is successful,
-  then we expect to get an instance to match
-properties:
-  MemberNames:
-    az: Az
-    configuration_issue: Configuration_Issue
-    failed: Failed
-    instanceType: InstanceType
-    insufficient_capacity: Insufficient_Capacity
-    limit_exceeded: Limit_Exceeded
-    region: Region
-    successful: Successful
-    throttled_calls: Throttled_Calls
-  Properties:
-    az:
-      IS_REQUIRED: false
-      PROPERTY_NAME: az
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/az
-      TYPE_NAME: ""
-      type: string
-    configuration_issue:
-      IS_REQUIRED: false
-      PROPERTY_NAME: configuration_issue
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/configuration_issue
-      TYPE_NAME: ""
-      description: The number of calls failed due to a misconfiguration of the worker
-        type.  Due to the large number of error codes the EC2 API might return, this
-        is a best effort categorization.  It covers codes which are like "Invalid%"
-        using SQL pattern mattching on the codes from https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html
-        It is not categorized by which field was invalid in this response
-      type: integer
-    failed:
-      IS_REQUIRED: false
-      PROPERTY_NAME: failed
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/failed
-      TYPE_NAME: ""
-      description: The total number of calls which failed, inrespective of why
-      type: integer
-    instanceType:
-      IS_REQUIRED: false
-      PROPERTY_NAME: instanceType
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/instanceType
-      TYPE_NAME: ""
-      type: string
-    insufficient_capacity:
-      IS_REQUIRED: false
-      PROPERTY_NAME: insufficient_capacity
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/insufficient_capacity
-      TYPE_NAME: ""
-      description: |
-        Number of runInstances calls which have failed because there aren't
-        enough hosts for the resources to be allocated.
-      type: integer
-    limit_exceeded:
-      IS_REQUIRED: false
-      PROPERTY_NAME: limit_exceeded
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/limit_exceeded
-      TYPE_NAME: ""
-      description: |
-        The number of calls which failed due to a limit being exceeded.
-        Due to the large number of error codes the EC2 API might return,
-        this is a best effort categorization.  It covers codes which are
-        like "%LimitExceeded" using SQL pattern mattching, but not
-        RequestLimitExceeded on the codes from
-        https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html
-        It is not categorized by which limit was exceeded in this response
-      type: integer
-    region:
-      IS_REQUIRED: false
-      PROPERTY_NAME: region
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/region
-      TYPE_NAME: ""
-      type: string
-    successful:
-      IS_REQUIRED: false
-      PROPERTY_NAME: successful
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/successful
-      TYPE_NAME: ""
-      description: |
-        The number of instances which have been requested successfully
-      type: integer
-    throttled_calls:
-      IS_REQUIRED: false
-      PROPERTY_NAME: throttled_calls
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/throttled_calls
-      TYPE_NAME: ""
-      description: |
-        Number of calls which have been throttled in this region.  These
-        are errors with the code RequestLimitExceeded.
-      type: integer
-  SortedPropertyNames:
-  - az
-  - configuration_issue
-  - failed
-  - instanceType
-  - insufficient_capacity
-  - limit_exceeded
-  - region
-  - successful
-  - throttled_calls
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties
-type: object
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items
-===================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items
-TYPE_NAME: Var2
-additionalProperties:
-  Boolean: false
-  Properties: null
-properties:
-  MemberNames:
-    az: Az
-    instanceType: InstanceType
-    region: Region
-    running: Running
-  Properties:
-    az:
-      IS_REQUIRED: false
-      PROPERTY_NAME: az
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/az
-      TYPE_NAME: ""
-      type: string
-    instanceType:
-      IS_REQUIRED: false
-      PROPERTY_NAME: instanceType
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/instanceType
-      TYPE_NAME: ""
-      type: string
-    region:
-      IS_REQUIRED: false
-      PROPERTY_NAME: region
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/region
-      TYPE_NAME: ""
-      type: string
-    running:
-      IS_REQUIRED: false
-      PROPERTY_NAME: running
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/running
-      TYPE_NAME: ""
-      description: |
-        The number of currently running instances in this configuration
-      type: integer
-  SortedPropertyNames:
-  - az
-  - instanceType
-  - region
-  - running
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties
-type: object
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items
-=============================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items
-TYPE_NAME: Var3
-description: |
-  This is a list of summaries of instances which have terminated
-properties:
-  MemberNames:
-    az: Az
-    clean_shutdown: Clean_Shutdown
-    instanceType: InstanceType
-    insufficient_capacity: Insufficient_Capacity
-    missing_ami: Missing_Ami
-    no_code: No_Code
-    region: Region
-    spot_kill: Spot_Kill
-    startup_failed: Startup_Failed
-    unknown_code: Unknown_Code
-    volume_limit_exceeded: Volume_Limit_Exceeded
-  Properties:
-    az:
-      IS_REQUIRED: false
-      PROPERTY_NAME: az
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/az
-      TYPE_NAME: ""
-      type: string
-    clean_shutdown:
-      IS_REQUIRED: false
-      PROPERTY_NAME: clean_shutdown
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/clean_shutdown
-      TYPE_NAME: ""
-      description: |
-        A count of the instances which were shutdown cleanty.  For the
-        purposes of this API, a clean shutdown is one which was initiated
-        by us.  This includes API shutdowns or workers ending themselves.
-        It does not mean the actual workload ran successfully, rather that
-        we chose to terminate it
-      type: integer
-    instanceType:
-      IS_REQUIRED: false
-      PROPERTY_NAME: instanceType
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/instanceType
-      TYPE_NAME: ""
-      type: string
-    insufficient_capacity:
-      IS_REQUIRED: false
-      PROPERTY_NAME: insufficient_capacity
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/insufficient_capacity
-      TYPE_NAME: ""
-      description: |
-        The number of instances which were terminated due to a lack of
-        capacity.  More than likely, this will always be zero because the
-        new spot service is now synchronous, so runInstances calls should
-        fail
-      type: integer
-    missing_ami:
-      IS_REQUIRED: false
-      PROPERTY_NAME: missing_ami
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/missing_ami
-      TYPE_NAME: ""
-      description: |
-        The number of instances which were terminated due to not being able
-        to find the AMI
-      type: integer
-    no_code:
-      IS_REQUIRED: false
-      PROPERTY_NAME: no_code
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/no_code
-      TYPE_NAME: ""
-      description: |
-        The number of terminations which we cannot find a code.  This means
-        we cannot determine whether this should be classified as a good or
-        bad outcome.  The specific reason is that the code which polls for
-        termination reason was not able to run before the EC2 API dropped
-        the instance from its database
-      type: integer
-    region:
-      IS_REQUIRED: false
-      PROPERTY_NAME: region
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/region
-      TYPE_NAME: ""
-      type: string
-    spot_kill:
-      IS_REQUIRED: false
-      PROPERTY_NAME: spot_kill
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/spot_kill
-      TYPE_NAME: ""
-      description: |
-        The number of instances which were killed by the spot service
-      type: integer
-    startup_failed:
-      IS_REQUIRED: false
-      PROPERTY_NAME: startup_failed
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/startup_failed
-      TYPE_NAME: ""
-      description: |
-        The number of instances which failed to start, either because of an
-        error on our side or on the EC2 side
-      type: integer
-    unknown_code:
-      IS_REQUIRED: false
-      PROPERTY_NAME: unknown_code
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/unknown_code
-      TYPE_NAME: ""
-      description: |
-        The number of terminations which have a code which this code does
-        not recognize
-      type: integer
-    volume_limit_exceeded:
-      IS_REQUIRED: false
-      PROPERTY_NAME: volume_limit_exceeded
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/volume_limit_exceeded
-      TYPE_NAME: ""
-      description: |
-        The number of instances which were terminated due to exceeding the
-        limit for number of ebs volumes
-      type: integer
-  SortedPropertyNames:
-  - az
-  - clean_shutdown
-  - instanceType
-  - insufficient_capacity
-  - missing_ami
-  - no_code
-  - region
-  - spot_kill
-  - startup_failed
-  - unknown_code
-  - volume_limit_exceeded
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties
-type: object
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/list-worker-types.json#
-=====================================================================
-$schema: http://json-schema.org/draft-04/schema#
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/list-worker-types.json#
-TYPE_NAME: ListOfWorkerTypes
-description: |
-  A list of names of worker types
-id: http://schemas.taskcluster.net/ec2-manager/v1/list-worker-types.json#
-items:
-  IS_REQUIRED: false
-  PROPERTY_NAME: ' entry'
-  SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/list-worker-types.json#/items
-  TYPE_NAME: Entry
-  type: string
-  uniqueItems: true
-title: List of worker types
-type: array
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#
-==================================================================
-$schema: http://json-schema.org/draft-04/schema#
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#
-TYPE_NAME: ListOfRestrictionsForPrices
-description: |
-  A list of prices for EC2
-id: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#
-items:
-  IS_REQUIRED: false
-  PROPERTY_NAME: ' entry'
-  SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items
-  TYPE_NAME: Entry2
-  additionalProperties:
-    Boolean: false
-    Properties: null
-  properties:
-    MemberNames:
-      key: Key
-      restriction: Restriction
-    Properties:
-      key:
-        IS_REQUIRED: false
-        PROPERTY_NAME: key
-        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/key
-        TYPE_NAME: ""
-        enum:
-        - instanceType
-        - region
-        - price
-        - minPrice
-        - maxPrice
-        - zone
-        - type
-        type: string
-      restriction:
-        IS_REQUIRED: false
-        PROPERTY_NAME: restriction
-        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction
-        TYPE_NAME: ""
-        oneOf:
-          Items:
-          - IS_REQUIRED: false
-            PROPERTY_NAME: ""
-            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[0]
-            TYPE_NAME: Var5
-            type: number
-          - IS_REQUIRED: false
-            PROPERTY_NAME: ""
-            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[1]
-            TYPE_NAME: Var6
-            type: string
-          - IS_REQUIRED: false
-            PROPERTY_NAME: ""
-            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]
-            TYPE_NAME: Var7
-            items:
-              IS_REQUIRED: false
-              PROPERTY_NAME: ' entry'
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]/items
-              TYPE_NAME: Entry3
-              type: string
-            type: array
-          SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf
-    SortedPropertyNames:
-    - key
-    - restriction
-    SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties
-  type: object
-title: List of restrictions for prices
-type: array
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items
-========================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ' entry'
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items
-TYPE_NAME: Entry2
-additionalProperties:
-  Boolean: false
-  Properties: null
-properties:
-  MemberNames:
-    key: Key
-    restriction: Restriction
-  Properties:
-    key:
-      IS_REQUIRED: false
-      PROPERTY_NAME: key
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/key
-      TYPE_NAME: ""
-      enum:
-      - instanceType
-      - region
-      - price
-      - minPrice
-      - maxPrice
-      - zone
-      - type
-      type: string
-    restriction:
-      IS_REQUIRED: false
-      PROPERTY_NAME: restriction
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction
-      TYPE_NAME: ""
-      oneOf:
-        Items:
-        - IS_REQUIRED: false
-          PROPERTY_NAME: ""
-          SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[0]
-          TYPE_NAME: Var5
-          type: number
-        - IS_REQUIRED: false
-          PROPERTY_NAME: ""
-          SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[1]
-          TYPE_NAME: Var6
-          type: string
-        - IS_REQUIRED: false
-          PROPERTY_NAME: ""
-          SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]
-          TYPE_NAME: Var7
-          items:
-            IS_REQUIRED: false
-            PROPERTY_NAME: ' entry'
-            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]/items
-            TYPE_NAME: Entry3
-            type: string
-          type: array
-        SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf
-  SortedPropertyNames:
-  - key
-  - restriction
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties
-type: object
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[0]
-========================================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[0]
-TYPE_NAME: Var5
-type: number
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[1]
-========================================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[1]
-TYPE_NAME: Var6
-type: string
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]
-========================================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]
-TYPE_NAME: Var7
-items:
-  IS_REQUIRED: false
-  PROPERTY_NAME: ' entry'
-  SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#/items/properties/restriction/oneOf[2]/items
-  TYPE_NAME: Entry3
-  type: string
-type: array
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/prices.json#
-==========================================================
-$schema: http://json-schema.org/draft-04/schema#
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#
-TYPE_NAME: ListOfPrices
-description: |
-  A list of prices for EC2
-id: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#
-items:
-  IS_REQUIRED: false
-  PROPERTY_NAME: ' entry'
-  SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items
-  TYPE_NAME: Entry1
-  additionalProperties:
-    Boolean: false
-    Properties: null
-  properties:
-    MemberNames:
-      instanceType: InstanceType
-      price: Price
-      region: Region
-      type: Type
-      zone: Zone
-    Properties:
-      instanceType:
-        IS_REQUIRED: false
-        PROPERTY_NAME: instanceType
-        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/instanceType
-        TYPE_NAME: ""
-        description: EC2 instance type
-        type: string
-      price:
-        IS_REQUIRED: false
-        PROPERTY_NAME: price
-        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/price
-        TYPE_NAME: ""
-        description: Amount of dollars for an hour of usage for this configuration
-        type: number
-      region:
-        IS_REQUIRED: false
-        PROPERTY_NAME: region
-        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/region
-        TYPE_NAME: ""
-        description: EC2 region
-        type: string
-      type:
-        IS_REQUIRED: false
-        PROPERTY_NAME: type
-        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/type
-        TYPE_NAME: ""
-        enum:
-        - spot
-        - ondemand
-        type: string
-      zone:
-        IS_REQUIRED: false
-        PROPERTY_NAME: zone
-        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/zone
-        TYPE_NAME: ""
-        description: EC2 availability zone identifier
-        type: string
-    SortedPropertyNames:
-    - instanceType
-    - price
-    - region
-    - type
-    - zone
-    SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties
-  type: object
-title: List of prices
-type: array
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items
-================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ' entry'
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items
-TYPE_NAME: Entry1
-additionalProperties:
-  Boolean: false
-  Properties: null
-properties:
-  MemberNames:
-    instanceType: InstanceType
-    price: Price
-    region: Region
-    type: Type
-    zone: Zone
-  Properties:
-    instanceType:
-      IS_REQUIRED: false
-      PROPERTY_NAME: instanceType
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/instanceType
-      TYPE_NAME: ""
-      description: EC2 instance type
-      type: string
-    price:
-      IS_REQUIRED: false
-      PROPERTY_NAME: price
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/price
-      TYPE_NAME: ""
-      description: Amount of dollars for an hour of usage for this configuration
-      type: number
-    region:
-      IS_REQUIRED: false
-      PROPERTY_NAME: region
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/region
-      TYPE_NAME: ""
-      description: EC2 region
-      type: string
-    type:
-      IS_REQUIRED: false
-      PROPERTY_NAME: type
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/type
-      TYPE_NAME: ""
-      enum:
-      - spot
-      - ondemand
-      type: string
-    zone:
-      IS_REQUIRED: false
-      PROPERTY_NAME: zone
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties/zone
-      TYPE_NAME: ""
-      description: EC2 availability zone identifier
-      type: string
-  SortedPropertyNames:
-  - instanceType
-  - price
-  - region
-  - type
-  - zone
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/prices.json#/items/properties
-type: object
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#
-========================================================================
-$schema: http://json-schema.org/draft-04/schema#
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#
-TYPE_NAME: MakeASpotRequest
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: |
-  Presented here are the fields that are absolutely 100% required to make a
-  spot request.  The `LaunchSpecification` property is an opaque datastructure
-  from EC2, however the fields which we know are absolutely required are
-  described
-id: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#
-properties:
-  MemberNames:
-    ClientToken: ClientToken
-    LaunchInfo: LaunchInfo
-    Region: Region
-    RequestType: RequestType
-    SpotPrice: SpotPrice
-  Properties:
-    ClientToken:
-      IS_REQUIRED: false
-      PROPERTY_NAME: ClientToken
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/ClientToken
-      TYPE_NAME: ""
-      description: |
-        A ClientToken string per the implementation requirements of the EC2 api.
-        This string must be no more than 64 characters of ASCII.  We restrict the
-        client tokens further to alphanumeric ASCII with the addition of the `-`
-        and `_` characters
-      maxLength: 64
-      minLength: 1
-      pattern: ^[a-zA-Z0-0_-]{1,64}
-      type: string
-    LaunchInfo:
-      IS_REQUIRED: false
-      PROPERTY_NAME: LaunchInfo
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo
-      TYPE_NAME: LaunchInfo
-      description: |
-        This is an EC2-Manager specific wrapping of the request body for the
-        upstream EC2 API.  Values from this are passed through verbatim.  A small
-        number of checks are done on the data before making the call, as well as
-        having some schema keys set to ensure certain values are either present
-        or absent
-      properties:
-        MemberNames:
-          ImageId: ImageID
-          InstanceType: InstanceType
-          KeyName: KeyName
-          SecurityGroups: SecurityGroups
-        Properties:
-          ImageId:
-            IS_REQUIRED: false
-            PROPERTY_NAME: ImageId
-            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/ImageId
-            TYPE_NAME: ""
-            description: |
-              This is the AMI Identifier for this spot request.  This image must
-              already exist and must be in the region of the request.  Note that
-              AMI images are per-region, so you must copy or regenerate the image
-              for each region.
-            type: string
-          InstanceType:
-            IS_REQUIRED: false
-            PROPERTY_NAME: InstanceType
-            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/InstanceType
-            TYPE_NAME: ""
-            description: |
-              The instance type to use for this spot request
-            type: string
-          KeyName:
-            IS_REQUIRED: false
-            PROPERTY_NAME: KeyName
-            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/KeyName
-            TYPE_NAME: ""
-            description: |
-              A valid EC2 KeyPair name.  The KeyPair must already exist
-            type: string
-          SecurityGroups:
-            IS_REQUIRED: false
-            PROPERTY_NAME: SecurityGroups
-            SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/SecurityGroups
-            TYPE_NAME: ""
-            description: |
-              This is a list of the security groups this image will use.  These
-              groups must already exist in the region.
-            items:
-              IS_REQUIRED: false
-              PROPERTY_NAME: ""
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/SecurityGroups/items
-              TYPE_NAME: ""
-              type: string
-            type: array
-        SortedPropertyNames:
-        - ImageId
-        - InstanceType
-        - KeyName
-        - SecurityGroups
-        SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties
-      type: object
-    Region:
-      IS_REQUIRED: false
-      PROPERTY_NAME: Region
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/Region
-      TYPE_NAME: ""
-      description: |
-        The EC2 region in which this spot request is to be made.  This should be
-        the lower case api-identifier.  For example `us-east-1`
-      type: string
-    RequestType:
-      IS_REQUIRED: false
-      PROPERTY_NAME: RequestType
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/RequestType
-      TYPE_NAME: ""
-      description: |
-        Specify whether to use a spot request or an on-demand instance.  This is
-        not inferred from the SpotPrice being set or not because we want to allow
-        for the default behaviour for spot prices, which is to use the spot
-        market with a default price of the on-demand price
-      enum:
-      - spot
-      - on-demand
-      type: string
-    SpotPrice:
-      IS_REQUIRED: false
-      PROPERTY_NAME: SpotPrice
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/SpotPrice
-      TYPE_NAME: ""
-      description: |
-        The actual price of the bid.  This is passed directly to the EC2 api and
-        so should not have any internal multipliers (e.g. capacity or utility)
-        applied
-      type: number
-  SortedPropertyNames:
-  - ClientToken
-  - LaunchInfo
-  - Region
-  - RequestType
-  - SpotPrice
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties
-title: Make a spot request
-type: object
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo
-==============================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: LaunchInfo
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo
-TYPE_NAME: LaunchInfo
-description: |
-  This is an EC2-Manager specific wrapping of the request body for the
-  upstream EC2 API.  Values from this are passed through verbatim.  A small
-  number of checks are done on the data before making the call, as well as
-  having some schema keys set to ensure certain values are either present
-  or absent
-properties:
-  MemberNames:
-    ImageId: ImageID
-    InstanceType: InstanceType
-    KeyName: KeyName
-    SecurityGroups: SecurityGroups
-  Properties:
-    ImageId:
-      IS_REQUIRED: false
-      PROPERTY_NAME: ImageId
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/ImageId
-      TYPE_NAME: ""
-      description: |
-        This is the AMI Identifier for this spot request.  This image must
-        already exist and must be in the region of the request.  Note that
-        AMI images are per-region, so you must copy or regenerate the image
-        for each region.
-      type: string
-    InstanceType:
-      IS_REQUIRED: false
-      PROPERTY_NAME: InstanceType
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/InstanceType
-      TYPE_NAME: ""
-      description: |
-        The instance type to use for this spot request
-      type: string
-    KeyName:
-      IS_REQUIRED: false
-      PROPERTY_NAME: KeyName
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/KeyName
-      TYPE_NAME: ""
-      description: |
-        A valid EC2 KeyPair name.  The KeyPair must already exist
-      type: string
-    SecurityGroups:
-      IS_REQUIRED: false
-      PROPERTY_NAME: SecurityGroups
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/SecurityGroups
-      TYPE_NAME: ""
-      description: |
-        This is a list of the security groups this image will use.  These
-        groups must already exist in the region.
-      items:
-        IS_REQUIRED: false
-        PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/SecurityGroups/items
-        TYPE_NAME: ""
-        type: string
-      type: array
-  SortedPropertyNames:
-  - ImageId
-  - InstanceType
-  - KeyName
-  - SecurityGroups
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties
-type: object
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#
-=========================================================================
-$schema: http://json-schema.org/draft-04/schema#
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#
-TYPE_NAME: OverviewOfComputationalResources
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: |
-  Overview of computational resources for a given worker type
-id: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#
-properties:
-  MemberNames:
-    pending: Pending
-    running: Running
-  Properties:
-    pending:
-      IS_REQUIRED: false
-      PROPERTY_NAME: pending
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending
-      TYPE_NAME: ""
-      items:
-        IS_REQUIRED: false
-        PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items
-        TYPE_NAME: Var
-        properties:
-          MemberNames:
-            count: Count
-            instanceType: InstanceType
-            type: Type
-          Properties:
-            count:
-              IS_REQUIRED: false
-              PROPERTY_NAME: count
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/count
-              TYPE_NAME: ""
-              type: number
-            instanceType:
-              IS_REQUIRED: false
-              PROPERTY_NAME: instanceType
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/instanceType
-              TYPE_NAME: ""
-              type: string
-            type:
-              IS_REQUIRED: false
-              PROPERTY_NAME: type
-              SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/type
-              TYPE_NAME: ""
-              enum:
-              - instance
-              type: string
-          SortedPropertyNames:
-          - count
-          - instanceType
-          - type
-          SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties
-        type: object
-      type: array
-    running:
-      IS_REQUIRED: false
-      PROPERTY_NAME: running
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/running
-      TYPE_NAME: ""
-      type: array
-  SortedPropertyNames:
-  - pending
-  - running
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties
-title: Overview of computational resources
-type: object
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items
-==================================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items
-TYPE_NAME: Var
-properties:
-  MemberNames:
-    count: Count
-    instanceType: InstanceType
-    type: Type
-  Properties:
-    count:
-      IS_REQUIRED: false
-      PROPERTY_NAME: count
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/count
-      TYPE_NAME: ""
-      type: number
-    instanceType:
-      IS_REQUIRED: false
-      PROPERTY_NAME: instanceType
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/instanceType
-      TYPE_NAME: ""
-      type: string
-    type:
-      IS_REQUIRED: false
-      PROPERTY_NAME: type
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/type
-      TYPE_NAME: ""
-      enum:
-      - instance
-      type: string
-  SortedPropertyNames:
-  - count
-  - instanceType
-  - type
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties
-type: object
-
-
-http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#
-=====================================================================
-$schema: http://json-schema.org/draft-04/schema#
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#
-TYPE_NAME: OverviewOfComputationalResources1
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: |
-  Overview of computational resources for a given worker type
-id: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#
-properties:
-  MemberNames:
-    instances: Instances
-  Properties:
-    instances:
-      IS_REQUIRED: false
-      PROPERTY_NAME: instances
-      SOURCE_URL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#/properties/instances
-      TYPE_NAME: ""
-      type: array
-  SortedPropertyNames:
-  - instances
-  SourceURL: http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#/properties
-title: Overview of computational resources
 type: object
 
 

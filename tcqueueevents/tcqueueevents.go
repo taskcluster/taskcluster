@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// http://references.taskcluster.net/queue/v1/exchanges.json
+// https://references.taskcluster.net/queue/v1/exchanges.json
 
 // The queue, typically available at `queue.taskcluster.net`, is responsible
 // for accepting tasks and track their state as they are executed by

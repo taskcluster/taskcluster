@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// http://references.taskcluster.net/purge-cache/v1/exchanges.json
+// https://references.taskcluster.net/purge-cache/v1/exchanges.json
 
 // The purge-cache service, typically available at
 // `purge-cache.taskcluster.net`, is responsible for publishing a pulse
