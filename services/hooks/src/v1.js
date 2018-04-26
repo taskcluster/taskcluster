@@ -46,7 +46,7 @@ api.declare({
   idempotent:   true,
   output:       'list-hook-groups-response.json',
   title:        'List hook groups',
-  stability:    'experimental',
+  stability:    'stable',
   description: [
     'This endpoint will return a list of all hook groups with at least one hook.',
   ].join('\n'),
@@ -68,7 +68,7 @@ api.declare({
   idempotent:   true,
   output:       'list-hooks-response.json',
   title:        'List hooks in a given group',
-  stability:    'experimental',
+  stability:    'stable',
   description: [
     'This endpoint will return a list of all the hook definitions within a',
     'given hook group.',
@@ -96,7 +96,7 @@ api.declare({
   idempotent:   true,
   output:       'hook-definition.json',
   title:        'Get hook definition',
-  stability:    'experimental',
+  stability:    'stable',
   description: [
     'This endpoint will return the hook definition for the given `hookGroupId`',
     'and hookId.',
@@ -124,7 +124,7 @@ api.declare({
   name:         'getHookStatus',
   output:       'hook-status.json',
   title:        'Get hook status',
-  stability:    'experimental',
+  stability:    'stable',
   description: [
     'This endpoint will return the current status of the hook.  This represents a',
     'snapshot in time and may vary from one call to the next.',
@@ -204,7 +204,7 @@ api.declare({
   input:        'create-hook-request.json',
   output:       'hook-definition.json',
   title:        'Create a hook',
-  stability:    'experimental',
+  stability:    'stable',
   description: [
     'This endpoint will create a new hook.',
     '',
@@ -279,7 +279,7 @@ api.declare({
   input:        'create-hook-request.json',
   output:       'hook-definition.json',
   title:        'Update a hook',
-  stability:    'experimental',
+  stability:    'stable',
   description: [
     'This endpoint will update an existing hook.  All fields except',
     '`hookGroupId` and `hookId` can be modified.',
@@ -342,7 +342,7 @@ api.declare({
   idempotent:   true,
   scopes:       'hooks:modify-hook:<hookGroupId>/<hookId>',
   title:        'Delete a hook',
-  stability:    'experimental',
+  stability:    'stable',
   description: [
     'This endpoint will remove a hook definition.',
   ].join('\n'),
@@ -367,7 +367,7 @@ api.declare({
   input:        'trigger-context.json',
   output:       'task-status.json',
   title:        'Trigger a hook',
-  stability:    'experimental',
+  stability:    'stable',
   description: [
     'This endpoint will trigger the creation of a task from a hook definition.',
     '',
@@ -453,7 +453,7 @@ api.declare({
   input:        undefined,
   output:       'trigger-token-response.json',
   title:        'Get a trigger token',
-  stability:    'experimental',
+  stability:    'stable',
   description: [
     'Retrieve a unique secret token for triggering the specified hook. This',
     'token can be deactivated with `resetTriggerToken`.',
@@ -483,7 +483,7 @@ api.declare({
   input:        undefined,
   output:       'trigger-token-response.json',
   title:        'Reset a trigger token',
-  stability:    'experimental',
+  stability:    'stable',
   description: [
     'Reset the token for triggering a given hook. This invalidates token that',
     'may have been issued via getTriggerToken with a new token.',
@@ -517,7 +517,7 @@ api.declare({
   input:        'trigger-context.json',
   output:       'task-status.json',
   title:        'Trigger a hook with a token',
-  stability:    'experimental',
+  stability:    'stable',
   description: [
     'This endpoint triggers a defined hook with a valid token.',
     '',
