@@ -1,0 +1,6 @@
+$schema:        http://json-schema.org/draft-06/schema#
+title:          "Trigger Hook Request"
+description:    |
+  A request to trigger a hook.  The payload must be a JSON object, and is used as the context
+  for a JSON-e rendering of the hook's task template, as described in "Firing Hooks".
+type:           object
