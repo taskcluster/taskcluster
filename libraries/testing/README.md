@@ -22,31 +22,52 @@ const {stickyLoader} = require('taskcluster-lib-testing');
 const load = require('../src/server');
 
 exports.load = stickyLoader(load);
-
-setup(function() {
-  exports.load.reset();
-  exports.load.inject('profile', 'test');
-  exports.load.inject('process', 'test');
-});
+exports.load.inject('profile', 'test');
+exports.load.inject('process', 'test');
 ```
 
-then, in test scripts:
+The `load.inject(component, value)` method sets a loader overwrite without
+attempting to load it. There is a corresponding `load.remove(component)` to
+remove a component.
+
+The last line of this `suiteSetup` is important: it loads the `cfg` component
+so that the configuration can be edited in-place (stickyLoader has special
+support for a component with this name).  If `cfg` is not loaded, the
+`load.cfg()` method will not work.
+
+In test scripts:
 
 ```javascript
 const {load} = require('./helper');
 
-setup(async function() {
-  load.inject('cfg', { /* fake config */});
-  const SomeTable = await load('SomeTable');
-  await SomeTable.create({ /* ... */ });
-});
+suite('SomeTable', function() {
+  suiteSetup(async function() {
+    load.save(); // save the state of the loader to restore in tearDown
+    load.cfg('azure.accountName', 'inMemory'); // edit the cfg in-place
+    const SomeTable = await load('SomeTable');
+    await SomeTable.ensureTable({ /* ... */ });
+  });
 
-test(async function() {
-  const component = await load('some-component');
-  // component will be loaded with the fake config and with
-  // the same instance of SomeTable that we set up above
+  suiteTeardown(function() {
+    load.restore(); // restore the state of the loader
+  });
+
+  test(async function() {
+    const component = await load('some-component');
+    // some-component will be loaded with the same cfg and with
+    // the same instance of SomeTable that we set up above
+  });
 });
 ```
+
+The `load.save()` and `load.restore()` methods push and pull loader states in a
+stack, and are best used in setup/teardown methods to ensure that one suite
+does not "pollute" the loader state for the next.
+
+The `load.cfg(path, value)` method edits the `cfg` component in place, using a
+dotted path to specify the config value. The `save` and `restore` methods are
+careful to deep-copy `cfg` so that these in-place modifications affect only
+the current loader state.
 
 Secrets
 -------
@@ -60,6 +81,8 @@ const {Secrets} = require('taskcluster-lib-testing');
 
 exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-lib-foo',
+  // provide a stickyLoader instance for use in mockSuite
+  load,
   secrets: {
    pulse: [
      // env - the environment variable by which this secret is set in the config (if any)
@@ -73,49 +96,68 @@ exports.secrets = new Secrets({
      {env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey'},
    ],
   },
-);
-```
-
-Then, in a global, async `setup` function, set it up (using a sticky loader):
-
-```javascript
-suiteSetup(async function() {
-  const cfg = await load('cfg');
-  await exports.secrets.setup({cfg});
 });
 ```
 
-This will fetch secrets, if necessary, and modify `cfg` in-place, if it is given.
-If the system you are testing does not use `typed-env-config`, simply omit the `cfg` option, and do not specify the `cfg` properties to the constructor.
+If a secret is defined in the loaded configuration, that value will be used even if the `env` key is also set.
+Secrets should not have any value set in `config.yml` (although `!env` is OK), or this class will not function properly.
+If the system you are testing does not use `typed-env-config`, simply do not specify the `cfg` properties to the constructor.
 
-The secrets object has a few useful methods, all of which can only be called *after* `setup`:
+You can then call `await secrets.setup()`  to set up the secrets (reading from `cfg` if necessary).
+This *must* be called during Mocha's runtime, so either in a setup function or a test.
+It short-circuits multiple calls, so it's safe to call it all over the place.
+In fact, `mockSuite` (below) will call it for you.
+
+The secrets object has a few useful methods, all of which can only be called *after* `setup`, and thus only in a setup function or a test:
 
 * `secrets.have(name)` -- true if the given secret is available
 * `secrets.get(name)` -- returns an object containing the secret values by name, or throws an error if not avaialble
-* `secrets.mockSuite(title, [secrets], async function(mock) { .. })` -- run the given suite of tests both with and without mocks, skipping the real tests if all given secrets are not available.
-  The `mock` parameter is true for the mock version, and false for the real version.
-  If `$NO_SKIP_TESTS` is set, then this will throw an error for each test when secrets are not available.
 
-If a secret is defined in the loaded configuration, that value will be used even if the `env` key is also set.
-Secrets should not have any value set in `config.yml`, or this class will not function properly.
+## mockSuite
 
-## Usage
+The `secrets.mockSuite` function abstracts away the most common case: running the same tests in a mock and real environment, skipping the real tests if secrets are not available.
+It is called as `secrets.mockSuite(title, [secrets], async function(mock, skipping) { .. })` in the same location you might call Mocha's `suite(..)`.
+The `secrets` is an array of secret names required to run this suite in a real environment.
+The given function should define the suite, and can include `setup`, `suiteSetup`, and so on.
+The `mock` parameter is true for the mock version, and false for the real version.
+If `$NO_TEST_SKIP` is set, `mockSuite` will throw an error when secrets are not available.
+
+Note that Mocha continues to run `setupSuite` and `teardownSuite` functions even after a suite has been skipped.
+Mocha does not provide any way to determine if a suite has been skipped.
+Use `skipping()` to determine if the suite is currently skipping, and avoid doing initialization that will fail.
+
+Note, too, that all modern versions of Mocha have [a bug](https://github.com/mochajs/mocha/issues/2819) causing nested suites to run anyway, even when the parent suite is skipped.
+A quick (but unfortunate) way to work around this bug is
+
+```javascript
+suite('mySuite', function() {
+  suiteSetup(function() {
+    if (skipping()) {
+      this.skip();
+    }
+  });
+});
+```
+
+### Usage
 
 ```javascript
 // helper.js
 const {Secrets, stickyLoader} = require('taskcluster-lib-testing');
 
+const load = stickyLoader(require('../src/main'));
 const secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-ping',
   secrets: {
     pingdom: [
       {name: 'apiKey', env: 'PINGDOM_API_KEY', cfg: 'app.pingdom.apiKey'},
     ],
-  });
-const load = stickyLoader(require('../src/main'));
-
-suiteSetup(async function() {
-  secrets.setup(load('cfg'));
+    taskcluster: [
+      {name: 'clientId', env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId'},
+      {name: 'accessToken', env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken'},
+    ],
+  },
+  load,
 });
 
 exports.secrets = secrets;
@@ -126,22 +168,52 @@ exports.load = load;
 // some_test.js
 const {secrets, load} = require('./helper');
 
-secrets.mockSuite('pingdom updates', ['pingdom'], function(mock) {
-  const pingdomUpdater = new PingdomUpdater({apiKey: mock ? 'pretendKey' : secrets.get('pingdom').apiKey});
-  if (mock) {
-    suiteSetup(function() {
+// for testing by passing secrets to the subject..
+secrets.mockSuite('pingdom updates', ['pingdom'], function(mock, skipping) {
+  let pingdomUpdater, pingdomComponent;
+
+  suiteSetup(async function() {
+    // use secrets.get(..) in the real case
+    pingdomUpdater = new PingdomUpdater({apiKey: mock ? 'pretendKey' : secrets.get('pingdom').apiKey});
+    if (mock) {
       nock('https://pingdom.com:443', ..); // mock out Pingdom API
-    });
-    suiteTeardown(function() {
+    }
+  });
+
+  suiteTeardown(function() {
+    if (mock) {
       nock.clearAll();
-    });
-  }
+    }
+  });
 
   test('updates once', function() { .. });
 });
+
+// for testing a loader component..
+secrets.mockSuite('Floobits', ['taskcluster'], function(mock) {
+  let Floobits;
+  suiteSetup(async function() {
+    if (mock) {
+      // set the special accountName that will cause azure-entities to use its fake version;
+      // otherwise, the loader component will use the taskcluster secrets to get access
+      // to the a Azure table
+      helper.load.cfg('azure.accountName', 'inMemory');
+    }
+    
+    if (!skipping()) {
+      Floobits = await helper.load('Floobits');
+      await Floobits.ensureTable();
+    }
+  });
+
+  test('create', async function() {
+    await Floobits.create(..);
+    // ..
+  });
+});
 ```
 
-The test output will contain something like
+The test output for the first suite will contain something like
 
 ```
   pingdom updates (mock)
