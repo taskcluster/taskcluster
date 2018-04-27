@@ -2414,11 +2414,10 @@ taskcluster-lib-api@8.0.0:
     type-is "^1.6.15"
     uuid "^3.1.0"
 
-taskcluster-lib-app@^2.0.3:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-app/-/taskcluster-lib-app-2.1.0.tgz#21f0b4e112cd26c2ebf5e6db9401d63091bd2a5f"
+taskcluster-lib-app@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-app/-/taskcluster-lib-app-4.0.0.tgz#1db3c7278fa0feab70d4d85c1053eaa68ea23648"
   dependencies:
-    babel-runtime "^6.26.0"
     content-security-policy "^0.3.0"
     debug "^3.1.0"
     express "4.16.2"
