@@ -57,23 +57,29 @@ exports.gitClone = async ({dir, url, sha, utils}) => {
   const [repo, ref = 'master'] = url.split('#');
   const opts = {cwd: dir};
 
-  if (!fs.existsSync(dir)) {
-    await exec('git', ['clone', repo, dir, '--depth=1', '-b', ref]);
-    const exactRev = (await exec('git', ['rev-parse', 'HEAD'], opts)).stdout;
-    return {exactRev: exactRev.split(/\s+/)[0], changed: true};
+  if (fs.existsSync(dir)) {
+    const existingRev = (await exec('git', ['rev-parse', 'HEAD'], opts)).stdout.split(/\s+/)[0];
+    const remoteRev = (await exec('git', ['ls-remote', repo, ref])).stdout.split(/\s+/)[0];
+
+    if (!remoteRev) {
+      throw new Error(`${url} does not exist!`);
+    }
+
+    if (existingRev === remoteRev) {
+      return {exactRev: existingRev, changed: false};
+    }
   }
 
-  const existingRev = (await exec('git', ['rev-parse', 'HEAD'], opts)).stdout.split(/\s+/)[0];
-  const remoteRev = (await exec('git', ['ls-remote', repo, ref])).stdout.split(/\s+/)[0];
-
-  if (existingRev === remoteRev) {
-    return {exactRev: existingRev, changed: false};
-  }
-
-  await exec('git', ['fetch', repo, ref], opts);
-  await exec('git', ['reset', '--hard', 'FETCH_HEAD'], opts);
-  const exactRev = (await exec('git', ['rev-parse', 'HEAD'], opts)).stdout.split(/\s+/)[0];
-  return {exactRev, changed: true};
+  // We _could_ try to manipulate the repo that already exists by
+  // fetching and checking out, but it can get into weird states easily.
+  // This is doubly true when we do things like set depth=1 etc.
+  //
+  // Instead, we just blow it away and clone. This is lightweight since we
+  // do use that depth=1 anyway.
+  await exec('rm', ['-rf', dir]);
+  await exec('git', ['clone', repo, dir, '--depth=1', '-b', ref]);
+  const exactRev = (await exec('git', ['rev-parse', 'HEAD'], opts)).stdout;
+  return {exactRev: exactRev.split(/\s+/)[0], changed: true};
 };
 
 /**
@@ -130,8 +136,10 @@ exports.dockerRun = async ({baseDir, logfile, command, env, binds, workingDir, i
   const {docker, dockerRunOpts} = await _dockerSetup({baseDir});
 
   const output = new PassThrough();
+  let errorAddendum = '';
   if (logfile) {
     output.pipe(fs.createWriteStream(logfile));
+    errorAddendum = ` Logs available in ${logfile}`;
   }
 
   const {Binds, Env, ...otherOpts} = dockerRunOpts;
@@ -151,7 +159,7 @@ exports.dockerRun = async ({baseDir, logfile, command, env, binds, workingDir, i
   await utils.waitFor(output);
   const container = await utils.waitFor(runPromise);
   if (container.output.StatusCode !== 0) {
-    throw new Error(`Container exited with status ${container.output.StatusCode}`);
+    throw new Error(`Container exited with status ${container.output.StatusCode}.${errorAddendum}`);
   }
 };
 

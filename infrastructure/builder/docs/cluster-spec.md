@@ -44,8 +44,15 @@ This kind represents repositories that are not built into services or other oupt
 
 # deploy.yml
 
-The `deploy.yml` file (or, in a JSON blob, the `deploy` property) contains a JSON-e expresison which will evaluate to object with properties:
+The `deploy.yml` file (or, in a JSON blob, the `deploy` property) contains a JSON-e expression which will evaluate to object with properties:
 
 * `resources` -- an array of objects describing Kubernetes resources to create; each should have at least `name`, `kind`, and `apiVersion`.
 
 The deploy process will perform the JSON-e rendering, then write each resource out for consumption by kubectl.
+
+# ingress.yml
+
+The `ingress.yml` file (or ina JSON blob, the `ingress` property) contains a JSON-e expression that must evaluate to a valid Kubernetes
+[ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) resource.
+
+The deploy process will perform the JSON-e rendering, then write the ingress resource out for consumption by kubectl.

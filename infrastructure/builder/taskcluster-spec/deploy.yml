@@ -1,7 +1,7 @@
 ---
 resources:
 - name: ping-web-deployment
-  apiVersion: apps/v1
+  apiVersion: apps/v1beta2
   kind: Deployment
   metadata:
     name: ping
@@ -58,6 +58,7 @@ resources:
     $let:
       service: {$eval: "builtService('ping')"}
     in:
+      type: NodePort
       selector:
         app: taskcluster
         tc-service: ping
@@ -68,7 +69,7 @@ resources:
         targetPort: 80
 
 - name: tools-web-deployment
-  apiVersion: apps/v1
+  apiVersion: apps/v1beta2
   kind: Deployment
   metadata:
     name: tools
@@ -97,6 +98,9 @@ resources:
               requests:
                 cpu: 10m
                 memory: 100Mi
+            env:
+              - name: APPLICATION_NAME
+                value: {$eval: "cfg.clusterName"}
             ports:
             - containerPort: 80
 
@@ -109,9 +113,76 @@ resources:
     $let:
       service: {$eval: "builtService('tools')"}
     in:
+      type: NodePort
       selector:
         app: taskcluster
         tc-service: tools
+        tc-proc: web
+      ports:
+      - protocol: TCP
+        port: 80
+        targetPort: 80
+
+- name: auth-web-deployment
+  apiVersion: apps/v1beta2
+  kind: Deployment
+  metadata:
+    name: auth
+  spec:
+    $let:
+      service: {$eval: "builtService('auth')"}
+    in:
+      selector:
+        matchLabels:
+          app: taskcluster
+          tc-service: auth
+          tc-proc: web
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            app: taskcluster
+            tc-service: auth
+            tc-proc: web
+        spec:
+          containers:
+          - name: auth
+            image: {$eval: "service.dockerImage"}
+            imagePullPolicy: Always
+            args: [web]
+            resources:
+              requests:
+                cpu: 100m
+                memory: 100Mi
+            env:
+              $flatten:
+              - name: PORT
+                value: '80'
+              - name: DEBUG
+                value: 'auth:*,statsum*,taskcluster-lib-monitor*,taskcluster-lib-docs,taskcluster-lib-api*'
+              - $map: {$eval: "infra.auth_secret_keys"}
+                each(k):
+                  name: '${k}'
+                  valueFrom:
+                    secretKeyRef:
+                      name: '${infra.auth_secret_name}'
+                      key: '${k}'
+            ports:
+            - containerPort: 80
+
+- name: auth-web-service
+  kind: Service
+  apiVersion: v1
+  metadata:
+    name: auth
+  spec:
+    $let:
+      service: {$eval: "builtService('auth')"}
+    in:
+      type: NodePort
+      selector:
+        app: taskcluster
+        tc-service: auth
         tc-proc: web
       ports:
       - protocol: TCP
