@@ -28,7 +28,7 @@ type (
 		//   * "review_request_removed"
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/action
-		Action json.RawMessage `json:"action"`
+		Action string `json:"action"`
 
 		// Metadata describing the pull request.
 		//
@@ -76,7 +76,7 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/version
-		Version json.RawMessage `json:"version"`
+		Version float64 `json:"version"`
 	}
 
 	// Message reporting that a GitHub push has occurred
@@ -130,7 +130,7 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/version
-		Version json.RawMessage `json:"version"`
+		Version float64 `json:"version"`
 	}
 
 	// Message reporting that a GitHub release has occurred
@@ -184,6 +184,6 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/version
-		Version json.RawMessage `json:"version"`
+		Version float64 `json:"version"`
 	}
 )

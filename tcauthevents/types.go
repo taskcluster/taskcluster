@@ -2,10 +2,6 @@
 
 package tcauthevents
 
-import (
-	"encoding/json"
-)
-
 type (
 	// Message reporting that a client has changed
 	//
@@ -25,7 +21,7 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/auth/v1/client-message.json#/properties/version
-		Version json.RawMessage `json:"version"`
+		Version float64 `json:"version"`
 	}
 
 	// Message reporting that a role has changed
@@ -46,6 +42,6 @@ type (
 		//   * 1
 		//
 		// See http://schemas.taskcluster.net/auth/v1/role-message.json#/properties/version
-		Version json.RawMessage `json:"version"`
+		Version float64 `json:"version"`
 	}
 )

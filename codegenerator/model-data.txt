@@ -1,4 +1,4 @@
-Generated: 1524766175
+Generated: 1524838967
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -895,6 +895,7 @@ oneOf:
     type: object
   SourceURL: http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf
 title: Hawk Signature Authentication Response
+type: object
 
 
 http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]
@@ -3019,6 +3020,7 @@ properties:
       description: Message version number
       enum:
       - 1
+      type: number
   SortedPropertyNames:
   - clientId
   - version
@@ -3065,6 +3067,7 @@ properties:
       description: Message version number
       enum:
       - 1
+      type: number
   SortedPropertyNames:
   - roleId
   - version
@@ -8398,6 +8401,7 @@ properties:
       - synchronize
       - review_requested
       - review_request_removed
+      type: string
     details:
       IS_REQUIRED: false
       PROPERTY_NAME: details
@@ -8455,6 +8459,7 @@ properties:
       description: Message version
       enum:
       - 1
+      type: number
   SortedPropertyNames:
   - action
   - details
@@ -8554,6 +8559,7 @@ properties:
       description: Message version
       enum:
       - 1
+      type: number
   SortedPropertyNames:
   - details
   - eventId
@@ -8651,6 +8657,7 @@ properties:
       description: Message version
       enum:
       - 1
+      type: number
   SortedPropertyNames:
   - details
   - eventId
@@ -9566,6 +9573,7 @@ properties:
           title: No Fire
           type: object
         SourceURL: http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf
+      type: object
     nextScheduledDate:
       IS_REQUIRED: false
       PROPERTY_NAME: nextScheduledDate
@@ -12333,6 +12341,7 @@ oneOf:
     type: object
   SourceURL: http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf
 title: Post IRC Message Request
+type: object
 
 
 http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]
@@ -20380,6 +20389,7 @@ oneOf:
     type: object
   SourceURL: http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf
 title: Post Artifact Request
+type: object
 
 
 http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]
@@ -21263,6 +21273,7 @@ oneOf:
     type: object
   SourceURL: http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf
 title: Post Artifact Response
+type: object
 
 
 http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]
@@ -32683,6 +32694,7 @@ properties:
           title: Github Pull Request
           type: object
         SourceURL: http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf
+      type: object
     owner:
       IS_REQUIRED: false
       PROPERTY_NAME: owner
