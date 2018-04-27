@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-testing",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-testing",
   "license": "MPL-2.0",
