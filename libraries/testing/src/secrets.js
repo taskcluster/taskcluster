@@ -63,7 +63,7 @@ class Secrets {
     const secretsService = new taskcluster.Secrets({
       baseUrl: 'http://taskcluster/secrets.taskcluster.net/v1',
     });
-    return (await secretsService.get(this.secretName)).secrets;
+    return (await secretsService.get(this.secretName)).secret;
   }
 
   have(secret) {
