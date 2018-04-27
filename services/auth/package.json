@@ -23,7 +23,7 @@
     "debug": "^3.1.0",
     "fast-azure-storage": "^2.0.0",
     "hawk": "2.3.0",
-    "hoek": "^2.16.3",
+    "hoek": "^5.0.3",
     "jsonwebtoken": "^8.1.0",
     "lodash": "^4.17.4",
     "morgan-debug": "^2.0.0",
