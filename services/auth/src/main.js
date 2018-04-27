@@ -215,7 +215,7 @@ let load = Loader({
     requires: ['cfg', 'api', 'docs'],
     setup: async ({cfg, api, docs}) => {
       // Create app
-      let serverApp = App(cfg.server);
+      let serverApp = App(Object.assign({}, {docs}, cfg.server));
 
       serverApp.use(morganDebug('auth-request', 'dev'));
       serverApp.use('/v1', api);

@@ -34,6 +34,7 @@ module.exports = async ({authBaseUrl, rootAccessToken}) => {
     env:            'development',
     forceSSL:       false,
     trustProxy:     false,
+    rootDocsLink:   false,
   });
 
   // Create router for the API
