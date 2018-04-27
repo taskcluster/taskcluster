@@ -20,8 +20,7 @@ class TaskCreator {
   }
 
   taskForHook(hook, context, options) {
-
-    let task = jsone(hook.task, context);
+    let task = jsone(hook.task, _.defaults({}, {taskId: options.taskId}, context));
     let created = options.created || new Date();
     // only apply created, deadline, and expires if they are not set
     if (!task.created) {
