@@ -199,7 +199,7 @@ suite('Secrets', function() {
       nock('http://taskcluster:80')
         .get('/secrets.taskcluster.net/v1/secret/path%2Fto%2Fsecret')
         .reply(200, (uri, requestBody) => {
-          return {secrets: {SECRET_VALUE: '13'}};
+          return {secret: {SECRET_VALUE: '13'}};
         });
     });
 
