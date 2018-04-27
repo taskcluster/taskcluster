@@ -23,6 +23,11 @@ var (
 		Short: "Get the name of the artifacts of a task.",
 		RunE:  executeHelperE(runArtifacts),
 	}
+	retriggerCmd = &cobra.Command{
+		Use:   "retrigger <taskId>",
+		Short: "Re-trigger a task (new taskId, updated timestamps).",
+		RunE:  executeHelperE(runRetrigger),
+	}
 )
 
 func init() {
@@ -30,6 +35,8 @@ func init() {
 	statusCmd.Flags().IntP("run", "r", -1, "Specifies which run to consider.")
 
 	artifactsCmd.Flags().IntP("run", "r", -1, "Specifies which run to consider.")
+
+	retriggerCmd.Flags().BoolP("exact", "e", false, "Retrigger in exact mode. WARNING: THIS MAY HAVE SIDE EFFECTS. USE AFTER YOU READ THE SOURCE CODE.")
 
 	// Commands that fetch information
 	Command.AddCommand(
@@ -77,6 +84,8 @@ func init() {
 			Short: "Rerun a task.",
 			RunE:  executeHelperE(runRerun),
 		},
+		// retrigger
+		retriggerCmd,
 		// cancel
 		&cobra.Command{
 			Use:   "complete <taskId>",
