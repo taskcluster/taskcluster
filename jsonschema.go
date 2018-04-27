@@ -119,6 +119,7 @@ type (
 		AdditionalProperties *AdditionalProperties  `json:"additionalProperties,omitempty"`
 		AllOf                *Items                 `json:"allOf,omitempty"`
 		AnyOf                *Items                 `json:"anyOf,omitempty"`
+		Const                *interface{}           `json:"const,omitempty"`
 		Default              *interface{}           `json:"default,omitempty"`
 		Definitions          *Properties            `json:"definitions,omitempty"`
 		Dependencies         map[string]*Dependency `json:"dependencies,omitempty"`
@@ -282,6 +283,15 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel 
 	if comment[len(comment)-1:] != "\n" {
 		comment += "\n"
 	}
+	if c := jsonSubSchema.Const; c != nil {
+		comment += "//\n// Constant value: "
+		switch (*c).(type) {
+		case float64:
+			comment += fmt.Sprintf("%v\n", *c)
+		default:
+			comment += fmt.Sprintf("%q\n", *c)
+		}
+	}
 	if enum := jsonSubSchema.Enum; enum != nil {
 		comment += "//\n// Possible values:\n"
 		for _, i := range enum {
@@ -366,6 +376,10 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, topLevel 
 			typ = "[]" + arrayType
 		}
 	case "object":
+		if jsonSubSchema.AnyOf != nil || jsonSubSchema.AllOf != nil || jsonSubSchema.OneOf != nil {
+			typ = "json.RawMessage"
+			break
+		}
 		ap := jsonSubSchema.AdditionalProperties
 		noExtraProperties := ap != nil && ap.Boolean != nil && !*ap.Boolean
 		if noExtraProperties {
@@ -658,20 +672,7 @@ func (subSchema *JsonSubSchema) prepare(job *Job) (err error) {
 	subSchema.AnyOf.MergeIn(subSchema, map[string]bool{"AnyOf": true, "ID": true})
 	subSchema.OneOf.MergeIn(subSchema, map[string]bool{"OneOf": true, "ID": true})
 
-	// This is a bit naughty, we're going to set the type if it isn't set, but we can infer it
-	if subSchema.Type == nil {
-		var t string
-		switch {
-		case subSchema.Properties != nil:
-			t = "object"
-		case subSchema.Items != nil:
-			t = "array"
-		}
-		if t != "" {
-			log.Printf(`WARNING: Setting type="%v" for schema "%v"`, t, subSchema.SourceURL)
-			subSchema.Type = &t
-		}
-	}
+	subSchema.Type = subSchema.inferType()
 
 	// Mark subschema properties that are in required list as being required (IsRequired property)
 	for _, req := range subSchema.Required {
@@ -1021,4 +1022,96 @@ func (jsonSubSchema *JsonSubSchema) getTypeName() string {
 		return jsonSubSchema.RefSubSchema.getTypeName()
 	}
 	return jsonSubSchema.TypeName
+}
+
+// inferType is a cheeky little function that tries to set the type, if it can
+// infer it from other information, such as if all OneOf subschemas share the
+// same type, for example.
+func (subSchema *JsonSubSchema) inferType() *string {
+
+	// 1) If already set, nothing to do...
+	if subSchema.Type != nil {
+		return subSchema.Type
+	}
+
+	// 2) See if we can infer from existence of `properties` or `items`
+	var inferredType string
+	switch {
+	case subSchema.Properties != nil:
+		inferredType = "object"
+	case subSchema.Items != nil:
+		inferredType = "array"
+	}
+	if inferredType != "" {
+		return &inferredType
+	}
+
+	// 3) If all items in subSchema.AllOf/subSchema.AnyOf/subSchema.OneOf have
+	// same type, we can infer that is the type
+	for _, items := range []*Items{
+		subSchema.AllOf,
+		subSchema.AnyOf,
+		subSchema.OneOf,
+	} {
+		if items != nil {
+			for _, subSubSchema := range items.Items {
+				subType := subSubSchema.inferType()
+				if subType == nil {
+					return nil
+				}
+				if inferredType == "" {
+					inferredType = *subType
+					continue
+				}
+				if inferredType != *subType {
+					return nil
+				}
+			}
+			return &inferredType
+		}
+	}
+
+	// 4) If const is set, infer from that
+	if subSchema.Const != nil {
+		return jsonSchemaTypeFromValue(*subSchema.Const)
+	}
+
+	// 5) If an enum, see if all entries have same type
+	for _, enumItem := range subSchema.Enum {
+		enumType := jsonSchemaTypeFromValue(enumItem)
+		if inferredType == "" {
+			inferredType = *enumType
+			continue
+		}
+		if inferredType != *enumType {
+			return nil
+		}
+	}
+	if inferredType != "" {
+		return &inferredType
+	}
+
+	// 6) Cannot infer type
+	return nil
+}
+
+func jsonSchemaTypeFromValue(v interface{}) *string {
+	var inferredType string
+	switch t := v.(type) {
+	case bool:
+		inferredType = "boolean"
+	case float64:
+		inferredType = "number"
+	case string:
+		inferredType = "string"
+	case []interface{}:
+		inferredType = "array"
+	case map[string]interface{}:
+		inferredType = "object"
+	case nil:
+		inferredType = "null"
+	default:
+		log.Fatalf("What the? %v", t)
+	}
+	return &inferredType
 }
