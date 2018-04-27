@@ -10,10 +10,12 @@ suite('TaskCreator', function() {
   this.slow(500);
   helper.setup();
 
-  // these tests require real TaskCluster credentials (for the queue insert)
-  if (!helper.haveRealCredentials && !process.env.TASK_ID) {
-    this.pending = true;
-  }
+  suiteSetup(function() {
+    // these tests require real TaskCluster credentials (for the queue insert)
+    if (!helper.haveRealCredentials && !process.env.TASK_ID) {
+      this.pending = true;
+    }
+  });
 
   /* Note that this requires the following set up in production TC:
    *  - TC credentials given in cfg.get('taskcluster:credentials') with
@@ -92,10 +94,13 @@ suite('TaskCreator', function() {
   });
 
   test('firing a real task with a JSON-e context succeeds', async function() {
-    let hook = await createTestHook([], {context:{
-      valueFromContext: {$eval: 'someValue + 13'},
-      flattenedDeep: {$flattenDeep: {$eval: 'numbers'}}, 
-      firedBy: '${firedBy}'},
+    let hook = await createTestHook([], {
+      context:{
+        valueFromContext: {$eval: 'someValue + 13'},
+        flattenedDeep: {$flattenDeep: {$eval: 'numbers'}},
+        firedBy: '${firedBy}',
+        taskId: '${taskId}',
+      },
     }); 
     let taskId = taskcluster.slugid();
     let resp = await creator.fire(hook, {
@@ -106,7 +111,12 @@ suite('TaskCreator', function() {
     let queue = new taskcluster.Queue({credentials: helper.cfg.taskcluster.credentials});
     let task = await queue.task(taskId);
     assume(task.extra).deeply.equals({
-      context: {valueFromContext: 55, flattenedDeep:[1, 2, 3, 4, 5, 6], firedBy: 'schedule'},
+      context: {
+        valueFromContext: 55,
+        flattenedDeep: [1, 2, 3, 4, 5, 6],
+        firedBy: 'schedule',
+        taskId,
+      },
     });
   });   
 
