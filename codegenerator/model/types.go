@@ -3,138 +3,6 @@
 package model
 
 type (
-	// Reference of methods implemented by API
-	//
-	// See http://schemas.taskcluster.net/base/v1/api-reference.json#
-	APIReferenceFile struct {
-
-		// Link to schema for this reference. That is a link to this very document. Typically used to identify what kind of reference this file is.
-		//
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/$schema
-		Schema string `json:"$schema"`
-
-		// BaseUrl for all _routes_ described in this document
-		//
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/baseUrl
-		BaseURL string `json:"baseUrl"`
-
-		// API description in markdown
-		//
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/description
-		Description string `json:"description"`
-
-		// Array of methods in this reference
-		//
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries
-		Entries []APIEntry `json:"entries"`
-
-		// Name of service for automation. Will be consumed by client generators to produce URLs
-		//
-		// Syntax:     ^[a-z][a-z0-9_-]*$
-		// Min length: 1
-		// Max length: 22
-		//
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/name
-		Name string `json:"name"`
-
-		// API title in markdown
-		//
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/title
-		Title string `json:"title"`
-
-		// API reference version
-		//
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/version
-		Version uint `json:"version"`
-	}
-
-	// Output kind if not JSON matching a specific schema.
-	//
-	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/output/oneOf[1]
-	Blob string
-
-	// if/then objects will replace themselves with the contents of then if the `if` is true
-	//
-	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateIf
-	Conditional struct {
-
-		// One of:
-		//   * RequiredScope
-		//   * Disjunction
-		//   * Conjunction
-		//   * Conditional
-		//   * ForAll
-		//
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate
-		Else ScopeExpressionTemplate `json:"else,omitempty"`
-
-		// Syntax:     ^[a-zA-Z][a-zA-Z0-9_]*$
-		//
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateIf/properties/if
-		If string `json:"if"`
-
-		// One of:
-		//   * RequiredScope
-		//   * Disjunction
-		//   * Conjunction
-		//   * Conditional
-		//   * ForAll
-		//
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate
-		Then ScopeExpressionTemplate `json:"then"`
-	}
-
-	// AllOf objects will evaluate to true if all subexpressions are true
-	//
-	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateAllOf
-	Conjunction struct {
-
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateAllOf/properties/AllOf
-		AllOf []ScopeExpressionTemplate `json:"AllOf"`
-	}
-
-	// AnyOf objects will evaluate to true if any subexpressions are true
-	//
-	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateAnyOf
-	Disjunction struct {
-
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateAnyOf/properties/AnyOf
-		AnyOf []ScopeExpressionTemplate `json:"AnyOf"`
-	}
-
-	// for/each/in objects will replace themselves with an array of basic scopes. They will be flattened into the array this object is a part of.
-	//
-	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate/oneOf[4]
-	ForAll struct {
-
-		// Syntax:     ^[\x20-\x7e]*$
-		//
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate/oneOf[4]/properties/each
-		Each string `json:"each"`
-
-		// Syntax:     ^[a-zA-Z][a-zA-Z0-9_]*$
-		//
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate/oneOf[4]/properties/for
-		For string `json:"for"`
-
-		// Syntax:     ^[a-zA-Z][a-zA-Z0-9_]*$
-		//
-		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate/oneOf[4]/properties/in
-		In string `json:"in"`
-	}
-
-	// JSON schema for output, if output is provided otherwise not present.
-	//
-	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/output/oneOf[0]
-	OutputSchema string
-
-	// The most basic element of a scope expression
-	//
-	// Syntax:     ^[\x20-\x7e]*$
-	//
-	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateString
-	RequiredScope string
-
 	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items
 	Entry struct {
 
@@ -235,7 +103,148 @@ type (
 
 		// Type of entry, currently only `function`.
 		//
+		// Possible values:
+		//   * "function"
+		//
 		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/type
 		Type string `json:"type"`
 	}
+
+	// Reference of methods implemented by API
+	//
+	// See http://schemas.taskcluster.net/base/v1/api-reference.json#
+	APIReferenceFile struct {
+
+		// Link to schema for this reference. That is a link to this very document. Typically used to identify what kind of reference this file is.
+		//
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/$schema
+		Schema string `json:"$schema"`
+
+		// BaseUrl for all _routes_ described in this document
+		//
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/baseUrl
+		BaseURL string `json:"baseUrl"`
+
+		// API description in markdown
+		//
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/description
+		Description string `json:"description"`
+
+		// Array of methods in this reference
+		//
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries
+		Entries []APIEntry `json:"entries"`
+
+		// Name of service for automation. Will be consumed by client generators to produce URLs
+		//
+		// Syntax:     ^[a-z][a-z0-9_-]*$
+		// Min length: 1
+		// Max length: 22
+		//
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/name
+		Name string `json:"name"`
+
+		// API title in markdown
+		//
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/title
+		Title string `json:"title"`
+
+		// API reference version
+		//
+		// Possible values:
+		//   * 0
+		//
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/version
+		Version int64 `json:"version"`
+	}
+
+	// Output kind if not JSON matching a specific schema.
+	//
+	// Possible values:
+	//   * "blob"
+	//
+	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/output/oneOf[1]
+	Blob string
+
+	// if/then objects will replace themselves with the contents of then if the `if` is true
+	//
+	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateIf
+	Conditional struct {
+
+		// One of:
+		//   * RequiredScope
+		//   * Disjunction
+		//   * Conjunction
+		//   * Conditional
+		//   * ForAll
+		//
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate
+		Else ScopeExpressionTemplate `json:"else,omitempty"`
+
+		// Syntax:     ^[a-zA-Z][a-zA-Z0-9_]*$
+		//
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateIf/properties/if
+		If string `json:"if"`
+
+		// One of:
+		//   * RequiredScope
+		//   * Disjunction
+		//   * Conjunction
+		//   * Conditional
+		//   * ForAll
+		//
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate
+		Then ScopeExpressionTemplate `json:"then"`
+	}
+
+	// AllOf objects will evaluate to true if all subexpressions are true
+	//
+	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateAllOf
+	Conjunction struct {
+
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateAllOf/properties/AllOf
+		AllOf []ScopeExpressionTemplate `json:"AllOf"`
+	}
+
+	// AnyOf objects will evaluate to true if any subexpressions are true
+	//
+	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateAnyOf
+	Disjunction struct {
+
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateAnyOf/properties/AnyOf
+		AnyOf []ScopeExpressionTemplate `json:"AnyOf"`
+	}
+
+	// for/each/in objects will replace themselves with an array of basic scopes. They will be flattened into the array this object is a part of.
+	//
+	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate/oneOf[4]
+	ForAll struct {
+
+		// Syntax:     ^[\x20-\x7e]*$
+		//
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate/oneOf[4]/properties/each
+		Each string `json:"each"`
+
+		// Syntax:     ^[a-zA-Z][a-zA-Z0-9_]*$
+		//
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate/oneOf[4]/properties/for
+		For string `json:"for"`
+
+		// Syntax:     ^[a-zA-Z][a-zA-Z0-9_]*$
+		//
+		// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate/oneOf[4]/properties/in
+		In string `json:"in"`
+	}
+
+	// JSON schema for output, if output is provided otherwise not present.
+	//
+	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/output/oneOf[0]
+	OutputSchema string
+
+	// The most basic element of a scope expression
+	//
+	// Syntax:     ^[\x20-\x7e]*$
+	//
+	// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateString
+	RequiredScope string
 )
