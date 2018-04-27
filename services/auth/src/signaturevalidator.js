@@ -345,7 +345,14 @@ var createSignatureValidator = function(options) {
           var parts = req.resource.match(
             /^(\/.*)([\?&])bewit\=([^&$]*)(?:&(.+))?$/
           );
-          var bewitString = hoek.base64urlDecode(parts[3]);
+
+          var bewitString;
+          try {
+            bewitString = hoek.base64urlDecode(parts[3]);
+          } catch (err) {
+            bewitString = err;
+          }
+
           if (!(bewitString instanceof Error)) {
             // Split string as hawk does it
             var parts = bewitString.split('\\');
