@@ -32,7 +32,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://references.taskcluster.net/ec2-manager/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 27 Apr 2018 at 14:22:00 UTC. The code was generated
+// Fri, 27 Apr 2018 at 15:54:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcec2manager
 
