@@ -66,7 +66,10 @@
     "properties": {
         "version": {
             "description": "API reference version",
-            "const": 0
+            "type": "integer",
+            "enum": [
+                0
+            ]
         },
         "$schema": {
             "description": "Link to schema for this reference. That is a link to this very document. Typically used to identify what kind of reference this file is.",
@@ -100,11 +103,14 @@
             "description": "Array of methods in this reference",
             "items": {
                 "type": "object",
+                "title": "API Entry",
                 "properties": {
                     "type": {
                         "description": "Type of entry, currently only `function`.",
                         "type": "string",
-                        "const": "function"
+                        "enum": [
+                            "function"
+                        ]
                     },
                     "method": {
                         "description": "HTTP method (verb) used to access the function",
@@ -186,6 +192,7 @@
                         "description": "JSON schema for input, if input is taken otherwise not present."
                     },
                     "output": {
+                        "type": "string",
                         "oneOf": [
                             {
                                 "title": "Output Schema",
@@ -196,7 +203,9 @@
                             {
                                 "title": "Blob",
                                 "type": "string",
-                                "const": "blob",
+                                "enum": [
+                                    "blob"
+                                ],
                                 "description": "Output kind if not JSON matching a specific schema."
                             }
                         ]
