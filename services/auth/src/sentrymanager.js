@@ -37,7 +37,7 @@ class SentryManager {
    * {
    *   organization:   '...',  // Sentry organization
    *   hostname:       'app.getsentry.com',
-   *   apiKey:         '...',  // Organization API key
+   *   authToken:      '...',  // Organization auth token with at least project:{read,write,admin} and org:read
    *   initialTeam:    '...',  // Initial team for new projects
    *   keyPrefix:      '...',  // Prefix for keys
    * }
@@ -46,11 +46,12 @@ class SentryManager {
     assert(options);
     assert(options.organization);
     assert(options.hostname);
-    assert(options.apiKey);
+    assert(options.authToken);
     assert(options.initialTeam);
     assert(options.keyPrefix);
-    let url = 'https://' + options.apiKey + ':@' + options.hostname;
-    this._sentry = new Sentry(url);
+    this._sentry = new Sentry(`https://${options.hostname}`, {
+      token: options.authToken,
+    });
     this._organization = options.organization;
     this._initialTeam = options.initialTeam;
     this._projectDSNCache = {};

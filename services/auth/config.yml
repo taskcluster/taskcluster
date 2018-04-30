@@ -44,10 +44,11 @@ defaults:
     maxLastUsedDelay:         '- 6 hours'
 
     # Sentry configuration
+    # The authToken _must_ have at least project:{read,write,admin} and org:read
     sentry:
       organization:             operations
       hostname:                 sentry.prod.mozaws.net
-      apiKey:                   !env SENTRY_API_KEY
+      authToken:                !env SENTRY_AUTH_TOKEN
       initialTeam:              taskcluster
       keyPrefix:                taskcluster-auth
 
@@ -145,7 +146,7 @@ test:
     # Special value for tests, as we don't want to wait forever
     maxLastUsedDelay:         '- 3 seconds'
     sentry:
-      apiKey:                   "no-key" # no-key skips tests
+      authToken:                "no-key" # no-key skips tests
       keyPrefix:                auth-test
     statsum:
       secret:                   'secret'
