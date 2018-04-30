@@ -3,8 +3,8 @@ suite('sentry', function() {
   let taskcluster = require('taskcluster-client');
   let assert = require('assert');
 
-  // Skip tests if we don't an have an API key
-  this.pending = helper.cfg.app.sentry.apiKey === 'no-key';
+  // Skip tests if we don't an have an api auth token
+  this.pending = helper.cfg.app.sentry.authToken === 'no-key';
 
   test('sentryDSN', async () => {
     await helper.auth.sentryDSN('playground');
