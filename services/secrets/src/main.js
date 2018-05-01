@@ -36,14 +36,14 @@ var load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => validator({
       prefix: 'secrets/v1/',
-      publish: cfg.taskclusterSecrets.publishMetaData,
+      publish: cfg.app.publishMetaData,
       aws: cfg.aws,
     }),
   },
 
-  entity: {
+  Secret: {
     requires: ['cfg', 'monitor', 'process'],
-    setup: ({cfg, monitor, process}) => data.SecretEntity.setup({
+    setup: ({cfg, monitor, process}) => data.Secret.setup({
       account:          cfg.azure.accountName,
       credentials:      cfg.taskcluster.credentials,
       table:            cfg.azure.tableName,
@@ -54,11 +54,11 @@ var load = loader({
   },
 
   router: {
-    requires: ['cfg', 'entity', 'validator', 'monitor'],
-    setup: ({cfg, entity, validator, monitor}) => api.setup({
-      context:          {cfg, entity},
+    requires: ['cfg', 'Secret', 'validator', 'monitor'],
+    setup: ({cfg, Secret, validator, monitor}) => api.setup({
+      context:          {cfg, Secret},
       authBaseUrl:      cfg.taskcluster.authBaseUrl,
-      publish:          cfg.taskclusterSecrets.publishMetaData,
+      publish:          cfg.app.publishMetaData,
       baseUrl:          cfg.server.publicUrl + '/v1',
       referencePrefix:  'secrets/v1/api.json',
       aws:              cfg.aws,
@@ -73,7 +73,7 @@ var load = loader({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
       schemas: validator.schemas,
-      publish: cfg.taskclusterSecrets.publishMetaData,
+      publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',
@@ -108,15 +108,15 @@ var load = loader({
   },
 
   expire: {
-    requires: ['cfg', 'entity'],
-    setup: async ({cfg, entity}) => {
+    requires: ['cfg', 'Secret'],
+    setup: async ({cfg, Secret}) => {
       // Find an secret expiration delay
-      var delay = cfg.taskclusterSecrets.secretExpirationDelay;
+      var delay = cfg.app.secretExpirationDelay;
       var now   = taskcluster.fromNow(delay);
       assert(!_.isNaN(now), 'Can\'t have NaN as now');
 
       debug('Expiring secrets');
-      let count = await entity.expire(now);
+      let count = await Secret.expire(now);
       debug('Expired ' + count + ' secrets');
     },
   },
