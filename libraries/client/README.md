@@ -175,6 +175,47 @@ _signature_, you'll find that it matches the signatures below. Notice that all
 the methods returns a promise. A method with `: void` also returns a promise,
 that either resolves without giving a value or rejects with an error.
 
+## Fake API Methods
+
+In testing, it is useful to be able to "fake out" client methods so that they
+do not try to communicate with an actual, external service. The normal client
+argument checking still takes place, and a function of your design will be called
+instead of calling the external service.
+
+This is set up when constructing the client. Typically, this occurs in a
+`taskcluster-lib-loader` entry.
+
+```javascript
+setup(function () {
+  // inject the dependency with a stickyLoader from taskcluster-lib-testing
+  helper.load.inject('secrets', new taskcluster.Secrets({
+    fake: {
+      get: (name) => 'my-hardcoded-secret',
+    },
+  });
+});
+
+test('test the thing', async function() {
+  // Get secrets from injection above
+  let secrets = await helper.load('secrets');
+
+  // Do something with the secrets object
+  let s = await secrets.get('thing-to-read');
+  assume(s).is.a('string');
+
+  // Make assertions over recorded calls
+  assume(secrets.fakeCalls.get).deep.contains({
+    name: 'thing-to-read',
+  });
+
+  try {
+    await secrets.get('...', {}); // throws and error because we didn't fake it
+  } catch (err) {
+    // pass
+  }
+});
+```
+
 ## Fake Listening
 
 It's inconvenient and error-prone to use real Pulse credentials in tests.  The
