@@ -2,16 +2,28 @@ const assert = require('assert');
 const api = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const mocha = require('mocha');
-const testing = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
 const load = require('../src/main');
 const config = require('typed-env-config');
 
-// Create and export helper object
-var helper = module.exports = {};
+exports.load = stickyLoader(load);
 
-// Load configuration
-var cfg = config({profile: 'test'});
-const baseUrl = cfg.server.publicUrl + '/v1';
+suiteSetup(async function() {
+  exports.load.inject('profile', 'test');
+  exports.load.inject('process', 'test');
+});
+
+// set up the testing secrets
+exports.secrets = new Secrets({
+  secretName: 'project/taskcluster/testing/taskcluster-secrets',
+  secrets: {
+    taskcluster: [
+      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
+      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
+    ],
+  },
+  load: exports.load,
+});
 
 // Some clients for the tests, with differents scopes.  These are turned
 // into temporary credentials based on the main test credentials, so
@@ -40,37 +52,25 @@ var testClients = [
   },
 ];
 
-var SecretsClient = taskcluster.createClient(
-  api.reference({baseUrl: baseUrl})
-);
-
-var webServer = null;
-
 // Setup before tests
-mocha.before(async () => {
-  // Set up all of our clients, each with a different clientId
-  helper.clients = {};
-  var auth = {};
+suiteSetup(async () => {
+  const auth = {};
+  const cfg = await exports.load('cfg');
+  const baseUrl = cfg.server.publicUrl + '/v1';
+  const SecretsClient = taskcluster.createClient(api.reference({baseUrl}));
+
+  exports.clients = {};
   for (let client of testClients) {
-    helper.clients[client.clientId] = new SecretsClient({
-      baseUrl:          baseUrl,
+    exports.clients[client.clientId] = new SecretsClient({
       credentials:      {clientId: client.clientId, accessToken: 'unused'},
     });
     auth[client.clientId] = client.scopes;
   }
-  testing.fakeauth.start(auth);
-
-  // create the Azure table
-  let entity = await load('entity', {profile: 'test', process: 'test'});
-  await entity.ensureTable();
-
-  // start up the secrets service so that we can test it live
-  webServer = await load('server', {profile: 'test', process: 'test'});
+  fakeauth.start(auth);
 });
 
 // Cleanup after tests
-mocha.after(async () => {
-  testing.fakeauth.stop();
-  await webServer.terminate();
+suiteTeardown(async () => {
+  fakeauth.stop();
 });
 
