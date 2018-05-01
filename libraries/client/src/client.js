@@ -60,6 +60,15 @@ var _defaultOptions = {
 
   // The prefix of any api calls. e.g. https://taskcluster.net/api/
   rootUrl: process.env.TASKCLUSTER_ROOT,
+
+  // Fake methods, if given this will produce a fake client object.
+  // Methods called won't make expected HTTP requests, but instead:
+  //   1. Add arguments to `Client.fakeCalls.<method>.push({...params, payload, query})`
+  //   2. Invoke and return `fake.<method>(...args)`
+  //
+  // This allows `Client.fakeCalls.<method>` to be used for assertions, and
+  // `fake.<method>` can be used inject fake implementations.
+  fake: null,
 };
 
 /** Make a request for a Client instance */
@@ -222,6 +231,17 @@ exports.createClient = function(reference, name) {
       // ext has any keys we better base64 encode it, and set ext on extra
       if (_.keys(ext).length > 0) {
         this._extData = new Buffer(JSON.stringify(ext)).toString('base64');
+      }
+    }
+
+    // If fake, we create an array this.fakeCalls[method] = [] for each method
+    if (this._options.fake) {
+      debug('Creating taskcluster-client object in "fake" mode');
+      this.fakeCalls = {};
+      reference.entries.filter(e => e.type === 'function').forEach(e => this.fakeCalls[e.name] = []);
+      // Throw an error if creating fakes in production
+      if (process.env.NODE_ENV === 'production') {
+        new Error('taskcluster-client object created in "fake" mode, when NODE_ENV == "production"');
       }
     }
   };
@@ -401,6 +421,28 @@ exports.createClient = function(reference, name) {
           });
         }
       };
+
+      // call out to the fake version, if set
+      if (this._options.fake) {
+        debug('Faking call to %s(%s)', entry.name, args.map(a => JSON.stringify(a, null, 2)).join(', '));
+        // Add a call record to fakeCalls[<method>]
+        var record = {};
+        if (payload !== undefined) {
+          record.payload = payload;
+        }
+        if (query !== null) {
+          record.query = query;
+        }
+        entry.args.forEach((k, i) => record[k] = args[i]);
+        this.fakeCalls[entry.name].push(record);
+        // Call fake[<method>]
+        if (!this._options.fake[entry.name]) {
+          return Promise.reject(new Error(
+            `Faked taskcluster-client object does not have an implementation of ${entry.name}`,
+          ));
+        }
+        return this._options.fake[entry.name].apply(null, args);
+      }
 
       // Start the retry request loop
       return retryRequest();

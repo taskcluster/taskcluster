@@ -641,4 +641,32 @@ suite('client requests/responses', function() {
       });
     });
   });
+
+  test('inject custom fake method', async function() {
+    let client;
+    let gotArgs;
+
+    const Fake = taskcluster.createClient(referenceNameStyle);
+    client = new Fake({
+      rootUrl: 'https://whatever.net',
+      credentials: {
+        clientId: 'nobody',
+        accessToken: 'nothing',
+      },
+      fake: {
+        postParam: async function() {
+          gotArgs = Array.prototype.slice.call(arguments);
+          return {result: 42};
+        },
+      },
+    });
+
+    const gotResult = await client.postParam('test', {hello: 'world'});
+    assert.deepEqual(gotArgs, ['test', {hello: 'world'}]);
+    assert.deepEqual(gotResult, {result: 42});
+    assert.deepEqual(client.fakeCalls.postParam, [{
+      param: 'test',
+      payload: {hello: 'world'},
+    }]);
+  });
 });
