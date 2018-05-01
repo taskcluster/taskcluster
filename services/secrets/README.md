@@ -12,6 +12,10 @@ The service expects the following to run periodically (daily?) to flush expired 
 
 From the project's base ``yarn install`` then ``yarn test``.
 No special configuration is required.
+Some of the tests will be skipped, but it is fine to make a pull request as long as no tests fail.
+
+To run *all* tests, you will need appropriate Taskcluster credentials.
+Using [taskcluster-cli](https://github.com/taskcluster/taskcluster-cli), run `eval $(taskcluster signin --scope assume:project:taskcluster:tests:taskcluster-secrets)`, then run `yarn test` again.
 
 # Deploying
 

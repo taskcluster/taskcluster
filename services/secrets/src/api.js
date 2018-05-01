@@ -20,7 +20,7 @@ let api = new API({
     'service credential or a one-time signing key.',
   ].join('\n'),
   name:          'secrets',
-  context: ['cfg', 'entity'],
+  context: ['cfg', 'Secret'],
 });
 
 // Export API
@@ -48,7 +48,7 @@ api.declare({
   let {name} = req.params;
   let {secret, expires} = req.body;
   try {
-    await this.entity.create({
+    await this.Secret.create({
       name:       name,
       secret:     secret,
       expires:    new Date(expires),
@@ -56,11 +56,13 @@ api.declare({
   } catch (e) {
     // If the entity exists, update it
     if (e.name == 'EntityAlreadyExistsError') {
-      let item = await this.entity.load({name});
+      let item = await this.Secret.load({name});
       await item.modify(function() {
         this.secret = secret;
         this.expires = new Date(expires);
       });
+    } else {
+      throw e;
     }
   }
   res.reply({});
@@ -79,7 +81,7 @@ api.declare({
 }, async function(req, res) {
   let {name} = req.params;
   try {
-    await this.entity.remove({name: name});
+    await this.Secret.remove({name: name});
   } catch (e) {
     if (e.name == 'ResourceNotFoundError') {
       return res.reportError('ResourceNotFound', 'Secret not found', {});
@@ -108,7 +110,7 @@ api.declare({
   let {name} = req.params;
   let item = undefined;
   try {
-    item = await this.entity.load({name});
+    item = await this.Secret.load({name});
   } catch (e) {
     if (e.name == 'ResourceNotFoundError') {
       return res.reportError('ResourceNotFound', 'Secret not found', {});
@@ -150,7 +152,7 @@ api.declare({
 }, async function(req, res) {
   const continuation = req.query.continuationToken || null;
   const limit = Math.min(parseInt(req.query.limit || 1000, 10), 1000);
-  const query = await this.entity.scan({}, {continuation, limit});
+  const query = await this.Secret.scan({}, {continuation, limit});
 
   return res.reply({
     secrets: query.entries.map(secret => secret.name),
