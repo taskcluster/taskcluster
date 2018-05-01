@@ -2,7 +2,7 @@ const _ = require('lodash');
 const assert = require('assert');
 const Entity = require('azure-entities');
 
-let SecretEntity = Entity.configure({
+let Secret = Entity.configure({
   version:          1,
   signEntities:     true,
   partitionKey:     Entity.keys.ConstantKey('secrets'),
@@ -14,11 +14,11 @@ let SecretEntity = Entity.configure({
   },
 });
 
-// Export SecretEntity
-exports.SecretEntity = SecretEntity;
+// Export Secret
+exports.Secret = Secret;
 
 /** Return JSON representation of the secret */
-SecretEntity.prototype.json = function() {
+Secret.prototype.json = function() {
   return {
     secret: _.cloneDeep(this.secret),
     expires: this.expires.toJSON(),
@@ -26,7 +26,7 @@ SecretEntity.prototype.json = function() {
 };
 
 /** Check if the resource is stale */
-SecretEntity.prototype.isExpired = function() {
+Secret.prototype.isExpired = function() {
   return (new Date()).getTime() > this.expires.getTime();
 };
 
@@ -35,7 +35,7 @@ SecretEntity.prototype.isExpired = function() {
  *
  * Returns a promise that all expired secrets have been deleted.
  */
-SecretEntity.expire = async function(now) {
+Secret.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await Entity.scan.call(this, {
