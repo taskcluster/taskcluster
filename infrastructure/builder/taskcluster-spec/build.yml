@@ -15,7 +15,7 @@ repositories:
 
 - name: auth
   kind: service
-  source: https://github.com/taskcluster/taskcluster-auth#master
+  source: https://github.com/taskcluster/taskcluster-auth#public-url-hax
   docs: generated
   service:
     buildtype: heroku-buildpack

@@ -49,7 +49,6 @@ class Deploy {
       ...contextFunctions,
     };
     this.resources = jsone(this.spec.deploy, context).resources;
-    this.ingress = jsone(this.spec.ingress, context);
   }
 
   async _writeResults() {
@@ -60,7 +59,6 @@ class Deploy {
       delete resource.name;
       fs.writeFileSync(filename, JSON.stringify(resource, null, 2));
     });
-    fs.writeFileSync(path.join(this.output, 'ingress.json'), JSON.stringify(this.ingress, null, 2));
   }
 
   async run() {

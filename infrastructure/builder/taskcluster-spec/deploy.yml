@@ -158,8 +158,12 @@ resources:
               $flatten:
               - name: PORT
                 value: '80'
+              - name: PUBLIC_URL
+                value: {$eval: "cfg.rootUrl"}
+              - name: PROXY_NAME
+                value: /api/auth
               - name: DEBUG
-                value: 'auth:*,statsum*,taskcluster-lib-monitor*,taskcluster-lib-docs,taskcluster-lib-api*'
+                value: 'auth:*,statsum*,taskcluster-lib-monitor*,taskcluster-lib-docs,taskcluster-lib-api*,express:*'
               - $map: {$eval: "infra.auth_secret_keys"}
                 each(k):
                   name: '${k}'
@@ -188,3 +192,30 @@ resources:
       - protocol: TCP
         port: 80
         targetPort: 80
+
+- apiVersion: extensions/v1beta1
+  kind: Ingress
+  metadata:
+    name: taskcluster-ingress
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+  spec:
+    tls:
+    - secretName: {$eval: "cfg.tlsCertSecretName"}
+      hosts:
+        - {$eval: "cfg.rootHost"}
+    rules:
+    - host: {$eval: "cfg.rootHost"}
+      http:
+        paths:
+        - path: /api/auth/
+          backend:
+            serviceName: auth
+            servicePort: 80
+        - path: /api/ping/
+          backend:
+            serviceName: ping
+            servicePort: 80
+        - backend:
+            serviceName: tools
+            servicePort: 80

@@ -24,23 +24,18 @@ class ClusterSpec {
 
     const deployFile = path.join(filename, 'deploy.yml');
     this.deploy = yaml.safeLoad(fs.readFileSync(deployFile));
-
-    const ingressFile = path.join(filename, 'ingress.yml');
-    this.ingress = yaml.safeLoad(fs.readFileSync(ingressFile));
   }
 
   _loadFile(filename) {
-    const {build, deploy, ingress} = JSON.parse(fs.readFileSync(filename));
+    const {build, deploy} = JSON.parse(fs.readFileSync(filename));
     this.build = build;
     this.deploy = deploy;
-    this.ingress = ingress;
   }
 
   write(filename) {
     const content = {
       build: this.build,
       deploy: this.deploy,
-      ingress: this.ingress,
     };
     fs.writeFileSync(filename, JSON.stringify(content, null, 2));
   }
