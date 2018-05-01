@@ -209,7 +209,7 @@ test('test the thing', async function() {
   });
 
   try {
-    await secrets.get('...', {}); // throws and error because we didn't fake it
+    await secrets.remove('...', {}); // throws and error because we didn't fake it
   } catch (err) {
     // pass
   }
