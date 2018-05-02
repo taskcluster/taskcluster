@@ -132,10 +132,10 @@ class Handlers {
     }
     let body = [
       '<details>\n',
-      '<summary>Submitting the task to Taskcluster failed. Details</summary>\n\n',
-      '```js\n',
-      errorBody,
-      '```\n',
+      '<summary>Submitting the task to Taskcluster failed. Details</summary>',
+      '',
+      errorBody, // already in Markdown..
+      '',
       '</details>',
     ].join('\n') ;
 
