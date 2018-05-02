@@ -309,6 +309,9 @@ func handleWorkerShutdown(abort func()) func() {
 				abort()
 				break
 			}
+			if resp.StatusCode != 404 {
+				log.Printf("WARNING: Non 200/404 status code from spot termination endpoint: %v", resp.StatusCode)
+			}
 		}
 	}()
 	return ticker.Stop

@@ -818,7 +818,7 @@ func (task *TaskRun) setReclaimTimer() {
 		// Reclaim 3 mins before current claim expires...
 		reclaimTime = takenUntil.Add(time.Minute * -3)
 	}
-	log.Printf("Reclaiming  at %v", reclaimTime)
+	log.Printf("Reclaiming task %v at %v", task.TaskID, reclaimTime)
 	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 	waitTimeUntilReclaim := reclaimTime.Round(0).Sub(time.Now())
 	log.Printf("Time to wait until then is %v", waitTimeUntilReclaim)
@@ -1056,7 +1056,7 @@ func (err *executionErrors) Occurred() bool {
 }
 
 func (task *TaskRun) resolve(e *executionErrors) *CommandExecutionError {
-	log.Print("Resolving task...")
+	log.Printf("Resolving task %v ...", task.TaskID)
 	if !e.Occurred() {
 		return ResourceUnavailable(task.StatusManager.ReportCompleted())
 	}
