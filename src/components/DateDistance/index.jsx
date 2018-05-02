@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { distanceInWords, distanceInWordsToNow } from 'date-fns';
+import { formatDistance, formatDistanceStrict } from 'date-fns';
 import { date } from '../../utils/prop-types';
 
 /**
@@ -26,8 +26,8 @@ export default class DateDistance extends Component {
 
   render() {
     const { from, offset } = this.props;
-    const fromNow = distanceInWordsToNow(from, { addSuffix: true });
-    const offsetNow = offset && distanceInWords(offset, from);
+    const fromNow = formatDistanceStrict(from, new Date(), { addSuffix: true });
+    const offsetNow = offset && formatDistance(from, offset);
 
     return offsetNow ? `${fromNow} (${offsetNow} later)` : fromNow;
   }

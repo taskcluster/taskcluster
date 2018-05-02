@@ -74,7 +74,10 @@ export default class ViewTask extends Component {
   };
 
   handleArtifactsPageChange = ({ cursor, previousCursor }) => {
-    const { match, data: { task, fetchMore } } = this.props;
+    const {
+      match,
+      data: { task, fetchMore },
+    } = this.props;
     const runId = match.params.runId || 0;
 
     return fetchMore({

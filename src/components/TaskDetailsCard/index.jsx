@@ -36,13 +36,7 @@ import { task } from '../../utils/prop-types';
     overflowX: 'hidden',
   },
   listItemButton: {
-    '& svg': {
-      transition: theme.transitions.create('fill'),
-      fill: theme.palette.primary.light,
-    },
-    '&:hover svg': {
-      fill: theme.palette.common.white,
-    },
+    ...theme.mixins.listItemButton,
   },
   pre: {
     margin: 0,

@@ -20,7 +20,6 @@ markdown.use(linkAttributes, {
 @withStyles(theme => ({
   root: {
     fontFamily: theme.typography.fontFamily,
-    fontSize: 16,
     color: theme.palette.text.primary,
     '& > p': {
       margin: 0,

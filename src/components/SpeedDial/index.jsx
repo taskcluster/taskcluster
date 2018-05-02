@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import classNames from 'classnames';
 import { arrayOf, node, oneOfType } from 'prop-types';
 import { withStyles } from 'material-ui/styles/index';
 import MuiSpeedDial from '@material-ui/lab/SpeedDial';
@@ -10,7 +11,7 @@ const IS_TOUCH = 'ontouchstart' in document.documentElement;
 
 @withStyles(theme => ({
   speedDial: {
-    position: 'absolute',
+    position: 'fixed',
     bottom: theme.spacing.double,
     right: theme.spacing.triple,
   },
@@ -50,7 +51,7 @@ export default class SpeedDial extends Component {
   };
 
   render() {
-    const { classes, children, ...props } = this.props;
+    const { classes, children, className, ...props } = this.props;
     const { open } = this.state;
 
     return (
@@ -60,7 +61,7 @@ export default class SpeedDial extends Component {
           <SpeedDialIcon icon={<DotsVerticalIcon />} openIcon={<CloseIcon />} />
         }
         ButtonProps={{ color: 'secondary' }}
-        className={classes.speedDial}
+        className={classNames(classes.speedDial, className)}
         onBlur={this.handleClose}
         onClick={this.handleClick}
         onClose={this.handleClose}

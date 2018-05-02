@@ -1,0 +1,36 @@
+query ViewWorkerTypes($provisionerId: ID!, $workerTypesConnection: PageConnection, $isAwsProvisioner: Boolean!) {
+  awsProvisionerWorkerTypeSummaries @include(if: $isAwsProvisioner) {
+    workerType
+    runningCapacity
+    pendingCapacity
+  }
+
+  workerTypes(provisionerId: $provisionerId, connection: $workerTypesConnection) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        provisionerId
+        workerType
+        stability
+        description
+        expires
+        lastDateActive
+        pendingTasks
+      }
+    }
+  }
+
+  provisioners {
+    edges {
+      node {
+        provisionerId
+      }
+    }
+  }
+}

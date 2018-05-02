@@ -29,7 +29,10 @@ const TaskIndex = loadable(() =>
 @hot(module)
 export default class Task extends Component {
   render() {
-    const { match: { path }, ...props } = this.props;
+    const {
+      match: { path },
+      ...props
+    } = this.props;
 
     return (
       <Switch>

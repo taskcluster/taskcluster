@@ -27,6 +27,12 @@ export default [
     path: '/tasks',
   },
   {
+    component: loadable(() =>
+      import(/* webpackChunkName: 'Provisioners' */ '../views/Provisioners')
+    ),
+    path: '/provisioners',
+  },
+  {
     // eslint-disable-next-line
     component: props =>
       props.user ? <Dashboard {...props} /> : <Home {...props} />,

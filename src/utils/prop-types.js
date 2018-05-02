@@ -66,13 +66,26 @@ export const status = shape({
   runs,
 });
 
+export const provisionerAction = shape({
+  name: string,
+  title: string,
+  context: oneOf(['PROVISIONER', 'WORKER_TYPE', 'WORKER']),
+  url: string,
+  method: oneOf(['POST', 'PUT', 'DELETE', 'PATCH']),
+  description: string,
+});
+
+export const stability = oneOf(['EXPERIMENTAL', 'STABLE', 'DEPRECATED']);
+
+export const taskMetadata = shape({
+  name: string,
+  description: string,
+  owner: string,
+  source: string,
+});
+
 export const task = shape({
-  metadata: shape({
-    name: string,
-    description: string,
-    owner: string,
-    source: string,
-  }),
+  metadata: taskMetadata,
   status,
   retries: number,
   created: date,
@@ -88,4 +101,55 @@ export const task = shape({
   routes: arrayOf(string),
   payload: object, // eslint-disable-line
   extra: object, // eslint-disable-line
+});
+
+export const worker = shape({
+  provisionerId: string,
+  workerType: string,
+  workerGroup: string,
+  workerId: string,
+  recentTasks: arrayOf(
+    shape({
+      taskId: string,
+      runId: number,
+      run,
+    })
+  ),
+  expires: date,
+  quarantineUntil: date,
+  latestTasks: arrayOf(task),
+  actions: arrayOf(provisionerAction),
+});
+
+export const workers = shape({
+  pageInfo,
+  edges: arrayOf(worker),
+});
+
+export const workerType = shape({
+  provisionerId: string,
+  workerType: string,
+  stability,
+  description: string,
+  expires: date,
+  lastDateActive: date,
+  actions: arrayOf(provisionerAction),
+});
+
+export const awsProvisionerWorkerTypeSummary = shape({
+  workerType: string,
+  minCapacity: number,
+  maxCapacity: number,
+  requestedCapacity: number,
+  pendingCapacity: number,
+  runningCapacity: number,
+});
+
+export const provisioner = shape({
+  provisionerId: string,
+  stability,
+  description: string,
+  expires: date,
+  lastDateActive: date,
+  actions: arrayOf(provisionerAction),
 });

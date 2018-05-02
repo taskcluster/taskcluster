@@ -1,0 +1,53 @@
+query ViewWorker($provisionerId: ID!, $workerType: String!, $workerGroup: String!, $workerId: ID!, $workerTypesConnection: PageConnection) {
+  worker(provisionerId: $provisionerId, workerType: $workerType, workerGroup: $workerGroup, workerId: $workerId) {
+    provisionerId
+    workerType
+    workerGroup
+    workerId
+    quarantineUntil
+    expires
+    firstClaim
+    recentTasks {
+      taskId
+      run {
+        taskId
+        runId
+        started
+        resolved
+        state
+      }
+    }
+    latestTasks {
+      taskId
+      metadata {
+        name
+        source
+        description
+        owner
+      }
+    }
+    actions {
+      name
+      title
+      context
+      url
+      description
+    }
+  }
+
+  workerTypes(provisionerId: $provisionerId, connection: $workerTypesConnection) {
+    edges {
+      node {
+        workerType
+      }
+    }
+  }
+
+  provisioners {
+    edges {
+      node {
+        provisionerId
+      }
+    }
+  }
+}

@@ -1,10 +1,11 @@
-import { Component } from 'react';
-import { array, func, number, shape } from 'prop-types';
+import { Component, Fragment } from 'react';
+import { array, arrayOf, func, number, shape, string, oneOf } from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import Table, {
   TableBody,
   TableCell,
-  TableFooter,
+  TableHead,
+  TableSortLabel,
   TablePagination,
   TableRow,
 } from 'material-ui/Table';
@@ -14,6 +15,17 @@ import { pageInfo } from '../../utils/prop-types';
 @withStyles({
   loading: {
     textAlign: 'right',
+  },
+  spinner: {
+    height: 56,
+    minHeight: 56,
+    paddingRight: 2,
+    display: 'flex',
+    alignItems: 'center',
+    flexDirection: 'row-reverse',
+  },
+  tableWrapper: {
+    overflowX: 'auto',
   },
 })
 /**
@@ -34,8 +46,9 @@ export default class ConnectionDataTable extends Component {
     pageSize: number.isRequired,
     /**
      * The number of columns the table contains.
+     * This property is not required when the `headers` prop is provided.
      */
-    columnsSize: number.isRequired,
+    columnsSize: number,
     /**
      * A function to execute for each row to render in the table.
      * Will be passed a single edge from the connection. The function
@@ -49,6 +62,30 @@ export default class ConnectionDataTable extends Component {
      * return a Promise which waits for the next page connection.
      */
     onPageChange: func.isRequired,
+    /**
+     * A function to execute when a column header is clicked.
+     * Will receive a single argument which is the column name.
+     * This can be used to handle sorting.
+     */
+    onHeaderClick: func,
+    /**
+     * A header name to sort on.
+     */
+    sortByHeader: string,
+    /**
+     * The sorting direction.
+     */
+    sortDirection: oneOf(['desc', 'asc']),
+    /**
+     * A list of header names to use on the table starting from the left.
+     */
+    headers: arrayOf(string),
+  };
+
+  static defaultProps = {
+    sortByHeader: null,
+    sortDirection: 'desc',
+    headers: null,
   };
 
   pages = new Map();
@@ -99,6 +136,12 @@ export default class ConnectionDataTable extends Component {
     };
   }
 
+  handleHeaderClick = ({ target }) => {
+    if (this.props.onHeaderClick) {
+      this.props.onHeaderClick(target.id);
+    }
+  };
+
   render() {
     const {
       classes,
@@ -106,43 +149,65 @@ export default class ConnectionDataTable extends Component {
       columnsSize,
       connection,
       renderRow,
+      headers,
+      sortByHeader,
+      sortDirection,
     } = this.props;
     const { loading } = this.state;
     const { count, page } = this.getPaginationMetadata();
+    const colSpan = columnsSize || (headers && headers.length) || 1;
 
     return (
-      <Table>
-        <TableBody>
-          {connection.edges.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={columnsSize}>
-                <em>No items for this page.</em>
-              </TableCell>
-            </TableRow>
-          ) : (
-            connection.edges.map(renderRow)
-          )}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            {loading ? (
-              <TableCell colSpan={columnsSize} className={classes.loading}>
-                <Spinner size={24} />
-              </TableCell>
-            ) : (
-              <TablePagination
-                colSpan={columnsSize}
-                count={count}
-                labelDisplayedRows={Function.prototype}
-                rowsPerPage={pageSize}
-                rowsPerPageOptions={[pageSize]}
-                page={page}
-                onChangePage={this.handlePageChange}
-              />
+      <Fragment>
+        <div className={classes.tableWrapper}>
+          <Table>
+            {headers && (
+              <TableHead>
+                <TableRow>
+                  {headers.map(header => (
+                    <TableCell key={`table-header-${header}`}>
+                      <TableSortLabel
+                        id={header}
+                        active={header === sortByHeader}
+                        direction={sortDirection || 'desc'}
+                        onClick={this.handleHeaderClick}>
+                        {header}
+                      </TableSortLabel>
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
             )}
-          </TableRow>
-        </TableFooter>
-      </Table>
+            <TableBody>
+              {connection.edges.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={colSpan}>
+                    <em>No items for this page.</em>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                connection.edges.map(renderRow)
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        {loading ? (
+          <div className={classes.spinner}>
+            <Spinner size={24} />
+          </div>
+        ) : (
+          <TablePagination
+            component="div"
+            colSpan={colSpan}
+            count={count}
+            labelDisplayedRows={Function.prototype}
+            rowsPerPage={pageSize}
+            rowsPerPageOptions={[pageSize]}
+            page={page}
+            onChangePage={this.handlePageChange}
+          />
+        )}
+      </Fragment>
     );
   }
 }

@@ -18,4 +18,7 @@ export default {
   RETRY: 'info',
   TASK_RETRY: 'info',
   RERUN: 'info',
+  EXPERIMENTAL: 'info',
+  STABLE: 'success',
+  DEPRECATED: 'warning',
 };
