@@ -1334,7 +1334,7 @@ func loadFromJSONFile(obj interface{}, filename string) (err error) {
 	d := json.NewDecoder(f)
 	err = d.Decode(obj)
 	if err == nil {
-		log.Printf("Loaded file %v into object:\n%#v\n", filename, obj)
+		log.Printf("Loaded file %v", filename)
 	} else {
 		log.Printf("Could not load file %v into object %T - is it json?", filename, obj)
 	}
