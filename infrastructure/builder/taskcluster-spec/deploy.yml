@@ -96,8 +96,12 @@ resources:
             imagePullPolicy: Always
             resources:
               requests:
-                cpu: 10m
-                memory: 100Mi
+                # This service builds on startup, which
+                # is a very resource-intensive operation.
+                # It does not use those resources after
+                # startup.
+                cpu: 1000m
+                memory: 400Mi
             env:
               - name: APPLICATION_NAME
                 value: {$eval: "cfg.clusterName"}
