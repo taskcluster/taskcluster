@@ -128,11 +128,12 @@ let load = loader({
       let handler = new Handler({
         notifier,
         validator,
-        monitor:            monitor.prefix('handler'),
-        routePrefix:        cfg.app.routePrefix,
+        monitor:                  monitor.prefix('handler'),
+        routePrefix:              cfg.app.routePrefix,
+        ignoreTaskReasonResolved: cfg.app.ignoreTaskReasonResolved,
         listener,
         queue,
-        testing:            profile === 'test',
+        testing:                  profile === 'test',
       });
       return handler.listen();
     },
