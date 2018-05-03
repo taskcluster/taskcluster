@@ -22,9 +22,9 @@ __on-success:__ Only when the task completes with no errors will you get a notif
 
 __on-failed:__ Only when the task fails for non-internal reasons will this be triggered. This could be your tests failing or a lint step failing, as examples.
 
-__on-exception:__ This is triggered when the task didn't run due to some exception, internal error, timeouts, deadlines, malformed-payload; if the task was deliberately canceled notifications will not be sent.
+__on-exception:__ This is triggered when the task didn't run due to some exception such as internal error, timeouts, deadlines, malformed-payload. Some exceptions can be ignored, using the `ignoreTaskReasonResolved` configuration parameter.  By default, this parameter contains `canceled` and `deadline-exceeded`.
 
-More thorough (and more correct) documentation of what task statuses are can be found [on the docs site](https://docs.taskcluster.net/reference/platform/queue/api-docs#status).
+More thorough (and more correct) documentation of task exception `reasonResolved` codes can be found [on the docs site](https://docs.taskcluster.net/reference/platform/queue/api-docs#status).
 
 ### Route Syntax
 
