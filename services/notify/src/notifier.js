@@ -14,7 +14,9 @@ let EmailTemplate = require('email-templates').EmailTemplate;
 class Notifier {
   constructor(options = {}) {
     // Set default options
-    this.options = _.defaults({}, options);
+    this.options = _.defaults({
+      emailBlacklist: [],
+    }, options);
     this.hashCache = [];
     this.ses = new aws.SES(_.defaults({
       params: {
@@ -47,6 +49,11 @@ class Notifier {
   async email({address, subject, content, link, replyTo, template}) {
     if (this.isDuplicate(address, subject, content, link, replyTo)) {
       debug('Duplicate email send detected. Not attempting resend.');
+      return;
+    }
+    // Don't notify emails on the blacklist
+    if (this.options.emailBlacklist.includes(address)) {
+      debug('Blacklist email: %s send detected, discarding the notification, link: %s', address, link);
       return;
     }
     debug(`Sending email to ${address}`);
