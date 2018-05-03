@@ -6,6 +6,8 @@ defaults:
     listenerQueueName:            !env LISTENER_QUEUE_NAME
     routePrefix:                  notify
     publishMetaData:              !env:bool PUBLISH_METADATA
+    # Email address to blacklist, useful to mitigate temporary misuse
+    emailBlacklist:               !env:list EMAIL_BLACKLIST
 
   taskcluster:
     authBaseUrl:      https://auth.taskcluster.net/v1

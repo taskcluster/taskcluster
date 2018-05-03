@@ -104,6 +104,7 @@ let load = loader({
       email: cfg.app.sourceEmail,
       aws: cfg.aws,
       queueName: cfg.app.sqsQueueName,
+      emailBlacklist: cfg.app.emailBlacklist,
       publisher,
     }),
   },
