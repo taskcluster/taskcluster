@@ -1,4 +1,5 @@
 suite('Handler', () => {
+  let _ = require('lodash');
   let assert = require('assert');
   let mocha = require('mocha');
   let debug = require('debug')('test');
@@ -9,12 +10,14 @@ suite('Handler', () => {
 
   let publisher;
   let listener;
+  let notifier;
   let queue = {};
 
   mocha.before(async () => {
     publisher = await load('publisher', {profile: 'test', process: 'test'});
     listener = await load('listener', {profile: 'test', process: 'test'});
-    await load('handler', {profile: 'test', process: 'test', listener, queue, publisher});
+    notifier = await load('notifier', {profile: 'test', process: 'test', publisher});
+    await load('handler', {profile: 'test', process: 'test', listener, queue, publisher, notifier});
   });
 
   // Create datetime for created and deadline as 25 minutes later
@@ -72,9 +75,37 @@ suite('Handler', () => {
     ],
   };
 
+  ['canceled', 'deadline-exceeded'].forEach(reasonResolved => {
+    test(`does not publish for ${reasonResolved}`, async () => {
+      let notified = false;
+      notifier.pulse = () => { notified = true; };
+      try {
+        let route = 'test-notify.pulse.notify-test.on-any';
+        queue.task = sinon.stub().returns(makeTask([route]));
+        const status = _.cloneDeep(baseStatus);
+        status.state = 'exception';
+        status.runs[0].state = 'exception';
+        status.runs[0].reasonResolved = reasonResolved;
+        await listener.fakeMessage({
+          payload: {status},
+          exchange: 'exchange/taskcluster-queue/v1/task-completed',
+          routingKey: 'doesnt-matter',
+          routes: [route],
+        });
+
+        // wait long enough for the promises to resolve..
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        assert.equal(notified, false);
+      } finally {
+        delete notifier.pulse; // restore to method via prototype
+      }
+    });
+  });
+
   test('pulse', async () => {
-    let result = publisher.on('fakePublish', ({CCs}) => {
-      assert.deepEqual(CCs, ['route.notify-test']);
+    let published = new Promise(resolve => {
+      publisher.once('fakePublish', resolve);
     });
 
     let route = 'test-notify.pulse.notify-test.on-any';
@@ -87,7 +118,9 @@ suite('Handler', () => {
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    return result;
+
+    const {CCs} = await published;
+    assert.deepEqual(CCs, ['route.notify-test']);
   });
 
   test('email', async () => {

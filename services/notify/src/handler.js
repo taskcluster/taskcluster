@@ -6,13 +6,14 @@ let jsone = require('json-e');
 
 /** Handler listening for tasks that carries notifications */
 class Handler {
-  constructor({notifier, validator, monitor, routePrefix, listener, queue, testing}) {
+  constructor({notifier, validator, monitor, routePrefix, ignoreTaskReasonResolved, listener, queue, testing}) {
     this.queue = queue;
 
     this.notifier = notifier;
     this.validator = validator;
     this.monitor = monitor;
     this.routePrefix = routePrefix;
+    this.ignoreTaskReasonResolved = ignoreTaskReasonResolved;
 
     this.listener = listener;
     this.testing = testing;
@@ -53,9 +54,11 @@ class Handler {
     let {status} = message.payload;
 
     // If task was canceled, we don't send a notification since this was a deliberate user action
-    if (status.state === 'exception' && (_.last(status.runs) || {}).reasonResolved === 'canceled') {
-      debug('Received message for %s with notify routes, ignoring because task was canceled', status.taskId);
-      return null;
+    if (status.state === 'exception') {
+      if (this.ignoreTaskReasonResolved.includes((_.last(status.runs) || {}).reasonResolved)) {
+        debug('Received message for %s with notify routes, ignoring because task was canceled', status.taskId);
+        return null;
+      }
     }
 
     // Load task definition
