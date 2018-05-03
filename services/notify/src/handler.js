@@ -50,8 +50,15 @@ class Handler {
   }
 
   async onMessage(message) {
-    // Load task definition
     let {status} = message.payload;
+
+    // If task was canceled, we don't send a notification since this was a deliberate user action
+    if (status.state === 'exception' && (_.last(status.runs) || {}).reasonResolved === 'canceled') {
+      debug('Received message for %s with notify routes, ignoring because task was canceled', status.taskId);
+      return null;
+    }
+
+    // Load task definition
     let taskId = status.taskId;
     let task = await this.queue.task(taskId);
     let href = `https://tools.taskcluster.net/task-inspector/#${taskId}`;
@@ -137,4 +144,3 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
 
 // Export Handler
 module.exports = Handler;
-

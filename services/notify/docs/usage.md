@@ -16,13 +16,13 @@ __Pulse:__ We can also send a Pulse message that is documented [on this page](ht
 
 ### Filters
 
-__on-any:__ This does what it sounds like and will notify you of task-completion no matter how it ends.
+__on-any:__ This does what it sounds like and will notify you of task-completion no matter how it ends. Unless the task was deliberately canceled.
 
 __on-success:__ Only when the task completes with no errors will you get a notification.
 
 __on-failed:__ Only when the task fails for non-internal reasons will this be triggered. This could be your tests failing or a lint step failing, as examples.
 
-__on-exception:__ This is triggered when some sort of internal issue happens in Taskcluster and we had to cancel the task.
+__on-exception:__ This is triggered when the task didn't run due to some exception, internal error, timeouts, deadlines, malformed-payload; if the task was deliberately canceled notifications will not be sent.
 
 More thorough (and more correct) documentation of what task statuses are can be found [on the docs site](https://docs.taskcluster.net/reference/platform/queue/api-docs#status).
 
