@@ -124,10 +124,10 @@ var app = function(options) {
     next();
   });
 
-  // Middleware for development
-  if (app.get('env') == 'development') {
-    app.use(morganDebug('base:app:request', 'dev'));
-  }
+  // output user-agent and referrer in production, which can be useful when debugging API (ab)use
+  const format = app.get('env') == 'development' ?
+    'dev' : '[:date[clf]] :method :url -> :status; ip=:remote-addr referrer=":referrer" ua=":user-agent"';
+  app.use(morganDebug('app:request', format));
 
   if (options.robotsTxt) {
     app.use('/robots.txt', function(req, res) {

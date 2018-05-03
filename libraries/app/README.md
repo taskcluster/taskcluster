@@ -36,3 +36,9 @@ The resulting object is an express application, configured with the standard
 TaskCluster microservice settings.  It should have an API object added to it,
 and then its `createServer` method called, which will start the Express app and
 return a Promise suitable for use with the loader..
+
+## Debugging Abuse
+
+To debug unexpected use of the server, enable `DEBUG=app:request` to see a log
+line for each request, including the requesting IP and referrer and user-agent
+headers.
