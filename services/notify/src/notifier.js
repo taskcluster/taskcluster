@@ -14,9 +14,9 @@ let EmailTemplate = require('email-templates').EmailTemplate;
 class Notifier {
   constructor(options = {}) {
     // Set default options
-    this.options = _.defaults({
+    this.options = _.defaults({}, options, {
       emailBlacklist: [],
-    }, options);
+    });
     this.hashCache = [];
     this.ses = new aws.SES(_.defaults({
       params: {
