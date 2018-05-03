@@ -8,6 +8,10 @@ defaults:
     publishMetaData:              !env:bool PUBLISH_METADATA
     # Email address to blacklist, useful to mitigate temporary misuse
     emailBlacklist:               !env:json EMAIL_BLACKLIST
+    # ignore tasks with reasonResolved matching something in this list
+    ignoreTaskReasonResolved:
+        - canceled
+        - deadline-exceeded
 
   taskcluster:
     authBaseUrl:      https://auth.taskcluster.net/v1
