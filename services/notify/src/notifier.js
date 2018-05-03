@@ -53,7 +53,7 @@ class Notifier {
     }
     // Don't notify emails on the blacklist
     if (this.options.emailBlacklist.includes(address)) {
-      debug('Blacklist email: %s send detected, discarding the notification, link: %s', address, link);
+      debug('Blacklist email: %s send detected, discarding the notification', address);
       return;
     }
     debug(`Sending email to ${address}`);
