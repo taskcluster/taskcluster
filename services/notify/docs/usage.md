@@ -18,7 +18,7 @@ __Pulse:__ We can also send a Pulse message that is documented [on this page](ht
 
 __on-any:__ This does what it sounds like and will notify you of task-completion no matter how it ends. Unless the task was deliberately canceled.
 
-__on-success:__ Only when the task completes with no errors will you get a notification.
+__on-completed:__ Only when the task completes with no errors will you get a notification.
 
 __on-failed:__ Only when the task fails for non-internal reasons will this be triggered. This could be your tests failing or a lint step failing, as examples.
 
