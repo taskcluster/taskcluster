@@ -26,12 +26,15 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 func TestAbortAfterMaxRunTime(t *testing.T) {
 	defer setup(t, "TestAbortAfterMaxRunTime")()
 	payload := GenericWorkerPayload{
-		Command:    sleep(4),
-		MaxRunTime: 3,
+		Command:    sleep(27),
+		MaxRunTime: 5,
 	}
 	td := testTask(t)
 
-	taskID := submitAndAssert(t, td, payload, "failed", "failed")
+	taskID := scheduleTask(t, td, payload)
+	startTime := time.Now()
+	ensureResolution(t, taskID, "failed", "failed")
+	endTime := time.Now()
 	// check uploaded log mentions abortion
 	// note: we do this rather than local log, to check also log got uploaded
 	// as failure path requires that task is resolved before logs are uploaded
@@ -52,9 +55,13 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	if !strings.Contains(logtext, "max run time exceeded") {
 		t.Fatalf("Was expecting log file to mention task abortion, but it doesn't")
 	}
-	// TODO: this is a hack to make sure sleep process has died before we call teardown
-	// We need to make sure processes are properly killed when a task is aborted
-	time.Sleep(1500 * time.Millisecond)
+	duration := endTime.Sub(startTime).Seconds()
+	if duration < 5 {
+		t.Fatalf("Task %v should have taken at least 3 seconds, but took %v seconds", taskID, duration)
+	}
+	if duration > 20 {
+		t.Fatalf("Task %v should have taken no more than 20 seconds, but took %v seconds", taskID, duration)
+	}
 }
 
 func TestIdleWithoutCrash(t *testing.T) {

@@ -68,7 +68,7 @@ func setupEnvironment(t *testing.T, testName string) (teardown func()) {
 		// want to delete that, which is why we delete the TasksDir
 		err := os.RemoveAll(testDir)
 		if err != nil {
-			t.Fatalf("Not able to clean up after test: %v", err)
+			t.Logf("WARNING: Not able to clean up after test: %v", err)
 		}
 		taskContext = nil
 		globalTestName = ""
