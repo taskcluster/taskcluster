@@ -126,8 +126,7 @@ func prepareTaskUser(userName string) (reboot bool) {
 			panic(err)
 		}
 		if script := config.RunAfterUserCreation; script != "" {
-			var noDeadline time.Time
-			command, err := process.NewCommand([]string{script}, taskContext.TaskDir, nil, loginInfo, noDeadline)
+			command, err := process.NewCommand([]string{script}, taskContext.TaskDir, nil, loginInfo)
 			if err != nil {
 				panic(err)
 			}
@@ -218,7 +217,7 @@ func (task *TaskRun) generateCommand(index int) error {
 		task.Errorf("Cannot get handle of interactive user: %v", err)
 		return err
 	}
-	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, loginInfo, task.maxRunTimeDeadline)
+	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, loginInfo)
 	if err != nil {
 		return err
 	}

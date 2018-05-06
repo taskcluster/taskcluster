@@ -57,7 +57,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	}
 	duration := endTime.Sub(startTime).Seconds()
 	if duration < 5 {
-		t.Fatalf("Task %v should have taken at least 3 seconds, but took %v seconds", taskID, duration)
+		t.Fatalf("Task %v should have taken at least 5 seconds, but took %v seconds", taskID, duration)
 	}
 	if duration > 20 {
 		t.Fatalf("Task %v should have taken no more than 20 seconds, but took %v seconds", taskID, duration)

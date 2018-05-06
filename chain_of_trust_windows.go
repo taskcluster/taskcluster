@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"golang.org/x/sys/windows"
 
@@ -16,8 +15,7 @@ func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error 
 	if err != nil {
 		panic(fmt.Errorf("SERIOUS BUG: Could not get login info of task user to check it can't read chain of trust private key - %v", err))
 	}
-	TenSecondDeadline := time.Now().Add(time.Second * 10)
-	c, err := process.NewCommand([]string{"cmd.exe", "/c", "type", config.SigningKeyLocation}, cwd, nil, loginInfo, TenSecondDeadline)
+	c, err := process.NewCommand([]string{"cmd.exe", "/c", "type", config.SigningKeyLocation}, cwd, nil, loginInfo)
 	if err != nil {
 		panic(fmt.Errorf("SERIOUS BUG: Could not create command (not even trying to execute it yet) to cat private chain of trust key - %v", err))
 	}
