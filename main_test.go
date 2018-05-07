@@ -26,7 +26,11 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 func TestAbortAfterMaxRunTime(t *testing.T) {
 	defer setup(t, "TestAbortAfterMaxRunTime")()
 	payload := GenericWorkerPayload{
-		Command:    sleep(27),
+		Command: append(
+			sleep(27),
+			// also make sure subsequent commands after abort don't run
+			helloGoodbye()...,
+		),
 		MaxRunTime: 5,
 	}
 	td := testTask(t)
@@ -53,7 +57,12 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	}
 	logtext := string(bytes)
 	if !strings.Contains(logtext, "max run time exceeded") {
-		t.Fatalf("Was expecting log file to mention task abortion, but it doesn't")
+		t.Log("Was expecting log file to mention task abortion, but it doesn't:")
+		t.Fatal(logtext)
+	}
+	if strings.Contains(logtext, "hello") {
+		t.Log("Task should have been aborted before 'hello' was logged, but log contains 'hello':")
+		t.Fatal(logtext)
 	}
 	duration := endTime.Sub(startTime).Seconds()
 	if duration < 5 {
