@@ -1,6 +1,6 @@
 language: go
 go:
-  - 1.9.4
+  - 1.10.2
 
 env:
   - "GIMME_OS=linux GIMME_ARCH=amd64"
@@ -16,9 +16,11 @@ before_install:
   - go get golang.org/x/tools/cmd/cover
   - go get github.com/pierrre/gotestcover
 
+install:
+  - 'CGO_ENABLED=0 go get -v -t -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...'
+
 script:
   # need to test without gotestcover since error code is not reliable for gotestcover
-  - 'CGO_ENABLED=0 go install -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...'
   - 'test $GIMME_OS.$GIMME_ARCH != linux.amd64 || CGO_ENABLED=1 GORACE=history_size=7 go test -v -ldflags "-X github.com/taskcluster/taskcluster-proxy.revision=$(git rev-parse HEAD)" ./...'
 
 after_script:
