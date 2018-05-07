@@ -1,4 +1,4 @@
-Generated: 1525089221
+Generated: 1525699361
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -3403,9 +3403,86 @@ Entry 14    =
 This endpoint is used to check that the service is up.'
 
 
+http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#
+=======================================================================================
+$schema: http://json-schema.org/draft-06/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#
+TYPE_NAME: AvailabilityZoneConfiguration
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: Availability zone configuration
+id: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#
+properties:
+  MemberNames:
+    availabilityZone: AvailabilityZone
+    launchSpec: LaunchSpec
+    region: Region
+    secrets: Secrets
+    userData: UserData
+  Properties:
+    availabilityZone:
+      IS_REQUIRED: true
+      PROPERTY_NAME: availabilityZone
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/availabilityZone
+      TYPE_NAME: ""
+      description: |
+        The AWS availability zone being configured.  Example: eu-central-1b
+      type: string
+    launchSpec:
+      IS_REQUIRED: true
+      PROPERTY_NAME: launchSpec
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/launchSpec
+      TYPE_NAME: ""
+      description: |
+        LaunchSpecification entries unique to this AZ
+      type: object
+    region:
+      IS_REQUIRED: true
+      PROPERTY_NAME: region
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/region
+      TYPE_NAME: ""
+      description: |
+        The AWS region containing this availability zone.  Example: eu-central-1
+      type: string
+    secrets:
+      IS_REQUIRED: false
+      PROPERTY_NAME: secrets
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/secrets
+      TYPE_NAME: ""
+      default: {}
+      description: |
+        Static Secrets unique to this AZ
+      type: object
+    userData:
+      IS_REQUIRED: false
+      PROPERTY_NAME: userData
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/userData
+      TYPE_NAME: ""
+      default: {}
+      description: |
+        UserData entries unique to this AZ
+      type: object
+  SortedPropertyNames:
+  - availabilityZone
+  - launchSpec
+  - region
+  - secrets
+  - userData
+  SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties
+required:
+- region
+- availabilityZone
+- launchSpec
+title: Availability Zone Configuration
+type: object
+
+
 http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#
 ===============================================================================
-$schema: http://json-schema.org/draft-04/schema#
+$schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/backend-status-response.json#
@@ -3455,11 +3532,11 @@ type: object
 
 http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#
 =============================================================================
-$schema: http://json-schema.org/draft-04/schema#
+$schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-secret-request.json#
-TYPE_NAME: GetSecretRequest
+TYPE_NAME: SecretRequest
 additionalProperties:
   Boolean: false
   Properties: null
@@ -3538,13 +3615,13 @@ required:
 - scopes
 - token
 - expiration
-title: Get Secret Request
+title: Secret Request
 type: object
 
 
 http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#
 ==================================================================================
-$schema: http://json-schema.org/draft-04/schema#
+$schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#
@@ -3580,76 +3657,86 @@ properties:
       SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones
       TYPE_NAME: ""
       items:
+        $ref: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items
-        TYPE_NAME: AvailabilityZoneConfiguration
-        additionalProperties:
-          Boolean: false
-          Properties: null
-        description: Availability zone configuration
-        properties:
-          MemberNames:
-            availabilityZone: AvailabilityZone
-            launchSpec: LaunchSpec
-            region: Region
-            secrets: Secrets
-            userData: UserData
-          Properties:
-            availabilityZone:
-              IS_REQUIRED: true
-              PROPERTY_NAME: availabilityZone
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/availabilityZone
-              TYPE_NAME: ""
-              description: |
-                The AWS availability zone being configured.  Example: eu-central-1b
-              type: string
-            launchSpec:
-              IS_REQUIRED: true
-              PROPERTY_NAME: launchSpec
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/launchSpec
-              TYPE_NAME: ""
-              description: |
-                LaunchSpecification entries unique to this AZ
-              type: object
-            region:
-              IS_REQUIRED: true
-              PROPERTY_NAME: region
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/region
-              TYPE_NAME: ""
-              description: |
-                The AWS region containing this availability zone.  Example: eu-central-1
-              type: string
-            secrets:
-              IS_REQUIRED: false
-              PROPERTY_NAME: secrets
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/secrets
-              TYPE_NAME: ""
-              default: {}
-              description: |
-                Static Secrets unique to this AZ
-              type: object
-            userData:
-              IS_REQUIRED: false
-              PROPERTY_NAME: userData
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/userData
-              TYPE_NAME: ""
-              default: {}
-              description: |
-                UserData entries unique to this AZ
-              type: object
-          SortedPropertyNames:
+        REF_SCHEMA_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#
+        REF_SUBSCHEMA:
+          $schema: http://json-schema.org/draft-06/schema#
+          IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#
+          TYPE_NAME: AvailabilityZoneConfiguration
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          description: Availability zone configuration
+          id: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#
+          properties:
+            MemberNames:
+              availabilityZone: AvailabilityZone
+              launchSpec: LaunchSpec
+              region: Region
+              secrets: Secrets
+              userData: UserData
+            Properties:
+              availabilityZone:
+                IS_REQUIRED: true
+                PROPERTY_NAME: availabilityZone
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/availabilityZone
+                TYPE_NAME: ""
+                description: |
+                  The AWS availability zone being configured.  Example: eu-central-1b
+                type: string
+              launchSpec:
+                IS_REQUIRED: true
+                PROPERTY_NAME: launchSpec
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/launchSpec
+                TYPE_NAME: ""
+                description: |
+                  LaunchSpecification entries unique to this AZ
+                type: object
+              region:
+                IS_REQUIRED: true
+                PROPERTY_NAME: region
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/region
+                TYPE_NAME: ""
+                description: |
+                  The AWS region containing this availability zone.  Example: eu-central-1
+                type: string
+              secrets:
+                IS_REQUIRED: false
+                PROPERTY_NAME: secrets
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/secrets
+                TYPE_NAME: ""
+                default: {}
+                description: |
+                  Static Secrets unique to this AZ
+                type: object
+              userData:
+                IS_REQUIRED: false
+                PROPERTY_NAME: userData
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/userData
+                TYPE_NAME: ""
+                default: {}
+                description: |
+                  UserData entries unique to this AZ
+                type: object
+            SortedPropertyNames:
+            - availabilityZone
+            - launchSpec
+            - region
+            - secrets
+            - userData
+            SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties
+          required:
+          - region
           - availabilityZone
           - launchSpec
-          - region
-          - secrets
-          - userData
-          SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties
-        required:
-        - region
-        - availabilityZone
-        - launchSpec
-        type: object
+          title: Availability Zone Configuration
+          type: object
+        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items
+        TYPE_NAME: ""
       type: array
     canUseOndemand:
       IS_REQUIRED: false
@@ -3683,111 +3770,120 @@ properties:
       SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes
       TYPE_NAME: ""
       items:
+        $ref: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items
-        TYPE_NAME: InstanceTypeConfiguration
-        additionalProperties:
-          Boolean: false
-          Properties: null
-        description: Instance Type configuration
-        properties:
-          MemberNames:
-            capacity: Capacity
-            instanceType: InstanceType
-            launchSpec: LaunchSpec
-            scopes: Scopes
-            secrets: Secrets
-            userData: UserData
-            utility: Utility
-          Properties:
-            capacity:
-              IS_REQUIRED: true
-              PROPERTY_NAME: capacity
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/capacity
-              TYPE_NAME: ""
-              description: |
-                This number represents the number of tasks that this instance type
-                is capable of running concurrently.  This is used by the provisioner
-                to know how many pending tasks to offset a pending instance of this
-                type by
-              type: number
-            instanceType:
-              IS_REQUIRED: true
-              PROPERTY_NAME: instanceType
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/instanceType
-              TYPE_NAME: ""
-              description: |
-                InstanceType name for Amazon.
-              type: string
-            launchSpec:
-              IS_REQUIRED: true
-              PROPERTY_NAME: launchSpec
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/launchSpec
-              TYPE_NAME: ""
-              description: |
-                LaunchSpecification entries unique to this InstanceType
-              type: object
-            scopes:
-              IS_REQUIRED: true
-              PROPERTY_NAME: scopes
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/scopes
-              TYPE_NAME: ""
-              description: |
-                Scopes which should be included for this InstanceType.  Scopes must
-                be composed of printable ASCII characters and spaces.
-              items:
-                IS_REQUIRED: false
-                PROPERTY_NAME: ""
-                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/scopes/items
+        REF_SCHEMA_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#
+        REF_SUBSCHEMA:
+          $schema: http://json-schema.org/draft-06/schema#
+          IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#
+          TYPE_NAME: InstanceTypeConfiguration
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          description: Instance Type configuration
+          id: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#
+          properties:
+            MemberNames:
+              capacity: Capacity
+              instanceType: InstanceType
+              launchSpec: LaunchSpec
+              scopes: Scopes
+              secrets: Secrets
+              userData: UserData
+              utility: Utility
+            Properties:
+              capacity:
+                IS_REQUIRED: true
+                PROPERTY_NAME: capacity
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/capacity
                 TYPE_NAME: ""
-                pattern: ^[ -~]*$
+                description: |
+                  This number represents the number of tasks that this instance type
+                  is capable of running concurrently.  This is used by the provisioner
+                  to know how many pending tasks to offset a pending instance of this
+                  type by
+                type: number
+              instanceType:
+                IS_REQUIRED: true
+                PROPERTY_NAME: instanceType
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/instanceType
+                TYPE_NAME: ""
+                description: |
+                  InstanceType name for Amazon.
                 type: string
-              type: array
-            secrets:
-              IS_REQUIRED: true
-              PROPERTY_NAME: secrets
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/secrets
-              TYPE_NAME: ""
-              description: |
-                Static Secrets unique to this InstanceType
-              type: object
-            userData:
-              IS_REQUIRED: true
-              PROPERTY_NAME: userData
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/userData
-              TYPE_NAME: ""
-              description: |
-                UserData entries unique to this InstanceType
-              type: object
-            utility:
-              IS_REQUIRED: true
-              PROPERTY_NAME: utility
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/utility
-              TYPE_NAME: ""
-              description: |
-                This number is a relative measure of performance between two instance
-                types.  It is multiplied by the spot price from Amazon to figure out
-                which instance type is the cheapest one
-              type: number
-          SortedPropertyNames:
-          - capacity
+              launchSpec:
+                IS_REQUIRED: true
+                PROPERTY_NAME: launchSpec
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/launchSpec
+                TYPE_NAME: ""
+                description: |
+                  LaunchSpecification entries unique to this InstanceType
+                type: object
+              scopes:
+                IS_REQUIRED: true
+                PROPERTY_NAME: scopes
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/scopes
+                TYPE_NAME: ""
+                description: |
+                  Scopes which should be included for this InstanceType.  Scopes must
+                  be composed of printable ASCII characters and spaces.
+                items:
+                  IS_REQUIRED: false
+                  PROPERTY_NAME: ""
+                  SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/scopes/items
+                  TYPE_NAME: ""
+                  pattern: ^[ -~]*$
+                  type: string
+                type: array
+              secrets:
+                IS_REQUIRED: true
+                PROPERTY_NAME: secrets
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/secrets
+                TYPE_NAME: ""
+                description: |
+                  Static Secrets unique to this InstanceType
+                type: object
+              userData:
+                IS_REQUIRED: true
+                PROPERTY_NAME: userData
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/userData
+                TYPE_NAME: ""
+                description: |
+                  UserData entries unique to this InstanceType
+                type: object
+              utility:
+                IS_REQUIRED: true
+                PROPERTY_NAME: utility
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/utility
+                TYPE_NAME: ""
+                description: |
+                  This number is a relative measure of performance between two instance
+                  types.  It is multiplied by the spot price from Amazon to figure out
+                  which instance type is the cheapest one
+                type: number
+            SortedPropertyNames:
+            - capacity
+            - instanceType
+            - launchSpec
+            - scopes
+            - secrets
+            - userData
+            - utility
+            SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties
+          required:
           - instanceType
+          - capacity
+          - utility
           - launchSpec
-          - scopes
           - secrets
           - userData
-          - utility
-          SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties
-        required:
-        - instanceType
-        - capacity
-        - utility
-        - launchSpec
-        - secrets
-        - userData
-        - scopes
-        type: object
+          - scopes
+          type: object
+        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items
+        TYPE_NAME: ""
       type: array
     launchSpec:
       IS_REQUIRED: true
@@ -3851,109 +3947,129 @@ properties:
       SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions
       TYPE_NAME: ""
       items:
+        $ref: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items
-        TYPE_NAME: RegionConfiguration
-        additionalProperties:
-          Boolean: false
-          Properties: null
-        description: Region configuration
-        properties:
-          MemberNames:
-            launchSpec: LaunchSpec
-            region: Region
-            scopes: Scopes
-            secrets: Secrets
-            userData: UserData
-          Properties:
-            launchSpec:
-              IS_REQUIRED: true
-              PROPERTY_NAME: launchSpec
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec
-              TYPE_NAME: LaunchSpec
-              additionalProperties:
-                Boolean: true
-                Properties: null
-              description: |
-                LaunchSpecification entries unique to this Region
-              properties:
-                MemberNames:
-                  ImageId: ImageID
-                Properties:
-                  ImageId:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: ImageId
-                    SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec/properties/ImageId
-                    TYPE_NAME: ""
-                    description: Per-region AMI ImageId
-                    type: string
-                SortedPropertyNames:
-                - ImageId
-                SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec/properties
-              required:
-              - ImageId
-              type: object
-            region:
-              IS_REQUIRED: true
-              PROPERTY_NAME: region
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/region
-              TYPE_NAME: ""
-              description: |
-                The Amazon AWS Region being configured.  Example: us-west-1
-              enum:
-              - us-west-2
-              - us-east-1
-              - us-east-2
-              - us-west-1
-              - eu-central-1
-              type: string
-            scopes:
-              IS_REQUIRED: true
-              PROPERTY_NAME: scopes
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/scopes
-              TYPE_NAME: ""
-              description: |
-                Scopes which should be included for this Region.  Scopes must be
-                composed of printable ASCII characters and spaces.
-              items:
-                IS_REQUIRED: false
-                PROPERTY_NAME: ""
-                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/scopes/items
+        REF_SCHEMA_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#
+        REF_SUBSCHEMA:
+          $schema: http://json-schema.org/draft-06/schema#
+          IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#
+          TYPE_NAME: RegionConfiguration
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          description: Region configuration
+          id: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#
+          properties:
+            MemberNames:
+              launchSpec: LaunchSpec
+              region: Region
+              scopes: Scopes
+              secrets: Secrets
+              userData: UserData
+            Properties:
+              launchSpec:
+                $ref: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+                IS_REQUIRED: true
+                PROPERTY_NAME: launchSpec
+                REF_SCHEMA_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+                REF_SUBSCHEMA:
+                  $schema: http://json-schema.org/draft-06/schema#
+                  IS_REQUIRED: false
+                  PROPERTY_NAME: ""
+                  SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+                  TYPE_NAME: RegionLaunchSpec
+                  additionalProperties:
+                    Boolean: true
+                    Properties: null
+                  description: |
+                    LaunchSpecification entries unique to this Region
+                  id: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+                  properties:
+                    MemberNames:
+                      ImageId: ImageID
+                    Properties:
+                      ImageId:
+                        IS_REQUIRED: true
+                        PROPERTY_NAME: ImageId
+                        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#/properties/ImageId
+                        TYPE_NAME: ""
+                        description: Per-region AMI ImageId
+                        type: string
+                    SortedPropertyNames:
+                    - ImageId
+                    SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#/properties
+                  required:
+                  - ImageId
+                  title: Region Launch Spec
+                  type: object
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/launchSpec
                 TYPE_NAME: ""
-                pattern: ^[ -~]*$
+              region:
+                IS_REQUIRED: true
+                PROPERTY_NAME: region
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/region
+                TYPE_NAME: ""
+                description: |
+                  The Amazon AWS Region being configured.  Example: us-west-1
+                enum:
+                - us-west-2
+                - us-east-1
+                - us-east-2
+                - us-west-1
+                - eu-central-1
                 type: string
-              type: array
-            secrets:
-              IS_REQUIRED: true
-              PROPERTY_NAME: secrets
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/secrets
-              TYPE_NAME: ""
-              description: |
-                Static Secrets unique to this Region
-              type: object
-            userData:
-              IS_REQUIRED: true
-              PROPERTY_NAME: userData
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/userData
-              TYPE_NAME: ""
-              description: |
-                UserData entries unique to this Region
-              type: object
-          SortedPropertyNames:
-          - launchSpec
+              scopes:
+                IS_REQUIRED: true
+                PROPERTY_NAME: scopes
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/scopes
+                TYPE_NAME: ""
+                description: |
+                  Scopes which should be included for this Region.  Scopes must be
+                  composed of printable ASCII characters and spaces.
+                items:
+                  IS_REQUIRED: false
+                  PROPERTY_NAME: ""
+                  SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/scopes/items
+                  TYPE_NAME: ""
+                  pattern: ^[ -~]*$
+                  type: string
+                type: array
+              secrets:
+                IS_REQUIRED: true
+                PROPERTY_NAME: secrets
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/secrets
+                TYPE_NAME: ""
+                description: |
+                  Static Secrets unique to this Region
+                type: object
+              userData:
+                IS_REQUIRED: true
+                PROPERTY_NAME: userData
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/userData
+                TYPE_NAME: ""
+                description: |
+                  UserData entries unique to this Region
+                type: object
+            SortedPropertyNames:
+            - launchSpec
+            - region
+            - scopes
+            - secrets
+            - userData
+            SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties
+          required:
           - region
-          - scopes
+          - launchSpec
           - secrets
           - userData
-          SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties
-        required:
-        - region
-        - launchSpec
-        - secrets
-        - userData
-        - scopes
-        type: object
+          - scopes
+          title: Region Configuration
+          type: object
+        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items
+        TYPE_NAME: ""
       type: array
     scalingRatio:
       IS_REQUIRED: true
@@ -4039,347 +4155,27 @@ title: Create Worker Type Request
 type: object
 
 
-http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items
-=====================================================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items
-TYPE_NAME: AvailabilityZoneConfiguration
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: Availability zone configuration
-properties:
-  MemberNames:
-    availabilityZone: AvailabilityZone
-    launchSpec: LaunchSpec
-    region: Region
-    secrets: Secrets
-    userData: UserData
-  Properties:
-    availabilityZone:
-      IS_REQUIRED: true
-      PROPERTY_NAME: availabilityZone
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/availabilityZone
-      TYPE_NAME: ""
-      description: |
-        The AWS availability zone being configured.  Example: eu-central-1b
-      type: string
-    launchSpec:
-      IS_REQUIRED: true
-      PROPERTY_NAME: launchSpec
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/launchSpec
-      TYPE_NAME: ""
-      description: |
-        LaunchSpecification entries unique to this AZ
-      type: object
-    region:
-      IS_REQUIRED: true
-      PROPERTY_NAME: region
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/region
-      TYPE_NAME: ""
-      description: |
-        The AWS region containing this availability zone.  Example: eu-central-1
-      type: string
-    secrets:
-      IS_REQUIRED: false
-      PROPERTY_NAME: secrets
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/secrets
-      TYPE_NAME: ""
-      default: {}
-      description: |
-        Static Secrets unique to this AZ
-      type: object
-    userData:
-      IS_REQUIRED: false
-      PROPERTY_NAME: userData
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties/userData
-      TYPE_NAME: ""
-      default: {}
-      description: |
-        UserData entries unique to this AZ
-      type: object
-  SortedPropertyNames:
-  - availabilityZone
-  - launchSpec
-  - region
-  - secrets
-  - userData
-  SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/availabilityZones/items/properties
-required:
-- region
-- availabilityZone
-- launchSpec
-type: object
-
-
-http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items
-=================================================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items
-TYPE_NAME: InstanceTypeConfiguration
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: Instance Type configuration
-properties:
-  MemberNames:
-    capacity: Capacity
-    instanceType: InstanceType
-    launchSpec: LaunchSpec
-    scopes: Scopes
-    secrets: Secrets
-    userData: UserData
-    utility: Utility
-  Properties:
-    capacity:
-      IS_REQUIRED: true
-      PROPERTY_NAME: capacity
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/capacity
-      TYPE_NAME: ""
-      description: |
-        This number represents the number of tasks that this instance type
-        is capable of running concurrently.  This is used by the provisioner
-        to know how many pending tasks to offset a pending instance of this
-        type by
-      type: number
-    instanceType:
-      IS_REQUIRED: true
-      PROPERTY_NAME: instanceType
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/instanceType
-      TYPE_NAME: ""
-      description: |
-        InstanceType name for Amazon.
-      type: string
-    launchSpec:
-      IS_REQUIRED: true
-      PROPERTY_NAME: launchSpec
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/launchSpec
-      TYPE_NAME: ""
-      description: |
-        LaunchSpecification entries unique to this InstanceType
-      type: object
-    scopes:
-      IS_REQUIRED: true
-      PROPERTY_NAME: scopes
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/scopes
-      TYPE_NAME: ""
-      description: |
-        Scopes which should be included for this InstanceType.  Scopes must
-        be composed of printable ASCII characters and spaces.
-      items:
-        IS_REQUIRED: false
-        PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/scopes/items
-        TYPE_NAME: ""
-        pattern: ^[ -~]*$
-        type: string
-      type: array
-    secrets:
-      IS_REQUIRED: true
-      PROPERTY_NAME: secrets
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/secrets
-      TYPE_NAME: ""
-      description: |
-        Static Secrets unique to this InstanceType
-      type: object
-    userData:
-      IS_REQUIRED: true
-      PROPERTY_NAME: userData
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/userData
-      TYPE_NAME: ""
-      description: |
-        UserData entries unique to this InstanceType
-      type: object
-    utility:
-      IS_REQUIRED: true
-      PROPERTY_NAME: utility
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties/utility
-      TYPE_NAME: ""
-      description: |
-        This number is a relative measure of performance between two instance
-        types.  It is multiplied by the spot price from Amazon to figure out
-        which instance type is the cheapest one
-      type: number
-  SortedPropertyNames:
-  - capacity
-  - instanceType
-  - launchSpec
-  - scopes
-  - secrets
-  - userData
-  - utility
-  SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/instanceTypes/items/properties
-required:
-- instanceType
-- capacity
-- utility
-- launchSpec
-- secrets
-- userData
-- scopes
-type: object
-
-
-http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items
-===========================================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items
-TYPE_NAME: RegionConfiguration
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: Region configuration
-properties:
-  MemberNames:
-    launchSpec: LaunchSpec
-    region: Region
-    scopes: Scopes
-    secrets: Secrets
-    userData: UserData
-  Properties:
-    launchSpec:
-      IS_REQUIRED: true
-      PROPERTY_NAME: launchSpec
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec
-      TYPE_NAME: LaunchSpec
-      additionalProperties:
-        Boolean: true
-        Properties: null
-      description: |
-        LaunchSpecification entries unique to this Region
-      properties:
-        MemberNames:
-          ImageId: ImageID
-        Properties:
-          ImageId:
-            IS_REQUIRED: true
-            PROPERTY_NAME: ImageId
-            SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec/properties/ImageId
-            TYPE_NAME: ""
-            description: Per-region AMI ImageId
-            type: string
-        SortedPropertyNames:
-        - ImageId
-        SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec/properties
-      required:
-      - ImageId
-      type: object
-    region:
-      IS_REQUIRED: true
-      PROPERTY_NAME: region
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/region
-      TYPE_NAME: ""
-      description: |
-        The Amazon AWS Region being configured.  Example: us-west-1
-      enum:
-      - us-west-2
-      - us-east-1
-      - us-east-2
-      - us-west-1
-      - eu-central-1
-      type: string
-    scopes:
-      IS_REQUIRED: true
-      PROPERTY_NAME: scopes
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/scopes
-      TYPE_NAME: ""
-      description: |
-        Scopes which should be included for this Region.  Scopes must be
-        composed of printable ASCII characters and spaces.
-      items:
-        IS_REQUIRED: false
-        PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/scopes/items
-        TYPE_NAME: ""
-        pattern: ^[ -~]*$
-        type: string
-      type: array
-    secrets:
-      IS_REQUIRED: true
-      PROPERTY_NAME: secrets
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/secrets
-      TYPE_NAME: ""
-      description: |
-        Static Secrets unique to this Region
-      type: object
-    userData:
-      IS_REQUIRED: true
-      PROPERTY_NAME: userData
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/userData
-      TYPE_NAME: ""
-      description: |
-        UserData entries unique to this Region
-      type: object
-  SortedPropertyNames:
-  - launchSpec
-  - region
-  - scopes
-  - secrets
-  - userData
-  SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties
-required:
-- region
-- launchSpec
-- secrets
-- userData
-- scopes
-type: object
-
-
-http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec
-=================================================================================================================================
-IS_REQUIRED: true
-PROPERTY_NAME: launchSpec
-SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec
-TYPE_NAME: LaunchSpec
-additionalProperties:
-  Boolean: true
-  Properties: null
-description: |
-  LaunchSpecification entries unique to this Region
-properties:
-  MemberNames:
-    ImageId: ImageID
-  Properties:
-    ImageId:
-      IS_REQUIRED: true
-      PROPERTY_NAME: ImageId
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec/properties/ImageId
-      TYPE_NAME: ""
-      description: Per-region AMI ImageId
-      type: string
-  SortedPropertyNames:
-  - ImageId
-  SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/create-worker-type-request.json#/properties/regions/items/properties/launchSpec/properties
-required:
-- ImageId
-type: object
-
-
 http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#
 =================================================================================
-$schema: http://json-schema.org/draft-04/schema#
+$schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#
-TYPE_NAME: GetAllLaunchSpecsResponse
+TYPE_NAME: LaunchSpecsResponse
 description: |
   All of the launch specifications for a worker type
 id: http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#
-title: Get All Launch Specs Response
+title: Launch Specs Response
 type: object
 
 
 http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#
 ===========================================================================
-$schema: http://json-schema.org/draft-04/schema#
+$schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-secret-response.json#
-TYPE_NAME: GetSecretResponse
+TYPE_NAME: SecretResponse
 additionalProperties:
   Boolean: false
   Properties: null
@@ -4465,7 +4261,7 @@ required:
 - data
 - credentials
 - scopes
-title: Get Secret Response
+title: Secret Response
 type: object
 
 
@@ -4518,16 +4314,16 @@ type: object
 
 http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#
 =====================================================================================
-$schema: http://json-schema.org/draft-04/schema#
+$schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#
-TYPE_NAME: GetWorkerTypeResponse1
+TYPE_NAME: WorkerTypeLastModified
 additionalProperties:
   Boolean: false
   Properties: null
 description: |
-  Get the last modified date of a workerType
+  The last modified date of a workerType
 id: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-last-modified.json#
 properties:
   MemberNames:
@@ -4560,17 +4356,17 @@ properties:
 required:
 - workerType
 - lastModified
-title: Get Worker Type Response
+title: Worker Type Last Modified
 type: object
 
 
 http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#
 ================================================================================
-$schema: http://json-schema.org/draft-04/schema#
+$schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#
-TYPE_NAME: GetWorkerTypeResponse
+TYPE_NAME: WorkerTypeResponse
 additionalProperties:
   Boolean: false
   Properties: null
@@ -4604,76 +4400,86 @@ properties:
       SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones
       TYPE_NAME: ""
       items:
+        $ref: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items
-        TYPE_NAME: AvailabilityZoneConfiguration1
-        additionalProperties:
-          Boolean: false
-          Properties: null
-        description: Availability zone configuration
-        properties:
-          MemberNames:
-            availabilityZone: AvailabilityZone
-            launchSpec: LaunchSpec
-            region: Region
-            secrets: Secrets
-            userData: UserData
-          Properties:
-            availabilityZone:
-              IS_REQUIRED: true
-              PROPERTY_NAME: availabilityZone
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/availabilityZone
-              TYPE_NAME: ""
-              description: |
-                The AWS availability zone being configured.  Example: eu-central-1b
-              type: string
-            launchSpec:
-              IS_REQUIRED: true
-              PROPERTY_NAME: launchSpec
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/launchSpec
-              TYPE_NAME: ""
-              description: |
-                LaunchSpecification entries unique to this AZ
-              type: object
-            region:
-              IS_REQUIRED: true
-              PROPERTY_NAME: region
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/region
-              TYPE_NAME: ""
-              description: |
-                The AWS region containing this availability zone.  Example: eu-central-1
-              type: string
-            secrets:
-              IS_REQUIRED: false
-              PROPERTY_NAME: secrets
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/secrets
-              TYPE_NAME: ""
-              default: {}
-              description: |
-                Static Secrets unique to this AZ
-              type: object
-            userData:
-              IS_REQUIRED: false
-              PROPERTY_NAME: userData
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/userData
-              TYPE_NAME: ""
-              default: {}
-              description: |
-                UserData entries unique to this AZ
-              type: object
-          SortedPropertyNames:
+        REF_SCHEMA_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#
+        REF_SUBSCHEMA:
+          $schema: http://json-schema.org/draft-06/schema#
+          IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#
+          TYPE_NAME: AvailabilityZoneConfiguration
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          description: Availability zone configuration
+          id: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#
+          properties:
+            MemberNames:
+              availabilityZone: AvailabilityZone
+              launchSpec: LaunchSpec
+              region: Region
+              secrets: Secrets
+              userData: UserData
+            Properties:
+              availabilityZone:
+                IS_REQUIRED: true
+                PROPERTY_NAME: availabilityZone
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/availabilityZone
+                TYPE_NAME: ""
+                description: |
+                  The AWS availability zone being configured.  Example: eu-central-1b
+                type: string
+              launchSpec:
+                IS_REQUIRED: true
+                PROPERTY_NAME: launchSpec
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/launchSpec
+                TYPE_NAME: ""
+                description: |
+                  LaunchSpecification entries unique to this AZ
+                type: object
+              region:
+                IS_REQUIRED: true
+                PROPERTY_NAME: region
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/region
+                TYPE_NAME: ""
+                description: |
+                  The AWS region containing this availability zone.  Example: eu-central-1
+                type: string
+              secrets:
+                IS_REQUIRED: false
+                PROPERTY_NAME: secrets
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/secrets
+                TYPE_NAME: ""
+                default: {}
+                description: |
+                  Static Secrets unique to this AZ
+                type: object
+              userData:
+                IS_REQUIRED: false
+                PROPERTY_NAME: userData
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties/userData
+                TYPE_NAME: ""
+                default: {}
+                description: |
+                  UserData entries unique to this AZ
+                type: object
+            SortedPropertyNames:
+            - availabilityZone
+            - launchSpec
+            - region
+            - secrets
+            - userData
+            SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/availability-zone-configuration.json#/properties
+          required:
+          - region
           - availabilityZone
           - launchSpec
-          - region
-          - secrets
-          - userData
-          SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties
-        required:
-        - availabilityZone
-        - region
-        - launchSpec
-        type: object
+          title: Availability Zone Configuration
+          type: object
+        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items
+        TYPE_NAME: ""
       type: array
     canUseOndemand:
       IS_REQUIRED: false
@@ -4707,111 +4513,120 @@ properties:
       SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes
       TYPE_NAME: ""
       items:
+        $ref: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items
-        TYPE_NAME: InstanceTypeConfiguration1
-        additionalProperties:
-          Boolean: false
-          Properties: null
-        description: Instance Type configuration
-        properties:
-          MemberNames:
-            capacity: Capacity
-            instanceType: InstanceType
-            launchSpec: LaunchSpec
-            scopes: Scopes
-            secrets: Secrets
-            userData: UserData
-            utility: Utility
-          Properties:
-            capacity:
-              IS_REQUIRED: true
-              PROPERTY_NAME: capacity
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/capacity
-              TYPE_NAME: ""
-              description: |
-                This number represents the number of tasks that this instance type
-                is capable of running concurrently.  This is used by the provisioner
-                to know how many pending tasks to offset a pending instance of this
-                type by
-              type: number
-            instanceType:
-              IS_REQUIRED: true
-              PROPERTY_NAME: instanceType
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/instanceType
-              TYPE_NAME: ""
-              description: |
-                InstanceType name for Amazon.
-              type: string
-            launchSpec:
-              IS_REQUIRED: true
-              PROPERTY_NAME: launchSpec
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/launchSpec
-              TYPE_NAME: ""
-              description: |
-                LaunchSpecification entries unique to this InstanceType
-              type: object
-            scopes:
-              IS_REQUIRED: true
-              PROPERTY_NAME: scopes
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/scopes
-              TYPE_NAME: ""
-              description: |
-                Scopes which should be included for this InstanceType.  Scopes must
-                be composed of printable ASCII characters and spaces.
-              items:
-                IS_REQUIRED: false
-                PROPERTY_NAME: ""
-                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/scopes/items
+        REF_SCHEMA_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#
+        REF_SUBSCHEMA:
+          $schema: http://json-schema.org/draft-06/schema#
+          IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#
+          TYPE_NAME: InstanceTypeConfiguration
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          description: Instance Type configuration
+          id: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#
+          properties:
+            MemberNames:
+              capacity: Capacity
+              instanceType: InstanceType
+              launchSpec: LaunchSpec
+              scopes: Scopes
+              secrets: Secrets
+              userData: UserData
+              utility: Utility
+            Properties:
+              capacity:
+                IS_REQUIRED: true
+                PROPERTY_NAME: capacity
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/capacity
                 TYPE_NAME: ""
-                pattern: ^[ -~]*$
+                description: |
+                  This number represents the number of tasks that this instance type
+                  is capable of running concurrently.  This is used by the provisioner
+                  to know how many pending tasks to offset a pending instance of this
+                  type by
+                type: number
+              instanceType:
+                IS_REQUIRED: true
+                PROPERTY_NAME: instanceType
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/instanceType
+                TYPE_NAME: ""
+                description: |
+                  InstanceType name for Amazon.
                 type: string
-              type: array
-            secrets:
-              IS_REQUIRED: true
-              PROPERTY_NAME: secrets
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/secrets
-              TYPE_NAME: ""
-              description: |
-                Static Secrets unique to this InstanceType
-              type: object
-            userData:
-              IS_REQUIRED: true
-              PROPERTY_NAME: userData
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/userData
-              TYPE_NAME: ""
-              description: |
-                UserData entries unique to this InstanceType
-              type: object
-            utility:
-              IS_REQUIRED: true
-              PROPERTY_NAME: utility
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/utility
-              TYPE_NAME: ""
-              description: |
-                This number is a relative measure of performance between two instance
-                types.  It is multiplied by the spot price from Amazon to figure out
-                which instance type is the cheapest one
-              type: number
-          SortedPropertyNames:
-          - capacity
+              launchSpec:
+                IS_REQUIRED: true
+                PROPERTY_NAME: launchSpec
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/launchSpec
+                TYPE_NAME: ""
+                description: |
+                  LaunchSpecification entries unique to this InstanceType
+                type: object
+              scopes:
+                IS_REQUIRED: true
+                PROPERTY_NAME: scopes
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/scopes
+                TYPE_NAME: ""
+                description: |
+                  Scopes which should be included for this InstanceType.  Scopes must
+                  be composed of printable ASCII characters and spaces.
+                items:
+                  IS_REQUIRED: false
+                  PROPERTY_NAME: ""
+                  SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/scopes/items
+                  TYPE_NAME: ""
+                  pattern: ^[ -~]*$
+                  type: string
+                type: array
+              secrets:
+                IS_REQUIRED: true
+                PROPERTY_NAME: secrets
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/secrets
+                TYPE_NAME: ""
+                description: |
+                  Static Secrets unique to this InstanceType
+                type: object
+              userData:
+                IS_REQUIRED: true
+                PROPERTY_NAME: userData
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/userData
+                TYPE_NAME: ""
+                description: |
+                  UserData entries unique to this InstanceType
+                type: object
+              utility:
+                IS_REQUIRED: true
+                PROPERTY_NAME: utility
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/utility
+                TYPE_NAME: ""
+                description: |
+                  This number is a relative measure of performance between two instance
+                  types.  It is multiplied by the spot price from Amazon to figure out
+                  which instance type is the cheapest one
+                type: number
+            SortedPropertyNames:
+            - capacity
+            - instanceType
+            - launchSpec
+            - scopes
+            - secrets
+            - userData
+            - utility
+            SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties
+          required:
           - instanceType
+          - capacity
+          - utility
           - launchSpec
-          - scopes
           - secrets
           - userData
-          - utility
-          SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties
-        required:
-        - instanceType
-        - capacity
-        - utility
-        - launchSpec
-        - secrets
-        - userData
-        - scopes
-        type: object
+          - scopes
+          type: object
+        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items
+        TYPE_NAME: ""
       type: array
     lastModified:
       IS_REQUIRED: true
@@ -4885,103 +4700,129 @@ properties:
       SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions
       TYPE_NAME: ""
       items:
+        $ref: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#
         IS_REQUIRED: false
         PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items
-        TYPE_NAME: RegionConfiguration1
-        additionalProperties:
-          Boolean: false
-          Properties: null
-        description: Region configuration
-        properties:
-          MemberNames:
-            launchSpec: LaunchSpec
-            region: Region
-            scopes: Scopes
-            secrets: Secrets
-            userData: UserData
-          Properties:
-            launchSpec:
-              IS_REQUIRED: true
-              PROPERTY_NAME: launchSpec
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec
-              TYPE_NAME: LaunchSpec1
-              additionalProperties:
-                Boolean: true
-                Properties: null
-              description: |
-                LaunchSpecification entries unique to this Region
-              properties:
-                MemberNames:
-                  ImageId: ImageID
-                Properties:
-                  ImageId:
-                    IS_REQUIRED: true
-                    PROPERTY_NAME: ImageId
-                    SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec/properties/ImageId
-                    TYPE_NAME: ""
-                    description: Per-region AMI ImageId
-                    type: string
-                SortedPropertyNames:
-                - ImageId
-                SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec/properties
-              required:
-              - ImageId
-              type: object
-            region:
-              IS_REQUIRED: true
-              PROPERTY_NAME: region
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/region
-              TYPE_NAME: ""
-              description: |
-                The Amazon AWS Region being configured.  Example: us-west-1
-              type: string
-            scopes:
-              IS_REQUIRED: true
-              PROPERTY_NAME: scopes
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/scopes
-              TYPE_NAME: ""
-              description: |
-                Scopes which should be included for this Region.  Scopes must be
-                composed of printable ASCII characters and spaces.
-              items:
-                IS_REQUIRED: false
-                PROPERTY_NAME: ""
-                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/scopes/items
+        REF_SCHEMA_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#
+        REF_SUBSCHEMA:
+          $schema: http://json-schema.org/draft-06/schema#
+          IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#
+          TYPE_NAME: RegionConfiguration
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          description: Region configuration
+          id: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#
+          properties:
+            MemberNames:
+              launchSpec: LaunchSpec
+              region: Region
+              scopes: Scopes
+              secrets: Secrets
+              userData: UserData
+            Properties:
+              launchSpec:
+                $ref: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+                IS_REQUIRED: true
+                PROPERTY_NAME: launchSpec
+                REF_SCHEMA_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+                REF_SUBSCHEMA:
+                  $schema: http://json-schema.org/draft-06/schema#
+                  IS_REQUIRED: false
+                  PROPERTY_NAME: ""
+                  SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+                  TYPE_NAME: RegionLaunchSpec
+                  additionalProperties:
+                    Boolean: true
+                    Properties: null
+                  description: |
+                    LaunchSpecification entries unique to this Region
+                  id: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+                  properties:
+                    MemberNames:
+                      ImageId: ImageID
+                    Properties:
+                      ImageId:
+                        IS_REQUIRED: true
+                        PROPERTY_NAME: ImageId
+                        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#/properties/ImageId
+                        TYPE_NAME: ""
+                        description: Per-region AMI ImageId
+                        type: string
+                    SortedPropertyNames:
+                    - ImageId
+                    SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#/properties
+                  required:
+                  - ImageId
+                  title: Region Launch Spec
+                  type: object
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/launchSpec
                 TYPE_NAME: ""
-                pattern: ^[ -~]*$
+              region:
+                IS_REQUIRED: true
+                PROPERTY_NAME: region
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/region
+                TYPE_NAME: ""
+                description: |
+                  The Amazon AWS Region being configured.  Example: us-west-1
+                enum:
+                - us-west-2
+                - us-east-1
+                - us-east-2
+                - us-west-1
+                - eu-central-1
                 type: string
-              type: array
-            secrets:
-              IS_REQUIRED: true
-              PROPERTY_NAME: secrets
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/secrets
-              TYPE_NAME: ""
-              description: |
-                Static Secrets unique to this Region
-              type: object
-            userData:
-              IS_REQUIRED: true
-              PROPERTY_NAME: userData
-              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/userData
-              TYPE_NAME: ""
-              description: |
-                UserData entries unique to this Region
-              type: object
-          SortedPropertyNames:
-          - launchSpec
+              scopes:
+                IS_REQUIRED: true
+                PROPERTY_NAME: scopes
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/scopes
+                TYPE_NAME: ""
+                description: |
+                  Scopes which should be included for this Region.  Scopes must be
+                  composed of printable ASCII characters and spaces.
+                items:
+                  IS_REQUIRED: false
+                  PROPERTY_NAME: ""
+                  SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/scopes/items
+                  TYPE_NAME: ""
+                  pattern: ^[ -~]*$
+                  type: string
+                type: array
+              secrets:
+                IS_REQUIRED: true
+                PROPERTY_NAME: secrets
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/secrets
+                TYPE_NAME: ""
+                description: |
+                  Static Secrets unique to this Region
+                type: object
+              userData:
+                IS_REQUIRED: true
+                PROPERTY_NAME: userData
+                SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/userData
+                TYPE_NAME: ""
+                description: |
+                  UserData entries unique to this Region
+                type: object
+            SortedPropertyNames:
+            - launchSpec
+            - region
+            - scopes
+            - secrets
+            - userData
+            SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties
+          required:
           - region
-          - scopes
+          - launchSpec
           - secrets
           - userData
-          SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties
-        required:
-        - region
-        - launchSpec
-        - secrets
-        - userData
-        - scopes
-        type: object
+          - scopes
+          title: Region Configuration
+          type: object
+        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items
+        TYPE_NAME: ""
       type: array
     scalingRatio:
       IS_REQUIRED: true
@@ -5077,94 +4918,22 @@ required:
 - regions
 - description
 - owner
-title: Get Worker Type Response
+title: Worker Type Response
 type: object
 
 
-http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items
-===================================================================================================================
+http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#
+===================================================================================
+$schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items
-TYPE_NAME: AvailabilityZoneConfiguration1
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: Availability zone configuration
-properties:
-  MemberNames:
-    availabilityZone: AvailabilityZone
-    launchSpec: LaunchSpec
-    region: Region
-    secrets: Secrets
-    userData: UserData
-  Properties:
-    availabilityZone:
-      IS_REQUIRED: true
-      PROPERTY_NAME: availabilityZone
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/availabilityZone
-      TYPE_NAME: ""
-      description: |
-        The AWS availability zone being configured.  Example: eu-central-1b
-      type: string
-    launchSpec:
-      IS_REQUIRED: true
-      PROPERTY_NAME: launchSpec
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/launchSpec
-      TYPE_NAME: ""
-      description: |
-        LaunchSpecification entries unique to this AZ
-      type: object
-    region:
-      IS_REQUIRED: true
-      PROPERTY_NAME: region
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/region
-      TYPE_NAME: ""
-      description: |
-        The AWS region containing this availability zone.  Example: eu-central-1
-      type: string
-    secrets:
-      IS_REQUIRED: false
-      PROPERTY_NAME: secrets
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/secrets
-      TYPE_NAME: ""
-      default: {}
-      description: |
-        Static Secrets unique to this AZ
-      type: object
-    userData:
-      IS_REQUIRED: false
-      PROPERTY_NAME: userData
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties/userData
-      TYPE_NAME: ""
-      default: {}
-      description: |
-        UserData entries unique to this AZ
-      type: object
-  SortedPropertyNames:
-  - availabilityZone
-  - launchSpec
-  - region
-  - secrets
-  - userData
-  SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/availabilityZones/items/properties
-required:
-- availabilityZone
-- region
-- launchSpec
-type: object
-
-
-http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items
-===============================================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items
-TYPE_NAME: InstanceTypeConfiguration1
+SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#
+TYPE_NAME: InstanceTypeConfiguration
 additionalProperties:
   Boolean: false
   Properties: null
 description: Instance Type configuration
+id: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#
 properties:
   MemberNames:
     capacity: Capacity
@@ -5178,7 +4947,7 @@ properties:
     capacity:
       IS_REQUIRED: true
       PROPERTY_NAME: capacity
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/capacity
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/capacity
       TYPE_NAME: ""
       description: |
         This number represents the number of tasks that this instance type
@@ -5189,7 +4958,7 @@ properties:
     instanceType:
       IS_REQUIRED: true
       PROPERTY_NAME: instanceType
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/instanceType
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/instanceType
       TYPE_NAME: ""
       description: |
         InstanceType name for Amazon.
@@ -5197,7 +4966,7 @@ properties:
     launchSpec:
       IS_REQUIRED: true
       PROPERTY_NAME: launchSpec
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/launchSpec
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/launchSpec
       TYPE_NAME: ""
       description: |
         LaunchSpecification entries unique to this InstanceType
@@ -5205,7 +4974,7 @@ properties:
     scopes:
       IS_REQUIRED: true
       PROPERTY_NAME: scopes
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/scopes
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/scopes
       TYPE_NAME: ""
       description: |
         Scopes which should be included for this InstanceType.  Scopes must
@@ -5213,7 +4982,7 @@ properties:
       items:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/scopes/items
+        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/scopes/items
         TYPE_NAME: ""
         pattern: ^[ -~]*$
         type: string
@@ -5221,7 +4990,7 @@ properties:
     secrets:
       IS_REQUIRED: true
       PROPERTY_NAME: secrets
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/secrets
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/secrets
       TYPE_NAME: ""
       description: |
         Static Secrets unique to this InstanceType
@@ -5229,7 +4998,7 @@ properties:
     userData:
       IS_REQUIRED: true
       PROPERTY_NAME: userData
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/userData
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/userData
       TYPE_NAME: ""
       description: |
         UserData entries unique to this InstanceType
@@ -5237,7 +5006,7 @@ properties:
     utility:
       IS_REQUIRED: true
       PROPERTY_NAME: utility
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties/utility
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties/utility
       TYPE_NAME: ""
       description: |
         This number is a relative measure of performance between two instance
@@ -5252,7 +5021,7 @@ properties:
   - secrets
   - userData
   - utility
-  SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/instanceTypes/items/properties
+  SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/instance-type-configuration.json#/properties
 required:
 - instanceType
 - capacity
@@ -5264,139 +5033,9 @@ required:
 type: object
 
 
-http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items
-=========================================================================================================
-IS_REQUIRED: false
-PROPERTY_NAME: ""
-SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items
-TYPE_NAME: RegionConfiguration1
-additionalProperties:
-  Boolean: false
-  Properties: null
-description: Region configuration
-properties:
-  MemberNames:
-    launchSpec: LaunchSpec
-    region: Region
-    scopes: Scopes
-    secrets: Secrets
-    userData: UserData
-  Properties:
-    launchSpec:
-      IS_REQUIRED: true
-      PROPERTY_NAME: launchSpec
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec
-      TYPE_NAME: LaunchSpec1
-      additionalProperties:
-        Boolean: true
-        Properties: null
-      description: |
-        LaunchSpecification entries unique to this Region
-      properties:
-        MemberNames:
-          ImageId: ImageID
-        Properties:
-          ImageId:
-            IS_REQUIRED: true
-            PROPERTY_NAME: ImageId
-            SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec/properties/ImageId
-            TYPE_NAME: ""
-            description: Per-region AMI ImageId
-            type: string
-        SortedPropertyNames:
-        - ImageId
-        SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec/properties
-      required:
-      - ImageId
-      type: object
-    region:
-      IS_REQUIRED: true
-      PROPERTY_NAME: region
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/region
-      TYPE_NAME: ""
-      description: |
-        The Amazon AWS Region being configured.  Example: us-west-1
-      type: string
-    scopes:
-      IS_REQUIRED: true
-      PROPERTY_NAME: scopes
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/scopes
-      TYPE_NAME: ""
-      description: |
-        Scopes which should be included for this Region.  Scopes must be
-        composed of printable ASCII characters and spaces.
-      items:
-        IS_REQUIRED: false
-        PROPERTY_NAME: ""
-        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/scopes/items
-        TYPE_NAME: ""
-        pattern: ^[ -~]*$
-        type: string
-      type: array
-    secrets:
-      IS_REQUIRED: true
-      PROPERTY_NAME: secrets
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/secrets
-      TYPE_NAME: ""
-      description: |
-        Static Secrets unique to this Region
-      type: object
-    userData:
-      IS_REQUIRED: true
-      PROPERTY_NAME: userData
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/userData
-      TYPE_NAME: ""
-      description: |
-        UserData entries unique to this Region
-      type: object
-  SortedPropertyNames:
-  - launchSpec
-  - region
-  - scopes
-  - secrets
-  - userData
-  SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties
-required:
-- region
-- launchSpec
-- secrets
-- userData
-- scopes
-type: object
-
-
-http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec
-===============================================================================================================================
-IS_REQUIRED: true
-PROPERTY_NAME: launchSpec
-SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec
-TYPE_NAME: LaunchSpec1
-additionalProperties:
-  Boolean: true
-  Properties: null
-description: |
-  LaunchSpecification entries unique to this Region
-properties:
-  MemberNames:
-    ImageId: ImageID
-  Properties:
-    ImageId:
-      IS_REQUIRED: true
-      PROPERTY_NAME: ImageId
-      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec/properties/ImageId
-      TYPE_NAME: ""
-      description: Per-region AMI ImageId
-      type: string
-  SortedPropertyNames:
-  - ImageId
-  SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#/properties/regions/items/properties/launchSpec/properties
-required:
-- ImageId
-type: object
-
-
 http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#
 ==================================================================================
+$schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-response.json#
@@ -5415,7 +5054,7 @@ uniqueItems: true
 
 http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#
 ============================================================================================
-$schema: http://json-schema.org/draft-04/schema#
+$schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/list-worker-types-summaries-response.json#
@@ -5427,7 +5066,7 @@ items:
   PROPERTY_NAME: ""
   REF_SCHEMA_URL: http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#
   REF_SUBSCHEMA:
-    $schema: http://json-schema.org/draft-04/schema#
+    $schema: http://json-schema.org/draft-06/schema#
     IS_REQUIRED: false
     PROPERTY_NAME: ' entry'
     SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#
@@ -5513,9 +5152,162 @@ type: array
 uniqueItems: true
 
 
+http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#
+============================================================================
+$schema: http://json-schema.org/draft-06/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#
+TYPE_NAME: RegionConfiguration
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: Region configuration
+id: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#
+properties:
+  MemberNames:
+    launchSpec: LaunchSpec
+    region: Region
+    scopes: Scopes
+    secrets: Secrets
+    userData: UserData
+  Properties:
+    launchSpec:
+      $ref: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+      IS_REQUIRED: true
+      PROPERTY_NAME: launchSpec
+      REF_SCHEMA_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+      REF_SUBSCHEMA:
+        $schema: http://json-schema.org/draft-06/schema#
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+        TYPE_NAME: RegionLaunchSpec
+        additionalProperties:
+          Boolean: true
+          Properties: null
+        description: |
+          LaunchSpecification entries unique to this Region
+        id: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+        properties:
+          MemberNames:
+            ImageId: ImageID
+          Properties:
+            ImageId:
+              IS_REQUIRED: true
+              PROPERTY_NAME: ImageId
+              SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#/properties/ImageId
+              TYPE_NAME: ""
+              description: Per-region AMI ImageId
+              type: string
+          SortedPropertyNames:
+          - ImageId
+          SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#/properties
+        required:
+        - ImageId
+        title: Region Launch Spec
+        type: object
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/launchSpec
+      TYPE_NAME: ""
+    region:
+      IS_REQUIRED: true
+      PROPERTY_NAME: region
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/region
+      TYPE_NAME: ""
+      description: |
+        The Amazon AWS Region being configured.  Example: us-west-1
+      enum:
+      - us-west-2
+      - us-east-1
+      - us-east-2
+      - us-west-1
+      - eu-central-1
+      type: string
+    scopes:
+      IS_REQUIRED: true
+      PROPERTY_NAME: scopes
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/scopes
+      TYPE_NAME: ""
+      description: |
+        Scopes which should be included for this Region.  Scopes must be
+        composed of printable ASCII characters and spaces.
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/scopes/items
+        TYPE_NAME: ""
+        pattern: ^[ -~]*$
+        type: string
+      type: array
+    secrets:
+      IS_REQUIRED: true
+      PROPERTY_NAME: secrets
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/secrets
+      TYPE_NAME: ""
+      description: |
+        Static Secrets unique to this Region
+      type: object
+    userData:
+      IS_REQUIRED: true
+      PROPERTY_NAME: userData
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties/userData
+      TYPE_NAME: ""
+      description: |
+        UserData entries unique to this Region
+      type: object
+  SortedPropertyNames:
+  - launchSpec
+  - region
+  - scopes
+  - secrets
+  - userData
+  SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/region-configuration.json#/properties
+required:
+- region
+- launchSpec
+- secrets
+- userData
+- scopes
+title: Region Configuration
+type: object
+
+
+http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+==========================================================================
+$schema: http://json-schema.org/draft-06/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+TYPE_NAME: RegionLaunchSpec
+additionalProperties:
+  Boolean: true
+  Properties: null
+description: |
+  LaunchSpecification entries unique to this Region
+id: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#
+properties:
+  MemberNames:
+    ImageId: ImageID
+  Properties:
+    ImageId:
+      IS_REQUIRED: true
+      PROPERTY_NAME: ImageId
+      SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#/properties/ImageId
+      TYPE_NAME: ""
+      description: Per-region AMI ImageId
+      type: string
+  SortedPropertyNames:
+  - ImageId
+  SourceURL: http://schemas.taskcluster.net/aws-provisioner/v1/region-launch-spec.json#/properties
+required:
+- ImageId
+title: Region Launch Spec
+type: object
+
+
 http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#
 ===========================================================================
-$schema: http://json-schema.org/draft-04/schema#
+$schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ' entry'
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-summary.json#
@@ -5685,7 +5477,7 @@ exchange.'
 
 http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#
 ===========================================================================
-$schema: http://json-schema.org/draft-04/schema#
+$schema: http://json-schema.org/draft-06/schema#
 IS_REQUIRED: false
 PROPERTY_NAME: ""
 SOURCE_URL: http://schemas.taskcluster.net/aws-provisioner/v1/worker-type-message.json#

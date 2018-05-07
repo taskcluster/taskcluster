@@ -58,7 +58,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 30 Apr 2018 at 11:53:00 UTC. The code was generated
+// Mon, 7 May 2018 at 13:22:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcawsprovisioner
 
@@ -150,10 +150,10 @@ func (awsProvisioner *AwsProvisioner) ListWorkerTypeSummaries() (*ListWorkerType
 //   aws-provisioner:manage-worker-type:<workerType>
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#createWorkerType
-func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeResponse, error) {
+func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*WorkerTypeResponse, error) {
 	cd := tcclient.Client(*awsProvisioner)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeResponse), nil)
-	return responseObject.(*GetWorkerTypeResponse), err
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/worker-type/"+url.QueryEscape(workerType), new(WorkerTypeResponse), nil)
+	return responseObject.(*WorkerTypeResponse), err
 }
 
 // Provide a new copy of a worker type to replace the existing one.
@@ -172,10 +172,10 @@ func (awsProvisioner *AwsProvisioner) CreateWorkerType(workerType string, payloa
 //   aws-provisioner:manage-worker-type:<workerType>
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#updateWorkerType
-func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*GetWorkerTypeResponse, error) {
+func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payload *CreateWorkerTypeRequest) (*WorkerTypeResponse, error) {
 	cd := tcclient.Client(*awsProvisioner)
-	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/update", new(GetWorkerTypeResponse), nil)
-	return responseObject.(*GetWorkerTypeResponse), err
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/worker-type/"+url.QueryEscape(workerType)+"/update", new(WorkerTypeResponse), nil)
+	return responseObject.(*WorkerTypeResponse), err
 }
 
 // This method is provided to allow workers to see when they were
@@ -185,10 +185,10 @@ func (awsProvisioner *AwsProvisioner) UpdateWorkerType(workerType string, payloa
 // should be identical as it is the same stored value.
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#workerTypeLastModified
-func (awsProvisioner *AwsProvisioner) WorkerTypeLastModified(workerType string) (*GetWorkerTypeResponse1, error) {
+func (awsProvisioner *AwsProvisioner) WorkerTypeLastModified(workerType string) (*WorkerTypeLastModified, error) {
 	cd := tcclient.Client(*awsProvisioner)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-type-last-modified/"+url.QueryEscape(workerType), new(GetWorkerTypeResponse1), nil)
-	return responseObject.(*GetWorkerTypeResponse1), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-type-last-modified/"+url.QueryEscape(workerType), new(WorkerTypeLastModified), nil)
+	return responseObject.(*WorkerTypeLastModified), err
 }
 
 // Retrieve a copy of the requested worker type definition.
@@ -203,10 +203,10 @@ func (awsProvisioner *AwsProvisioner) WorkerTypeLastModified(workerType string) 
 //   - aws-provisioner:manage-worker-type:<workerType>
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#workerType
-func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*GetWorkerTypeResponse, error) {
+func (awsProvisioner *AwsProvisioner) WorkerType(workerType string) (*WorkerTypeResponse, error) {
 	cd := tcclient.Client(*awsProvisioner)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType), new(GetWorkerTypeResponse), nil)
-	return responseObject.(*GetWorkerTypeResponse), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType), new(WorkerTypeResponse), nil)
+	return responseObject.(*WorkerTypeResponse), err
 }
 
 // Returns a signed URL for WorkerType, valid for the specified duration.
@@ -266,7 +266,7 @@ func (awsProvisioner *AwsProvisioner) ListWorkerTypes() (*ListWorkerTypes, error
 //   aws-provisioner:create-secret:<workerType>
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#createSecret
-func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSecretRequest) error {
+func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *SecretRequest) error {
 	cd := tcclient.Client(*awsProvisioner)
 	_, _, err := (&cd).APICall(payload, "PUT", "/secret/"+url.QueryEscape(token), nil, nil)
 	return err
@@ -281,10 +281,10 @@ func (awsProvisioner *AwsProvisioner) CreateSecret(token string, payload *GetSec
 // user data associated with the instance.
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#getSecret
-func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*GetSecretResponse, error) {
+func (awsProvisioner *AwsProvisioner) GetSecret(token string) (*SecretResponse, error) {
 	cd := tcclient.Client(*awsProvisioner)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/secret/"+url.QueryEscape(token), new(GetSecretResponse), nil)
-	return responseObject.(*GetSecretResponse), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/secret/"+url.QueryEscape(token), new(SecretResponse), nil)
+	return responseObject.(*SecretResponse), err
 }
 
 // An instance will report in by giving its instance id as well
@@ -328,10 +328,10 @@ func (awsProvisioner *AwsProvisioner) RemoveSecret(token string) error {
 //   - aws-provisioner:manage-worker-type:<workerType>
 //
 // See https://docs.taskcluster.net/reference/core/aws-provisioner/api-docs#getLaunchSpecs
-func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*GetAllLaunchSpecsResponse, error) {
+func (awsProvisioner *AwsProvisioner) GetLaunchSpecs(workerType string) (*LaunchSpecsResponse, error) {
 	cd := tcclient.Client(*awsProvisioner)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType)+"/launch-specifications", new(GetAllLaunchSpecsResponse), nil)
-	return responseObject.(*GetAllLaunchSpecsResponse), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/worker-type/"+url.QueryEscape(workerType)+"/launch-specifications", new(LaunchSpecsResponse), nil)
+	return responseObject.(*LaunchSpecsResponse), err
 }
 
 // Returns a signed URL for GetLaunchSpecs, valid for the specified duration.
