@@ -69,8 +69,8 @@ tasks:
       maxRunTime: 3600
       command:
         - set CGO_ENABLED=0
-        - set GOPATH=%CD%\gopath1.10.1
-        - set GOROOT=%CD%\go1.10.1\go
+        - set GOPATH=%CD%\gopath1.10.2
+        - set GOROOT=%CD%\go1.10.2\go
         - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
         - go version
@@ -104,21 +104,21 @@ tasks:
         - set CGO_ENABLED=1
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
-        - 'go test -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
+        - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
         - set GW_TESTS_GENERATE_USERS=true
-        - 'go test -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
+        - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-amd64.exe
-          path: gopath1.10.1\bin\generic-worker.exe
+          path: gopath1.10.2\bin\generic-worker.exe
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
         - cacheName: generic-worker-checkout
-          directory: gopath1.10.1\src
+          directory: gopath1.10.2\src
         - content:
-            url: https://storage.googleapis.com/golang/go1.10.1.windows-amd64.zip
-          directory: go1.10.1
+            url: https://storage.googleapis.com/golang/go1.10.2.windows-amd64.zip
+          directory: go1.10.2
           format: zip
         - content:
             url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
@@ -149,8 +149,8 @@ tasks:
       maxRunTime: 3600
       command:
         - set CGO_ENABLED=0
-        - set GOPATH=%CD%\gopath1.10.1
-        - set GOROOT=%CD%\go1.10.1\go
+        - set GOPATH=%CD%\gopath1.10.2
+        - set GOROOT=%CD%\go1.10.2\go
         - set PATH=%CD%\git\bin;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
         - go version
@@ -174,21 +174,21 @@ tasks:
         - go get -ldflags "-X main.revision=%revision%" -v -u -t ./...
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
-        - 'go test -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v ./...'
+        - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v ./...'
         - set GW_TESTS_GENERATE_USERS=true
-        - 'go test -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v'
+        - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v'
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-386.exe
-          path: gopath1.10.1\bin\generic-worker.exe
+          path: gopath1.10.2\bin\generic-worker.exe
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
         - cacheName: generic-worker-checkout
-          directory: gopath1.10.1\src
+          directory: gopath1.10.2\src
         - content:
-            url: https://storage.googleapis.com/golang/go1.10.1.windows-386.zip
-          directory: go1.10.1
+            url: https://storage.googleapis.com/golang/go1.10.2.windows-386.zip
+          directory: go1.10.2
           format: zip
         - content:
             url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/Git-2.11.0.3-32-bit.tar.bz2
@@ -219,8 +219,8 @@ tasks:
       maxRunTime: 3600
       command:
         - set CGO_ENABLED=0
-        - set GOPATH=%CD%\gopath1.10.1
-        - set GOROOT=%CD%\go1.10.1\go
+        - set GOPATH=%CD%\gopath1.10.2
+        - set GOROOT=%CD%\go1.10.2\go
         - set PATH=%CD%\git\cmd;%GOPATH%\bin;%GOROOT%\bin;%PATH%
         - git config --global core.autocrlf false
         - go version
@@ -254,21 +254,21 @@ tasks:
         - set CGO_ENABLED=1
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
-        - 'go test -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
+        - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
         - set GW_TESTS_GENERATE_USERS=true
-        - 'go test -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
+        - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-amd64.exe
-          path: gopath1.10.1\bin\generic-worker.exe
+          path: gopath1.10.2\bin\generic-worker.exe
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
         - cacheName: generic-worker-checkout
-          directory: gopath1.10.1\src
+          directory: gopath1.10.2\src
         - content:
-            url: https://storage.googleapis.com/golang/go1.10.1.windows-amd64.zip
-          directory: go1.10.1
+            url: https://storage.googleapis.com/golang/go1.10.2.windows-amd64.zip
+          directory: go1.10.2
           format: zip
         - content:
             url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
@@ -304,8 +304,8 @@ tasks:
           - -vxec
           - |
             export CGO_ENABLED=0
-            export GOROOT="$(pwd)/go1.10.1/go"
-            export GOPATH="$(pwd)/gopath1.10.1"
+            export GOROOT="$(pwd)/go1.10.2/go"
+            export GOPATH="$(pwd)/gopath1.10.2"
             export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
             go version
             go env
@@ -327,19 +327,19 @@ tasks:
             go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v -u -t ./...
             # output of wc command can contain spaces on darwin, so no quotes around expression
             test $(git status --porcelain | wc -l) == 0
-            GORACE=history_size=7 CGO_ENABLED=1 go test -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v ./...
+            GORACE=history_size=7 CGO_ENABLED=1 go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v ./...
             ineffassign .
       artifacts:
         - name: public/build/generic-worker-darwin-amd64
-          path: gopath1.10.1/bin/generic-worker
+          path: gopath1.10.2/bin/generic-worker
           expires: "{{ '2 weeks' | $fromNow }}"
           type: file
       mounts:
         - cacheName: generic-worker-checkout
-          directory: gopath1.10.1/src
+          directory: gopath1.10.2/src
         - content:
-            url: https://storage.googleapis.com/golang/go1.10.1.darwin-amd64.tar.gz
-          directory: go1.10.1
+            url: https://storage.googleapis.com/golang/go1.10.2.darwin-amd64.tar.gz
+          directory: go1.10.2
           format: tar.gz
 
 
@@ -375,8 +375,8 @@ tasks:
   #         - -vxec
   #         - |
   #           export CGO_ENABLED=0
-  #           export GOROOT="$(pwd)/go1.10.1/go"
-  #           export GOPATH="$(pwd)/gopath1.10.1"
+  #           export GOROOT="$(pwd)/go1.10.2/go"
+  #           export GOPATH="$(pwd)/gopath1.10.2"
   #           export PATH="${GOPATH}/bin:${GOROOT}/bin:${PATH}"
   #           export CGO_ENABLED=0
   #           go version
@@ -398,19 +398,19 @@ tasks:
   #           go generate
   #           go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v -u -t ./...
   #           test "$(git status --porcelain | wc -l)" == 0
-  #           GORACE=history_size=7 go test -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
+  #           GORACE=history_size=7 go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
   #           ineffassign .
   #     artifacts:
   #       - name: public/build/generic-worker-linux-armv6l
-  #         path: gopath1.10.1/bin/generic-worker
+  #         path: gopath1.10.2/bin/generic-worker
   #         expires: "{{ '2 weeks' | $fromNow }}"
   #         type: file
   #     mounts:
   #       - cacheName: generic-worker-checkout
-  #         directory: gopath1.10.1/src
+  #         directory: gopath1.10.2/src
   #       - content:
-  #           url: https://storage.googleapis.com/golang/go1.10.1.linux-armv6l.tar.gz
-  #         directory: go1.10.1
+  #           url: https://storage.googleapis.com/golang/go1.10.2.linux-armv6l.tar.gz
+  #         directory: go1.10.2
   #         format: tar.gz
 
 
@@ -464,7 +464,7 @@ tasks:
           go generate
           go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v -u -t ./...
           test "$(git status --porcelain | wc -l)" == 0
-          GORACE=history_size=7 CGO_ENABLED=1 go test -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
+          GORACE=history_size=7 CGO_ENABLED=1 go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
           "${GOPATH}/bin/ineffassign" .
       artifacts:
         public/build/generic-worker-linux-amd64:

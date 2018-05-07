@@ -5,6 +5,7 @@ package process
 import (
 	"fmt"
 	"io"
+	"log"
 	"os/exec"
 	"strconv"
 	"sync"
@@ -109,5 +110,11 @@ func (c *Command) DirectOutput(writer io.Writer) {
 func (c *Command) Kill() error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
+	if c.Process == nil {
+		// If process hasn't been started yet, nothing to kill
+		return nil
+	}
+	log.Printf("Killing process with ID %v... (%p)", c.Process.Pid, c)
+	defer log.Printf("Process with ID %v killed.", c.Process.Pid)
 	return c.Process.Kill()
 }

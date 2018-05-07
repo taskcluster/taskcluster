@@ -356,6 +356,7 @@ func initialiseFeatures() (err error) {
 			return err
 		}
 	}
+	log.Print("All features initialised.")
 	return nil
 }
 
@@ -1073,7 +1074,10 @@ func (task *TaskRun) setMaxRunTimer() *time.Timer {
 		func() {
 			// ignore any error the Abort function returns - we are in the
 			// wrong go routine to properly handle it
-			task.StatusManager.Abort(Failure(fmt.Errorf("Aborting task - max run time exceeded!")))
+			err := task.StatusManager.Abort(Failure(fmt.Errorf("Aborting task - max run time exceeded!")))
+			if err != nil {
+				task.Warnf("Error when aborting task: %v", err)
+			}
 		},
 	)
 }

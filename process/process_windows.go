@@ -1,9 +1,9 @@
 package process
 
 import (
-	"context"
 	"fmt"
 	"io"
+	"log"
 	"os/exec"
 	"sync"
 	"syscall"
@@ -17,8 +17,6 @@ import (
 type Command struct {
 	mutex sync.RWMutex
 	*exec.Cmd
-	Context    context.Context
-	CancelFunc context.CancelFunc
 }
 
 type Result struct {
@@ -50,7 +48,7 @@ func (r *Result) Crashed() bool {
 	return r.SystemError != nil && !r.Aborted
 }
 
-func NewCommand(commandLine []string, workingDirectory string, env []string, loginInfo *subprocess.LoginInfo, deadline time.Time) (*Command, error) {
+func NewCommand(commandLine []string, workingDirectory string, env []string, loginInfo *subprocess.LoginInfo) (*Command, error) {
 	if loginInfo != nil && loginInfo.HUser != 0 {
 		environment, err := win32.CreateEnvironment(&env, loginInfo.HUser)
 		if err != nil {
@@ -58,15 +56,7 @@ func NewCommand(commandLine []string, workingDirectory string, env []string, log
 		}
 		env = *environment
 	}
-	var cancel context.CancelFunc
-	var ctx context.Context
-	if deadline.IsZero() {
-		ctx = context.Background()
-		cancel = func() {}
-	} else {
-		ctx, cancel = context.WithDeadline(context.Background(), deadline)
-	}
-	cmd := exec.CommandContext(ctx, commandLine[0], commandLine[1:]...)
+	cmd := exec.Command(commandLine[0], commandLine[1:]...)
 	cmd.Env = env
 	cmd.Dir = workingDirectory
 	isWindows8OrGreater := win32.IsWindows8OrGreater()
@@ -81,9 +71,7 @@ func NewCommand(commandLine []string, workingDirectory string, env []string, log
 		}
 	}
 	return &Command{
-		Context:    ctx,
-		CancelFunc: cancel,
-		Cmd:        cmd,
+		Cmd: cmd,
 	}, nil
 }
 
@@ -109,7 +97,6 @@ func (r *Result) ExitCode() int {
 }
 
 func (c *Command) Execute() (r *Result) {
-	defer c.CancelFunc()
 	r = &Result{}
 	started := time.Now()
 	c.mutex.Lock()
@@ -119,19 +106,23 @@ func (c *Command) Execute() (r *Result) {
 		r.SystemError = err
 		return
 	}
-	err = c.Wait()
+	// See https://bugzilla.mozilla.org/show_bug.cgi?id=1458873
+	// If we call c.Wait() here, we'll end up waiting for subprocesses
+	// that aren't killed. By calling c.Process.Wait() we only wait for
+	// the parent process to terminate, and not for the stdout/stderr
+	// handles to get closed, which only happens when all subprocesses
+	// have terminated.
+	state, err := c.Process.Wait()
 	finished := time.Now()
 	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 	r.Duration = finished.Round(0).Sub(started)
-	r.Aborted = (c.Context.Err() != nil)
-	r.UserTime = c.ProcessState.UserTime()
-	r.KernelTime = c.ProcessState.SystemTime()
+	r.UserTime = state.UserTime()
+	r.KernelTime = state.SystemTime()
 	if err != nil {
-		if exiterr, ok := err.(*exec.ExitError); ok {
-			r.ExitError = exiterr
-		} else {
-			r.SystemError = err
-		}
+		r.SystemError = err
+	}
+	if !state.Success() {
+		r.ExitError = &exec.ExitError{ProcessState: state}
 	}
 	return
 }
@@ -174,7 +165,24 @@ func (c *Command) DirectOutput(writer io.Writer) {
 func (c *Command) Kill() error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
+	if c.Process == nil {
+		// If process hasn't been started yet, nothing to kill
+		return nil
+	}
+	// tasklist()
+	log.Printf("Killing process with ID %v... (%p)", c.Process.Pid, c)
+	// defer tasklist()
+	defer log.Printf("Process with ID %v killed.", c.Process.Pid)
 	return c.Process.Kill()
+}
+
+func tasklist() {
+	cmd := exec.Command("tasklist")
+	stdoutStderr, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("%s\n", stdoutStderr)
 }
 
 type LogonSession struct {
