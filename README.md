@@ -84,7 +84,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run:
 
 ```
-generic-worker 10.7.11
+generic-worker 10.7.12
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -370,7 +370,7 @@ go test -v ./...
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 10.7.11
+$ ./release.sh 10.7.12
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
