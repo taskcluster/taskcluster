@@ -32,7 +32,7 @@ suite('api/schemaPrefix', function() {
   api.declare({
     method:   'get',
     route:    '/test-output',
-    name:     'testInput',
+    name:     'testInputValidOutput',
     output:   'test-schema.json',
     title:    'Test End-Point',
     description:  'Place we can call to test something',
