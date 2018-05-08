@@ -21,10 +21,7 @@ func TestTaskclusterProxy(t *testing.T) {
 		),
 		MaxRunTime: 60,
 		Env:        map[string]string{},
-		Features: struct {
-			ChainOfTrust     bool `json:"chainOfTrust,omitempty"`
-			TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
-		}{
+		Features: FeatureFlags{
 			TaskclusterProxy: true,
 		},
 	}

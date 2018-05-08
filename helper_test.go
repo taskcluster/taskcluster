@@ -221,12 +221,7 @@ func testTask(t *testing.T) *tcqueue.TaskDefinitionRequest {
 		Extra:        json.RawMessage(`{}`),
 		Dependencies: []string{},
 		Requires:     "all-completed",
-		Metadata: struct {
-			Description string `json:"description"`
-			Name        string `json:"name"`
-			Owner       string `json:"owner"`
-			Source      string `json:"source"`
-		}{
+		Metadata: tcqueue.TaskMetadata{
 			Description: "Test task",
 			Name:        "[TC] Generic Worker CI - " + globalTestName,
 			Owner:       "generic-worker-ci@mozilla.com",

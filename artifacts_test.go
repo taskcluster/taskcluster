@@ -448,10 +448,7 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 				Type:    "file",
 			},
 		},
-		Features: struct {
-			ChainOfTrust     bool `json:"chainOfTrust,omitempty"`
-			TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
-		}{
+		Features: FeatureFlags{
 			ChainOfTrust: true,
 		},
 	}
@@ -734,10 +731,7 @@ func TestUpload(t *testing.T) {
 				Type:    "file",
 			},
 		},
-		Features: struct {
-			ChainOfTrust     bool `json:"chainOfTrust,omitempty"`
-			TaskclusterProxy bool `json:"taskclusterProxy,omitempty"`
-		}{
+		Features: FeatureFlags{
 			ChainOfTrust: true,
 		},
 	}
