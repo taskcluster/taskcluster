@@ -63,12 +63,12 @@ suite('api/auth', function() {
     await _apiServer.terminate();
   });
 
-  const testEndpoint = ({method, route, scopes = null, handler, handlerBuilder, tests}) => {
+  const testEndpoint = ({method, route, name, scopes = null, handler, handlerBuilder, tests}) => {
     let sideEffects = {};
     api.declare({
       method,
       route,
-      name: 'placeholder',
+      name,
       title: 'placeholder',
       description: 'placeholder',
       scopes,
@@ -108,6 +108,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route:  '/test-deprecated-satisfies',
+    name: 'testDeprecatedSatisfies',
     handler: (req, res) => {
       if (req.satisfies([])) {
         res.status(200).json({ok: true});
@@ -126,6 +127,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route:  '/test-static-scope',
+    name: 'testStaticScope',
     scopes: {AllOf: ['service:magic']},
     handler: (req, res) => {
       res.status(200).json({ok: true});
@@ -182,6 +184,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route: '/scopes',
+    name: 'scopes',
     scopes: {AllOf: ['service:magic']},
     handler: async (req, res) => {
       res.status(200).json({
@@ -210,6 +213,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route: '/test-scopes',
+    name: 'testScopes',
     scopes: {AllOf: ['service:<param>']},
     handler: async (req, res) => {
       await req.authorize({
@@ -235,6 +239,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route: '/test-scopes-authorize-twice',
+    name: 'testScopesAuthorizeTwice',
     scopes: {AllOf: ['service:<param>']},
     handler: async (req, res) => {
       await req.authorize({
@@ -263,6 +268,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route: '/crash-override',
+    name: 'crashOverride',
     scopes: {AllOf: ['service:<param>']},
     handler: async (req, res) => {
       try {
@@ -291,6 +297,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route: '/test-no-auth',
+    name: 'testNoAuth',
     handler: async (req, res) => {
       assert.equal(await req.clientId(), 'auth-failed:no-auth');
       res.status(200).json('OK');
@@ -306,6 +313,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route: '/test-dyn-auth',
+    name: 'testDynAuth',
     scopes: {AllOf: [{for: 'scope', in: 'scopes', each: '<scope>'}]},
     handler: async (req, res) => {
       await req.authorize({scopes: req.body.scopes});
@@ -393,6 +401,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route: '/test-expression-auth/:provisionerId/:workerType',
+    name: 'testExpAuthWorker',
     scopes: {AllOf: [
       'queue:create-task:<provisionerId>/<workerType>',
       {for: 'route', in: 'routes', each: 'queue:route:<route>'},
@@ -426,6 +435,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route: '/test-expression-if-then-2',
+    name: 'testIfThen',
     scopes: {if: 'private', then: {AllOf: [
       'some:scope:nobody:has',
     ]}},
@@ -488,6 +498,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route: '/test-expression-if-then-forget',
+    name: 'testIfThenForget',
     scopes: {AnyOf: [
       'some:scope:nobody:has',
       {if: 'public', then: {AllOf: []}},
@@ -511,6 +522,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route: '/test-dyn-auth-no-authorize',
+    name: 'testDynNoAuth',
     scopes: {AllOf: [{for: 'scope', in: 'scopes', each: '<scope>'}]},
     handler: async (req, res) => {
       return res.reply({});
@@ -539,6 +551,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route: '/test-dyn-auth-missing-authorize',
+    name: 'testDynMissingAuth',
     scopes: {AllOf: [{for: 'scope', in: 'scopes', each: '<scope>'}]},
     handler: async (req, res) => {
       await req.authorize({foo: 'bar'});
@@ -568,6 +581,7 @@ suite('api/auth', function() {
   testEndpoint({
     method: 'get',
     route: '/test-bad-auth-side-effects',
+    name: 'testBadAuth',
     scopes: 'something<foo>',
     handlerBuilder: sideEffects => async (req, res) => {
       await req.authorize({foo: 'bar'});
