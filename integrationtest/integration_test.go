@@ -83,12 +83,7 @@ func TestDefineTask(t *testing.T) {
 		Deadline: tcclient.Time(deadline),
 		Expires:  tcclient.Time(expires),
 		Extra:    json.RawMessage(`{"index":{"rank":12345}}`),
-		Metadata: struct {
-			Description string `json:"description"`
-			Name        string `json:"name"`
-			Owner       string `json:"owner"`
-			Source      string `json:"source"`
-		}{
+		Metadata: tcqueue.TaskMetadata{
 			Description: "Stuff",
 			Name:        "[TC] Pete",
 			Owner:       "pmoore@mozilla.com",
