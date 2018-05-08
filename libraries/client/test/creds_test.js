@@ -12,6 +12,7 @@ suite('client credential handling', function() {
   let client = function(options) {
     options = _.defaults({}, options || {}, {
       credentials: {},
+      rootUrl: 'https://taskcluster.net',
     });
     options.credentials = _.defaults({}, options.credentials, {
       clientId: 'tester',
@@ -372,7 +373,7 @@ suite('client credential handling', function() {
     });
 
     test('implicit credentials', async () => {
-      let client = new cleanClient.Auth();
+      let client = new cleanClient.Auth({rootUrl: 'https://taskcluster.net'});
       assert.deepEqual(
         await client.testAuthenticate({
           clientScopes: [],
