@@ -9,6 +9,7 @@ let testing     = require('taskcluster-lib-testing');
 let api         = require('../src/api');
 let exchanges   = require('../src/exchanges');
 let load        = require('../src/main');
+let RateLimit   = require('../src/ratelimit');
 
 // Load configuration
 let cfg = config({profile: 'test'});
@@ -52,8 +53,10 @@ mocha.before(async () => {
   // Create mock authentication server
   testing.fakeauth.start(testclients);
 
+  // disable periodic purging so that mocha will exit
+  const rateLimit = new RateLimit({count: 100, time: 100, noPeriodicPurge: true});
   helper.publisher = await load('publisher', {profile: 'test', process: 'test'});
-  webServer = await load('server', {profile: 'test', process: 'test', publisher: helper.publisher});
+  webServer = await load('server', {profile: 'test', process: 'test', publisher: helper.publisher, rateLimit});
 
   // Create client for working with API
   helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';

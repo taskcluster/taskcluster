@@ -44,6 +44,7 @@
   },
   "devDependencies": {
     "mocha": "^5.0.0",
+    "mockdate": "^2.0.2",
     "sinon": "^4.2.1",
     "taskcluster-lib-testing": "^2.0.2"
   }
