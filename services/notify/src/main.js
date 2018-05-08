@@ -9,6 +9,7 @@ let taskcluster       = require('taskcluster-client');
 let _                 = require('lodash');
 let v1                = require('./api');
 let Notifier          = require('./notifier');
+let RateLimit         = require('./ratelimit');
 let Handler           = require('./handler');
 let exchanges         = require('./exchanges');
 let IRC               = require('./irc');
@@ -98,14 +99,23 @@ let load = loader({
     setup: () => new taskcluster.Queue(),
   },
 
+  rateLimit: {
+    requires: ['cfg'],
+    setup: ({cfg}) => new RateLimit({
+      count: cfg.app.maxMessageCount,
+      time: cfg.app.maxMessageTime,
+    }),
+  },
+
   notifier: {
-    requires: ['cfg', 'publisher'],
-    setup: ({cfg, publisher}) => new Notifier({
+    requires: ['cfg', 'publisher', 'rateLimit'],
+    setup: ({cfg, publisher, rateLimit}) => new Notifier({
       email: cfg.app.sourceEmail,
       aws: cfg.aws,
       queueName: cfg.app.sqsQueueName,
       emailBlacklist: cfg.app.emailBlacklist,
       publisher,
+      rateLimit,
     }),
   },
 

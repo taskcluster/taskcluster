@@ -6,6 +6,7 @@ let aws = require('aws-sdk');
 let crypto = require('crypto');
 let marked = require('marked');
 let EmailTemplate = require('email-templates').EmailTemplate;
+let RateLimit = require('./ratelimit');
 
 /**
  * Object to send notifications, so the logic can be re-used in both the pulse
@@ -28,6 +29,7 @@ class Notifier {
     this.queueUrl = this.sqs.createQueue({
       QueueName:  this.options.queueName,
     }).promise().then(req => req.QueueUrl);
+    this.rateLimit = options.rateLimit;
   }
 
   key(idents) {
@@ -51,11 +53,19 @@ class Notifier {
       debug('Duplicate email send detected. Not attempting resend.');
       return;
     }
+
     // Don't notify emails on the blacklist
     if (this.options.emailBlacklist.includes(address)) {
       debug('Blacklist email: %s send detected, discarding the notification', address);
       return;
     }
+
+    const rateLimit = this.rateLimit.remaining(address);
+    if (rateLimit <= 0) {
+      debug('Ratelimited email: %s is over its rate limit, discarding the notification', address);
+      return;
+    }
+
     debug(`Sending email to ${address}`);
     // It is very, very important that this uses the sanitize option
     let formatted  = marked(content, {
@@ -69,7 +79,7 @@ class Notifier {
     });
 
     let tmpl = new EmailTemplate(path.join(__dirname, 'templates', template || 'simple'));
-    let mail = await tmpl.render({address, subject, content, formatted, link});
+    let mail = await tmpl.render({address, subject, content, formatted, link, rateLimit});
     let html = mail.html;
     content = mail.text;
     subject = mail.subject;
@@ -94,6 +104,7 @@ class Notifier {
         },
       },
     }).promise().then(res => {
+      this.rateLimit.markEvent(address);
       this.markSent(address, subject, content, link, replyTo);
       return res;
     });
