@@ -14,6 +14,7 @@ var http        = require('http');
 var https       = require('https');
 var Promise     = require('promise');
 var querystring = require('querystring');
+var tcUrl       = require('taskcluster-lib-urls');
 
 /** Default options for our http/https global agents */
 var AGENT_OPTIONS = {
@@ -59,7 +60,7 @@ var _defaultOptions = {
   maxDelay:       30 * 1000,
 
   // The prefix of any api calls. e.g. https://taskcluster.net/api/
-  rootUrl: process.env.TASKCLUSTER_ROOT,
+  rootUrl: process.env.TASKCLUSTER_ROOT_URL,
 
   // Fake methods, if given this will produce a fake client object.
   // Methods called won't make expected HTTP requests, but instead:
@@ -137,14 +138,13 @@ var makeRequest = function(client, method, url, payload, query) {
  *   // Limit the set of scopes requests with this client may make.
  *   // Note, that your clientId must have a superset of the these scopes.
  *   authorizedScopes:  ['scope1', 'scope2', ...]
- *   baseUrl:         'http://.../v1'                // baseUrl for API requests
  *   exchangePrefix:  'queue/v1/'                    // exchangePrefix prefix
  *   retries:         5,                             // Maximum number of retries
  *   monitor:         await Monitor()                // From taskcluster-lib-monitor
  *   rootUrl:         'https://taskcluster.net/api/' // prefix for all api calls
  * }
  *
- * `baseUrl` and `exchangePrefix` defaults to values from reference.
+ * `exchangePrefix` defaults to values from reference.
  *
  * `rootUrl` and `baseUrl` are mutually exclusive.
  */
@@ -155,22 +155,19 @@ exports.createClient = function(reference, name) {
 
   // Client class constructor
   var Client = function(options) {
-    if (options && options.baseUrl && options.rootUrl) {
-      throw new Error('baseUrl and rootUrl are mutually exlcusive. Prefer rootUrl.');
+    if (options && options.baseUrl) {
+      throw new Error('baseUrl has been deprecated!');
     }
     this._options = _.defaults({}, options || {}, {
-      baseUrl:          reference.baseUrl        || '',
       exchangePrefix:   reference.exchangePrefix || '',
+      // We can remove the second half of this assignment once all api definitions are upgraded to have `name`
+      serviceName: reference.name || reference.baseUrl.split('//')[1].split('.')[0],
+      serviceVersion: 'v' + (reference.version + 1),
     }, _defaultOptions);
 
-    // Remove possible trailing slash from baseUrl
-    this._options.baseUrl = this._options.baseUrl.replace(/\/$/, '');
+    assert(this._options.rootUrl, 'Must provide a rootUrl or set the env var TASKCLUSTER_ROOT_URL');
 
-    if (this._options.rootUrl) {
-      // We can remove the second half of this assignment once all api definitions are upgraded to have `name`
-      const urlPrefix = reference.name || reference.baseUrl.split('//')[1].split('.')[0];
-      this._options.baseUrl = `${this._options.rootUrl}/${urlPrefix}/v${reference.version + 1}`;
-    }
+    this._options.rootUrl = this._options.rootUrl.replace(/\/$/, '');
 
     if (this._options.stats) {
       throw new Error('options.stats is now deprecated! Use options.monitor instead.');
@@ -182,7 +179,7 @@ exports.createClient = function(reference, name) {
     }
 
     // Shortcut for which default agent to use...
-    var isHttps = this._options.baseUrl.indexOf('https') === 0;
+    var isHttps = this._options.rootUrl.indexOf('https') === 0;
 
     if (this._options.agent) {
       // We have explicit options for new agent create one...
@@ -288,7 +285,7 @@ exports.createClient = function(reference, name) {
         return text; // Preserve original
       });
       // Create url for the request
-      var url = this._options.baseUrl + endpoint;
+      var url = tcUrl.api(this._options.rootUrl, this._options.serviceName, this._options.serviceVersion, endpoint);
       // Add payload if one is given
       var payload = undefined;
       if (entry.input) {
@@ -565,7 +562,7 @@ exports.createClient = function(reference, name) {
       }
     }
 
-    return this._options.baseUrl + endpoint + query;
+    return tcUrl.api(this._options.rootUrl, this._options.serviceName, this._options.serviceVersion, endpoint) + query;
   };
 
   // Utility function to construct a bewit URL for GET requests
@@ -787,7 +784,7 @@ exports.createTemporaryCredentials = function(options) {
  *    scopes: [...],        // associated scopes (if available)
  * }
  */
-exports.credentialInformation = function(credentials) {
+exports.credentialInformation = function(rootUrl, credentials) {
   var result = {};
   var issuer = credentials.clientId;
 
@@ -818,7 +815,7 @@ exports.credentialInformation = function(credentials) {
     result.type = 'permanent';
   }
 
-  var anonClient = new exports.Auth();
+  var anonClient = new exports.Auth({rootUrl});
   var clientLookup = anonClient.client(issuer).then(function(client) {
     var expires = new Date(client.expires);
     if (!result.expiry || result.expiry > expires) {
@@ -829,7 +826,7 @@ exports.credentialInformation = function(credentials) {
     }
   });
 
-  var credClient = new exports.Auth({credentials: credentials});
+  var credClient = new exports.Auth({rootUrl, credentials});
   var scopeLookup = credClient.currentScopes().then(function(response) {
     result.scopes = response.scopes;
   });

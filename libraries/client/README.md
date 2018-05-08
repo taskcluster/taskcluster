@@ -664,13 +664,13 @@ the `rootUrl` when creating an instance of the client. As illustrated below:
 ```js
 var auth = new taskcluster.Auth({
   credentials:  {...},
-  rootUrl:      "http://whatever.com/api"
+  rootUrl:      "http://whatever.com"
 });
 ```
 
 This will be the supported way moving forward of pointing taskcluster at
 different instances of taskcluster. This can also be set by setting a
-`TASKCLUSTER_ROOT` env var before importing taskcluster-client. You can also
+`TASKCLUSTER_ROOT_URL` env var before importing taskcluster-client. You can also
 use global config options as below:
 
 ```js
@@ -880,7 +880,7 @@ var dateObject2 = taskcluster.fromNow("1 year", dateObject1);
 Your users may find the options for TaskCluster credentials overwhelming.  You
 can help by interpreting the credentials for them.
 
-The `credentialInformation(credentials, options)` function returns a promise
+The `credentialInformation(rootUrl, credentials)` function returns a promise
 with information about the given credentials:
 
 ```js

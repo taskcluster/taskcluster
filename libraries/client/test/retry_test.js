@@ -15,6 +15,7 @@ suite('retry-test', function() {
   var api = new API({
     title:        'Retry API',
     description:  'API that sometimes works by retrying things',
+    name:         'retrytest',
   });
 
   var getInternalErrorCount = 0;
@@ -23,8 +24,7 @@ suite('retry-test', function() {
     route:        '/internal-error',
     name:         'getInternalError',
     title:        'Test End-Point',
-    scopes:       [['test:internal-error']],
-    deferAuth:    false,
+    scopes:       'test:internal-error',
     description:  'Place we can call to test something',
   }, function(req, res) {
     getInternalErrorCount += 1;
@@ -41,8 +41,7 @@ suite('retry-test', function() {
     route:        '/internal-error-sometimes',
     name:         'getOccasionalInternalError',
     title:        'Test End-Point',
-    scopes:       [['test:internal-error']],
-    deferAuth:    false,
+    scopes:       'test:internal-error',
     description:  'Place we can call to test something',
   }, function(req, res) {
     getOccasionalInternalErrorCount += 1;
@@ -67,8 +66,7 @@ suite('retry-test', function() {
     route:        '/user-error',
     name:         'getUserError',
     title:        'Test End-Point',
-    scopes:       [['test:internal-error']],
-    deferAuth:    false,
+    scopes:       'test:internal-error',
     description:  'Place we can call to test something',
   }, function(req, res) {
     getUserErrorCount += 1;
@@ -85,8 +83,7 @@ suite('retry-test', function() {
     route:        '/connection-error',
     name:         'getConnectionError',
     title:        'Test End-Point',
-    scopes:       [['test:internal-error']],
-    deferAuth:    false,
+    scopes:       'test:internal-error',
     description:  'Place we can call to test something',
   }, function(req, res) {
     getConnectionErrorCount += 1;
@@ -131,7 +128,7 @@ suite('retry-test', function() {
           clientId:     'test-client',
           accessToken:  'test-token',
         },
-        baseUrl:        'http://localhost:60526/v1',
+        rootUrl:        'http://localhost:60526',
         monitor,
       });
 
@@ -144,7 +141,7 @@ suite('retry-test', function() {
       });
 
       // Use router
-      app.use('/v1', router);
+      app.use('/api/retrytest/v1', router);
 
       return app.createServer().then(function(server) {
         _apiServer = server;
@@ -198,7 +195,7 @@ suite('retry-test', function() {
         clientId:     'test-client',
         accessToken:  'test-token',
       },
-      baseUrl:        'http://localhost:60526/v1',
+      rootUrl:        'http://localhost:60526',
       monitor:        m,
     });
     return server2.getOccasionalInternalError().then(function() {
@@ -213,7 +210,7 @@ suite('retry-test', function() {
         clientId:     'test-client',
         accessToken:  'test-token',
       },
-      baseUrl:        'http://localhost:60526/v1',
+      rootUrl:        'http://localhost:60526',
       retries:        0,
     });
     getInternalErrorCount = 0;
@@ -231,7 +228,7 @@ suite('retry-test', function() {
         clientId:     'test-client',
         accessToken:  'test-token',
       },
-      baseUrl:        'http://localhost:60526/v1',
+      rootUrl:        'http://localhost:60526',
       retries:        1,
     });
     getInternalErrorCount = 0;
