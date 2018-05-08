@@ -26,7 +26,7 @@ suite('api/publish', function() {
     api.declare({
       method:       'get',
       route:        '/test0',
-      name:         'test',
+      name:         'test0',
       title:        'Test End-Point',
       description:  'Place we can call to test something',
       stability:    subject.stability.stable,
@@ -38,7 +38,7 @@ suite('api/publish', function() {
     api.declare({
       method:       'get',
       route:        '/test1',
-      name:         'test',
+      name:         'test1',
       title:        'Test End-Point',
       description:  'Place we can call to test something',
       stability:    subject.stability.stable,
@@ -49,7 +49,7 @@ suite('api/publish', function() {
     api.declare({
       method:       'get',
       route:        '/test2',
-      name:         'test',
+      name:         'test2',
       title:        'Test End-Point',
       description:  'Place we can call to test something',
       stability:    subject.stability.stable,
@@ -60,7 +60,7 @@ suite('api/publish', function() {
     api.declare({
       method:       'get',
       route:        '/test3',
-      name:         'test',
+      name:         'test3',
       title:        'Test End-Point',
       description:  'Place we can call to test something',
       stability:    subject.stability.stable,
@@ -71,7 +71,7 @@ suite('api/publish', function() {
     api.declare({
       method:       'get',
       route:        '/test4',
-      name:         'test',
+      name:         'test4',
       title:        'Test End-Point',
       description:  'Place we can call to test something',
       stability:    subject.stability.stable,
@@ -82,7 +82,7 @@ suite('api/publish', function() {
     api.declare({
       method:       'get',
       route:        '/test5',
-      name:         'test',
+      name:         'test5',
       title:        'Test End-Point',
       description:  'Place we can call to test something',
       stability:    subject.stability.stable,
@@ -93,7 +93,7 @@ suite('api/publish', function() {
     api.declare({
       method:       'get',
       route:        '/test6',
-      name:         'test',
+      name:         'test6',
       title:        'Test End-Point',
       description:  'Place we can call to test something',
       stability:    subject.stability.stable,
