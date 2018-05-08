@@ -7,6 +7,7 @@ suite('Handler', () => {
   let sinon = require('sinon');
   let helper = require('./helper');
   let load = require('../src/main');
+  let RateLimit = require('../src/ratelimit');
 
   let publisher;
   let listener;
@@ -16,7 +17,9 @@ suite('Handler', () => {
   mocha.before(async () => {
     publisher = await load('publisher', {profile: 'test', process: 'test'});
     listener = await load('listener', {profile: 'test', process: 'test'});
-    notifier = await load('notifier', {profile: 'test', process: 'test', publisher});
+    // disable periodic purging so that mocha will exit
+    rateLimit = new RateLimit({count: 100, time: 100, noPeriodicPurge: true});
+    notifier = await load('notifier', {profile: 'test', process: 'test', publisher, rateLimit});
     await load('handler', {profile: 'test', process: 'test', listener, queue, publisher, notifier});
   });
 
