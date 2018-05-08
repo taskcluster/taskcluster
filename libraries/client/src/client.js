@@ -428,12 +428,12 @@ exports.createClient = function(reference, name) {
         // Add a call record to fakeCalls[<method>]
         var record = {};
         if (payload !== undefined) {
-          record.payload = payload;
+          record.payload = _.cloneDeep(payload);
         }
         if (query !== null) {
-          record.query = query;
+          record.query = _.cloneDeep(query);
         }
-        entry.args.forEach((k, i) => record[k] = args[i]);
+        entry.args.forEach((k, i) => record[k] = _.cloneDeep(args[i]));
         this.fakeCalls[entry.name].push(record);
         // Call fake[<method>]
         if (!this._options.fake[entry.name]) {
