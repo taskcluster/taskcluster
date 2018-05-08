@@ -145,13 +145,14 @@ suite('client requests/responses', function() {
 
   const subjects = {
     old: {
-      name: 'baseurl with no rootUrl set',
+      name: 'just https://taskcluster.net',
       urlPrefix: 'https://fake.taskcluster.net',
       Fake: taskcluster.createClient(referenceBaseUrlStyle),
-      rootUrl: null,
+      rootUrl: 'https://taskcluster.net',
       client: (() => {
         const Fake = taskcluster.createClient(referenceBaseUrlStyle);
         return new Fake({
+          rootUrl: 'https://taskcluster.net',
           credentials: {
             clientId: 'nobody',
             accessToken: 'nothing',
@@ -161,7 +162,7 @@ suite('client requests/responses', function() {
     },
     bothWays: {
       name: 'baseurl and rootUrl with rootUrl set',
-      urlPrefix: 'https://whatever.net/fake1',
+      urlPrefix: 'https://whatever.net/api/fake1',
       Fake: taskcluster.createClient(referenceBothStyle),
       rootUrl: 'https://whatever.net',
       client: (() => {
@@ -177,7 +178,7 @@ suite('client requests/responses', function() {
     },
     justRootUrl: {
       name: 'rootUrl set via constructor',
-      urlPrefix: 'https://whatever.net/fake2',
+      urlPrefix: 'https://whatever.net/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net',
       client: (() => {
@@ -193,13 +194,13 @@ suite('client requests/responses', function() {
     },
     rootUrlWithPath: {
       name: 'rootUrl set via constructor with path',
-      urlPrefix: 'https://whatever.net/api/fake2',
+      urlPrefix: 'https://whatever.net/taskcluster/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
-      rootUrl: 'https://whatever.net/api',
+      rootUrl: 'https://whatever.net/taskcluster',
       client: (() => {
         const Fake = taskcluster.createClient(referenceNameStyle);
         return new Fake({
-          rootUrl: 'https://whatever.net/api',
+          rootUrl: 'https://whatever.net/taskcluster',
           credentials: {
             clientId: 'nobody',
             accessToken: 'nothing',
@@ -209,13 +210,13 @@ suite('client requests/responses', function() {
     },
     rootUrlWithPathAndSubdomain: {
       name: 'rootUrl set via constructor with path and subdomain',
-      urlPrefix: 'https://foo.whatever.net/api/fake2',
+      urlPrefix: 'https://foo.whatever.net/taskcluster/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
-      rootUrl: 'https://foo.whatever.net/api',
+      rootUrl: 'https://foo.whatever.net/taskcluster',
       client: (() => {
         const Fake = taskcluster.createClient(referenceNameStyle);
         return new Fake({
-          rootUrl: 'https://foo.whatever.net/api',
+          rootUrl: 'https://foo.whatever.net/taskcluster',
           credentials: {
             clientId: 'nobody',
             accessToken: 'nothing',
@@ -225,11 +226,11 @@ suite('client requests/responses', function() {
     },
     usingEnvVar: {
       name: 'rootUrl set via env var',
-      urlPrefix: 'https://whatever.net/fake2',
+      urlPrefix: 'https://whatever.net/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net',
       client: (() => {
-        process.env.TASKCLUSTER_ROOT = 'https://whatever.net';
+        process.env.TASKCLUSTER_ROOT_URL = 'https://whatever.net';
         const clientPath = path.resolve(__dirname, '..', 'lib', 'client.js');
         delete require.cache[clientPath];
         const cleanClient = require(clientPath);
@@ -240,7 +241,7 @@ suite('client requests/responses', function() {
             accessToken: 'nothing',
           },
         });
-        delete process.env.TASKCLUSTER_ROOT;
+        delete process.env.TASKCLUSTER_ROOT_URL;
         return fake;
       })(),
     },
@@ -349,33 +350,6 @@ suite('client requests/responses', function() {
           .reply(200, {});
         await client.paramQuery('test');
       });
-
-      if (subject === 'old') {
-        test('GET with baseUrl', async () => {
-          nock('https://fake-staging.taskcluster.net').get('/v1/get-test')
-            .reply(200, {});
-          let client = new Fake({baseUrl: 'https://fake-staging.taskcluster.net/v1'});
-          await client.get();
-        });
-
-        test('GET with baseUrl (404)', async () => {
-          nock('https://fake-staging.taskcluster.net').get('/v1/get-test')
-            .reply(404, {code: 'NotFoundError'});
-          let client = new Fake({baseUrl: 'https://fake-staging.taskcluster.net/v1'});
-          await client.get().then(() => assert('false'), err => {
-            assert(err.statusCode === 404);
-          });
-        });
-
-        test('Use .use to set baseUrl (404)', async () => {
-          nock('https://fake-staging.taskcluster.net').get('/v1/get-test')
-            .reply(404, {code: 'NotFoundError'});
-          let client = new Fake().use({baseUrl: 'https://fake-staging.taskcluster.net/v1'});
-          await client.get().then(() => assert('false'), err => {
-            assert(err.statusCode === 404);
-          });
-        });
-      }
 
       test('GET public resource', async () => {
         nock(urlPrefix).get('/v1/get-test')
