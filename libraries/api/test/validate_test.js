@@ -17,7 +17,7 @@ suite('api/validate', function() {
   api.declare({
     method:   'post',
     route:    '/test-input',
-    name:     'testInput',
+    name:     'testInputValidate',
     input:    'http://localhost:4321/test-schema.json',
     title:    'Test End-Point',
     description:  'Place we can call to test something',
@@ -29,7 +29,7 @@ suite('api/validate', function() {
   api.declare({
     method:   'get',
     route:    '/test-output',
-    name:     'testInput',
+    name:     'testInputValidOutputValidate',
     output:   'http://localhost:4321/test-schema.json',
     title:    'Test End-Point',
     description:  'Place we can call to test something',
@@ -41,7 +41,7 @@ suite('api/validate', function() {
   api.declare({
     method:   'get',
     route:    '/test-invalid-output',
-    name:     'testInput',
+    name:     'testInputInvalidOutputValidate',
     output:   'http://localhost:4321/test-schema.json',
     title:    'Test End-Point',
     description:  'Place we can call to test something',
@@ -66,7 +66,7 @@ suite('api/validate', function() {
   api.declare({
     method:   'get',
     route:    '/test-skip-output-validation',
-    name:     'testOutputSkipInputValidation',
+    name:     'testOutputSkipOutputValidation',
     output:    'http://localhost:4321/test-schema.json',
     skipOutputValidation: true,
     title:    'Test End-Point',

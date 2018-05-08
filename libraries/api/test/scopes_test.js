@@ -17,7 +17,7 @@ suite('api/route', function() {
     api.declare({
       method:       'get',
       route:        '/test/:myparam',
-      name:         'testEP',
+      name:         'noScopeOktestEP',
       title:        'Test',
       description:  'Test',
     }, function(req, res) {});
@@ -28,7 +28,7 @@ suite('api/route', function() {
       method:       'get',
       route:        '/testString/:myparam',
       scopes:       'test:unit',
-      name:         'testEP',
+      name:         'strScopetestEP',
       title:        'Test',
       description:  'Test',
     }, function(req, res) {});
@@ -40,7 +40,7 @@ suite('api/route', function() {
         method:       'get',
         route:        '/testArr/:myparam',
         scopes:       ['test:unit'],
-        name:         'testEP',
+        name:         'arrayScopeRejectedtestEP',
         title:        'Test',
         description:  'Test',
       }, function(req, res) {});
@@ -53,7 +53,7 @@ suite('api/route', function() {
         method:       'get',
         route:        '/testArrArr/:myparam',
         scopes:       [[]],
-        name:         'testEP',
+        name:         'arrayOfArraytestEP',
         title:        'Test',
         description:  'Test',
       }, function(req, res) {});
@@ -65,7 +65,7 @@ suite('api/route', function() {
       method:       'get',
       route:        '/testScope/:myparam',
       scopes:       {AnyOf: ['something']},
-      name:         'testEP',
+      name:         'expNotRejectedtestEP',
       title:        'Test',
       description:  'Test',
     }, function(req, res) {});
@@ -76,7 +76,7 @@ suite('api/route', function() {
       method:       'get',
       route:        '/testScope2/:myparam',
       scopes:       {AnyOf: [{for: 'foo', in: 'bar', each: '<foo>'}]},
-      name:         'testEP',
+      name:         'expLoopNotRejectedtestEP',
       title:        'Test',
       description:  'Test',
     }, function(req, res) {});
