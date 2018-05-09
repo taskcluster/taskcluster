@@ -33,6 +33,12 @@ export default [
     path: '/provisioners',
   },
   {
+    component: loadable(() =>
+      import(/* webpackChunkName: 'Clients' */ '../views/Clients')
+    ),
+    path: '/auth/clients',
+  },
+  {
     // eslint-disable-next-line
     component: props =>
       props.user ? <Dashboard {...props} /> : <Home {...props} />,

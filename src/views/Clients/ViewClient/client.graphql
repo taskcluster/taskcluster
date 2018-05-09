@@ -1,0 +1,14 @@
+query Client($clientId: ID!) {
+  client(clientId: $clientId) {
+    clientId
+    description
+    expires
+    created
+    lastModified
+    lastDateUsed
+    lastRotated
+    scopes
+    expandedScopes
+    deleteOnExpiration
+  }
+}

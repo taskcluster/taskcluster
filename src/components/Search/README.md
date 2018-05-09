@@ -1,7 +1,7 @@
 ```js
 initialState = { value: '' };
 
-<TaskSearch
+<Search
   value={state.value}
   onChange={e => setState({ value: e.target.value })}
   onSubmit={e => {

@@ -2,7 +2,7 @@ import { hot } from 'react-hot-loader';
 import { Component } from 'react';
 import { withStyles } from 'material-ui/styles';
 import Dashboard from '../../../components/Dashboard';
-import TaskSearch from '../../../components/TaskSearch';
+import Search from '../../../components/Search';
 
 @hot(module)
 @withStyles(theme => ({
@@ -44,7 +44,7 @@ export default class NoTask extends Component {
         onSignIn={onSignIn}
         onSignOut={onSignOut}
         search={
-          <TaskSearch
+          <Search
             value={taskSearch}
             onChange={this.handleTaskSearchChange}
             onSubmit={this.handleTaskSearchSubmit}

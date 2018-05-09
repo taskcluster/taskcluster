@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { node } from 'prop-types';
+import { node, bool } from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import List, { ListItem } from 'material-ui/List';
 
@@ -23,13 +23,19 @@ export default class TableCellListItem extends Component {
   static propTypes = {
     /** The table cell contents. */
     children: node.isRequired,
+    /* Set to true to remove the padding applied to the List component */
+    dense: bool,
+  };
+
+  static defaultProps = {
+    dense: true,
   };
 
   render() {
-    const { classes, children, ...props } = this.props;
+    const { classes, children, dense, ...props } = this.props;
 
     return (
-      <List classes={{ root: classes.root }}>
+      <List dense={dense} classes={{ root: classes.root }}>
         <ListItem
           classes={{ gutters: classes.listItem }}
           className={classes.listItemButton}

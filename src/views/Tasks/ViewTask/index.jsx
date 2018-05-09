@@ -10,7 +10,7 @@ import dotProp from 'dot-prop-immutable';
 import Dashboard from '../../../components/Dashboard';
 import TaskDetailsCard from '../../../components/TaskDetailsCard';
 import TaskRunsCard from '../../../components/TaskRunsCard';
-import TaskSearch from '../../../components/TaskSearch';
+import Search from '../../../components/Search';
 import Spinner from '../../../components/Spinner';
 import ErrorPanel from '../../../components/ErrorPanel';
 import Markdown from '../../../components/Markdown';
@@ -129,7 +129,7 @@ export default class ViewTask extends Component {
         onSignIn={onSignIn}
         onSignOut={onSignOut}
         search={
-          <TaskSearch
+          <Search
             value={taskSearch}
             onChange={this.handleTaskSearchChange}
             onSubmit={this.handleTaskSearchSubmit}

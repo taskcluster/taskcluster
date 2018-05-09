@@ -90,6 +90,11 @@ const theme = createMuiTheme({
         fill: 'white',
       },
     },
+    fab: {
+      position: 'fixed',
+      bottom: 16,
+      right: 24,
+    },
   },
   overrides: {
     MuiPaper: {
@@ -116,6 +121,32 @@ const theme = createMuiTheme({
       root: {
         borderBottom: `1px solid ${TEN_PERCENT_WHITE}`,
         whiteSpace: 'nowrap',
+      },
+    },
+    MuiPickersYear: {
+      root: {
+        '&:focus': {
+          color: 'white',
+        },
+      },
+      selected: {
+        color: 'white',
+      },
+    },
+    MuiPickersDay: {
+      selected: {
+        backgroundColor: SECONDARY,
+      },
+      current: {
+        color: 'white',
+      },
+    },
+    MuiPickersModal: {
+      dialogAction: {
+        color: 'white',
+        '&:hover': {
+          backgroundColor: TEN_PERCENT_WHITE,
+        },
       },
     },
   },

@@ -11,9 +11,7 @@ const IS_TOUCH = 'ontouchstart' in document.documentElement;
 
 @withStyles(theme => ({
   speedDial: {
-    position: 'fixed',
-    bottom: theme.spacing.double,
-    right: theme.spacing.triple,
+    ...theme.mixins.fab,
   },
 }))
 /**

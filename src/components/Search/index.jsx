@@ -14,7 +14,7 @@ import MagnifyIcon from 'mdi-react/MagnifyIcon';
     },
     '& $input': {
       transition: theme.transitions.create('width'),
-      width: 180,
+      width: 200,
       '&:focus': {
         width: 300,
       },
@@ -53,9 +53,9 @@ import MagnifyIcon from 'mdi-react/MagnifyIcon';
   },
 }))
 /**
- * An app-bar compatible controlled search field for entering task IDs.
+ * An app-bar compatible controlled search field.
  */
-export default class TaskSearch extends Component {
+export default class Search extends Component {
   static propTypes = {
     /**
      * The search field value.
@@ -80,7 +80,14 @@ export default class TaskSearch extends Component {
   };
 
   render() {
-    const { classes, value, onChange, onSubmit, spellCheck } = this.props;
+    const {
+      classes,
+      value,
+      onChange,
+      onSubmit,
+      spellCheck,
+      ...props
+    } = this.props;
 
     return (
       <form onSubmit={onSubmit} className={classes.root}>
@@ -89,13 +96,14 @@ export default class TaskSearch extends Component {
             <MagnifyIcon />
           </div>
           <input
-            id="adornment-task-search"
+            id="adornment-search"
             spellCheck={spellCheck}
             placeholder="Search"
             className={classes.input}
             type="text"
             value={value}
             onChange={onChange}
+            {...props}
           />
         </FormControl>
       </form>

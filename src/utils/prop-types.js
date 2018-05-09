@@ -153,3 +153,17 @@ export const provisioner = shape({
   lastDateActive: date,
   actions: arrayOf(provisionerAction),
 });
+
+export const client = shape({
+  clientId: string,
+  expires: date,
+  deleteOnExpiration: bool,
+  description: string,
+  created: date,
+  lastModified: date,
+  lastDateUsed: date,
+  lastRotated: date,
+  scopes: arrayOf(string),
+  expandedScopes: arrayOf(string),
+  disabled: bool,
+});
