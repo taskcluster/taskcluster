@@ -284,6 +284,12 @@ repositories:
     tier: libraries
   source: https://github.com/taskcluster/taskcluster-lib-scopes#master
 
+- name: taskcluster-lib-azure
+  kind: other
+  docs:
+    tier: libraries
+  source: https://github.com/taskcluster/taskcluster-lib-azure#master
+
 - name: taskcluster-lib-urls
   kind: other
   docs:
