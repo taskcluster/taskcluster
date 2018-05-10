@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -70,9 +71,8 @@ type Cache struct {
 	Owner CacheMap `json:"-"`
 	// The key used in the CacheMap
 	Key string `json:"key"`
-	// the size of the file in bytes (cached for performance, as it is
-	// immutable file)
-	// Size int64
+	// SHA256 of content, if a file (not used for directories)
+	SHA256 string `json:"sha256"`
 }
 
 // Rating determines how valuable the file cache is compared to other file
@@ -185,8 +185,8 @@ type TaskMount struct {
 // Represents an individual Mount listed in task payload - there
 // can be several mounts per task
 type MountEntry interface {
-	Mount() error
-	Unmount() error
+	Mount(task *TaskRun) error
+	Unmount(task *TaskRun) error
 	FSContent() (FSContent, error)
 	RequiredScopes() []string
 }
@@ -201,11 +201,15 @@ type FSContent interface {
 	RequiredScopes() []string
 	// Download the content, and return the absolute location of the file. No
 	// archive extraction is performed.
-	Download() (string, error)
+	Download(task *TaskRun) (file string, sha256 string, err error)
 	// UniqueKey returns a string which represents the content, such that if
 	// two FSContent types return the same key, it can be assumed they
 	// represent the same content.
 	UniqueKey() string
+	// SHA256 of the content.
+	RequiredSHA256() string
+	// String representation of where the content comes from
+	String() string
 }
 
 // No scopes required
@@ -322,12 +326,12 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 	// services has an outage. Although 1) could not be part of an obscure
 	// attack strategy (although releases shouldn't use caches).
 	if err != nil {
-		taskMount.task.Warn("Could not reach purgecache service to see if caches need purging!")
-		taskMount.task.Warn(err.Error())
+		taskMount.task.Warn("[mounts] Could not reach purgecache service to see if caches need purging:")
+		taskMount.task.Warn("[mounts] " + err.Error())
 	}
 	// loop through all mounts described in payload
 	for _, mount := range taskMount.mounts {
-		err = mount.Mount()
+		err = mount.Mount(taskMount.task)
 		// An error is returned if it is a task problem, such as an invalid url
 		// to download content, or a downloaded archive cannot be extracted.
 		// If the problem is internal (e.g. can't mount a writable cache) then
@@ -343,7 +347,7 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 func (taskMount *TaskMount) Stop() *CommandExecutionError {
 	// loop through all mounts described in payload
 	for _, mount := range taskMount.mounts {
-		err := mount.Unmount()
+		err := mount.Unmount(taskMount.task)
 		if err != nil {
 			log.Printf("Could not unmount due to: %v", err)
 			panic(err)
@@ -392,7 +396,17 @@ func (f *FileMount) FSContent() (FSContent, error) {
 	return FSContentFrom(f.Content)
 }
 
-func (w *WritableDirectoryCache) Mount() error {
+func (w *WritableDirectoryCache) makeCacheReadable(task *TaskRun) {
+	target := filepath.Join(taskContext.TaskDir, w.Directory)
+	task.Infof("[mounts] Granting task user full control of '%v' and subdirectories", target)
+	err := makeDirReadableForTaskUser(target)
+	if err != nil {
+		panic(fmt.Errorf("Not able to make cache %v writable to task user: %v", w.CacheName, err))
+	}
+	task.Infof("[mounts] Successfully mounted writable directory cache '%v'", target)
+}
+
+func (w *WritableDirectoryCache) Mount(task *TaskRun) error {
 	// cache already there?
 	if _, dirCacheExists := directoryCaches[w.CacheName]; dirCacheExists {
 		// bump counter
@@ -401,21 +415,20 @@ func (w *WritableDirectoryCache) Mount() error {
 		src := directoryCaches[w.CacheName].Location
 		target := filepath.Join(taskContext.TaskDir, w.Directory)
 		parentDir := filepath.Dir(target)
-		err := os.MkdirAll(parentDir, 0777)
+		task.Infof("[mounts] Mounting existing writable directory cache %v at path '%v'", w.CacheName, target)
+		err := os.MkdirAll(parentDir, 0700)
 		if err != nil {
-			panic(fmt.Errorf("Not able to create directory %v with permissions 0777: %v", parentDir, err))
+			panic(fmt.Errorf("Not able to create directory %v with permissions 0700: %v", parentDir, err))
 		}
 		err = RenameCrossDevice(src, target)
 		if err != nil {
 			panic(fmt.Errorf("Not able to rename dir %v as %v: %v", src, target, err))
 		}
-		err = makeDirReadableForTaskUser(filepath.Join(taskContext.TaskDir, w.Directory))
-		if err != nil {
-			panic(fmt.Errorf("Not able to make cache %v writable to task user: %v", w.CacheName, err))
-		}
+		w.makeCacheReadable(task)
 		return nil
 	}
 	// new cache, let's initialise it...
+	task.Infof("[mounts] No existing writable directory cache '%v' - creating...", w.CacheName)
 	basename := slugid.Nice()
 	file := filepath.Join(config.CachesDir, basename)
 	directoryCaches[w.CacheName] = &Cache{
@@ -431,21 +444,23 @@ func (w *WritableDirectoryCache) Mount() error {
 		if err != nil {
 			return fmt.Errorf("Not able to retrieve FSContent: %v", err)
 		}
-		err = extract(c, w.Format, filepath.Join(taskContext.TaskDir, w.Directory))
+		err = extract(c, w.Format, filepath.Join(taskContext.TaskDir, w.Directory), task)
 		if err != nil {
 			return err
 		}
+		w.makeCacheReadable(task)
 		return nil
 	}
 	// no preloaded content => just create dir in place
-	err := os.MkdirAll(filepath.Join(taskContext.TaskDir, w.Directory), 0777)
+	err := os.MkdirAll(filepath.Join(taskContext.TaskDir, w.Directory), 0700)
 	if err != nil {
 		panic(fmt.Errorf("Not able to create dir: %v", err))
 	}
+	w.makeCacheReadable(task)
 	return nil
 }
 
-func (w *WritableDirectoryCache) Unmount() error {
+func (w *WritableDirectoryCache) Unmount(task *TaskRun) error {
 	cacheDir := directoryCaches[w.CacheName].Location
 	log.Printf("Moving %q to %q", filepath.Join(taskContext.TaskDir, w.Directory), cacheDir)
 	err := RenameCrossDevice(filepath.Join(taskContext.TaskDir, w.Directory), cacheDir)
@@ -459,25 +474,25 @@ func (w *WritableDirectoryCache) Unmount() error {
 	return nil
 }
 
-func (r *ReadOnlyDirectory) Mount() error {
+func (r *ReadOnlyDirectory) Mount(task *TaskRun) error {
 	c, err := FSContentFrom(r.Content)
 	if err != nil {
 		return fmt.Errorf("Not able to retrieve FSContent: %v", err)
 	}
-	return extract(c, r.Format, filepath.Join(taskContext.TaskDir, r.Directory))
+	return extract(c, r.Format, filepath.Join(taskContext.TaskDir, r.Directory), task)
 }
 
 // Nothing to do - original archive file wasn't moved
-func (r *ReadOnlyDirectory) Unmount() error {
+func (r *ReadOnlyDirectory) Unmount(task *TaskRun) error {
 	return nil
 }
 
-func (f *FileMount) Mount() error {
+func (f *FileMount) Mount(task *TaskRun) error {
 	fsContent, err := FSContentFrom(f.Content)
 	if err != nil {
 		return err
 	}
-	cacheFile, err := ensureCached(fsContent)
+	cacheFile, err := ensureCached(fsContent, task)
 	if err != nil {
 		return err
 	}
@@ -492,26 +507,35 @@ func (f *FileMount) Mount() error {
 	// Let's copy rather than move, since we want to be totally sure that the
 	// task can't modify the contents, and setting as read-only is not enough -
 	// the user could change the rights and then modify it.
+	task.Infof("[mounts] Copying cached version of %v to %v", fsContent.String(), file)
 	err = copyFileContents(cacheFile, file)
 	if err != nil {
-		panic(fmt.Errorf("Could not copy file %v to %v due to:\n%v", cacheFile, file, err))
+		// this could be a system error, but it can also be that e.g. the task
+		// specified an invalid path, so resolve as malformed payload rather
+		// than panic
+		task.Errorf("[mounts] Not able to mount content from %v at path %v", fsContent.String(), file)
+		task.Infof("%v", err)
+		return err
 	}
 	return nil
 }
 
 // Nothing to do - original archive file was copied, not moved
-func (f *FileMount) Unmount() error {
+func (f *FileMount) Unmount(task *TaskRun) error {
 	return nil
 }
 
 // ensureCached returns a file containing the given content
-func ensureCached(fsContent FSContent) (file string, err error) {
+func ensureCached(fsContent FSContent, task *TaskRun) (file string, err error) {
 	cacheKey := fsContent.UniqueKey()
+	var sha256 string
 	if _, inCache := fileCaches[cacheKey]; !inCache {
-		file, err := fsContent.Download()
+		// fsContent.Download already takes care of ensuring SHA256 is correct,
+		// so don't need to do that here
+		file, sha256, err = fsContent.Download(task)
 		if err != nil {
 			log.Printf("Could not download %v due to %v", fsContent.UniqueKey(), err)
-			return "", err
+			return
 		}
 		fileCaches[cacheKey] = &Cache{
 			Location: file,
@@ -519,27 +543,46 @@ func ensureCached(fsContent FSContent) (file string, err error) {
 			Created:  time.Now(),
 			Owner:    fileCaches,
 			Key:      cacheKey,
+			SHA256:   sha256,
+		}
+		err = validateSHA256(fsContent.String(), sha256, fsContent.RequiredSHA256(), task)
+		return
+	}
+	file = fileCaches[cacheKey].Location
+	// Sanity check - if file is in file map, but not on file system,
+	// something is seriously wrong, so should be a worker exception
+	// (panic), not a task failure
+	_, err = os.Stat(file)
+	if err != nil {
+		panic(fmt.Errorf("File in cache, but not on filesystem: %v", *fileCaches[cacheKey]))
+	}
+	fileCaches[cacheKey].Hits += 1
+
+	// validate SHA256 in case of tampering
+	sha256, err = fileutil.CalculateSHA256(file)
+	if err != nil {
+		panic(fmt.Sprintf("Internal worker bug! Cannot calculate SHA256 of file %v that I have in my cache: %v", file, err))
+	}
+	if requiredSHA256 := fsContent.RequiredSHA256(); requiredSHA256 != "" {
+		if requiredSHA256 != sha256 {
+			err = fmt.Errorf("[mounts] Found existing download of %v with SHA256 %v but task definition explicitly requires %v", cacheKey, sha256, requiredSHA256)
+		} else {
+			task.Infof("[mounts] Found existing download for %v with (correct) SHA256 %v", cacheKey, sha256)
 		}
 	} else {
-		// Sanity check - if file is in file map, but not on file system,
-		// something is seriously wrong, so should be a worker exception
-		// (panic), not a task failure
-		_, err := os.Stat(fileCaches[cacheKey].Location)
-		if err != nil {
-			panic(fmt.Errorf("File in cache, but not on filesystem: %v", *fileCaches[cacheKey]))
-		}
-		fileCaches[cacheKey].Hits += 1
+		task.Warnf("[mounts] Found existing download for %v with SHA256 %v, but since no required SHA256 is specified in task mounts, it is not possible to verify the integrity of this file", cacheKey, sha256)
 	}
-	return fileCaches[cacheKey].Location, nil
+	return
 }
 
-func extract(fsContent FSContent, format string, dir string) error {
-	cacheFile, err := ensureCached(fsContent)
+func extract(fsContent FSContent, format string, dir string, task *TaskRun) error {
+	cacheFile, err := ensureCached(fsContent, task)
 	if err != nil {
 		log.Printf("Could not cache content: %v", err)
 		return err
 	}
 	log.Printf("Extracting %v file '%v' to '%v'", format, cacheFile, dir)
+	task.Infof("[mounts] Extracting %v file from %v to '%v'", format, fsContent.String(), dir)
 	err = os.MkdirAll(dir, 0777)
 	if err != nil {
 		log.Printf("Could not MkdirAll %v: %v", dir, err)
@@ -589,41 +632,73 @@ func UnmarshalInto(c json.RawMessage, fsContent FSContent) (FSContent, error) {
 // Downloads ArtifactContent to a file inside the downloads directory specified
 // in the global config file. The filename is a random slugid, and the
 // absolute path of the file is returned.
-func (ac *ArtifactContent) Download() (string, error) {
+func (ac *ArtifactContent) Download(task *TaskRun) (file string, sha256 string, err error) {
 	basename := slugid.Nice()
-	file := filepath.Join(config.DownloadsDir, basename)
-	signedURL, err := queue.GetLatestArtifact_SignedURL(ac.TaskID, ac.Artifact, time.Minute*30)
+	file = filepath.Join(config.DownloadsDir, basename)
+	var signedURL *url.URL
+	signedURL, err = queue.GetLatestArtifact_SignedURL(ac.TaskID, ac.Artifact, time.Minute*30)
 	if err != nil {
-		return "", err
+		return
 	}
-	return file, downloadURLToFile(signedURL.String(), file)
+	sha256, err = downloadURLToFile(signedURL.String(), ac.String(), file, task)
+	return
+}
+
+func (ac *ArtifactContent) String() string {
+	return "task " + ac.TaskID + " artifact " + ac.Artifact
 }
 
 func (ac *ArtifactContent) UniqueKey() string {
 	return "artifact:" + ac.TaskID + ":" + ac.Artifact
 }
 
+func (ac *ArtifactContent) RequiredSHA256() string {
+	return ac.Sha256
+}
+
 // Downloads URLContent to a file inside the caches directory specified in the
 // global config file.  The filename is a random slugid, and the absolute path
 // of the file is returned.
-func (uc *URLContent) Download() (string, error) {
+func (uc *URLContent) Download(task *TaskRun) (file string, sha256 string, err error) {
 	basename := slugid.Nice()
-	file := filepath.Join(config.DownloadsDir, basename)
-	return file, downloadURLToFile(uc.URL, file)
+	file = filepath.Join(config.DownloadsDir, basename)
+	sha256, err = downloadURLToFile(uc.URL, uc.String(), file, task)
+	return
+}
+
+func (uc *URLContent) String() string {
+	return "url " + uc.URL
 }
 
 func (uc *URLContent) UniqueKey() string {
 	return "urlcontent:" + uc.URL
 }
 
-// Utility function to aggressively download a url to a file location
-func downloadURLToFile(url, file string) error {
-	log.Printf("Downloading url %v to %v", url, file)
-	err := os.MkdirAll(filepath.Dir(file), 0777)
-	if err != nil {
-		log.Printf("Could not make MkdirAll %v: %v", filepath.Dir(file), err)
-		return err
+func (uc *URLContent) RequiredSHA256() string {
+	return uc.Sha256
+}
+
+func validateSHA256(contentSource, sha256, requiredSHA256 string, task *TaskRun) error {
+	if requiredSHA256 == "" {
+		task.Warnf("[mounts] Content from %v has SHA256 %v but task payload does not declare a required value, so content authenticity cannot be verified", contentSource, sha256)
+		return nil
 	}
+	if requiredSHA256 != sha256 {
+		return fmt.Errorf("[mounts] SHA256 of content from %v was %v but task definition explicitly requires %v", contentSource, sha256, requiredSHA256)
+	}
+	task.Infof("[mounts] Content from %v matched required SHA256 (%v)", contentSource, sha256)
+	return nil
+}
+
+// Utility function to aggressively download a url to a file location
+func downloadURLToFile(url, contentSource, file string, task *TaskRun) (sha256 string, err error) {
+	task.Infof("[mounts] Downloading %v to %v", contentSource, file)
+	err = os.MkdirAll(filepath.Dir(file), 0777)
+	if err != nil {
+		task.Errorf("[mounts] Could not make MkdirAll %v: %v", filepath.Dir(file), err)
+		return
+	}
+	var contentSize int64
 	// httpbackoff.Get(url) is not sufficient as that only guarantees we have
 	// an http response to read from, but does not retry if we lose
 	// connectivity while reading from it. Therefore include the reading of the
@@ -637,14 +712,14 @@ func downloadURLToFile(url, file string) error {
 		defer resp.Body.Close()
 		f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 		if err != nil {
-			log.Printf("Could not open file %v: %v", file, err)
+			task.Errorf("[mounts] Could not open file %v: %v", file, err)
 			// permanent error!
 			return resp, nil, err
 		}
 		defer f.Close()
-		_, err = io.Copy(f, resp.Body)
+		contentSize, err = io.Copy(f, resp.Body)
 		if err != nil {
-			log.Printf("Could not write http response from url %v to file %v: %v", url, file, err)
+			task.Errorf("[mounts] Could not write http response from %v to file %v: %v", contentSource, file, err)
 			// likely a temporary error - network blip
 			return resp, err, nil
 		}
@@ -652,10 +727,15 @@ func downloadURLToFile(url, file string) error {
 	}
 	_, _, err = httpbackoff.Retry(retryFunc)
 	if err != nil {
-		log.Printf("Could not fetch from url %v into file %v: %v", url, file, err)
-		return err
+		task.Errorf("[mounts] Could not fetch from %v into file %v: %v", contentSource, file, err)
+		return
 	}
-	return nil
+	task.Infof("[mounts] Downloaded %v bytes of content from %v", contentSize, contentSource)
+	sha256, err = fileutil.CalculateSHA256(file)
+	if err != nil {
+		panic(fmt.Sprintf("Internal worker bug! Cannot calculate SHA256 of file %v that I just downloaded: %v", file, err))
+	}
+	return
 }
 
 func (taskMount *TaskMount) purgeCaches() error {

@@ -14,7 +14,7 @@ import (
 func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
 	b, err := json.Marshal(x)
 	if err != nil {
-		t.Fatalf("Could not convert %v to json", x)
+		t.Fatalf("Could not convert %#v to json: %v", x, err)
 	}
 
 	rawMessageArray := []json.RawMessage{}
@@ -305,5 +305,253 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 	logtext := string(bytes)
 	if !strings.Contains(logtext, "zip: not a valid zip file") {
 		t.Fatalf("Was expecting log file to contain a zip error message, but it instead contains:\n%v", logtext)
+	}
+}
+
+func TestInvalidSHA256FailsTest(t *testing.T) {
+	LogTest(
+		&MountsLoggingTestCase{
+			Test: t,
+			Mounts: []MountEntry{
+				&ReadOnlyDirectory{
+					Directory: filepath.Join("unknown_issuer_app_1"),
+					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
+					Content: json.RawMessage(`{
+						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
+						"artifact": "public/build/unknown_issuer_app_1.zip",
+						"sha256":   "9263625672993742f0916f7a22b4d9924ed0327f2e02edd18456c0c4e5876850"
+					}`),
+					Format: "zip",
+				},
+			},
+			TaskRunResolutionState: "failed",
+			TaskRunReasonResolved:  "failed",
+			PerTaskRunLogExcerpts: [][]string{
+				// Required text from first task with no cached value
+				[]string{
+					"[mounts] Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to",
+					"[mounts] Downloaded 4220 bytes of content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip",
+					"[mounts] SHA256 of content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip was 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task definition explicitly requires 9263625672993742f0916f7a22b4d9924ed0327f2e02edd18456c0c4e5876850",
+				},
+				// Required text from second task when download is already cached
+				[]string{
+					"[mounts] Found existing download of artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task definition explicitly requires 9263625672993742f0916f7a22b4d9924ed0327f2e02edd18456c0c4e5876850",
+				},
+			},
+		},
+	)
+}
+
+func TestValidSHA256(t *testing.T) {
+	LogTest(
+		&MountsLoggingTestCase{
+			Test: t,
+			Mounts: []MountEntry{
+				&ReadOnlyDirectory{
+					Directory: filepath.Join("unknown_issuer_app_1"),
+					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
+					Content: json.RawMessage(`{
+						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
+						"artifact": "public/build/unknown_issuer_app_1.zip",
+						"sha256":   "625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e"
+					}`),
+					Format: "zip",
+				},
+			},
+			TaskRunResolutionState: "completed",
+			TaskRunReasonResolved:  "completed",
+			PerTaskRunLogExcerpts: [][]string{
+				// Required text from first task with no cached value
+				[]string{
+					"[mounts] Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to ",
+					"[mounts] Downloaded 4220 bytes of content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip",
+					"[mounts] Content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip matched required SHA256 (625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e)",
+					"[mounts] Extracting zip file from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to ",
+				},
+				// Required text from second task when download is already cached
+				[]string{
+					"[mounts] Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip with (correct) SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e",
+					"[mounts] Extracting zip file from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to ",
+				},
+			},
+		},
+	)
+}
+
+func TestFileMountNoSHA256(t *testing.T) {
+	LogTest(
+		&MountsLoggingTestCase{
+			Test: t,
+			Mounts: []MountEntry{
+				&FileMount{
+					File: filepath.Join("TestFileMountNoSHA256"),
+					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
+					Content: json.RawMessage(`{
+						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
+						"artifact": "public/build/unknown_issuer_app_1.zip"
+					}`),
+				},
+			},
+			TaskRunResolutionState: "completed",
+			TaskRunReasonResolved:  "completed",
+			PerTaskRunLogExcerpts: [][]string{
+				// Required text from first task with no cached value
+				[]string{
+					"[mounts] Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to ",
+					"[mounts] Downloaded 4220 bytes of content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip",
+					"[mounts] Content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified",
+					"[mounts] Copying cached version of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to ",
+				},
+				// Required text from second task when download is already cached
+				[]string{
+					"[mounts] Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e, but since no required SHA256 is specified in task mounts, it is not possible to verify the integrity of this file",
+					"[mounts] Copying cached version of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to ",
+				},
+			},
+		},
+	)
+}
+
+func TestMountFileAtCWD(t *testing.T) {
+	LogTest(
+		&MountsLoggingTestCase{
+			Test: t,
+			Mounts: []MountEntry{
+				&FileMount{
+					// note path needs to be relative, not absolute, so don't use cwd here!
+					// intentionally setting the path of a directory (current directory) since this should fail test
+					// since a content can't be mounted at the location of an existing directory (content has no explicit filename)
+					File: ".",
+					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
+					Content: json.RawMessage(`{
+						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
+						"artifact": "public/build/unknown_issuer_app_1.zip"
+					}`),
+				},
+			},
+			TaskRunResolutionState: "failed",
+			TaskRunReasonResolved:  "failed",
+			PerTaskRunLogExcerpts: [][]string{
+				// Required text from first task with no cached value
+				[]string{
+					"[mounts] Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to ",
+					"[mounts] Downloaded 4220 bytes of content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip",
+					"[mounts] Content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified",
+					"[mounts] Copying cached version of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to ",
+					"[mounts] Not able to mount content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip at path ",
+				},
+				// Required text from second task when download is already cached
+				[]string{
+					"[mounts] Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e, but since no required SHA256 is specified in task mounts, it is not possible to verify the integrity of this file",
+					"[mounts] Copying cached version of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to ",
+					"[mounts] Not able to mount content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip at path ",
+				},
+			},
+		},
+	)
+}
+
+func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
+	LogTest(
+		&MountsLoggingTestCase{
+			Test: t,
+			Mounts: []MountEntry{
+				&WritableDirectoryCache{
+					CacheName: "banana-cache",
+					Directory: filepath.Join("TestMountsLogDownloadedFile"),
+					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
+					Content: json.RawMessage(`{
+						"taskId":   "LK1Rz2UtT16d-HBSqyCtuA",
+						"artifact": "public/build/unknown_issuer_app_1.zip"
+					}`),
+					Format: "zip",
+				},
+			},
+			TaskRunResolutionState: "completed",
+			TaskRunReasonResolved:  "completed",
+			PerTaskRunLogExcerpts: [][]string{
+				// Required text from first task with no cached value
+				[]string{
+					"[mounts] No existing writable directory cache 'banana-cache' - creating...",
+					"[mounts] Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to ",
+					"[mounts] Downloaded 4220 bytes of content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip",
+					"[mounts] Content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified",
+					"[mounts] Extracting zip file from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to ",
+					"[mounts] Granting task user full control of '",
+					"[mounts] Successfully mounted writable directory cache '",
+				},
+				// Required text from second task when download is already cached
+				[]string{
+					"[mounts] Mounting existing writable directory cache banana-cache at path '",
+					"[mounts] Granting task user full control of '",
+					"[mounts] Successfully mounted writable directory cache '",
+				},
+			},
+			Scopes: []string{"generic-worker:cache:banana-cache"},
+		},
+	)
+}
+
+// We currently don't check for any of these strings:
+//  [mounts] Could not fetch from %v into file %v: %v
+//  [mounts] Could not make MkdirAll %v: %v
+//  [mounts] Could not open file %v: %v
+//  [mounts] Could not reach purgecache service to see if caches need purging:
+//  [mounts] Could not write http response from %v to file %v: %v
+
+type MountsLoggingTestCase struct {
+	Test                   *testing.T
+	Mounts                 []MountEntry
+	Scopes                 []string
+	TaskRunResolutionState string
+	TaskRunReasonResolved  string
+	PerTaskRunLogExcerpts  [][]string
+}
+
+// This is an extremely strict test helper, that requires you to specify
+// extracts from every log line that the mounts feature writes to the log
+func LogTest(m *MountsLoggingTestCase) {
+	defer setup(m.Test, m.Test.Name())()
+	payload := GenericWorkerPayload{
+		Mounts:     toMountArray(m.Test, &m.Mounts),
+		Command:    helloGoodbye(),
+		MaxRunTime: 30,
+	}
+	for _, run := range m.PerTaskRunLogExcerpts {
+
+		td := testTask(m.Test)
+		td.Scopes = m.Scopes
+		_ = submitAndAssert(m.Test, td, payload, m.TaskRunResolutionState, m.TaskRunReasonResolved)
+
+		// check log entries
+		bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
+		if err != nil {
+			m.Test.Fatalf("Error when trying to read log file: %v", err)
+		}
+		logtext := string(bytes)
+		allLogLines := strings.Split(logtext, "\n")
+		mountsLogLines := make([]string, 0, len(run))
+		for _, logLine := range allLogLines {
+			if strings.Contains(logLine, "[mounts] ") {
+				mountsLogLines = append(mountsLogLines, logLine)
+			}
+		}
+		if len(mountsLogLines) != len(run) {
+			m.Test.Log("Wrong number of lines logged by mounts feature")
+			m.Test.Log("Required lines:")
+			for _, l := range run {
+				m.Test.Log(l)
+			}
+			m.Test.Log("Actual logged lines:")
+			for _, l := range mountsLogLines {
+				m.Test.Log(l)
+			}
+			m.Test.FailNow()
+		}
+		for i := range mountsLogLines {
+			if !strings.Contains(mountsLogLines[i], run[i]) {
+				m.Test.Fatalf("Was expecting log file to contain text '%v', but it does not:\n%v", run[i], mountsLogLines[i])
+			}
+		}
 	}
 }

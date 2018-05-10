@@ -42,11 +42,23 @@ func setupEnvironment(t *testing.T, testName string) (teardown func()) {
 		filepath.Join(cwd, "caches"),
 		testDir,
 	} {
-		// even though we know parent directory exists, use MkdirAll instead of
-		// Mkdir since we don't want to fail if child directory already exists
-		err := os.MkdirAll(dir, 0755)
+		err := os.RemoveAll(dir)
 		if err != nil {
-			t.Fatalf("Could not create directory %v", dir)
+			t.Fatalf("Could not remove directory %v: %v", dir, err)
+		}
+		err = os.Mkdir(dir, 0755)
+		if err != nil {
+			t.Fatalf("Could not create directory %v: %v", dir, err)
+		}
+	}
+
+	for _, file := range []string{
+		filepath.Join(cwd, "file-caches.json"),
+		filepath.Join(cwd, "directory-caches.json"),
+	} {
+		err := os.RemoveAll(file)
+		if err != nil {
+			t.Fatalf("Could not remove file %v: %v", file, err)
 		}
 	}
 

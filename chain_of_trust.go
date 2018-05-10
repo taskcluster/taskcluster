@@ -2,8 +2,6 @@ package main
 
 import (
 	"bytes"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"io"
 	"log"
@@ -14,6 +12,7 @@ import (
 	"golang.org/x/crypto/openpgp/clearsign"
 	"golang.org/x/crypto/openpgp/packet"
 
+	"github.com/taskcluster/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
@@ -152,7 +151,8 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 		switch a := artifact.(type) {
 		case *S3Artifact:
 			// make sure SHA256 is calculated
-			hash, err := calculateHash(a)
+			file := filepath.Join(taskContext.TaskDir, a.Path)
+			hash, err := fileutil.CalculateSHA256(file)
 			if err != nil {
 				panic(err)
 			}
@@ -209,20 +209,4 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 		return err
 	}
 	return nil
-}
-
-func calculateHash(artifact *S3Artifact) (hash string, err error) {
-	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.Path)
-	rawContent, err := os.Open(rawContentFile)
-	if err != nil {
-		return
-	}
-	defer rawContent.Close()
-	hasher := sha256.New()
-	_, err = io.Copy(hasher, rawContent)
-	if err != nil {
-		panic(err)
-	}
-	hash = hex.EncodeToString(hasher.Sum(nil))
-	return
 }
