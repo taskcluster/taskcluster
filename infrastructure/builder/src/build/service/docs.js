@@ -7,8 +7,9 @@ const mkdirp = util.promisify(require('mkdirp'));
 const doT = require('dot');
 const tar = require('tar-fs');
 const copy = require('recursive-copy');
+const Stamp = require('../stamp');
 const {dockerRun, dockerPull, dockerImages, dockerBuild, dockerRegistryCheck,
-  dirStamped, stampDir, ensureDockerImage} = require('../utils');
+  serviceDockerImageTask, ensureDockerImage} = require('../utils');
 
 doT.templateSettings.strip = false;
 const DOCS_DOCKERFILE_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'docs-dockerfile.dot')));
@@ -26,13 +27,14 @@ exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, w
     requires: [
       `docker-image-${nodeImage}`,
       `docker-image-${nginxImage}`,
-      `repo-${name}-exact-source`,
+      `repo-${name}-stamp`,
       `repo-${name}-dir`,
       ...docNames.map(name => `docs-${name}-dir`),
-      ...docNames.map(name => `repo-${name}-exact-source`),
+      ...docNames.map(name => `docs-${name}-stamp`),
     ],
     provides: [
       `service-${name}-built-app-dir`,
+      `service-${name}-stamp`,
       `service-${name}-static-dir`, // result of `gulp build-static`
     ],
     locks: ['docker'],
@@ -41,13 +43,18 @@ exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, w
       const appDir = path.join(workDir, 'app');
       const cacheDir = path.join(workDir, 'cache');
       const staticDir = path.join(appDir, 'static');
-      const sources = [name, ...docNames].map(name => requirements[`repo-${name}-exact-source`]);
+      const stamp = new Stamp({step: 'docs-build', version: 1},
+        // our own repo
+        requirements[`repo-${name}-stamp`],
+        // all of the input docs
+        ...docNames.map(n => requirements[`docs-${n}-stamp`]));
       const provides = {
         [`service-${name}-built-app-dir`]: appDir,
+        [`service-${name}-stamp`]: stamp,
         [`service-${name}-static-dir`]: staticDir,
       };
 
-      if (dirStamped({dir: appDir, sources})) {
+      if (stamp.dirStamped(appDir)) {
         return utils.skip({provides});
       }
       await rimraf(appDir);
@@ -104,72 +111,28 @@ exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, w
         baseDir,
       });
 
-      stampDir({dir: appDir, sources});
+      stamp.stampDir(appDir);
       return provides;
     },
   });
 
-  tasks.push({
-    title: `Service ${name} - Build Image`,
+  serviceDockerImageTask({tasks, baseDir, workDir, cfg, name,
     requires: [
-      `repo-${name}-exact-source`,
       `service-${name}-static-dir`,
+      'docker-image-nginx:alpine',
     ],
-    provides: [
-      `service-${name}-docker-image`, // docker image tag
-      `service-${name}-image-on-registry`, // true if the image already exists on registry
-    ],
-    locks: ['docker'],
-    run: async (requirements, utils) => {
+    makeTarball: (requirements, utils) => {
       const staticDir = requirements[`service-${name}-static-dir`];
-      const headRef = requirements[`repo-${name}-exact-source`].split('#')[1];
-      const tag = `${cfg.docker.repositoryPrefix}${name}:${headRef}`;
-
-      utils.step({title: 'Check for Existing Images'});
-
-      const imageLocal = (await dockerImages({baseDir}))
-        .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
-      const imageOnRegistry = await dockerRegistryCheck({tag});
-
-      const provides = {
-        [`service-${name}-docker-image`]: tag,
-        [`service-${name}-image-on-registry`]: imageOnRegistry,
-      };
-
-      // bail out if we can, pulling the image if it's only available remotely
-      if (!imageLocal && imageOnRegistry) {
-        await dockerPull({image: tag, utils, baseDir});
-        return utils.skip({provides});
-      } else if (imageLocal) {
-        return utils.skip({provides});
-      }
-
-      // build a tarfile containing the build directory, Dockerfile, and ancillary files
-      utils.step({title: 'Create Docker-Build Tarball'});
-
       const dockerfile = DOCS_DOCKERFILE_TEMPLATE({});
 
-      const tarball = tar.pack(staticDir, {
+      return tar.pack(staticDir, {
         finalize: false,
         finish: pack => {
           pack.entry({name: 'Dockerfile'}, dockerfile);
           pack.finalize();
         },
       });
-
-      utils.step({title: 'Building'});
-
-      await dockerBuild({
-        tarball,
-        logfile: `${workDir}/docker-build.log`,
-        tag,
-        utils,
-        baseDir,
-      });
-
-      return provides;
     },
   });
-
 };
 
