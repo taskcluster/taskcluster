@@ -329,6 +329,12 @@ by many Taskcluster components.</p>
 <a id="user-content-list-clients" class="anchor" href="#list-clients" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List Clients</h4>
 <p>Get a list of all clients.  With <code>prefix</code>, only clients for which
 it is a prefix of the clientId are returned.</p>
+<p>By default this end-point will try to return up to 1000 clients in one
+request. But it <strong>may return less, even none</strong>.
+It may also return a <code>continuationToken</code> even though there are no more
+results. However, you can only be sure to have seen all results if you
+keep calling <code>listClients</code> with the last <code>continuationToken</code> until you
+get a result without a <code>continuationToken</code>.</p>
 <p>Required <a href="http://schemas.taskcluster.net/auth/v1/list-clients-response.json#" rel="nofollow">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.listClients() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
@@ -1854,7 +1860,7 @@ task template.</p>
 <li><code>hookGroupId</code></li>
 <li><code>hookId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/trigger-context.json" rel="nofollow">input schema</a></p>
+<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/trigger-hook.json" rel="nofollow">input schema</a></p>
 <p>Required <a href="http://schemas.taskcluster.net/hooks/v1/task-status.json" rel="nofollow">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.triggerHook(hookGroupId, hookId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
@@ -1906,7 +1912,7 @@ task template.</p>
 <li><code>hookId</code></li>
 <li><code>token</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/trigger-context.json" rel="nofollow">input schema</a></p>
+<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/trigger-hook.json" rel="nofollow">input schema</a></p>
 <p>Required <a href="http://schemas.taskcluster.net/hooks/v1/task-status.json" rel="nofollow">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.triggerHookWithToken(hookGroupId, hookId, token, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
@@ -2054,26 +2060,6 @@ index.listNamespaces(<span class="pl-v">namespace</span><span class="pl-k">=</sp
 <span class="pl-k">await</span> asyncIndex.listNamespaces(namespace) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-k">await</span> asyncIndex.listNamespaces(<span class="pl-v">namespace</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
 <h4>
-<a id="user-content-list-namespaces-1" class="anchor" href="#list-namespaces-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List Namespaces</h4>
-<p>List the namespaces immediately under a given namespace.</p>
-<p>This endpoint
-lists up to 1000 namespaces. If more namespaces are present, a
-<code>continuationToken</code> will be returned, which can be given in the next
-request. For the initial request, the payload should be an empty JSON
-object.</p>
-<p>Takes the following arguments:</p>
-<ul>
-<li><code>namespace</code></li>
-</ul>
-<p>Required <a href="http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#" rel="nofollow">output schema</a></p>
-<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-index.listNamespacesPost(namespace, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
-index.listNamespacesPost(payload, <span class="pl-v">namespace</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
-<span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncIndex.listNamespacesPost(namespace, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
-<span class="pl-k">await</span> asyncIndex.listNamespacesPost(payload, <span class="pl-v">namespace</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
-<h4>
 <a id="user-content-list-tasks" class="anchor" href="#list-tasks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List Tasks</h4>
 <p>List the tasks immediately under a given namespace.</p>
 <p>This endpoint
@@ -2094,28 +2080,6 @@ index.listTasks(<span class="pl-v">namespace</span><span class="pl-k">=</span><s
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
 <span class="pl-k">await</span> asyncIndex.listTasks(namespace) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-k">await</span> asyncIndex.listTasks(<span class="pl-v">namespace</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
-<h4>
-<a id="user-content-list-tasks-1" class="anchor" href="#list-tasks-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List Tasks</h4>
-<p>List the tasks immediately under a given namespace.</p>
-<p>This endpoint
-lists up to 1000 tasks. If more tasks are present, a
-<code>continuationToken</code> will be returned, which can be given in the next
-request. For the initial request, the payload should be an empty JSON
-object.</p>
-<p><strong>Remark</strong>, this end-point is designed for humans browsing for tasks, not
-services, as that makes little sense.</p>
-<p>Takes the following arguments:</p>
-<ul>
-<li><code>namespace</code></li>
-</ul>
-<p>Required <a href="http://schemas.taskcluster.net/index/v1/list-tasks-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/index/v1/list-tasks-response.json#" rel="nofollow">output schema</a></p>
-<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-index.listTasksPost(namespace, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
-index.listTasksPost(payload, <span class="pl-v">namespace</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
-<span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncIndex.listTasksPost(namespace, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
-<span class="pl-k">await</span> asyncIndex.listTasksPost(payload, <span class="pl-v">namespace</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
 <h4>
 <a id="user-content-insert-task-into-index" class="anchor" href="#insert-task-into-index" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Insert Task into Index</h4>
 <p>Insert a task into the index.  If the new rank is less than the existing rank
@@ -2860,7 +2824,66 @@ authorization is not necessary to fetch the artifact.</p>
 <p><strong>API Clients</strong>, this method will redirect you to the artifact, if it is
 stored externally. Either way, the response may not be JSON. So API
 client users might want to generate a signed URL for this end-point and
-use that URL with a normal HTTP client.</p>
+use that URL with an HTTP client that can handle responses correctly.</p>
+<p><strong>Downloading artifacts</strong>
+There are some special considerations for those http clients which download
+artifacts.  This api endpoint is designed to be compatible with an HTTP 1.1
+compliant client, but has extra features to ensure the download is valid.
+It is strongly recommend that consumers use either taskcluster-lib-artifact (JS),
+taskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with
+artifacts.</p>
+<p>In order to download an artifact the following must be done:</p>
+<ol>
+<li>Obtain queue url.  Building a signed url with a taskcluster client is
+recommended</li>
+<li>Make a GET request which does not follow redirects</li>
+<li>In all cases, if specified, the
+x-taskcluster-location-{content,transfer}-{sha256,length} values must be
+validated to be equal to the Content-Length and Sha256 checksum of the
+final artifact downloaded. as well as any intermediate redirects</li>
+<li>If this response is a 500-series error, retry using an exponential
+backoff.  No more than 5 retries should be attempted</li>
+<li>If this response is a 400-series error, treat it appropriately for
+your context.  This might be an error in responding to this request or
+an Error storage type body.  This request should not be retried.</li>
+<li>If this response is a 200-series response, the response body is the artifact.
+If the x-taskcluster-location-{content,transfer}-{sha256,length} and
+x-taskcluster-location-content-encoding are specified, they should match
+this response body</li>
+<li>If the response type is a 300-series redirect, the artifact will be at the
+location specified by the <code>Location</code> header.  There are multiple artifact storage
+types which use a 300-series redirect.</li>
+<li>For all redirects followed, the user must verify that the content-sha256, content-length,
+transfer-sha256, transfer-length and content-encoding match every further request.  The final
+artifact must also be validated against the values specified in the original queue response</li>
+<li>Caching of requests with an x-taskcluster-artifact-storage-type value of <code>reference</code>
+must not occur</li>
+<li>A request which has x-taskcluster-artifact-storage-type value of <code>blob</code> and does not
+have x-taskcluster-location-content-sha256 or x-taskcluster-location-content-length
+must be treated as an error</li>
+</ol>
+<p><strong>Headers</strong>
+The following important headers are set on the response to this method:</p>
+<ul>
+<li>location: the url of the artifact if a redirect is to be performed</li>
+<li>x-taskcluster-artifact-storage-type: the storage type.  Example: blob, s3, error</li>
+</ul>
+<p>The following important headers are set on responses to this method for Blob artifacts</p>
+<ul>
+<li>x-taskcluster-location-content-sha256: the SHA256 of the artifact
+<em>after</em> any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})</li>
+<li>x-taskcluster-location-content-length: the number of bytes <em>after</em> any content-encoding
+is undone</li>
+<li>x-taskcluster-location-transfer-sha256: the SHA256 of the artifact
+<em>before</em> any content-encoding is undone.  This is the SHA256 of what is sent over
+the wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})</li>
+<li>x-taskcluster-location-transfer-length: the number of bytes <em>after</em> any content-encoding
+is undone</li>
+<li>x-taskcluster-location-content-encoding: the content-encoding used.  It will either
+be <code>gzip</code> or <code>identity</code> right now.  This is hardcoded to a value set when the artifact
+was created and no content-negotiation occurs</li>
+<li>x-taskcluster-location-content-type: the content-type of the artifact</li>
+</ul>
 <p><strong>Caching</strong>, artifacts may be cached in data centers closer to the
 workers in-order to reduce bandwidth costs. This can lead to longer
 response times. Caching can be skipped by setting the header

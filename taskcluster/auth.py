@@ -65,6 +65,13 @@ class Auth(BaseClient):
         Get a list of all clients.  With `prefix`, only clients for which
         it is a prefix of the clientId are returned.
 
+        By default this end-point will try to return up to 1000 clients in one
+        request. But it **may return less, even none**.
+        It may also return a `continuationToken` even though there are no more
+        results. However, you can only be sure to have seen all results if you
+        keep calling `listClients` with the last `continuationToken` until you
+        get a result without a `continuationToken`.
+
         This method gives output: ``http://schemas.taskcluster.net/auth/v1/list-clients-response.json#``
 
         This method is ``stable``
@@ -759,7 +766,7 @@ class Auth(BaseClient):
             'method': 'get',
             'name': 'listClients',
             'output': 'http://schemas.taskcluster.net/auth/v1/list-clients-response.json#',
-            'query': ['prefix'],
+            'query': ['prefix', 'continuationToken', 'limit'],
             'route': '/clients/',
             'stability': 'stable',
         },

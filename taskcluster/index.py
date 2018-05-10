@@ -144,27 +144,6 @@ class Index(BaseClient):
 
         return self._makeApiCall(self.funcinfo["listNamespaces"], *args, **kwargs)
 
-    def listNamespacesPost(self, *args, **kwargs):
-        """
-        List Namespaces
-
-        List the namespaces immediately under a given namespace.
-
-        This endpoint
-        lists up to 1000 namespaces. If more namespaces are present, a
-        `continuationToken` will be returned, which can be given in the next
-        request. For the initial request, the payload should be an empty JSON
-        object.
-
-        This method takes input: ``http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#``
-
-        This method gives output: ``http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#``
-
-        This method is ``deprecated``
-        """
-
-        return self._makeApiCall(self.funcinfo["listNamespacesPost"], *args, **kwargs)
-
     def listTasks(self, *args, **kwargs):
         """
         List Tasks
@@ -186,30 +165,6 @@ class Index(BaseClient):
         """
 
         return self._makeApiCall(self.funcinfo["listTasks"], *args, **kwargs)
-
-    def listTasksPost(self, *args, **kwargs):
-        """
-        List Tasks
-
-        List the tasks immediately under a given namespace.
-
-        This endpoint
-        lists up to 1000 tasks. If more tasks are present, a
-        `continuationToken` will be returned, which can be given in the next
-        request. For the initial request, the payload should be an empty JSON
-        object.
-
-        **Remark**, this end-point is designed for humans browsing for tasks, not
-        services, as that makes little sense.
-
-        This method takes input: ``http://schemas.taskcluster.net/index/v1/list-tasks-request.json#``
-
-        This method gives output: ``http://schemas.taskcluster.net/index/v1/list-tasks-response.json#``
-
-        This method is ``deprecated``
-        """
-
-        return self._makeApiCall(self.funcinfo["listTasksPost"], *args, **kwargs)
 
     def insertTask(self, *args, **kwargs):
         """
@@ -300,32 +255,14 @@ class Index(BaseClient):
             'route': '/namespaces/<namespace>',
             'stability': 'stable',
         },
-        "listNamespacesPost": {
-            'args': ['namespace'],
-            'input': 'http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#',
-            'method': 'post',
-            'name': 'listNamespacesPost',
-            'output': 'http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#',
-            'route': '/namespaces/<namespace>',
-            'stability': 'deprecated',
-        },
         "listTasks": {
             'args': ['namespace'],
-            'method': 'post',
+            'method': 'get',
             'name': 'listTasks',
             'output': 'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/tasks/<namespace>',
             'stability': 'stable',
-        },
-        "listTasksPost": {
-            'args': ['namespace'],
-            'input': 'http://schemas.taskcluster.net/index/v1/list-tasks-request.json#',
-            'method': 'post',
-            'name': 'listTasksPost',
-            'output': 'http://schemas.taskcluster.net/index/v1/list-tasks-response.json#',
-            'route': '/tasks/<namespace>',
-            'stability': 'deprecated',
         },
         "ping": {
             'args': [],

@@ -315,6 +315,13 @@ by many Taskcluster components.
 Get a list of all clients.  With `prefix`, only clients for which
 it is a prefix of the clientId are returned.
 
+By default this end-point will try to return up to 1000 clients in one
+request. But it **may return less, even none**.
+It may also return a `continuationToken` even though there are no more
+results. However, you can only be sure to have seen all results if you
+keep calling `listClients` with the last `continuationToken` until you
+get a result without a `continuationToken`.
+
 
 Required [output schema](http://schemas.taskcluster.net/auth/v1/list-clients-response.json#)
 
@@ -2270,7 +2277,7 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [input schema](http://schemas.taskcluster.net/hooks/v1/trigger-context.json)
+Required [input schema](http://schemas.taskcluster.net/hooks/v1/trigger-hook.json)
 
 Required [output schema](http://schemas.taskcluster.net/hooks/v1/task-status.json)
 
@@ -2342,7 +2349,7 @@ Takes the following arguments:
   * `hookId`
   * `token`
 
-Required [input schema](http://schemas.taskcluster.net/hooks/v1/trigger-context.json)
+Required [input schema](http://schemas.taskcluster.net/hooks/v1/trigger-hook.json)
 
 Required [output schema](http://schemas.taskcluster.net/hooks/v1/task-status.json)
 
@@ -2522,34 +2529,6 @@ await asyncIndex.listNamespaces(namespace) # -> result
 await asyncIndex.listNamespaces(namespace='value') # -> result
 ```
 
-#### List Namespaces
-List the namespaces immediately under a given namespace.
-
-This endpoint
-lists up to 1000 namespaces. If more namespaces are present, a
-`continuationToken` will be returned, which can be given in the next
-request. For the initial request, the payload should be an empty JSON
-object.
-
-
-
-Takes the following arguments:
-
-  * `namespace`
-
-Required [input schema](http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#)
-
-Required [output schema](http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#)
-
-```python
-# Sync calls
-index.listNamespacesPost(namespace, payload) # -> result`
-index.listNamespacesPost(payload, namespace='value') # -> result
-# Async call
-await asyncIndex.listNamespacesPost(namespace, payload) # -> result
-await asyncIndex.listNamespacesPost(payload, namespace='value') # -> result
-```
-
 #### List Tasks
 List the tasks immediately under a given namespace.
 
@@ -2577,37 +2556,6 @@ index.listTasks(namespace='value') # -> result
 # Async call
 await asyncIndex.listTasks(namespace) # -> result
 await asyncIndex.listTasks(namespace='value') # -> result
-```
-
-#### List Tasks
-List the tasks immediately under a given namespace.
-
-This endpoint
-lists up to 1000 tasks. If more tasks are present, a
-`continuationToken` will be returned, which can be given in the next
-request. For the initial request, the payload should be an empty JSON
-object.
-
-**Remark**, this end-point is designed for humans browsing for tasks, not
-services, as that makes little sense.
-
-
-
-Takes the following arguments:
-
-  * `namespace`
-
-Required [input schema](http://schemas.taskcluster.net/index/v1/list-tasks-request.json#)
-
-Required [output schema](http://schemas.taskcluster.net/index/v1/list-tasks-response.json#)
-
-```python
-# Sync calls
-index.listTasksPost(namespace, payload) # -> result`
-index.listTasksPost(payload, namespace='value') # -> result
-# Async call
-await asyncIndex.listTasksPost(namespace, payload) # -> result
-await asyncIndex.listTasksPost(payload, namespace='value') # -> result
 ```
 
 #### Insert Task into Index
@@ -3577,7 +3525,67 @@ authorization is not necessary to fetch the artifact.
 **API Clients**, this method will redirect you to the artifact, if it is
 stored externally. Either way, the response may not be JSON. So API
 client users might want to generate a signed URL for this end-point and
-use that URL with a normal HTTP client.
+use that URL with an HTTP client that can handle responses correctly.
+
+**Downloading artifacts**
+There are some special considerations for those http clients which download
+artifacts.  This api endpoint is designed to be compatible with an HTTP 1.1
+compliant client, but has extra features to ensure the download is valid.
+It is strongly recommend that consumers use either taskcluster-lib-artifact (JS),
+taskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with
+artifacts.
+
+In order to download an artifact the following must be done:
+
+1. Obtain queue url.  Building a signed url with a taskcluster client is
+recommended
+1. Make a GET request which does not follow redirects
+1. In all cases, if specified, the
+x-taskcluster-location-{content,transfer}-{sha256,length} values must be
+validated to be equal to the Content-Length and Sha256 checksum of the
+final artifact downloaded. as well as any intermediate redirects
+1. If this response is a 500-series error, retry using an exponential
+backoff.  No more than 5 retries should be attempted
+1. If this response is a 400-series error, treat it appropriately for
+your context.  This might be an error in responding to this request or
+an Error storage type body.  This request should not be retried.
+1. If this response is a 200-series response, the response body is the artifact.
+If the x-taskcluster-location-{content,transfer}-{sha256,length} and
+x-taskcluster-location-content-encoding are specified, they should match
+this response body
+1. If the response type is a 300-series redirect, the artifact will be at the
+location specified by the `Location` header.  There are multiple artifact storage
+types which use a 300-series redirect.
+1. For all redirects followed, the user must verify that the content-sha256, content-length,
+transfer-sha256, transfer-length and content-encoding match every further request.  The final
+artifact must also be validated against the values specified in the original queue response
+1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`
+must not occur
+1. A request which has x-taskcluster-artifact-storage-type value of `blob` and does not
+have x-taskcluster-location-content-sha256 or x-taskcluster-location-content-length
+must be treated as an error
+
+**Headers**
+The following important headers are set on the response to this method:
+
+* location: the url of the artifact if a redirect is to be performed
+* x-taskcluster-artifact-storage-type: the storage type.  Example: blob, s3, error
+
+The following important headers are set on responses to this method for Blob artifacts
+
+* x-taskcluster-location-content-sha256: the SHA256 of the artifact
+*after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})
+* x-taskcluster-location-content-length: the number of bytes *after* any content-encoding
+is undone
+* x-taskcluster-location-transfer-sha256: the SHA256 of the artifact
+*before* any content-encoding is undone.  This is the SHA256 of what is sent over
+the wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})
+* x-taskcluster-location-transfer-length: the number of bytes *after* any content-encoding
+is undone
+* x-taskcluster-location-content-encoding: the content-encoding used.  It will either
+be `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact
+was created and no content-negotiation occurs
+* x-taskcluster-location-content-type: the content-type of the artifact
 
 **Caching**, artifacts may be cached in data centers closer to the
 workers in-order to reduce bandwidth costs. This can lead to longer

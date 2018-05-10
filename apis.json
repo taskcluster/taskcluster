@@ -7,12 +7,14 @@
       "entries": [
         {
           "args": [],
-          "description": "Get a list of all clients.  With `prefix`, only clients for which\nit is a prefix of the clientId are returned.",
+          "description": "Get a list of all clients.  With `prefix`, only clients for which\nit is a prefix of the clientId are returned.\n\nBy default this end-point will try to return up to 1000 clients in one\nrequest. But it **may return less, even none**.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listClients` with the last `continuationToken` until you\nget a result without a `continuationToken`.",
           "method": "get",
           "name": "listClients",
           "output": "http://schemas.taskcluster.net/auth/v1/list-clients-response.json#",
           "query": [
-            "prefix"
+            "prefix",
+            "continuationToken",
+            "limit"
           ],
           "route": "/clients/",
           "stability": "stable",
@@ -494,7 +496,7 @@
       "title": "Authentication API",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/auth/v1/api.json"
+    "referenceUrl": "https://references.taskcluster.net/auth/v1/api.json"
   },
   "AuthEvents": {
     "reference": {
@@ -602,7 +604,7 @@
       "title": "Auth Pulse Exchanges",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/auth/v1/exchanges.json"
+    "referenceUrl": "https://references.taskcluster.net/auth/v1/exchanges.json"
   },
   "AwsProvisioner": {
     "reference": {
@@ -633,11 +635,7 @@
           "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#",
           "query": [],
           "route": "/worker-type/<workerType>",
-          "scopes": [
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
+          "scopes": "aws-provisioner:manage-worker-type:<workerType>",
           "stability": "stable",
           "title": "Create new Worker Type",
           "type": "function"
@@ -653,11 +651,7 @@
           "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#",
           "query": [],
           "route": "/worker-type/<workerType>/update",
-          "scopes": [
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
+          "scopes": "aws-provisioner:manage-worker-type:<workerType>",
           "stability": "stable",
           "title": "Update Worker Type",
           "type": "function"
@@ -686,14 +680,12 @@
           "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-worker-type-response.json#",
           "query": [],
           "route": "/worker-type/<workerType>",
-          "scopes": [
-            [
-              "aws-provisioner:view-worker-type:<workerType>"
-            ],
-            [
+          "scopes": {
+            "AnyOf": [
+              "aws-provisioner:view-worker-type:<workerType>",
               "aws-provisioner:manage-worker-type:<workerType>"
             ]
-          ],
+          },
           "stability": "stable",
           "title": "Get Worker Type",
           "type": "function"
@@ -707,11 +699,7 @@
           "name": "removeWorkerType",
           "query": [],
           "route": "/worker-type/<workerType>",
-          "scopes": [
-            [
-              "aws-provisioner:manage-worker-type:<workerType>"
-            ]
-          ],
+          "scopes": "aws-provisioner:manage-worker-type:<workerType>",
           "stability": "stable",
           "title": "Delete Worker Type",
           "type": "function"
@@ -738,11 +726,7 @@
           "name": "createSecret",
           "query": [],
           "route": "/secret/<token>",
-          "scopes": [
-            [
-              "aws-provisioner:create-secret:<workerType>"
-            ]
-          ],
+          "scopes": "aws-provisioner:create-secret:<workerType>",
           "stability": "stable",
           "title": "Create new Secret",
           "type": "function"
@@ -798,14 +782,12 @@
           "output": "http://schemas.taskcluster.net/aws-provisioner/v1/get-launch-specs-response.json#",
           "query": [],
           "route": "/worker-type/<workerType>/launch-specifications",
-          "scopes": [
-            [
-              "aws-provisioner:view-worker-type:<workerType>"
-            ],
-            [
+          "scopes": {
+            "AnyOf": [
+              "aws-provisioner:view-worker-type:<workerType>",
               "aws-provisioner:manage-worker-type:<workerType>"
             ]
-          ],
+          },
           "stability": "experimental",
           "title": "Get All Launch Specifications for WorkerType",
           "type": "function"
@@ -847,10 +829,11 @@
           "type": "function"
         }
       ],
+      "name": "awsprovisioner",
       "title": "AWS Provisioner API Documentation",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/api.json"
+    "referenceUrl": "https://references.taskcluster.net/aws-provisioner/v1/api.json"
   },
   "AwsProvisionerEvents": {
     "reference": {
@@ -949,7 +932,7 @@
       "title": "AWS Provisioner Pulse Exchanges",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/aws-provisioner/v1/exchanges.json"
+    "referenceUrl": "https://references.taskcluster.net/aws-provisioner/v1/exchanges.json"
   },
   "EC2Manager": {
     "reference": {
@@ -1440,7 +1423,7 @@
       "title": "Taskcluster GitHub API Documentation",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/github/v1/api.json"
+    "referenceUrl": "https://references.taskcluster.net/github/v1/api.json"
   },
   "GithubEvents": {
     "reference": {
@@ -1545,7 +1528,7 @@
       "title": "Taskcluster-Github Exchanges",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/github/v1/exchanges.json"
+    "referenceUrl": "https://references.taskcluster.net/github/v1/exchanges.json"
   },
   "Hooks": {
     "reference": {
@@ -1561,7 +1544,7 @@
           "output": "http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json",
           "query": [],
           "route": "/hooks",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "List hook groups",
           "type": "function"
         },
@@ -1575,7 +1558,7 @@
           "output": "http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json",
           "query": [],
           "route": "/hooks/<hookGroupId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "List hooks in a given group",
           "type": "function"
         },
@@ -1590,7 +1573,7 @@
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-definition.json",
           "query": [],
           "route": "/hooks/<hookGroupId>/<hookId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get hook definition",
           "type": "function"
         },
@@ -1605,7 +1588,7 @@
           "output": "http://schemas.taskcluster.net/hooks/v1/hook-status.json",
           "query": [],
           "route": "/hooks/<hookGroupId>/<hookId>/status",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get hook status",
           "type": "function"
         },
@@ -1642,7 +1625,7 @@
               "assume:hook-id:<hookGroupId>/<hookId>"
             ]
           },
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Create a hook",
           "type": "function"
         },
@@ -1664,7 +1647,7 @@
               "assume:hook-id:<hookGroupId>/<hookId>"
             ]
           },
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Update a hook",
           "type": "function"
         },
@@ -1679,7 +1662,7 @@
           "query": [],
           "route": "/hooks/<hookGroupId>/<hookId>",
           "scopes": "hooks:modify-hook:<hookGroupId>/<hookId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Delete a hook",
           "type": "function"
         },
@@ -1689,14 +1672,14 @@
             "hookId"
           ],
           "description": "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
-          "input": "http://schemas.taskcluster.net/hooks/v1/trigger-context.json",
+          "input": "http://schemas.taskcluster.net/hooks/v1/trigger-hook.json",
           "method": "post",
           "name": "triggerHook",
           "output": "http://schemas.taskcluster.net/hooks/v1/task-status.json",
           "query": [],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger",
           "scopes": "hooks:trigger-hook:<hookGroupId>/<hookId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Trigger a hook",
           "type": "function"
         },
@@ -1712,7 +1695,7 @@
           "query": [],
           "route": "/hooks/<hookGroupId>/<hookId>/token",
           "scopes": "hooks:get-trigger-token:<hookGroupId>/<hookId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Get a trigger token",
           "type": "function"
         },
@@ -1728,7 +1711,7 @@
           "query": [],
           "route": "/hooks/<hookGroupId>/<hookId>/token",
           "scopes": "hooks:reset-trigger-token:<hookGroupId>/<hookId>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Reset a trigger token",
           "type": "function"
         },
@@ -1739,13 +1722,13 @@
             "token"
           ],
           "description": "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
-          "input": "http://schemas.taskcluster.net/hooks/v1/trigger-context.json",
+          "input": "http://schemas.taskcluster.net/hooks/v1/trigger-hook.json",
           "method": "post",
           "name": "triggerHookWithToken",
           "output": "http://schemas.taskcluster.net/hooks/v1/task-status.json",
           "query": [],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
-          "stability": "experimental",
+          "stability": "stable",
           "title": "Trigger a hook with a token",
           "type": "function"
         },
@@ -1765,7 +1748,7 @@
       "title": "Hooks API Documentation",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/hooks/v1/api.json"
+    "referenceUrl": "https://references.taskcluster.net/hooks/v1/api.json"
   },
   "Index": {
     "reference": {
@@ -1808,23 +1791,8 @@
           "args": [
             "namespace"
           ],
-          "description": "List the namespaces immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 namespaces. If more namespaces are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.",
-          "input": "http://schemas.taskcluster.net/index/v1/list-namespaces-request.json#",
-          "method": "post",
-          "name": "listNamespacesPost",
-          "output": "http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#",
-          "query": [],
-          "route": "/namespaces/<namespace>",
-          "stability": "deprecated",
-          "title": "List Namespaces",
-          "type": "function"
-        },
-        {
-          "args": [
-            "namespace"
-          ],
           "description": "List the tasks immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 tasks. If more tasks are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.\n\n**Remark**, this end-point is designed for humans browsing for tasks, not\nservices, as that makes little sense.",
-          "method": "post",
+          "method": "get",
           "name": "listTasks",
           "output": "http://schemas.taskcluster.net/index/v1/list-tasks-response.json#",
           "query": [
@@ -1833,21 +1801,6 @@
           ],
           "route": "/tasks/<namespace>",
           "stability": "stable",
-          "title": "List Tasks",
-          "type": "function"
-        },
-        {
-          "args": [
-            "namespace"
-          ],
-          "description": "List the tasks immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 tasks. If more tasks are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.\n\n**Remark**, this end-point is designed for humans browsing for tasks, not\nservices, as that makes little sense.",
-          "input": "http://schemas.taskcluster.net/index/v1/list-tasks-request.json#",
-          "method": "post",
-          "name": "listTasksPost",
-          "output": "http://schemas.taskcluster.net/index/v1/list-tasks-response.json#",
-          "query": [],
-          "route": "/tasks/<namespace>",
-          "stability": "deprecated",
           "title": "List Tasks",
           "type": "function"
         },
@@ -1901,7 +1854,7 @@
       "title": "Task Index API Documentation",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/index/v1/api.json"
+    "referenceUrl": "https://references.taskcluster.net/index/v1/api.json"
   },
   "Login": {
     "reference": {
@@ -1935,10 +1888,11 @@
           "type": "function"
         }
       ],
+      "name": "login",
       "title": "Login API",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/login/v1/api.json"
+    "referenceUrl": "https://references.taskcluster.net/login/v1/api.json"
   },
   "Notify": {
     "reference": {
@@ -2005,7 +1959,7 @@
       "title": "Notification Service",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/notify/v1/api.json"
+    "referenceUrl": "https://references.taskcluster.net/notify/v1/api.json"
   },
   "PurgeCache": {
     "reference": {
@@ -2077,7 +2031,7 @@
       "title": "Purge Cache API Documentation",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/purge-cache/v1/api.json"
+    "referenceUrl": "https://references.taskcluster.net/purge-cache/v1/api.json"
   },
   "PurgeCacheEvents": {
     "reference": {
@@ -2118,7 +2072,7 @@
       "title": "Purge-Cache Exchanges",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/purge-cache/v1/exchanges.json"
+    "referenceUrl": "https://references.taskcluster.net/purge-cache/v1/exchanges.json"
   },
   "Queue": {
     "reference": {
@@ -2634,7 +2588,7 @@
             "runId",
             "name"
           ],
-          "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with a normal HTTP client.\n\n**Caching**, artifacts may be cached in data centers closer to the\nworkers in-order to reduce bandwidth costs. This can lead to longer\nresponse times. Caching can be skipped by setting the header\n`x-taskcluster-skip-cache: true`, this should only be used for resources\nwhere request volume is known to be low, and caching not useful.\n(This feature may be disabled in the future, use is sparingly!)",
+          "description": "Get artifact by `<name>` from a specific run.\n\n**Public Artifacts**, in-order to get an artifact you need the scope\n`queue:get-artifact:<name>`, where `<name>` is the name of the artifact.\nBut if the artifact `name` starts with `public/`, authentication and\nauthorization is not necessary to fetch the artifact.\n\n**API Clients**, this method will redirect you to the artifact, if it is\nstored externally. Either way, the response may not be JSON. So API\nclient users might want to generate a signed URL for this end-point and\nuse that URL with an HTTP client that can handle responses correctly.\n\n**Downloading artifacts**\nThere are some special considerations for those http clients which download\nartifacts.  This api endpoint is designed to be compatible with an HTTP 1.1\ncompliant client, but has extra features to ensure the download is valid.\nIt is strongly recommend that consumers use either taskcluster-lib-artifact (JS),\ntaskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with\nartifacts.\n\nIn order to download an artifact the following must be done:\n\n1. Obtain queue url.  Building a signed url with a taskcluster client is\nrecommended\n1. Make a GET request which does not follow redirects\n1. In all cases, if specified, the\nx-taskcluster-location-{content,transfer}-{sha256,length} values must be\nvalidated to be equal to the Content-Length and Sha256 checksum of the\nfinal artifact downloaded. as well as any intermediate redirects\n1. If this response is a 500-series error, retry using an exponential\nbackoff.  No more than 5 retries should be attempted\n1. If this response is a 400-series error, treat it appropriately for\nyour context.  This might be an error in responding to this request or\nan Error storage type body.  This request should not be retried.\n1. If this response is a 200-series response, the response body is the artifact.\nIf the x-taskcluster-location-{content,transfer}-{sha256,length} and\nx-taskcluster-location-content-encoding are specified, they should match\nthis response body\n1. If the response type is a 300-series redirect, the artifact will be at the\nlocation specified by the `Location` header.  There are multiple artifact storage\ntypes which use a 300-series redirect.\n1. For all redirects followed, the user must verify that the content-sha256, content-length,\ntransfer-sha256, transfer-length and content-encoding match every further request.  The final\nartifact must also be validated against the values specified in the original queue response\n1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`\nmust not occur\n1. A request which has x-taskcluster-artifact-storage-type value of `blob` and does not\nhave x-taskcluster-location-content-sha256 or x-taskcluster-location-content-length\nmust be treated as an error\n\n**Headers**\nThe following important headers are set on the response to this method:\n\n* location: the url of the artifact if a redirect is to be performed\n* x-taskcluster-artifact-storage-type: the storage type.  Example: blob, s3, error\n\nThe following important headers are set on responses to this method for Blob artifacts\n\n* x-taskcluster-location-content-sha256: the SHA256 of the artifact\n*after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-content-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-transfer-sha256: the SHA256 of the artifact\n*before* any content-encoding is undone.  This is the SHA256 of what is sent over\nthe wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})\n* x-taskcluster-location-transfer-length: the number of bytes *after* any content-encoding\nis undone\n* x-taskcluster-location-content-encoding: the content-encoding used.  It will either\nbe `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact\nwas created and no content-negotiation occurs\n* x-taskcluster-location-content-type: the content-type of the artifact\n\n**Caching**, artifacts may be cached in data centers closer to the\nworkers in-order to reduce bandwidth costs. This can lead to longer\nresponse times. Caching can be skipped by setting the header\n`x-taskcluster-skip-cache: true`, this should only be used for resources\nwhere request volume is known to be low, and caching not useful.\n(This feature may be disabled in the future, use is sparingly!)",
           "method": "get",
           "name": "getArtifact",
           "query": [],
@@ -2935,7 +2889,7 @@
       "title": "Queue API Documentation",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/queue/v1/api.json"
+    "referenceUrl": "https://references.taskcluster.net/queue/v1/api.json"
   },
   "QueueEvents": {
     "reference": {
@@ -3479,7 +3433,7 @@
       "title": "Queue AMQP Exchanges",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/queue/v1/exchanges.json"
+    "referenceUrl": "https://references.taskcluster.net/queue/v1/exchanges.json"
   },
   "Secrets": {
     "reference": {
@@ -3562,7 +3516,7 @@
       "title": "TaskCluster Secrets API Documentation",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/secrets/v1/api.json"
+    "referenceUrl": "https://references.taskcluster.net/secrets/v1/api.json"
   },
   "TreeherderEvents": {
     "reference": {
@@ -3602,6 +3556,6 @@
       "title": "Taskcluster-treeherder Pulse Exchange",
       "version": 0
     },
-    "referenceUrl": "http://references.taskcluster.net/taskcluster-treeherder/v1/exchanges.json"
+    "referenceUrl": "https://references.taskcluster.net/taskcluster-treeherder/v1/exchanges.json"
   }
 }
