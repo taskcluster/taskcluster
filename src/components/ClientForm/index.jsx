@@ -143,6 +143,17 @@ export default class ClientForm extends Component {
               />
             </FormGroup>
           </ListItem>
+          {isNewClient && (
+            <ListItem>
+              <TextField
+                label="Client ID"
+                name="clientId"
+                onChange={this.handleInputChange}
+                fullWidth
+                value={clientId}
+              />
+            </ListItem>
+          )}
           {client && (
             <Fragment>
               <ListItem>

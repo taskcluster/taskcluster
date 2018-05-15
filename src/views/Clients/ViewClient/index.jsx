@@ -22,7 +22,7 @@ export default class ViewClient extends Component {
 
     return (
       <Dashboard
-        title="Client"
+        title={isNewClient ? 'Create Client' : 'Client'}
         user={user}
         onSignIn={onSignIn}
         onSignOut={onSignOut}>
