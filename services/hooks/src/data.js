@@ -1,12 +1,12 @@
-var Entity      = require('azure-entities');
-var debug       = require('debug')('hooks:data');
-var assert      = require('assert');
-var Promise     = require('promise');
-var taskcluster = require('taskcluster-client');
-var _           = require('lodash');
+const Entity = require('azure-entities');
+const debug = require('debug')('hooks:data');
+const assert = require('assert');
+const Promise = require('promise');
+const taskcluster = require('taskcluster-client');
+const _ = require('lodash');
 
 /** Entity for tracking hooks and associated state **/
-var Hook = Entity.configure({
+const Hook = Entity.configure({
   version:              1,
   partitionKey:         Entity.keys.StringKey('hookGroupId'),
   rowKey:               Entity.keys.StringKey('hookId'),
