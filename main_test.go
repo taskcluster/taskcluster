@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"regexp"
 	"strings"
@@ -158,5 +159,29 @@ func TestLogFormat(t *testing.T) {
 				t.Fatalf("Expected log line '%v' to match regexp '%v' but it didn't.", logWriter.String(), test.ResultFormat)
 			}
 		}
+	}
+}
+
+func TestExecutionErrorsText(t *testing.T) {
+	errors := executionErrors{
+		&CommandExecutionError{
+			Cause:      fmt.Errorf("Oh dear oh dear"),
+			Reason:     malformedPayload,
+			TaskStatus: failed,
+		},
+		&CommandExecutionError{
+			Cause:      fmt.Errorf("This isn't good"),
+			Reason:     workerShutdown,
+			TaskStatus: aborted,
+		},
+	}
+	expectedError := "Oh dear oh dear\nThis isn't good"
+	actualError := errors.Error()
+	if expectedError != actualError {
+		t.Log("Was expecting error:")
+		t.Log(expectedError)
+		t.Log("but got:")
+		t.Log(actualError)
+		t.FailNow()
 	}
 }

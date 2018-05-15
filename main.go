@@ -1032,11 +1032,11 @@ func (err *executionErrors) Error() string {
 	if !err.Occurred() {
 		return ""
 	}
-	text := ""
-	for _, e := range *err {
-		text += e.Error()
+	lines := make([]string, len(*err), len(*err))
+	for i, e := range *err {
+		lines[i] = e.Error()
 	}
-	return text
+	return strings.Join(lines, "\n")
 }
 
 // Return true if any of the accumlated errors is a worker-shutdown
