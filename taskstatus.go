@@ -54,6 +54,8 @@ func (tsm *TaskStatusManager) DeregisterListener(listener *TaskStatusChangeListe
 }
 
 func (tsm *TaskStatusManager) RegisterListener(listener *TaskStatusChangeListener) {
+	tsm.Lock()
+	defer tsm.Unlock()
 	tsm.statusChangeListeners[listener] = true
 }
 
@@ -246,9 +248,7 @@ func (tsm *TaskStatusManager) queryQueueForLatestStatus() {
 
 func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) error, fromStatuses ...TaskStatus) error {
 	tsm.Lock()
-	defer func() {
-		tsm.Unlock()
-	}()
+	defer tsm.Unlock()
 	currentStatus := tsm.task.Status
 	for _, allowedStatus := range fromStatuses {
 		if currentStatus == allowedStatus {

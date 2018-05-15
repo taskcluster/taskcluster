@@ -344,6 +344,14 @@ definitions:
         artifact:
           type: string
           maxLength: 1024
+        sha256:
+          type: string
+          title: SHA 256
+          description: |-
+            The required SHA 256 of the content body.
+
+            Since: generic-worker 10.8.0
+          pattern: '^[a-f0-9]{64}$'
       additionalProperties: false
       required:
       - taskId
@@ -363,6 +371,14 @@ definitions:
 
             Since: generic-worker 5.4.0
           format: uri
+        sha256:
+          type: string
+          title: SHA 256
+          description: |-
+            The required SHA 256 of the content body.
+
+            Since: generic-worker 10.8.0
+          pattern: '^[a-f0-9]{64}$'
       additionalProperties: false
       required:
       - url

@@ -67,6 +67,13 @@ type (
 		// Max length: 1024
 		Artifact string `json:"artifact"`
 
+		// The required SHA 256 of the content body.
+		//
+		// Since: generic-worker 10.8.0
+		//
+		// Syntax:     ^[a-f0-9]{64}$
+		Sha256 string `json:"sha256,omitempty"`
+
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskID string `json:"taskId"`
 	}
@@ -198,6 +205,13 @@ type (
 	// Since: generic-worker 5.4.0
 	URLContent struct {
 
+		// The required SHA 256 of the content body.
+		//
+		// Since: generic-worker 10.8.0
+		//
+		// Syntax:     ^[a-f0-9]{64}$
+		Sha256 string `json:"sha256,omitempty"`
+
 		// URL to download content from.
 		//
 		// Since: generic-worker 5.4.0
@@ -264,6 +278,12 @@ func taskPayloadSchema() string {
               "maxLength": 1024,
               "type": "string"
             },
+            "sha256": {
+              "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "SHA 256",
+              "type": "string"
+            },
             "taskId": {
               "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$",
               "type": "string"
@@ -280,6 +300,12 @@ func taskPayloadSchema() string {
           "additionalProperties": false,
           "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
           "properties": {
+            "sha256": {
+              "description": "The required SHA 256 of the content body.\n\nSince: generic-worker 10.8.0",
+              "pattern": "^[a-f0-9]{64}$",
+              "title": "SHA 256",
+              "type": "string"
+            },
             "url": {
               "description": "URL to download content from.\n\nSince: generic-worker 5.4.0",
               "format": "uri",
