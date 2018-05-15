@@ -174,28 +174,30 @@ func NewQueue(t *testing.T) *tcqueue.Queue {
 func scheduleTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string) {
 	taskID = slugid.Nice()
 
-	b, err := json.Marshal(&payload)
-	if err != nil {
-		t.Fatalf("Could not convert task payload to json")
-	}
-	//////////////////////////////////////////////////////////////////////////////////
-	//
-	// horrible hack here, until we have jsonschema2go generating pointer types...
-	//
-	//////////////////////////////////////////////////////////////////////////////////
-	b = bytes.Replace(b, []byte(`"expires":"0001-01-01T00:00:00Z",`), []byte{}, -1)
-	b = bytes.Replace(b, []byte(`,"expires":"0001-01-01T00:00:00Z"`), []byte{}, -1)
+	if td.Payload == nil {
+		b, err := json.Marshal(&payload)
+		if err != nil {
+			t.Fatalf("Could not convert task payload to json")
+		}
+		//////////////////////////////////////////////////////////////////////////////////
+		//
+		// horrible hack here, until we have jsonschema2go generating pointer types...
+		//
+		//////////////////////////////////////////////////////////////////////////////////
+		b = bytes.Replace(b, []byte(`"expires":"0001-01-01T00:00:00Z",`), []byte{}, -1)
+		b = bytes.Replace(b, []byte(`,"expires":"0001-01-01T00:00:00Z"`), []byte{}, -1)
 
-	payloadJSON := json.RawMessage{}
-	err = json.Unmarshal(b, &payloadJSON)
-	if err != nil {
-		t.Fatalf("Could not convert json bytes of payload to json.RawMessage")
-	}
+		payloadJSON := json.RawMessage{}
+		err = json.Unmarshal(b, &payloadJSON)
+		if err != nil {
+			t.Fatalf("Could not convert json bytes of payload to json.RawMessage")
+		}
 
-	td.Payload = payloadJSON
+		td.Payload = payloadJSON
+	}
 
 	// submit task
-	_, err = testQueue.CreateTask(taskID, td)
+	_, err := testQueue.CreateTask(taskID, td)
 	if err != nil {
 		t.Fatalf("Could not submit task: %v", err)
 	}
@@ -239,7 +241,7 @@ func testTask(t *testing.T) *tcqueue.TaskDefinitionRequest {
 			Owner:       "generic-worker-ci@mozilla.com",
 			Source:      "https://github.com/taskcluster/generic-worker",
 		},
-		Payload:       json.RawMessage(``),
+		Payload:       nil,
 		ProvisionerID: config.ProvisionerID,
 		Retries:       1,
 		Routes:        []string{},
