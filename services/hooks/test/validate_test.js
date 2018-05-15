@@ -1,5 +1,5 @@
-var testing = require('taskcluster-lib-testing');
-var path = require('path');
+const testing = require('taskcluster-lib-testing');
+const path = require('path');
 
 suite('validate', function() {
   testing.schemas({

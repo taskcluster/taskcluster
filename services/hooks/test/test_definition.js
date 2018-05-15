@@ -1,5 +1,3 @@
-var taskcluster = require('taskcluster-client');
-
 module.exports = {
   task: {
     provisionerId:  'no-provisioner',

@@ -2,7 +2,7 @@ defaults:
   # defaults outlining all configuration options and some sane defaults
   app:
     component:        hooks
-    hookTable:        !env HOOK_TABLE_NAME
+    hookTableName:    !env HOOK_TABLE_NAME
     publishMetaData:  !env:bool PUBLISH_METADATA
     scheduler:
       pollingDelay:   60000
@@ -10,12 +10,11 @@ defaults:
     connectionString: !env INFLUX_CONNECTION
     maxDelay:         300
     maxPendingPoints: 300
-  azureTable:
-    account:          !env AZURE_ACCOUNT
+  azure:
+    accountName:      !env AZURE_ACCOUNT
     signingKey:       !env TABLE_SIGNING_KEY
     cryptoKey:        !env TABLE_CRYPTO_KEY
   taskcluster:
-    authBaseUrl:      null
     credentials:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
@@ -60,15 +59,12 @@ test:
   # See user-config-example.yml for secrets credentials required for tests
   app:
     component:        hooks-tests
-    hookTable:        HooksTestTable2
+    hookTableName:    HooksTestTable2
     publishMetaData:  false
     scheduler:
       pollingDelay:   5000
-  azureTable:
-    # use in-memory fake Azure by default; you can override in user-config.yml
-    # this with a real account together with setting `taskcluster.credentials`
-    # to test against the real Azure Table Storage.
-    account:          'inMemory'
+  azure:
+    accountName:      'jungle'
     signingKey:       'not a secret'
     cryptoKey:        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
   monitoring:
