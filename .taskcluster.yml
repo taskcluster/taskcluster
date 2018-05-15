@@ -118,10 +118,12 @@ tasks:
           directory: gopath1.10.2\src
         - content:
             url: https://storage.googleapis.com/golang/go1.10.2.windows-amd64.zip
+            sha256: 0fb4a893796e8151c0b8d0a3da4ed8cbb22bf6d98a3c29c915be4d7083f146ee
           directory: go1.10.2
           format: zip
         - content:
             url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
+            sha256: 65c12e4959b8874187b68ec37e532fe7fc526e10f6f0f29e699fa1d2449e7d92
           directory: git
           format: zip
 
@@ -188,10 +190,12 @@ tasks:
           directory: gopath1.10.2\src
         - content:
             url: https://storage.googleapis.com/golang/go1.10.2.windows-386.zip
+            sha256: 0bb12875044674d632d1f1b2f53cf33510a6df914178fe672f3f70f6f6cdf80d
           directory: go1.10.2
           format: zip
         - content:
             url: https://github.com/git-for-windows/git/releases/download/v2.11.0.windows.3/Git-2.11.0.3-32-bit.tar.bz2
+            sha256: 0f0e2f78fc9b91d6c860eb7de742f3601b0ccd13c5c61444c7cf55b00bcb4ed4
           directory: git
           format: tar.bz2
 
@@ -268,10 +272,12 @@ tasks:
           directory: gopath1.10.2\src
         - content:
             url: https://storage.googleapis.com/golang/go1.10.2.windows-amd64.zip
+            sha256: 0fb4a893796e8151c0b8d0a3da4ed8cbb22bf6d98a3c29c915be4d7083f146ee
           directory: go1.10.2
           format: zip
         - content:
             url: https://github.com/git-for-windows/git/releases/download/v2.14.1.windows.1/MinGit-2.14.1-64-bit.zip
+            sha256: 65c12e4959b8874187b68ec37e532fe7fc526e10f6f0f29e699fa1d2449e7d92
           directory: git
           format: zip
 
@@ -339,6 +345,7 @@ tasks:
           directory: gopath1.10.2/src
         - content:
             url: https://storage.googleapis.com/golang/go1.10.2.darwin-amd64.tar.gz
+            sha256: 360ad908840217ee1b2a0b4654666b9abb3a12c8593405ba88ab9bba6e64eeda
           directory: go1.10.2
           format: tar.gz
 
@@ -410,6 +417,7 @@ tasks:
   #         directory: gopath1.10.2/src
   #       - content:
   #           url: https://storage.googleapis.com/golang/go1.10.2.linux-armv6l.tar.gz
+  #           sha256: 529a16b531d4561572db6ba9d357215b58a1953437a63e76dc0c597be9e25dd2
   #         directory: go1.10.2
   #         format: tar.gz
 
