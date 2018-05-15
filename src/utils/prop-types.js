@@ -167,3 +167,12 @@ export const client = shape({
   expandedScopes: arrayOf(string),
   disabled: bool,
 });
+
+export const role = shape({
+  roleId: string,
+  scopes: arrayOf(string),
+  description: string,
+  created: date,
+  lastModified: date,
+  expandedScopes: arrayOf(string),
+});

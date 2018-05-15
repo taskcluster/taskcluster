@@ -23,19 +23,25 @@ export default class TableCellListItem extends Component {
   static propTypes = {
     /** The table cell contents. */
     children: node.isRequired,
-    /* Set to true to remove the padding applied to the List component */
+    /** Set to true to remove the padding applied to the List component */
     dense: bool,
+    /** The CSS class name of the wrapper element */
+    className: null,
   };
 
   static defaultProps = {
     dense: true,
+    className: null,
   };
 
   render() {
-    const { classes, children, dense, ...props } = this.props;
+    const { classes, children, className, dense, ...props } = this.props;
 
     return (
-      <List dense={dense} classes={{ root: classes.root }}>
+      <List
+        dense={dense}
+        classes={{ root: classes.root }}
+        className={className}>
         <ListItem
           classes={{ gutters: classes.listItem }}
           className={classes.listItemButton}

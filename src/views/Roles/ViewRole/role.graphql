@@ -1,0 +1,10 @@
+query Role($roleId: ID!) {
+  role(roleId: $roleId) {
+    roleId
+    description
+    created
+    lastModified
+    scopes
+    expandedScopes
+  }
+}
