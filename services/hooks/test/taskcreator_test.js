@@ -1,192 +1,209 @@
-suite('TaskCreator', function() {
-  var assume            = require('assume');
-  var taskcreator       = require('../src/taskcreator');
-  var debug             = require('debug')('test:test_schedule_hooks');
-  var helper            = require('./helper');
-  var data              = require('../src/data');
-  var taskcluster       = require('taskcluster-client');
-  var _                 = require('lodash');
+const assume = require('assume');
+const taskcreator = require('../src/taskcreator');
+const debug = require('debug')('test:test_schedule_hooks');
+const helper = require('./helper');
+const data = require('../src/data');
+const {TaskCreator} = require('../src/taskcreator');
+const taskcluster = require('taskcluster-client');
+const _ = require('lodash');
+const hookDef = require('./test_definition');
 
-  this.slow(500);
-  helper.setup();
+suite('taskcreator_test.js', function() {
+  helper.secrets.mockSuite('TaskCreator', ['taskcluster'], function(mock, skipping) {
+    helper.withHook(mock, skipping);
 
-  suiteSetup(function() {
-    // these tests require real TaskCluster credentials (for the queue insert)
-    if (!helper.haveRealCredentials && !process.env.TASK_ID) {
-      this.pending = true;
+    this.slow(500);
+
+    /* Note that this requires the following set up in production TC:
+     *  - TC credentials given in cfg.get('taskcluster:credentials') with
+     *    - assume:hook-id:tc-hooks-tests/tc-test-hook
+     *    - auth:azure-table-access:jungle/*
+     *  - a role `hook-id:tc-hooks-tests/tc-test-hook` with scopes
+     *    - queue:create-task:no-provisioner/test-worker
+     *    - project:taskcluster:tests:tc-hooks:scope/required/for/task/1
+     */
+
+    let creator = null;
+    setup(async () => {
+      helper.load.remove('taskcreator');
+      creator = await helper.load('taskcreator');
+      if (mock) {
+        creator.fakeCreate = true;
+      }
+    });
+
+    const defaultHook = {
+      hookGroupId:        'tc-hooks-tests',
+      hookId:             'tc-test-hook',
+      metadata:           {},
+      bindings:           [],
+      deadline:           '1 day',
+      expires:            '1 day',
+      schedule:           {format: {type: 'none'}},
+      triggerToken:       taskcluster.slugid(),
+      lastFire:           {},
+      nextTaskId:         taskcluster.slugid(),
+      nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
+      triggerSchema:      {
+        type: 'object',
+        properties: {
+          location: {
+            type: 'string',
+            default: 'Niskayuna, NY',
+          },
+          otherVariable: {
+            type: 'integer',
+            default: '12',
+          },
+        },
+        additionalProperties: false,
+      },
+      task:               {
+        // use a JSON-e construct at the top level to double-check that this is a
+        // JSON-e template and not treated as a task definition
+        $if: 'true',
+        then: {
+          provisionerId: 'no-provisioner',
+          workerType: 'test-worker',
+          metadata: {
+            name: 'test task',
+            description: 'task created by tc-hooks tests',
+            owner: 'taskcluster@mozilla.com',
+            source: 'http://taskcluster.net',
+          },
+          payload: {},
+        },
+      },
+    };
+
+    const createTestHook = async function(scopes, extra) {
+      let hook = _.cloneDeep(defaultHook);
+      hook.task.then.extra = extra;
+      hook.task.then.scopes = scopes;
+      return await helper.Hook.create(hook);
+    };
+
+    const fetchFiredTask = async taskId => {
+      if (mock) {
+        // for mock runs, creator was started with fakeCreate, so use that
+        assume(creator.lastCreateTask.taskId).equals(taskId);
+        return creator.lastCreateTask.task;
+      } else {
+        // in real runs, ask the queue for the resulting task
+        const cfg = await helper.load('cfg');
+        const queue = new taskcluster.Queue({credentials: cfg.taskcluster.credentials});
+        return await queue.task(taskId);
+      }
+    };
+
+    test('firing a real task succeeds', async function() {
+      let hook = await createTestHook([], {
+        context:'${context}',
+        firedBy:'${firedBy}',
+      });
+      let taskId = taskcluster.slugid();
+      let resp = await creator.fire(hook, {context: true, firedBy: 'schedule'}, {taskId});
+      if (mock) {
+        assume(creator.lastCreateTask.taskId).equals(taskId);
+        assume(creator.lastCreateTask.task.workerType).equals(hook.task.then.workerType);
+      } else {
+        assume(resp.status.taskId).equals(taskId);
+        assume(resp.status.workerType).equals(hook.task.then.workerType);
+      }
+    });
+
+    test('firing a real task with a JSON-e context succeeds', async function() {
+      let hook = await createTestHook([], {
+        context: {
+          valueFromContext: {$eval: 'someValue + 13'},
+          flattenedDeep: {$flattenDeep: {$eval: 'numbers'}},
+          firedBy: '${firedBy}',
+          // and test that taskId is set in the context..
+          taskId: '${taskId}',
+        },
+      });
+      let taskId = taskcluster.slugid();
+      let resp = await creator.fire(hook, {
+        someValue: 42,
+        numbers: [1, 2, [3, 4], [[5, 6]]],
+        firedBy: 'schedule',
+      }, {taskId});
+      const task = await fetchFiredTask(taskId);
+      assume(task.extra).deeply.equals({
+        context: {
+          valueFromContext: 55,
+          flattenedDeep:[1, 2, 3, 4, 5, 6],
+          firedBy: 'schedule',
+          taskId,
+        },
+      });
+    });
+
+    test('firing a real task that sets its own task times works', async function() {
+      let hook = _.cloneDeep(defaultHook);
+      hook.task.then.created = {$fromNow: '0 seconds'};
+      hook.task.then.deadline = {$fromNow: '1 minute'};
+      hook.task.then.expires = {$fromNow: '2 minutes'};
+      return await helper.Hook.create(hook);
+      let taskId = taskcluster.slugid();
+      let resp = await creator.fire(hook, {}, {taskId});
+
+      const task = await fetchFiredTask(taskId);
+      assume(new Date(task.expires) - new Date(task.created)).to.equal(60000);
+      assume(new Date(task.deadline) - new Date(task.created)).to.equal(120000);
+    });
+
+    test('firing a real task includes values from context', async function() {
+      let hook = await createTestHook([], {
+        env: {DUSTIN_LOCATION: '${location}'},
+        firedBy: '${firedBy}',
+      });
+      let taskId = taskcluster.slugid();
+      let resp = await creator.fire(hook, {
+        location: 'Belo Horizonte, MG',
+        firedBy:'schedule',
+      }, {taskId});
+
+      const task = await fetchFiredTask(taskId);
+      assume(task.extra).deeply.equals({
+        env: {DUSTIN_LOCATION: 'Belo Horizonte, MG'},
+        firedBy:'schedule',
+      });
+    });
+
+    test('adds a taskId if one is not specified', async function() {
+      let hook = await createTestHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1'],
+        {context:'${context}'});
+      let resp = await creator.fire(hook, {context: true});
+      const task = await fetchFiredTask(resp.status.taskId);
+      assume(task.workerType).equals(hook.task.then.workerType);
+    });
+
+    if (!mock) {
+      // this only makes sense with the real queue's scope-checking logic
+      test('fails if task.scopes includes scopes not granted to the role', async function() {
+        let hook = await createTestHook(['project:taskcluster:tests:tc-hooks:scope/not/in/the/role']);
+        await creator.fire(hook, {payload: true}).then(
+          () => { throw new Error('Expected an error'); },
+          (err) => { debug('Got expected error: %s', err); });
+      });
     }
   });
 
-  /* Note that this requires the following set up in production TC:
-   *  - TC credentials given in cfg.get('taskcluster:credentials') with
-   *    - assume:hook-id:tc-hooks-tests/tc-test-hook
-   *    - auth:azure-table-access:jungle/*
-   *  - a role `hook-id:tc-hooks-tests/tc-test-hook` with scopes
-   *    - queue:create-task:no-provisioner/test-worker
-   *    - project:taskcluster:tests:tc-hooks:scope/required/for/task/1
-   */
-
-  var creator = null;
-
-  var secret = null;
-
-  setup(async () => {
-    creator = await helper.load('taskcreator', helper.loadOptions);
-  });
-
-  var defaultHook = {
-    hookGroupId:        'tc-hooks-tests',
-    hookId:             'tc-test-hook',
-    metadata:           {},
-    bindings:           [],
-    deadline:           '1 day',
-    expires:            '1 day',
-    schedule:           {format: {type: 'none'}},
-    triggerToken:       taskcluster.slugid(),
-    lastFire:           {},
-    nextTaskId:         taskcluster.slugid(),
-    nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
-    triggerSchema:      {
-      type: 'object',
-      properties: {
-        location: {
-          type: 'string',
-          default: 'Niskayuna, NY',
-        }, 
-        otherVariable: {
-          type: 'integer',
-          default: '12',
-        },
-      },
-      additionalProperties: false,
-    },
-    task:               {
-      // use a JSON-e construct at the top level to double-check that this is a
-      // JSON-e template and not treated as a task definition
-      $if: 'true',
-      then: {
-        provisionerId: 'no-provisioner',
-        workerType: 'test-worker',
-        metadata: {
-          name: 'test task',
-          description: 'task created by tc-hooks tests',
-          owner: 'taskcluster@mozilla.com',
-          source: 'http://taskcluster.net',
-        },  
-        payload: {}, 
-      },
-    },
-  };
-
-  var createTestHook = async function(scopes, extra) {
-    let hook = _.cloneDeep(defaultHook);
-    hook.task.then.extra = extra;
-    hook.task.then.scopes = scopes;
-    return await helper.Hook.create(hook);
-  };
-
-  test('firing a real task succeeds', async function() {
-    let hook = await createTestHook([], {context:'${context}', firedBy:'${firedBy}'});
-    let taskId = taskcluster.slugid();
-    let resp = await creator.fire(hook, {context: true, firedBy: 'schedule'}, {taskId});
-    assume(resp.status.taskId).equals(taskId);
-    assume(resp.status.workerType).equals(hook.task.then.workerType);
-  });
-
-  test('firing a real task with a JSON-e context succeeds', async function() {
-    let hook = await createTestHook([], {
-      context:{
-        valueFromContext: {$eval: 'someValue + 13'},
-        flattenedDeep: {$flattenDeep: {$eval: 'numbers'}},
-        firedBy: '${firedBy}',
-        taskId: '${taskId}',
-      },
-    }); 
-    let taskId = taskcluster.slugid();
-    let resp = await creator.fire(hook, {
-      someValue: 42, 
-      numbers: [1, 2, [3, 4], [[5, 6]]],
-      firedBy: 'schedule',
-    }, {taskId});
-    let queue = new taskcluster.Queue({credentials: helper.cfg.taskcluster.credentials});
-    let task = await queue.task(taskId);
-    assume(task.extra).deeply.equals({
-      context: {
-        valueFromContext: 55,
-        flattenedDeep: [1, 2, 3, 4, 5, 6],
-        firedBy: 'schedule',
-        taskId,
-      },
+  suite('MockTaskCreator', function() {
+    let creator = null;
+    setup(async () => {
+      creator = new taskcreator.MockTaskCreator();
     });
-  });   
 
-  test('firing a real task that sets its own task times works', async function() {
-    let hook = _.cloneDeep(defaultHook);
-    hook.task.then.created = {$fromNow: '0 seconds'};
-    hook.task.then.deadline = {$fromNow: '1 minute'};
-    hook.task.then.expires = {$fromNow: '2 minutes'};
-    return await helper.Hook.create(hook);
-    let taskId = taskcluster.slugid();
-    let resp = await creator.fire(hook, {}, {taskId});
-    let queue = new taskcluster.Queue({credentials: helper.cfg.taskcluster.credentials});
-    let task = await queue.task(taskId);
-    assume(new Date(task.expires) - new Date(task.created)).to.equal(60000);
-    assume(new Date(task.deadline) - new Date(task.created)).to.equal(120000);
-  });
-
-  test('triggerSchema', async function() {
-    let hook = await createTestHook([], {
-      env: {DUSTIN_LOCATION: '${location}'},
-      firedBy: '${firedBy}',
-    }); 
-    let taskId = taskcluster.slugid();
-    let resp = await creator.fire(hook, {
-      location: 'Belo Horizonte, MG',
-      firedBy:'schedule',
-    }, {taskId});
-    let queue = new taskcluster.Queue({credentials: helper.cfg.taskcluster.credentials});
-    let task = await queue.task(taskId);
-    assume(task.extra).deeply.equals({
-      env: {DUSTIN_LOCATION: 'Belo Horizonte, MG'},
-      firedBy:'schedule',
+    test('the fire method records calls', async function() {
+      const hook = _.cloneDeep(hookDef);
+      hook.hookGroupId = 'g';
+      hook.hookId = 'h';
+      await creator.fire(hook, {p: 1}, {o: 1});
+      assume(creator.fireCalls).deep.equals([
+        {hookGroupId: 'g', hookId: 'h', context: {p: 1}, options: {o: 1}},
+      ]);
     });
-  });
-
-  test('adds a taskId if one is not specified', async function() {
-    let hook = await createTestHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1'],
-      {context:'${context}'});
-    let resp = await creator.fire(hook, {context: true});
-    assume(resp.status.workerType).equals(hook.task.then.workerType);
-  });
-
-  test('fails if task.scopes includes scopes not granted to the role', async function() {
-    let hook = await createTestHook(['project:taskcluster:tests:tc-hooks:scope/not/in/the/role']);
-    await creator.fire(hook, {payload: true}).then(
-      () => { throw new Error('Expected an error'); },
-      (err) => { debug('Got expected error: %s', err); });
-  });
-});
-
-suite('MockTaskCreator', function() {
-  var assume            = require('assume');
-  var taskcreator       = require('../src/taskcreator');
-  var debug             = require('debug')('test:test_schedule_hooks');
-  var helper            = require('./helper');
-  var hookDef           = require('./test_definition');
-  var _                 = require('lodash');
-
-  var creator = null;
-  setup(async () => {
-    creator = new taskcreator.MockTaskCreator();
-  });
-
-  test('the fire method records calls', async function() {
-    let hook = _.cloneDeep(hookDef);
-    hook.hookGroupId = 'g';
-    hook.hookId = 'h';
-    await creator.fire(hook, {p: 1}, {o: 1});
-    assume(creator.fireCalls).deep.equals([
-      {hookGroupId: 'g', hookId: 'h', context: {p: 1}, options: {o: 1}},
-    ]);
   });
 });

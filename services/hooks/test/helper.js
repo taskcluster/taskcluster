@@ -1,62 +1,92 @@
-var data        = require('../src/data');
-var taskcluster = require('taskcluster-client');
-var taskcreator = require('../src/taskcreator');
-var testing     = require('taskcluster-lib-testing');
-var v1          = require('../src/v1');
-var load        = require('../src/main');
-var config      = require('typed-env-config');
-var _           = require('lodash');
+const data = require('../src/data');
+const taskcluster = require('taskcluster-client');
+const taskcreator = require('../src/taskcreator');
+const {stickyLoader, fakeauth, Secrets} = require('taskcluster-lib-testing');
+const v1 = require('../src/v1');
+const load = require('../src/main');
+const config = require('typed-env-config');
+const _ = require('lodash');
 
-var helper = module.exports = {};
+const helper = module.exports = {};
 
-helper.load = load;
-helper.loadOptions = {profile: 'test', process: 'test-helper'};
+helper.load = stickyLoader(load);
+helper.load.inject('profile', 'test');
+helper.load.inject('process', 'test');
 
-helper.getSecrets = function() {
-  console.log('Fetching secrets');
-  var secrets = new taskcluster.Secrets({baseUrl: 'http://taskcluster/secrets/v1/'});
-  return secrets.get('repo:github.com/taskcluster/taskcluster-hooks');
+helper.secrets = new Secrets({
+  secretName: 'project/taskcluster/testing/taskcluster-hooks',
+  load: helper.load,
+  secrets: {
+    taskcluster: [
+      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
+      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
+    ],
+  },
+});
+
+/**
+ * Set helper.Hook to a set-up Hook entity (and inject it into the loader)
+ */
+helper.withHook = (mock, skipping) => {
+  suiteSetup(async function() {
+    if (mock) {
+      // TODO: rename this config to be consistent
+      helper.load.cfg('azure.accountName', 'inMemory');
+    }
+
+    helper.Hook = await helper.load('Hook');
+    await helper.Hook.ensureTable();
+  });
+
+  const cleanup = async () => {
+    if (!skipping()) {
+      await helper.Hook.scan({}, {handler: hook => hook.remove()});
+    }
+  };
+  setup(cleanup);
+  suiteTeardown(cleanup);
 };
-// Call this in suites or tests that make API calls, hooks etc; it will set up
-// what's required to respond to those calls.
-helper.setup = function() {
-  // Hold reference to authServer
-  var authServer = null;
-  var webServer = null;
 
-  // Setup before tests
+/**
+ * Set up a MockTaskCreator; with this, use helper.creator.fireCalls
+ * to see what calls to taskcreator.fire() have been made, and set
+ * helper.creator.shouldFail to make the TaskCreator fail.
+ * Call this before withServer.
+ */
+helper.withTaskCreator = function(mock, skipping) {
   suiteSetup(async () => {
-    testing.fakeauth.start({
+    const cfg = await helper.load('cfg');
+
+    helper.creator = new taskcreator.MockTaskCreator();
+    helper.load.inject('taskcreator', helper.creator);
+  });
+
+  setup(function() {
+    helper.creator.fireCalls = [];
+    helper.creator.shouldFail = false;
+  });
+};
+
+/**
+ * Set up an API server.  Call this after withHook, so the server
+ * uses the same Hook class.
+ *
+ * This also sets up helper.hooks as an API client, using scopes configurable
+ * with helper.scopes([..]); and configures fakeAuth to support that.
+ */
+helper.withServer = (mock, skipping) => {
+  let webServer;
+
+  suiteSetup(async function() {
+    const cfg = await helper.load('cfg');
+
+    fakeauth.start({
       'test-client': ['*'],
     });
 
-    if (process.env.TASK_ID) {
-      secret = await helper.getSecrets();
-      process.env.TASKCLUSTER_CLIENT_ID = secret.secret.credentials.clientId;
-      process.env.TASKCLUSTER_ACCESS_TOKEN = secret.secret.credentials.accessToken;
-    }
-
-    var cfg = config({profile: 'test'});
-
-    helper.haveRealCredentials = !!cfg.taskcluster.credentials.accessToken;
-
-    // Create Hooks table
-    helper.Hook = await load('Hook', helper.loadOptions);
-
-    // Create table and remove all entities before each test
-    await helper.Hook.ensureTable();
-    await helper.Hook.scan({}, {handler: hook => hook.remove()});
-
-    helper.cfg = cfg;
-    helper.creator = new taskcreator.MockTaskCreator();
-    webServer = await load('server', _.defaults({
-      Hook: helper.Hook,
-      taskcreator: helper.creator,
-    }, helper.loadOptions));
-
     // Create client for working with API
-    helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
-    var reference = v1.reference({baseUrl: helper.baseUrl});
+    helper.baseUrl = cfg.server.publicUrl + '/v1';
+    const reference = v1.reference({baseUrl: helper.baseUrl});
     helper.Hooks = taskcluster.createClient(reference);
 
     // Utility to create an Hooks instance with limited scopes
@@ -74,26 +104,18 @@ helper.setup = function() {
         authorizedScopes: scopes.length > 0 ? scopes : undefined,
       });
     };
+
+    webServer = await helper.load('server');
   });
 
-  // Setup before each test
-  setup(async () => {
-    // Remove all entities before each test
-    await helper.Hook.scan({}, {handler: hook => hook.remove()});
-
-    // reset the list of fired tasks
-    helper.creator.fireCalls = [];
-
-    helper.creator.shouldFail = false;
-
-    // Setup client with all scopes
+  setup(function() {
     helper.scopes();
   });
 
-  // Cleanup after tests
-  suiteTeardown(async () => {
-    // Kill webServer
-    await webServer.terminate();
-    testing.fakeauth.stop();
+  suiteTeardown(async function() {
+    if (webServer) {
+      await webServer.terminate();
+      webServer = null;
+    }
   });
 };

@@ -1,13 +1,13 @@
-var parser      = require('cron-parser');
-var debug       = require('debug')('hooks:routes:v1');
-var Promise     = require('promise');
-var taskcluster = require('taskcluster-client');
-var API         = require('taskcluster-lib-api');
-var nextDate    = require('../src/nextdate');
-var _           = require('lodash');
-var Ajv         = require('ajv');
+const parser = require('cron-parser');
+const debug = require('debug')('hooks:routes:v1');
+const Promise = require('promise');
+const taskcluster = require('taskcluster-client');
+const API = require('taskcluster-lib-api');
+const nextDate = require('../src/nextdate');
+const _ = require('lodash');
+const Ajv = require('ajv');
 
-var api = new API({
+const api = new API({
   title:         'Hooks API Documentation',
   description:   [
     'Hooks are a mechanism for creating tasks in response to events.',
@@ -51,7 +51,7 @@ api.declare({
     'This endpoint will return a list of all hook groups with at least one hook.',
   ].join('\n'),
 }, async function(req, res) {
-  var groups = new Set();
+  const groups = new Set();
   await this.Hook.scan({}, {
     handler: (item) => {
       groups.add(item.hookGroupId);
@@ -74,7 +74,7 @@ api.declare({
     'given hook group.',
   ].join('\n'),
 }, async function(req, res) {
-  var hooks = [];
+  const hooks = [];
   await this.Hook.query({
     hookGroupId: req.params.hookGroupId,
   }, {
@@ -213,9 +213,9 @@ api.declare({
     'necessary scopes to add the task to the queue.',,
   ].join('\n'),
 }, async function(req, res) {
-  var hookGroupId = req.params.hookGroupId;
-  var hookId    = req.params.hookId;
-  var hookDef   = req.body;
+  const hookGroupId = req.params.hookGroupId;
+  const hookId = req.params.hookId;
+  const hookDef = req.body;
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
     return res.reportError('InputError', 'Hook Group Ids do not match', {});
@@ -241,7 +241,7 @@ api.declare({
   });
   // Try to create a Hook entity
   try {
-    var hook = await this.Hook.create(
+    const hook = await this.Hook.create(
       _.defaults({}, hookDef, {
         bindings:           [], // TODO
         triggerToken:       taskcluster.slugid(),
@@ -254,7 +254,7 @@ api.declare({
     if (!err || err.code !== 'EntityAlreadyExists') {
       throw err;
     }
-    let existingHook = await this.Hook.load({hookGroupId, hookId}, true);
+    const existingHook = await this.Hook.load({hookGroupId, hookId}, true);
 
     if (!_.isEqual(hookDef, await existingHook.definition())) {
       return res.reportError('RequestConflict',
@@ -285,9 +285,9 @@ api.declare({
     '`hookGroupId` and `hookId` can be modified.',
   ].join('\n'),
 }, async function(req, res) {
-  var hookGroupId = req.params.hookGroupId;
-  var hookId = req.params.hookId;
-  var hookDef = req.body;
+  const hookGroupId = req.params.hookGroupId;
+  const hookId = req.params.hookId;
+  const hookDef = req.body;
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
     return res.reportError('InputError', 'Hook Group Ids do not match', {});
@@ -302,14 +302,14 @@ api.declare({
 
   await req.authorize({hookGroupId, hookId});
 
-  var hook = await this.Hook.load({hookGroupId, hookId}, true);
+  const hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
   // Attempt to modify properties of the hook
-  var schedule = hookDef.schedule ? hookDef.schedule : [];
+  const schedule = hookDef.schedule ? hookDef.schedule : [];
   _.forEach(schedule, function(schedule) {
     try {
       parser.parseExpression(schedule);
@@ -347,8 +347,8 @@ api.declare({
     'This endpoint will remove a hook definition.',
   ].join('\n'),
 }, async function(req, res) {
-  var hookGroupId = req.params.hookGroupId;
-  var hookId = req.params.hookId;
+  const hookGroupId = req.params.hookGroupId;
+  const hookId = req.params.hookId;
 
   await req.authorize({hookGroupId, hookId});
 
@@ -376,23 +376,23 @@ api.declare({
     'task template.',
   ].join('\n'),
 }, async function(req, res) {
-  var hookGroupId = req.params.hookGroupId;
-  var hookId      = req.params.hookId;
+  const hookGroupId = req.params.hookGroupId;
+  const hookId      = req.params.hookId;
 
   await req.authorize({hookGroupId, hookId});
 
-  var lastFire;
-  var resp;
-  var payload = req.body;
-  var hook = await this.Hook.load({hookGroupId, hookId}, true);
-  var error = null;
+  let lastFire;
+  let resp;
+  const payload = req.body;
+  const hook = await this.Hook.load({hookGroupId, hookId}, true);
+  let error = null;
   const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
 
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
   //Using ajv lib to check if the context respect the triggerSchema
-  var validate = ajv.compile(hook.triggerSchema);
+  const validate = ajv.compile(hook.triggerSchema);
 
   if (validate && payload) {
     let valid = validate(payload);
@@ -459,11 +459,11 @@ api.declare({
     'token can be deactivated with `resetTriggerToken`.',
   ].join('\n'),
 }, async function(req, res) {
-  var hookGroupId = req.params.hookGroupId;
-  var hookId    = req.params.hookId;
+  const hookGroupId = req.params.hookGroupId;
+  const hookId = req.params.hookId;
   await req.authorize({hookGroupId, hookId});
 
-  let hook = await this.Hook.load({hookGroupId, hookId}, true);
+  const hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
@@ -489,8 +489,8 @@ api.declare({
     'may have been issued via getTriggerToken with a new token.',
   ].join('\n'),
 }, async function(req, res) {
-  var hookGroupId = req.params.hookGroupId;
-  var hookId    = req.params.hookId;
+  const hookGroupId = req.params.hookGroupId;
+  const hookId = req.params.hookId;
 
   await req.authorize({hookGroupId, hookId});
 
@@ -526,10 +526,10 @@ api.declare({
     'task template.',
   ].join('\n'),
 }, async function(req, res) {
-  var payload = req.body;
+  const payload = req.body;
   const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
 
-  var hook = await this.Hook.load({
+  const hook = await this.Hook.load({
     hookGroupId: req.params.hookGroupId,
     hookId: req.params.hookId,
   }, true);
@@ -545,7 +545,7 @@ api.declare({
   }
 
   //Using ajv lib to check if the context respect the triggerSchema
-  var validate = ajv.compile(hook.triggerSchema);
+  const validate = ajv.compile(hook.triggerSchema);
 
   if (validate && payload) {
     let valid = validate(payload);
