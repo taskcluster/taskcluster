@@ -566,7 +566,7 @@ func ensureCached(fsContent FSContent, task *TaskRun) (file string, err error) {
 		}
 		return
 	}
-	task.Infof("[mounts] Content from %v (%v) matched required SHA256 %v", fsContent, file, sha256)
+	task.Infof("[mounts] Content from %v (%v) matches required SHA256 %v", fsContent, file, sha256)
 	return
 }
 

@@ -94,7 +94,7 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 				panic(fmt.Sprintf("Got http status code %v when issuing PUT to %v", res.StatusCode, putURL))
 			}
 			log.Printf("Got http status code %v when issuing PUT to %v with clientId %v", res.StatusCode, putURL, newCreds.ClientID)
-			l.task.Infof("Successfully refreshed taskcluster-proxy credentials: %v", newCreds.ClientID)
+			l.task.Infof("[taskcluster-proxy] Successfully refreshed taskcluster-proxy credentials: %v", newCreds.ClientID)
 		},
 	}
 	l.task.StatusManager.RegisterListener(l.taskStatusChangeListener)
@@ -106,7 +106,7 @@ func (l *TaskclusterProxyTask) Stop() *CommandExecutionError {
 	errTerminate := l.taskclusterProxy.Terminate()
 	if errTerminate != nil {
 		// no need to raise an exception, machine will reboot anyway
-		l.task.Warnf("Could not terminate taskcluster proxy process: %s", errTerminate)
+		l.task.Warnf("[taskcluster-proxy] Could not terminate taskcluster proxy process: %s", errTerminate)
 		log.Printf("WARN: could not terminate taskcluster proxy writer: %s", errTerminate)
 	}
 	return nil
