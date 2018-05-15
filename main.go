@@ -1032,9 +1032,9 @@ func (err *executionErrors) Error() string {
 	if !err.Occurred() {
 		return ""
 	}
-	text := "Task not successful due to following exception(s):\n"
-	for i, e := range *err {
-		text += fmt.Sprintf("Exception %v)\n%v\n", i+1, e)
+	text := ""
+	for _, e := range *err {
+		text += e.Error()
 	}
 	return text
 }

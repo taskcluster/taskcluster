@@ -7,7 +7,7 @@ import "fmt"
 // favour of a resource with a lower rating.
 type Resource interface {
 	Rating() float64
-	Expunge() error
+	Expunge(task *TaskRun) error
 }
 
 // Resources is a type that can be sorted in order to establish in which order
@@ -19,7 +19,7 @@ func (r Resources) Empty() bool {
 }
 
 func (r *Resources) ExpungeNext() error {
-	err := (*r)[0].Expunge()
+	err := (*r)[0].Expunge(nil)
 	if err != nil {
 		return err
 	}
