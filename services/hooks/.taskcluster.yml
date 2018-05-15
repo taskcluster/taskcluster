@@ -11,8 +11,10 @@ tasks:
           - push
           - release
     scopes:
-        - 'secrets:get:repo:github.com/taskcluster/taskcluster-hooks'
+        - secrets:get:project/taskcluster/testing/taskcluster-hooks
     payload:
+      env:
+        NO_TEST_SKIP: true
       features:
         taskclusterProxy: true
       maxRunTime: 3600

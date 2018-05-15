@@ -7,20 +7,15 @@ API Documentation
 -----------------
 Please see https://docs.taskcluster.net/reference/core/hooks/api-docs.
 
-Testing
--------
-TaskCluster components use "real" APIs for much of their testing, and thus
-require credentials that cannot be checked into the repository.  To run all of
-the tests, you will need to set up a `user-config.yml` with credentials to
-connect to an influx database, and a TaskCluster Queue and Auth endpoint. This
-file should be placed in the root directory of your checkout. We recommend
-copying the file `user-config-example.yml` as `user-config.yml` and then
-editing the values.
+Development
+-----------
 
-Speak to the Taskcluster team on IRC via `irc.mozilla.org#taskcluster` channel
-to obtain credentials if you need them.
+From the project's base ``yarn install`` then ``yarn test``.
+No special configuration is required.
+Some of the tests will be skipped, but it is fine to make a pull request as long as no tests fail.
 
-Fetch dependencies with `yarn install`. Tests can then be executed with `yarn test`.
+To run *all* tests, you will need appropriate Taskcluster credentials.
+Using [taskcluster-cli](https://github.com/taskcluster/taskcluster-cli), run `eval $(taskcluster signin --scope assume:project:taskcluster:tests:taskcluster-hooks)`, then run `yarn test` again.
 
 Service Owner
 -------------

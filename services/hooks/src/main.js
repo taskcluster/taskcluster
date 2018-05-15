@@ -1,23 +1,22 @@
-#!/usr/bin/env node
-var data        = require('./data');
-var debug       = require('debug')('hooks:bin:server');
-var path        = require('path');
-var Promise     = require('promise');
-var taskcreator = require('./taskcreator');
-var validator   = require('taskcluster-lib-validate');
-var v1          = require('./v1');
-var _           = require('lodash');
-var Scheduler   = require('./scheduler');
-var AWS         = require('aws-sdk');
-var config      = require('typed-env-config');
-var loader      = require('taskcluster-lib-loader');
-var app         = require('taskcluster-lib-app');
-var docs        = require('taskcluster-lib-docs');
-var monitor     = require('taskcluster-lib-monitor');
-var taskcluster = require('taskcluster-client');
+const data = require('./data');
+const debug = require('debug')('hooks:bin:server');
+const path = require('path');
+const Promise = require('promise');
+const taskcreator = require('./taskcreator');
+const validator = require('taskcluster-lib-validate');
+const v1 = require('./v1');
+const _ = require('lodash');
+const Scheduler = require('./scheduler');
+const AWS = require('aws-sdk');
+const config = require('typed-env-config');
+const loader = require('taskcluster-lib-loader');
+const app = require('taskcluster-lib-app');
+const docs = require('taskcluster-lib-docs');
+const monitor = require('taskcluster-lib-monitor');
+const taskcluster = require('taskcluster-client');
 
 // Create component loader
-var load = loader({
+const load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({profile}) => config({profile}),
@@ -37,10 +36,14 @@ var load = loader({
   Hook: {
     requires: ['cfg', 'process', 'monitor'],
     setup: ({cfg, process, monitor}) => {
-      return data.Hook.setup(_.defaults({
-        table:        cfg.app.hookTable,
-        monitor:      monitor.prefix('table.hooks'),
-      }, cfg.azureTable, cfg.taskcluster));
+      return data.Hook.setup({
+        table: cfg.app.hookTableName,
+        monitor: monitor.prefix('table.hooks'),
+        account: cfg.azure.accountName,
+        cryptoKey: cfg.azure.cryptoKey,
+        signingKey: cfg.azure.signingKey,
+        credentials: cfg.taskcluster.credentials,
+      });
     },
   },
 

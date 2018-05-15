@@ -1,13 +1,13 @@
-var assert      = require('assert');
-var events      = require('events');
-var Entity      = require('azure-entities');
-var data        = require('./data');
-var debug       = require('debug')('hooks:scheduler');
-var Promise     = require('promise');
-var taskcluster = require('taskcluster-client');
-var nextDate    = require('./nextdate');
-var taskcreator = require('./taskcreator');
-var _           = require('lodash');
+const assert = require('assert');
+const events = require('events');
+const Entity = require('azure-entities');
+const data = require('./data');
+const debug = require('debug')('hooks:scheduler');
+const Promise = require('promise');
+const taskcluster = require('taskcluster-client');
+const nextDate = require('./nextdate');
+const taskcreator = require('./taskcreator');
+const _ = require('lodash');
 
 /**
  * The Scheduler will periodically check for tasks in azure storage that are
@@ -71,7 +71,7 @@ class Scheduler extends events.EventEmitter {
 
   async poll() {
     // Get all hooks that have a scheduled date that is earlier than now
-    var hooks = await this.Hook.scan({
+    await this.Hook.scan({
       nextScheduledDate:  Entity.op.lessThan(new Date()),
     }, {
       limit: 100,
@@ -94,8 +94,8 @@ class Scheduler extends events.EventEmitter {
 
   /** Handle spawning a new task for a given hook that needs to be scheduled */
   async handleHook(hook) {
-    var lastFire;
-    console.log('firing hook %s/%s with taskId %s', hook.hookGroupId, hook.hookId, hook.nextTaskId);
+    let lastFire;
+    debug('firing hook %s/%s with taskId %s', hook.hookGroupId, hook.hookId, hook.nextTaskId);
     try {
       await this.taskcreator.fire(hook, {firedBy: 'schedule'}, {
         taskId: hook.nextTaskId,
@@ -113,8 +113,7 @@ class Scheduler extends events.EventEmitter {
         time: new Date(),
       };
     } catch (err) {
-      console.log('Failed to handle hook: %s/%s' +
-                  ', with err: %s', hook.hookGroupId, hook.hookId, err);
+      debug('Failed to handle hook: %s/%s, with err: %s', hook.hookGroupId, hook.hookId, err);
 
       // for 500's, pretend nothing happend and we'll try again on the next go-round.
       if (err.statusCode >= 500) {
@@ -144,8 +143,7 @@ class Scheduler extends events.EventEmitter {
         }
       });
     } catch (err) {
-      console.log('Failed to update hook (will re-fire): %s/%s' +
-                  ', with err: %s', hook.hookGroupId, hook.hookId, err);
+      debug('Failed to update hook (will re-fire): %s/%s, with err: %s', hook.hookGroupId, hook.hookId, err);
       return;
     }
   }
@@ -155,7 +153,7 @@ class Scheduler extends events.EventEmitter {
       return;
     }
 
-    var errJson;
+    let errJson;
     try {
       errJson = JSON.stringify(err, null, 2);
     } catch (e) {

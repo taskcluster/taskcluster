@@ -1,8 +1,8 @@
-var assert      = require('assert');
-var taskcluster = require('taskcluster-client');
-var debug       = require('debug')('hooks:taskcreator');
-var _           = require('lodash');
-var jsone       = require('json-e');
+const assert = require('assert');
+const taskcluster = require('taskcluster-client');
+const debug = require('debug')('hooks:taskcreator');
+const _ = require('lodash');
+const jsone = require('json-e');
 
 class TaskCreator {
   /** Create a TaskCreator instance.
@@ -43,11 +43,10 @@ class TaskCreator {
   * definition).  If options.taskId is set, it will be used as the taskId;
   * otherwise a new taskId will be created.  If options.created is set, then
   * it is used as the creation time for the task (to ensure idempotency).  If
-  * options.retru is false, then the call will not be automatically retried on
+  * options.retry is false, then the call will not be automatically retried on
   * 5xx errors.
   */
   async fire(hook, context, options) {
-    
     options = _.defaults({}, options, {
       taskId: taskcluster.slugid(),
       created: new Date(),
@@ -64,8 +63,14 @@ class TaskCreator {
 
     debug('firing hook %s/%s to create taskId: %s',
       hook.hookGroupId, hook.hookId, options.taskId);
-    return await queue.createTask(options.taskId,
-      this.taskForHook(hook, context, options));
+    const task = this.taskForHook(hook, context, options);
+
+    if (this.fakeCreate) {
+      // for testing, just record that we *would* hvae called this..
+      this.lastCreateTask = {taskId: options.taskId, task};
+      return {status: {taskId: options.taskId}};
+    }
+    return await queue.createTask(options.taskId, task);
   };
 }
 
@@ -91,7 +96,7 @@ class MockTaskCreator extends TaskCreator {
       hookId: hook.hookId,
       context,
       options});
-    var taskId = options.taskId || taskcluster.slugid();
+    const taskId = options.taskId || taskcluster.slugid();
     return {
       status: {
         taskId: taskId,

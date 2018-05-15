@@ -1,12 +1,12 @@
-var debug  = require('debug')('hooks:nextdate');
-var parser = require('cron-parser');
+const debug  = require('debug')('hooks:nextdate');
+const parser = require('cron-parser');
 
 // Far in the future, but still within Azure's range
-var FUTURE = new Date(4000, 1, 1);
+const FUTURE = new Date(4000, 1, 1);
 
 /** Return the next scheduled date that is greater than the reference, in UTC.
  */
-var nextDate = function(schedule, reference) {
+const nextDate = function(schedule, reference) {
   reference    = typeof reference !== 'undefined' ? reference : new Date();
 
   let next;

@@ -1,15 +1,17 @@
-suite('API', function() {
-  var _           = require('lodash');
-  var assert      = require('assert');
-  var assume      = require('assume');
-  var debug       = require('debug')('test:api:createhook');
-  var helper      = require('./helper');
+const _ = require('lodash');
+const assert = require('assert');
+const assume = require('assume');
+const debug = require('debug')('test:api:createhook');
+const helper = require('./helper');
 
-  helper.setup();
+helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping) {
+  helper.withHook(mock, skipping);
+  helper.withTaskCreator(mock, skipping);
+  helper.withServer(mock, skipping);
 
   // Use the same hook definition for everything
-  var hookDef = require('./test_definition');
-  let hookWithTriggerSchema = _.defaults({
+  const hookDef = _.cloneDeep(require('./test_definition'));
+  const hookWithTriggerSchema = _.defaults({
     triggerSchema: {
       type: 'object',
       properties: {
@@ -26,7 +28,7 @@ suite('API', function() {
     },
   }, hookDef);
 
-  let hookWithHookIds = {
+  const hookWithHookIds = {
     task: {
       provisionerId:  'no-provisioner',
       workerType:     'test-worker',
@@ -55,22 +57,32 @@ suite('API', function() {
     },
   };
 
-  let dailyHookDef = _.defaults({
+  const dailyHookDef = _.defaults({
     schedule: ['0 0 3 * * *'],
   }, hookWithTriggerSchema);
-  let invalidHookDef = _.defaults({
+  const invalidHookDef = _.defaults({
     schedule: ['0 0 3 0 * *'],
   }, hookWithTriggerSchema);
 
-  let setHookLastFire = async (hookGroupId, hookId, lastFire) => {
-    let hook = await helper.Hook.load({hookGroupId, hookId}, true);
+  const setHookLastFire = async (hookGroupId, hookId, lastFire) => {
+    const hook = await helper.Hook.load({hookGroupId, hookId}, true);
     await hook.modify((hook) => { hook.lastFire = lastFire; });
   };
 
+  // work around https://github.com/mochajs/mocha/issues/2819.
+  const subSkip = () => {
+    suiteSetup(function() {
+      if (skipping()) {
+        this.skip();
+      }
+    });
+  };
+
   suite('createHook', function() {
+    subSkip();
     test('creates a hook', async () => {
-      var r1 = await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      var r2 = await helper.hooks.hook('foo', 'bar');
+      const r1 = await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      const r2 = await helper.hooks.hook('foo', 'bar');
       assume(r1).deep.equals(r2);
     });
     
@@ -88,7 +100,7 @@ suite('API', function() {
 
     test('fails if different resource already exists', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      let newHookDef = _.cloneDeep(hookWithTriggerSchema);
+      const newHookDef = _.cloneDeep(hookWithTriggerSchema);
       newHookDef.expires = '11 days';
       await helper.hooks.createHook('foo', 'bar', newHookDef).then(
         () => { throw new Error('Expected an error'); },
@@ -97,20 +109,20 @@ suite('API', function() {
 
     test('creates associated group', async () => {
       await helper.hooks.createHook('baz', 'qux', hookWithTriggerSchema);
-      var r1 = await helper.hooks.listHookGroups();
+      const r1 = await helper.hooks.listHookGroups();
       assume(r1.groups.length).equals(1);
       assume(r1.groups).contains('baz');
     });
 
     test('without a schedule', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
+      const r1 = await helper.hooks.getHookSchedule('foo', 'bar');
       assume(r1).deep.equals({schedule: []});
     });
 
     test('with a daily schedule', async () => {
       await helper.hooks.createHook('foo', 'bar', dailyHookDef);
-      var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
+      const r1 = await helper.hooks.getHookSchedule('foo', 'bar');
       assert(new Date(r1.nextScheduledDate) > new Date());
     });
 
@@ -133,15 +145,28 @@ suite('API', function() {
   });
 
   suite('updateHook', function() {
+    subSkip();
     test('updates a hook', async () => {
-      var input = require('./test_definition');
-      let inputWithTriggerSchema = _.defaults({triggerSchema: {type: 'object', properties:{location:{type: 'string', 
-        default: 'Niskayuna, NY'}, otherVariable: {type: 'integer', default: '12'}}, 
-      additionalProperties: false}}, input);
-      var r1 = await helper.hooks.createHook('foo', 'bar', inputWithTriggerSchema);
+      const inputWithTriggerSchema = _.defaults({
+        triggerSchema: {
+          type: 'object',
+          properties:{
+            location:{
+              type: 'string',
+              default: 'Niskayuna, NY',
+            },
+            otherVariable: {
+              type: 'integer',
+              default: '12',
+            },
+          },
+          additionalProperties: false,
+        },
+      }, hookDef);
+      const r1 = await helper.hooks.createHook('foo', 'bar', inputWithTriggerSchema);
 
-      input.metadata.owner = 'test@test.org';
-      var r2 = await helper.hooks.updateHook('foo', 'bar', input);
+      inputWithTriggerSchema.metadata.owner = 'test@test.org';
+      const r2 = await helper.hooks.updateHook('foo', 'bar', inputWithTriggerSchema);
       assume(r2.metadata).deep.not.equals(r1.metadata);
       assume(r2.task).deep.equals(r1.task);
     });
@@ -173,6 +198,7 @@ suite('API', function() {
   });
 
   suite('removeHook', function() {
+    subSkip();
     test('removes a hook', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.removeHook('foo', 'bar');
@@ -183,7 +209,7 @@ suite('API', function() {
 
     test('removed empty groups', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      var r1 = await helper.hooks.listHooks('foo');
+      const r1 = await helper.hooks.listHooks('foo');
       assume(r1.hooks.length).equals(1);
 
       await helper.hooks.removeHook('foo', 'bar');
@@ -194,13 +220,14 @@ suite('API', function() {
   });
 
   suite('listHookGroups', function() {
+    subSkip();
     test('returns valid groups', async () => {
-      var input = ['foo', 'bar', 'baz', 'qux'];
-      for (let i =0; i < input.length; i++) {
+      const input = ['foo', 'bar', 'baz', 'qux'];
+      for (let i = 0; i < input.length; i++) {
         await helper.hooks.createHook(input[i], 'testHook1', hookWithTriggerSchema);
         await helper.hooks.createHook(input[i], 'testHook2', hookWithTriggerSchema);
       }
-      var r1 = await helper.hooks.listHookGroups();
+      const r1 = await helper.hooks.listHookGroups();
       input.sort();
       r1.groups.sort();
       assume(r1.groups).eql(input);
@@ -208,14 +235,15 @@ suite('API', function() {
   });
 
   suite('listHooks', function() {
+    subSkip();
     test('lists hooks in the given group only', async () => {
-      var input = ['foo', 'bar', 'baz', 'qux'];
-      for (let i =0; i < input.length; i++) {
+      const input = ['foo', 'bar', 'baz', 'qux'];
+      for (let i = 0; i < input.length; i++) {
         await helper.hooks.createHook('grp1', input[i], hookWithTriggerSchema);
         await helper.hooks.createHook('grp2', input[i], hookWithTriggerSchema);
       }
-      var r1 = await helper.hooks.listHooks('grp1');
-      var got = r1.hooks.map((h) => { return h.hookId; });
+      const r1 = await helper.hooks.listHooks('grp1');
+      const got = r1.hooks.map((h) => { return h.hookId; });
       input.sort();
       got.sort();
       assume(got).eql(input);
@@ -223,9 +251,10 @@ suite('API', function() {
   });
 
   suite('hook', function() {
+    subSkip();
     test('returns a hook', async () => {
       await helper.hooks.createHook('gp', 'hk', hookWithTriggerSchema);
-      var r1 = await helper.hooks.hook('gp', 'hk');
+      const r1 = await helper.hooks.hook('gp', 'hk');
       assume(r1.metadata.name).equals('Unit testing hook');
     });
 
@@ -237,11 +266,12 @@ suite('API', function() {
   });
 
   suite('getTriggerToken', function() {
+    subSkip();
 
     test('returns the same token', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      var r1 = await helper.hooks.getTriggerToken('foo', 'bar');
-      var r2 = await helper.hooks.getTriggerToken('foo', 'bar');
+      const r1 = await helper.hooks.getTriggerToken('foo', 'bar');
+      const r2 = await helper.hooks.getTriggerToken('foo', 'bar');
       assume(r1).deep.equals(r2);
     });
 
@@ -253,15 +283,16 @@ suite('API', function() {
   });
 
   suite('getHookSchedule', function() {
+    subSkip();
     test('returns {schedule: []} for a non-scheduled task', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
+      const r1 = await helper.hooks.getHookSchedule('foo', 'bar');
       assume(r1).deep.equals({schedule: []});
     });
 
     test('returns the schedule for a -scheduled task', async () => {
       await helper.hooks.createHook('foo', 'bar', dailyHookDef);
-      var r1 = await helper.hooks.getHookSchedule('foo', 'bar');
+      const r1 = await helper.hooks.getHookSchedule('foo', 'bar');
       assume(r1).contains('nextScheduledDate');
       assume(r1.schedule).deep.eql(['0 0 3 * * *']);
     });
@@ -274,23 +305,24 @@ suite('API', function() {
   });
 
   suite('getHookStatus', function() {
+    subSkip();
     test('returns "no-fire" for a non-scheduled, non-fired task', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      var r1 = await helper.hooks.getHookStatus('foo', 'bar');
+      const r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).deep.equals({lastFire: {result: 'no-fire'}});
     });
 
     test('returns the next date for a scheduled task', async () => {
       await helper.hooks.createHook('foo', 'bar', dailyHookDef);
-      var r1 = await helper.hooks.getHookStatus('foo', 'bar');
+      const r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).contains('nextScheduledDate');
     });
 
     test('returns the last run status for a hook that has fired', async () => {
       await helper.hooks.createHook('foo', 'bar', dailyHookDef);
-      let now = new Date();
+      const now = new Date();
       await setHookLastFire('foo', 'bar', {result: 'success', taskId: 'E5SBRfo-RfOIxh0V4187Qg', time: now});
-      var r1 = await helper.hooks.getHookStatus('foo', 'bar');
+      const r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).contains('lastFire');
       assume(r1.lastFire.result).is.equal('success');
       assume(r1.lastFire.taskId).is.equal('E5SBRfo-RfOIxh0V4187Qg');
@@ -301,7 +333,7 @@ suite('API', function() {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG', 
         foo: 'triggerHook'});
-      var r1 = await helper.hooks.getHookStatus('foo', 'bar');
+      const r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).contains('lastFire');
       assume(r1.lastFire.result).is.equal('success');
     });
@@ -314,6 +346,7 @@ suite('API', function() {
   });
 
   suite('triggerHook', function() {
+    subSkip();
     test('should launch task with the given payload', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG', 
@@ -367,13 +400,13 @@ suite('API', function() {
   });
 
   suite('resetTriggerToken', function() {
-
+    subSkip();
     test('creates a new token', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      var r1 = await helper.hooks.getTriggerToken('foo', 'bar');
-      var r2 = await helper.hooks.resetTriggerToken('foo', 'bar');
+      const r1 = await helper.hooks.getTriggerToken('foo', 'bar');
+      const r2 = await helper.hooks.resetTriggerToken('foo', 'bar');
       assume(r1).deep.not.equals(r2);
-      var r3 = await helper.hooks.getTriggerToken('foo', 'bar');
+      const r3 = await helper.hooks.getTriggerToken('foo', 'bar');
       assume(r2).deep.equals(r2);
     });
 
@@ -386,10 +419,10 @@ suite('API', function() {
   });
 
   suite('triggerHookWithToken', function() {
-
+    subSkip();
     test('successfully triggers task with the given payload', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      var res = await helper.hooks.getTriggerToken('foo', 'bar');
+      const res = await helper.hooks.getTriggerToken('foo', 'bar');
       await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, {location: 'New Zealand'});
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
@@ -400,7 +433,7 @@ suite('API', function() {
     });
 
     test('should fail with invalid token', async () => {
-      let payload = {};
+      const payload = {};
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.triggerHookWithToken('foo', 'bar', 'invalidtoken', payload).then(
         () => { throw new Error('This operation should have failed!'); },
@@ -408,9 +441,9 @@ suite('API', function() {
     });
 
     test('fails with invalidated token', async () => {
-      let payload = {};
+      const payload = {};
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      let res = await helper.hooks.getTriggerToken('foo', 'bar');
+      const res = await helper.hooks.getTriggerToken('foo', 'bar');
 
       await helper.hooks.resetTriggerToken('foo', 'bar');
       await helper.hooks.triggerHookWithToken('foo', 'bar', res.token, payload).then(
@@ -419,18 +452,18 @@ suite('API', function() {
     });
 
     test('fails with undefined hook', async () => {
-      let payload = {};
+      const payload = {};
       await helper.hooks.triggerHookWithToken('foo', 'bar', 'zzz', payload).then(
         () => { throw new Error('This operation should have failed!'); },
         (err) => { assume(err.statusCode).equals(404); });
     });
 
     test('trigger task after resetting the trigger token', async () => {
-      let payload = {a: 'payload'};
+      const payload = {a: 'payload'};
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      let r1 = await helper.hooks.getTriggerToken('foo', 'bar');
-      var r2 = await helper.hooks.resetTriggerToken('foo', 'bar');
-      var r3 = await helper.hooks.getTriggerToken('foo', 'bar');
+      const r1 = await helper.hooks.getTriggerToken('foo', 'bar');
+      const r2 = await helper.hooks.resetTriggerToken('foo', 'bar');
+      const r3 = await helper.hooks.getTriggerToken('foo', 'bar');
 
       assume(r1).deep.not.equals(r2);
       assume(r2).deep.equals(r3);
