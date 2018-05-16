@@ -1,5 +1,13 @@
 import { Component } from 'react';
-import { arrayOf, func, number, string, oneOf, object } from 'prop-types';
+import {
+  arrayOf,
+  func,
+  number,
+  string,
+  oneOf,
+  oneOfType,
+  object,
+} from 'prop-types';
 import Table, {
   TableBody,
   TableCell,
@@ -42,10 +50,10 @@ export default class DataTable extends Component {
      */
     headers: arrayOf(string),
     /**
-     * A list of objects to display. Each element in the list is represented
-     * by a row and each element's key-value pair represents a column.
+     * A list of objects or strings to display. Each element in
+     * the list is represented by a row and each element represents a column.
      */
-    items: arrayOf(object).isRequired,
+    items: arrayOf(oneOfType([object, string])).isRequired,
   };
 
   static defaultProps = {

@@ -45,6 +45,12 @@ export default [
     path: '/auth/roles',
   },
   {
+    component: loadable(() =>
+      import(/* webpackChunkName: 'Scopes' */ '../views/Scopes')
+    ),
+    path: '/auth/scopes',
+  },
+  {
     // eslint-disable-next-line
     component: props =>
       props.user ? <Dashboard {...props} /> : <Home {...props} />,

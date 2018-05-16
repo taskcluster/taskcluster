@@ -57,21 +57,13 @@ import MagnifyIcon from 'mdi-react/MagnifyIcon';
  */
 export default class Search extends Component {
   static propTypes = {
-    /**
-     * The search field value.
-     */
+    /** The search field value. */
     value: string.isRequired,
-    /**
-     * A function to execute when the search field value changes.
-     */
+    /** A function to execute when the search field value changes. */
     onChange: func.isRequired,
-    /**
-     * A function to execute when the search form has been submitted.
-     */
-    onSubmit: func.isRequired,
-    /**
-     * Set to `true` to enable spell-check on the search field.
-     */
+    /** A function to execute when the search form has been submitted. */
+    onSubmit: func,
+    /** Set to `true` to enable spell-check on the search field. */
     spellCheck: bool,
   };
 

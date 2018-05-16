@@ -176,3 +176,5 @@ export const role = shape({
   lastModified: date,
   expandedScopes: arrayOf(string),
 });
+
+export const scopeExpansionLevel = oneOf(['scopes', 'expandedScopes']);
