@@ -1,5 +1,5 @@
 const assert = require('assert');
-const utils = require('../lib/index.js');
+const utils = require('../src');
 
 suite('sets', function() {
   suite('scopeUnion', () => {

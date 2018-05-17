@@ -1,5 +1,4 @@
 /user-config.yml
 node_modules/
 .vagrant/
-lib/
 .test/

@@ -20,7 +20,7 @@
  * This sort order is useful for normalizing scopes, since it puts the "interesting"
  * scopes (those with a final `*`) up front.
  */
-export const scopeCompare = (a, b) => {
+const scopeCompare = exports.scopeCompare = (a, b) => {
   let astar = a.endsWith('*');
   let bstar = b.endsWith('*');
 
@@ -60,7 +60,7 @@ export const scopeCompare = (a, b) => {
  * added the to normalized result list doesn't satisfy the current scope, the
  * current scope is added to the result list.
  */
-export const normalizeScopeSet = scopeset => {
+exports.normalizeScopeSet = scopeset => {
   const n = scopeset.length;
   const result = [];
   let i = 0;
@@ -94,7 +94,7 @@ export const normalizeScopeSet = scopeset => {
  * Returns a set of normalized scopes. See scopeCompare for formal definition
  * for normalized scope-set.
  */
-export const mergeScopeSets = (scopes1, scopes2) => {
+exports.mergeScopeSets = (scopes1, scopes2) => {
   // This is dead simple, we track the length with n and m
   let n = scopes1.length;
   let m = scopes2.length;

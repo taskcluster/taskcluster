@@ -1,4 +1,4 @@
-import assert from 'assert';
+const assert = require('assert');
 
 const SCOPES_MSG = 'scopes must be an array of arrays of strings ' +
           '(disjunctive normal form)';
@@ -9,16 +9,16 @@ const VALID_SCOPE = /^[\x20-\x7e]*$/;
  * characters 0x20-0x7e (printable characters, including space but no other
  * whitespace)
  */
-export const validScope = (scope) =>
+const validScope = exports.validScope = (scope) =>
   typeof scope == 'string' && VALID_SCOPE.test(scope);
 
 /**
  * Validate scope-sets for well-formedness.  See scopeMatch for the description
  * of a scope-set.
  */
-export const validateScopeSets = (scopesets) => {
+exports.validateScopeSets = (scopesets) => {
   assert(Array.isArray(scopesets), SCOPES_MSG);
   assert(scopesets.every(function(conj) {
-    return Array.isArray(conj) && conj.every(exports.validScope);
+    return Array.isArray(conj) && conj.every(validScope);
   }), SCOPES_MSG);
 };
