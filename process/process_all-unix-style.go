@@ -48,6 +48,8 @@ func NewCommand(commandLine []string, workingDirectory string, env []string) (*C
 	cmd := exec.Command(commandLine[0], commandLine[1:]...)
 	cmd.Env = env
 	cmd.Dir = workingDirectory
+	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	return &Command{
 		Cmd: cmd,
 	}, nil
@@ -107,14 +109,15 @@ func (c *Command) DirectOutput(writer io.Writer) {
 	c.Stderr = writer
 }
 
-func (c *Command) Kill() error {
+func (c *Command) Kill() ([]byte, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	if c.Process == nil {
 		// If process hasn't been started yet, nothing to kill
-		return nil
+		return []byte{}, nil
 	}
 	log.Printf("Killing process with ID %v... (%p)", c.Process.Pid, c)
 	defer log.Printf("Process with ID %v killed.", c.Process.Pid)
-	return c.Process.Kill()
+	// See https://medium.com/@felixge/killing-a-child-process-and-all-of-its-children-in-go-54079af94773
+	return []byte{}, syscall.Kill(-c.Process.Pid, syscall.SIGKILL)
 }

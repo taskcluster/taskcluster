@@ -89,6 +89,17 @@ func goEnv() [][]string {
 	}
 }
 
+func logOncePerSecond(count uint, file string) [][]string {
+	return [][]string{
+		{
+			"/bin/bash",
+			"-c",
+			// don't use ping since that isn't available on travis-ci.org !
+			`for ((i=0; i<30; i++)); do echo $i; sleep 1; done > '` + file + `'`,
+		},
+	}
+}
+
 func sleep(seconds uint) [][]string {
 	return [][]string{
 		{

@@ -443,7 +443,7 @@ func (w *WritableDirectoryCache) Mount(task *TaskRun) error {
 
 func (w *WritableDirectoryCache) Unmount(task *TaskRun) error {
 	cacheDir := directoryCaches[w.CacheName].Location
-	log.Printf("Moving %q to %q", filepath.Join(taskContext.TaskDir, w.Directory), cacheDir)
+	task.Infof("[mounts] Preserving cache: Moving %q to %q", filepath.Join(taskContext.TaskDir, w.Directory), cacheDir)
 	err := RenameCrossDevice(filepath.Join(taskContext.TaskDir, w.Directory), cacheDir)
 	if err != nil {
 		panic(err)
