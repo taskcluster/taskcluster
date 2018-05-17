@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -26,15 +27,29 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 
 func TestAbortAfterMaxRunTime(t *testing.T) {
 	defer setup(t, "TestAbortAfterMaxRunTime")()
+
+	// include a writable directory cache where our process writes to, to make
+	// sure we are still able unmount cache when we abort process prematurely
+	// that is writing to the cache
+	mounts := []MountEntry{
+		// requires scope "generic-worker:cache:banana-cache"
+		&WritableDirectoryCache{
+			CacheName: "banana-cache",
+			Directory: filepath.Join("bananas"),
+		},
+	}
+
 	payload := GenericWorkerPayload{
+		Mounts: toMountArray(t, &mounts),
 		Command: append(
-			sleep(27),
+			logPing(27, filepath.Join("bananas", "banana.log")),
 			// also make sure subsequent commands after abort don't run
 			helloGoodbye()...,
 		),
 		MaxRunTime: 5,
 	}
 	td := testTask(t)
+	td.Scopes = []string{"generic-worker:cache:banana-cache"}
 
 	taskID := scheduleTask(t, td, payload)
 	startTime := time.Now()

@@ -89,6 +89,16 @@ func goEnv() [][]string {
 	}
 }
 
+func logPing(count uint, file string) [][]string {
+	return [][]string{
+		{
+			"/bin/bash",
+			"-c",
+			"ping -c " + strconv.Itoa(int(count)) + " 127.0.0.1 > '" + file + "'",
+		},
+	}
+}
+
 func sleep(seconds uint) [][]string {
 	return [][]string{
 		{

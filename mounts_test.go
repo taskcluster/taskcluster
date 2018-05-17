@@ -612,6 +612,7 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 					`Extracting zip file .* to '.*TestWritableDirectoryCacheNoSHA256'`,
 					`Granting task user full control of '.*TestWritableDirectoryCacheNoSHA256' and subdirectories`,
 					`Successfully mounted writable directory cache '.*TestWritableDirectoryCacheNoSHA256'`,
+					`Preserving cache: Moving ".*TestWritableDirectoryCacheNoSHA256" to ".*"`,
 				},
 				// Required text from second task when download is already cached
 				[]string{
@@ -619,6 +620,7 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 					`Creating directory .* with permissions 0700`,
 					`Granting task user full control of '.*TestWritableDirectoryCacheNoSHA256' and subdirectories`,
 					`Successfully mounted writable directory cache '.*TestWritableDirectoryCacheNoSHA256'`,
+					`Preserving cache: Moving ".*TestWritableDirectoryCacheNoSHA256" to ".*"`,
 				},
 			},
 			Scopes: []string{"generic-worker:cache:banana-cache"},
