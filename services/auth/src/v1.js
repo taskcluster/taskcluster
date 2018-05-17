@@ -81,7 +81,7 @@ var api = new API({
     // doesn't work well with HTTPS and virtual-style hosting.
     // Hence, we shouldn't encourage people to use them
     // Project for sentry (and other per project resources)
-    project:    /^[a-zA-Z0-9_-]{1,22}$/,
+    project:    /^[a-zA-Z0-9_-]{1,64}$/,
   },
   context: [
     // Instances of data tables
