@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os/exec"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -17,6 +18,7 @@ import (
 type Command struct {
 	mutex sync.RWMutex
 	*exec.Cmd
+	Aborted bool
 }
 
 type Result struct {
@@ -106,23 +108,19 @@ func (c *Command) Execute() (r *Result) {
 		r.SystemError = err
 		return
 	}
-	// See https://bugzilla.mozilla.org/show_bug.cgi?id=1458873
-	// If we call c.Wait() here, we'll end up waiting for subprocesses
-	// that aren't killed. By calling c.Process.Wait() we only wait for
-	// the parent process to terminate, and not for the stdout/stderr
-	// handles to get closed, which only happens when all subprocesses
-	// have terminated.
-	state, err := c.Process.Wait()
+	err = c.Wait()
 	finished := time.Now()
 	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 	r.Duration = finished.Round(0).Sub(started)
-	r.UserTime = state.UserTime()
-	r.KernelTime = state.SystemTime()
+	r.UserTime = c.ProcessState.UserTime()
+	r.KernelTime = c.ProcessState.SystemTime()
+	r.Aborted = c.Aborted
 	if err != nil {
-		r.SystemError = err
-	}
-	if !state.Success() {
-		r.ExitError = &exec.ExitError{ProcessState: state}
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			r.ExitError = exiterr
+		} else {
+			r.SystemError = err
+		}
 	}
 	return
 }
@@ -162,27 +160,18 @@ func (c *Command) DirectOutput(writer io.Writer) {
 	c.Stderr = writer
 }
 
-func (c *Command) Kill() error {
+func (c *Command) Kill() (killOutput []byte, err error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	if c.Process == nil {
 		// If process hasn't been started yet, nothing to kill
-		return nil
+		return []byte{}, nil
 	}
-	// tasklist()
-	log.Printf("Killing process with ID %v... (%p)", c.Process.Pid, c)
-	// defer tasklist()
-	defer log.Printf("Process with ID %v killed.", c.Process.Pid)
-	return c.Process.Kill()
-}
-
-func tasklist() {
-	cmd := exec.Command("tasklist")
-	stdoutStderr, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("%s\n", stdoutStderr)
+	c.Aborted = true
+	log.Printf("Killing process tree with parent PID %v... (%p)", c.Process.Pid, c)
+	defer log.Printf("Process tree with parent PID %v killed.", c.Process.Pid)
+	// here we use taskkill.exe rather than c.Process.Kill() since we want child processes also to be killed
+	return exec.Command("taskkill.exe", "/pid", strconv.Itoa(c.Process.Pid), "/f", "/t").CombinedOutput()
 }
 
 type LogonSession struct {

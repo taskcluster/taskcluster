@@ -180,6 +180,7 @@ func (tsm *TaskStatusManager) Abort(cee *CommandExecutionError) error {
 	return tsm.updateStatus(
 		aborted,
 		func(task *TaskRun) error {
+			task.Errorf("Aborting task...")
 			task.kill()
 			tsm.abortException = cee
 			return nil

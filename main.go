@@ -1074,7 +1074,7 @@ func (task *TaskRun) setMaxRunTimer() *time.Timer {
 		func() {
 			// ignore any error the Abort function returns - we are in the
 			// wrong go routine to properly handle it
-			err := task.StatusManager.Abort(Failure(fmt.Errorf("Aborting task - max run time exceeded!")))
+			err := task.StatusManager.Abort(Failure(fmt.Errorf("Task aborted - max run time exceeded")))
 			if err != nil {
 				task.Warnf("Error when aborting task: %v", err)
 			}
@@ -1084,7 +1084,14 @@ func (task *TaskRun) setMaxRunTimer() *time.Timer {
 
 func (task *TaskRun) kill() {
 	for _, command := range task.Commands {
-		command.Kill()
+		output, err := command.Kill()
+		if len(output) > 0 {
+			task.Info(string(output))
+		}
+		if err != nil {
+			log.Printf("WARNING - %v", err)
+			task.Warnf("%v", err)
+		}
 	}
 }
 

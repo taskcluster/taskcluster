@@ -107,14 +107,14 @@ func (c *Command) DirectOutput(writer io.Writer) {
 	c.Stderr = writer
 }
 
-func (c *Command) Kill() error {
+func (c *Command) Kill() ([]byte, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	if c.Process == nil {
 		// If process hasn't been started yet, nothing to kill
-		return nil
+		return []byte{}, nil
 	}
 	log.Printf("Killing process with ID %v... (%p)", c.Process.Pid, c)
 	defer log.Printf("Process with ID %v killed.", c.Process.Pid)
-	return c.Process.Kill()
+	return []byte{}, c.Process.Kill()
 }
