@@ -89,12 +89,13 @@ func goEnv() [][]string {
 	}
 }
 
-func logPing(count uint, file string) [][]string {
+func logOncePerSecond(count uint, file string) [][]string {
 	return [][]string{
 		{
 			"/bin/bash",
 			"-c",
-			"ping -c " + strconv.Itoa(int(count)) + " 127.0.0.1 > '" + file + "'",
+			// don't use ping since that isn't available on travis-ci.org !
+			`for ((i=0; i<30; i++)); do echo $i; sleep 1; done > '` + file + `'`,
 		},
 	}
 }

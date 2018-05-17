@@ -42,7 +42,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	payload := GenericWorkerPayload{
 		Mounts: toMountArray(t, &mounts),
 		Command: append(
-			logPing(27, filepath.Join("bananas", "banana.log")),
+			logOncePerSecond(27, filepath.Join("bananas", "banana.log")),
 			// also make sure subsequent commands after abort don't run
 			helloGoodbye()...,
 		),
