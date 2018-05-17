@@ -1,5 +1,5 @@
-import assert from 'assert';
-import utils from '../lib/expressions.js';
+const assert = require('assert');
+const utils = require('../src/expressions.js');
 
 suite('scope expression validity:', function() {
 

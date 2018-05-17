@@ -1,6 +1,6 @@
-import assert from 'assert';
-import {validScope} from './validate';
-import {patternMatch} from './satisfaction';
+const assert = require('assert');
+const {validScope} = require('./validate');
+const {patternMatch} = require('./satisfaction');
 
 /** Validate a scope expression */
 const validateExpression = (expr) => {

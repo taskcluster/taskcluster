@@ -1,5 +1,5 @@
 const assert = require('assert');
-const utils = require('../lib/index.js');
+const utils = require('../src');
 
 suite('validate', function() {
   test('Normal-looking scopes are OK', function() {

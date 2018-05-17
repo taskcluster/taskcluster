@@ -1,5 +1,5 @@
-import assert from 'assert';
-import {validateScopeSets} from './validate';
+const assert = require('assert');
+const {validateScopeSets} = require('./validate');
 
 const validateScopePatterns = (scopePatterns) => {
   assert(scopePatterns instanceof Array && scopePatterns.every((scope) => {
@@ -7,7 +7,7 @@ const validateScopePatterns = (scopePatterns) => {
   }), 'scopes must be an array of strings');
 };
 
-export const patternMatch = (pattern, scope) => {
+const patternMatch = exports.patternMatch = (pattern, scope) => {
   if (scope === pattern) {
     return true;
   }
@@ -29,7 +29,7 @@ export const patternMatch = (pattern, scope) => {
  *
  * Also expressed as ('a' and 'b') or 'c'.
  */
-export const scopeMatch = (scopePatterns, scopesets) => {
+exports.scopeMatch = (scopePatterns, scopesets) => {
   validateScopeSets(scopesets);
   validateScopePatterns(scopePatterns);
 

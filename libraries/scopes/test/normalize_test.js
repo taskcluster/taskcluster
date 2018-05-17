@@ -1,5 +1,5 @@
 suite('normalize', () => {
-  const utils = require('../lib/index.js');
+  const utils = require('../src');
   const assert = require('assert');
   const _ = require('lodash');
 
