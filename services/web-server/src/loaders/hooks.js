@@ -6,8 +6,9 @@ export default ({ hooks }) => {
     Promise.all(
       queries.map(async ({ filter }) => {
         const { groups } = await hooks.listHookGroups();
+        const raw = groups.map(hookGroupId => ({ hookGroupId }));
 
-        return filter ? sift(filter, groups) : groups;
+        return filter ? sift(filter, raw) : raw;
       })
     )
   );

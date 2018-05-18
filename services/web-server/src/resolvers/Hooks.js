@@ -20,6 +20,11 @@ export default {
       return loaders.hookStatus.load({ hookGroupId, hookId });
     },
   },
+  HookGroup: {
+    hooks({ hookGroupId }, { filter }, { loaders }) {
+      return loaders.hooks.load({ hookGroupId, filter });
+    },
+  },
   Query: {
     hookGroups(parent, { filter }, { loaders }) {
       return loaders.hookGroups.load({ filter });

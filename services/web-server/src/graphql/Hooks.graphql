@@ -69,6 +69,12 @@ type Hook {
   status(hookGroupId: ID = hookGroupId, hookId: ID = hookId): HookStatus
 }
 
+type HookGroup {
+  hookGroupId: ID!
+
+  hooks(hookGroupId: ID = hookGroupId): [Hook]
+}
+
 type DeleteHook {
   hookGroupId: ID
   hookId: ID
@@ -84,7 +90,7 @@ input HookInput {
 }
 
 extend type Query {
-  hookGroups(filter: JSON): [ID]
+  hookGroups(filter: JSON): [HookGroup]
   hooks(hookGroupId: ID!, filter: JSON): [Hook]
   hook(hookGroupId: ID!, hookId: ID!): Hook
   hookStatus(hookGroupId: ID!, hookId: ID!): HookStatus
