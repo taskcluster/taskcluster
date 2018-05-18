@@ -1,4 +1,4 @@
-const utils = require('../lib/utils.js');
+const utils = require('../src/utils.js');
 const assert = require('assert');
 
 suite('utils', function() {

@@ -59,7 +59,7 @@ class MockMonitor {
     if (this._opts.prefix) {
       p = this._opts.prefix + '.';
     }
-    return this._opts.project + p + key;
+    return this._opts.projectName + p + key;
   }
 
   async flush() {

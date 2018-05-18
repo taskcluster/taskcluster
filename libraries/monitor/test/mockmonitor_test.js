@@ -3,13 +3,15 @@ suite('MockMonitor', () => {
   let Promise = require('bluebird');
   let monitoring = require('../');
   let debug = require('debug')('test');
+  let libUrls = require('taskcluster-lib-urls');
   let testing = require('taskcluster-lib-testing');
 
   let monitor = null;
 
   setup(async () => {
     monitor = await monitoring({
-      project: 'mm',
+      rootUrl: libUrls.testRootUrl(),
+      projectName: 'mm',
       credentials: {clientId: 'test-client', accessToken: 'test'},
       mock: true,
     });
@@ -134,7 +136,10 @@ suite('MockMonitor', () => {
 
   test('monitor.patchAWS(service)', async () => {
     let aws = require('aws-sdk');
-    let ec2 = new aws.EC2({region: 'us-west-2'});
+    let ec2 = new aws.EC2({
+      region: 'us-west-2',
+      credentials: new aws.Credentials('akid', 'fake', 'session'),
+    });
     monitor.patchAWS(ec2);
     await ec2.describeAvailabilityZones().promise().catch(err => {
       debug('Ignored ec2 error, we measure duration, not success, err: ', err);

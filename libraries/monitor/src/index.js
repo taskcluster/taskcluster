@@ -14,7 +14,7 @@ let path = require('path');
 /**
  * Create a new monitor, given options:
  * {
- *   project: '...',
+ *   projectName: '...',
  *   patchGlobal:  true,
  *   bailOnUnhandledRejection: false,
  *   reportStatsumErrors: true,
@@ -27,9 +27,9 @@ let path = require('path');
  *     accessToken:    '...',
  *   },
  *   // If credentials aren't given, you must supply:
- *   statsumToken: async (project) => {token, expires, baseUrl}
+ *   statsumToken: async (projectName) => {token, expires, baseUrl}
  *
- *   sentryDSN: async (project) => {dsn: {secret: '...'}, expires}
+ *   sentryDSN: async (projectName) => {dsn: {secret: '...'}, expires}
  *   sentryOptions: {}, // options given to raven.Client constructor
  *   // see https://docs.sentry.io/clients/node/config/
  *
@@ -56,10 +56,12 @@ async function monitor(options) {
     sentryOptions: {},
     gitVersionFile: '.git-version',
   });
-  assert(options.authBaseUrl || options.credentials || options.statsumToken && options.sentryDSN ||
+  assert(options.rootUrl || options.mock, 'Must provide a rootUrl to taskcluster-lib-monitor');
+  assert(options.projectName, 'Must provide a project name (this is now `projectName` instead of `project`)');
+  assert(!options.authBaseUrl, 'authBaseUrl is deprecated.');
+  assert(options.credentials || options.statsumToken && options.sentryDSN ||
          options.mock || !options.enable,
   'Must provide taskcluster credentials or authBaseUrl or sentryDSN and statsumToken');
-  assert(options.project, 'Must provide a project name!');
 
   // Return mock monitor, if mocking
   if (options.mock) {
@@ -78,23 +80,20 @@ async function monitor(options) {
     sentryDSN = () => options.sentryDSN;
   }
   // Use taskcluster credentials for statsumToken and sentryDSN, if given
-  if (options.credentials || options.authBaseUrl) {
-    let auth = new taskcluster.Auth({
-      credentials: options.credentials,
-      baseUrl: options.authBaseUrl,
-    });
+  if (options.credentials) {
+    let auth = new taskcluster.Auth(options);
     if (!statsumToken) {
-      statsumToken = project => auth.statsumToken(project);
+      statsumToken = projectName => auth.statsumToken(projectName);
     }
     if (!sentryDSN) {
-      sentryDSN = project => auth.sentryDSN(project);
+      sentryDSN = projectName => auth.sentryDSN(projectName);
     }
   }
 
   let statsum;
   if (options.enable) {
     statsum = new Statsum(statsumToken, {
-      project: options.project,
+      project: options.projectName,
       emitErrors: options.reportStatsumErrors,
     });
   }

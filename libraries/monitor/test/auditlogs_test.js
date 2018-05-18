@@ -4,6 +4,7 @@ suite('Audit Logs', () => {
   let monitoring = require('../');
   let AWS = require('aws-sdk-mock');
   let testing = require('taskcluster-lib-testing');
+  let libUrls = require('taskcluster-lib-urls');
   let nock = require('nock');
   let authmock = require('./authmock');
 
@@ -32,7 +33,8 @@ suite('Audit Logs', () => {
     });
 
     monitor = await monitoring({
-      project: 'tc-lib-monitor',
+      rootUrl: libUrls.testRootUrl(),
+      projectName: 'tc-lib-monitor',
       credentials: {clientId: 'test-client', accessToken: 'test'},
       patchGlobal: false,
       reportStatsumErrors: false,
