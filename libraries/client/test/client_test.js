@@ -231,7 +231,7 @@ suite('client requests/responses', function() {
       rootUrl: 'https://whatever.net',
       client: (() => {
         process.env.TASKCLUSTER_ROOT_URL = 'https://whatever.net';
-        const clientPath = path.resolve(__dirname, '..', 'lib', 'client.js');
+        const clientPath = path.resolve(__dirname, '..', 'src', 'client.js');
         delete require.cache[clientPath];
         const cleanClient = require(clientPath);
         const Fake = cleanClient.createClient(referenceNameStyle);
@@ -412,7 +412,7 @@ suite('client requests/responses', function() {
 
       test('Report stats', async () => {
         let monitor = await _monitor({
-          project: 'tc-client',
+          projectName: 'tc-client',
           credentials: {},
           mock: true,
         });
@@ -433,7 +433,7 @@ suite('client requests/responses', function() {
 
       test('Report stats (unauthorized)', async () => {
         let monitor = await _monitor({
-          project: 'tc-client',
+          projectName: 'tc-client',
           credentials: {},
           mock: true,
         });
