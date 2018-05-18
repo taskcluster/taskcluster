@@ -1,7 +1,7 @@
 "use strict";
 
 suite('testing.PulseTestReceiver', async function() {
-  var config            = require('taskcluster-lib-config');
+  var config            = require('typed-env-config');
   var Exchanges         = require('pulse-publisher');
   var validator         = require('taskcluster-lib-validate');
   var assert            = require('assert');
