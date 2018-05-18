@@ -117,7 +117,7 @@ suite('api/publish', function() {
     const res = await s3.getObject({
       Bucket:     cfg.referenceTestBucket,
       Key:        'test/v1/api.json',
-    });
+    }).promise();
     const reference = JSON.parse(res.Body);
     assert(reference.entries, 'Missing entries');
     assert.equal(reference.entries.length, 8);
