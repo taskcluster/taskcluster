@@ -309,10 +309,7 @@ func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
 	// attempted a few minutes prior to expiration, to allow for clock drift.
 
 	go func() {
-		defer func() {
-			tsm.finishedReclaiming = true
-			close(tsm.reclaimingDone)
-		}()
+		defer close(tsm.reclaimingDone)
 		for {
 			var waitTimeUntilReclaim time.Duration
 			if reclaimEvery5Seconds {
@@ -350,10 +347,11 @@ func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
 	return tsm
 }
 
-// stopReclaiming must be called when tsm.Lock() is held by caller
+// stopReclaims() must be called when tsm.Lock() is held by caller
 func (tsm *TaskStatusManager) stopReclaims() {
 	if !tsm.finishedReclaiming {
 		close(tsm.stopReclaiming)
 		<-tsm.reclaimingDone
+		tsm.finishedReclaiming = true
 	}
 }
