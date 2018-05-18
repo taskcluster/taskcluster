@@ -39,5 +39,8 @@
     "sinon": "^4.1.2",
     "source-map-support": "^0.5.0",
     "taskcluster-lib-monitor": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=8"
   }
 }
