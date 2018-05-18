@@ -43,7 +43,6 @@ type (
 		// be useful for the user. Normally this map would get appended to by
 		// features when they are started.
 		featureArtifacts map[string]string
-		reclaimMux       sync.Mutex
 	}
 
 	S3ArtifactResponse struct {

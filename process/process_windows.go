@@ -167,11 +167,19 @@ func (c *Command) Kill() (killOutput []byte, err error) {
 		// If process hasn't been started yet, nothing to kill
 		return []byte{}, nil
 	}
+	// Concurrent access to c.ProcessState is not thread safe - so let's not do this.
+	// Need to find a better way to manage this...
+	// if c.ProcessState != nil {
+	// 	// If process has finished, nothing to kill
+	// 	return
+	// }
 	c.Aborted = true
 	log.Printf("Killing process tree with parent PID %v... (%p)", c.Process.Pid, c)
-	defer log.Printf("Process tree with parent PID %v killed.", c.Process.Pid)
+	defer log.Printf("taskkill.exe command has completed for PID %v", c.Process.Pid)
 	// here we use taskkill.exe rather than c.Process.Kill() since we want child processes also to be killed
-	return exec.Command("taskkill.exe", "/pid", strconv.Itoa(c.Process.Pid), "/f", "/t").CombinedOutput()
+	bytes, err := exec.Command("taskkill.exe", "/pid", strconv.Itoa(c.Process.Pid), "/f", "/t").CombinedOutput()
+	log.Print("taskkill.exe output:\n" + string(bytes))
+	return bytes, err
 }
 
 type LogonSession struct {

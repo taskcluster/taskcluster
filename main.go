@@ -793,61 +793,6 @@ func ClaimWork() *TaskRun {
 	}
 }
 
-func (task *TaskRun) setReclaimTimer() {
-	// Reclaiming Tasks
-	// ----------------
-	// When the worker has claimed a task, it's said to have a claim to a given
-	// `taskId`/`runId`. This claim has an expiration, see the `takenUntil`
-	// property in the _task status structure_ returned from `tcqueue.ClaimTask`
-	// and `tcqueue.ReclaimTask`. A worker must call `tcqueue.ReclaimTask` before
-	// the claim denoted in `takenUntil` expires. It's recommended that this
-	// attempted a few minutes prior to expiration, to allow for clock drift.
-
-	// First time we need to check claim response, after that, need to check reclaim response
-	log.Print("Setting reclaim timer...")
-	takenUntil := time.Time(task.StatusManager.TakenUntil())
-	log.Printf("Current claim will expire at %v", takenUntil)
-
-	// horrible hack for testing reclaims
-	var reclaimTime time.Time
-	reclaimOftenMux.Lock()
-	defer reclaimOftenMux.Unlock()
-	if reclaimEvery5Seconds {
-		// Reclaim in 5 seconds...
-		reclaimTime = time.Now().Add(time.Second * 5)
-	} else {
-		// Reclaim 3 mins before current claim expires...
-		reclaimTime = takenUntil.Add(time.Minute * -3)
-	}
-	log.Printf("Reclaiming task %v at %v", task.TaskID, reclaimTime)
-	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
-	waitTimeUntilReclaim := reclaimTime.Round(0).Sub(time.Now())
-	log.Printf("Time to wait until then is %v", waitTimeUntilReclaim)
-	// sanity check - only set an alarm, if wait time > 30s, so we can't hammer queue in production
-	if reclaimEvery5Seconds || waitTimeUntilReclaim.Seconds() > 30 {
-		task.reclaimMux.Lock()
-		defer task.reclaimMux.Unlock()
-		task.reclaimTimer = time.AfterFunc(
-			waitTimeUntilReclaim, func() {
-				log.Printf("About to reclaim task %v...", task.TaskID)
-				err := task.StatusManager.Reclaim()
-				if err == nil {
-					log.Printf("Successfully reclaimed task %v", task.TaskID)
-					// only set another reclaim timer if the previous reclaim succeeded
-					task.setReclaimTimer()
-				} else {
-					log.Printf("Encountered exception when reclaiming task %v: %v", task.TaskID, err)
-					log.Printf("Killing task %v since I cannot reclaim it", task.TaskID)
-					task.Errorf("Killing process since task reclaim resulted in exception: %v", err)
-					task.kill()
-				}
-			},
-		)
-		return
-	}
-	log.Print("WARNING ******************** This is NOT more than 30 seconds away - so NOT setting a timer")
-}
-
 func (task *TaskRun) validatePayload() *CommandExecutionError {
 	jsonPayload := task.Definition.Payload
 	log.Printf("JSON payload: %s", jsonPayload)
@@ -1137,23 +1082,6 @@ func (task *TaskRun) Run() (err *executionErrors) {
 			defer panic(r)
 		}
 		err.add(task.resolve(err))
-	}()
-
-	task.setReclaimTimer()
-	defer func() {
-
-		// Bug 1329617
-		// ********* DON'T drain channel **********
-		// because AfterFunc() drains it!
-		// see https://play.golang.org/p/6pqRerGVcg
-		// ****************************************
-		//
-		// if !task.reclaimTimer.Stop() {
-		// <-task.reclaimTimer.C
-		// }
-		task.reclaimMux.Lock()
-		defer task.reclaimMux.Unlock()
-		task.reclaimTimer.Stop()
 	}()
 
 	logHandle := task.createLogFile()
