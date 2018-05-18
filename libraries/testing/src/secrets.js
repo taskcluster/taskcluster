@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const assert = require('assert');
-const taskcluster = require('taskcluster-client');
+const request = require('superagent');
 
 class Secrets {
   constructor({secretName, secrets, load}) {
@@ -60,10 +60,10 @@ class Secrets {
   }
 
   async _fetchSecrets() {
-    const secretsService = new taskcluster.Secrets({
-      baseUrl: 'http://taskcluster/secrets.taskcluster.net/v1',
-    });
-    return (await secretsService.get(this.secretName)).secret;
+    // construct a taskcluster-proxy URL to get the secret.  We can't use the taskcluster-client
+    // as it cannot form URLs that match the proxy right now
+    const url =  `http://taskcluster/secrets.taskcluster.net/v1/secret/${encodeURIComponent(this.secretName)}`;
+    return (await request.get(url)).body.secret;
   }
 
   have(secret) {
