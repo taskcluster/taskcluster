@@ -13,7 +13,7 @@ caches:
   yarn: true
 env:
   global:
-  - DEBUG='taskcluster-lib-urls test'
+  - DEBUG='taskcluster-lib-azure test'
   - CXX=g++-4.8
 notifications:
   irc:
@@ -26,5 +26,5 @@ deploy:
     secure: LegnCcsUuXaAkG+1CqaSDvOnXjkgfrcB/SXOB5X1DI668Zny76ifnLzvBv1DRYnf7vc3cZy2dHEuAjsg0Ima1eanw0Pjyvh0SF8CPrlXuSPXuqFsbxsHsPtYj7BLCixRDG+4vTIhKIDKY0DFoLa6/HcLr0kyIuPOeJ7nkwKxjnPiCzv1stoBL3HujbodALPCPRo9eGZqv8MQu5Cuk+z2ZPRO05XrHxWfVfjBGCVIZqg9Sy/lzukFCNdpOdsv2YP4po4Kk7qcTTgDeZm5k/0i0oxWMlETasJOJI4EkZBWLX9YBu6ZE2kgr8x3S4E1PvHWgsoL9tYJgSFaQ51nE/w6IyTB1vLi65ZJRLO1YbYhJt+GNivEhDSZ7E6liwLiga+Sfc7bGaoJ2l0Ccas410hStXIM+rhgOem+Sr1CmplOb9aZ1B8Wdc9+3yev1myqqWp8KoDT1QCvWmf6OhWyjGGnyzasGAQhSaDa9E+81KgYUeDXB1V0DAnr64yBDbT8jzV30gdPzDUsZABowuiBALdKfg2+k27ZW7GaaTvE45equ5T8nFJr47GuYmaEkVgqHYeLa3g6DmHSr1/Z8PqXdXIP0ATkiXY2QgyN7Z93d0WcaIxF/2tMLFb30LQOOrLhPALKf1R8CyPSuiIc/NRugAWfJx6VuU6SNSLWb1hqt72XC9w=
   on:
     tags: true
-    repo: taskcluster/taskcluster-lib-urls
+    repo: taskcluster/taskcluster-lib-azure
     node: '10'
