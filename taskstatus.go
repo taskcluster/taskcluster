@@ -79,10 +79,7 @@ func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) error {
 	return tsm.updateStatus(
 		errored,
 		func(task *TaskRun) error {
-			if !tsm.finishedReclaiming {
-				close(tsm.stopReclaiming)
-				<-tsm.reclaimingDone
-			}
+			tsm.stopReclaims()
 			ter := tcqueue.TaskExceptionRequest{Reason: string(reason)}
 			tsr, err := task.Queue.ReportException(task.TaskID, strconv.FormatInt(int64(task.RunID), 10), &ter)
 			if err != nil {
@@ -104,10 +101,7 @@ func (tsm *TaskStatusManager) ReportFailed() error {
 	return tsm.updateStatus(
 		failed,
 		func(task *TaskRun) error {
-			if !tsm.finishedReclaiming {
-				close(tsm.stopReclaiming)
-				<-tsm.reclaimingDone
-			}
+			tsm.stopReclaims()
 			tsr, err := task.Queue.ReportFailed(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
 			if err != nil {
 				log.Printf("Not able to report failed completion for task %v:", task.TaskID)
@@ -128,10 +122,7 @@ func (tsm *TaskStatusManager) ReportCompleted() error {
 	return tsm.updateStatus(
 		succeeded,
 		func(task *TaskRun) error {
-			if !tsm.finishedReclaiming {
-				close(tsm.stopReclaiming)
-				<-tsm.reclaimingDone
-			}
+			tsm.stopReclaims()
 			log.Printf("Task %v finished successfully!", task.TaskID)
 			tsr, err := task.Queue.ReportCompleted(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
 			if err != nil {
@@ -199,6 +190,7 @@ func (tsm *TaskStatusManager) Abort(cee *CommandExecutionError) error {
 	return tsm.updateStatus(
 		aborted,
 		func(task *TaskRun) error {
+			tsm.stopReclaims()
 			task.Errorf("Aborting task...")
 			task.kill()
 			tsm.abortException = cee
@@ -356,4 +348,12 @@ func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
 		}
 	}()
 	return tsm
+}
+
+// stopReclaiming must be called when tsm.Lock() is held by caller
+func (tsm *TaskStatusManager) stopReclaims() {
+	if !tsm.finishedReclaiming {
+		close(tsm.stopReclaiming)
+		<-tsm.reclaimingDone
+	}
 }
