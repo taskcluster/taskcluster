@@ -294,13 +294,13 @@ A fake for the auth service to support testing APIs without requiring
 production credentials, using Nock.
 
 This object intercepts requests to the auth service's `authenticateHawk` method
-and return a response based on the given `clients`, instead. Note that
+and returns a response based on the given `clients`, instead. Note that
 accessTokens are not checked -- the fake simply controls access based on
 clientId or the scopes in a temporary credential or supplied with
 authorizedScopes.
 
-To start the mock, call `testing.fakeauth.start(clients)` in your suite's
-`setup` method. Clients has the form
+To start the mock, call `testing.fakeauth.start(clients, {rootUrl})` in your suite's
+`setup` method. The first argument has the form
 
 ```js
 {
@@ -308,6 +308,10 @@ To start the mock, call `testing.fakeauth.start(clients)` in your suite's
  "clientId2": ["scope1", "scope3"],
 }
 ```
+
+The auth service on the cluster identified by `rootUrl` will be faked. When
+used to test an API in a microservice, this is same as the root URL for the
+fake web server -- `http://localhost:1234` or something of that sort.
 
 Call `testing.fakeauth.stop()` in your test suite's `teardown` method to stop the HTTP interceptor.
 
