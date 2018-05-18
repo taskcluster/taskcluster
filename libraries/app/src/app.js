@@ -53,35 +53,22 @@ var createServer = function() {
   });
 };
 
-/** Create express application
- * options:
- * {
- *   port:                  8080,           // Port to run the server on
- *   env:                   'development',  // 'development' or 'production'
- *   forceSSL:              false,          // Force redirect to SSL or return 403
- *   trustProxy:            false,          // Trust the proxy that forwarded for SSL
- *   contentSecurityPolicy: true,           // Send CSP (default true!)
- *   robotsTxt:             true,           // Serve a disallow-all robots.txt
- *   rootDocsLink:          true,           // Indicator to redirect to a HTML with documentation link (default true!)
- *   docs:                  'docs',         // Instance of taskcluster-lib-docs for accessing its methods
- * }
- *
- * Returns an express application with extra methods:
- *   - `createServer`   (Creates an server)
+/** Create express application.  See the README for docs.
  */
-var app = function(options) {
+var app = async function(options) {
   assert(options,                           'options are required');
   _.defaults(options, {
     contentSecurityPolicy: true,
     robotsTxt: true,
-    rootDocsLink: true,
   });
   assert(typeof options.port === 'number', 'Port must be a number');
   assert(options.env == 'development' ||
          options.env == 'production',       'env must be production or development');
   assert(options.forceSSL !== undefined,    'forceSSL must be defined');
   assert(options.trustProxy !== undefined,  'trustProxy must be defined');
-  assert(!options.rootDocsLink || options.docs, 'options.docs must be given if rootDocsLink is specified');
+  assert(options.apis, 'Must provide an array of apis');
+  assert(!options.rootDocsLink, '`rootDocsLink` is no longer allowed');
+  assert(!options.docs, '`docs` is no longer allowed');
 
   // Create application
   var app = express();
@@ -136,21 +123,14 @@ var app = function(options) {
     });
   }
 
-  // If rootDocsLink == true ,
-  // we redirect to a HTML page with documentation link
-  if (options.rootDocsLink) {
-    let link = options.docs.documentationUrl;
-    let DOCS_HTML = `<html><body><p>You're lost, here's the way out.</p>
-    <a href= "${link}" >Refer to the documentation</a></body></html>`;
-    app.get('/', function(req, res) {
-      res.status(200).send(DOCS_HTML);
-    });
-  }
+  options.apis.forEach(api => {
+    api.express(app);
+  });
 
   // Add some auxiliary methods to the app
   app.createServer = createServer;
 
-  return app;
+  return app.createServer();
 };
 
 // Export app creation utility
