@@ -186,7 +186,7 @@ class API {
     // Upload object
     await s3.putObject({
       Bucket:           this.options.referenceBucket,
-      Key:              libUrls.apiReference('', this.builder.name, this.builder.version),
+      Key:              `${this.builder.name}/${this.builder.version}/api.json`,
       Body:             JSON.stringify(this.reference(), undefined, 2),
       ContentType:      'application/json',
     }).promise();
