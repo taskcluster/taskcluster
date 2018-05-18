@@ -1,24 +1,26 @@
+const request         = require('superagent');
+const assert          = require('assert');
+const APIBuilder      = require('../');
+const helper          = require('./helper');
+const libUrls         = require('taskcluster-lib-urls');
+
 suite('api/validate', function() {
-  var request         = require('superagent');
-  var assert          = require('assert');
-  var Promise         = require('promise');
-  var subject         = require('../');
-  var helper          = require('./helper');
-  var testing         = require('taskcluster-lib-testing');
+  const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
 
   // Create test api
-  var api = new subject({
+  var builder = new APIBuilder({
     title:        'Test Api',
     description:  'Another test api',
     name:         'test',
+    version:      'v1',
   });
 
   // Declare a method we can test input with
-  api.declare({
+  builder.declare({
     method:   'post',
     route:    '/test-input',
     name:     'testInputValidate',
-    input:    'http://localhost:4321/test-schema.json',
+    input:    'test-schema.json',
     title:    'Test End-Point',
     description:  'Place we can call to test something',
   }, function(req, res) {
@@ -26,11 +28,11 @@ suite('api/validate', function() {
   });
 
   // Declare a method we can use to test valid output
-  api.declare({
+  builder.declare({
     method:   'get',
     route:    '/test-output',
     name:     'testInputValidOutputValidate',
-    output:   'http://localhost:4321/test-schema.json',
+    output:   'test-schema.json',
     title:    'Test End-Point',
     description:  'Place we can call to test something',
   }, function(req, res) {
@@ -38,11 +40,11 @@ suite('api/validate', function() {
   });
 
   // Declare a method we can use to test invalid output
-  api.declare({
+  builder.declare({
     method:   'get',
     route:    '/test-invalid-output',
     name:     'testInputInvalidOutputValidate',
-    output:   'http://localhost:4321/test-schema.json',
+    output:   'test-schema.json',
     title:    'Test End-Point',
     description:  'Place we can call to test something',
   }, function(req, res) {
@@ -50,11 +52,11 @@ suite('api/validate', function() {
   });
 
   // Declare a method we can test input validation skipping on
-  api.declare({
+  builder.declare({
     method:   'post',
     route:    '/test-skip-input-validation',
     name:     'testInputSkipInputValidation',
-    input:    'http://localhost:4321/test-schema.json',
+    input:    'test-schema.json',
     skipInputValidation: true,
     title:    'Test End-Point',
     description:  'Place we can call to test something',
@@ -63,11 +65,11 @@ suite('api/validate', function() {
   });
 
   // Declare a method we can test output validation skipping on
-  api.declare({
+  builder.declare({
     method:   'get',
     route:    '/test-skip-output-validation',
     name:     'testOutputSkipOutputValidation',
-    output:    'http://localhost:4321/test-schema.json',
+    output:    'test-schema.json',
     skipOutputValidation: true,
     title:    'Test End-Point',
     description:  'Place we can call to test something',
@@ -76,7 +78,7 @@ suite('api/validate', function() {
   });
 
   // Declare a method we can test blob output on
-  api.declare({
+  builder.declare({
     method:   'get',
     route:    '/test-blob-output',
     name:     'testBlobOutput',
@@ -88,12 +90,12 @@ suite('api/validate', function() {
   });
 
   // Create a mock authentication server
-  setup(() => helper.setupServer({api}));
+  setup(() => helper.setupServer({builder}));
   teardown(helper.teardownServer);
 
   // Test valid input
   test('input (valid)', function() {
-    var url = 'http://localhost:23525/test-input';
+    var url = u('/test-input');
     return request
       .post(url)
       .send({value: 5})
@@ -105,7 +107,7 @@ suite('api/validate', function() {
 
   // Test invalid input
   test('input (invalid)', function() {
-    var url = 'http://localhost:23525/test-input';
+    var url = u('/test-input');
     return request
       .post(url)
       .send({value: 11})
@@ -117,7 +119,7 @@ suite('api/validate', function() {
 
   // Test valid output
   test('output (valid)', function() {
-    var url = 'http://localhost:23525/test-output';
+    var url = u('/test-output');
     return request
       .get(url)
       .then(function(res) {
@@ -128,7 +130,7 @@ suite('api/validate', function() {
 
   // test invalid output
   test('output (invalid)', function() {
-    var url = 'http://localhost:23525/test-invalid-output';
+    var url = u('/test-invalid-output');
     return request
       .get(url)
       .then(res => assert(false, 'should have failed!'))
@@ -139,7 +141,7 @@ suite('api/validate', function() {
 
   // test skipping input validation
   test('skip input validation', function() {
-    var url = 'http://localhost:23525/test-skip-input-validation';
+    var url = u('/test-skip-input-validation');
     return request
       .post(url)
       .send({value: 100})
@@ -151,7 +153,7 @@ suite('api/validate', function() {
 
   // test skipping output validation
   test('skip output validation', function() {
-    var url = 'http://localhost:23525/test-skip-output-validation';
+    var url = u('/test-skip-output-validation');
     return request
       .get(url)
       .then(function(res) {
@@ -162,7 +164,7 @@ suite('api/validate', function() {
 
   // test blob output
   test('blob output', function() {
-    var url = 'http://localhost:23525/test-blob-output';
+    var url = u('/test-blob-output');
     return request
       .get(url)
       .then(function(res) {
@@ -172,7 +174,7 @@ suite('api/validate', function() {
   });
 
   test('input (correct content-type)', function() {
-    var url = 'http://localhost:23525/test-input';
+    var url = u('/test-input');
     return request
       .post(url)
       .send(JSON.stringify({value: 5}))
@@ -183,7 +185,7 @@ suite('api/validate', function() {
   });
 
   test('input (wrong content-type)', function() {
-    var url = 'http://localhost:23525/test-input';
+    var url = u('/test-input');
     return request
       .post(url)
       .send(JSON.stringify({value: 5}))

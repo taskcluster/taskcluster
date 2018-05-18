@@ -1,60 +1,56 @@
-suite('api/auth', function() {
-  var _               = require('lodash');
-  var request         = require('superagent-hawk')(require('superagent'));
-  var assert          = require('assert');
-  var Promise         = require('promise');
-  var validator       = require('taskcluster-lib-validate');
-  var makeApp         = require('taskcluster-lib-app');
-  var subject         = require('../');
-  var express         = require('express');
-  var hawk            = require('hawk');
-  var slugid          = require('slugid');
-  var crypto          = require('crypto');
-  var testing         = require('taskcluster-lib-testing');
-  var path            = require('path');
+const _               = require('lodash');
+const request         = require('superagent-hawk')(require('superagent'));
+const assert          = require('assert');
+const Promise         = require('promise');
+const validator       = require('taskcluster-lib-validate');
+const makeApp         = require('taskcluster-lib-app');
+const APIBuilder      = require('../');
+const testing         = require('taskcluster-lib-testing');
+const path            = require('path');
 
+suite('api/auth', function() {
   // Reference for test api server
   var _apiServer = null;
 
   this.timeout(500);
 
   // Create test api
-  var api = new subject({
+  var builder = new APIBuilder({
     title:        'Test Api',
     description:  'Another test api',
     name:         'test',
+    version:      'v1',
   });
 
   // Create a mock authentication server
   setup(async () => {
+    const rootUrl = 'http://localhost:4321/';
     testing.fakeauth.start({
       'test-client': ['service:magic'],
       admin: ['*'],
       nobody: ['another-irrelevant-scope'],
       param: ['service:myfolder/resource'],
       param2: ['service:myfolder/resource', 'service:myfolder/other-resource'],
-    });
+    }, {rootUrl});
 
-    // Create router
-    var router = api.router({
-      validator:      await validator({
-        folder:         path.join(__dirname, 'schemas'),
-        baseUrl:        'http://localhost:4321/',
+    // Create API
+    const api = await builder.build({
+      rootUrl,
+      validator: await validator({
+        serviceName: 'test',
+        rootUrl,
+        folder: path.join(__dirname, 'schemas'),
       }),
     });
 
     // Create application
-    var app = makeApp({
+    _apiServer = await makeApp({
       port:       23526,
       env:        'development',
       forceSSL:   false,
       trustProxy: false,
+      apis: [api],
     });
-
-    // Use router
-    app.use(router);
-
-    _apiServer = await app.createServer();
   });
 
   // Close server
@@ -65,7 +61,7 @@ suite('api/auth', function() {
 
   const testEndpoint = ({method, route, name, scopes = null, handler, handlerBuilder, tests}) => {
     let sideEffects = {};
-    api.declare({
+    builder.declare({
       method,
       route,
       name,
@@ -81,7 +77,7 @@ suite('api/auth', function() {
         }
         return result;
       });
-      return `http://localhost:23526${path}`;
+      return `http://localhost:23526/api/test/v1${path}`;
     };
     const buildHawk = id => ({
       id,
@@ -99,7 +95,11 @@ suite('api/auth', function() {
           const res = await tester(auth, url, sideEffects);
           assert.equal(res.status, desiredStatus);
         } catch (err) {
-          assert.equal(err.status, desiredStatus);
+          if ('status' in err) {
+            assert.equal(err.status, desiredStatus);
+          } else {
+            throw err;
+          }
         }
       });
     });
