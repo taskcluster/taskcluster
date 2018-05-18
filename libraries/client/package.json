@@ -21,7 +21,7 @@
     "promise": "^8.0.1",
     "slugid": "^1.1.0",
     "superagent": "~3.8.1",
-    "taskcluster-lib-urls": "^1.1.0"
+    "taskcluster-lib-urls": "^10.0.0"
   },
   "engines": {
     "node": ">=8"
@@ -38,12 +38,12 @@
     "json-stable-stringify": "^1.0.0",
     "mocha": "^4.0.1",
     "nock": "^9.1.0",
-    "pulse-publisher": "^2.0.0",
+    "pulse-publisher": "^4.0.0",
     "source-map-support": "^0.5.0",
-    "taskcluster-lib-api": "^8.3.0",
-    "taskcluster-lib-app": "^2.0.3",
-    "taskcluster-lib-monitor": "^4.6.3",
-    "taskcluster-lib-testing": "^2.0.2",
-    "taskcluster-lib-validate": "^3.0.1"
+    "taskcluster-lib-api": "^10.0.0",
+    "taskcluster-lib-app": "^10.0.0",
+    "taskcluster-lib-monitor": "^10.0.0",
+    "taskcluster-lib-testing": "^10.0.0",
+    "taskcluster-lib-validate": "^10.0.0"
   }
 }
