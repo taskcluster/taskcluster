@@ -27,7 +27,7 @@
     "promise": "^8.0.1",
     "slugid": "^1.1.0",
     "taskcluster-client": "^10.0.0",
-    "taskcluster-lib-scopes": "^1.9.0",
+    "taskcluster-lib-scopes": "^10.0.0",
     "type-is": "^1.6.15",
     "uuid": "^3.1.0"
   },
@@ -36,11 +36,11 @@
     "mocha": "5.1.1",
     "superagent": "^3.8.1",
     "superagent-hawk": "^0.0.6",
-    "taskcluster-lib-app": "^2.0.3",
-    "taskcluster-lib-monitor": "^4.6.3",
-    "taskcluster-lib-testing": "^3.0.0",
-    "taskcluster-lib-urls": "^1.0.0",
-    "taskcluster-lib-validate": "^3.1.0",
+    "taskcluster-lib-app": "^10.0.0",
+    "taskcluster-lib-monitor": "^10.0.0",
+    "taskcluster-lib-testing": "^10.0.0",
+    "taskcluster-lib-urls": "^10.0.0",
+    "taskcluster-lib-validate": "^10.0.0",
     "typed-env-config": "^1.1.1"
   },
   "engines": {
