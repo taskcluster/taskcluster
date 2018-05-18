@@ -59,7 +59,7 @@ describe('Iterate', () => {
       //useFakeTimers: true,
     });
     //clock = sandbox.clock;
-    monitor = await monitoring({project: 'iterate', credentials: {}, mock: true});
+    monitor = await monitoring({projectName: 'iterate', credentials: {}, mock: true});
   });
 
   afterEach(() => {

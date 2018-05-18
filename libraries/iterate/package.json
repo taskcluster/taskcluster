@@ -38,6 +38,6 @@
     "mocha": "^4.0.1",
     "sinon": "^4.1.2",
     "source-map-support": "^0.5.0",
-    "taskcluster-lib-monitor": "^4.6.3"
+    "taskcluster-lib-monitor": "^10.0.0"
   }
 }
