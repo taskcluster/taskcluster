@@ -49,9 +49,9 @@ type TaskStatusManager struct {
 	statusChangeListeners map[*TaskStatusChangeListener]bool
 	abortException        *CommandExecutionError
 	// closed when reclaim go routine should stop reclaiming
-	stopReclaiming chan struct{}
+	stopReclaiming chan<- struct{}
 	// closed when reclaim loop exits
-	reclaimingDone chan struct{}
+	reclaimingDone <-chan struct{}
 	// true if reclaims are no longer taking place for this task
 	finishedReclaiming bool
 }
@@ -289,13 +289,16 @@ func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) 
 
 func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
 
+	stopReclaiming := make(chan struct{})
+	reclaimingDone := make(chan struct{})
+
 	tsm := &TaskStatusManager{
 		task:                  task,
 		takenUntil:            task.TaskClaimResponse.TakenUntil,
 		status:                task.TaskClaimResponse.Status,
 		statusChangeListeners: map[*TaskStatusChangeListener]bool{},
-		stopReclaiming:        make(chan struct{}),
-		reclaimingDone:        make(chan struct{}),
+		stopReclaiming:        stopReclaiming,
+		reclaimingDone:        reclaimingDone,
 	}
 
 	// Reclaiming Tasks
@@ -308,7 +311,7 @@ func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
 	// attempted a few minutes prior to expiration, to allow for clock drift.
 
 	go func() {
-		defer close(tsm.reclaimingDone)
+		defer close(reclaimingDone)
 		for {
 			var waitTimeUntilReclaim time.Duration
 			if reclaimEvery5Seconds {
@@ -330,7 +333,7 @@ func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
 			}
 			log.Printf("Reclaiming task %v in %v", task.TaskID, waitTimeUntilReclaim)
 			select {
-			case <-tsm.stopReclaiming:
+			case <-stopReclaiming:
 				return
 			case <-time.After(waitTimeUntilReclaim):
 				log.Printf("About to reclaim task %v...", task.TaskID)
