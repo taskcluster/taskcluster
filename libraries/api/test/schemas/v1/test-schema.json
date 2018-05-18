@@ -1,5 +1,4 @@
 {
-    "$id": "http://localhost:4321/test-schema.json#",
     "$schema": "http://json-schema.org/draft-06/schema#",
     "title": "test schema",
     "type": "object",

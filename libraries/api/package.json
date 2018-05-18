@@ -5,14 +5,12 @@
   "description": "taskcluster-lib-api",
   "license": "MPL-2.0",
   "scripts": {
-    "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "prepublish": "yarn compile",
     "lint": "eslint src/*.js test/*.js",
-    "pretest": "yarn lint && yarn compile",
-    "test": "mocha .test/*_test.js"
+    "pretest": "yarn lint",
+    "test": "mocha test/*_test.js"
   },
   "files": [
-    "lib"
+    "src"
   ],
   "repository": {
     "type": "git",
@@ -21,7 +19,6 @@
   "dependencies": {
     "ajv": "^5.3.0",
     "aws-sdk": "^2.151.0",
-    "babel-runtime": "^6.26.0",
     "body-parser": "1.18.2",
     "debug": "^3.1.0",
     "express": "4.16.2",
@@ -29,24 +26,25 @@
     "lodash": "^4.15.0",
     "promise": "^8.0.1",
     "slugid": "^1.1.0",
-    "taskcluster-client": "^3.1.0",
+    "taskcluster-client": "^10.0.0",
     "taskcluster-lib-scopes": "^1.9.0",
     "type-is": "^1.6.15",
     "uuid": "^3.1.0"
   },
   "devDependencies": {
-    "babel-compile": "^2.0.0",
-    "babel-preset-taskcluster": "^3.0.0",
     "eslint-config-taskcluster": "^3.0.0",
-    "mocha": "4.0.1",
-    "source-map-support": "^0.5.0",
+    "mocha": "5.1.1",
     "superagent": "^3.8.1",
     "superagent-hawk": "^0.0.6",
     "taskcluster-lib-app": "^2.0.3",
     "taskcluster-lib-monitor": "^4.6.3",
     "taskcluster-lib-testing": "^3.0.0",
+    "taskcluster-lib-urls": "^1.0.0",
     "taskcluster-lib-validate": "^3.1.0",
     "typed-env-config": "^1.1.1"
   },
-  "main": "./lib/api.js"
+  "engines": {
+    "node": ">=8"
+  },
+  "main": "./src/builder.js"
 }

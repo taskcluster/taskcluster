@@ -6,28 +6,32 @@ var express         = require('express');
 
 var runningServer = null;
 
+const rootUrl = 'http://localhost:23525';
+exports.rootUrl = rootUrl;
+
 /**
- * Set up a testing server on port 23525 serving the given API.  If mointor is
+ * Set up a testing server on port 23525 serving the given API.  If monitor is
  * specified, it is added to the router.
  */
-export const setupServer = async ({api, monitor}) => {
-  testing.fakeauth.start();
+exports.setupServer = async ({builder, monitor}) => {
+  testing.fakeauth.start([], {rootUrl});
   assert(runningServer === null);
 
   let validator = await validate({
+    rootUrl,
+    serviceName: 'test',
     folder: path.join(__dirname, 'schemas'),
-    baseUrl: 'http://localhost:4321/',
   });
 
-  let router = api.router({
-    authBaseUrl: 'http://localhost:23243',
+  const api = await builder.build({
+    rootUrl,
     validator,
     monitor,
   });
 
   // Create application
   let app = express();
-  app.use(router);
+  api.express(app);
 
   return await new Promise(function(accept, reject) {
     var server = app.listen(23525);
@@ -39,7 +43,7 @@ export const setupServer = async ({api, monitor}) => {
   });
 };
 
-export const teardownServer = async () => {
+exports.teardownServer = async () => {
   if (runningServer) {
     await new Promise(function(accept) {
       runningServer.once('close', function() {
