@@ -1,20 +1,18 @@
-suite('api/route', function() {
-  var assert          = require('assert');
-  var Promise         = require('promise');
-  var subject         = require('../');
-  var express         = require('express');
-  var path            = require('path');
+const assert          = require('assert');
+const APIBuilder      = require('../');
 
+suite('api/route', function() {
   // Create test api
-  var api = new subject({
+  var builder = new APIBuilder({
     title:        'Test Api',
     description:  'Another test api',
     name:         'test',
+    version:      'v1',
   });
 
   test('no scopes is OK', function() {
     // doesn't throw
-    api.declare({
+    builder.declare({
       method:       'get',
       route:        '/test/:myparam',
       name:         'noScopeOktestEP',
@@ -24,7 +22,7 @@ suite('api/route', function() {
   });
 
   test('string scope works', function() {
-    api.declare({
+    builder.declare({
       method:       'get',
       route:        '/testString/:myparam',
       scopes:       'test:unit',
@@ -36,7 +34,7 @@ suite('api/route', function() {
 
   test('array of string scope rejected', function() {
     assert.throws(function() {
-      api.declare({
+      builder.declare({
         method:       'get',
         route:        '/testArr/:myparam',
         scopes:       ['test:unit'],
@@ -49,7 +47,7 @@ suite('api/route', function() {
 
   test('array of arrays of scope rejected', function() {
     assert.throws(function() {
-      api.declare({
+      builder.declare({
         method:       'get',
         route:        '/testArrArr/:myparam',
         scopes:       [[]],
@@ -61,7 +59,7 @@ suite('api/route', function() {
   });
 
   test('scope expression not rejected', function() {
-    api.declare({
+    builder.declare({
       method:       'get',
       route:        '/testScope/:myparam',
       scopes:       {AnyOf: ['something']},
@@ -72,7 +70,7 @@ suite('api/route', function() {
   });
 
   test('scope expression with looping template not rejected', function() {
-    api.declare({
+    builder.declare({
       method:       'get',
       route:        '/testScope2/:myparam',
       scopes:       {AnyOf: [{for: 'foo', in: 'bar', each: '<foo>'}]},

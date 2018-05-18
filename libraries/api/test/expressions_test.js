@@ -1,5 +1,5 @@
 const assert = require('assert');
-const ScopeExpressionTemplate = require('../lib/expressions');
+const ScopeExpressionTemplate = require('../src/expressions');
 
 suite('expression expansion success', function() {
 
