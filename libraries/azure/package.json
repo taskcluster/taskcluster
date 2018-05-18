@@ -21,9 +21,9 @@
     "eslint-config-taskcluster": "^3.1.0",
     "mocha": "^5.1.1",
     "nock": "^9.2.5",
-    "taskcluster-lib-urls": "^1.0.0"
+    "taskcluster-lib-urls": "^10.0.0"
   },
   "dependencies": {
-    "taskcluster-client": "^5.0.0"
+    "taskcluster-client": "^10.0.0"
   }
 }
