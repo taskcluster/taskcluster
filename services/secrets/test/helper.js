@@ -1,10 +1,11 @@
+const _ = require('lodash');
 const assert = require('assert');
-const api = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const mocha = require('mocha');
 const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
 const load = require('../src/main');
 const config = require('typed-env-config');
+const data = require('../src/data');
 
 exports.load = stickyLoader(load);
 
@@ -18,6 +19,7 @@ exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-secrets',
   secrets: {
     taskcluster: [
+      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl'},
       {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
       {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
     ],
@@ -25,52 +27,94 @@ exports.secrets = new Secrets({
   load: exports.load,
 });
 
+/**
+ * Set helper.Secret to a fully-configured Secret entity, and inject it into the loader
+ */
+exports.withSecret = (mock, skipping) => {
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+
+    if (mock) {
+      const cfg = await exports.load('cfg');
+      exports.load.inject('Secret', data.Secret.setup({
+        tableName: 'Secret',
+        credentials: 'inMemory',
+        cryptoKey: cfg.azure.cryptoKey,
+        signingKey: cfg.azure.signingKey,
+      }));
+    }
+
+    exports.Secret = await exports.load('Secret');
+    await exports.Secret.ensureTable();
+  });
+
+  const cleanup = async () => {
+    if (!skipping()) {
+      await exports.Secret.scan({}, {handler: secret => secret.remove()});
+    }
+  };
+  setup(cleanup);
+  suiteTeardown(cleanup);
+};
+
 // Some clients for the tests, with differents scopes.  These are turned
 // into temporary credentials based on the main test credentials, so
 // the clientIds listed here are purely internal to the tests.
-var testClients = [
-  {
-    clientId:     'captain-write', // can write captain's secrets
-    scopes:       [
-      'secrets:set:captain:*',
-    ],
-  }, {
-    clientId:     'captain-read', // can read captain's secrets
-    accessToken:  'none',
-    scopes:       ['secrets:get:captain:*'],
-  }, {
-    clientId:     'captain-read-write',
-    scopes:       [
-      'secrets:set:captain:*',
-      'secrets:get:captain:*',
-    ],
-  }, {
-    clientId:     'captain-read-limited',
-    scopes:       [
-      'secrets:get:captain:limited/*',
-    ],
-  },
-];
+var testClients = {
+  'captain-write': ['secrets:set:captain:*'],
+  'captain-read': ['secrets:get:captain:*'],
+  'captain-read-write': ['secrets:set:captain:*', 'secrets:get:captain:*'],
+  'captain-read-limited': ['secrets:get:captain:limited/*'],
+};
 
-// Setup before tests
-suiteSetup(async () => {
-  const auth = {};
-  const cfg = await exports.load('cfg');
-  const baseUrl = cfg.server.publicUrl + '/v1';
-  const SecretsClient = taskcluster.createClient(api.reference({baseUrl}));
+/**
+ * Set up an API server.  Call this after withSecret, so the server
+ * uses the same Secret class.
+ *
+ * This also sets up helper.client as an API client generator, using the
+ * "captain" clients.
+ */
+exports.withServer = (mock, skipping) => {
+  let webServer;
 
-  exports.clients = {};
-  for (let client of testClients) {
-    exports.clients[client.clientId] = new SecretsClient({
-      credentials:      {clientId: client.clientId, accessToken: 'unused'},
-    });
-    auth[client.clientId] = client.scopes;
-  }
-  fakeauth.start(auth);
-});
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+    const cfg = await exports.load('cfg');
 
-// Cleanup after tests
-suiteTeardown(async () => {
-  fakeauth.stop();
-});
+    // even if we are using a "real" rootUrl for access to Azure, we use
+    // a local rootUrl to test the API, including mocking auth on that
+    // rootUrl.
+    const rootUrl = 'http://localhost:60415';
+    exports.load.cfg('taskcluster.rootUrl', rootUrl);
+    exports.load.cfg('taskcluster.clientId', null);
+    exports.load.cfg('taskcluster.accessToken', null);
+    fakeauth.start(testClients, {rootUrl});
 
+    const api = await exports.load('api');
+    exports.client = async clientId => {
+      const SecretsClient = taskcluster.createClient(api.reference());
+
+      return new SecretsClient({
+        credentials: {clientId, accessToken: 'unused'},
+        rootUrl,
+      });
+    };
+
+    webServer = await exports.load('server');
+  });
+
+  suiteTeardown(async function() {
+    if (skipping()) {
+      return;
+    }
+    if (webServer) {
+      await webServer.terminate();
+      webServer = null;
+    }
+    fakeauth.stop();
+  });
+};
