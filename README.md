@@ -81,7 +81,7 @@ Once you have been granted the above scope:
 }
 ```
 
-To see a full description of all the config options available to you, run:
+To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
 generic-worker 10.8.3
