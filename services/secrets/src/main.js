@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const Debug = require('debug');
-const api = require('../src/api');
+const builder = require('../src/api');
 const data = require('../src/data');
 const assert = require('assert');
 const path = require('path');
@@ -8,10 +8,11 @@ const _ = require('lodash');
 const loader = require('taskcluster-lib-loader');
 const validator = require('taskcluster-lib-validate');
 const monitor = require('taskcluster-lib-monitor');
-const app = require('taskcluster-lib-app');
+const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
 const config = require('typed-env-config');
+const {sasCredentials} = require('taskcluster-lib-azure');
 
 let debug = Debug('secrets:server');
 
@@ -24,7 +25,8 @@ var load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: cfg.monitoring.project || 'taskcluster-secrets',
+      rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-sercrets',
       enable: cfg.monitoring.enable,
       credentials: cfg.taskcluster.credentials,
       mock: profile !== 'production',
@@ -35,7 +37,8 @@ var load = loader({
   validator: {
     requires: ['cfg'],
     setup: ({cfg}) => validator({
-      prefix: 'secrets/v1/',
+      rootUrl: cfg.taskcluster.rootUrl,
+      serviceName: 'secrets',
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
     }),
@@ -44,23 +47,25 @@ var load = loader({
   Secret: {
     requires: ['cfg', 'monitor', 'process'],
     setup: ({cfg, monitor, process}) => data.Secret.setup({
-      account:          cfg.azure.accountName,
-      credentials:      cfg.taskcluster.credentials,
-      table:            cfg.azure.tableName,
+      tableName: cfg.azure.tableName,
+      credentials: sasCredentials({
+        accountId: cfg.azure.accountId,
+        tableName: cfg.azure.tableName,
+        rootUrl: cfg.taskcluster.rootUrl,
+        credentials: cfg.taskcluster.credentials,
+      }),
       cryptoKey:        cfg.azure.cryptoKey,
       signingKey:       cfg.azure.signingKey,
       monitor:          monitor.prefix('table.secrets'),
     }),
   },
 
-  router: {
+  api: {
     requires: ['cfg', 'Secret', 'validator', 'monitor'],
-    setup: ({cfg, Secret, validator, monitor}) => api.setup({
+    setup: ({cfg, Secret, validator, monitor}) => builder.build({
+      rootUrl:          cfg.taskcluster.rootUrl,
       context:          {cfg, Secret},
-      authBaseUrl:      cfg.taskcluster.authBaseUrl,
       publish:          cfg.app.publishMetaData,
-      baseUrl:          cfg.server.publicUrl + '/v1',
-      referencePrefix:  'secrets/v1/api.json',
       aws:              cfg.aws,
       monitor:          monitor.prefix('api'),
       validator,
@@ -68,8 +73,8 @@ var load = loader({
   },
 
   docs: {
-    requires: ['cfg', 'validator'],
-    setup: ({cfg, validator}) => docs.documenter({
+    requires: ['cfg', 'validator', 'api'],
+    setup: ({cfg, validator, api}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
       schemas: validator.schemas,
@@ -77,7 +82,7 @@ var load = loader({
       references: [
         {
           name: 'api',
-          reference: api.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+          reference: api.reference(),
         },
       ],
     }),
@@ -89,22 +94,14 @@ var load = loader({
   },
 
   server: {
-    requires: ['cfg', 'router', 'docs'],
-    setup: ({cfg, router, docs}) => {
-      let secretsApp = app({
-        port:           Number(process.env.PORT || cfg.server.port),
-        env:            cfg.server.env,
-        forceSSL:       cfg.server.forceSSL,
-        trustProxy:     cfg.server.trustProxy,
-        docs,
-      });
-
-      // Mount API router
-      secretsApp.use('/v1', router);
-
-      // Create server
-      return secretsApp.createServer();
-    },
+    requires: ['cfg', 'api'],
+    setup: ({cfg, api}) => App({
+      port: Number(process.env.PORT || cfg.server.port),
+      env: cfg.server.env,
+      forceSSL: cfg.server.forceSSL,
+      trustProxy: cfg.server.trustProxy,
+      apis: [api],
+    }),
   },
 
   expire: {
