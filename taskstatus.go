@@ -317,7 +317,7 @@ func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
 				waitTimeUntilReclaim = time.Second * 5
 			} else {
 				// Reclaim 3 mins before current claim expires...
-				takenUntil := time.Time(task.StatusManager.TakenUntil())
+				takenUntil := time.Time(tsm.TakenUntil())
 				reclaimTime := takenUntil.Add(time.Minute * -3)
 				// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 				waitTimeUntilReclaim = reclaimTime.Round(0).Sub(time.Now())
@@ -335,7 +335,7 @@ func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
 				return
 			case <-time.After(waitTimeUntilReclaim):
 				log.Printf("About to reclaim task %v...", task.TaskID)
-				err := task.StatusManager.reclaim()
+				err := tsm.reclaim()
 				if err != nil {
 					log.Printf("ERROR: Encountered exception when reclaiming task %v - giving up retrying: %v", task.TaskID, err)
 					return
