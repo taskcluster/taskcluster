@@ -26,7 +26,7 @@ function s3(s3, bucket, prefix, name, content) {
  * Write the schema to a local file.  This is useful for debugging purposes
  * mainly.
  */
-function writeFile(name, content) {
+function writeFile(filename, content) {
   let toPrint;
   // We want something that's pretty-printable, so let's parse and reserialise
   // the JSON in a nice way.  If this fails, let's just write out whatever was
@@ -36,15 +36,7 @@ function writeFile(name, content) {
   } catch (err) {
     toPrint = content;
   }
-  return new Promise((resolve, reject) => {
-    fs.writeFile(path.join('rendered_schemas', name), toPrint, (err) => {
-      if (err) {
-        reject(err);
-      }
-      console.log('Wrote ' + name);
-      resolve();
-    });
-  });
+  fs.writeFileSync(filename, toPrint);
 }
 
 /**

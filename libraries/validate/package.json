@@ -5,14 +5,12 @@
   "description": "Validate schemas for TaskCluster projects",
   "license": "MPL-2.0",
   "scripts": {
-    "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "prepublish": "npm run compile",
     "lint": "eslint src/*.js test/*.js",
-    "pretest": "yarn lint && npm run compile",
-    "test": "mocha .test/*_test.js"
+    "pretest": "yarn lint",
+    "test": "mocha test/*_test.js"
   },
   "files": [
-    "lib"
+    "src"
   ],
   "repository": {
     "type": "git",
@@ -22,22 +20,24 @@
     "ajv": "^5.3.0",
     "app-root-dir": "^1.0.2",
     "aws-sdk": "^2.142.0",
-    "babel-runtime": "^6.26.0",
     "debug": "^3.1.0",
     "js-yaml": "^3.10.0",
     "lodash": "^4.5.1",
+    "mkdirp": "^0.5.1",
     "promise": "^8.0.1",
     "rimraf": "^2.6.2",
-    "url-join": "^2.0.2",
+    "taskcluster-lib-urls": "^1.1.0",
     "walk": "^2.3.9"
   },
   "devDependencies": {
-    "babel-compile": "^2.0.0",
-    "babel-preset-taskcluster": "^3.0.0",
     "eslint-config-taskcluster": "^3.0.0",
+    "intercept-stdout": "^0.1.2",
     "mocha": "4.0.1",
     "mock-aws-s3": "2.6.0",
     "source-map-support": "^0.5.0"
   },
-  "main": "./lib/validate.js"
+  "engines": {
+    "node": ">=8"
+  },
+  "main": "./src/validate.js"
 }
