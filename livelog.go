@@ -69,7 +69,7 @@ func (l *LiveLogTask) RequiredScopes() scopes.Required {
 func (l *LiveLogTask) Start() *CommandExecutionError {
 	liveLog, err := livelog.New(config.LiveLogExecutable, config.LiveLogCertificate, config.LiveLogKey, config.LiveLogPUTPort, config.LiveLogGETPort)
 	if err != nil {
-		log.Printf("WARN: could not create livelog: %s", err)
+		log.Printf("WARNING: could not create livelog: %s", err)
 		// then run without livelog, is only a "best effort" service
 		return nil
 	}
@@ -81,7 +81,7 @@ func (l *LiveLogTask) Start() *CommandExecutionError {
 
 	err = l.uploadLiveLog()
 	if err != nil {
-		log.Printf("WARN: could not upload livelog: %s", err)
+		log.Printf("WARNING: could not upload livelog: %s", err)
 	}
 	return nil
 }
@@ -123,12 +123,12 @@ func (l *LiveLogTask) Stop() *CommandExecutionError {
 	errClose := l.liveLog.LogWriter.Close()
 	if errClose != nil {
 		// no need to raise an exception
-		log.Printf("WARN: could not close livelog writer: %s", errClose)
+		log.Printf("WARNING: could not close livelog writer: %s", errClose)
 	}
 	errTerminate := l.liveLog.Terminate()
 	if errTerminate != nil {
 		// no need to raise an exception
-		log.Printf("WARN: could not terminate livelog writer: %s", errTerminate)
+		log.Printf("WARNING: could not terminate livelog writer: %s", errTerminate)
 	}
 	log.Printf("Redirecting %v to %v", livelogName, logName)
 	logURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", queue.BaseURL, l.task.TaskID, l.task.RunID, logName)

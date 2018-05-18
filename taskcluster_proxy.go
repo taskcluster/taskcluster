@@ -107,7 +107,7 @@ func (l *TaskclusterProxyTask) Stop() *CommandExecutionError {
 	if errTerminate != nil {
 		// no need to raise an exception, machine will reboot anyway
 		l.task.Warnf("[taskcluster-proxy] Could not terminate taskcluster proxy process: %s", errTerminate)
-		log.Printf("WARN: could not terminate taskcluster proxy writer: %s", errTerminate)
+		log.Printf("WARNING: could not terminate taskcluster proxy writer: %s", errTerminate)
 	}
 	return nil
 }

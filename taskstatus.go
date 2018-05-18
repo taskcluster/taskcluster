@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
@@ -47,6 +48,12 @@ type TaskStatusManager struct {
 	// callback functions to call when status changes
 	statusChangeListeners map[*TaskStatusChangeListener]bool
 	abortException        *CommandExecutionError
+	// closed when reclaim go routine should stop reclaiming
+	stopReclaiming chan<- struct{}
+	// closed when reclaim loop exits
+	reclaimingDone <-chan struct{}
+	// true if reclaims are no longer taking place for this task
+	finishedReclaiming bool
 }
 
 func (tsm *TaskStatusManager) DeregisterListener(listener *TaskStatusChangeListener) {
@@ -72,6 +79,7 @@ func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) error {
 	return tsm.updateStatus(
 		errored,
 		func(task *TaskRun) error {
+			tsm.stopReclaims()
 			ter := tcqueue.TaskExceptionRequest{Reason: string(reason)}
 			tsr, err := task.Queue.ReportException(task.TaskID, strconv.FormatInt(int64(task.RunID), 10), &ter)
 			if err != nil {
@@ -93,6 +101,7 @@ func (tsm *TaskStatusManager) ReportFailed() error {
 	return tsm.updateStatus(
 		failed,
 		func(task *TaskRun) error {
+			tsm.stopReclaims()
 			tsr, err := task.Queue.ReportFailed(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
 			if err != nil {
 				log.Printf("Not able to report failed completion for task %v:", task.TaskID)
@@ -113,7 +122,8 @@ func (tsm *TaskStatusManager) ReportCompleted() error {
 	return tsm.updateStatus(
 		succeeded,
 		func(task *TaskRun) error {
-			log.Print("Command finished successfully!")
+			tsm.stopReclaims()
+			log.Printf("Task %v finished successfully!", task.TaskID)
 			tsr, err := task.Queue.ReportCompleted(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
 			if err != nil {
 				log.Printf("Not able to report successful completion for task %v:", task.TaskID)
@@ -129,7 +139,7 @@ func (tsm *TaskStatusManager) ReportCompleted() error {
 	)
 }
 
-func (tsm *TaskStatusManager) Reclaim() error {
+func (tsm *TaskStatusManager) reclaim() error {
 	return tsm.updateStatus(
 		reclaimed,
 		func(task *TaskRun) error {
@@ -278,10 +288,72 @@ func (tsm *TaskStatusManager) updateStatus(ts TaskStatus, f func(task *TaskRun) 
 }
 
 func NewTaskStatusManager(task *TaskRun) *TaskStatusManager {
-	return &TaskStatusManager{
+
+	stopReclaiming := make(chan struct{})
+	reclaimingDone := make(chan struct{})
+
+	tsm := &TaskStatusManager{
 		task:                  task,
 		takenUntil:            task.TaskClaimResponse.TakenUntil,
 		status:                task.TaskClaimResponse.Status,
 		statusChangeListeners: map[*TaskStatusChangeListener]bool{},
+		stopReclaiming:        stopReclaiming,
+		reclaimingDone:        reclaimingDone,
+	}
+
+	// Reclaiming Tasks
+	// ----------------
+	// When the worker has claimed a task, it's said to have a claim to a given
+	// `taskId`/`runId`. This claim has an expiration, see the `takenUntil`
+	// property in the _task status structure_ returned from `tcqueue.ClaimTask`
+	// and `tcqueue.ReclaimTask`. A worker must call `tcqueue.ReclaimTask` before
+	// the claim denoted in `takenUntil` expires. It's recommended that this
+	// attempted a few minutes prior to expiration, to allow for clock drift.
+
+	go func() {
+		defer close(reclaimingDone)
+		for {
+			var waitTimeUntilReclaim time.Duration
+			if reclaimEvery5Seconds {
+				// Reclaim in 5 seconds...
+				waitTimeUntilReclaim = time.Second * 5
+			} else {
+				// Reclaim 3 mins before current claim expires...
+				takenUntil := time.Time(tsm.TakenUntil())
+				reclaimTime := takenUntil.Add(time.Minute * -3)
+				// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
+				waitTimeUntilReclaim = reclaimTime.Round(0).Sub(time.Now())
+				log.Printf("Reclaiming task %v at %v", task.TaskID, reclaimTime)
+				log.Printf("Current task claim expires at %v", takenUntil)
+				// sanity check - only set an alarm, if wait time >= 30s, so we can't hammer queue in production
+				if waitTimeUntilReclaim.Seconds() < 30 {
+					log.Printf("WARNING: This is less than 30 seconds away. NOT setting a reclaim timer for task %v to avoid hammering queue if this is a bug.", task.TaskID)
+					return
+				}
+			}
+			log.Printf("Reclaiming task %v in %v", task.TaskID, waitTimeUntilReclaim)
+			select {
+			case <-stopReclaiming:
+				return
+			case <-time.After(waitTimeUntilReclaim):
+				log.Printf("About to reclaim task %v...", task.TaskID)
+				err := tsm.reclaim()
+				if err != nil {
+					log.Printf("ERROR: Encountered exception when reclaiming task %v - giving up retrying: %v", task.TaskID, err)
+					return
+				}
+				log.Printf("Successfully reclaimed task %v", task.TaskID)
+			}
+		}
+	}()
+	return tsm
+}
+
+// stopReclaims() must be called when tsm.Lock() is held by caller
+func (tsm *TaskStatusManager) stopReclaims() {
+	if !tsm.finishedReclaiming {
+		close(tsm.stopReclaiming)
+		<-tsm.reclaimingDone
+		tsm.finishedReclaiming = true
 	}
 }
