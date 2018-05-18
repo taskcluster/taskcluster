@@ -1,6 +1,6 @@
 {
   "name": "taskcluster-lib-iterate",
-  "version": "1.0.4",
+  "version": "10.0.0",
   "description": "A library to share iteration logic",
   "main": "lib/iterate.js",
   "scripts": {
