@@ -357,7 +357,7 @@ suite('client credential handling', function() {
       // then this obviously will break.  The intent is to re-require the file
       // with the environment variables in place, since they are used at
       // load time
-      let clientPath = path.resolve(__dirname, '..', 'lib', 'client.js');
+      let clientPath = path.resolve(__dirname, '..', 'src', 'client.js');
       delete require.cache[clientPath];
       cleanClient = require(clientPath);
     });

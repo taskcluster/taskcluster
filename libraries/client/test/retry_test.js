@@ -7,19 +7,20 @@ suite('retry-test', function() {
   var _               = require('lodash');
   var _validator      = require('taskcluster-lib-validate');
   var _monitor        = require('taskcluster-lib-monitor');
-  var API             = require('taskcluster-lib-api');
+  var APIBuilder      = require('taskcluster-lib-api');
   var testing         = require('taskcluster-lib-testing');
-  var _app            = require('taskcluster-lib-app');
+  var App             = require('taskcluster-lib-app');
 
   // Construct API
-  var api = new API({
+  var builder = new APIBuilder({
     title:        'Retry API',
     description:  'API that sometimes works by retrying things',
     name:         'retrytest',
+    version:      'v1',
   });
 
   var getInternalErrorCount = 0;
-  api.declare({
+  builder.declare({
     method:       'get',
     route:        '/internal-error',
     name:         'getInternalError',
@@ -36,7 +37,7 @@ suite('retry-test', function() {
   });
 
   var getOccasionalInternalErrorCount = 0;
-  api.declare({
+  builder.declare({
     method:       'delete', // Just to ensure that delete works :)
     route:        '/internal-error-sometimes',
     name:         'getOccasionalInternalError',
@@ -61,7 +62,7 @@ suite('retry-test', function() {
   });
 
   var getUserErrorCount = 0;
-  api.declare({
+  builder.declare({
     method:       'get',
     route:        '/user-error',
     name:         'getUserError',
@@ -78,7 +79,7 @@ suite('retry-test', function() {
   });
 
   var getConnectionErrorCount = 0;
-  api.declare({
+  builder.declare({
     method:       'get',
     route:        '/connection-error',
     name:         'getConnectionError',
@@ -98,54 +99,51 @@ suite('retry-test', function() {
   var reference = null;
   var Server = null;
   var server = null;
+  const rootUrl = 'http://localhost:60526';
 
   setup(async function() {
     assert(_apiServer === null,       '_apiServer must be null');
     testing.fakeauth.start({
       'test-client': ['auth:credentials', 'test:internal-error'],
-    });
+    }, {rootUrl});
 
     monitor = await _monitor({
-      project: 'tc-client',
+      projectName: 'tc-client',
       credentials: {},
       mock: true,
     });
 
     // Create server for api
-    return _validator({
+    const validator = await _validator({
+      rootUrl,
+      serviceName: 'tc-client-tests',
       folder:         path.join(__dirname, 'schemas'),
-      baseUrl:        'http://localhost:4321/',
-    }).then(function(validator) {
-      // Create router
-      var router = api.router({
-        validator:      validator,
-      });
+    });
 
-      reference = api.reference({baseUrl: 'http://localhost:60526/v1'});
-      Server = taskcluster.createClient(reference);
-      server = new Server({
-        credentials: {
-          clientId:     'test-client',
-          accessToken:  'test-token',
-        },
-        rootUrl:        'http://localhost:60526',
-        monitor,
-      });
+    // Create router
+    const api = await builder.build({
+      rootUrl,
+      validator,
+    });
 
-      // Create application
-      var app = _app({
-        port:         60526,
-        env:          'development',
-        forceSSL:     false,
-        trustProxy:   false,
-      });
+    reference = api.reference();
+    Server = taskcluster.createClient(reference);
+    server = new Server({
+      credentials: {
+        clientId:     'test-client',
+        accessToken:  'test-token',
+      },
+      rootUrl,
+      monitor,
+    });
 
-      // Use router
-      app.use('/api/retrytest/v1', router);
-
-      return app.createServer().then(function(server) {
-        _apiServer = server;
-      });
+    // Create application
+    _apiServer = await App({
+      port:         60526,
+      env:          'development',
+      forceSSL:     false,
+      trustProxy:   false,
+      apis: [api],
     });
   });
 
@@ -185,7 +183,7 @@ suite('retry-test', function() {
 
   test('Can succeed after 3 attempts (record stats)', async function() {
     let m = await _monitor({
-      project: 'tc-client',
+      projectName: 'tc-client',
       credentials: {},
       mock: true,
     });

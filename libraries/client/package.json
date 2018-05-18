@@ -5,11 +5,9 @@
   "description": "Client for interfacing taskcluster components",
   "license": "MPL-2.0",
   "scripts": {
-    "compile": "babel-compile -p taskcluster src:lib test:.test",
-    "prepare": "yarn compile",
-    "pretest": "yarn lint && yarn compile",
+    "pretest": "yarn lint",
     "lint": "eslint src/*.js test/*.js",
-    "test": "mocha ./.test/*_test.js"
+    "test": "mocha test/*_test.js"
   },
   "repository": {
     "type": "git",
@@ -17,24 +15,23 @@
   },
   "dependencies": {
     "amqplib": "^0.5.1",
-    "babel-runtime": "^6.26.0",
     "debug": "^3.1.0",
     "hawk": "^6.0.2",
     "lodash": "^4.17.4",
     "promise": "^8.0.1",
     "slugid": "^1.1.0",
     "superagent": "~3.8.1",
-    "taskcluster-lib-urls": "^1.0.0"
+    "taskcluster-lib-urls": "^1.1.0"
+  },
+  "engines": {
+    "node": ">=8"
   },
   "files": [
-    "lib"
+    "src"
   ],
-  "main": "./lib/index.js",
+  "main": "./src/index.js",
   "optionalDependencies": {},
   "devDependencies": {
-    "babel": "^6.23.0",
-    "babel-compile": "^2.0.0",
-    "babel-preset-taskcluster": "^3.0.0",
     "cliff": "^0.1.10",
     "commander": "^2.11.0",
     "eslint-config-taskcluster": "^3.0.0",

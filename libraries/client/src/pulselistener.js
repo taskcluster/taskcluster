@@ -11,14 +11,17 @@ var URL       = require('url');
 /**
  * Build Pulse ConnectionString, from options on the form:
  * {
- *   username:          // Pulse username (optional, if connectionString)
- *   password:          // Pulse password (optional, if connectionString)
- *   hostname:          // Hostname to use (defaults to pulse.mozilla.org)
+ *   username:          // Pulse username
+ *   password:          // Pulse password
+ *   hostname:          // Hostname to use
+ *   vhost:             // Vhost to use
  * }
  */
 var buildPulseConnectionString = function(options) {
   assert(options.username, 'options.username password is required');
   assert(options.password, 'options.password is required');
+  assert(options.hostname, 'options.hostname is required');
+  assert(options.vhost, 'options.vhost is required');
 
   // Construct connection string
   return [
@@ -27,9 +30,11 @@ var buildPulseConnectionString = function(options) {
     ':',
     options.password,
     '@',
-    options.hostname || 'pulse.mozilla.org',
+    options.hostname,
     ':',
     5671,                // Port for SSL
+    '/',
+    encodeURIComponent(options.vhost),
   ].join('');
 };
 
@@ -54,9 +59,8 @@ var retryConnect = function(connectionString, retries) {
  *   username:          // Username to connect with (and namespace if not given)
  *   password:          // Password to connect with
  *   hostname:          // Hostname to connect to using username/password
- *                      // defaults to pulse.mozilla.org
- *   connectionString:  // connectionString cannot be used with username,
- *                      // password and/or hostname.
+ *   vhost:             // Vhost to use on the AMQP host
+ *   connectionString:  // connectionString replaces the previous four options
  *   fake:              // If true, do not connect to pulse (for tests)
  * }
  */
@@ -78,6 +82,7 @@ var PulseConnection = function(options) {
     assert(!options.username, 'Can\'t take `username` along with `connectionString`');
     assert(!options.password, 'Can\'t take `password` along with `connectionString`');
     assert(!options.hostname, 'Can\'t take `hostname` along with `connectionString`');
+    assert(!options.vhost, 'Can\'t take `vhost` along with `connectionString`');
   }
 
   // If namespace was not explicitly set infer it from connection string...
@@ -178,9 +183,8 @@ exports.PulseConnection = PulseConnection;
  *     username:          // Pulse username
  *     password:          // Pulse password
  *     hostname:          // Hostname to connect to using username/password
- *                        // defaults to pulse.mozilla.org
- *     connectionString:  // connectionString overwrites username/password and
- *                        // hostname (if given)
+ *     vhost:             // Vhost to use on the AQMP server
+ *     connectionString:  // connectionString overwrites other credentials if given
  *     fake:              // if true, do not connect to pulse (for tests)
  *   }
  *   maxLength:           // Maximum queue size, undefined for none
