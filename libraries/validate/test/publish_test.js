@@ -6,6 +6,7 @@ suite('Publish Tests', () => {
   let path = require('path');
   let rimraf = require('rimraf');
   let debug = require('debug')('test');
+  let libUrls = require('taskcluster-lib-urls');
 
   let s3 = null;
   let validate = null;
@@ -19,17 +20,15 @@ suite('Publish Tests', () => {
     s3 = awsMock.S3();
 
     validate = await validator({
-      prefix: 'test/v1/',
       folder: 'test/publish-schemas',
-      baseUrl: 'http://localhost:1203/',
+      rootUrl: libUrls.testRootUrl(),
+      serviceName: 'whatever',
       constants: {'my-constant': 42},
       aws: {
         accessKeyId: 'doesntmatter',
         secretAccessKey: 'thesearentused',
       },
       publish: true,
-      preview: true,
-      writeFile: true,
       s3Provider: s3,
     });
   });
