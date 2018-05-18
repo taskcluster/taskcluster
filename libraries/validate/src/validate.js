@@ -5,25 +5,30 @@ let rimraf = require('rimraf');
 let path = require('path');
 let walk = require('walk');
 let yaml = require('js-yaml');
-let urljoin = require('url-join');
 let assert = require('assert');
 let Ajv = require('ajv');
 let aws = require('aws-sdk');
+let libUrls = require('taskcluster-lib-urls');
 let Promise = require('promise');
 let publish = require('./publish');
 let render = require('./render');
 let rootdir = require('app-root-dir');
+let mkdirp = require('mkdirp');
 
 async function validator(options) {
   let schemas = {};
   let ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
+
+  assert(!options.prefix, 'The `prefix` option is no longer allowed');
+  assert(!options.version, 'The `version` option is no longer allowed');
+  assert(options.rootUrl, 'A `rootUrl` must be provided to taskcluster-lib-validate!');
+  assert(options.serviceName, 'A `serviceName` must be provided to taskcluster-lib-validate!');
 
   let defaultFolder = path.join(rootdir.get(), 'schemas');
   let cfg = _.defaults(options, {
     folder: defaultFolder,
     constants: path.join(options && options.folder || defaultFolder, 'constants.yml'),
     publish: process.env.NODE_ENV == 'production',
-    baseUrl: 'http://schemas.taskcluster.net/',
     bucket: 'schemas.taskcluster.net',
     preview: process.env.PREVIEW_JSON_SCHEMA_FILES,
     writeFile: process.env.WRITE_JSON_SCHEMA_FILES,
@@ -44,47 +49,53 @@ async function validator(options) {
     }
   }
 
-  walk.walkSync(path.resolve(cfg.folder), {listeners: {name: (root, name) => {
-    let json = null;
-    let data = fs.readFileSync(path.resolve(root, name), 'utf-8');
-    if (/\.ya?ml$/.test(name) && name !== 'constants.yml') {
-      json = yaml.safeLoad(data);
-    } else if (/\.json$/.test(name)) {
-      json = JSON.parse(data);
-    } else {
-      return;
-    }
-
-    let schema = render(json, cfg.constants);
-
-    if (schema.id) {
-      debug('Schema incorrectly attempts to set own id: %s', name);
-      throw new Error('Schema ' + path.join(root, name) + ' attempts to set own id!');
-    }
-    name = name.replace(/\.ya?ml$/, '.json');
-    schema.id = urljoin(cfg.baseUrl, cfg.prefix, name) + '#';
-
+  let walkErr;
+  walk.walkSync(path.resolve(cfg.folder), {listeners: {file: (root, stats) => {
     try {
+      let name = path.relative(cfg.folder, path.join(root, stats.name));
+
+      let json = null;
+      let data = fs.readFileSync(path.join(cfg.folder, name), 'utf-8');
+      if (/\.ya?ml$/.test(name) && name !== 'constants.yml') {
+        json = yaml.safeLoad(data);
+      } else if (/\.json$/.test(name)) {
+        json = JSON.parse(data);
+      } else {
+        debug('Ignoring file %s', name);
+        return;
+      }
+
+      let schema = render(json, cfg.constants);
+
+      if (schema.id) {
+        debug('Schema incorrectly attempts to set own id: %s', name);
+        throw new Error('Schema ' + path.join(root, name) + ' attempts to set own id!');
+      }
+      let jsonName = name.replace(/\.ya?ml$/, '.json');
+      schema.id = libUrls.schema(cfg.rootUrl, cfg.serviceName, jsonName + '#');
+
       ajv.addSchema(schema);
       debug('Loaded schema with id of "%s"', schema.id);
       let content = JSON.stringify(schema, undefined, 4);
       if (!content) {
         throw new Error('Schema %s has invalid content!', name);
       }
-      schemas[name] = content;
+      schemas[jsonName] = content;
     } catch (err) {
-      debug('failed to load schema at %s', path.resolve(root, name));
-      throw err;
+      // walk swallows errors, so we must raise them ourselves
+      if (!walkErr) {
+        walkErr = err;
+      }
     }
   }}});
+  if (walkErr) {
+    throw walkErr;
+  }
   debug('finished walking tree of schemas');
 
   if (cfg.publish) {
     debug('Publishing schemas');
     assert(cfg.aws, 'Can\'t publish without aws credentials.');
-    assert(cfg.prefix, 'Can\'t publish without prefix');
-    assert(cfg.prefix == '' || /.+\/$/.test(cfg.prefix),
-      'prefix must be empty or should end with a slash');
     let s3Provider = cfg.s3Provider;
     if (!s3Provider) {
       debug('Using default s3 client');
@@ -94,7 +105,7 @@ async function validator(options) {
       return publish.s3(
         s3Provider,
         cfg.bucket,
-        cfg.prefix,
+        `${cfg.serviceName}/`,
         name,
         content
       );
@@ -105,13 +116,12 @@ async function validator(options) {
     debug('Writing schema to local file');
     let dir = 'rendered_schemas';
     rimraf.sync(dir);
-    fs.mkdirSync(dir);
-    await Promise.all(_.map(schemas, (content, name) => {
-      return publish.writeFile(
-        name,
-        content
-      );
-    }));
+    _.forEach(schemas, (content, name) => {
+      const file = path.join(dir, name);
+      const subdir = path.dirname(file);
+      mkdirp.sync(subdir);
+      publish.writeFile(file, content);
+    });
   }
 
   if (cfg.preview) {
@@ -149,7 +159,7 @@ async function validator(options) {
     return null;
   };
 
-  // Add a utility function that can be used to get all of the
+  // Add a utility property that can be used to get all of the
   // schemas that have been loaded.
   validate.schemas = schemas;
 
