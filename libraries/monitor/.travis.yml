@@ -1,8 +1,9 @@
 language: node_js
 sudo: false
 node_js:
-- '6'
 - '8'
+- '9'
+- '10'
 addons:
   apt:
     sources:
@@ -35,4 +36,3 @@ deploy:
   on:
     tags: true
     repo: taskcluster/taskcluster-lib-monitor
-    node: '8'

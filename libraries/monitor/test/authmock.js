@@ -1,4 +1,5 @@
 let debug = require('debug')('test');
+let libUrls = require('taskcluster-lib-urls');
 let nock = require('nock');
 
 let testclients = {
@@ -7,9 +8,9 @@ let testclients = {
 
 exports.setup = () => {
   let date = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
-  nock('https://auth.taskcluster.net')
+  nock(libUrls.testRootUrl())
     .persist()
-    .get(/v1\/sentry\/tc-lib-monitor\/dsn/)
+    .get(/api\/auth\/v1\/sentry\/tc-lib-monitor\/dsn/)
     .reply(200, function(uri) {
       debug('Responding to request for:', uri);
       return {
@@ -21,7 +22,7 @@ exports.setup = () => {
         expires: date,
       };
     })
-    .get(/v1\/statsum\/tc-lib-monitor\/token/)
+    .get(/api\/auth\/v1\/statsum\/tc-lib-monitor\/token/)
     .reply(200, function(uri) {
       debug('Responding to request for:', uri);
       return {

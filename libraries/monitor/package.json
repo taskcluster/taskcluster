@@ -5,14 +5,12 @@
   "description": "Make it easy to hook up monitoring and metrics for taskcluster services.",
   "license": "MPL-2.0",
   "scripts": {
-    "compile": "babel-compile -p taskcluster src:lib test:.test",
     "lint": "eslint src/*.js test/*.js",
-    "prepublish": "yarn compile",
-    "pretest": "yarn lint && yarn compile",
-    "test": "mocha --exit .test/*_test.js"
+    "pretest": "yarn lint",
+    "test": "mocha test/*_test.js"
   },
   "files": [
-    "lib"
+    "src"
   ],
   "repository": {
     "type": "git",
@@ -21,26 +19,25 @@
   "dependencies": {
     "app-root-dir": "^1.0.2",
     "aws-sdk": "^2.30.0",
-    "babel-runtime": "^6.26.0",
     "bluebird": "^3.5.1",
     "debug": "^3.1.0",
     "lodash": "^4.5.1",
     "raven": "^2.2.1",
-    "statsum": "^0.5.1",
-    "taskcluster-client": "^3.0.3",
-    "usage": "^0.7.1"
+    "statsum": "^0.6.0",
+    "taskcluster-client": "^10.0.0"
   },
   "devDependencies": {
     "aws-sdk-mock": "^1.7.0",
-    "babel-compile": "^2.0.0",
-    "babel-preset-taskcluster": "^3.0.0",
     "capture-console": "^1.0.1",
     "eslint-config-taskcluster": "^3.0.0",
     "mocha": "4.0.1",
     "mock-aws-s3": "^2.6.0",
     "nock": "^9.0.28",
-    "source-map-support": "^0.5.0",
-    "taskcluster-lib-testing": "^2.0.2"
+    "taskcluster-lib-testing": "^2.0.2",
+    "taskcluster-lib-urls": "^1.1.0"
   },
-  "main": "./lib/index.js"
+  "main": "./src/index.js",
+  "engines": {
+    "node": ">=8"
+  }
 }

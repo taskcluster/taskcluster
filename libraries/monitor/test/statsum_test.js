@@ -4,6 +4,7 @@ suite('Statsum', () => {
   let debug = require('debug')('test');
   let nock = require('nock');
   let authmock = require('./authmock');
+  let libUrls = require('taskcluster-lib-urls');
 
   let monitor = null;
 
@@ -23,7 +24,8 @@ suite('Statsum', () => {
       }, 2000);
 
       monitor = await monitoring({
-        project: 'tc-lib-monitor',
+        rootUrl: libUrls.testRootUrl(),
+        projectName: 'tc-lib-monitor',
         credentials: {clientId: 'test-client', accessToken: 'test'},
         patchGlobal: false,
         reportStatsumErrors: false,
@@ -51,7 +53,8 @@ suite('Statsum', () => {
   suite('not enabled', function() {
     suiteSetup(async () => {
       monitor = await monitoring({
-        project: 'tc-lib-monitor',
+        rootUrl: libUrls.testRootUrl(),
+        projectName: 'tc-lib-monitor',
         enable: false,
       });
     });

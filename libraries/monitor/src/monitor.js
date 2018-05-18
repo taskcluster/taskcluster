@@ -29,7 +29,7 @@ class Monitor {
 
     this._sentry = this._sentry.then(async (sentry) => {
       if (!sentry.expires || Date.parse(sentry.expires) <= Date.now()) {
-        let sentryInfo = await this._sentryDSN(this._opts.project);
+        let sentryInfo = await this._sentryDSN(this._opts.projectName);
         return {
           client: new raven.Client(sentryInfo.dsn.secret, _.defaults(
             {}, this._opts.sentryOptions, {
@@ -52,7 +52,7 @@ class Monitor {
 
       sentry.client.captureException(err, {
         tags: _.defaults({
-          prefix: this._opts.project + (this._opts.prefix || '.root'),
+          prefix: this._opts.projectName + (this._opts.prefix || '.root'),
           process: this._opts.process || 'unknown',
         }, tags),
         level,
