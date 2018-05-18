@@ -10,10 +10,6 @@ addons:
     packages:
     - g++-4.8
 node_js:
-- '4'
-- '5'
-- '6'
-- '7'
 - '8'
 
 # encrpyt channel name to get around issue
