@@ -24,6 +24,7 @@ suite('api/route', function() {
     route:    '/single-param/:myparam',
     name:     'testParam',
     title:    'Test End-Point',
+    stability:    APIBuilder.stability.stable,
     description:  'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.params.myparam);

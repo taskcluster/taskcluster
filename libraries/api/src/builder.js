@@ -79,6 +79,7 @@ var stability = {
 
 // List of valid stability-levels
 var STABILITY_LEVELS = _.values(stability);
+APIBuilder.stability = stability;
 
 /**
  * Declare an API end-point entry, where options is on the following form:
