@@ -9,10 +9,10 @@ checking, and generation of client libraries.
 ## Quick example
 
 ```js
-let API = require('taskcluster-lib-api');
+let APIBuilder = require('taskcluster-lib-api');
 
-// First declare an API
-let api = new API({
+// First declare API Builder
+let builder = new APIBuilder({
   // Title and description for docs
   title: 'My API',
   name: 'my-api', // Must match /^[a-z][a-z0-9_-]*$/
@@ -26,16 +26,13 @@ let api = new API({
     userId: /^[a-z0-9]+$/
   },
 
-  // Prefix for all schema referenced
-  schemaPrefix: 'http://myschema-site.com/folder/',
-
-  // List of properties required as context in api.router(...)
+  // List of properties required as context when building the API,
   // provided as `this` context to handlers
   context: ['myDataStore']
 });
 
 // Now declare an API method
-api.declare({
+builder.declare({
   method: 'get',
   route:  '/:userId',
   name:   'getUser',
@@ -48,27 +45,35 @@ api.declare({
     data: "in compliance with schema",
   });
 });
+```
 
+then, during application startup:
 
-// Now create an express router
-let router = api.setup({
+```javascript
+let api = builder.build({
+  rootUrl:            cfg.taskcluster.rootUrl,
   context: {
     myDataStore:      new DataStore(),
   },
-  validator:          new base.validator(),
+  validator,
+  monitor,
+  // ...
 });
 
-// Add to express app
-app.use(router);
+// pass it to taskcluster-lib-app
+App({
+  apis: [api],
+  // ...
+});
 ```
 
 ## Declaring APIs
 
-To declare an API, create a new `API` object:
+To declare an API, create a new `APIBuilder` object:
 
 ```js
-const API = require('taskcluster-lib-api');
-let api = new API({
+const APIBuilder = require('taskcluster-lib-api');
+let builder = new APIBuilder({
   // ..options..
 });
 ```
@@ -77,18 +82,18 @@ The available options are:
  * `title` (required) - the title of the API (the microservice name)
  * `description` (required) - a description of the service, treated as markdown
  * `name` (required) - a simple name for the service that will become part of a url
-   This must match the regex `/^[a-z][a-z0-9_-]*$/`. It will be the following part of a url:
-   `https://whatever.net/api/<name>/v1/endpoint`.
- * `schemaPrefix` - the prefix for the schema definitions for this service
+   This must match the regex `/^[a-z][a-z0-9_-]*$/`. This must be the same as the
+   `serviceName` used elsewhere to define the service.
+ * `version` (required) - version of this API, such as `'v1'`.
  * `params` - patterns for URL parameters that apply to all methods (see below)
- * `context` - a list of context entries that must be passed to `api.setup`.  Each
+ * `context` - a list of context entries that must be passed to `builder.build`.  Each
    will be available as properties of `this` within the implementation of each API
    method.
  * `errorCodes` - a mapping from error names to HTTP statuses, e.g., `{MyError: 400}`
 
 ## Declaring methods
 
-To declare an API method, call `api.declare(options, handler)` with the following options.
+To declare an API method, call `builder.declare(options, handler)` with the following options.
 
  * `name` (required) - identifier with which the method can be called from client
    libraries (camelCase)
@@ -209,11 +214,32 @@ endpoint implementation _must_ check for authorization manually as described bel
 this check does not occur, taskcluster-lib-api will throw an error for the result of the
 endpoint.
 
+### Schemas
+
+The `input` and `output` properties of an API method declration name
+JSON-schema files which the method input payload and output body must satisfy.
+The output property can also have the special property `blob` indicating that
+it is not a JSON value, but this is rarely used.
+
+The schema declarations are expected to be in
+`schemas/<api.version>/<schemafile>`, as loaded by taskcluster-lib-validate.
+For example:
+
+```js
+builder.declare({
+  // ...
+  input: 'important-stuff.yml',
+});
+```
+
+you may see names ending in `.json` or `.json#`. While still supported, such
+usage is deprecated.
+
 ### Stability Levels
 
-The API stability levels are available as properties of `API.stability`:
+The API stability levels are available as properties of `APIBuilder.stability`:
 
-*`API.stability.experimental`*
+*`APIBuilder.stability.experimental`*
 
 Unless otherwise stated, experimental interfaces may change and resources may
 be deleted without warning. Often we will, however, try to deprecate the API
@@ -232,7 +258,7 @@ Generally, this is a good stability level for anything under-development, or
 when we know that there is a limited number of consumers so fixing the world
 after breaking the API is easy.
 
-*`API.stability.stable`*
+*`APIBuilder.stability.stable`*
 
 Indicates that the API method is stable and we will not delete resources or
 break the API suddenly.  As a guideline we will always facilitate gradual
@@ -243,7 +269,7 @@ Intended Usage:
  * API end-points used in critical production.
  * APIs so widely used that refactoring would be hard.
 
-*`API.stability.deprecated`*
+*`APIBuilder.stability.deprecated`*
 
 Indicates that the API method has been marked for deprecation and should not be
 used in new clients.
@@ -365,72 +391,55 @@ reproduce its contents within the error message.
 anti-pattern.  While you may see older code that still follows this pattern, do
 not repeat it!
 
-## API Server Setup
+## Building an API
 
-The API instance will have a `setup` method that takes additional options and
-returns a router which can be passed to an Express app's `app.use`.  The options
-to `api.setup` are:
+The `APIBuilder` instance will have an async `build` method that takes additional options and
+returns an API instance which can be passed to
+[taskcluster-lib-app](https://github.com/taskcluster/taskcluster-lib-app).  The
+options to `builder.build` are:
 
+ * `rootUrl` - the root URL for this instance of Taskcluster; this is used both to call the
+   auth service to validate credentials, and to generate relevant URLs for this service.
  * `inputLimit` - maximum input size, defaulting to`"10mb"`
  * `allowedCORSOrigin` - Allowed CORS origin, or null to disable CORS; defaults to `"*"`
  * `context` - Object to be provided as `this` in handlers.  This must have exactly the properties
    specified in `context` when the API was declared.  The purpose of this parameter is to
    provide uesful application-specific objects such as Azure table objects or
    other API clients to the API methods.
+ * `monitor` - an instance of [taskcluster-lib-monitor](https://github.com/taskcluster/taskcluster-lib-monitor)
  * `validator` (required) - a schema validator; this is a Validator object from
    [taskcluster-lib-validate](https://github.com/taskcluster/taskcluster-lib-validate).
  * `signatureValidator` - a validator for Hawk signatures; this is only required for
    the Auth service, as the default signature validator consults the Auth service.
- * `authBaseUrl` - base URL for the Auth service to use for authorizing requests; defaults
-   to https://auth.taskcluster.net/v1
  * `nonceManager` - a function to check for replay attacks (seldom used)
- * `baseUrl` -  URL under which routes are mounted; generally something like `publicUrl + "/v1"`
+
+For publishing (only supported for the legacy URL scheme):
  * `publish` - if true, publish the API metadata where documentation and client libraries
    can find it (should only be true for production deployments)
  * `referenceBucket` - Amazon S3 bucket to which references should be published (required if
    `publish` is true); defaults to `references.taskclutser.net`.
- * `referencePrefix` - Prefix within the reference bucket; something like
-   `myservice/v1/api.json` (required if `publish` is true)
  * `aws` - AWS credentials for uploading to the reference bucket (required if `publish` is true);
    has the form `{accessKeyId: .., secretAccessKey: .., region: ..}`.
- * `monitor` - an instance of [taskcluster-lib-monitor](https://github.com/taskcluster/taskcluster-lib-monitor)
 
-The result is an `express.Router` instance.
+The resulting object has a `references()` method that will return the API
+reference data structure, and an `express(app)` method that configures the API
+on the given express app.
 
 For most TaskCluster services, the startup process uses
 [taskcluster-lib-loader](https://github.com/taskcluster/taskcluster-lib-loader),
 and the relevant loader components are defined like this:
 
 ```js
+const builder = require('./api');
+const App = require('taskcluster-lib-app');
+
 let load = loader({
   // ...
-  monitor: {
-    requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitor({
-      project: cfg.app.name,
-      credentials: cfg.taskcluster.credentials,
-      mock: profile === 'test',
-      process,
-    }),
-  },
-
-  validator: {
-    requires: ['cfg'],
-    setup: ({cfg}) => validator({
-      prefix: 'myservice/v1/',
-      aws: cfg.aws,
-    }),
-  },
-
   api: {
     requires: ['cfg', 'monitor', 'validator'],
-    setup: ({cfg, monitor, validator}) => api.setup({
+    setup: ({cfg, monitor, validator}) => builder.build({
+      rootUrl:          cfg.taskcluster.rootUrl,
       context:          {..},
-      authBaseUrl:      cfg.taskcluster.authBaseUrl,
-      publish:          process.env.NODE_ENV === 'production',
-      baseUrl:          cfg.server.publicUrl + '/v1',
-      referencePrefix:  'myservice/v1/api.json',
-      aws:              cfg.aws,
       monitor:          monitor.prefix('api'),
       validator,
     }),
@@ -438,24 +447,12 @@ let load = loader({
 
   server: {
     requires: ['cfg', 'api'],
-    setup: ({cfg, api}) => {
-      debug('Launching server.');
-      let app = App(cfg.server);
-      app.use('/v1', api);
-      return app.createServer();
-    },
+    setup: ({cfg, api}) => App({
+      // ...
+      apis: [api],
+    }),
   },
 }, ['profile', 'process']);
-
-if (!module.parent) {
-  load(process.argv[2], {
-    process: process.argv[2],
-    profile: process.env.NODE_ENV,
-  }).catch(err => {
-    console.log(err.stack);
-    process.exit(1);
-  });
-}
 ```
 
 Consult the source of some of the existing TaskCluster services direcly for

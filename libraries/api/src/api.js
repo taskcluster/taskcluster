@@ -1,25 +1,37 @@
-var express = require('express');
-var Debug = require('debug');
-var Promise = require('promise');
-var hawk = require('hawk');
-var aws = require('aws-sdk');
-var assert = require('assert');
-var _ = require('lodash');
-var bodyParser = require('body-parser');
-var path = require('path');
-var fs = require('fs');
-var scopes = require('taskcluster-lib-scopes');
-var crypto = require('crypto');
-var taskcluster = require('taskcluster-client');
-var Ajv = require('ajv');
-var typeis = require('type-is');
-var errors = require('./errors');
-var ScopeExpressionTemplate = require('./expressions');
+const express = require('express');
+const url = require('url');
+const Debug = require('debug');
+const Promise = require('promise');
+const hawk = require('hawk');
+const aws = require('aws-sdk');
+const assert = require('assert');
+const _ = require('lodash');
+const bodyParser = require('body-parser');
+const path = require('path');
+const fs = require('fs');
+const scopes = require('taskcluster-lib-scopes');
+const libUrls = require('taskcluster-lib-urls');
+const crypto = require('crypto');
+const taskcluster = require('taskcluster-client');
+const Ajv = require('ajv');
+const typeis = require('type-is');
+const errors = require('./errors');
+const ScopeExpressionTemplate = require('./expressions');
 
-// Default baseUrl for authentication server
-var AUTH_BASE_URL = 'https://auth.taskcluster.net/v1';
+const debug = Debug('api');
 
-var ping = {
+/* In production, log authorizations so they are included in papertrail regardless of
+ * DEBUG settings; otherwise, log with debug
+ */
+let authLog = (...args) => console.log(...args);
+if (process.env.NODE_ENV !== 'production') {
+  authLog = Debug('api.authz');
+}
+
+/**
+ * A ping method, added automatically to every service
+ */
+const ping = {
   method:   'get',
   route:    '/ping',
   name:     'ping',
@@ -37,14 +49,258 @@ var ping = {
   },
 };
 
-var debug = Debug('api');
+/** Return [route, params] from route */
+const _cleanRouteAndParams = (route) => {
+  // Find parameters for entry
+  const params = [];
+  // Note: express uses the NPM module path-to-regexp for parsing routes
+  // when modifying this to support more complicated routes it can be
+  // beneficial lookup the source of this module:
+  // https://github.com/component/path-to-regexp/blob/0.1.x/index.js
+  route = route.replace(/\/:(\w+)(\(.*?\))?\??/g, (match, param) => {
+    params.push(param);
+    return '/<' + param + '>';
+  });
+  return [route, params];
+};
 
-/* In production, log authorizations so they are included in papertrail regardless of
- * DEBUG settings; otherwise, log with debug
+/**
+ * A service represents an instance of an API at a specific rootUrl, ready to
+ * provide an Express router, references, etc.  It is constructed by APIBuilder.build().
  */
-var authLog = (...args) => console.log(...args);
-if (process.env.NODE_ENV !== 'production') {
-  var authLog = Debug('api.authz');
+class API {
+  constructor(options) {
+    assert(!options.authBaseUrl, 'authBaseUrl option is no longer allowed');
+    assert(!options.baseUrl, 'baseUrl option is no longer allowed');
+    assert(options.builder, 'builder option is required');
+    assert(options.rootUrl, 'rootUrl option is required');
+    assert(!options.referencePrefix, 'referencePrefix is now deprecated!');
+
+    options = _.defaults({}, options, {
+      inputLimit:           '10mb',
+      allowedCORSOrigin:    '*',
+      context:              {},
+      nonceManager:         nonceManager(),
+      referenceBucket:      'references.taskcluster.net',
+      signatureValidator:   createRemoteSignatureValidator({
+        rootUrl: options.rootUrl,
+      }),
+      name: options.builder.name,
+      version: options.builder.version,
+    });
+    this.builder = options.builder;
+
+    // validate context
+    this.builder.context.forEach(function(property) {
+      assert(options.context[property] !== undefined,
+        'Context must have declared property: \'' + property + '\'');
+    });
+
+    Object.keys(options.context).forEach(property => {
+      assert(this.builder.context.indexOf(property) !== -1,
+        `Context has unexpected property: ${property}`);
+    });
+
+    // make `entries` specific to this rootUrl (and add ping)
+    this.entries = _.concat(this.builder.entries, [ping]).map((entry) => {
+      entry = _.clone(entry);
+
+      // fully-qualify schema references
+      if (entry.input) {
+        assert(!entry.input.startsWith('http'), 'entry.input should be a filename, not a url');
+        entry.input = libUrls.schema(options.rootUrl, this.builder.name, `${this.builder.version}/${entry.input}`);
+      }
+      if (entry.output && entry.output !== 'blob') {
+        assert(!entry.output.startsWith('http'), 'entry.output should be a filename, not a url');
+        entry.output = libUrls.schema(options.rootUrl, this.builder.name, `${this.builder.version}/${entry.output}`);
+      }
+      return entry;
+    });
+
+    this.options = options;
+  }
+
+  /**
+   * Construct the API reference document as a JSON value.
+   */
+  reference() {
+    const {builder} = this;
+    var reference = {
+      version:            0,
+      $schema:            'http://schemas.taskcluster.net/base/v1/api-reference.json#',
+      title:              builder.title,
+      description:        builder.description,
+      baseUrl:            libUrls.api(this.options.rootUrl, builder.name, builder.version, ''),
+      name:               builder.name,
+      entries: this.entries.filter(entry => !entry.noPublish).map(entry => {
+        const [route, params] = _cleanRouteAndParams(entry.route);
+        var retval = {
+          type:           'function',
+          method:         entry.method,
+          route:          route,
+          query:          _.keys(entry.query || {}),
+          args:           params,
+          name:           entry.name,
+          stability:      entry.stability,
+          title:          entry.title,
+          input:          entry.input,
+          output:         entry.output,
+          description:    entry.description,
+        };
+        if (entry.scopes) {
+          retval.scopes = entry.scopes;
+        }
+        return retval;
+      }),
+    };
+
+    var ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
+    var schemaPath = path.join(__dirname, 'schemas', 'api-reference.json');
+    var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
+    var validate = ajv.compile(JSON.parse(schema));
+
+    // Check against it
+    var valid = validate(reference);
+    if (!valid) {
+      debug('Reference:\n%s', JSON.stringify(reference, null, 2));
+      throw new Error(`API.references(): Failed to validate against schema:\n
+        ${ajv.errorsText(validate.errors, {separator: '\n  * '})}`);
+    }
+
+    return reference;
+  }
+
+  /**
+   * Publish this schema to an S3 bucket.
+   *
+   * This is only used for the `taskcluster.net` deployment.
+   */
+  async publish() {
+    // Check that required options are provided
+    assert(this.options.referenceBucket, '`referenceBucket` is required in order ot publish');
+    assert(this.options.aws, '`aws` is required in order ot publish');
+
+    // Create S3 object
+    var s3 = new aws.S3(this.options.aws);
+
+    // Upload object
+    await s3.putObject({
+      Bucket:           this.options.referenceBucket,
+      Key:              libUrls.apiReference('', this.builder.name, this.builder.version),
+      Body:             JSON.stringify(this.reference(), undefined, 2),
+      ContentType:      'application/json',
+    }).promise();
+  }
+
+  /**
+    * Create an express router, rooted *after* the version in the URL path
+    */
+  router() {
+    let {
+      builder,
+      monitor,
+      allowedCORSOrigin,
+      rootUrl,
+      inputLimit,
+      signatureValidator,
+      validator,
+      context,
+    } = this.options;
+
+    // Create router
+    var router = express.Router();
+
+    // Allow CORS requests to the API
+    if (allowedCORSOrigin) {
+      router.use(function(req, res, next) {
+        res.header('Access-Control-Allow-Origin', allowedCORSOrigin);
+        res.header('Access-Control-Max-Age', 900);
+        res.header('Access-Control-Allow-Methods', [
+          'OPTIONS',
+          'GET',
+          'HEAD',
+          'POST',
+          'PUT',
+          'DELETE',
+          'TRACE',
+          'CONNECT',
+        ].join(','));
+        res.header('Access-Control-Request-Method', '*');
+        res.header('Access-Control-Allow-Headers',  [
+          'X-Requested-With',
+          'Content-Type',
+          'Authorization',
+          'Accept',
+          'Origin',
+        ].join(','));
+        next();
+      });
+    }
+
+    router.use(function(req, res, next) {
+      res.header('Cache-Control', 'no-store no-cache must-revalidate');
+      next();
+    });
+
+    // Add entries to router
+    this.entries.forEach(entry => {
+      // Route pattern
+      var middleware = [entry.route];
+
+      if (monitor) {
+        middleware.push(monitor.expressMiddleware(entry.name));
+      }
+
+      // Add authentication, schema validation and handler
+      middleware.push(
+        errors.BuildReportErrorMethod(
+          entry.name, builder.errorCodes, monitor,
+          entry.cleanPayload
+        ),
+        bodyParser.text({
+          limit:          inputLimit,
+          type:           'application/json',
+        }), function(req, res, next) {
+          // Use JSON middleware, and add hack to store text as req.text
+          if (typeof req.body === 'string' && req.body !== '') {
+            req.text = req.body;
+            try {
+              req.body = JSON.parse(req.text);
+              if (!(req.body instanceof Object)) {
+                throw new Error('Must be an object or array');
+              }
+            } catch (err) {
+              return res.reportError(
+                'MalformedPayload', 'Failed to parse JSON: {{errMsg}}', {
+                  errMsg: err.message,
+                });
+            }
+          } else {
+            req.text = '';
+            req.body = {};
+          }
+          next();
+        },
+        remoteAuthentication({signatureValidator}, entry),
+        parameterValidator(entry.params),
+        queryValidator(entry.query),
+        schema(validator, entry),
+        handle(entry.handler, context)
+      );
+
+      // Create entry on router
+      router[entry.method].apply(router, middleware);
+    });
+
+    // Return router
+    return router;
+  }
+
+  express(app) {
+    // generate the appropriate path for this service, based on the rootUrl
+    const path = url.parse(libUrls.api(this.options.rootUrl, this.builder.name, this.builder.version, '')).path;
+    app.use(path, this.router());
+  }
 }
 
 /**
@@ -62,7 +318,7 @@ if (process.env.NODE_ENV !== 'production') {
  * present must match the pattern given in `options` or the request will be
  * rejected with a 400 error message.
  */
-var parameterValidator = function(options) {
+const parameterValidator = function(options) {
   // Validate options
   _.forIn(options, function(pattern, param) {
     assert(pattern instanceof RegExp || pattern instanceof Function,
@@ -265,7 +521,7 @@ var nonceManager = function(options) {
  *
  * options:
  * {
- *    authBaseUrl:   'https://....' // baseUrl for authentication server
+ *    rootUrl:   ..
  * }
  *
  * The function returns takes an object:
@@ -279,9 +535,9 @@ var nonceManager = function(options) {
  * `remoteAuthentication`.
  */
 var createRemoteSignatureValidator = function(options) {
-  assert(options.authBaseUrl, 'options.authBaseUrl is required');
+  assert(options.rootUrl, 'options.rootUrl is required');
   var auth = new taskcluster.Auth({
-    baseUrl: options.authBaseUrl,
+    rootUrl: options.rootUrl,
     credentials: {}, // We do this to avoid sending auth headers to authenticateHawk
   });
   return function(data) {
@@ -471,7 +727,7 @@ var remoteAuthentication = function(options, entry) {
     scopeTemplate = new ScopeExpressionTemplate(entry.scopes);
     // Write route parameters into {[param]: ''}
     // if these are valid parameters, then we can parameterize using req.params
-    let [, params] = cleanRouteAndParams(entry.route);
+    let [, params] = _cleanRouteAndParams(entry.route);
     params = Object.assign({}, ...params.map(p => ({[p]: ''})));
     useUrlParams = scopeTemplate.validate(params);
   }
@@ -601,9 +857,8 @@ var remoteAuthentication = function(options, entry) {
  *
  * This invokes the handler with `context` as `this` and then catches
  * exceptions and failures of returned promises handler.
- * Errors are reported as internal errors with `name` as API method name.
  */
-var handle = function(handler, context, name) {
+var handle = function(handler, context) {
   assert(handler, 'No handler is provided');
   return function(req, res) {
     Promise.resolve(null).then(function() {
@@ -622,490 +877,13 @@ var handle = function(handler, context, name) {
       } else if (err.code === 'AuthenticationError') {
         return res.reportError('AuthenticationFailed', err.message, err.details);
       }
+      //console.log(err);
       return res.reportInternalError(err);
     });
   };
 };
 
-/**
- * Create an API builder
- *
- * options:
- * {
- *   title:         "API Title",
- *   description:   "API description in markdown",
- *   schemaPrefix:  "http://schemas..../queue/",    // Prefix for all schemas
- *   params: {                                      // Patterns for URL params
- *     param1:  /.../,                // Reg-exp pattern
- *     param2(val) { return "..." }   // Function, returns message if invalid
- *   },
- *   context:       [],               // List of required context properties
- *   errorCodes: {
- *     MyError:     400,              // Mapping from error code to HTTP status
- *   }
- * }
- *
- * The API object will only modified by declarations, when `mount` or `publish`
- * is called it'll use the currently defined entries to mount or publish the
- * API.
- */
-var API = function(options) {
-  ['title', 'description', 'name'].forEach(function(key) {
-    assert(options[key], 'Option \'' + key + '\' must be provided');
-  });
-  assert(/^[a-z][a-z0-9_-]*$/.test(options.name), `api name "${options.name}" is not valid`);
-  this._options = _.defaults({
-    errorCodes: _.defaults({}, options.errorCodes || {}, errors.ERROR_CODES),
-  }, options, {
-    schemaPrefix:   '',
-    params:         {},
-    context:        [],
-    errorCodes:     {},
-  });
-  _.forEach(this._options.errorCodes, (value, key) => {
-    assert(/[A-Z][A-Za-z0-9]*/.test(key), 'Invalid error code: ' + key);
-    assert(typeof value === 'number', 'Expected HTTP status code to be int');
-  });
-  this._entries = [];
-};
-
-/** Stability levels offered by API method */
-var stability = {
-  /**
-   * API has been marked for deprecation and should not be used in new clients.
-   *
-   * Note, documentation string for a deprecated API end-point should outline
-   * the deprecation strategy.
-   */
-  deprecated:       'deprecated',
-  /**
-   * Unless otherwise stated API may change and resources may be deleted
-   * without warning. Often we will, however, try to deprecate the API first
-   * and keep around as `deprecated`.
-   *
-   * **Intended Usage:**
-   *  - Prototype API end-points,
-   *  - API end-points intended displaying unimportant state.
-   *    (e.g. API to fetch state from a provisioner)
-   *  - Prototypes used in non-critical production by third parties,
-   *  - API end-points of little public interest,
-   *    (e.g. API to define workerTypes for a provisioner)
-   *
-   * Generally, this is a good stability levels for anything under-development,
-   * or when we know that there is a limited number of consumers so fixing
-   * the world after breaking the API is easy.
-   */
-  experimental:     'experimental',
-  /**
-   * API is stable and we will not delete resources or break the API suddenly.
-   * As a guideline we will always facilitate gradual migration if we change
-   * a stable API.
-   *
-   * **Intended Usage:**
-   *  - API end-points used in critical production.
-   *  - APIs so widely used that refactoring would be hard.
-   */
-  stable:           'stable',
-};
-
-// List of valid stability-levels
-var STABILITY_LEVELS = _.values(stability);
-
-/**
- * Declare an API end-point entry, where options is on the following form:
- *
- * {
- *   method:   'post|head|put|get|delete',
- *   route:    '/object/:id/action/:param',      // URL pattern with parameters
- *   params: {                                   // Patterns for URL params
- *     param: /.../,                             // Reg-exp pattern
- *     id(val) { return "..." }                  // Function, returns message
- *                                               // if value is invalid
- *     // The `params` option from new API(), will be used as fall-back
- *   },
- *   query: {                                    // Query-string parameters
- *     offset: /.../,                            // Reg-exp pattern
- *     limit(n) { return "..." }                 // Function, returns message
- *                                               // if value is invalid
- *     // Query-string options are always optional (at-least in this iteration)
- *   },
- *   name:     'identifierForLibraries',         // identifier for client libraries
- *   stability: base.API.stability.experimental, // API stability level
- *   scopes:   ['admin', 'superuser'],           // Scopes for the request
- *   scopes:   [['admin'], ['per1', 'per2']],    // Scopes in disjunctive form
- *                                               // admin OR (per1 AND per2)
- *   input:    'input-schema.json',              // optional, null if no input
- *   output:   'output-schema.json' || 'blob',   // optional, null if no output
- *   skipInputValidation:    true,               // defaults to false
- *   skipOutputValidation:   true,               // defaults to false
- *   title:     "My API Method",
- *   noPublish: true                             // defaults to false, causes
- *                                               // endpoint to be left out of api
- *                                               // references
- *   description: [
- *     "Description of method in markdown, enjoy"
- *   ].join('\n'),
- *   cleanPayload: payload => payload,           // function to 'clean' the payload for
- *                                               // error messages (e.g., remove secrets)
- * }
- *
- * The handler parameter is a normal connect/express request handler, it should
- * return JSON replies with `request.reply(json)` and errors with
- * `request.json(code, json)`, as `request.reply` may be validated against the
- * declared output schema.
- *
- * **Note** the handler may return a promise, if this promise fails we will
- * log the error and return an error message. If the promise is successful,
- * nothing happens.
- */
-API.prototype.declare = function(options, handler) {
-  ['name', 'method', 'route', 'title', 'description'].forEach(function(key) {
-    assert(options[key], 'Option \'' + key + '\' must be provided');
-  });
-  // Default to experimental API end-points
-  if (!options.stability) {
-    options.stability = stability.experimental;
-  }
-  assert(STABILITY_LEVELS.indexOf(options.stability) !== -1,
-    'options.stability must be a valid stability-level, ' +
-         'see base.API.stability for valid options');
-  options.params = _.defaults({}, options.params || {}, this._options.params);
-  options.query = options.query || {};
-  _.forEach(options.query, (value, key) => {
-    if (!(value instanceof RegExp || value instanceof Function)) {
-      throw new Error('query.' + key + ' must be a RegExp or a function!');
-    }
-  });
-  assert(!options.deferAuth,
-    'deferAuth is deprecated! https://github.com/taskcluster/taskcluster-lib-api#request-handlers');
-  if (options.scopes && !ScopeExpressionTemplate.validate(options.scopes)) {
-    throw new Error(`Invalid scope expression template: ${JSON.stringify(options.scopes, null, 2)}`);
-  }
-  options.handler = handler;
-  if (options.input) {
-    options.input = this._options.schemaPrefix + options.input;
-  }
-  if (options.output && options.output !== 'blob') {
-    options.output = this._options.schemaPrefix + options.output;
-  }
-  if (this._entries.filter(entry => entry.route == options.route && entry.method == options.method).length > 0) {
-    throw new Error('Identical route and method declaration.');
-  }
-  if (this._entries.some(entry => entry.name === options.name)) {
-    throw new Error('This function has already been declared.');
-  }
-  this._entries.push(options);
-};
-
-/**
- * Construct a router that can be mounted on an express application
- *
- * options:
- * {
- *   inputLimit:          '10mb'  // Max input JSON size
- *   allowedCORSOrigin:   '*'     // Allowed CORS origin, null to disable CORS
- *   context:             {}      // Object to be provided as `this` in handlers
- *   validator:           new base.validator()      // JSON schema validator
- *   nonceManager:        function(nonce, ts, cb) { // Check for replay attack
- *   authBaseUrl:         'http://auth.example.net' // BaseUrl for auth server
- *   monitor:             await require('taskcluster-lib-monitor')({...}),
- * }
- *
- * The option `validator` must provided.
- *
- * Return an `express.Router` instance.
- */
-API.prototype.router = function(options) {
-  assert(options.validator);
-
-  // Provide default options
-  options = _.defaults({}, options, {
-    inputLimit:           '10mb',
-    allowedCORSOrigin:    '*',
-    context:              {},
-    nonceManager:         nonceManager(),
-    signatureValidator:   createRemoteSignatureValidator({
-      authBaseUrl:        options.authBaseUrl || AUTH_BASE_URL,
-    }),
-  });
-
-  // Validate context
-  this._options.context.forEach(function(property) {
-    assert(options.context[property] !== undefined,
-      'Context must have declared property: \'' + property + '\'');
-  });
-
-  Object.keys(options.context).forEach(property => {
-    assert(this._options.context.indexOf(property) !== -1,
-      `Context has unexpected property: ${property}`);
-  });
-
-  // Create caching authentication strategy if possible
-  if (options.clientLoader || options.credentials) {
-    throw new Error('options.clientLoader and options.credentials are no longer ' +
-                    'supported; use remote signature validation');
-  }
-
-  if (options.drain || options.component || options.raven) {
-    throw new Error('taskcluster-lib-stats is now deprecated!\n' +
-                'Use the `monitor` option rather than `drain`.\n' +
-                '`monitor` should be an instance of taskcluster-lib-monitor.\n' +
-                '`component` is no longer needed. Prefix your `monitor` before use.\n' +
-                '`raven` is deprecated. An instance of `monitor` will work instead.');
-  }
-
-  var monitor = null;
-  if (options.monitor) {
-    monitor = options.monitor;
-  }
-
-  // Create router
-  var router = express.Router();
-
-  // Allow CORS requests to the API
-  if (options.allowedCORSOrigin) {
-    router.use(function(req, res, next) {
-      res.header('Access-Control-Allow-Origin',   options.allowedCORSOrigin);
-      res.header('Access-Control-Max-Age', 900);
-      res.header('Access-Control-Allow-Methods', [
-        'OPTIONS',
-        'GET',
-        'HEAD',
-        'POST',
-        'PUT',
-        'DELETE',
-        'TRACE',
-        'CONNECT',
-      ].join(','));
-      res.header('Access-Control-Request-Method', '*');
-      res.header('Access-Control-Allow-Headers',  [
-        'X-Requested-With',
-        'Content-Type',
-        'Authorization',
-        'Accept',
-        'Origin',
-      ].join(','));
-      next();
-    });
-  }
-
-  router.use(function(req, res, next) {
-    res.header('Cache-Control', 'no-store no-cache must-revalidate');
-    next();
-  });
-
-  // Add entries to router
-  _.concat(this._entries, [ping]).forEach(entry => {
-    // Route pattern
-    var middleware = [entry.route];
-
-    if (monitor) {
-      middleware.push(monitor.expressMiddleware(entry.name));
-    }
-
-    // Add authentication, schema validation and handler
-    middleware.push(
-      errors.BuildReportErrorMethod(
-        entry.name, this._options.errorCodes, monitor,
-        entry.cleanPayload
-      ),
-      bodyParser.text({
-        limit:          options.inputLimit,
-        type:           'application/json',
-      }), function(req, res, next) {
-        // Use JSON middleware, and add hack to store text as req.text
-        if (typeof req.body === 'string' && req.body !== '') {
-          req.text = req.body;
-          try {
-            req.body = JSON.parse(req.text);
-            if (!(req.body instanceof Object)) {
-              throw new Error('Must be an object or array');
-            }
-          } catch (err) {
-            return res.reportError(
-              'MalformedPayload', 'Failed to parse JSON: {{errMsg}}', {
-                errMsg: err.message,
-              });
-          }
-        } else {
-          req.text = '';
-          req.body = {};
-        }
-        next();
-      },
-      remoteAuthentication({
-        signatureValidator: options.signatureValidator,
-      }, entry),
-      parameterValidator(entry.params),
-      queryValidator(entry.query),
-      schema(options.validator, entry),
-      handle(entry.handler, options.context, options.name)
-    );
-
-    // Create entry on router
-    router[entry.method].apply(router, middleware);
-  });
-
-  // Return router
-  return router;
-};
-
-/** Return [route, params] from route */
-const cleanRouteAndParams = (route) => {
-  // Find parameters for entry
-  const params = [];
-  // Note: express uses the NPM module path-to-regexp for parsing routes
-  // when modifying this to support more complicated routes it can be
-  // beneficial lookup the source of this module:
-  // https://github.com/component/path-to-regexp/blob/0.1.x/index.js
-  route = route.replace(/\/:(\w+)(\(.*?\))?\??/g, (match, param) => {
-    params.push(param);
-    return '/<' + param + '>';
-  });
-  return [route, params];
-};
-
-/**
- * Construct API reference as JSON
- *
- * options:
- * {
- *   baseUrl:       'https://example.com/v1'  // URL where routes are mounted
- * }
- */
-API.prototype.reference = function(options) {
-  assert(options, '\'Options\' is required');
-  assert(options.baseUrl, 'A \'baseUrl\' must be provided');
-  var reference = {
-    version:            0,
-    $schema:            'http://schemas.taskcluster.net/base/v1/api-reference.json#',
-    title:              this._options.title,
-    description:        this._options.description,
-    baseUrl:            options.baseUrl,
-    name:               this._options.name,
-    entries: _.concat(this._entries, [ping]).filter(entry => !entry.noPublish).map(function(entry) {
-      const [route, params] = cleanRouteAndParams(entry.route);
-      var retval = {
-        type:           'function',
-        method:         entry.method,
-        route:          route,
-        query:          _.keys(entry.query || {}),
-        args:           params,
-        name:           entry.name,
-        stability:      entry.stability,
-        title:          entry.title,
-        description:    entry.description,
-      };
-      if (entry.scopes) {
-        retval.scopes = entry.scopes;
-      }
-      if (entry.input) {
-        retval.input  = entry.input;
-      }
-      if (entry.output) {
-        retval.output = entry.output;
-      }
-      return retval;
-    }),
-  };
-
-  var ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
-  var schemaPath = path.join(__dirname, 'schemas', 'api-reference.json');
-  var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
-  var validate = ajv.compile(JSON.parse(schema));
-
-  // Check against it
-  var valid = validate(reference);
-  if (!valid) {
-    debug('Reference:\n%s', JSON.stringify(reference, null, 2));
-    throw new Error(`API.references(): Failed to validate against schema:\n
-      ${ajv.errorsText(validate.errors, {separator: '\n  * '})}`);
-  }
-
-  return reference;
-};
-
-/**
- * Publish API reference to URL with given end-point
- *
- * options:
- * {
- *   baseUrl:         'https://example.com/v1' // URL where routes are mounted
- *   referencePrefix: 'queue/v1/api.json'      // Prefix within S3 bucket
- *   referenceBucket: 'reference.taskcluster.net',
- *   aws: {             // AWS credentials and region
- *    accessKeyId:      '...',
- *    secretAccessKey:  '...',
- *    region:           'us-west-2'
- *   }
- * }
- *
- * Return a promise that reference was published.
- */
-API.prototype.publish = function(options) {
-  // Provide default options
-  options = _.defaults({}, options, {
-    referenceBucket:    'references.taskcluster.net',
-  });
-  // Check that required options are provided
-  ['baseUrl', 'referencePrefix', 'aws'].forEach(function(key) {
-    assert(options[key], 'Option \'' + key + '\' must be provided');
-  });
-  // Create S3 object
-  var s3 = new aws.S3(options.aws);
-  // Upload object
-  return s3.putObject({
-    Bucket:           options.referenceBucket,
-    Key:              options.referencePrefix,
-    Body:             JSON.stringify(this.reference(options), undefined, 2),
-    ContentType:      'application/json',
-  }).promise();
-};
-
-/**
- * Setup API, by publishing reference and returning an `express.Router`.  Also
- * documented in the README
- *
- * options:
- * {
- *   inputLimit:          '10mb'  // Max input JSON size
- *   allowedCORSOrigin:   '*'     // Allowed CORS origin, null to disable CORS
- *   context:             {}      // Object to be provided as `this` in handlers
- *   validator:           new base.validator()      // JSON schema validator
- *   nonceManager:        function(nonce, ts, cb) { // Check for replay attack
- *   authBaseUrl:         'http://auth.example.net' // BaseUrl for auth server
- *   publish:             true,                     // Publish API reference
- *   baseUrl:             'https://example.com/v1'  // URL under which routes are mounted
- *   referencePrefix:     'queue/v1/api.json'       // Prefix within S3 bucket
- *   referenceBucket:     'reference.taskcluster.net',
- *   aws: {               // AWS credentials and region
- *    accessKeyId:        '...',
- *    secretAccessKey:    '...',
- *    region:             'us-west-2'
- *   }
- * }
- *
- * The option `validator` must provided.
- *
- * Return an `express.Router` instance.
- */
-API.prototype.setup = function(options) {
-  var that = this;
-  return Promise.resolve(null).then(function() {
-    if (options.publish) {
-      return that.publish(options);
-    }
-  }).then(function() {
-    return that.router(options);
-  });
-};
-
-// Export API
 module.exports = API;
 
-// Export middleware utilities
-API.schema        = schema;
-API.handle        = handle;
-API.stability     = stability;
-API.nonceManager  = nonceManager;
-API.remoteAuthentication = remoteAuthentication;
+// for tests
+module.exports.nonceManager = nonceManager;
