@@ -52,7 +52,7 @@ type TaskStatusManager struct {
 	stopReclaiming chan struct{}
 	// closed when reclaim loop exits
 	reclaimingDone chan struct{}
-	// true if task completed, failed, errored or was aborted
+	// true if reclaims are no longer taking place for this task
 	finishedReclaiming bool
 }
 
