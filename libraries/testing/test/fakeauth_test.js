@@ -3,20 +3,23 @@ var _            = require('lodash');
 var nock         = require('nock');
 var hawk         = require('hawk');
 var request      = require('superagent');
-var validator    = require('taskcluster-lib-validate');
-var API          = require('taskcluster-lib-api');
+var libValidate  = require('taskcluster-lib-validate');
+var APIBuilder   = require('taskcluster-lib-api');
 var App          = require('taskcluster-lib-app');
 var assert       = require('assert');
 var taskcluster  = require('taskcluster-client');
 var Promise      = require('promise');
 var path         = require('path');
+var libUrls      = require('taskcluster-lib-urls');
 
-var testApi = new API({
+var builder = new APIBuilder({
   title:        'Test Server',
   description:  'for testing',
+  name:         'test',
+  version:      'v1',
 });
 
-testApi.declare({
+builder.declare({
   method:       'get',
   route:        '/test',
   name:         'test',
@@ -36,38 +39,36 @@ testApi.declare({
 });
 
 suite('fakeauth', function() {
-  var fakeauth = require('../lib/fakeauth');
+  const rootUrl = 'http://localhost:1208';
+  var fakeauth = require('../src/fakeauth');
   var server;
 
-  suiteSetup(function() {
-    return validator({
+  suiteSetup(async function() {
+    const validator = await libValidate({
+      rootUrl,
+      serviceName: 'lib-testing',
       folder:  path.join(__dirname, 'schemas'),
-      baseUrl: 'http://localhost:1234',
-    }).then(function(validator) {
-      // Create application
-      var app = App({
-        port:           1208,
-        env:            'development',
-        forceSSL:       false,
-        trustProxy:     false,
-      });
-
-      // Create router for the API
-      var router =  testApi.router({
-        validator:          validator,
-      });
-
-      // Mount router
-      app.use('/v1', router);
-
-      // Create server
-      return app.createServer().then(function(svr) {
-        server = svr;
-        // Time out connections after 500 ms, prevents tests from hanging
-        svr.setTimeout(500);
-        return svr;
-      });
     });
+
+    // Create router for the API
+    const api = await builder.build({
+      validator: validator,
+      rootUrl,
+    });
+
+    // Create application
+    server = await App({
+      port:           1208,
+      env:            'development',
+      forceSSL:       false,
+      trustProxy:     false,
+      rootDocsLink:   false,
+      serviceName:    'test',
+      apis:           [api],
+    });
+
+    // Time out connections after 500 ms, prevents tests from hanging
+    server.setTimeout(500);
   });
 
   suiteTeardown(function() {
@@ -80,7 +81,7 @@ suite('fakeauth', function() {
 
   var callApi = (clientId, extContent) => {
     // We'll call both with auth headers and bewit
-    var reqUrl = 'http://localhost:1208/v1/test';
+    var reqUrl = libUrls.api(rootUrl, 'test', 'v1', 'test');
     var content = {
       ttlSec: 60 * 5,
       credentials: {
@@ -115,7 +116,7 @@ suite('fakeauth', function() {
   };
 
   test('using a rawClientId', function() {
-    fakeauth.start({client1: ['test.scope']});
+    fakeauth.start({client1: ['test.scope']}, {rootUrl});
     return callApi('client1').then(function(responses) {
       for (var res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
@@ -124,16 +125,16 @@ suite('fakeauth', function() {
   });
 
   test('using an unconfigured rawClientId', function() {
-    fakeauth.start({client1: ['test.scope']});
+    fakeauth.start({client1: ['test.scope']}, {rootUrl});
     return callApi('unconfiguredClient')
       .then(() => {assert(false, 'should have failed');})
       .catch(function(err) {
-        assert(err.status === 401, 'wrong error code returned');
+        assert.equal(err.status, 401, 'wrong error code returned');
       });
   });
 
   test('using authorizedScopes', function() {
-    fakeauth.start({client1: ['some.other.scope']});
+    fakeauth.start({client1: ['some.other.scope']}, {rootUrl});
     return callApi('client1', {
       authorizedScopes: ['test.scope'],
     }).then(function(responses) {
@@ -144,7 +145,7 @@ suite('fakeauth', function() {
   });
 
   test('using temp creds', function() {
-    fakeauth.start({client1: ['some.other.scope']});
+    fakeauth.start({client1: ['some.other.scope']}, {rootUrl});
     var tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test.scope'],
       expiry: taskcluster.fromNow('1d'),
