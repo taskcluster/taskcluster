@@ -1,14 +1,12 @@
-const API = require('taskcluster-lib-api');
+const APIBuilder = require('taskcluster-lib-api');
 const slugid = require('slugid');
 const _ = require('lodash');
 const Entity = require('azure-entities');
 
-let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/secrets/v1/';
-
 /** API end-point for version v1/
  *
  */
-let api = new API({
+let builder = new APIBuilder({
   title:        'TaskCluster Secrets API Documentation',
   description: [
     'The secrets service provides a simple key/value store for small bits of secret',
@@ -19,23 +17,24 @@ let api = new API({
     'longer be read.  This is useful for short-term secrets such as a temporary',
     'service credential or a one-time signing key.',
   ].join('\n'),
-  name:          'secrets',
+  name: 'secrets',
+  version: 'v1',
   context: ['cfg', 'Secret'],
 });
 
 // Export API
-module.exports = api;
+module.exports = builder;
 
 let cleanPayload = payload => {
   payload.secret = '(OMITTED)';
   return payload;
 };
 
-api.declare({
+builder.declare({
   method:      'put',
   route:       '/secret/:name(*)',
   name:        'set',
-  input:       SCHEMA_PREFIX_CONST + 'secret.json#',
+  input:       'secret.yml',
   scopes:      'secrets:set:<name>',
   title:       'Set Secret',
   stability:    'stable',
@@ -68,7 +67,7 @@ api.declare({
   res.reply({});
 });
 
-api.declare({
+builder.declare({
   method:      'delete',
   route:       '/secret/:name(*)',
   name:        'remove',
@@ -92,11 +91,11 @@ api.declare({
   res.reply({});
 });
 
-api.declare({
+builder.declare({
   method:      'get',
   route:       '/secret/:name(*)',
   name:        'get',
-  output:      SCHEMA_PREFIX_CONST + 'secret.json#',
+  output:      'secret.yml',
   scopes:      'secrets:get:<name>',
   title:       'Read Secret',
   stability:    'stable',
@@ -125,11 +124,11 @@ api.declare({
   }
 });
 
-api.declare({
+builder.declare({
   method:      'get',
   route:       '/secrets',
   name:        'list',
-  output:      SCHEMA_PREFIX_CONST + 'secret-list.json#',
+  output:      'secret-list.yml',
   title:       'List Secrets',
   stability:   'stable',
   query: {
