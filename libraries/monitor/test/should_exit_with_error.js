@@ -3,6 +3,7 @@
 // our process.exit behavior.
 let monitoring = require('../');
 let authmock = require('./authmock');
+let libUrls = require('taskcluster-lib-urls');
 let nock = require('nock');
 
 function nockit(delay) {
@@ -23,7 +24,8 @@ if (process.argv[2] === '--correct') {
 
 authmock.setup();
 monitoring({
-  project: 'tc-lib-monitor',
+  rootUrl: libUrls.testRootUrl(),
+  projectName: 'tc-lib-monitor',
   credentials: {clientId: 'test-client', accessToken: 'test'},
   crashTimeout: 250,
 }).then((monitor) => {
