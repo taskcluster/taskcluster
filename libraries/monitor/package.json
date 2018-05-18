@@ -33,8 +33,8 @@
     "mocha": "4.0.1",
     "mock-aws-s3": "^2.6.0",
     "nock": "^9.0.28",
-    "taskcluster-lib-testing": "^2.0.2",
-    "taskcluster-lib-urls": "^1.1.0"
+    "taskcluster-lib-testing": "^10.0.0",
+    "taskcluster-lib-urls": "^10.0.0"
   },
   "main": "./src/index.js",
   "engines": {
