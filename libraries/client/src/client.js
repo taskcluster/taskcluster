@@ -138,13 +138,10 @@ var makeRequest = function(client, method, url, payload, query) {
  *   // Limit the set of scopes requests with this client may make.
  *   // Note, that your clientId must have a superset of the these scopes.
  *   authorizedScopes:  ['scope1', 'scope2', ...]
- *   exchangePrefix:  'queue/v1/'                    // exchangePrefix prefix
  *   retries:         5,                             // Maximum number of retries
  *   monitor:         await Monitor()                // From taskcluster-lib-monitor
  *   rootUrl:         'https://taskcluster.net/api/' // prefix for all api calls
  * }
- *
- * `exchangePrefix` defaults to values from reference.
  *
  * `rootUrl` and `baseUrl` are mutually exclusive.
  */
@@ -158,11 +155,26 @@ exports.createClient = function(reference, name) {
     if (options && options.baseUrl) {
       throw new Error('baseUrl has been deprecated!');
     }
+    if (options && options.exchangePrefix) {
+      throw new Error('exchangePrefix has been deprecated!');
+    }
+    let serviceName = reference.serviceName;
+
+    // allow for older schemas; this should be deleted once it is no longer used.
+    if (!serviceName) {
+      if (reference.name) {
+        // it was called this for a while; https://bugzilla.mozilla.org/show_bug.cgi?id=1463207
+        serviceName = reference.name;
+      } else if (reference.baseUrl) {
+        serviceName = reference.baseUrl.split('//')[1].split('.')[0];
+      } else if (reference.exchangePrefix) {
+        serviceName = reference.exchangePrefix.split('/')[1].replace('taskcluster-', '');
+      }
+    }
     this._options = _.defaults({}, options || {}, {
-      exchangePrefix:   reference.exchangePrefix || '',
-      // We can remove the second half of this assignment once all api definitions are upgraded to have `name`
-      serviceName: reference.name || reference.baseUrl.split('//')[1].split('.')[0],
-      serviceVersion: 'v' + (reference.version + 1),
+      exchangePrefix:   reference.exchangePrefix,
+      serviceName,
+      serviceVersion: 'v1',
     }, _defaultOptions);
 
     assert(this._options.rootUrl, 'Must provide a rootUrl or set the env var TASKCLUSTER_ROOT_URL');
