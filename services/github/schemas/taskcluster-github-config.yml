@@ -1,7 +1,7 @@
 $schema:            http://json-schema.org/draft-06/schema#
 title:              ".taskcluster.yml format"
 description: |
- Description of a taskclusterrc.yml file, which may be used to generate a taskgraph
+ Description of a taskcluster.yml file v0, which may be used to generate a taskgraph
  and tasks.
 type:               object
 properties:
