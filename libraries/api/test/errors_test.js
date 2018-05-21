@@ -11,7 +11,7 @@ suite('api/errors', function() {
     title:        'Test Api',
     description:  'Yet another test api',
     errorCodes:   {TooManyFoos: 472},
-    name:         'test',
+    serviceName:  'test',
     version:      'v1',
   });
 

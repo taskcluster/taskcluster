@@ -14,7 +14,7 @@ suite('API (context)', function() {
       title:        'Test Api',
       description:  'Another test api',
       context:      ['myProp'],
-      name:         'test',
+      serviceName:  'test',
       version:      'v1',
     });
 
@@ -69,7 +69,7 @@ suite('API (context)', function() {
       title:        'Test Api',
       description:  'Another test api',
       context:      ['prop1', 'prop2'],
-      name:         'test',
+      serviceName:  'test',
       version:      'v1',
     });
 
@@ -102,7 +102,7 @@ suite('API (context)', function() {
       title:        'Test Api',
       description:  'Another test api',
       context:      ['prop1', 'prop2'],
-      name:         'test',
+      serviceName:  'test',
       version:      'v1',
     });
 
@@ -128,7 +128,7 @@ suite('API (context)', function() {
       title:        'Test Api',
       description:  'Another test api',
       context:      [],
-      name:         'test',
+      serviceName:  'test',
       version:      'v1',
     });
 
