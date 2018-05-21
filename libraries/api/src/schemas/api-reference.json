@@ -90,7 +90,7 @@
             "type": "string",
             "format": "uri"
         },
-        "name": {
+        "serviceName": {
             "description": "Name of service for automation. Will be consumed by client generators to produce URLs",
             "type": "string",
             "minLength": 1,
@@ -240,7 +240,7 @@
         "title",
         "description",
         "baseUrl",
-        "name",
+        "serviceName",
         "entries"
     ]
 }

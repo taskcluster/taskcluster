@@ -12,7 +12,7 @@ suite('api/route', function() {
   var builder = new APIBuilder({
     title:        'Test Api',
     description:  'Another test api',
-    name:         'test',
+    serviceName:  'test',
     version:      'v1',
     params: {
       taskId:     /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/,
