@@ -162,30 +162,7 @@ APIBuilder.prototype.declare = function(options, handler) {
 };
 
 /**
- * Setup API, by publishing reference and returning an `express.Router`.  Also
- * documented in the README TODO only doc in README
- *
- * options:
- * {
- *   rootUrl:             cfg.taskcluster.rootUrl,
- *   inputLimit:          '10mb'  // Max input JSON size
- *   allowedCORSOrigin:   '*'     // Allowed CORS origin, null to disable CORS
- *   context:             {}      // Object to be provided as `this` in handlers
- *   validator:           new base.validator()      // JSON schema validator
- *   nonceManager:        function(nonce, ts, cb) { // Check for replay attack
- *   publish:             true,                     // Publish API reference
- *   baseUrl:             'https://example.com/v1'  // URL under which routes are mounted
- *   referenceBucket:     'reference.taskcluster.net',
- *   aws: {               // AWS credentials and region
- *    accessKeyId:        '...',
- *    secretAccessKey:    '...',
- *    region:             'us-west-2'
- *   }
- * }
- *
- * The option `validator` must provided.
- *
- * Return an `express.Router` instance.
+ * Build an API, optionally publishing to S3.
  */
 APIBuilder.prototype.build = async function(options) {
   options.builder = this;
