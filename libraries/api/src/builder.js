@@ -12,10 +12,10 @@ var debug = Debug('api');
  */
 var APIBuilder = function(options) {
   assert(!options.schemaPrefix, 'schemaPrefix is no longer allowed!');
-  ['title', 'description', 'name', 'version'].forEach(function(key) {
+  ['title', 'description', 'serviceName', 'version'].forEach(function(key) {
     assert(options[key], 'Option \'' + key + '\' must be provided');
   });
-  assert(/^[a-z][a-z0-9_-]*$/.test(options.name), `api name "${options.name}" is not valid`);
+  assert(/^[a-z][a-z0-9_-]*$/.test(options.serviceName), `api serviceName "${options.serviceName}" is not valid`);
   assert(/^v[0-9]+$/.test(options.version), `api version "${options.version}" is not valid`);
   options = _.defaults({
     errorCodes: _.defaults({}, options.errorCodes || {}, errors.ERROR_CODES),
@@ -28,7 +28,7 @@ var APIBuilder = function(options) {
     assert(/[A-Z][A-Za-z0-9]*/.test(key), 'Invalid error code: ' + key);
     assert(typeof value === 'number', 'Expected HTTP status code to be int');
   });
-  this.name = options.name;
+  this.serviceName = options.serviceName;
   this.version = options.version;
   this.title = options.title;
   this.description = options.description;

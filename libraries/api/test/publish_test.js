@@ -19,7 +19,7 @@ suite('api/publish', function() {
     var builder = new APIBuilder({
       title:        'Test Api',
       description:  'Another test api',
-      name:         'test',
+      serviceName:  'test',
       version:      'v1',
     });
 
