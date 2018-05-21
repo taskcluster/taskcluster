@@ -1,0 +1,33 @@
+$schema:            http://json-schema.org/draft-06/schema#
+title:              ".taskcluster.yml format"
+description: |
+ Description of a taskcluster.yml file v1, which may be used to generate a taskgraph
+ and tasks.
+type:               object
+properties:
+  version:
+    description:    "Version of the format of this file; must be 1"
+    enum:           [1]
+    type:           integer
+  policy:
+    pullRequests:
+      description: |
+          Policy for creating tasks for pull requests.  The effective policy is found in this property
+          in the `.taskcluster.yml` file in the repository's default branch.  See the documentation for
+          detailed definition of the options.
+      type: string
+      enum:
+        - public
+        - collaborators
+  tasks:
+    type:           array
+    default:        []
+    items:
+        title:              "Task definition template"
+        description: |
+          Definition of a task that can be scheduled. Rendered with JSON-e
+        type:               object
+        additionalProperties: true
+additionalProperties: false
+required:
+  - version
