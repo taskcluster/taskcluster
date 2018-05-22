@@ -17,7 +17,7 @@ let builder = new APIBuilder({
     'longer be read.  This is useful for short-term secrets such as a temporary',
     'service credential or a one-time signing key.',
   ].join('\n'),
-  name: 'secrets',
+  serviceName: 'secrets',
   version: 'v1',
   context: ['cfg', 'Secret'],
 });
