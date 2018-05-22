@@ -342,67 +342,13 @@ api.declare({
 
   await req.authorize({hookGroupId, hookId});
 
-  let lastFire;
-  let resp;
   const payload = req.body;
   const hook = await this.Hook.load({hookGroupId, hookId}, true);
-  let error = null;
-  const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
 
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
-  //Using ajv lib to check if the context respect the triggerSchema
-  const validate = ajv.compile(hook.triggerSchema);
-
-  if (validate && payload) {
-    let valid = validate(payload);
-    if (!valid) {
-      return res.reportError('InputError', '{{message}}', {
-        message: ajv.errorsText(validate.errors, {separator: '; '}
-        )});
-    }
-  } 
-  // build the context for the task creation
-  let context = {
-    firedBy: 'triggerHook',
-    payload: payload,
-  };
-
-  try {
-    resp = await this.taskcreator.fire(hook, context);
-    lastFire = {
-      result: 'success',
-      taskId: resp.status.taskId,
-      time: new Date(),
-    };
-  } catch (err) {
-    error = err;
-    lastFire = {
-      result: 'error',
-      error: err,
-      time: new Date(),
-    };
-  }
-
-  await hook.modify((hook) => {
-    hook.lastFire = lastFire;
-  });
-
-  if (resp) {
-    return res.reply(resp);
-  } else if (error.requestInfo && error.code) {
-    // handle errors from further API calls specially
-    return res.reportError(
-      'InputError',
-      `While calling queue.createTask: ${error.code}\n\n${error.message}`,
-      {createTask: error.requestInfo});
-  } else {
-    return res.reportError(
-      'InputError',
-      'While firing hook:\n\n{{error}}',
-      {error: (error || 'unknown').toString()});
-  }
+  return triggerHookCommon.call(this, {req, res, hook, payload, firedBy: 'triggerHook'});
 });
 
 /** Get secret token for a trigger **/
@@ -488,7 +434,6 @@ api.declare({
   ].join('\n'),
 }, async function(req, res) {
   const payload = req.body;
-  const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
 
   const hook = await this.Hook.load({
     hookGroupId: req.params.hookGroupId,
@@ -505,21 +450,72 @@ api.declare({
     return res.reportError('AuthenticationFailed', 'invalid hook token', {});
   }
 
+  return triggerHookCommon.call(this, {req, res, hook, payload, firedBy: 'triggerHookWithToken'});
+});
+
+/**
+ * Common implementation of triggerHook and triggerHookWithToken
+ */
+const triggerHookCommon = async function({req, res, hook, payload, firedBy}) {
+  const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
+  const context = {firedBy, payload};
+  let lastFire;
+  let resp;
+  let error;
+
   //Using ajv lib to check if the context respect the triggerSchema
   const validate = ajv.compile(hook.triggerSchema);
 
-  if (validate && payload) {
-    let valid = validate(payload);
-    if (!valid) {
-      return res.reportError('InputError', '{{message}}', {message: validate.errors[0].message});
-    }
-  }
-  // build the context for the task creation
-  let context = {
-    firedBy: 'triggerHookWithToken',
-    payload: payload,
-  };
+  let valid = validate(payload);
+  if (!valid) {
+    return res.reportError('InputError', '{{message}}', {
+      message: ajv.errorsText(validate.errors, {separator: '; '}),
+    });
+  } 
 
-  let resp = await this.taskcreator.fire(hook, context);
-  return res.reply(resp);
-});
+  try {
+    resp = await this.taskcreator.fire(hook, context);
+    lastFire = {
+      result: 'success',
+      taskId: resp.status.taskId,
+      time: new Date(),
+    };
+  } catch (err) {
+    error = err;
+    lastFire = {
+      result: 'error',
+      error: err,
+      time: new Date(),
+    };
+  }
+
+  await hook.modify((hook) => {
+    hook.lastFire = lastFire;
+  });
+
+  if (resp) {
+    return res.reply(resp);
+  } else if (error.body && error.body.requestInfo) {
+    // handle errors from createTask specially (since they are usually about scopes)
+    if (error.body.requestInfo.method === 'createTask' && error.body.code === 'InsufficientScopes') {
+      return res.reportError(
+        'InsufficientScopes',
+        `The role \`hook-id:${hook.hookGroupId}/${hook.hookId}\` does not have sufficient scopes ` +
+        `to create the task:\n\n${error.body.message}`,
+        {createTask: error.body.requestInfo});
+    }
+    return res.reportError(
+      'InputError',
+      'While calling {{method}}: {{code}}\n\n{{message}}', {
+        code: error.body.code,
+        method: error.body.requestInfo.method,
+        message: error.body.message,
+      });
+  } else {
+    return res.reportError(
+      'InputError',
+      'While firing hook:\n\n{{error}}',
+      {error: (error || 'unknown').toString()});
+  }
+};
+
