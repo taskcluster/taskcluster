@@ -153,45 +153,6 @@ api.declare({
   return res.reply(reply);
 });
 
-/** Get next scheduled hook date */
-api.declare({
-  method:       'get',
-  route:        '/hooks/:hookGroupId/:hookId/schedule',
-  name:         'getHookSchedule',
-  output:       'hook-schedule.json',
-  title:        'Get hook schedule',
-  stability:    'deprecated',
-  description: [
-    'This endpoint will return the schedule and next scheduled creation time',
-    'for the given hook.',
-  ].join('\n'),
-}, async function(req, res) {
-  let hook = await this.Hook.load({
-    hookGroupId: req.params.hookGroupId,
-    hookId: req.params.hookId,
-  }, true);
-
-  // Handle the case where the hook doesn't exist
-  if (!hook) {
-    return res.reportError('ResourceNotFound', 'No such hook', {});
-  }
-
-  // Return a schedule only if a schedule is defined
-  if (hook.schedule.length > 0) {
-    return res.reply({
-      schedule: hook.schedule,
-      nextScheduledDate: hook.nextScheduledDate.toJSON(),
-      // Remark: nextTaskId cannot be exposed here, it's a secret.
-      // If someone could predict the taskId they could use it, breaking this
-      // service at best, at worst maybe exploit it to elevate from defineTask
-      // to createTask without scope to schedule a task.
-    });
-  }
-  return res.reply({
-    schedule: hook.schedule,
-  });
-});
-
 /** Create a hook **/
 api.declare({
   method:       'put',
