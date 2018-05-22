@@ -129,6 +129,7 @@ suite('taskcreator_test.js', function() {
         firedBy: 'schedule',
       }, {taskId});
       const task = await fetchFiredTask(taskId);
+      assume(taskId).equals(task.taskGroupId); // the default
       assume(task.extra).deeply.equals({
         context: {
           valueFromContext: 55,
@@ -144,13 +145,24 @@ suite('taskcreator_test.js', function() {
       hook.task.then.created = {$fromNow: '0 seconds'};
       hook.task.then.deadline = {$fromNow: '1 minute'};
       hook.task.then.expires = {$fromNow: '2 minutes'};
-      return await helper.Hook.create(hook);
+      await helper.Hook.create(hook);
       let taskId = taskcluster.slugid();
       let resp = await creator.fire(hook, {}, {taskId});
 
       const task = await fetchFiredTask(taskId);
-      assume(new Date(task.expires) - new Date(task.created)).to.equal(60000);
-      assume(new Date(task.deadline) - new Date(task.created)).to.equal(120000);
+      assume(new Date(task.deadline) - new Date(task.created)).to.equal(60000);
+      assume(new Date(task.expires) - new Date(task.created)).to.equal(120000);
+    });
+
+    test('firing a real task that sets its own taskGroupId works', async function() {
+      let hook = _.cloneDeep(defaultHook);
+      hook.task.then.taskGroupId = taskcluster.slugid();
+      await helper.Hook.create(hook);
+      let taskId = taskcluster.slugid();
+      let resp = await creator.fire(hook, {}, {taskId});
+
+      const task = await fetchFiredTask(taskId);
+      assume(task.taskGroupId).equals(hook.task.then.taskGroupId);
     });
 
     test('firing a real task includes values from context', async function() {

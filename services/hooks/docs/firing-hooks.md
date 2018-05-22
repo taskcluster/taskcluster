@@ -12,7 +12,8 @@ A hook can be "fired" in a variety of ways:
 In each case, the hooks service creates a task based on the hook definition and
 submits it to the Queue service via `Queue.createTask`.
 
-Such tasks always have `taskGroupId` equal to their `taskId`.
+If the task definition does not specify a `taskGroupId`, it is set the created
+task's `taskId`.
 
 ## JSON-e Rendering
 
@@ -23,8 +24,8 @@ fired, that template is rendered and the result is submitted to
 
 The context for that rendering is an object with property `firedBy`, giving the
 action that led to the hook firing; as well as `taskId` giving the taskId (and
-taskGroupId) of the task being created. The other properties of the object vary
-depending on the `firedBy` property.
+default `taskGroupId`) of the task being created. The other properties of the
+object vary depending on the `firedBy` property.
 
 ### Scheduled Tasks
 
