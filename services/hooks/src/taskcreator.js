@@ -32,9 +32,13 @@ class TaskCreator {
     if (!task.expires) {
       task.expires = taskcluster.fromNowJSON(hook.expires, created);
     }
-    // set the taskGroupId to the taskId, thereby creating a new task group
-    // and following the convention for decision tasks.
-    task.taskGroupId = options.taskId;
+
+    // If the template did not set a taskGroupId, then set the taskGroupId to
+    // the taskId, thereby creating a new task group and following the
+    // convention for decision tasks.
+    if (!task.taskGroupId) {
+      task.taskGroupId = options.taskId;
+    }
     return task;
   }
 
