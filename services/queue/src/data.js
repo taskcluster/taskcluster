@@ -969,6 +969,8 @@ Worker.expire = async function(now) {
 
   await Entity.scan.call(this, {
     expires:          Entity.op.lessThan(now),
+    // don't expire quarantined hosts (as they might come out of quarantine..)
+    quarantineUntil:  Entity.op.lessThan(now),
   }, {
     limit:            250, // max number of concurrent delete operations
     handler:          entry => { count++; return entry.remove(true); },
