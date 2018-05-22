@@ -168,7 +168,9 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
       let oldTaskId = hook.nextTaskId;
       let oldScheduledDate = hook.nextScheduledDate;
 
-      helper.creator.shouldFail = true;
+      helper.creator.shouldFail = {
+        statusCode: 499,
+      };
 
       let emailSent = false;
       scheduler.sendFailureEmail = async (hook, err) => { emailSent = true; };

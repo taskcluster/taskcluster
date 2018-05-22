@@ -356,7 +356,11 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
 
     test('fails when creating the task fails', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      helper.creator.shouldFail = true; // firing the hook should fail..
+      helper.creator.shouldFail = { // firing the hook should fail..
+        statusCode: 499,
+        code: 'uhoh',
+        body: {message: 'uhoh'},
+      };
       helper.scopes('hooks:trigger-hook:foo/bar');
       try {
         await helper.hooks.triggerHook('foo', 'bar', {bar: {location: 'Belo Horizonte, MG'}, 
@@ -364,6 +368,59 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       } catch (err) {
         assume(err.statusCode).equals(400);
         assume(err.body.message).exists();
+        return;
+      }
+      throw new Error('should have thrown an exception');
+    });
+
+    test('fails with a useful message when triggering fails to call a TC API', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      helper.creator.shouldFail = {
+        statusCode: 413,
+        code: 'InputTooLarge',
+        body: {
+          code: 'InputTooLarge',
+          message: 'too much data',
+          requestInfo: {
+            method: 'makeMeATask',
+          },
+        },
+      };
+      helper.scopes('hooks:trigger-hook:foo/bar');
+      try {
+        await helper.hooks.triggerHook('foo', 'bar', {});
+      } catch (err) {
+        assume(err.statusCode).equals(400);
+        assume(err.body.message).match(/While calling makeMeATask: InputTooLarge/);
+        assume(err.body.message).match(/too much data/);
+        return;
+      }
+      throw new Error('should have thrown an exception');
+    });
+
+    test('fails with a useful message when createTask says InsufficientScopes', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      helper.creator.shouldFail = {
+        statusCode: 403,
+        code: 'InsufficientScopes',
+        body: {
+          code: 'InsufficientScopes',
+          message: 'not enough scopez',
+          requestInfo: {
+            method: 'createTask',
+          },
+        },
+      };
+      helper.scopes('hooks:trigger-hook:foo/bar');
+      try {
+        await helper.hooks.triggerHook('foo', 'bar', {});
+      } catch (err) {
+        assume(err.statusCode).equals(403);
+        assume(err.code).equals('InsufficientScopes');
+        assume(err.body.code).equals('InsufficientScopes');
+        assume(err.body.message).match(
+          /The role `hook-id:foo\/bar` does not have sufficient scopes to create the task:/);
+        assume(err.body.message).match(/not enough scopez/);
         return;
       }
       throw new Error('should have thrown an exception');
