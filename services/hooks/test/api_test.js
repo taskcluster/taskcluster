@@ -116,13 +116,13 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
 
     test('without a schedule', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      const r1 = await helper.hooks.getHookSchedule('foo', 'bar');
-      assume(r1).deep.equals({schedule: []});
+      const r1 = await helper.hooks.getHookStatus('foo', 'bar');
+      assume(r1.nextScheduledDate).to.equal(undefined);
     });
 
     test('with a daily schedule', async () => {
       await helper.hooks.createHook('foo', 'bar', dailyHookDef);
-      const r1 = await helper.hooks.getHookSchedule('foo', 'bar');
+      const r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assert(new Date(r1.nextScheduledDate) > new Date());
     });
 
@@ -278,28 +278,6 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     test('error on requesting token for undefined hook', async () => {
       await helper.hooks.getTriggerToken('foo', 'bar').then(
         () => { throw new Error('This operation should have failed!'); },
-        (err) => { assume(err.statusCode).equals(404); });
-    });
-  });
-
-  suite('getHookSchedule', function() {
-    subSkip();
-    test('returns {schedule: []} for a non-scheduled task', async () => {
-      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      const r1 = await helper.hooks.getHookSchedule('foo', 'bar');
-      assume(r1).deep.equals({schedule: []});
-    });
-
-    test('returns the schedule for a -scheduled task', async () => {
-      await helper.hooks.createHook('foo', 'bar', dailyHookDef);
-      const r1 = await helper.hooks.getHookSchedule('foo', 'bar');
-      assume(r1).contains('nextScheduledDate');
-      assume(r1.schedule).deep.eql(['0 0 3 * * *']);
-    });
-
-    test('fails if no hook exists', async () => {
-      await helper.hooks.getHookSchedule('foo', 'bar').then(
-        () => { throw new Error('The resource should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
     });
   });
