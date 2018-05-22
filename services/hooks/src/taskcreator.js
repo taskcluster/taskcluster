@@ -89,9 +89,8 @@ class MockTaskCreator extends TaskCreator {
 
   async fire(hook, context, options) {
     if (this.shouldFail) {
-      let err = new Error('uhoh');
-      err.statusCode = 499;
-      err.body = {message: 'uhoh'};
+      let err = new Error();
+      Object.assign(err, this.shouldFail);
       throw err;
     }
     options = options || {};
