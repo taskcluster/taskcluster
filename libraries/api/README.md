@@ -15,7 +15,7 @@ let APIBuilder = require('taskcluster-lib-api');
 let builder = new APIBuilder({
   // Title and description for docs
   title: 'My API',
-  name: 'my-api', // Must match /^[a-z][a-z0-9_-]*$/
+  serviceName: 'my-api', // Must match /^[a-z][a-z0-9_-]*$/
   description: [
     "Long string with **markdown** support, used for writing docs",
     "typically written using [].join('\n') to allow for long strings"
@@ -81,7 +81,7 @@ The available options are:
 
  * `title` (required) - the title of the API (the microservice name)
  * `description` (required) - a description of the service, treated as markdown
- * `name` (required) - a simple name for the service that will become part of a url
+ * `serviceName` (required) - a simple name for the service that will become part of a url
    This must match the regex `/^[a-z][a-z0-9_-]*$/`. This must be the same as the
    `serviceName` used elsewhere to define the service.
  * `version` (required) - version of this API, such as `'v1'`.
