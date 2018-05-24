@@ -365,7 +365,7 @@ The resulting HTTP response will have a JSON body containing (whitespace adjuste
     '  2,',
     '  3',
     ']',
-    '```,
+    '```',
     '----',
     'method:     toomanyfoos',
     'errorCode:  TooManyFoos',
