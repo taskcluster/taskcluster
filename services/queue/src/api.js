@@ -2383,15 +2383,22 @@ api.declare({
     this.Provisioner.load({provisionerId}, true),
   ]);
 
-  if (worker) {
-    try {
-      result = await worker.modify((entity) => {
-        entity.quarantineUntil = new Date(quarantineUntil);
-      });
-    } catch (err) {
-      throw err;
-    }
+  if (!worker) {
+    return res.reportError('ResourceNotFound',
+      'Worker with workerId {{workerId}}, workerGroup {{workerGroup}},' +
+      'worker-type {{workerType}} and provisionerId {{provisionerId}} not found. ' +
+      'Are you sure it was created?', {
+        workerId,
+        workerGroup,
+        workerType,
+        provisionerId,
+      },
+    );
   }
+
+  result = await worker.modify((entity) => {
+    entity.quarantineUntil = new Date(quarantineUntil);
+  });
 
   const actions = provisioner.actions.filter(action => action.context === 'worker');
   return res.reply(Object.assign({}, result.json(), {actions}));
