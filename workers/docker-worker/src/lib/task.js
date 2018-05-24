@@ -800,6 +800,7 @@ class Task extends EventEmitter {
    * @param {String} reason - Reason for aborting the test run (Example: worker-shutdown)
   */
   abort(reason) {
+    this.stopReclaims();
     this.taskState = 'aborted';
     this.taskException = reason;
     if (this.dockerProcess) this.dockerProcess.kill();
