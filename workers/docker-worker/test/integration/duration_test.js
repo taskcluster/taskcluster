@@ -10,15 +10,14 @@ suite('Task duration stats', () => {
         command: cmd(
           'sleep 1'
         ),
-        features: {
-          bufferLog:    true,
-          azureLiveLog: false
-        },
         maxRunTime: 5 * 60
       }
     });
 
+    assert.equal(result.run.state, 'completed', 'task should be successful');
+    assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
+
     var duration = new Date(result.run.resolved) - new Date(result.run.started);
-    assert.ok(duration > 1000, 'Duration should exist and be greater then 1s');
+    assert.ok(duration > 1000, `Duration should exist and be greater then 1s, but it was ${duration} ms`);
   });
 });

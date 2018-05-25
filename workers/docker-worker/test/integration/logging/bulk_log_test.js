@@ -14,7 +14,7 @@ suite('logging to artifact', () => {
           'for i in {1..1000}; do echo "Hello Number $i"; done;'
         ],
         features: {
-          liveLog: true,
+          localLiveLog: true,
           bulkLog: true
         },
         maxRunTime: 5 * 60

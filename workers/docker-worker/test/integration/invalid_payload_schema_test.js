@@ -7,7 +7,6 @@ suite('Invalid payload schema', () => {
     let result = await testworker({
       payload: {
         image: 'taskcluster/test-ubuntu',
-        features: {bufferLog: true},
         // maxRunTime should be a number.
         maxRunTime: 'hello'
       }

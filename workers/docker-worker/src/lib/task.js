@@ -114,6 +114,13 @@ function buildStateHandlers(task, monitor) {
   let handlers = [];
   let featureFlags = task.payload.features || {};
 
+  // performs a set difference (featureFlags - features) to get the set of non supported requested features
+  let diff = _.keys(featureFlags).filter(x => !features.hasOwnProperty(x));
+
+  if (diff.length) {
+    throw new Error(`${diff.join()} ${diff.length > 1 ? 'are' : 'is'} not part of valid features`);
+  }
+
   for (let flag in features) {
     let enabled = (flag in featureFlags) ?
       featureFlags[flag] : features[flag].defaults;
@@ -337,8 +344,13 @@ class Task extends EventEmitter {
     // Primarly log of all actions for the task.
     this.stream = new PassThrough();
 
-    // states actions.
-    this.states = buildStateHandlers(task, this.runtime.monitor);
+    try {
+      // states actions.
+      this.states = buildStateHandlers(this.task, this.runtime.monitor);
+    } catch (err) {
+      this.abortRun(fmtErrorLog(err));
+      throw err;
+    }
   }
 
   /**
@@ -865,9 +877,11 @@ class Task extends EventEmitter {
       };
 
       // Build the list of container links... and base environment variables
-      linkInfo = await promiseRetry(retry => {
-        return this.states.link(this).catch(retry);
-      }, retryOptions);
+      if (this.states) {
+        linkInfo = await promiseRetry(retry => {
+          return this.states.link(this).catch(retry);
+        }, retryOptions);
+      }
 
       // Hooks prior to running the task.
       await promiseRetry(retry => {
