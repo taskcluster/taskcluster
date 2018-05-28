@@ -52,7 +52,7 @@ class BulkLog {
     try {
       await uploadToS3(task.queue, task.status.taskId, task.runId,
         diskStream, this.artifactName, expiration, {
-          'content-type': 'text/plain',
+          'content-type': 'text/plain; charset=utf-8',
           'content-length': stat.size,
           'content-encoding': 'gzip'
         });

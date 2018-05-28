@@ -156,7 +156,7 @@ class TaskclusterLogs {
       {
         storageType: 'reference',
         expires: expiration,
-        contentType: 'text/plain',
+        contentType: 'text/plain; charset=utf-8',
         url: this.publicUrl
       }
     );
@@ -202,7 +202,7 @@ class TaskclusterLogs {
       {
         storageType: 'reference',
         expires: expiration,
-        contentType: 'text/plain',
+        contentType: 'text/plain; charset=utf-8',
         url: backingUrl
       }
     );
