@@ -71,17 +71,16 @@ Example
 let docs              = require('taskcluster-lib-docs');
 let v1                = require('./v1')  # the API declaration
 let config            = require('typed-env-config')
-let validator         = require('taskcluster-lib-validate')
+let SchemaSet         = require('taskcluster-lib-validate')
 let load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({profile}) => config({profile}),
   },
-  validator: {
+  schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => validator({
-      prefix: 'service/v1/',
-      aws: cfg.aws,
+    setup: ({cfg}) => new SchemaSet({
+      serviceName: 'myservice',
     }),
   },
   reference: {
@@ -92,15 +91,15 @@ let load = loader({
     }),
   },
   docs: {
-    requires: ['cfg', 'validator', 'reference'],
-    setup: ({cfg, validator, reference}) => docs.documenter({
+    requires: ['cfg', 'schemaset', 'reference'],
+    setup: ({cfg, schemaset, reference}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
-      schemas: validator.schemas,
+      schemaset,
       references: [
         {
           name: 'api',
-          reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+          reference: v1.reference(),
         }, {
           name: 'events',
           reference: reference,
@@ -160,9 +159,9 @@ The following are the options that can be passed to the publisher function in th
     // 'libraries', and 'workers'.
     tier: null,
 
-    // This should be set to the value of the schemas field from an instance of taskcluster-lib-validate.
-    // It provides the schemas necessary to generate the api and events references.
-    schemas: {},
+    // This should be a schemaset from taskcluster-lib-validate
+    // It provides the data necessary to generate the schema files
+    schemaset: null,
 
     // Optionally help taskcluster-docs pick the order this documetation should appear in on the list.
     menuIndex: 10,
