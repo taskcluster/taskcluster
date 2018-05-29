@@ -188,8 +188,7 @@
                     },
                     "input": {
                         "type": "string",
-                        "format": "uri",
-                        "description": "JSON schema for input, if input is taken otherwise not present."
+                        "description": "JSON schema for input, if input is validated, otherwise not present. The value must be a relative URI, based on the service's schema location; that is, based at `<rootUrl>/schemas/<serviceName`."
                     },
                     "output": {
                         "type": "string",
@@ -197,8 +196,7 @@
                             {
                                 "title": "Output Schema",
                                 "type": "string",
-                                "format": "uri",
-                                "description": "JSON schema for output, if output is provided otherwise not present."
+                                "description": "JSON schema for output, if output is validated, otherwise not present. The value must be a relative URI, based on the service's schema location; that is, based at `<rootUrl>/schemas/<serviceName`."
                             },
                             {
                                 "title": "Blob",

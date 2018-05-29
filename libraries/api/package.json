@@ -40,7 +40,7 @@
     "taskcluster-lib-monitor": "^10.0.0",
     "taskcluster-lib-testing": "^10.0.0",
     "taskcluster-lib-urls": "^10.0.0",
-    "taskcluster-lib-validate": "^10.0.0",
+    "taskcluster-lib-validate": "^11.0.0",
     "typed-env-config": "^1.1.1"
   },
   "engines": {

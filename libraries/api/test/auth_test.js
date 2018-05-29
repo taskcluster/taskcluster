@@ -2,7 +2,7 @@ const _               = require('lodash');
 const request         = require('superagent-hawk')(require('superagent'));
 const assert          = require('assert');
 const Promise         = require('promise');
-const validator       = require('taskcluster-lib-validate');
+const SchemaSet       = require('taskcluster-lib-validate');
 const makeApp         = require('taskcluster-lib-app');
 const APIBuilder      = require('../');
 const testing         = require('taskcluster-lib-testing');
@@ -36,9 +36,8 @@ suite('api/auth', function() {
     // Create API
     const api = await builder.build({
       rootUrl,
-      validator: await validator({
+      schemaset: new SchemaSet({
         serviceName: 'test',
-        rootUrl,
         folder: path.join(__dirname, 'schemas'),
       }),
     });
