@@ -16,6 +16,7 @@ const taskcluster = require('taskcluster-client');
 const Ajv = require('ajv');
 const typeis = require('type-is');
 const errors = require('./errors');
+const utils = require('./utils');
 const ScopeExpressionTemplate = require('./expressions');
 
 const debug = Debug('api');
@@ -27,42 +28,6 @@ let authLog = (...args) => console.log(...args);
 if (process.env.NODE_ENV !== 'production') {
   authLog = Debug('api.authz');
 }
-
-/**
- * A ping method, added automatically to every service
- */
-const ping = {
-  method:   'get',
-  route:    '/ping',
-  name:     'ping',
-  stability:  'stable',
-  title:    'Ping Server',
-  description: [
-    'Respond without doing anything.',
-    'This endpoint is used to check that the service is up.',
-  ].join('\n'),
-  handler: function(req, res) {
-    res.status(200).json({
-      alive:    true,
-      uptime:   process.uptime(),
-    });
-  },
-};
-
-/** Return [route, params] from route */
-const _cleanRouteAndParams = (route) => {
-  // Find parameters for entry
-  const params = [];
-  // Note: express uses the NPM module path-to-regexp for parsing routes
-  // when modifying this to support more complicated routes it can be
-  // beneficial lookup the source of this module:
-  // https://github.com/component/path-to-regexp/blob/0.1.x/index.js
-  route = route.replace(/\/:(\w+)(\(.*?\))?\??/g, (match, param) => {
-    params.push(param);
-    return '/<' + param + '>';
-  });
-  return [route, params];
-};
 
 /**
  * A service represents an instance of an API at a specific rootUrl, ready to
@@ -101,75 +66,9 @@ class API {
         `Context has unexpected property: ${property}`);
     });
 
-    // make `entries` specific to this rootUrl (and add ping)
-    this.entries = _.concat(this.builder.entries, [ping]).map((entry) => {
-      entry = _.clone(entry);
-
-      // fully-qualify schema references
-      if (entry.input) {
-        assert(!entry.input.startsWith('http'), 'entry.input should be a filename, not a url');
-        entry.input = libUrls.schema(options.rootUrl, this.builder.serviceName,
-          `${this.builder.version}/${entry.input}`);
-      }
-      if (entry.output && entry.output !== 'blob') {
-        assert(!entry.output.startsWith('http'), 'entry.output should be a filename, not a url');
-        entry.output = libUrls.schema(options.rootUrl, this.builder.serviceName,
-          `${this.builder.version}/${entry.output}`);
-      }
-      return entry;
-    });
+    this.entries = this.builder.entries.map(_.clone);
 
     this.options = options;
-  }
-
-  /**
-   * Construct the API reference document as a JSON value.
-   */
-  reference() {
-    const {builder} = this;
-    var reference = {
-      version:            0,
-      $schema:            'http://schemas.taskcluster.net/base/v1/api-reference.json#',
-      title:              builder.title,
-      description:        builder.description,
-      baseUrl:            libUrls.api(this.options.rootUrl, builder.serviceName, builder.version, ''),
-      serviceName:        builder.serviceName,
-      entries: this.entries.filter(entry => !entry.noPublish).map(entry => {
-        const [route, params] = _cleanRouteAndParams(entry.route);
-        var retval = {
-          type:           'function',
-          method:         entry.method,
-          route:          route,
-          query:          _.keys(entry.query || {}),
-          args:           params,
-          name:           entry.name,
-          stability:      entry.stability,
-          title:          entry.title,
-          input:          entry.input,
-          output:         entry.output,
-          description:    entry.description,
-        };
-        if (entry.scopes) {
-          retval.scopes = entry.scopes;
-        }
-        return retval;
-      }),
-    };
-
-    var ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
-    var schemaPath = path.join(__dirname, 'schemas', 'api-reference.json');
-    var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
-    var validate = ajv.compile(JSON.parse(schema));
-
-    // Check against it
-    var valid = validate(reference);
-    if (!valid) {
-      debug('Reference:\n%s', JSON.stringify(reference, null, 2));
-      throw new Error(`API.references(): Failed to validate against schema:\n
-        ${ajv.errorsText(validate.errors, {separator: '\n  * '})}`);
-    }
-
-    return reference;
   }
 
   /**
@@ -189,7 +88,7 @@ class API {
     await s3.putObject({
       Bucket:           this.options.referenceBucket,
       Key:              `${this.builder.serviceName}/${this.builder.version}/api.json`,
-      Body:             JSON.stringify(this.reference(), undefined, 2),
+      Body:             JSON.stringify(this.builder.reference(), undefined, 2),
       ContentType:      'application/json',
     }).promise();
   }
@@ -286,7 +185,7 @@ class API {
         remoteAuthentication({signatureValidator}, entry),
         parameterValidator(entry.params),
         queryValidator(entry.query),
-        schema(validator, entry),
+        schema(validator, this.options.rootUrl, this.builder.serviceName, entry),
         handle(entry.handler, context)
       );
 
@@ -364,11 +263,11 @@ const parameterValidator = function(options) {
  *
  * options:
  * {
- *   input:    'http://schemas...input-schema.json',   // optional, null if no input
- *   output:   'http://schemas...output-schema.json',  // optional, null if no output
- *   skipInputValidation:    true,                     // defaults to false
- *   skipOutputValidation:   true,                     // defaults to false
- *   name:     '...',                                  // method name for debug
+ *   input:    'v1/input-schema.json',   // optional, null if no input, relative to service schemas
+ *   output:   'v1/output-schema.json',  // optional, null if no output, relative to service schemas
+ *   skipInputValidation:    true,       // defaults to false
+ *   skipOutputValidation:   true,       // defaults to false
+ *   name:     '...',                    // method name for debug
  * }
  *
  * This validates body against the schema given in `options.input` and returns
@@ -378,10 +277,16 @@ const parameterValidator = function(options) {
  * Handlers may output errors using `req.json`, as `req.reply` will validate
  * against schema and always returns a 200 OK reply.
  */
-var schema = function(validate, options) {
+var schema = function(validate, rootUrl, serviceName, options) {
+  // convert relative schema references to id's
+  const input = options.input && !options.skipInputValidation &&
+    url.resolve(libUrls.schema(rootUrl, serviceName, ''), options.input);
+  const output = options.output && options.output !== 'blob' && !options.skipOutputValidation &&
+    url.resolve(libUrls.schema(rootUrl, serviceName, ''), options.output);
+
   return function(req, res, next) {
     // If input schema is defined we need to validate the input
-    if (options.input !== undefined && !options.skipInputValidation) {
+    if (input) {
       if (!typeis(req, 'application/json')) {
         return res.reportError(
           'MalformedPayload',
@@ -390,13 +295,13 @@ var schema = function(validate, options) {
             contentType: req.headers['content-type'] || null,
           });
       }
-      var error = validate(req.body, options.input);
+      var error = validate(req.body, input);
       if (error) {
         debug('Input schema validation error: ' + error);
         return res.reportError(
           'InputValidationError',
           error,
-          {schema: options.input});
+          {schema: libUrls.schema(rootUrl, serviceName, input)});
       }
     }
     // Add a reply method sending JSON replies, this will always reply with HTTP
@@ -408,13 +313,12 @@ var schema = function(validate, options) {
       }
       // If we're supposed to validate outgoing messages and output schema is
       // defined, then we have to validate against it...
-      if (options.output !== undefined && !options.skipOutputValidation &&
-         options.output !== 'blob') {
-        var error = validate(json, options.output);
+      if (output) {
+        var error = validate(json, output);
         if (error) {
           debug('Output schema validation error: ' + error);
           let err = new Error('Output schema validation error: ' + error);
-          err.schema = options.output;
+          err.schema = libUrls.schema(rootUrl, serviceName, output);
           err.url = req.url;
           err.payload = json;
           return res.reportInternalError(err);
@@ -729,7 +633,7 @@ var remoteAuthentication = function(options, entry) {
     scopeTemplate = new ScopeExpressionTemplate(entry.scopes);
     // Write route parameters into {[param]: ''}
     // if these are valid parameters, then we can parameterize using req.params
-    let [, params] = _cleanRouteAndParams(entry.route);
+    let [, params] = utils.cleanRouteAndParams(entry.route);
     params = Object.assign({}, ...params.map(p => ({[p]: ''})));
     useUrlParams = scopeTemplate.validate(params);
   }

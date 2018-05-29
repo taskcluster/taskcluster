@@ -1,5 +1,5 @@
 var testing         = require('taskcluster-lib-testing');
-var validate        = require('taskcluster-lib-validate');
+var SchemaSet       = require('taskcluster-lib-validate');
 var assert          = require('assert');
 var path            = require('path');
 var express         = require('express');
@@ -17,15 +17,14 @@ exports.setupServer = async ({builder, monitor}) => {
   testing.fakeauth.start([], {rootUrl});
   assert(runningServer === null);
 
-  let validator = await validate({
-    rootUrl,
+  const schemaset = new SchemaSet({
     serviceName: 'test',
     folder: path.join(__dirname, 'schemas'),
   });
 
   const api = await builder.build({
     rootUrl,
-    validator,
+    schemaset,
     monitor,
   });
 

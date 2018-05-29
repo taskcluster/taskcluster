@@ -1,4 +1,4 @@
-const validator       = require('taskcluster-lib-validate');
+const SchemaSet       = require('taskcluster-lib-validate');
 const App             = require('taskcluster-lib-app');
 const APIBuilder      = require('../');
 const assert          = require('assert');
@@ -29,14 +29,13 @@ suite('API (context)', function() {
     });
 
     var value = slugid.v4();
-    let validate = await validator({
-      rootUrl,
+    let schemaset = new SchemaSet({
       serviceName: 'test',
       folder: path.join(__dirname, 'schemas'),
     });
     const api = await builder.build({
       rootUrl,
-      validator: validate,
+      schemaset,
       context: {
         myProp: value,
       },
@@ -74,15 +73,14 @@ suite('API (context)', function() {
     });
 
     var value = slugid.v4();
-    let validate = await validator({
-      rootUrl,
+    let schemaset = new SchemaSet({
       serviceName: 'test',
       folder: path.join(__dirname, 'schemas'),
     });
     try {
       await builder.build({
         rootUrl,
-        validator:  validate,
+        schemaset,
         context: {
           prop1: 'value1',
         },
@@ -107,14 +105,13 @@ suite('API (context)', function() {
     });
 
     var value = slugid.v4();
-    let validate = await validator({
-      rootUrl,
+    let schemaset = new SchemaSet({
       serviceName: 'test',
       folder: path.join(__dirname, 'schemas'),
     });
     await builder.build({
       rootUrl,
-      validator:  validate,
+      schemaset,
       context: {
         prop1: 'value1',
         prop2: 'value2',
@@ -133,15 +130,14 @@ suite('API (context)', function() {
     });
 
     var value = slugid.v4();
-    let validate = await validator({
-      rootUrl,
+    let schemaset = new SchemaSet({
       serviceName: 'test',
       folder: path.join(__dirname, 'schemas'),
     });
     try {
       await builder.build({
         rootUrl,
-        validator: validate,
+        schemaset,
         context: {
           prop3: 'value3',
         },
