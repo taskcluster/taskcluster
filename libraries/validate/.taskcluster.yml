@@ -18,7 +18,7 @@ tasks:
           - master
     payload:
       maxRunTime: 3600
-      image: 'node:6'
+      image: 'node:8'
       command:
         - /bin/bash
         - '--login'

@@ -1,6 +1,6 @@
 suite('Debugging Tests', () => {
   let assert = require('assert');
-  let validator = require('../');
+  let SchemaSet = require('../');
   let rimraf = require('rimraf');
   let fs = require('fs');
   let intercept = require('intercept-stdout');
@@ -13,13 +13,13 @@ suite('Debugging Tests', () => {
       return '';
     });
     try {
-      await validator({
+      const schemaset = new SchemaSet({
         folder: 'test/publish-schemas',
-        rootUrl: libUrls.testRootUrl(),
         serviceName: 'whatever',
         constants: {'my-constant': 42},
         preview: true,
       });
+      await schemaset.validator(libUrls.testRootUrl());
     } finally {
       unhook();
     }
@@ -29,14 +29,14 @@ suite('Debugging Tests', () => {
 
   test('writeFile writes files', async function() {
     try {
-      await validator({
+      const schemaset = new SchemaSet({
         folder: 'test/publish-schemas',
-        rootUrl: libUrls.testRootUrl(),
         serviceName: 'whatever',
         constants: {'my-constant': 42},
         writeFile: true,
       });
 
+      await schemaset.validator(libUrls.testRootUrl());
       assert(fs.existsSync('rendered_schemas/v1/yml-test-schema.json'));
     } finally {
       rimraf.sync('rendered_schemas');

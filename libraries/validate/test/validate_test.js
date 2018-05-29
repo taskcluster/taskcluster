@@ -1,47 +1,50 @@
 suite('Valid Schema Tests', () => {
-  let assert = require('assert');
-  let validator = require('../');
-  let debug = require('debug')('test');
-  let _ = require('lodash');
-  let libUrls = require('taskcluster-lib-urls');
+  const assert = require('assert');
+  const SchemaSet = require('../');
+  const debug = require('debug')('test');
+  const _ = require('lodash');
+  const libUrls = require('taskcluster-lib-urls');
+
+  const rootUrl = libUrls.testRootUrl();
 
   let validate = null;
 
   suiteSetup(async () => {
-    validate = await validator({
+    const schemaset = new SchemaSet({
       folder: 'test/schemas',
-      rootUrl: libUrls.testRootUrl(),
       serviceName: 'whatever',
       constants: {'my-constant': 42},
     });
+    validate = await schemaset.validator(libUrls.testRootUrl());
   });
 
   test('load json', () => {
     let error = validate(
       {value: 42},
-      libUrls.schema(libUrls.testRootUrl(), 'whatever', '/v1/test-schema.json#'));
+      libUrls.schema(rootUrl, 'whatever', '/v1/test-schema.json#'));
     assert.equal(error, null);
   });
 
   test('load yml', () => {
     let error = validate(
       {value: 42},
-      libUrls.schema(libUrls.testRootUrl(), 'whatever', '/v1/yml-test-schema#'));
+      libUrls.schema(rootUrl, 'whatever', '/v1/yml-test-schema#'));
     assert.equal(error, null);
   });
 
   test('load yaml', () => {
     let error = validate(
       {value: 42},
-      libUrls.schema(libUrls.testRootUrl(), 'whatever', '/v1/yaml-test-schema#'));
+      libUrls.schema(rootUrl, 'whatever', '/v1/yaml-test-schema#'));
     assert.equal(error, null);
   });
 
   test('$ref', () => {
     let error = validate({
-      reference: {value: 42},
+      referenceWithDotDot: {value: 42},
+      localReference: {value: 42},
       tid: new Date().toJSON(),
-    }, libUrls.schema(libUrls.testRootUrl(), 'whatever', '/v1/ref-test-schema#'));
+    }, libUrls.schema(rootUrl, 'whatever', '/v1/ref-test-schema#'));
     assert.equal(error, null);
   });
 
@@ -49,7 +52,7 @@ suite('Valid Schema Tests', () => {
     let json = {value: 42};
     let error = validate(
       json,
-      libUrls.schema(libUrls.testRootUrl(), 'whatever', '/v1/default-schema'));
+      libUrls.schema(rootUrl, 'whatever', '/v1/default-schema'));
     assert.equal(error, null);
     assert.equal(json.value, 42);
     assert.equal(json.optionalValue, 'my-default-value');
@@ -59,7 +62,7 @@ suite('Valid Schema Tests', () => {
     let json = {value: 42, optionalValue: 'already-here'};
     let error = validate(
       json,
-      libUrls.schema(libUrls.testRootUrl(), 'whatever', '/v1/default-schema'));
+      libUrls.schema(rootUrl, 'whatever', '/v1/default-schema'));
     assert.equal(error, null);
     assert.equal(json.value, 42);
     assert.equal(json.optionalValue, 'already-here');
@@ -69,7 +72,7 @@ suite('Valid Schema Tests', () => {
     let json = {};
     let error = validate(
       json,
-      libUrls.schema(libUrls.testRootUrl(), 'whatever', '/v1/default-array-obj-schema'));
+      libUrls.schema(rootUrl, 'whatever', '/v1/default-array-obj-schema'));
     assert.equal(error, null);
     assert.equal(json.optObj.hello, 'world');
     assert.equal(json.optArray.length, 1);
@@ -82,12 +85,11 @@ suite('Valid Schema Tests', () => {
       let v = await validator({
         folder: 'test/schemas',
         constants: 'test/schemas/constants.yml',
-        rootUrl: libUrls.testRootUrl(),
         serviceName: 'whatever',
       });
       let error = v(
         {value: 43},
-        libUrls.schema(libUrls.testRootUrl(), 'whatever', '/v1/yml-test-schema#'));
+        libUrls.schema(rootUrl, 'whatever', '/v1/yml-test-schema#'));
       return assert.equal(error, null);
     } catch (err) {
       return err;
@@ -97,7 +99,7 @@ suite('Valid Schema Tests', () => {
   test('rejects poorly formed object', () => {
     let error = validate(
       {value: 43},
-      libUrls.schema(libUrls.testRootUrl(), 'whatever', '/v1/test-schema#'));
+      libUrls.schema(rootUrl, 'whatever', '/v1/test-schema#'));
     debug(error);
     assert.notEqual(error, null);
   });
@@ -105,7 +107,7 @@ suite('Valid Schema Tests', () => {
   test('messages for large schema are nice', () => {
     let error = validate(
       {},
-      libUrls.schema(libUrls.testRootUrl(), 'whatever', '/v1/big-schema#'));
+      libUrls.schema(rootUrl, 'whatever', '/v1/big-schema#'));
     debug(error);
     assert.notEqual(error, null);
   });
@@ -113,21 +115,22 @@ suite('Valid Schema Tests', () => {
   test('automatic id', () => {
     let error = validate(
       {value: 42},
-      libUrls.schema(libUrls.testRootUrl(), 'whatever', '/v1/auto-named-schema#'));
+      libUrls.schema(rootUrl, 'whatever', '/v1/auto-named-schema#'));
     assert.equal(error, null);
   });
 
-  test('schemas available', () => {
-    let schemas = validate.schemas;
-    assert.equal(_.keys(schemas).length, 9);
-    assert(_.includes(_.keys(schemas), 'v1/default-schema.json'));
+  test('message specifies absolute schema URL', () => {
+    let error = validate(
+      {value: 42, unwanted_value: 1729},
+      libUrls.schema(rootUrl, 'whatever', '/v1/default-schema'));
+    assert.notEqual(error, null);
+    assert(error.includes(`Rejecting Schema: ${rootUrl}`), error);
   });
 
   test('message specifies unwanted additional property', () => {
     let error = validate(
       {value: 42, unwanted_value: 1729},
-      libUrls.schema(libUrls.testRootUrl(), 'whatever', '/v1/default-schema'));
-    debug(error);
+      libUrls.schema(rootUrl, 'whatever', '/v1/default-schema'));
     assert.notEqual(error, null);
     assert(error.includes('data should NOT have additional properties: "unwanted_value"'));
   });
