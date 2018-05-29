@@ -47,8 +47,23 @@ properties:
           task-graph scheduler, this is the `taskGraphId`.
         type:           string
         pattern:        {$const: slugid-pattern}
-      deadline:         {$const: deadline}
-      expires:          {$const: expires}
+      deadline:
+        title:        Deadline
+        description: |
+          Deadline of the task, `pending` and `running` runs are
+          resolved as **exception** if not resolved by other means
+          before the deadline. Note, deadline cannot be more than
+          5 days into the future
+        type:         string
+        format:       date-time
+      expires:
+        title:        Expiration
+        description: |
+          Task expiration, time at which task definition and
+          status is deleted. Notice that all artifacts for the task
+          must have an expiration that is no later than this.
+        type:         string
+        format:       date-time
       retriesLeft:
         title:          "Retries Left"
         description: |

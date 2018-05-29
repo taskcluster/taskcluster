@@ -37,8 +37,6 @@ suite('taskcreator_test.js', function() {
       hookId:             'tc-test-hook',
       metadata:           {},
       bindings:           [],
-      deadline:           '1 day',
-      expires:            '1 day',
       schedule:           {format: {type: 'none'}},
       triggerToken:       taskcluster.slugid(),
       lastFire:           {},
@@ -65,6 +63,9 @@ suite('taskcreator_test.js', function() {
         then: {
           provisionerId: 'no-provisioner',
           workerType: 'test-worker',
+          created: {$fromNow: '0 minutes'},
+          deadline: {$fromNow: '1 minutes'},
+          expires: {$fromNow: '2 minutes'},
           metadata: {
             name: 'test task',
             description: 'task created by tc-hooks tests',
@@ -138,6 +139,8 @@ suite('taskcreator_test.js', function() {
           taskId,
         },
       });
+      assume(new Date(task.deadline) - new Date(task.created)).to.equal(60000);
+      assume(new Date(task.expires) - new Date(task.created)).to.equal(120000); 
     });
 
     test('firing a real task that sets its own task times works', async function() {
