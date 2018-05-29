@@ -21,7 +21,7 @@ async function documenter(options) {
     credentials: undefined,
     project: null,
     tier: null,
-    schemas: {},
+    schemaset: null,
     menuIndex: 10,
     readme: path.join(rootdir.get(), 'README.md'),
     docsFolder: path.join(rootdir.get(), '/docs'),
@@ -29,7 +29,7 @@ async function documenter(options) {
     references: [],
     publish: process.env.NODE_ENV == 'production',
   });
-  
+
   const rv = new Documenter(options);
   if (options.publish) {
     await rv.publish();
@@ -50,7 +50,6 @@ const TIERS = [
 
 class Documenter {
   constructor(options) {
-    assert(options.schemas, 'options.schemas must be given');
     assert(options.tier, 'options.tier must be given');
     assert(TIERS.indexOf(options.tier) !== -1,
       `options.tier must be one of ${TIERS.join(', ')}`
@@ -96,10 +95,12 @@ class Documenter {
       JSON.stringify(metadata, null, 2)
     );
 
-    _.forEach(this.options.schemas, (schema, name) => tarball.entry(
-      headers(name, 'schemas'),
-      schema
-    ));
+    if (this.options.schemaset) {
+      _.forEach(this.options.schemaset.abstractSchemas(), (schema, name) => tarball.entry(
+        headers(name, 'schemas'),
+        JSON.stringify(schema, null, 2)
+      ));
+    }
 
     _.forEach(this.options.references, reference => tarball.entry(
       headers(reference.name + '.json', 'references'),

@@ -7,9 +7,9 @@ const tar = require('tar-stream');
 const rootdir = require('app-root-dir');
 const zlib = require('zlib');
 const path = require('path');
-const validator = require('taskcluster-lib-validate');
+const SchemaSet = require('taskcluster-lib-validate');
 const config = require('typed-env-config');
-const API = require('taskcluster-lib-api');
+const APIBuilder = require('taskcluster-lib-api');
 const Exchanges = require('pulse-publisher');
 const MockS3UploadStream = require('./mockS3UploadStream');
 const awsMock = require('mock-aws-s3');
@@ -78,8 +78,7 @@ function assertInTarball(shoulds, tarball) {
 }
 
 suite('documenter', () => {
-  let validate = null;
-  let api = null;
+  let schemaset = null;
   let exchanges = null;
   let references = null;
   let cfg = config({});
@@ -87,28 +86,30 @@ suite('documenter', () => {
   let tier = 'core';
 
   suiteSetup(async () => {
-    validate = await validator({
+    schemaset = new SchemaSet({
       folder: './test/schemas',
-      baseUrl: 'http://localhost:1203/',
+      serviceName: 'whatever',
       constants: {'my-constant': 42},
     });
-    api = new API({
+    const builder = new APIBuilder({
       title: 'Testing Stuff',
       description: 'This is for testing stuff!',
+      serviceName: 'whatever',
+      version: 'v1',
     });
     exchanges = new Exchanges({
       title: 'Testing Stuff Again',
       description: 'Another test!',
     });
     references = [
-      {name: 'api', reference: api.reference({baseUrl: 'http://localhost'})},
+      {name: 'api', reference: builder.reference()},
       {name: 'events', reference: exchanges.reference({baseUrl: 'http://localhost'})},
     ];
   });
 
   test('tarball exists', async function() {
     let doc = await documenter({
-      schemas: validate.schemas,
+      schemaset,
       tier,
     });
     assert.ok(await doc._tarballStream());
@@ -128,7 +129,7 @@ suite('documenter', () => {
 
   test('tarball contains schemas and metadata', async function() {
     let doc = await documenter({
-      schemas: validate.schemas,
+      schemaset,
       tier,
     });
     let shoulds = [
@@ -165,30 +166,44 @@ suite('documenter', () => {
     return assertInTarball(shoulds, await doc._tarballStream());
   });
 
-  test('write() writes a directory', async function() {
+  const withWrittenDocs = async cb => {
     let doc = await documenter({
       docsFolder: './test/docs',
+      schemaset,
       tier,
     });
-    let shoulds = [
-      'docs/example.md',
-      'docs/nested/nested-example.md',
-    ];
     const tmpdir = tmp.dirSync({unsafeCleanup: true});
     const docsDir = path.join(tmpdir.name, 'docs_output_dir');
     try {
       await doc.write({docsDir});
-      shoulds.forEach(name =>
-        assert(fs.existsSync(path.join(docsDir, name)), `${name} should exist`));
+      await cb(docsDir);
     } finally {
       tmpdir.removeCallback();
     }
+  };
+
+  test('write() writes a directory', async function() {
+    await withWrittenDocs(docsDir => {
+      const shoulds = [
+        'docs/example.md',
+        'docs/nested/nested-example.md',
+      ];
+      shoulds.forEach(name =>
+        assert(fs.existsSync(path.join(docsDir, name)), `${name} should exist`));
+    });
+  });
+
+  test('writen schemas are abstract', async function() {
+    await withWrittenDocs(docsDir => {
+      const schema = JSON.parse(fs.readFileSync(path.join(docsDir, 'schemas', 'bar.json')));
+      assert.equal(schema.$id, 'taskcluster:/schemas/whatever/bar.json#');
+    });
   });
 
   const publishTest = async function(mock) {
     const options = {
       project: 'docs-testing',
-      schemas: validate.schemas,
+      schemaset,
       tier,
       docsFolder: './test/docs/',
       references,
