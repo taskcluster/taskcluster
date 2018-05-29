@@ -21,6 +21,17 @@ class TaskCreator {
 
   taskForHook(hook, context, options) {
     let task = jsone(hook.task, _.defaults({}, {taskId: options.taskId}, context));
+    let created = options.created || new Date();
+    // only apply created, deadline, and expires if they are not set
+    if (!task.created) {
+      task.created = created.toJSON();
+    }
+    if (!task.deadline) {
+      task.deadline = taskcluster.fromNowJSON('1 day', created);
+    }
+    if (!task.expires) {
+      task.expires = taskcluster.fromNowJSON('1 month', created);
+    }
 
     // If the template did not set a taskGroupId, then set the taskGroupId to
     // the taskId, thereby creating a new task group and following the
