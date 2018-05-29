@@ -42,12 +42,12 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
         owner:        'amiyaguchi@mozilla.com',
         source:       'http://github.com/',
       },
+      expires:        {$fromNow: '10 days'},
+      deadline:       {$fromNow: '3 days'},
       tags: {
         purpose:      'taskcluster-testing',
       },
     },
-    expires:          '10 days',
-    deadline:         '3 days',
     hookId:           'bar',
     hookGroupId:      'foo',
     metadata: {

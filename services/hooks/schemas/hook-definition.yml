@@ -20,8 +20,6 @@ properties:
       specified by one or more patterns.  Note that tasks may not be created
       at exactly the time specified.
                           {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json#"}
-  expires:                {$const: expires}
-  deadline:               {$const: deadline}
   task:
     title:                "Task Template"
     description: |
@@ -38,6 +36,4 @@ required:
   - metadata
   - task
   - schedule
-  - expires
-  - deadline
   - triggerSchema
