@@ -88,6 +88,6 @@ same base time, meaning that times will add up precisely.  Use something like
 ```
 
 If the `created`, `deadline`, and `expires` attributes of the task are not set,
-they will be filled in based on the relative times given in `hook.deadline` and
-`hook.expires`.  However, this behavior is deprecated and you are encouraged to
-use `$fromNow` instead.
+they will be filled with the default values of 0 seconds, 1 day, and 1 month.
+However, this behavior is deprecated and you are encouraged to use `$fromNow`
+instead.
