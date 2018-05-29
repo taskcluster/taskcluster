@@ -203,8 +203,7 @@ suite('api/route', function() {
   });
 
   test('reference', async function() {
-    const api = await builder.build({rootUrl: 'http://localhost:23242'});
-    const ref = api.reference();
+    const ref = builder.reference();
     ref.entries.forEach(function(entry) {
       if (entry.name == 'testSlashParam') {
         assert(entry.route === '/slash-param/<name>',

@@ -55,7 +55,7 @@ let api = builder.build({
   context: {
     myDataStore:      new DataStore(),
   },
-  validator,
+  schemaset,
   monitor,
   // ...
 });
@@ -105,9 +105,11 @@ To declare an API method, call `builder.declare(options, handler)` with the foll
  * `query` - patterns for query parameters (see below)
  * `scopes` - scopes required for this API endpoint, in 'scope expression' form (see below)
  * `stability` - API stability level, defaulting to experimental (see below)
- * `input` - the schema against which the input payload will be validated
+ * `input` - the schema against which the input payload will be validated. This should be the path to the file
+   containing the schema in `schemas/<version>`, i.e. `schema.yaml`
  * `skipInputValidation` - if true, don't do input validation (but include the schema in documentation)
- * `output` - the schema against which the output payload will be validated
+ * `output` - the schema against which the output payload will be validated. This should be the path to the file
+   containing the schema in `schemas/<version>`, i.e. `schema.yaml`
  * `skipOutputValidation` - if true, don't do output validation (but include the schema in documentation)
  * `cleanPayload` - a function taking and returning a payload, which will "clean" any values that should
    not appear in error messages (for example, removing secrets)
@@ -407,7 +409,7 @@ options to `builder.build` are:
    provide uesful application-specific objects such as Azure table objects or
    other API clients to the API methods.
  * `monitor` - an instance of [taskcluster-lib-monitor](https://github.com/taskcluster/taskcluster-lib-monitor)
- * `validator` (required) - a schema validator; this is a Validator object from
+ * `schemaset` (required) - a schemaset; this is from
    [taskcluster-lib-validate](https://github.com/taskcluster/taskcluster-lib-validate).
  * `signatureValidator` - a validator for Hawk signatures; this is only required for
    the Auth service, as the default signature validator consults the Auth service.
@@ -436,12 +438,12 @@ const App = require('taskcluster-lib-app');
 let load = loader({
   // ...
   api: {
-    requires: ['cfg', 'monitor', 'validator'],
-    setup: ({cfg, monitor, validator}) => builder.build({
+    requires: ['cfg', 'monitor', 'schemaset'],
+    setup: ({cfg, monitor, schemaset}) => builder.build({
       rootUrl:          cfg.taskcluster.rootUrl,
       context:          {..},
       monitor:          monitor.prefix('api'),
-      validator,
+      schemaset,
     }),
   },
 

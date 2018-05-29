@@ -1,11 +1,37 @@
+const fs = require('fs');
+const path = require('path');
 const Debug = require('debug');
 const assert = require('assert');
 const _ = require('lodash');
+const libUrls = require('taskcluster-lib-urls');
+const Ajv = require('ajv');
+const utils = require('./utils');
 const errors = require('./errors');
 const ScopeExpressionTemplate = require('./expressions');
 const API = require('./api');
 
 var debug = Debug('api');
+
+/**
+ * A ping method, added automatically to every service
+ */
+const ping = {
+  method:   'get',
+  route:    '/ping',
+  name:     'ping',
+  stability:  'stable',
+  title:    'Ping Server',
+  description: [
+    'Respond without doing anything.',
+    'This endpoint is used to check that the service is up.',
+  ].join('\n'),
+  handler: function(req, res) {
+    res.status(200).json({
+      alive:    true,
+      uptime:   process.uptime(),
+    });
+  },
+};
 
 /**
  * Create an APIBuilder; see README for syntax
@@ -35,7 +61,8 @@ var APIBuilder = function(options) {
   this.params = options.params;
   this.context = options.context;
   this.errorCodes = options.errorCodes;
-  this.entries = [];
+  this.entries = [ping];
+  this.hasSchemas = false;
 };
 
 /** Stability levels offered by API method */
@@ -104,8 +131,8 @@ APIBuilder.stability = stability;
  *   scopes:   ['admin', 'superuser'],           // Scopes for the request
  *   scopes:   [['admin'], ['per1', 'per2']],    // Scopes in disjunctive form
  *                                               // admin OR (per1 AND per2)
- *   input:    'input-schema.json',              // optional, null if no input
- *   output:   'output-schema.json' || 'blob',   // optional, null if no output
+ *   input:    'input-schema.yaml',              // optional, null if no input
+ *   output:   'output-schema.yaml' || 'blob',   // optional, null if no output
  *   skipInputValidation:    true,               // defaults to false
  *   skipOutputValidation:   true,               // defaults to false
  *   title:     "My API Method",
@@ -158,6 +185,18 @@ APIBuilder.prototype.declare = function(options, handler) {
   if (this.entries.some(entry => entry.name === options.name)) {
     throw new Error('This function has already been declared.');
   }
+  // make options.input and options.output relative to the service schemas
+  // (<rootUrl>/schemas>/<serviceName>)
+  if (options.input) {
+    this.hasSchemas = true;
+    assert(!options.input.startsWith('http'), 'entry.input should be a filename, not a url');
+    options.input = `${this.version}/${options.input.replace(/ya?ml$/, 'json#')}`;
+  }
+  if (options.output && options.output !== 'blob') {
+    this.hasSchemas = true;
+    assert(!options.output.startsWith('http'), 'entry.output should be a filename, not a url');
+    options.output = `${this.version}/${options.output.replace(/ya?ml$/, 'json#')}`;
+  }
   this.entries.push(options);
 };
 
@@ -166,11 +205,67 @@ APIBuilder.prototype.declare = function(options, handler) {
  */
 APIBuilder.prototype.build = async function(options) {
   options.builder = this;
+  assert(!options.validator, 'validator is deprecated. use a schemaset instead');
+  if (this.hasSchemas) {
+    assert(options.schemaset, 'must provide a schemaset if any schemas are used.');
+    options.validator = await options.schemaset.validator(options.rootUrl);
+  }
   const service = new API(options);
   if (options.publish) {
     await service.publish();
   }
   return service;
+};
+
+/**
+ * Construct the API reference document as a JSON value.
+ */
+APIBuilder.prototype.reference = function() {
+  var reference = {
+    version:            0,
+    $schema:            'http://schemas.taskcluster.net/base/v1/api-reference.json#',
+    title:              this.title,
+    description:        this.description,
+    // We hardcode taskcluster.net here because no other system uses baseUrl
+    baseUrl:            libUrls.api('https://taskcluster.net', this.serviceName, this.version, ''),
+    serviceName:        this.serviceName,
+    entries: this.entries.filter(entry => !entry.noPublish).map(entry => {
+      const [route, params] = utils.cleanRouteAndParams(entry.route);
+
+      var retval = {
+        type:           'function',
+        method:         entry.method,
+        route:          route,
+        query:          _.keys(entry.query || {}),
+        args:           params,
+        name:           entry.name,
+        stability:      entry.stability,
+        title:          entry.title,
+        input:          entry.input,
+        output:         entry.output,
+        description:    entry.description,
+      };
+      if (entry.scopes) {
+        retval.scopes = entry.scopes;
+      }
+      return retval;
+    }),
+  };
+
+  var ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
+  var schemaPath = path.join(__dirname, 'schemas', 'api-reference.json');
+  var schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
+  var validate = ajv.compile(JSON.parse(schema));
+
+  // Check against it
+  var valid = validate(reference);
+  if (!valid) {
+    debug('Reference:\n%s', JSON.stringify(reference, null, 2));
+    throw new Error(`API.references(): Failed to validate against schema:\n
+      ${ajv.errorsText(validate.errors, {separator: '\n  * '})}`);
+  }
+
+  return reference;
 };
 
 // Export APIBuilder
