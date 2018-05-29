@@ -110,7 +110,7 @@ if [ -f packer-artifacts.json ]; then
         | split(":")
       ]
       | flatten
-      | { (.[0]): .[1], (.[2]): .[3], (.[4]): .[5] }
+      | { (.[0]): .[1], (.[2]): .[3], (.[4]): .[5], (.[6]): .[7] }
     }
   ' packer-artifacts.json | jq -s add > docker-worker-amis.json
 fi
