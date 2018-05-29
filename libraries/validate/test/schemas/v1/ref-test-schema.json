@@ -3,8 +3,11 @@
     "title": "test json schema",
     "type": "object",
     "properties": {
-        "reference": {
-            "$ref": "https://tc-tests.localhost/schemas/whatever/v1/test-schema.json#"
+        "referenceWithDotDot": {
+            "$ref": "../v1/test-schema.json#"
+        },
+        "localReference": {
+            "$ref": "test-schema.json#"
         },
         "tid": {
             "type": "string",
@@ -13,7 +16,8 @@
     },
     "additionalProperties": false,
     "required": [
-        "reference",
+        "referenceWithDotDot",
+        "localReference",
         "tid"
     ]
 }

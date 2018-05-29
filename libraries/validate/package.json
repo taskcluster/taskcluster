@@ -17,7 +17,7 @@
     "url": "https://github.com/taskcluster/taskcluster-lib-validate.git"
   },
   "dependencies": {
-    "ajv": "^5.3.0",
+    "ajv": "^6.5.0",
     "app-root-dir": "^1.0.2",
     "aws-sdk": "^2.142.0",
     "debug": "^3.1.0",
@@ -39,5 +39,5 @@
   "engines": {
     "node": ">=8"
   },
-  "main": "./src/validate.js"
+  "main": "./src/schemaset.js"
 }

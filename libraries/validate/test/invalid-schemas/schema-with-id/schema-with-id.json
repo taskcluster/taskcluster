@@ -1,12 +1,11 @@
 {
   "$schema":      "http://json-schema.org/draft-06/schema#",
+  "id":           "http://schemas.taskcluster.net/i-am-a-bad-schema",
   "title":        "test json schema",
   "type":         "object",
   "properties": {
     "value": {
-      "type":           "integer",
-      "minimum":        {"$const": "my-constant"},
-      "maximum":        {"$const": "my-constant"}
+      "type":           "integer"
     }
   },
   "additionalProperties":   false,
