@@ -29,8 +29,6 @@ properties:
         Note that tasks may not be created at exactly the time specified.
     uniqueItems: true
     default: []
-  expires:                {$const: expires}
-  deadline:               {$const: deadline}
   task:
     title:                "Task Template"
     description: |
