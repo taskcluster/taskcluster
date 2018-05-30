@@ -26,13 +26,7 @@ import { role } from '../../utils/prop-types';
     ...theme.mixins.listItemButton,
   },
   saveIcon: {
-    backgroundColor: theme.palette.success.main,
-    '&:hover': {
-      backgroundColor: theme.palette.success.dark,
-    },
-    '& svg': {
-      backgroundColor: 'transparent',
-    },
+    ...theme.mixins.greenIcon,
   },
 }))
 /** A form to view/edit/create a role */

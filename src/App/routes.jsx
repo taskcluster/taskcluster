@@ -51,6 +51,12 @@ export default [
     path: '/auth/scopes',
   },
   {
+    component: loadable(() =>
+      import(/* webpackChunkName: 'Hooks' */ '../views/Hooks')
+    ),
+    path: '/hooks',
+  },
+  {
     // eslint-disable-next-line
     component: props =>
       props.user ? <Dashboard {...props} /> : <Home {...props} />,

@@ -9,3 +9,8 @@ export const SCOPES_SEARCH_MODE = {
   HAS_SCOPE: 'HAS SCOPE',
   HAS_SUB_SCOPE: 'HAS SUB SCOPE',
 };
+export const HOOKS_LAST_FIRE_TYPE = {
+  NO_FIRE: 'NoFire',
+  SUCCESSFUL_FIRE: 'HookSuccessfulFire',
+  FAILED_FIRE: 'HookFailedFire',
+};

@@ -13,6 +13,10 @@ const TEN_PERCENT_WHITE = fade('#fff', 0.1);
 const BACKGROUND = '#12202c';
 const PRIMARY = '#1b2a39';
 const SECONDARY = '#4177a5';
+const SUCCESS = {
+  MAIN: green[500],
+  DARK: green[800],
+};
 const theme = createMuiTheme({
   palette: {
     type: 'dark',
@@ -28,8 +32,7 @@ const theme = createMuiTheme({
     },
     success: {
       ...green,
-      main: green[500],
-      dark: green[800],
+      ...SUCCESS,
     },
     warning: {
       ...amber,
@@ -94,6 +97,15 @@ const theme = createMuiTheme({
       position: 'fixed',
       bottom: 16,
       right: 24,
+    },
+    greenIcon: {
+      backgroundColor: SUCCESS.MAIN,
+      '&:hover': {
+        backgroundColor: SUCCESS.DARK,
+      },
+      '& svg': {
+        backgroundColor: 'transparent',
+      },
     },
   },
   overrides: {

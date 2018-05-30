@@ -115,7 +115,9 @@ export default class TaskDetailsCard extends Component {
                 button
                 className={classes.listItemButton}
                 component="a"
-                href={`${process.env.BASE_URL}/queue/v1/task/${task.taskId}`}
+                href={`queue.${
+                  process.env.TASKCLUSTER_ROOT_URL
+                }/queue/v1/task/${task.taskId}`}
                 target="_blank"
                 rel="noopener noreferrer">
                 <ListItemText primary="View task definition" />

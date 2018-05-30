@@ -1,0 +1,8 @@
+query Hooks {
+  hookGroups {
+    hookGroupId
+    hooks {
+      hookId
+    }
+  }
+}

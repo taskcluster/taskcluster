@@ -84,6 +84,16 @@ export const taskMetadata = shape({
   source: string,
 });
 
+export const taskPriority = oneOf([
+  'HIGHEST',
+  'VERY_HIGH',
+  'HIGH',
+  'MEDIUM',
+  'LOW',
+  'VERY_LOW',
+  'LOWEST',
+]);
+
 export const task = shape({
   metadata: taskMetadata,
   status,
@@ -91,7 +101,7 @@ export const task = shape({
   created: date,
   deadline: date,
   expires: date,
-  priority: string,
+  priority: taskPriority,
   provisionerId: string,
   workerType: string,
   schedulerId: string,
@@ -178,3 +188,36 @@ export const role = shape({
 });
 
 export const scopeExpansionLevel = oneOf(['scopes', 'expandedScopes']);
+
+export const hookMetadata = shape({
+  name: string,
+  description: string,
+  owner: string,
+  emailOnError: bool,
+});
+
+export const hookTask = shape({
+  provisionerId: string,
+  workerType: string,
+  schedulerId: string,
+  taskGroupId: string,
+  routes: arrayOf(string),
+  priority: taskPriority,
+  retries: number,
+  scopes: arrayOf(string),
+  payload: object,
+  metadata: taskMetadata,
+  tags: object,
+  extra: object,
+});
+
+export const hook = shape({
+  hookGroupId: string,
+  hookId: string,
+  metadata: hookMetadata,
+  schedule: arrayOf(string),
+  task: hookTask,
+  expires: date,
+  deadline: date,
+  triggerSchema: object,
+});

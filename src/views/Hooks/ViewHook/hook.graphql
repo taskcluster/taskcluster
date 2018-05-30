@@ -1,0 +1,49 @@
+query Hook($hookGroupId: ID!, $hookId: ID!) {
+  hook(hookGroupId: $hookGroupId, hookId: $hookId) {
+    hookGroupId
+    hookId
+    schedule
+    metadata {
+      name
+      description
+      owner
+      emailOnError
+    }
+    status {
+      nextScheduledDate
+      lastFire {
+        ... on HookSuccessfulFire {
+          time
+          taskId
+        }
+        ... on HookFailedFire {
+          time
+          error
+        }
+        ... on NoFire {
+          result
+        }
+        __typename
+      }
+    }
+    triggerSchema
+    task {
+      provisionerId
+      workerType
+      schedulerId
+      taskGroupId
+      routes
+      retries
+      scopes
+      payload
+      metadata {
+        name
+        description
+        owner
+        source
+      }
+      tags
+      extra
+    }
+  }
+}

@@ -64,7 +64,7 @@ module.exports = {
       'AUTH0_REDIRECT_URI',
       'AUTH0_RESPONSE_TYPE',
       'AUTH0_SCOPE',
-      'BASE_URL',
+      'TASKCLUSTER_ROOT_URL',
     ]],
     (neutrino) => {
       if (process.env.NODE_ENV === 'development') {
