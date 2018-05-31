@@ -45,12 +45,7 @@ suite('handle rerun job', () => {
     expected.state = 'completed';
     expected.result = 'fail';
     expected.isRetried = true;
-    expected.logs = [
-      {
-        name: 'builds-4h',
-        url: 'https://queue.taskcluster.net/v1/task/5UMTRzgESFG3Bn8kCBwxxQ/runs/0/artifacts/public/logs/live_backing.log', // eslint-disable-line max-len
-      },
-    ];
+    expected.logs = [];
 
     let job = await handler.handleTaskRerun(pushInfo, task, status);
     assert.deepEqual(actual, expected);
