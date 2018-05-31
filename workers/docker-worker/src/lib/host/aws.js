@@ -6,6 +6,7 @@ const got = require('got-promise');
 const taskcluster = require('taskcluster-client');
 const _ = require('lodash');
 const { createLogger } = require('../log');
+const { spawn } = require('child_process');
 
 let log = createLogger({
   source: 'host/aws'
@@ -132,15 +133,7 @@ module.exports = {
       // or if the worker respawned (because of an uncaught exception).  Either way,
       // alert and set capacity to 0.
       log('[alert-operator] error retrieving secrets', {stack: e.stack});
-      return _.defaultsDeep(
-        userdata.data,
-        {
-          capacity: 0,
-          workerType: userdata.workerType,
-          provisionerId: userdata.provisionerId
-        },
-        config
-      );
+      spawn('shutdown', ['-h', 'now']);
     }
 
     log('read secrets');
