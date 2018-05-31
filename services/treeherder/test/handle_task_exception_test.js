@@ -51,12 +51,7 @@ suite('handle exception job', () => {
     expected.result = 'exception';
     expected.timeStarted = started.toISOString();
     expected.timeCompleted = resolved.toISOString();
-    expected.logs = [
-      {
-        name: 'builds-4h',
-        url: 'https://queue.taskcluster.net/v1/task/5UMTRzgESFG3Bn8kCBwxxQ/runs/0/artifacts/public/logs/live_backing.log', // eslint-disable-line max-len
-      },
-    ];
+    expected.logs = [];
 
     let job = await handler.handleTaskException(pushInfo, task, status);
     assert.deepEqual(actual, expected);
@@ -88,12 +83,7 @@ suite('handle exception job', () => {
     expected.result = 'superseded';
     expected.timeStarted = started.toISOString();
     expected.timeCompleted = resolved.toISOString();
-    expected.logs = [
-      {
-        name: 'builds-4h',
-        url: 'https://queue.taskcluster.net/v1/task/5UMTRzgESFG3Bn8kCBwxxQ/runs/0/artifacts/public/logs/live_backing.log', // eslint-disable-line max-len
-      },
-    ];
+    expected.logs = [];
 
     let job = await handler.handleTaskException(pushInfo, task, status);
     assert.deepEqual(actual, expected);
@@ -120,12 +110,7 @@ suite('handle exception job', () => {
       resolved: resolved.toISOString(),
     };
 
-    expected.logs = [
-      {
-        name: 'builds-4h',
-        url: 'https://queue.taskcluster.net/v1/task/5UMTRzgESFG3Bn8kCBwxxQ/runs/0/artifacts/public/logs/live_backing.log', // eslint-disable-line max-len
-      },
-    ];
+    expected.logs = [];
 
     let job = await handler.handleTaskException(pushInfo, task, status);
     assert.deepEqual(actual, undefined);
