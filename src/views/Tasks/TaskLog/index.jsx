@@ -1,9 +1,9 @@
 import { hot } from 'react-hot-loader';
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { withStyles } from 'material-ui/styles';
-import Button from 'material-ui/Button';
-import Tooltip from 'material-ui/Tooltip';
+import { withStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+import Tooltip from '@material-ui/core/Tooltip';
 import ArrowRightIcon from 'mdi-react/ArrowRightIcon';
 import Dashboard from '../../../components/Dashboard';
 import Log from '../../../components/Log';

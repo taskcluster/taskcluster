@@ -2,13 +2,13 @@ import { hot } from 'react-hot-loader';
 import { Component } from 'react';
 import { graphql } from 'react-apollo';
 import { prop, map } from 'ramda';
-import { withStyles } from 'material-ui/styles';
-import Tooltip from 'material-ui/Tooltip';
-import Button from 'material-ui/Button';
+import { withStyles } from '@material-ui/core/styles';
+import Tooltip from '@material-ui/core/Tooltip';
+import Button from '@material-ui/core/Button';
+import MuiTreeView from 'material-ui-treeview';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
-import Tree from '../../../components/Tree';
 import Spinner from '../../../components/Spinner';
 import ErrorPanel from '../../../components/ErrorPanel';
 import hooksQuery from './hooks.graphql';
@@ -69,7 +69,7 @@ export default class ListHooks extends Component {
         {!hookGroups && loading && <Spinner loading />}
         {error && error.graphQLErrors && <ErrorPanel error={error} />}
         {hookGroups && (
-          <Tree
+          <MuiTreeView
             searchTerm={hookSearch || null}
             tree={tree}
             onLeafClick={this.handleLeafClick}

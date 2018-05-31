@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { node, string } from 'prop-types';
 import classNames from 'classnames';
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 import PageTitle from '../PageTitle';
 import ErrorPanel from '../ErrorPanel';
 

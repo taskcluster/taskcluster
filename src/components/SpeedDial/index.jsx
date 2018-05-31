@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import classNames from 'classnames';
 import { arrayOf, node, oneOfType } from 'prop-types';
-import { withStyles } from 'material-ui/styles/index';
+import { withStyles } from '@material-ui/core/styles';
 import MuiSpeedDial from '@material-ui/lab/SpeedDial';
 import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
 import CloseIcon from 'mdi-react/CloseIcon';

@@ -1,8 +1,8 @@
 import { hot } from 'react-hot-loader';
 import { Component } from 'react';
 import { graphql } from 'react-apollo';
-import { withStyles } from 'material-ui/styles';
-import Grid from 'material-ui/Grid';
+import { withStyles } from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
 import provisionersQuery from './provisioners.graphql';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';

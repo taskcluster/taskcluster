@@ -1,7 +1,8 @@
 import { Component } from 'react';
 import { node, bool, string } from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import List, { ListItem } from 'material-ui/List';
+import { withStyles } from '@material-ui/core/styles';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
 
 @withStyles(theme => ({
   root: {

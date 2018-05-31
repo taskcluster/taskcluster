@@ -1,8 +1,8 @@
 import { instanceOf } from 'prop-types';
 import { RedBoxError } from 'redbox-react';
 import ErrorStackParser from 'error-stack-parser';
-import { withStyles } from 'material-ui/styles';
-import CardContent from 'material-ui/Card/CardContent';
+import { withStyles } from '@material-ui/core/styles';
+import CardContent from '@material-ui/core/CardContent';
 
 @withStyles({
   redbox: {

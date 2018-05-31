@@ -1,7 +1,7 @@
 import { hot } from 'react-hot-loader';
 import { Component } from 'react';
-import { withStyles } from 'material-ui/styles';
-import Typography from 'material-ui/Typography';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../components/Dashboard';
 import emoticonUrl from './emoticon-neutral.svg';
 

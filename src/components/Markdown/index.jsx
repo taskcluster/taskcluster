@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import parser from 'markdown-it';
 import linkAttributes from 'markdown-it-link-attributes';
 import highlighter from 'markdown-it-highlightjs';
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 import 'highlight.js/styles/atom-one-dark.css';
 
 const markdown = parser({ linkify: true });

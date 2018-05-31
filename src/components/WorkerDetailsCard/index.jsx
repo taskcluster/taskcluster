@@ -1,6 +1,8 @@
 import { Component } from 'react';
 import { format } from 'date-fns';
-import List, { ListItem, ListItemText } from 'material-ui/List';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
 import DateDistance from '../DateDistance';
 import { worker } from '../../utils/prop-types';
 

@@ -1,10 +1,10 @@
 import { hot } from 'react-hot-loader';
 import { Component } from 'react';
-import { withStyles } from 'material-ui/styles';
-import Button from 'material-ui/Button';
-import Divider from 'material-ui/Divider';
-import Hidden from 'material-ui/Hidden';
-import Typography from 'material-ui/Typography';
+import { withStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+import Divider from '@material-ui/core/Divider';
+import Hidden from '@material-ui/core/Hidden';
+import Typography from '@material-ui/core/Typography';
 import ArrowRightIcon from 'mdi-react/ArrowRightIcon';
 import Landing from '../../components/Landing';
 

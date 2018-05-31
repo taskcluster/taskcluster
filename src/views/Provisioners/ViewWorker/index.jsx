@@ -4,7 +4,7 @@ import { graphql } from 'react-apollo';
 import { format, addYears, isAfter } from 'date-fns';
 import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import HammerIcon from 'mdi-react/HammerIcon';
-import TextField from 'material-ui/TextField';
+import TextField from '@material-ui/core/TextField';
 import HomeLockIcon from 'mdi-react/HomeLockIcon';
 import HomeLockOpenIcon from 'mdi-react/HomeLockOpenIcon';
 import Dashboard from '../../../components/Dashboard';
@@ -25,18 +25,16 @@ import sleep from '../../../utils/sleep';
   }),
 })
 export default class ViewWorker extends Component {
-  state = {
-    dialogOpen: false,
-    dialogTitle: null,
-    dialogBody: null,
-    quarantineUntilInput: null,
-  };
+  constructor(props) {
+    super(props);
 
-  static getDerivedStateFromProps({ data: { worker } }) {
-    return {
+    this.state = {
+      dialogOpen: false,
+      dialogTitle: null,
+      dialogBody: null,
       quarantineUntilInput:
-        worker && worker.quarantineUntil
-          ? worker.quarantineUntil
+        props.worker && props.worker.quarantineUntil
+          ? props.worker.quarantineUntil
           : addYears(new Date(), 1000),
     };
   }

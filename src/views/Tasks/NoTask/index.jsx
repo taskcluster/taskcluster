@@ -1,6 +1,6 @@
 import { hot } from 'react-hot-loader';
 import { Component } from 'react';
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 

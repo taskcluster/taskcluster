@@ -24,12 +24,22 @@ export default (mode, selectedScope) => {
     [exact, T],
     [
       test(/\\*$/),
-      pipe(dropLast(1), scope => selectedScope.indexOf(scope), equals(0)),
+      pipe(
+        dropLast(1),
+        scope => selectedScope.indexOf(scope),
+        equals(0)
+      ),
     ],
     [T, F],
   ]);
   const hasSubScopePattern = cond([
-    [compose(not, test(/\\*$/)), pattern => `${pattern}*`],
+    [
+      compose(
+        not,
+        test(/\\*$/)
+      ),
+      pattern => `${pattern}*`,
+    ],
     [T, identity],
   ])(selectedScope);
 

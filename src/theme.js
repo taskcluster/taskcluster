@@ -1,10 +1,10 @@
-import { createMuiTheme } from 'material-ui/styles';
-import { fade, lighten } from 'material-ui/styles/colorManipulator';
-import transitions from 'material-ui/styles/transitions';
-import red from 'material-ui/colors/red';
-import amber from 'material-ui/colors/amber';
-import blue from 'material-ui/colors/blue';
-import green from 'material-ui/colors/green';
+import { createMuiTheme } from '@material-ui/core/styles';
+import { fade, lighten } from '@material-ui/core/styles/colorManipulator';
+import transitions from '@material-ui/core/styles/transitions';
+import red from '@material-ui/core/colors/red';
+import amber from '@material-ui/core/colors/amber';
+import blue from '@material-ui/core/colors/blue';
+import green from '@material-ui/core/colors/green';
 
 const Roboto300 = { fontFamily: 'Roboto300, sans-serif' };
 const Roboto400 = { fontFamily: 'Roboto400, sans-serif' };

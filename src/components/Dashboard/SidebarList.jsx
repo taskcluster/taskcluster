@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import List from 'material-ui/List';
+import List from '@material-ui/core/List';
 import LibraryIcon from 'mdi-react/LibraryIcon';
 import HexagonMultipleIcon from 'mdi-react/HexagonMultipleIcon';
 import HumanIcon from 'mdi-react/HumanIcon';

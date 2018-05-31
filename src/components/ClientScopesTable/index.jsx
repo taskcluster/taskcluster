@@ -14,9 +14,10 @@ import {
   contains,
   sort as rSort,
 } from 'ramda';
-import { withStyles } from 'material-ui/styles';
-import { ListItemText } from 'material-ui/List';
-import { TableRow, TableCell } from 'material-ui/Table';
+import { withStyles } from '@material-ui/core/styles';
+import ListItemText from '@material-ui/core/ListItemText';
+import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableCellListItem from '../TableCellListItem';
 import ConnectionDataTable from '../ConnectionDataTable';
@@ -86,7 +87,12 @@ export default class ClientScopesTable extends Component {
         rSort(sort)
       );
       const extractClients = pipe(
-        filter(pipe(path(['node', searchProperty]), any(match))),
+        filter(
+          pipe(
+            path(['node', searchProperty]),
+            any(match)
+          )
+        ),
         map(pipe(path(['node', 'clientId']))),
         rSort(sort)
       );

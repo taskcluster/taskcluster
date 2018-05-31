@@ -1,8 +1,8 @@
 import { Component } from 'react';
 import { bool, func, string } from 'prop-types';
-import { withStyles } from 'material-ui/styles';
-import { fade } from 'material-ui/styles/colorManipulator';
-import FormControl from 'material-ui/Form/FormControl';
+import { withStyles } from '@material-ui/core/styles';
+import { fade } from '@material-ui/core/styles/colorManipulator';
+import FormControl from '@material-ui/core/FormControl';
 import MagnifyIcon from 'mdi-react/MagnifyIcon';
 
 @withStyles(theme => ({

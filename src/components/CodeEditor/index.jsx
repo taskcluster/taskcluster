@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { object, string, func } from 'prop-types';
 import { Controlled } from 'react-codemirror2';
-import { withStyles } from 'material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/yaml/yaml';
 import 'codemirror/mode/javascript/javascript';

@@ -15,9 +15,10 @@ import {
   pluck,
   sort as rSort,
 } from 'ramda';
-import { withStyles } from 'material-ui/styles';
-import { ListItemText } from 'material-ui/List';
-import { TableRow, TableCell } from 'material-ui/Table';
+import { withStyles } from '@material-ui/core/styles';
+import ListItemText from '@material-ui/core/ListItemText';
+import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableCellListItem from '../TableCellListItem';
 import DataTable from '../DataTable';
@@ -75,7 +76,12 @@ export default class RoleScopesTable extends Component {
         rSort(sort)
       );
       const extractRoles = pipe(
-        filter(pipe(prop(searchProperty), any(match))),
+        filter(
+          pipe(
+            prop(searchProperty),
+            any(match)
+          )
+        ),
         pluck('roleId'),
         rSort(sort)
       );

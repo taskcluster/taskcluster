@@ -8,13 +8,12 @@ import {
   oneOfType,
   object,
 } from 'prop-types';
-import Table, {
-  TableBody,
-  TableCell,
-  TableHead,
-  TableSortLabel,
-  TableRow,
-} from 'material-ui/Table';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableSortLabel from '@material-ui/core/TableSortLabel';
+import TableRow from '@material-ui/core/TableRow';
 
 /**
  * A table to display a set of data elements.
