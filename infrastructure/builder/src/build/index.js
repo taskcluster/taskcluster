@@ -7,7 +7,7 @@ const config = require('typed-env-config');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const {ClusterSpec} = require('../formats/cluster-spec');
-const {TaskGraph, Lock} = require('console-taskgraph');
+const {TaskGraph, Lock, ConsoleRenderer} = require('console-taskgraph');
 const {gitClone} = require('./utils');
 const generateRepoTasks = require('./repo');
 
@@ -77,6 +77,7 @@ class Build {
         // and let's be sane about how many git clones we do..
         git: new Lock(8),
       },
+      renderer: new ConsoleRenderer({elideCompleted: true}),
     });
     const context = await taskgraph.run();
 
