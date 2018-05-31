@@ -292,7 +292,9 @@ module.exports = class Handler {
     job.state = 'completed';
     job.result = 'fail';
     job.isRetried = true;
-    job.logs = [createLogReference(this.queue, message.status.taskId, run)];
+    // reruns often have no logs, so in the interest of not linking to a 404'ing artifact,
+    // don't include a link
+    job.logs = [];
     job = await addArtifactUploadedLinks(this.queue,
       this.monitor,
       message.status.taskId,
@@ -348,7 +350,9 @@ module.exports = class Handler {
     let job = this.buildMessage(pushInfo, task, message.runId, message);
     job.timeStarted = run.started;
     job.timeCompleted = run.resolved;
-    job.logs = [createLogReference(this.queue, message.status.taskId, run)];
+    // exceptions generally have no logs, so in the interest of not linking to a 404'ing artifact,
+    // don't include a link
+    job.logs = [];
     job = await addArtifactUploadedLinks(this.queue,
       this.monitor,
       message.status.taskId,
