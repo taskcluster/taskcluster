@@ -1,5 +1,3 @@
-const program = require('commander');
-const {version} = require('../package.json');
 const {load} = require('./load');
 const {update} = require('./update');
 const {store} = require('./store');
@@ -10,19 +8,18 @@ const build = async (input, output, rootUrl) => {
   await store({references, schemas, output});
 };
 
-program.version(version);
-program.command('build <input> <output')
-  .option('--root-url <root-url>', 'Taskcluster rootUrl for which the output should be specialized')
-  .action((input, output, options) => {
-    build(input, output, options.rootUrl || process.env.TASKCLUSTER_ROOT_URL).then(
-      () => {},
-      err => {
-        console.error(err);
-        process.exit(1);
-      });
-  });
+if (!module.parent) {
+  if (!process.env.TASKCLUSTER_ROOT_URL) {
+    console.error('TASKCLUSTER_ROOT_URL is not set');
+    process.exit(1);
+  }
 
-program.parse(process.argv);
-if (!program.args.length) {
-  program.help();
+  const input = process.argv[2];
+  const output = process.argv[3];
+  if (!input || !output) {
+    console.error('usage: node src/main.js <input> <output>');
+    process.exit(1);
+  }
+
+  build(input, output, process.env.TASKCLUSTER_ROOT_URL);
 }
