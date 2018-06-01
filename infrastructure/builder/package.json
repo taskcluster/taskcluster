@@ -12,7 +12,7 @@
     "url": "https://github.com/imbstack/taskcluster-installer.git"
   },
   "scripts": {
-    "lint": "eslint src/*.js src/*/*.js test/*.js",
+    "lint": "eslint src/*.js src/*/*.js test/*.js test/*/*_test.js",
     "test": "mocha test/*_test.js test/*/*_test.js",
     "pretest": "yarn lint"
   },
