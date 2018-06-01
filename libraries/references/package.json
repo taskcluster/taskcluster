@@ -13,13 +13,13 @@
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js",
-    "pretest": "yarn lint"
+    "pretest": "yarn lint",
+    "build": "node src/main.js /app/input /app/built"
   },
   "repository": "https://github.com/taskcluster/taskcluster-references",
   "author": "Dustin J. Mitchell <dustin@mozilla.com>",
   "license": "MPL-2.0",
   "dependencies": {
-    "commander": "^2.15.1",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2",
     "walk": "^2.3.13"
