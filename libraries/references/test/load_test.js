@@ -9,37 +9,24 @@ suite('loading input', function() {
     mockFs.restore();
   });
 
-  /*
-  test('deletes and re-creates output', async function() {
-    mockFs({
-      '/test/input': {},
-      '/test/output/junk': 'junk-data',
-    });
-    assert(fs.existsSync('/test/output/junk'));
-    await load('/test/input', '/test/output');
-    assert(fs.existsSync('/test/output'));
-    assert(!fs.existsSync('/test/output/junk'));
-  });
-  */
-
   test('fails on files in the input dir', async function() {
     mockFs({'/test/input/some.data': 'junk'});
     await assert_rejects(
-      load('/test/input'),
+      load({input: '/test/input'}),
       /some.data is not a directory/);
   });
 
   test('fails on dirs without metadata.json', async function() {
     mockFs({'/test/input/svc': {}});
     await assert_rejects(
-      load('/test/input'),
+      load({input: '/test/input'}),
       /no such file or directory .*metadata.json/);
   });
 
   test('fails on metadata.json with unknown version', async function() {
     mockFs({'/test/input/svc/metadata.json': '{"version": 17}'});
     await assert_rejects(
-      load('/test/input'),
+      load({input: '/test/input'}),
       /unrecognized metadata version/);
   });
 
@@ -53,7 +40,7 @@ suite('loading input', function() {
       '/test/input/svc3/metadata.json': '{"version": 1}',
       '/test/input/svc3/references/exchanges.json': '{"exchanges": 3}',
     });
-    const {references, schemas} = await load('/test/input');
+    const {references, schemas} = await load({input: '/test/input'});
     assert.deepEqual(references.map(JSON.stringify).sort(),
       ['{"api":1}', '{"api":2}', '{"exchanges":1}', '{"exchanges":3}']);
     assert.deepEqual(schemas, []);
@@ -76,7 +63,7 @@ suite('loading input', function() {
         },
       },
     });
-    const {references, schemas} = await load('/test/input');
+    const {references, schemas} = await load({input: '/test/input'});
     assert.deepEqual(references, []);
     assert.deepEqual(schemas.map(JSON.stringify).sort(),
       ['"deeper"', '"root"', '"versioned"']);
