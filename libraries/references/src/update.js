@@ -40,8 +40,14 @@ const updateReferences = (references) => {
 
 const updateSchemas = (schemas, rootUrl) => {
   schemas.forEach(schema => {
-    const $id = schema.$id || schema.id;
-    schema.$id = url.resolve(rootUrl, url.parse($id).pathname) + '#';
+    const $id = url.parse(schema.$id || schema.id);
+
+    // compatibility with old, non-r13y schemas (this can be removed when none remain)
+    if ($id.hostname === 'schemas.taskcluster.net') {
+      schema.$id = url.resolve(rootUrl, '/schemas' + $id.pathname) + '#';
+    } else {
+      schema.$id = url.resolve(rootUrl, $id.pathname) + '#';
+    }
     delete schema.id;
   });
 };
