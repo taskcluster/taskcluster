@@ -1,9 +1,11 @@
 const program = require('commander');
 const {version} = require('../package.json');
 const {load} = require('./load');
+const {update} = require('./update');
 
 const build = async (input, output, rootUrl) => {
   const {references, schemas} = await load(input);
+  update({references, schemas, rootUrl});
 };
 
 program.version(version);

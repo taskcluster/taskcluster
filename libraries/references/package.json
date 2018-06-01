@@ -27,6 +27,7 @@
   "devDependencies": {
     "eslint-config-taskcluster": "^3.1.0",
     "mocha": "^5.2.0",
-    "mock-fs": "^4.5.0"
+    "mock-fs": "^4.5.0",
+    "taskcluster-lib-urls": "^10.0.0"
   }
 }
