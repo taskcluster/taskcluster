@@ -6,7 +6,7 @@ const assert = require('assert');
 const path = require('path');
 const _ = require('lodash');
 const loader = require('taskcluster-lib-loader');
-const validator = require('taskcluster-lib-validate');
+const SchemaSet = require('taskcluster-lib-validate');
 const monitor = require('taskcluster-lib-monitor');
 const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
@@ -34,10 +34,9 @@ var load = loader({
     }),
   },
 
-  validator: {
+  schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => validator({
-      rootUrl: cfg.taskcluster.rootUrl,
+    setup: ({cfg}) => new SchemaSet({
       serviceName: 'secrets',
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
@@ -61,28 +60,28 @@ var load = loader({
   },
 
   api: {
-    requires: ['cfg', 'Secret', 'validator', 'monitor'],
-    setup: ({cfg, Secret, validator, monitor}) => builder.build({
+    requires: ['cfg', 'Secret', 'schemaset', 'monitor'],
+    setup: async ({cfg, Secret, schemaset, monitor}) => builder.build({
       rootUrl:          cfg.taskcluster.rootUrl,
       context:          {cfg, Secret},
       publish:          cfg.app.publishMetaData,
       aws:              cfg.aws,
       monitor:          monitor.prefix('api'),
-      validator,
+      schemaset,
     }),
   },
 
   docs: {
-    requires: ['cfg', 'validator', 'api'],
-    setup: ({cfg, validator, api}) => docs.documenter({
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
-      schemas: validator.schemas,
+      schemaset,
       publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',
-          reference: api.reference(),
+          reference: builder.reference(),
         },
       ],
     }),
