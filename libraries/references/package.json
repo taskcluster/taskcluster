@@ -1,0 +1,31 @@
+{
+  "name": "taskcluster-references",
+  "version": "1.0.0",
+  "main": "src/main.js",
+  "bin": {
+    "taskcluster-installer": "./src/main.js"
+  },
+  "engine-strict": true,
+  "engines": {
+    "node": "^9.8.0",
+    "yarn": "^1.0.0"
+  },
+  "scripts": {
+    "lint": "eslint src/*.js src/*/*.js test/*.js",
+    "test": "mocha test/*_test.js test/*/*_test.js",
+    "pretest": "yarn lint"
+  },
+  "repository": "https://github.com/taskcluster/taskcluster-references",
+  "author": "Dustin J. Mitchell <dustin@mozilla.com>",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "commander": "^2.15.1",
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.6.2"
+  },
+  "devDependencies": {
+    "eslint-config-taskcluster": "^3.1.0",
+    "mocha": "^5.2.0",
+    "mock-fs": "^4.5.0"
+  }
+}
