@@ -103,13 +103,20 @@ exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, w
         image: nodeImage,
         workingDir: '/app',
         command: ['/app/node_modules/.bin/gulp', 'build-static'],
-        logfile: `${workDir}/yarn-build.log`,
+        logfile: `${workDir}/gulp.log`,
         utils,
         binds: [
           `${appDir}:/app`,
         ],
         baseDir,
       });
+
+      // Streams are wonderful and lead to lots of unhandled promise rejections, meaning that we
+      // do not always get a nonzero exit status when the docs build fails.  This is a good
+      // double-check:
+      if (!fs.existsSync(path.join(staticDir, 'nginx-site.conf'))) {
+        throw new Error('`gulp build-static` did not produce static/nginx-site.conf; check the logfile');
+      }
 
       stamp.stampDir(appDir);
       return provides;
