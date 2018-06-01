@@ -65,7 +65,7 @@ const loadSchemas = async (serviceDirectory, schemas) => {
 /**
  * Load all schemas and references from `input`.
  */
-const load = async (input) => {
+const load = async ({input}) => {
   const references = [];
   const schemas = [];
 
