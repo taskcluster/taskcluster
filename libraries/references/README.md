@@ -43,3 +43,6 @@ on port 80 after a very short delay for `yarn build` to run.
 # Development
 
 The usual `yarn` and `yarn test` will run tests for this service.
+
+Note that this service uses node 8, because that is what is easily installed in
+the `nginx:alpine` Docker image.
