@@ -5,6 +5,7 @@ const Promise = require('promise');
 const fs = require('fs');
 const path = require('path');
 const mkdirp = require('mkdirp');
+const aws = require('aws-sdk');
 
 /**
 * Publish the given schemas to S3, as described by cfg (bucket, etc.)

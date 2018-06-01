@@ -7,7 +7,6 @@ const walk = require('walk');
 const yaml = require('js-yaml');
 const assert = require('assert');
 const Ajv = require('ajv');
-const aws = require('aws-sdk');
 const libUrls = require('taskcluster-lib-urls');
 const publish = require('./publish');
 const {renderConstants, checkRefs} = require('./util');
