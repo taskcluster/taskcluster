@@ -44,6 +44,10 @@ suite('updating', function() {
     {$id: 'taskcluster:/schemas/fake/v1/fake-data.json#'},
     {$id: libUrls.schema(libUrls.testRootUrl(), 'fake', 'v1/fake-data.json#')});
 
+  schemaTest('relativizes rootUrl=https://taskcluster.net schemas correctly',
+    {$id: 'https://schemas.taskcluster.net/fake/v1/fake-data.json#'},
+    {$id: libUrls.schema(libUrls.testRootUrl(), 'fake', 'v1/fake-data.json#')});
+
   schemaTest('adds # to $id',
     {$id: 'taskcluster:/schemas/fake/v1/fake-data.json'},
     {$id: libUrls.schema(libUrls.testRootUrl(), 'fake', 'v1/fake-data.json#')});
