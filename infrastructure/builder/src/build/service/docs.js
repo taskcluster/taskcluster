@@ -125,6 +125,7 @@ exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, w
 
   serviceDockerImageTask({tasks, baseDir, workDir, cfg, name,
     requires: [
+      `service-${name}-stamp`,
       `service-${name}-static-dir`,
       'docker-image-nginx:alpine',
     ],

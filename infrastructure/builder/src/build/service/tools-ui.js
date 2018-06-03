@@ -81,6 +81,7 @@ exports.toolsUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository
 
   serviceDockerImageTask({tasks, baseDir, workDir, cfg, name,
     requires: [
+      `service-${name}-stamp`,
       `service-${name}-installed-app-dir`,
       `docker-image-${nodeImage}`,
     ],

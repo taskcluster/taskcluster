@@ -4,12 +4,14 @@ const split = require('split');
 const exec = util.promisify(require('child_process').execFile);
 const fs = require('fs');
 const os = require('os');
+const assert = require('assert');
 const path = require('path');
 const Docker = require('dockerode');
 const Observable = require('zen-observable');
 const {PassThrough} = require('stream');
 const got = require('got');
 const {spawn} = require('child_process'); 
+const Stamp = require('./stamp');
 
 /**
  * Perform a git clone
@@ -331,17 +333,22 @@ exports.ensureDockerImage = (tasks, baseDir, image) => {
 exports.serviceDockerImageTask = ({tasks, baseDir, workDir, cfg, name, requires, makeTarball}) => {
   tasks.push({
     title: `Service ${name} - Build Image`,
-    requires: requires.concat([
-      `service-${name}-stamp`,
-    ]),
+    requires,
     provides: [
       `service-${name}-docker-image`, // docker image tag
       `service-${name}-image-on-registry`, // true if the image already exists on registry
     ],
     locks: ['docker'],
     run: async (requirements, utils) => {
-      const serviceStamp = requirements[`service-${name}-stamp`];
-      const tag = `${cfg.docker.repositoryPrefix}${name}:SVC-${serviceStamp.hash()}`;
+
+      // find the requirements ending in '-stamp' that we should depend on
+      const requiredStamps = _.keys(requirements)
+        .filter(r => r.endsWith('-stamp'))
+        .sort()
+        .map(r => requirements[r]);
+      assert(requiredStamps.length > 0);
+      const stamp = new Stamp({step: 'build-image', version: 1}, ...requiredStamps);
+      const tag = `${cfg.docker.repositoryPrefix}${name}:SVC-${stamp.hash()}`;
 
       utils.step({title: 'Check for Existing Images'});
 

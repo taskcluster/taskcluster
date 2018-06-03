@@ -39,7 +39,7 @@ Dependency names follow some patterns:
 * `repo-${name}-exact-source` -- the exact source URL for the repository
 * `repo-${name}-stamp` -- the Stamp instance for this repository
 * `docker-image-${image}` -- the named Docker image is available in the local Docker daemon
-* `docs-${name}-dir` -- the directory containing documentation for the named repository; this will always be `${workDir}/docs/${name}`, allowing mounting `${workDir}/docs` in a docker image if necessary.
+* `docs-${name}-dir` -- the directory containing documentation for the named repository; this will always be `${baseDir}/docs/${name}`, allowing mounting `${baseDir}/docs` in a docker image if necessary.
 * `docs-${name}-stamp` -- the Stamp instance for the docs dir
 * `service-${name}-stamp` -- the Stamp instance for the built service
 * `service-${name}-docker-image` -- the built Docker image for the named service

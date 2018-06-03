@@ -9,6 +9,7 @@ const {dockerPush} = require('./utils');
 const {herokuBuildpackTasks} = require('./service/heroku-buildpack');
 const {toolsUiTasks} = require('./service/tools-ui');
 const {docsTasks} = require('./service/docs');
+const {referencesTasks} = require('./service/references');
 
 const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
   const repository = _.find(spec.build.repositories, {name});
@@ -28,6 +29,10 @@ const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => 
 
     case 'docs':
       docsTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
+      break;
+
+    case 'references':
+      referencesTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
       break;
 
     default:

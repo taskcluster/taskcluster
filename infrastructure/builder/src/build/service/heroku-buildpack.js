@@ -169,6 +169,7 @@ exports.herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, re
 
   serviceDockerImageTask({tasks, baseDir, workDir, cfg, name,
     requires: [
+      `service-${name}-stamp`,
       `service-${name}-built-app-dir`,
       `docker-image-${stackImage}`,
     ],
