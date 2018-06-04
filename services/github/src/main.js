@@ -104,7 +104,7 @@ const load = loader({
     setup: async ({cfg, monitor}) => data.Builds.setup({
       tableName: cfg.app.buildsTableName,
       credentials: sasCredentials({
-        accountId: cfg.azure.account,
+        accountId: cfg.azure.accountId,
         tableName: cfg.app.buildsTableName,
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
@@ -118,7 +118,7 @@ const load = loader({
     setup: async ({cfg, monitor}) => data.OwnersDirectory.setup({
       tableName: cfg.app.ownersDirectoryTableName,
       credentials: sasCredentials({
-        accountId: cfg.azure.account,
+        accountId: cfg.azure.accountId,
         tableName: cfg.app.ownersDirectoryTableName,
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
