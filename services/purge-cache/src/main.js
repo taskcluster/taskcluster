@@ -29,7 +29,7 @@ let load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: cfg.monitoring.project || 'tc-purge-cache',
+      project: cfg.monitoring.project || 'taskcluster-purge-cache',
       enable: cfg.monitoring.enable,
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
@@ -102,7 +102,6 @@ let load = loader({
   docs: {
     requires: ['cfg', 'validator', 'reference'],
     setup: ({cfg, validator, reference}) => docs.documenter({
-      project: 'purge-cache',
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
       schemas: validator.schemas,
