@@ -1323,7 +1323,7 @@ func removeTaskDirs(parentDir string) {
 	activeTaskUser, _ := AutoLogonCredentials()
 	taskDirsParent, err := os.Open(parentDir)
 	if err != nil {
-		log.Print("WARNING: Could not open " + config.TasksDir + " directory to find old home directories to delete")
+		log.Print("WARNING: Could not open " + parentDir + " directory to find old home directories to delete")
 		log.Printf("%v", err)
 		return
 	}
@@ -1336,7 +1336,7 @@ func removeTaskDirs(parentDir string) {
 	}
 	for _, file := range fi {
 		fileName := file.Name()
-		path := filepath.Join(config.TasksDir, fileName)
+		path := filepath.Join(parentDir, fileName)
 		if file.IsDir() {
 			if strings.HasPrefix(fileName, "task_") && fileName != activeTaskUser {
 				// ignore any error occuring here, not a lot we can do about it...
