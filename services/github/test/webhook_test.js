@@ -1,10 +1,14 @@
-suite('webhook', () => {
-  let helper = require('./helper');
-  let assert = require('assert');
+const helper = require('./helper');
+const assert = require('assert');
+
+helper.secrets.mockSuite('webhook', ['taskcluster'], function(mock, skipping) {
+  helper.withEntities(mock, skipping);
+  helper.withFakeGithub(mock, skipping);
+  helper.withServer(mock, skipping);
 
   let github = null;
 
-  setup(async () => {
+  setup(async function() {
     github = await helper.load('github');
     github.inst(5808).setUser({id: 14795478, email: 'someuser@github.com'});
     github.inst(5808).setUser({id: 18102552, email: 'anotheruser@github.com'});
@@ -12,7 +16,7 @@ suite('webhook', () => {
 
   // Check the status code returned from a request containing some test data
   function statusTest(testName, jsonFile, statusCode) {
-    test(testName, async () => {
+    test(testName, async function() {
       let response = await helper.jsonHttpRequest('./test/data/webhooks/' + jsonFile);
       assert.equal(response.statusCode, statusCode);
       response.connection.destroy();

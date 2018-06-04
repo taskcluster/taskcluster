@@ -1,30 +1,30 @@
+const debug = require('debug')('test');
+const helper = require('./helper');
+const assert = require('assert');
+const sinon = require('sinon');
+const libUrls = require('taskcluster-lib-urls');
+
 /**
  * This tests the event handlers, faking out all of the services they
  * interact with.
  */
-suite('handlers', () => {
-  let debug = require('debug')('test');
-  let helper = require('./helper');
-  let assert = require('assert');
-  let testing = require('taskcluster-lib-testing');
-  let load = require('../src/main');
-  let sinon = require('sinon');
-  let slugid = require('slugid');
+helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
+  helper.withEntities(mock, skipping);
+  helper.withFakeGithub(mock, skipping);
+
+  const URL_PREFIX = 'https://tools.taskcluster.net/task-group-inspector/#/';
 
   let github = null;
   let handlers = null;
+  setup(async function() {
+    helper.load.save();
 
-  let URL_PREFIX = 'https://tools.taskcluster.net/task-group-inspector/#/';
-
-  setup(async () => {
+    helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
     github = await helper.load('github');
-
     handlers = await helper.load('handlers');
 
     // stub out `createTasks` so that we don't actually create tasks
-    handlers.oldCreateTasks = handlers.createTasks;
     handlers.createTasks = sinon.stub();
-
     await handlers.setup();
 
     // set up the allowPullRequests key
@@ -35,12 +35,18 @@ suite('handlers', () => {
     });
   });
 
-  teardown(async () => {
-    handlers.createTasks = handlers.oldCreateTasks;
+  teardown(async function() {
     await handlers.terminate();
+    helper.load.restore();
   });
 
   suite('jobHandler', function() {
+    suiteSetup(function() {
+      if (skipping()) {
+        this.skip();
+      }
+    });
+
     function simulateJobMessage({user, head, base, eventType='push'}) {
       // set up to resolve when the handler has finished (even if it finishes with error)
       return new Promise((resolve, reject) => {
@@ -310,6 +316,12 @@ suite('handlers', () => {
   });
 
   suite('statusHandler', function() {
+    suiteSetup(function() {
+      if (skipping()) {
+        this.skip();
+      }
+    });
+
     teardown(async function() {
       await helper.Builds.remove({taskGroupId: TASKGROUPID}, true);
     });

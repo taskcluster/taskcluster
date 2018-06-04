@@ -1,12 +1,14 @@
+const debug = require('debug')('test');
+const helper = require('./helper');
+const assert = require('assert');
+const prAllowed = require('../src/pr-allowed');
+
 suite('allowPullRequests', function() {
-  let debug = require('debug')('test');
-  let helper = require('./helper');
-  let assert = require('assert');
-  let prAllowed = require('../src/pr-allowed');
+  helper.withFakeGithub(false, () => false);
 
   let github = null;
 
-  setup(async () => {
+  setup(async function() {
     github = await helper.load('github');
   });
 

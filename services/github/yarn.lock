@@ -62,23 +62,24 @@ ajv@^5.2.3:
     json-schema-traverse "^0.3.0"
     json-stable-stringify "^1.0.1"
 
-ajv@^5.4.0:
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.4.0.tgz#32d1cf08dbc80c432f426f12e10b2511f6b46474"
+ajv@^6.5.0:
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.5.0.tgz#4c8affdf80887d8f132c9c52ab8a2dc4d0b7b24c"
   dependencies:
-    co "^4.6.0"
-    fast-deep-equal "^1.0.0"
+    fast-deep-equal "^2.0.1"
     fast-json-stable-stringify "^2.0.0"
     json-schema-traverse "^0.3.0"
+    uri-js "^4.2.1"
 
 amqplib@^0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/amqplib/-/amqplib-0.5.1.tgz#7cccfebabe56c2e984ea7a2243f7cefe6fbfc6cf"
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/amqplib/-/amqplib-0.5.2.tgz#d2d7313c7ffaa4d10bcf1e6252de4591b6cc7b63"
   dependencies:
     bitsyntax "~0.0.4"
     bluebird "^3.4.6"
     buffer-more-ints "0.0.2"
     readable-stream "1.x >=1.1.9"
+    safe-buffer "^5.0.1"
 
 ansi-escapes@^3.0.0:
   version "3.0.0"
@@ -146,8 +147,8 @@ arrify@^1.0.0:
   resolved "https://registry.yarnpkg.com/arrify/-/arrify-1.0.1.tgz#898508da2226f380df904728456849c1501a4b0d"
 
 asap@~2.0.3:
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/asap/-/asap-2.0.5.tgz#522765b50c3510490e52d7dcfe085ef9ba96958f"
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/asap/-/asap-2.0.6.tgz#e50347611d7e690943208bbdafebcbc2fb866d46"
 
 asn1@~0.2.3:
   version "0.2.3"
@@ -212,21 +213,19 @@ aws4@^1.2.1, aws4@^1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.6.0.tgz#83ef5ca860b2b32e4a0deedee8c771b9db57471e"
 
-azure-entities@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-3.2.1.tgz#44af9e99c3b3ee26635ff14d556f7fd38870c33c"
+azure-entities@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-4.0.0.tgz#cb629af76cb4abfb0a6e835ac31d9ecf73fbe63d"
   dependencies:
     ajv "^5.3.0"
     babel-runtime "^6.22.0"
     buffertools "^2.1.3"
     debug "^3.1.0"
-    fast-azure-storage "^2.1.0"
+    fast-azure-storage "^2.2.1"
     json-stable-stringify "^1.0.0"
     lodash "^4.17.4"
     promise "^8.0.1"
     slugid "^1.0.3"
-    taskcluster-client "^3.0.3"
-    taskcluster-lib-testing "^2.0.2"
 
 azure-table-node@1.5.0:
   version "1.5.0"
@@ -245,7 +244,7 @@ babel-code-frame@^6.22.0:
     esutils "^2.0.2"
     js-tokens "^3.0.0"
 
-babel-runtime@^6.0.0, babel-runtime@^6.22.0:
+babel-runtime@^6.22.0:
   version "6.23.0"
   resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-6.23.0.tgz#0a9489f144de70efb3ce4300accdb329e2fc543b"
   dependencies:
@@ -287,7 +286,7 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
-bindings@1.2.1, bindings@1.x.x:
+bindings@1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/bindings/-/bindings-1.2.1.tgz#14ad6113812d2d37d72e67b4cacb4bb726505f11"
 
@@ -309,11 +308,7 @@ block-stream@*:
   dependencies:
     inherits "~2.0.0"
 
-bluebird@^3.4.6:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.0.tgz#791420d7f551eea2897453a8a77653f96606d67c"
-
-bluebird@^3.5.1:
+bluebird@^3.4.6, bluebird@^3.5.1:
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.1.tgz#d9551f9de98f1fcda1e683d17ee91a0602ee2eb9"
 
@@ -504,7 +499,13 @@ color-name@^1.1.1:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.3.tgz#a7d0558bd89c42f795dd42328f740831ca53bc25"
 
-combined-stream@^1.0.5, combined-stream@~1.0.5:
+combined-stream@1.0.6, combined-stream@^1.0.5:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/combined-stream/-/combined-stream-1.0.6.tgz#723e7df6e801ac5613113a7e445a9b69cb632818"
+  dependencies:
+    delayed-stream "~1.0.0"
+
+combined-stream@~1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/combined-stream/-/combined-stream-1.0.5.tgz#938370a57b4a51dea2c77c15d5c5fdf895164009"
   dependencies:
@@ -834,10 +835,6 @@ espree@^3.5.2:
     acorn "^5.2.1"
     acorn-jsx "^3.0.0"
 
-esprima@^3.1.1:
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/esprima/-/esprima-3.1.3.tgz#fdca51cee6133895e3c88d535ce49dbff62a4633"
-
 esprima@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-4.0.0.tgz#4499eddcd1110e0b218bacf2fa7f7f59f55ca804"
@@ -914,6 +911,10 @@ extend@^3.0.0, extend@~3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/extend/-/extend-3.0.1.tgz#a755ea7bc1adfcc5a31ce7e762dbaadc5e636444"
 
+extend@~2.0.0:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/extend/-/extend-2.0.1.tgz#1ee8010689e7395ff9448241c98652bc759a8260"
+
 extend@~3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/extend/-/extend-3.0.0.tgz#5a474353b9f3353ddd8176dfd37b91c83a46f1d4"
@@ -930,7 +931,7 @@ extsprintf@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/extsprintf/-/extsprintf-1.0.2.tgz#e1080e0658e300b06294990cc70e1502235fd550"
 
-fast-azure-storage@^2.1.0:
+fast-azure-storage@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/fast-azure-storage/-/fast-azure-storage-2.2.1.tgz#54581428c4f7576a89c804be1c0ede82530f9ebc"
   dependencies:
@@ -943,6 +944,10 @@ fast-azure-storage@^2.1.0:
 fast-deep-equal@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-1.0.0.tgz#96256a3bc975595eb36d82e9929d060d893439ff"
+
+fast-deep-equal@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-2.0.1.tgz#7b05218ddf9667bf7f370bf7fdb2cb15fdd0aa49"
 
 fast-json-stable-stringify@^2.0.0:
   version "2.0.0"
@@ -998,17 +1003,25 @@ forever-agent@~0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/forever-agent/-/forever-agent-0.6.1.tgz#fbc71f0c41adeb37f96c577ad1ed42d8fdacca91"
 
-form-data@^2.3.1, form-data@~2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/form-data/-/form-data-2.3.1.tgz#6fb94fbd71885306d73d15cc497fe4cc4ecd44bf"
+form-data@^2.3.1:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/form-data/-/form-data-2.3.2.tgz#4970498be604c20c005d4f5c23aecd21d6b49099"
   dependencies:
     asynckit "^0.4.0"
-    combined-stream "^1.0.5"
+    combined-stream "1.0.6"
     mime-types "^2.1.12"
 
 form-data@~2.1.1:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/form-data/-/form-data-2.1.2.tgz#89c3534008b97eada4cbb157d58f6f5df025eae4"
+  dependencies:
+    asynckit "^0.4.0"
+    combined-stream "^1.0.5"
+    mime-types "^2.1.12"
+
+form-data@~2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/form-data/-/form-data-2.3.1.tgz#6fb94fbd71885306d73d15cc497fe4cc4ecd44bf"
   dependencies:
     asynckit "^0.4.0"
     combined-stream "^1.0.5"
@@ -1020,9 +1033,9 @@ formatio@1.2.0, formatio@^1.2.0:
   dependencies:
     samsam "1.x"
 
-formidable@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/formidable/-/formidable-1.1.1.tgz#96b8886f7c3c3508b932d6bd70c4d3a88f35f1a9"
+formidable@^1.1.1, formidable@^1.2.0:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/formidable/-/formidable-1.2.1.tgz#70fb7ca0290ee6ff961090415f4b3df3d2082659"
 
 forwarded@~0.1.2:
   version "0.1.2"
@@ -1297,8 +1310,8 @@ hoek@2.x.x:
   resolved "https://registry.yarnpkg.com/hoek/-/hoek-2.16.3.tgz#20bb7403d3cea398e91dc4710a8ff1b8274a25ed"
 
 hoek@4.x.x:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/hoek/-/hoek-4.2.0.tgz#72d9d0754f7fe25ca2d01ad8f8f9a9449a89526d"
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/hoek/-/hoek-4.2.1.tgz#9634502aa12c445dd5a7c5734b572bb8738aacbb"
 
 hsts@^2.1.0:
   version "2.1.0"
@@ -1517,13 +1530,6 @@ js-yaml@^3.10.0, js-yaml@^3.9.1:
     argparse "^1.0.7"
     esprima "^4.0.0"
 
-js-yaml@^3.6.1:
-  version "3.8.2"
-  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.8.2.tgz#02d3e2c0f6beab20248d412c352203827d786721"
-  dependencies:
-    argparse "^1.0.7"
-    esprima "^3.1.1"
-
 jsbn@~0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
@@ -1676,13 +1682,17 @@ lodash.once@^4.0.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/lodash.once/-/lodash.once-4.1.1.tgz#0dd3971213c7c56df880977d504c88fb471a97ac"
 
-lodash@4.17.4, lodash@^4.0.0, lodash@^4.11.1, lodash@^4.13.1, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.17.4, lodash@^4.3.0, lodash@^4.5.1, lodash@~4.17.2:
+lodash@4.17.4, lodash@^4.0.0, lodash@^4.11.1, lodash@^4.13.1, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.3.0, lodash@^4.5.1, lodash@~4.17.2:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
 lodash@^3.10.1:
   version "3.10.1"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.10.1.tgz#5bf45e8e49ba4189e17d482789dfd15bd140b7b6"
+
+lodash@^4.17.4:
+  version "4.17.10"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
 lolex@^1.6.0:
   version "1.6.0"
@@ -1731,11 +1741,15 @@ mime-db@~1.30.0:
   version "1.30.0"
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.30.0.tgz#74c643da2dd9d6a45399963465b26d5ca7d71f01"
 
-mime-types@^2.1.12, mime-types@~2.1.7:
-  version "2.1.14"
-  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.14.tgz#f7ef7d97583fcaf3b7d282b6f8b5679dab1e94ee"
+mime-db@~1.33.0:
+  version "1.33.0"
+  resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.33.0.tgz#a3492050a5cb9b63450541e39d9788d2272783db"
+
+mime-types@^2.1.12:
+  version "2.1.18"
+  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.18.tgz#6f323f60a83d11146f831ff11fd66e2fe5503bb8"
   dependencies:
-    mime-db "~1.26.0"
+    mime-db "~1.33.0"
 
 mime-types@~2.1.15, mime-types@~2.1.16, mime-types@~2.1.17:
   version "2.1.17"
@@ -1743,9 +1757,19 @@ mime-types@~2.1.15, mime-types@~2.1.16, mime-types@~2.1.17:
   dependencies:
     mime-db "~1.30.0"
 
-mime@1.4.1, mime@^1.4.1:
+mime-types@~2.1.7:
+  version "2.1.14"
+  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.14.tgz#f7ef7d97583fcaf3b7d282b6f8b5679dab1e94ee"
+  dependencies:
+    mime-db "~1.26.0"
+
+mime@1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/mime/-/mime-1.4.1.tgz#121f9ebc49e3766f311a76e1fa1c8003c4b03aa6"
+
+mime@^1.4.1:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/mime/-/mime-1.6.0.tgz#32cd9e5c64553bd58d19a568af452acff04981b1"
 
 mimic-fn@^1.0.0:
   version "1.1.0"
@@ -1836,7 +1860,7 @@ mz@^2.7.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
-nan@^2.0.9, nan@~2.5.0:
+nan@~2.5.0:
   version "2.5.1"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.5.1.tgz#d5b01691253326a97a2bbee9e61c55d8d60351e2"
 
@@ -2077,15 +2101,13 @@ process-nextick-args@~1.0.6:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-1.0.7.tgz#150e20b756590ad3f91093f25a4f2ad8bff30ba3"
 
+process-nextick-args@~2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-2.0.0.tgz#a37d732f4271b4ab1ad070d35508e8290788ffaa"
+
 progress@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/progress/-/progress-2.0.0.tgz#8a1be366bf8fc23db2bd23f10c6fe920b4389d1f"
-
-promise@^7.1.1:
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/promise/-/promise-7.1.1.tgz#489654c692616b8aa55b0724fa809bb7db49c5bf"
-  dependencies:
-    asap "~2.0.3"
 
 promise@^8.0.1:
   version "8.0.1"
@@ -2116,19 +2138,19 @@ pseudomap@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/pseudomap/-/pseudomap-1.0.2.tgz#f052a28da70e618917ef0a8ac34c1ae5a68286b3"
 
-pulse-publisher@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/pulse-publisher/-/pulse-publisher-3.0.3.tgz#d79e01e3ff760cb66d979601d2f2d7ce55d3b527"
+pulse-publisher@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/pulse-publisher/-/pulse-publisher-10.0.0.tgz#4a94fb5245961dbb419ea93ab89682fe65284c8a"
   dependencies:
     ajv "^5.3.0"
     amqplib "^0.5.1"
     aws-sdk "^2.148.0"
-    babel-runtime "^6.26.0"
     debug "^3.1.0"
     lodash "^4.0.0"
     promise "^8.0.1"
     slugid "^1.1.0"
-    taskcluster-client "^3.0.3"
+    taskcluster-client "^10.0.0"
+    taskcluster-lib-urls "^10.0.0"
 
 punycode@1.3.2:
   version "1.3.2"
@@ -2138,13 +2160,21 @@ punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
 
-qs@6.5.1, qs@^6.0.2, qs@^6.5.1, qs@~6.5.1:
+punycode@^2.1.0:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
+
+qs@6.5.1, qs@^6.0.2, qs@~6.5.1:
   version "6.5.1"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.5.1.tgz#349cdf6eef89ec45c12d7d5eb3fc0c870343a6d8"
 
 qs@^0.6.6:
   version "0.6.6"
   resolved "https://registry.yarnpkg.com/qs/-/qs-0.6.6.tgz#6e015098ff51968b8a3c819001d5f2c89bc4b107"
+
+qs@^6.5.1:
+  version "6.5.2"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.5.2.tgz#cb3ae806e8740444584ef154ce8ee98d403f3e36"
 
 qs@~6.3.0:
   version "6.3.2"
@@ -2209,7 +2239,7 @@ read-all-stream@^3.0.0:
     isarray "0.0.1"
     string_decoder "~0.10.x"
 
-readable-stream@^2.0.0, "readable-stream@^2.0.0 || ^1.1.13", readable-stream@^2.0.2, readable-stream@^2.0.5, readable-stream@^2.1.5:
+readable-stream@^2.0.0, "readable-stream@^2.0.0 || ^1.1.13", readable-stream@^2.0.2, readable-stream@^2.1.5:
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.2.3.tgz#9cf49463985df016c8ae8813097a9293a9b33729"
   dependencies:
@@ -2219,6 +2249,18 @@ readable-stream@^2.0.0, "readable-stream@^2.0.0 || ^1.1.13", readable-stream@^2.
     isarray "~1.0.0"
     process-nextick-args "~1.0.6"
     string_decoder "~0.10.x"
+    util-deprecate "~1.0.1"
+
+readable-stream@^2.0.5, readable-stream@^2.3.5:
+  version "2.3.6"
+  resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.3.6.tgz#b11c27d88b8ff1fbe070643cf94b0c79ae1b0aaf"
+  dependencies:
+    core-util-is "~1.0.0"
+    inherits "~2.0.3"
+    isarray "~1.0.0"
+    process-nextick-args "~2.0.0"
+    safe-buffer "~5.1.1"
+    string_decoder "~1.1.1"
     util-deprecate "~1.0.1"
 
 readable-stream@^2.2.2:
@@ -2524,18 +2566,16 @@ stack-trace@0.0.10:
   version "0.0.10"
   resolved "https://registry.yarnpkg.com/stack-trace/-/stack-trace-0.0.10.tgz#547c70b347e8d32b4e108ea1a2a159e5fdde19c0"
 
-statsum@^0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/statsum/-/statsum-0.5.1.tgz#6c2876bd11f0fc4f652295107259d9936760c209"
+statsum@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/statsum/-/statsum-0.6.0.tgz#1b19566459b43885aee23d744f41295c7c5c80ad"
   dependencies:
-    babel-runtime "^6.0.0"
     debug "^2.2.0"
     get-stream "^2.0.0"
     got "^5.0.0"
     jsonwebtoken "^5.7.0"
     lodash "^4.5.1"
-    promise "^7.1.1"
-    url-join "^0.0.1"
+    urljoin "^0.1.5"
     uuid "^2.0.2"
 
 "statuses@>= 1.3.1 < 2":
@@ -2575,6 +2615,12 @@ string_decoder@~1.0.3:
   dependencies:
     safe-buffer "~5.1.0"
 
+string_decoder@~1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/string_decoder/-/string_decoder-1.1.1.tgz#9cf1611ba62685d7030ae9e4ba34149c3af03fc8"
+  dependencies:
+    safe-buffer "~5.1.0"
+
 stringstream@~0.0.4, stringstream@~0.0.5:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/stringstream/-/stringstream-0.0.5.tgz#4e484cd4de5a0bbbee18e46307710a8a81621878"
@@ -2602,24 +2648,9 @@ superagent-hawk@0.0.6:
     hawk "~1.0.0"
     qs "^0.6.6"
 
-superagent@3.8.0:
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/superagent/-/superagent-3.8.0.tgz#87e3ed536c8860c08c7c7d1225da9a80cab064c6"
-  dependencies:
-    component-emitter "^1.2.0"
-    cookiejar "^2.1.0"
-    debug "^3.1.0"
-    extend "^3.0.0"
-    form-data "^2.3.1"
-    formidable "^1.1.1"
-    methods "^1.1.1"
-    mime "^1.4.1"
-    qs "^6.5.1"
-    readable-stream "^2.0.5"
-
-superagent@~3.7.0:
-  version "3.7.0"
-  resolved "https://registry.yarnpkg.com/superagent/-/superagent-3.7.0.tgz#bd58bfde2cbc5305adb9ccbb6dacba18408629d6"
+superagent@3.8.2:
+  version "3.8.2"
+  resolved "https://registry.yarnpkg.com/superagent/-/superagent-3.8.2.tgz#e4a11b9d047f7d3efeb3bbe536d9ec0021d16403"
   dependencies:
     component-emitter "^1.2.0"
     cookiejar "^2.1.0"
@@ -2633,19 +2664,19 @@ superagent@~3.7.0:
     readable-stream "^2.0.5"
 
 superagent@~3.8.1:
-  version "3.8.1"
-  resolved "https://registry.yarnpkg.com/superagent/-/superagent-3.8.1.tgz#2571fd921f3fcdba43ac68c3b35c91951532701f"
+  version "3.8.3"
+  resolved "https://registry.yarnpkg.com/superagent/-/superagent-3.8.3.tgz#460ea0dbdb7d5b11bc4f78deba565f86a178e128"
   dependencies:
     component-emitter "^1.2.0"
     cookiejar "^2.1.0"
     debug "^3.1.0"
     extend "^3.0.0"
     form-data "^2.3.1"
-    formidable "^1.1.1"
+    formidable "^1.2.0"
     methods "^1.1.1"
     mime "^1.4.1"
     qs "^6.5.1"
-    readable-stream "^2.0.5"
+    readable-stream "^2.3.5"
 
 supports-color@4.4.0:
   version "4.4.0"
@@ -2704,20 +2735,33 @@ tar@~2.2.1:
     fstream "^1.0.2"
     inherits "2"
 
-taskcluster-client@3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-3.0.3.tgz#fbfb5fd87dcaf2fac280413dbb52ae51d2a812dc"
+taskcluster-client@10.0.0, taskcluster-client@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-10.0.0.tgz#4acc66797897a6a922b9c9ec2c87ddebd884cedd"
   dependencies:
     amqplib "^0.5.1"
-    babel-runtime "^6.26.0"
     debug "^3.1.0"
     hawk "^6.0.2"
     lodash "^4.17.4"
     promise "^8.0.1"
     slugid "^1.1.0"
-    superagent "~3.7.0"
+    superagent "~3.8.1"
+    taskcluster-lib-urls "^1.1.0"
 
-taskcluster-client@^3.0.3, taskcluster-client@^3.1.0:
+taskcluster-client@^11.0.0:
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-11.0.0.tgz#1eb1971a753e27b72476ab05ae0d8894046f8a43"
+  dependencies:
+    amqplib "^0.5.1"
+    debug "^3.1.0"
+    hawk "^6.0.2"
+    lodash "^4.17.4"
+    promise "^8.0.1"
+    slugid "^1.1.0"
+    superagent "~3.8.1"
+    taskcluster-lib-urls "^10.0.0"
+
+taskcluster-client@^3.0.3:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-3.1.0.tgz#6f3bbf6ba4d6c149f11ab0cc23ef4f333c19a521"
   dependencies:
@@ -2730,13 +2774,26 @@ taskcluster-client@^3.0.3, taskcluster-client@^3.1.0:
     slugid "^1.1.0"
     superagent "~3.8.1"
 
-taskcluster-lib-api@8.3.0:
-  version "8.3.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-api/-/taskcluster-lib-api-8.3.0.tgz#ced009510f74d1494e81e7a159c9de5814d80742"
+taskcluster-client@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-5.0.0.tgz#6171941188be26a7c32f18ff80bc17486f60f24f"
+  dependencies:
+    amqplib "^0.5.1"
+    babel-runtime "^6.26.0"
+    debug "^3.1.0"
+    hawk "^6.0.2"
+    lodash "^4.17.4"
+    promise "^8.0.1"
+    slugid "^1.1.0"
+    superagent "~3.8.1"
+    taskcluster-lib-urls "^1.0.0"
+
+taskcluster-lib-api@12.0.0:
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-api/-/taskcluster-lib-api-12.0.0.tgz#4ae1e54f16a5790cfff658ddb4a92b9f767cb393"
   dependencies:
     ajv "^5.3.0"
     aws-sdk "^2.151.0"
-    babel-runtime "^6.26.0"
     body-parser "1.18.2"
     debug "^3.1.0"
     express "4.16.2"
@@ -2744,16 +2801,15 @@ taskcluster-lib-api@8.3.0:
     lodash "^4.15.0"
     promise "^8.0.1"
     slugid "^1.1.0"
-    taskcluster-client "^3.1.0"
-    taskcluster-lib-scopes "^1.9.0"
+    taskcluster-client "^10.0.0"
+    taskcluster-lib-scopes "^10.0.0"
     type-is "^1.6.15"
     uuid "^3.1.0"
 
-taskcluster-lib-app@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-app/-/taskcluster-lib-app-2.0.3.tgz#cba6789737a4037f17d178e4f9935ca733bb26de"
+taskcluster-lib-app@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-app/-/taskcluster-lib-app-10.0.0.tgz#d9ab50c0ce52ebeee94f183b755ef2aeba8ec0fa"
   dependencies:
-    babel-runtime "^6.26.0"
     content-security-policy "^0.3.0"
     debug "^3.1.0"
     express "4.16.2"
@@ -2764,9 +2820,15 @@ taskcluster-lib-app@^2.0.3:
     morgan-debug "^2.0.0"
     promise "^8.0.1"
 
-taskcluster-lib-docs@^4.2.2:
-  version "4.2.2"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-docs/-/taskcluster-lib-docs-4.2.2.tgz#3b33ece87f7ea0ad84fe6398b00c706ee903d70e"
+taskcluster-lib-azure@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-azure/-/taskcluster-lib-azure-10.0.0.tgz#85962dd070d192ee9e73daee5c29e3271aec5bd6"
+  dependencies:
+    taskcluster-client "^5.0.0"
+
+taskcluster-lib-docs@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-docs/-/taskcluster-lib-docs-10.0.0.tgz#6fde1be55c6e7e81d6bf7ae2b9c1b3933956253d"
   dependencies:
     app-root-dir "^1.0.2"
     aws-sdk "^2.147.0"
@@ -2781,9 +2843,9 @@ taskcluster-lib-docs@^4.2.2:
     tar-stream "^1.5.4"
     taskcluster-client "^3.0.3"
 
-taskcluster-lib-loader@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-loader/-/taskcluster-lib-loader-2.0.0.tgz#a3c7894b45e5a089e3952644cdc2a88481625a7e"
+taskcluster-lib-loader@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-loader/-/taskcluster-lib-loader-10.0.0.tgz#c398cdce5ad0ad8a8ed86235bf304e49f2653d36"
   dependencies:
     assume "^1.5.2"
     babel-runtime "^6.26.0"
@@ -2792,34 +2854,29 @@ taskcluster-lib-loader@^2.0.0:
     promise "^8.0.1"
     topo-sort "^1.0.0"
 
-taskcluster-lib-monitor@^5.4.0:
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-monitor/-/taskcluster-lib-monitor-5.4.0.tgz#96a0715273afa2a9ebd6ae5c0e672a929389594e"
+taskcluster-lib-monitor@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-monitor/-/taskcluster-lib-monitor-10.0.0.tgz#85dc2ca71a388ac58100bf26392930ea98a0c752"
   dependencies:
     app-root-dir "^1.0.2"
     aws-sdk "^2.30.0"
-    babel-runtime "^6.26.0"
     bluebird "^3.5.1"
     debug "^3.1.0"
     lodash "^4.5.1"
     raven "^2.2.1"
-    statsum "^0.5.1"
-    taskcluster-client "^3.0.3"
-    usage "^0.7.1"
+    statsum "^0.6.0"
+    taskcluster-client "^10.0.0"
 
-taskcluster-lib-scopes@^1.9.0:
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-1.9.0.tgz#c8d6113d386d432b96eb73cfb182a335c5f49a90"
-  dependencies:
-    babel-runtime "^6.26.0"
+taskcluster-lib-scopes@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-10.0.0.tgz#2b90666b8e5127a1d367b726de84c7829b57efef"
 
-taskcluster-lib-testing@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-testing/-/taskcluster-lib-testing-2.0.2.tgz#4b0d846083b3a24a0e8339cacabcc0ed32e72f99"
+taskcluster-lib-testing@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-testing/-/taskcluster-lib-testing-10.0.0.tgz#c1dc760ab9420212f068421c420bf1e3790eced0"
   dependencies:
     aws-sdk "^2.144.0"
     azure-table-node "1.5.0"
-    babel-runtime "^6.26.0"
     debug "^3.1.0"
     express "4.16.2"
     express-sslify "1.2.0"
@@ -2828,42 +2885,51 @@ taskcluster-lib-testing@^2.0.2:
     nock "^9.0.27"
     promise "^8.0.1"
     slugid "^1.0.3"
-    superagent "3.8.0"
+    superagent "3.8.2"
     superagent-hawk "0.0.6"
-    taskcluster-client "3.0.3"
-    taskcluster-lib-validate "^3.0.1"
+    taskcluster-client "10.0.0"
+    taskcluster-lib-urls "^1.1.0"
+    taskcluster-lib-validate "^10.0.0"
     uuid "^3.1.0"
 
-taskcluster-lib-validate@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-3.0.1.tgz#100280e7137bb065bcb7c27570e23238a7781afd"
+taskcluster-lib-urls@^1.0.0, taskcluster-lib-urls@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-1.1.0.tgz#de6d78a0b61179e7f395ef2d3d7e5a994c1a6446"
+
+taskcluster-lib-urls@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-10.0.0.tgz#ee4c687b4539171d8aef39b38a63c8b9bc82f82e"
+
+taskcluster-lib-validate@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-10.0.0.tgz#5baf30abe794b1da56a055baa0f3636725627645"
   dependencies:
     ajv "^5.3.0"
     app-root-dir "^1.0.2"
     aws-sdk "^2.142.0"
-    babel-runtime "^6.26.0"
     debug "^3.1.0"
     js-yaml "^3.10.0"
     lodash "^4.5.1"
+    mkdirp "^0.5.1"
     promise "^8.0.1"
     rimraf "^2.6.2"
-    url-join "^2.0.2"
+    taskcluster-lib-urls "^1.1.0"
     walk "^2.3.9"
 
-taskcluster-lib-validate@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-3.1.0.tgz#da73c5b908dcdc682b5c8b7d5c88112b57d4a316"
+taskcluster-lib-validate@^11.0.1:
+  version "11.0.1"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-11.0.1.tgz#b15241cbe83a15997adf93b1face695781067ae6"
   dependencies:
-    ajv "^5.3.0"
+    ajv "^6.5.0"
     app-root-dir "^1.0.2"
     aws-sdk "^2.142.0"
-    babel-runtime "^6.26.0"
     debug "^3.1.0"
     js-yaml "^3.10.0"
     lodash "^4.5.1"
+    mkdirp "^0.5.1"
     promise "^8.0.1"
     rimraf "^2.6.2"
-    url-join "^2.0.2"
+    taskcluster-lib-urls "^1.1.0"
     walk "^2.3.9"
 
 text-encoding@^0.6.4:
@@ -2970,13 +3036,13 @@ type-is@^1.6.15, type-is@~1.6.15:
     media-typer "0.3.0"
     mime-types "~2.1.15"
 
-typed-env-config@^1.1.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/typed-env-config/-/typed-env-config-1.1.1.tgz#debed355e08ef2e5f708d717862e43ed81bafe86"
+typed-env-config@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/typed-env-config/-/typed-env-config-2.0.0.tgz#b6e56257d620268d494585e59031bf5b5d25a17f"
   dependencies:
-    babel-runtime "^6.0.0"
-    debug "^2.2.0"
-    js-yaml "^3.6.1"
+    babel-runtime "^6.26.0"
+    debug "^3.1.0"
+    js-yaml "^3.10.0"
     lodash "^4.0.0"
 
 typedarray@^0.0.6:
@@ -2999,13 +3065,11 @@ unzip-response@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/unzip-response/-/unzip-response-1.0.2.tgz#b984f0877fc0a89c2c773cc1ef7b5b232b5b06fe"
 
-url-join@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/url-join/-/url-join-0.0.1.tgz#1db48ad422d3402469a87f7d97bdebfe4fb1e3c8"
-
-url-join@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/url-join/-/url-join-2.0.2.tgz#c072756967ad24b8b59e5741551caac78f50b8b7"
+uri-js@^4.2.1:
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/uri-js/-/uri-js-4.2.2.tgz#94c540e1ff772956e2299507c010aea6c8838eb0"
+  dependencies:
+    punycode "^2.1.0"
 
 url-parse-lax@^1.0.0:
   version "1.0.0"
@@ -3034,12 +3098,11 @@ url@0.10.3:
     punycode "1.3.2"
     querystring "0.2.0"
 
-usage@^0.7.1:
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/usage/-/usage-0.7.1.tgz#25f3106a519550aba41bf6e7685bc9bd533362ff"
+urljoin@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/urljoin/-/urljoin-0.1.5.tgz#b25d2c6112c55ac9d50096a49a0f1fb7f4f53921"
   dependencies:
-    bindings "1.x.x"
-    nan "^2.0.9"
+    extend "~2.0.0"
 
 util-deprecate@~1.0.1:
   version "1.0.2"

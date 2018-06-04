@@ -1,8 +1,22 @@
-suite('intree config', () => {
-  let fs = require('fs');
-  let assert = require('assert');
-  let _ = require('lodash');
-  let helper = require('./helper');
+const fs = require('fs');
+const assert = require('assert');
+const _ = require('lodash');
+const helper = require('./helper');
+const libUrls = require('taskcluster-lib-urls');
+
+suite('intree config', function() {
+  let intree;
+
+  suiteSetup(async function() {
+    helper.load.save();
+    await helper.load('cfg');
+    helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
+    intree = await helper.load('intree');
+  });
+
+  suiteTeardown(function() {
+    helper.load.restore();
+  });
 
   /**
    * Test github data, like one would see in a pulse message
@@ -39,20 +53,18 @@ suite('intree config', () => {
    * configPath:  '', Path to a taskclusterConfig file
    * params:      {
    *                payload:    {}, WebHook message payload
-   *                validator:  {}, A taskcluster.base validator
    *              }
    * count:       number of tasks to expect
    * expected:    {}, keys=>values expected to exist in the compiled config
    * shouldError: if you want intree to throw an exception, set this to true
    **/
   let buildConfigTest = function(testName, configPath, params, expected, count=-1, shouldError=false) {
-    test(testName, async () => {
+    test(testName, async function() {
       params.config = fs.readFileSync(configPath);
-      params.schema = 'http://schemas.taskcluster.net/github/v1/taskcluster-github-config.json#';
-      params.validator = helper.validator;
+      params.schema = libUrls.schema(libUrls.testRootUrl(), 'github', 'v1/taskcluster-github-config.yml');
       let config;
       try {
-        config = helper.intree(params);
+        config = intree(params);
       } catch (e) {
         if (shouldError) {
           return;
