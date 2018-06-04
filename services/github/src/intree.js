@@ -1,9 +1,9 @@
-let debug = require('debug')('taskcluster-github:intree');
-let yaml = require('js-yaml');
-let slugid = require('slugid');
-let tc = require('taskcluster-client');
-let jparam = require('json-parameterization');
-let _ = require('lodash');
+const debug = require('debug')('taskcluster-github:intree');
+const yaml = require('js-yaml');
+const slugid = require('slugid');
+const tc = require('taskcluster-client');
+const jparam = require('json-parameterization');
+const _ = require('lodash');
 
 // Assert that only scope-valid characters are in branches
 const branchTest = /^[\x20-\x7e]*$/;
@@ -82,14 +82,14 @@ function completeInTreeConfig(config, payload) {
  *  params {
  *    config:             '...', A yaml string
  *    payload:            {},    GitHub WebHook message payload
- *    validator:          {}     A taskcluster.base validator instance
  *    schema:             url,   Url to the taskcluster config schema
  *  }
  **/
-module.exports.setup = function(cfg) {
-  return function({config, payload, validator, schema}) {
+module.exports.setup = async function({cfg, schemaset}) {
+  const validate = await schemaset.validator(cfg.taskcluster.rootUrl);
+  return function({config, payload, schema}) {
     config = yaml.safeLoad(config);
-    let errors = validator(config, schema);
+    let errors = validate(config, schema);
     if (errors) {
       throw new Error(errors);
     }

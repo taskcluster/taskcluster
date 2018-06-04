@@ -10,4 +10,4 @@ properties:
     description: The contents of the comment.
 additionalProperties: false
 required:
-  - body 
+  - body

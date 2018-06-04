@@ -1,13 +1,11 @@
-let Entity = require('azure-entities');
-
-module.exports = {};
+const Entity = require('azure-entities');
 
 /**
  * Entity for tracking which task-groups are associated
  * with which org/repo/sha, etc.
  *
  */
-module.exports.Build = Entity.configure({
+module.exports.Builds = Entity.configure({
   version: 1,
   partitionKey: Entity.keys.StringKey('taskGroupId'),
   rowKey: Entity.keys.ConstantKey('taskGroupId'),

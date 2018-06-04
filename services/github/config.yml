@@ -1,24 +1,19 @@
 ---
 defaults:
   app:
-    exchangePrefix: 'v1/'
     jobQueue: null
     statusQueue: null
-    buildTableName: 'TaskclusterGithubBuilds'
+    buildsTableName: 'TaskclusterGithubBuilds'
     ownersDirectoryTableName: 'TaskclusterIntegrationOwners'
     publishMetaData: !env:bool PUBLISH_METADATA
-    name: 'taskcluster-github'
     statusContext: 'Taskcluster'
     botName: !env BOT_USERNAME
 
   taskcluster:
-    # Taskcluster credentials for this server, these must have scopes:
-    # auth:credentials
-    # (typically configured using environment variables)
+    rootUrl: !env TASKCLUSTER_ROOT_URL
     credentials:
       clientId: !env TASKCLUSTER_CLIENT_ID
       accessToken: !env TASKCLUSTER_ACCESS_TOKEN
-    queueBaseUrl: !env QUEUE_BASE_URL
 
   github:
     credentials:
@@ -33,14 +28,13 @@ defaults:
     workerType: !env WORKER_TYPE
 
   azure:
-    account: !env AZURE_ACCOUNT_NAME
+    accountId: !env AZURE_ACCOUNT_NAME
 
   monitoring:
     project: !env MONITORING_PROJECT
     enable: !env:bool MONITORING_ENABLE
 
   server:
-    publicUrl: 'https://github.taskcluster.net'
     port: !env:number PORT
     env: 'development'
     forceSSL: false
@@ -67,7 +61,6 @@ production:
     workerType: 'github-worker'
 
   server:
-    publicUrl: 'https://github.taskcluster.net'
     env: 'production'
     forceSSL: true
     # We trust the proxy on heroku, as the SSL end-point provided by heroku
@@ -81,7 +74,7 @@ staging:
   app:
     jobQueue: 'jobs'
     statusQueue: 'statuses'
-    buildTableName: 'TaskclusterGithubBuildsStaging'
+    buildsTableName: 'TaskclusterGithubBuildsStaging'
     ownersDirectoryTableName: 'TaskclusterIntegrationOwnersStaging'
     name: 'tc-github-staging'
     statusContext: 'Taskcluster-Staging'
@@ -92,7 +85,6 @@ staging:
     workerType: 'github-worker'
 
   server:
-    publicUrl: 'https://taskcluster-github-staging.herokuapp.com'
     env: 'production'
     forceSSL: true
     # We trust the proxy on heroku, as the SSL end-point provided by heroku
@@ -110,13 +102,12 @@ test:
     secret: ['abc123', 'def456']
 
   azure:
-    account: 'inMemory'
+    account: 'jungle'
 
   monitoring:
     enable: false
 
   server:
-    publicUrl: 'http://localhost:60415'
     port: 60415
 
   intree:
