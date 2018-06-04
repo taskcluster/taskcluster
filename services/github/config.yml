@@ -43,6 +43,8 @@ defaults:
   pulse:
     username: !env PULSE_USERNAME
     password: !env PULSE_PASSWORD
+    hostname: !env PULSE_HOSTNAME
+    vhost: !env PULSE_VHOST
 
   aws:
     accessKeyId: !env AWS_ACCESS_KEY
