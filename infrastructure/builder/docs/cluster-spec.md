@@ -24,6 +24,7 @@ The docs property, if an object, has properties:
 
 * `tier` -- the documentation tier for this repository
 * `menuIndex` -- (optional) the sorting order for this item in the docs index
+* `projectName` -- (optional) the projectName under which to list the project
 
 The following kinds are defined:
 

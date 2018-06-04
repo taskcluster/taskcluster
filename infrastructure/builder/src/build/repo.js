@@ -66,6 +66,7 @@ const generateRepoTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
       const repoDir = requirements[`repo-${name}-dir`];
 
       const stamp = new Stamp({step: 'repo-docs', version: 1},
+        {config: repository.docs},
         requirements[`repo-${name}-stamp`]);
       const provides = {
         [`docs-${name}-dir`]: docsDir,
@@ -80,7 +81,7 @@ const generateRepoTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
       await mkdirp(path.dirname(docsDir));
 
       const documentor = await libDocs.documenter({
-        project: name,
+        project: repository.docs.projectName || name,
         readme: path.join(repoDir, 'README.md'),
         docsFolder: path.join(repoDir, 'docs'),
         tier: repository.docs.tier,

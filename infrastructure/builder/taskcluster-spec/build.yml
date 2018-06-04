@@ -108,6 +108,7 @@ repositories:
   kind: service
   docs:
     tier: integrations
+    projectName: taskcluster-docs
   service:
     buildtype: docs
     node: 9
@@ -118,6 +119,7 @@ repositories:
   kind: service
   docs:
     tier: integrations
+    projectName: taskcluster-tools
   service:
     buildtype: tools-ui
     node: 8
@@ -128,6 +130,7 @@ repositories:
   kind: service
   docs:
     tier: integrations
+    projectName: taskcluster-references
   service:
     buildtype: references
     node: 8
