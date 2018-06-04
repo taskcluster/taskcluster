@@ -102,7 +102,7 @@ test:
     secret: ['abc123', 'def456']
 
   azure:
-    account: 'jungle'
+    accountId: 'jungle'
 
   monitoring:
     enable: false
