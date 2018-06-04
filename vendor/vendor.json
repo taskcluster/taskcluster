@@ -149,7 +149,7 @@
 			"revisionTime": "2017-03-30T08:48:43Z"
 		},
 		{
-			"checksumSHA1": "GPl+4G/6LSTGEgPtxqlIQhXJ82U=",
+			"checksumSHA1": "DCjamhJdcLN963jm6/yFoDbJvT4=",
 			"path": "github.com/shirou/gopsutil/disk",
 			"revision": "e49a95f3d5f824c3f9875ca49e54e4fef17f82cf",
 			"revisionTime": "2017-04-06T13:17:56Z"
@@ -161,7 +161,7 @@
 			"revisionTime": "2017-04-06T13:17:56Z"
 		},
 		{
-			"checksumSHA1": "rLo31ffS0VeaRYKDTm+WSd8nUQ4=",
+			"checksumSHA1": "zkNNauN735M7Jghr+MsARbb+/xQ=",
 			"path": "github.com/shirou/gopsutil/mem",
 			"revision": "e49a95f3d5f824c3f9875ca49e54e4fef17f82cf",
 			"revisionTime": "2017-04-06T13:17:56Z"
@@ -287,6 +287,12 @@
 			"revisionTime": "2017-04-07T13:25:32Z"
 		},
 		{
+			"checksumSHA1": "RRxFQSmAKEqOr0yNyocMTnVfZEo=",
+			"path": "github.com/taskcluster/taskcluster-lib-urls",
+			"revision": "fa4efabda5891c53b4885970852eb0d5c487d977",
+			"revisionTime": "2018-06-01T19:41:51Z"
+		},
+		{
 			"checksumSHA1": "Es6jQ7nOtzvM74kkdt1BTj2CvBY=",
 			"path": "github.com/taskcluster/taskcluster-worker/engines",
 			"revision": "df09bd89ac4247df258814ccfc396d255327def0",
@@ -383,7 +389,7 @@
 			"revisionTime": "2016-12-29T22:47:41Z"
 		},
 		{
-			"checksumSHA1": "oBjdFvDUZpioGsB6URqe16hDQUg=",
+			"checksumSHA1": "aQcK6fcqVIdpOQ7Gw6qkFiDtnrE=",
 			"origin": "github.com/fatih/color/vendor/golang.org/x/sys/unix",
 			"path": "golang.org/x/sys/unix",
 			"revision": "9131ab34cf20d2f6d83fdc67168a5430d1c7dc23",
