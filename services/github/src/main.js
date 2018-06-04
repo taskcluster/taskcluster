@@ -28,7 +28,7 @@ const load = loader({
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
       rootUrl: cfg.taskcluster.rootUrl,
-      projectName: 'taskcluster-github',
+      projectName: cfg.monitoring.project || 'taskcluster-github',
       enable: cfg.monitoring.enable,
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
