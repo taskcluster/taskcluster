@@ -52,6 +52,17 @@ tools using those libraries can also benefit from this signin method.`,
 	root.Command.AddCommand(cmd)
 
 	config.RegisterOptions("signin", map[string]config.OptionDefinition{
+		"rootUrl": config.OptionDefinition{
+			Description: "Root URL against which to act",
+			Default:     "https://taskcluster.net",
+			Env:         "TASKCLUSTER_ROOT_URL",
+			Validate: func(value interface{}) error {
+				if _, ok := value.(string); !ok {
+					return errors.New("Must be a string")
+				}
+				return nil
+			},
+		},
 		"toolsUrl": config.OptionDefinition{
 			Description: "URL for the tools service.",
 			Default:     "https://tools.taskcluster.net",
@@ -87,12 +98,15 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	s.Server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		qs := r.URL.Query()
 		csh, _ := cmd.Flags().GetBool("csh")
+		rootURL := config.Configuration["signin"]["rootUrl"].(string)
 		if csh {
 			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_CLIENT_ID '"+qs.Get("clientId")+"'")
 			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ACCESS_TOKEN '"+qs.Get("accessToken")+"'")
+			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ROOT_URL '"+rootURL+"'")
 		} else {
 			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_CLIENT_ID='"+qs.Get("clientId")+"'")
 			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ACCESS_TOKEN='"+qs.Get("accessToken")+"'")
+			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ROOT_URL='"+rootURL+"'")
 		}
 		fmt.Fprintln(cmd.OutOrStderr(), "Credentials output as environment variables")
 
