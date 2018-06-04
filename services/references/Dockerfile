@@ -11,6 +11,6 @@ RUN apk update && \
     apk upgrade && \
     apk add nodejs=8.9.3-r1 yarn=1.3.2-r0 && \
     cd /app && \
-    yarn
+    yarn --production
 
 CMD ["sh", "-c", "cd /app && yarn build && exec nginx -g 'daemon off;'"]
