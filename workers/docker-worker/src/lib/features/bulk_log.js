@@ -46,8 +46,9 @@ class BulkLog {
     // Open a new stream to read the entire log from disk (this in theory could
     // be a huge file).
     let diskStream = fs.createReadStream(this.file.path);
-    let expiration = taskcluster.fromNow(task.runtime.logging.bulkLogExpires);
-    expiration = new Date(Math.min(expiration, new Date(task.task.expires)));
+
+    // expire the log when the task expires
+    let expiration = new Date(task.task.expires);
 
     try {
       await uploadToS3(task.queue, task.status.taskId, task.runId,

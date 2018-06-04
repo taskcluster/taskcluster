@@ -87,11 +87,6 @@ defaults:
     secureLiveLogging: false
     # Used by Azure live logger to chunk writes and send on an interval
     liveLogChunkInterval: 5000 # 5 seconds
-    # Added to the current date to make up the expiry time for logs. This is
-    # hack to generate a year in ms... Note that two args (year, month) are
-    # required here instead of one due to some quirk of v8...
-    liveLogExpires: '1 year'
-    bulkLogExpires: '1 year'
 
   task:
     # We must reclaim somewhat frequently (but not too frequently) this is the
@@ -202,11 +197,6 @@ test:
   ssl:
     certificate: '/worker/test/fixtures/ssl_cert.crt'
     key: '/worker/test/fixtures/ssl_cert.key'
-
-  logging:
-    # Expires one hour from now so test logs don't live too long...
-    liveLogExpires: '1 hour'
-    bulkLogExpires: '1 hour'
 
   cache:
     volumeCachePath: '/tmp/test-cache'

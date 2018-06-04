@@ -37,8 +37,6 @@ suite('secure local live logging', () => {
     settings.configure({
       logging: {
         secureLiveLogging: true,
-        liveLogExpires: '1 hour',
-        bulkLogExpires: '1 hour'
       }
     });
 
@@ -121,8 +119,6 @@ suite('secure local live logging', () => {
     settings.configure({
       logging: {
         secureLiveLogging: true,
-        liveLogExpires: 3600,
-        bulkLogExpires: 3600
       },
       shutdown: {
         enabled: true,
