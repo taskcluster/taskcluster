@@ -1,14 +1,11 @@
-let Debug = require('debug');
-let crypto = require('crypto');
-let API = require('taskcluster-lib-api');
-let _ = require('lodash');
-let Entity = require('azure-entities');
+const Debug = require('debug');
+const crypto = require('crypto');
+const APIBuilder = require('taskcluster-lib-api');
+const _ = require('lodash');
+const Entity = require('azure-entities');
 
-let debugPrefix = 'taskcluster-github:api';
-let debug = Debug(debugPrefix);
-
-// Common schema prefix
-let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/github/v1/';
+const debugPrefix = 'taskcluster-github:api';
+const debug = Debug(debugPrefix);
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
@@ -157,7 +154,7 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
 
 /** API end-point for version v1/
  */
-let api = new API({
+let builder = new APIBuilder({
   title:        'Taskcluster GitHub API Documentation',
   description: [
     'The github service, typically available at',
@@ -170,8 +167,8 @@ let api = new API({
     'When Github forbids an action, this service returns an HTTP 403',
     'with code ForbiddenByGithub.',
   ].join('\n'),
-  name: 'github',
-  schemaPrefix: 'http://schemas.taskcluster.net/github/v1/',
+  serviceName: 'github',
+  version: 'v1',
   context: ['Builds', 'OwnersDirectory', 'monitor', 'publisher', 'cfg', 'ajv', 'github'],
   errorCodes: {
     ForbiddenByGithub: 403,
@@ -179,10 +176,10 @@ let api = new API({
 });
 
 // Export API
-module.exports = api;
+module.exports = builder;
 
 /** Define tasks */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/github',
   name:       'githubWebHookConsumer',
@@ -288,13 +285,13 @@ api.declare({
   res.status(204).send();
 });
 
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/builds',
   name:       'builds',
   title:      'List of Builds',
   stability:  'experimental',
-  output:     'build-list.json#',
+  output:     'build-list.yml',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
@@ -330,7 +327,7 @@ api.declare({
   });
 });
 
-api.declare({
+builder.declare({
   name: 'badge',
   title: 'Latest Build Status Badge',
   description: [
@@ -376,7 +373,7 @@ api.declare({
   }
 });
 
-api.declare({
+builder.declare({
   name: 'repository',
   title: 'Get Repository Info',
   description: [
@@ -386,7 +383,7 @@ api.declare({
   stability: 'experimental',
   method: 'get',
   route: '/repository/:owner/:repo',
-  output: 'repository.json',
+  output: 'repository.yml',
 }, async function(req, res) {
   // Extract owner and repo from request into variables
   let {owner, repo} = req.params;
@@ -419,7 +416,7 @@ api.declare({
   return res.reply({installed: false});
 });
 
-api.declare({
+builder.declare({
   name: 'latest',
   title: 'Latest Status for Branch',
   description: [
@@ -453,7 +450,7 @@ api.declare({
   return res.status(404).send();
 });
 
-api.declare({
+builder.declare({
   name: 'createStatus',
   title: 'Post a status against a given changeset',
   description: [
@@ -467,7 +464,7 @@ api.declare({
   // route and input (schema) matches github API
   // https://developer.github.com/v3/repos/statuses/#create-a-status
   route: '/repository/:owner/:repo/statuses/:sha',
-  input: 'create-status.json',
+  input: 'create-status.yml',
   scopes: 'github:create-status:<owner>/<repo>',
 }, async function(req, res) {
   // Extract owner, repo and sha from request into variables
@@ -507,7 +504,7 @@ api.declare({
   return res.status(404).send();
 });
 
-api.declare({
+builder.declare({
   name: 'createComment',
   title: 'Post a comment on a given GitHub Issue or Pull Request',
   description: [
@@ -519,7 +516,7 @@ api.declare({
   // https://developer.github.com/v3/issues/comments/#create-a-comment
   // number is a Issue or Pull request ID. Both share the same IDs set.
   route: '/repository/:owner/:repo/issues/:number/comments',
-  input: 'create-comment.json',
+  input: 'create-comment.yml',
   scopes: 'github:create-comment:<owner>/<repo>',
 }, async function(req, res) {
   // Extract owner, repo and number from request into variables

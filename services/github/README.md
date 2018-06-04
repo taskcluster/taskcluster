@@ -26,11 +26,14 @@ Listen for WebHook triggered pulse messages and attempts to schedule Taskcluster
 ## Contributing
 
 ### Run Tests
-To run the tests, use `npm test`.  No credentials are necessary.
+To run the tests, use `yarn test`.  No credentials are necessary. Some tests will be skipped, but it is fine to submit a pull request as long as nothing fails.
+
+To run all tests, you will need appropriate Taskcluster credentials. Using taskcluster-cli, run `eval $(taskcluster signin --scopes assume:project:taskcluster:tests:taskcluster-github)`, then run `yarn test` again.
+
 
 To test the components separately, run:
-- server: `npm run compile && <set the environment variables> node lib/main.js server`
-- handlers: `npm run compile && <set the environment variables> node lib/main.js worker`
+- server: `<set the environment variables> node lib/main.js server`
+- handlers: `<set the environment variables> node lib/main.js worker`
 
 ## Deploying
 

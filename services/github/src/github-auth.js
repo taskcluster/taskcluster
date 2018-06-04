@@ -1,7 +1,7 @@
-let debug = require('debug')('taskcluster-github:github-auth');
-let Github = require('github');
-let Promise = require('bluebird');
-let jwt = require('jsonwebtoken');
+const debug = require('debug')('taskcluster-github:github-auth');
+const Github = require('github');
+const Promise = require('bluebird');
+const jwt = require('jsonwebtoken');
 
 module.exports = async ({cfg}) => {
   let github = new Github({

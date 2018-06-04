@@ -1,10 +1,7 @@
-let Exchanges = require('pulse-publisher');
-let assert = require('assert');
-let _ = require('lodash');
-let debug = require('debug')('taskcluster-github:exchanges');
-
-// Common schema prefix
-let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/github/v1/';
+const Exchanges = require('pulse-publisher');
+const assert = require('assert');
+const _ = require('lodash');
+const debug = require('debug')('taskcluster-github:exchanges');
 
 /** Build common routing key construct for `exchanges.declare` */
 let commonRoutingKey = function(options) {
@@ -61,11 +58,14 @@ let releaseMessageBuilder = function(msg) {
 
 /** Declaration of exchanges offered by the github */
 let exchanges = new Exchanges({
-  title:      'Taskcluster-Github Exchanges',
+  serviceName: 'github',
+  projectName: 'taskcluster-github',
+  version: 'v1',
+  title: 'Taskcluster-Github Exchanges',
   description: [
-    'The github service, typically available at',
-    '`github.taskcluster.net`, is responsible for publishing a pulse',
-    'message for supported github events.',
+    'The github service publishes a pulse',
+    'message for supported github events, translating Github webhook',
+    'events into pulse messages.',
     '',
     'This document describes the exchange offered by the taskcluster',
     'github service',
@@ -83,7 +83,7 @@ exchanges.declare({
     'in the routing-key along with event specific metadata in the payload.',
   ].join('\n'),
   routingKey:         commonRoutingKey({hasActions: true}),
-  schema:             SCHEMA_PREFIX_CONST + 'github-pull-request-message.json#',
+  schema:             'github-pull-request-message.yml',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  msg => _.pick(msg, 'organization', 'repository', 'action'),
   CCBuilder:          () => [],
@@ -100,7 +100,7 @@ exchanges.declare({
     'in the routing-key along with event specific metadata in the payload.',
   ].join('\n'),
   routingKey:         commonRoutingKey(),
-  schema:             SCHEMA_PREFIX_CONST + 'github-push-message.json#',
+  schema:             'github-push-message.yml',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  msg => _.pick(msg, 'organization', 'repository'),
   CCBuilder:          () => [],
@@ -117,7 +117,7 @@ exchanges.declare({
     'in the routing-key along with event specific metadata in the payload.',
   ].join('\n'),
   routingKey:         commonRoutingKey(),
-  schema:             SCHEMA_PREFIX_CONST + 'github-release-message.json#',
+  schema:             'github-release-message.yml',
   messageBuilder:     releaseMessageBuilder, // TO DO: replace with commonMessageBuilder
   routingKeyBuilder:  msg => _.pick(msg, 'organization', 'repository'),
   CCBuilder:          () => [],

@@ -1,10 +1,5 @@
 version: 0
 allowPullRequests: public
-metadata:
-  name: "TaskCluster GitHub Tests"
-  description: "All non-integration tests for taskcluster github"
-  owner: "{{ event.head.user.email }}"
-  source: "{{ event.head.repo.url }}"
 tasks:
   - provisionerId: "{{ taskcluster.docker.provisionerId }}"
     workerType: "{{ taskcluster.docker.workerType }}"
@@ -15,13 +10,42 @@ tasks:
           - pull_request.opened
           - pull_request.synchronize
           - pull_request.reopened
-          - push
+    scopes:
+      - secrets:get:project/taskcluster/testing/taskcluster-github
     payload:
       maxRunTime: 3600
       image: "node:8"
       env:
         DEBUG: "* -babel* -mocha* -nock* -express* -body-parser* -morgan -eslint* -follow-redirects"
-        QUEUE_BASE_URL: 'taskcluster/queue/v1'
+        NO_TEST_SKIP: true
+      features:
+        taskclusterProxy: true
+      command:
+        - "/bin/bash"
+        - "-lc"
+        - "git clone {{event.head.repo.url}} repo && cd repo && git checkout {{event.head.sha}} && yarn global add node-gyp && yarn && yarn test"
+    metadata:
+      name: "TaskCluster GitHub Tests"
+      description: "All non-integration tests"
+      owner: "{{ event.head.user.email }}"
+      source: "{{ event.head.repo.url }}"
+  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+    workerType: "{{ taskcluster.docker.workerType }}"
+    extra:
+      github:
+        env: true
+        events:
+          - push
+        branches:
+          - master
+    scopes:
+      - secrets:get:project/taskcluster/testing/taskcluster-github
+    payload:
+      maxRunTime: 3600
+      image: "node:8"
+      env:
+        DEBUG: "* -babel* -mocha* -nock* -express* -body-parser* -morgan -eslint* -follow-redirects"
+        NO_TEST_SKIP: true
       features:
         taskclusterProxy: true
       command:

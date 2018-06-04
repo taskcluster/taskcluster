@@ -1,39 +1,42 @@
-let assert = require('assert');
-let http = require('http');
-let Promise = require('bluebird');
-let path = require('path');
-let fs = require('fs');
-let _ = require('lodash');
-let api = require('../src/api');
-let Intree = require('../src/intree');
-let taskcluster = require('taskcluster-client');
-let mocha = require('mocha');
-let exchanges = require('../src/exchanges');
-let load = require('../src/main');
-let slugid = require('slugid');
-let config = require('typed-env-config');
-let testing = require('taskcluster-lib-testing');
-let validator = require('taskcluster-lib-validate');
-let fakeGithubAuth = require('./github-auth');
+const http = require('http');
+const fs = require('fs');
+const _ = require('lodash');
+const builder = require('../src/api');
+const Intree = require('../src/intree');
+const taskcluster = require('taskcluster-client');
+const load = require('../src/main');
+const fakeGithubAuth = require('./github-auth');
+const data = require('../src/data');
+const libUrls = require('taskcluster-lib-urls');
+const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
 
-// Load configuration
-let cfg = config({profile: 'test'});
+exports.load = stickyLoader(load);
 
-let testClients = {
-  'test-server': ['*'],
-  'test-client': ['*'],
-};
+suiteSetup(async function() {
+  exports.load.inject('profile', 'test');
+  exports.load.inject('process', 'test');
+});
 
-// Create and export helper object
-let helper = module.exports = {};
+// set up the testing secrets
+exports.secrets = new Secrets({
+  secretName: 'project/taskcluster/testing/taskcluster-github',
+  secrets: {
+    taskcluster: [
+      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl'},
+      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
+      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
+    ],
+  },
+  load: exports.load,
+});
 
 // Build an http request from a json file with fields describing
 // headers and a body
-helper.jsonHttpRequest = function(jsonFile, options) {
+exports.jsonHttpRequest = function(jsonFile, options) {
   let defaultOptions = {
     hostname: 'localhost',
-    port: cfg.server.port,
-    path: '/v1/github',
+    port: 60415,
+    path: '/api/github/v1/github',
     method: 'POST',
   };
   options = _.defaultsDeep(options, defaultOptions);
@@ -51,66 +54,132 @@ helper.jsonHttpRequest = function(jsonFile, options) {
   });
 };
 
-let webServer = null;
-
-// Setup before any tests run (note that even with TDD style, `mocha.setup` does nothing)
-mocha.before(async () => {
-  testing.fakeauth.start(testClients);
-
-  helper.validator = await validator({
-    prefix: 'github/v1/',
-    aws: cfg.aws,
-  });
-
-  let overwrites = {profile: 'test', process: 'test'};
-  helper.load = async (component) => {
-    if (component in overwrites) {
-      return overwrites[component];
+/**
+ * Set up a fake publisher.  Call this before withServer to ensure the server
+ * uses the same publisher.
+ */
+exports.withFakePublisher = (mock, skipping) => {
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
     }
-    let loaded = overwrites[component] = await load(component, overwrites);
-    return loaded;
-  };
+    exports.load.save();
 
-  // inject some fakes
-  helper.fakeGithub = overwrites.github = fakeGithubAuth();
-  helper.publisher = overwrites.publisher = await helper.load('publisher');
-
-  helper.Builds = await helper.load('Builds', overwrites);
-  helper.OwnersDirectory = await helper.load('OwnersDirectory', overwrites);
-  helper.intree = overwrites.intree = await helper.load('intree', overwrites);
-  webServer = overwrites.server = await helper.load('server', overwrites);
-
-  helper.syncInstallations = async () => {
-    await helper.load('syncInstallations', overwrites);
-  };
-
-  helper.queue = new taskcluster.Queue({
-    baseUrl: cfg.taskcluster.queueBaseUrl,
-    credentials: cfg.taskcluster.credentials,
+    exports.load.cfg('pulse.fake', true);
+    exports.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
+    await exports.load('publisher');
   });
 
-  helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
-  let reference = api.reference({baseUrl: helper.baseUrl});
-  helper.Github = taskcluster.createClient(reference);
-  helper.github = new helper.Github({
-    baseUrl: helper.baseUrl,
-    credentials: {
-      clientId: 'test-client',
-      accessToken: 'none',
-    },
+  suiteTeardown(function() {
+    if (skipping()) {
+      return;
+    }
+    exports.load.restore();
   });
-});
+};
 
-mocha.beforeEach(async () => {
-  let github = await helper.load('github');
-  github.resetStubs();
-});
+/**
+ * Set helper.Builds and helper.OwnersDirectory to fully-configured entity
+ * objects, and inject them into the loader. These tables are cleared at
+ * suiteSetup, but not between test cases.
+ */
+exports.withEntities = (mock, skipping) => {
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
 
-// Cleanup after all tests have completed
-mocha.after(async () => {
-  // Kill webServer
-  if (webServer) {
-    await webServer.terminate();
-  }
-  testing.fakeauth.stop();
-});
+    if (mock) {
+      const cfg = await exports.load('cfg');
+      exports.load.inject('Builds', data.Builds.setup({
+        tableName: 'Builds',
+        credentials: 'inMemory',
+      }));
+      exports.load.inject('OwnersDirectory', data.OwnersDirectory.setup({
+        tableName: 'OwnersDirectory',
+        credentials: 'inMemory',
+      }));
+    }
+
+    exports.Builds = await exports.load('Builds');
+    await exports.Builds.ensureTable();
+
+    exports.OwnersDirectory = await exports.load('OwnersDirectory');
+    await exports.OwnersDirectory.ensureTable();
+  });
+
+  const cleanup = async () => {
+    if (!skipping()) {
+      await exports.Builds.scan({}, {handler: secret => secret.remove()});
+      await exports.OwnersDirectory.scan({}, {handler: secret => secret.remove()});
+    }
+  };
+  suiteSetup(cleanup);
+  suiteTeardown(cleanup);
+};
+
+/**
+ * Set the `github` loader component to a fake version.
+ * This is reset before each test.  Call this before withServer.
+ */
+exports.withFakeGithub = (mock, skipping) => {
+  suiteSetup(function() {
+    exports.load.inject('github', fakeGithubAuth());
+  });
+
+  suiteTeardown(function() {
+    exports.load.remove('github');
+  });
+
+  setup(async function() {
+    let fakeGithub = await exports.load('github');
+    fakeGithub.resetStubs();
+  });
+};
+
+/**
+ * Set up an API server.  Call this after withEntities, so the server
+ * uses the same entities classes.
+ *
+ * This also sets up helper.apiClient as a client of the service API.
+ */
+exports.withServer = (mock, skipping) => {
+  let webServer;
+
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+    const cfg = await exports.load('cfg');
+
+    // even if we are using a "real" rootUrl for access to Azure, we use
+    // a local rootUrl to test the API, including mocking auth on that
+    // rootUrl.
+    const rootUrl = 'http://localhost:60415';
+    exports.load.cfg('taskcluster.rootUrl', rootUrl);
+    exports.load.cfg('taskcluster.clientId', null);
+    exports.load.cfg('taskcluster.accessToken', null);
+
+    fakeauth.start({'test-client': ['*']}, {rootUrl});
+
+    const GithubClient = taskcluster.createClient(builder.reference());
+
+    exports.apiClient = new GithubClient({
+      credentials: {clientId: 'test-client', accessToken: 'unused'},
+      rootUrl,
+    });
+
+    webServer = await exports.load('server');
+  });
+
+  suiteTeardown(async function() {
+    if (skipping()) {
+      return;
+    }
+    if (webServer) {
+      await webServer.terminate();
+      webServer = null;
+    }
+    fakeauth.stop();
+  });
+};

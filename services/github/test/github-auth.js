@@ -1,7 +1,7 @@
-let Debug = require('debug');
-let sinon = require('sinon');
-let _ = require('lodash');
-let assert = require('assert');
+const Debug = require('debug');
+const sinon = require('sinon');
+const _ = require('lodash');
+const assert = require('assert');
 
 class FakeGithub {
   constructor(installation_id) {

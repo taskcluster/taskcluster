@@ -1,25 +1,19 @@
+const helper = require('./helper');
+const assert = require('assert');
+const _ = require('lodash');
+const got = require('got');
+
 /**
  * Tests of endpoints in the api _other than_
  * the github webhook endpoint which is tested
  * in webhook_test.js
  */
-suite('api', () => {
-  let helper = require('./helper');
-  let assert = require('assert');
-  let _ = require('lodash');
-  let got = require('got');
+helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping) {
+  helper.withEntities(mock, skipping);
+  helper.withFakeGithub(mock, skipping);
+  helper.withServer(mock, skipping);
 
-  let github = Object.create(null);
-
-  suiteSetup(async () => {
-    await helper.Builds.scan({}, {
-      handler: build => build.remove(),
-    });
-
-    await helper.OwnersDirectory.scan({}, {
-      handler: owner => owner.remove(),
-    });
-
+  suiteSetup(async function() {
     await helper.Builds.create({
       organization: 'abc123',
       repository: 'def456',
@@ -80,7 +74,7 @@ suite('api', () => {
     });
   });
 
-  setup(async () => {
+  setup(async function() {
     github = await helper.load('github');
     github.inst(9090).setRepositories('coolRepo', 'anotherCoolRepo', 'awesomeRepo', 'nonTCGHRepo');
     github.inst(9090).setStatuses({
@@ -108,7 +102,7 @@ suite('api', () => {
   });
 
   test('all builds', async function() {
-    let builds = await helper.github.builds();
+    let builds = await helper.apiClient.builds();
     assert.equal(builds.builds.length, 4);
     builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
     assert.equal(builds.builds[0].organization, 'abc123');
@@ -118,14 +112,14 @@ suite('api', () => {
   });
 
   test('org builds', async function() {
-    let builds = await helper.github.builds({organization: 'abc123'});
+    let builds = await helper.apiClient.builds({organization: 'abc123'});
     assert.equal(builds.builds.length, 3);
     builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
     assert.equal(builds.builds[0].organization, 'abc123');
   });
 
   test('repo builds', async function() {
-    let builds = await helper.github.builds({organization: 'abc123', repository: 'xyz'});
+    let builds = await helper.apiClient.builds({organization: 'abc123', repository: 'xyz'});
     assert.equal(builds.builds.length, 2);
     builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
     assert.equal(builds.builds[0].organization, 'abc123');
@@ -133,7 +127,7 @@ suite('api', () => {
   });
 
   test('sha builds', async function() {
-    let builds = await helper.github.builds({
+    let builds = await helper.apiClient.builds({
       organization: 'abc123',
       repository: 'xyz',
       sha: 'y650871208002a13ba35cf232c0e30d2c3d64783',
@@ -146,11 +140,11 @@ suite('api', () => {
   });
 
   test('integration installation', async function() {
-    let result = await helper.github.repository('abc123', 'coolRepo');
+    let result = await helper.apiClient.repository('abc123', 'coolRepo');
     assert.deepEqual(result, {installed: true});
-    result = await helper.github.repository('abc123', 'unknownRepo');
+    result = await helper.apiClient.repository('abc123', 'unknownRepo');
     assert.deepEqual(result, {installed: false});
-    result = await helper.github.repository('unknownOwner', 'unknownRepo');
+    result = await helper.apiClient.repository('unknownOwner', 'unknownRepo');
     assert.deepEqual(result, {installed: false});
   });
 
@@ -158,35 +152,19 @@ suite('api', () => {
     var res;
 
     // status: failure
-    try {
-      res = await got('http://localhost:60415/v1/repository/abc123/coolRepo/master/badge.svg');
-    } catch (e) {
-      console.log(`Test for failure status failed. Error: ${JSON.stringify(e)}`);
-    }
+    res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'coolRepo', 'master'));
     assert.equal(res.headers['content-length'], 8615);
 
     // status: success
-    try {
-      res = await got('http://localhost:60415/v1/repository/abc123/awesomeRepo/master/badge.svg');
-    } catch (e) {
-      console.log(`Test for success status failed. Error: ${JSON.stringify(e)}`);
-    }
+    res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'awesomeRepo', 'master'));
     assert.equal(res.headers['content-length'], 9189);
 
     // error
-    try {
-      res = await got('http://localhost:60415/v1/repository/abc123/unknownRepo/master/badge.svg');
-    } catch (e) {
-      console.log(`Test for error during getting status failed. Error: ${JSON.stringify(e)}`);
-    }
+    res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'unknownRepo', 'master'));
     assert.equal(res.headers['content-length'], 4268);
 
     // new repo (no info yet)
-    try {
-      res = await got('http://localhost:60415/v1/repository/abc123/nonTCGHRepo/master/badge.svg');
-    } catch (e) {
-      console.log(`Test for new repo with no status failed. Error: ${JSON.stringify(e)}`);
-    }
+    res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'nonTCGHRepo', 'master'));
     assert.equal(res.headers['content-length'], 7873);
   });
 
@@ -195,7 +173,9 @@ suite('api', () => {
 
     // check if the function returns a correct link
     try {
-      res = await got('http://localhost:60415/v1/repository/abc123/awesomeRepo/master/latest', {followRedirect: false});
+      res = await got(
+        helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'awesomeRepo', 'master'),
+        {followRedirect: false});
     } catch (e) {
       console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
     }
@@ -203,7 +183,7 @@ suite('api', () => {
   });
 
   test('simple status creation', async function() {
-    await helper.github.createStatus('abc123', 'awesomeRepo', 'master', {
+    await helper.apiClient.createStatus('abc123', 'awesomeRepo', 'master', {
       state: 'error',
     });
 
@@ -219,7 +199,7 @@ suite('api', () => {
   });
 
   test('advanced status creation', async function() {
-    await helper.github.createStatus('abc123', 'awesomeRepo', 'master', {
+    await helper.apiClient.createStatus('abc123', 'awesomeRepo', 'master', {
       state: 'failure',
       target_url: 'http://test.com',
       description: 'Status title',
@@ -239,7 +219,7 @@ suite('api', () => {
 
   test('status creation where integraiton lacks permission', async function() {
     try {
-      await helper.github.createStatus('abc123', 'no-permission', 'master', {
+      await helper.apiClient.createStatus('abc123', 'no-permission', 'master', {
         state: 'failure',
         target_url: 'http://test.com',
         description: 'Status title',
@@ -252,7 +232,7 @@ suite('api', () => {
     throw new Error('endpoint should have failed');
   });
   test('pull request comment', async function() {
-    await helper.github.createComment('abc123', 'awesomeRepo', 1, {
+    await helper.apiClient.createComment('abc123', 'awesomeRepo', 1, {
       body: 'Task failed here',
     });
 
@@ -266,7 +246,7 @@ suite('api', () => {
 
   test('pull request comment where integration lacks permission', async function() {
     try {
-      await helper.github.createComment('abc123', 'no-permission', 1, {body: 'x'});
+      await helper.apiClient.createComment('abc123', 'no-permission', 1, {body: 'x'});
     } catch (e) {
       assert.equal(e.statusCode, 403);
       return; // passed
