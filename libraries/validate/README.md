@@ -9,17 +9,11 @@ A single purpose library to wrap up all of the logic for ensuring that
 content matches established schemas. This is a replacement for
 [taskcluster/schema-validator-publisher](https://github.com/taskcluster/schema-validator-publisher/blob/master/package.json).
 
-Changelog
----------
-View the changelog on the [releases page](https://github.com/taskcluster/taskcluster-lib-validate/releases).
-
-Requirements
-------------
+## Requirements
 
 This is tested on and should run on any of node `{8, 10}`.
 
-Usage
------
+## Usage
 
 This library is used to manage schemas used within an application.
 Schemas are typically stored under `schemas/` in the repository root, with a directory per schema version.
@@ -41,8 +35,7 @@ console.log(schemaset.abstractSchemas())
 // ↳ [{'id': 'taskcluster:/schemas/someservice/first-schema.json#', ...}, ...]
 ```
 
-Schema References
-#################
+### Schema References
 
 Each schema file is given an identifier when it is loaded (as seen in the `$id` property).
 The draft standard specifies that this must be a URI and cannot be relative.
@@ -132,8 +125,7 @@ minValue: {$const: smallest}
 
 This library will automatically publish schemas to s3 in production, for backward-compatibility with the `taskcluster.net` deployment.
 
-Options and Defaults
---------------------
+## Options and Defaults
 
 This section explores some of the options a bit further. In general, your schemas should be
 stored in the top-level of your project in `<root of app>/schemas/` and the constants in a yaml file in
@@ -184,13 +176,15 @@ rendered schema files out to `rendered_schemas/` in the current directory.
 Similarly, set option `preview`, or `$PREVIEW_JSON_SCHEMA_FILES`, to write the
 fully rendered schema files out to the console.
 
-Testing
--------
+## Testing
 
 Just `yarn install` and `yarn test`. You can set `DEBUG=taskcluster-lib-validate,test` if you want to see what's going on.
 There are no keys needed to test this library.
 
-License
--------
+## Changelog
+
+View the changelog on the [releases page](https://github.com/taskcluster/taskcluster-lib-validate/releases).
+
+## License
 
 [Mozilla Public License Version 2.0](https://github.com/taskcluster/taskcluster-lib-validate/blob/master/LICENSE)
