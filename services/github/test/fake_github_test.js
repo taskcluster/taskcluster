@@ -1,7 +1,7 @@
-let assert = require('assert');
-let _ = require('lodash');
-let github = require('github');
-let fakeGithubAuth = require('./github-auth');
+const assert = require('assert');
+const _ = require('lodash');
+const github = require('github');
+const fakeGithubAuth = require('./github-auth');
 
 suite('fake github', function() {
 

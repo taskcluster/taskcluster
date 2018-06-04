@@ -1,4 +1,4 @@
-let yaml = require('js-yaml');
+const yaml = require('js-yaml');
 
 const DEFAULT_POLICY = 'collaborators';
 

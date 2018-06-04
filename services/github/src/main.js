@@ -1,23 +1,24 @@
-let debug = require('debug')('taskcluster-github:loader');
-let api = require('./api');
-let path = require('path');
-let exchanges = require('./exchanges');
-let Handlers = require('./handlers');
-let Intree = require('./intree');
-let data = require('./data');
-let _ = require('lodash');
-let Promise = require('bluebird');
-let Ajv = require('ajv');
-let taskcluster = require('taskcluster-client');
-let config = require('typed-env-config');
-let monitor = require('taskcluster-lib-monitor');
-let validator = require('taskcluster-lib-validate');
-let loader = require('taskcluster-lib-loader');
-let docs = require('taskcluster-lib-docs');
-let App = require('taskcluster-lib-app');
-let githubAuth = require('./github-auth');
+const debug = require('debug')('taskcluster-github:loader');
+const builder = require('./api');
+const path = require('path');
+const exchanges = require('./exchanges');
+const Handlers = require('./handlers');
+const Intree = require('./intree');
+const data = require('./data');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const Ajv = require('ajv');
+const taskcluster = require('taskcluster-client');
+const config = require('typed-env-config');
+const monitor = require('taskcluster-lib-monitor');
+const SchemaSet = require('taskcluster-lib-validate');
+const loader = require('taskcluster-lib-loader');
+const docs = require('taskcluster-lib-docs');
+const App = require('taskcluster-lib-app');
+const {sasCredentials} = require('taskcluster-lib-azure');
+const githubAuth = require('./github-auth');
 
-let load = loader({
+const load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({profile}) => config({profile}),
@@ -26,7 +27,8 @@ let load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: cfg.monitoring.project || 'taskcluster-github',
+      rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-github',
       enable: cfg.monitoring.enable,
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
@@ -34,12 +36,20 @@ let load = loader({
     }),
   },
 
-  validator: {
+  schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => validator({
-      prefix: 'github/v1/',
+    setup: ({cfg}) => new SchemaSet({
+      serviceName: 'github',
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
+    }),
+  },
+
+  reference: {
+    requires: ['cfg'],
+    setup: ({cfg}) => exchanges.reference({
+      rootUrl:          cfg.taskcluster.rootUrl,
+      credentials:      cfg.pulse,
     }),
   },
 
@@ -49,20 +59,15 @@ let load = loader({
   },
 
   docs: {
-    requires: ['cfg', 'validator', 'reference'],
-    setup: ({cfg, validator, reference}) => docs.documenter({
+    requires: ['cfg', 'schemaset', 'reference'],
+    setup: ({cfg, schemaset, reference}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'integrations',
-      schemas: validator.schemas,
+      schemaset: schemaset,
       publish: cfg.app.publishMetaData,
       references: [
-        {
-          name: 'api',
-          reference: api.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
-        }, {
-          name: 'events',
-          reference: reference,
-        },
+        {name: 'api', reference: builder.reference()},
+        {name: 'events', reference: reference},
       ],
     }),
   },
@@ -73,13 +78,12 @@ let load = loader({
   },
 
   publisher: {
-    requires: ['cfg', 'monitor', 'validator'],
-    setup: async ({cfg, monitor, validator}) => exchanges.setup({
+    requires: ['cfg', 'monitor', 'schemaset'],
+    setup: async ({cfg, monitor, schemaset}) => exchanges.setup({
+      rootUrl:            cfg.taskcluster.rootUrl,
       credentials:        cfg.pulse,
-      exchangePrefix:     cfg.app.exchangePrefix,
-      validator:          validator,
-      referencePrefix:    'github/v1/exchanges.json',
-      publish: cfg.app.publishMetaData,
+      validator:          await schemaset.validator(cfg.taskcluster.rootUrl),
+      publish:            cfg.app.publishMetaData,
       aws:                cfg.aws,
       monitor:            monitor.prefix('publisher'),
     }),
@@ -91,70 +95,69 @@ let load = loader({
   },
 
   intree: {
-    requires: ['cfg'],
-    setup: ({cfg}) => Intree.setup(cfg),
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => Intree.setup({cfg, schemaset}),
   },
 
   Builds: {
     requires: ['cfg', 'monitor'],
-    setup: async ({cfg, monitor}) => {
-      var build = await data.Build.setup({
-        account: cfg.azure.account,
-        table: cfg.app.buildTableName,
+    setup: async ({cfg, monitor}) => data.Builds.setup({
+      tableName: cfg.app.buildsTableName,
+      credentials: sasCredentials({
+        accountId: cfg.azure.account,
+        tableName: cfg.app.buildsTableName,
+        rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
-        monitor: monitor.prefix('table.builds'),
-      });
-
-      await build.ensureTable();
-      return build;
-    },
+      }),
+      monitor: monitor.prefix('table.builds'),
+    }),
   },
 
   OwnersDirectory: {
     requires: ['cfg', 'monitor'],
-    setup: async ({cfg, monitor}) => {
-      var ownersDir = await data.OwnersDirectory.setup({
-        account: cfg.azure.account,
-        table: cfg.app.ownersDirectoryTableName,
+    setup: async ({cfg, monitor}) => data.OwnersDirectory.setup({
+      tableName: cfg.app.ownersDirectoryTableName,
+      credentials: sasCredentials({
+        accountId: cfg.azure.account,
+        tableName: cfg.app.ownersDirectoryTableName,
+        rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
-        monitor: monitor.prefix('table.ownersdirectory'),
-      });
-
-      await ownersDir.ensureTable();
-      return ownersDir;
-    },
+      }),
+      monitor: monitor.prefix('table.ownersdirectory'),
+    }),
   },
 
   api: {
-    requires: ['cfg', 'monitor', 'validator', 'github', 'publisher', 'Builds', 'OwnersDirectory', 'ajv'],
-    setup: ({cfg, monitor, validator, github, publisher, Builds, OwnersDirectory, ajv}) => api.setup({
-      context:          {publisher, cfg, github, Builds, OwnersDirectory, monitor: monitor.prefix('api-context'), ajv},
-      authBaseUrl:      cfg.taskcluster.authBaseUrl,
+    requires: [
+      'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'Builds',
+      'OwnersDirectory', 'ajv'],
+    setup: ({cfg, monitor, schemaset, github, publisher, Builds,
+      OwnersDirectory, ajv}) => builder.build({
+      rootUrl: cfg.taskcluster.rootUrl,
+      context: {
+        publisher,
+        cfg,
+        github,
+        Builds,
+        OwnersDirectory,
+        ajv,
+        monitor: monitor.prefix('api-context'),
+      },
       publish: cfg.app.publishMetaData,
-      baseUrl:          cfg.server.publicUrl + '/v1',
-      referencePrefix:  'github/v1/api.json',
-      aws:              cfg.aws,
-      monitor:          monitor.prefix('api'),
-      validator,
+      aws: cfg.aws,
+      monitor: monitor.prefix('api'),
+      schemaset,
     }),
   },
 
   server: {
-    requires: ['cfg', 'api', 'docs'],
-    setup: ({cfg, api, docs}) => {
-
-      debug('Launching server.');
-      let app = App(cfg.server);
-      app.use('/v1', api);
-      return app.createServer();
-    },
-  },
-
-  reference: {
-    requires: ['cfg'],
-    setup: ({cfg}) => exchanges.reference({
-      exchangePrefix:   cfg.app.exchangePrefix,
-      credentials:      cfg.pulse,
+    requires: ['cfg', 'api'],
+    setup: ({cfg, api, docs}) => App({
+      port: cfg.server.port,
+      env: cfg.server.env,
+      forceSSL: cfg.server.forceSSL,
+      trustProxy: cfg.server.trustProxy,
+      apis: [api],
     }),
   },
 
@@ -173,15 +176,16 @@ let load = loader({
   },
 
   handlers: {
-    requires: ['cfg', 'github', 'monitor', 'intree', 'validator', 'reference', 'Builds'],
-    setup: async ({cfg, github, monitor, intree, validator, reference, Builds}) => new Handlers({
+    requires: ['cfg', 'github', 'monitor', 'intree', 'schemaset', 'reference', 'Builds'],
+    setup: async ({cfg, github, monitor, intree, schemaset, reference, Builds}) => new Handlers({
+      rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.pulse,
       monitor: monitor.prefix('handlers'),
       intree,
       reference,
       jobQueueName: cfg.app.jobQueueName,
       statusQueueName: cfg.app.statusQueueName,
-      context: {cfg, github, validator, Builds},
+      context: {cfg, github, schemaset, Builds},
     }),
   },
 

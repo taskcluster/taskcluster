@@ -14,8 +14,8 @@
     "url": "https://github.com/taskcluster/taskcluster-github.git"
   },
   "dependencies": {
-    "ajv": "^5.4.0",
-    "azure-entities": "^3.2.1",
+    "ajv": "^6.5.0",
+    "azure-entities": "^4.0.0",
     "bluebird": "^3.5.1",
     "debug": "^3.1.0",
     "eslint-config-taskcluster": "^3.0.0",
@@ -24,16 +24,18 @@
     "json-parameterization": "^0.2.0",
     "jsonwebtoken": "^8.1.0",
     "lodash": "^4.11.1",
-    "pulse-publisher": "^3.0.3",
+    "pulse-publisher": "^10.0.0",
     "slugid": "^1.1.0",
-    "taskcluster-client": "^3.1.0",
-    "taskcluster-lib-api": "8.3.0",
-    "taskcluster-lib-app": "^2.0.3",
-    "taskcluster-lib-docs": "^4.2.2",
-    "taskcluster-lib-loader": "^2.0.0",
-    "taskcluster-lib-monitor": "^5.4.0",
-    "taskcluster-lib-validate": "^3.1.0",
-    "typed-env-config": "^1.1.0"
+    "taskcluster-client": "^11.0.0",
+    "taskcluster-lib-api": "12.0.0",
+    "taskcluster-lib-app": "^10.0.0",
+    "taskcluster-lib-azure": "^10.0.0",
+    "taskcluster-lib-docs": "^10.0.0",
+    "taskcluster-lib-loader": "^10.0.0",
+    "taskcluster-lib-monitor": "^10.0.0",
+    "taskcluster-lib-urls": "^10.0.0",
+    "taskcluster-lib-validate": "^11.0.1",
+    "typed-env-config": "^2.0.0"
   },
   "engine-strict": true,
   "engines": {
@@ -45,6 +47,6 @@
     "got": "^8.0.0",
     "mocha": "^4.0.1",
     "sinon": "^4.1.2",
-    "taskcluster-lib-testing": "^2.0.2"
+    "taskcluster-lib-testing": "^10.0.0"
   }
 }

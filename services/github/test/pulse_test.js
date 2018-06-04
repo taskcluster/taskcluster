@@ -1,14 +1,26 @@
-suite('pulse', () => {
-  let helper = require('./helper');
-  let assert = require('assert');
-  let _ = require('lodash');
+const helper = require('./helper');
+const assert = require('assert');
+const _ = require('lodash');
+const libUrls = require('taskcluster-lib-urls');
+
+helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
+  helper.withEntities(mock, skipping);
+  helper.withFakePublisher(mock, skipping);
+  helper.withFakeGithub(mock, skipping);
+  helper.withServer(mock, skipping);
 
   let github = null;
+  let publisher = null;
 
-  setup(async () => {
+  setup(async function() {
+    await helper.load('cfg');
+    helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
+
     github = await helper.load('github');
     github.inst(5808).setUser({id: 14795478, email: 'someuser@github.com'});
     github.inst(5808).setUser({id: 18102552, email: 'anotheruser@github.com'});
+
+    publisher = await helper.load('publisher');
   });
 
   /**
@@ -23,21 +35,23 @@ suite('pulse', () => {
    *  jsonFile:     'data file'
    **/
   function pulseTest(params) {
-    test(params.testName, async () => {
+    test(params.testName, async function() {
       let published = [];
-      let fakePublish = event => published.push(event);
-      helper.publisher.on('fakePublish', fakePublish);
+      let fakePublish = event => {
+        published.push(event);
+      };
+      publisher.on('fakePublish', fakePublish);
 
       // Trigger a pull-request message
       try {
         let res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile);
         res.connection.destroy();
       } finally {
-        helper.publisher.removeListener('fakePublish', fakePublish);
+        publisher.removeListener('fakePublish', fakePublish);
       }
 
       let expected = [{
-        exchange: `exchange/fake/v1/${params.listenFor}`,
+        exchange: `exchange/taskcluster-fake/v1/${params.listenFor}`,
         routingKey: params.routingKey,
         payload: {
           organization: 'TaskClusterRobot',
