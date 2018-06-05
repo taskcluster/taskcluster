@@ -15,7 +15,7 @@ type (
 		RequiredScopes() scopes.Required
 		ReservedArtifacts() []string
 		Start() *CommandExecutionError
-		Stop() *CommandExecutionError
+		Stop(err *ExecutionErrors)
 	}
 
 	EnabledFeatures struct {

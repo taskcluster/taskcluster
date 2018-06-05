@@ -137,7 +137,7 @@ func (task *TaskRun) addGroupsToUser(groups []string) error {
 	if len(groups) == 0 {
 		return nil
 	}
-	return fmt.Errorf("Not able to add groups %v to user on platform %v - feature not supported.", groups, runtime.GOOS)
+	return fmt.Errorf("Not able to add groups %v to user on platform %v - feature not supported", groups, runtime.GOOS)
 }
 
 func (task *TaskRun) formatCommand(index int) string {

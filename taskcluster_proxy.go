@@ -37,7 +37,7 @@ type TaskclusterProxyTask struct {
 	taskStatusChangeListener *TaskStatusChangeListener
 }
 
-func (feature *TaskclusterProxyTask) ReservedArtifacts() []string {
+func (l *TaskclusterProxyTask) ReservedArtifacts() []string {
 	return []string{}
 }
 
@@ -101,7 +101,7 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 	return nil
 }
 
-func (l *TaskclusterProxyTask) Stop() *CommandExecutionError {
+func (l *TaskclusterProxyTask) Stop(err *ExecutionErrors) {
 	l.task.StatusManager.DeregisterListener(l.taskStatusChangeListener)
 	errTerminate := l.taskclusterProxy.Terminate()
 	if errTerminate != nil {
@@ -109,5 +109,4 @@ func (l *TaskclusterProxyTask) Stop() *CommandExecutionError {
 		l.task.Warnf("[taskcluster-proxy] Could not terminate taskcluster proxy process: %s", errTerminate)
 		log.Printf("WARNING: could not terminate taskcluster proxy writer: %s", errTerminate)
 	}
-	return nil
 }

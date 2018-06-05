@@ -84,9 +84,10 @@ func (cache *Cache) Rating() float64 {
 }
 
 func (cache *Cache) Expunge(task *TaskRun) error {
+	task.Infof("[mounts] Removing cache %v from cache table", cache.Key)
 	delete(cache.Owner, cache.Key)
 	if task != nil {
-		task.Infof("[mounts] Deleting cache of %v at %v", cache.Key, cache.Location)
+		task.Infof("[mounts] Deleting cache %v file(s) at %v", cache.Key, cache.Location)
 	}
 	// delete the cache on the file system
 	return os.RemoveAll(cache.Location)
@@ -100,7 +101,7 @@ func (feature *MountsFeature) Name() string {
 	return "Mounts/Caches"
 }
 
-func (feature *TaskMount) ReservedArtifacts() []string {
+func (taskMount *TaskMount) ReservedArtifacts() []string {
 	return []string{}
 }
 
@@ -142,7 +143,7 @@ func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
 	if err != nil {
 		panic(err)
 	}
-	for i, _ := range *cm {
+	for i := range *cm {
 		(*cm)[i].Owner = *cm
 	}
 }
@@ -195,7 +196,7 @@ type FSContent interface {
 }
 
 // No scopes required to mount files/dirs in a task
-func (ac *URLContent) RequiredScopes() []string {
+func (uc *URLContent) RequiredScopes() []string {
 	return []string{}
 }
 
@@ -246,11 +247,11 @@ func (feature *MountsFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 }
 
 // Utility method to unmarshal a json blob and add it to the mounts in the TaskMount
-func (tm *TaskMount) Unmarshal(rm json.RawMessage, m MountEntry) {
+func (taskMount *TaskMount) Unmarshal(rm json.RawMessage, m MountEntry) {
 	// only update if nil, otherwise we could replace a previous error with nil
-	if tm.payloadError == nil {
-		tm.payloadError = json.Unmarshal(rm, m)
-		tm.mounts = append(tm.mounts, m)
+	if taskMount.payloadError == nil {
+		taskMount.payloadError = json.Unmarshal(rm, m)
+		taskMount.mounts = append(taskMount.mounts, m)
 	}
 }
 
@@ -326,21 +327,20 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 }
 
 // called when a task has completed
-func (taskMount *TaskMount) Stop() *CommandExecutionError {
+func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 	// loop through all mounts described in payload
 	for i, mount := range taskMount.mounts {
-		err := mount.Unmount(taskMount.task)
-		if err != nil {
+		e := mount.Unmount(taskMount.task)
+		if e != nil {
 			fsc, errfsc := mount.FSContent()
 			if errfsc != nil {
-				taskMount.task.Errorf("[mounts] Could not unmount mount entry %v (description not available due to '%v') due to: '%v'", i, errfsc, err)
+				taskMount.task.Errorf("[mounts] Could not unmount mount entry %v (description not available due to '%v') due to: '%v'", i, errfsc, e)
 			} else {
-				taskMount.task.Errorf("[mounts] Could not unmount %v due to: '%v'", fsc, err)
+				taskMount.task.Errorf("[mounts] Could not unmount %v due to: '%v'", fsc, e)
 			}
-			panic(err)
+			err.add(Failure(e))
 		}
 	}
-	return nil
 }
 
 // Writable caches require scope generic-worker:cache:<cacheName>. Preloaded caches
@@ -442,11 +442,43 @@ func (w *WritableDirectoryCache) Mount(task *TaskRun) error {
 }
 
 func (w *WritableDirectoryCache) Unmount(task *TaskRun) error {
-	cacheDir := directoryCaches[w.CacheName].Location
-	task.Infof("[mounts] Preserving cache: Moving %q to %q", filepath.Join(taskContext.TaskDir, w.Directory), cacheDir)
-	err := RenameCrossDevice(filepath.Join(taskContext.TaskDir, w.Directory), cacheDir)
+	cache := directoryCaches[w.CacheName]
+	cacheDir := cache.Location
+	taskCacheDir := filepath.Join(taskContext.TaskDir, w.Directory)
+	task.Infof("[mounts] Preserving cache: Moving %q to %q", taskCacheDir, cacheDir)
+	err := RenameCrossDevice(taskCacheDir, cacheDir)
 	if err != nil {
-		panic(err)
+		// An error can occur for several reasons:
+		//
+		// Task problems:
+		// T1) The move was transformed into copy/delete semantics, e.g. if
+		// cache persistence directory is on a different drive. Perhaps the
+		// delete failed due to file handles being held by orphaned processes.
+		// Test TestAbortAfterMaxRunTime simulates this.
+		// T2) Maybe the task moved/deleted the cache, or altered ACLs which
+		// caused the move to fail.
+		//
+		// Worker problems:
+		// W1) Perhaps a genuine worker issue - disk fault, drive full, etc.
+		//
+		// It is non-trivial to diagnose whether it is a task issue (=> resolve
+		// task as failure) or a worker issue (=> resolve task as exception and
+		// trigger internal-error to quarantine/terminate worker). Therefore
+		// assume it is a task problem not a worker problem, and if we are
+		// wrong, in the worst case we just have performance degredation on
+		// this worker since it cannot persist the cache. Hopefully if there is
+		// a more serious issue, it will be detected via another mechanism and
+		// cause an internal-error.
+		expungeErr := cache.Expunge(task)
+		// If we can't remove the cacheDir, then something nasty is going on
+		// since this is in a location that the task shouldn't be writing to...
+		if expungeErr != nil {
+			panic(expungeErr)
+		}
+		// The cache directory inside the task (taskCacheDir) will in any case
+		// be cleaned up when task folder is deleted so no need to do anything
+		// with it.
+		return Failure(fmt.Errorf("Could not persist cache %q due to %v", cache.Key, err))
 	}
 	err = makeDirUnreadable(cacheDir)
 	if err != nil {
@@ -520,7 +552,7 @@ func ensureCached(fsContent FSContent, task *TaskRun) (file string, err error) {
 		if err != nil {
 			panic(fmt.Errorf("File in cache, but not on filesystem: %v", *fileCaches[cacheKey]))
 		}
-		fileCaches[cacheKey].Hits += 1
+		fileCaches[cacheKey].Hits++
 
 		// validate SHA256 in case of either tampering or new content at url...
 		sha256, err = fileutil.CalculateSHA256(file)
@@ -559,7 +591,7 @@ func ensureCached(fsContent FSContent, task *TaskRun) (file string, err error) {
 		return
 	}
 	if requiredSHA256 != sha256 {
-		err = fmt.Errorf("Download %v of %v has SHA256 %v but task definition explicitly requires %v. Not retrying download as there were no connection failures and HTTP response status code was 200.", file, fsContent, sha256, requiredSHA256)
+		err = fmt.Errorf("Download %v of %v has SHA256 %v but task definition explicitly requires %v; not retrying download as there were no connection failures and HTTP response status code was 200", file, fsContent, sha256, requiredSHA256)
 		err2 := fileCaches[cacheKey].Expunge(task)
 		if err2 != nil {
 			panic(fmt.Errorf("Could not delete cache entry %v: %v", fileCaches[cacheKey], err2))

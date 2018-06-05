@@ -43,7 +43,7 @@ type SupersedeTask struct {
 	task *TaskRun
 }
 
-func (feature *SupersedeTask) ReservedArtifacts() []string {
+func (l *SupersedeTask) ReservedArtifacts() []string {
 	return []string{
 		supersededByName,
 	}
@@ -119,6 +119,5 @@ func (l *SupersedeTask) Start() *CommandExecutionError {
 	return nil
 }
 
-func (l *SupersedeTask) Stop() *CommandExecutionError {
-	return nil
+func (l *SupersedeTask) Stop(*ExecutionErrors) {
 }

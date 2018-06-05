@@ -18,6 +18,8 @@ import (
 )
 
 const (
+	// ChainOfTrustKeyNotSecureMessage contains message to log when chain of
+	// trust key is discovered at runtime not to be secure
 	ChainOfTrustKeyNotSecureMessage = "Was expecting attempt to read private chain of trust key as task user to fail - however, it did not!"
 )
 
@@ -116,45 +118,42 @@ func (feature *ChainOfTrustTaskFeature) ReservedArtifacts() []string {
 	}
 }
 
-func (cot *ChainOfTrustTaskFeature) RequiredScopes() scopes.Required {
+func (feature *ChainOfTrustTaskFeature) RequiredScopes() scopes.Required {
 	// let's not require any scopes, as I see no reason to control access to this feature
 	return scopes.Required{}
 }
 
-func (cot *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
+func (feature *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
 	// Return an error if the task user can read the private key file.
 	// We shouldn't be able to read the private key, if we can let's raise
 	// MalformedPayloadError, as it could be a problem with the task definition
 	// (for example, enabling chainOfTrust on a worker type that has
 	// runTasksAsCurrentUser enabled).
-	err := cot.ensureTaskUserCantReadPrivateCotKey()
+	err := feature.ensureTaskUserCantReadPrivateCotKey()
 	if err != nil {
 		return MalformedPayloadError(err)
 	}
 	return nil
 }
 
-func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
+func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	logFile := filepath.Join(taskContext.TaskDir, logPath)
 	certifiedLogFile := filepath.Join(taskContext.TaskDir, certifiedLogPath)
 	signedCert := filepath.Join(taskContext.TaskDir, signedCertPath)
-	e := copyFileContents(logFile, certifiedLogFile)
-	if e != nil {
-		panic(e)
+	copyErr := copyFileContents(logFile, certifiedLogFile)
+	if copyErr != nil {
+		panic(copyErr)
 	}
-	err := cot.task.uploadLog(certifiedLogName, certifiedLogPath)
-	if err != nil {
-		return err
-	}
+	err.add(feature.task.uploadLog(certifiedLogName, certifiedLogPath))
 	artifactHashes := map[string]ArtifactHash{}
-	for _, artifact := range cot.task.Artifacts {
+	for _, artifact := range feature.task.Artifacts {
 		switch a := artifact.(type) {
 		case *S3Artifact:
 			// make sure SHA256 is calculated
 			file := filepath.Join(taskContext.TaskDir, a.Path)
-			hash, err := fileutil.CalculateSHA256(file)
-			if err != nil {
-				panic(err)
+			hash, hashErr := fileutil.CalculateSHA256(file)
+			if hashErr != nil {
+				panic(hashErr)
 			}
 			artifactHashes[a.Name] = ArtifactHash{
 				SHA256: hash,
@@ -165,9 +164,9 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 	cotCert := &ChainOfTrustData{
 		Version:     1,
 		Artifacts:   artifactHashes,
-		Task:        cot.task.Definition,
-		TaskID:      cot.task.TaskID,
-		RunID:       cot.task.RunID,
+		Task:        feature.task.Definition,
+		TaskID:      feature.task.TaskID,
+		RunID:       feature.task.RunID,
 		WorkerGroup: config.WorkerGroup,
 		WorkerID:    config.WorkerID,
 		Environment: CoTEnvironment{
@@ -193,7 +192,7 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 	}
 	defer out.Close()
 
-	w, e := clearsign.Encode(out, cot.privKey, nil)
+	w, e := clearsign.Encode(out, feature.privKey, nil)
 	if e != nil {
 		panic(e)
 	}
@@ -204,9 +203,5 @@ func (cot *ChainOfTrustTaskFeature) Stop() *CommandExecutionError {
 	w.Close()
 	out.Write([]byte{'\n'})
 	out.Close()
-	err = cot.task.uploadLog(signedCertName, signedCertPath)
-	if err != nil {
-		return err
-	}
-	return nil
+	err.add(feature.task.uploadLog(signedCertName, signedCertPath))
 }

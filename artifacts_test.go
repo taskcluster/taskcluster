@@ -21,7 +21,7 @@ import (
 var (
 	// all tests can share taskGroupId so we can view all test tasks in same
 	// graph later for troubleshooting
-	taskGroupID string = slugid.Nice()
+	taskGroupID = slugid.Nice()
 )
 
 func validateArtifacts(
@@ -406,12 +406,12 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
 	command := helloGoodbye()
-	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/logs/live.log")...)
-	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/logs/live_backing.log")...)
-	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/logs/certified.log")...)
-	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/chainOfTrust.json.asc")...)
-	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/X.txt")...)
-	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/Y.txt")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/logs/live.log")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/logs/live_backing.log")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/logs/certified.log")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/chainOfTrust.json.asc")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/X.txt")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/Y.txt")...)
 
 	payload := GenericWorkerPayload{
 		Command:    command,
@@ -509,7 +509,7 @@ func TestPublicDirectoryArtifact(t *testing.T) {
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
 	command := helloGoodbye()
-	command = append(command, copyArtifactTo("SampleArtifacts/_/X.txt", "public/build/X.txt")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/build/X.txt")...)
 
 	payload := GenericWorkerPayload{
 		Command:    command,
@@ -554,8 +554,8 @@ func TestConflictingFileArtifactsInPayload(t *testing.T) {
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
 	command := helloGoodbye()
-	command = append(command, copyArtifact("SampleArtifacts/_/X.txt")...)
-	command = append(command, copyArtifact("SampleArtifacts/b/c/d.jpg")...)
+	command = append(command, copyTestdataFile("SampleArtifacts/_/X.txt")...)
+	command = append(command, copyTestdataFile("SampleArtifacts/b/c/d.jpg")...)
 
 	payload := GenericWorkerPayload{
 		Command:    command,
@@ -607,7 +607,7 @@ func TestFileArtifactTwiceInPayload(t *testing.T) {
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
 	command := helloGoodbye()
-	command = append(command, copyArtifact("SampleArtifacts/_/X.txt")...)
+	command = append(command, copyTestdataFile("SampleArtifacts/_/X.txt")...)
 
 	payload := GenericWorkerPayload{
 		Command:    command,
@@ -659,7 +659,7 @@ func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
 	command := helloGoodbye()
-	command = append(command, copyArtifact("SampleArtifacts/_/X.txt")...)
+	command = append(command, copyTestdataFile("SampleArtifacts/_/X.txt")...)
 
 	payload := GenericWorkerPayload{
 		Command:    command,
@@ -712,8 +712,8 @@ func TestUpload(t *testing.T) {
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
 	command := helloGoodbye()
-	command = append(command, copyArtifact("SampleArtifacts/_/X.txt")...)
-	command = append(command, copyArtifact("SampleArtifacts/b/c/d.jpg")...)
+	command = append(command, copyTestdataFile("SampleArtifacts/_/X.txt")...)
+	command = append(command, copyTestdataFile("SampleArtifacts/b/c/d.jpg")...)
 
 	payload := GenericWorkerPayload{
 		Command:    command,
@@ -919,7 +919,7 @@ func TestFileArtifactHasNoExpiry(t *testing.T) {
 	defer setup(t, "TestFileArtifactHasNoExpiry")()
 
 	payload := GenericWorkerPayload{
-		Command:    copyArtifact("SampleArtifacts/_/X.txt"),
+		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
 		MaxRunTime: 30,
 		Artifacts: []Artifact{
 			{
@@ -956,7 +956,7 @@ func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 	defer setup(t, "TestDirectoryArtifactHasNoExpiry")()
 
 	payload := GenericWorkerPayload{
-		Command:    copyArtifact("SampleArtifacts/_/X.txt"),
+		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
 		MaxRunTime: 30,
 		Artifacts: []Artifact{
 			{

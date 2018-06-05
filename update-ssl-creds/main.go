@@ -52,10 +52,10 @@ func main() {
 		if changed {
 			gw := s["generic-worker"].(map[string]interface{})
 			conf := gw["config"].(map[string]interface{})
-			oldDeploymentId := conf["deploymentId"].(string)
-			newDeploymentId := slugid.Nice()
-			log.Printf("New deploymentId for %v: %v => %v", wt, oldDeploymentId, newDeploymentId)
-			conf["deploymentId"] = newDeploymentId
+			oldDeploymentID := conf["deploymentId"].(string)
+			newDeploymentID := slugid.Nice()
+			log.Printf("New deploymentId for %v: %v => %v", wt, oldDeploymentID, newDeploymentID)
+			conf["deploymentId"] = newDeploymentID
 			newBase64EncodedBytes, err := json.Marshal(s)
 			if err != nil {
 				panic(err)

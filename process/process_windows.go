@@ -18,7 +18,10 @@ import (
 type Command struct {
 	mutex sync.RWMutex
 	*exec.Cmd
-	Aborted bool
+	// abort channel is closed when Kill() is called so that Execute() can
+	// return even if cmd.Wait() is blocked. This is useful since cmd.Wait()
+	// sometimes does not return promptly.
+	abort chan struct{}
 }
 
 type Result struct {
@@ -73,7 +76,8 @@ func NewCommand(commandLine []string, workingDirectory string, env []string, log
 		}
 	}
 	return &Command{
-		Cmd: cmd,
+		Cmd:   cmd,
+		abort: make(chan struct{}),
 	}, nil
 }
 
@@ -108,20 +112,30 @@ func (c *Command) Execute() (r *Result) {
 		r.SystemError = err
 		return
 	}
-	err = c.Wait()
+	exitErr := make(chan error)
+	// wait for command to complete in separate go routine, so we handle abortion in parallel to command termination
+	go func() {
+		err := c.Wait()
+		exitErr <- err
+	}()
+	select {
+	case err = <-exitErr:
+		r.UserTime = c.ProcessState.UserTime()
+		r.KernelTime = c.ProcessState.SystemTime()
+		if err != nil {
+			if exiterr, ok := err.(*exec.ExitError); ok {
+				r.ExitError = exiterr
+			} else {
+				r.SystemError = err
+			}
+		}
+	case <-c.abort:
+		r.SystemError = fmt.Errorf("Process aborted")
+		r.Aborted = true
+	}
 	finished := time.Now()
 	// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 	r.Duration = finished.Round(0).Sub(started)
-	r.UserTime = c.ProcessState.UserTime()
-	r.KernelTime = c.ProcessState.SystemTime()
-	r.Aborted = c.Aborted
-	if err != nil {
-		if exiterr, ok := err.(*exec.ExitError); ok {
-			r.ExitError = exiterr
-		} else {
-			r.SystemError = err
-		}
-	}
 	return
 }
 
@@ -130,6 +144,9 @@ func (c *Command) String() string {
 }
 
 func (r *Result) String() string {
+	if r.Aborted {
+		return fmt.Sprintf("Command ABORTED after %v", r.Duration)
+	}
 	return fmt.Sprintf(""+
 		"   Exit Code: %v\n"+
 		"   User Time: %v\n"+
@@ -173,7 +190,7 @@ func (c *Command) Kill() (killOutput []byte, err error) {
 	// 	// If process has finished, nothing to kill
 	// 	return
 	// }
-	c.Aborted = true
+	close(c.abort)
 	log.Printf("Killing process tree with parent PID %v... (%p)", c.Process.Pid, c)
 	defer log.Printf("taskkill.exe command has completed for PID %v", c.Process.Pid)
 	// here we use taskkill.exe rather than c.Process.Kill() since we want child processes also to be killed

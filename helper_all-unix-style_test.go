@@ -110,7 +110,7 @@ func sleep(seconds uint) [][]string {
 }
 
 func goRun(goFile string, args ...string) [][]string {
-	copy := copyArtifact(goFile)
+	copy := copyTestdataFile(goFile)
 	run := []string{
 		"go",
 		"run",
@@ -120,11 +120,11 @@ func goRun(goFile string, args ...string) [][]string {
 	return append(copy, runWithArgs)
 }
 
-func copyArtifact(path string) [][]string {
-	return copyArtifactTo(path, path)
+func copyTestdataFile(path string) [][]string {
+	return copyTestdataFileTo(path, path)
 }
 
-func copyArtifactTo(src, dest string) [][]string {
+func copyTestdataFileTo(src, dest string) [][]string {
 	sourcePath := filepath.Join(testdataDir, src)
 	return [][]string{
 		{

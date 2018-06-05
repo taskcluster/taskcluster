@@ -324,22 +324,28 @@ type MountsLoggingTestCase struct {
 	TaskRunResolutionState string
 	TaskRunReasonResolved  string
 	PerTaskRunLogExcerpts  [][]string
+	Payload                *GenericWorkerPayload
 }
 
 // This is an extremely strict test helper, that requires you to specify
 // extracts from every log line that the mounts feature writes to the log
 func LogTest(m *MountsLoggingTestCase) {
 	defer setup(m.Test, m.Test.Name())()
-	payload := GenericWorkerPayload{
-		Mounts:     toMountArray(m.Test, &m.Mounts),
-		Command:    helloGoodbye(),
-		MaxRunTime: 30,
+
+	payload := m.Payload
+	if payload == nil {
+		payload = &GenericWorkerPayload{
+			Command:    helloGoodbye(),
+			MaxRunTime: 30,
+		}
 	}
+	payload.Mounts = toMountArray(m.Test, &m.Mounts)
+
 	for _, run := range m.PerTaskRunLogExcerpts {
 
 		td := testTask(m.Test)
 		td.Scopes = m.Scopes
-		_ = submitAndAssert(m.Test, td, payload, m.TaskRunResolutionState, m.TaskRunReasonResolved)
+		_ = submitAndAssert(m.Test, td, *payload, m.TaskRunResolutionState, m.TaskRunReasonResolved)
 
 		// check log entries
 		bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
@@ -397,15 +403,17 @@ func TestInvalidSHA256(t *testing.T) {
 				[]string{
 					`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
 					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Deleting cache of artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip at .*`,
-					`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task definition explicitly requires 9263625672993742f0916f7a22b4d9924ed0327f2e02edd18456c0c4e5876850. Not retrying download as there were no connection failures and HTTP response status code was 200.`,
+					`Removing cache artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip from cache table`,
+					`Deleting cache artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip file\(s\) at .*`,
+					`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task definition explicitly requires 9263625672993742f0916f7a22b4d9924ed0327f2e02edd18456c0c4e5876850; not retrying download as there were no connection failures and HTTP response status code was 200`,
 				},
 				// Required text from second task when download is already cached
 				[]string{
 					`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
 					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Deleting cache of artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip at .*`,
-					`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task definition explicitly requires 9263625672993742f0916f7a22b4d9924ed0327f2e02edd18456c0c4e5876850. Not retrying download as there were no connection failures and HTTP response status code was 200.`,
+					`Removing cache artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip from cache table`,
+					`Deleting cache artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip file\(s\) at .*`,
+					`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task definition explicitly requires 9263625672993742f0916f7a22b4d9924ed0327f2e02edd18456c0c4e5876850; not retrying download as there were no connection failures and HTTP response status code was 200`,
 				},
 			},
 		},
@@ -626,4 +634,65 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 			Scopes: []string{"generic-worker:cache:banana-cache"},
 		},
 	)
+}
+
+// TestCacheMoved tests that if a test mounts a cache, and then moves it to a
+// different location, that the test fails, and the worker doesn't crash.
+func TestCacheMoved(t *testing.T) {
+	LogTest(
+		&MountsLoggingTestCase{
+			Test: t,
+			Mounts: []MountEntry{
+				&WritableDirectoryCache{
+					CacheName: "banana-cache",
+					Directory: "TestCacheMoved",
+					// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
+					Content: json.RawMessage(`{
+						"taskId": "LK1Rz2UtT16d-HBSqyCtuA",
+						"artifact": "public/build/unknown_issuer_app_1.zip",
+						"sha256": "625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e"
+					}`),
+					Format: "zip",
+				},
+			},
+			Scopes: []string{"generic-worker:cache:banana-cache"},
+			Payload: &GenericWorkerPayload{
+				Command:    goRun("move-file.go", "TestCacheMoved", "MovedCache"),
+				MaxRunTime: 180,
+			},
+			TaskRunResolutionState: "failed",
+			TaskRunReasonResolved:  "failed",
+			PerTaskRunLogExcerpts: [][]string{
+				// Required text from first task with no cached value
+				[]string{
+					`No existing writable directory cache 'banana-cache' - creating .*`,
+					`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
+					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
+					`Content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
+					`Creating directory .*TestCacheMoved with permissions 0700`,
+					`Extracting zip file .* to '.*TestCacheMoved'`,
+					`Granting task user full control of '.*TestCacheMoved' and subdirectories`,
+					`Successfully mounted writable directory cache '.*TestCacheMoved'`,
+					`Preserving cache: Moving ".*TestCacheMoved" to ".*"`,
+					`Removing cache banana-cache from cache table`,
+					`Deleting cache banana-cache file\(s\) at .*`,
+					`Could not unmount task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip due to: 'Could not persist cache "banana-cache" due to .*'`,
+				},
+				// Required text from second task when download is already cached
+				[]string{
+					`No existing writable directory cache 'banana-cache' - creating .*`,
+					`Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
+					`Creating directory .*TestCacheMoved with permissions 0700`,
+					`Extracting zip file .* to '.*TestCacheMoved'`,
+					`Granting task user full control of '.*TestCacheMoved' and subdirectories`,
+					`Successfully mounted writable directory cache '.*TestCacheMoved'`,
+					`Preserving cache: Moving ".*TestCacheMoved" to ".*"`,
+					`Removing cache banana-cache from cache table`,
+					`Deleting cache banana-cache file\(s\) at .*`,
+					`Could not unmount task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip due to: 'Could not persist cache "banana-cache" due to .*'`,
+				},
+			},
+		},
+	)
+
 }
