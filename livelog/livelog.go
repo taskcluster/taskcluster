@@ -4,6 +4,7 @@
 package livelog
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net"
@@ -11,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
@@ -22,7 +24,6 @@ type LiveLog struct {
 	SSLCert string
 	SSLKey  string
 	secret  string
-	command *exec.Cmd
 	PUTPort uint16
 	GETPort uint16
 	putURL  string
@@ -31,6 +32,8 @@ type LiveLog struct {
 	logReader io.ReadCloser
 	// The io.WriteCloser to write your log to
 	LogWriter io.WriteCloser
+	mutex     sync.Mutex
+	command   *exec.Cmd
 }
 
 // New starts a livelog OS process using the executable specified, and returns
@@ -72,9 +75,22 @@ func New(liveLogExecutable, sslCert, sslKey string, putPort, getPort uint16) (*L
 	}
 	putResult := make(chan CommandResult)
 	go func() {
-		b, e := l.command.CombinedOutput()
+		var b bytes.Buffer
+		l.command.Stdout = &b
+		l.command.Stderr = &b
+		l.mutex.Lock()
+		e := l.command.Start()
+		l.mutex.Unlock()
+		if e != nil {
+			putResult <- CommandResult{
+				b: []byte{},
+				e: e,
+			}
+			return
+		}
+		e = l.command.Wait()
 		putResult <- CommandResult{
-			b: b,
+			b: b.Bytes(),
 			e: e,
 		}
 	}()
@@ -105,6 +121,8 @@ func (l *LiveLog) Terminate() error {
 	// DON'T close the reader!!! otherwise PUT will fail
 	// i.e DON'T write `l.logReader.Close()`
 	l.LogWriter.Close()
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
 	return l.command.Process.Kill()
 }
 
