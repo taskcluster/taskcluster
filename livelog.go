@@ -49,7 +49,7 @@ type LiveLogTask struct {
 	backingLogFile *os.File
 }
 
-func (feature *LiveLogTask) ReservedArtifacts() []string {
+func (l *LiveLogTask) ReservedArtifacts() []string {
 	return []string{
 		livelogName,
 	}
@@ -114,10 +114,10 @@ func (l *LiveLogTask) updateTaskLogWriter(liveLogWriter io.Writer) *CommandExecu
 	return nil
 }
 
-func (l *LiveLogTask) Stop() *CommandExecutionError {
+func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 	// if livelog couldn't be started, nothing to do here...
 	if l.liveLog == nil {
-		return nil
+		return
 	}
 	l.reinstateBackingLog()
 	errClose := l.liveLog.LogWriter.Close()
@@ -132,7 +132,7 @@ func (l *LiveLogTask) Stop() *CommandExecutionError {
 	}
 	log.Printf("Redirecting %v to %v", livelogName, logName)
 	logURL := fmt.Sprintf("%v/task/%v/runs/%v/artifacts/%v", queue.BaseURL, l.task.TaskID, l.task.RunID, logName)
-	err := l.task.uploadArtifact(
+	err.add(l.task.uploadArtifact(
 		&RedirectArtifact{
 			BaseArtifact: &BaseArtifact{
 				Name: livelogName,
@@ -142,11 +142,7 @@ func (l *LiveLogTask) Stop() *CommandExecutionError {
 			},
 			URL: logURL,
 		},
-	)
-	if err != nil {
-		return ResourceUnavailable(err)
-	}
-	return nil
+	))
 }
 
 func (l *LiveLogTask) reinstateBackingLog() {

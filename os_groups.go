@@ -35,7 +35,7 @@ func (feature *OSGroupsFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	return osGroups
 }
 
-func (feature *OSGroups) ReservedArtifacts() []string {
+func (osGroups *OSGroups) ReservedArtifacts() []string {
 	return []string{}
 }
 
@@ -62,6 +62,5 @@ func (osGroups *OSGroups) Start() (err *CommandExecutionError) {
 	return
 }
 
-func (osGroups *OSGroups) Stop() *CommandExecutionError {
-	return nil
+func (osGroups *OSGroups) Stop(err *ExecutionErrors) {
 }

@@ -171,8 +171,7 @@ tasks:
         - go get -v -u
         - cd ..
         - go generate
-        # getting the real revision has proven difficult on win7 32 bit, so a fake one is good enough for these builds
-        - set revision=0123456789012345678901234567890123456789
+        - set revision={{ event.head.sha }}
         - go get -ldflags "-X main.revision=%revision%" -v -u -t ./...
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd

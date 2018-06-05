@@ -71,9 +71,8 @@ func (l *RDPTask) Start() *CommandExecutionError {
 	return l.uploadRDPArtifact()
 }
 
-func (l *RDPTask) Stop() *CommandExecutionError {
+func (l *RDPTask) Stop(err *ExecutionErrors) {
 	time.Sleep(time.Hour * 12)
-	return nil
 }
 
 func (l *RDPTask) createRDPArtifact() {

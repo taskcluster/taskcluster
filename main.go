@@ -42,7 +42,7 @@ var (
 	configureForAws bool
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
-	taskContext *TaskContext = &TaskContext{}
+	taskContext = &TaskContext{}
 	// queue is the object we will use for accessing queue api. See
 	// https://docs.taskcluster.net/reference/platform/queue/api-docs
 	queue      *tcqueue.Queue
@@ -59,6 +59,7 @@ var (
 
 type ExitCode int
 
+// These constants represent all possible exit codes from the generic-worker process.
 const (
 	TASKS_COMPLETE              ExitCode = 0
 	CANT_LOAD_CONFIG            ExitCode = 65
@@ -960,48 +961,48 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	return nil
 }
 
-type executionErrors []*CommandExecutionError
+type ExecutionErrors []*CommandExecutionError
 
-func (e *executionErrors) add(err *CommandExecutionError) {
+func (e *ExecutionErrors) add(err *CommandExecutionError) {
 	if err == nil {
 		return
 	}
 	if e == nil {
-		*e = executionErrors{err}
+		*e = ExecutionErrors{err}
 	} else {
 		*e = append(*e, err)
 	}
 }
 
-func (err *executionErrors) Error() string {
-	if !err.Occurred() {
+func (e *ExecutionErrors) Error() string {
+	if !e.Occurred() {
 		return ""
 	}
-	lines := make([]string, len(*err), len(*err))
-	for i, e := range *err {
-		lines[i] = e.Error()
+	lines := make([]string, len(*e), len(*e))
+	for i, err := range *e {
+		lines[i] = err.Error()
 	}
 	return strings.Join(lines, "\n")
 }
 
 // Return true if any of the accumlated errors is a worker-shutdown
-func (err *executionErrors) WorkerShutdown() bool {
-	if !err.Occurred() {
+func (e *ExecutionErrors) WorkerShutdown() bool {
+	if !e.Occurred() {
 		return false
 	}
-	for _, e := range *err {
-		if e.TaskStatus == aborted && e.Reason == workerShutdown {
+	for _, err := range *e {
+		if err.TaskStatus == aborted && err.Reason == workerShutdown {
 			return true
 		}
 	}
 	return false
 }
 
-func (err *executionErrors) Occurred() bool {
-	return len(*err) > 0
+func (e *ExecutionErrors) Occurred() bool {
+	return len(*e) > 0
 }
 
-func (task *TaskRun) resolve(e *executionErrors) *CommandExecutionError {
+func (task *TaskRun) resolve(e *ExecutionErrors) *CommandExecutionError {
 	log.Printf("Resolving task %v ...", task.TaskID)
 	if !e.Occurred() {
 		return ResourceUnavailable(task.StatusManager.ReportCompleted())
@@ -1063,7 +1064,7 @@ func (task *TaskRun) logHeader() {
 	task.Info("=== Task Starting ===")
 }
 
-func (task *TaskRun) Run() (err *executionErrors) {
+func (task *TaskRun) Run() (err *ExecutionErrors) {
 
 	// err is essentially a list of all errors that occur. We'll base the task
 	// resolution on the first error that occurs. The err.add(<error-or-nil>)
@@ -1074,7 +1075,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 	// to manipulate `err` even in defer statements, and this will affect
 	// return value of this method.
 
-	err = &executionErrors{}
+	err = &ExecutionErrors{}
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -1141,13 +1142,13 @@ func (task *TaskRun) Run() (err *executionErrors) {
 				continue
 			}
 			if !scopesSatisfied {
-				err.add(MalformedPayloadError(fmt.Errorf("Feature %q requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition.", feature.Name(), requiredScopes, scopes.Given(task.Definition.Scopes))))
+				err.add(MalformedPayloadError(fmt.Errorf("Feature %q requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", feature.Name(), requiredScopes, scopes.Given(task.Definition.Scopes))))
 				continue
 			}
 			reservedArtifacts := taskFeature.ReservedArtifacts()
 			for _, a := range reservedArtifacts {
 				if f := task.featureArtifacts[a]; f != "" {
-					err.add(MalformedPayloadError(fmt.Errorf("Feature %q wishes to publish artifact %v but feature %v has already reserved this artifact name.", feature.Name(), a, f)))
+					err.add(MalformedPayloadError(fmt.Errorf("Feature %q wishes to publish artifact %v but feature %v has already reserved this artifact name", feature.Name(), a, f)))
 				} else {
 					task.featureArtifacts[a] = feature.Name()
 				}
@@ -1175,7 +1176,7 @@ func (task *TaskRun) Run() (err *executionErrors) {
 		}
 		defer func(taskFeatureOrigin TaskFeatureOrigin) {
 			log.Printf("Stopping task feature %v...", taskFeatureOrigin.feature.Name())
-			err.add(taskFeatureOrigin.taskFeature.Stop())
+			taskFeatureOrigin.taskFeature.Stop(err)
 		}(taskFeatureOrigin)
 	}
 

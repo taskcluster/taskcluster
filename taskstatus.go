@@ -197,6 +197,12 @@ func (tsm *TaskStatusManager) Abort(cee *CommandExecutionError) error {
 		},
 		claimed,
 		reclaimed,
+		// Since task abortion may take a while, we should continue reclaiming
+		// until we resolve the task. If we didn't do this, but immediately
+		// stopped reclaiming as soon as we had a task abortion, if the task
+		// abortion took too long to complete, the claim might expire before
+		// the task finally gets resolved after the task abortion completes.
+		aborted,
 	)
 }
 

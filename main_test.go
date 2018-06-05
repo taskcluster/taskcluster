@@ -178,7 +178,7 @@ func TestLogFormat(t *testing.T) {
 }
 
 func TestExecutionErrorsText(t *testing.T) {
-	errors := executionErrors{
+	errors := ExecutionErrors{
 		&CommandExecutionError{
 			Cause:      fmt.Errorf("Oh dear oh dear"),
 			Reason:     malformedPayload,

@@ -65,7 +65,7 @@ func runGarbageCollection(r Resources) error {
 		}
 	}
 	if currentFreeSpace < requiredFreeSpace {
-		return fmt.Errorf("Not able to free up enough disk space - require %v bytes, but only have %v bytes - and nothing left to delete.", requiredFreeSpace, currentFreeSpace)
+		return fmt.Errorf("Not able to free up enough disk space - require %v bytes, but only have %v bytes - and nothing left to delete", requiredFreeSpace, currentFreeSpace)
 	}
 	return nil
 }

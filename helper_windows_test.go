@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -59,9 +60,10 @@ func goEnv() []string {
 }
 
 func logOncePerSecond(count uint, file string) []string {
-	return []string{
-		"ping 127.0.0.1 -n " + strconv.Itoa(int(count)) + " > " + file,
-	}
+	return goRunFileOutput(file, "spawn-orphan-process.go", strconv.Itoa(int(count)))
+	// return []string{
+	// 	"ping 127.0.0.1 -n " + strconv.Itoa(int(count)) + " > " + file,
+	// }
 }
 
 func sleep(seconds uint) []string {
@@ -71,17 +73,33 @@ func sleep(seconds uint) []string {
 }
 
 func goRun(goFile string, args ...string) []string {
-	copy := copyArtifact(goFile)
+	return goRunFileOutput("", goFile, args...)
+}
+
+func goRunFileOutput(output, goFile string, args ...string) []string {
+	prepare := []string{}
+	for _, envVar := range []string{
+		"PATH", "GOPATH", "GOROOT",
+	} {
+		if val, exists := os.LookupEnv(envVar); exists {
+			prepare = append(prepare, "set "+envVar+"="+val)
+		}
+	}
+	prepare = append(prepare, copyTestdataFile(goFile)...)
 	command := []string{`"` + goFile + `"`}
 	commandWithArgs := append(command, args...)
-	return append(copy, `go run `+strings.Join(commandWithArgs, ` `))
+	run := `go run ` + strings.Join(commandWithArgs, ` `)
+	if output != "" {
+		run += " > " + output
+	}
+	return append(prepare, run)
 }
 
-func copyArtifact(path string) []string {
-	return copyArtifactTo(path, path)
+func copyTestdataFile(path string) []string {
+	return copyTestdataFileTo(path, path)
 }
 
-func copyArtifactTo(src, dest string) []string {
+func copyTestdataFileTo(src, dest string) []string {
 	destFile := strings.Replace(dest, "/", "\\", -1)
 	sourceFile := filepath.Join(testdataDir, strings.Replace(src, "/", "\\", -1))
 	return []string{

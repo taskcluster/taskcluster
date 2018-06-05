@@ -25,7 +25,7 @@ import (
 
 var (
 	// for overriding/complementing system mime type mappings
-	customMimeMappings map[string]string = map[string]string{
+	customMimeMappings = map[string]string{
 
 		// keys *must* be lower-case
 
@@ -75,8 +75,8 @@ func (base *BaseArtifact) Base() *BaseArtifact {
 	return base
 }
 
-func (artifact *RedirectArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
-	task.Infof("Uploading redirect artifact %v to URL %v with mime type %q and expiry %v", artifact.Name, artifact.URL, artifact.ContentType, artifact.Expires)
+func (redirectArtifact *RedirectArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
+	task.Infof("Uploading redirect artifact %v to URL %v with mime type %q and expiry %v", redirectArtifact.Name, redirectArtifact.URL, redirectArtifact.ContentType, redirectArtifact.Expires)
 	// nothing to do
 	return nil
 }
@@ -94,8 +94,8 @@ func (redirectArtifact *RedirectArtifact) ResponseObject() interface{} {
 	return new(tcqueue.RedirectArtifactResponse)
 }
 
-func (artifact *ErrorArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
-	task.Errorf("Uploading error artifact %v from file %v with message %q, reason %q and expiry %v", artifact.Name, artifact.Path, artifact.Message, artifact.Reason, artifact.Expires)
+func (errArtifact *ErrorArtifact) ProcessResponse(response interface{}, task *TaskRun) error {
+	task.Errorf("Uploading error artifact %v from file %v with message %q, reason %q and expiry %v", errArtifact.Name, errArtifact.Path, errArtifact.Message, errArtifact.Reason, errArtifact.Expires)
 	// TODO: process error response
 	return nil
 }
@@ -120,8 +120,8 @@ func (errArtifact *ErrorArtifact) String() string {
 // createTempFileForPUTBody gzip-compresses the file at path rawContentFile and writes
 // it to a temporary file. The file path of the generated temporary file is returned.
 // It is the responsibility of the caller to delete the temporary file.
-func (artifact *S3Artifact) CreateTempFileForPUTBody() string {
-	rawContentFile := filepath.Join(taskContext.TaskDir, artifact.Path)
+func (s3Artifact *S3Artifact) CreateTempFileForPUTBody() string {
+	rawContentFile := filepath.Join(taskContext.TaskDir, s3Artifact.Path)
 	baseName := filepath.Base(rawContentFile)
 	tmpFile, err := ioutil.TempFile("", baseName)
 	if err != nil {
@@ -129,7 +129,7 @@ func (artifact *S3Artifact) CreateTempFileForPUTBody() string {
 	}
 	defer tmpFile.Close()
 	var target io.Writer = tmpFile
-	if artifact.ContentEncoding == "gzip" {
+	if s3Artifact.ContentEncoding == "gzip" {
 		gzipLogWriter := gzip.NewWriter(tmpFile)
 		defer gzipLogWriter.Close()
 		gzipLogWriter.Name = baseName
@@ -144,14 +144,14 @@ func (artifact *S3Artifact) CreateTempFileForPUTBody() string {
 	return tmpFile.Name()
 }
 
-func (artifact *S3Artifact) ChooseContentEncoding() {
+func (s3Artifact *S3Artifact) ChooseContentEncoding() {
 	// respect value, if already set
-	if artifact.ContentEncoding != "" {
+	if s3Artifact.ContentEncoding != "" {
 		return
 	}
 	// based on https://github.com/evansd/whitenoise/blob/03f6ea846394e01cbfe0c730141b81eb8dd6e88a/whitenoise/compress.py#L21-L29
 	// with .7z added (useful for NSS)
-	SKIP_COMPRESS_EXTENSIONS := map[string]bool{
+	SkipCompressionExtensions := map[string]bool{
 		// Images
 		".jpg":  true,
 		".jpeg": true,
@@ -174,19 +174,19 @@ func (artifact *S3Artifact) ChooseContentEncoding() {
 		".woff":  true,
 		".woff2": true,
 	}
-	if SKIP_COMPRESS_EXTENSIONS[filepath.Ext(artifact.Path)] {
+	if SkipCompressionExtensions[filepath.Ext(s3Artifact.Path)] {
 		return
 	}
 
-	artifact.ContentEncoding = "gzip"
+	s3Artifact.ContentEncoding = "gzip"
 }
 
-func (artifact *S3Artifact) ProcessResponse(resp interface{}, task *TaskRun) (err error) {
+func (s3Artifact *S3Artifact) ProcessResponse(resp interface{}, task *TaskRun) (err error) {
 	response := resp.(*tcqueue.S3ArtifactResponse)
 
-	artifact.ChooseContentEncoding()
-	task.Infof("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", artifact.Name, artifact.Path, artifact.ContentEncoding, artifact.ContentType, artifact.Expires)
-	transferContentFile := artifact.CreateTempFileForPUTBody()
+	s3Artifact.ChooseContentEncoding()
+	task.Infof("Uploading artifact %v from file %v with content encoding %q, mime type %q and expiry %v", s3Artifact.Name, s3Artifact.Path, s3Artifact.ContentEncoding, s3Artifact.ContentType, s3Artifact.Expires)
+	transferContentFile := s3Artifact.CreateTempFileForPUTBody()
 	defer os.Remove(transferContentFile)
 
 	// perform http PUT to upload to S3...
@@ -210,9 +210,9 @@ func (artifact *S3Artifact) ProcessResponse(resp interface{}, task *TaskRun) (er
 		if permError != nil {
 			return
 		}
-		httpRequest.Header.Set("Content-Type", artifact.ContentType)
+		httpRequest.Header.Set("Content-Type", s3Artifact.ContentType)
 		httpRequest.ContentLength = transferContentLength
-		if enc := artifact.ContentEncoding; enc != "" {
+		if enc := s3Artifact.ContentEncoding; enc != "" {
 			httpRequest.Header.Set("Content-Encoding", enc)
 		}
 		requestHeaders, dumpError := httputil.DumpRequestOut(httpRequest, false)
@@ -443,29 +443,28 @@ func (task *TaskRun) uploadArtifact(artifact TaskArtifact) *CommandExecutionErro
 			case httpbackoff.BadHttpResponseCode:
 				if rootCause.HttpResponseCode/100 == 5 {
 					return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", rootCause.HttpResponseCode, artifact, string(payload)))
-				} else {
-					// was artifact already uploaded ( => malformed payload)?
-					if rootCause.HttpResponseCode == 409 {
-						fullError := fmt.Errorf(
-							"There was a conflict uploading artifact %v - this suggests artifact %v was already uploaded to this task with different content earlier on in this task.\n"+
-								"Check the artifacts section of the task payload at https://queue.taskcluster.net/v1/task/%v\n"+
-								"%v",
-							artifact.Base().Name,
-							artifact.Base().Name,
-							task.TaskID,
-							rootCause,
-						)
-						return MalformedPayloadError(fullError)
-					}
-					// was task cancelled or deadline exceeded?
-					task.StatusManager.UpdateStatus()
-					status := task.StatusManager.LastKnownStatus()
-					if status == deadlineExceeded || status == cancelled {
-						return nil
-					}
-					// assume a problem with the request == worker bug
-					panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", rootCause.HttpResponseCode, artifact, string(payload)))
 				}
+				// was artifact already uploaded ( => malformed payload)?
+				if rootCause.HttpResponseCode == 409 {
+					fullError := fmt.Errorf(
+						"There was a conflict uploading artifact %v - this suggests artifact %v was already uploaded to this task with different content earlier on in this task.\n"+
+							"Check the artifacts section of the task payload at https://queue.taskcluster.net/v1/task/%v\n"+
+							"%v",
+						artifact.Base().Name,
+						artifact.Base().Name,
+						task.TaskID,
+						rootCause,
+					)
+					return MalformedPayloadError(fullError)
+				}
+				// was task cancelled or deadline exceeded?
+				task.StatusManager.UpdateStatus()
+				status := task.StatusManager.LastKnownStatus()
+				if status == deadlineExceeded || status == cancelled {
+					return nil
+				}
+				// assume a problem with the request == worker bug
+				panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v", rootCause.HttpResponseCode, artifact, string(payload)))
 			case *url.Error:
 				switch subCause := rootCause.Err.(type) {
 				case *net.OpError:
