@@ -7,6 +7,7 @@ import (
 	"net/http/httputil"
 	"runtime"
 	"testing"
+	"time"
 )
 
 func TestLiveLog(t *testing.T) {
@@ -43,7 +44,10 @@ func TestLiveLog(t *testing.T) {
 	// writes data to it, which probably should be fixed in the livelog
 	// codebase. Ideally it would serve both ports on initialisation, not
 	// requiring data to be PUT first.
-	waitForPortToBeActive(ll.GETPort)
+	err = waitForPortToBeActive(ll.GETPort, time.Minute*1)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
 	resp, err := http.Get(ll.GetURL)
 	if err != nil {
 		t.Fatalf("Could not GET livelog from URL %s:\n%s", ll.GetURL, err)
