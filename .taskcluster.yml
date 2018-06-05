@@ -36,7 +36,7 @@ tasks:
         - |
           git clone {{event.head.repo.url}} repo
           cd repo
-          git checkout -b "${TASK_ID}" '{{event.head.sha}}'
+          git checkout -b "X${TASK_ID}" '{{event.head.sha}}'
           export DOCS_PROJECT=generic-worker DOCS_TIER=workers DOCS_FOLDER=docs DOCS_README=README.md
           upload-project-docs
     metadata:
@@ -79,11 +79,11 @@ tasks:
         - 'cd "%GOPATH%\src\github.com\taskcluster"'
         - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
         - 'cd generic-worker'
-        - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.ref }}:refs/heads/%TASK_ID%"'
-        - 'git checkout -f "%TASK_ID%"'
+        - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.ref }}:refs/heads/X%TASK_ID%"'
+        - 'git checkout -f "X%TASK_ID%"'
         - 'git reset --hard "{{ event.head.sha }}"'
         - 'git clean -fdx'
-        - 'git checkout -B tmp -t "%TASK_ID%"'
+        - 'git checkout -B tmp -t "X%TASK_ID%"'
         - go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
         - cd gw-codegen
         - go get -v -u
@@ -161,11 +161,11 @@ tasks:
         - 'cd "%GOPATH%\src\github.com\taskcluster"'
         - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
         - 'cd generic-worker'
-        - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.ref }}:refs/heads/%TASK_ID%"'
-        - 'git checkout -f "%TASK_ID%"'
+        - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.ref }}:refs/heads/X%TASK_ID%"'
+        - 'git checkout -f "X%TASK_ID%"'
         - 'git reset --hard "{{ event.head.sha }}"'
         - 'git clean -fdx'
-        - 'git checkout -B tmp -t "%TASK_ID%"'
+        - 'git checkout -B tmp -t "X%TASK_ID%"'
         - go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
         - cd gw-codegen
         - go get -v -u
@@ -233,11 +233,11 @@ tasks:
         - 'cd "%GOPATH%\src\github.com\taskcluster"'
         - 'if not exist generic-worker git clone {{ event.head.repo.url }} generic-worker'
         - 'cd generic-worker'
-        - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.ref }}:refs/heads/%TASK_ID%"'
-        - 'git checkout -f "%TASK_ID%"'
+        - 'git fetch "{{ event.head.repo.url }}" "+{{ event.head.ref }}:refs/heads/X%TASK_ID%"'
+        - 'git checkout -f "X%TASK_ID%"'
         - 'git reset --hard "{{ event.head.sha }}"'
         - 'git clean -fdx'
-        - 'git checkout -B tmp -t "%TASK_ID%"'
+        - 'git checkout -B tmp -t "X%TASK_ID%"'
         - go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
         - cd gw-codegen
         - go get -v -u
@@ -320,11 +320,11 @@ tasks:
             cd "${GOPATH}/src/github.com/taskcluster"
             if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
             cd 'generic-worker'
-            git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/${TASK_ID}"
-            git checkout -f "${TASK_ID}"
+            git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
+            git checkout -f "X${TASK_ID}"
             git reset --hard '{{ event.head.sha }}'
             git clean -fdx
-            git checkout -B tmp -t "${TASK_ID}"
+            git checkout -B tmp -t "X${TASK_ID}"
             go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
             cd gw-codegen
             go get -v -u
@@ -393,11 +393,11 @@ tasks:
   #           cd "${GOPATH}/src/github.com/taskcluster"
   #           if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
   #           cd 'generic-worker'
-  #           git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/${TASK_ID}"
-  #           git checkout -f "${TASK_ID}"
+  #           git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
+  #           git checkout -f "X${TASK_ID}"
   #           git reset --hard '{{ event.head.sha }}'
   #           git clean -fdx
-  #           git checkout -B tmp -t "${TASK_ID}"
+  #           git checkout -B tmp -t "X${TASK_ID}"
   #           go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
   #           cd gw-codegen
   #           go get -v -u
@@ -460,11 +460,11 @@ tasks:
           cd "${GOPATH}/src/github.com/taskcluster"
           if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
           cd 'generic-worker'
-          git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/${TASK_ID}"
-          git checkout -f "${TASK_ID}"
+          git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
+          git checkout -f "X${TASK_ID}"
           git reset --hard '{{ event.head.sha }}'
           git clean -fdx
-          git checkout -B tmp -t "${TASK_ID}"
+          git checkout -B tmp -t "X${TASK_ID}"
           go get -v -u github.com/taskcluster/livelog github.com/taskcluster/taskcluster-proxy github.com/gordonklaus/ineffassign
           cd gw-codegen
           go get -v -u
