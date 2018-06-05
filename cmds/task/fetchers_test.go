@@ -133,22 +133,36 @@ func TestLogCommand(t *testing.T) {
 
 	buf, cmd := setUpCommand()
 
-	args := []string{"TtAsnXdCS1-tAQxvMO4rHQ"}
+	args := []string{"YwxadSlPQm-d9jV8V0F9Ig"}
 	runLog(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
 	// This is the output of a static log
-	s := "[taskcluster 2017-03-03 21:18:34.946Z] Task ID: TtAsnXdCS1-tAQxvMO4rHQ\n" +
-		"[taskcluster 2017-03-03 21:18:34.946Z] Worker ID: i-035dd1bd8da876f13\n" +
-		"[taskcluster 2017-03-03 21:18:34.946Z] Worker Group: us-west-1b\n" +
-		"[taskcluster 2017-03-03 21:18:34.946Z] Worker Node Type: m3.large\n" +
-		"[taskcluster 2017-03-03 21:18:34.946Z] Worker Type: tutorial\n" +
-		"[taskcluster 2017-03-03 21:18:34.946Z] Public IP: 54.153.13.193\n" +
-		"\n" +
-		"[taskcluster 2017-03-03 21:18:48.518Z] === Task Starting ===\n" +
-		"hello World\n" +
-		"[taskcluster 2017-03-03 21:18:48.945Z] === Task Finished ===\n" +
-		"[taskcluster 2017-03-03 21:18:48.946Z] Successful task run with exit code: 0 completed in 14.001 seconds\n"
+	s := `[taskcluster 2018-06-05 17:24:56.191Z] Task ID: YwxadSlPQm-d9jV8V0F9Ig
+[taskcluster 2018-06-05 17:24:56.191Z] Worker ID: i-06fcf8c1cc7acdd70
+[taskcluster 2018-06-05 17:24:56.191Z] Worker Group: us-west-2
+[taskcluster 2018-06-05 17:24:56.191Z] Worker Node Type: m3.large
+[taskcluster 2018-06-05 17:24:56.191Z] Worker Type: tutorial
+[taskcluster 2018-06-05 17:24:56.191Z] Public IP: 18.236.208.30
 
+5037c5cd623d - Started downloading
+5037c5cd623d - Downloaded in 0.015 seconds
+0d8710fc57fd - Started downloading
+83b53423b49f - Started downloading
+83b53423b49f - Downloaded in 0.001 seconds
+0d8710fc57fd - Downloaded in 0.661 seconds
+e9e8bd3b94ab - Started downloading
+7db00e6b6e5e - Started downloading
+7db00e6b6e5e - Downloaded in 0.044 seconds
+e9e8bd3b94ab - Downloaded in 0.343 seconds
+a3ed95caeb02 - Started downloading
+a3ed95caeb02 - Downloaded in 0.001 seconds
+Digest: sha256:403105e61e2d540187da20d837b6a6e92efc3eb4337da9c04c191fb5e28c44dc
+Status: Downloaded newer image for ubuntu:13.10
+[taskcluster 2018-06-05 17:25:06.493Z] === Task Starting ===
+hello World
+[taskcluster 2018-06-05 17:25:07.016Z] === Task Finished ===
+[taskcluster 2018-06-05 17:25:07.016Z] Successful task run with exit code: 0 completed in 10.827 seconds
+`
 	assert.Equal(s, buf.String(), "Log's are not equal.")
 }
 
