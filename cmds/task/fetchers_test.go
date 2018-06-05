@@ -133,11 +133,11 @@ func TestLogCommand(t *testing.T) {
 
 	buf, cmd := setUpCommand()
 
-	args := []string{"TtAsnXdCS1-tAQxvMO4rHQ"}
+	args := []string{"YwxadSlPQm-d9jV8V0F9Ig"}
 	runLog(&tcclient.Credentials{}, args, cmd.OutOrStdout(), cmd.Flags())
 
 	// This is the output of a static log
-	s := "[taskcluster 2017-03-03 21:18:34.946Z] Task ID: TtAsnXdCS1-tAQxvMO4rHQ\n" +
+	s := "[taskcluster 2017-03-03 21:18:34.946Z] Task ID: YwxadSlPQm-d9jV8V0F9Ig\n" +
 		"[taskcluster 2017-03-03 21:18:34.946Z] Worker ID: i-035dd1bd8da876f13\n" +
 		"[taskcluster 2017-03-03 21:18:34.946Z] Worker Group: us-west-1b\n" +
 		"[taskcluster 2017-03-03 21:18:34.946Z] Worker Node Type: m3.large\n" +
