@@ -24,7 +24,7 @@ func TestCodeGeneration(t *testing.T) {
 	defer codegenServer.Close()
 
 	// query server, generate code
-	source, err := GenerateServices(codegenServer.URL + "/manifest.json", "servicesTest", "schemasTest")
+	source, err := GenerateServices(codegenServer.URL+"/manifest.json", "servicesTest", "schemasTest")
 	assert.NoError(err, fmt.Sprintf("failed generating services: %s", err))
 
 	// check that the returned byte thing is correct
