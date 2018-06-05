@@ -126,7 +126,7 @@ func NewPingURLs() (pingURLs PingURLs, err error) {
 	if err != nil {
 		return
 	}
-	if cachedURLs.Expired(time.Hour * 24) {
+	if cachedURLs.Expired(time.Hour * 24 * 365) {
 		return RefreshCache(manifestURL, cache, pingURLsCachePath)
 	}
 	pingURLs = cachedURLs.PingURLs
