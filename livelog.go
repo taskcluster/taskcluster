@@ -87,9 +87,9 @@ func (l *LiveLogTask) Start() *CommandExecutionError {
 }
 
 func (l *LiveLogTask) updateTaskLogWriter(liveLogWriter io.Writer) *CommandExecutionError {
-	// store current writer so it can be reinstated later when stopping livelog
 	l.task.logMux.Lock()
 	defer l.task.logMux.Unlock()
+	// store current writer so it can be reinstated later when stopping livelog
 	l.backingLogFile = l.task.logWriter.(*os.File)
 	// write logs written so far to livelog
 	// first rewind to beginning of backing log...
