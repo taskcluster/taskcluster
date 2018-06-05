@@ -63,7 +63,7 @@ func runRetrigger(credentials *tcclient.Credentials, args []string, out io.Write
 
 	exactRetrigger, _ := flagSet.GetBool("exact")
 
-	newTaskID := slugid.V4()
+	newTaskID := slugid.Nice()
 	now := time.Now().UTC()
 
 	origCreated, err := time.Parse(time.RFC3339, t.Created.String())
@@ -85,10 +85,10 @@ func runRetrigger(credentials *tcclient.Credentials, args []string, out io.Write
 	// TaskDefinitionResponse: https://github.com/taskcluster/taskcluster-client-go/blob/88cfe471bfe2eb8fc9bc22d9cde6a65e74a9f3e5/tcqueue/types.go#L1554-L1716
 
 	newDependencies := []string{}
-	newRoutes       := []string{}
+	newRoutes := []string{}
 	if exactRetrigger {
 		newDependencies = t.Dependencies
-		newRoutes       = t.Routes
+		newRoutes = t.Routes
 	}
 
 	newT := &queue.TaskDefinitionRequest{
