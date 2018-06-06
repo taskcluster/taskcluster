@@ -64,7 +64,7 @@ $client.DownloadFile("http://download.microsoft.com/download/A/8/0/A80747C3-41BD
 Start-Process "C:\vcredist_x64-vs2010.exe" -ArgumentList "/install /passive /norestart /log C:\vcredist_x64-vs2010-install.log" -Wait -PassThru
 
 # download mozilla-build installer
-$client.DownloadFile("https://ftp.mozilla.org/pub/mozilla.org/mozilla/libraries/win32/MozillaBuildSetup-Latest.exe", "C:\MozillaBuildSetup.exe")
+$client.DownloadFile("https://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-3.1.1.exe", "C:\MozillaBuildSetup.exe")
 
 # run mozilla-build installer in silent (/S) mode
 Start-Process "C:\MozillaBuildSetup.exe" -ArgumentList "/S" -Wait -NoNewWindow -PassThru -RedirectStandardOutput "C:\MozillaBuild_install.log" -RedirectStandardError "C:\MozillaBuild_install.err"
