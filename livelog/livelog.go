@@ -74,6 +74,7 @@ func New(liveLogExecutable, sslCert, sslKey string, putPort, getPort uint16) (*L
 		e error
 	}
 	putResult := make(chan CommandResult)
+	defer close(putResult)
 	go func() {
 		var b bytes.Buffer
 		l.command.Stdout = &b
@@ -96,6 +97,7 @@ func New(liveLogExecutable, sslCert, sslKey string, putPort, getPort uint16) (*L
 	}()
 
 	inputStreamConnectionResult := make(chan error)
+	defer close(inputStreamConnectionResult)
 	go func() {
 		err := l.connectInputStream()
 		inputStreamConnectionResult <- err
