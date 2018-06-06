@@ -2138,9 +2138,9 @@ pseudomap@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/pseudomap/-/pseudomap-1.0.2.tgz#f052a28da70e618917ef0a8ac34c1ae5a68286b3"
 
-pulse-publisher@^10.0.0:
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/pulse-publisher/-/pulse-publisher-10.0.0.tgz#4a94fb5245961dbb419ea93ab89682fe65284c8a"
+pulse-publisher@^10.0.1:
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/pulse-publisher/-/pulse-publisher-10.0.1.tgz#db150103f87a0b508374fa0949191a6fead56db0"
   dependencies:
     ajv "^5.3.0"
     amqplib "^0.5.1"
