@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 	"time"
-
+	
 	"github.com/spf13/pflag"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -13,34 +13,66 @@ import (
 )
 
 // runCancel cancels the runs of a given task.
-func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
+func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, flagSet *pflag.FlagSet) error {
+	nooprunCancel, _ := flagSet.GetBool("noop")
+
 	q := makeQueue(credentials)
 	taskID := args[0]
 
+
+	if nooprunCancel {
+		c, _ := q.Status(taskID)
+		run := c.Status.Runs[len(c.Status.Runs)-1]
+		fmt.Println("Cancels", taskID ,"(state:",run.State,")")
+		runName(credentials , args , out , flagSet)
+		return nil
+	}
+
 	c, err := q.CancelTask(taskID)
+	run := c.Status.Runs[len(c.Status.Runs)-1]
+		
+
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return fmt.Errorf("could not cancel the task %s: %v", taskID, err)
 	}
 
-	run := c.Status.Runs[len(c.Status.Runs)-1]
+
+
 	fmt.Fprintln(out, getRunStatusString(run.State, run.ReasonResolved))
 	return nil
 }
 
+
 // runRerun re-runs a given task.
-func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
+func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, flagSet *pflag.FlagSet) error {
+	noopRerun, _ := flagSet.GetBool("noop")
+
 	q := makeQueue(credentials)
 	taskID := args[0]
 
-	c, err := q.RerunTask(taskID)
-	if err != nil {
-		return fmt.Errorf("could not rerun the task %s: %v", taskID, err)
+	if noopRerun {
+		c, _ := q.Status(taskID)
+		run := c.Status.Runs[len(c.Status.Runs)-1]
+		fmt.Println("Rerunns", taskID ,"(state:",run.State,")") 
+		runName(credentials , args , out , flagSet)
+		return nil
 	}
 
+	c, err := q.RerunTask(taskID)
+
 	run := c.Status.Runs[len(c.Status.Runs)-1]
+	
+
+	if err != nil {
+		return fmt.Errorf("could not rerun the task %s: %v", taskID, err)
+
+	}
+
+	
 	fmt.Fprintln(out, getRunStatusString(run.State, run.ReasonResolved))
 	return nil
+
 }
 
 // runRetrigger re-triggers a given task.
@@ -63,7 +95,7 @@ func runRetrigger(credentials *tcclient.Credentials, args []string, out io.Write
 
 	exactRetrigger, _ := flagSet.GetBool("exact")
 
-	newTaskID := slugid.Nice()
+	newTaskID := slugid.V4()
 	now := time.Now().UTC()
 
 	origCreated, err := time.Parse(time.RFC3339, t.Created.String())
@@ -85,10 +117,10 @@ func runRetrigger(credentials *tcclient.Credentials, args []string, out io.Write
 	// TaskDefinitionResponse: https://github.com/taskcluster/taskcluster-client-go/blob/88cfe471bfe2eb8fc9bc22d9cde6a65e74a9f3e5/tcqueue/types.go#L1554-L1716
 
 	newDependencies := []string{}
-	newRoutes := []string{}
+	newRoutes       := []string{}
 	if exactRetrigger {
 		newDependencies = t.Dependencies
-		newRoutes = t.Routes
+		newRoutes       = t.Routes
 	}
 
 	newT := &queue.TaskDefinitionRequest{
@@ -122,7 +154,9 @@ func runRetrigger(credentials *tcclient.Credentials, args []string, out io.Write
 }
 
 // runComplete completes a given task.
-func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
+func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer, flagSet *pflag.FlagSet) error {
+	nooprunComplete, _ := flagSet.GetBool("noop")
+
 	q := makeQueue(credentials)
 	taskID := args[0]
 
@@ -147,6 +181,14 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 	r, err := wq.ReportCompleted(taskID, fmt.Sprint(c.RunID))
 	if err != nil {
 		return fmt.Errorf("could not complete the task %s: %v", taskID, err)
+	}
+
+	if nooprunComplete {
+		c, _ := q.Status(taskID)
+		run := c.Status.Runs[len(c.Status.Runs)-1]
+		fmt.Println("Completes", taskID ,"(state:",run.State,")")
+		runName(credentials , args , out , flagSet)
+		return nil
 	}
 
 	fmt.Fprintln(out, getRunStatusString(r.Status.Runs[c.RunID].State, r.Status.Runs[c.RunID].ReasonResolved))

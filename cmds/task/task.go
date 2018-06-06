@@ -28,6 +28,23 @@ var (
 		Short: "Re-trigger a task (new taskId, updated timestamps).",
 		RunE:  executeHelperE(runRetrigger),
 	}
+	rerunCmd = &cobra.Command{
+		Use:   "rerun <taskId>",
+		Short: "Rerun a task.",
+		RunE:  executeHelperE(runRerun),
+	}
+
+	runcancelCmd = &cobra.Command{
+		Use:   "cancel <taskId>",
+		Short: "Cancel a task.",
+		RunE:  executeHelperE(runCancel),
+	}
+
+	runcompleteCmd = &cobra.Command{
+		Use:   "complete <taskId>",
+		Short: "Completes a task.",
+		RunE:  executeHelperE(runComplete),
+	}
 )
 
 func init() {
@@ -37,6 +54,12 @@ func init() {
 	artifactsCmd.Flags().IntP("run", "r", -1, "Specifies which run to consider.")
 
 	retriggerCmd.Flags().BoolP("exact", "e", false, "Retrigger in exact mode. WARNING: THIS MAY HAVE SIDE EFFECTS. USE AFTER YOU READ THE SOURCE CODE.")
+
+	rerunCmd.Flags().BoolP("noop","e", false, "Specifies the operation to perform and adjust some operations to print extra information.")
+
+	runcancelCmd.Flags().BoolP("noop","e", false, "Specifies the operation to perform and adjust some operations to print extra information.")
+	
+	runcompleteCmd.Flags().BoolP("noop","e", false, "Specifies the operation to perform and adjust some operations to print extra information.")
 
 	// Commands that fetch information
 	Command.AddCommand(
@@ -72,26 +95,15 @@ func init() {
 
 	// Commands that take actions
 	Command.AddCommand(
+		
 		// cancel
-		&cobra.Command{
-			Use:   "cancel <taskId>",
-			Short: "Cancel a task.",
-			RunE:  executeHelperE(runCancel),
-		},
-		// cancel
-		&cobra.Command{
-			Use:   "rerun <taskId>",
-			Short: "Rerun a task.",
-			RunE:  executeHelperE(runRerun),
-		},
+		runcancelCmd,
 		// retrigger
 		retriggerCmd,
+		// rerun
+		rerunCmd,
 		// cancel
-		&cobra.Command{
-			Use:   "complete <taskId>",
-			Short: "Complete the execution of a task.",
-			RunE:  executeHelperE(runComplete),
-		},
+		runcompleteCmd,
 	)
 
 	// Add the task subtree to the root.

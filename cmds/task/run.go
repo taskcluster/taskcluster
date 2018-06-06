@@ -84,7 +84,7 @@ func runRunTask(cmd *cobra.Command, args []string) error {
 	}
 
 	// Generate a new taskID
-	taskID := slugid.Nice()
+	taskID := slugid.V4()
 	runPayload.TaskGroupID = taskID
 
 	// Build the environment variables.
