@@ -91,8 +91,6 @@ exports.withServer = (mock, skipping) => {
     // rootUrl.
     const rootUrl = 'http://localhost:60415';
     exports.load.cfg('taskcluster.rootUrl', rootUrl);
-    exports.load.cfg('taskcluster.clientId', null);
-    exports.load.cfg('taskcluster.accessToken', null);
     fakeauth.start(testClients, {rootUrl});
 
     exports.client = async clientId => {
