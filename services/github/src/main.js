@@ -151,7 +151,7 @@ const load = loader({
   },
 
   server: {
-    requires: ['cfg', 'api'],
+    requires: ['cfg', 'api', 'docs'],
     setup: ({cfg, api, docs}) => App({
       port: cfg.server.port,
       env: cfg.server.env,
