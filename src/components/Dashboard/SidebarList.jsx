@@ -7,6 +7,7 @@ import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
 import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 import GroupIcon from 'mdi-react/GroupIcon';
 import AccountMultipleIcon from 'mdi-react/AccountMultipleIcon';
+import AmazonIcon from 'mdi-react/AmazonIcon';
 import HelpCircleOutlineIcon from 'mdi-react/HelpCircleOutlineIcon';
 import MixcloudIcon from 'mdi-react/MixcloudIcon';
 import BackupRestoreIcon from 'mdi-react/BackupRestoreIcon';
@@ -55,6 +56,10 @@ export default class SidebarList extends Component {
             Scope Grants
           </SidebarListItem>
         </SidebarListGroup>
+
+        <SidebarListItem to="/aws-provisioner" icon={<AmazonIcon />}>
+          AWS Provisioner
+        </SidebarListItem>
 
         <SidebarListItem to="/provisioners" icon={<MixcloudIcon />}>
           Provisioners

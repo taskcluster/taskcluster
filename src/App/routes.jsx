@@ -57,6 +57,12 @@ export default [
     path: '/hooks',
   },
   {
+    component: loadable(() =>
+      import(/* webpackChunkName: 'AWS Provisioner' */ '../views/AwsProvisioner')
+    ),
+    path: '/aws-provisioner',
+  },
+  {
     // eslint-disable-next-line
     component: props =>
       props.user ? <Dashboard {...props} /> : <Home {...props} />,
