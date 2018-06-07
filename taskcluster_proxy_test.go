@@ -7,7 +7,7 @@ import (
 )
 
 func TestTaskclusterProxy(t *testing.T) {
-	defer setup(t, "TestTaskclusterProxy")()
+	defer setup(t)()
 	payload := GenericWorkerPayload{
 		Command: append(
 			append(

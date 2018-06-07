@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -12,23 +13,9 @@ import (
 	"github.com/taskcluster/generic-worker/gwconfig"
 )
 
-func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
-	b, err := json.Marshal(x)
-	if err != nil {
-		t.Fatalf("Could not convert %#v to json: %v", x, err)
-	}
-
-	rawMessageArray := []json.RawMessage{}
-	err = json.Unmarshal(b, &rawMessageArray)
-	if err != nil {
-		t.Fatalf("Could not convert json bytes to []json.RawMessage")
-	}
-	return rawMessageArray
-}
-
 func TestMounts(t *testing.T) {
 
-	defer setup(t, "TestMounts")()
+	defer setup(t)()
 
 	mounts := []MountEntry{
 
@@ -177,7 +164,7 @@ func TestMounts(t *testing.T) {
 }
 
 func TestMissingScopes(t *testing.T) {
-	defer setup(t, "TestMissingScopes")()
+	defer setup(t)()
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
 		&FileMount{
@@ -266,7 +253,7 @@ func TestMissingMountsDependency(t *testing.T) {
 }
 
 func TestCachesCanBeModified(t *testing.T) {
-	defer setup(t, "TestCachesCanBeModified")()
+	defer setup(t)()
 	// We're going to run three consecutive tasks here. The first will create
 	// a file called `counter` in the cache and the contents of the file will
 	// be `1`. The next task will overwrite this file with the number `2`. The
@@ -327,7 +314,7 @@ func Test32BitOverflow(t *testing.T) {
 }
 
 func TestCorruptZipDoesntCrashWorker(t *testing.T) {
-	defer setup(t, "TestCorruptZipDoesntCrashWorker")()
+	defer setup(t)()
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
 		&ReadOnlyDirectory{
@@ -437,7 +424,7 @@ type MountsLoggingTestCase struct {
 // This is an extremely strict test helper, that requires you to specify
 // extracts from every log line that the mounts feature writes to the log
 func LogTest(m *MountsLoggingTestCase) {
-	defer setup(m.Test, m.Test.Name())()
+	defer setup(m.Test)()
 
 	payload := m.Payload
 	if payload == nil {
@@ -715,6 +702,48 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 }
 
 func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
+
+	// whether permission is granted to task user depends if running task as current user...
+	granting, denying := []string{}, []string{}
+	if os.Getenv("GW_TESTS_GENERATE_USERS") != "" {
+		granting = []string{
+			`Granting task_.* full control of '.*TestWritableDirectoryCacheNoSHA256'`,
+		}
+		denying = []string{
+			`Denying task_.* access to '.*'`,
+		}
+	}
+
+	// No cache on first pass
+	pass1 := append([]string{
+		`No existing writable directory cache 'banana-cache' - creating .*`,
+		`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
+		`Creating directory .*TestWritableDirectoryCacheNoSHA256 with permissions 0700`,
+		`Extracting zip file .* to '.*TestWritableDirectoryCacheNoSHA256'`,
+	},
+		granting...,
+	)
+	pass1 = append(pass1,
+		`Successfully mounted writable directory cache '.*TestWritableDirectoryCacheNoSHA256'`,
+		`Preserving cache: Moving ".*TestWritableDirectoryCacheNoSHA256" to ".*"`,
+	)
+	pass1 = append(pass1, denying...)
+
+	// On second pass, cache already exists
+	pass2 := append([]string{
+		`Moving existing writable directory cache banana-cache from .* to .*TestWritableDirectoryCacheNoSHA256`,
+		`Creating directory .* with permissions 0700`,
+	},
+		granting...,
+	)
+	pass2 = append(pass2,
+		`Successfully mounted writable directory cache '.*TestWritableDirectoryCacheNoSHA256'`,
+		`Preserving cache: Moving ".*TestWritableDirectoryCacheNoSHA256" to ".*"`,
+	)
+	pass2 = append(pass2, denying...)
+
 	LogTest(
 		&MountsLoggingTestCase{
 			Test: t,
@@ -737,25 +766,9 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 			TaskRunReasonResolved:  "completed",
 			PerTaskRunLogExcerpts: [][]string{
 				// Required text from first task with no cached value
-				[]string{
-					`No existing writable directory cache 'banana-cache' - creating .*`,
-					`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Download .* of task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip has SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e but task payload does not declare a required value, so content authenticity cannot be verified`,
-					`Creating directory .*TestWritableDirectoryCacheNoSHA256 with permissions 0700`,
-					`Extracting zip file .* to '.*TestWritableDirectoryCacheNoSHA256'`,
-					`Granting task user full control of '.*TestWritableDirectoryCacheNoSHA256' and subdirectories`,
-					`Successfully mounted writable directory cache '.*TestWritableDirectoryCacheNoSHA256'`,
-					`Preserving cache: Moving ".*TestWritableDirectoryCacheNoSHA256" to ".*"`,
-				},
+				pass1,
 				// Required text from second task when download is already cached
-				[]string{
-					`Moving existing writable directory cache banana-cache from .* to .*TestWritableDirectoryCacheNoSHA256`,
-					`Creating directory .* with permissions 0700`,
-					`Granting task user full control of '.*TestWritableDirectoryCacheNoSHA256' and subdirectories`,
-					`Successfully mounted writable directory cache '.*TestWritableDirectoryCacheNoSHA256'`,
-					`Preserving cache: Moving ".*TestWritableDirectoryCacheNoSHA256" to ".*"`,
-				},
+				pass2,
 			},
 			Scopes: []string{"generic-worker:cache:banana-cache"},
 		},
@@ -765,6 +778,51 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 // TestCacheMoved tests that if a test mounts a cache, and then moves it to a
 // different location, that the test fails, and the worker doesn't crash.
 func TestCacheMoved(t *testing.T) {
+
+	// whether permission is granted to task user depends if running task as current user...
+	granting := []string{}
+	if os.Getenv("GW_TESTS_GENERATE_USERS") != "" {
+		granting = []string{
+			`Granting task_.* full control of '.*TestCacheMoved'`,
+		}
+	}
+
+	// No cache on first pass
+	pass1 := append([]string{
+		`No existing writable directory cache 'banana-cache' - creating .*`,
+		`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
+		`Content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
+		`Creating directory .*TestCacheMoved with permissions 0700`,
+		`Extracting zip file .* to '.*TestCacheMoved'`,
+	},
+		granting...,
+	)
+	pass1 = append(pass1,
+		`Successfully mounted writable directory cache '.*TestCacheMoved'`,
+		`Preserving cache: Moving ".*TestCacheMoved" to ".*"`,
+		`Removing cache banana-cache from cache table`,
+		`Deleting cache banana-cache file\(s\) at .*`,
+		`Could not unmount task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip due to: 'Could not persist cache "banana-cache" due to .*'`,
+	)
+
+	// On second pass, cache already exists
+	pass2 := append([]string{
+		`No existing writable directory cache 'banana-cache' - creating .*`,
+		`Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
+		`Creating directory .*TestCacheMoved with permissions 0700`,
+		`Extracting zip file .* to '.*TestCacheMoved'`,
+	},
+		granting...,
+	)
+	pass2 = append(pass2,
+		`Successfully mounted writable directory cache '.*TestCacheMoved'`,
+		`Preserving cache: Moving ".*TestCacheMoved" to ".*"`,
+		`Removing cache banana-cache from cache table`,
+		`Deleting cache banana-cache file\(s\) at .*`,
+		`Could not unmount task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip due to: 'Could not persist cache "banana-cache" due to .*'`,
+	)
+
 	LogTest(
 		&MountsLoggingTestCase{
 			Test: t,
@@ -793,33 +851,9 @@ func TestCacheMoved(t *testing.T) {
 			TaskRunReasonResolved:  "failed",
 			PerTaskRunLogExcerpts: [][]string{
 				// Required text from first task with no cached value
-				[]string{
-					`No existing writable directory cache 'banana-cache' - creating .*`,
-					`Downloading task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Downloaded 4220 bytes with SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip to .*`,
-					`Content from task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip \(.*\) matches required SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
-					`Creating directory .*TestCacheMoved with permissions 0700`,
-					`Extracting zip file .* to '.*TestCacheMoved'`,
-					`Granting task user full control of '.*TestCacheMoved' and subdirectories`,
-					`Successfully mounted writable directory cache '.*TestCacheMoved'`,
-					`Preserving cache: Moving ".*TestCacheMoved" to ".*"`,
-					`Removing cache banana-cache from cache table`,
-					`Deleting cache banana-cache file\(s\) at .*`,
-					`Could not unmount task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip due to: 'Could not persist cache "banana-cache" due to .*'`,
-				},
+				pass1,
 				// Required text from second task when download is already cached
-				[]string{
-					`No existing writable directory cache 'banana-cache' - creating .*`,
-					`Found existing download for artifact:LK1Rz2UtT16d-HBSqyCtuA:public/build/unknown_issuer_app_1.zip \(.*\) with correct SHA256 625554ec8ce731e486a5fb904f3331d18cf84a944dd9e40c19550686d4e8492e`,
-					`Creating directory .*TestCacheMoved with permissions 0700`,
-					`Extracting zip file .* to '.*TestCacheMoved'`,
-					`Granting task user full control of '.*TestCacheMoved' and subdirectories`,
-					`Successfully mounted writable directory cache '.*TestCacheMoved'`,
-					`Preserving cache: Moving ".*TestCacheMoved" to ".*"`,
-					`Removing cache banana-cache from cache table`,
-					`Deleting cache banana-cache file\(s\) at .*`,
-					`Could not unmount task LK1Rz2UtT16d-HBSqyCtuA artifact public/build/unknown_issuer_app_1.zip due to: 'Could not persist cache "banana-cache" due to .*'`,
-				},
+				pass2,
 			},
 		},
 	)

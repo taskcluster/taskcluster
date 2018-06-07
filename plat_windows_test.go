@@ -10,7 +10,7 @@ func TestAppDataNotShared(t *testing.T) {
 
 	t.Skip("It isn't possible to test this without rebooting, which we can't do in the middle of a test, so disabling")
 
-	defer setup(t, "TestAppDataNotShared")()
+	defer setup(t)()
 
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Not running, since APPDATA does not change when running as current user")
@@ -60,7 +60,7 @@ func TestAppDataNotShared(t *testing.T) {
 // Test we don't get weird error:
 //  c:\mozilla-build\msys\bin\bash.exe: *** CreateFileMappingA, Win32 error 0.  Terminating.
 func TestNoCreateFileMappingError(t *testing.T) {
-	defer setup(t, "TestNoCreateFileMappingError")()
+	defer setup(t)()
 
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Not running, since we never want to call msys directly from LocalSystem account")
@@ -92,7 +92,7 @@ func TestNoCreateFileMappingError(t *testing.T) {
 }
 
 func TestChainOfTrustWithAdministratorPrivs(t *testing.T) {
-	defer setup(t, "TestChainOfTrustWithAdministratorPrivs")()
+	defer setup(t)()
 	payload := GenericWorkerPayload{
 		Command: []string{
 			`type "` + filepath.Join(cwd, config.SigningKeyLocation) + `"`,

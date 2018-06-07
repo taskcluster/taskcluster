@@ -9,7 +9,7 @@ import (
 )
 
 func TestMissingScopesOSGroups(t *testing.T) {
-	defer setup(t, "TestMissingScopesOSGroups")()
+	defer setup(t)()
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),
 		MaxRunTime: 1,
@@ -32,7 +32,7 @@ func TestMissingScopesOSGroups(t *testing.T) {
 }
 
 func TestOSGroupsRespected(t *testing.T) {
-	defer setup(t, "TestOSGroupsRespected")()
+	defer setup(t)()
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),
 		MaxRunTime: 30,

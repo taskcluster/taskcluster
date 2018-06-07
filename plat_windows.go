@@ -507,25 +507,35 @@ func (task *TaskRun) formatCommand(index int) string {
 }
 
 // see http://ss64.com/nt/icacls.html
-func makeDirReadableForTaskUser(dir string) error {
+func makeDirReadableForTaskUser(task *TaskRun, dir string) error {
 	if config.RunTasksAsCurrentUser {
 		return nil
 	}
-	return runtime.RunCommands(
+	task.Infof("[mounts] Granting %v full control of '%v'", taskContext.LogonSession.User.Name, dir)
+	err := runtime.RunCommands(
 		false,
 		[]string{"icacls", dir, "/grant:r", taskContext.LogonSession.User.Name + ":(OI)(CI)F"},
 	)
+	if err != nil {
+		return fmt.Errorf("[mounts] Not able to make directory %v writable for %v: %v", dir, taskContext.LogonSession.User.Name, err)
+	}
+	return nil
 }
 
 // see http://ss64.com/nt/icacls.html
-func makeDirUnreadable(dir string) error {
-	if taskContext.LogonSession == nil {
+func makeDirUnreadable(task *TaskRun, dir string) error {
+	if config.RunTasksAsCurrentUser {
 		return nil
 	}
-	return runtime.RunCommands(
+	task.Infof("[mounts] Denying %v access to '%v'", taskContext.LogonSession.User.Name, dir)
+	err := runtime.RunCommands(
 		false,
 		[]string{"icacls", dir, "/remove:g", taskContext.LogonSession.User.Name},
 	)
+	if err != nil {
+		return fmt.Errorf("[mounts] Not able to make directory %v unreadable for %v: %v", dir, taskContext.LogonSession.User.Name, err)
+	}
+	return nil
 }
 
 // The windows implementation of os.Rename(...) doesn't allow renaming files

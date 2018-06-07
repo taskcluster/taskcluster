@@ -7,7 +7,7 @@ import (
 )
 
 func TestRunAfterUserCreation(t *testing.T) {
-	defer setup(t, "TestRunAfterUserCreation")()
+	defer setup(t)()
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Skipping since running as current user...")
 	}

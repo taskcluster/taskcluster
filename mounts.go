@@ -417,10 +417,9 @@ func (f *FileMount) FSContent() (FSContent, error) {
 
 func (w *WritableDirectoryCache) makeCacheReadable(task *TaskRun) {
 	target := filepath.Join(taskContext.TaskDir, w.Directory)
-	task.Infof("[mounts] Granting task user full control of '%v' and subdirectories", target)
-	err := makeDirReadableForTaskUser(target)
+	err := makeDirReadableForTaskUser(task, target)
 	if err != nil {
-		panic(fmt.Errorf("[mounts] Not able to make cache %v writable to task user: %v", w.CacheName, err))
+		panic(err)
 	}
 	task.Infof("[mounts] Successfully mounted writable directory cache '%v'", target)
 }
@@ -512,7 +511,7 @@ func (w *WritableDirectoryCache) Unmount(task *TaskRun) error {
 		// with it.
 		return Failure(fmt.Errorf("Could not persist cache %q due to %v", cache.Key, err))
 	}
-	err = makeDirUnreadable(cacheDir)
+	err = makeDirUnreadable(task, cacheDir)
 	if err != nil {
 		panic(fmt.Errorf("Not able to make cache %v unreadable and unwritable to all task users when unmounting it: %v", w.CacheName, err))
 	}

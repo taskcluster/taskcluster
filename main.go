@@ -9,11 +9,9 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"net"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"reflect"
 	"runtime"
 	"runtime/debug"
 	"strconv"
@@ -70,6 +68,7 @@ const (
 	NONCURRENT_DEPLOYMENT_ID    ExitCode = 70
 	WORKER_STOPPED              ExitCode = 71
 	WORKER_SHUTDOWN             ExitCode = 72
+	INVALID_CONFIG              ExitCode = 73
 )
 
 func usage(versionName string) string {
@@ -251,9 +250,7 @@ and reports back results to the queue.
                                             option does *not* support running a command as
                                             Administrator.
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
-                                            the current OS user will be used. Useful if not an
-                                            administrator, e.g. when running tests. Should not
-                                            be used in production! [default: false]
+                                            the current OS user will be used. [default: ` + strconv.FormatBool(runtime.GOOS != "windows") + `]
           sentryProject                     The project name used in https://sentry.io for
                                             reporting worker crashes. Permission to publish
                                             crash reports is granted via the scope
@@ -326,6 +323,7 @@ and reports back results to the queue.
     71     The worker was terminated via an interrupt signal (e.g. Ctrl-C pressed).
     72     The worker is running on spot infrastructure in AWS EC2 and has been served a
            spot termination notice, and therefore has shut down.
+    73     The config provided to the worker is invalid.
 `
 }
 
@@ -437,15 +435,6 @@ func main() {
 	}
 }
 
-type MissingConfigError struct {
-	Setting string
-	File    string
-}
-
-func (err MissingConfigError) Error() string {
-	return "Config setting \"" + err.Setting + "\" must be defined in file \"" + err.File + "\"."
-}
-
 func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 	// TODO: would be better to have a json schema, and also define defaults in
 	// only one place if possible (defaults also declared in `usage`)
@@ -469,7 +458,7 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 		QueueBaseURL:                   tcqueue.DefaultBaseURL,
 		RequiredDiskSpaceMegabytes:     10240,
 		RunAfterUserCreation:           "",
-		RunTasksAsCurrentUser:          false,
+		RunTasksAsCurrentUser:          runtime.GOOS != "windows",
 		SentryProject:                  "",
 		ShutdownMachineOnIdle:          false,
 		ShutdownMachineOnInternalError: false,
@@ -487,6 +476,12 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 		updateConfigWithAmazonSettings(c)
 	}
 
+	configFileAbs, err := filepath.Abs(filename)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot determine absolute path location for generic-worker config file '%v': %v", filename, err)
+	}
+
+	log.Printf("Loading generic-worker config file '%v'...", configFileAbs)
 	configFileBytes, err := ioutil.ReadFile(filename)
 	// only overlay values if config file exists and could be read
 	if err == nil {
@@ -513,40 +508,6 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 		gwMetadata["source"] = "https://github.com/taskcluster/generic-worker/commits/" + revision
 	}
 	c.WorkerTypeMetadata["generic-worker"] = gwMetadata
-
-	// now check all required values are set
-	// TODO: could probably do this with reflection to avoid explicitly listing
-	// all members
-
-	fields := []struct {
-		value      interface{}
-		name       string
-		disallowed interface{}
-	}{
-		{value: c.AccessToken, name: "accessToken", disallowed: ""},
-		{value: c.CachesDir, name: "cachesDir", disallowed: ""},
-		{value: c.ClientID, name: "clientId", disallowed: ""},
-		{value: c.DownloadsDir, name: "downloadsDir", disallowed: ""},
-		{value: c.LiveLogExecutable, name: "livelogExecutable", disallowed: ""},
-		{value: c.LiveLogPUTPort, name: "livelogPUTPort", disallowed: 0},
-		{value: c.LiveLogGETPort, name: "livelogGETPort", disallowed: 0},
-		{value: c.LiveLogSecret, name: "livelogSecret", disallowed: ""},
-		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
-		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
-		{value: c.SigningKeyLocation, name: "signingKeyLocation", disallowed: ""},
-		{value: c.Subdomain, name: "subdomain", disallowed: ""},
-		{value: c.TasksDir, name: "tasksDir", disallowed: ""},
-		{value: c.WorkerGroup, name: "workerGroup", disallowed: ""},
-		{value: c.WorkerID, name: "workerId", disallowed: ""},
-		{value: c.WorkerType, name: "workerType", disallowed: ""},
-	}
-
-	for _, f := range fields {
-		if reflect.DeepEqual(f.value, f.disallowed) {
-			return c, MissingConfigError{Setting: f.name, File: filename}
-		}
-	}
-	// all required config set!
 	return c, nil
 }
 
@@ -597,6 +558,12 @@ func RunWorker() (exitCode ExitCode) {
 		}
 	}()
 
+	err := config.Validate()
+	if err != nil {
+		log.Printf("Invalid config: %v", err)
+		return INVALID_CONFIG
+	}
+
 	// This *DOESN'T* output secret fields, so is SAFE
 	log.Printf("Config: %v", config)
 
@@ -611,7 +578,7 @@ func RunWorker() (exitCode ExitCode) {
 			panic(err)
 		}
 	}(&tasksResolved)
-	err := taskCleanup()
+	err = taskCleanup()
 	// any errors are fatal
 	if err != nil {
 		log.Printf("OH NO!!!\n\n%#v", err)

@@ -15,7 +15,7 @@ import (
 
 // Test failure should resolve as "failed"
 func TestFailureResolvesAsFailure(t *testing.T) {
-	defer setup(t, "TestFailureResolvesAsFailure")()
+	defer setup(t)()
 	payload := GenericWorkerPayload{
 		Command:    returnExitCode(1),
 		MaxRunTime: 10,
@@ -26,7 +26,7 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 }
 
 func TestAbortAfterMaxRunTime(t *testing.T) {
-	defer setup(t, "TestAbortAfterMaxRunTime")()
+	defer setup(t)()
 
 	// include a writable directory cache where our process writes to, to make
 	// sure we are still able unmount cache when we abort process prematurely
@@ -90,7 +90,7 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 }
 
 func TestIdleWithoutCrash(t *testing.T) {
-	defer setup(t, "TestIdleWithoutCrash")()
+	defer setup(t)()
 	if config.ClientID == "" || config.AccessToken == "" {
 		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
 	}

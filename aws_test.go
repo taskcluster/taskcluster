@@ -10,7 +10,6 @@ func TestWorkerShutdown(t *testing.T) {
 		SecretFiles:     nil,
 		Terminating:     true,
 		PretendMetadata: "",
-		TestName:        "TestWorkerShutdown",
 	}
 	defer m.Setup(t)()
 	payload := GenericWorkerPayload{
@@ -27,7 +26,6 @@ func TestNoShutdown(t *testing.T) {
 		SecretFiles:     nil,
 		Terminating:     false,
 		PretendMetadata: "",
-		TestName:        "TestNoShutdown",
 	}
 	defer m.Setup(t)()
 	payload := GenericWorkerPayload{
@@ -45,7 +43,6 @@ func TestAWSWorkerTypeMetadata(t *testing.T) {
 		SecretFiles:     nil,
 		Terminating:     false,
 		PretendMetadata: expected,
-		TestName:        "TestAWSWorkerTypeMetadata",
 	}
 	defer m.Setup(t)()
 	md := config.WorkerTypeMetadata
@@ -61,10 +58,9 @@ func TestFileExtraction(t *testing.T) {
 	m := &MockAWSProvisionedEnvironment{
 		Terminating:     false,
 		PretendMetadata: "",
-		TestName:        "TestFileExtraction",
 	}
 
-	testDir := filepath.Join(testdataDir, m.TestName)
+	testDir := filepath.Join(testdataDir, t.Name())
 
 	m.SecretFiles = []map[string]string{
 

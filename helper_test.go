@@ -35,9 +35,9 @@ var (
 	testdataDir    = filepath.Join(cwd, "testdata")
 )
 
-func setupEnvironment(t *testing.T, testName string) (teardown func()) {
+func setupEnvironment(t *testing.T) (teardown func()) {
 
-	testDir := filepath.Join(testdataDir, testName)
+	testDir := filepath.Join(testdataDir, t.Name())
 
 	for _, dir := range []string{
 		filepath.Join(cwd, "downloads"),
@@ -72,7 +72,7 @@ func setupEnvironment(t *testing.T, testName string) (teardown func()) {
 
 	// useful for expiry dates of tasks
 	inAnHour = tcclient.Time(time.Now().Add(time.Hour * 1))
-	globalTestName = testName
+	globalTestName = t.Name()
 
 	testQueue = NewQueue(t)
 
@@ -91,10 +91,10 @@ func setupEnvironment(t *testing.T, testName string) (teardown func()) {
 	}
 }
 
-func setup(t *testing.T, testName string) (teardown func()) {
-	teardown = setupEnvironment(t, testName)
+func setup(t *testing.T) (teardown func()) {
+	teardown = setupEnvironment(t)
 	// configure the worker
-	testDir := filepath.Join(testdataDir, testName)
+	testDir := filepath.Join(testdataDir, t.Name())
 	config = &gwconfig.Config{
 		AccessToken:      os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 		AuthBaseURL:      tcauth.DefaultBaseURL,
@@ -413,4 +413,60 @@ func checkSHA256OfFile(t *testing.T, path string, SHA256 string) {
 	} else {
 		t.Logf("SHA256 of %v correct (%v = %v)", path, SHA256, actualSHA256)
 	}
+}
+
+func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
+	b, err := json.Marshal(x)
+	if err != nil {
+		t.Fatalf("Could not convert %#v to json: %v", x, err)
+	}
+
+	rawMessageArray := []json.RawMessage{}
+	err = json.Unmarshal(b, &rawMessageArray)
+	if err != nil {
+		t.Fatalf("Could not convert json bytes to []json.RawMessage")
+	}
+	return rawMessageArray
+}
+
+func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
+	payload = GenericWorkerPayload{
+		Command:    goRun("resolvetask.go"),
+		MaxRunTime: 60,
+		Artifacts: []Artifact{
+			{
+				Type:    "file",
+				Path:    "resolvetask.go",
+				Expires: inAnHour,
+			},
+		},
+	}
+	fullCreds := &tcclient.Credentials{
+		AccessToken: config.AccessToken,
+		ClientID:    config.ClientID,
+		Certificate: config.Certificate,
+	}
+	if fullCreds.AccessToken == "" || fullCreds.ClientID == "" || fullCreds.Certificate != "" {
+		t.Skip("Skipping TestResolveResolvedTask since I need permanent TC credentials for this test")
+	}
+	td = testTask(t)
+	tempCreds, err := fullCreds.CreateNamedTemporaryCredentials("project/taskcluster:generic-worker-tester/TestResolveResolvedTask", time.Minute, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/*")
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	payload.Env = map[string]string{
+		"TASKCLUSTER_CLIENT_ID":    tempCreds.ClientID,
+		"TASKCLUSTER_ACCESS_TOKEN": tempCreds.AccessToken,
+		"TASKCLUSTER_CERTIFICATE":  tempCreds.Certificate,
+	}
+	for _, envVar := range []string{
+		"PATH",
+		"GOPATH",
+		"GOROOT",
+	} {
+		if v, exists := os.LookupEnv(envVar); exists {
+			payload.Env[envVar] = v
+		}
+	}
+	return
 }

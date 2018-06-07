@@ -117,12 +117,14 @@ func (task *TaskRun) EnvVars() []string {
 	return taskEnvArray
 }
 
-func makeDirReadableForTaskUser(dir string) error {
-	return os.Chmod(dir, 0777)
+func makeDirReadableForTaskUser(task *TaskRun, dir string) error {
+	// No user separation yet
+	return nil
 }
 
-func makeDirUnreadable(dir string) error {
-	return os.Chmod(dir, 0700)
+func makeDirUnreadable(task *TaskRun, dir string) error {
+	// No user separation yet
+	return nil
 }
 
 func RenameCrossDevice(oldpath, newpath string) error {
