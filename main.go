@@ -18,7 +18,6 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	docopt "github.com/docopt/docopt-go"
@@ -35,7 +34,6 @@ import (
 
 var (
 	// a horrible simple hack for testing reclaims
-	reclaimOftenMux      sync.Mutex
 	reclaimEvery5Seconds = false
 	// Current working directory of process
 	cwd = CwdOrPanic()

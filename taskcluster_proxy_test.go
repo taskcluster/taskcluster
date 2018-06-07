@@ -36,13 +36,9 @@ func TestTaskclusterProxy(t *testing.T) {
 	}
 	td := testTask(t)
 	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/X.txt"}
-	reclaimOftenMux.Lock()
 	reclaimEvery5Seconds = true
-	reclaimOftenMux.Unlock()
 	taskID := submitAndAssert(t, td, payload, "completed", "completed")
-	reclaimOftenMux.Lock()
 	reclaimEvery5Seconds = false
-	reclaimOftenMux.Unlock()
 
 	expectedArtifacts := ExpectedArtifacts{
 		"public/logs/live_backing.log": {
