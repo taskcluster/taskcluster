@@ -194,6 +194,113 @@ type AwsProvisionerWorkerTypeState {
   summary: AwsProvisionerWorkerTypeSummary
 }
 
+enum AwsProvisionerErrorType {
+  INSTANCE_REQUEST
+  TERMINATION
+}
+
+interface Aws {
+  region: String
+  az: String
+  instanceType: String
+}
+
+type AwsProvisionerErrors implements Aws {
+  region: String!
+  az: String!
+  instanceType: String!
+  code: String!
+  type: AwsProvisionerErrorType!
+  workerType: String!
+  time: DateTime!
+  message: String!
+}
+
+type AwsProvisionerRunning implements Aws {
+  region: String!
+  az: String!
+  instanceType: String!
+  running: Int!
+}
+
+type AwsProvisionerTerminationHealth implements Aws {
+  region: String!
+  az: String!
+  instanceType: String!
+
+  # A count of the instances which were shutdown cleanty.
+  # For the purposes of this API, a clean shutdown is one which was initiated by us.
+  # This includes API shutdowns or workers ending themselves.
+  # It does not mean the actual workload ran successfully, rather that we chose to terminate it.
+  cleanShutdown: Int!
+
+  # The number of instances which were killed by the spot service.
+  spotKill: Int!
+
+  # The number of instances which were terminated due to a lack of capacity.
+  # More than likely, this will always be zero because the new spot service is
+  # now synchronous, so runInstances calls should fail.
+  insufficientCapacity: Int!
+
+  # The number of instances which were terminated due to a lack of capacity.
+  # More than likely, this will always be zero because the new spot service is now
+  # synchronous, so runInstances calls should fail.
+  volumeLimitExceeded: Int!
+
+  # The number of instances which were terminated due to not being able to find the AMI.
+  missingAmi: Int!
+
+  # The number of instances which failed to start, either because of an
+  # error on our side or on the EC2 side.
+  startupFailed: Int!
+
+  # The number of terminations which have a code which this code does not recognize.
+  unknownCodes: Int!
+
+  # The number of terminations which we cannot find a code.
+  # This means we cannot determine whether this should be classified as a good or bad outcome.
+  # The specific reason is that the code which polls for termination reason was not able
+  # to run before the EC2 API dropped the instance from its database.
+  noCode: Int!
+}
+
+type AwsProvisionerRequestHealth implements Aws {
+  region: String!
+  az: String!
+  instanceType: String!
+
+  # The number of instances which have been requested successfully.
+  successful: Int!
+
+  # The total number of calls which failed, inrespective of why.
+  failed: Int!
+
+  # The number of calls fail…invalid in this response.
+  configurationIssue: Int!
+
+  # Number of calls which have been throttled in this region.
+  # These are errors with the code RequestLimitExceeded.
+  throttledCalls: Int!
+
+  # Number of runInstances calls which have failed because there
+  # aren't enough hosts for the resources to be allocated.
+  insufficientCapacity: Int!
+
+  # The number of calls which failed due to a limit being exceeded.
+  # Due to the large number of error codes the EC2 API might return, this is a best effort categorization.
+  # It covers codes which are like \"%LimitExceeded\" using SQL pattern mattching,
+  # but not RequestLimitExceeded on the codes from
+  # https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html.
+  # It is not categorized by which limit was exceeded in this response.
+  limitExceeded: Int!
+}
+
+type AwsProvisionerHealth {
+  running: [AwsProvisionerRunning]!
+  terminationHealth: [AwsProvisionerTerminationHealth]!
+  requestHealth: [AwsProvisionerRequestHealth]!
+}
+
 input AwsProvisionerWorkerTypeInput {
   launchSpec: AwsProvisionerWorkerTypeLaunchSpecInput!
   description: String!
@@ -231,6 +338,13 @@ extend type Query {
   # The `summary` property contains an updated summary similar to that returned
   # from `awsProvisionerWorkerTypeSummaries`.
   awsProvisionerWorkerTypeState(workerType: String!): AwsProvisionerWorkerTypeState
+
+  # Query the most recent errors in the provisioner across all worker types.
+  awsProvisionerRecentErrors(filter: JSON): [AwsProvisionerErrors]
+
+  # Query EC2 account health metric.
+  # This returns basic stats on the health of our EC2 account.
+  awsProvisionerHealth(filter: JSON): AwsProvisionerHealth
 }
 
 extend type Mutation {

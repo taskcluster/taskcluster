@@ -2,7 +2,7 @@ import DataLoader from 'dataloader';
 import sift from 'sift';
 import ConnectionLoader from '../ConnectionLoader';
 
-export default ({ queue, awsProvisioner }) => {
+export default ({ queue, awsProvisioner, ec2Manager }) => {
   const workerType = new DataLoader(queries =>
     Promise.all(
       queries.map(({ provisionerId, workerType }) =>
@@ -49,11 +49,31 @@ export default ({ queue, awsProvisioner }) => {
       })
     )
   );
+  const awsProvisionerRecentErrors = new DataLoader(queries =>
+    Promise.all(
+      queries.map(async ({ filter }) => {
+        const recentErrors = (await ec2Manager.getRecentErrors()).errors;
+
+        return filter ? sift(filter, recentErrors) : recentErrors;
+      })
+    )
+  );
+  const awsProvisionerHealth = new DataLoader(queries =>
+    Promise.all(
+      queries.map(async ({ filter }) => {
+        const health = await ec2Manager.getHealth();
+
+        return filter ? sift(filter, health) : health;
+      })
+    )
+  );
 
   return {
     workerType,
     workerTypes,
     pendingTasks,
+    awsProvisionerRecentErrors,
+    awsProvisionerHealth,
     awsProvisionerWorkerType,
     awsProvisionerWorkerTypeState,
     awsProvisionerWorkerTypeSummaries,

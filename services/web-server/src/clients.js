@@ -1,6 +1,7 @@
 import {
   Auth,
   AwsProvisioner,
+  EC2Manager,
   Hooks,
   Index,
   PurgeCache,
@@ -16,6 +17,10 @@ export default user => {
   return {
     auth: new Auth(options),
     awsProvisioner: new AwsProvisioner(options),
+    ec2Manager: new EC2Manager({
+      ...{ baseUrl: process.env.EC2_MANAGER_BASE_URL },
+      ...options,
+    }),
     hooks: new Hooks(options),
     index: new Index(options),
     purgeCache: new PurgeCache(options),
