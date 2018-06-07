@@ -106,10 +106,10 @@ func prepareTaskUser(userName string) (reboot bool) {
 	}
 	if autoLogonUser, _ := AutoLogonCredentials(); userName == autoLogonUser {
 		// make sure user has completed logon before doing anything else
-		// timeout of 1 minute should be plenty - note, this function will
+		// timeout of 3 minutes should be plenty - note, this function will
 		// return as soon as user has logged in *and* user profile directory
 		// has been created - the timeout just sets an upper cap
-		hToken, err := win32.InteractiveUserToken(1 * time.Minute)
+		hToken, err := win32.InteractiveUserToken(3 * time.Minute)
 		if err != nil {
 			panic(err)
 		}
