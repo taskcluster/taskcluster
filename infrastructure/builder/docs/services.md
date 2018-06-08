@@ -22,10 +22,22 @@ Services annotated with `docs: generated` in the build spec are expected to prod
 DOCS_OUTPUT_DIR=/output/docs docker run -v $somepath:/output write-docs
 ```
 
-# Tools
+# Other Build Types
 
-The tools site is not a microservice, so its build process is a bit different and customized to the specific repository.
+Several repositories have a different `service.buildtype` specified.
+These are generally customized to the specific service and provide inputs based on other components.
 
-Before building, the documentation for all repositories is included in the tier-specific subdirectory of `src/docs`.
-Once that is complete, `yarn` and `yarn build` are run in a `node` image.
-The resulting build is then installed into an `nginx`-derived image configured to serve the content.
+## Docs
+
+The docs build type depends on all other services and documentation sources, and provides all of that documentation to the docs `build-static` command, which produces static output that is then bundled into an nginx-based docker image.
+
+## Tools
+
+The tools service incorporates the rootUrl in its build process, so it is built at container startup time.
+Thus the tools docker image contains only the repository source and a populated `node_modules` directory.
+
+## References
+
+Like docs, references depends on the output of many other services.
+It bundles all of the reference documents and schemas together and arranges them to be served in an nginx-based docker image.
+That image has a short Javascript script that runs at container startup and rewrites the schema files to contain a rootUrl-specific `$id` property.

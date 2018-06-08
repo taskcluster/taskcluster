@@ -1,23 +1,19 @@
 ---
-title: Installing Taskcluster
+title: Building Taskcluster
 order: 10
 ---
 
-Taskcluster installation breaks down into two phases:
+The build process produces a Taskcluster release, which takes the form of a [terraform-json.md](Terraform JSON) file.
+A release can be deployed anywhere, so the build process does not contain any deployment-specific settings, and in particular, has no rootUrl.
+Most installations of Taskcluster will deploy the "upstream" release produced by the Taskcluster team, incorporating deployment-specific configuration such as rootUrl.
 
- * Build a Taskcluster release
- * Deploy that release
+# Building Taskcluster
 
-A release can be deployed anywhere, so the build process does not contain any deployment-specific settings.
-Most installations of Taskcluster will deploy the "upstream" release produced by the Taskcluster team, incorporating deployment-specific configuration.
-
-# Build
-
-The build phase takes a [cluster spec](./cluster-spec) and source code and, along with lots of external resources like docker images, third-party packages, and so on, produces a "release".
+The build process takes a [cluster spec](./cluster-spec) and source code and, along with lots of external resources like docker images, third-party packages, and so on, produces a "release".
 The build process uses a *build config* for credentials to access artifact repositories, etc.
 The content of the configuration does not affect the result of the build.
 
-The output of the build process is also a cluster spec, but one that contains links to artifacts to support the deployment, as well as information about the precise revision of the source code used in the build.
+The output of the build process is a Taskcluster release, which takes the form of a [terraform-json.md](Terraform JSON) file.
 
 Note that builds are not deterministic.
 Two builds of exactly the same source may produce artifacts with different hashes.

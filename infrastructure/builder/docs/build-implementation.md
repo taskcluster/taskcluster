@@ -42,5 +42,5 @@ Dependency names follow some patterns:
 * `docs-${name}-dir` -- the directory containing documentation for the named repository; this will always be `${baseDir}/docs/${name}`, allowing mounting `${baseDir}/docs` in a docker image if necessary.
 * `docs-${name}-stamp` -- the Stamp instance for the docs dir
 * `service-${name}-stamp` -- the Stamp instance for the built service
-* `service-${name}-docker-image` -- the built Docker image for the named service
+* `service-${name}-docker-image` -- the built Docker image for the named service (used to create the Terraform-JSON output)
 * `service-${name}-image-on-registry` -- true if the docker image for the named service is already present on the Docker registry

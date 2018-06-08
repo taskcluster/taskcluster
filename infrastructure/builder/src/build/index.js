@@ -83,16 +83,10 @@ class Build {
     });
     const context = await taskgraph.run();
 
-    // fill in the cluster spec with the results of the build
-    this.spec.build.repositories.forEach(repo => {
-      repo.exactSource = context[`repo-${repo.name}-exact-source`];
-      if (repo.kind === 'service') {
-        repo.service.dockerImage = context[`service-${repo.name}-docker-image`];
-      }
-    });
-
-    // and write it back out
-    this.spec.write(this.output);
+    // create a TerraformJson output based on the result of the build
+    const tfJson = new TerraformJson(this.spec, context);
+    // ..and write it out
+    tfjson.write(this.output);
   }
 }
 
