@@ -753,6 +753,8 @@ func downloadURLToFile(url, contentSource, file string, task *TaskRun) (sha256 s
 		resp, err := http.Get(url)
 		// assume all errors should result in a retry
 		if err != nil {
+			task.Warnf("[mounts] Download of %v failed on this attempt: %v", contentSource, err)
+			// temporary error!
 			return resp, err, nil
 		}
 		defer resp.Body.Close()
@@ -765,7 +767,7 @@ func downloadURLToFile(url, contentSource, file string, task *TaskRun) (sha256 s
 		defer f.Close()
 		contentSize, err = io.Copy(f, resp.Body)
 		if err != nil {
-			task.Errorf("[mounts] Could not write http response from %v to file %v: %v", contentSource, file, err)
+			task.Warnf("[mounts] Could not write http response from %v to file %v on this attempt: %v", contentSource, file, err)
 			// likely a temporary error - network blip
 			return resp, err, nil
 		}
