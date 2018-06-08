@@ -523,7 +523,7 @@ func makeDirReadableForTaskUser(task *TaskRun, dir string) error {
 }
 
 // see http://ss64.com/nt/icacls.html
-func makeDirUnreadable(task *TaskRun, dir string) error {
+func makeDirUnreadableForTaskUser(task *TaskRun, dir string) error {
 	if config.RunTasksAsCurrentUser {
 		return nil
 	}

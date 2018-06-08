@@ -415,23 +415,14 @@ func (f *FileMount) FSContent() (FSContent, error) {
 	return FSContentFrom(f.Content)
 }
 
-func (w *WritableDirectoryCache) makeCacheReadable(task *TaskRun) {
-	target := filepath.Join(taskContext.TaskDir, w.Directory)
-	err := makeDirReadableForTaskUser(task, target)
-	if err != nil {
-		panic(err)
-	}
-	task.Infof("[mounts] Successfully mounted writable directory cache '%v'", target)
-}
-
 func (w *WritableDirectoryCache) Mount(task *TaskRun) error {
+	target := filepath.Join(taskContext.TaskDir, w.Directory)
 	// cache already there?
 	if _, dirCacheExists := directoryCaches[w.CacheName]; dirCacheExists {
 		// bump counter
 		directoryCaches[w.CacheName].Hits++
 		// move it into place...
 		src := directoryCaches[w.CacheName].Location
-		target := filepath.Join(taskContext.TaskDir, w.Directory)
 		parentDir := filepath.Dir(target)
 		task.Infof("[mounts] Moving existing writable directory cache %v from %v to %v", w.CacheName, src, target)
 		MkdirAllOrDie(task, parentDir, 0700)
@@ -439,36 +430,41 @@ func (w *WritableDirectoryCache) Mount(task *TaskRun) error {
 		if err != nil {
 			panic(fmt.Errorf("[mounts] Not able to rename dir %v as %v: %v", src, target, err))
 		}
-		w.makeCacheReadable(task)
-		return nil
-	}
-	// new cache, let's initialise it...
-	basename := slugid.Nice()
-	file := filepath.Join(config.CachesDir, basename)
-	task.Infof("[mounts] No existing writable directory cache '%v' - creating %v", w.CacheName, file)
-	directoryCaches[w.CacheName] = &Cache{
-		Hits:     1,
-		Created:  time.Now(),
-		Location: file,
-		Owner:    directoryCaches,
-		Key:      w.CacheName,
-	}
-	// preloaded content?
-	if w.Content != nil {
-		c, err := FSContentFrom(w.Content)
-		if err != nil {
-			return fmt.Errorf("Not able to retrieve FSContent: %v", err)
+	} else {
+		// new cache, let's initialise it...
+		basename := slugid.Nice()
+		file := filepath.Join(config.CachesDir, basename)
+		task.Infof("[mounts] No existing writable directory cache '%v' - creating %v", w.CacheName, file)
+		directoryCaches[w.CacheName] = &Cache{
+			Hits:     1,
+			Created:  time.Now(),
+			Location: file,
+			Owner:    directoryCaches,
+			Key:      w.CacheName,
 		}
-		err = extract(c, w.Format, filepath.Join(taskContext.TaskDir, w.Directory), task)
-		if err != nil {
-			return err
+		// preloaded content?
+		if w.Content != nil {
+			c, err := FSContentFrom(w.Content)
+			if err != nil {
+				return fmt.Errorf("Not able to retrieve FSContent: %v", err)
+			}
+			err = extract(c, w.Format, target, task)
+			if err != nil {
+				return err
+			}
+		} else {
+			// no preloaded content => just create dir in place
+			MkdirAllOrDie(task, target, 0700)
 		}
-		w.makeCacheReadable(task)
-		return nil
 	}
-	// no preloaded content => just create dir in place
-	MkdirAllOrDie(task, filepath.Join(taskContext.TaskDir, w.Directory), 0700)
-	w.makeCacheReadable(task)
+	// if not running task as current user, grant task user access
+	if !config.RunTasksAsCurrentUser {
+		err := makeDirReadableForTaskUser(task, target)
+		if err != nil {
+			panic(err)
+		}
+	}
+	task.Infof("[mounts] Successfully mounted writable directory cache '%v'", target)
 	return nil
 }
 
@@ -511,9 +507,12 @@ func (w *WritableDirectoryCache) Unmount(task *TaskRun) error {
 		// with it.
 		return Failure(fmt.Errorf("Could not persist cache %q due to %v", cache.Key, err))
 	}
-	err = makeDirUnreadable(task, cacheDir)
-	if err != nil {
-		panic(fmt.Errorf("Not able to make cache %v unreadable and unwritable to all task users when unmounting it: %v", w.CacheName, err))
+	// if not running task as current user, remove task user access
+	if !config.RunTasksAsCurrentUser {
+		err = makeDirUnreadableForTaskUser(task, cacheDir)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return nil
 }
