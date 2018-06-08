@@ -1,7 +1,7 @@
 Taskcluster Installer
 =====================
 
-This tool builds and deploys Taskcluster instances.
+This tool builds Taskcluster images.
 
 See the `docs/` directory for more details on how it does that.
 

@@ -24,7 +24,6 @@ suite('ClusterSpec', function() {
   test('load deploy spec from directory', function() {
     const cs = new ClusterSpec(path.join(__dirname, 'example'));
     assume(cs.build.services[0].name).to.equal('ping');
-    assume(cs.deploy.resources[0].name).to.equal('ping-web-deployment');
   });
 
   test('write deploy as JSON', function() {
@@ -33,7 +32,6 @@ suite('ClusterSpec', function() {
     cs.write(filename);
     const written = JSON.parse(fs.readFileSync(filename));
     assume(written.build).to.deeply.equal(cs.build);
-    assume(written.deploy).to.deeply.equal(cs.deploy);
   });
 
   test('read deploy as JSON', function() {
@@ -41,6 +39,5 @@ suite('ClusterSpec', function() {
     fs.writeFileSync(filename, JSON.stringify({build: 'b', deploy: 'd'}));
     const cs = new ClusterSpec(filename);
     assume(cs.build).to.equal('b');
-    assume(cs.deploy).to.equal('d');
   });
 });

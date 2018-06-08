@@ -2,7 +2,7 @@
   "name": "taskcluster-installer",
   "version": "0.0.1",
   "author": "Brian Stack <bstack@mozilla.com>",
-  "description": "Build and deploy taskcluster instances",
+  "description": "Build taskcluster images",
   "license": "MPL-2.0",
   "bin": {
     "taskcluster-installer": "./src/main.js"

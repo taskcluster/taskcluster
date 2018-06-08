@@ -21,23 +21,40 @@ class ClusterSpec {
   _loadDirectory(filename) {
     const buildFile = path.join(filename, 'build.yml');
     this.build = yaml.safeLoad(fs.readFileSync(buildFile));
-
-    const deployFile = path.join(filename, 'deploy.yml');
-    this.deploy = yaml.safeLoad(fs.readFileSync(deployFile));
   }
 
   _loadFile(filename) {
-    const {build, deploy} = JSON.parse(fs.readFileSync(filename));
-    this.build = build;
-    this.deploy = deploy;
+    const {build} = JSON.parse(fs.readFileSync(filename));
+    if (build.locals) {
+      this.build = JSON.parse(build.locals.installer_info);
+    } else {
+      this.build = build;
+    }
   }
 
   write(filename) {
-    const content = {
-      build: this.build,
-      deploy: this.deploy,
-    };
-    fs.writeFileSync(filename, JSON.stringify(content, null, 2));
+    const format = path.basename(filename).split('.').slice(1).join('.');
+    if (format === 'json') {
+      const content = {
+        build: this.build,
+      };
+      fs.writeFileSync(filename, JSON.stringify(content, null, 2));
+    } else if (format === 'tf.json') {
+      const locals = {
+        installer_info: JSON.stringify(this.build),
+      };
+      const content = {
+        locals: this.build.repositories.reduce((o, b) => {
+          if (b.service) {
+            o[`taskcluster_image_${b.name}`] = b.service.dockerImage;
+          }
+          return o;
+        }, locals),
+      };
+      fs.writeFileSync(filename, JSON.stringify(content, null, 2));
+    } else {
+      throw new Error(`Unrecognized format ${format}`);
+    }
   }
 };
 

@@ -3,7 +3,7 @@ title: Cluster Specs
 order: 20
 ---
 
-A *cluster spec* describes how to build and deploy a Taskcluster release.
+A *cluster spec* describes how to build a Taskcluster release.
 
 A cluster spec is represented either as a directory containing several `.yml` files, or as a JSON object.
 The contents are the same, but the `.yml` format is intended to be human-editable.
@@ -42,11 +42,3 @@ The tools and docs sites are special-cased with `buildType == "tools-ui"` `build
 ## `other`
 
 This kind represents repositories that are not built into services or other ouptuts, but may contribute other metadata such as documentation.
-
-# deploy.yml
-
-The `deploy.yml` file (or, in a JSON blob, the `deploy` property) contains a JSON-e expression which will evaluate to object with properties:
-
-* `resources` -- an array of objects describing Kubernetes resources to create; each should have at least `name`, `kind`, and `apiVersion`.
-
-The deploy process will perform the JSON-e rendering, then write each resource out for consumption by kubectl.
