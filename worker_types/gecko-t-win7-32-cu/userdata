@@ -34,11 +34,11 @@ Start-Process "cmd.exe" -ArgumentList "/c del /f /q `"C:\Program Files\Citrix\Xe
 md "C:\log"
 
 # NxLog: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.9.1716.msi", "C:\binaries\nxlog-ce-2.9.1716.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\nxlog-ce-2.9.1716.msi /quiet" -Wait -NoNewWindow
+$client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.9.1716.msi", "C:\binaries\404.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\404.msi /quiet" -Wait -NoNewWindow
 
 # PaperTrailEncryptionCertificate: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://papertrailapp.com/tools/papertrail-bundle.pem", "C:\Program Files\nxlog\cert\papertrail-bundle.pem")
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/papertrail-bundle.pem", "C:\Program Files\nxlog\cert\papertrail-bundle.pem")
 
 # NxLogPaperTrailConfiguration: Maintenance Toolchain - not essential for building firefox
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/win7.conf", "C:\Program Files\nxlog\conf\nxlog.conf")
@@ -59,8 +59,8 @@ $client.DownloadFile("http://files.gpg4win.org/gpg4win-2.3.0.exe", "C:\binaries\
 Start-Process "C:\binaries\gpg4win-2.3.0.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SevenZip: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("http://7-zip.org/a/7z1602.exe", "C:\binaries\download?use_mirror=netix.exe")
-Start-Process "C:\binaries\download?use_mirror=netix.exe" -ArgumentList "/S" -Wait -NoNewWindow
+$client.DownloadFile("http://7-zip.org/a/7z1602.exe", "C:\binaries\download?use_mirror=kent.exe")
+Start-Process "C:\binaries\download?use_mirror=kent.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SublimeText3: Maintenance Toolchain - not essential for building firefox
 $client.DownloadFile("https://download.sublimetext.com/Sublime%20Text%20Build%203114%20Setup.exe", "C:\binaries\Sublime Text Build 3114 Setup.exe")
@@ -100,9 +100,9 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Python\PythonCore\2.7\PythonPath" -Name "(
 # DeleteMozillaBuildMercurial
 Start-Process "cmd.exe" -ArgumentList "/c del C:\mozilla-build\python\Scripts\hg*" -Wait -NoNewWindow
 
-# Mercurial: https://bugzilla.mozilla.org/show_bug.cgi?id=1390271
-$client.DownloadFile("https://www.mercurial-scm.org/release/windows/mercurial-4.3.3-x86.msi", "C:\binaries\mercurial-4.3.3-x86.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\mercurial-4.3.3-x86.msi /quiet" -Wait -NoNewWindow
+# Mercurial: https://bugzilla.mozilla.org/show_bug.cgi?id=1456395
+$client.DownloadFile("https://www.mercurial-scm.org/release/windows/mercurial-4.5.3-x86.msi", "C:\binaries\mercurial-4.5.3-x86.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\mercurial-4.5.3-x86.msi /quiet" -Wait -NoNewWindow
 
 # MercurialConfig: Required by clonebundle and share hg extensions
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mercurial/mercurial.ini", "C:\Program Files\Mercurial\Mercurial.ini")
@@ -132,10 +132,13 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting"
 md "C:\generic-worker"
 
 # GenericWorkerDownload
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.6.0/generic-worker-windows-386.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.8.4/generic-worker-windows-386.exe", "C:\generic-worker\generic-worker.exe")
 
 # LiveLogDownload
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-386.exe", "C:\generic-worker\livelog.exe")
+
+# TaskClusterProxyDownload
+$client.DownloadFile("https://github.com/taskcluster/taskcluster-proxy/releases/download/v4.1.0/taskcluster-proxy-windows-386.exe", "C:\generic-worker\taskcluster-proxy.exe")
 
 # LiveLog_Get
 New-NetFirewallRule -DisplayName "LiveLog_Get (TCP 60022 Inbound): Allow" -Direction Inbound -LocalPort 60022 -Protocol TCP -Action Allow
@@ -157,6 +160,9 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloud
 
 # GenericWorkerStateWait
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-generic-worker-format-and-reboot.bat", "C:\generic-worker\run-generic-worker.bat")
+
+# TaskUserInitScript: https://bugzilla.mozilla.org/show_bug.cgi?id=1433851#c19
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/task-user-init-win7.cmd", "C:\generic-worker\task-user-init.cmd")
 
 # PipConfDirectory: https://pip.pypa.io/en/stable/user_guide/#config-file
 md "C:\ProgramData\pip"
@@ -298,6 +304,50 @@ $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/
 
 # reg_Power_PreferredPlan_HighPerformance: https://bugzilla.mozilla.org/show_bug.cgi?id=1362613
 New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\explorer\ControlPanel\NameSpace\{025A5937-A6BE-4686-A844-36FE4BEC8B6D}" -Name "PreferredPlan" -Value "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c" -PropertyType String -Force
+
+# DisableWinDefend: https://bugzilla.mozilla.org/show_bug.cgi?id=1365909
+Set-Service "WinDefend" -StartupType Disabled -Status Stopped
+
+# OpenSshDownload: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+$client.DownloadFile("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.1.0p1-Beta/OpenSSH-Win32.zip", "C:\Windows\Temp\OpenSSH-Win32.zip")
+
+# OpenSshUnzip: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+Start-Process "C:\Program Files\7-Zip\7z.exe" -ArgumentList "x -o`"C:\Program Files`" C:\Windows\Temp\OpenSSH-Win32.zip" -Wait -NoNewWindow
+
+# SshIn
+New-NetFirewallRule -DisplayName "SshIn (TCP 22 Inbound): Allow" -Direction Inbound -LocalPort 22 -Protocol TCP -Action Allow
+
+# InstallOpenSSH: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+Start-Process "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File `"C:\Program Files\OpenSSH-Win32\install-sshd.ps1`"" -Wait -NoNewWindow
+
+# reg_OpenSSH_DefaultShell: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+New-ItemProperty -Path "HKLM:SOFTWARE\OpenSSH" -Name "DefaultShell" -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -PropertyType String -Force
+
+# reg_OpenSSH_DefaultShellCommandOption: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+New-ItemProperty -Path "HKLM:SOFTWARE\OpenSSH" -Name "DefaultShellCommandOption" -Value "/c" -PropertyType String -Force
+
+# AdministratorSshDir: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+md "C:\Users\Administrator\.ssh"
+
+# AdministratorSshAuthorisedKeys: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/ssh/authorized_keys", "C:\Users\Administrator\.ssh\authorized_keys")
+
+# sshd_config: https://bugzilla.mozilla.org/show_bug.cgi?id=1464343
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/ssh/sshd_config", "C:\ProgramData\ssh\sshd_config")
+
+# Start_sshd: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+Set-Service "sshd" -StartupType Automatic -Status Running
+
+# Start_sshagent: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+Set-Service "ssh-agent" -StartupType Automatic -Status Running
+
+# vcredist_vs2015_x86: https://bugzilla.mozilla.org/show_bug.cgi?id=1460042
+$client.DownloadFile("http://download.microsoft.com/download/f/3/9/f39b30ec-f8ef-4ba3-8cb4-e301fcf0e0aa/vc_redist.x86.exe", "C:\binaries\vc_redist.x86.exe")
+Start-Process "C:\binaries\vc_redist.x86.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2015_x86-install.log" -Wait -NoNewWindow
+
+# vcredist_vs2015_x64: https://bugzilla.mozilla.org/show_bug.cgi?id=1460042
+$client.DownloadFile("http://download.microsoft.com/download/4/c/b/4cbd5757-0dd4-43a7-bac0-2a492cedbacb/vc_redist.x64.exe", "C:\binaries\vc_redist.x64.exe")
+Start-Process "C:\binaries\vc_redist.x64.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2015_x64-install.log" -Wait -NoNewWindow
 
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead

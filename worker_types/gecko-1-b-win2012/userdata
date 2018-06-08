@@ -28,11 +28,11 @@ md C:\binaries
 md "C:\log"
 
 # NxLog: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.9.1716.msi", "C:\binaries\nxlog-ce-2.9.1716.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\nxlog-ce-2.9.1716.msi /quiet" -Wait -NoNewWindow
+$client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.9.1716.msi", "C:\binaries\404.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\404.msi /quiet" -Wait -NoNewWindow
 
 # PaperTrailEncryptionCertificate: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://papertrailapp.com/tools/papertrail-bundle.pem", "C:\Program Files (x86)\nxlog\cert\papertrail-bundle.pem")
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/papertrail-bundle.pem", "C:\Program Files (x86)\nxlog\cert\papertrail-bundle.pem")
 
 # NxLogPaperTrailConfiguration: Maintenance Toolchain - not essential for building firefox
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/win2012.conf", "C:\Program Files (x86)\nxlog\conf\nxlog.conf")
@@ -56,8 +56,8 @@ $client.DownloadFile("http://files.gpg4win.org/gpg4win-2.3.0.exe", "C:\binaries\
 Start-Process "C:\binaries\gpg4win-2.3.0.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SevenZip: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("http://7-zip.org/a/7z1514-x64.exe", "C:\binaries\download?use_mirror=10gbps-io.exe")
-Start-Process "C:\binaries\download?use_mirror=10gbps-io.exe" -ArgumentList "/S" -Wait -NoNewWindow
+$client.DownloadFile("http://7-zip.org/a/7z1514-x64.exe", "C:\binaries\download?use_mirror=datapacket.exe")
+Start-Process "C:\binaries\download?use_mirror=datapacket.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SublimeText3: Maintenance Toolchain - not essential for building firefox
 $client.DownloadFile("https://download.sublimetext.com/Sublime%20Text%20Build%203114%20x64%20Setup.exe", "C:\binaries\Sublime Text Build 3114 x64 Setup.exe")
@@ -139,9 +139,9 @@ cmd /c mklink "C:\mozilla-build\msys\home" "C:\Users"
 # DeleteMozillaBuildMercurial
 Start-Process "cmd.exe" -ArgumentList "/c del C:\mozilla-build\python\Scripts\hg*" -Wait -NoNewWindow
 
-# Mercurial: https://bugzilla.mozilla.org/show_bug.cgi?id=1390271
-$client.DownloadFile("https://www.mercurial-scm.org/release/windows/mercurial-4.3.3-x64.msi", "C:\binaries\mercurial-4.3.3-x64.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\mercurial-4.3.3-x64.msi /quiet" -Wait -NoNewWindow
+# Mercurial: https://bugzilla.mozilla.org/show_bug.cgi?id=1456395
+$client.DownloadFile("https://www.mercurial-scm.org/release/windows/mercurial-4.5.3-x64.msi", "C:\binaries\mercurial-4.5.3-x64.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\mercurial-4.5.3-x64.msi /quiet" -Wait -NoNewWindow
 
 # MercurialConfig: Required by clonebundle and share hg extensions
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mercurial/mercurial.ini", "C:\Program Files\Mercurial\Mercurial.ini")
@@ -213,10 +213,13 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting"
 md "C:\generic-worker"
 
 # GenericWorkerDownload
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.6.0/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.8.4/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # LiveLogDownload
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
+
+# TaskClusterProxyDownload
+$client.DownloadFile("https://github.com/taskcluster/taskcluster-proxy/releases/download/v4.1.0/taskcluster-proxy-windows-amd64.exe", "C:\generic-worker\taskcluster-proxy.exe")
 
 # LiveLog_Get
 New-NetFirewallRule -DisplayName "LiveLog_Get (TCP 60022 Inbound): Allow" -Direction Inbound -LocalPort 60022 -Protocol TCP -Action Allow
@@ -235,6 +238,9 @@ Start-Process "C:\generic-worker\generic-worker.exe" -ArgumentList "install serv
 
 # GenericWorkerStateWait
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/run-generic-worker-format-and-reboot.bat", "C:\generic-worker\run-generic-worker.bat")
+
+# TaskUserInitScript: Bug 1433851 - wait for user registry to initialise before running a task
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/GenericWorker/task-user-init-win2012.cmd", "C:\generic-worker\task-user-init.cmd")
 
 # HgShared: allows builds to use `hg robustcheckout ...`
 md "y:\hg-shared"
@@ -260,27 +266,6 @@ Start-Process "xcopy" -ArgumentList "C:\Windows\Temp\carbon\Carbon C:\Windows\Sy
 # GrantEveryoneSeCreateSymbolicLinkPrivilege: Bug 1316329 - support creation of symlinks by task users
 Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity Everyone -Privilege SeCreateSymbolicLinkPrivilege}`"" -Wait -NoNewWindow
 
-# GrantGenericWorkerSeAssignPrimaryTokenPrivilege: Bug 1303455 - grant SeAssignPrimaryTokenPrivilege to g-w user
-Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity GenericWorker -Privilege SeAssignPrimaryTokenPrivilege}`"" -Wait -NoNewWindow
-
-# GrantGenericWorkerSeIncreaseQuotaPrivilege: Bug 1303455 - grant SeIncreaseQuotaPrivilege to g-w user
-Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity GenericWorker -Privilege SeIncreaseQuotaPrivilege}`"" -Wait -NoNewWindow
-
-# GrantGenericWorkerSeIncreaseBasePriorityPrivilege: Bug 1312383 - grant SeIncreaseBasePriorityPrivilege to g-w user
-Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity GenericWorker -Privilege SeIncreaseBasePriorityPrivilege}`"" -Wait -NoNewWindow
-
-# reg_PythonCpuPriority
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe\PerfOptions" -Name "CpuPriorityClass" -Value "0x00000006" -PropertyType Dword -Force
-
-# reg_PythonIoPriority
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\python.exe\PerfOptions" -Name "IoPriority" -Value "0x00000002" -PropertyType Dword -Force
-
-# reg_MercurialCpuPriority
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\hg.exe\PerfOptions" -Name "CpuPriorityClass" -Value "0x00000006" -PropertyType Dword -Force
-
-# reg_MercurialIoPriority
-New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\hg.exe\PerfOptions" -Name "IoPriority" -Value "0x00000002" -PropertyType Dword -Force
-
 # ZDriveAccessRights: facilitates loaner self provisioning
 Start-Process "icacls.exe" -ArgumentList "z:\ /grant Everyone:(OI)(CI)F" -Wait -NoNewWindow
 
@@ -292,6 +277,39 @@ New-NetFirewallRule -DisplayName "KmsOut (TCP 1688 Outbound): Allow" -Direction 
 
 # reg_Power_PreferredPlan_HighPerformance: https://bugzilla.mozilla.org/show_bug.cgi?id=1362613
 New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\explorer\ControlPanel\NameSpace\{025A5937-A6BE-4686-A844-36FE4BEC8B6D}" -Name "PreferredPlan" -Value "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c" -PropertyType String -Force
+
+# OpenSshDownload: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+$client.DownloadFile("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.1.0p1-Beta/OpenSSH-Win64.zip", "C:\Windows\Temp\OpenSSH-Win64.zip")
+
+# OpenSshUnzip: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+Start-Process "C:\Program Files\7-Zip\7z.exe" -ArgumentList "x -o`"C:\Program Files`" C:\Windows\Temp\OpenSSH-Win64.zip" -Wait -NoNewWindow
+
+# SshIn
+New-NetFirewallRule -DisplayName "SshIn (TCP 22 Inbound): Allow" -Direction Inbound -LocalPort 22 -Protocol TCP -Action Allow
+
+# InstallOpenSSH: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+Start-Process "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File `"C:\Program Files\OpenSSH-Win64\install-sshd.ps1`"" -Wait -NoNewWindow
+
+# reg_OpenSSH_DefaultShell: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+New-ItemProperty -Path "HKLM:SOFTWARE\OpenSSH" -Name "DefaultShell" -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -PropertyType String -Force
+
+# reg_OpenSSH_DefaultShellCommandOption: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+New-ItemProperty -Path "HKLM:SOFTWARE\OpenSSH" -Name "DefaultShellCommandOption" -Value "/c" -PropertyType String -Force
+
+# AdministratorSshDir: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+md "C:\Users\Administrator\.ssh"
+
+# AdministratorSshAuthorisedKeys: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/ssh/authorized_keys", "C:\Users\Administrator\.ssh\authorized_keys")
+
+# sshd_config: https://bugzilla.mozilla.org/show_bug.cgi?id=1464343
+$client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/ssh/sshd_config", "C:\ProgramData\ssh\sshd_config")
+
+# Start_sshd: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+Set-Service "sshd" -StartupType Automatic -Status Running
+
+# Start_sshagent: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
+Set-Service "ssh-agent" -StartupType Automatic -Status Running
 
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead
