@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: taskcluster-ingress
+  annotations:
+    kubernetes.io/ingress.allow-http: "false"
+spec:
+  tls:
+  - secretName: taskcluster-ingress-tls-secret
+  rules:
+  - http:
+      paths:
+      - path: /api/auth/*
+        backend:
+          serviceName: taskcluster-auth
+          servicePort: 80
+      - path: /api/secrets/*
+        backend:
+          serviceName: taskcluster-secrets
+          servicePort: 80
+      - path: /api/ping/*
+        backend:
+          serviceName: taskcluster-ping
+          servicePort: 80
+      - path: /*
+        backend:
+          serviceName: taskcluster-tools
+          servicePort: 80

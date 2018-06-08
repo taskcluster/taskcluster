@@ -43,7 +43,7 @@ EOF
 
 module "queue_secrets" {
   source       = "modules/service-secrets"
-  service_name = "taskcluster-queue"
+  project_name = "taskcluster-queue"
 
   secrets = {
     AWS_ACCESS_KEY_ID     = "${module.queue_user.access_key_id}"

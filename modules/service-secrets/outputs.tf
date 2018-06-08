@@ -3,5 +3,5 @@ output "env_var_keys" {
 }
 
 output "secret_name" {
-  value = "${var.service_name}"
+  value = "${var.project_name}"
 }
