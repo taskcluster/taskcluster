@@ -7,8 +7,7 @@ A taskcluster service which manages EC2 instances.  This service does not unders
 ## EC2Manager Client
 
 ```js
-// Create EC2Manager client instance with default baseUrl:
-// localhost:5555/v1
+// Create EC2Manager client instance:
 
 const eC2Manager = new taskcluster.EC2Manager(options);
 ```

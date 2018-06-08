@@ -15,16 +15,17 @@ const base64 = hawk.crypto.utils.enc.Base64;
  *  start:        new Date(),   // Start time of credentials (defaults to now)
  *  expiry:       new Date(),   // Credentials expiration time
  *  scopes:       ['scope'...], // Scopes granted (defaults to empty-set)
- *  clientId:     '...',  // *optional* name to create named temporary credential
+ *  clientId:     '...',  // *optional* ID to create named temporary credential
  *  credentials: {        // (defaults to use global config, if available)
  *    clientId:    '...', // ClientId
  *    accessToken: '...', // AccessToken for clientId
  *  },
  * }
  *
- * Note that a named temporary credential is only valid if the issuing credentials
- * have the scope 'auth:create-client:<name>'.  This function does not check for
- * this scope, but it will be checked when the credentials are used.
+ * Note that a named temporary credential is only valid if the issuing
+ * credentials have the scope 'auth:create-client:<name>'. This function does
+ * not check for this scope, but it will be checked when the credentials are
+ * used.
  *
  * The auth service already tolerates up to five minutes clock drift for start
  * and expiry fields, therefore caller should *not* apply further clock skew
@@ -32,7 +33,7 @@ const base64 = hawk.crypto.utils.enc.Base64;
  *
  * Returns an object on the form: {clientId, accessToken, certificate}
  */
-export const createTemporaryCredentials = (opts) => {
+export const createTemporaryCredentials = opts => {
   if (!opts) {
     throw new Error('Missing required options');
   }
@@ -59,8 +60,10 @@ export const createTemporaryCredentials = (opts) => {
   }
 
   if (options.credentials.certificate != null) {
-    throw new Error(`Temporary credentials cannot be used to make new temporary credentials.
-      Ensure that options.credentials.certificate is null.`);
+    throw new Error(
+      `Temporary credentials cannot be used to make new temporary credentials.
+      Ensure that options.credentials.certificate is null.`
+    );
   }
 
   if (!(options.start instanceof Date)) {
@@ -79,7 +82,7 @@ export const createTemporaryCredentials = (opts) => {
     throw new Error('options.scopes must be an array');
   }
 
-  options.scopes.forEach((scope) => {
+  options.scopes.forEach(scope => {
     if (typeof scope !== 'string') {
       throw new Error('options.scopes must be an array of strings');
     }
@@ -92,9 +95,8 @@ export const createTemporaryCredentials = (opts) => {
     expiry: options.expiry.getTime(),
     seed: v4() + v4(),
     signature: null,
-    issuer: isNamed ? options.credentials.clientId : null
+    issuer: isNamed ? options.credentials.clientId : null,
   };
-
   const signature = createHmac(sha256, options.credentials.accessToken);
 
   signature.update(`version:${certificate.version}\n`);
@@ -122,7 +124,7 @@ export const createTemporaryCredentials = (opts) => {
   return {
     accessToken,
     clientId: isNamed ? options.clientId : options.credentials.clientId,
-    certificate: JSON.stringify(certificate)
+    certificate: JSON.stringify(certificate),
   };
 };
 
@@ -145,16 +147,16 @@ export const createTemporaryCredentials = (opts) => {
  *    scopes: [...],        // associated scopes (if available)
  * }
  */
-export const credentialInformation = async (credentials) => {
+export const credentialInformation = async credentials => {
   let issuer = credentials.clientId;
   const result = {
     clientId: issuer,
-    active: true
+    active: true,
   };
 
   // Distinguish permanent credentials from temporary credentials
   if (credentials.certificate) {
-    let certificate = credentials.certificate;
+    let { certificate } = credentials;
 
     if (typeof certificate === 'string') {
       try {
@@ -170,6 +172,7 @@ export const credentialInformation = async (credentials) => {
     result.expiry = new Date(certificate.expiry);
 
     if (certificate.issuer) {
+      // eslint-disable-next-line prefer-destructuring
       issuer = certificate.issuer;
     }
   } else {
@@ -178,24 +181,20 @@ export const credentialInformation = async (credentials) => {
 
   const anonymousClient = new Auth();
   const credentialsClient = new Auth({ credentials });
-  const clientLookup = anonymousClient
-    .client(issuer)
-    .then((client) => {
-      const expires = new Date(client.expires);
+  const clientLookup = anonymousClient.client(issuer).then(client => {
+    const expires = new Date(client.expires);
 
-      if (!result.expiry || result.expiry > expires) {
-        result.expiry = expires;
-      }
+    if (!result.expiry || result.expiry > expires) {
+      result.expiry = expires;
+    }
 
-      if (client.disabled) {
-        result.active = false;
-      }
-    });
-  const scopeLookup = credentialsClient
-    .currentScopes()
-    .then((response) => {
-      result.scopes = response.scopes;
-    });
+    if (client.disabled) {
+      result.active = false;
+    }
+  });
+  const scopeLookup = credentialsClient.currentScopes().then(response => {
+    result.scopes = response.scopes;
+  });
 
   await Promise.all([clientLookup, scopeLookup]);
 

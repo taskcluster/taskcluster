@@ -5,117 +5,134 @@ import Client from '../Client';
 export default class Hooks extends Client {
   constructor(options = {}) {
     super({
-      baseUrl: 'https://hooks.taskcluster.net/v1',
+      serviceName: 'hooks',
+      serviceVersion: 'v1',
       exchangePrefix: '',
-      ...options
+      ...options,
     });
-    this.listHookGroups.entry = {type:'function',method:'get',route:'/hooks',query:[],args:[],name:'listHookGroups',stability:'experimental',output:true}; // eslint-disable-line
-    this.listHooks.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>',query:[],args:['hookGroupId'],name:'listHooks',stability:'experimental',output:true}; // eslint-disable-line
-    this.hook.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'hook',stability:'experimental',output:true}; // eslint-disable-line
-    this.getHookStatus.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/status',query:[],args:['hookGroupId','hookId'],name:'getHookStatus',stability:'experimental',output:true}; // eslint-disable-line
-    this.getHookSchedule.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/schedule',query:[],args:['hookGroupId','hookId'],name:'getHookSchedule',stability:'deprecated',output:true}; // eslint-disable-line
-    this.createHook.entry = {type:'function',method:'put',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'createHook',stability:'experimental',scopes:{AllOf:['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']},input:true,output:true}; // eslint-disable-line
-    this.updateHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'updateHook',stability:'experimental',scopes:{AllOf:['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']},input:true,output:true}; // eslint-disable-line
-    this.removeHook.entry = {type:'function',method:'delete',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'removeHook',stability:'experimental',scopes:'hooks:modify-hook:<hookGroupId>/<hookId>'}; // eslint-disable-line
-    this.triggerHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger',query:[],args:['hookGroupId','hookId'],name:'triggerHook',stability:'experimental',scopes:'hooks:trigger-hook:<hookGroupId>/<hookId>',input:true,output:true}; // eslint-disable-line
-    this.getTriggerToken.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'getTriggerToken',stability:'experimental',scopes:'hooks:get-trigger-token:<hookGroupId>/<hookId>',output:true}; // eslint-disable-line
-    this.resetTriggerToken.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'resetTriggerToken',stability:'experimental',scopes:'hooks:reset-trigger-token:<hookGroupId>/<hookId>',output:true}; // eslint-disable-line
-    this.triggerHookWithToken.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger/<token>',query:[],args:['hookGroupId','hookId','token'],name:'triggerHookWithToken',stability:'experimental',input:true,output:true}; // eslint-disable-line
+    this.listHookGroups.entry = {type:'function',method:'get',route:'/hooks',query:[],args:[],name:'listHookGroups',stability:'stable',output:true}; // eslint-disable-line
+    this.listHooks.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>',query:[],args:['hookGroupId'],name:'listHooks',stability:'stable',output:true}; // eslint-disable-line
+    this.hook.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'hook',stability:'stable',output:true}; // eslint-disable-line
+    this.getHookStatus.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/status',query:[],args:['hookGroupId','hookId'],name:'getHookStatus',stability:'stable',output:true}; // eslint-disable-line
+    this.createHook.entry = {type:'function',method:'put',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'createHook',stability:'stable',scopes:{AllOf:['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']},input:true,output:true}; // eslint-disable-line
+    this.updateHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'updateHook',stability:'stable',scopes:{AllOf:['hooks:modify-hook:<hookGroupId>/<hookId>','assume:hook-id:<hookGroupId>/<hookId>']},input:true,output:true}; // eslint-disable-line
+    this.removeHook.entry = {type:'function',method:'delete',route:'/hooks/<hookGroupId>/<hookId>',query:[],args:['hookGroupId','hookId'],name:'removeHook',stability:'stable',scopes:'hooks:modify-hook:<hookGroupId>/<hookId>'}; // eslint-disable-line
+    this.triggerHook.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger',query:[],args:['hookGroupId','hookId'],name:'triggerHook',stability:'stable',scopes:'hooks:trigger-hook:<hookGroupId>/<hookId>',input:true,output:true}; // eslint-disable-line
+    this.getTriggerToken.entry = {type:'function',method:'get',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'getTriggerToken',stability:'stable',scopes:'hooks:get-trigger-token:<hookGroupId>/<hookId>',output:true}; // eslint-disable-line
+    this.resetTriggerToken.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/token',query:[],args:['hookGroupId','hookId'],name:'resetTriggerToken',stability:'stable',scopes:'hooks:reset-trigger-token:<hookGroupId>/<hookId>',output:true}; // eslint-disable-line
+    this.triggerHookWithToken.entry = {type:'function',method:'post',route:'/hooks/<hookGroupId>/<hookId>/trigger/<token>',query:[],args:['hookGroupId','hookId','token'],name:'triggerHookWithToken',stability:'stable',input:true,output:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
-
+  /* eslint-disable max-len */
   // This endpoint will return a list of all hook groups with at least one hook.
+  /* eslint-enable max-len */
   listHookGroups(...args) {
     this.validate(this.listHookGroups.entry, args);
+
     return this.request(this.listHookGroups.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This endpoint will return a list of all the hook definitions within a
   // given hook group.
+  /* eslint-enable max-len */
   listHooks(...args) {
     this.validate(this.listHooks.entry, args);
+
     return this.request(this.listHooks.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This endpoint will return the hook definition for the given `hookGroupId`
   // and hookId.
+  /* eslint-enable max-len */
   hook(...args) {
     this.validate(this.hook.entry, args);
+
     return this.request(this.hook.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This endpoint will return the current status of the hook.  This represents a
   // snapshot in time and may vary from one call to the next.
+  /* eslint-enable max-len */
   getHookStatus(...args) {
     this.validate(this.getHookStatus.entry, args);
+
     return this.request(this.getHookStatus.entry, args);
   }
-
-  // This endpoint will return the schedule and next scheduled creation time
-  // for the given hook.
-  getHookSchedule(...args) {
-    this.validate(this.getHookSchedule.entry, args);
-    return this.request(this.getHookSchedule.entry, args);
-  }
-
+  /* eslint-disable max-len */
   // This endpoint will create a new hook.
   // The caller's credentials must include the role that will be used to
   // create the task.  That role must satisfy task.scopes as well as the
   // necessary scopes to add the task to the queue.
+  /* eslint-enable max-len */
   createHook(...args) {
     this.validate(this.createHook.entry, args);
+
     return this.request(this.createHook.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This endpoint will update an existing hook.  All fields except
   // `hookGroupId` and `hookId` can be modified.
+  /* eslint-enable max-len */
   updateHook(...args) {
     this.validate(this.updateHook.entry, args);
+
     return this.request(this.updateHook.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This endpoint will remove a hook definition.
+  /* eslint-enable max-len */
   removeHook(...args) {
     this.validate(this.removeHook.entry, args);
+
     return this.request(this.removeHook.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This endpoint will trigger the creation of a task from a hook definition.
   // The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
   // provided as the `payload` property of the JSON-e context used to render the
   // task template.
+  /* eslint-enable max-len */
   triggerHook(...args) {
     this.validate(this.triggerHook.entry, args);
+
     return this.request(this.triggerHook.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Retrieve a unique secret token for triggering the specified hook. This
   // token can be deactivated with `resetTriggerToken`.
+  /* eslint-enable max-len */
   getTriggerToken(...args) {
     this.validate(this.getTriggerToken.entry, args);
+
     return this.request(this.getTriggerToken.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Reset the token for triggering a given hook. This invalidates token that
   // may have been issued via getTriggerToken with a new token.
+  /* eslint-enable max-len */
   resetTriggerToken(...args) {
     this.validate(this.resetTriggerToken.entry, args);
+
     return this.request(this.resetTriggerToken.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This endpoint triggers a defined hook with a valid token.
   // The HTTP payload must match the hooks `triggerSchema`.  If it does, it is
   // provided as the `payload` property of the JSON-e context used to render the
   // task template.
+  /* eslint-enable max-len */
   triggerHookWithToken(...args) {
     this.validate(this.triggerHookWithToken.entry, args);
+
     return this.request(this.triggerHookWithToken.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
   ping(...args) {
     this.validate(this.ping.entry, args);
+
     return this.request(this.ping.entry, args);
   }
 }

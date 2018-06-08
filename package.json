@@ -1,53 +1,49 @@
 {
   "name": "taskcluster-client-web",
   "version": "7.0.0",
-  "main": "lib/index.js",
+  "main": "build/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
   "repository": "taskcluster/taskcluster-client-web",
   "files": [
     "src",
-    "lib"
+    "build"
   ],
   "scripts": {
-    "build": "neutrino build",
-    "docs": "rm -f docs/* && bin/generate-docs",
-    "compile-clients": "rm -f src/clients/* && bin/compile-clients",
+    "build": "neutrino build --require dotenv/config",
+    "docs": "rm -f docs/* && node -r dotenv/config bin/generate-docs",
+    "compile-clients": "rm -f src/clients/* && node -r dotenv/config bin/compile-clients && yarn lint --fix",
     "lint": "neutrino lint",
-    "list-clients": "bin/list-clients",
+    "list-clients": "node -r dotenv/config bin/list-clients",
+    "precommit": "neutrino stage",
     "prepare": "yarn build",
-    "show-client": "bin/show-client",
-    "test": "neutrino test",
+    "show-client": "node -r dotenv/config bin/show-client",
+    "test": "neutrino test --require dotenv/config",
     "update-all": "yarn compile-clients && yarn build && yarn docs"
   },
-  "lint-staged": {
-    "*.js": [
-      "neutrino lint --fix",
-      "git add"
-    ]
-  },
   "devDependencies": {
+    "@neutrinojs/karma": "^8.2.3",
+    "@neutrinojs/library": "^8.2.3",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "cliff": "^0.1.10",
     "common-tags": "^1.4.0",
+    "dotenv": "^6.0.0",
     "ejs": "^2.5.7",
-    "got": "^7.1.0",
-    "husky": "^0.14.3",
+    "got": "^8.3.1",
     "javascript-stringify": "^1.6.0",
     "json-schema-to-markdown": "^1.0.3",
     "json-stable-stringify": "^1.0.1",
     "karma-sourcemap-loader": "^0.3.7",
-    "lint-staged": "^4.2.1",
-    "neutrino": "^6.2.0",
-    "neutrino-preset-karma": "^6.2.0",
-    "neutrino-preset-taskcluster-web-library": "^2.0.0",
+    "neutrino": "^8.2.3",
+    "neutrino-preset-mozilla-frontend-infra": "^4.1.0",
     "object.omit": "^3.0.0"
   },
   "dependencies": {
-    "hawk": "^6.0.2",
-    "query-string": "^5.0.0"
+    "hawk": "^7.0.7",
+    "query-string": "^6.1.0",
+    "taskcluster-lib-urls": "^10.0.0"
   }
 }

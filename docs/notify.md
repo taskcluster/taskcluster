@@ -9,8 +9,7 @@ send emails and post pulse messages.
 ## Notify Client
 
 ```js
-// Create Notify client instance with default baseUrl:
-// https://notify.taskcluster.net/v1
+// Create Notify client instance:
 
 const notify = new taskcluster.Notify(options);
 ```

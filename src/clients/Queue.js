@@ -5,9 +5,10 @@ import Client from '../Client';
 export default class Queue extends Client {
   constructor(options = {}) {
     super({
-      baseUrl: 'https://queue.taskcluster.net/v1',
+      serviceName: 'queue',
+      serviceVersion: 'v1',
       exchangePrefix: '',
-      ...options
+      ...options,
     });
     this.task.entry = {type:'function',method:'get',route:'/task/<taskId>',query:[],args:['taskId'],name:'task',stability:'stable',output:true}; // eslint-disable-line
     this.status.entry = {type:'function',method:'get',route:'/task/<taskId>/status',query:[],args:['taskId'],name:'status',stability:'stable',output:true}; // eslint-disable-line
@@ -44,21 +45,25 @@ export default class Queue extends Client {
     this.declareWorker.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'declareWorker',stability:'experimental',scopes:{AllOf:[{'for':'property','in':'properties',each:'queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>'}]},input:true,output:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
-
+  /* eslint-disable max-len */
   // This end-point will return the task-definition. Notice that the task
   // definition may have been modified by queue, if an optional property is
   // not specified the queue may provide a default value.
+  /* eslint-enable max-len */
   task(...args) {
     this.validate(this.task.entry, args);
+
     return this.request(this.task.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get task status structure from `taskId`
+  /* eslint-enable max-len */
   status(...args) {
     this.validate(this.status.entry, args);
+
     return this.request(this.status.entry, args);
   }
-
+  /* eslint-disable max-len */
   // List tasks sharing the same `taskGroupId`.
   // As a task-group may contain an unbounded number of tasks, this end-point
   // may return a `continuationToken`. To continue listing tasks you must call
@@ -72,11 +77,13 @@ export default class Queue extends Client {
   // get a result without a `continuationToken`.
   // If you are not interested in listing all the members at once, you may
   // use the query-string option `limit` to return fewer.
+  /* eslint-enable max-len */
   listTaskGroup(...args) {
     this.validate(this.listTaskGroup.entry, args);
+
     return this.request(this.listTaskGroup.entry, args);
   }
-
+  /* eslint-disable max-len */
   // List tasks that depend on the given `taskId`.
   // As many tasks from different task-groups may dependent on a single tasks,
   // this end-point may return a `continuationToken`. To continue listing
@@ -90,11 +97,13 @@ export default class Queue extends Client {
   // you get a result without a `continuationToken`.
   // If you are not interested in listing all the tasks at once, you may
   // use the query-string option `limit` to return fewer.
+  /* eslint-enable max-len */
   listDependentTasks(...args) {
     this.validate(this.listDependentTasks.entry, args);
+
     return this.request(this.listDependentTasks.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Create a new task, this is an **idempotent** operation, so repeat it if
   // you get an internal server error or network connection is dropped.
   // **Task `deadline´**, the deadline property can be no more than 5 days
@@ -114,18 +123,22 @@ export default class Queue extends Client {
   // already been created at the time of this call.
   // **Important** Any scopes the task requires are also required for creating
   // the task. Please see the Request Payload (Task Definition) for details.
+  /* eslint-enable max-len */
   createTask(...args) {
     this.validate(this.createTask.entry, args);
+
     return this.request(this.createTask.entry, args);
   }
-
+  /* eslint-disable max-len */
   // **Deprecated**, this is the same as `createTask` with a **self-dependency**.
   // This is only present for legacy.
+  /* eslint-enable max-len */
   defineTask(...args) {
     this.validate(this.defineTask.entry, args);
+
     return this.request(this.defineTask.entry, args);
   }
-
+  /* eslint-disable max-len */
   // scheduleTask will schedule a task to be executed, even if it has
   // unresolved dependencies. A task would otherwise only be scheduled if
   // its dependencies were resolved.
@@ -137,11 +150,13 @@ export default class Queue extends Client {
   // **Note** this operation is **idempotent** and will not fail or complain
   // if called with a `taskId` that is already scheduled, or even resolved.
   // To reschedule a task previously resolved, use `rerunTask`.
+  /* eslint-enable max-len */
   scheduleTask(...args) {
     this.validate(this.scheduleTask.entry, args);
+
     return this.request(this.scheduleTask.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This method _reruns_ a previously resolved task, even if it was
   // _completed_. This is useful if your task completes unsuccessfully, and
   // you just want to run it from scratch again. This will also reset the
@@ -152,11 +167,13 @@ export default class Queue extends Client {
   // **Remark** this operation is idempotent, if you try to rerun a task that
   // is not either `failed` or `completed`, this operation will just return
   // the current task status.
+  /* eslint-enable max-len */
   rerunTask(...args) {
     this.validate(this.rerunTask.entry, args);
+
     return this.request(this.rerunTask.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This method will cancel a task that is either `unscheduled`, `pending` or
   // `running`. It will resolve the current run as `exception` with
   // `reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.
@@ -168,31 +185,39 @@ export default class Queue extends Client {
   // **Remark** this operation is idempotent, if you try to cancel a task that
   // isn't `unscheduled`, `pending` or `running`, this operation will just
   // return the current task status.
+  /* eslint-enable max-len */
   cancelTask(...args) {
     this.validate(this.cancelTask.entry, args);
+
     return this.request(this.cancelTask.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get a signed URLs to get and delete messages from azure queue.
   // Once messages are polled from here, you can claim the referenced task
   // with `claimTask`, and afterwards you should always delete the message.
+  /* eslint-enable max-len */
   pollTaskUrls(...args) {
     this.validate(this.pollTaskUrls.entry, args);
+
     return this.request(this.pollTaskUrls.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Claim any task, more to be added later... long polling up to 20s.
+  /* eslint-enable max-len */
   claimWork(...args) {
     this.validate(this.claimWork.entry, args);
+
     return this.request(this.claimWork.entry, args);
   }
-
+  /* eslint-disable max-len */
   // claim a task, more to be added later...
+  /* eslint-enable max-len */
   claimTask(...args) {
     this.validate(this.claimTask.entry, args);
+
     return this.request(this.claimTask.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Refresh the claim for a specific `runId` for given `taskId`. This updates
   // the `takenUntil` property and returns a new set of temporary credentials
   // for performing requests on behalf of the task. These credentials should
@@ -211,28 +236,34 @@ export default class Queue extends Client {
   // or the `task.deadline` have been exceeded. If reclaiming fails, workers
   // should abort the task and forget about the given `runId`. There is no
   // need to resolve the run or upload artifacts.
+  /* eslint-enable max-len */
   reclaimTask(...args) {
     this.validate(this.reclaimTask.entry, args);
+
     return this.request(this.reclaimTask.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Report a task completed, resolving the run as `completed`.
+  /* eslint-enable max-len */
   reportCompleted(...args) {
     this.validate(this.reportCompleted.entry, args);
+
     return this.request(this.reportCompleted.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Report a run failed, resolving the run as `failed`. Use this to resolve
   // a run that failed because the task specific code behaved unexpectedly.
   // For example the task exited non-zero, or didn't produce expected output.
   // Do not use this if the task couldn't be run because if malformed
   // payload, or other unexpected condition. In these cases we have a task
   // exception, which should be reported with `reportException`.
+  /* eslint-enable max-len */
   reportFailed(...args) {
     this.validate(this.reportFailed.entry, args);
+
     return this.request(this.reportFailed.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Resolve a run as _exception_. Generally, you will want to report tasks as
   // failed instead of exception. You should `reportException` if,
   //   * The `task.payload` is invalid,
@@ -244,11 +275,13 @@ export default class Queue extends Client {
   // Do not use this to signal that some user-specified code crashed for any
   // reason specific to this code. If user-specific code hits a resource that
   // is temporarily unavailable worker should report task _failed_.
+  /* eslint-enable max-len */
   reportException(...args) {
     this.validate(this.reportException.entry, args);
+
     return this.request(this.reportException.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This API end-point creates an artifact for a specific run of a task. This
   // should **only** be used by a worker currently operating on this task, or
   // from a process running within the task (ie. on the worker).
@@ -309,11 +342,13 @@ export default class Queue extends Client {
   // As a special case the `url` property on _reference artifacts_ can be
   // updated. You should only use this to update the `url` property for
   // reference artifacts your process has created.
+  /* eslint-enable max-len */
   createArtifact(...args) {
     this.validate(this.createArtifact.entry, args);
+
     return this.request(this.createArtifact.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This endpoint finalises an upload done through the blob `storageType`.
   // The queue will ensure that the task/run is still allowing artifacts
   // to be uploaded.  For single-part S3 blob artifacts, this endpoint
@@ -323,11 +358,13 @@ export default class Queue extends Client {
   // the `present` entity field will be set to `true` to reflect that the
   // artifact is now present and a message published to pulse.  NOTE: This
   // endpoint *must* be called for all artifacts of storageType 'blob'
+  /* eslint-enable max-len */
   completeArtifact(...args) {
     this.validate(this.completeArtifact.entry, args);
+
     return this.request(this.completeArtifact.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get artifact by `<name>` from a specific run.
   // **Public Artifacts**, in-order to get an artifact you need the scope
   // `queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
@@ -336,18 +373,73 @@ export default class Queue extends Client {
   // **API Clients**, this method will redirect you to the artifact, if it is
   // stored externally. Either way, the response may not be JSON. So API
   // client users might want to generate a signed URL for this end-point and
-  // use that URL with a normal HTTP client.
+  // use that URL with an HTTP client that can handle responses correctly.
+  // **Downloading artifacts**
+  // There are some special considerations for those http clients which download
+  // artifacts.  This api endpoint is designed to be compatible with an HTTP 1.1
+  // compliant client, but has extra features to ensure the download is valid.
+  // It is strongly recommend that consumers use either taskcluster-lib-artifact (JS),
+  // taskcluster-lib-artifact-go (Go) or the CLI written in Go to interact with
+  // artifacts.
+  // In order to download an artifact the following must be done:
+  // 1. Obtain queue url.  Building a signed url with a taskcluster client is
+  // recommended
+  // 1. Make a GET request which does not follow redirects
+  // 1. In all cases, if specified, the
+  // x-taskcluster-location-{content,transfer}-{sha256,length} values must be
+  // validated to be equal to the Content-Length and Sha256 checksum of the
+  // final artifact downloaded. as well as any intermediate redirects
+  // 1. If this response is a 500-series error, retry using an exponential
+  // backoff.  No more than 5 retries should be attempted
+  // 1. If this response is a 400-series error, treat it appropriately for
+  // your context.  This might be an error in responding to this request or
+  // an Error storage type body.  This request should not be retried.
+  // 1. If this response is a 200-series response, the response body is the artifact.
+  // If the x-taskcluster-location-{content,transfer}-{sha256,length} and
+  // x-taskcluster-location-content-encoding are specified, they should match
+  // this response body
+  // 1. If the response type is a 300-series redirect, the artifact will be at the
+  // location specified by the `Location` header.  There are multiple artifact storage
+  // types which use a 300-series redirect.
+  // 1. For all redirects followed, the user must verify that the content-sha256, content-length,
+  // transfer-sha256, transfer-length and content-encoding match every further request.  The final
+  // artifact must also be validated against the values specified in the original queue response
+  // 1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`
+  // must not occur
+  // 1. A request which has x-taskcluster-artifact-storage-type value of `blob` and does not
+  // have x-taskcluster-location-content-sha256 or x-taskcluster-location-content-length
+  // must be treated as an error
+  // **Headers**
+  // The following important headers are set on the response to this method:
+  // * location: the url of the artifact if a redirect is to be performed
+  // * x-taskcluster-artifact-storage-type: the storage type.  Example: blob, s3, error
+  // The following important headers are set on responses to this method for Blob artifacts
+  // * x-taskcluster-location-content-sha256: the SHA256 of the artifact
+  // *after* any content-encoding is undone.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})
+  // * x-taskcluster-location-content-length: the number of bytes *after* any content-encoding
+  // is undone
+  // * x-taskcluster-location-transfer-sha256: the SHA256 of the artifact
+  // *before* any content-encoding is undone.  This is the SHA256 of what is sent over
+  // the wire.  Sha256 is hex encoded (e.g. [0-9A-Fa-f]{64})
+  // * x-taskcluster-location-transfer-length: the number of bytes *after* any content-encoding
+  // is undone
+  // * x-taskcluster-location-content-encoding: the content-encoding used.  It will either
+  // be `gzip` or `identity` right now.  This is hardcoded to a value set when the artifact
+  // was created and no content-negotiation occurs
+  // * x-taskcluster-location-content-type: the content-type of the artifact
   // **Caching**, artifacts may be cached in data centers closer to the
   // workers in-order to reduce bandwidth costs. This can lead to longer
   // response times. Caching can be skipped by setting the header
   // `x-taskcluster-skip-cache: true`, this should only be used for resources
   // where request volume is known to be low, and caching not useful.
   // (This feature may be disabled in the future, use is sparingly!)
+  /* eslint-enable max-len */
   getArtifact(...args) {
     this.validate(this.getArtifact.entry, args);
+
     return this.request(this.getArtifact.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get artifact by `<name>` from the last run of a task.
   // **Public Artifacts**, in-order to get an artifact you need the scope
   // `queue:get-artifact:<name>`, where `<name>` is the name of the artifact.
@@ -360,11 +452,13 @@ export default class Queue extends Client {
   // **Remark**, this end-point is slightly slower than
   // `queue.getArtifact`, so consider that if you already know the `runId` of
   // the latest run. Otherwise, just us the most convenient API end-point.
+  /* eslint-enable max-len */
   getLatestArtifact(...args) {
     this.validate(this.getLatestArtifact.entry, args);
+
     return this.request(this.getLatestArtifact.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Returns a list of artifacts and associated meta-data for a given run.
   // As a task may have many artifacts paging may be necessary. If this
   // end-point returns a `continuationToken`, you should call the end-point
@@ -372,11 +466,13 @@ export default class Queue extends Client {
   // `continuationToken`.
   // By default this end-point will list up-to 1000 artifacts in a single page
   // you may limit this with the query-string parameter `limit`.
+  /* eslint-enable max-len */
   listArtifacts(...args) {
     this.validate(this.listArtifacts.entry, args);
+
     return this.request(this.listArtifacts.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Returns a list of artifacts and associated meta-data for the latest run
   // from the given task.
   // As a task may have many artifacts paging may be necessary. If this
@@ -385,11 +481,13 @@ export default class Queue extends Client {
   // `continuationToken`.
   // By default this end-point will list up-to 1000 artifacts in a single page
   // you may limit this with the query-string parameter `limit`.
+  /* eslint-enable max-len */
   listLatestArtifacts(...args) {
     this.validate(this.listLatestArtifacts.entry, args);
+
     return this.request(this.listLatestArtifacts.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get all active provisioners.
   // The term "provisioner" is taken broadly to mean anything with a provisionerId.
   // This does not necessarily mean there is an associated service performing any
@@ -398,20 +496,24 @@ export default class Queue extends Client {
   // should call the end-point again with the `continuationToken` as a query-string
   // option. By default this end-point will list up to 1000 provisioners in a single
   // page. You may limit this with the query-string parameter `limit`.
+  /* eslint-enable max-len */
   listProvisioners(...args) {
     this.validate(this.listProvisioners.entry, args);
+
     return this.request(this.listProvisioners.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get an active provisioner.
   // The term "provisioner" is taken broadly to mean anything with a provisionerId.
   // This does not necessarily mean there is an associated service performing any
   // provisioning activity.
+  /* eslint-enable max-len */
   getProvisioner(...args) {
     this.validate(this.getProvisioner.entry, args);
+
     return this.request(this.getProvisioner.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Declare a provisioner, supplying some details about it.
   // `declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
   // possessed. For example, a request to update the `aws-provisioner-v1`
@@ -420,48 +522,58 @@ export default class Queue extends Client {
   // The term "provisioner" is taken broadly to mean anything with a provisionerId.
   // This does not necessarily mean there is an associated service performing any
   // provisioning activity.
+  /* eslint-enable max-len */
   declareProvisioner(...args) {
     this.validate(this.declareProvisioner.entry, args);
+
     return this.request(this.declareProvisioner.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get an approximate number of pending tasks for the given `provisionerId`
   // and `workerType`.
   // The underlying Azure Storage Queues only promises to give us an estimate.
   // Furthermore, we cache the result in memory for 20 seconds. So consumers
   // should be no means expect this to be an accurate number.
   // It is, however, a solid estimate of the number of pending tasks.
+  /* eslint-enable max-len */
   pendingTasks(...args) {
     this.validate(this.pendingTasks.entry, args);
+
     return this.request(this.pendingTasks.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get all active worker-types for the given provisioner.
   // The response is paged. If this end-point returns a `continuationToken`, you
   // should call the end-point again with the `continuationToken` as a query-string
   // option. By default this end-point will list up to 1000 worker-types in a single
   // page. You may limit this with the query-string parameter `limit`.
+  /* eslint-enable max-len */
   listWorkerTypes(...args) {
     this.validate(this.listWorkerTypes.entry, args);
+
     return this.request(this.listWorkerTypes.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get a worker-type from a provisioner.
+  /* eslint-enable max-len */
   getWorkerType(...args) {
     this.validate(this.getWorkerType.entry, args);
+
     return this.request(this.getWorkerType.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Declare a workerType, supplying some details about it.
   // `declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
   // possessed. For example, a request to update the `gecko-b-1-w2008` worker-type within the `aws-provisioner-v1`
   // provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
   // `queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.
+  /* eslint-enable max-len */
   declareWorkerType(...args) {
     this.validate(this.declareWorkerType.entry, args);
+
     return this.request(this.declareWorkerType.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get a list of all active workers of a workerType.
   // `listWorkers` allows a response to be filtered by quarantined and non quarantined workers.
   // To filter the query, you should call the end-point with `quarantined` as a query-string option with a
@@ -470,35 +582,45 @@ export default class Queue extends Client {
   // should call the end-point again with the `continuationToken` as a query-string
   // option. By default this end-point will list up to 1000 workers in a single
   // page. You may limit this with the query-string parameter `limit`.
+  /* eslint-enable max-len */
   listWorkers(...args) {
     this.validate(this.listWorkers.entry, args);
+
     return this.request(this.listWorkers.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get a worker from a worker-type.
+  /* eslint-enable max-len */
   getWorker(...args) {
     this.validate(this.getWorker.entry, args);
+
     return this.request(this.getWorker.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Quarantine a worker
+  /* eslint-enable max-len */
   quarantineWorker(...args) {
     this.validate(this.quarantineWorker.entry, args);
+
     return this.request(this.quarantineWorker.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Declare a worker, supplying some details about it.
   // `declareWorker` allows updating one or more properties of a worker as long as the required scopes are
   // possessed.
+  /* eslint-enable max-len */
   declareWorker(...args) {
     this.validate(this.declareWorker.entry, args);
+
     return this.request(this.declareWorker.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
   ping(...args) {
     this.validate(this.ping.entry, args);
+
     return this.request(this.ping.entry, args);
   }
 }

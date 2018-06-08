@@ -5,48 +5,55 @@ import Client from '../Client';
 export default class AuthEvents extends Client {
   constructor(options = {}) {
     super({
-      baseUrl: '',
+      serviceName: 'auth',
+      serviceVersion: 'v1',
       exchangePrefix: 'exchange/taskcluster-auth/v1/',
-      ...options
+      ...options,
     });
   }
-
+  /* eslint-disable max-len */
   // Message that a new client has been created.
+  /* eslint-enable max-len */
   clientCreated(pattern) {
     const entry = {type:'topic-exchange',exchange:'client-created',name:'clientCreated',routingKey:[{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/auth/v1/client-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // Message that a new client has been updated.
+  /* eslint-enable max-len */
   clientUpdated(pattern) {
     const entry = {type:'topic-exchange',exchange:'client-updated',name:'clientUpdated',routingKey:[{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/auth/v1/client-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // Message that a new client has been deleted.
+  /* eslint-enable max-len */
   clientDeleted(pattern) {
     const entry = {type:'topic-exchange',exchange:'client-deleted',name:'clientDeleted',routingKey:[{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/auth/v1/client-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // Message that a new role has been created.
+  /* eslint-enable max-len */
   roleCreated(pattern) {
     const entry = {type:'topic-exchange',exchange:'role-created',name:'roleCreated',routingKey:[{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/auth/v1/role-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // Message that a new role has been updated.
+  /* eslint-enable max-len */
   roleUpdated(pattern) {
     const entry = {type:'topic-exchange',exchange:'role-updated',name:'roleUpdated',routingKey:[{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/auth/v1/role-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // Message that a new role has been deleted.
+  /* eslint-enable max-len */
   roleDeleted(pattern) {
     const entry = {type:'topic-exchange',exchange:'role-deleted',name:'roleDeleted',routingKey:[{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/auth/v1/role-message.json#'}; // eslint-disable-line
 

@@ -1,8 +1,7 @@
+import { withRootUrl } from 'taskcluster-lib-urls';
 import { stringify } from 'query-string';
 import hawk from 'hawk';
 import fetch from './fetch';
-
-const REMOVE_TRAILING_SLASH = /\/$/;
 
 export default class Client {
   static defaults = {
@@ -13,8 +12,10 @@ export default class Client {
     delayFactor: 100,
     randomizationFactor: 0.25,
     maxDelay: 30 * 1000,
+    serviceName: '',
+    serviceVersion: 'v1',
     exchangePrefix: '',
-    credentialAgent: null
+    credentialAgent: null,
   };
 
   static create(reference) {
@@ -28,26 +29,35 @@ export default class Client {
   constructor(options = {}) {
     this.options = {
       ...Client.defaults,
-      ...options
+      ...options,
     };
 
-    if (this.options.baseUrl) {
-      this.options.baseUrl = this.options.baseUrl.replace(REMOVE_TRAILING_SLASH, '');
+    if (!this.options.rootUrl) {
+      throw new Error('Missing required option "rootUrl"');
     }
 
-    if (this.options.randomizationFactor < 0 || this.options.randomizationFactor >= 1) {
+    if (
+      this.options.randomizationFactor < 0 ||
+      this.options.randomizationFactor >= 1
+    ) {
       throw new Error('options.randomizationFactor must be between 0 and 1');
     }
 
     if (this.options.accessToken) {
-      throw new Error('options.accessToken is no longer supported; use OIDCCredentialAgent');
+      throw new Error(
+        'options.accessToken is no longer supported; use OIDCCredentialAgent'
+      );
     }
 
     const { reference } = options;
 
     if (reference) {
-      if (reference.baseUrl) {
-        this.options.baseUrl = reference.baseUrl.replace(REMOVE_TRAILING_SLASH, '');
+      if (reference.serviceName) {
+        this.options.serviceName = reference.serviceName;
+      }
+
+      if (reference.serviceVersion) {
+        this.options.serviceVersion = reference.serviceVersion;
       }
 
       if (reference.exchangePrefix) {
@@ -55,19 +65,21 @@ export default class Client {
       }
 
       if (reference.entries) {
-        reference.entries.forEach((entry) => {
+        reference.entries.forEach(entry => {
           if (entry.type === 'function') {
             // eslint-disable-next-line func-names
-            this[entry.name] = function (...args) {
+            this[entry.name] = function(...args) {
               this.validate(entry, args);
+
               return this.request(entry, args);
             };
+
             this[entry.name].entry = entry;
           }
 
           if (entry.type === 'topic-exchange') {
             // eslint-disable-next-line func-names
-            this[entry.name] = function (pattern) {
+            this[entry.name] = function(pattern) {
               return this.normalizePattern(entry, pattern);
             };
           }
@@ -78,6 +90,7 @@ export default class Client {
 
   use(optionsUpdates) {
     const options = { ...this.options, ...optionsUpdates };
+
     return new this.constructor(options);
   }
 
@@ -103,9 +116,8 @@ export default class Client {
     // If there is a certificate we have temporary credentials, and we
     // must provide the certificate
     if (certificate) {
-      extra.certificate = typeof certificate === 'string' ?
-        JSON.parse(certificate) :
-        certificate;
+      extra.certificate =
+        typeof certificate === 'string' ? JSON.parse(certificate) : certificate;
     }
 
     // If set of authorized scopes is provided, we'll restrict the request
@@ -134,7 +146,9 @@ export default class Client {
       const type = typeof param;
 
       if (type !== 'string' && type !== 'number') {
-        throw new Error(`URL parameter \`${arg}\` expected a string but was provided type "${type}"`);
+        throw new Error(
+          `URL parameter \`${arg}\` expected a string but was provided type "${type}"`
+        );
       }
 
       return encodeURIComponent(param);
@@ -147,10 +161,12 @@ export default class Client {
     }
 
     // Find the method
-    const entry = method.entry;
+    const { entry } = method;
 
     if (!entry || entry.type !== 'function') {
-      throw new Error('Method in buildUrl must be an API method from the same object');
+      throw new Error(
+        'Method in buildUrl must be an API method from the same object'
+      );
     }
 
     // Get the query string options taken
@@ -158,28 +174,38 @@ export default class Client {
     const supportsOptions = optionKeys.length !== 0;
     const arity = entry.args.length;
 
-    if (args.length !== arity && (!supportsOptions || args.length !== arity + 1)) {
+    if (
+      args.length !== arity &&
+      (!supportsOptions || args.length !== arity + 1)
+    ) {
       throw new Error(
-        `Method \`${entry.name}.buildUrl\` expected ${arity + 1} argument(s) but received ${args.length + 1}`
+        `Method \`${entry.name}.buildUrl\` expected ${arity +
+          1} argument(s) but received ${args.length + 1}`
       );
     }
 
     const endpoint = this.buildEndpoint(entry, args);
 
     if (args[arity]) {
-      Object
-        .keys(args[arity])
-        .forEach((key) => {
-          if (!optionKeys.includes(key)) {
-            throw new Error(`Method \`${entry.name}\` expected options ${optionKeys.join(', ')} but received ${key}`);
-          }
-        });
+      Object.keys(args[arity]).forEach(key => {
+        if (!optionKeys.includes(key)) {
+          throw new Error(
+            `Method \`${entry.name}\` expected options ${optionKeys.join(
+              ', '
+            )} but received ${key}`
+          );
+        }
+      });
     }
 
     const queryArgs = args[arity] && stringify(args[arity]);
     const query = queryArgs ? `?${queryArgs}` : '';
 
-    return `${this.options.baseUrl}${endpoint}${query}`;
+    return withRootUrl(this.options.rootUrl).api(
+      this.options.serviceName,
+      this.options.serviceVersion,
+      `${endpoint}${query}`
+    );
   }
 
   async buildSignedUrl(method, ...args) {
@@ -188,7 +214,7 @@ export default class Client {
     }
 
     // Find reference entry
-    const entry = method.entry;
+    const { entry } = method;
 
     if (entry.method.toLowerCase() !== 'get') {
       throw new Error('buildSignedUrl only works for GET requests');
@@ -206,6 +232,7 @@ export default class Client {
       const options = args.pop();
 
       if (options.expiration) {
+        // eslint-disable-next-line prefer-destructuring
         expiration = options.expiration;
       }
 
@@ -215,9 +242,9 @@ export default class Client {
     }
 
     const url = this.buildUrl(method, ...args);
-    const credentials = this.options.credentialAgent ?
-      await this.options.credentialAgent.getCredentials() :
-      this.options.credentials;
+    const credentials = this.options.credentialAgent
+      ? await this.options.credentialAgent.getCredentials()
+      : this.options.credentials;
 
     if (!credentials) {
       throw new Error('buildSignedUrl missing required credentials');
@@ -230,20 +257,24 @@ export default class Client {
     }
 
     if (!accessToken) {
-      throw new Error('buildSignedUrl missing required credentials accessToken');
+      throw new Error(
+        'buildSignedUrl missing required credentials accessToken'
+      );
     }
 
     const bewit = hawk.client.bewit(url, {
       credentials: {
         id: clientId,
         key: accessToken,
-        algorithm: 'sha256'
+        algorithm: 'sha256',
       },
       ttlSec: expiration,
-      ext: this.buildExtraData(credentials)
+      ext: this.buildExtraData(credentials),
     });
 
-    return url.includes('?') ? `${url}&bewit=${bewit}` : `${url}?bewit=${bewit}`;
+    return url.includes('?')
+      ? `${url}&bewit=${bewit}`
+      : `${url}?bewit=${bewit}`;
   }
 
   validate(entry, args = []) {
@@ -251,18 +282,23 @@ export default class Client {
     const queryOptions = entry.query || [];
     const arity = args.length;
 
-    if (arity !== expectedArity && (queryOptions.length === 0 || arity !== expectedArity + 1)) {
-      throw new Error(`${entry.name} expected ${expectedArity} arguments but only received ${arity}`);
+    if (
+      arity !== expectedArity &&
+      (queryOptions.length === 0 || arity !== expectedArity + 1)
+    ) {
+      throw new Error(
+        `${
+          entry.name
+        } expected ${expectedArity} arguments but only received ${arity}`
+      );
     }
 
-    Object
-      .keys(args[expectedArity] || {})
-      .forEach((key) => {
-        if (!queryOptions.includes(key)) {
-          throw new Error(`${key} is not a valid option for ${entry.name}.
+    Object.keys(args[expectedArity] || {}).forEach(key => {
+      if (!queryOptions.includes(key)) {
+        throw new Error(`${key} is not a valid option for ${entry.name}.
             Valid options include: ${queryOptions.join(', ')}`);
-        }
-      });
+      }
+    });
   }
 
   normalizePattern(entry, pattern) {
@@ -273,7 +309,7 @@ export default class Client {
     }
 
     const routingKeyPattern = entry.routingKey
-      .map((key) => {
+      .map(key => {
         const value = key.constant || initialPattern[key.name];
 
         if (typeof value === 'number') {
@@ -283,7 +319,9 @@ export default class Client {
         if (typeof value === 'string') {
           if (value.includes('.') && !key.multipleWords) {
             throw new Error(
-              `routingKeyPattern "${value}" for ${key.name} cannot contain dots since it does not hold multiple words`
+              `routingKeyPattern "${value}" for ${
+                key.name
+              } cannot contain dots since it does not hold multiple words`
             );
           }
 
@@ -291,7 +329,9 @@ export default class Client {
         }
 
         if (value != null) {
-          throw new Error(`routingKey value "${value}" is not a valid pattern for ${key.name}`);
+          throw new Error(
+            `routingKey value "${value}" is not a valid pattern for ${key.name}`
+          );
         }
 
         return key.multipleWords ? '#' : '*';
@@ -301,24 +341,30 @@ export default class Client {
     return {
       routingKeyPattern,
       routingKeyReference: entry.routingKey.map(item => ({ ...item })),
-      exchange: `${this.options.exchangePrefix}${entry.exchange}`
+      exchange: `${this.options.exchangePrefix}${entry.exchange}`,
     };
   }
 
   async request(entry, args) {
     const expectedArity = this.getMethodExpectedArity(entry);
     const endpoint = this.buildEndpoint(entry, args);
-    const query = args[expectedArity] ? `?${stringify(args[expectedArity])}` : '';
-    const url = `${this.options.baseUrl}${endpoint}${query}`;
+    const query = args[expectedArity]
+      ? `?${stringify(args[expectedArity])}`
+      : '';
+    const url = withRootUrl(this.options.rootUrl).api(
+      this.options.serviceName,
+      this.options.serviceVersion,
+      `${endpoint}${query}`
+    );
     const options = { method: entry.method };
-
-    const credentials = this.options.credentialAgent ?
-      await this.options.credentialAgent.getCredentials() :
-      this.options.credentials;
+    const credentials = this.options.credentialAgent
+      ? await this.options.credentialAgent.getCredentials()
+      : this.options.credentials;
 
     if (entry.input) {
       options.body = JSON.stringify(args[expectedArity - 1]);
     }
+
     if (credentials) {
       options.credentials = credentials;
       options.extra = this.buildExtraData(credentials);

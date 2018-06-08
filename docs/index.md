@@ -98,8 +98,7 @@ points in their own.
 ## Index Client
 
 ```js
-// Create Index client instance with default baseUrl:
-// https://index.taskcluster.net/v1
+// Create Index client instance:
 
 const index = new taskcluster.Index(options);
 ```

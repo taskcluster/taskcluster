@@ -13,13 +13,17 @@ service credential or a one-time signing key.
 ## Secrets Client
 
 ```js
-// Create Secrets client instance with default baseUrl:
-// https://secrets.taskcluster.net/v1
+// Create Secrets client instance:
 
 const secrets = new taskcluster.Secrets(options);
 ```
 
 ## Methods in Secrets Client
+
+```js
+// secrets.ping :: () -> Promise Nothing
+secrets.ping()
+```
 
 ```js
 // secrets.set :: (name -> payload) -> Promise Nothing
@@ -40,10 +44,5 @@ secrets.get(name)
 // secrets.list :: [options] -> Promise Result
 secrets.list()
 secrets.list(options)
-```
-
-```js
-// secrets.ping :: () -> Promise Nothing
-secrets.ping()
 ```
 

@@ -1,5 +1,6 @@
 import hawk from 'hawk';
 
+/* eslint-disable-next-line max-len */
 const JSON_CONTENT = /^(application\/(json|x-javascript)|text\/(x-)?javascript|x-json)(;.*)?$/;
 const defaults = {
   credentials: 'omit',
@@ -9,42 +10,54 @@ const defaults = {
   maxDelay: 30 * 1000,
   timeout: 30 * 1000,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 };
+const handleResponse = response =>
+  Promise.resolve(response)
+    .then(
+      () =>
+        JSON_CONTENT.test(response.headers.get('Content-Type'))
+          ? response.json()
+          : null
+    )
+    .then(json => {
+      if (response.ok) {
+        return json;
+      }
 
-const handleResponse = response => Promise
-  .resolve(response)
-  .then(() => (JSON_CONTENT.test(response.headers.get('Content-Type')) ? response.json() : null))
-  .then((json) => {
-    if (response.ok) {
-      return json;
-    }
+      const message = json.message
+        ? json.message.split('---')[0]
+        : response.statusText;
 
-    const message = json.message ? json.message.split('---')[0] : response.statusText;
-
-    return Promise.reject(Object.assign(new Error(message), {
-      response,
-      body: json
-    }));
-  });
+      return Promise.reject(
+        Object.assign(new Error(message), {
+          response,
+          body: json,
+        })
+      );
+    });
 
 export default (url, opts = {}) => {
-  const options = { ...defaults, ...opts, headers: { ...(opts.body && defaults.headers), ...opts.headers } };
+  const options = {
+    ...defaults,
+    ...opts,
+    headers: { ...(opts.body && defaults.headers), ...opts.headers },
+  };
   const { delayFactor, randomizationFactor, maxDelay, retries } = options;
 
   if (typeof options.credentials !== 'string') {
-    const header = hawk.client.header(url, options.method.toUpperCase(), {
+    const { header } = hawk.client.header(url, options.method.toUpperCase(), {
       credentials: {
         id: options.credentials.clientId,
         key: options.credentials.accessToken,
-        algorithm: 'sha256'
+        algorithm: 'sha256',
       },
-      ext: options.extra
+      ext: options.extra,
     });
 
     options.credentials = 'omit';
-    options.headers.Authorization = header.field;
+    options.headers.Authorization = header;
   }
 
   return new Promise((resolve, reject) => {
@@ -52,18 +65,22 @@ export default (url, opts = {}) => {
       fetch(url, options)
         .then(handleResponse)
         .then(resolve)
-        .catch((err) => {
+        .catch(err => {
           if (n > retries) {
             reject(err);
           } else {
             const delay = Math.min(
-              ((n - 1) ** 2) * delayFactor * (((Math.random() * 2 * randomizationFactor) + 1) - randomizationFactor),
+              (n - 1) ** 2 *
+                delayFactor *
+                (Math.random() * 2 * randomizationFactor +
+                  1 -
+                  randomizationFactor),
               maxDelay
             );
 
             setTimeout(() => attempt(n + 1), delay);
           }
         });
-    }(1));
+    })(1);
   });
 };

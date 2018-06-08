@@ -5,12 +5,13 @@ import Client from '../Client';
 export default class QueueEvents extends Client {
   constructor(options = {}) {
     super({
-      baseUrl: '',
+      serviceName: 'queue',
+      serviceVersion: 'v1',
       exchangePrefix: 'exchange/taskcluster-queue/v1/',
-      ...options
+      ...options,
     });
   }
-
+  /* eslint-disable max-len */
   // When a task is created or just defined a message is posted to this
   // exchange.
   // This message exchange is mainly useful when tasks are scheduled by a
@@ -18,32 +19,35 @@ export default class QueueEvents extends Client {
   // `pending`. Thus, no `taskPending` message is published.
   // Please, note that messages are also published on this exchange if defined
   // using `createTask`.
+  /* eslint-enable max-len */
   taskDefined(pattern) {
     const entry = {type:'topic-exchange',exchange:'task-defined',name:'taskDefined',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:false},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-defined-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // When a task becomes `pending` a message is posted to this exchange.
   // This is useful for workers who doesn't want to constantly poll the queue
   // for new tasks. The queue will also be authority for task states and
   // claims. But using this exchange workers should be able to distribute work
   // efficiently and they would be able to reduce their polling interval
   // significantly without affecting general responsiveness.
+  /* eslint-enable max-len */
   taskPending(pattern) {
     const entry = {type:'topic-exchange',exchange:'task-pending',name:'taskPending',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // Whenever a task is claimed by a worker, a run is started on the worker,
   // and a message is posted on this exchange.
+  /* eslint-enable max-len */
   taskRunning(pattern) {
     const entry = {type:'topic-exchange',exchange:'task-running',name:'taskRunning',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:true},{name:'workerId',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-running-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // Whenever the `createArtifact` end-point is called, the queue will create
   // a record of the artifact and post a message on this exchange. All of this
   // happens before the queue returns a signed URL for the caller to upload
@@ -60,49 +64,54 @@ export default class QueueEvents extends Client {
   // artifacts per task, or _index_ artifacts though in most cases it'll be
   // smarter to index artifacts after the task in question have completed
   // successfully.
+  /* eslint-enable max-len */
   artifactCreated(pattern) {
     const entry = {type:'topic-exchange',exchange:'artifact-created',name:'artifactCreated',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:true},{name:'workerId',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // When a task is successfully completed by a worker a message is posted
   // this exchange.
   // This message is routed using the `runId`, `workerGroup` and `workerId`
   // that completed the task. But information about additional runs is also
   // available from the task status structure.
+  /* eslint-enable max-len */
   taskCompleted(pattern) {
     const entry = {type:'topic-exchange',exchange:'task-completed',name:'taskCompleted',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:true},{name:'workerId',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-completed-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // When a task ran, but failed to complete successfully a message is posted
   // to this exchange. This is same as worker ran task-specific code, but the
   // task specific code exited non-zero.
+  /* eslint-enable max-len */
   taskFailed(pattern) {
     const entry = {type:'topic-exchange',exchange:'task-failed',name:'taskFailed',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:false},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // Whenever Taskcluster fails to run a message is posted to this exchange.
   // This happens if the task isn't completed before its `deadlìne`,
   // all retries failed (i.e. workers stopped responding), the task was
   // canceled by another entity, or the task carried a malformed payload.
   // The specific _reason_ is evident from that task status structure, refer
   // to the `reasonResolved` property for the last run.
+  /* eslint-enable max-len */
   taskException(pattern) {
     const entry = {type:'topic-exchange',exchange:'task-exception',name:'taskException',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:false},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-exception-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // A message is published on task-group-resolved whenever all submitted
   // tasks (whether scheduled or unscheduled) for a given task group have
   // been resolved, regardless of whether they resolved as successful or
   // not. A task group may be resolved multiple times, since new tasks may
   // be submitted against an already resolved task group.
+  /* eslint-enable max-len */
   taskGroupResolved(pattern) {
     const entry = {type:'topic-exchange',exchange:'task-group-resolved',name:'taskGroupResolved',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}],schema:'http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#'}; // eslint-disable-line
 

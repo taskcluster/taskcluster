@@ -4,7 +4,7 @@ import { Queue } from '../src';
 describe('Queue', function() {
   this.timeout(30000);
 
-  const queue = new Queue();
+  const queue = new Queue({ rootUrl: 'https://taskcluster.net' });
 
   it('should be loaded', () => {
     expect(queue).to.be.ok;

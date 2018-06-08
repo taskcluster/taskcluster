@@ -25,8 +25,7 @@ for more information.
 ## Hooks Client
 
 ```js
-// Create Hooks client instance with default baseUrl:
-// https://hooks.taskcluster.net/v1
+// Create Hooks client instance:
 
 const hooks = new taskcluster.Hooks(options);
 ```
@@ -51,11 +50,6 @@ hooks.hook(hookGroupId, hookId)
 ```js
 // hooks.getHookStatus :: (hookGroupId -> hookId) -> Promise Result
 hooks.getHookStatus(hookGroupId, hookId)
-```
-
-```js
-// hooks.getHookSchedule :: (hookGroupId -> hookId) -> Promise Result
-hooks.getHookSchedule(hookGroupId, hookId)
 ```
 
 ```js

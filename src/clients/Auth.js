@@ -5,9 +5,10 @@ import Client from '../Client';
 export default class Auth extends Client {
   constructor(options = {}) {
     super({
-      baseUrl: 'https://auth.taskcluster.net/v1',
+      serviceName: 'auth',
+      serviceVersion: 'v1',
       exchangePrefix: '',
-      ...options
+      ...options,
     });
     this.listClients.entry = {type:'function',method:'get',route:'/clients/',query:['prefix','continuationToken','limit'],args:[],name:'listClients',stability:'stable',output:true}; // eslint-disable-line
     this.client.entry = {type:'function',method:'get',route:'/clients/<clientId>',query:[],args:['clientId'],name:'client',stability:'stable',output:true}; // eslint-disable-line
@@ -39,7 +40,7 @@ export default class Auth extends Client {
     this.testAuthenticateGet.entry = {type:'function',method:'get',route:'/test-authenticate-get/',query:[],args:[],name:'testAuthenticateGet',stability:'stable',output:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
-
+  /* eslint-disable max-len */
   // Get a list of all clients.  With `prefix`, only clients for which
   // it is a prefix of the clientId are returned.
   // By default this end-point will try to return up to 1000 clients in one
@@ -48,17 +49,21 @@ export default class Auth extends Client {
   // results. However, you can only be sure to have seen all results if you
   // keep calling `listClients` with the last `continuationToken` until you
   // get a result without a `continuationToken`.
+  /* eslint-enable max-len */
   listClients(...args) {
     this.validate(this.listClients.entry, args);
+
     return this.request(this.listClients.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get information about a single client.
+  /* eslint-enable max-len */
   client(...args) {
     this.validate(this.client.entry, args);
+
     return this.request(this.client.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Create a new client and get the `accessToken` for this client.
   // You should store the `accessToken` from this API call as there is no
   // other way to retrieve it.
@@ -68,121 +73,149 @@ export default class Auth extends Client {
   // If a client with the same `clientId` already exists this operation will
   // fail. Use `updateClient` if you wish to update an existing client.
   // The caller's scopes must satisfy `scopes`.
+  /* eslint-enable max-len */
   createClient(...args) {
     this.validate(this.createClient.entry, args);
+
     return this.request(this.createClient.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Reset a clients `accessToken`, this will revoke the existing
   // `accessToken`, generate a new `accessToken` and return it from this
   // call.
   // There is no way to retrieve an existing `accessToken`, so if you loose it
   // you must reset the accessToken to acquire it again.
+  /* eslint-enable max-len */
   resetAccessToken(...args) {
     this.validate(this.resetAccessToken.entry, args);
+
     return this.request(this.resetAccessToken.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Update an exisiting client. The `clientId` and `accessToken` cannot be
   // updated, but `scopes` can be modified.  The caller's scopes must
   // satisfy all scopes being added to the client in the update operation.
   // If no scopes are given in the request, the client's scopes remain
   // unchanged
+  /* eslint-enable max-len */
   updateClient(...args) {
     this.validate(this.updateClient.entry, args);
+
     return this.request(this.updateClient.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Enable a client that was disabled with `disableClient`.  If the client
   // is already enabled, this does nothing.
   // This is typically used by identity providers to re-enable clients that
   // had been disabled when the corresponding identity's scopes changed.
+  /* eslint-enable max-len */
   enableClient(...args) {
     this.validate(this.enableClient.entry, args);
+
     return this.request(this.enableClient.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Disable a client.  If the client is already disabled, this does nothing.
   // This is typically used by identity providers to disable clients when the
   // corresponding identity's scopes no longer satisfy the client's scopes.
+  /* eslint-enable max-len */
   disableClient(...args) {
     this.validate(this.disableClient.entry, args);
+
     return this.request(this.disableClient.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Delete a client, please note that any roles related to this client must
   // be deleted independently.
+  /* eslint-enable max-len */
   deleteClient(...args) {
     this.validate(this.deleteClient.entry, args);
+
     return this.request(this.deleteClient.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get a list of all roles, each role object also includes the list of
   // scopes it expands to.
+  /* eslint-enable max-len */
   listRoles(...args) {
     this.validate(this.listRoles.entry, args);
+
     return this.request(this.listRoles.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get information about a single role, including the set of scopes that the
   // role expands to.
+  /* eslint-enable max-len */
   role(...args) {
     this.validate(this.role.entry, args);
+
     return this.request(this.role.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Create a new role.
   // The caller's scopes must satisfy the new role's scopes.
   // If there already exists a role with the same `roleId` this operation
   // will fail. Use `updateRole` to modify an existing role.
   // Creation of a role that will generate an infinite expansion will result
   // in an error response.
+  /* eslint-enable max-len */
   createRole(...args) {
     this.validate(this.createRole.entry, args);
+
     return this.request(this.createRole.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Update an existing role.
   // The caller's scopes must satisfy all of the new scopes being added, but
   // need not satisfy all of the client's existing scopes.
   // An update of a role that will generate an infinite expansion will result
   // in an error response.
+  /* eslint-enable max-len */
   updateRole(...args) {
     this.validate(this.updateRole.entry, args);
+
     return this.request(this.updateRole.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Delete a role. This operation will succeed regardless of whether or not
   // the role exists.
+  /* eslint-enable max-len */
   deleteRole(...args) {
     this.validate(this.deleteRole.entry, args);
+
     return this.request(this.deleteRole.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Return an expanded copy of the given scopeset, with scopes implied by any
   // roles included.
   // This call uses the GET method with an HTTP body.  It remains only for
   // backward compatibility.
+  /* eslint-enable max-len */
   expandScopesGet(...args) {
     this.validate(this.expandScopesGet.entry, args);
+
     return this.request(this.expandScopesGet.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Return an expanded copy of the given scopeset, with scopes implied by any
   // roles included.
+  /* eslint-enable max-len */
   expandScopes(...args) {
     this.validate(this.expandScopes.entry, args);
+
     return this.request(this.expandScopes.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Return the expanded scopes available in the request, taking into account all sources
   // of scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,
   // and roles).
+  /* eslint-enable max-len */
   currentScopes(...args) {
     this.validate(this.currentScopes.entry, args);
+
     return this.request(this.currentScopes.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get temporary AWS credentials for `read-write` or `read-only` access to
   // a given `bucket` and `prefix` within that bucket.
   // The `level` parameter can be `read-write` or `read-only` and determines
@@ -241,84 +274,104 @@ export default class Auth extends Client {
   // compatibility for libraries and tools built to auto-refresh credentials.
   // For details on the format returned by EC2 metadata service see:
   // [EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).
+  /* eslint-enable max-len */
   awsS3Credentials(...args) {
     this.validate(this.awsS3Credentials.entry, args);
+
     return this.request(this.awsS3Credentials.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Retrieve a list of all Azure accounts managed by Taskcluster Auth.
+  /* eslint-enable max-len */
   azureAccounts(...args) {
     this.validate(this.azureAccounts.entry, args);
+
     return this.request(this.azureAccounts.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Retrieve a list of all tables in an account.
+  /* eslint-enable max-len */
   azureTables(...args) {
     this.validate(this.azureTables.entry, args);
+
     return this.request(this.azureTables.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get a shared access signature (SAS) string for use with a specific Azure
   // Table Storage table.
   // The `level` parameter can be `read-write` or `read-only` and determines
   // which type of credentials are returned.  If level is read-write, it will create the
   // table if it doesn't already exist.
+  /* eslint-enable max-len */
   azureTableSAS(...args) {
     this.validate(this.azureTableSAS.entry, args);
+
     return this.request(this.azureTableSAS.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Retrieve a list of all containers in an account.
+  /* eslint-enable max-len */
   azureContainers(...args) {
     this.validate(this.azureContainers.entry, args);
+
     return this.request(this.azureContainers.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get a shared access signature (SAS) string for use with a specific Azure
   // Blob Storage container.
   // The `level` parameter can be `read-write` or `read-only` and determines
   // which type of credentials are returned.  If level is read-write, it will create the
   // container if it doesn't already exist.
+  /* eslint-enable max-len */
   azureContainerSAS(...args) {
     this.validate(this.azureContainerSAS.entry, args);
+
     return this.request(this.azureContainerSAS.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get temporary DSN (access credentials) for a sentry project.
   // The credentials returned can be used with any Sentry client for up to
   // 24 hours, after which the credentials will be automatically disabled.
   // If the project doesn't exist it will be created, and assigned to the
   // initial team configured for this component. Contact a Sentry admin
   // to have the project transferred to a team you have access to if needed
+  /* eslint-enable max-len */
   sentryDSN(...args) {
     this.validate(this.sentryDSN.entry, args);
+
     return this.request(this.sentryDSN.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get temporary `token` and `baseUrl` for sending metrics to statsum.
   // The token is valid for 24 hours, clients should refresh after expiration.
+  /* eslint-enable max-len */
   statsumToken(...args) {
     this.validate(this.statsumToken.entry, args);
+
     return this.request(this.statsumToken.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Get temporary `token` and `id` for connecting to webhooktunnel
   // The token is valid for 96 hours, clients should refresh after expiration.
+  /* eslint-enable max-len */
   webhooktunnelToken(...args) {
     this.validate(this.webhooktunnelToken.entry, args);
+
     return this.request(this.webhooktunnelToken.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Validate the request signature given on input and return list of scopes
   // that the authenticating client has.
   // This method is used by other services that wish rely on Taskcluster
   // credentials for authentication. This way we can use Hawk without having
   // the secret credentials leave this service.
+  /* eslint-enable max-len */
   authenticateHawk(...args) {
     this.validate(this.authenticateHawk.entry, args);
+
     return this.request(this.authenticateHawk.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Utility method to test client implementations of Taskcluster
   // authentication.
   // Rather than using real credentials, this endpoint accepts requests with
@@ -328,11 +381,13 @@ export default class Auth extends Client {
   // applied, and the resulting scopes are checked against `requiredScopes`
   // from the request body. On success, the response contains the clientId
   // and scopes as seen by the API method.
+  /* eslint-enable max-len */
   testAuthenticate(...args) {
     this.validate(this.testAuthenticate.entry, args);
+
     return this.request(this.testAuthenticate.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Utility method similar to `testAuthenticate`, but with the GET method,
   // so it can be used with signed URLs (bewits).
   // Rather than using real credentials, this endpoint accepts requests with
@@ -345,15 +400,19 @@ export default class Auth extends Client {
   // the API method.
   // This method may later be extended to allow specification of client and
   // required scopes via query arguments.
+  /* eslint-enable max-len */
   testAuthenticateGet(...args) {
     this.validate(this.testAuthenticateGet.entry, args);
+
     return this.request(this.testAuthenticateGet.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
   ping(...args) {
     this.validate(this.ping.entry, args);
+
     return this.request(this.ping.entry, args);
   }
 }

@@ -5,14 +5,15 @@ import Client from '../Client';
 export default class Login extends Client {
   constructor(options = {}) {
     super({
-      baseUrl: 'https://login.taskcluster.net/v1',
+      serviceName: 'login',
+      serviceVersion: 'v1',
       exchangePrefix: '',
-      ...options
+      ...options,
     });
     this.oidcCredentials.entry = {type:'function',method:'get',route:'/oidc-credentials/<provider>',query:[],args:['provider'],name:'oidcCredentials',stability:'experimental',output:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
-
+  /* eslint-disable max-len */
   // Given an OIDC `access_token` from a trusted OpenID provider, return a
   // set of Taskcluster credentials for use on behalf of the identified
   // user.
@@ -31,15 +32,19 @@ export default class Login extends Client {
   // The given credentials will expire in a relatively short time. Callers should
   // monitor this expiration and refresh the credentials if necessary, by calling
   // this endpoint again, if they have expired.
+  /* eslint-enable max-len */
   oidcCredentials(...args) {
     this.validate(this.oidcCredentials.entry, args);
+
     return this.request(this.oidcCredentials.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
   ping(...args) {
     this.validate(this.ping.entry, args);
+
     return this.request(this.ping.entry, args);
   }
 }

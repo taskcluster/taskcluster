@@ -5,31 +5,36 @@ import Client from '../Client';
 export default class Notify extends Client {
   constructor(options = {}) {
     super({
-      baseUrl: 'https://notify.taskcluster.net/v1',
+      serviceName: 'notify',
+      serviceVersion: 'v1',
       exchangePrefix: '',
-      ...options
+      ...options,
     });
     this.email.entry = {type:'function',method:'post',route:'/email',query:[],args:[],name:'email',stability:'experimental',scopes:'notify:email:<address>',input:true}; // eslint-disable-line
     this.pulse.entry = {type:'function',method:'post',route:'/pulse',query:[],args:[],name:'pulse',stability:'experimental',scopes:'notify:pulse:<routingKey>',input:true}; // eslint-disable-line
     this.irc.entry = {type:'function',method:'post',route:'/irc',query:[],args:[],name:'irc',stability:'experimental',scopes:{'if':'channelRequest',then:'notify:irc-channel:<channel>','else':'notify:irc-user:<user>'},input:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
-
+  /* eslint-disable max-len */
   // Send an email to `address`. The content is markdown and will be rendered
   // to HTML, but both the HTML and raw markdown text will be sent in the
   // email. If a link is included, it will be rendered to a nice button in the
   // HTML version of the email
+  /* eslint-enable max-len */
   email(...args) {
     this.validate(this.email.entry, args);
+
     return this.request(this.email.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Publish a message on pulse with the given `routingKey`.
+  /* eslint-enable max-len */
   pulse(...args) {
     this.validate(this.pulse.entry, args);
+
     return this.request(this.pulse.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Post a message on IRC to a specific channel or user, or a specific user
   // on a specific channel.
   // Success of this API method does not imply the message was successfully
@@ -39,15 +44,19 @@ export default class Notify extends Client {
   // However, if the user isn't online the message will be dropped without
   // error. We maybe improve this behavior in the future. For now just keep
   // in mind that IRC is a best-effort service.
+  /* eslint-enable max-len */
   irc(...args) {
     this.validate(this.irc.entry, args);
+
     return this.request(this.irc.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
   ping(...args) {
     this.validate(this.ping.entry, args);
+
     return this.request(this.ping.entry, args);
   }
 }

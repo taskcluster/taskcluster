@@ -111,6 +111,7 @@ const taskId = '...';
 
 // Instantiate the Queue Client class
 const queue = new Queue({
+  rootUrl: 'https://taskcluster.net',
   timeout: 30 * 1000, // timeout for _each_ individual http request
   credentials: {
     clientId: '...',
@@ -166,8 +167,9 @@ By default the `WebListener` will connect to `events.taskcluster.net` using a We
 ```js
 import { QueueEvents, WebListener } from 'taskcluster-client-web';
 
-const queueEvents = new QueueEvents();
+const queueEvents = new QueueEvents({ rootUrl });
 const listener = new WebListener({
+  rootUrl,
   credentials: {
     username: '...', // Pulse username from pulse guardian
     password: '...' // Pulse password from pulse guardian
@@ -212,8 +214,7 @@ The `WebListener` accepts a few options for modifying its operation:
 
 ```js
 new WebListener({
-  // This is the default value
-  baseUrl: 'wss://events.taskcluster.net/v1',
+  rootUrl: 'https://taskcluster.net',
   
   // By default the WebSocket will attempt to
   // reconnect every 5 seconds in case of disconnection
@@ -294,7 +295,7 @@ listener
 For convenience, there are also some methods to determine the status of the socket connection:
 
 ```js
-const listener = new WebListener();
+const listener = new WebListener({ rootUrl });
 
 // This will return a Boolean based on whether the socket connection is in the OPEN state.
 listener.isOpen();
@@ -308,14 +309,13 @@ listener.isConnected();
 Documentation for the set of API entries is generated from the built-in references,
 and is listed in the [`docs` directory](/docs) of this repository.
 Detailed documentation with description, payload, and result format details is
-available on [docs.taskcluster.net](http://docs.taskcluster.net).
+available on this cluster's documentation site.
 
 ## Providing Options
 
 Some API end-points may take a query string. This is indicated in the signature
 as `[options]`. These options are always _optional_, commonly used for
-continuation tokens when paging a list. For a list of supported options,
-consult the API documentation on `docs.taskcluster.net`.
+continuation tokens when paging a list.
 
 ## Construct URLs
 
@@ -329,7 +329,7 @@ illustrated in the following example:
 import { Queue } from 'taskcluster-client-web';
 
 // Create queue instance
-const queue = new Queue();
+const queue = new Queue({ rootUrl });
 
 // Build url to get a specific task
 const url = queue.buildUrl(
@@ -363,7 +363,7 @@ specific artifact that is protected by a scope, for example:
 import { Queue } from 'taskcluster-client-web';
 
 // Create queue instance
-const queue = new Queue({ credentials });
+const queue = new Queue({ rootUrl, credentials });
 
 // Build signed url
 queue
@@ -425,17 +425,17 @@ There are a number of configuration options for clients which affect invocation
 of API endpoints. These are useful if using a non-default server, e.g.
 when setting up a staging area or testing locally.
 
-### Configuring API Base URLs
+### Configuring API Root URLs
 
-If you use the built-in API client classes, you can configure
-the `baseUrl` when creating an instance of the client. As illustrated below:
+If you use the built-in API client classes, you must configure
+the `rootUrl` when creating an instance of the client. As illustrated below:
 
 ```js
 import { Auth } from 'taskcluster-client-web';
 
 const auth = new Auth({
+  rootUrl: 'http://localhost:4040', // Useful for development and testing
   credentials: { /* ... */ },
-  baseUrl: 'http://localhost:4040' // Useful for development and testing
 });
 ```
 
@@ -448,6 +448,7 @@ in options. For example:
 import { Auth } from 'taskcluster-client-web';
 
 const auth = new Auth({
+  rootUrl,
   credentials: {
     clientId: '...',
     accessToken: '...'
@@ -464,8 +465,8 @@ shared between multiple clients, and are inherited via `.use`.
 
 #### OIDCCredentialAgent
 
-[Taskcluster-Login](https://docs.taskcluster.net/reference/integrations/taskcluster-login/docs/getting-user-creds)
-provides Taskcluster credentials in exchange for an OIDC `access_token`. To use
+This cluster's login service
+provides credentials in exchange for an OIDC `access_token`. To use
 this functionality, construct an `OIDCCredentialAgent` and pass it to the
 client. This agent will automatically fetch credentials as needed.
 
@@ -473,11 +474,11 @@ client. This agent will automatically fetch credentials as needed.
 import { Queue, OIDCCredentialAgent } from 'taskcluster-client-web';
 
 const credentialAgent = new OIDCCredentialAgent({
+  rootUrl,
   accessToken: '...',
-  oidcProvider: 'mozilla-auth0',
 });
 
-const queue = new Queue({ credentialAgent });
+const queue = new Queue({ rootUrl, credentialAgent });
 
 queue
   .createTask(/* ... */)
@@ -515,6 +516,7 @@ import { Queue } from 'taskcluster-client-web';
 
 // Create a Queue Client class can only define tasks for a specific workerType
 const queue = new Queue({
+  rootUrl,
   // Credentials that can define tasks for any provisioner and workerType.
   credentials: {
     clientId: '...',
@@ -545,6 +547,7 @@ import { QueueEvents } from 'taskcluster-client-web';
 
 // Instantiate the QueueEvents Client class
 const queueEvents = new QueueEvents({
+  rootUrl,
   exchangePrefix: 'staging-queue/v1/'
 });
 

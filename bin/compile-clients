@@ -1,6 +1,9 @@
 #! /usr/bin/env node
 
-const got = require('got');
+if (!process.env.TASKCLUSTER_ROOT_URL) {
+  throw new Error('Missing required environment variable TASKCLUSTER_ROOT_URL');
+}
+
 const stringify = require('javascript-stringify');
 const { compile } = require('ejs');
 const omit = require('object.omit');
@@ -9,8 +12,35 @@ const { join } = require('path');
 const fetchApis = require('./fetch-apis');
 
 const src = join(__dirname, '../src');
-const template = compile(readFileSync(join(__dirname, '../templates/client.ejs'), 'utf-8'));
+const template = compile(
+  readFileSync(join(__dirname, '../templates/client.ejs'), 'utf-8')
+);
 const index = readFileSync(join(src, 'index.js'), 'utf-8');
+// We won't need to dynamically generate the service name from the
+// baseUrl when all APIs have reference.name.
+// Allow for older schemas.
+// This should be deleted once it is no longer used.
+const getServiceName = reference => {
+  if (reference.serviceName) {
+    return reference.serviceName;
+  }
+
+  // It was called this for a while, see:
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1463207
+  if (reference.name) {
+    return reference.name;
+  }
+
+  if (reference.rootUrl) {
+    const parts = reference.rootUrl.split('//');
+
+    return (parts[1] || parts[0]).split('.')[0];
+  }
+
+  if (reference.exchangePrefix) {
+    return reference.exchangePrefix.split('/')[1].replace('taskcluster-', '');
+  }
+};
 
 fetchApis()
   .then(apis => {
@@ -19,6 +49,7 @@ fetchApis()
       .sort()
       .reduce((exports, name, index, context) => {
         const client = apis[name];
+        const { reference } = client;
 
         writeFileSync(
           join(src, `clients/${name}.js`),
@@ -26,9 +57,11 @@ fetchApis()
             name,
             stringify,
             omit,
-            baseUrl: client.reference.baseUrl,
-            exchangePrefix: client.reference.exchangePrefix,
-            methods: client.reference.entries
+            rootUrl: process.env.TASKCLUSTER_ROOT_URL,
+            serviceName: getServiceName(reference),
+            serviceVersion: 'v1',
+            exchangePrefix: reference.exchangePrefix,
+            methods: reference.entries
               .filter(({ type }) => type === 'function')
               .map(entry => {
                 if (entry.input) {
@@ -41,7 +74,7 @@ fetchApis()
 
                 return entry;
               }),
-            topics: client.reference.entries
+            topics: reference.entries
               .filter(({ type }) => type === 'topic-exchange')
               .map(entry => Object.assign(entry, {
                 routingKey: entry.routingKey.map(route => omit(route, ['summary']))

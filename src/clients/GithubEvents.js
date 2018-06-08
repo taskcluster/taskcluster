@@ -5,35 +5,39 @@ import Client from '../Client';
 export default class GithubEvents extends Client {
   constructor(options = {}) {
     super({
-      baseUrl: '',
+      serviceName: 'github',
+      serviceVersion: 'v1',
       exchangePrefix: 'exchange/taskcluster-github/v1/',
-      ...options
+      ...options,
     });
   }
-
+  /* eslint-disable max-len */
   // When a GitHub pull request event is posted it will be broadcast on this
   // exchange with the designated `organization` and `repository`
   // in the routing-key along with event specific metadata in the payload.
+  /* eslint-enable max-len */
   pullRequest(pattern) {
-    const entry = {type:'topic-exchange',exchange:'pull-request',name:'pullRequest',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true},{name:'action',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#'}; // eslint-disable-line
+    const entry = {type:'topic-exchange',exchange:'pull-request',name:'pullRequest',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true},{name:'action',multipleWords:false,required:true}],schema:'v1/github-pull-request-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // When a GitHub push event is posted it will be broadcast on this
   // exchange with the designated `organization` and `repository`
   // in the routing-key along with event specific metadata in the payload.
+  /* eslint-enable max-len */
   push(pattern) {
-    const entry = {type:'topic-exchange',exchange:'push',name:'push',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-push-message.json#'}; // eslint-disable-line
+    const entry = {type:'topic-exchange',exchange:'push',name:'push',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}],schema:'v1/github-push-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
-
+  /* eslint-disable max-len */
   // When a GitHub release event is posted it will be broadcast on this
   // exchange with the designated `organization` and `repository`
   // in the routing-key along with event specific metadata in the payload.
+  /* eslint-enable max-len */
   release(pattern) {
-    const entry = {type:'topic-exchange',exchange:'release',name:'release',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}],schema:'http://schemas.taskcluster.net/github/v1/github-release-message.json#'}; // eslint-disable-line
+    const entry = {type:'topic-exchange',exchange:'release',name:'release',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}],schema:'v1/github-release-message.json#'}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }

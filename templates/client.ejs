@@ -5,20 +5,23 @@ import Client from '../Client';
 export default class <%= name %> extends Client {
   constructor(options = {}) {
     super({
-      baseUrl: '<%= baseUrl %>',
+      serviceName: '<%= serviceName %>',
+      serviceVersion: '<%= serviceVersion %>',
       exchangePrefix: '<%= exchangePrefix %>',
       ...options
     });<% methods.forEach(entry => { %>
     this.<%= entry.name %>.entry = <%- stringify(omit(entry, ['description', 'title'])) %>; // eslint-disable-line<% }) %>
   }<% methods.forEach(entry => { %>
-<% entry.description.split('\n').filter(Boolean).forEach(line => { %>
+  <%- '/* eslint-disable max-len */' %><% entry.description.split('\n').filter(Boolean).forEach(line => { %>
   <%- `// ${line.trimRight()}` %><% }) %>
+  <%- '/* eslint-enable max-len */' %>
   <%= entry.name %>(...args) {
     this.validate(this.<%= entry.name %>.entry, args);
     return this.request(this.<%= entry.name %>.entry, args);
   }<% }) %><% topics.forEach(entry => { %>
-<% entry.description.split('\n').filter(Boolean).forEach(line => { %>
+  <%- '/* eslint-disable max-len */' %><% entry.description.split('\n').filter(Boolean).forEach(line => { %>
   <%- `// ${line.trimRight()}` %><% }) %>
+  <%- '/* eslint-enable max-len */' %>
   <%= entry.name %>(pattern) {
     const entry = <%- stringify(omit(entry, ['description', 'title'])) %>; // eslint-disable-line
 

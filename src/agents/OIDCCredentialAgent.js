@@ -8,9 +8,13 @@ import fetch from '../fetch';
  * with many Client instances.
  */
 export default class OIDCCredentialAgent {
-  constructor({ accessToken, oidcProvider }) {
+  constructor({ accessToken, url }) {
+    if (!this.url) {
+      throw new Error('Missing required option "url"');
+    }
+
     this._accessToken = accessToken;
-    this.oidcProvider = oidcProvider;
+    this.url = url;
   }
 
   // Update the access token, invalidating any cached credentials
@@ -28,24 +32,20 @@ export default class OIDCCredentialAgent {
       return this.credentialsPromise;
     }
 
-    // Call the oidcCredentials endpoint with the access token.
-    const loginBaseUrl = 'https://login.taskcluster.net';
-    const url = `${loginBaseUrl}/v1/oidc-credentials/${this.oidcProvider}`;
-
-    this.credentialsPromise = fetch(url, {
+    this.credentialsPromise = fetch(this.url, {
       headers: {
-        Authorization: `Bearer ${this.accessToken}`
-      }
+        Authorization: `Bearer ${this.accessToken}`,
+      },
     })
-    .then((response) => {
-      this.credentialsExpire = new Date(response.expires);
+      .then(response => {
+        this.credentialsExpire = new Date(response.expires);
 
-      return response.credentials;
-    })
-    .catch((err) => {
-      this.credentialsPromise = null;
-      throw err;
-    });
+        return response.credentials;
+      })
+      .catch(err => {
+        this.credentialsPromise = null;
+        throw err;
+      });
 
     return this.credentialsPromise;
   }

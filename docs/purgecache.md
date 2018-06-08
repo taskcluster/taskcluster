@@ -12,8 +12,7 @@ message. This is mainly intended to be used by tools.
 ## PurgeCache Client
 
 ```js
-// Create PurgeCache client instance with default baseUrl:
-// https://purge-cache.taskcluster.net/v1
+// Create PurgeCache client instance:
 
 const purgeCache = new taskcluster.PurgeCache(options);
 ```

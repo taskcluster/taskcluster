@@ -1,16 +1,19 @@
 // Regular expression matching:
 // A years B months C days D hours E minutes F seconds
-const timeExpression = new RegExp([
-  '^(\\s*(-|\\+))?',
-  '(\\s*(\\d+)\\s*y((ears?)|r)?)?',
-  '(\\s*(\\d+)\\s*mo(nths?)?)?',
-  '(\\s*(\\d+)\\s*w((eeks?)|k)?)?',
-  '(\\s*(\\d+)\\s*d(ays?)?)?',
-  '(\\s*(\\d+)\\s*h((ours?)|r)?)?',
-  '(\\s*(\\d+)\\s*m(in(utes?)?)?)?',
-  '(\\s*(\\d+)\\s*s(ec(onds?)?)?)?',
-  '\\s*$'
-].join(''), 'i');
+const timeExpression = new RegExp(
+  [
+    '^(\\s*(-|\\+))?',
+    '(\\s*(\\d+)\\s*y((ears?)|r)?)?',
+    '(\\s*(\\d+)\\s*mo(nths?)?)?',
+    '(\\s*(\\d+)\\s*w((eeks?)|k)?)?',
+    '(\\s*(\\d+)\\s*d(ays?)?)?',
+    '(\\s*(\\d+)\\s*h((ours?)|r)?)?',
+    '(\\s*(\\d+)\\s*m(in(utes?)?)?)?',
+    '(\\s*(\\d+)\\s*s(ec(onds?)?)?)?',
+    '\\s*$',
+  ].join(''),
+  'i'
+);
 
 export const parseTime = (str = '') => {
   // Parse the string
@@ -21,7 +24,7 @@ export const parseTime = (str = '') => {
   }
 
   // Negate if needed
-  const neg = (match[2] === '-' ? -1 : 1);
+  const neg = match[2] === '-' ? -1 : 1;
 
   // Return parsed values
   return {
@@ -31,7 +34,7 @@ export const parseTime = (str = '') => {
     days: parseInt(match[15] || 0, 10) * neg,
     hours: parseInt(match[18] || 0, 10) * neg,
     minutes: parseInt(match[22] || 0, 10) * neg,
-    seconds: parseInt(match[25] || 0, 10) * neg
+    seconds: parseInt(match[25] || 0, 10) * neg,
   };
 };
 
@@ -52,11 +55,11 @@ export const fromNow = (offset, reference = new Date()) => {
 
   return new Date(
     reference.getTime() +
-    (parsedOffset.weeks * 7 * 24 * 60 * 60 * 1000) +
-    (parsedOffset.days * 24 * 60 * 60 * 1000) +
-    (parsedOffset.hours * 60 * 60 * 1000) +
-    (parsedOffset.minutes * 60 * 1000) +
-    (parsedOffset.seconds * 1000)
+      parsedOffset.weeks * 7 * 24 * 60 * 60 * 1000 +
+      parsedOffset.days * 24 * 60 * 60 * 1000 +
+      parsedOffset.hours * 60 * 60 * 1000 +
+      parsedOffset.minutes * 60 * 1000 +
+      parsedOffset.seconds * 1000
   );
 };
 
@@ -73,7 +76,8 @@ export const fromNow = (offset, reference = new Date()) => {
  * short hand `1d2h3min`, it's fairly tolerant of different spelling forms and
  * whitespace. But only really meant to be used with constants.
  */
-export const fromNowJSON = (offset, reference) => fromNow(offset, reference).toJSON();
+export const fromNowJSON = (offset, reference) =>
+  fromNow(offset, reference).toJSON();
 
 /* eslint-disable no-bitwise, no-mixed-operators */
 export const uuid = () => {

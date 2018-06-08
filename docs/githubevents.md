@@ -2,9 +2,9 @@
 
 ##
 
-The github service, typically available at
-`github.taskcluster.net`, is responsible for publishing a pulse
-message for supported github events.
+The github service publishes a pulse
+message for supported github events, translating Github webhook
+events into pulse messages.
 
 This document describes the exchange offered by the taskcluster
 github service

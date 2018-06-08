@@ -30,6 +30,7 @@ describe('Building URLs', function() {
 
   const Fake = Client.create(reference);
   const client = new Fake({
+    rootUrl: 'https://taskcluster.net',
     credentials: {
       // note that nothing in this suite actually verifies these, but it
       // exercises the request-signing code

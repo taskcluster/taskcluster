@@ -15,8 +15,7 @@ end-points targets the following audience:
 ## Queue Client
 
 ```js
-// Create Queue client instance with default baseUrl:
-// https://queue.taskcluster.net/v1
+// Create Queue client instance:
 
 const queue = new taskcluster.Queue(options);
 ```

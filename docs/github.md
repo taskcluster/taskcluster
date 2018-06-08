@@ -15,13 +15,17 @@ with code ForbiddenByGithub.
 ## Github Client
 
 ```js
-// Create Github client instance with default baseUrl:
-// https://github.taskcluster.net/v1
+// Create Github client instance:
 
 const github = new taskcluster.Github(options);
 ```
 
 ## Methods in Github Client
+
+```js
+// github.ping :: () -> Promise Nothing
+github.ping()
+```
 
 ```js
 // github.githubWebHookConsumer :: () -> Promise Nothing
@@ -57,10 +61,5 @@ github.createStatus(owner, repo, sha, payload)
 ```js
 // github.createComment :: (owner -> repo -> number -> payload) -> Promise Nothing
 github.createComment(owner, repo, number, payload)
-```
-
-```js
-// github.ping :: () -> Promise Nothing
-github.ping()
 ```
 

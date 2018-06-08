@@ -34,8 +34,7 @@ which can read the instance user data.
 ## AwsProvisioner Client
 
 ```js
-// Create AwsProvisioner client instance with default baseUrl:
-// https://aws-provisioner.taskcluster.net/v1
+// Create AwsProvisioner client instance:
 
 const awsProvisioner = new taskcluster.AwsProvisioner(options);
 ```

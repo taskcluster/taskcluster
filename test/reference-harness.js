@@ -1,9 +1,9 @@
 export default {
   version: 0,
-  $schema: 'http://schemas.taskcluster.net/base/v1/api-reference.json#',
+  $schema: 'https://taskcluster.net/references/base/v1/api-reference.json#',
   title: 'Fake API',
   description: 'Fake API',
-  baseUrl: 'https://fake.taskcluster.net/v1',
+  serviceName: 'fake',
   entries: [
     {
       type: 'function',
@@ -28,7 +28,7 @@ export default {
       title: 'Test Post',
       description: 'Place we can call to test POST',
       scopes: [],
-      input: 'http://schemas.taskcluster.net/nothing.json'
+      input: '/schemas/v1/nothing.json'
     },
     {
       type: 'function',
@@ -41,7 +41,7 @@ export default {
       title: 'Test Post Param',
       description: 'Place we can call to test POST with params',
       scopes: [],
-      input: 'http://schemas.taskcluster.net/nothing.json'
+      input: 'https://taskcluster.net/schemas/nothing.json'
     },
     {
       type: 'function',
@@ -54,7 +54,7 @@ export default {
       title: 'Test Post Param Query',
       description: 'Place we can call to test POST with params and a query',
       scopes: [],
-      input: 'http://schemas.taskcluster.net/nothing.json'
+      input: 'http://taskcluster.net/schemas/nothing.json'
     },
     {
       type: 'function',

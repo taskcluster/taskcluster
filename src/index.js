@@ -1,6 +1,9 @@
 export { default as Client } from './Client';
 export { default as OIDCCredentialAgent } from './agents/OIDCCredentialAgent';
-export { createTemporaryCredentials, credentialInformation } from './credentials';
+export {
+  createTemporaryCredentials,
+  credentialInformation,
+} from './credentials';
 export { fromNow, fromNowJSON, slugid, nice, v4, parseTime } from './utils';
 export { default as WebListener } from './WebListener';
 export { default as request } from './fetch';
@@ -9,7 +12,9 @@ export { default as request } from './fetch';
 export { default as Auth } from './clients/Auth';
 export { default as AuthEvents } from './clients/AuthEvents';
 export { default as AwsProvisioner } from './clients/AwsProvisioner';
-export { default as AwsProvisionerEvents } from './clients/AwsProvisionerEvents';
+export {
+  default as AwsProvisionerEvents,
+} from './clients/AwsProvisionerEvents';
 export { default as EC2Manager } from './clients/EC2Manager';
 export { default as Github } from './clients/Github';
 export { default as GithubEvents } from './clients/GithubEvents';

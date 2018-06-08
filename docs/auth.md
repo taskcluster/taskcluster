@@ -45,8 +45,7 @@ by many Taskcluster components.
 ## Auth Client
 
 ```js
-// Create Auth client instance with default baseUrl:
-// https://auth.taskcluster.net/v1
+// Create Auth client instance:
 
 const auth = new taskcluster.Auth(options);
 ```

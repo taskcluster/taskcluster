@@ -5,36 +5,39 @@ import Client from '../Client';
 export default class AwsProvisioner extends Client {
   constructor(options = {}) {
     super({
-      baseUrl: 'https://aws-provisioner.taskcluster.net/v1',
+      serviceName: 'aws-provisioner',
+      serviceVersion: 'v1',
       exchangePrefix: '',
-      ...options
+      ...options,
     });
     this.listWorkerTypeSummaries.entry = {type:'function',method:'get',route:'/list-worker-type-summaries',query:[],args:[],name:'listWorkerTypeSummaries',stability:'stable',output:true}; // eslint-disable-line
-    this.createWorkerType.entry = {type:'function',method:'put',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'createWorkerType',stability:'stable',scopes:[['aws-provisioner:manage-worker-type:<workerType>']],input:true,output:true}; // eslint-disable-line
-    this.updateWorkerType.entry = {type:'function',method:'post',route:'/worker-type/<workerType>/update',query:[],args:['workerType'],name:'updateWorkerType',stability:'stable',scopes:[['aws-provisioner:manage-worker-type:<workerType>']],input:true,output:true}; // eslint-disable-line
+    this.createWorkerType.entry = {type:'function',method:'put',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'createWorkerType',stability:'stable',scopes:'aws-provisioner:manage-worker-type:<workerType>',input:true,output:true}; // eslint-disable-line
+    this.updateWorkerType.entry = {type:'function',method:'post',route:'/worker-type/<workerType>/update',query:[],args:['workerType'],name:'updateWorkerType',stability:'stable',scopes:'aws-provisioner:manage-worker-type:<workerType>',input:true,output:true}; // eslint-disable-line
     this.workerTypeLastModified.entry = {type:'function',method:'get',route:'/worker-type-last-modified/<workerType>',query:[],args:['workerType'],name:'workerTypeLastModified',stability:'stable',output:true}; // eslint-disable-line
-    this.workerType.entry = {type:'function',method:'get',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'workerType',stability:'stable',scopes:[['aws-provisioner:view-worker-type:<workerType>'],['aws-provisioner:manage-worker-type:<workerType>']],output:true}; // eslint-disable-line
-    this.removeWorkerType.entry = {type:'function',method:'delete',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'removeWorkerType',stability:'stable',scopes:[['aws-provisioner:manage-worker-type:<workerType>']]}; // eslint-disable-line
+    this.workerType.entry = {type:'function',method:'get',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'workerType',stability:'stable',scopes:{AnyOf:['aws-provisioner:view-worker-type:<workerType>','aws-provisioner:manage-worker-type:<workerType>']},output:true}; // eslint-disable-line
+    this.removeWorkerType.entry = {type:'function',method:'delete',route:'/worker-type/<workerType>',query:[],args:['workerType'],name:'removeWorkerType',stability:'stable',scopes:'aws-provisioner:manage-worker-type:<workerType>'}; // eslint-disable-line
     this.listWorkerTypes.entry = {type:'function',method:'get',route:'/list-worker-types',query:[],args:[],name:'listWorkerTypes',stability:'stable',output:true}; // eslint-disable-line
-    this.createSecret.entry = {type:'function',method:'put',route:'/secret/<token>',query:[],args:['token'],name:'createSecret',stability:'stable',scopes:[['aws-provisioner:create-secret:<workerType>']],input:true}; // eslint-disable-line
+    this.createSecret.entry = {type:'function',method:'put',route:'/secret/<token>',query:[],args:['token'],name:'createSecret',stability:'stable',scopes:'aws-provisioner:create-secret:<workerType>',input:true}; // eslint-disable-line
     this.getSecret.entry = {type:'function',method:'get',route:'/secret/<token>',query:[],args:['token'],name:'getSecret',stability:'stable',output:true}; // eslint-disable-line
     this.instanceStarted.entry = {type:'function',method:'get',route:'/instance-started/<instanceId>/<token>',query:[],args:['instanceId','token'],name:'instanceStarted',stability:'stable'}; // eslint-disable-line
     this.removeSecret.entry = {type:'function',method:'delete',route:'/secret/<token>',query:[],args:['token'],name:'removeSecret',stability:'stable'}; // eslint-disable-line
-    this.getLaunchSpecs.entry = {type:'function',method:'get',route:'/worker-type/<workerType>/launch-specifications',query:[],args:['workerType'],name:'getLaunchSpecs',stability:'experimental',scopes:[['aws-provisioner:view-worker-type:<workerType>'],['aws-provisioner:manage-worker-type:<workerType>']],output:true}; // eslint-disable-line
+    this.getLaunchSpecs.entry = {type:'function',method:'get',route:'/worker-type/<workerType>/launch-specifications',query:[],args:['workerType'],name:'getLaunchSpecs',stability:'experimental',scopes:{AnyOf:['aws-provisioner:view-worker-type:<workerType>','aws-provisioner:manage-worker-type:<workerType>']},output:true}; // eslint-disable-line
     this.state.entry = {type:'function',method:'get',route:'/state/<workerType>',query:[],args:['workerType'],name:'state',stability:'stable'}; // eslint-disable-line
     this.backendStatus.entry = {type:'function',method:'get',route:'/backend-status',query:[],args:[],name:'backendStatus',stability:'experimental',output:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
   }
-
+  /* eslint-disable max-len */
   // Return a list of worker types, including some summary information about
   // current capacity for each.  While this list includes all defined worker types,
   // there may be running EC2 instances for deleted worker types that are not
   // included here.  The list is unordered.
+  /* eslint-enable max-len */
   listWorkerTypeSummaries(...args) {
     this.validate(this.listWorkerTypeSummaries.entry, args);
+
     return this.request(this.listWorkerTypeSummaries.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Create a worker type.  A worker type contains all the configuration
   // needed for the provisioner to manage the instances.  Each worker type
   // knows which regions and which instance types are allowed for that
@@ -55,11 +58,13 @@ export default class AwsProvisioner extends Client {
   // are available using the secrets api.  If specified, the scopes provided
   // will be used to generate a set of temporary credentials available with
   // the other secrets.
+  /* eslint-enable max-len */
   createWorkerType(...args) {
     this.validate(this.createWorkerType.entry, args);
+
     return this.request(this.createWorkerType.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Provide a new copy of a worker type to replace the existing one.
   // This will overwrite the existing worker type definition if there
   // is already a worker type of that name.  This method will return a
@@ -70,31 +75,37 @@ export default class AwsProvisioner extends Client {
   // the request body for this method
   // Otherwise, all input requirements and actions are the same as the
   // create method.
+  /* eslint-enable max-len */
   updateWorkerType(...args) {
     this.validate(this.updateWorkerType.entry, args);
+
     return this.request(this.updateWorkerType.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This method is provided to allow workers to see when they were
   // last modified.  The value provided through UserData can be
   // compared against this value to see if changes have been made
   // If the worker type definition has not been changed, the date
   // should be identical as it is the same stored value.
+  /* eslint-enable max-len */
   workerTypeLastModified(...args) {
     this.validate(this.workerTypeLastModified.entry, args);
+
     return this.request(this.workerTypeLastModified.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Retrieve a copy of the requested worker type definition.
   // This copy contains a lastModified field as well as the worker
   // type name.  As such, it will require manipulation to be able to
   // use the results of this method to submit date to the update
   // method.
+  /* eslint-enable max-len */
   workerType(...args) {
     this.validate(this.workerType.entry, args);
+
     return this.request(this.workerType.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Delete a worker type definition.  This method will only delete
   // the worker type definition from the storage table.  The actual
   // deletion will be handled by a background worker.  As soon as this
@@ -105,94 +116,114 @@ export default class AwsProvisioner extends Client {
   // either ensure that no tasks are created with that worker type name
   // or you could theoretically set maxCapacity to 0, though, this is
   // not a supported or tested action
+  /* eslint-enable max-len */
   removeWorkerType(...args) {
     this.validate(this.removeWorkerType.entry, args);
+
     return this.request(this.removeWorkerType.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Return a list of string worker type names.  These are the names
   // of all managed worker types known to the provisioner.  This does
   // not include worker types which are left overs from a deleted worker
   // type definition but are still running in AWS.
+  /* eslint-enable max-len */
   listWorkerTypes(...args) {
     this.validate(this.listWorkerTypes.entry, args);
+
     return this.request(this.listWorkerTypes.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Insert a secret into the secret storage.  The supplied secrets will
   // be provided verbatime via `getSecret`, while the supplied scopes will
   // be converted into credentials by `getSecret`.
   // This method is not ordinarily used in production; instead, the provisioner
   // creates a new secret directly for each spot bid.
+  /* eslint-enable max-len */
   createSecret(...args) {
     this.validate(this.createSecret.entry, args);
+
     return this.request(this.createSecret.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Retrieve a secret from storage.  The result contains any passwords or
   // other restricted information verbatim as well as a temporary credential
   // based on the scopes specified when the secret was created.
   // It is important that this secret is deleted by the consumer (`removeSecret`),
   // or else the secrets will be visible to any process which can access the
   // user data associated with the instance.
+  /* eslint-enable max-len */
   getSecret(...args) {
     this.validate(this.getSecret.entry, args);
+
     return this.request(this.getSecret.entry, args);
   }
-
+  /* eslint-disable max-len */
   // An instance will report in by giving its instance id as well
   // as its security token.  The token is given and checked to ensure
   // that it matches a real token that exists to ensure that random
   // machines do not check in.  We could generate a different token
   // but that seems like overkill
+  /* eslint-enable max-len */
   instanceStarted(...args) {
     this.validate(this.instanceStarted.entry, args);
+
     return this.request(this.instanceStarted.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Remove a secret.  After this call, a call to `getSecret` with the given
   // token will return no information.
   // It is very important that the consumer of a
   // secret delete the secret from storage before handing over control
   // to untrusted processes to prevent credential and/or secret leakage.
+  /* eslint-enable max-len */
   removeSecret(...args) {
     this.validate(this.removeSecret.entry, args);
+
     return this.request(this.removeSecret.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This method returns a preview of all possible launch specifications
   // that this worker type definition could submit to EC2.  It is used to
   // test worker types, nothing more
   // **This API end-point is experimental and may be subject to change without warning.**
+  /* eslint-enable max-len */
   getLaunchSpecs(...args) {
     this.validate(this.getLaunchSpecs.entry, args);
+
     return this.request(this.getLaunchSpecs.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Return the state of a given workertype as stored by the provisioner.
   // This state is stored as three lists: 1 for running instances, 1 for
   // pending requests.  The `summary` property contains an updated summary
   // similar to that returned from `listWorkerTypeSummaries`.
+  /* eslint-enable max-len */
   state(...args) {
     this.validate(this.state.entry, args);
+
     return this.request(this.state.entry, args);
   }
-
+  /* eslint-disable max-len */
   // This endpoint is used to show when the last time the provisioner
   // has checked in.  A check in is done through the deadman's snitch
   // api.  It is done at the conclusion of a provisioning iteration
   // and used to tell if the background provisioning process is still
   // running.
   // **Warning** this api end-point is **not stable**.
+  /* eslint-enable max-len */
   backendStatus(...args) {
     this.validate(this.backendStatus.entry, args);
+
     return this.request(this.backendStatus.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
   ping(...args) {
     this.validate(this.ping.entry, args);
+
     return this.request(this.ping.entry, args);
   }
 }

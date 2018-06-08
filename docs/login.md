@@ -8,8 +8,7 @@ systems and Taskcluster credentials.
 ## Login Client
 
 ```js
-// Create Login client instance with default baseUrl:
-// https://login.taskcluster.net/v1
+// Create Login client instance:
 
 const login = new taskcluster.Login(options);
 ```

@@ -5,77 +5,94 @@ import Client from '../Client';
 export default class Github extends Client {
   constructor(options = {}) {
     super({
-      baseUrl: 'https://github.taskcluster.net/v1',
+      serviceName: 'github',
+      serviceVersion: 'v1',
       exchangePrefix: '',
-      ...options
+      ...options,
     });
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
     this.githubWebHookConsumer.entry = {type:'function',method:'post',route:'/github',query:[],args:[],name:'githubWebHookConsumer',stability:'experimental'}; // eslint-disable-line
     this.builds.entry = {type:'function',method:'get',route:'/builds',query:['continuationToken','limit','organization','repository','sha'],args:[],name:'builds',stability:'experimental',output:true}; // eslint-disable-line
     this.badge.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>/<branch>/badge.svg',query:[],args:['owner','repo','branch'],name:'badge',stability:'experimental'}; // eslint-disable-line
     this.repository.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>',query:[],args:['owner','repo'],name:'repository',stability:'experimental',output:true}; // eslint-disable-line
     this.latest.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>/<branch>/latest',query:[],args:['owner','repo','branch'],name:'latest',stability:'experimental'}; // eslint-disable-line
-    this.createStatus.entry = {type:'function',method:'post',route:'/repository/<owner>/<repo>/statuses/<sha>',query:[],args:['owner','repo','sha'],name:'createStatus',stability:'experimental',scopes:'github:create-status:<owner>/<repo>',input:true}; // eslint-disable-line
-    this.createComment.entry = {type:'function',method:'post',route:'/repository/<owner>/<repo>/issues/<number>/comments',query:[],args:['owner','repo','number'],name:'createComment',stability:'experimental',scopes:'github:create-comment:<owner>/<repo>',input:true}; // eslint-disable-line
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
+    this.createStatus.entry = {type:'function',method:'post',route:'/repository/<owner>/<repo>/statuses/<sha>',query:[],args:['owner','repo','sha'],name:'createStatus',stability:'experimental',input:true,scopes:'github:create-status:<owner>/<repo>'}; // eslint-disable-line
+    this.createComment.entry = {type:'function',method:'post',route:'/repository/<owner>/<repo>/issues/<number>/comments',query:[],args:['owner','repo','number'],name:'createComment',stability:'experimental',input:true,scopes:'github:create-comment:<owner>/<repo>'}; // eslint-disable-line
   }
+  /* eslint-disable max-len */
+  // Respond without doing anything.
+  // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
+  ping(...args) {
+    this.validate(this.ping.entry, args);
 
+    return this.request(this.ping.entry, args);
+  }
+  /* eslint-disable max-len */
   // Capture a GitHub event and publish it via pulse, if it's a push,
   // release or pull request.
+  /* eslint-enable max-len */
   githubWebHookConsumer(...args) {
     this.validate(this.githubWebHookConsumer.entry, args);
+
     return this.request(this.githubWebHookConsumer.entry, args);
   }
-
+  /* eslint-disable max-len */
   // A paginated list of builds that have been run in
   // Taskcluster. Can be filtered on various git-specific
   // fields.
+  /* eslint-enable max-len */
   builds(...args) {
     this.validate(this.builds.entry, args);
+
     return this.request(this.builds.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Checks the status of the latest build of a given branch
   // and returns corresponding badge svg.
+  /* eslint-enable max-len */
   badge(...args) {
     this.validate(this.badge.entry, args);
+
     return this.request(this.badge.entry, args);
   }
-
+  /* eslint-disable max-len */
   // Returns any repository metadata that is
   // useful within Taskcluster related services.
+  /* eslint-enable max-len */
   repository(...args) {
     this.validate(this.repository.entry, args);
+
     return this.request(this.repository.entry, args);
   }
-
+  /* eslint-disable max-len */
   // For a given branch of a repository, this will always point
   // to a status page for the most recent task triggered by that
   // branch.
   // Note: This is a redirect rather than a direct link.
+  /* eslint-enable max-len */
   latest(...args) {
     this.validate(this.latest.entry, args);
+
     return this.request(this.latest.entry, args);
   }
-
+  /* eslint-disable max-len */
   // For a given changeset (SHA) of a repository, this will attach a "commit status"
   // on github. These statuses are links displayed next to each revision.
   // The status is either OK (green check) or FAILURE (red cross),
   // made of a custom title and link.
+  /* eslint-enable max-len */
   createStatus(...args) {
     this.validate(this.createStatus.entry, args);
+
     return this.request(this.createStatus.entry, args);
   }
-
+  /* eslint-disable max-len */
   // For a given Issue or Pull Request of a repository, this will write a new message.
+  /* eslint-enable max-len */
   createComment(...args) {
     this.validate(this.createComment.entry, args);
-    return this.request(this.createComment.entry, args);
-  }
 
-  // Respond without doing anything.
-  // This endpoint is used to check that the service is up.
-  ping(...args) {
-    this.validate(this.ping.entry, args);
-    return this.request(this.ping.entry, args);
+    return this.request(this.createComment.entry, args);
   }
 }
