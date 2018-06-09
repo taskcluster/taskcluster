@@ -21,10 +21,7 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 
 
 	if nooprunCancel {
-		c, _ := q.Status(taskID)
-		run := c.Status.Runs[len(c.Status.Runs)-1]
-		fmt.Println("Cancels", taskID ,"(state:",run.State,")")
-		runName(credentials , args , out , flagSet)
+		displayNoopMsg("Cancels", credentials, args, out, flagSet)
 		return nil
 	}
 
@@ -52,10 +49,7 @@ func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, f
 	taskID := args[0]
 
 	if noopRerun {
-		c, _ := q.Status(taskID)
-		run := c.Status.Runs[len(c.Status.Runs)-1]
-		fmt.Println("Rerunns", taskID ,"(state:",run.State,")") 
-		runName(credentials , args , out , flagSet)
+		displayNoopMsg("Runs", credentials, args, out, flagSet)
 		return nil
 	}
 
@@ -184,10 +178,7 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 	}
 
 	if nooprunComplete {
-		c, _ := q.Status(taskID)
-		run := c.Status.Runs[len(c.Status.Runs)-1]
-		fmt.Println("Completes", taskID ,"(state:",run.State,")")
-		runName(credentials , args , out , flagSet)
+		displayNoopMsg("Completes", credentials, args, out, flagSet)
 		return nil
 	}
 

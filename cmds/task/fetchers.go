@@ -59,6 +59,26 @@ func runStatus(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	return nil
 }
 
+// displayNoopMsg displays details when --noop is used
+func displayNoopMsg(command string, credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet ) error {
+	q := makeQueue(credentials)
+	taskID := args[0]
+
+	c, _ := q.Status(taskID)
+	run := c.Status.Runs[len(c.Status.Runs)-1]
+
+
+	t, err := q.Task(taskID)
+	if err != nil {
+		return fmt.Errorf("could not get the task %s: %v", taskID, err)
+	}
+
+	fmt.Println(command, t.Metadata.Name ,"taskid:", taskID ,"(state:",run.State,")")
+
+	return nil
+
+
+}
 // runName gets the name of a given task.
 func runName(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
 	q := makeQueue(credentials)
