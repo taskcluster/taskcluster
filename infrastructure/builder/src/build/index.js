@@ -7,6 +7,7 @@ const config = require('typed-env-config');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const {ClusterSpec} = require('../formats/cluster-spec');
+const {TerraformJson} = require('../formats/tf-json');
 const {TaskGraph, Lock, ConsoleRenderer, LogRenderer} = require('console-taskgraph');
 const {gitClone} = require('./utils');
 const generateRepoTasks = require('./repo');
@@ -86,7 +87,7 @@ class Build {
     // create a TerraformJson output based on the result of the build
     const tfJson = new TerraformJson(this.spec, context);
     // ..and write it out
-    tfjson.write(this.output);
+    tfJson.write(this.output);
   }
 }
 
