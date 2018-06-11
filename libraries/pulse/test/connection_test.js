@@ -13,12 +13,14 @@ if (!PULSE_CONNECTION_STRING) {
 
 suite('buildConnectionString', function() {
   test('missing arguments are an error', function() {
-    assume(() => lib.buildConnectionString({username: 'me', password: 'pw'}))
-      .throws(/hostname/);
-    assume(() => lib.buildConnectionString({username: 'me', hostname: 'h'}))
-      .throws(/password/);
-    assume(() => lib.buildConnectionString({password: 'pw', hostname: 'h'}))
+    assume(() => lib.buildConnectionString({password: 'pw', hostname: 'h', vhost: 'v'}))
       .throws(/username/);
+    assume(() => lib.buildConnectionString({username: 'me', hostname: 'h', vhost: 'v'}))
+      .throws(/password/);
+    assume(() => lib.buildConnectionString({username: 'me', password: 'pw', vhost: 'v'}))
+      .throws(/hostname/);
+    assume(() => lib.buildConnectionString({username: 'me', password: 'pw', hostname: 'v'}))
+      .throws(/vhost/);
   });
 
   test('builds a connection string with given host', function() {
@@ -27,8 +29,9 @@ suite('buildConnectionString', function() {
         username: 'me',
         password: 'letmein',
         hostname: 'pulse.abc.com',
+        vhost: '/',
       }),
-      'amqps://me:letmein@pulse.abc.com:5671');
+      'amqps://me:letmein@pulse.abc.com:5671/%2F');
   });
 
   test('builds a connection string with urlencoded values', function() {
@@ -37,8 +40,9 @@ suite('buildConnectionString', function() {
         username: 'ali-escaper:/@\\|()<>&',
         password: 'bobby-tables:/@\\|()<>&',
         hostname: 'pulse.abc.com',
+        vhost: '/',
       }),
-      'amqps://ali-escaper:/@%5C%7C()%3C%3E&:bobby-tables:/@%5C%7C()%3C%3E&@pulse.abc.com:5671');
+      'amqps://ali-escaper:/@%5C%7C()%3C%3E&:bobby-tables:/@%5C%7C()%3C%3E&@pulse.abc.com:5671/%2F');
   });
 });
 
