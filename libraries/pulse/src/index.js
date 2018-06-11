@@ -13,10 +13,11 @@ var clientCounter = 0;
  *   hostname:          // Hostname to use
  * }
  */
-const buildConnectionString = function({username, password, hostname}) {
+const buildConnectionString = function({username, password, hostname, vhost}) {
   assert(username, 'options.username password is required');
   assert(password, 'options.password is required');
   assert(hostname, 'options.hostname is required');
+  assert(vhost, 'options.vhost is required');
 
   // Construct connection string
   return [
@@ -28,6 +29,8 @@ const buildConnectionString = function({username, password, hostname}) {
     hostname,
     ':',
     5671,                // Port for SSL
+    '/',
+    encodeURIComponent(vhost),
   ].join('');
 };
 exports.buildConnectionString = buildConnectionString;
@@ -53,20 +56,22 @@ exports.buildConnectionString = buildConnectionString;
  * * username
  * * password
  * * hostname
+ * * vhost
  * * recycleInterval (ms; default 1h)
  * * retirementDelay (ms; default 30s)
  */
 class Client extends events.EventEmitter {
-  constructor({username, password, hostname, connectionString, recycleInterval, retirementDelay}) {
+  constructor({username, password, hostname, vhost, connectionString, recycleInterval, retirementDelay}) {
     super();
 
     if (connectionString) {
       assert(!username, 'Can\'t use `username` along with `connectionString`');
       assert(!password, 'Can\'t use `password` along with `connectionString`');
       assert(!hostname, 'Can\'t use `hostname` along with `connectionString`');
+      assert(!vhost, 'Can\'t use `hostname` along with `connectionString`');
       this.connectionString = connectionString;
     } else {
-      connectionString = buildConnectionString({username, password, hostname});
+      connectionString = buildConnectionString({username, password, hostname, vhost});
     }
 
     this.recycleInterval = recycleInterval || 3600 * 1000;

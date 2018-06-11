@@ -19,6 +19,7 @@ const client = new pulse.Client({
   username: 'sendr',
   password: 'sekrit',
   hostname: 'pulse.mycompany.com',
+  vhost: '/',
 });
 ```
 
