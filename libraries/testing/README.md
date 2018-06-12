@@ -275,13 +275,12 @@ function to define a test for each schema case.
  * `validator` - {}  // options to pass to the [taskcluster-lib-validate](https://github.com/taskcluster/taskcluster-lib-validate) constructor
  * `cases` - array of test cases
  * `basePath` -  base path for relative pathnames in test cases (default `path.join(__dirname, 'validate')`)
- * `schemaPrefix` - prefix used to resolve schema references; usually `http://schemas.taskcluster.net`
 
 Each test case looks like this:
 
 ```js
 {
-  schema:   'svc/v7/frobnicate-foo.json', // JSON schema identifier to test against (appended to schemaPrefix)
+  schema:   'https://tc-tests.localhost/svcname/v7/frobnicate-foo.json', // JSON schema identifier to test against
   path:     'test-file.json',             // Path to test file (relative to basePath)
   success:  true || false                 // true if validation should succeed; false if it should fail
 }
@@ -330,3 +329,10 @@ poll for the expected state.
 
 The `poll` function will repeatedly call a function that returns a promise
 until the promise is resolved without errors.
+
+```javascript
+await poll(
+  maybeFunc, // function to be called
+  11,        // max times to try it
+  100);      // delay (ms) between tries
+```

@@ -32,7 +32,7 @@
     "superagent-hawk": "0.0.6",
     "taskcluster-client": "10.0.0",
     "taskcluster-lib-urls": "^10.0.0",
-    "taskcluster-lib-validate": "^10.0.0",
+    "taskcluster-lib-validate": "^11.0.1",
     "uuid": "^3.1.0"
   },
   "devDependencies": {
