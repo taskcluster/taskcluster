@@ -1,4 +1,5 @@
-const lib = require('../src');
+const {Client} = require('../src');
+const {buildConnectionString} = require('../src/client');
 const amqplib = require('amqplib');
 const assert = require('assert');
 const assume = require('assume');
@@ -13,19 +14,19 @@ if (!PULSE_CONNECTION_STRING) {
 
 suite('buildConnectionString', function() {
   test('missing arguments are an error', function() {
-    assume(() => lib.buildConnectionString({password: 'pw', hostname: 'h', vhost: 'v'}))
+    assume(() => buildConnectionString({password: 'pw', hostname: 'h', vhost: 'v'}))
       .throws(/username/);
-    assume(() => lib.buildConnectionString({username: 'me', hostname: 'h', vhost: 'v'}))
+    assume(() => buildConnectionString({username: 'me', hostname: 'h', vhost: 'v'}))
       .throws(/password/);
-    assume(() => lib.buildConnectionString({username: 'me', password: 'pw', vhost: 'v'}))
+    assume(() => buildConnectionString({username: 'me', password: 'pw', vhost: 'v'}))
       .throws(/hostname/);
-    assume(() => lib.buildConnectionString({username: 'me', password: 'pw', hostname: 'v'}))
+    assume(() => buildConnectionString({username: 'me', password: 'pw', hostname: 'v'}))
       .throws(/vhost/);
   });
 
   test('builds a connection string with given host', function() {
     assert.equal(
-      lib.buildConnectionString({
+      buildConnectionString({
         username: 'me',
         password: 'letmein',
         hostname: 'pulse.abc.com',
@@ -36,7 +37,7 @@ suite('buildConnectionString', function() {
 
   test('builds a connection string with urlencoded values', function() {
     assert.equal(
-      lib.buildConnectionString({
+      buildConnectionString({
         username: 'ali-escaper:/@\\|()<>&',
         password: 'bobby-tables:/@\\|()<>&',
         hostname: 'pulse.abc.com',
@@ -58,7 +59,7 @@ const connectionTests = connectionString => {
   const debug = debugModule('test');
 
   setup(function() {
-    client = new lib.Client({
+    client = new Client({
       connectionString,
       retirementDelay: 50,
     });
@@ -91,7 +92,7 @@ const connectionTests = connectionString => {
   });
 
   test('reconnect interval', async function() {
-    let client = new lib.Client({
+    let client = new Client({
       connectionString,
       recycleInterval: 10,
     });
@@ -184,11 +185,11 @@ const connectionTests = connectionString => {
 suite('Client', function() {
   suite('constructor', function() {
     test('rejects connectionString *and* username', function() {
-      assume(() => new lib.Client({username: 'me', connectionString: 'amqps://..'}))
+      assume(() => new Client({username: 'me', connectionString: 'amqps://..'}))
         .throws(/along with/);
     });
     test('requires either connectionString *or* username', function() {
-      assume(() => new lib.Client({}))
+      assume(() => new Client({}))
         .throws(/is required/);
     });
   });
