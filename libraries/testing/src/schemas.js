@@ -3,7 +3,8 @@ var _             = require('lodash');
 var assert        = require('assert');
 var debug         = require('debug')('taskcluster-lib-testing:schemas');
 var fs            = require('fs');
-var validator     = require('taskcluster-lib-validate');
+var SchemaSet     = require('taskcluster-lib-validate');
+var libUrls       = require('taskcluster-lib-urls');
 var path          = require('path');
 
 /**
@@ -12,30 +13,27 @@ var path          = require('path');
  * Basically, it only makes sense to use from inside `suite` in a mocha test.
  *
  * options:{
- *   validator: {}  // options for base.validator
+ *   schemasetOptions: {}  // options for SchemaSet constructor
  *   cases: [
  *     {
- *       schema:    '...json'         // JSON schema identifier to test against
+ *       // JSON schema id to test against
+ *       schema:    'https://tc-tests.localhost/schemas/somesvc/v1/foo.json#',
  *       path:      'test-file.json', // Path to test file
  *       success:   true || false     // Is test expected to fail
  *     }
  *   ],
  *   basePath:      path.join(__dirname, 'validate')  // basePath test cases
- *   schemaPrefix:  'http://'         // Prefix for schema identifiers
  * }
  */
 var schemas = function(options) {
-  options = _.defaults({}, options, {
-    schemaPrefix:     '',  // Defaults to no schema prefix
-  });
-
   // Validate options
-  assert(options.validator, 'Options must be given for validator');
+  assert(options.schemasetOptions, 'Options must be given for validator');
   assert(options.cases instanceof Array, 'Array of cases must be given');
 
-  var validate = null;
+  let validate;
   setup(async function() {
-    validate = await validator(options.validator);
+    const schemaset = new SchemaSet(options.schemasetOptions);
+    validate = await schemaset.validator(libUrls.testRootUrl());
   });
 
   // Create test cases
@@ -51,7 +49,7 @@ var schemas = function(options) {
       var json = JSON.parse(data);
 
       // Find schema
-      var schema = options.schemaPrefix + testCase.schema;
+      var schema = testCase.schema;
 
       // Validate json
       var error = validate(json, schema);
