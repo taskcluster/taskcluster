@@ -20,14 +20,15 @@
   "author": "Dustin J. Mitchell <dustin@mozilla.com>",
   "license": "MPL-2.0",
   "dependencies": {
+    "lodash": "^4.17.10",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2",
+    "taskcluster-lib-urls": "^10.0.0",
     "walk": "^2.3.13"
   },
   "devDependencies": {
     "eslint-config-taskcluster": "^3.1.0",
     "mocha": "^5.2.0",
-    "mock-fs": "^4.5.0",
-    "taskcluster-lib-urls": "^10.0.0"
+    "mock-fs": "^4.5.0"
   }
 }
