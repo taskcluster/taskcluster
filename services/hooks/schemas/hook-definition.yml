@@ -4,14 +4,8 @@ description: |
   Definition of a hook that will create tasks when defined events occur.
 type:                     object
 properties:
-  hookGroupId:
-    type:                 string
-    minLength:            {$const: identifier-min-length}
-    maxLength:            {$const: identifier-max-length}
-    pattern:              {$const: identifier-pattern}
-  hookId:
-    type:                 string
-    maxLength:            255
+  hookGroupId:            {$const: hookGroupId}
+  hookId:                 {$const: hookId}
   metadata:               {$ref: "http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#"}
   schedule:
     description: |

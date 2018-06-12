@@ -31,6 +31,10 @@ const api = new API({
     'for more information.',
   ].join('\n'),
   name: 'hooks',
+  params: {
+    hookGroupId: /^[a-zA-Z0-9-_]{1,64}$/,
+    hookId: /^[a-zA-Z0-9-_\/]{1,64}$/,
+  },
   context: ['Hook', 'taskcreator'],
   schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/',
 });
