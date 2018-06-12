@@ -5,7 +5,7 @@ const debug           = require('debug')('base:test:nonceManager');
 
 suite('nonceManager test', function() {
   // Create a new nonceManager for each test
-  var nonceManager = null;
+  let nonceManager = null;
   setup(function() {
     nonceManager = API.nonceManager({size: 5});
   });

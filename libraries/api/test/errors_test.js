@@ -7,7 +7,7 @@ const libUrls         = require('taskcluster-lib-urls');
 
 suite('api/errors', function() {
   // Create test api
-  var builder = new APIBuilder({
+  const builder = new APIBuilder({
     title:        'Test Api',
     description:  'Yet another test api',
     errorCodes:   {TooManyFoos: 472},
@@ -32,13 +32,13 @@ suite('api/errors', function() {
   });
 
   test('InputError response', async function() {
-    let url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputerror');
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputerror');
     return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
       if (!res.status) {
         throw res;
       }
       assert.equal(res.status, 400);
-      let response = JSON.parse(res.response.text);
+      const response = JSON.parse(res.response.text);
       assert(response.code === 'InputError');
       assert(/Testing Error\n\n---\n\n/.test(response.message));
       delete response.requestInfo['time'];
@@ -65,10 +65,10 @@ suite('api/errors', function() {
   });
 
   test('TooManyFoos response', async function() {
-    let url = libUrls.api(helper.rootUrl, 'test', 'v1', '/toomanyfoos');
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/toomanyfoos');
     return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
       assert(res.status === 472);
-      let response = JSON.parse(res.response.text);
+      const response = JSON.parse(res.response.text);
       response.message = response.message.replace(response.requestInfo.time, '<nowish>');
       response.requestInfo.time = '<nowish>';
       assert.deepEqual(response, {
@@ -109,10 +109,10 @@ suite('api/errors', function() {
   });
 
   test('ISE response', async function() {
-    let url = libUrls.api(helper.rootUrl, 'test', 'v1', '/ISE');
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/ISE');
     return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
       assert(res.status === 500);
-      let response = JSON.parse(res.response.text);
+      const response = JSON.parse(res.response.text);
       assert(response.code === 'InternalServerError');
       assert(/^Internal/.test(response.message));
       assert(!/uhoh/.test(response.message)); // error doesn't go to user
@@ -130,7 +130,7 @@ suite('api/errors', function() {
     route:    '/inputvalidationerror',
     name:     'InputValidationError',
     title:    'Test End-Point',
-    input:    'test-schema.json',
+    input:    'test-schema.yml',
     description:  'Place we can call to test something',
     cleanPayload: payload => {
       payload.secret = '<HIDDEN>';
@@ -140,12 +140,12 @@ suite('api/errors', function() {
   });
 
   test('InputValidationError response', async function() {
-    let url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputvalidationerror');
+    const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputvalidationerror');
     return request.post(url).send({invalid: 'yep', secret: 's3kr!t'})
       .then(res => assert(false, 'should have failed!'))
       .catch(res => {
-        assert(res.status === 400);
-        let response = JSON.parse(res.response.text);
+        assert.equal(res.status, 400);
+        const response = JSON.parse(res.response.text);
         assert(!/s3kr!t/.test(res.text)); // secret does not appear in response
         assert(response.code === 'InputValidationError');
         assert(response.requestInfo.payload.secret == '<HIDDEN>'); // replaced payload appears in response

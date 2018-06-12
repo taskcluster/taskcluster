@@ -3,7 +3,7 @@ const APIBuilder      = require('../');
 
 suite('api/route', function() {
   // Create test api
-  var builder = new APIBuilder({
+  const builder = new APIBuilder({
     title:        'Test Api',
     description:  'Another test api',
     serviceName:  'test',
