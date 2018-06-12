@@ -38,6 +38,20 @@ suite('storing output', function() {
     assert.deepEqual(ref1, {serviceName: 'fake', version: 'v1'});
     const ref2 = JSON.parse(fs.readFileSync('/test/output/references/fake/v2/exchanges.json'));
     assert.deepEqual(ref2, {serviceName: 'fake', exchangePrefix: 'exchanges/taskcluster-fake/v2', version: 'v2'});
+    const manifest = JSON.parse(fs.readFileSync('/test/output/references/manifest.json'));
+    assert.deepEqual(manifest, {
+      services: [
+        {
+          serviceName: 'fake',
+          apis: [
+            {version: 'v1', reference: '/references/fake/v1/api.json'},
+          ],
+          pulse: [
+            {version: 'v2', reference: '/references/fake/v2/exchanges.json'},
+          ],
+        },
+      ],
+    });
   });
 
   test('writes schemas at the path given by their $id (without #)', async function() {
