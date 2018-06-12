@@ -5,7 +5,7 @@ const assert          = require('assert');
 const libUrls         = require('taskcluster-lib-urls');
 
 suite('api/publish', function() {
-  var cfg = config({});
+  const cfg = config({});
 
   if (!cfg.aws || !cfg.referenceTestBucket) {
     console.log('Skipping \'publish\', missing config file: ' +
@@ -16,7 +16,7 @@ suite('api/publish', function() {
   // Test simple method
   test('publish minimal reference', async function() {
     // Create test api
-    var builder = new APIBuilder({
+    const builder = new APIBuilder({
       title:        'Test Api',
       description:  'Another test api',
       serviceName:  'test',

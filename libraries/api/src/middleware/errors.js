@@ -1,6 +1,6 @@
-let uuid = require('uuid');
-let debug = require('debug')('api:errors');
-let _ = require('lodash');
+const uuid = require('uuid');
+const debug = require('debug')('api:errors');
+const _ = require('lodash');
 
 const ERROR_CODES = {
   MalformedPayload:         400,  // Only for JSON.parse() errors
@@ -27,10 +27,11 @@ exports.ERROR_CODES = ERROR_CODES;
  * allowed error codes to HTTP status codes, and `monitor` is an instance of
  * `raven.Client` from an instance of taskcluster-lib-monitor.
  */
-let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
+const buildReportErrorMethod = ({errorCodes, monitor, entry}) => {
+  const {name: method, cleanPayload} = entry;
   return (req, res, next) => {
     res.reportError = (code, message, details = {}) => {
-      let status = errorCodes[code];
+      const status = errorCodes[code];
       let payload = req.body;
       if (cleanPayload) {
         payload = cleanPayload(payload);
@@ -42,7 +43,7 @@ let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
         code = 'InternalServerError';
         status = 500;
         if (monitor) {
-          let err = new Error(message);
+          const err = new Error(message);
           err.badMessage = message;
           err.badCode = code;
           err.details = details;
@@ -50,7 +51,7 @@ let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
         }
       }
 
-      let requestInfo = {
+      const requestInfo = {
         method,
         params:  req.params,
         payload,
@@ -74,7 +75,7 @@ let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
     };
 
     res.reportInternalError = (err, tags = {}) => {
-      let incidentId = uuid.v4();
+      const incidentId = uuid.v4();
       res.reportError(
         'InternalServerError',
         'Internal Server Error, incidentId: ' + incidentId,
@@ -100,5 +101,4 @@ let BuildReportErrorMethod = (method, errorCodes, monitor, cleanPayload) => {
   };
 };
 
-// Export BuildReportErrorMethod
-exports.BuildReportErrorMethod = BuildReportErrorMethod;
+exports.buildReportErrorMethod = buildReportErrorMethod;
