@@ -86,11 +86,37 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       assume(r1).deep.equals(r2);
     });
     
+    test('creates a hook with slash in hookId', async () => {
+      const r1 = await helper.hooks.createHook('foo', 'bar/slash', hookWithTriggerSchema);
+      const r2 = await helper.hooks.hook('foo', 'bar/slash');
+      assume(r1).deep.equals(r2);
+    });
+    
     test('with invalid scopes', async () => {
       helper.scopes('hooks:modify-hook:wrong/scope');
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema).then(
         () => { throw new Error('Expected an authentication error'); },
         (err) => { debug('Got expected authentication error: %s', err); });
+    });
+
+    test('with invalid hookGroupId', async () => {
+      await helper.hooks.createHook('foo/slash', 'bar', hookWithTriggerSchema).then(
+        () => { throw new Error('Expected an error'); },
+        (err) => {
+          if (!/hookGroupId.*must match/.test(err)) {
+            throw err;
+          }
+        });
+    });
+
+    test('with invalid hookId', async () => {
+      await helper.hooks.createHook('foo', 'bar!!!', hookWithTriggerSchema).then(
+        () => { throw new Error('Expected an error'); },
+        (err) => {
+          if (!/hookId.*must match/.test(err)) {
+            throw err;
+          }
+        });
     });
 
     test('succeeds if a matching resource already exists', async () => {
