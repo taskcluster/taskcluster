@@ -3,7 +3,7 @@ var _            = require('lodash');
 var nock         = require('nock');
 var hawk         = require('hawk');
 var request      = require('superagent');
-var libValidate  = require('taskcluster-lib-validate');
+var SchemaSet    = require('taskcluster-lib-validate');
 var APIBuilder   = require('taskcluster-lib-api');
 var App          = require('taskcluster-lib-app');
 var assert       = require('assert');
@@ -44,7 +44,7 @@ suite('fakeauth', function() {
   var server;
 
   suiteSetup(async function() {
-    const validator = await libValidate({
+    const schemaset = new SchemaSet({
       rootUrl,
       serviceName: 'lib-testing',
       folder:  path.join(__dirname, 'schemas'),
@@ -52,7 +52,7 @@ suite('fakeauth', function() {
 
     // Create router for the API
     const api = await builder.build({
-      validator: validator,
+      schemaset,
       rootUrl,
     });
 
