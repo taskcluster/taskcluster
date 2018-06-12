@@ -9,7 +9,7 @@ suite('api/route', function() {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
 
   // Create test api
-  var builder = new APIBuilder({
+  const builder = new APIBuilder({
     title:        'Test Api',
     description:  'Another test api',
     serviceName:  'test',
@@ -87,7 +87,7 @@ suite('api/route', function() {
   teardown(helper.teardownServer);
 
   test('single parameter', function() {
-    var url = u('/single-param/Hello');
+    const url = u('/single-param/Hello');
     return request
       .get(url)
       .then(function(res) {
@@ -97,7 +97,7 @@ suite('api/route', function() {
   });
 
   test('query parameter', function() {
-    var url = u('/query-param/');
+    const url = u('/query-param/');
     return request
       .get(url)
       .query({nextPage: '352'})
@@ -108,7 +108,7 @@ suite('api/route', function() {
   });
 
   test('query parameter (is optional)', function() {
-    var url = u('/query-param/');
+    const url = u('/query-param/');
     return request
       .get(url)
       .then(function(res) {
@@ -118,7 +118,7 @@ suite('api/route', function() {
   });
 
   test('query parameter (validation works)', function() {
-    var url = u('/query-param/');
+    const url = u('/query-param/');
     return request
       .get(url)
       .query({nextPage: 'abc'})
@@ -130,7 +130,7 @@ suite('api/route', function() {
   });
 
   test('slash parameter', function() {
-    var url = u('/slash-param/Hello/World');
+    const url = u('/slash-param/Hello/World');
     return request
       .get(url)
       .then(function(res) {
@@ -140,8 +140,8 @@ suite('api/route', function() {
   });
 
   test('validated reg-exp parameter (valid)', function() {
-    var id = slugid.v4();
-    var url = u('/validated-param/') + id;
+    const id = slugid.v4();
+    const url = u('/validated-param/') + id;
     return request
       .get(url)
       .then(function(res) {
@@ -151,7 +151,7 @@ suite('api/route', function() {
   });
 
   test('validated reg-exp parameter (invalid)', function() {
-    var url = u('/validated-param/-');
+    const url = u('/validated-param/-');
     return request
       .get(url)
       .then(res => assert(false, 'should have failed!'))
@@ -162,7 +162,7 @@ suite('api/route', function() {
   });
 
   test('validated function parameter (valid)', function() {
-    var url = u('/validated-param-2/correct');
+    const url = u('/validated-param-2/correct');
     return request
       .get(url)
       .then(function(res) {
@@ -172,7 +172,7 @@ suite('api/route', function() {
   });
 
   test('validated function parameter (invalid)', function() {
-    var url = u('/validated-param-2/incorrect');
+    const url = u('/validated-param-2/incorrect');
     return request
       .get(url)
       .then(res => assert(false, 'should have failed!'))
@@ -183,7 +183,7 @@ suite('api/route', function() {
   });
 
   test('cache header', function() {
-    var url = u('/single-param/Hello');
+    const url = u('/single-param/Hello');
     return request
       .get(url)
       .then(function(res) {
@@ -193,7 +193,7 @@ suite('api/route', function() {
   });
 
   test('cache header on 404s', function() {
-    var url = u('/unknown');
+    const url = u('/unknown');
     return request
       .get(url)
       .then(res => assert(false, 'should have failed!'))
