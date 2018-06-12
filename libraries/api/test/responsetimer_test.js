@@ -8,7 +8,7 @@ const libUrls         = require('taskcluster-lib-urls');
 
 suite('api/responsetimer', function() {
   // Create test api
-  var builder = new APIBuilder({
+  const builder = new APIBuilder({
     title:        'Test Api',
     description:  'Another test api',
     serviceName:  'test',
@@ -46,9 +46,8 @@ suite('api/responsetimer', function() {
   });
 
   // Reference for test api server
-  var _apiServer = null;
-
-  var monitor = null;
+  let _apiServer = null;
+  let monitor = null;
 
   // Create a mock authentication server
   setup(async () => {

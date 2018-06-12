@@ -10,7 +10,7 @@ suite('API (context)', function() {
   const rootUrl = 'http://localhost:4321';
   test('Provides context', async () => {
     // Create test api
-    var builder = new APIBuilder({
+    const builder = new APIBuilder({
       title:        'Test Api',
       description:  'Another test api',
       context:      ['myProp'],
@@ -28,8 +28,8 @@ suite('API (context)', function() {
       res.status(200).json({myProp: this.myProp});
     });
 
-    var value = slugid.v4();
-    let schemaset = new SchemaSet({
+    const value = slugid.v4();
+    const schemaset = new SchemaSet({
       serviceName: 'test',
       folder: path.join(__dirname, 'schemas'),
     });
@@ -41,7 +41,7 @@ suite('API (context)', function() {
       },
     });
 
-    let server = await App({
+    const server = await App({
       port:       60872,
       env:        'development',
       forceSSL:   false,
@@ -64,7 +64,7 @@ suite('API (context)', function() {
 
   test('Context properties can be required', async () => {
     // Create test api
-    var builder = new APIBuilder({
+    const builder = new APIBuilder({
       title:        'Test Api',
       description:  'Another test api',
       context:      ['prop1', 'prop2'],
@@ -72,8 +72,8 @@ suite('API (context)', function() {
       version:      'v1',
     });
 
-    var value = slugid.v4();
-    let schemaset = new SchemaSet({
+    const value = slugid.v4();
+    const schemaset = new SchemaSet({
       serviceName: 'test',
       folder: path.join(__dirname, 'schemas'),
     });
@@ -96,7 +96,7 @@ suite('API (context)', function() {
 
   test('Context properties can provided', async () => {
     // Create test api
-    var builder = new APIBuilder({
+    const builder = new APIBuilder({
       title:        'Test Api',
       description:  'Another test api',
       context:      ['prop1', 'prop2'],
@@ -104,8 +104,8 @@ suite('API (context)', function() {
       version:      'v1',
     });
 
-    var value = slugid.v4();
-    let schemaset = new SchemaSet({
+    const value = slugid.v4();
+    const schemaset = new SchemaSet({
       serviceName: 'test',
       folder: path.join(__dirname, 'schemas'),
     });
@@ -121,7 +121,7 @@ suite('API (context)', function() {
 
   test('Context entry should be known', async () => {
     //Create test api
-    var builder = new APIBuilder({
+    const builder = new APIBuilder({
       title:        'Test Api',
       description:  'Another test api',
       context:      [],
@@ -129,8 +129,8 @@ suite('API (context)', function() {
       version:      'v1',
     });
 
-    var value = slugid.v4();
-    let schemaset = new SchemaSet({
+    const value = slugid.v4();
+    const schemaset = new SchemaSet({
       serviceName: 'test',
       folder: path.join(__dirname, 'schemas'),
     });

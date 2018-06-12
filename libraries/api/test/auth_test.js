@@ -10,12 +10,12 @@ const path            = require('path');
 
 suite('api/auth', function() {
   // Reference for test api server
-  var _apiServer = null;
+  let _apiServer = null;
 
   this.timeout(500);
 
   // Create test api
-  var builder = new APIBuilder({
+  const builder = new APIBuilder({
     title:        'Test Api',
     description:  'Another test api',
     serviceName:  'test',
@@ -507,7 +507,7 @@ suite('api/auth', function() {
     },
     tests: [
       {
-        label: 'forgot to auth',
+        label: 'forgot to auth simple',
         desiredStatus: 500,
         id: 'admin',
         tester: (auth, url) => request

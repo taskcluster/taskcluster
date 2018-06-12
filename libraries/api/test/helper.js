@@ -1,10 +1,10 @@
-var testing         = require('taskcluster-lib-testing');
-var SchemaSet       = require('taskcluster-lib-validate');
-var assert          = require('assert');
-var path            = require('path');
-var express         = require('express');
+const testing         = require('taskcluster-lib-testing');
+const SchemaSet       = require('taskcluster-lib-validate');
+const assert          = require('assert');
+const path            = require('path');
+const express         = require('express');
 
-var runningServer = null;
+let runningServer = null;
 
 const rootUrl = 'http://localhost:23525';
 exports.rootUrl = rootUrl;
@@ -29,11 +29,11 @@ exports.setupServer = async ({builder, monitor}) => {
   });
 
   // Create application
-  let app = express();
+  const app = express();
   api.express(app);
 
   return await new Promise(function(accept, reject) {
-    var server = app.listen(23525);
+    const server = app.listen(23525);
     server.once('listening', function() {
       runningServer = server;
       accept(server);
