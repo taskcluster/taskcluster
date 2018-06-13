@@ -9,7 +9,7 @@ import fetch from '../fetch';
  */
 export default class OIDCCredentialAgent {
   constructor({ accessToken, url }) {
-    if (!this.url) {
+    if (!url) {
       throw new Error('Missing required option "url"');
     }
 
