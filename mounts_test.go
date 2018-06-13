@@ -119,6 +119,11 @@ func TestMounts(t *testing.T) {
 	}
 
 	td := testTask(t)
+	td.Dependencies = []string{
+		"KTBKfEgxR5GdfIIREQIvFQ",
+		"LK1Rz2UtT16d-HBSqyCtuA",
+		"VESwp9JaRo-XkFN_bemBhw",
+	}
 	td.Scopes = []string{
 		"queue:get-artifact:SampleArtifacts/_/X.txt",
 		"generic-worker:cache:banana-cache",
@@ -197,6 +202,9 @@ func TestMissingScopes(t *testing.T) {
 	}
 
 	td := testTask(t)
+	td.Dependencies = []string{
+		"KTBKfEgxR5GdfIIREQIvFQ",
+	}
 	// don't set any scopes
 
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
@@ -209,6 +217,51 @@ func TestMissingScopes(t *testing.T) {
 	logtext := string(bytes)
 	if !strings.Contains(logtext, "queue:get-artifact:SampleArtifacts/_/X.txt") || !strings.Contains(logtext, "generic-worker:cache:banana-cache") {
 		t.Fatalf("Was expecting log file to contain missing scopes, but it doesn't")
+	}
+}
+
+// TestMissingDependency tests that if artifact content is mounted, it must be included as a task dependency
+func TestMissingMountsDependency(t *testing.T) {
+	defer setup(t, "TestMissingMountsDependency")()
+	mounts := []MountEntry{
+		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
+		&FileMount{
+			File: filepath.Join("preloaded", "Mr X.txt"),
+			// Note: the task definition for taskId KTBKfEgxR5GdfIIREQIvFQ can be seen in the testdata/tasks directory
+			Content: json.RawMessage(`{
+				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
+				"artifact": "SampleArtifacts/_/X.txt"
+			}`),
+		},
+		// requires scope "generic-worker:cache:banana-cache"
+		&WritableDirectoryCache{
+			CacheName: "banana-cache",
+			Directory: filepath.Join("my-task-caches", "bananas"),
+		},
+	}
+
+	payload := GenericWorkerPayload{
+		Mounts:     toMountArray(t, &mounts),
+		Command:    helloGoodbye(),
+		MaxRunTime: 180,
+	}
+
+	td := testTask(t)
+	td.Scopes = []string{
+		"generic-worker:cache:banana-cache",
+		"queue:get-artifact:SampleArtifacts/_/X.txt",
+	}
+
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+
+	// check log mentions task dependency failure
+	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
+	if err != nil {
+		t.Fatalf("Error when trying to read log file: %v", err)
+	}
+	logtext := string(bytes)
+	if !strings.Contains(logtext, "[mounts] task.dependencies needs to include KTBKfEgxR5GdfIIREQIvFQ since one or more of its artifacts are mounted") {
+		t.Fatalf("Was expecting log file to explain that task dependency was missing, but it doesn't: \n%v", logtext)
 	}
 }
 
@@ -295,6 +348,9 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 	}
 
 	td := testTask(t)
+	td.Dependencies = []string{
+		"KTBKfEgxR5GdfIIREQIvFQ",
+	}
 	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/X.txt"}
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
@@ -310,8 +366,58 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 	}
 }
 
+// TODO: maybe want to create a test where an error artifact is uploaded but
+// task is resolved as successful, and then have artifact content that mounts
+// the error artifact. This would be a bizarre test case though as it would be
+// unusual for a task to resolve successfully if it contains error artifacts -
+// although there is nothing stopping a task from publishing error artifacts
+// and then resolving successfully - so it could be an attack vector for a
+// malicious task.
+
+// TestNonExistentArtifact depends on an artifact that does not exist from a
+// task that *does* exist.
+func TestNonExistentArtifact(t *testing.T) {
+	defer setup(t, "TestNonExistentArtifact")()
+	mounts := []MountEntry{
+		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
+		&ReadOnlyDirectory{
+			Directory: ".",
+			// Note: the task definition for taskId KTBKfEgxR5GdfIIREQIvFQ can be seen in the testdata/tasks directory
+			Content: json.RawMessage(`{
+				"taskId":   "KTBKfEgxR5GdfIIREQIvFQ",
+				"artifact": "SampleArtifacts/_/non-existent-artifact.txt"
+			}`),
+			Format: "zip",
+		},
+	}
+
+	payload := GenericWorkerPayload{
+		Mounts:     toMountArray(t, &mounts),
+		Command:    helloGoodbye(),
+		MaxRunTime: 180,
+	}
+
+	td := testTask(t)
+	td.Dependencies = []string{
+		"KTBKfEgxR5GdfIIREQIvFQ",
+	}
+	td.Scopes = []string{"queue:get-artifact:SampleArtifacts/_/non-existent-artifact.txt"}
+
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
+
+	// check log mentions zip file is invalid
+	bytes, err := ioutil.ReadFile(filepath.Join(taskContext.TaskDir, logPath))
+	if err != nil {
+		t.Fatalf("Error when trying to read log file: %v", err)
+	}
+	logtext := string(bytes)
+	if !strings.Contains(logtext, "[mounts] Could not fetch from task KTBKfEgxR5GdfIIREQIvFQ artifact SampleArtifacts/_/non-existent-artifact.txt into file") {
+		t.Fatalf("Log did not contain expected text:\n%v", logtext)
+	}
+}
+
 // We currently don't check for any of these strings:
-//  [mounts] Could not fetch from %v into file %v: %v
+//  [mounts] Could not download %v to %v due to %v
 //  [mounts] Could not make MkdirAll %v: %v
 //  [mounts] Could not open file %v: %v
 //  [mounts] Could not reach purgecache service to see if caches need purging:
@@ -321,6 +427,7 @@ type MountsLoggingTestCase struct {
 	Test                   *testing.T
 	Mounts                 []MountEntry
 	Scopes                 []string
+	Dependencies           []string
 	TaskRunResolutionState string
 	TaskRunReasonResolved  string
 	PerTaskRunLogExcerpts  [][]string
@@ -345,6 +452,7 @@ func LogTest(m *MountsLoggingTestCase) {
 
 		td := testTask(m.Test)
 		td.Scopes = m.Scopes
+		td.Dependencies = m.Dependencies
 		_ = submitAndAssert(m.Test, td, *payload, m.TaskRunResolutionState, m.TaskRunReasonResolved)
 
 		// check log entries
@@ -396,6 +504,9 @@ func TestInvalidSHA256(t *testing.T) {
 					Format: "zip",
 				},
 			},
+			Dependencies: []string{
+				"LK1Rz2UtT16d-HBSqyCtuA",
+			},
 			TaskRunResolutionState: "failed",
 			TaskRunReasonResolved:  "failed",
 			PerTaskRunLogExcerpts: [][]string{
@@ -436,6 +547,9 @@ func TestValidSHA256(t *testing.T) {
 					Format: "zip",
 				},
 			},
+			Dependencies: []string{
+				"LK1Rz2UtT16d-HBSqyCtuA",
+			},
 			TaskRunResolutionState: "completed",
 			TaskRunReasonResolved:  "completed",
 			PerTaskRunLogExcerpts: [][]string{
@@ -471,6 +585,9 @@ func TestFileMountNoSHA256(t *testing.T) {
 						"artifact": "public/build/unknown_issuer_app_1.zip"
 					}`),
 				},
+			},
+			Dependencies: []string{
+				"LK1Rz2UtT16d-HBSqyCtuA",
 			},
 			TaskRunResolutionState: "completed",
 			TaskRunReasonResolved:  "completed",
@@ -510,6 +627,9 @@ func TestMountFileAtCWD(t *testing.T) {
 						"artifact": "public/build/unknown_issuer_app_1.zip"
 					}`),
 				},
+			},
+			Dependencies: []string{
+				"LK1Rz2UtT16d-HBSqyCtuA",
 			},
 			TaskRunResolutionState: "failed",
 			TaskRunReasonResolved:  "failed",
@@ -561,6 +681,9 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 					Format: "zip",
 				},
 			},
+			Dependencies: []string{
+				"LK1Rz2UtT16d-HBSqyCtuA",
+			},
 			TaskRunResolutionState: "failed",
 			TaskRunReasonResolved:  "failed",
 			PerTaskRunLogExcerpts: [][]string{
@@ -606,6 +729,9 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 					}`),
 					Format: "zip",
 				},
+			},
+			Dependencies: []string{
+				"LK1Rz2UtT16d-HBSqyCtuA",
 			},
 			TaskRunResolutionState: "completed",
 			TaskRunReasonResolved:  "completed",
@@ -654,6 +780,9 @@ func TestCacheMoved(t *testing.T) {
 					}`),
 					Format: "zip",
 				},
+			},
+			Dependencies: []string{
+				"LK1Rz2UtT16d-HBSqyCtuA",
 			},
 			Scopes: []string{"generic-worker:cache:banana-cache"},
 			Payload: &GenericWorkerPayload{

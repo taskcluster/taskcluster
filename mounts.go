@@ -161,8 +161,9 @@ type TaskMount struct {
 	mounts []MountEntry
 	// payload errors are detected when creating feature but only reported when
 	// feature starts, so need to keep hold of any error raised...
-	payloadError   error
-	requiredScopes scopes.Required
+	payloadError      error
+	requiredScopes    scopes.Required
+	referencedTaskIDs map[string]bool // simple implementation of set of strings
 }
 
 // Represents an individual Mount listed in task payload - there
@@ -193,6 +194,7 @@ type FSContent interface {
 	RequiredSHA256() string
 	// String representation of where the content comes from
 	String() string
+	TaskDependencies() []string
 }
 
 // No scopes required to mount files/dirs in a task
@@ -243,6 +245,7 @@ func (feature *MountsFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 		}
 	}
 	tm.initRequiredScopes()
+	tm.initReferencedTaskIDs()
 	return tm
 }
 
@@ -280,6 +283,34 @@ func (taskMount *TaskMount) initRequiredScopes() {
 		}
 	}
 	taskMount.requiredScopes = scopes.Required{requiredScopes}
+}
+
+// loops through all referenced mounts and keeps a list of referenced TaskIDs
+func (taskMount *TaskMount) initReferencedTaskIDs() {
+	taskMount.referencedTaskIDs = map[string]bool{}
+	for _, mount := range taskMount.mounts {
+		fsContent, err := mount.FSContent()
+		if err != nil {
+			taskMount.payloadError = err
+			return
+		}
+		// A writable cache might not be preloaded so might have no initial content
+		if fsContent != nil {
+			for _, taskID := range fsContent.TaskDependencies() {
+				taskMount.referencedTaskIDs[taskID] = true
+			}
+		}
+	}
+	taskDependencies := map[string]bool{}
+	for _, taskID := range taskMount.task.Definition.Dependencies {
+		taskDependencies[taskID] = true
+	}
+	for taskID := range taskMount.referencedTaskIDs {
+		if !taskDependencies[taskID] {
+			taskMount.payloadError = fmt.Errorf("[mounts] task.dependencies needs to include %v since one or more of its artifacts are mounted", taskID)
+			return
+		}
+	}
 }
 
 // Here the order is important. We want to delete file caches before we delete
@@ -681,6 +712,10 @@ func (ac *ArtifactContent) RequiredSHA256() string {
 	return ac.Sha256
 }
 
+func (ac *ArtifactContent) TaskDependencies() []string {
+	return []string{ac.TaskID}
+}
+
 // Downloads URLContent to a file inside the caches directory specified in the
 // global config file.  The filename is a random slugid, and the absolute path
 // of the file is returned.
@@ -701,6 +736,10 @@ func (uc *URLContent) UniqueKey() string {
 
 func (uc *URLContent) RequiredSHA256() string {
 	return uc.Sha256
+}
+
+func (uc *URLContent) TaskDependencies() []string {
+	return []string{}
 }
 
 // Utility function to aggressively download a url to a file location
