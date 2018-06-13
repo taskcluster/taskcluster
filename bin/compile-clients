@@ -31,8 +31,8 @@ const getServiceName = reference => {
     return reference.name;
   }
 
-  if (reference.rootUrl) {
-    const parts = reference.rootUrl.split('//');
+  if (reference.baseUrl) {
+    const parts = reference.baseUrl.split('//');
 
     return (parts[1] || parts[0]).split('.')[0];
   }
