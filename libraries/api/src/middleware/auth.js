@@ -150,7 +150,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     // Parse host header
     const host = hawk.utils.parseHost(req);
     // Find port, overwrite if forwarded by reverse proxy
-    const port = host.port;
+    let port = host.port;
     if (req.headers['x-forwarded-port'] !== undefined) {
       port = parseInt(req.headers['x-forwarded-port'], 10);
     } else if (req.headers['x-forwarded-proto'] !== undefined) {
