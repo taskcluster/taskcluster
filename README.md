@@ -7,7 +7,9 @@ in your module:
 
 - aws
 - azurerm
-- kubernetes
+- rabbitmq
+- [k8s](https://github.com/ericchiang/terraform-provider-k8s)
+- [json-e](https://github.com/taskcluster/terraform-provider-jsone)
 
 You will also need to `kubectl config use-context <the cluster you wish to deploy to>`
 in the shell you are applying this from.
@@ -15,7 +17,8 @@ in the shell you are applying this from.
 ## Requirements not managed here
 
 - A kubernetes cluster
-- An ingress controller that can handle rewrites in said cluster
+- An ingress controller in said cluster
+- A rabbitmq cluster with the RabbitMQ management plugin enabled
 
 ## Usage
 
@@ -29,19 +32,14 @@ module "taskcluster" {
   azure_region              = "${var.azure_region}"
   auth_pulse_username       = "${var.auth_pulse_username}"
   auth_pulse_password       = "${var.auth_pulse_password}"
+  rabbitmq_hostname         = "${var.rabbitmq_hostname}"
+  rabbitmq_vhost            = "${var.rabbitmq_vhost}"
 }
 ```
 
 Before you apply, you should `kubectl config use-context <the cluster you wish to deploy to>`
-Now you can take the output from this module and feed it into the `infra` config for
-your [taskcluster-installer](https://github.com/taskcluster/taskcluster-installer):
-
-```
-terraform output -json | jq '.taskcluster_installer_config.value' > some-config-file.json
-```
 
 The root accessToken is also available as output.
-
 
 ## TODO
 
