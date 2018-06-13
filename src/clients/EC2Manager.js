@@ -5,7 +5,7 @@ import Client from '../Client';
 export default class EC2Manager extends Client {
   constructor(options = {}) {
     super({
-      serviceName: '',
+      serviceName: 'ec2-manager',
       serviceVersion: 'v1',
       exchangePrefix: '',
       ...options,
