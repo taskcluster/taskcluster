@@ -153,6 +153,8 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     const port = host.port;
     if (req.headers['x-forwarded-port'] !== undefined) {
       port = parseInt(req.headers['x-forwarded-port'], 10);
+    } else if (req.headers['x-forwarded-proto'] !== undefined) {
+      port = req.headers['x-forwarded-proto'] === 'https' ? 443 : port;
     }
 
     // Send input to signatureValidator (auth server or local validator)
