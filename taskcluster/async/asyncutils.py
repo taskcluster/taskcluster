@@ -89,6 +89,9 @@ async def makeSingleHttpRequest(method, url, payload, headers, session=None):
     skip_auto_headers = [aiohttp.hdrs.CONTENT_TYPE]
 
     try:
+        # https://docs.aiohttp.org/en/stable/client_quickstart.html#passing-parameters-in-urls
+        # we must avoid aiohttp's helpful "requoting" functionality, as it breaks Hawk signatures
+        url = aiohttp.client.URL(url, encoded=True)
         async with session.request(
             method, url, data=payload, headers=headers,
             skip_auto_headers=skip_auto_headers, compress=False
