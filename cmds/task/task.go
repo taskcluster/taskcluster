@@ -55,12 +55,14 @@ func init() {
 
 	retriggerCmd.Flags().BoolP("exact", "e", false, "Retrigger in exact mode. WARNING: THIS MAY HAVE SIDE EFFECTS. USE AFTER YOU READ THE SOURCE CODE.")
 
-	rerunCmd.Flags().BoolP("noop","e", false, "Specifies the operation to perform and adjust some operations to print extra information.")
+	rerunCmd.Flags().BoolP("noop","n", false, "Specifies the operation to perform and adjust some operations to print extra information.")
+	rerunCmd.Flags().BoolP("confirm","c", false, "Prompts user with a confirmation (y/n) before performing any changes and prints extra informations.")
 
-	runcancelCmd.Flags().BoolP("noop","e", false, "Specifies the operation to perform and adjust some operations to print extra information.")
-	
-	runcompleteCmd.Flags().BoolP("noop","e", false, "Specifies the operation to perform and adjust some operations to print extra information.")
+	runcancelCmd.Flags().BoolP("noop","n", false, "Specifies the operation to perform and adjust some operations to print extra information.")
+	runcancelCmd.Flags().BoolP("confirm","c", false, "Prompts user with a confirmation (y/n) before performing any changes and prints extra informations.")
 
+	runcompleteCmd.Flags().BoolP("noop","n", false, "Specifies the operation to perform and adjust some operations to print extra information.")
+	runcompleteCmd.Flags().BoolP("confirm","c", false, "Prompts user with a confirmation (y/n) before performing any changes and prints extra informations.")
 	// Commands that fetch information
 	Command.AddCommand(
 		// status
