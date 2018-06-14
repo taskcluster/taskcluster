@@ -37,10 +37,8 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 			}
 			fmt.Fprintln(out, getRunStatusString(run.State, run.ReasonResolved))
 			return nil
-
-		} else {
-			return nil
 		}
+		return nil
 	}
 
 	c, err := q.CancelTask(taskID)
@@ -84,8 +82,6 @@ func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, f
 			fmt.Fprintln(out, getRunStatusString(run.State, run.ReasonResolved))
 			return nil
 
-		} else {
-			return nil
 		}
 	}
 
@@ -238,9 +234,7 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 			fmt.Fprintln(out, getRunStatusString(r.Status.Runs[c.RunID].State, r.Status.Runs[c.RunID].ReasonResolved))
 			return nil
 
-		} else {
-			return nil
-		}
+		} 
 	}
 	
 	if nooprunComplete {
