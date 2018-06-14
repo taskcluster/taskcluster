@@ -67,7 +67,6 @@ func confirmMsg(command string, credentials *tcclient.Credentials, args []string
 	c, _ := q.Status(taskID)
 	run := c.Status.Runs[len(c.Status.Runs)-1]
 
-
 	t, _ := q.Task(taskID)
 	
 	fmt.Println(command, t.Metadata.Name ,"taskid:", taskID ,"(state:",run.State,"). Are you sure you want to proceed with given command? (y/N)")
