@@ -147,7 +147,7 @@ export const createTemporaryCredentials = opts => {
  *    scopes: [...],        // associated scopes (if available)
  * }
  */
-export const credentialInformation = async credentials => {
+export const credentialInformation = async (credentials, rootUrl) => {
   let issuer = credentials.clientId;
   const result = {
     clientId: issuer,
@@ -179,8 +179,8 @@ export const credentialInformation = async credentials => {
     result.type = 'permanent';
   }
 
-  const anonymousClient = new Auth();
-  const credentialsClient = new Auth({ credentials });
+  const anonymousClient = new Auth({ rootUrl });
+  const credentialsClient = new Auth({ credentials, rootUrl });
   const clientLookup = anonymousClient.client(issuer).then(client => {
     const expires = new Date(client.expires);
 
