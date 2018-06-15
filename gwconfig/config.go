@@ -13,6 +13,7 @@ type (
 	// Generic Worker config
 	Config struct {
 		AccessToken                    string                 `json:"accessToken"`
+		AuthBaseURL                    string                 `json:"authBaseURL"`
 		AvailabilityZone               string                 `json:"availabilityZone"`
 		CachesDir                      string                 `json:"cachesDir"`
 		Certificate                    string                 `json:"certificate"`
@@ -36,6 +37,8 @@ type (
 		ProvisionerBaseURL             string                 `json:"provisionerBaseURL"`
 		ProvisionerID                  string                 `json:"provisionerId"`
 		PublicIP                       net.IP                 `json:"publicIP"`
+		PurgeCacheBaseURL              string                 `json:"purgeCacheBaseURL"`
+		QueueBaseURL                   string                 `json:"queueBaseURL"`
 		Region                         string                 `json:"region"`
 		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
 		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
