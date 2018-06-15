@@ -43,3 +43,9 @@ variable "rabbitmq_vhost" {
   type        = "string"
   description = "rabbitmq hostname"
 }
+
+variable "disabled_services" {
+  type        = "list"
+  default     = []
+  description = "List of services to disable i.e. [\"taskcluster-ping\"]"
+}

@@ -25,9 +25,19 @@ variable "schedule" {
   description = "Crontab-esque schedule i.e. `*/1 * * * *`."
 }
 
+variable "deadline_seconds" {
+  type        = "string"
+  description = "How long to allow the job to run before termination in seconds."
+}
+
 variable "secret_keys" {
   type        = "list"
   description = "A set of environment variables to set via kubernetes secrets."
+}
+
+variable "secrets_hash" {
+  type        = "string"
+  description = "Used to know if the deployment needs to be updated"
 }
 
 variable "secret_name" {

@@ -3,6 +3,8 @@ locals {
     secrets      = "${var.secrets}"
     project_name = "${var.project_name}"
   }
+
+  is_enabled = "${contains(var.disabled_services, var.project_name) ? 0 : 1}"
 }
 
 data "jsone_template" "secrets_resource" {
@@ -10,13 +12,9 @@ data "jsone_template" "secrets_resource" {
   yaml_context = "${jsonencode(local.context)}"
 }
 
-data "template_file" "secrets_resource_encoded" {
-  template = "${data.jsone_template.secrets_resource.rendered}"
-  vars     = "${var.secrets}"
-}
-
-resource "k8s_manifest" "taskcluster-secrets" {
-  content = "${data.template_file.secrets_resource_encoded.rendered}"
+resource "k8s_manifest" "secrets_resource" {
+  count   = "${local.is_enabled}"
+  content = "${data.jsone_template.secrets_resource.rendered}"
 }
 
 data "jsone_templates" "service_account" {
@@ -25,6 +23,6 @@ data "jsone_templates" "service_account" {
 }
 
 resource "k8s_manifest" "service_account" {
-  count   = "${length(data.jsone_templates.service_account.rendered)}"
+  count   = "${local.is_enabled * length(data.jsone_templates.service_account.rendered)}"
   content = "${data.jsone_templates.service_account.rendered[count.index]}"
 }

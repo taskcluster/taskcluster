@@ -11,6 +11,8 @@ spec:
   replicas: 1 # TODO: make configurable
   template:
     metadata:
+      annotations:
+        secrets_hash: ${secrets_hash}
       labels:
         app: taskcluster
         tc-service: ${project_name}

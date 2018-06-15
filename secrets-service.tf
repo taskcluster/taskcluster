@@ -37,25 +37,26 @@ module "secrets_secrets" {
   }
 }
 
-# TODO: Get service accounts working!
-
 module "secrets_web_service" {
   source       = "modules/web-service"
   project_name = "taskcluster-secrets"
   service_name = "secrets"
-  secret_name  = "taskcluster-secrets"
+  secret_name  = "${module.secrets_secrets.secret_name}"
+  secrets_hash = "${module.secrets_secrets.secrets_hash}"
   root_url     = "${var.root_url}"
   secret_keys  = "${module.secrets_secrets.env_var_keys}"
   docker_image = "${local.taskcluster_image_secrets}"
 }
 
 module "secrets_expire_job" {
-  source       = "modules/background-job"
-  project_name = "taskcluster-secrets"
-  job_name     = "expire"
-  schedule     = "0 * * * *"
-  secret_name  = "taskcluster-secrets"
-  root_url     = "${var.root_url}"
-  secret_keys  = "${module.secrets_secrets.env_var_keys}"
-  docker_image = "${local.taskcluster_image_secrets}"
+  source           = "modules/background-job"
+  project_name     = "taskcluster-secrets"
+  job_name         = "expire"
+  schedule         = "0 * * * *"
+  deadline_seconds = 600
+  secret_name      = "${module.secrets_secrets.secret_name}"
+  secrets_hash     = "${module.secrets_secrets.secrets_hash}"
+  root_url         = "${var.root_url}"
+  secret_keys      = "${module.secrets_secrets.env_var_keys}"
+  docker_image     = "${local.taskcluster_image_secrets}"
 }

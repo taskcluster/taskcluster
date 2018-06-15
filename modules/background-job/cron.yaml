@@ -13,6 +13,7 @@ spec:
       template:
         spec:
           restartPolicy: OnFailure
+          activeDeadlineSeconds: {$eval: number(deadline_seconds)}
           containers:
           - name: ${project_name}-${job_name}
             image: ${docker_image}

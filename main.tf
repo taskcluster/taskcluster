@@ -7,6 +7,7 @@ provider "random" {
 }
 
 data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
 
 resource "aws_s3_bucket" "private_artifacts" {
   bucket = "${var.bucket_prefix}-private-artifacts"
@@ -50,6 +51,27 @@ resource "aws_s3_bucket" "public_artifacts" {
   }
 }
 
+resource "aws_s3_bucket_policy" "public_artifacts" {
+  bucket = "${aws_s3_bucket.public_artifacts.id}"
+
+  policy = <<POLICY
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "*"
+            },
+            "Action": "s3:GetObject",
+            "Resource": "${aws_s3_bucket.public_artifacts.arn}/*"
+        }
+    ]
+}
+POLICY
+}
+
 resource "aws_s3_bucket" "public_blobs" {
   bucket = "${var.bucket_prefix}-public-blobs"
   acl    = "public-read"
@@ -59,6 +81,18 @@ resource "aws_s3_bucket" "public_blobs" {
     allowed_origins = ["*"]
     allowed_methods = ["GET"]
     max_age_seconds = 3000
+  }
+}
+
+resource "aws_s3_bucket" "private_blobs" {
+  bucket = "${var.bucket_prefix}-private-blobs"
+  acl    = "private"
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_origins = ["*"]
+    allowed_methods = ["GET", "PUT", "HEAD", "POST", "DELETE"]
+    max_age_seconds = 3600
   }
 }
 

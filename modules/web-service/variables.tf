@@ -29,3 +29,14 @@ variable "secret_name" {
   type        = "string"
   description = "The kubernetes secret to pull the variables from."
 }
+
+variable "secrets_hash" {
+  type        = "string"
+  description = "Used to know if the deployment needs to be updated"
+}
+
+variable "disabled_services" {
+  type        = "list"
+  description = "list of disabled services."
+  default     = []
+}

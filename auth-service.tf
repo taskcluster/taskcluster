@@ -63,6 +63,13 @@ locals {
       ]
     },
     {
+      clientId    = "static/taskcluster/queue"
+      accessToken = "${random_string.queue_access_token.result}"
+      description = "..."
+
+      scopes = ["*"]
+    },
+    {
       clientId    = "static/taskcluster/root"
       accessToken = "${random_string.auth_root_access_token.result}"
       description = "..."
@@ -72,8 +79,9 @@ locals {
 }
 
 module "auth_secrets" {
-  source       = "modules/service-secrets"
-  project_name = "taskcluster-auth"
+  source            = "modules/service-secrets"
+  project_name      = "taskcluster-auth"
+  disabled_services = "${var.disabled_services}"
 
   secrets = {
     AWS_ACCESS_KEY_ID     = "${module.auth_user.access_key_id}"
@@ -101,7 +109,7 @@ module "auth_secrets" {
     OWNER_EMAIL             = "bstack@mozilla.com"
     PROFILE                 = "production"
     PUBLISH_METADATA        = "false"
-    SENTRY_API_KEY          = "TODO"
+    SENTRY_API_KEY          = "TODO SENTRY 4"
     SENTRY_DSN              = "TODO"
     SENTRY_AUTH_TOKEN       = "TODO"
     STATSUM_API_SECRET      = "TODO"
@@ -113,11 +121,13 @@ module "auth_secrets" {
 }
 
 module "auth_web_service" {
-  source       = "modules/web-service"
-  project_name = "taskcluster-auth"
-  service_name = "auth"
-  secret_name  = "taskcluster-auth"
-  root_url     = "${var.root_url}"
-  secret_keys  = "${module.auth_secrets.env_var_keys}"
-  docker_image = "${local.taskcluster_image_auth}"
+  source            = "modules/web-service"
+  project_name      = "taskcluster-auth"
+  disabled_services = "${var.disabled_services}"
+  service_name      = "auth"
+  secret_name       = "${module.auth_secrets.secret_name}"
+  secrets_hash      = "${module.auth_secrets.secrets_hash}"
+  root_url          = "${var.root_url}"
+  secret_keys       = "${module.auth_secrets.env_var_keys}"
+  docker_image      = "${local.taskcluster_image_auth}"
 }

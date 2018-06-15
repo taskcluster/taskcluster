@@ -10,19 +10,20 @@ spec:
   rules:
   - http:
       paths:
-      - path: /api/auth/*
-        backend:
-          serviceName: taskcluster-auth
-          servicePort: 80
-      - path: /api/secrets/*
-        backend:
-          serviceName: taskcluster-secrets
-          servicePort: 80
-      - path: /api/ping/*
-        backend:
-          serviceName: taskcluster-ping
-          servicePort: 80
-      - path: /*
-        backend:
-          serviceName: taskcluster-tools
-          servicePort: 80
+        $flatten:
+        - path: '/*'
+          backend:
+            serviceName: taskcluster-tools
+            servicePort: 80
+        - $map:
+            - {service_name: auth, project_name: taskcluster-auth}
+            - {service_name: secrets, project_name: taskcluster-secrets}
+            - {service_name: queue, project_name: taskcluster-queue}
+            - {service_name: ping, project_name: taskcluster-ping}
+          each(svc):
+            $if: '!(svc.project_name in disabled_services)'
+            then:
+              path: '/api/${svc.service_name}/*'
+              backend:
+                serviceName: ${svc.project_name}
+                servicePort: 80
