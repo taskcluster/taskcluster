@@ -22,6 +22,7 @@ func ReportCrashToSentry(r interface{}) {
 			Certificate: config.Certificate,
 		},
 	)
+	Auth.BaseURL = config.AuthBaseURL
 	res, err := Auth.SentryDSN(config.SentryProject)
 	if err != nil {
 		log.Printf("WARNING: Could not get sentry DSN: %v", err)

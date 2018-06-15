@@ -28,6 +28,7 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/tcauth"
 	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
+	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -167,6 +168,7 @@ and reports back results to the queue.
         ** OPTIONAL ** properties
         =========================
 
+          authBaseURL                       The base URL for API calls to the auth service.
           availabilityZone                  The EC2 availability zone of the worker.
           cachesDir                         The location where task caches should be stored on
                                             the worker. [default: C:\generic-worker\caches]
@@ -226,11 +228,14 @@ and reports back results to the queue.
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           privateIP                         The private IP of the worker, used by chain of trust.
-          provisionerBaseUrl                The base URL for API calls to the provisioner in
+          provisionerBaseURL                The base URL for API calls to the provisioner in
                                             order to determine if there is a new deploymentId.
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: test-provisioner]
+          purgeCacheBaseURL                 The base URL for API calls to the purge cache
+                                            service.
+          queueBaseURL                      The base URL for API calls to the queue service.
           region                            The EC2 region of the worker.
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
@@ -449,6 +454,7 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 
 	// first assign defaults
 	c := &gwconfig.Config{
+		AuthBaseURL:                    tcauth.DefaultBaseURL,
 		CachesDir:                      "C:\\generic-worker\\caches",
 		CheckForNewDeploymentEverySecs: 1800,
 		CleanUpTaskDirs:                true,
@@ -461,6 +467,8 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 		NumberOfTasksToRun:             0,
 		ProvisionerBaseURL:             "",
 		ProvisionerID:                  "test-provisioner",
+		PurgeCacheBaseURL:              tcpurgecache.DefaultBaseURL,
+		QueueBaseURL:                   tcqueue.DefaultBaseURL,
 		RequiredDiskSpaceMegabytes:     10240,
 		RunAfterUserCreation:           "",
 		RunTasksAsCurrentUser:          false,
@@ -618,6 +626,7 @@ func RunWorker() (exitCode ExitCode) {
 	}
 	// Queue is the object we will use for accessing queue api
 	queue = tcqueue.New(creds)
+	queue.BaseURL = config.QueueBaseURL
 	provisioner = tcawsprovisioner.New(creds)
 	provisioner.BaseURL = config.ProvisionerBaseURL
 
@@ -776,6 +785,7 @@ func ClaimWork() *TaskRun {
 				Certificate: taskResponse.Credentials.Certificate,
 			},
 		)
+		taskQueue.BaseURL = config.QueueBaseURL
 		task := &TaskRun{
 			TaskID:            taskResponse.Status.TaskID,
 			RunID:             uint(taskResponse.RunID),
