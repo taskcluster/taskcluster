@@ -84,7 +84,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker 10.8.5
+generic-worker 10.9.0
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -177,6 +177,7 @@ and reports back results to the queue.
         ** OPTIONAL ** properties
         =========================
 
+          authBaseURL                       The base URL for API calls to the auth service.
           availabilityZone                  The EC2 availability zone of the worker.
           cachesDir                         The location where task caches should be stored on
                                             the worker. [default: C:\generic-worker\caches]
@@ -236,11 +237,14 @@ and reports back results to the queue.
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           privateIP                         The private IP of the worker, used by chain of trust.
-          provisionerBaseUrl                The base URL for API calls to the provisioner in
+          provisionerBaseURL                The base URL for API calls to the provisioner in
                                             order to determine if there is a new deploymentId.
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: test-provisioner]
+          purgeCacheBaseURL                 The base URL for API calls to the purge cache
+                                            service.
+          queueBaseURL                      The base URL for API calls to the queue service.
           region                            The EC2 region of the worker.
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
@@ -370,7 +374,7 @@ go test -v ./...
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 10.8.5
+$ ./release.sh 10.9.0
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
