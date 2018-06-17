@@ -55,14 +55,14 @@ func init() {
 
 	retriggerCmd.Flags().BoolP("exact", "e", false, "Retrigger in exact mode. WARNING: THIS MAY HAVE SIDE EFFECTS. USE AFTER YOU READ THE SOURCE CODE.")
 
-	rerunCmd.Flags().BoolP("noop","n", false, "Specifies the operation to perform and adjust some operations to print extra information.")
-	rerunCmd.Flags().BoolP("confirm","c", false, "Prompts user with a confirmation (y/n) before performing any changes and prints extra informations.")
+	rerunCmd.Flags().BoolP("noop","n", false, "Using this flag, will tell the command to not actually run, but prints out what it would do.")
+	rerunCmd.Flags().BoolP("confirm","c", false, "Prompts user with a confirmation (y/n) before performing any changes.")
 
-	runcancelCmd.Flags().BoolP("noop","n", false, "Specifies the operation to perform and adjust some operations to print extra information.")
-	runcancelCmd.Flags().BoolP("confirm","c", false, "Prompts user with a confirmation (y/n) before performing any changes and prints extra informations.")
+	runcancelCmd.Flags().BoolP("noop","n", false, "Using this flag, will tell the command to not actually run, but prints out what it would do.")
+	runcancelCmd.Flags().BoolP("confirm","c", false, "Prompts user with a confirmation (y/n) before performing any changes.")
 
-	runcompleteCmd.Flags().BoolP("noop","n", false, "Specifies the operation to perform and adjust some operations to print extra information.")
-	runcompleteCmd.Flags().BoolP("confirm","c", false, "Prompts user with a confirmation (y/n) before performing any changes and prints extra informations.")
+	runcompleteCmd.Flags().BoolP("noop","n", false, "Using this flag, will tell the command to not actually run, but prints out what it would do.")
+	runcompleteCmd.Flags().BoolP("confirm","c", false, "Prompts user with a confirmation (y/n) before performing any changes.")
 	// Commands that fetch information
 	Command.AddCommand(
 		// status
