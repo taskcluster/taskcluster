@@ -29,3 +29,5 @@ resource "k8s_manifest" "taskcluster_ingress" {
 
 # TODO: https://github.com/kubernetes/ingress-gce#backend-https
 
+
+# TODO: Set up service accounts for ingress!

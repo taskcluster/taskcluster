@@ -24,7 +24,7 @@ in the shell you are applying this from.
 
 First include this module in your terraform.
 
-```
+```hcl
 module "taskcluster" {
   source                    = "github.com/taskcluster/taskcluster-terraform"
   bucket_prefix             = "${var.taskcluster_bucket_prefix}"
