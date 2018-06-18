@@ -184,6 +184,8 @@ type AwsProvisionerWorkerTypeSummary {
   requestedCapacity: Int!
   pendingCapacity: Int!
   runningCapacity: Int!
+
+  pendingTasks: Int!
 }
 
 type AwsProvisionerWorkerTypeState {

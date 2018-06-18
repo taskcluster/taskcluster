@@ -50,6 +50,14 @@ export default {
     INSTANCE_REQUEST: 'instance-request',
     TERMINATION: 'termination',
   },
+  AwsProvisionerWorkerTypeSummary: {
+    pendingTasks({ workerType }, args, { loaders }) {
+      return loaders.pendingTasks.load({
+        provisionerId: 'aws-provisioner-v1',
+        workerType,
+      });
+    },
+  },
   Query: {
     awsProvisionerWorkerType(parent, { workerType }, { loaders }) {
       return loaders.awsProvisionerWorkerType.load(workerType);
