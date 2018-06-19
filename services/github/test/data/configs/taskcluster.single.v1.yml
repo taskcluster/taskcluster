@@ -1,0 +1,18 @@
+version: 1
+tasks:
+  - $if: ' tasks_for == "github-push" '
+    then:
+      taskId: {$eval: as_slugid('banana')}
+      provisionerId: aprovisioner
+      workerType: worker
+      created: {$eval: 'now'}
+      deadline: {$fromNow: '1 hour'}
+      payload:
+        image: "ubuntu:latest"
+        command:
+          - test
+      metadata:
+        name: "name"
+        description: "description"
+        owner: ${event.pusher.email}
+        source: ${event.repository.url}
