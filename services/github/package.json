@@ -21,6 +21,7 @@
     "eslint-config-taskcluster": "^3.0.0",
     "github": "13.1.0",
     "js-yaml": "^3.10.0",
+    "json-e": "^2.5.0",
     "json-parameterization": "^0.2.0",
     "jsonwebtoken": "^8.1.0",
     "lodash": "^4.11.1",

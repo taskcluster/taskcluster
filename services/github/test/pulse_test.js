@@ -33,6 +33,8 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
    *  routingKey:   {...}, a dict containing a pulse routing key
    *  details:      {...}, a dict of details we expect to seein the msg payload
    *  jsonFile:     'data file'
+   *  tasks_for:    'the event type; for v1'
+   *  branch:       'the head branch name; for v1'
    **/
   function pulseTest(params) {
     test(params.testName, async function() {
@@ -60,6 +62,9 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
           repository: 'hooks-testing',
           eventId: params.eventId,
           version: 1,
+          body: require('./data/webhooks/' + params.jsonFile).body,
+          tasks_for: params.tasks_for,
+          branch: params.branch,
         },
         CCs: [],
       }];
@@ -97,6 +102,8 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
       'event.title': 'Update README.md',
     },
     jsonFile: 'webhook.pull_request.open.json',
+    tasks_for: 'github-pull-request',
+    branch: 'owlishDeveloper-patch-2',
   });
 
   pulseTest({
@@ -123,6 +130,8 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
       'event.head.user.email': 'anotheruser@github.com',
     },
     jsonFile:     'webhook.push.json',
+    tasks_for: 'github-push',
+    branch: 'master',
   });
 
   pulseTest({
@@ -148,6 +157,8 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
       'event.head.user.email': 'someuser@github.com',
     },
     jsonFile:     'webhook.release.json',
+    tasks_for: 'github-push',
+    branch: 'master',
   });
 
   pulseTest({
@@ -173,5 +184,7 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
       'event.head.user.email': 'anotheruser@github.com',
     },
     jsonFile:     'webhook.tag_push.json',
+    tasks_for: 'github-push',
+    branch: 'v1.0.2',
   });
 });
