@@ -153,6 +153,7 @@ export const awsProvisionerWorkerTypeSummary = shape({
   requestedCapacity: number,
   pendingCapacity: number,
   runningCapacity: number,
+  pendingTasks: number,
 });
 
 export const provisioner = shape({

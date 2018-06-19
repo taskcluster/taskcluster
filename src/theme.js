@@ -13,9 +13,20 @@ const TEN_PERCENT_WHITE = fade('#fff', 0.1);
 const BACKGROUND = '#12202c';
 const PRIMARY = '#1b2a39';
 const SECONDARY = '#4177a5';
-const SUCCESS = {
-  MAIN: green[500],
-  DARK: green[800],
+const success = {
+  main: green[500],
+  dark: green[800],
+};
+const warning = {
+  main: amber[500],
+  dark: amber[700],
+  light: amber[200],
+  contrastText: 'rgba(0, 0, 0, 0.87)',
+};
+const error = {
+  main: red[500],
+  dark: red[700],
+  light: red[300],
 };
 const theme = createMuiTheme({
   palette: {
@@ -29,17 +40,15 @@ const theme = createMuiTheme({
     },
     error: {
       ...red,
+      ...error,
     },
     success: {
       ...green,
-      ...SUCCESS,
+      ...success,
     },
     warning: {
       ...amber,
-      light: amber[200],
-      main: amber[500],
-      dark: amber[700],
-      contrastText: 'rgba(0, 0, 0, 0.87)',
+      ...warning,
     },
     info: {
       ...blue,
@@ -99,9 +108,27 @@ const theme = createMuiTheme({
       right: 24,
     },
     greenIcon: {
-      backgroundColor: SUCCESS.MAIN,
+      backgroundColor: success.main,
       '&:hover': {
-        backgroundColor: SUCCESS.DARK,
+        backgroundColor: success.dark,
+      },
+      '& svg': {
+        backgroundColor: 'transparent',
+      },
+    },
+    warningIcon: {
+      backgroundColor: warning.main,
+      '&:hover': {
+        backgroundColor: warning.dark,
+      },
+      '& svg': {
+        backgroundColor: 'transparent',
+      },
+    },
+    errorIcon: {
+      backgroundColor: error.main,
+      '&:hover': {
+        backgroundColor: error.dark,
       },
       '& svg': {
         backgroundColor: 'transparent',

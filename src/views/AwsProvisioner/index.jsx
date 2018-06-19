@@ -4,6 +4,9 @@ import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
 import loadable from '../../utils/loadable';
 
+const ViewWorkerTypes = loadable(() =>
+  import(/* webpackChunkName: 'AwsProvisioner.ViewWorkerTypes' */ './ViewWorkerTypes')
+);
 const ViewAwsHealth = loadable(() =>
   import(/* webpackChunkName: 'AwsProvisioner.ViewAwsHealth' */ './ViewAwsHealth')
 );
@@ -23,6 +26,7 @@ export default class AwsProvisioner extends Component {
           {...props}
           component={ViewAwsHealth}
         />
+        <RouteWithProps path={path} {...props} component={ViewWorkerTypes} />
       </Switch>
     );
   }
