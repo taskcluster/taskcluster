@@ -1,0 +1,57 @@
+version: 1
+tasks:
+  - $if: ' tasks_for == "github-push" '
+    then:
+      taskId: {$eval: as_slugid('😄')}
+      provisionerId: aprovisioner
+      workerType: worker
+      created: {$eval: 'now'}
+      deadline: {$fromNow: '1 hour'}
+      extra:
+        github:
+          env: true
+          events:
+            - push
+      payload:
+        image: "ubuntu:latest"
+        command:
+          - test
+      metadata:
+        name: "Push Task"
+        description: "description"
+        owner: "test@test.com"
+        source: "http://mrrrgn.com"
+  
+  - $if: ' tasks_for == "github-pull-request" '
+    then:
+      taskId: {$eval: as_slugid('pull')}
+      provisionerId: aprovisioner2
+      workerType: worker2
+      created: {$eval: 'now'}
+      deadline: {$fromNow: '1 hour'}
+      payload:
+        image: "ubuntu:latest"
+        command:
+          - test
+      metadata:
+        name: "PR task"
+        description: "description2"
+        owner: "test@test.com"
+        source: "http://mrrrgn.com"
+  
+  - $if: ' tasks_for == "github-release" '
+    then:
+      taskId: {$eval: as_slugid('release')}
+      provisionerId: aprovisioner3
+      workerType: worker3
+      created: {$eval: 'now'}
+      deadline: {$fromNow: '1 hour'}
+      payload:
+        image: "ubuntu:latest"
+        command:
+          - test
+      metadata:
+        name: "Release task"
+        description: "description3"
+        owner: "test@test.com"
+        source: "http://mrrrgn.com"

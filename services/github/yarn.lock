@@ -1538,6 +1538,12 @@ json-buffer@3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/json-buffer/-/json-buffer-3.0.0.tgz#5b1f397afc75d677bde8bcfc0e47e1f9a3d9a898"
 
+json-e@^2.5.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/json-e/-/json-e-2.5.0.tgz#5416b595777e2946d5e065e7e384c19ffa8b409f"
+  dependencies:
+    json-stable-stringify "^1.0.1"
+
 json-parameterization@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/json-parameterization/-/json-parameterization-0.2.0.tgz#263aea2cc3c69614dbc26c176f772662050d04c8"
