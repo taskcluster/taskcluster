@@ -37,6 +37,7 @@ are for hacking on the worker itself.
   - Node >= 8.5.0
   - Docker
   - Packer (to build AMI)
+    - Note that cracklib also hsa a utility named `packer` - run `packer version` to check!
 
 ## Usage
 
@@ -195,6 +196,10 @@ deploy an AMI requires Amazon credentials to be specified. Follow this
 [document](https://www.packer.io/docs/builders/amazon.html) to configure the
 environment appropriately.
 
+#### Deploying
+
+You will need passwordstore set up, and the `aws` CLI tool configured.  Then run `./deploy.sh`.  It should do the rest!
+
 ### Building AMI's
 
 The docker worker deploy script is essentially a wrapper around `packer`
@@ -238,7 +243,7 @@ are important.
       ./deploy/bin/build app
       ```
 
-### Production deployment
+### Deployment Implementation
 
 Everything related to the deployment of the worker is in the
 [deploy](/deploy) folder which has a number of other important sub
@@ -287,18 +292,8 @@ folders.
     directly, use the [release.sh](/release.sh) script, which does some safe
     checks before releasing.
 
-If eveything is alright, all should you do to deploy docker-worker is to run
-[deploy.sh](/deploy.sh). You need the
-[secrets](ssh://gitolite3@git-internal.mozilla.org/taskcluster/secrets.git)
-repo configured.
-
-After running [deploy.sh](/deploy.sh), you can make a Github release of the
-deployed AMIs by running [release.sh](/release.sh). It creates the Github
-release and uploads the `docker-worker-amis.json` and
-`worker-types-backup.json` files. You need to setup a Github personal access
-token and put it in a environment variable called `DOCKER_WORKER_GITHUB_TOKEN`.
-
 ### Block-Device Mapping
+
 The AMI built with packer will mount all available instances storage under
 `/mnt` and use this for storing docker images and containers. In order for this
 to work you must specify a block device mapping that maps `ephemeral[0-9]` to

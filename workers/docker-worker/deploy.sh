@@ -15,9 +15,13 @@ if [ 0$NODE_VERSION_MAJOR -lt 8 -o 0$NODE_VERSION_MINOR -lt 5 ]; then
   exit 1
 fi
 
-if ! [ -d $HOME/.password-store ]; then
+if [ -z "$PASSWORD_STORE_DIR" ]; then
+    export PASSWORD_STORE_DIR=$HOME/.password-store
+fi
+
+if ! [ -d $PASSWORD_STORE_DIR ]; then
     echo "Password store not found, please install it by running:"
-    echo "git clone ssh://gitolite3@git-internal.mozilla.org/taskcluster/secrets.git $HOME/.password-store"
+    echo "git clone ssh://gitolite3@git-internal.mozilla.org/taskcluster/secrets.git $PASSWORD_STORE_DIR"
     echo "To clone this repository, you need Mozilla VPN access. Please check \
 https://mana.mozilla.org/wiki/display/IT/Mozilla+VPN for information on how to setup VPN connection."
     exit 1
