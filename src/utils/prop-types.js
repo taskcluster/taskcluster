@@ -256,3 +256,7 @@ export const awsProvisionerHealth = shape({
     })
   ),
 });
+
+export const secret = shape({
+  name: string,
+});

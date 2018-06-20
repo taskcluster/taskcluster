@@ -77,6 +77,12 @@ export default [
   },
   {
     component: loadable(() =>
+      import(/* webpackChunkName: 'Secrets' */ '../views/Secrets')
+    ),
+    path: '/secrets',
+  },
+  {
+    component: loadable(() =>
       import(/* webpackChunkName: 'NotFound' */ '../views/NotFound')
     ),
   },
