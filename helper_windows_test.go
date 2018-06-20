@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -27,9 +28,9 @@ func checkSHASums() []string {
 	}
 }
 
-func failCommand() []string {
+func returnExitCode(exitCode uint) []string {
 	return []string{
-		"exit 1",
+		fmt.Sprintf("exit %d", exitCode),
 	}
 }
 
