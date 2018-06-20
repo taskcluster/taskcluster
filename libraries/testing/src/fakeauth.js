@@ -22,10 +22,6 @@ exports.start = function(clients, {rootUrl}={}) {
       if (body.authorization) {
         let authorization = hawk.utils.parseAuthorizationHeader(body.authorization);
         clientId = authorization.id;
-        if (!(clientId in clients)) {
-          debug(`rejecting access to ${body.resource} by ${clientId}`);
-          return {status: 'auth-failed', message: `client ${clientId} not configured in fakeauth`};
-        }
         scopes = clients[clientId];
         ext = authorization.ext;
       } else {
@@ -46,13 +42,25 @@ exports.start = function(clients, {rootUrl}={}) {
       }
       if (ext) {
         ext = JSON.parse(new Buffer(ext, 'base64').toString('utf-8'));
-        if (ext.authorizedScopes) {
-          scopes = ext.authorizedScopes;
-          from = 'ext.authorizedScopes';
-        } else if (ext.certificate.scopes) {
-          scopes = ext.certificate.scopes;
-          from = 'ext.certificate.scopes';
-        }
+      } else {
+        ext = {};
+      }
+
+      if (ext.certificate && ext.certificate.issuer) {
+        clientId = ext.certificate.issuer;
+      }
+
+      if (!(clientId in clients)) {
+        debug(`rejecting access to ${body.resource} by ${clientId}`);
+        return {status: 'auth-failed', message: `client ${clientId} not configured in fakeauth`};
+      }
+
+      if (ext.authorizedScopes) {
+        scopes = ext.authorizedScopes;
+        from = 'ext.authorizedScopes';
+      } else if (ext.certificate && ext.certificate.scopes) {
+        scopes = ext.certificate.scopes;
+        from = 'ext.certificate.scopes';
       }
       debug('authenticating access to ' + body.resource +
           ' by ' + clientId +
