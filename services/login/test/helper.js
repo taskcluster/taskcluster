@@ -1,36 +1,32 @@
 const taskcluster = require('taskcluster-client');
-const testing = require('taskcluster-lib-testing');
-const v1 = require('../src/v1');
+const {fakeauth, stickyLoader} = require('taskcluster-lib-testing');
+const builder = require('../src/v1');
 const load = require('../src/main');
-const config = require('taskcluster-lib-config');
 const _ = require('lodash');
 
-var helper = module.exports = {};
+const helper = module.exports = {};
+helper.load = stickyLoader(load);
 
 // Call this in suites or tests that make API calls, etc; it will set up
 // what's required to respond to those calls.
-helper.setup = function(options) {
-  options = options || {};
-  var webServer = null;
-
-  var loadOptions = {
-    profile: 'test',
-    process: 'test-helper',
-  };
+helper.setup = function(options = {}) {
+  let webServer = null;
 
   // Setup before tests
   suiteSetup(async () => {
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    });
+    helper.load.inject('profile', 'test');
+    helper.load.inject('process', 'test-helper');
+    const cfg = await helper.load('cfg');
+    helper.rootUrl = `http://localhost:${cfg.server.port}`;
+    helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
+    webServer = await helper.load('server');
 
-    webServer = await load('server', _.defaults({
-      authenticators: [],
-    }, loadOptions));
+    fakeauth.start({
+      'test-client': ['*'],
+    }, {rootUrl: helper.rootUrl});
 
     // Create client for working with API
-    helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
-    var reference = v1.reference({baseUrl: helper.baseUrl});
+    const reference = builder.reference();
     helper.Login = taskcluster.createClient(reference);
     // Utility to create an Login instance with limited scopes
     helper.scopes = (...scopes) => {
@@ -38,12 +34,12 @@ helper.setup = function(options) {
         // Ensure that we use global agent, to avoid problems with keepAlive
         // preventing tests from exiting
         agent:            require('http').globalAgent,
-        baseUrl:          helper.baseUrl,
         credentials: {
           clientId:       'test-client',
           accessToken:    'none',
         },
         authorizedScopes: scopes.length > 0 ? scopes : undefined,
+        rootUrl: helper.rootUrl,
       });
     };
   });
@@ -59,7 +55,8 @@ helper.setup = function(options) {
     // Kill webServer
     if (webServer) {
       await webServer.terminate();
+      webServer = null;
     }
-    testing.fakeauth.stop();
+    fakeauth.stop();
   });
 };

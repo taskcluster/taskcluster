@@ -24,20 +24,21 @@
     "jwks-rsa": "^1.2.1",
     "lodash": "^4.17.5",
     "superagent": "^3.8.2",
-    "taskcluster-client": "^3.2.1",
-    "taskcluster-lib-api": "8.0.0",
-    "taskcluster-lib-app": "^3.0.0",
+    "taskcluster-client": "^11.0.0",
+    "taskcluster-lib-api": "^12.0.2",
+    "taskcluster-lib-app": "^10.0.0",
     "taskcluster-lib-config": "^0.9.1",
-    "taskcluster-lib-docs": "^4.2.2",
-    "taskcluster-lib-loader": "^2.0.0",
-    "taskcluster-lib-monitor": "^5.4.0",
-    "taskcluster-lib-scopes": "^1.9.0",
-    "taskcluster-lib-validate": "^3.0.3"
+    "taskcluster-lib-docs": "^10.0.0",
+    "taskcluster-lib-loader": "^10.0.0",
+    "taskcluster-lib-monitor": "^10.0.0",
+    "taskcluster-lib-scopes": "^10.0.0",
+    "taskcluster-lib-validate": "^11.0.1"
   },
   "devDependencies": {
     "assume": "^1.5.2",
     "mocha": "^5.0.0",
-    "taskcluster-lib-testing": "^2.0.2"
+    "taskcluster-lib-testing": "^11.0.0",
+    "taskcluster-lib-urls": "^10.0.0"
   },
   "engine-strict": true,
   "engines": {

@@ -1,18 +1,16 @@
 const config = require('taskcluster-lib-config');
 const loader = require('taskcluster-lib-loader');
 const scanner = require('./scanner');
-const v1 = require('./v1');
 const App = require('taskcluster-lib-app');
-const validator = require('taskcluster-lib-validate');
+const SchemaSet = require('taskcluster-lib-validate');
 const monitor = require('taskcluster-lib-monitor');
 const docs = require('taskcluster-lib-docs');
+const builder = require('./v1');
 
 let load = loader({
   cfg: {
     requires: ['profile'],
-    setup: ({profile}) => {
-      return config({profile});
-    },
+    setup: ({profile}) => config({profile}),
   },
 
   handlers: {
@@ -24,6 +22,7 @@ let load = loader({
         let Handler = require('./handlers/' + name);
         handlers[name] = new Handler({name, cfg});
       });
+
       return handlers;
     },
   },
@@ -31,7 +30,8 @@ let load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: cfg.monitoring.project || 'taskcluster-login',
+      rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-login',
       enable: cfg.monitoring.enable,
       credentials: cfg.app.credentials,
       mock: profile !== 'production',
@@ -39,45 +39,25 @@ let load = loader({
     }),
   },
 
-  validator: {
+  schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => {
-      return validator({
-        prefix: 'login/v1/',
-        publish: cfg.app.publishMetaData,
-        aws: cfg.aws,
-      });
-    },
-  },
-
-  router: {
-    requires: ['cfg', 'validator', 'monitor', 'handlers'],
-    setup: ({cfg, validator, monitor, handlers}) => {
-      return v1.setup({
-        context: {},
-        validator,
-        authBaseUrl:      cfg.authBaseUrl,
-        publish:          cfg.app.publishMetaData,
-        baseUrl:          cfg.server.publicUrl + '/v1',
-        referencePrefix:  'login/v1/api.json',
-        aws:              cfg.aws,
-        monitor:          monitor.prefix('api'),
-        context:          {cfg, handlers},
-      });
-    },
+    setup: ({cfg}) => new SchemaSet({
+      serviceName: 'login',
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
+    }),
   },
 
   docs: {
-    requires: ['cfg', 'validator'],
-    setup: ({cfg, validator}) => docs.documenter({
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.app.credentials,
       tier: 'integrations',
-      schemas: validator.schemas,
-      publish: cfg.app.publishMetaData,
+      schemaset,
       references: [
         {
           name: 'api',
-          reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+          reference: builder.reference(),
         },
       ],
     }),
@@ -88,30 +68,25 @@ let load = loader({
     setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
-  app: {
-    requires: ['cfg', 'docs', 'router'],
-    setup: ({cfg, docs, router}) => {
-      // Create application
-      let app = App({
-        port: cfg.server.port,
-        publicUrl: cfg.server.publicUrl,
-        env: cfg.server.env,
-        forceSSL: cfg.server.forceSSL,
-        trustProxy: cfg.server.trustProxy,
-        rootDocsLink: true, // doesn't work?
-        docs,
-      });
-      app.use('/v1', router);
-      return app;
-    },
+  api: {
+    requires: ['cfg', 'schemaset', 'monitor', 'handlers'],
+    setup: ({cfg, schemaset, monitor, handlers}) => builder.build({
+      schemaset,
+      context: {cfg, handlers},
+      rootUrl: cfg.taskcluster.rootUrl,
+      monitor: monitor.prefix('api'),
+    }),
   },
 
   server: {
-    requires: ['cfg', 'app'],
-    setup: async ({cfg, app}) => {
-      // Create server and start listening
-      return app.createServer();
-    },
+    requires: ['cfg', 'api', 'docs'],
+    setup: ({cfg, api, docs}) => App({
+      port: cfg.server.port,
+      env: cfg.server.env,
+      forceSSL: cfg.server.forceSSL,
+      trustProxy: cfg.server.trustProxy,
+      apis: [api],
+    }),
   },
 
   scanner: {
