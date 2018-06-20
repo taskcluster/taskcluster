@@ -1,4 +1,6 @@
 Defaults:
+  taskcluster:
+    rootUrl:        !env TASKCLUSTER_ROOT_URL
   app:
     # credentials used for the service (uploading docs, etc.)
     credentials:
@@ -15,7 +17,6 @@ Defaults:
       credentials:
         clientId:     !env TASKCLUSTER_CLIENT_ID
         accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
-    authBaseUrl:      https://auth.taskcluster.net/v1
     publishMetaData:  !env:bool PUBLISH_METADATA
   aws:
     # Credentials with access to artifact buckets and
@@ -25,14 +26,12 @@ Defaults:
     region:           us-west-2
     apiVersion:       2014-01-01
   monitoring:
-    project: !env MONITORING_PROJECT
     enable: !env:bool MONITORING_ENABLE
   server:
     port:       !env:number PORT
     forceSSL:   !env:flag FORCE_SSL
     env:        !env NODE_ENV
     trustProxy: !env:flag TRUST_PROXY
-    publicUrl:  !env PUBLIC_URL
 Profiles:
   production:
     handlers:
@@ -42,7 +41,6 @@ Profiles:
         clientId:       !env AUTH0_CLIENT_ID
         clientSecret:   !env AUTH0_CLIENT_SECRET
     server:
-      publicUrl:                    'https://login.taskcluster.net'
       forceSSL: true
   test:
     handlers:
@@ -56,7 +54,6 @@ Profiles:
       enable: false
     server:
       port: 60174
-      publicUrl: http://localhost:60174
       env: development
       forceSSL: false
   ngrok:
@@ -74,7 +71,6 @@ Profiles:
       enable: false
     server:
       port: 60174
-      publicUrl: https://taskcluster-login.ngrok.io
       forceSSL:   true
       trustProxy: true
       env: development

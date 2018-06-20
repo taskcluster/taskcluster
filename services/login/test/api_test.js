@@ -1,3 +1,4 @@
+const libUrls = require('taskcluster-lib-urls');
 require('mocha');
 
 suite('API', function() {
@@ -22,7 +23,7 @@ suite('API', function() {
 
     test('returns credentials for "test" provider', async function() {
       let res = await request
-        .get(helper.baseUrl + '/oidc-credentials/test')
+        .get(libUrls.api(helper.rootUrl, 'login', 'v1', '/oidc-credentials/test'))
         .set('Authorization', 'Bearer let-me-in');
       let resp = JSON.parse(res.text);
       assume(resp.credentials.clientId).to.equal('test/let-me-in');
