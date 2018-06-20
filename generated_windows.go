@@ -76,6 +76,13 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
+	// By default generic-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
+	ExitStatusHandling struct {
+
+		// If the task exists with a retriable exit status, the task will be marked as an exception and a new run created.
+		Retry []int64 `json:"retry,omitempty"`
+	}
+
 	// Feature flags enable additional functionality.
 	//
 	// Since: generic-worker 5.3.0
@@ -162,6 +169,9 @@ type (
 		//
 		// Since: generic-worker 5.4.0
 		Mounts []json.RawMessage `json:"mounts,omitempty"`
+
+		// By default generic-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
+		OnExitStatus ExitStatusHandling `json:"onExitStatus,omitempty"`
 
 		// A list of OS Groups that the task user should be a member of. Requires
 		// scope `generic-worker:os-group:<os-group>` for each group listed.
@@ -565,6 +575,23 @@ func taskPayloadSchema() string {
         "title": "Mount"
       },
       "type": "array"
+    },
+    "onExitStatus": {
+      "additionalProperties": false,
+      "description": "By default generic-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.",
+      "properties": {
+        "retry": {
+          "description": "If the task exists with a retriable exit status, the task will be marked as an exception and a new run created.",
+          "items": {
+            "title": "Exit statuses",
+            "type": "integer"
+          },
+          "title": "Retriable exit statuses",
+          "type": "array"
+        }
+      },
+      "title": "Exit status handling",
+      "type": "object"
     },
     "osGroups": {
       "description": "A list of OS Groups that the task user should be a member of. Requires\nscope ` + "`" + `generic-worker:os-group:\u003cos-group\u003e` + "`" + ` for each group listed.\n\nSince: generic-worker 6.0.0",
