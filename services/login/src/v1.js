@@ -1,27 +1,28 @@
-const API = require('taskcluster-lib-api');
+const APIBuilder = require('taskcluster-lib-api');
 
-const api = new API({
+const builder = new APIBuilder({
+  serviceName: 'login',
+  version: 'v1',
   title:         'Login API',
   description:   [
     'The Login service serves as the interface between external authentication',
     'systems and Taskcluster credentials.',
   ].join('\n'),
   name: 'login',
-  schemaPrefix:  'http://schemas.taskcluster.net/login/v1/',
   context: ['cfg', 'handlers'],
 });
 
-// Export api
-module.exports = api;
+// Export builder
+module.exports = builder;
 
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/oidc-credentials/:provider',
   name:       'oidcCredentials',
   idempotent: false,
-  output:     'oidc-credentials-response.json',
+  output:     'oidc-credentials-response.yml',
   title:      'Get Taskcluster credentials given a suitable `access_token`',
-  stability:  API.stability.experimental,
+  stability:  APIBuilder.stability.experimental,
   description: [
     'Given an OIDC `access_token` from a trusted OpenID provider, return a',
     'set of Taskcluster credentials for use on behalf of the identified',
@@ -35,7 +36,7 @@ api.declare({
     '```',
     '',
     'The `access_token` is first verified against the named',
-    ':provider, then passed to the provider\'s API to retrieve a user',
+    ':provider, then passed to the provider\'s APIBuilder to retrieve a user',
     'profile. That profile is then used to generate Taskcluster credentials',
     'appropriate to the user. Note that the resulting credentials may or may',
     'not include a `certificate` property. Callers should be prepared for either',
