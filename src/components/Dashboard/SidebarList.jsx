@@ -14,7 +14,6 @@ import BackupRestoreIcon from 'mdi-react/BackupRestoreIcon';
 import AccountKeyIcon from 'mdi-react/AccountKeyIcon';
 import AccountStarIcon from 'mdi-react/AccountStarIcon';
 import AccountSettingsIcon from 'mdi-react/AccountSettingsIcon';
-import AccountSwitchIcon from 'mdi-react/AccountSwitchIcon';
 import FileTreeIcon from 'mdi-react/FileTreeIcon';
 import WebhookIcon from 'mdi-react/WebhookIcon';
 import KeyIcon from 'mdi-react/KeyIcon';
@@ -51,9 +50,6 @@ export default class SidebarList extends Component {
           </SidebarListItem>
           <SidebarListItem to="/auth/scopes" icon={<AccountSettingsIcon />}>
             Scopes
-          </SidebarListItem>
-          <SidebarListItem to="/auth/grants" icon={<AccountSwitchIcon />}>
-            Scope Grants
           </SidebarListItem>
         </SidebarListGroup>
 

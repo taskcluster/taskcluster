@@ -15,9 +15,7 @@ import rolesQuery from './roles.graphql';
 @graphql(rolesQuery)
 @withStyles(theme => ({
   plusIcon: {
-    position: 'fixed',
-    bottom: theme.spacing.double,
-    right: theme.spacing.triple,
+    ...theme.mixins.fab,
   },
 }))
 export default class ViewRoles extends PureComponent {

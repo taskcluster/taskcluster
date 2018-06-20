@@ -25,9 +25,7 @@ import clientsQuery from './clients.graphql';
 })
 @withStyles(theme => ({
   plusIcon: {
-    position: 'fixed',
-    bottom: theme.spacing.double,
-    right: theme.spacing.triple,
+    ...theme.mixins.fab,
   },
 }))
 export default class ViewWorker extends PureComponent {
