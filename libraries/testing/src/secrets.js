@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const assert = require('assert');
 const request = require('superagent');
+const debug = require('debug')('tc-lib-testing:secrets');
 
 class Secrets {
   constructor({secretName, secrets, load}) {
@@ -18,6 +19,7 @@ class Secrets {
     // load secrets, if running in a task
     let env = Object.assign({}, process.env);
     if (process.env.TASK_ID) {
+      debug('fetching test secrets');
       Object.assign(env, await this._fetchSecrets());
     }
 
@@ -40,6 +42,7 @@ class Secrets {
           const value = _.get(cfg, secret.cfg);
           if (value !== undefined) {
             secret.value = value;
+            debug(`got value for secret ${secret.name} from config`);
             continue;
           }
         }
@@ -50,9 +53,12 @@ class Secrets {
           const value = env[secret.env];
           if (value) {
             secret.value = value;
+            debug(`got value for secret ${secret.name} from fetched secrets`);
             continue;
           }
         }
+
+        debug(`no value for secret ${secret.name}`);
       }
     }
 
