@@ -102,6 +102,15 @@ class Secrets {
         skipping = false;
         await that.setup();
         that.load.save();
+
+        // update the loader's cfg with `mock` default values
+        secretList.forEach(name => {
+          that.secrets[name].forEach(secret => {
+            if (secret.cfg && secret.mock) {
+              that.load.cfg(secret.cfg, secret.mock);
+            }
+          });
+        });
       });
 
       fn.call(this, true, () => skipping);
