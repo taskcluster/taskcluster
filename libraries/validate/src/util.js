@@ -48,7 +48,7 @@ const checkRefs = (schema, serviceName) => {
         if (ref.hostname || ref.protocol) {
           throw new Error(`Disallowed $ref '${ref}': absolute URIs are not allowed`);
         }
-        if (ref.path.startsWith('/')) {
+        if (ref.path && ref.path.startsWith('/')) {
           throw new Error(`Disallowed $ref '${ref}': rooted URIs (starting with /) are not allowed`);
         }
         return;
