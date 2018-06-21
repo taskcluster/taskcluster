@@ -88,7 +88,8 @@ exports.secrets = new Secrets({
      // env - the environment variable by which this secret is set in the config (if any)
      // cfg - dotted path to the config value containing this secret (if any)
      // name - name for the secret (used for programmatic access in tests; defaults to env)
-     {env: 'PULSE_USERNAME', cfg: 'pulse.username', name: 'username'},
+     // mock - value to provide if secret is not set (for mock runs only)
+     {env: 'PULSE_USERNAME', cfg: 'pulse.username', name: 'username', mock: 'dummy'},
      {env: 'PULSE_PASSWORD', cfg: 'pulse.password', name: 'password'},
    ],
    aws: [
