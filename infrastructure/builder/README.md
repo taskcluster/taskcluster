@@ -1,5 +1,5 @@
-Taskcluster Installer
-=====================
+Taskcluster Builder
+===================
 
 This tool builds Taskcluster images.
 
