@@ -91,7 +91,7 @@ var listener = new taskcluster.PulseListener({
 });
 
 // Instantiate the QueueEvents Client class
-var queueEvents = new taskcluster.QueueEvents();
+var queueEvents = new taskcluster.QueueEvents({rootUrl: ..});
 
 // Bind to task-completed events from queue that matches routing key pattern:
 //   'primary.<myTaskId>.*.*.*.*.*.#'
