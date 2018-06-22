@@ -1,24 +1,32 @@
 const {Secrets, stickyLoader} = require('../');
+const _ = require('lodash');
 const assert = require('assert');
 const nock = require('nock');
 
-let old_TASK_ID;
-const clearEnv = () => {
-  old_TASK_ID = process.env.TASK_ID;
-  delete process.env.TASK_ID;
-  delete process.env.PASS_IN_ENV;
-  delete process.env.PASS_IN_BOTH;
-};
-
-const resetEnv = () => {
-  process.env.TASK_ID = old_TASK_ID;
-  delete process.env.PASS_IN_ENV;
-  delete process.env.PASS_IN_BOTH;
-};
+const savedEnv = _.cloneDeep(process.env);
 
 suite('Secrets', function() {
-  suiteSetup(clearEnv);
-  suiteTeardown(resetEnv);
+  let oldTaskId;
+  let savedEnv;
+
+  suiteSetup(function() {
+    // make sure $TASK_ID isn't set for the duration of this suite
+    oldTaskId = process.env.TASK_ID;
+    delete process.env.TASK_ID;
+    savedEnv = _.cloneDeep(process.env);
+  });
+
+  teardown(function() {
+    // reset process.env back to savedEnv, in-place (without $TASK_ID)
+    Object.keys(process.env).forEach(k => delete process.env[k]);
+    Object.entries(savedEnv).forEach(([k, v]) => process.env[k] = v);
+  });
+
+  suiteTeardown(function() {
+    if (oldTaskId) {
+      process.env.TASK_ID = oldTaskId;
+    }
+  });
 
   const loader = (component, overwrites) => {
     if (component in overwrites) {
@@ -57,7 +65,6 @@ suite('Secrets', function() {
     });
 
     test('with nothing', async function() {
-      sticky.inject('cfg', {});
       await secrets.setup();
       assert(!secrets.have('envOnly'));
       assert.throws(() => secrets.get('envOnly'));
@@ -103,7 +110,6 @@ suite('Secrets', function() {
     test('with env', async function() {
       process.env.PASS_IN_ENV = 'PIE';
       process.env.PASS_IN_BOTH = 'PIB';
-      sticky.inject('cfg', {});
       await secrets.setup();
       assert(secrets.have('envOnly'));
       assert.deepEqual(secrets.get('envOnly'), {PASS_IN_ENV: 'PIE'});
@@ -111,11 +117,12 @@ suite('Secrets', function() {
       assert.throws(() => secrets.get('cfgOnly'));
       assert(secrets.have('envAndCfg'));
       assert.deepEqual(secrets.get('envAndCfg'), {PASS_IN_BOTH: 'PIB'});
+      assert(!process.env.PASS_IN_ENV, '$PASS_IN_ENV is still set');
     });
 
     test('with env via secrets service', async function() {
+      process.env.TASK_ID = 'abc123'; // so fetching occurs
       secrets._fetchSecrets = async () => ({PASS_IN_ENV: 'PIE', PASS_IN_BOTH: 'PIB'});
-      sticky.inject('cfg', {});
       await secrets.setup();
       assert(secrets.have('envOnly'));
       assert.deepEqual(secrets.get('envOnly'), {PASS_IN_ENV: 'PIE'});
@@ -123,6 +130,7 @@ suite('Secrets', function() {
       assert.throws(() => secrets.get('cfgOnly'));
       assert(secrets.have('envAndCfg'));
       assert.deepEqual(secrets.get('envAndCfg'), {PASS_IN_BOTH: 'PIB'});
+      assert(!process.env.PASS_IN_ENV, '$PASS_IN_ENV is set');
     });
 
     test('with env and config', async function() {
@@ -137,6 +145,7 @@ suite('Secrets', function() {
       assert(secrets.have('envAndCfg'));
       // NOTE: this prefers the config value!
       assert.deepEqual(secrets.get('envAndCfg'), {PASS_IN_BOTH: 'P2'});
+      assert(!process.env.PASS_IN_ENV, '$PASS_IN_ENV is set');
     });
   });
 
