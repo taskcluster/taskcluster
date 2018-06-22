@@ -5,6 +5,7 @@ export const VIEW_WORKERS_PAGE_SIZE = 15;
 export const VIEW_CLIENTS_PAGE_SIZE = 20;
 export const VIEW_CLIENT_SCOPES_INSPECT_SIZE = 10;
 export const VIEW_SECRETS_PAGE_SIZE = 100;
+export const VIEW_CACHE_PURGES_PAGE_SIZE = 20;
 export const SCOPES_SEARCH_MODE = {
   EXACT: 'EXACT',
   HAS_SCOPE: 'HAS SCOPE',

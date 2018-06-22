@@ -83,6 +83,12 @@ export default [
   },
   {
     component: loadable(() =>
+      import(/* webpackChunkName: 'CachePurges' */ '../views/CachePurges')
+    ),
+    path: '/purge-caches',
+  },
+  {
+    component: loadable(() =>
       import(/* webpackChunkName: 'NotFound' */ '../views/NotFound')
     ),
   },

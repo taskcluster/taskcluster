@@ -260,3 +260,10 @@ export const awsProvisionerHealth = shape({
 export const secret = shape({
   name: string,
 });
+
+export const cachePurge = shape({
+  provisionerId: number,
+  workerType: string,
+  cacheName: string,
+  before: date,
+});

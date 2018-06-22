@@ -28,8 +28,6 @@ const sorted = pipe(
  * Display secrets in a table.
  */
 export default class SecretsTable extends Component {
-  secrets = null;
-
   static propTypes = {
     /** Callback function fired when a page is changed. */
     onPageChange: func.isRequired,
