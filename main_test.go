@@ -27,11 +27,11 @@ func TestFailureResolvesAsFailure(t *testing.T) {
 
 // Exit codes specified in OnExitCode should resolve as itermittent
 func TestFailureRetryCode(t *testing.T) {
-	defer setup(t, "TestFailureResolvesAsFailure")()
+	defer setup(t, "TestFailureRetryCode")()
 	payload := GenericWorkerPayload{
 		Command:    returnExitCode(123),
 		MaxRunTime: 10,
-		OnExitStatus: ExitStatusHandling{
+		OnExitStatus: ExitCodeHandling{
 			Retry: []int64{123},
 		},
 	}
@@ -44,11 +44,11 @@ func TestFailureRetryCode(t *testing.T) {
 
 // Exit codes _not_ specified in OnExitCode should resolve normally
 func TestFailureRetryCodeNormal(t *testing.T) {
-	defer setup(t, "TestFailureResolvesAsFailure")()
+	defer setup(t, "TestFailureRetryCodeNormal")()
 	payload := GenericWorkerPayload{
 		Command:    returnExitCode(456),
 		MaxRunTime: 10,
-		OnExitStatus: ExitStatusHandling{
+		OnExitStatus: ExitCodeHandling{
 			Retry: []int64{123},
 		},
 	}
@@ -61,11 +61,11 @@ func TestFailureRetryCodeNormal(t *testing.T) {
 
 // Exit codes should not override success
 func TestFailureRetryCodeSuccess(t *testing.T) {
-	defer setup(t, "TestFailureResolvesAsFailure")()
+	defer setup(t, "TestFailureRetryCodeSuccess")()
 	payload := GenericWorkerPayload{
 		Command:    returnExitCode(0),
 		MaxRunTime: 10,
-		OnExitStatus: ExitStatusHandling{
+		OnExitStatus: ExitCodeHandling{
 			Retry: []int64{780},
 		},
 	}
@@ -74,6 +74,57 @@ func TestFailureRetryCodeSuccess(t *testing.T) {
 	fmt.Print(td)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+// Exit codes as a list
+func TestFailureRetryCodeList(t *testing.T) {
+	defer setup(t, "TestFailureRetryCodeList")()
+	payload := GenericWorkerPayload{
+		Command:    returnExitCode(10),
+		MaxRunTime: 10,
+		OnExitStatus: ExitCodeHandling{
+			Retry: []int64{780, 10, 2},
+		},
+	}
+	td := testTask(t)
+
+	fmt.Print(td)
+
+	_ = submitAndAssert(t, td, payload, "exception", "intermittent-task")
+}
+
+// Exit codes with empty list are fine
+func TestFailureRetryCodeEmpty(t *testing.T) {
+	defer setup(t, "TestFailureRetryCodeEmpty")()
+	payload := GenericWorkerPayload{
+		Command:    returnExitCode(0),
+		MaxRunTime: 10,
+		OnExitStatus: ExitCodeHandling{
+			Retry: []int64{},
+		},
+	}
+	td := testTask(t)
+
+	fmt.Print(td)
+
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+// Exit codes with empty list are fine (failure)
+func TestFailureRetryCodeEmptyFail(t *testing.T) {
+	defer setup(t, "TestFailureRetryCodeEmptyFail")()
+	payload := GenericWorkerPayload{
+		Command:    returnExitCode(1),
+		MaxRunTime: 10,
+		OnExitStatus: ExitCodeHandling{
+			Retry: []int64{},
+		},
+	}
+	td := testTask(t)
+
+	fmt.Print(td)
+
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }
 
 func TestAbortAfterMaxRunTime(t *testing.T) {

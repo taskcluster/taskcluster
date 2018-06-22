@@ -946,7 +946,7 @@ func (err *CommandExecutionError) Error() string {
 	return fmt.Sprintf("%v", err.Cause)
 }
 
-func (task *TaskRun) RetryExitCode(c int64) bool {
+func (task *TaskRun) IsIntermittentExitCode(c int64) bool {
 	for _, code := range task.Payload.OnExitStatus.Retry {
 		if c == code {
 			return true
@@ -970,9 +970,9 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 
 	switch {
 	case result.Failed():
-		if task.RetryExitCode(int64(result.ExitCode())) {
+		if task.IsIntermittentExitCode(int64(result.ExitCode())) {
 			return &CommandExecutionError{
-				Cause:      fmt.Errorf("Intermittent task will be rerun. Exit code was in onExitStatusList"),
+				Cause:      fmt.Errorf("Task appears to have failed intermittently - exit code %v found in task payload.onExitStatus list", result.ExitCode()),
 				Reason:     intermittentTask,
 				TaskStatus: errored,
 			}

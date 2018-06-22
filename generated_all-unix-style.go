@@ -78,10 +78,11 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
-	// By default generic-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
-	ExitStatusHandling struct {
+	// By default generic-worker will fail a task with a non-zero exit code without retrying.  This payload property allows a task owner to define certain exit codes that are handled differently.
+	ExitCodeHandling struct {
 
-		// If the task exists with a retriable exit status, the task will be marked as an exception and a new run created.
+		// If the task exists with a retriable exit code, the task will be marked as an exception with a reason of intermitten-task. This may cause the queue to rerun the task.
+		// See [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.
 		Retry []int64 `json:"retry,omitempty"`
 	}
 
@@ -165,8 +166,8 @@ type (
 		// Since: generic-worker 5.4.0
 		Mounts []json.RawMessage `json:"mounts,omitempty"`
 
-		// By default generic-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.
-		OnExitStatus ExitStatusHandling `json:"onExitStatus,omitempty"`
+		// By default generic-worker will fail a task with a non-zero exit code without retrying.  This payload property allows a task owner to define certain exit codes that are handled differently.
+		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty"`
 
 		// A list of OS Groups that the task user should be a member of. Requires
 		// scope `generic-worker:os-group:<os-group>` for each group listed.
@@ -549,19 +550,19 @@ func taskPayloadSchema() string {
     },
     "onExitStatus": {
       "additionalProperties": false,
-      "description": "By default generic-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.",
+      "description": "By default generic-worker will fail a task with a non-zero exit code without retrying.  This payload property allows a task owner to define certain exit codes that are handled differently.",
       "properties": {
         "retry": {
-          "description": "If the task exists with a retriable exit status, the task will be marked as an exception and a new run created.",
+          "description": "If the task exists with a retriable exit code, the task will be marked as an exception with a reason of intermitten-task. This may cause the queue to rerun the task.\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.",
           "items": {
-            "title": "Exit statuses",
+            "title": "Exit codes",
             "type": "integer"
           },
-          "title": "Retriable exit statuses",
+          "title": "Intermittent task exit codes",
           "type": "array"
         }
       },
-      "title": "Exit status handling",
+      "title": "Exit code handling",
       "type": "object"
     },
     "osGroups": {
