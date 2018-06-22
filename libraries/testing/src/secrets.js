@@ -62,6 +62,18 @@ class Secrets {
       }
     }
 
+    // Remove variables from process.env, so that nothing can use them directly. In
+    // particular, taskcluster-client will happiliy use TASKCLUSTER_* from the env,
+    // allowing bugs to slip through where the values are not passed explicitly
+    for (let name of Object.keys(this.secrets)) {
+      for (let secret of this.secrets[name]) {
+        if (secret.env) {
+          debug(`removing $${secret.env} from environment`);
+          delete process.env[secret.env];
+        }
+      }
+    }
+
     this._setupComplete = true;
   }
 
