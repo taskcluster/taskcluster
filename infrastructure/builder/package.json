@@ -1,15 +1,15 @@
 {
-  "name": "taskcluster-installer",
+  "name": "taskcluster-builder",
   "version": "0.0.1",
   "author": "Brian Stack <bstack@mozilla.com>",
   "description": "Build taskcluster images",
   "license": "MPL-2.0",
   "bin": {
-    "taskcluster-installer": "./src/main.js"
+    "taskcluster-builder": "./src/main.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imbstack/taskcluster-installer.git"
+    "url": "https://github.com/imbstack/taskcluster-builder.git"
   },
   "scripts": {
     "lint": "eslint src/*.js src/*/*.js test/*.js test/*/*_test.js",

@@ -23,7 +23,7 @@ class Build {
     this.output = output;
     this.cmdOptions = cmdOptions;
 
-    this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-installer-build';
+    this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
 
     this.spec = null;
     this.cfg = null;

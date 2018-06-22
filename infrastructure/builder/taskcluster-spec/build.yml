@@ -145,11 +145,11 @@ repositories:
     tier: operations
   source: https://github.com/taskcluster/statsum#master
 
-- name: taskcluster-installer
+- name: taskcluster-builder
   kind: other
   docs:
     tier: operations
-  source: https://github.com/taskcluster/taskcluster-installer#master
+  source: https://github.com/taskcluster/taskcluster-builder#master
 
 # workers
 - name: docker-worker

@@ -24,7 +24,7 @@ In practice, the results are similar enough that this is not an issue.
 To build a release:
 
 ```
-./taskcluster-installer build --push --base-dir /tmp/base-dir taskcluster-spec/ release.tf.json
+./taskcluster-builder build --push --base-dir /tmp/base-dir taskcluster-spec/ release.tf.json
 ```
 
 Omit `--push` to skip pushing to a Docker registry (e.g., for local testing).
