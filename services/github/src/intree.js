@@ -127,6 +127,7 @@ module.exports.setup = async function({cfg, schemaset}) {
     }
   };
   const validate = await schemaset.validator(cfg.taskcluster.rootUrl);
+
   return function({config, payload, schema}) {
     config = yaml.safeLoad(config);
     let slugids = {};
@@ -138,7 +139,14 @@ module.exports.setup = async function({cfg, schemaset}) {
         return slugids[label] = slugid.nice();
       }
     };
-    let errors = validate(config, schema);
+    let version = config.version;
+    
+    let errors;
+    if (version == 0) {
+      errors = validate(config, schema);
+    } else {
+      errors = validate(config, schema.replace(/\.ya?ml$/, '.v1.yaml'));
+    }
     if (errors) {
       throw new Error(errors);
     }
@@ -146,7 +154,6 @@ module.exports.setup = async function({cfg, schemaset}) {
 
     // We need to toss out the config version number; it's the only
     // field that's not also in graph/task definitions
-    let version = config.version;
     delete config.version;
 
     // Perform parameter substitutions. This happens after verification
