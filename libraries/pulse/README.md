@@ -50,7 +50,7 @@ messages - bind to those queues.
 
 Note that declaring non-durable queues in this method may lead to message loss
 or duplication: when this connection fails, the server will delete the queues
-and any pending tasks.  If this is not acceptable for your application, use a
+and any pending messages.  If this is not acceptable for your application, use a
 durable queue.
 
 The library cannot detect all problems with an existing connection.  If any
