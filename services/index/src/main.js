@@ -75,6 +75,7 @@ var load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
+      rootUrl: cfg.taskcluster.rootUrl,
       projectName: cfg.monitoring.project || 'taskcluster-index',
       enable: cfg.monitoring.enable,
       credentials: cfg.taskcluster.credentials,
