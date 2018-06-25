@@ -13,6 +13,16 @@ See [getting user
 creds](https://docs.taskcluster.net/reference/integrations/taskcluster-login/getting-user-creds)
 for more detail about interacting with this service.
 
+## Looking Up User Profiles
+
+Given the necessary credentials, it is possible to use this service to retrieve a user's Auth0 profile.
+This should **only** be done to help debug an issue with the affected user.
+Put the credentials in a `user-config.yml` section named `lookup` and run
+
+```shell
+NODE_ENV=lookup node src/main.js show-auth0-profile '<auth0UserId>'
+```
+
 ## Development and Testing
 
 Test this like any Taskcluster microservice: install with `yarn` and then test
