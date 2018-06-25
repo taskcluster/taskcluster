@@ -8,10 +8,6 @@ defaults:
     indexedTaskTableName:         'IndexedTasks'
     namespaceTableName:           'Namespaces'
 
-    # Azure account
-    azure:
-      accountId:                  !env AZURE_ACCOUNT
-
     # Publish references and schemas
     publishMetaData:              !env:bool PUBLISH_METADATA
 
@@ -21,6 +17,10 @@ defaults:
     # Time delay before expiring artifacts, in readable format, see:
     # taskcluster.fromNow, notice this should be negative!
     expirationDelay:              '-1 day'
+
+  # Azure account
+  azure:
+    accountId:                  !env AZURE_ACCOUNT
 
   monitoring:
     project:                    !env MONITORING_PROJECT
