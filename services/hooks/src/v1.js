@@ -2,12 +2,12 @@ const parser = require('cron-parser');
 const debug = require('debug')('hooks:routes:v1');
 const Promise = require('promise');
 const taskcluster = require('taskcluster-client');
-const API = require('taskcluster-lib-api');
+const APIBuilder = require('taskcluster-lib-api');
 const nextDate = require('../src/nextdate');
 const _ = require('lodash');
 const Ajv = require('ajv');
 
-const api = new API({
+const builder = new APIBuilder({
   title:         'Hooks API Documentation',
   description:   [
     'Hooks are a mechanism for creating tasks in response to events.',
@@ -30,25 +30,24 @@ const api = new API({
     'https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks',
     'for more information.',
   ].join('\n'),
-  name: 'hooks',
+  serviceName: 'hooks',
+  version: 'v1',
   params: {
     hookGroupId: /^[a-zA-Z0-9-_]{1,64}$/,
     hookId: /^[a-zA-Z0-9-_\/]{1,64}$/,
   },
   context: ['Hook', 'taskcreator'],
-  schemaPrefix:  'http://schemas.taskcluster.net/hooks/v1/',
 });
 
-// Export api
-module.exports = api;
+module.exports = builder;
 
 /** Get hook groups **/
-api.declare({
+builder.declare({
   method:       'get',
   route:        '/hooks',
   name:         'listHookGroups',
   idempotent:   true,
-  output:       'list-hook-groups-response.json',
+  output:       'list-hook-groups-response.yml',
   title:        'List hook groups',
   stability:    'stable',
   description: [
@@ -65,12 +64,12 @@ api.declare({
 });
 
 /** Get hooks in a given group **/
-api.declare({
+builder.declare({
   method:       'get',
   route:        '/hooks/:hookGroupId',
   name:         'listHooks',
   idempotent:   true,
-  output:       'list-hooks-response.json',
+  output:       'list-hooks-response.yml',
   title:        'List hooks in a given group',
   stability:    'stable',
   description: [
@@ -93,12 +92,12 @@ api.declare({
 });
 
 /** Get hook definition **/
-api.declare({
+builder.declare({
   method:       'get',
   route:        '/hooks/:hookGroupId/:hookId',
   name:         'hook',
   idempotent:   true,
-  output:       'hook-definition.json',
+  output:       'hook-definition.yml',
   title:        'Get hook definition',
   stability:    'stable',
   description: [
@@ -122,11 +121,11 @@ api.declare({
 });
 
 /** Get hook's current status */
-api.declare({
+builder.declare({
   method:       'get',
   route:        '/hooks/:hookGroupId/:hookId/status',
   name:         'getHookStatus',
-  output:       'hook-status.json',
+  output:       'hook-status.yml',
   title:        'Get hook status',
   stability:    'stable',
   description: [
@@ -158,7 +157,7 @@ api.declare({
 });
 
 /** Create a hook **/
-api.declare({
+builder.declare({
   method:       'put',
   route:        '/hooks/:hookGroupId/:hookId',
   name:         'createHook',
@@ -166,8 +165,8 @@ api.declare({
   scopes:       {AllOf:
     ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
   },
-  input:        'create-hook-request.json',
-  output:       'hook-definition.json',
+  input:        'create-hook-request.yml',
+  output:       'hook-definition.yml',
   title:        'Create a hook',
   stability:    'stable',
   description: [
@@ -196,14 +195,15 @@ api.declare({
   await req.authorize({hookGroupId, hookId});
 
   // Validate cron-parser expressions
-  _.forEach(hookDef.schedule, function(schedule) {
+  for (let schedElement of hookDef.schedule) {
     try {
-      parser.parseExpression(schedule);
+      parser.parseExpression(schedElement);
     } catch (err) {
       return res.reportError('InputError',
-        '{{message}} in {{schedule}}', {message: err.message, schedule});
+        '{{message}} in {{schedElement}}', {message: err.message, schedElement});
     }
-  });
+  }
+
   // Try to create a Hook entity
   try {
     const hook = await this.Hook.create(
@@ -233,7 +233,7 @@ api.declare({
 });
 
 /** Update hook definition**/
-api.declare({
+builder.declare({
   method:       'post',
   route:        '/hooks/:hookGroupId/:hookId',
   name:         'updateHook',
@@ -241,8 +241,8 @@ api.declare({
   scopes:       {AllOf:
     ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
   },
-  input:        'create-hook-request.json',
-  output:       'hook-definition.json',
+  input:        'create-hook-request.yml',
+  output:       'hook-definition.yml',
   title:        'Update a hook',
   stability:    'stable',
   description: [
@@ -275,14 +275,14 @@ api.declare({
 
   // Attempt to modify properties of the hook
   const schedule = hookDef.schedule ? hookDef.schedule : [];
-  _.forEach(schedule, function(schedule) {
+  for (let schedElement of schedule) {
     try {
-      parser.parseExpression(schedule);
+      parser.parseExpression(schedElement);
     } catch (err) {
       return res.reportError('InputError',
-        '{{message}} in {{schedule}}', {message: err.message, schedule});
+        '{{message}} in {{schedElement}}', {message: err.message, schedElement});
     }
-  });
+  }
 
   await hook.modify((hook) => {
     hook.metadata          = hookDef.metadata;
@@ -298,7 +298,7 @@ api.declare({
 });
 
 /** Delete hook definition**/
-api.declare({
+builder.declare({
   method:       'delete',
   route:        '/hooks/:hookGroupId/:hookId',
   name:         'removeHook',
@@ -322,13 +322,13 @@ api.declare({
 });
 
 /** Trigger a hook **/
-api.declare({
+builder.declare({
   method:       'post',
   route:        '/hooks/:hookGroupId/:hookId/trigger',
   name:         'triggerHook',
   scopes:       'hooks:trigger-hook:<hookGroupId>/<hookId>',
-  input:        'trigger-hook.json',
-  output:       'task-status.json',
+  input:        'trigger-hook.yml',
+  output:       'task-status.yml',
   title:        'Trigger a hook',
   stability:    'stable',
   description: [
@@ -354,13 +354,13 @@ api.declare({
 });
 
 /** Get secret token for a trigger **/
-api.declare({
+builder.declare({
   method:       'get',
   route:        '/hooks/:hookGroupId/:hookId/token',
   name:         'getTriggerToken',
   scopes:       'hooks:get-trigger-token:<hookGroupId>/<hookId>',
   input:        undefined,
-  output:       'trigger-token-response.json',
+  output:       'trigger-token-response.yml',
   title:        'Get a trigger token',
   stability:    'stable',
   description: [
@@ -384,13 +384,13 @@ api.declare({
 });
 
 /** Reset a trigger token **/
-api.declare({
+builder.declare({
   method:       'post',
   route:        '/hooks/:hookGroupId/:hookId/token',
   name:         'resetTriggerToken',
   scopes:       'hooks:reset-trigger-token:<hookGroupId>/<hookId>',
   input:        undefined,
-  output:       'trigger-token-response.json',
+  output:       'trigger-token-response.yml',
   title:        'Reset a trigger token',
   stability:    'stable',
   description: [
@@ -419,12 +419,12 @@ api.declare({
 });
 
 /** Trigger hook from a webhook with a token **/
-api.declare({
+builder.declare({
   method:       'post',
   route:        '/hooks/:hookGroupId/:hookId/trigger/:token',
   name:         'triggerHookWithToken',
-  input:        'trigger-hook.json',
-  output:       'task-status.json',
+  input:        'trigger-hook.yml',
+  output:       'task-status.yml',
   title:        'Trigger a hook with a token',
   stability:    'stable',
   description: [

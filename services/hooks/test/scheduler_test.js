@@ -16,6 +16,7 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
   setup(function() {
     helper.load.cfg('app.scheduler.pollingDelay', 1);
     helper.load.inject('notify', new taskcluster.Notify({
+      rootUrl: helper.rootUrl,
       fake: {
         email: email => null,
       },

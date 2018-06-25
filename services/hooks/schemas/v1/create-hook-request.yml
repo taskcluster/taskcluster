@@ -6,7 +6,7 @@ type:                       object
 properties:
   hookGroupId:            {$const: hookGroupId}
   hookId:                 {$const: hookId}
-  metadata:               {$ref: "http://schemas.taskcluster.net/hooks/v1/hook-metadata.json#"}
+  metadata:               {$ref: "hook-metadata.json#"}
   schedule:
     # It would be prettier with:
     # {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json#"}
