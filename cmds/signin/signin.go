@@ -18,6 +18,7 @@ import (
 	"github.com/taskcluster/taskcluster-cli/config"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/auth"
+	libUrls "github.com/taskcluster/taskcluster-lib-urls"
 	graceful "gopkg.in/tylerb/graceful.v1"
 )
 
@@ -52,9 +53,10 @@ tools using those libraries can also benefit from this signin method.`,
 	root.Command.AddCommand(cmd)
 
 	config.RegisterOptions("signin", map[string]config.OptionDefinition{
-		"toolsUrl": config.OptionDefinition{
-			Description: "URL for the tools service.",
-			Default:     "https://tools.taskcluster.net",
+		"rootUrl": config.OptionDefinition{
+			Description: "Root URL against which to act",
+			Default:     "https://taskcluster.net",
+			Env:         "TASKCLUSTER_ROOT_URL",
 			Validate: func(value interface{}) error {
 				if _, ok := value.(string); !ok {
 					return errors.New("Must be a string")
@@ -87,12 +89,15 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	s.Server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		qs := r.URL.Query()
 		csh, _ := cmd.Flags().GetBool("csh")
+		rootURL := config.Configuration["signin"]["rootUrl"].(string)
 		if csh {
 			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_CLIENT_ID '"+qs.Get("clientId")+"'")
 			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ACCESS_TOKEN '"+qs.Get("accessToken")+"'")
+			fmt.Fprintln(cmd.OutOrStdout(), "setenv TASKCLUSTER_ROOT_URL '"+rootURL+"'")
 		} else {
 			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_CLIENT_ID='"+qs.Get("clientId")+"'")
 			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ACCESS_TOKEN='"+qs.Get("accessToken")+"'")
+			fmt.Fprintln(cmd.OutOrStdout(), "export TASKCLUSTER_ROOT_URL='"+rootURL+"'")
 		}
 		fmt.Fprintln(cmd.OutOrStderr(), "Credentials output as environment variables")
 
@@ -124,7 +129,7 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 	// Construct URL for login service and open it
 	callbackURL := "http://" + strings.Replace(listener.Addr().String(), "127.0.0.1", "localhost", 1)
 	description := url.QueryEscape("Temporary client for use on the command line")
-	loginURL := config.Configuration["signin"]["toolsUrl"].(string) + "/auth/clients/new"
+	loginURL := libUrls.UI(config.Configuration["signin"]["rootUrl"].(string), "/auth/clients/new")
 	name, _ := cmd.Flags().GetString("name")
 	loginURL += "?name=" + url.QueryEscape(name)
 	loginURL += "&description=" + description
