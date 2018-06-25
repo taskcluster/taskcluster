@@ -14,16 +14,17 @@
     "url": "https://github.com/taskcluster/taskcluster-index.git"
   },
   "dependencies": {
-    "azure-entities": "^3.2.1",
+    "azure-entities": "^4.0.0",
     "debug": "^3.1.0",
     "lodash": "^4.11.1",
-    "taskcluster-client": "^3.1.0",
-    "taskcluster-lib-api": "8.1.1",
-    "taskcluster-lib-app": "^2.0.3",
-    "taskcluster-lib-docs": "^4.2.2",
-    "taskcluster-lib-loader": "^2.0.0",
-    "taskcluster-lib-monitor": "^5.4.0",
-    "taskcluster-lib-validate": "^3.0.1",
+    "taskcluster-client": "^11.0.0",
+    "taskcluster-lib-api": "12.0.2",
+    "taskcluster-lib-app": "^10.0.0",
+    "taskcluster-lib-azure": "^10.0.0",
+    "taskcluster-lib-docs": "^10.0.0",
+    "taskcluster-lib-loader": "^10.0.0",
+    "taskcluster-lib-monitor": "^10.0.0",
+    "taskcluster-lib-validate": "^11.0.2",
     "typed-env-config": "^1.0.0"
   },
   "engine-strict": true,
@@ -36,6 +37,6 @@
     "mocha": "^4.0.1",
     "slugid": "^1.1.0",
     "superagent": "^3.8.1",
-    "taskcluster-lib-testing": "^2.0.2"
+    "taskcluster-lib-testing": "^11.2.0"
   }
 }
