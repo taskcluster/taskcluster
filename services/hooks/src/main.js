@@ -3,17 +3,18 @@ const debug = require('debug')('hooks:bin:server');
 const path = require('path');
 const Promise = require('promise');
 const taskcreator = require('./taskcreator');
-const validator = require('taskcluster-lib-validate');
-const v1 = require('./v1');
+const SchemaSet = require('taskcluster-lib-validate');
+const builder = require('./v1');
 const _ = require('lodash');
 const Scheduler = require('./scheduler');
 const AWS = require('aws-sdk');
 const config = require('typed-env-config');
 const loader = require('taskcluster-lib-loader');
-const app = require('taskcluster-lib-app');
+const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
 const monitor = require('taskcluster-lib-monitor');
 const taskcluster = require('taskcluster-client');
+const {sasCredentials} = require('taskcluster-lib-azure'); 
 
 // Create component loader
 const load = loader({
@@ -25,7 +26,8 @@ const load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: cfg.monitoring.project || 'taskcluster-hooks',
+      rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-hooks',
       enable: cfg.monitoring.enable,
       credentials: cfg.taskcluster.credentials,
       mock: profile !== 'production',
@@ -37,23 +39,27 @@ const load = loader({
     requires: ['cfg', 'process', 'monitor'],
     setup: ({cfg, process, monitor}) => {
       return data.Hook.setup({
-        table: cfg.app.hookTableName,
+        tableName: cfg.app.hookTableName,
         monitor: monitor.prefix('table.hooks'),
-        account: cfg.azure.accountName,
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.hookTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
         cryptoKey: cfg.azure.cryptoKey,
         signingKey: cfg.azure.signingKey,
-        credentials: cfg.taskcluster.credentials,
       });
     },
   },
 
-  validator: {
+  schemaset: {
     requires: ['cfg'],
     setup: ({cfg}) => {
-      return validator({
-        prefix:  'hooks/v1/',
-        publish:          cfg.app.publishMetaData,
-        aws:     cfg.aws.validator,
+      return new SchemaSet({
+        serviceName: 'hooks',
+        publish: cfg.app.publishMetaData,
+        aws: cfg.aws.validator,
       });
     },
   },
@@ -66,41 +72,35 @@ const load = loader({
   notify: {
     requires: ['cfg'],
     setup: ({cfg}) => new taskcluster.Notify({
+      rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.taskcluster.credentials,
       authorizedScopes: ['notify:email:*'],
     }),
   },
 
-  router: {
-    requires: ['cfg', 'validator', 'Hook', 'taskcreator', 'monitor'],
-    setup: async ({cfg, validator, Hook, taskcreator, monitor}) => {
-
-      await Hook.ensureTable();
-
-      return v1.setup({
-        context: {Hook, taskcreator},
-        validator,
-        authBaseUrl:      cfg.taskcluster.authBaseUrl,
-        publish:          cfg.app.publishMetaData,
-        baseUrl:          cfg.server.publicUrl + '/v1',
-        referencePrefix:  'hooks/v1/api.json',
-        aws:              cfg.aws.validator,
-        monitor,
-      });
-    },
+  api: {
+    requires: ['cfg', 'schemaset', 'Hook', 'taskcreator', 'monitor'],
+    setup: ({cfg, schemaset, Hook, taskcreator, monitor}) => builder.build({
+      rootUrl: cfg.taskcluster.rootUrl,
+      context: {Hook, taskcreator},
+      schemaset,
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws.validator,
+      monitor,
+    }),
   },
 
   docs: {
-    requires: ['cfg', 'validator'],
-    setup: ({cfg, validator}) => docs.documenter({
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
-      schemas: validator.schemas,
+      schemaset,
       publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',
-          reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+          reference: builder.reference(),
         },
       ],
     }),
@@ -112,20 +112,14 @@ const load = loader({
   },
 
   server: {
-    requires: ['cfg', 'router', 'docs'],
-    setup: ({cfg, router, docs}) => {
-      let hooksApp = app({
-        port:                   cfg.server.port,
-        env:                    cfg.server.env,
-        forceSSL:               cfg.server.forceSSL,
-        trustProxy:             cfg.server.trustProxy,
-        publicUrl:              cfg.server.publicUrl,
-        rootDocsLink:           true, 
-        docs,
-      });
-      hooksApp.use('/v1', router);
-      return hooksApp.createServer();
-    },
+    requires: ['cfg', 'api', 'docs'],
+    setup: ({cfg, api, docs}) => App({
+      port: cfg.server.port,
+      env: cfg.server.env,
+      forceSSL: cfg.server.forceSSL,
+      trustProxy: cfg.server.trustProxy,
+      apis: [api],
+    }),
   },
 
   schedulerNoStart: {

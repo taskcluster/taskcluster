@@ -7,6 +7,7 @@ const {TaskCreator} = require('../src/taskcreator');
 const taskcluster = require('taskcluster-client');
 const _ = require('lodash');
 const hookDef = require('./test_definition');
+const libUrls = require('taskcluster-lib-urls');
 
 suite('taskcreator_test.js', function() {
   helper.secrets.mockSuite('TaskCreator', ['taskcluster'], function(mock, skipping) {
@@ -26,6 +27,9 @@ suite('taskcreator_test.js', function() {
     let creator = null;
     setup(async () => {
       helper.load.remove('taskcreator');
+      if (mock) {
+        helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
+      }
       creator = await helper.load('taskcreator');
       if (mock) {
         creator.fakeCreate = true;
@@ -92,7 +96,7 @@ suite('taskcreator_test.js', function() {
       } else {
         // in real runs, ask the queue for the resulting task
         const cfg = await helper.load('cfg');
-        const queue = new taskcluster.Queue({credentials: cfg.taskcluster.credentials});
+        const queue = new taskcluster.Queue(cfg.taskcluster);
         return await queue.task(taskId);
       }
     };
