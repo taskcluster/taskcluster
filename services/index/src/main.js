@@ -4,17 +4,18 @@ var debug       = require('debug')('index:bin:server');
 var taskcluster = require('taskcluster-client');
 var data        = require('./data');
 var Handlers    = require('./handlers');
-var v1          = require('./api');
+var builder     = require('./api');
 var Config      = require('typed-env-config');
 var loader      = require('taskcluster-lib-loader');
 var monitor     = require('taskcluster-lib-monitor');
-var validator   = require('taskcluster-lib-validate');
+const SchemaSet   = require('taskcluster-lib-validate');
 var App         = require('taskcluster-lib-app');
 var docs        = require('taskcluster-lib-docs');
+const {sasCredentials} = require('taskcluster-lib-azure'); 
 
 // Create component loader
 var load = loader({
-  cfg: {
+  cfg: {   
     requires: ['profile'],
     setup: ({profile}) => Config({profile}),
   },
@@ -23,50 +24,58 @@ var load = loader({
   IndexedTask: {
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => data.IndexedTask.setup({
-      account:          cfg.app.azureAccount,
-      table:            cfg.app.indexedTaskTableName,
-      credentials:      cfg.taskcluster.credentials,
-      authBaseUrl:      cfg.taskcluster.authBaseUrl,
-      monitor:          monitor.prefix('table.indexedtasks'),
+      tableName:    cfg.app.indexedTaskTableName,
+      credentials:  sasCredentials({
+        accountId:  cfg.azure.accountId,
+        tableName:  cfg.app.indexedTaskTableName,
+        rootUrl:    cfg.taskcluster.rootUrl,
+        credentials:cfg.taskcluster.credentials,  
+      }),
     }),
   },
+
   Namespace: {
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => data.Namespace.setup({
-      account:          cfg.app.azureAccount,
-      table:            cfg.app.namespaceTableName,
-      credentials:      cfg.taskcluster.credentials,
-      authBaseUrl:      cfg.taskcluster.authBaseUrl,
-      monitor:          monitor.prefix('table.namespaces'),
+      tableName:    cfg.app.namespaceTableName,
+      credentials:  sasCredentials({
+        accountId:  cfg.azure.accountId,
+        tableName:  cfg.app.namespaceTableName,
+        rootUrl:    cfg.taskcluster.rootUrl,
+        credentials:cfg.taskcluster.credentials,  
+      }),
     }),
   },
 
   // Create a validator
-  validator: {
+  schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => validator({
-      prefix: 'index/v1/',
-      publish:          cfg.app.publishMetaData,
-      aws:    cfg.aws,
+    setup: ({cfg}) => new SchemaSet({
+      serviceName: 'index',
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
     }),
   },
 
   queue: {
     requires: ['cfg'],
     setup: ({cfg}) => new taskcluster.Queue({
+      rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.taskcluster.credentials,
     }),
   },
 
   queueEvents: {
-    requires: [],
-    setup: () => new taskcluster.QueueEvents(),
+    requires: ['cfg'],
+    setup: ({cfg}) => new taskcluster.QueueEvents({
+      rootUrl: cfg.taskcluster.rootUrl,
+    }),
   },
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: cfg.monitoring.project || 'taskcluster-index',
+      projectName: cfg.monitoring.project || 'taskcluster-index',
       enable: cfg.monitoring.enable,
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
@@ -75,16 +84,16 @@ var load = loader({
   },
 
   docs: {
-    requires: ['cfg', 'validator'],
-    setup: ({cfg, validator}) => docs.documenter({
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
-      schemas: validator.schemas,
       publish:          cfg.app.publishMetaData,
+      schemaset,
       references: [
         {
-          name: 'api',
-          reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+          name: 'api', 
+          reference: builder.reference(),
         },
       ],
     }),
@@ -96,31 +105,30 @@ var load = loader({
   },
 
   api: {
-    requires: ['cfg', 'validator', 'IndexedTask', 'Namespace', 'monitor', 'queue'],
-    setup: async ({cfg, validator, IndexedTask, Namespace, monitor, queue}) => v1.setup({
+    requires: ['cfg', 'schemaset', 'IndexedTask', 'Namespace', 'monitor', 'queue'],
+    setup: async ({cfg, schemaset, IndexedTask, Namespace, monitor, queue}) => builder.build({
       context: {
         queue,
-        validator,
-        IndexedTask,
+        IndexedTask,  
         Namespace,
       },
-      authBaseUrl:      cfg.taskcluster.authBaseUrl,
+      rootUrl:          cfg.taskcluster.rootUrl,
       publish:          cfg.app.publishMetaData,
-      baseUrl:          cfg.server.publicUrl + '/v1',
-      referencePrefix:  'index/v1/api.json',
       aws:              cfg.aws,
-      validator,
+      schemaset,
       monitor:          monitor.prefix('api'),
     }),
   },
 
   server: {
     requires: ['cfg', 'api', 'docs'],
-    setup: async ({cfg, api, docs}) => {
-      let app = App(cfg.server);
-      app.use('/v1', api);
-      return app.createServer();
-    },
+    setup: async ({cfg, api, docs}) => App({
+      port:  cfg.server.port,
+      env:   cfg.server.env,
+      forceSSL: cfg.server.forceSSL,
+      trustProxy: cfg.server.trustProxy,
+      apis: [api],
+    }),
   },
 
   handlers: {

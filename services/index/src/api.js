@@ -1,7 +1,7 @@
 var _           = require('lodash');
 var debug       = require('debug')('routes:api:v1');
 var assert      = require('assert');
-var API         = require('taskcluster-lib-api');
+var APIBuilder  = require('taskcluster-lib-api');
 var helpers     = require('./helpers');
 var Entity      = require('azure-entities');
 
@@ -11,12 +11,11 @@ var Entity      = require('azure-entities');
  * In this API implementation we shall assume the following context:
  * {
  *   queue:             // taskcluster.Queue instance w. "queue:get-artifact:*"
- *   validator:         // base.validator instance
  *   IndexedTask:       // data.IndexedTask instance
  *   Namespace:         // data.Namespace instance
  * }
  */
-var api = new API({
+let builder = new APIBuilder({
   title:        'Task Index API Documentation',
   description: [
     'The task index, typically available at `index.taskcluster.net`, is',
@@ -112,25 +111,25 @@ var api = new API({
     'good idea to document task index hierarchies, as these make up extension',
     'points in their own.',
   ].join('\n'),
-  name:               'index',
-  context:            ['queue', 'validator', 'IndexedTask', 'Namespace'],
-  schemaPrefix:       'http://schemas.taskcluster.net/index/v1/',
+  projectName:        'taskcluster-index',
+  serviceName:        'index',
+  version:            'v1',
+  context:            ['queue', 'IndexedTask', 'Namespace'],
   params: {
     namespace:        helpers.namespaceFormat,
     indexPath:        helpers.namespaceFormat,
   },
 });
 
-// Export api
-module.exports = api;
+module.exports = builder;
 
 /** Get specific indexed task */
-api.declare({
+builder.declare({
   method:         'get',
   route:          '/task/:indexPath',
   name:           'findTask',
-  stability:      API.stability.stable,
-  output:         'indexed-task-response.json#',
+  stability:      APIBuilder.stability.stable,
+  output:         'indexed-task-response.yml',
   title:          'Find Indexed Task',
   description: [
     'Find a task by index path, returning the highest-rank task with that path. If no',
@@ -168,7 +167,7 @@ api.declare({
 });
 
 /** GET List namespaces inside another namespace */
-api.declare({
+builder.declare({
   method:         'get',
   route:          '/namespaces/:namespace?',
   query: {
@@ -176,8 +175,8 @@ api.declare({
     limit: /^[0-9]+$/,
   },
   name:           'listNamespaces',
-  stability:      API.stability.stable,
-  output:         'list-namespaces-response.json#',
+  stability:      APIBuilder.stability.stable,
+  output:         'list-namespaces-response.yml',
   title:          'List Namespaces',
   description: [
     'List the namespaces immediately under a given namespace.',
@@ -211,14 +210,14 @@ api.declare({
 });
 
 /** POST List namespaces inside another namespace */
-api.declare({
+builder.declare({
   method:         'post',
   route:          '/namespaces/:namespace?',
   name:           'listNamespacesPost',
   stability:      'deprecated',
   noPublish:      true,
-  input:          'list-namespaces-request.json#',
-  output:         'list-namespaces-response.json#',
+  input:          'list-namespaces-request.yml',
+  output:         'list-namespaces-response.yml',
   title:          'List Namespaces',
   description: [
     'List the namespaces immediately under a given namespace.',
@@ -252,7 +251,7 @@ api.declare({
 });
 
 /** List tasks in namespace */
-api.declare({
+builder.declare({
   method:         'get',
   route:          '/tasks/:namespace?',
   query: {
@@ -260,8 +259,8 @@ api.declare({
     limit: /^[0-9]+$/,
   },
   name:           'listTasks',
-  stability:      API.stability.stable,
-  output:         'list-tasks-response.json#',
+  stability:      APIBuilder.stability.stable,
+  output:         'list-tasks-response.yml',
   title:          'List Tasks',
   description: [
     'List the tasks immediately under a given namespace.',
@@ -297,13 +296,13 @@ api.declare({
   res.reply(tasks);
 });
 
-api.declare({
+builder.declare({
   method:         'post',
   route:          '/tasks/:namespace?',
   name:           'listTasksPost',
   stability:      'deprecated',
   noPublish:      true,
-  output:         'list-tasks-response.json#',
+  output:         'list-tasks-response.yml',
   title:          'List Tasks',
   description: [
     '(a version of listTasks with POST for backward compatibility; do not use)',
@@ -331,14 +330,14 @@ api.declare({
 });
 
 /** Insert new task into the index */
-api.declare({
+builder.declare({
   method:         'put',
   route:          '/task/:namespace',
   name:           'insertTask',
-  stability:      API.stability.stable,
+  stability:      APIBuilder.stability.stable,
   scopes:         'index:insert-task:<namespace>',
-  input:          'insert-task-request.json#',
-  output:         'indexed-task-response.json#',
+  input:          'insert-task-request.yml',
+  output:         'indexed-task-response.yml',
   title:          'Insert Task into Index',
   description: [
     'Insert a task into the index.  If the new rank is less than the existing rank',
@@ -369,11 +368,11 @@ api.declare({
 });
 
 /** Get artifact from indexed task */
-api.declare({
+builder.declare({
   method:         'get',
   route:          '/task/:indexPath/artifacts/:name(*)',
   name:           'findArtifactFromTask',
-  stability:      API.stability.stable,
+  stability:      APIBuilder.stability.stable,
   scopes:         {if: 'private', then: 'queue:get-artifact:<name>'},
   title:          'Get Artifact From Indexed Task',
   description: [
