@@ -3,6 +3,8 @@
 package main
 
 import (
+	"fmt"
+
 	"path/filepath"
 	"strconv"
 )
@@ -46,10 +48,12 @@ func checkSHASums() [][]string {
 	}
 }
 
-func failCommand() [][]string {
+func returnExitCode(exitCode uint) [][]string {
 	return [][]string{
 		{
-			"false",
+			"/bin/bash",
+			"-c",
+			fmt.Sprintf("exit %d", exitCode),
 		},
 	}
 }

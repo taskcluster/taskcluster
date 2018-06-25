@@ -946,6 +946,15 @@ func (err *CommandExecutionError) Error() string {
 	return fmt.Sprintf("%v", err.Cause)
 }
 
+func (task *TaskRun) IsIntermittentExitCode(c int64) bool {
+	for _, code := range task.Payload.OnExitStatus.Retry {
+		if c == code {
+			return true
+		}
+	}
+	return false
+}
+
 func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 	task.Infof("Executing command %v: %v", index, task.formatCommand(index))
 	log.Print("Executing command " + strconv.Itoa(index) + ": " + task.Commands[index].String())
@@ -961,9 +970,17 @@ func (task *TaskRun) ExecuteCommand(index int) *CommandExecutionError {
 
 	switch {
 	case result.Failed():
-		return &CommandExecutionError{
-			Cause:      result.FailureCause(),
-			TaskStatus: failed,
+		if task.IsIntermittentExitCode(int64(result.ExitCode())) {
+			return &CommandExecutionError{
+				Cause:      fmt.Errorf("Task appears to have failed intermittently - exit code %v found in task payload.onExitStatus list", result.ExitCode()),
+				Reason:     intermittentTask,
+				TaskStatus: errored,
+			}
+		} else {
+			return &CommandExecutionError{
+				Cause:      result.FailureCause(),
+				TaskStatus: failed,
+			}
 		}
 	case result.Crashed():
 		panic(result.CrashCause())

@@ -150,6 +150,25 @@ properties:
           [the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.
 
           Since: generic-worker 10.6.0
+  onExitStatus:
+    title: Exit code handling
+    description: By default generic-worker will fail a task with a non-zero exit code
+      without retrying.  This payload property allows a task owner to define certain
+      exit codes that are handled differently.
+    type: object
+    additionalProperties: false
+    properties:
+      retry:
+        title: Intermittent task exit codes
+        description: If the task exists with a retriable exit code, the task will
+          be marked as an exception with a reason of intermitten-task.
+          This may cause the queue to rerun the task.
+
+          See [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.
+        type: array
+        items:
+          title: Exit codes
+          type: integer
   mounts:
     type: array
     description: |-
