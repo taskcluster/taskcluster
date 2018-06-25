@@ -6,7 +6,7 @@ const _ = require('lodash');
  * Query-string options not specified in options will not be allowed. But it's
  * optional if a request carries any query-string parameters at all.
  */
-const queryValidator = ({entry}) => {
+const queryValidator = ({context, entry}) => {
   const {query} = entry;
 
   return (req, res, next) => {
@@ -26,7 +26,7 @@ const queryValidator = ({entry}) => {
                       '" does not match expression: ' + pattern.toString());
         }
       } else {
-        const msg = pattern(value);
+        const msg = pattern.call(context, value);
         if (typeof msg === 'string') {
           errors.push('Query-string parameter: ' + key + '="' + value +
                       '" is not valid, error: ' + msg);

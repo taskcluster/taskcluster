@@ -121,8 +121,8 @@ class API {
         buildReportErrorMethod({errorCodes, monitor, entry}),
         parseBody({inputLimit}),
         remoteAuthentication({signatureValidator, entry}),
-        parameterValidator({entry}),
-        queryValidator({entry}),
+        parameterValidator({context, entry}),
+        queryValidator({context, entry}),
         validateSchemas({validator, absoluteSchemas, rootUrl, serviceName, entry}),
         callHandler({entry, context, monitor})
       );
