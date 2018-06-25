@@ -107,7 +107,7 @@ const theme = createMuiTheme({
       bottom: 16,
       right: 24,
     },
-    greenIcon: {
+    successIcon: {
       backgroundColor: success.main,
       '&:hover': {
         backgroundColor: success.dark,

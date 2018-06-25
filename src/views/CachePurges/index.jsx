@@ -7,6 +7,9 @@ import loadable from '../../utils/loadable';
 const ViewCachePurges = loadable(() =>
   import(/* webpackChunkName: 'CachePurges.ViewCachePurges' */ './ViewCachePurges')
 );
+const CreatePurgeCacheRequest = loadable(() =>
+  import(/* webpackChunkName: 'CachePurges.CreatePurgeCacheRequest' */ './CreatePurgeCacheRequest')
+);
 
 @hot(module)
 export default class CachePurges extends Component {
@@ -18,6 +21,11 @@ export default class CachePurges extends Component {
 
     return (
       <Switch>
+        <RouteWithProps
+          path={`${path}/create`}
+          {...props}
+          component={CreatePurgeCacheRequest}
+        />
         <RouteWithProps path={path} {...props} component={ViewCachePurges} />
       </Switch>
     );

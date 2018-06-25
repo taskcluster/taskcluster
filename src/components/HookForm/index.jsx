@@ -77,7 +77,7 @@ const initialHook = {
     marginRight: -14,
   },
   saveIcon: {
-    ...theme.mixins.greenIcon,
+    ...theme.mixins.successIcon,
   },
 }))
 /** A form to view/edit/create a hook */

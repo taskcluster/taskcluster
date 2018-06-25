@@ -28,7 +28,7 @@ import { role } from '../../utils/prop-types';
     ...theme.mixins.listItemButton,
   },
   saveIcon: {
-    ...theme.mixins.greenIcon,
+    ...theme.mixins.successIcon,
   },
 }))
 /** A form to view/edit/create a role */
