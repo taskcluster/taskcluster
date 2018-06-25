@@ -9,7 +9,8 @@ defaults:
     namespaceTableName:           'Namespaces'
 
     # Azure account
-    azureAccount:                 !env AZURE_ACCOUNT
+    azure:
+      accountId:                  !env AZURE_ACCOUNT
 
     # Publish references and schemas
     publishMetaData:              !env:bool PUBLISH_METADATA
@@ -27,9 +28,6 @@ defaults:
 
   # Server configuration
   server:
-    # Public URL from which the server can be accessed (used for persona)
-    publicUrl:                      'https://index.taskcluster.net'
-
     # Port to listen for requests on
     port:                           !env:number PORT
 
@@ -47,7 +45,7 @@ defaults:
     # TaskCluster credentials for this server, these must have scopes:
     # auth:credentials, queue:*
     # (typically configured using environment variables)
-    authBaseUrl:                  'https://auth.taskcluster.net/v1'
+    rootUrl:                      !env TASKCLUSTER_ROOT_URL              
     credentials:
       clientId:                   !env TASKCLUSTER_CLIENT_ID
       accessToken:                !env TASKCLUSTER_ACCESS_TOKEN
@@ -56,6 +54,9 @@ defaults:
   pulse:
     username:                     !env PULSE_USERNAME
     password:                     !env PULSE_PASSWORD
+    hostname:                     !env PULSE_HOSTNAME
+    vhost:                        !env PULSE_VHOST
+
 
   # AWS SDK configuration for publication of schemas and references
   aws:
@@ -81,7 +82,6 @@ production:
     listenerQueueName:            'index/incoming-tasks2'
 
   server:
-    publicUrl:                      'https://index.taskcluster.net'
     env:                            'production'
     forceSSL:                       true
     # We trust the proxy on heroku, as the SSL end-point provided by heroku
@@ -90,19 +90,19 @@ production:
 
 test:
   app:
-    routePrefix:                  'dummy-routes.index-testing'
     indexedTaskTableName:         'DummyTestIndexedTasks'
     namespaceTableName:           'DummyTestNamespaces'
-    azureAccount:                 'inMemory'
 
   monitoring:
     enable: false
   server:
-    publicUrl:                    'http://localhost:60020'
     port:                         60020
 
   aws:
     region:                       'us-west-2'
+
+  azure:
+    accountId:                    'jungle'
 
   pulse:
     fake: true

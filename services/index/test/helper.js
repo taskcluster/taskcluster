@@ -1,48 +1,202 @@
-var assert      = require('assert');
-var path        = require('path');
-var _           = require('lodash');
-var mocha       = require('mocha');
-var api          = require('../src/api');
-var taskcluster = require('taskcluster-client');
-var load        = require('../src/main');
-var Config      = require('typed-env-config');
-var testing     = require('taskcluster-lib-testing');
+const assert = require('assert');
+const path = require('path');
+const _ = require('lodash');
+const mocha = require('mocha');
+const data = require('../src/data');
+const builder = require('../src/api');
+const taskcluster = require('taskcluster-client');
+const load = require('../src/main');
+const libUrls = require('taskcluster-lib-urls');
+const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
 
-// Load configuration
-const profile = 'test';
-var cfg = Config({profile});
+const helper = module.exports;
 
-// Create helper to be tested by test
-var helper = module.exports = {};
+exports.load = stickyLoader(load);
 
-// Hold reference to all listeners created with `helper.listenFor`
-var listeners = [];
+suiteSetup(async function() {
+  exports.load.inject('profile', 'test');
+  exports.load.inject('process', 'test');
+});
 
-// Hold reference to servers
-var server = null;
-helper.handlers = null;
+// set up the testing secrets
+exports.secrets = new Secrets({
+  secretName: 'project/taskcluster/testing/taskcluster-index',
+  secrets: {
+    taskcluster: [
+      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl',
+        mock: libUrls.testRootUrl()},
+      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
+      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
+    ],
+  },
+  load: exports.load,
+});
 
-var testclients = {
-  'index-server': ['*'],
-  'test-client': ['*'],
-  'public-only-client': [], // no scopes at all
+helper.rootUrl = 'http://localhost:60020';
+
+/**
+ * Set helper.<Class> for each of the Azure entities used in the service
+ */
+exports.withEntities = (mock, skipping) => {
+  const tables = [
+    {name: 'IndexedTask'},
+    {name: 'Namespace'},
+  ];
+
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+
+    if (mock) {
+      const cfg = await exports.load('cfg');
+      await Promise.all(tables.map(async tbl => {
+        exports.load.inject(tbl.name, data[tbl.className || tbl.name].setup({
+          tableName: tbl.name,
+          credentials: 'inMemory',
+          context: tbl.context ? await tbl.context() : undefined,
+        }));
+      }));
+    }
+
+    await Promise.all(tables.map(async tbl => {
+      exports[tbl.name] = await exports.load(tbl.name);
+      await exports[tbl.name].ensureTable();
+    }));
+  });
+
+  const cleanup = async () => {
+    if (skipping()) {
+      return;
+    }
+
+    await Promise.all(tables.map(async tbl => {
+      await exports[tbl.name].scan({}, {handler: e => e.remove()});
+    }));
+  };
+  setup(cleanup);
+  suiteTeardown(cleanup);
 };
 
-// make a queue object with some methods stubbed
-var stubbedQueue = () => {
-  var queue = new taskcluster.Queue({
+/**
+ * Create the handlers component with a fake pulse listener, and add that
+ * listener at helper.listener.
+ */
+exports.withPulse = (mock, skipping) => {
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+
+    helper.load.cfg('pulse.fake', true);
+    const handlers = await helper.load('handlers');
+    helper.listener = handlers.listener;
+  });
+};
+
+/**
+ * Set up a fake tc-queue object that supports only the `task` method,
+ * and inject that into the loader.  This is injected regardless of
+ * whether we are mocking.
+ *
+ * The component is available at `helper.queue`.
+ */
+exports.withFakeQueue = (mock, skipping) => {
+  suiteSetup(function() {
+    if (skipping()) {
+      return;
+    }
+
+    helper.queue = stubbedQueue();
+    helper.load.inject('queue', helper.queue);
+  });
+};
+
+/**
+ * Set up an API server.  Call this after withEntities, so the server
+ * uses the same Entities classes.
+ *
+ * This also sets up helper.scopes to set the scopes for helper.queue, the
+ * API client object, and stores a client class a helper.Index.
+ */
+exports.withServer = (mock, skipping) => {
+  let webServer;
+
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+    const cfg = await exports.load('cfg');
+
+    // even if we are using a "real" rootUrl for access to Azure, we use
+    // a local rootUrl to test the API, including mocking auth on that
+    // rootUrl.
+    exports.load.cfg('taskcluster.rootUrl', helper.rootUrl);
+    fakeauth.start({'test-client': ['*']}, {rootUrl: helper.rootUrl});
+
+    helper.Index = taskcluster.createClient(builder.reference());
+
+    helper.scopes = (...scopes) => {
+      const options = {
+        // Ensure that we use global agent, to avoid problems with keepAlive
+        // preventing tests from exiting
+        agent:            require('http').globalAgent,
+        rootUrl: helper.rootUrl,
+      };
+      // if called as scopes('none'), don't pass credentials at all
+      if (scopes && scopes[0] !== 'none') {
+        options['credentials'] = {
+          clientId:       'test-client',
+          accessToken:    'none',
+        };
+        options['authorizedScopes'] = scopes.length > 0 ? scopes : undefined;
+      }
+      helper.index = new helper.Index(options);
+    };
+
+    webServer = await helper.load('server');
+  });
+
+  setup(async function() {
+    if (skipping()) {
+      return;
+    }
+    // reset scopes to *
+    helper.scopes();
+  });
+
+  suiteTeardown(async function() {
+    if (skipping()) {
+      return;
+    }
+    if (webServer) {
+      await webServer.terminate();
+      webServer = null;
+    }
+    fakeauth.stop();
+  });
+};
+
+/**
+ * make a queue object with the `task` method stubbed out, and with
+ * an `addTask` method to add fake tasks.
+ */
+const stubbedQueue = () => {
+  const tasks = {};
+  const queue = new taskcluster.Queue({
+    rootUrl: helper.rootUrl,
     credentials:      {
       clientId: 'index-server',
       accessToken: 'none',
     },
+    fake: {
+      task: async (taskId) => {
+        const task = tasks[taskId];
+        assert(task, `fake queue has no task ${taskId}`);
+        return task;
+      },
+    },
   });
-  var tasks = {};
-
-  queue.task = async function(taskId) {
-    var task = tasks[taskId];
-    assert(task, `fake queue has no task ${taskId}`);
-    return task;
-  };
 
   queue.addTask = function(taskId, task) {
     tasks[taskId] = task;
@@ -50,75 +204,3 @@ var stubbedQueue = () => {
 
   return queue;
 };
-
-// Setup server
-mocha.before(async () => {
-  await testing.fakeauth.start(testclients);
-
-  let loadOptions = {profile, process: 'test'};
-
-  // initialize the tables
-  loadOptions.IndexedTask = await load('IndexedTask', loadOptions);
-  await loadOptions.IndexedTask.ensureTable();
-  loadOptions.Namespace = await load('Namespace', loadOptions);
-  await loadOptions.Namespace.ensureTable();
-
-  // set up a fake queue
-  helper.queue = loadOptions.queue = stubbedQueue();
-
-  // and load everything up
-  server = loadOptions.server = await load('server', loadOptions);
-  helper.handlers = loadOptions.handlers = await load('handlers', loadOptions);
-
-  // Utility function to listen for a message
-  helper.listenFor = function(binding) {
-    // Create listener
-    var listener = new taskcluster.PulseListener({
-      credentials:        cfg.pulse,
-    });
-    // Track it, so we can close it in teardown()
-    listeners.push(listener);
-    // Bind to binding
-    listener.bind(binding);
-    // Wait for a message
-    var gotMessage = new Promise(function(accept, reject) {
-      listener.on('message', accept);
-      listener.on('error', reject);
-    });
-    // Connect to AMQP server
-    return listener.connect().then(function() {
-      // Resume immediately
-      return listener.resume().then(function() {
-        return gotMessage;
-      });
-    });
-  };
-  // Expose routePrefix to tests
-  helper.routePrefix = cfg.app.routePrefix;
-  // Create client for working with API
-  let baseUrl = 'http://localhost:' + server.address().port + '/v1';
-  helper.baseUrl = baseUrl;
-  var reference = api.reference({baseUrl: baseUrl});
-  helper.Index = taskcluster.createClient(reference);
-  helper.index = new helper.Index({
-    baseUrl:          baseUrl,
-    credentials:      {
-      clientId: 'test-client',
-      accessToken: 'none',
-    },
-  });
-
-  // Create queueEvents
-  helper.queueEvents = new taskcluster.QueueEvents();
-});
-
-mocha.after(async () => {
-  if (server) {
-    await server.terminate();
-  }
-  if (helper.handlers) {
-    await helper.handlers.terminate();
-    helper.handlers = null;
-  }
-  testing.fakeauth.stop();
-});
