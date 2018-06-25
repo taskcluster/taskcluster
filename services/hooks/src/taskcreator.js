@@ -3,6 +3,7 @@ const taskcluster = require('taskcluster-client');
 const debug = require('debug')('hooks:taskcreator');
 const _ = require('lodash');
 const jsone = require('json-e');
+const libUrls = require('taskcluster-lib-urls');
 
 class TaskCreator {
   /** Create a TaskCreator instance.
@@ -14,8 +15,11 @@ class TaskCreator {
    * */
   constructor(options) {
     assert(options, 'options must be given');
+    assert(options.rootUrl, 'Expected rootUrl');
     assert(options.credentials instanceof Object,
       'Expected credentials');
+
+    this.rootUrl = options.rootUrl;
     this.credentials = options.credentials;
   }
 
@@ -60,6 +64,7 @@ class TaskCreator {
     // assigned to the hook.
     let role = 'assume:hook-id:' + hook.hookGroupId + '/' + hook.hookId;
     let queue = new taskcluster.Queue({
+      rootUrl: this.rootUrl,
       credentials: this.credentials,
       authorizedScopes: [role],
       retries: options.retry ? 0 : 5,
@@ -82,7 +87,7 @@ exports.TaskCreator = TaskCreator;
 
 class MockTaskCreator extends TaskCreator {
   constructor() {
-    super({credentials: {}});
+    super({credentials: {}, rootUrl: libUrls.testRootUrl()});
     this.shouldFail = false;
     this.fireCalls = [];
   }
