@@ -104,8 +104,8 @@ var load = loader({
   },
 
   expire: {
-    requires: ['cfg', 'Secret'],
-    setup: async ({cfg, Secret}) => {
+    requires: ['cfg', 'Secret', 'monitor'],
+    setup: async ({cfg, Secret, monitor}) => {
       // Find an secret expiration delay
       var delay = cfg.app.secretExpirationDelay;
       var now   = taskcluster.fromNow(delay);
@@ -114,6 +114,9 @@ var load = loader({
       debug('Expiring secrets');
       let count = await Secret.expire(now);
       debug('Expired ' + count + ' secrets');
+      monitor.count('expire-secrets.done');
+      monitor.stopResourceMonitoring();
+      await monitor.flush();
     },
   },
 }, ['process', 'profile']);
