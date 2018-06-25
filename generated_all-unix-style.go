@@ -78,11 +78,20 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
-	// By default generic-worker will fail a task with a non-zero exit code without retrying.  This payload property allows a task owner to define certain exit codes that are handled differently.
+	// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
+	// if all task commands have a zero exit code, or `failed/failed` if any command has a
+	// non-zero exit code. This payload property allows customsation of the task resolution
+	// based on exit code of task commands.
 	ExitCodeHandling struct {
 
-		// If the task exists with a retriable exit code, the task will be marked as an exception with a reason of intermitten-task. This may cause the queue to rerun the task.
+		// Exit codes for any command in the task payload to cause this task to
+		// be resolved as `exception/intermittent-task`. Typically the Queue
+		// will then schedule a new run of the existing `taskId` (rerun) if not
+		// all task runs have been exhausted.
+		//
 		// See [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.
+		//
+		// Since: generic-worker 10.10.0
 		Retry []int64 `json:"retry,omitempty"`
 	}
 
@@ -166,7 +175,10 @@ type (
 		// Since: generic-worker 5.4.0
 		Mounts []json.RawMessage `json:"mounts,omitempty"`
 
-		// By default generic-worker will fail a task with a non-zero exit code without retrying.  This payload property allows a task owner to define certain exit codes that are handled differently.
+		// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
+		// if all task commands have a zero exit code, or `failed/failed` if any command has a
+		// non-zero exit code. This payload property allows customsation of the task resolution
+		// based on exit code of task commands.
 		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty"`
 
 		// A list of OS Groups that the task user should be a member of. Requires
@@ -550,11 +562,12 @@ func taskPayloadSchema() string {
     },
     "onExitStatus": {
       "additionalProperties": false,
-      "description": "By default generic-worker will fail a task with a non-zero exit code without retrying.  This payload property allows a task owner to define certain exit codes that are handled differently.",
+      "description": "By default tasks will be resolved with ` + "`" + `state/reasonResolved` + "`" + `: ` + "`" + `completed/completed` + "`" + `\nif all task commands have a zero exit code, or ` + "`" + `failed/failed` + "`" + ` if any command has a\nnon-zero exit code. This payload property allows customsation of the task resolution\nbased on exit code of task commands.",
       "properties": {
         "retry": {
-          "description": "If the task exists with a retriable exit code, the task will be marked as an exception with a reason of intermitten-task. This may cause the queue to rerun the task.\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.",
+          "description": "Exit codes for any command in the task payload to cause this task to\nbe resolved as ` + "`" + `exception/intermittent-task` + "`" + `. Typically the Queue\nwill then schedule a new run of the existing ` + "`" + `taskId` + "`" + ` (rerun) if not\nall task runs have been exhausted.\n\nSee [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.\n\nSince: generic-worker 10.10.0",
           "items": {
+            "minimum": 1,
             "title": "Exit codes",
             "type": "integer"
           },
