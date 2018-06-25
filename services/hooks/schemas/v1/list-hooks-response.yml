@@ -7,7 +7,7 @@ properties:
   hooks:
     title: "Hooks"
     type: array
-    items: {$ref: "http://schemas.taskcluster.net/hooks/v1/hook-definition.json#"}
+    items: {$ref: "hook-definition.json#"}
 additionalProperties: false
 required:
   - hooks

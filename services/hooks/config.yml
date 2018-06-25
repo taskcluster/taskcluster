@@ -11,10 +11,11 @@ defaults:
     maxDelay:         300
     maxPendingPoints: 300
   azure:
-    accountName:      !env AZURE_ACCOUNT
+    accountId:        !env AZURE_ACCOUNT
     signingKey:       !env TABLE_SIGNING_KEY
     cryptoKey:        !env TABLE_CRYPTO_KEY
   taskcluster:
+    rootUrl:          !env TASKCLUSTER_ROOT_URL
     credentials:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
@@ -23,13 +24,9 @@ defaults:
     enable:                     !env:bool MONITORING_ENABLE
   server:
     port:             !env:number PORT
-    publicUrl:        !env PUBLIC_URL
     env:              !env NODE_ENV
     forceSSL:         !env:bool FORCE_SSL
     trustProxy:       false
-  #pulse:
-  #  username: !env PULSE_USERNAME
-  #  password: !env PULSE_PASSWORD
   aws:
     ses:
       # Credentials with access to SES to send hook failure emails
@@ -47,10 +44,7 @@ defaults:
       apiVersion:       2014-01-01
 
 production:
-  taskcluster:
-    authBaseUrl:      https://auth.taskcluster.net/v1
   server:
-    publicUrl:        https://hooks.taskcluster.net
     env:              production
     forceSSL:         true
     trustProxy:       true
@@ -64,7 +58,7 @@ test:
     scheduler:
       pollingDelay:   5000
   azure:
-    accountName:      'jungle'
+    accountId:        'jungle'
     signingKey:       'not a secret'
     cryptoKey:        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
   monitoring:
@@ -72,7 +66,6 @@ test:
     enable: false
   server:
     port:             60401
-    publicUrl:        'http://localhost:60401'
     env:              development
     forceSSL:         false
     trustProxy:       false
