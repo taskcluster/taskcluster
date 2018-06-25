@@ -17,6 +17,10 @@ suite('api/route', function() {
     params: {
       taskId:     /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/,
     },
+    context: [
+      'expectedValidatedParam',
+      'expectedValidatedQuery',
+    ],
   });
 
   builder.declare({
@@ -45,6 +49,23 @@ suite('api/route', function() {
 
   builder.declare({
     method:   'get',
+    route:    '/query-param-fn/',
+    query: {
+      incantation: function(val) {
+        if (val !== this.expectedValidatedQuery) {
+          return 'uhoh: query not valid';
+        }
+      },
+    },
+    name:     'testQueryParamFn',
+    title:    'Test End-Point',
+    description:  'Place we can call to test something',
+  }, function(req, res) {
+    res.status(200).send(req.query.incantation);
+  });
+
+  builder.declare({
+    method:   'get',
     route:    '/slash-param/:name(*)',
     name:     'testSlashParam',
     title:    'Test End-Point',
@@ -61,6 +82,23 @@ suite('api/route', function() {
     description:  'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.params.taskId);
+  });
+
+  builder.declare({
+    method:   'get',
+    route:    '/function-validated-param/:fnValidated',
+    name:     'testFunctionParamValidation',
+    title:    'Test End-Point',
+    params: {
+      fnValidated: function(val) {
+        if (val !== this.expectedValidatedParam) {
+          return 'uhoh: param not valid';
+        }
+      },
+    },
+    description:  'Place we can call to test something',
+  }, function(req, res) {
+    res.status(200).send(req.params.fnValidated);
   });
 
   builder.declare({
@@ -82,7 +120,13 @@ suite('api/route', function() {
 
   // Create a mock authentication server
   setup(async () => {
-    await helper.setupServer({builder});
+    await helper.setupServer({
+      builder,
+      context: {
+        expectedValidatedParam: 'open-sesame',
+        expectedValidatedQuery: 'abracadabra',
+      },
+    });
   });
   teardown(helper.teardownServer);
 
@@ -122,6 +166,29 @@ suite('api/route', function() {
     return request
       .get(url)
       .query({nextPage: 'abc'})
+      .then(res => assert(false, 'should have failed!'))
+      .catch(function(res) {
+        assert(!res.ok, 'Expected request failure!');
+        assert(res.status === 400, 'Expected a 400 error');
+      });
+  });
+
+  test('query parameter with function + context (valid)', function() {
+    const url = u('/query-param-fn/');
+    return request
+      .get(url)
+      .query({incantation: 'abracadabra'})
+      .then(res => {
+        assert(res.ok, 'Request failed');
+        assert(res.text === 'abracadabra');
+      });
+  });
+
+  test('query parameter with function + context (invalid)', function() {
+    const url = u('/query-param-fn/');
+    return request
+      .get(url)
+      .query({incantation: 'alohomora'})
       .then(res => assert(false, 'should have failed!'))
       .catch(function(res) {
         assert(!res.ok, 'Expected request failure!');
@@ -178,6 +245,27 @@ suite('api/route', function() {
       .then(res => assert(false, 'should have failed!'))
       .catch(function(res) {
         assert(!res.ok, 'Expected a failure');
+        assert(res.status === 400, 'Expected a 400 error');
+      });
+  });
+
+  test('validated function parameter using context (valid)', function() {
+    const url = u('/function-validated-param/open-sesame');
+    return request
+      .get(url)
+      .then(res => {
+        assert(res.ok, 'Request failed');
+        assert(res.text === 'open-sesame');
+      });
+  });
+
+  test('validated function parameter using context (invalid)', function() {
+    const url = u('/function-validated-param/open-amaranth');
+    return request
+      .get(url)
+      .then(res => assert(false, 'should have failed!'))
+      .catch(function(res) {
+        assert(!res.ok, 'Expected request failure!');
         assert(res.status === 400, 'Expected a 400 error');
       });
   });

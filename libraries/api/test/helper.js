@@ -13,7 +13,7 @@ exports.rootUrl = rootUrl;
  * Set up a testing server on port 23525 serving the given API.  If monitor is
  * specified, it is added to the router.
  */
-exports.setupServer = async ({builder, monitor}) => {
+exports.setupServer = async ({builder, monitor, context}) => {
   testing.fakeauth.start([], {rootUrl});
   assert(runningServer === null);
 
@@ -26,6 +26,7 @@ exports.setupServer = async ({builder, monitor}) => {
     rootUrl,
     schemaset,
     monitor,
+    context,
   });
 
   // Create application

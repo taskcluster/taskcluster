@@ -10,7 +10,7 @@ const assert = require('assert');
  * present must match the pattern given in `options` or the request will be
  * rejected with a 400 error message.
  */
-const parameterValidator = ({entry}) => {
+const parameterValidator = ({context, entry}) => {
   const {params} = entry;
 
   // Validate parameters
@@ -31,7 +31,7 @@ const parameterValidator = ({entry}) => {
           );
         }
       } else if (pattern instanceof Function) {
-        const msg = pattern(val);
+        const msg = pattern.call(context, val);
         if (typeof msg === 'string') {
           errors.push(
             'URL parameter \'' + param + '\' given  as \'' + val +  '\' is not ' +
