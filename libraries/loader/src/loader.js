@@ -3,6 +3,7 @@ let assume = require('assume');
 let Promise = require('promise');
 let _ = require('lodash');
 let TopoSort = require('topo-sort');
+let debug = require('debug')('taskcluster-lib-loader');
 
 // see babel issue 2215
 function includes(a, v) {
@@ -212,7 +213,16 @@ function loader(componentDirectory, virtualComponents = []) {
           for (let i = 0; i < deps.length; i++) {
             ctx[def.requires[i]] = deps[i];
           }
-          return def.setup.call(null, ctx);
+          return new Promise((resolve, reject) => {
+            try {
+              resolve(def.setup.call(null, ctx));
+            } catch (err) {
+              reject(err);
+            }
+          }).catch(function(err) {
+            debug(`error while loading component '${target}': ${err}`);
+            throw err;
+          });
         });
       }
       return loaded[target];
