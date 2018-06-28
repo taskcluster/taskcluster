@@ -25,13 +25,13 @@ def docApi(name, ref):
             'import asyncio # Only for async ',
             '// Create %s client instance' % name,
             'import taskcluster',
-            'import taskcluster.async',
+            'import taskcluster.aio',
             '',
             '%s = taskcluster.%s(options)' % (instName, name),
             '# Below only for async instances, assume already in coroutine',
             'loop = asyncio.get_event_loop()',
-            'session = taskcluster.async.createSession(loop=loop)',
-            '%s = taskcluster.async.%s(options, session=session)' % (asyncName, name),
+            'session = taskcluster.aio.createSession(loop=loop)',
+            '%s = taskcluster.aio.%s(options, session=session)' % (asyncName, name),
             '```',
         ])
         if ref.get('description'):

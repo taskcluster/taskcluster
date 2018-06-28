@@ -39,7 +39,7 @@ done
 
 case "$($python -c 'import sys ; print(sys.version_info.major)')" in
   2)
-    ignore_async="--exclude=*/async/*,*_async.py"
+    ignore_async="--exclude=*/aio/*,*_async.py"
     ;;
   *)
     ignore_async=""

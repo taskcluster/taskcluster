@@ -6,7 +6,7 @@ import os
 import asyncio
 
 import base
-import taskcluster.async.auth as subjectAsync
+import taskcluster.aio.auth as subjectAsync
 
 
 @unittest.skipIf(os.environ.get('NO_TESTS_OVER_WIRE'), "Skipping tests over wire")

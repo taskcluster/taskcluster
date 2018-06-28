@@ -70,7 +70,7 @@ The objects under `taskcluster` (e.g., `taskcluster.Queue`) are
 python2-compatible and operate synchronously.
 
 
-The objects under `taskcluster.async` (e.g., `taskcluster.async.Queue`) require
+The objects under `taskcluster.aio` (e.g., `taskcluster.aio.Queue`) require
 `python>=3.5`. The async objects use asyncio coroutines for concurrency; this
 allows us to put I/O operations in the background, so operations that require
 the cpu can happen sooner. Given dozens of operations that can run concurrently
@@ -81,7 +81,7 @@ performance improvements. The code would look something like
 #!/usr/bin/env python
 import aiohttp
 import asyncio
-from taskcluster.async import Auth
+from taskcluster.aio import Auth
 
 async def do_ping():
     with aiohttp.ClientSession() as session:
@@ -264,13 +264,13 @@ taskcluster.fromNow("1 year", dateObj=dateObject1);
 import asyncio # Only for async 
 // Create Auth client instance
 import taskcluster
-import taskcluster.async
+import taskcluster.aio
 
 auth = taskcluster.Auth(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession(loop=loop)
-asyncAuth = taskcluster.async.Auth(options, session=session)
+session = taskcluster.aio.createSession(loop=loop)
+asyncAuth = taskcluster.aio.Auth(options, session=session)
 ```
 Authentication related API end-points for Taskcluster and related
 services. These API end-points are of interest if you wish to:
@@ -1052,13 +1052,13 @@ welcome to use these for other purposes, monitoring changes for example.
 import asyncio # Only for async 
 // Create AwsProvisioner client instance
 import taskcluster
-import taskcluster.async
+import taskcluster.aio
 
 awsProvisioner = taskcluster.AwsProvisioner(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession(loop=loop)
-asyncAwsProvisioner = taskcluster.async.AwsProvisioner(options, session=session)
+session = taskcluster.aio.createSession(loop=loop)
+asyncAwsProvisioner = taskcluster.aio.AwsProvisioner(options, session=session)
 ```
 The AWS Provisioner is responsible for provisioning instances on EC2 for use in
 Taskcluster.  The provisioner maintains a set of worker configurations which
@@ -1480,13 +1480,13 @@ Exchanges from the provisioner... more docs later
 import asyncio # Only for async 
 // Create EC2Manager client instance
 import taskcluster
-import taskcluster.async
+import taskcluster.aio
 
 eC2Manager = taskcluster.EC2Manager(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession(loop=loop)
-asyncEC2Manager = taskcluster.async.EC2Manager(options, session=session)
+session = taskcluster.aio.createSession(loop=loop)
+asyncEC2Manager = taskcluster.aio.EC2Manager(options, session=session)
 ```
 A taskcluster service which manages EC2 instances.  This service does not understand any taskcluster concepts intrinsicaly other than using the name `workerType` to refer to a group of associated instances.  Unless you are working on building a provisioner for AWS, you almost certainly do not want to use this service
 #### See the list of worker types which are known to be managed
@@ -1853,13 +1853,13 @@ await asyncEC2Manager.ping() # -> None
 import asyncio # Only for async 
 // Create Github client instance
 import taskcluster
-import taskcluster.async
+import taskcluster.aio
 
 github = taskcluster.Github(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession(loop=loop)
-asyncGithub = taskcluster.async.Github(options, session=session)
+session = taskcluster.aio.createSession(loop=loop)
+asyncGithub = taskcluster.aio.Github(options, session=session)
 ```
 The github service, typically available at
 `github.taskcluster.net`, is responsible for publishing pulse
@@ -2065,13 +2065,13 @@ github service
 import asyncio # Only for async 
 // Create Hooks client instance
 import taskcluster
-import taskcluster.async
+import taskcluster.aio
 
 hooks = taskcluster.Hooks(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession(loop=loop)
-asyncHooks = taskcluster.async.Hooks(options, session=session)
+session = taskcluster.aio.createSession(loop=loop)
+asyncHooks = taskcluster.aio.Hooks(options, session=session)
 ```
 Hooks are a mechanism for creating tasks in response to events.
 
@@ -2360,13 +2360,13 @@ await asyncHooks.triggerHookWithToken(payload, hookGroupId='value', hookId='valu
 import asyncio # Only for async 
 // Create Index client instance
 import taskcluster
-import taskcluster.async
+import taskcluster.aio
 
 index = taskcluster.Index(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession(loop=loop)
-asyncIndex = taskcluster.async.Index(options, session=session)
+session = taskcluster.aio.createSession(loop=loop)
+asyncIndex = taskcluster.aio.Index(options, session=session)
 ```
 The task index, typically available at `index.taskcluster.net`, is
 responsible for indexing tasks. The service ensures that tasks can be
@@ -2614,13 +2614,13 @@ await asyncIndex.findArtifactFromTask(indexPath='value', name='value') # -> None
 import asyncio # Only for async 
 // Create Login client instance
 import taskcluster
-import taskcluster.async
+import taskcluster.aio
 
 login = taskcluster.Login(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession(loop=loop)
-asyncLogin = taskcluster.async.Login(options, session=session)
+session = taskcluster.aio.createSession(loop=loop)
+asyncLogin = taskcluster.aio.Login(options, session=session)
 ```
 The Login service serves as the interface between external authentication
 systems and Taskcluster credentials.
@@ -2684,13 +2684,13 @@ await asyncLogin.ping() # -> None
 import asyncio # Only for async 
 // Create Notify client instance
 import taskcluster
-import taskcluster.async
+import taskcluster.aio
 
 notify = taskcluster.Notify(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession(loop=loop)
-asyncNotify = taskcluster.async.Notify(options, session=session)
+session = taskcluster.aio.createSession(loop=loop)
+asyncNotify = taskcluster.aio.Notify(options, session=session)
 ```
 The notification service, typically available at `notify.taskcluster.net`
 listens for tasks with associated notifications and handles requests to
@@ -2767,13 +2767,13 @@ await asyncNotify.ping() # -> None
 import asyncio # Only for async 
 // Create PurgeCache client instance
 import taskcluster
-import taskcluster.async
+import taskcluster.aio
 
 purgeCache = taskcluster.PurgeCache(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession(loop=loop)
-asyncPurgeCache = taskcluster.async.PurgeCache(options, session=session)
+session = taskcluster.aio.createSession(loop=loop)
+asyncPurgeCache = taskcluster.aio.PurgeCache(options, session=session)
 ```
 The purge-cache service, typically available at
 `purge-cache.taskcluster.net`, is responsible for publishing a pulse
@@ -2885,13 +2885,13 @@ cache-purge service.
 import asyncio # Only for async 
 // Create Queue client instance
 import taskcluster
-import taskcluster.async
+import taskcluster.aio
 
 queue = taskcluster.Queue(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession(loop=loop)
-asyncQueue = taskcluster.async.Queue(options, session=session)
+session = taskcluster.aio.createSession(loop=loop)
+asyncQueue = taskcluster.aio.Queue(options, session=session)
 ```
 The queue, typically available at `queue.taskcluster.net`, is responsible
 for accepting tasks and track their state as they are executed by
@@ -4138,13 +4138,13 @@ if this corner case is of concern to you.
 import asyncio # Only for async 
 // Create Secrets client instance
 import taskcluster
-import taskcluster.async
+import taskcluster.aio
 
 secrets = taskcluster.Secrets(options)
 # Below only for async instances, assume already in coroutine
 loop = asyncio.get_event_loop()
-session = taskcluster.async.createSession(loop=loop)
-asyncSecrets = taskcluster.async.Secrets(options, session=session)
+session = taskcluster.aio.createSession(loop=loop)
+asyncSecrets = taskcluster.aio.Secrets(options, session=session)
 ```
 The secrets service provides a simple key/value store for small bits of secret
 data.  Access is limited by scopes, so values can be considered secret from

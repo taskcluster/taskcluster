@@ -122,7 +122,7 @@ a method like this:</p>
 <a id="user-content-sync-vs-async" class="anchor" href="#sync-vs-async" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Sync vs Async</h2>
 <p>The objects under <code>taskcluster</code> (e.g., <code>taskcluster.Queue</code>) are
 python2-compatible and operate synchronously.</p>
-<p>The objects under <code>taskcluster.async</code> (e.g., <code>taskcluster.async.Queue</code>) require
+<p>The objects under <code>taskcluster.aio</code> (e.g., <code>taskcluster.aio.Queue</code>) require
 <code>python&gt;=3.5</code>. The async objects use asyncio coroutines for concurrency; this
 allows us to put I/O operations in the background, so operations that require
 the cpu can happen sooner. Given dozens of operations that can run concurrently

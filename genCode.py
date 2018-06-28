@@ -231,7 +231,7 @@ asyncImporterLines = []
 
 for name, api in apiConfig.items():
     syncfilename = os.path.join('taskcluster', name.lower() + '.py')
-    asyncfilename = os.path.join('taskcluster', 'async', name.lower() + '.py')
+    asyncfilename = os.path.join('taskcluster', 'aio', name.lower() + '.py')
 
     syncClientString = createStaticClient(name, api)
     asyncClientString = createStaticClient(name, api, genAsync=True)
@@ -259,7 +259,7 @@ with open(syncImporterFilename, 'w') as f:
     f.write('\n'.join(syncImporterLines))
     py_compile.compile(syncImporterFilename, doraise=True)
 
-asyncImporterFilename = os.path.join('taskcluster', 'async', '_client_importer.py')
+asyncImporterFilename = os.path.join('taskcluster', 'aio', '_client_importer.py')
 with open(asyncImporterFilename, 'w') as f:
     asyncImporterLines.sort()
     asyncImporterLines.append('')

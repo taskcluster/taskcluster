@@ -76,7 +76,7 @@ if __name__ == '__main__':
         author='John Ford',
         author_email='jhford@mozilla.com',
         url='https://github.com/taskcluster/taskcluster-client.py',
-        packages=['taskcluster', 'taskcluster.async'],
+        packages=['taskcluster', 'taskcluster.aio'],
         install_requires=install_requires,
         test_suite="nose.collector",
         tests_require=tests_require,
