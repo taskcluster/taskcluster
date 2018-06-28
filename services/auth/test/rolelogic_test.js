@@ -115,11 +115,11 @@ suite('api (role logic)', function() {
     ],
   });
 
-  test('can get *', {
+  test('can get assume:tree:*', {
     roles: [
       {
         roleId: 'thing-id:test',
-        scopes: ['*'],
+        scopes: ['assume:tree:*'],
       },
     ],
     clients: [
@@ -129,7 +129,7 @@ suite('api (role logic)', function() {
           'assume:thing-id:test',
         ],
         includes: [
-          '*',
+          'assume:tree:*',
         ],
         excludes: [
           'assume:thing-id:test', // should be compressed away
@@ -404,10 +404,10 @@ suite('api (role logic)', function() {
         excludes: ['*'],
       },
     ],
-  }); //*/
+  });
 
   const M = 5;  // depth
-  const K = 50; // multiplier
+  const K = 25; // multiplier
   test('test with depth = ' + M + ' x ' + K, {
     roles: _.flatten([
       _.flatten(_.range(K).map(k => {
@@ -437,50 +437,21 @@ suite('api (role logic)', function() {
     ],
   });
 
-  test('cyclic roles', {
+  test('a* scope grants all roles', {
     roles: [
       {
-        roleId: 'test-client-1',
-        scopes: ['assume:test-role'],
-      }, {
-        roleId: 'test-role',
-        scopes: ['special-scope', 'assume:test-client-1'],
+        roleId: '-',
+        scopes: ['T'],
       },
     ],
     clients: [
       {
         clientId:   'test-client-1',
         scopes: [
-          'assume:test-client-1',
+          'a*',
         ],
         includes: [
-          'assume:test-role',
-          'special-scope',
-        ],
-        excludes: ['*'],
-      },
-    ],
-  });
-
-  test('a* scope is *', {
-    roles: [
-      {
-        roleId: 'test-client-1',
-        scopes: ['a*'],
-      },
-      {
-        roleId: 'star',
-        scopes: ['*'],
-      },
-    ],
-    clients: [
-      {
-        clientId:   'test-client-1',
-        scopes: [
-          'assume:test-client-1',
-        ],
-        includes: [
-          '*',       // because assume:star is granted
+          'T',
         ],
         excludes: [
           'scope-1', 'scope-2',
@@ -489,25 +460,21 @@ suite('api (role logic)', function() {
     ],
   });
 
-  test('assume* scope is *', {
+  test('assume* scope grants all roles', {
     roles: [
       {
-        roleId: 'test-client-1',
-        scopes: ['assume*'],
-      },
-      {
-        roleId: 'star',
-        scopes: ['*'],
+        roleId: '-',
+        scopes: ['T'],
       },
     ],
     clients: [
       {
         clientId:   'test-client-1',
         scopes: [
-          'assume:test-client-1',
+          'assume*',
         ],
         includes: [
-          '*',       // because assume:star is granted
+          'T',
         ],
         excludes: [
           'scope-1', 'scope-2',
@@ -516,25 +483,21 @@ suite('api (role logic)', function() {
     ],
   });
 
-  test('assume:* scope is *', {
+  test('assume:* scope grants all roles', {
     roles: [
       {
-        roleId: 'test-client-1',
-        scopes: ['assume:*'],
-      },
-      {
-        roleId: 'star',
-        scopes: ['*'],
+        roleId: '-',
+        scopes: ['T'],
       },
     ],
     clients: [
       {
         clientId:   'test-client-1',
         scopes: [
-          'assume:test-client-1',
+          'assume:*',
         ],
         includes: [
-          '*',       // because assume:star is granted
+          'T',
         ],
         excludes: [
           'scope-1', 'scope-2',
@@ -543,25 +506,22 @@ suite('api (role logic)', function() {
     ],
   });
 
-  test('assume:client-* scope is *', {
+  test('assume:project:<name> expands', {
     roles: [
       {
-        roleId: 'test-client-1',
-        scopes: ['assume:st*'],
-      },
-      {
-        roleId: 'star',
-        scopes: ['*'],
+        roleId: 'project:*',
+        scopes: ['irc:<..>', 'artifacts:private/<..>/*'],
       },
     ],
     clients: [
       {
         clientId:   'test-client-1',
         scopes: [
-          'assume:test-client-1',
+          'assume:project:my-prj',
         ],
         includes: [
-          '*',       // because assume:star is granted
+          'irc:my-prj',
+          'artifacts:private/my-prj/*',
         ],
         excludes: [
           'scope-1', 'scope-2',
@@ -569,6 +529,4 @@ suite('api (role logic)', function() {
       },
     ],
   });
-
-  //*/
 });

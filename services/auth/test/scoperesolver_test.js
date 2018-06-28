@@ -1,10 +1,12 @@
 suite('scoperesolver', () => {
-  let ScopeResolver = require('../src/scoperesolver');
-  let {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
-  let Monitor            = require('taskcluster-lib-monitor');
-  let assert = require('assert');
-  let _ = require('lodash');
-  let fs = require('fs');
+  const ScopeResolver = require('../src/scoperesolver');
+  const {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
+  const Monitor = require('taskcluster-lib-monitor');
+  const assert = require('assert');
+  const _ = require('lodash');
+  const fs = require('fs');
+  const assume = require('assume');
+
   let monitor, scopeResolver;
   before(async () => {
     monitor = await Monitor({project: 'mock-auth', mock: true});
@@ -16,7 +18,7 @@ suite('scoperesolver', () => {
       test(title, function() {
         const resolver = scopeResolver.buildResolver(roles);
         expected.sort(scopeCompare);
-        assert.deepEqual(expected, resolver(scopes));
+        assume(resolver(scopes)).eql(expected);
       });
     };
 
@@ -30,22 +32,6 @@ suite('scoperesolver', () => {
       roles: [],
       scopes: ['a*', 'ab', 'ac*', 'a'],
       expected: ['a*'],
-    });
-
-    testResolver('role with * gets everything', {
-      roles: [
-        {roleId: 'client-id:root', scopes: ['*']},
-      ],
-      scopes: ['assume:client-id:root'],
-      expected: ['*'],
-    });
-
-    testResolver('role with *, matched with *, gets everything', {
-      roles: [
-        {roleId: 'client-id:root', scopes: ['*']},
-      ],
-      scopes: ['assume:client-id:*'],
-      expected: ['*'],
     });
 
     testResolver('assume:a* matches, a, aa, ab, a*', {
@@ -272,15 +258,6 @@ suite('scoperesolver', () => {
       expected: ['assume:a*b*', 'ASTARB', 'ASTARBC', 'ASTAR'],
     });
 
-    testResolver('eventually resolve to *', {
-      roles: [
-        {roleId: 'test', scopes:['assume:*']},
-        {roleId: 'star', scopes:['*']},
-      ],
-      scopes: ['assume:test'],
-      expected: ['*'],
-    });
-
     testResolver('basic parameterized role', {
       roles: [
         {roleId: 'a*', scopes:['A<..>']},
@@ -319,22 +296,6 @@ suite('scoperesolver', () => {
       ],
       scopes: ['assume:a*'],
       expected: ['assume:a*', 'ABC*'],
-    });
-
-    testResolver('parameterized role with two replacements', {
-      roles: [
-        {roleId: 'abc*', scopes:['ABC<..>DEF<..>GHI']},
-      ],
-      scopes: ['assume:abc/'],
-      expected: ['assume:abc/', 'ABC/DEF/GHI'],
-    });
-
-    testResolver('parameterized role with two replacements, matched with *', {
-      roles: [
-        {roleId: 'abc*', scopes:['ABC<..>DEF<..>GHI']},
-      ],
-      scopes: ['assume:abc/*'],
-      expected: ['assume:abc/*', 'ABC/*'],
     });
   });
 
@@ -465,7 +426,7 @@ suite('scoperesolver', () => {
     }
 
     // Test with a snapshot of real roles, captured with
-    //   `curl https://auth.taskcluster.net/v1/roles`
+    //   `curl https://auth.taskcluster.net/v1/roles > test/roles.json`
     const realRoles = require('./roles');
     const testRealRoles = (scopes, expected) => {
       testResolver(`real roles with scopes ${scopes.join(', ')}`, {
@@ -492,6 +453,8 @@ suite('scoperesolver', () => {
       'queue:*',
       'scheduler:*',
       'secrets:*',
+      'in-tree:*',
+      'worker:*',
     ]);
 
     testRealRoles(['assume:repo:github.com/*']);
@@ -500,6 +463,7 @@ suite('scoperesolver', () => {
     testRealRoles(['assume:mozilla-group:team_taskcluster']);
     testRealRoles(['assume:moz-tree:level:3']);
 
+    // curl https://auth.taskcluster.net/v1/clients | jq -r '.clients' > test/clients.json
     const realClients = require('./clients');
     test('resolve all clients', () => {
       const resolver = time('setup', () => scopeResolver.buildResolver(realRoles));
@@ -509,43 +473,141 @@ suite('scoperesolver', () => {
     });
   });
 
-  suite('cycleCheck', function() {
-    const testCycle = (title, expectCycle, roles) => {
-      test(title, function() {
-        _.range(100).forEach(() => {
-          _.shuffle(roles);
-          try {
-            ScopeResolver.cycleCheck(roles);
-          } catch (e) {
-            if (expectCycle && e.message.startsWith('Found cycle in roles:')) {
-              return;
-            }
-            throw e;
+  suite('validateRoles', () => {
+    const validateRoles = (title, roles, errorCode = false) => {
+      test(title, () => _.range(100).forEach(() => {
+        try {
+          ScopeResolver.validateRoles(_.shuffle(roles));
+        } catch (e) {
+          if (!errorCode) {
+            assume(e).not.exists('unexpected error');
           }
-          assert(!expectCycle, 'expected a cycle');
-        });
-      });
+          assume(e.code).equals(errorCode, 'unexpected err.code');
+          return;
+        }
+        assume(errorCode).false('expected an error');
+      }));
     };
 
-    testCycle('self-referential simple role', false, [
-      {roleId: 'abc', scopes: ['assume:abc']},
+    validateRoles('simple role', [
+      {roleId: 'a', scopes: ['A']},
+      {roleId: 'b', scopes: ['B']},
+      {roleId: 'c', scopes: ['C']},
     ]);
 
-    testCycle('four simple roles, pointing to each other', false, [
+    validateRoles('simple role DAG', [
+      {roleId: 'a', scopes: ['assume:c']},
+      {roleId: 'b', scopes: ['assume:c']},
+      {roleId: 'c', scopes: ['assume:e']},
+    ]);
+
+    validateRoles('simple role cycle', [
+      {roleId: 'a', scopes: ['assume:c']},
+      {roleId: 'b', scopes: ['assume:c']},
+      {roleId: 'c', scopes: ['assume:a']},
+    ], 'DependencyCycleError');
+
+    validateRoles('simple prefix match role DAG', [
+      {roleId: 'a*', scopes: ['assume:c']},
+      {roleId: 'b*', scopes: ['assume:c']},
+      {roleId: 'c*', scopes: ['assume:e']},
+    ]);
+
+    validateRoles('simple prefix match role cycle', [
+      {roleId: 'a*', scopes: ['assume:c']},
+      {roleId: 'b*', scopes: ['assume:c']},
+      {roleId: 'c*', scopes: ['assume:a']},
+    ], 'DependencyCycleError');
+
+    validateRoles('simple parameterized role (1)', [
+      {roleId: 'a*', scopes: ['assume:b']},
+    ]);
+
+    validateRoles('simple parameterized role (2)', [
+      {roleId: 'a*', scopes: ['assume:b*']},
+    ]);
+
+    validateRoles('simple parameterized role (3)', [
+      {roleId: 'a*', scopes: ['assume:b<..>']},
+    ]);
+
+    validateRoles('simple parameterized role (4)', [
+      {roleId: 'a*', scopes: ['assume:b<..>*']},
+    ]);
+
+    validateRoles('simple parameterized role (5)', [
+      {roleId: 'a*', scopes: ['assume:b<..>c']},
+    ]);
+
+    validateRoles('simple parameterized role (6)', [
+      {roleId: 'a*', scopes: ['assume:b<..>c*']},
+    ]);
+
+    validateRoles('ambiguous kleene in parameterized role', [
+      {roleId: 'a*', scopes: ['assume:b*<..>']},
+    ], 'InvalidScopeError');
+
+    validateRoles('double parameter in parameterized role (1)', [
+      {roleId: 'a*', scopes: ['assume:b<..>c<..>']},
+    ], 'InvalidScopeError');
+
+    validateRoles('double parameter in parameterized role (2)', [
+      {roleId: 'a*', scopes: ['assume:b<..><..>']},
+    ], 'InvalidScopeError');
+
+    validateRoles('double parameter in parameterized role (3)', [
+      {roleId: 'a*', scopes: ['assume:b<..>c<..>d']},
+    ], 'InvalidScopeError');
+
+    validateRoles('simple parameterized role DAG', [
+      {roleId: 'a*', scopes: ['assume:c<..>A']},
+      {roleId: 'b*', scopes: ['assume:c<..>B*']},
+      {roleId: 'c*', scopes: ['assume:e<..>']},
+    ]);
+
+    validateRoles('simple parameterized role cycle (1)', [
+      {roleId: 'a*', scopes: ['assume:c<..>A']},
+      {roleId: 'b*', scopes: ['assume:c<..>B*']},
+      {roleId: 'c*', scopes: ['assume:a<..>']},
+    ], 'DependencyCycleError');
+
+    validateRoles('simple parameterized role cycle (2)', [
+      {roleId: 'a*', scopes: ['assume:c<..>A']},
+      {roleId: 'b*', scopes: ['assume:c<..>B*']},
+      {roleId: 'c*', scopes: ['assume:b<..>']},
+    ], 'DependencyCycleError');
+
+    validateRoles('simple parameterized role cycle (3)', [
+      {roleId: 'a*', scopes: ['assume:c<..>A']},
+      {roleId: 'b*', scopes: ['assume:c<..>B*']},
+      {roleId: 'c*', scopes: ['assume:<..>']},
+    ], 'DependencyCycleError');
+
+    validateRoles('simple parameterized role cycle (4)', [
+      {roleId: 'a*', scopes: ['assume:c<..>A']},
+      {roleId: 'b*', scopes: ['assume:c<..>B*']},
+      {roleId: 'c*', scopes: ['assume:b']},
+    ], 'DependencyCycleError');
+
+    validateRoles('self-referential simple role', [
+      {roleId: 'abc', scopes: ['assume:abc']},
+    ], 'DependencyCycleError');
+
+    validateRoles('four simple roles, pointing to each other', [
       {roleId: 'abc', scopes: ['assume:def']},
       {roleId: 'def', scopes: ['assume:ghi']},
       {roleId: 'ghi', scopes: ['assume:jkl']},
-      {roleId: 'jkl', scopes: ['assume:abc']},
+      {roleId: 'jkl', scopes: ['assume:abcd']},
     ]);
 
-    testCycle('inter-referential roles among others', false, [
+    validateRoles('inter-referential roles among others', [
       {roleId: 'abc', scopes: ['assume:def']},
-      {roleId: 'def', scopes: ['assume:abc']},
+      {roleId: 'def', scopes: ['assume:ghi']},
       {roleId: 'ghi', scopes: ['assume:xyz']},
       {roleId: 'jkl', scopes: ['assume:xyz']},
     ]);
 
-    testCycle('no cycles', false, [
+    validateRoles('no cycles', [
       {roleId: 'abc', scopes: ['assume:xyz']},
       {roleId: 'def', scopes: ['assume:xyz']},
       {roleId: 'ghi', scopes: ['assume:xyz']},
@@ -553,63 +615,69 @@ suite('scoperesolver', () => {
       {roleId: 'xyz', scopes: ['some-scope']},
     ]);
 
-    testCycle('self-referential role with * in scopes', false, [
+    validateRoles('self-referential role with * in scopes', [
       {roleId: 'abc', scopes: ['assume:ab*']},
-    ]);
+    ], 'DependencyCycleError');
 
-    testCycle('self-referential role with * in roleId', false, [
+    validateRoles('self-referential role with * in roleId', [
       {roleId: 'ab*', scopes: ['assume:abc']},
-    ]);
+    ], 'DependencyCycleError');
 
-    testCycle('self-referential role with * in roleId and scopes', false, [
+    validateRoles('self-referential role with * in roleId and scopes', [
       {roleId: 'ab*', scopes: ['assume:abc*']},
-    ]);
+    ], 'DependencyCycleError');
 
-    testCycle('four inter-referential roles with *s', false, [
+    validateRoles('four inter-referential roles with *s', [
       {roleId: 'abc', scopes: ['assume:d*']},
       {roleId: 'def', scopes: ['assume:ghi']},
       {roleId: 'g*', scopes: ['assume:jkl']},
-      {roleId: 'jkl', scopes: ['assume:abc*']},
+      {roleId: 'jkl', scopes: ['assume:ab']},
     ]);
 
-    testCycle('cycle containing a single parameterized role with no suffix', true, [
+    validateRoles('cycle containing a single parameterized role with no suffix', [
       {roleId: 'a*', scopes: ['assume:ab<..>']},
-    ]);
+    ], 'DependencyCycleError');
 
-    testCycle('cycle containing a single parameterized role with a suffix', true, [
+    validateRoles('cycle containing a single parameterized role with a suffix', [
       {roleId: 'a*', scopes: ['assume:a<..>x']},
-    ]);
+    ], 'DependencyCycleError');
 
-    testCycle('cycle containing a single parameterized role with a prefix and suffix', true, [
+    validateRoles('cycle containing a single parameterized role with a prefix and suffix', [
       {roleId: 'a*', scopes: ['assume:ab<..>x']},
-    ]);
+    ], 'DependencyCycleError');
 
-    testCycle('cycle containing two parameterized roles', true, [
+    validateRoles('cycle containing two parameterized roles', [
       {roleId: 'a*', scopes: ['assume:b<..>x']},
       {roleId: 'b*', scopes: ['assume:a<..>']},
-    ]);
+    ], 'DependencyCycleError');
 
-    testCycle('cycle containing two parameterized roles where scope is prefix of role', true, [
+    validateRoles('cycle containing two parameterized roles where scope is prefix of role', [
       {roleId: 'a*', scopes: ['assume:b<..>x']},
       {roleId: 'bstuff*', scopes: ['assume:a<..>']},
-    ]);
+    ], 'DependencyCycleError');
 
-    testCycle('cycle containing two parameterized roles where role is prefix of scope', true, [
+    validateRoles('cycle containing two parameterized roles where role is prefix of scope', [
       {roleId: 'a*', scopes: ['assume:bstuff<..>x']},
       {roleId: 'b*', scopes: ['assume:a<..>']},
-    ]);
+    ], 'DependencyCycleError');
 
-    testCycle('cycle with a partial appearance of "assume:"', true, [
+    validateRoles('cycle with a partial appearance of "assume:"', [
       // note that this would actually be stable, since the replacement is shorter, but we still
       // want to forbid this
       {roleId: 'b*', scopes: ['as<..>']},
+    ], 'DependencyCycleError');
+
+    validateRoles('roles with some parameters', [
+      {roleId: 'bb*', scopes: ['assume:cd<..>']},
+      {roleId: 'cde*', scopes: ['assume:de<..>x']},
+      {roleId: 'd*', scopes: ['assume:b']},
     ]);
 
-    testCycle('roles with some parameters but a fixed point', false, [
+    validateRoles('roles with some parameters but a fixed point', [
       {roleId: 'b*', scopes: ['assume:cd<..>']},
       {roleId: 'cde*', scopes: ['assume:de<..>x']},
       {roleId: 'd*', scopes: ['assume:bx']},
-    ]);
+    ], 'DependencyCycleError');
   });
 
   suite('normalizeScopes', () => {

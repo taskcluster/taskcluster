@@ -5,13 +5,20 @@ var events      = require('events');
 var LRU         = require('quick-lru');
 var debug       = require('debug')('auth:ScopeResolver');
 var {scopeCompare, mergeScopeSets, normalizeScopeSet} = require('taskcluster-lib-scopes');
-var {generateTrie, executeTrie} = require('./trie');
+const trie = require('./trie');
+const ScopeSetBuilder = require('./scopesetbuilder');
 
 const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
 const PARAMETERIZED_SCOPE = /^(:?|a|as|ass|assu|assum|assum|assume|assume:.*)<\.\.>/;
 const PARAMETER = /<\.\.\>/;
 const PARAMETER_G = /<\.\.\>/g;
 const PARAMETER_TO_END = /<\.\.>.*/;
+
+/** ZeroCache is an LRU cache instance that contains nothing for caching is disabled */
+const ZeroCache = {
+  get: (k) => null,
+  set: (k, v) => null,
+};
 
 class ScopeResolver extends events.EventEmitter {
   /** Create ScopeResolver */
@@ -236,192 +243,60 @@ class ScopeResolver extends events.EventEmitter {
   }
 
   /**
-   * Throw an informative exception if this set of roles has a cycle that would
-   * lead to unbounded role expansion.
-   *
-   * Such a cycle must contain *only* parameterized expansions (`..*` ->
-   * `assume:..<..>..`).  Any non-parameterized expansions in a cycle would
-   * always produce the same expansion, resulting in a fixed point.
+   * Throws an error with a human readable message and code: 'InvalidScopeError'
+   * or 'DependencyCycleError', if any of the roles are illegal, or form a cycle.
    */
-  static cycleCheck(roles) {
-    let paramRules = [];
-
-    // find the set of parameterized rules and strip * and parameters from them
-    let roleIds = roles.map(({roleId}) => roleId);
-    roles.forEach(({roleId, scopes}) => {
-      if (!roleId.endsWith('*')) {
-        return;
-      }
-      roleId = roleId.slice(0, -1);
-      scopes.forEach(scope => {
-        if (!PARAMETERIZED_SCOPE.test(scope)) {
-          return;
-        }
-        // strip `assume:` and any parameters
-        scope = scope.replace(PARAMETER_TO_END, '').slice(7);
-        paramRules.push({roleId, scope});
-      });
-    });
-
-    // turn those into edges, with an edge wherever r is a prefix of s or s is a prefix of r
-    let edges = {};
-    for (let {roleId: roleId1, scope: scope1} of paramRules) {
-      for (let {roleId: roleId2} of paramRules) {
-        if (scope1.startsWith(roleId2) || roleId2.startsWith(scope1)) {
-          if (edges[roleId1]) {
-            edges[roleId1].push(roleId2);
-          } else {
-            edges[roleId1] = [roleId2];
-          }
-        }
-      }
-    }
-
-    // Use depth-first searches from each node to find any cycles in the edges collected above.
-    // The graph may not be connected, so we must start from each node, but once we have visited
-    // a node we need not start there again
-    let done = new Set();
-    _.keys(edges).forEach(start => {
-      let seen = [];
-      let visit = roleId => {
-        if (done.has(start)) {
-          return;
-        }
-        if (seen.indexOf(roleId) !== -1) {
-          return seen.slice(seen.indexOf(roleId)).concat([roleId]);
-        }
-        seen.push(roleId);
-        for (let edge of edges[roleId] || []) {
-          let cycle = visit(edge);
-          if (cycle) {
-            return cycle;
-          }
-        }
-        done.add(seen.pop());
-      };
-
-      let cycle = visit(start);
-      if (cycle) {
-        throw new Error(`Found cycle in roles: ${cycle.map(c => `${c}*`).join(' -> ')}`);
-      }
-    });
-  };
+  static validateRoles(roles = []) {
+    const rules = roles.map(({roleId, scopes}) => ({pattern: `assume:${roleId}`, scopes}));
+    trie.dependencyOrdering(rules);
+  }
 
   /**
    * Build a resolver which, given a set of scopes, will return the expanded
    * set of scopes based on the given roles.  Roles are an array of elements
    * {roleId, scopes}.
    */
-  buildResolver(roles) {
-    this._monitor.timer('cycleCheck', () => ScopeResolver.cycleCheck(roles));
-
-    // encode the roles as rules, including the `assume:` prefix, and marking up
-    // the expansions of any parameterized scopes as {scope, index}, where index
-    // is the index in the input at which the replacement begins (the index of
-    // the `*`)
-
-    let rules = roles.map(({roleId, scopes}) => ({pattern: `assume:${roleId}`, scopes}));
-    let dfa = this._monitor.timer('generateTrie', () => generateTrie(rules));
+  buildResolver(roles = []) {
+    const rules = roles.map(({roleId, scopes}) => ({pattern: `assume:${roleId}`, scopes}));
+    const node = trie.optimize(trie.withPrefix(trie.build(rules), 'assume:'));
 
     // LRU of resolved scope-sets, to increase probability of hits, we shall
     // omit all input scopes that doesn't match ASSUME_PREFIX (ie. match 'assume:')
-    let lru = new LRU({maxSize: 10000});
+    const lru = this._disableCache ? ZeroCache : new LRU({maxSize: 10000});
 
     return (inputs) => {
-      inputs.sort(scopeCompare);
-      inputs = normalizeScopeSet(inputs);
-      // queue is the list of scopes to expand (so only expandable scopes)
-      let queue = inputs.filter(s => ASSUME_PREFIX.test(s));
-      // seen is the normalied scopeset we have seen already, we don't include
-      // input scopes that doesn't match ASSUME_PREFIX because we don't want to
-      // embed those in the cacheKey
-      let seen = [...queue];
+      inputs = ScopeSetBuilder.normalizeScopeSet(inputs);
+      // Reduce input to the set of scopes starting with 'assume:'
+      const queue = inputs.filter(s => ASSUME_PREFIX.test(s));
 
       // Check if we have an expansion of queue in LRU cache, if there is no
-      // such expansion we'll continue, compute one in `seen`.
+      // such expansion we'll continue and compute one.
       const cacheKey = queue.join('\n');
-      if (!this._disableCache) {
-        this._monitor.count('cache-lookup', 1);
-        const cacheResult = lru.get(cacheKey);
-        if (cacheResult !== undefined) {
-          this._monitor.count('cache-hit', 1);
-          return mergeScopeSets(inputs, cacheResult);
-        } else {
-          this._monitor.count('cache-miss', 1);
-        }
+      const cacheResult = lru.get(cacheKey);
+      if (cacheResult) {
+        this._monitor.count('cache-hit', 1);
+        return ScopeSetBuilder.mergeScopeSets(cacheResult, inputs);
       }
+      this._monitor.count('cache-miss', 1);
 
-      // insert a new scope into the `seen` scopeset, returning false if it was
-      // already satisfied by the scopeset.  This is equivalent to `seen =
-      // mergeScopeSets(seen, [scope])`, then returning false if seen is not
-      // changed.
-      let see = (scope) => {
-        const n = seen.length;
-        const trailingStar = scope.endsWith('*');
-        const prefix = scope.slice(0, -1);
-        let i = 0;
-        while (i < n) {
-          let seenScope = seen[i];
-          // if seenScope satisfies scope, we're done
-          if (scope === seenScope || seenScope.endsWith('*') && scope.startsWith(seenScope.slice(0, -1))) {
-            return false;
-          }
-
-          // if we've found where to insert this scope, do so and splice out any existing scopes
-          // that this one satisfies
-          if (scopeCompare(seenScope, scope) > 0) {
-            let j = i;
-            if (trailingStar) {
-              while (j < n && seen[j].startsWith(prefix)) {
-                j++;
-              }
-            }
-            seen.splice(i, j - i, scope);
-            return true;
-          }
-
-          i++;
-        }
-
-        // we fell off the end of `seen`, so add this new scope at the end
-        seen.push(scope);
-        return true;
-      };
-
-      let i = 0;
-      while (i < queue.length) {
-        let scope = queue[i++];
-
-        // execute the DFA and expand any parameterizations in the result, then add
-        // the newly expanded scopes to the list of scopes to expand (recursively)
-        const trailingStar = scope.endsWith('*');
-        executeTrie(dfa, scope, (scopes, offset) => {
-          // Get the replacement slice for any parameterization. If this is empty and the
-          // scope ended with `*`, consider that `*` to have been extended into the
-          // replacement.
-          const slice = scope.slice(offset) || (trailingStar ? '*' : '');
-          const parameter_regexp = trailingStar ? PARAMETER_TO_END : PARAMETER_G;
-
-          scopes.map(s => s.replace(parameter_regexp, slice)).forEach(s => {
-            // mark this scope as seen, and if it is novel and expandable, add it
-            // to the queue for expansion
-            if (see(s) && ASSUME_PREFIX.test(s)) {
-              queue.push(s);
-            }
-          });
-        });
+      // Build expansion of queue
+      const result = new ScopeSetBuilder();
+      for (const scope of queue) {
+        const input = scope.startsWith('assume:') ? scope.slice(7) : '*';
+        trie.execute(node, input, result);
       }
+      // Store result in cache
+      const scopes = result.scopes();
+      lru.set(cacheKey, scopes);
 
-      lru.set(cacheKey, seen);
-      return mergeScopeSets(inputs, seen);
+      return ScopeSetBuilder.mergeScopeSets(scopes, inputs);
     };
-  };
+  }
 
   /**
    * Return a normalized set of scopes that `scopes` can be expanded to when
    * assuming all authorized roles.
    */
-
   resolve(scopes) {
     return this._resolver(scopes);
   }

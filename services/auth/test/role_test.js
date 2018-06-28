@@ -181,16 +181,28 @@ suite('api (roles)', function() {
   });
 
   test('update a role introducing a parameter cycle', async () => {
-    await helper.auth.deleteRole('test*');
-    await helper.auth.createRole('test*', {
-      description: 'test*',
-      scopes: ['assume:test2'],
+    await Promise.all([
+      await helper.auth.deleteRole('test-1:*'),
+      await helper.auth.deleteRole('test-2:*'),
+    ]);
+
+    await helper.auth.createRole('test-1:*', {
+      description: 'test role 1',
+      scopes: ['assume:test-2:prefix-<..>/some-suffix'],
     });
-    await helper.auth.updateRole('test*', {
-      description: 'test*',
-      scopes: ['assume:test2<..>'],
-    }).then(() => assert(false, 'Expected an error'),
-      err => assert.equal(err.statusCode, 400));
+
+    await helper.auth.createRole('test-2:*', {
+      description: 'test role 2',
+      scopes: ['plain-scope'],
+    });
+
+    await helper.auth.updateRole('test-2:*', {
+      description: 'test role 2 (updated)',
+      scopes: ['assume:test-1:prefix/<..>#some-suffix'],
+    }).then(
+      () => assert(false, 'Expected an error'),
+      err => assert.equal(err.statusCode, 400),
+    );
   });
 
   suite('updateRole', function() {
