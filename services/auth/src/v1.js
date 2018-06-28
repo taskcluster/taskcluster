@@ -1,12 +1,12 @@
-var debug       = require('debug')('auth:api');
-var assert      = require('assert');
-var API         = require('taskcluster-lib-api');
-var scopeUtils  = require('taskcluster-lib-scopes');
-var slugid      = require('slugid');
-var Promise     = require('promise');
-var _           = require('lodash');
-var signaturevalidator = require('./signaturevalidator');
-let ScopeResolver      = require('./scoperesolver');
+const debug = require('debug')('auth:api');
+const assert = require('assert');
+const API = require('taskcluster-lib-api');
+const scopeUtils = require('taskcluster-lib-scopes');
+const slugid = require('slugid');
+const Promise = require('promise');
+const _ = require('lodash');
+const signaturevalidator = require('./signaturevalidator');
+const ScopeResolver = require('./scoperesolver');
 
 /**
  * Helper to return a role as defined in the blob to one suitable for return.
@@ -18,7 +18,7 @@ const roleToJson = (role, context) => _.defaults(
 );
 
 /** API end-point for version v1/ */
-var api = new API({
+const api = new API({
   title:      'Authentication API',
   name:       'auth',
   description: [
@@ -637,8 +637,8 @@ api.declare({
     'in an error response.',
   ].join('\n'),
 }, async function(req, res) {
-  let roleId    = req.params.roleId;
-  let input     = req.body;
+  const roleId    = req.params.roleId;
+  const input     = req.body;
 
   if (process.env.LOCK_ROLES === 'true') {
     return res.reportError('InputError',
@@ -651,54 +651,47 @@ api.declare({
 
   input.scopes.sort(scopeUtils.scopeCompare);
 
-  let when = new Date().toJSON();
-  role = {
+  let role = {
     roleId,
     description: input.description,
     scopes: input.scopes,
-    lastModified: when,
-    created: when,
+    lastModified: new Date().toJSON(),
+    created: new Date().toJSON(),
   };
 
   // update Roles
-  let reportError = (code, message, details) => {
-    res.reportError(code, message, details);
-    let err = new Error();
-    err.code = 'ErrorReported';
-    return err;
-  };
   try {
     await this.Roles.modify(roles => {
-      let existing = _.find(roles, {roleId});
+      const existing = _.find(roles, {roleId});
       if (existing) {
         // role exists and doesn't match this one -> RequestConflict
         if (existing.description !== input.description || !_.isEqual(existing.scopes, input.scopes)) {
-          throw reportError('RequestConflict',
-            'Role with same roleId already exists',
-            {});
-        } else {
-          role = existing;
-          return;
+          const err = new Error(`Role with roleId '${roleId}' already exists`);
+          err.roleId = roleId;
+          err.code = 'RoleIdExists';
+          throw err;
         }
+        role = existing;
       }
 
       // check that this new role does not introduce a cycle
-      let checkRoles = _.clone(roles);
-      checkRoles.push(role);
-      try {
-        ScopeResolver.cycleCheck(checkRoles);
-      } catch (e) {
-        throw reportError('InputError', `Invalid roles: ${e.message}`, {});
-      }
+      // Errors from validateRoles will caught higher up
+      ScopeResolver.validateRoles([...roles, role]);
 
       // add the role for real
       roles.push(role);
     });
-  } catch (e) {
-    if (e.code === 'ErrorReported') {
-      return;
+  } catch (err) {
+    switch (err.code) {
+      case 'InvalidScopeError':
+        return res.reportError('InputError', err.message, {scope: err.scope});
+      case 'DependencyCycleError':
+        return res.reportError('InputError', err.message, {cycle: err.cycle});
+      case 'RoleIdExists':
+        return res.reportError('RequestConflict', err.message, {roleId: err.roleId});
+      default:
+        throw err;
     }
-    throw e;
   }
 
   // Send pulse message and reload
@@ -736,9 +729,8 @@ api.declare({
     'in an error response.',
   ].join('\n'),
 }, async function(req, res) {
-  let roleId    = req.params.roleId;
-  let input     = req.body;
-  let role;
+  const roleId    = req.params.roleId;
+  const input     = req.body;
 
   if (process.env.LOCK_ROLES === 'true') {
     return res.reportError('InputError',
@@ -746,19 +738,16 @@ api.declare({
       {});
   }
 
-  // Load role
-  let callerScopes = await req.scopes();
-  let reportError = (code, message, details) => {
-    res.reportError(code, message, details);
-    let err = new Error();
-    err.code = 'ErrorReported';
-    return err;
-  };
+  // Load and modify role
+  let role;
   try {
     await this.Roles.modify(async (roles) => {
-      let i = _.findIndex(roles, {roleId});
+      const i = _.findIndex(roles, {roleId});
       if (i === -1) {
-        throw reportError('ResourceNotFound', 'Role not found', {});
+        const err = new Error(`Role with roleId '${roleId}' not found`);
+        err.roleId = roleId;
+        err.code = 'RoleNotFound';
+        throw err;
       }
       role = roles[i];
 
@@ -769,26 +758,27 @@ api.declare({
 
       // check that this updated role does not introduce a cycle, careful not to modify
       // the original yet (since azure-blob-storage caches it)
-      let checkRoles = _.clone(roles);
-      checkRoles[i] = _.clone(role);
-      checkRoles[i].scopes = input.scopes;
-      try {
-        ScopeResolver.cycleCheck(checkRoles);
-      } catch (e) {
-        throw reportError('InputError', `Invalid roles: ${e.message}`, {});
-      }
+      ScopeResolver.validateRoles([
+        ...roles.filter(r => r !== role),
+        Object.assign({}, role, {scopes: input.scopes}),
+      ]);
 
       // finish modification
       role.scopes = input.scopes;
       role.description = input.description;
       role.lastModified = new Date().toJSON();
     });
-  } catch (e) {
-    if (e.code === 'ErrorReported') {
-      // res.reportError already called
-      return;
+  } catch (err) {
+    switch (err.code) {
+      case 'InvalidScopeError':
+        return res.reportError('InputError', err.message, {scope: err.scope});
+      case 'DependencyCycleError':
+        return res.reportError('InputError', err.message, {cycle: err.cycle});
+      case 'RoleNotFound':
+        return res.reportError('ResourceNotFound', err.message, {roleId: err.roleId});
+      default:
+        throw err;
     }
-    throw e;
   }
 
   // Publish message on pulse to clear caches...
