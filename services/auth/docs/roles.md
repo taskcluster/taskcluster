@@ -7,7 +7,7 @@ A _role_ consists of a `roleId`, a set of scopes, and a description. Each role
 constitutes a simple _expansion rule_ that says if you have the scope
 `assume:<roleId>` then your expanded roles also contain the set of scopes
 associated with the role named `roleId`. The expansion continues recursively
-until no further expansion is possible.
+until no further expansion is possible, however, roles must be acyclic.
 
 ## Example
 
@@ -50,7 +50,7 @@ two different kinds of `*` expansion:
    in a star can be very powerful!
 
  * (role expansion) A role ending in a star will apply to all roles of which it
-   is a prefix. For example, given 
+   is a prefix. For example, given
 
    ```
    hook-id:taskcluster/* -> queue:create-task:aws-provisioner/taskcluster-hooks
@@ -80,21 +80,12 @@ a scope-set containing `"assume:project-admin:zap"` would expand to include
 ]
 ```
 
-Multiple `<..>` are allowed in the same scope.
-
-### Circular Roles
-
-It is possible to construct parameterized roles which would expand infinitely.
-For example:
-
-```
-[
-project-admin:* -> assume:project-admin:subproject:<...>
-]
-```
-
-Such cyclical configurations of roles are forbidden and will result in an
-error. In practice, such configurations are always a mistake, anyway.
+### Limits
+ * Parameter substitution `<..>` may only appear once in a scope.
+ * Scopes on the form `prefix*<..>` are not permitted, regardless of what
+   `prefix` is, as the `*` star is ambiguous and leads to unsound expansions.
+ * Roles must be acyclic regardless of the parameter, even `*` as discussed
+   in the next section.
 
 ### Stars in Parameters
 
