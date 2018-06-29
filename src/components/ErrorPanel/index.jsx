@@ -61,27 +61,26 @@ import Markdown from '../Markdown';
  */
 export default class ErrorPanel extends Component {
   static propTypes = {
-    /**
-     * Error to display
-     */
+    /** Error to display */
     error: oneOfType([string, instanceOf(Error)]).isRequired,
     /**
      * Render the panel with a warning palette instead of the
      * harsher error palette.
      */
     warning: bool,
-    /**
-     * Execute a function to make the panel controlled-closeable.
-     */
+    /** Execute a function to make the panel controlled-closeable. */
     onClose: func,
+    /** The CSS class name of the wrapper element */
+    className: string,
   };
 
   static defaultProps = {
     warning: false,
+    className: null,
   };
 
   render() {
-    const { classes, error, warning, onClose } = this.props;
+    const { classes, className, error, warning, onClose } = this.props;
     const showStack =
       process.env.NODE_ENV === 'development' && error instanceof Error;
     const markdown = (
@@ -98,10 +97,15 @@ export default class ErrorPanel extends Component {
     if (!showStack) {
       return (
         <Paper
-          className={classNames(classes.panel, classes.paper, {
-            [classes.error]: !warning,
-            [classes.warning]: warning,
-          })}>
+          className={classNames(
+            classes.panel,
+            classes.paper,
+            {
+              [classes.error]: !warning,
+              [classes.warning]: warning,
+            },
+            className
+          )}>
           {markdown}
           {onClose && (
             <IconButton onClick={onClose}>
@@ -114,10 +118,14 @@ export default class ErrorPanel extends Component {
 
     return (
       <ExpansionPanel
-        className={classNames(classes.panel, {
-          [classes.error]: !warning,
-          [classes.warning]: warning,
-        })}
+        className={classNames(
+          classes.panel,
+          {
+            [classes.error]: !warning,
+            [classes.warning]: warning,
+          },
+          className
+        )}
         disabled={!showStack}>
         <ExpansionPanelSummary
           classes={{ disabled: classes.disabled }}

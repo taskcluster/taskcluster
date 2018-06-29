@@ -37,6 +37,7 @@
     "is-absolute-url": "^2.1.0",
     "js-yaml": "^3.11.0",
     "localforage": "^1.6.0",
+    "lodash.debounce": "^4.0.8",
     "markdown-it": "^8.4.1",
     "markdown-it-highlightjs": "^3.0.0",
     "markdown-it-link-attributes": "^2.1.0",
