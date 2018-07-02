@@ -23,8 +23,20 @@ class Secrets(AsyncBaseClient):
     """
 
     classOptions = {
-        "baseUrl": "https://secrets.taskcluster.net/v1"
+        "baseUrl": "https://secrets.taskcluster.net/v1/"
     }
+
+    async def ping(self, *args, **kwargs):
+        """
+        Ping Server
+
+        Respond without doing anything.
+        This endpoint is used to check that the service is up.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     async def set(self, *args, **kwargs):
         """
@@ -33,7 +45,7 @@ class Secrets(AsyncBaseClient):
         Set the secret associated with some key.  If the secret already exists, it is
         updated instead.
 
-        This method takes input: ``http://schemas.taskcluster.net/secrets/v1/secret.json#``
+        This method takes input: ``v1/secret.json#``
 
         This method is ``stable``
         """
@@ -60,7 +72,7 @@ class Secrets(AsyncBaseClient):
         scope necessary to get the secret, the call will fail with a 403 code
         regardless of whether the secret exists.
 
-        This method gives output: ``http://schemas.taskcluster.net/secrets/v1/secret.json#``
+        This method gives output: ``v1/secret.json#``
 
         This method is ``stable``
         """
@@ -83,31 +95,19 @@ class Secrets(AsyncBaseClient):
         If you are not interested in listing all the members at once, you may
         use the query-string option `limit` to return fewer.
 
-        This method gives output: ``http://schemas.taskcluster.net/secrets/v1/secret-list.json#``
+        This method gives output: ``v1/secret-list.json#``
 
         This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["list"], *args, **kwargs)
 
-    async def ping(self, *args, **kwargs):
-        """
-        Ping Server
-
-        Respond without doing anything.
-        This endpoint is used to check that the service is up.
-
-        This method is ``stable``
-        """
-
-        return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
-
     funcinfo = {
         "get": {
             'args': ['name'],
             'method': 'get',
             'name': 'get',
-            'output': 'http://schemas.taskcluster.net/secrets/v1/secret.json#',
+            'output': 'v1/secret.json#',
             'route': '/secret/<name>',
             'stability': 'stable',
         },
@@ -115,7 +115,7 @@ class Secrets(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'list',
-            'output': 'http://schemas.taskcluster.net/secrets/v1/secret-list.json#',
+            'output': 'v1/secret-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/secrets',
             'stability': 'stable',
@@ -136,7 +136,7 @@ class Secrets(AsyncBaseClient):
         },
         "set": {
             'args': ['name'],
-            'input': 'http://schemas.taskcluster.net/secrets/v1/secret.json#',
+            'input': 'v1/secret.json#',
             'method': 'put',
             'name': 'set',
             'route': '/secret/<name>',

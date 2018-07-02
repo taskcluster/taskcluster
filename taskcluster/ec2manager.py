@@ -17,7 +17,7 @@ class EC2Manager(BaseClient):
     """
 
     classOptions = {
-        "baseUrl": "localhost:5555/v1"
+        "baseUrl": "https://ec2-manager.taskcluster.net/v1"
     }
 
     def listWorkerTypes(self, *args, **kwargs):

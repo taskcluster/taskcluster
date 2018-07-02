@@ -1870,6 +1870,18 @@ web hooks, as well as some useful consumer APIs.
 
 When Github forbids an action, this service returns an HTTP 403
 with code ForbiddenByGithub.
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+github.ping() # -> None`
+# Async call
+await asyncGithub.ping() # -> None
+```
+
 #### Consume GitHub WebHook
 Capture a GitHub event and publish it via pulse, if it's a push,
 release or pull request.
@@ -1888,7 +1900,7 @@ Taskcluster. Can be filtered on various git-specific
 fields.
 
 
-Required [output schema](http://schemas.taskcluster.net/github/v1/build-list.json#)
+Required [output schema](v1/build-list.json#)
 
 ```python
 # Sync calls
@@ -1929,7 +1941,7 @@ Takes the following arguments:
   * `owner`
   * `repo`
 
-Required [output schema](http://schemas.taskcluster.net/github/v1/repository.json)
+Required [output schema](v1/repository.json#)
 
 ```python
 # Sync calls
@@ -1978,7 +1990,7 @@ Takes the following arguments:
   * `repo`
   * `sha`
 
-Required [input schema](http://schemas.taskcluster.net/github/v1/create-status.json)
+Required [input schema](v1/create-status.json#)
 
 ```python
 # Sync calls
@@ -2000,7 +2012,7 @@ Takes the following arguments:
   * `repo`
   * `number`
 
-Required [input schema](http://schemas.taskcluster.net/github/v1/create-comment.json)
+Required [input schema](v1/create-comment.json#)
 
 ```python
 # Sync calls
@@ -2009,18 +2021,6 @@ github.createComment(payload, owner='value', repo='value', number='value') # -> 
 # Async call
 await asyncGithub.createComment(owner, repo, number, payload) # -> None
 await asyncGithub.createComment(payload, owner='value', repo='value', number='value') # -> None
-```
-
-#### Ping Server
-Respond without doing anything.
-This endpoint is used to check that the service is up.
-
-
-```python
-# Sync calls
-github.ping() # -> None`
-# Async call
-await asyncGithub.ping() # -> None
 ```
 
 
@@ -2032,9 +2032,9 @@ await asyncGithub.ping() # -> None
 import taskcluster
 githubEvents = taskcluster.GithubEvents(options)
 ```
-The github service, typically available at
-`github.taskcluster.net`, is responsible for publishing a pulse
-message for supported github events.
+The github service publishes a pulse
+message for supported github events, translating Github webhook
+events into pulse messages.
 
 This document describes the exchange offered by the taskcluster
 github service
@@ -2092,11 +2092,23 @@ https://www.npmjs.com/package/cron-parser.  For example:
 The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
 https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks
 for more information.
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+hooks.ping() # -> None`
+# Async call
+await asyncHooks.ping() # -> None
+```
+
 #### List hook groups
 This endpoint will return a list of all hook groups with at least one hook.
 
 
-Required [output schema](http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json)
+Required [output schema](v1/list-hook-groups-response.json#)
 
 ```python
 # Sync calls
@@ -2115,7 +2127,7 @@ Takes the following arguments:
 
   * `hookGroupId`
 
-Required [output schema](http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json)
+Required [output schema](v1/list-hooks-response.json#)
 
 ```python
 # Sync calls
@@ -2137,7 +2149,7 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [output schema](http://schemas.taskcluster.net/hooks/v1/hook-definition.json)
+Required [output schema](v1/hook-definition.json#)
 
 ```python
 # Sync calls
@@ -2159,7 +2171,7 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [output schema](http://schemas.taskcluster.net/hooks/v1/hook-status.json)
+Required [output schema](v1/hook-status.json#)
 
 ```python
 # Sync calls
@@ -2168,28 +2180,6 @@ hooks.getHookStatus(hookGroupId='value', hookId='value') # -> result
 # Async call
 await asyncHooks.getHookStatus(hookGroupId, hookId) # -> result
 await asyncHooks.getHookStatus(hookGroupId='value', hookId='value') # -> result
-```
-
-#### Get hook schedule
-This endpoint will return the schedule and next scheduled creation time
-for the given hook.
-
-
-
-Takes the following arguments:
-
-  * `hookGroupId`
-  * `hookId`
-
-Required [output schema](http://schemas.taskcluster.net/hooks/v1/hook-schedule.json)
-
-```python
-# Sync calls
-hooks.getHookSchedule(hookGroupId, hookId) # -> result`
-hooks.getHookSchedule(hookGroupId='value', hookId='value') # -> result
-# Async call
-await asyncHooks.getHookSchedule(hookGroupId, hookId) # -> result
-await asyncHooks.getHookSchedule(hookGroupId='value', hookId='value') # -> result
 ```
 
 #### Create a hook
@@ -2207,9 +2197,9 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [input schema](http://schemas.taskcluster.net/hooks/v1/create-hook-request.json)
+Required [input schema](v1/create-hook-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/hooks/v1/hook-definition.json)
+Required [output schema](v1/hook-definition.json#)
 
 ```python
 # Sync calls
@@ -2231,9 +2221,9 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [input schema](http://schemas.taskcluster.net/hooks/v1/create-hook-request.json)
+Required [input schema](v1/create-hook-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/hooks/v1/hook-definition.json)
+Required [output schema](v1/hook-definition.json#)
 
 ```python
 # Sync calls
@@ -2277,9 +2267,9 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [input schema](http://schemas.taskcluster.net/hooks/v1/trigger-hook.json)
+Required [input schema](v1/trigger-hook.json#)
 
-Required [output schema](http://schemas.taskcluster.net/hooks/v1/task-status.json)
+Required [output schema](v1/task-status.json#)
 
 ```python
 # Sync calls
@@ -2301,7 +2291,7 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [output schema](http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json)
+Required [output schema](v1/trigger-token-response.json#)
 
 ```python
 # Sync calls
@@ -2323,7 +2313,7 @@ Takes the following arguments:
   * `hookGroupId`
   * `hookId`
 
-Required [output schema](http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json)
+Required [output schema](v1/trigger-token-response.json#)
 
 ```python
 # Sync calls
@@ -2349,9 +2339,9 @@ Takes the following arguments:
   * `hookId`
   * `token`
 
-Required [input schema](http://schemas.taskcluster.net/hooks/v1/trigger-hook.json)
+Required [input schema](v1/trigger-hook.json#)
 
-Required [output schema](http://schemas.taskcluster.net/hooks/v1/task-status.json)
+Required [output schema](v1/task-status.json#)
 
 ```python
 # Sync calls
@@ -2360,18 +2350,6 @@ hooks.triggerHookWithToken(payload, hookGroupId='value', hookId='value', token='
 # Async call
 await asyncHooks.triggerHookWithToken(hookGroupId, hookId, token, payload) # -> result
 await asyncHooks.triggerHookWithToken(payload, hookGroupId='value', hookId='value', token='value') # -> result
-```
-
-#### Ping Server
-Respond without doing anything.
-This endpoint is used to check that the service is up.
-
-
-```python
-# Sync calls
-hooks.ping() # -> None`
-# Async call
-await asyncHooks.ping() # -> None
 ```
 
 
@@ -2482,6 +2460,18 @@ example one could bind to `route.index.some-app.*.release-build`,
 and pick up all messages about release builds. Hence, it is a
 good idea to document task index hierarchies, as these make up extension
 points in their own.
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+index.ping() # -> None`
+# Async call
+await asyncIndex.ping() # -> None
+```
+
 #### Find Indexed Task
 Find a task by index path, returning the highest-rank task with that path. If no
 task exists for the given path, this API end-point will respond with a 404 status.
@@ -2492,7 +2482,7 @@ Takes the following arguments:
 
   * `indexPath`
 
-Required [output schema](http://schemas.taskcluster.net/index/v1/indexed-task-response.json#)
+Required [output schema](v1/indexed-task-response.json#)
 
 ```python
 # Sync calls
@@ -2518,7 +2508,7 @@ Takes the following arguments:
 
   * `namespace`
 
-Required [output schema](http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#)
+Required [output schema](v1/list-namespaces-response.json#)
 
 ```python
 # Sync calls
@@ -2547,7 +2537,7 @@ Takes the following arguments:
 
   * `namespace`
 
-Required [output schema](http://schemas.taskcluster.net/index/v1/list-tasks-response.json#)
+Required [output schema](v1/list-tasks-response.json#)
 
 ```python
 # Sync calls
@@ -2571,9 +2561,9 @@ Takes the following arguments:
 
   * `namespace`
 
-Required [input schema](http://schemas.taskcluster.net/index/v1/insert-task-request.json#)
+Required [input schema](v1/insert-task-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/index/v1/indexed-task-response.json#)
+Required [output schema](v1/indexed-task-response.json#)
 
 ```python
 # Sync calls
@@ -2614,18 +2604,6 @@ index.findArtifactFromTask(indexPath='value', name='value') # -> None
 # Async call
 await asyncIndex.findArtifactFromTask(indexPath, name) # -> None
 await asyncIndex.findArtifactFromTask(indexPath='value', name='value') # -> None
-```
-
-#### Ping Server
-Respond without doing anything.
-This endpoint is used to check that the service is up.
-
-
-```python
-# Sync calls
-index.ping() # -> None`
-# Async call
-await asyncIndex.ping() # -> None
 ```
 
 
@@ -4175,6 +4153,18 @@ those who do not have the relevant scopes.
 Secrets also have an expiration date, and once a secret has expired it can no
 longer be read.  This is useful for short-term secrets such as a temporary
 service credential or a one-time signing key.
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+secrets.ping() # -> None`
+# Async call
+await asyncSecrets.ping() # -> None
+```
+
 #### Set Secret
 Set the secret associated with some key.  If the secret already exists, it is
 updated instead.
@@ -4185,7 +4175,7 @@ Takes the following arguments:
 
   * `name`
 
-Required [input schema](http://schemas.taskcluster.net/secrets/v1/secret.json#)
+Required [input schema](v1/secret.json#)
 
 ```python
 # Sync calls
@@ -4226,7 +4216,7 @@ Takes the following arguments:
 
   * `name`
 
-Required [output schema](http://schemas.taskcluster.net/secrets/v1/secret.json#)
+Required [output schema](v1/secret.json#)
 
 ```python
 # Sync calls
@@ -4251,25 +4241,13 @@ If you are not interested in listing all the members at once, you may
 use the query-string option `limit` to return fewer.
 
 
-Required [output schema](http://schemas.taskcluster.net/secrets/v1/secret-list.json#)
+Required [output schema](v1/secret-list.json#)
 
 ```python
 # Sync calls
 secrets.list() # -> result`
 # Async call
 await asyncSecrets.list() # -> result
-```
-
-#### Ping Server
-Respond without doing anything.
-This endpoint is used to check that the service is up.
-
-
-```python
-# Sync calls
-secrets.ping() # -> None`
-# Async call
-await asyncSecrets.ping() # -> None
 ```
 
 

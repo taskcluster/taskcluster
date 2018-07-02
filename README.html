@@ -1528,6 +1528,14 @@ web hooks, as well as some useful consumer APIs.</p>
 <p>When Github forbids an action, this service returns an HTTP 403
 with code ForbiddenByGithub.</p>
 <h4>
+<a id="user-content-ping-server-3" class="anchor" href="#ping-server-3" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
+<p>Respond without doing anything.
+This endpoint is used to check that the service is up.</p>
+<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
+github.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
+<span class="pl-c"><span class="pl-c">#</span> Async call</span>
+<span class="pl-k">await</span> asyncGithub.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
+<h4>
 <a id="user-content-consume-github-webhook" class="anchor" href="#consume-github-webhook" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Consume GitHub WebHook</h4>
 <p>Capture a GitHub event and publish it via pulse, if it's a push,
 release or pull request.</p>
@@ -1540,7 +1548,7 @@ github.githubWebHookConsumer() <span class="pl-c"><span class="pl-c">#</span> -&
 <p>A paginated list of builds that have been run in
 Taskcluster. Can be filtered on various git-specific
 fields.</p>
-<p>Required <a href="http://schemas.taskcluster.net/github/v1/build-list.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/build-list.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 github.builds() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -1570,7 +1578,7 @@ useful within Taskcluster related services.</p>
 <li><code>owner</code></li>
 <li><code>repo</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/github/v1/repository.json" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/repository.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 github.repository(owner, repo) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 github.repository(<span class="pl-v">owner</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">repo</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -1607,7 +1615,7 @@ made of a custom title and link.</p>
 <li><code>repo</code></li>
 <li><code>sha</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/github/v1/create-status.json" rel="nofollow">input schema</a></p>
+<p>Required <a href="v1/create-status.json#">input schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 github.createStatus(owner, repo, sha, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
 github.createStatus(payload, <span class="pl-v">owner</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">repo</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">sha</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span>
@@ -1623,30 +1631,22 @@ github.createStatus(payload, <span class="pl-v">owner</span><span class="pl-k">=
 <li><code>repo</code></li>
 <li><code>number</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/github/v1/create-comment.json" rel="nofollow">input schema</a></p>
+<p>Required <a href="v1/create-comment.json#">input schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 github.createComment(owner, repo, number, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
 github.createComment(payload, <span class="pl-v">owner</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">repo</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">number</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
 <span class="pl-k">await</span> asyncGithub.createComment(owner, repo, number, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span>
 <span class="pl-k">await</span> asyncGithub.createComment(payload, <span class="pl-v">owner</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">repo</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">number</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
-<h4>
-<a id="user-content-ping-server-3" class="anchor" href="#ping-server-3" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
-<p>Respond without doing anything.
-This endpoint is used to check that the service is up.</p>
-<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-github.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
-<span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncGithub.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
 <h3>
 <a id="user-content-exchanges-in-taskclustergithubevents" class="anchor" href="#exchanges-in-taskclustergithubevents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Exchanges in <code>taskcluster.GithubEvents</code>
 </h3>
 <div class="highlight highlight-source-python"><pre><span class="pl-k">//</span> Create GithubEvents client instance
 <span class="pl-k">import</span> taskcluster
 githubEvents <span class="pl-k">=</span> taskcluster.GithubEvents(options)</pre></div>
-<p>The github service, typically available at
-<code>github.taskcluster.net</code>, is responsible for publishing a pulse
-message for supported github events.</p>
+<p>The github service publishes a pulse
+message for supported github events, translating Github webhook
+events into pulse messages.</p>
 <p>This document describes the exchange offered by the taskcluster
 github service</p>
 <h4>
@@ -1729,9 +1729,17 @@ be created.  Each schedule is in a simple cron format, per
 <a href="https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks" rel="nofollow">https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks</a>
 for more information.</p>
 <h4>
+<a id="user-content-ping-server-4" class="anchor" href="#ping-server-4" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
+<p>Respond without doing anything.
+This endpoint is used to check that the service is up.</p>
+<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
+hooks.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
+<span class="pl-c"><span class="pl-c">#</span> Async call</span>
+<span class="pl-k">await</span> asyncHooks.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
+<h4>
 <a id="user-content-list-hook-groups" class="anchor" href="#list-hook-groups" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List hook groups</h4>
 <p>This endpoint will return a list of all hook groups with at least one hook.</p>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/list-hook-groups-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.listHookGroups() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -1744,7 +1752,7 @@ given hook group.</p>
 <ul>
 <li><code>hookGroupId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/list-hooks-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.listHooks(hookGroupId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 hooks.listHooks(<span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -1760,7 +1768,7 @@ and hookId.</p>
 <li><code>hookGroupId</code></li>
 <li><code>hookId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/hook-definition.json" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/hook-definition.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.hook(hookGroupId, hookId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 hooks.hook(<span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -1776,29 +1784,13 @@ snapshot in time and may vary from one call to the next.</p>
 <li><code>hookGroupId</code></li>
 <li><code>hookId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/hook-status.json" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/hook-status.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.getHookStatus(hookGroupId, hookId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 hooks.getHookStatus(<span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
 <span class="pl-k">await</span> asyncHooks.getHookStatus(hookGroupId, hookId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-k">await</span> asyncHooks.getHookStatus(<span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
-<h4>
-<a id="user-content-get-hook-schedule" class="anchor" href="#get-hook-schedule" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get hook schedule</h4>
-<p>This endpoint will return the schedule and next scheduled creation time
-for the given hook.</p>
-<p>Takes the following arguments:</p>
-<ul>
-<li><code>hookGroupId</code></li>
-<li><code>hookId</code></li>
-</ul>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/hook-schedule.json" rel="nofollow">output schema</a></p>
-<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-hooks.getHookSchedule(hookGroupId, hookId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
-hooks.getHookSchedule(<span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
-<span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncHooks.getHookSchedule(hookGroupId, hookId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
-<span class="pl-k">await</span> asyncHooks.getHookSchedule(<span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
 <h4>
 <a id="user-content-create-a-hook" class="anchor" href="#create-a-hook" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create a hook</h4>
 <p>This endpoint will create a new hook.</p>
@@ -1810,8 +1802,8 @@ necessary scopes to add the task to the queue.</p>
 <li><code>hookGroupId</code></li>
 <li><code>hookId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/create-hook-request.json" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/hook-definition.json" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/create-hook-request.json#">input schema</a></p>
+<p>Required <a href="v1/hook-definition.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.createHook(hookGroupId, hookId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 hooks.createHook(payload, <span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -1827,8 +1819,8 @@ hooks.createHook(payload, <span class="pl-v">hookGroupId</span><span class="pl-k
 <li><code>hookGroupId</code></li>
 <li><code>hookId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/create-hook-request.json" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/hook-definition.json" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/create-hook-request.json#">input schema</a></p>
+<p>Required <a href="v1/hook-definition.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.updateHook(hookGroupId, hookId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 hooks.updateHook(payload, <span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -1860,8 +1852,8 @@ task template.</p>
 <li><code>hookGroupId</code></li>
 <li><code>hookId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/trigger-hook.json" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/task-status.json" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/trigger-hook.json#">input schema</a></p>
+<p>Required <a href="v1/task-status.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.triggerHook(hookGroupId, hookId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 hooks.triggerHook(payload, <span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -1877,7 +1869,7 @@ token can be deactivated with <code>resetTriggerToken</code>.</p>
 <li><code>hookGroupId</code></li>
 <li><code>hookId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/trigger-token-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.getTriggerToken(hookGroupId, hookId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 hooks.getTriggerToken(<span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -1893,7 +1885,7 @@ may have been issued via getTriggerToken with a new token.</p>
 <li><code>hookGroupId</code></li>
 <li><code>hookId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/trigger-token-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.resetTriggerToken(hookGroupId, hookId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 hooks.resetTriggerToken(<span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -1912,22 +1904,14 @@ task template.</p>
 <li><code>hookId</code></li>
 <li><code>token</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/trigger-hook.json" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/hooks/v1/task-status.json" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/trigger-hook.json#">input schema</a></p>
+<p>Required <a href="v1/task-status.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.triggerHookWithToken(hookGroupId, hookId, token, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 hooks.triggerHookWithToken(payload, <span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">token</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
 <span class="pl-k">await</span> asyncHooks.triggerHookWithToken(hookGroupId, hookId, token, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-k">await</span> asyncHooks.triggerHookWithToken(payload, <span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">token</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
-<h4>
-<a id="user-content-ping-server-4" class="anchor" href="#ping-server-4" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
-<p>Respond without doing anything.
-This endpoint is used to check that the service is up.</p>
-<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-hooks.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
-<span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncHooks.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
 <h3>
 <a id="user-content-methods-in-taskclusterindex" class="anchor" href="#methods-in-taskclusterindex" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Methods in <code>taskcluster.Index</code>
 </h3>
@@ -2026,6 +2010,14 @@ and pick up all messages about release builds. Hence, it is a
 good idea to document task index hierarchies, as these make up extension
 points in their own.</p>
 <h4>
+<a id="user-content-ping-server-5" class="anchor" href="#ping-server-5" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
+<p>Respond without doing anything.
+This endpoint is used to check that the service is up.</p>
+<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
+index.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
+<span class="pl-c"><span class="pl-c">#</span> Async call</span>
+<span class="pl-k">await</span> asyncIndex.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
+<h4>
 <a id="user-content-find-indexed-task" class="anchor" href="#find-indexed-task" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Find Indexed Task</h4>
 <p>Find a task by index path, returning the highest-rank task with that path. If no
 task exists for the given path, this API end-point will respond with a 404 status.</p>
@@ -2033,7 +2025,7 @@ task exists for the given path, this API end-point will respond with a 404 statu
 <ul>
 <li><code>indexPath</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/index/v1/indexed-task-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/indexed-task-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 index.findTask(indexPath) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 index.findTask(<span class="pl-v">indexPath</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2052,7 +2044,7 @@ object.</p>
 <ul>
 <li><code>namespace</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/index/v1/list-namespaces-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/list-namespaces-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 index.listNamespaces(namespace) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 index.listNamespaces(<span class="pl-v">namespace</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2073,7 +2065,7 @@ services, as that makes little sense.</p>
 <ul>
 <li><code>namespace</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/index/v1/list-tasks-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/list-tasks-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 index.listTasks(namespace) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 index.listTasks(<span class="pl-v">namespace</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2090,8 +2082,8 @@ about indexing successfully completed tasks automatically using custom routes.</
 <ul>
 <li><code>namespace</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/index/v1/insert-task-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/index/v1/indexed-task-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/insert-task-request.json#">input schema</a></p>
+<p>Required <a href="v1/indexed-task-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 index.insertTask(namespace, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 index.insertTask(payload, <span class="pl-v">namespace</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2124,14 +2116,6 @@ index.findArtifactFromTask(<span class="pl-v">indexPath</span><span class="pl-k"
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
 <span class="pl-k">await</span> asyncIndex.findArtifactFromTask(indexPath, name) <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span>
 <span class="pl-k">await</span> asyncIndex.findArtifactFromTask(<span class="pl-v">indexPath</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">name</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
-<h4>
-<a id="user-content-ping-server-5" class="anchor" href="#ping-server-5" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
-<p>Respond without doing anything.
-This endpoint is used to check that the service is up.</p>
-<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-index.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
-<span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncIndex.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
 <h3>
 <a id="user-content-methods-in-taskclusterlogin" class="anchor" href="#methods-in-taskclusterlogin" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Methods in <code>taskcluster.Login</code>
 </h3>
@@ -3468,6 +3452,14 @@ those who do not have the relevant scopes.</p>
 longer be read.  This is useful for short-term secrets such as a temporary
 service credential or a one-time signing key.</p>
 <h4>
+<a id="user-content-ping-server-10" class="anchor" href="#ping-server-10" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
+<p>Respond without doing anything.
+This endpoint is used to check that the service is up.</p>
+<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
+secrets.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
+<span class="pl-c"><span class="pl-c">#</span> Async call</span>
+<span class="pl-k">await</span> asyncSecrets.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
+<h4>
 <a id="user-content-set-secret" class="anchor" href="#set-secret" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Set Secret</h4>
 <p>Set the secret associated with some key.  If the secret already exists, it is
 updated instead.</p>
@@ -3475,7 +3467,7 @@ updated instead.</p>
 <ul>
 <li><code>name</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/secrets/v1/secret.json#" rel="nofollow">input schema</a></p>
+<p>Required <a href="v1/secret.json#">input schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 secrets.set(name, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
 secrets.set(payload, <span class="pl-v">name</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span>
@@ -3505,7 +3497,7 @@ regardless of whether the secret exists.</p>
 <ul>
 <li><code>name</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/secrets/v1/secret.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/secret.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 secrets.get(name) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 secrets.get(<span class="pl-v">name</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -3523,19 +3515,11 @@ keep calling <code>listTaskGroup</code> with the last <code>continuationToken</c
 get a result without a <code>continuationToken</code>.</p>
 <p>If you are not interested in listing all the members at once, you may
 use the query-string option <code>limit</code> to return fewer.</p>
-<p>Required <a href="http://schemas.taskcluster.net/secrets/v1/secret-list.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/secret-list.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 secrets.list() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
 <span class="pl-k">await</span> asyncSecrets.list() <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
-<h4>
-<a id="user-content-ping-server-10" class="anchor" href="#ping-server-10" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
-<p>Respond without doing anything.
-This endpoint is used to check that the service is up.</p>
-<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-secrets.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
-<span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncSecrets.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
 <h3>
 <a id="user-content-exchanges-in-taskclustertreeherderevents" class="anchor" href="#exchanges-in-taskclustertreeherderevents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Exchanges in <code>taskcluster.TreeherderEvents</code>
 </h3>

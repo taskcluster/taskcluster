@@ -13,9 +13,9 @@ _defaultConfig = config
 
 class GithubEvents(AsyncBaseClient):
     """
-    The github service, typically available at
-    `github.taskcluster.net`, is responsible for publishing a pulse
-    message for supported github events.
+    The github service publishes a pulse
+    message for supported github events, translating Github webhook
+    events into pulse messages.
 
     This document describes the exchange offered by the taskcluster
     github service
@@ -33,7 +33,7 @@ class GithubEvents(AsyncBaseClient):
         exchange with the designated `organization` and `repository`
         in the routing-key along with event specific metadata in the payload.
 
-        This exchange outputs: ``http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``v1/github-pull-request-message.json#``This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
 
@@ -66,7 +66,7 @@ class GithubEvents(AsyncBaseClient):
                     'name': 'action',
                 },
             ],
-            'schema': 'http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#',
+            'schema': 'v1/github-pull-request-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -78,7 +78,7 @@ class GithubEvents(AsyncBaseClient):
         exchange with the designated `organization` and `repository`
         in the routing-key along with event specific metadata in the payload.
 
-        This exchange outputs: ``http://schemas.taskcluster.net/github/v1/github-push-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``v1/github-push-message.json#``This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
 
@@ -105,7 +105,7 @@ class GithubEvents(AsyncBaseClient):
                     'name': 'repository',
                 },
             ],
-            'schema': 'http://schemas.taskcluster.net/github/v1/github-push-message.json#',
+            'schema': 'v1/github-push-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -117,7 +117,7 @@ class GithubEvents(AsyncBaseClient):
         exchange with the designated `organization` and `repository`
         in the routing-key along with event specific metadata in the payload.
 
-        This exchange outputs: ``http://schemas.taskcluster.net/github/v1/github-release-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``v1/github-release-message.json#``This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
 
@@ -144,7 +144,7 @@ class GithubEvents(AsyncBaseClient):
                     'name': 'repository',
                 },
             ],
-            'schema': 'http://schemas.taskcluster.net/github/v1/github-release-message.json#',
+            'schema': 'v1/github-release-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 

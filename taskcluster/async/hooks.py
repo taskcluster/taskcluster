@@ -35,8 +35,20 @@ class Hooks(AsyncBaseClient):
     """
 
     classOptions = {
-        "baseUrl": "https://hooks.taskcluster.net/v1"
+        "baseUrl": "https://hooks.taskcluster.net/v1/"
     }
+
+    async def ping(self, *args, **kwargs):
+        """
+        Ping Server
+
+        Respond without doing anything.
+        This endpoint is used to check that the service is up.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     async def listHookGroups(self, *args, **kwargs):
         """
@@ -44,7 +56,7 @@ class Hooks(AsyncBaseClient):
 
         This endpoint will return a list of all hook groups with at least one hook.
 
-        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json``
+        This method gives output: ``v1/list-hook-groups-response.json#``
 
         This method is ``stable``
         """
@@ -58,7 +70,7 @@ class Hooks(AsyncBaseClient):
         This endpoint will return a list of all the hook definitions within a
         given hook group.
 
-        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json``
+        This method gives output: ``v1/list-hooks-response.json#``
 
         This method is ``stable``
         """
@@ -72,7 +84,7 @@ class Hooks(AsyncBaseClient):
         This endpoint will return the hook definition for the given `hookGroupId`
         and hookId.
 
-        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/hook-definition.json``
+        This method gives output: ``v1/hook-definition.json#``
 
         This method is ``stable``
         """
@@ -86,26 +98,12 @@ class Hooks(AsyncBaseClient):
         This endpoint will return the current status of the hook.  This represents a
         snapshot in time and may vary from one call to the next.
 
-        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/hook-status.json``
+        This method gives output: ``v1/hook-status.json#``
 
         This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["getHookStatus"], *args, **kwargs)
-
-    async def getHookSchedule(self, *args, **kwargs):
-        """
-        Get hook schedule
-
-        This endpoint will return the schedule and next scheduled creation time
-        for the given hook.
-
-        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/hook-schedule.json``
-
-        This method is ``deprecated``
-        """
-
-        return await self._makeApiCall(self.funcinfo["getHookSchedule"], *args, **kwargs)
 
     async def createHook(self, *args, **kwargs):
         """
@@ -118,9 +116,9 @@ class Hooks(AsyncBaseClient):
         necessary scopes to add the task to the queue.
 
 
-        This method takes input: ``http://schemas.taskcluster.net/hooks/v1/create-hook-request.json``
+        This method takes input: ``v1/create-hook-request.json#``
 
-        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/hook-definition.json``
+        This method gives output: ``v1/hook-definition.json#``
 
         This method is ``stable``
         """
@@ -134,9 +132,9 @@ class Hooks(AsyncBaseClient):
         This endpoint will update an existing hook.  All fields except
         `hookGroupId` and `hookId` can be modified.
 
-        This method takes input: ``http://schemas.taskcluster.net/hooks/v1/create-hook-request.json``
+        This method takes input: ``v1/create-hook-request.json#``
 
-        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/hook-definition.json``
+        This method gives output: ``v1/hook-definition.json#``
 
         This method is ``stable``
         """
@@ -164,9 +162,9 @@ class Hooks(AsyncBaseClient):
         provided as the `payload` property of the JSON-e context used to render the
         task template.
 
-        This method takes input: ``http://schemas.taskcluster.net/hooks/v1/trigger-hook.json``
+        This method takes input: ``v1/trigger-hook.json#``
 
-        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/task-status.json``
+        This method gives output: ``v1/task-status.json#``
 
         This method is ``stable``
         """
@@ -180,7 +178,7 @@ class Hooks(AsyncBaseClient):
         Retrieve a unique secret token for triggering the specified hook. This
         token can be deactivated with `resetTriggerToken`.
 
-        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json``
+        This method gives output: ``v1/trigger-token-response.json#``
 
         This method is ``stable``
         """
@@ -194,7 +192,7 @@ class Hooks(AsyncBaseClient):
         Reset the token for triggering a given hook. This invalidates token that
         may have been issued via getTriggerToken with a new token.
 
-        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json``
+        This method gives output: ``v1/trigger-token-response.json#``
 
         This method is ``stable``
         """
@@ -211,50 +209,30 @@ class Hooks(AsyncBaseClient):
         provided as the `payload` property of the JSON-e context used to render the
         task template.
 
-        This method takes input: ``http://schemas.taskcluster.net/hooks/v1/trigger-hook.json``
+        This method takes input: ``v1/trigger-hook.json#``
 
-        This method gives output: ``http://schemas.taskcluster.net/hooks/v1/task-status.json``
+        This method gives output: ``v1/task-status.json#``
 
         This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["triggerHookWithToken"], *args, **kwargs)
 
-    async def ping(self, *args, **kwargs):
-        """
-        Ping Server
-
-        Respond without doing anything.
-        This endpoint is used to check that the service is up.
-
-        This method is ``stable``
-        """
-
-        return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
-
     funcinfo = {
         "createHook": {
             'args': ['hookGroupId', 'hookId'],
-            'input': 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json',
+            'input': 'v1/create-hook-request.json#',
             'method': 'put',
             'name': 'createHook',
-            'output': 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json',
+            'output': 'v1/hook-definition.json#',
             'route': '/hooks/<hookGroupId>/<hookId>',
             'stability': 'stable',
-        },
-        "getHookSchedule": {
-            'args': ['hookGroupId', 'hookId'],
-            'method': 'get',
-            'name': 'getHookSchedule',
-            'output': 'http://schemas.taskcluster.net/hooks/v1/hook-schedule.json',
-            'route': '/hooks/<hookGroupId>/<hookId>/schedule',
-            'stability': 'deprecated',
         },
         "getHookStatus": {
             'args': ['hookGroupId', 'hookId'],
             'method': 'get',
             'name': 'getHookStatus',
-            'output': 'http://schemas.taskcluster.net/hooks/v1/hook-status.json',
+            'output': 'v1/hook-status.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/status',
             'stability': 'stable',
         },
@@ -262,7 +240,7 @@ class Hooks(AsyncBaseClient):
             'args': ['hookGroupId', 'hookId'],
             'method': 'get',
             'name': 'getTriggerToken',
-            'output': 'http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json',
+            'output': 'v1/trigger-token-response.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/token',
             'stability': 'stable',
         },
@@ -270,7 +248,7 @@ class Hooks(AsyncBaseClient):
             'args': ['hookGroupId', 'hookId'],
             'method': 'get',
             'name': 'hook',
-            'output': 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json',
+            'output': 'v1/hook-definition.json#',
             'route': '/hooks/<hookGroupId>/<hookId>',
             'stability': 'stable',
         },
@@ -278,7 +256,7 @@ class Hooks(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'listHookGroups',
-            'output': 'http://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json',
+            'output': 'v1/list-hook-groups-response.json#',
             'route': '/hooks',
             'stability': 'stable',
         },
@@ -286,7 +264,7 @@ class Hooks(AsyncBaseClient):
             'args': ['hookGroupId'],
             'method': 'get',
             'name': 'listHooks',
-            'output': 'http://schemas.taskcluster.net/hooks/v1/list-hooks-response.json',
+            'output': 'v1/list-hooks-response.json#',
             'route': '/hooks/<hookGroupId>',
             'stability': 'stable',
         },
@@ -308,34 +286,34 @@ class Hooks(AsyncBaseClient):
             'args': ['hookGroupId', 'hookId'],
             'method': 'post',
             'name': 'resetTriggerToken',
-            'output': 'http://schemas.taskcluster.net/hooks/v1/trigger-token-response.json',
+            'output': 'v1/trigger-token-response.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/token',
             'stability': 'stable',
         },
         "triggerHook": {
             'args': ['hookGroupId', 'hookId'],
-            'input': 'http://schemas.taskcluster.net/hooks/v1/trigger-hook.json',
+            'input': 'v1/trigger-hook.json#',
             'method': 'post',
             'name': 'triggerHook',
-            'output': 'http://schemas.taskcluster.net/hooks/v1/task-status.json',
+            'output': 'v1/task-status.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/trigger',
             'stability': 'stable',
         },
         "triggerHookWithToken": {
             'args': ['hookGroupId', 'hookId', 'token'],
-            'input': 'http://schemas.taskcluster.net/hooks/v1/trigger-hook.json',
+            'input': 'v1/trigger-hook.json#',
             'method': 'post',
             'name': 'triggerHookWithToken',
-            'output': 'http://schemas.taskcluster.net/hooks/v1/task-status.json',
+            'output': 'v1/task-status.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/trigger/<token>',
             'stability': 'stable',
         },
         "updateHook": {
             'args': ['hookGroupId', 'hookId'],
-            'input': 'http://schemas.taskcluster.net/hooks/v1/create-hook-request.json',
+            'input': 'v1/create-hook-request.json#',
             'method': 'post',
             'name': 'updateHook',
-            'output': 'http://schemas.taskcluster.net/hooks/v1/hook-definition.json',
+            'output': 'v1/hook-definition.json#',
             'route': '/hooks/<hookGroupId>/<hookId>',
             'stability': 'stable',
         },

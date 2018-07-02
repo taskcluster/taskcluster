@@ -25,8 +25,20 @@ class Github(BaseClient):
     """
 
     classOptions = {
-        "baseUrl": "https://github.taskcluster.net/v1"
+        "baseUrl": "https://github.taskcluster.net/v1/"
     }
+
+    def ping(self, *args, **kwargs):
+        """
+        Ping Server
+
+        Respond without doing anything.
+        This endpoint is used to check that the service is up.
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     def githubWebHookConsumer(self, *args, **kwargs):
         """
@@ -48,7 +60,7 @@ class Github(BaseClient):
         Taskcluster. Can be filtered on various git-specific
         fields.
 
-        This method gives output: ``http://schemas.taskcluster.net/github/v1/build-list.json#``
+        This method gives output: ``v1/build-list.json#``
 
         This method is ``experimental``
         """
@@ -74,7 +86,7 @@ class Github(BaseClient):
         Returns any repository metadata that is
         useful within Taskcluster related services.
 
-        This method gives output: ``http://schemas.taskcluster.net/github/v1/repository.json``
+        This method gives output: ``v1/repository.json#``
 
         This method is ``experimental``
         """
@@ -105,7 +117,7 @@ class Github(BaseClient):
         The status is either OK (green check) or FAILURE (red cross),
         made of a custom title and link.
 
-        This method takes input: ``http://schemas.taskcluster.net/github/v1/create-status.json``
+        This method takes input: ``v1/create-status.json#``
 
         This method is ``experimental``
         """
@@ -118,24 +130,12 @@ class Github(BaseClient):
 
         For a given Issue or Pull Request of a repository, this will write a new message.
 
-        This method takes input: ``http://schemas.taskcluster.net/github/v1/create-comment.json``
+        This method takes input: ``v1/create-comment.json#``
 
         This method is ``experimental``
         """
 
         return self._makeApiCall(self.funcinfo["createComment"], *args, **kwargs)
-
-    def ping(self, *args, **kwargs):
-        """
-        Ping Server
-
-        Respond without doing anything.
-        This endpoint is used to check that the service is up.
-
-        This method is ``stable``
-        """
-
-        return self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     funcinfo = {
         "badge": {
@@ -149,14 +149,14 @@ class Github(BaseClient):
             'args': [],
             'method': 'get',
             'name': 'builds',
-            'output': 'http://schemas.taskcluster.net/github/v1/build-list.json#',
+            'output': 'v1/build-list.json#',
             'query': ['continuationToken', 'limit', 'organization', 'repository', 'sha'],
             'route': '/builds',
             'stability': 'experimental',
         },
         "createComment": {
             'args': ['owner', 'repo', 'number'],
-            'input': 'http://schemas.taskcluster.net/github/v1/create-comment.json',
+            'input': 'v1/create-comment.json#',
             'method': 'post',
             'name': 'createComment',
             'route': '/repository/<owner>/<repo>/issues/<number>/comments',
@@ -164,7 +164,7 @@ class Github(BaseClient):
         },
         "createStatus": {
             'args': ['owner', 'repo', 'sha'],
-            'input': 'http://schemas.taskcluster.net/github/v1/create-status.json',
+            'input': 'v1/create-status.json#',
             'method': 'post',
             'name': 'createStatus',
             'route': '/repository/<owner>/<repo>/statuses/<sha>',
@@ -195,7 +195,7 @@ class Github(BaseClient):
             'args': ['owner', 'repo'],
             'method': 'get',
             'name': 'repository',
-            'output': 'http://schemas.taskcluster.net/github/v1/repository.json',
+            'output': 'v1/repository.json#',
             'route': '/repository/<owner>/<repo>',
             'stability': 'experimental',
         },
