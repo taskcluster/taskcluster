@@ -1232,7 +1232,9 @@ builder.declare({
   method:     'get',
   route:      '/poll-task-url/:provisionerId/:workerType',
   name:       'pollTaskUrls',
-  stability:  APIBuilder.stability.stable,
+  stability:  APIBuilder.stability.deprecated,
+  // this is so deprecated we do not even want to show its docs
+  noPublish:      true,
   scopes: {AnyOf: [
     'queue:poll-task-urls:<provisionerId>/<workerType>',
     {AllOf: [// Legacy scopes
@@ -1291,7 +1293,14 @@ builder.declare({
   output:     'claim-work-response.yml',
   title:      'Claim Work',
   description: [
-    'Claim any task, more to be added later... long polling up to 20s.',
+    'Claim pending task(s) for the given `provisionerId`/`workerType` queue.',
+    '',
+    'If any work is available (even if fewer than the requested number of',
+    'tasks, this will return immediately. Otherwise, it will block for tens of',
+    'seconds waiting for work.  If no work appears, it will return an emtpy',
+    'list of tasks.  Callers should sleep a short while (to avoid denial of',
+    'service in an error condition) and call the endpoint again.  This is a',
+    'simple implementation of "long polling".',
   ].join('\n'),
 }, async function(req, res) {
   let provisionerId = req.params.provisionerId;
@@ -1349,7 +1358,7 @@ builder.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/claim',
   name:       'claimTask',
-  stability:  APIBuilder.stability.stable,
+  stability:  APIBuilder.stability.deprecated,
   scopes: {AnyOf: [
     {AllOf: [
       'queue:claim-task:<provisionerId>/<workerType>',
@@ -1365,7 +1374,7 @@ builder.declare({
   output:     'task-claim-response.yml',
   title:      'Claim Task',
   description: [
-    'claim a task, more to be added later...',
+    'claim a task - never documented',
   ].join('\n'),
 }, async function(req, res) {
   var taskId      = req.params.taskId;
