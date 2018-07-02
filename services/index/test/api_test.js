@@ -110,8 +110,10 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     test('list top-level namespaces with continuation', async function() {
       const opts = {limit: 1};
       let results = [];
+      let iterations = 0;
       
       while (1) {
+        iterations++;
         const result = await helper.index.listNamespaces('', opts);
         results = results.concat(result.namespaces);
         if (!result.continuationToken) {
@@ -119,6 +121,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
         }
         opts.continuationToken = result.continuationToken;
       }
+      assert.equal(iterations, 4);
       assert.equal(results.length, 4);
       testValidNamespaces(results, ['abc', 'bbc', 'cbc', 'dbc']);
     });
