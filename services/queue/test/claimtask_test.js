@@ -1,15 +1,23 @@
-suite('Claim task', function() {
-  var debug       = require('debug')('test:claim');
-  var assert      = require('assert');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var taskcluster = require('taskcluster-client');
-  var assume      = require('assume');
-  var helper      = require('./helper');
-  var testing     = require('taskcluster-lib-testing');
+const debug       = require('debug')('test:claim');
+const assert      = require('assert');
+const slugid      = require('slugid');
+const _           = require('lodash');
+const taskcluster = require('taskcluster-client');
+const assume      = require('assume');
+const helper      = require('./helper');
+const testing     = require('taskcluster-lib-testing');
+
+helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+  helper.withAmazonIPRanges(mock, skipping);
+  helper.withPulse(mock, skipping);
+  helper.withS3(mock, skipping);
+  helper.withQueueService(mock, skipping);
+  helper.withBlobStore(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withServer(mock, skipping);
 
   // Use the same task definition for everything
-  var taskDef = {
+  const taskDef = () => ({
     provisionerId:    'no-provisioner',
     workerType:       'test-worker',
     schedulerId:      'my-scheduler',
@@ -29,18 +37,15 @@ suite('Claim task', function() {
     tags: {
       purpose:        'taskcluster-testing',
     },
-  };
+  });
 
-  test('can claimTask', async () => {
-    var taskId = slugid.v4();
-
-    debug('### Start listening for task running message');
-    await helper.events.listenFor('running', helper.queueEvents.taskRunning({
-      taskId,
-    }));
+  test('can claimTask', helper.runWithFakeTime(async function() {
+    const taskId = slugid.v4();
 
     debug('### Creating task');
-    await helper.queue.createTask(taskId, taskDef);
+    await helper.queue.createTask(taskId, taskDef());
+    helper.checkNextMessage('task-defined');
+    helper.checkNextMessage('task-pending');
 
     debug('### Claim task');
     // Reduce scopes available to test minimum set of scopes required
@@ -50,12 +55,14 @@ suite('Claim task', function() {
       'assume:worker-id:my-worker-group/my-worker',
     );
     // First runId is always 0, so we should be able to claim it here
-    var before = new Date();
-    var r1 = await helper.queue.claimTask(taskId, 0, {
+    const before = new Date();
+    const r1 = await helper.queue.claimTask(taskId, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
-    var takenUntil = new Date(r1.takenUntil);
+    helper.checkNextMessage('task-running');
+
+    const takenUntil = new Date(r1.takenUntil);
     // Compare to time before the request, because claimTimeout is very small
     // so we can only count on takenUntil being larger than or equal to the
     // time before the request was made
@@ -64,44 +71,40 @@ suite('Claim task', function() {
     // Check that task definition is included..
     assume(r1.task).deep.equals(await helper.queue.task(taskId));
 
-    debug('### Waiting for task running message');
-    var m1 = await helper.events.waitFor('running');
-    assume(m1.payload.status).deep.equals(r1.status);
-
     debug('### Fetch task status');
-    var r2 = await helper.queue.status(taskId);
+    const r2 = await helper.queue.status(taskId);
     assume(r2.status).deep.equals(r1.status);
 
     debug('### reclaimTask');
     await testing.sleep(100);
     // Again we talking about the first run, so runId must still be 0
-    var r3 = await helper.queue.reclaimTask(taskId, 0);
-    var takenUntil2 = new Date(r3.takenUntil);
+    const r3 = await helper.queue.reclaimTask(taskId, 0);
+    const takenUntil2 = new Date(r3.takenUntil);
     assume(takenUntil2.getTime()).is.greaterThan(takenUntil.getTime() - 1);
 
     debug('### reclaimTask using temp creds from claim');
     await testing.sleep(100);
     // Works because r1.credentials expires at takenUntil, and are not revoked
     // on reclaimTask
-    var queue = new helper.Queue({credentials: r1.credentials});
-    var r4 = await queue.reclaimTask(taskId, 0);
-    var takenUntil3 = new Date(r4.takenUntil);
+    const queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
+    const r4 = await queue.reclaimTask(taskId, 0);
+    const takenUntil3 = new Date(r4.takenUntil);
     assume(takenUntil3.getTime()).is.greaterThan(takenUntil.getTime() - 1);
     assume(takenUntil3.getTime()).is.greaterThan(takenUntil2.getTime() - 1);
 
     debug('### reclaimTask using temp creds from reclaim');
     await testing.sleep(100);
-    var queue2 = new helper.Queue({credentials: r4.credentials});
-    var r5 = await queue2.reclaimTask(taskId, 0);
-    var takenUntil4 = new Date(r5.takenUntil);
+    const queue2 = new helper.Queue({rootUrl: helper.rootUrl, credentials: r4.credentials});
+    const r5 = await queue2.reclaimTask(taskId, 0);
+    const takenUntil4 = new Date(r5.takenUntil);
     assume(takenUntil4.getTime()).is.greaterThan(takenUntil.getTime() - 1);
     assume(takenUntil4.getTime()).is.greaterThan(takenUntil2.getTime() - 1);
     assume(takenUntil4.getTime()).is.greaterThan(takenUntil3.getTime() - 1);
-  });
+  }, mock));
 
   test('claimTask is idempotent', async () => {
-    var taskId = slugid.v4();
-    await helper.queue.createTask(taskId, taskDef);
+    const taskId = slugid.v4();
+    await helper.queue.createTask(taskId, taskDef());
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
       workerGroup:    'my-worker-group',
@@ -119,14 +122,16 @@ suite('Claim task', function() {
     }).then(() => {
       throw new Error('This request should have failed');
     }, (err) => {
-      debug('Got error as expected: %j', err, err);
+      if (err.code != 'RequestConflict') {
+        throw err;
+      }
     });
   });
 
   test('claimTask requires scopes', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
 
-    await helper.queue.createTask(taskId, taskDef);
+    await helper.queue.createTask(taskId, taskDef());
 
     // leave out a required scope
     helper.scopes(
@@ -140,7 +145,9 @@ suite('Claim task', function() {
     }).then(() => {
       throw new Error('Expected an authentication error');
     }, (err) => {
-      debug('Got expected authentiation error: %s', err);
+      if (err.code != 'InsufficientScopes') {
+        throw err;
+      }
     });
 
     // leave out a required scope
@@ -155,7 +162,9 @@ suite('Claim task', function() {
     }).then(() => {
       throw new Error('Expected an authentication error');
     }, (err)  => {
-      debug('Got expected authentiation error: %s', err);
+      if (err.code != 'InsufficientScopes') {
+        throw err;
+      }
     });
 
     // leave out a required scope
@@ -170,7 +179,9 @@ suite('Claim task', function() {
     }).then(() => {
       throw new Error('Expected an authentication error');
     }, (err) => {
-      debug('Got expected authentiation error: %s', err);
+      if (err.code != 'InsufficientScopes') {
+        throw err;
+      }
     });
   });
 });

@@ -13,7 +13,7 @@ properties:
       title:      "Task Claim"
       type:       object
       properties:
-        status: {$ref: "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
+        status: {$ref: "task-status.json#"}
         runId:
           description: |
             `run-id` assigned to this run of the task
@@ -40,8 +40,8 @@ properties:
             with reason `claim-expired` if the run haven't been reclaimed.
           type:         string
           format:       date-time
-        task:           {$ref: "http://schemas.taskcluster.net/queue/v1/task.json#"}
-        credentials:    {$ref: "http://schemas.taskcluster.net/queue/v1/task-credentials.json#"}
+        task:           {$ref: "task.json#"}
+        credentials:    {$ref: "task-credentials.json#"}
       additionalProperties: false
       required:
         - status

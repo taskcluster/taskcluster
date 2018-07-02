@@ -1,18 +1,18 @@
-let debug   = require('debug')('app:artifacts');
-let _       = require('lodash');
-let assert  = require('assert');
-let API     = require('taskcluster-lib-api');
-let urllib  = require('url');
-let crypto  = require('crypto');
-let api     = require('./api');
-let Entity  = require('azure-entities');
+const debug = require('debug')('app:artifacts');
+const _ = require('lodash');
+const assert = require('assert');
+const APIBuilder = require('taskcluster-lib-api');
+const urllib = require('url');
+const crypto = require('crypto');
+const builder = require('./api');
+const Entity = require('azure-entities');
 
 /** Post artifact */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name:       'createArtifact',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   scopes: {AnyOf: [
     'queue:create-artifact:<taskId>/<runId>',
     {AllOf: [
@@ -637,11 +637,11 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
 };
 
 /** Complete artifact */
-api.declare({
+builder.declare({
   method:     'put',
   route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name:       'completeArtifact',
-  stability:  API.stability.experimental,
+  stability:  APIBuilder.stability.experimental,
   scopes: {AnyOf: [
     'queue:create-artifact:<taskId>/<runId>',
     {AllOf: [
@@ -791,11 +791,11 @@ api.declare({
 });
 
 /** Get artifact from run */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
   name:       'getArtifact',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   scopes: {
     if: 'private',
     then: {
@@ -897,11 +897,11 @@ api.declare({
 });
 
 /** Get latest artifact from task */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/task/:taskId/artifacts/:name(*)',
   name:       'getLatestArtifact',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   scopes: {
     if: 'private',
     then: {
@@ -956,7 +956,7 @@ api.declare({
 });
 
 /** Get artifacts from run */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/task/:taskId/runs/:runId/artifacts',
   query: {
@@ -964,7 +964,7 @@ api.declare({
     limit: /^[0-9]+$/,
   },
   name:       'listArtifacts',
-  stability:  API.stability.experimental,
+  stability:  APIBuilder.stability.experimental,
   output:     'list-artifacts-response.json#',
   title:      'Get Artifacts from Run',
   description: [
@@ -1023,7 +1023,7 @@ api.declare({
 });
 
 /** Get latest artifacts from task */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/task/:taskId/artifacts',
   name:       'listLatestArtifacts',
@@ -1031,7 +1031,7 @@ api.declare({
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
-  stability:  API.stability.experimental,
+  stability:  APIBuilder.stability.experimental,
   output:     'list-artifacts-response.json#',
   title:      'Get Artifacts from Latest Run',
   description: [

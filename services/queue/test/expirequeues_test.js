@@ -1,18 +1,19 @@
-suite('Task Expiration (expire-tasks)', () => {
-  var debug       = require('debug')('test:expireTasks');
-  var assert      = require('assert');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var taskcluster = require('taskcluster-client');
-  var assume      = require('assume');
-  var helper      = require('./helper');
+const debug = require('debug')('test:expireTasks');
+const assert = require('assert');
+const slugid = require('slugid');
+const _ = require('lodash');
+const taskcluster = require('taskcluster-client');
+const assume = require('assume');
+const helper = require('./helper');
+
+helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
+  helper.withQueueService(mock, skipping);
 
   // test functionality elsewhere, here we just test that it can actually run
   test('expire-queues runs without bugs', async () => {
     // We don't care if we delete any queues. In fact we won't delete queues
     // used in testing because they have up-to-date meta-data. Also if we did
     // they would be in state queue-being-deleted (so tests would fail)
-    debug('### Expire queues (don\'t care if delete any)');
-    await helper.expireQueues();
+    await helper.runExpiration('expire-queues');
   });
 });

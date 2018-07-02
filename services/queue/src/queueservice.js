@@ -79,8 +79,9 @@ class QueueService {
    *   prefix:               // Prefix for all pending-task queues, max 6 chars
    *   pendingPollTimeout:   // Timeout embedded in signed poll URL (ms)
    *   credentials: {
-   *     accountName:        // Azure storage account name
+   *     accountId:          // Azure storage account name
    *     accountKey:         // Azure storage account key
+   *     fake:               // if true, use in-memory version
    *   },
    *   claimQueue:           // Queue name for the claim expiration queue
    *   resolvedQueue:        // Queue name for the resolved task queue
@@ -106,14 +107,18 @@ class QueueService {
     this.pendingPollTimeout = options.pendingPollTimeout;
     this.monitor            = options.monitor;
 
-    this.client = new azure.Queue({
-      accountId:    options.credentials.accountName,
-      accessKey:    options.credentials.accountKey,
-      timeout:      AZURE_QUEUE_TIMEOUT,
-    });
+    if (options.credentials.fake) {
+      this.client = new FakeQueueClient();
+    } else {
+      this.client = new azure.Queue({
+        accountId:    options.credentials.accountId,
+        accessKey:    options.credentials.accountKey,
+        timeout:      AZURE_QUEUE_TIMEOUT,
+      });
+    }
 
     // Store account name of use in SAS signed Urls
-    this.accountName = options.credentials.accountName;
+    this.accountId = options.credentials.accountId;
 
     // Promises that queues are created, return mapping from priority to
     // azure queue names.
@@ -121,7 +126,7 @@ class QueueService {
 
     // Resets queues cache every 25 hours, this ensures that meta-data is kept
     // up-to-date with a last_used field no more than 48 hours behind
-    setInterval(() => {this.queues = {};}, 25 * 60 * 60 * 1000);
+    this.queueResetInterval = setInterval(() => {this.queues = {};}, 25 * 60 * 60 * 1000);
 
     // Store claimQueue name, and remember if we've created it
     this.claimQueue         = options.claimQueue;
@@ -139,6 +144,10 @@ class QueueService {
     // Keep a cache of pending counts as mapping:
     //    <provisionerId>/<workerType> -> {lastUpdated, count: promise}
     this.countPendingCache  = {};
+  }
+
+  terminate() {
+    clearInterval(this.queueResetInterval);
   }
 
   _putMessage(queue, message, {visibility, ttl}) {
@@ -636,13 +645,13 @@ class QueueService {
       return {
         signedPollUrl: url.format({
           protocol:       'https',
-          host:           `${this.accountName}.queue.core.windows.net`,
+          host:           `${this.accountId}.queue.core.windows.net`,
           pathname:       `/${queueName}/messages`,
           search:         `?visibilitytimeout=${pendingPollTimeout}&${sas}`,
         }),
         signedDeleteUrl: url.format({
           protocol:       'https',
-          host:           `${this.accountName}.queue.core.windows.net`,
+          host:           `${this.accountId}.queue.core.windows.net`,
           pathname:       `/${queueName}/messages/{{messageId}}`,
           search:         `?popreceipt={{popReceipt}}&${sas}`,
         }),
@@ -726,6 +735,124 @@ class QueueService {
     return await entry.count;
   }
 };
+
+/**
+ * Fake, in-memory version of azure.Queue, but without support for signed URLs
+ * (which are only used for deprecated polling mechanisms for which we don't
+ * need extensive testing).
+ */
+class FakeQueueClient {
+  constructor() {
+    this._reset();
+  }
+
+  // used by tests
+  _reset() {
+    this.queues = {};
+    this.metadata = {};
+  }
+
+  _queue(name) {
+    if (!this.queues[name]) {
+      const err = new Error('Queue not found');
+      err.code = 'QueueNotFound';
+      err.statusCode = 404;
+      throw err;
+    }
+    return {queue: this.queues[name], metadata: this.metadata[name]};
+  }
+
+  async createQueue(name, metadata) {
+    this.queues[name] = [];
+    this.metadata[name] = metadata || {};
+  }
+
+  async getMetadata(name) {
+    const {queue, metadata} = this._queue(name);
+    return {
+      metadata,
+      messageCount: queue.length,
+    };
+  }
+
+  async setMetadata(name, update) {
+    const {metadata} = this._queue(name);
+    Object.assign(metadata, update);
+  }
+
+  async putMessage(name, text, {visibilityTimeout, messageTTL}) {
+    const {queue} = this._queue(name);
+    queue.push({
+      messageText: text,
+      messageId: slugid.v4(),
+      _visibleAfter: taskcluster.fromNow(`${visibilityTimeout} seconds`),
+      _expiresAfter: taskcluster.fromNow(`${messageTTL} seconds`),
+    });
+  }
+
+  async getMessages(name, {visibilityTimeout, numberOfMessages}) {
+    const {queue} = this._queue(name);
+    const rv = [];
+    const now = new Date();
+    const visibilityTime = taskcluster.fromNow(`${visibilityTimeout} seconds`);
+
+    for (let msg of queue) {
+      if (now > msg._visibleAfter && now <= msg._expiresAfter) {
+        msg._visibleAfter = visibilityTime;
+        msg._popReceipt = slugid.v4();
+        rv.push({
+          messageText: msg.messageText,
+          messageId: msg.messageId,
+          popReceipt: msg._popReceipt,
+        });
+        if (rv.length === numberOfMessages) {
+          break;
+        }
+      }
+    }
+
+    return rv;
+  }
+
+  async deleteMessage(name, messageId, popReceipt) {
+    const {queue} = this._queue(name);
+    this.queues[name] = queue.filter(m => {
+      if (m.messageId === messageId) {
+        assert.equal(m._popReceipt, popReceipt);
+        return false;
+      }
+      return true;
+    });
+  }
+
+  async updateMessage(name, messageText, messageId, popReceipt, {visibilityTimeout}) {
+    const {queue} = this._queue(name);
+    queue.forEach(msg => {
+      if (msg.messageId !== messageId) {
+        return;
+      }
+
+      assert.equal(msg._popReceipt, popReceipt);
+      msg.messageText = messageText;
+      msg._visibleAfter = taskcluster.fromNow(`${visibilityTimeout} seconds`);
+    });
+  }
+
+  async listQueues({marker, prefix, metadata}) {
+    return {
+      queues: _.map(this.queues, (queue, name) => ({
+        name,
+        metadata: this.metadata[name],
+      })),
+      nextMarker: undefined,
+    };
+  }
+
+  async deleteQueue(name) {
+    delete this.queues[name];
+    delete this.metadata[name];
+  }
+}
 
 // Export QueueService
 module.exports = QueueService;

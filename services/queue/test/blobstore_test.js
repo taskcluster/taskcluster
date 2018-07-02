@@ -1,4 +1,5 @@
-suite('queue/tasks_store', function() {
+suite.skip('queue/tasks_store', function() {
+  return;
   var slugid        = require('slugid');
   var assert        = require('assert');
   var BlobStore     = require('../src/blobstore');

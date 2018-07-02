@@ -4,7 +4,7 @@ description: |
   Response to a task status request
 type:         object
 properties:
-  status:     {$ref: "http://schemas.taskcluster.net/queue/v1/task-status.json#"}
+  status:     {$ref: "task-status.json#"}
 additionalProperties: false
 required:
   - status

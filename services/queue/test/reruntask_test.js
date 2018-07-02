@@ -1,13 +1,21 @@
-suite('Rerun task', function() {
-  var debug       = require('debug')('test:rerun');
-  var assert      = require('assert');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var taskcluster = require('taskcluster-client');
-  var helper      = require('./helper');
+const debug = require('debug')('test:rerun');
+const assert = require('assert');
+const slugid = require('slugid');
+const _ = require('lodash');
+const taskcluster = require('taskcluster-client');
+const helper = require('./helper');
+
+helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+  helper.withAmazonIPRanges(mock, skipping);
+  helper.withPulse(mock, skipping);
+  helper.withS3(mock, skipping);
+  helper.withQueueService(mock, skipping);
+  helper.withBlobStore(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withServer(mock, skipping);
 
   // Use the same task definition for everything
-  var taskDef = {
+  const taskDef = {
     provisionerId:    'no-provisioner',
     workerType:       'test-worker',
     schedulerId:      'my-scheduler',
@@ -30,30 +38,13 @@ suite('Rerun task', function() {
   };
 
   test('create, claim, complete and rerun (is idempotent)', async () => {
-    let taskId = slugid.v4();
-
-    await Promise.all([
-      helper.events.listenFor('pending', helper.queueEvents.taskPending({
-        taskId,
-        runId:    0,
-      })),
-      helper.events.listenFor('running', helper.queueEvents.taskRunning({
-        taskId,
-      })),
-      helper.events.listenFor('completed', helper.queueEvents.taskCompleted({
-        taskId,
-      })),
-      helper.events.listenFor('pending-again', helper.queueEvents.taskPending({
-        taskId:   taskId,
-        runId:    1,
-      })),
-    ]);
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
-
-    debug('### Waiting for pending message');
-    await helper.events.waitFor('pending');
+    helper.checkNextMessage('task-defined');
+    helper.checkNextMessage('task-pending', m =>
+      assert.equal(m.payload.runId, 0));
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
@@ -61,15 +52,11 @@ suite('Rerun task', function() {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
-
-    debug('### Waiting for running message');
-    await helper.events.waitFor('running');
+    helper.checkNextMessage('task-running');
 
     debug('### Reporting task completed');
     await helper.queue.reportCompleted(taskId, 0);
-
-    debug('### Waiting for completed message');
-    await helper.events.waitFor('completed');
+    helper.checkNextMessage('task-completed');
 
     debug('### Requesting task rerun');
     helper.scopes(
@@ -79,17 +66,24 @@ suite('Rerun task', function() {
     await helper.queue.rerunTask(taskId);
 
     debug('### Waiting for pending message again');
-    await helper.events.waitFor('pending-again');
+    helper.checkNextMessage('task-pending', m => {
+      assert.equal(m.payload.runId, 1);
+    });
 
-    debug('### Requesting task rerun (again)');
+    debug('### Requesting task rerun (again - idempotent)');
     await helper.queue.rerunTask(taskId);
+    helper.checkNextMessage('task-pending', m =>
+      assert.equal(m.payload.runId, 1));
   });
 
   test('throw error on missing task', async () => {
-    let taskId = slugid.v4();
-    await helper.queue.rerunTask(taskId).catch(err => {
-      assert.equal(err.statusCode, 404);
-      assert.equal(err.code, 'ResourceNotFound');
-    });
+    const taskId = slugid.v4();
+    await helper.queue.rerunTask(taskId).then(
+      () => assert(0, 'expected an error'),
+      err => {
+        if (err.code != 'ResourceNotFound') {
+          throw err;
+        }
+      });
   });
 });

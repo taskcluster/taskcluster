@@ -2,7 +2,7 @@ let debug       = require('debug')('app:api');
 let slugid      = require('slugid');
 let assert      = require('assert');
 let _           = require('lodash');
-let API         = require('taskcluster-lib-api');
+let APIBuilder  = require('taskcluster-lib-api');
 let Entity      = require('azure-entities');
 let taskcluster = require('taskcluster-client');
 let taskCreds   = require('./task-creds');
@@ -66,26 +66,8 @@ var SLUGID_PATTERN      = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-]
 var GENERIC_ID_PATTERN  = /^[a-zA-Z0-9-_]{1,22}$/;
 var RUN_ID_PATTERN      = /^[1-9]*[0-9]+$/;
 
-/** API end-point for version v1/
- *
- * In this API implementation we shall assume the following context:
- * {
- *   Task:           // data.Task instance
- *   Artifact:       // data.Artifact instance
- *   publicBucket:   // bucket instance for public artifacts
- *   privateBucket:  // bucket instance for private artifacts
- *   blobStore:      // BlobStore for azure artifacts
- *   publisher:      // publisher from base.Exchanges
- *   validator:      // base.validator
- *   claimTimeout:   // Number of seconds before a claim expires
- *   queueService:   // Azure QueueService object from queueservice.js
- *   regionResolver: // Instance of EC2RegionResolver,
- *   credentials:    // Taskcluster credentials for issuing temp creds on claim
- *   dependencyTracker: // Instance of DependencyTracker
- *   workClaimer:    // WorkClaimer instance from workclaimer.js
- * }
- */
-var api = new API({
+/** API end-point for version v1/ */
+var builder = new APIBuilder({
   title:        'Queue API Documentation',
   description: [
     'The queue, typically available at `queue.taskcluster.net`, is responsible',
@@ -98,8 +80,8 @@ var api = new API({
     ' * Workers, who execute tasks, and',
     ' * Tools, that wants to inspect the state of a task.',
   ].join('\n'),
-  name:               'queue',
-  schemaPrefix:       'http://schemas.taskcluster.net/queue/v1/',
+  serviceName:        'queue',
+  version:            'v1',
   params: {
     taskId:           SLUGID_PATTERN,
     taskGroupId:      SLUGID_PATTERN,
@@ -125,7 +107,6 @@ var api = new API({
     'privateBucket',      // bucket instance for private artifacts
     'blobStore',          // BlobStore for azure artifacts
     'publisher',          // publisher from base.Exchanges
-    'validator',          // base.validator
     'claimTimeout',       // Number of seconds before a claim expires
     'queueService',       // Azure QueueService object from queueservice.js
     'regionResolver',     // Instance of EC2RegionResolver,
@@ -144,17 +125,17 @@ var api = new API({
   ],
 });
 
-// Export api
-module.exports = api;
+// Export builder
+module.exports = builder;
 
 /** Get task */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/task/:taskId',
   name:       'task',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   idempotent: true,
-  output:     'task.json#',
+  output:     'task.yml',
   title:      'Get Task Definition',
   description: [
     'This end-point will return the task-definition. Notice that the task',
@@ -184,13 +165,13 @@ api.declare({
 });
 
 /** Get task status */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/task/:taskId/status',
   name:       'status',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   input:      undefined,  // No input is accepted
-  output:     'task-status-response.json#',
+  output:     'task-status-response.yml',
   title:      'Get task status',
   description: [
     'Get task status structure from `taskId`',
@@ -218,7 +199,7 @@ api.declare({
 });
 
 /** List taskIds by taskGroupId */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/task-group/:taskGroupId/list',
   query: {
@@ -226,8 +207,8 @@ api.declare({
     limit: /^[0-9]+$/,
   },
   name:       'listTaskGroup',
-  stability:  API.stability.stable,
-  output:     'list-task-group-response.json#',
+  stability:  APIBuilder.stability.stable,
+  output:     'list-task-group-response.yml',
   title:      'List Task Group',
   description: [
     'List tasks sharing the same `taskGroupId`.',
@@ -303,7 +284,7 @@ api.declare({
 });
 
 /** List tasks dependents */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/task/:taskId/dependents',
   query: {
@@ -311,8 +292,8 @@ api.declare({
     limit: /^[0-9]+$/,
   },
   name:       'listDependentTasks',
-  stability:  API.stability.stable,
-  output:     'list-dependent-tasks-response.json#',
+  stability:  APIBuilder.stability.stable,
+  output:     'list-dependent-tasks-response.yml',
   title:      'List Dependent Tasks',
   description: [
     'List tasks that depend on the given `taskId`.',
@@ -543,11 +524,11 @@ let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
 };
 
 /** Create tasks */
-api.declare({
+builder.declare({
   method:     'put',
   route:      '/task/:taskId',
   name:       'createTask',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   idempotent: true,
   scopes: {AllOf: [
     {for: 'scope', in: 'scopes', each: '<scope>'},
@@ -578,8 +559,8 @@ api.declare({
       },
     ]},
   ]},
-  input:      'create-task-request.json#',
-  output:     'task-status-response.json#',
+  input:      'create-task-request.yml',
+  output:     'task-status-response.yml',
   title:      'Create New Task',
   description: [
     'Create a new task, this is an **idempotent** operation, so repeat it if',
@@ -753,11 +734,11 @@ api.declare({
 });
 
 /** Define tasks */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/task/:taskId/define',
   name:       'defineTask',
-  stability:  API.stability.deprecated,
+  stability:  APIBuilder.stability.deprecated,
   scopes:     {AllOf: [
     {for: 'scope', in: 'scopes', each: '<scope>'},
     {for: 'route', in: 'routes', each: 'queue:route:<route>'},
@@ -787,8 +768,8 @@ api.declare({
       },
     ]},
   ]},
-  input:      'create-task-request.json#',
-  output:     'task-status-response.json#',
+  input:      'create-task-request.yml',
+  output:     'task-status-response.yml',
   title:      'Define Task',
   description: [
     '**Deprecated**, this is the same as `createTask` with a **self-dependency**.',
@@ -929,11 +910,11 @@ api.declare({
 });
 
 /** Schedule previously defined tasks */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/task/:taskId/schedule',
   name:       'scheduleTask',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   scopes:     {AnyOf: [
     'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
     {AllOf: [ // Legacy scopes
@@ -942,7 +923,7 @@ api.declare({
     ]},
   ]},
   input:      undefined, // No input accepted
-  output:     'task-status-response.json#',
+  output:     'task-status-response.yml',
   title:      'Schedule Defined Task',
   description: [
     'scheduleTask will schedule a task to be executed, even if it has',
@@ -999,11 +980,11 @@ api.declare({
 });
 
 /** Rerun a previously resolved task */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/task/:taskId/rerun',
   name:       'rerunTask',
-  stability:  API.stability.deprecated,
+  stability:  APIBuilder.stability.deprecated,
   scopes:     {AnyOf: [
     'queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',
     {AllOf: [ // Legacy scopes
@@ -1012,7 +993,7 @@ api.declare({
     ]},
   ]},
   input:      undefined, // No input accepted
-  output:     'task-status-response.json#',
+  output:     'task-status-response.yml',
   title:      'Rerun a Resolved Task',
   description: [
     'This method _reruns_ a previously resolved task, even if it was',
@@ -1122,11 +1103,11 @@ api.declare({
 });
 
 /** Cancel a task */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/task/:taskId/cancel',
   name:       'cancelTask',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   scopes:     {AnyOf: [
     'queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>',
     {AllOf: [ // Legacy scopes
@@ -1135,7 +1116,7 @@ api.declare({
     ]},
   ]},
   input:      undefined, // No input accepted
-  output:     'task-status-response.json#',
+  output:     'task-status-response.yml',
   title:      'Cancel Task',
   description: [
     'This method will cancel a task that is either `unscheduled`, `pending` or',
@@ -1247,11 +1228,11 @@ api.declare({
 });
 
 /** Poll for a task */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/poll-task-url/:provisionerId/:workerType',
   name:       'pollTaskUrls',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   scopes: {AnyOf: [
     'queue:poll-task-urls:<provisionerId>/<workerType>',
     {AllOf: [// Legacy scopes
@@ -1259,7 +1240,7 @@ api.declare({
       'assume:worker-type:<provisionerId>/<workerType>',
     ]},
   ]},
-  output:     'poll-task-urls-response.json#',
+  output:     'poll-task-urls-response.yml',
   title:      'Get Urls to Poll Pending Tasks',
   description: [
     'Get a signed URLs to get and delete messages from azure queue.',
@@ -1290,24 +1271,24 @@ let _lastTime = 0;
 let _sleeping = null;
 let sleep20Seconds = () => {
   let time = Date.now();
-  if (time - _lastTime > 2000) {
+  if (!_sleeping || time - _lastTime > 2000) {
     _sleeping = new Promise(accept => setTimeout(accept, 20 * 1000));
   }
   return _sleeping;
 };
 
 /** Claim any task */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/claim-work/:provisionerId/:workerType',
   name:       'claimWork',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   scopes: {AllOf: [
     'queue:claim-work:<provisionerId>/<workerType>',
     'queue:worker-id:<workerGroup>/<workerId>',
   ]},
-  input:      'claim-work-request.json#',
-  output:     'claim-work-response.json#',
+  input:      'claim-work-request.yml',
+  output:     'claim-work-response.yml',
   title:      'Claim Work',
   description: [
     'Claim any task, more to be added later... long polling up to 20s.',
@@ -1364,11 +1345,11 @@ api.declare({
 });
 
 /** Claim a task */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/claim',
   name:       'claimTask',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   scopes: {AnyOf: [
     {AllOf: [
       'queue:claim-task:<provisionerId>/<workerType>',
@@ -1380,8 +1361,8 @@ api.declare({
       'assume:worker-id:<workerGroup>/<workerId>',
     ]},
   ]},
-  input:      'task-claim-request.json#',
-  output:     'task-claim-response.json#',
+  input:      'task-claim-request.yml',
+  output:     'task-claim-response.yml',
   title:      'Claim Task',
   description: [
     'claim a task, more to be added later...',
@@ -1473,11 +1454,11 @@ api.declare({
 });
 
 /** Reclaim a task */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/reclaim',
   name:       'reclaimTask',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   scopes: {AnyOf: [
     'queue:reclaim-task:<taskId>/<runId>',
     {AllOf: [ // Legacy
@@ -1485,7 +1466,7 @@ api.declare({
       'assume:worker-id:<workerGroup>/<workerId>',
     ]},
   ]},
-  output:     'task-reclaim-response.json#',
+  output:     'task-reclaim-response.yml',
   title:      'Reclaim task',
   description: [
     'Refresh the claim for a specific `runId` for given `taskId`. This updates',
@@ -1745,11 +1726,11 @@ var resolveTask = async function(req, res, taskId, runId, target) {
 };
 
 /** Report task completed */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/completed',
   name:       'reportCompleted',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   scopes: {AnyOf: [
     'queue:resolve-task:<taskId>/<runId>',
     {AllOf: [ // Legacy
@@ -1758,7 +1739,7 @@ api.declare({
     ]},
   ]},
   input:      undefined,  // No input at this point
-  output:     'task-status-response.json#',
+  output:     'task-status-response.yml',
   title:      'Report Run Completed',
   description: [
     'Report a task completed, resolving the run as `completed`.',
@@ -1774,11 +1755,11 @@ api.declare({
 });
 
 /** Report task failed */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/failed',
   name:       'reportFailed',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   scopes: {AnyOf: [
     'queue:resolve-task:<taskId>/<runId>',
     {AllOf: [ // Legacy
@@ -1787,7 +1768,7 @@ api.declare({
     ]},
   ]},
   input:      undefined,  // No input at this point
-  output:     'task-status-response.json#',
+  output:     'task-status-response.yml',
   title:      'Report Run Failed',
   description: [
     'Report a run failed, resolving the run as `failed`. Use this to resolve',
@@ -1806,11 +1787,11 @@ api.declare({
 });
 
 /** Report task exception */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/task/:taskId/runs/:runId/exception',
   name:       'reportException',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   scopes: {AnyOf: [
     'queue:resolve-task:<taskId>/<runId>',
     {AllOf: [ // Legacy
@@ -1818,8 +1799,8 @@ api.declare({
       'assume:worker-id:<workerGroup>/<workerId>',
     ]},
   ]},
-  input:      'task-exception-request.json#',
-  output:     'task-status-response.json#',
+  input:      'task-exception-request.yml',
+  output:     'task-status-response.yml',
   title:      'Report Task Exception',
   description: [
     'Resolve a run as _exception_. Generally, you will want to report tasks as',
@@ -1969,7 +1950,7 @@ api.declare({
 require('./artifacts');
 
 /** Count pending tasks for workerType */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/provisioners',
   query: {
@@ -1977,8 +1958,8 @@ api.declare({
     limit: /^[0-9]+$/,
   },
   name:       'listProvisioners',
-  stability:  API.stability.experimental,
-  output:     'list-provisioners-response.json#',
+  stability:  APIBuilder.stability.experimental,
+  output:     'list-provisioners-response.yml',
   title:      'Get a list of all active provisioners',
   description: [
     'Get all active provisioners.',
@@ -2009,12 +1990,12 @@ api.declare({
 });
 
 /** Get a provisioner */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/provisioners/:provisionerId',
   name:       'getProvisioner',
-  stability:  API.stability.experimental,
-  output:     'provisioner-response.json#',
+  stability:  APIBuilder.stability.experimental,
+  output:     'provisioner-response.yml',
   title:      'Get an active provisioner',
   description: [
     'Get an active provisioner.',
@@ -2043,18 +2024,18 @@ api.declare({
 });
 
 /** Update a provisioner */
-api.declare({
+builder.declare({
   method:     'put',
   route:      '/provisioners/:provisionerId',
   name:       'declareProvisioner',
-  stability:  API.stability.experimental,
+  stability:  APIBuilder.stability.experimental,
   scopes:     {AllOf: [{
     for: 'property',
     in: 'properties',
     each: 'queue:declare-provisioner:<provisionerId>#<property>',
   }]},
-  output:     'provisioner-response.json#',
-  input:      'update-provisioner-request.json#',
+  output:     'provisioner-response.yml',
+  input:      'update-provisioner-request.yml',
   title:      'Update a provisioner',
   description: [
     'Declare a provisioner, supplying some details about it.',
@@ -2089,12 +2070,12 @@ api.declare({
 });
 
 /** Count pending tasks for workerType */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/pending/:provisionerId/:workerType',
   name:       'pendingTasks',
-  stability:  API.stability.stable,
-  output:     'pending-tasks-response.json#',
+  stability:  APIBuilder.stability.stable,
+  output:     'pending-tasks-response.yml',
   title:      'Get Number of Pending Tasks',
   description: [
     'Get an approximate number of pending tasks for the given `provisionerId`',
@@ -2123,7 +2104,7 @@ api.declare({
 });
 
 /** List worker-types for a given provisioner */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/provisioners/:provisionerId/worker-types',
   query: {
@@ -2131,8 +2112,8 @@ api.declare({
     limit: /^[0-9]+$/,
   },
   name:       'listWorkerTypes',
-  stability:  API.stability.experimental,
-  output:     'list-workertypes-response.json#',
+  stability:  APIBuilder.stability.experimental,
+  output:     'list-workertypes-response.yml',
   title:      'Get a list of all active worker-types',
   description: [
     'Get all active worker-types for the given provisioner.',
@@ -2161,12 +2142,12 @@ api.declare({
 });
 
 /** Get a worker-type from a provisioner */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/provisioners/:provisionerId/worker-types/:workerType',
   name:       'getWorkerType',
-  stability:  API.stability.experimental,
-  output:     'workertype-response.json#',
+  stability:  APIBuilder.stability.experimental,
+  output:     'workertype-response.yml',
   title:      'Get a worker-type',
   description: [
     'Get a worker-type from a provisioner.',
@@ -2197,11 +2178,11 @@ api.declare({
 });
 
 /** Update a worker-type */
-api.declare({
+builder.declare({
   method:     'put',
   route:      '/provisioners/:provisionerId/worker-types/:workerType',
   name:       'declareWorkerType',
-  stability:  API.stability.experimental,
+  stability:  APIBuilder.stability.experimental,
   scopes:     {AllOf: [
     {
       for: 'property',
@@ -2209,8 +2190,8 @@ api.declare({
       each: 'queue:declare-worker-type:<provisionerId>/<workerType>#<property>',
     },
   ]},
-  output:     'workertype-response.json#',
-  input:      'update-workertype-request.json#',
+  output:     'workertype-response.yml',
+  input:      'update-workertype-request.yml',
   title:      'Update a worker-type',
   description: [
     'Declare a workerType, supplying some details about it.',
@@ -2246,7 +2227,7 @@ api.declare({
 });
 
 /** List all active workerGroup/workerId of a workerType */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/provisioners/:provisionerId/worker-types/:workerType/workers',
   query: {
@@ -2255,8 +2236,8 @@ api.declare({
     quarantined: /^(true|false)$/,
   },
   name:       'listWorkers',
-  stability:  API.stability.experimental,
-  output:     'list-workers-response.json#',
+  stability:  APIBuilder.stability.experimental,
+  output:     'list-workers-response.yml',
   title:      'Get a list of all active workers of a workerType',
   description: [
     'Get a list of all active workers of a workerType.',
@@ -2317,12 +2298,12 @@ api.declare({
 });
 
 /** Get a worker from a worker-type */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/provisioners/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId',
   name:       'getWorker',
-  stability:  API.stability.experimental,
-  output:     'worker-response.json#',
+  stability:  APIBuilder.stability.experimental,
+  output:     'worker-response.yml',
   title:      'Get a worker-type',
   description: [
     'Get a worker from a worker-type.',
@@ -2360,16 +2341,16 @@ api.declare({
 });
 
 /** Quarantine a Worker */
-api.declare({
+builder.declare({
   method: 'put',
   route:  '/provisioners/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId',
   name:   'quarantineWorker',
-  stability: API.stability.experimental,
+  stability: APIBuilder.stability.experimental,
   scopes: {AllOf: [
     'queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>',
   ]},
-  input: 'quarantine-worker-request.json#',
-  output: 'worker-response.json#',
+  input: 'quarantine-worker-request.yml',
+  output: 'worker-response.yml',
   title: 'Quarantine a worker',
   description: [
     'Quarantine a worker',
@@ -2405,11 +2386,11 @@ api.declare({
 });
 
 /** Update a worker */
-api.declare({
+builder.declare({
   method:     'put',
   route:      '/provisioners/:provisionerId/worker-types/:workerType/:workerGroup/:workerId',
   name:       'declareWorker',
-  stability:  API.stability.experimental,
+  stability:  APIBuilder.stability.experimental,
   scopes:     {AllOf: [
     {
       for: 'property',
@@ -2417,8 +2398,8 @@ api.declare({
       each: 'queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>',
     },
   ]},
-  output:     'worker-response.json#',
-  input:      'update-worker-request.json#',
+  output:     'worker-response.yml',
+  input:      'update-worker-request.yml',
   title:      'Declare a worker',
   description: [
     'Declare a worker, supplying some details about it.',

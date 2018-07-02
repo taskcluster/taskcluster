@@ -39,7 +39,7 @@ properties:
       of when the provisioner was last seen active.
     type:         string
     format:       date-time
-  actions:        {$ref: "http://schemas.taskcluster.net/queue/v1/actions.json#"}
+  actions:        {$ref: "actions.json#"}
 additionalProperties: false
 required:
   - provisionerId

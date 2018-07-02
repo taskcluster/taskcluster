@@ -1,17 +1,17 @@
-var testing     = require('taskcluster-lib-testing');
-var path        = require('path');
+const testing = require('taskcluster-lib-testing');
+const path = require('path');
 
-suite('validate', () => {
+suite('validate_test.js', () => {
   // Run test cases using schemas testing utility from taskcluster-base
   testing.schemas({
-    validator: {
-      prefix:   'queue/v1/',
+    schemasetOptions: {
+      folder: path.join(__dirname, '..', 'schemas'),
+      serviceName: 'queue',
     },
     basePath:       path.join(__dirname, 'validate_test'),
-    schemaPrefix:   'http://schemas.taskcluster.net/',
     cases: [
       {
-        schema:   'queue/v1/create-task-request.json#',
+        schema:   'https://tc-tests.localhost/schemas/queue/v1/create-task-request.json#',
         path:     'task.json',
         success:  true,
       },

@@ -62,16 +62,16 @@ defaults:
     # Number of ms before deadline expiration message arrives, past deadline
     deadlineDelay:                60000
 
-    # Configuration for deadline-reaper
-    deadline:
+    # Configuration for deadline-resolver
+    deadlineResolver:
       # Number of ms to sleep after polling from an empty queue
       pollingDelay:               5000
       # Number of event loops to run in parallel, each taking up to 32 message
       # in parallel. Hence, 4 implies 4 * 32 = 128 messages in parallel
       parallelism:                1
 
-    # Configuration for claim-reaper
-    claim:
+    # Configuration for claim-resolver
+    claimResolver:
       # Number of ms to sleep after polling from an empty queue
       pollingDelay:               5000
       # Number of event loops to run in parallel, each taking up to 32 message
@@ -99,7 +99,7 @@ defaults:
 
 
   taskcluster:
-    authBaseUrl:      https://auth.taskcluster.net/v1
+    rootUrl:          !env TASKCLUSTER_ROOT_URL
     credentials:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
@@ -110,14 +110,13 @@ defaults:
 
   server:
     port:             !env:number PORT
-    publicUrl:        !env PUBLIC_URL
     env:              !env NODE_ENV
     forceSSL:         !env:flag FORCE_SSL
     trustProxy:       false
 
   # Azure credentials (for blob and queue storage)
   azure:
-    accountName:              !env AZURE_ACCOUNT_NAME
+    accountId:                !env AZURE_ACCOUNT_ID
     accountKey:               !env AZURE_ACCOUNT_KEY
 
   # Azure account (for table storage which uses auth for access)
@@ -126,13 +125,15 @@ defaults:
   pulse:
     username:                 !env PULSE_USERNAME
     password:                 !env PULSE_PASSWORD
+    hostname:                 !env PULSE_HOSTNAME
+    vhost:                    !env PULSE_VHOST
 
   aws:
     # Credentials with access to artifact buckets and
     # references/schemas.taskcluster.net if you wish to publish meta-data
     accessKeyId:      !env AWS_ACCESS_KEY_ID
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
-    region:           us-west-2
+    region:           !env ARTIFACT_REGION
     apiVersion:       2014-01-01
 
   monitor:
@@ -141,11 +142,6 @@ defaults:
 # Configuration in production
 production:
   app:
-    publicBlobArtifactBucket:     'taskcluster-public-blobs'
-    privateBlobArtifactBucket:    'taskcluster-private-blobs'
-    blobArtifactRegion:           'us-east-1'
-    publicArtifactBucket:         'taskcluster-public-artifacts'
-    privateArtifactBucket:        'taskcluster-private-artifacts'
     artifactContainer:            'artifacts'
     taskTableName:                'QueueTasks'
     artifactTableName:            'QueueArtifacts'
@@ -163,12 +159,8 @@ production:
       - us-west-1
       - eu-central-1
     useCloudMirror: !env:bool USE_PUBLIC_ARTIFACT_BUCKET_PROXY
-  taskcluster:
-    authBaseUrl:      https://auth.taskcluster.net/v1
   server:
-    publicUrl:        https://queue.taskcluster.net
     env:              production
-    forceSSL:         true
     trustProxy:       true
   monitor:
     mock:             false
@@ -179,11 +171,6 @@ test:
     publishMetaData:              false
     # For testing purposes we let claims expire very fast
     claimTimeout:                 1
-    publicBlobArtifactBucket:     'test-bucket-for-any-garbage'
-    privateBlobArtifactBucket:    'test-bucket-for-any-garbage2'
-    blobArtifactRegion:           'us-west-2'
-    publicArtifactBucket:         'test-bucket-for-any-garbage'
-    privateArtifactBucket:        'test-bucket-for-any-garbage2'
     artifactContainer:            'artifacts'
     queuePrefix:                  'hacks3'
     queuePrefix2:                 'hacks4' # For testing deletion of queues
@@ -197,10 +184,10 @@ test:
     # testing. In production this should be "- x hours" or so...
     taskExpirationDelay:          '4 days'
     taskGroupExpiresExtension:    0 # should always be positive in production
-    deadline:
+    deadlineResolver:
       pollingDelay:               250
       parallelism:                1
-    claim:
+    claimResolver:
       pollingDelay:               250
       parallelism:                1
     dependencyResolver:
@@ -208,14 +195,9 @@ test:
       parallelism:                1
     publicArtifactBucketProxies:
       'us-east-1':    'proxy-for-us-east-1'
-  taskcluster:
-    credentials:
-      clientId:       test-server
-      accessToken:    none
   monitoring:
     enable: false
   server:
-    publicUrl:        http://localhost:60401
     port:             60401
     env:              development
   azureTableAccount:  inMemory
@@ -243,7 +225,6 @@ load-test:
   monitoring:
     enable: false
   server:
-    publicUrl:        https://tc-queue-load-test.herokuapp.com
     env:              development
     forceSSL:         true
     trustProxy:       true
