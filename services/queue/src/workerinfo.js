@@ -89,7 +89,7 @@ class WorkerInfo {
           });
         }
 
-        createEntry(this.Provisioner, {
+        return createEntry(this.Provisioner, {
           provisionerId,
           expires,
           description: '',

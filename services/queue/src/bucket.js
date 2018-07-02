@@ -12,6 +12,8 @@ let assert      = require('assert');
  *   credentials: {
  *     accessKeyId:      // ...
  *     secretAccessKey:  // ...
+ *     // --or--
+ *     mock: <obj>,     // use mock S3 object
  *   },
  *   bucketCDN:          // https://cdn-for-bucket.com
  *   monitor:            // base.monitor instance
@@ -34,11 +36,15 @@ var Bucket = function(options) {
   // Ensure access to the bucket property
   this.bucket = options.bucket;
   // Create S3 client
-  this.s3 = new aws.S3(_.defaults({
-    params: {
-      Bucket:   options.bucket,
-    },
-  }, options.credentials));
+  if (!options.credentials.mock) {
+    this.s3 = new aws.S3(_.defaults({
+      params: {
+        Bucket:   options.bucket,
+      },
+    }, options.credentials));
+  } else {
+    this.s3 = options.credentials.mock;
+  }
   // Store bucket CDN
   this.bucketCDN = options.bucketCDN;
 };

@@ -6,7 +6,7 @@ description: |
 type:         object
 properties:
   version:    {$const: message-version}
-  status:     {$ref: http://schemas.taskcluster.net/queue/v1/task-status.json#}
+  status:     {$ref: 'task-status.json#'}
 additionalProperties: false
 required:
   - version

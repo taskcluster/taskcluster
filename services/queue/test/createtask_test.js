@@ -1,15 +1,22 @@
-suite('Create task', function() {
-  var debug       = require('debug')('test:create');
-  var assert      = require('assert');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var taskcluster = require('taskcluster-client');
-  var assume      = require('assume');
-  var helper      = require('./helper');
-  var testing       = require('taskcluster-lib-testing');
+const debug       = require('debug')('test:create');
+const assert      = require('assert');
+const slugid      = require('slugid');
+const _           = require('lodash');
+const taskcluster = require('taskcluster-client');
+const assume      = require('assume');
+const helper      = require('./helper');
+
+helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+  helper.withAmazonIPRanges(mock, skipping);
+  helper.withS3(mock, skipping);
+  helper.withQueueService(mock, skipping);
+  helper.withBlobStore(mock, skipping);
+  helper.withPulse(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withServer(mock, skipping);
 
   // Use the same task definition for everything
-  var taskDef = {
+  const taskDef = {
     provisionerId:    'no-provisioner',
     workerType:       'test-worker',
     schedulerId:      'my-scheduler',
@@ -43,38 +50,31 @@ suite('Create task', function() {
   };
 
   test('createTask', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
 
     helper.scopes(
       'queue:create-task:no-provisioner/test-worker',
       'queue:route:*',
     );
-    debug('### Start listening for messages');
-    await helper.events.listenFor('is-defined', helper.queueEvents.taskDefined({
-      taskId,
-    }));
-    await helper.events.listenFor('is-pending', helper.queueEvents.taskPending({
-      taskId,
-    }));
 
     debug('### Create task');
-    var r1 = await helper.queue.createTask(taskId, taskDef);
+    const r1 = await helper.queue.createTask(taskId, taskDef);
 
     debug('### Wait for defined message');
-    var m1 = await helper.events.waitFor('is-defined');
-    assume(r1.status).deep.equals(m1.payload.status);
+    helper.checkNextMessage('task-defined', m =>
+      assume(r1.status).deep.equals(m.payload.status));
 
     debug('### Wait for pending message');
-    var m2 = await helper.events.waitFor('is-pending');
-    assume(r1.status).deep.equals(m1.payload.status);
+    helper.checkNextMessage('task-pending', m =>
+      assume(r1.status).deep.equals(m.payload.status));
 
     debug('### Get task status');
-    var r2 = await helper.queue.status(taskId);
+    const r2 = await helper.queue.status(taskId);
     assume(r1.status).deep.equals(r2.status);
   });
 
   test('createTask (without required scopes)', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     helper.scopes(
       'queue:create-task:my-provisioner/another-worker',
       'queue:route:wrong-route',
@@ -82,15 +82,17 @@ suite('Create task', function() {
     await helper.queue.createTask(taskId, taskDef).then(() => {
       throw new Error('Expected an authentication error');
     }, (err) => {
-      debug('Got expected authentication error: %s', err);
+      if (err.code != 'InsufficientScopes') {
+        throw err;
+      }
     });
   });
 
   test('createTask is idempotent', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
 
-    var r1 = await helper.queue.createTask(taskId, taskDef);
-    var r2 = await helper.queue.createTask(taskId, taskDef);
+    const r1 = await helper.queue.createTask(taskId, taskDef);
+    const r2 = await helper.queue.createTask(taskId, taskDef);
     assume(r1).deep.equals(r2);
 
     // Verify that we can't modify the task
@@ -99,65 +101,45 @@ suite('Create task', function() {
     }, taskDef)).then(() => {
       throw new Error('This operation should have failed!');
     }, (err) => {
-      assume(err.statusCode).equals(409);
-      debug('Expected error: %j', err, err);
+      if (err.code !== 'RequestConflict') {
+        throw err;
+      }
     });
   });
 
   test('defineTask', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
 
     helper.scopes(
       'queue:define-task:no-provisioner/test-worker',
       'queue:route:---*',
     );
-    await helper.events.listenFor('is-defined', helper.queueEvents.taskDefined({
-      taskId,
-    }));
-    await helper.events.listenFor('is-pending', helper.queueEvents.taskPending({
-      taskId,
-    }));
 
     await helper.queue.defineTask(taskId, taskDef);
-    await helper.events.waitFor('is-defined');
 
-    // Fail execution, if the task-pending event arrives
-    await new Promise((accept, reject) => {
-      helper.events.waitFor('is-pending').then(reject, reject);
-      setTimeout(accept, 500);
-    }).catch(() => {
-      throw new Error('Didn\'t expect task-pending message to arrive!');
-    });
+    helper.checkNextMessage('task-defined');
+    helper.checkNoNextMessage('task-pending');
   });
 
   test('defineTask and scheduleTask', async () => {
-    var taskId = slugid.v4();
-    var taskIsScheduled = false;
-
-    await helper.events.listenFor('pending', helper.queueEvents.taskPending({
-      taskId,
-    }));
-
-    var gotMessage = helper.events.waitFor('pending').then((message) => {
-      assert(taskIsScheduled, 'Got pending message before scheduleTask');
-      return message;
-    });
+    const taskId = slugid.v4();
+    const taskIsScheduled = false;
 
     await helper.queue.defineTask(taskId, taskDef);
-    await testing.sleep(500);
+    helper.checkNextMessage('task-defined');
+    helper.checkNoNextMessage('task-pending');
 
-    taskIsScheduled = true;
     helper.scopes(
       'queue:schedule-task',
       'assume:scheduler-id:my-scheduler/dSlITZ4yQgmvxxAi4A8fHQ',
     );
-    var r1 = await helper.queue.scheduleTask(taskId);
-    var m1 = await gotMessage;
-    assume(r1.status).deep.equals(m1.payload.status);
+    const r1 = await helper.queue.scheduleTask(taskId);
+    helper.checkNextMessage('task-pending', m => 
+      assume(r1.status).deep.equals(m.payload.status));
   });
 
   test('defineTask is idempotent', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     await helper.queue.defineTask(taskId, taskDef);
     await helper.queue.defineTask(taskId, taskDef);
 
@@ -173,11 +155,11 @@ suite('Create task', function() {
   });
 
   test('defineTask is idempotent (with date format variance)', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     // You can add as many ms fractions as you like in the date format
     // but we won't store them, so we have to handle this case right
-    var x = '234324Z';
-    var taskDef2 = _.defaults({
+    const x = '234324Z';
+    const taskDef2 = _.defaults({
       created:      taskDef.created.substr(0, taskDef.created.length - 1)   + x,
       deadline:     taskDef.deadline.substr(0, taskDef.deadline.length - 1) + x,
       expires:      taskDef.expires.substr(0, taskDef.expires.length - 1)   + x,
@@ -197,7 +179,7 @@ suite('Create task', function() {
   });
 
   test('createTask invalid taskId -> 400', async () => {
-    var taskId = 'my-invalid-slugid';
+    const taskId = 'my-invalid-slugid';
 
     // Verify that we can't modify the task
     await helper.queue.createTask(taskId, taskDef).then(() => {
@@ -208,21 +190,9 @@ suite('Create task', function() {
     });
   });
 
-  test('createTask with incorrect scheduler -> 409', async () => {
-    var taskId = slugid.v4();
-    var taskDef2 = _.defaults({
-      schedulerId: 'not-my-scheduler',
-    }, taskDef);
-    await helper.queue.createTask(taskId, taskDef2).then(() => {
-      throw new Error('this Operation should have failed!');
-    }, (err) => {
-      assume(err.statusCode).equals(409);
-    });
-  });
-
   test('createTask w. created > deadline', async () => {
-    var taskId = slugid.v4();
-    var taskDef2 = _.defaults({
+    const taskId = slugid.v4();
+    const taskDef2 = _.defaults({
       created:      taskcluster.fromNowJSON('15 min'),
       deadline:     taskcluster.fromNowJSON('10 min'),
       expires:      taskcluster.fromNowJSON('3 days'),
@@ -237,8 +207,8 @@ suite('Create task', function() {
   });
 
   test('createTask w. deadline > expires', async () => {
-    var taskId = slugid.v4();
-    var taskDef2 = _.defaults({
+    const taskId = slugid.v4();
+    const taskDef2 = _.defaults({
       created:      taskcluster.fromNowJSON(),
       deadline:     taskcluster.fromNowJSON('4 days'),
       expires:      taskcluster.fromNowJSON('3 days'),
@@ -251,4 +221,90 @@ suite('Create task', function() {
       debug('Expected error: %j', err, err);
     });
   });
+
+  test('Minimum task definition with all possible defaults', async () => {
+    const taskDef = {
+      provisionerId:    'no-provisioner',
+      workerType:       'test-worker',
+      created:          taskcluster.fromNowJSON(),
+      deadline:         taskcluster.fromNowJSON('3 days'),
+      payload:          {},
+      metadata: {
+        name:           'Unit testing task',
+        description:    'Task created during unit tests',
+        owner:          'jonsafj@mozilla.com',
+        source:         'https://github.com/taskcluster/taskcluster-queue',
+      },
+    };
+    const taskId = slugid.v4();
+
+    helper.scopes(
+      'queue:create-task:no-provisioner/test-worker',
+    );
+
+    debug('### Creating task');
+    const r1 = await helper.queue.createTask(taskId, taskDef);
+    helper.checkNextMessage('task-defined', m =>
+      assume(r1.status).deep.equals(m.payload.status));
+    helper.checkNextMessage('task-pending', m =>
+      assume(r1.status).deep.equals(m.payload.status));
+
+    const r2 = await helper.queue.status(taskId);
+    assume(r1.status).deep.equals(r2.status);
+  });
+
+  const makePriorityTask = (priority) => {
+    return {
+      provisionerId:    'no-provisioner',
+      workerType:       'test-worker',
+      priority:         priority,
+      schedulerId:      'test-run',
+      created:          taskcluster.fromNowJSON(),
+      deadline:         taskcluster.fromNowJSON('30 min'),
+      payload:          {},
+      metadata: {
+        name:           'Unit testing task',
+        description:    'Task created during unit tests',
+        owner:          'jonsafj@mozilla.com',
+        source:         'https://github.com/taskcluster/taskcluster-queue',
+      },
+    };
+  };
+
+  test('Can create "high" w. queue:create-task:high:<provisionerId>/<workerType>', async () => {
+    helper.scopes(
+      'queue:create-task:high:no-provisioner/test-worker',
+      'queue:scheduler-id:test-run',
+    );
+    await helper.queue.createTask(slugid.v4(), makePriorityTask('high'));
+  });
+
+  test('Can create "high" w. queue:create-task:highest:<provisionerId>/<workerType>', async () => {
+    helper.scopes(
+      'queue:create-task:highest:no-provisioner/test-worker',
+      'queue:scheduler-id:test-run',
+    );
+    await helper.queue.createTask(slugid.v4(), makePriorityTask('high'));
+  });
+
+  test('Can\'t create "high" with queue:create-task:low:<provisionerId>/<workerType>', async () => {
+    helper.scopes(
+      'queue:create-task:low:no-provisioner/test-worker',
+      'queue:scheduler-id:test-run',
+    );
+    await helper.queue.createTask(slugid.v4(), makePriorityTask('high')).then(() => {
+      assert(false, 'Expected 400 error!');
+    }, err => {
+      debug('Got error as expected');
+    });
+  });
+
+  // Test for compatibility only
+  test('Can create "normal" without queue:task-priority:high', async () => {
+    helper.scopes(
+      'queue:create-task:no-provisioner/test-worker',
+    );
+    await helper.queue.createTask(slugid.v4(), makePriorityTask('normal'));
+  });
+
 });
