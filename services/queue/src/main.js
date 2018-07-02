@@ -4,7 +4,7 @@ let _                   = require('lodash');
 let assert              = require('assert');
 let path                = require('path');
 let taskcluster         = require('taskcluster-client');
-let v1                  = require('./api');
+let builder             = require('./api');
 let exchanges           = require('./exchanges');
 let BlobStore           = require('./blobstore');
 let data                = require('./data');
@@ -20,10 +20,11 @@ let WorkerInfo          = require('./workerinfo');
 let loader              = require('taskcluster-lib-loader');
 let config              = require('typed-env-config');
 let monitor             = require('taskcluster-lib-monitor');
-let validator           = require('taskcluster-lib-validate');
+let SchemaSet           = require('taskcluster-lib-validate');
 let docs                = require('taskcluster-lib-docs');
 let App                 = require('taskcluster-lib-app');
 let remoteS3            = require('remotely-signed-s3');
+let {sasCredentials}    = require('taskcluster-lib-azure');
 
 // Create component loader
 let load = loader({
@@ -35,8 +36,9 @@ let load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: cfg.monitoring.project || 'taskcluster-queue',
+      projectName: 'taskcluster-queue',
       enable: cfg.monitoring.enable,
+      rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.taskcluster.credentials,
       mock: cfg.monitor.mock,
       process,
@@ -55,44 +57,40 @@ let load = loader({
   },
 
   // Validator and publisher
-  validator: {
+  schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => validator({
-      prefix:       'queue/v1/',
+    setup: ({cfg}) => new SchemaSet({
+      serviceName:   'queue',
       publish:       cfg.app.publishMetaData,
       aws:           cfg.aws,
     }),
   },
   publisher: {
-    requires: ['cfg', 'validator', 'monitor'],
-    setup: ({cfg, validator, monitor}) => exchanges.setup({
+    requires: ['cfg', 'schemaset', 'monitor'],
+    setup: async ({cfg, schemaset, monitor}) => exchanges.setup({
+      rootUrl:            cfg.taskcluster.rootUrl,
       credentials:        cfg.pulse,
-      exchangePrefix:     cfg.app.exchangePrefix,
-      validator:          validator,
-      referencePrefix:    'queue/v1/exchanges.json',
       publish:            cfg.app.publishMetaData,
+      validator:          await schemaset.validator(cfg.taskcluster.rootUrl),
       aws:                cfg.aws,
       monitor:            monitor.prefix('publisher'),
     }),
   },
 
   docs: {
-    requires: ['cfg', 'validator'],
-    setup: ({cfg, validator}) => docs.documenter({
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'platform',
-      schemas: validator.schemas,
+      schemaset,
       publish: cfg.app.publishMetaData,
-      references: [{
-        name: 'api',
-        reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
-      }, {
-        name: 'events',
-        reference: exchanges.reference({
-          exchangePrefix:   cfg.app.exchangePrefix,
+      references: [
+        {name: 'api', reference: builder.reference()},
+        {name: 'events', reference: exchanges.reference({
+          rootUrl:          cfg.taskcluster.rootUrl,
           credentials:      cfg.pulse,
-        }),
-      }],
+        })},
+      ],
     }),
   },
 
@@ -128,8 +126,8 @@ let load = loader({
     },
   },
 
-  // Create artifactStore
-  artifactStore: {
+  // Create blobStore
+  blobStore: {
     requires: ['cfg'],
     setup: async ({cfg}) => {
       let store = new BlobStore({
@@ -146,22 +144,27 @@ let load = loader({
   Artifact: {
     requires: [
       'cfg', 'monitor', 'process',
-      'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
+      'blobStore', 'publicArtifactBucket', 'privateArtifactBucket',
       's3Controller',
     ],
-    setup: async (ctx) => {
+    setup: async ({cfg, monitor, process, blobStore, publicArtifactBucket,
+      privateArtifactBucket, s3Controller}) => {
       let Artifact = data.Artifact.setup({
-        table:            ctx.cfg.app.artifactTableName,
-        account:          ctx.cfg.azureTableAccount,
-        credentials:      ctx.cfg.taskcluster.credentials,
+        tableName:        cfg.app.artifactTableName,
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.artifactTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
         context: {
-          blobStore:      ctx.artifactStore,
-          publicBucket:   ctx.publicArtifactBucket,
-          privateBucket:  ctx.privateArtifactBucket,
-          monitor:        ctx.monitor.prefix('data.Artifact'),
-          s3Controller:   ctx.s3Controller,
+          blobStore,
+          publicBucket:   publicArtifactBucket,
+          privateBucket:  privateArtifactBucket,
+          monitor:        monitor.prefix('data.Artifact'),
+          s3Controller:   s3Controller,
         },
-        monitor:          ctx.monitor.prefix('table.artifacts'),
+        monitor:          monitor.prefix('table.artifacts'),
       });
       await Artifact.ensureTable();
       return Artifact;
@@ -173,9 +176,13 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let Task = data.Task.setup({
-        table:            cfg.app.taskTableName,
-        account:          cfg.azureTableAccount,
-        credentials:      cfg.taskcluster.credentials,
+        tableName:        cfg.app.taskTableName,
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.taskTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
         monitor:          monitor.prefix('table.tasks'),
       });
       await Task.ensureTable();
@@ -188,9 +195,13 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let TaskGroup = data.TaskGroup.setup({
-        table:            cfg.app.taskGroupTableName,
-        account:          cfg.azureTableAccount,
-        credentials:      cfg.taskcluster.credentials,
+        tableName: cfg.app.taskGroupTableName,
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.taskGroupTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
         monitor:          monitor.prefix('table.taskgroups'),
       });
       await TaskGroup.ensureTable();
@@ -203,9 +214,13 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let TaskGroupMember = data.TaskGroupMember.setup({
-        table:            cfg.app.taskGroupMemberTableName,
-        account:          cfg.azureTableAccount,
-        credentials:      cfg.taskcluster.credentials,
+        tableName:        cfg.app.taskGroupMemberTableName,
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.taskGroupMemberTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
         monitor:          monitor.prefix('table.taskgroupmembers'),
       });
       await TaskGroupMember.ensureTable();
@@ -217,10 +232,16 @@ let load = loader({
   TaskGroupActiveSet: {
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
+      // NOTE: this uses the same entity type definition as TaskGroupMember,
+      // but presence in either table indicates different things
       let TaskGroupActiveSet = data.TaskGroupMember.setup({
-        table:            cfg.app.taskGroupActiveSetTableName,
-        account:          cfg.azureTableAccount,
-        credentials:      cfg.taskcluster.credentials,
+        tableName:        cfg.app.taskGroupActiveSetTableName,
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.taskGroupActiveSetTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
         monitor:          monitor.prefix('table.taskgroupactivesets'),
       });
       await TaskGroupActiveSet.ensureTable();
@@ -233,9 +254,13 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let TaskRequirement = data.TaskRequirement.setup({
-        table:            cfg.app.taskRequirementTableName,
-        account:          cfg.azureTableAccount,
-        credentials:      cfg.taskcluster.credentials,
+        tableName:        cfg.app.taskRequirementTableName,
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.taskRequirementTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
         monitor:          monitor.prefix('table.taskrequirements'),
       });
       await TaskRequirement.ensureTable();
@@ -248,9 +273,13 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let TaskDependency = data.TaskDependency.setup({
-        table:            cfg.app.taskDependencyTableName,
-        account:          cfg.azureTableAccount,
-        credentials:      cfg.taskcluster.credentials,
+        tableName:        cfg.app.taskDependencyTableName,
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.taskDependencyTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
         monitor:          monitor.prefix('table.taskdependencies'),
       });
       await TaskDependency.ensureTable();
@@ -263,9 +292,13 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let Provisioner = data.Provisioner.setup({
-        table:            cfg.app.provisionerTableName,
-        account:          cfg.azureTableAccount,
-        credentials:      cfg.taskcluster.credentials,
+        tableName:        cfg.app.provisionerTableName,
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.provisionerTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
         monitor:          monitor.prefix('table.provisioner'),
       });
       await Provisioner.ensureTable();
@@ -278,9 +311,13 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let WorkerType = data.WorkerType.setup({
-        table:            cfg.app.workerTypeTableName,
-        account:          cfg.azureTableAccount,
-        credentials:      cfg.taskcluster.credentials,
+        tableName:        cfg.app.workerTypeTableName,
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.workerTypeTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
         monitor:          monitor.prefix('table.workerType'),
       });
       await WorkerType.ensureTable();
@@ -293,9 +330,13 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let Worker = data.Worker.setup({
-        table:            cfg.app.workerTableName,
-        account:          cfg.azureTableAccount,
-        credentials:      cfg.taskcluster.credentials,
+        tableName:        cfg.app.workerTableName,
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.workerTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
         monitor:          monitor.prefix('table.worker'),
       });
       await Worker.ensureTable();
@@ -379,14 +420,14 @@ let load = loader({
 
   api: {
     requires: [
-      'cfg', 'publisher', 'validator', 'Task', 'Artifact',
+      'cfg', 'publisher', 'schemaset', 'Task', 'Artifact',
       'TaskGroup', 'TaskGroupMember', 'TaskGroupActiveSet', 'queueService',
-      'artifactStore', 'publicArtifactBucket', 'privateArtifactBucket',
+      'blobStore', 'publicArtifactBucket', 'privateArtifactBucket',
       'regionResolver', 'monitor', 'dependencyTracker', 'TaskDependency',
       'workClaimer', 'Provisioner', 'workerInfo', 'WorkerType', 'Worker',
       's3Controller', 's3Runner',
     ],
-    setup: (ctx) => v1.setup({
+    setup: (ctx) => builder.build({
       context: {
         Task:             ctx.Task,
         Artifact:         ctx.Artifact,
@@ -400,10 +441,9 @@ let load = loader({
         Worker:           ctx.Worker,
         dependencyTracker: ctx.dependencyTracker,
         publisher:        ctx.publisher,
-        validator:        ctx.validator,
         claimTimeout:     ctx.cfg.app.claimTimeout,
         queueService:     ctx.queueService,
-        blobStore:        ctx.artifactStore,
+        blobStore:        ctx.blobStore,
         publicBucket:     ctx.publicArtifactBucket,
         privateBucket:    ctx.privateArtifactBucket,
         regionResolver:   ctx.regionResolver,
@@ -419,11 +459,9 @@ let load = loader({
         publicBlobBucket: ctx.cfg.app.publicBlobArtifactBucket,
         privateBlobBucket:ctx.cfg.app.privateBlobArtifactBucket,
       },
-      validator:        ctx.validator,
-      authBaseUrl:      ctx.cfg.taskcluster.authBaseUrl,
+      rootUrl:          ctx.cfg.taskcluster.rootUrl,
+      schemaset:        ctx.schemaset,
       publish:          ctx.cfg.app.publishMetaData,
-      baseUrl:          ctx.cfg.server.publicUrl + '/v1',
-      referencePrefix:  'queue/v1/api.json',
       aws:              ctx.cfg.aws,
       monitor:          ctx.monitor.prefix('api'),
     }),
@@ -431,20 +469,14 @@ let load = loader({
 
   // Create the server process
   server: {
-    requires: ['cfg', 'api', 'monitor', 'docs'],
-    setup: ({cfg, api, monitor, docs}) => {
-      let app = App({
-        port: cfg.server.port,
-        publicUrl: cfg.server.publicUrl,
-        env: cfg.server.env,
-        forceSSL: cfg.server.forceSSL,
-        trustProxy: cfg.server.trustProxy,
-        rootDocsLink: true,
-        docs,
-      });
-      app.use('/v1', api);
-      return app.createServer();
-    },
+    requires: ['cfg', 'api', 'docs'],
+    setup: ({cfg, api, docs}) => App({
+      port: cfg.server.port,
+      env: cfg.server.env,
+      forceSSL: cfg.server.forceSSL,
+      trustProxy: cfg.server.trustProxy,
+      apis: [api],
+    }),
   },
 
   // CLI utility to scan tasks
@@ -453,8 +485,8 @@ let load = loader({
     setup: options => require('./scan')(options),
   },
 
-  // Create the claim-reaper process
-  'claim-reaper': {
+  // Create the claim-resolver process
+  'claim-resolver': {
     requires: [
       'cfg', 'Task', 'queueService', 'publisher', 'monitor',
       'dependencyTracker',
@@ -464,9 +496,9 @@ let load = loader({
     }) => {
       let resolver = new ClaimResolver({
         Task, queueService, publisher, dependencyTracker,
-        pollingDelay:   cfg.app.claim.pollingDelay,
-        parallelism:    cfg.app.claim.parallelism,
-        monitor:        monitor.prefix('claim-reaper'),
+        pollingDelay:   cfg.app.claimResolver.pollingDelay,
+        parallelism:    cfg.app.claimResolver.parallelism,
+        monitor:        monitor.prefix('claim-resolver'),
       });
       resolver.start();
       return resolver;
@@ -474,7 +506,7 @@ let load = loader({
   },
 
   // Create the deadline reaper process
-  'deadline-reaper': {
+  'deadline-resolver': {
     requires: [
       'cfg', 'Task', 'queueService', 'publisher', 'monitor',
       'dependencyTracker',
@@ -484,9 +516,9 @@ let load = loader({
     }) => {
       let resolver = new DeadlineResolver({
         Task, queueService, publisher, dependencyTracker,
-        pollingDelay:   cfg.app.deadline.pollingDelay,
-        parallelism:    cfg.app.deadline.parallelism,
-        monitor:        monitor.prefix('deadline-reaper'),
+        pollingDelay:   cfg.app.deadlineResolver.pollingDelay,
+        parallelism:    cfg.app.deadlineResolver.parallelism,
+        monitor:        monitor.prefix('deadline-resolver'),
       });
       resolver.start();
       return resolver;

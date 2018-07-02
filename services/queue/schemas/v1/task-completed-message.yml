@@ -1,14 +1,14 @@
 $schema:  http://json-schema.org/draft-06/schema#
-title:        "Task Failed Message"
+title:        "Task Completed Message"
 description: |
-  Message reporting that a task failed to complete successfully.
+  Message reporting that a task has complete successfully.
 type:         object
 properties:
   version:    {$const: message-version}
-  status:     {$ref: http://schemas.taskcluster.net/queue/v1/task-status.json#}
+  status:     {$ref: 'task-status.json#'}
   runId:
     description: |
-      Id of the run that failed.
+      Id of the run that completed the task
     type:         integer
     minimum:      {$const: min-run-id}
     maximum:      {$const: max-run-id}

@@ -1,37 +1,31 @@
 $schema:  http://json-schema.org/draft-06/schema#
-title:        "Task Running Message"
+title:        "Task Failed Message"
 description: |
-  Message reporting that a given run of a task have started
+  Message reporting that a task failed to complete successfully.
 type:         object
 properties:
   version:    {$const: message-version}
-  status:     {$ref: http://schemas.taskcluster.net/queue/v1/task-status.json#}
+  status:     {$ref: 'task-status.json#'}
   runId:
     description: |
-      Id of the run that just started, always starts from 0
+      Id of the run that failed.
     type:         integer
     minimum:      {$const: min-run-id}
     maximum:      {$const: max-run-id}
   workerGroup:
     description: |
-      Identifier for the worker-group within which this run started.
+      Identifier for the worker-group within which this run ran.
     type:         string
     minLength:    {$const: identifier-min-length}
     maxLength:    {$const: identifier-max-length}
     pattern:      {$const: identifier-pattern}
   workerId:
     description: |
-      Identifier for the worker executing this run.
+      Identifier for the worker that executed this run.
     type:         string
     minLength:    {$const: identifier-min-length}
     maxLength:    {$const: identifier-max-length}
     pattern:      {$const: identifier-pattern}
-  takenUntil:
-    description: |
-      Time at which the run expires and is resolved as `failed`, if the run
-      isn't reclaimed.
-    type:         string
-    format:       date-time
 additionalProperties: false
 required:
   - version
@@ -39,4 +33,3 @@ required:
   - runId
   - workerGroup
   - workerId
-  - takenUntil

@@ -1,15 +1,23 @@
-suite('Query tasks', function() {
-  var debug       = require('debug')('test:query');
-  var assert      = require('assert');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var taskcluster = require('taskcluster-client');
-  var assume      = require('assume');
-  var helper      = require('./helper');
-  var testing     = require('taskcluster-lib-testing');
+const debug       = require('debug')('test:query');
+const assert      = require('assert');
+const slugid      = require('slugid');
+const _           = require('lodash');
+const taskcluster = require('taskcluster-client');
+const assume      = require('assume');
+const helper      = require('./helper');
+const testing     = require('taskcluster-lib-testing');
+
+helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+  helper.withAmazonIPRanges(mock, skipping);
+  helper.withPulse(mock, skipping);
+  helper.withS3(mock, skipping);
+  helper.withQueueService(mock, skipping);
+  helper.withBlobStore(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withServer(mock, skipping);
 
   test('pendingTasks >= 1', async () => {
-    let taskDef = {
+    const taskDef = {
       provisionerId:    'no-provisioner',
       workerType:       'query-test-worker',
       schedulerId:      'my-scheduler',
@@ -31,8 +39,8 @@ suite('Query tasks', function() {
       },
     };
 
-    let taskId1 = slugid.v4();
-    let taskId2 = slugid.v4();
+    const taskId1 = slugid.v4();
+    const taskId2 = slugid.v4();
 
     debug('### Create tasks');
     await Promise.all([
@@ -40,7 +48,7 @@ suite('Query tasks', function() {
       helper.queue.createTask(taskId2, taskDef),
     ]);
 
-    let r1 = await helper.queue.pendingTasks(
+    const r1 = await helper.queue.pendingTasks(
       'no-provisioner',
       'query-test-worker',
     );
@@ -54,7 +62,7 @@ suite('Query tasks', function() {
     // is cached it ought to be really fast and take less than 20 seconds to
     // do: queue.createTask + queue.pendingTasks, if not that's also sort of a
     // bug we should investigate
-    let r2 = await helper.queue.pendingTasks(
+    const r2 = await helper.queue.pendingTasks(
       'no-provisioner',
       'query-test-worker',
     );
@@ -69,7 +77,7 @@ suite('Query tasks', function() {
     await testing.poll(async () => {
       // At some point in the future we have to got fetch a new result saying
       // more tasks are now in the queue...
-      let r3 = await helper.queue.pendingTasks(
+      const r3 = await helper.queue.pendingTasks(
         'no-provisioner',
         'query-test-worker',
       );
@@ -78,13 +86,13 @@ suite('Query tasks', function() {
   });
 
   test('pendingTasks == 0', async () => {
-    let r1 = await helper.queue.pendingTasks(
+    const r1 = await helper.queue.pendingTasks(
       'no-provisioner',
       'empty-test-worker',
     );
     assume(r1.pendingTasks).equals(0);
 
-    let r2 = await helper.queue.pendingTasks(
+    const r2 = await helper.queue.pendingTasks(
       'no-provisioner',
       'empty-test-worker',
     );

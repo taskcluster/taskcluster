@@ -1,14 +1,22 @@
-suite('Resolve task', function() {
-  var debug       = require('debug')('test:completed');
-  var assert      = require('assert');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var taskcluster = require('taskcluster-client');
-  var assume      = require('assume');
-  var helper      = require('./helper');
+const debug = require('debug')('test:completed');
+const assert = require('assert');
+const slugid = require('slugid');
+const _ = require('lodash');
+const taskcluster = require('taskcluster-client');
+const assume = require('assume');
+const helper = require('./helper');
+
+helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+  helper.withAmazonIPRanges(mock, skipping);
+  helper.withPulse(mock, skipping);
+  helper.withS3(mock, skipping);
+  helper.withQueueService(mock, skipping);
+  helper.withBlobStore(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withServer(mock, skipping);
 
   // Use the same task definition for everything
-  var taskDef = {
+  const taskDef = {
     provisionerId:    'no-provisioner',
     workerType:       'test-worker',
     schedulerId:      'my-scheduler',
@@ -31,16 +39,7 @@ suite('Resolve task', function() {
   };
 
   test('reportCompleted is idempotent', async () => {
-    var taskId = slugid.v4();
-    var allowedToCompleteNow = false;
-
-    await helper.events.listenFor(
-      'completed', helper.queueEvents.taskCompleted({taskId})
-    );
-    var gotMessage = helper.events.waitFor('completed').then((message) => {
-      assert(allowedToCompleteNow, 'Completing at wrong time');
-      return message;
-    });
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
@@ -51,39 +50,32 @@ suite('Resolve task', function() {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
+    helper.checkNoNextMessage('task-completed');
 
     debug('### Reporting task completed');
-    allowedToCompleteNow = true;
     helper.scopes(
       'queue:resolve-task',
       'assume:worker-id:my-worker-group/my-worker',
     );
     await helper.queue.reportCompleted(taskId, 0);
-
-    var m1 = await gotMessage;
-    assume(m1.payload.status.runs[0].state).equals('completed');
+    helper.checkNextMessage('task-completed', m =>
+      assume(m.payload.status.runs[0].state).equals('completed'));
 
     debug('### Reporting task completed (again)');
     await helper.queue.reportCompleted(taskId, 0);
+    // idempotent, but sends the message again..
+    helper.checkNextMessage('task-completed', m =>
+      assume(m.payload.status.runs[0].state).equals('completed'));
 
     debug('### Reporting task completed (using temp creds)');
-    let queue = new helper.Queue({credentials: r1.credentials});
+    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
     await queue.reportCompleted(taskId, 0);
+    helper.checkNextMessage('task-completed', m =>
+      assume(m.payload.status.runs[0].state).equals('completed'));
   });
 
   test('reportFailed is idempotent', async () => {
-    var taskId = slugid.v4();
-    var allowedToFailNow = false;
-    var gotMessage = null;
-
-    await helper.events.listenFor('failed', helper.queueEvents.taskFailed({
-      taskId,
-    }));
-
-    var gotMessage = helper.events.waitFor('failed').then((message) => {
-      assert(allowedToFailNow, 'Failed at wrong time');
-      return message;
-    });
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
@@ -94,39 +86,31 @@ suite('Resolve task', function() {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
+    helper.checkNoNextMessage('task-completed');
 
     debug('### Reporting task failed');
-    allowedToFailNow = true;
     helper.scopes(
       'queue:resolve-task',
       'assume:worker-id:my-worker-group/my-worker',
     );
     await helper.queue.reportFailed(taskId, 0);
-
-    var m1 = await gotMessage;
-    assume(m1.payload.status.runs[0].state).equals('failed');
+    helper.checkNextMessage('task-failed', m =>
+      assume(m.payload.status.runs[0].state).equals('failed'));
 
     debug('### Reporting task failed (again)');
     await helper.queue.reportFailed(taskId, 0);
+    helper.checkNextMessage('task-failed', m =>
+      assume(m.payload.status.runs[0].state).equals('failed'));
 
     debug('### Reporting task failed (using temp creds)');
-    let queue = new helper.Queue({credentials: r1.credentials});
+    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
     await queue.reportFailed(taskId, 0);
+    helper.checkNextMessage('task-failed', m =>
+      assume(m.payload.status.runs[0].state).equals('failed'));
   });
 
   test('reportException (malformed-payload) is idempotent', async () => {
-    var taskId = slugid.v4();
-    var allowedToFailNow = false;
-    var gotMessage = null;
-
-    await helper.events.listenFor('except', helper.queueEvents.taskException({
-      taskId,
-    }));
-
-    var gotMessage = helper.events.waitFor('except').then((message) => {
-      assert(allowedToFailNow, 'Failed at wrong time');
-      return message;
-    });
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
@@ -139,7 +123,6 @@ suite('Resolve task', function() {
     });
 
     debug('### Reporting task exception');
-    allowedToFailNow = true;
     helper.scopes(
       'queue:resolve-task',
       'assume:worker-id:my-worker-group/my-worker',
@@ -147,41 +130,32 @@ suite('Resolve task', function() {
     await helper.queue.reportException(taskId, 0, {
       reason:     'malformed-payload',
     });
-
-    var {payload: {status: s1}} = await gotMessage;
-    assume(s1.runs[0].state).equals('exception');
-    assume(s1.runs[0].reasonResolved).equals('malformed-payload');
+    helper.checkNextMessage('task-exception', m => {
+      assume(m.payload.status.runs[0].state).equals('exception');
+      assume(m.payload.status.runs[0].reasonResolved).equals('malformed-payload');
+    });
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
       reason:     'malformed-payload',
     });
+    helper.checkNextMessage('task-exception');
 
     debug('### Check status of task');
-    var {status: s2} = await helper.queue.status(taskId);
+    const {status: s2} = await helper.queue.status(taskId);
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('malformed-payload');
 
     debug('### Reporting task exception (using temp creds)');
-    let queue = new helper.Queue({credentials: r1.credentials});
+    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
     await queue.reportException(taskId, 0, {
       reason:     'malformed-payload',
     });
+    helper.checkNextMessage('task-exception');
   });
 
   test('reportException (resource-unavailable) is idempotent', async () => {
-    var taskId = slugid.v4();
-    var allowedToFailNow = false;
-    var gotMessage = null;
-
-    await helper.events.listenFor('except', helper.queueEvents.taskException({
-      taskId,
-    }));
-
-    var gotMessage = helper.events.waitFor('except').then((message) => {
-      assert(allowedToFailNow, 'Failed at wrong time');
-      return message;
-    });
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
@@ -194,7 +168,6 @@ suite('Resolve task', function() {
     });
 
     debug('### Reporting task exception');
-    allowedToFailNow = true;
     helper.scopes(
       'queue:resolve-task',
       'assume:worker-id:my-worker-group/my-worker',
@@ -202,41 +175,32 @@ suite('Resolve task', function() {
     await helper.queue.reportException(taskId, 0, {
       reason:     'resource-unavailable',
     });
-
-    var {payload: {status: s1}} = await gotMessage;
-    assume(s1.runs[0].state).equals('exception');
-    assume(s1.runs[0].reasonResolved).equals('resource-unavailable');
+    helper.checkNextMessage('task-exception', m => {
+      assume(m.payload.status.runs[0].state).equals('exception');
+      assume(m.payload.status.runs[0].reasonResolved).equals('resource-unavailable');
+    });
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
       reason:     'resource-unavailable',
     });
+    helper.checkNextMessage('task-exception');
 
     debug('### Check status of task');
-    var {status: s2} = await helper.queue.status(taskId);
+    const {status: s2} = await helper.queue.status(taskId);
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('resource-unavailable');
 
     debug('### Reporting task exception (using temp creds)');
-    let queue = new helper.Queue({credentials: r1.credentials});
+    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
     await queue.reportException(taskId, 0, {
       reason:     'resource-unavailable',
     });
+    helper.checkNextMessage('task-exception');
   });
 
   test('reportException (internal-error) is idempotent', async () => {
-    var taskId = slugid.v4();
-    var allowedToFailNow = false;
-    var gotMessage = null;
-
-    await helper.events.listenFor('except', helper.queueEvents.taskException({
-      taskId,
-    }));
-
-    var gotMessage = helper.events.waitFor('except').then((message) => {
-      assert(allowedToFailNow, 'Failed at wrong time');
-      return message;
-    });
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
@@ -249,7 +213,6 @@ suite('Resolve task', function() {
     });
 
     debug('### Reporting task exception');
-    allowedToFailNow = true;
     helper.scopes(
       'queue:resolve-task',
       'assume:worker-id:my-worker-group/my-worker'
@@ -257,41 +220,32 @@ suite('Resolve task', function() {
     await helper.queue.reportException(taskId, 0, {
       reason:     'internal-error',
     });
-
-    var {payload: {status: s1}} = await gotMessage;
-    assume(s1.runs[0].state).equals('exception');
-    assume(s1.runs[0].reasonResolved).equals('internal-error');
+    helper.checkNextMessage('task-exception', m => {
+      assume(m.payload.status.runs[0].state).equals('exception');
+      assume(m.payload.status.runs[0].reasonResolved).equals('internal-error');
+    });
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
       reason:     'internal-error',
     });
+    helper.checkNextMessage('task-exception');
 
     debug('### Check status of task');
-    var {status: s2} = await helper.queue.status(taskId);
+    const {status: s2} = await helper.queue.status(taskId);
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('internal-error');
 
     debug('### Reporting task exception (using temp creds)');
-    let queue = new helper.Queue({credentials: r1.credentials});
+    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
     await queue.reportException(taskId, 0, {
       reason:     'internal-error',
     });
+    helper.checkNextMessage('task-exception');
   });
 
   test('reportException (superseded) is idempotent', async () => {
-    var taskId = slugid.v4();
-    var allowedToFailNow = false;
-    var gotMessage = null;
-
-    await helper.events.listenFor('except', helper.queueEvents.taskException({
-      taskId,
-    }));
-
-    var gotMessage = helper.events.waitFor('except').then((message) => {
-      assert(allowedToFailNow, 'Failed at wrong time');
-      return message;
-    });
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
@@ -304,7 +258,6 @@ suite('Resolve task', function() {
     });
 
     debug('### Reporting task exception');
-    allowedToFailNow = true;
     helper.scopes(
       'queue:resolve-task',
       'assume:worker-id:my-worker-group/my-worker',
@@ -312,30 +265,32 @@ suite('Resolve task', function() {
     await helper.queue.reportException(taskId, 0, {
       reason:     'superseded',
     });
-
-    var {payload: {status: s1}} = await gotMessage;
-    assume(s1.runs[0].state).equals('exception');
-    assume(s1.runs[0].reasonResolved).equals('superseded');
+    helper.checkNextMessage('task-exception', m => {
+      assume(m.payload.status.runs[0].state).equals('exception');
+      assume(m.payload.status.runs[0].reasonResolved).equals('superseded');
+    });
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
       reason:     'superseded',
     });
+    helper.checkNextMessage('task-exception');
 
     debug('### Check status of task');
-    var {status: s2} = await helper.queue.status(taskId);
+    const {status: s2} = await helper.queue.status(taskId);
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('superseded');
 
     debug('### Reporting task exception (using temp creds)');
-    let queue = new helper.Queue({credentials: r1.credentials});
+    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
     await queue.reportException(taskId, 0, {
       reason:     'superseded',
     });
+    helper.checkNextMessage('task-exception');
   });
 
   test('reportException can\'t overwrite reason', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
@@ -353,7 +308,7 @@ suite('Resolve task', function() {
     });
 
     debug('### Check status of task');
-    var {status: s1} = await helper.queue.status(taskId);
+    const {status: s1} = await helper.queue.status(taskId);
     assume(s1.runs[0].state).equals('exception');
     assume(s1.runs[0].reasonResolved).equals('malformed-payload');
 
@@ -363,31 +318,24 @@ suite('Resolve task', function() {
     }).then(() => {
       assert(false, 'Expected error');
     }, err => {
-      assert(err.statusCode === 409, 'Expected conflict error');
+      if (err.statusCode !== 409) {
+        throw err;
+      }
     });
 
     debug('### Check status of task (again)');
-    var {status: s2} = await helper.queue.status(taskId);
+    const {status: s2} = await helper.queue.status(taskId);
     assume(s2.runs[0].state).equals('exception');
     assume(s2.runs[0].reasonResolved).equals('malformed-payload');
   });
 
   test('reportException (worker-shutdown) is idempotent', async () => {
-    var taskId = slugid.v4();
-    var allowedToBeException = false;
-    var gotMessage = null;
-
-    await helper.events.listenFor('except', helper.queueEvents.taskException({
-      taskId,
-    }));
-
-    var gotMessage = helper.events.waitFor('except').then((message) => {
-      assert(allowedToBeException, 'Exception at wrong time');
-      return message;
-    });
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
+    helper.checkNextMessage('task-defined');
+    helper.checkNextMessage('task-pending');
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
@@ -395,51 +343,54 @@ suite('Resolve task', function() {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
-
-    await helper.events.listenFor('pending', helper.queueEvents.taskPending({
-      taskId,
-    }));
+    helper.checkNextMessage('task-running');
 
     debug('### Reporting task exception (worker-shutdown)');
     helper.scopes(
       'queue:resolve-task',
       'assume:worker-id:my-worker-group/my-worker',
     );
-    var r1 = await helper.queue.reportException(taskId, 0, {
+    const r1 = await helper.queue.reportException(taskId, 0, {
       reason:     'worker-shutdown',
     });
     assume(r1.status.runs.length).equals(2);
     assume(r1.status.runs[0].state).equals('exception');
+    assume(r1.status.runs[0].reasonResolved).equals('worker-shutdown');
     assume(r1.status.runs[1].state).equals('pending');
+    assume(r1.status.runs[1].reasonCreated).equals('retry');
+
+    // no exception message, just right back to pending
+    helper.checkNoNextMessage('task-exception');
+    helper.checkNextMessage('task-pending', m => {
+      assume(m.payload.status).deep.equals(r1.status);
+      assume(m.payload.runId).equals(1);
+    });
+
     await helper.queue.reportException(taskId, 0, {
       reason:     'worker-shutdown',
     });
-
-    var m1 = await helper.events.waitFor('pending');
-    assume(m1.payload.status).deep.equals(r1.status);
-    assume(m1.payload.runId).equals(1);
-    assume(m1.payload.status.runs[0].reasonResolved).equals('worker-shutdown');
-    assume(m1.payload.status.runs[1].reasonCreated).equals('retry');
+    helper.checkNoNextMessage('task-exception');
+    helper.checkNextMessage('task-pending');
 
     helper.scopes();
     await helper.queue.claimTask(taskId, 1, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
+    helper.checkNextMessage('task-running');
 
     debug('### Reporting task exception (again)');
-    allowedToBeException = true;
     await helper.queue.reportException(taskId, 1, {
       reason:     'worker-shutdown',
     });
-
-    var m1 = await gotMessage;
-    assume(m1.payload.status.runs[1].state).equals('exception');
-    assume(m1.payload.status.runs.length).equals(2);
+    helper.checkNextMessage('task-exception', m => {
+      assume(m.payload.status.runs[1].state).equals('exception');
+      assume(m.payload.status.runs.length).equals(2);
+    });
   });
 
   test('reportComplete with bad scopes', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
@@ -458,26 +409,19 @@ suite('Resolve task', function() {
     await helper.queue.reportCompleted(taskId, 0).then(function() {
       throw new Error('Expected authentication error');
     }, function(err) {
-      debug('Got expected authentication error: %s', err);
+      if (err.code != 'InsufficientScopes') {
+        throw err;
+      }
     });
   });
 
   test('reportException (intermittent-task) is idempotent', async () => {
-    var taskId = slugid.v4();
-    var allowedToBeException = false;
-    var gotMessage = null;
-
-    await helper.events.listenFor('except', helper.queueEvents.taskException({
-      taskId,
-    }));
-
-    var gotMessage = helper.events.waitFor('except').then((message) => {
-      assert(allowedToBeException, 'Exception at wrong time');
-      return message;
-    });
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
+    helper.checkNextMessage('task-defined');
+    helper.checkNextMessage('task-pending');
 
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
@@ -485,17 +429,14 @@ suite('Resolve task', function() {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
-
-    await helper.events.listenFor('pending', helper.queueEvents.taskPending({
-      taskId,
-    }));
+    helper.checkNextMessage('task-running');
 
     debug('### Reporting task exception (intermittent-task)');
     helper.scopes(
       'queue:resolve-task',
       'assume:worker-id:my-worker-group/my-worker',
     );
-    var r1 = await helper.queue.reportException(taskId, 0, {
+    const r1 = await helper.queue.reportException(taskId, 0, {
       reason:     'intermittent-task',
     });
     assume(r1.status.runs.length).equals(2);
@@ -504,27 +445,28 @@ suite('Resolve task', function() {
     await helper.queue.reportException(taskId, 0, {
       reason:     'intermittent-task',
     });
-
-    var m1 = await helper.events.waitFor('pending');
-    assume(m1.payload.status).deep.equals(r1.status);
-    assume(m1.payload.runId).equals(1);
-    assume(m1.payload.status.runs[0].reasonResolved).equals('intermittent-task');
-    assume(m1.payload.status.runs[1].reasonCreated).equals('task-retry');
+    helper.checkNextMessage('task-pending', m => {
+      assume(m.payload.status).deep.equals(r1.status);
+      assume(m.payload.runId).equals(1);
+      assume(m.payload.status.runs[0].reasonResolved).equals('intermittent-task');
+      assume(m.payload.status.runs[1].reasonCreated).equals('task-retry');
+    });
 
     helper.scopes();
     await helper.queue.claimTask(taskId, 1, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
+    helper.checkNextMessage('task-running');
 
     debug('### Reporting task exception (again)');
-    allowedToBeException = true;
     await helper.queue.reportException(taskId, 1, {
       reason:     'intermittent-task',
     });
 
-    var m1 = await gotMessage;
-    assume(m1.payload.status.runs[1].state).equals('exception');
-    assume(m1.payload.status.runs.length).equals(2);
+    helper.checkNextMessage('task-exception', m => {
+      assume(m.payload.status.runs[1].state).equals('exception');
+      assume(m.payload.status.runs.length).equals(2);
+    });
   });
 });

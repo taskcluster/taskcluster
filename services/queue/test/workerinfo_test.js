@@ -1,26 +1,23 @@
-suite('provisioners and worker-types', () => {
-  var debug       = require('debug')('test:claim-work');
-  var assert      = require('assert');
-  var _           = require('lodash');
-  var slugid      = require('slugid');
-  var Entity      = require('azure-entities');
-  var taskcluster = require('taskcluster-client');
-  var assume      = require('assume');
-  var helper      = require('./helper');
-  var testing     = require('taskcluster-lib-testing');
+const debug = require('debug')('test:claim-work');
+const assert = require('assert');
+const _ = require('lodash');
+const slugid = require('slugid');
+const Entity = require('azure-entities');
+const taskcluster = require('taskcluster-client');
+const assume = require('assume');
+const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
-  setup(async function() {
-    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
-    const WorkerType = await helper.load('WorkerType', helper.loadOptions);
-    const Worker = await helper.load('Worker', helper.loadOptions);
-
-    await Provisioner.scan({}, {handler: p => p.remove()});
-    await WorkerType.scan({}, {handler: p => p.remove()});
-    await Worker.scan({}, {handler: p => p.remove()});
-  });
+helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+  helper.withAmazonIPRanges(mock, skipping);
+  helper.withPulse(mock, skipping);
+  helper.withS3(mock, skipping);
+  helper.withQueueService(mock, skipping);
+  helper.withBlobStore(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withServer(mock, skipping);
 
   const makeProvisioner = async (opts) => {
-    const Provisioner = await helper.load('Provisioner', helper.loadOptions);
     const provisioner = Object.assign({
       provisionerId: 'prov1',
       expires: new Date('3017-07-29'),
@@ -29,12 +26,11 @@ suite('provisioners and worker-types', () => {
       stability: 'experimental',
       actions: [],
     }, opts);
-    await Provisioner.create(provisioner);
+    await helper.Provisioner.create(provisioner);
     return provisioner;
   };
   
   const makeWorkerType = async (opts) => {
-    const WorkerType = await helper.load('WorkerType', helper.loadOptions);
     const wType = Object.assign({
       provisionerId: 'prov1',
       workerType: 'gecko-b-2-linux',
@@ -44,12 +40,11 @@ suite('provisioners and worker-types', () => {
       stability: 'experimental',
     }, opts);
 
-    await WorkerType.create(wType);
+    await helper.WorkerType.create(wType);
     return wType;
   };
 
   const makeWorker = async (opts) => {
-    const Worker = await helper.load('Worker', helper.loadOptions);
     const worker = Object.assign({
       provisionerId: 'prov1',
       workerType: 'gecko-b-2-linux',
@@ -61,10 +56,19 @@ suite('provisioners and worker-types', () => {
       firstClaim: new Date(),
     }, opts);
 
-    await Worker.create(worker);
+    await helper.Worker.create(worker);
 
     return worker;
   };
+
+  let workerInfo;
+  suiteSetup('load workerInfo', async function() {
+    if (skipping()) {
+      return;
+    }
+    workerInfo = await helper.load('workerInfo');
+    workerInfo.updateFrequency = '0 seconds'; // don't skip updates
+  });
 
   test('queue.listProvisioners returns an empty list', async () => {
     const result = await helper.queue.listProvisioners();
@@ -84,7 +88,7 @@ suite('provisioners and worker-types', () => {
   });
 
   test('provisioner seen creates and updates a provisioner', async () => {
-    const workerInfo = await helper.load('workerInfo', helper.loadOptions);
+    const workerInfo = await helper.load('workerInfo');
 
     await Promise.all([
       workerInfo.seen('prov2'),
@@ -97,9 +101,9 @@ suite('provisioners and worker-types', () => {
   });
 
   test('provisioner expiration works', async () => {
-    await makeProvisioner({expires: new Date('1000-01-01')});
+    await makeProvisioner({expires: new Date('2000-01-01')});
 
-    await helper.expireWorkerInfo();
+    await helper.runExpiration('expire-worker-info');
 
     const result = await helper.queue.listProvisioners();
     assert(result.provisioners.length === 0, 'expected no provisioners');
@@ -166,7 +170,7 @@ suite('provisioners and worker-types', () => {
   });
 
   test('worker-type seen creates and updates a worker-type', async () => {
-    const workerInfo = await helper.load('workerInfo', helper.loadOptions);
+    const workerInfo = await helper.load('workerInfo');
     const workerType = 'gecko-b-2-linux';
 
     await Promise.all([
@@ -180,10 +184,10 @@ suite('provisioners and worker-types', () => {
 
   test('worker-type expiration works', async () => {
     await makeWorkerType({
-      expires: new Date('1017-07-29'),
+      expires: new Date('2017-07-29'),
     });
 
-    await helper.expireWorkerInfo();
+    await helper.runExpiration('expire-worker-info');
 
     const result = await helper.queue.listWorkerTypes('prov1');
     assert(result.workerTypes.length === 0, 'expected no worker-types');
@@ -276,7 +280,7 @@ suite('provisioners and worker-types', () => {
   });
 
   test('workerSeen creates and updates a worker', async () => {
-    const workerInfo = await helper.load('workerInfo', helper.loadOptions);
+    const workerInfo = await helper.load('workerInfo');
     const provisionerId = 'prov1';
     const workerType = 'gecko-b-2-linux';
     const workerGroup = 'my-worker-group';
@@ -293,9 +297,9 @@ suite('provisioners and worker-types', () => {
 
   test('worker expiration works', async () => {
     const worker = await makeWorker({
-      expires: new Date('1017-07-29'),
+      expires: new Date('2017-07-29'),
     });
-    await helper.expireWorkerInfo();
+    await helper.runExpiration('expire-worker-info');
 
     const result = await helper.queue.listWorkers(worker.provisionerId, worker.workerType);
 
@@ -546,8 +550,9 @@ suite('provisioners and worker-types', () => {
 
   test('worker-type lastDateActive updates', async () => {
     let result;
-    const workerInfo = await helper.load('workerInfo', helper.loadOptions);
+    const workerInfo = await helper.load('workerInfo');
 
+    await makeProvisioner({});
     const wType = {
       provisionerId: 'prov1',
       workerType: 'gecko-b-2-linux',
@@ -578,7 +583,7 @@ suite('provisioners and worker-types', () => {
 
   test('provisioner lastDateActive updates', async () => {
     let result;
-    const workerInfo = await helper.load('workerInfo', helper.loadOptions);
+    const workerInfo = await helper.load('workerInfo');
 
     const provisioner = await makeProvisioner({});
 
@@ -772,14 +777,13 @@ suite('provisioners and worker-types', () => {
   });
 
   test('queue.claimWork adds a task to a worker', async () => {
-    const Worker = await helper.load('Worker', helper.loadOptions);
     const provisionerId = 'prov1';
     const workerType = 'gecko-b-2-linux';
     const workerGroup = 'my-worker-group';
     const workerId = 'my-worker';
     const taskId = slugid.v4();
 
-    await helper.queue.createTask(taskId, {
+    const taskStatus = await helper.queue.createTask(taskId, {
       provisionerId,
       workerType,
       priority: 'normal',
@@ -794,13 +798,14 @@ suite('provisioners and worker-types', () => {
       },
     });
 
+    //await makeClaimable(taskStatus);
     await helper.queue.claimWork(provisionerId, workerType, {
       workerGroup,
       workerId,
       tasks: 1,
     });
 
-    const result = await Worker.load({provisionerId, workerType, workerGroup, workerId});
+    const result = await helper.Worker.load({provisionerId, workerType, workerGroup, workerId});
 
     assert(result.recentTasks[0].taskId === taskId, `expected taskId ${taskId}`);
     assert(result.recentTasks[0].runId === 0, 'expected runId 0');
@@ -816,9 +821,10 @@ suite('provisioners and worker-types', () => {
     let taskIds = [];
 
     for (let i = 0; i < 30; i++) {
-      taskIds.push(slugid.v4());
+      const taskId = slugid.v4();
+      taskIds.push(taskId);
 
-      await helper.queue.createTask(taskIds[i], {
+      const taskStatus = await helper.queue.createTask(taskIds[i], {
         provisionerId,
         workerType,
         priority: 'normal',

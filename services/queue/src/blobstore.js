@@ -21,7 +21,7 @@ var BlobStore = function(options) {
   // Documentation for the BlobService object can be found here:
   // http://dl.windowsazure.com/nodestoragedocs/index.html
   this.service = azure.createBlobService(
-    options.credentials.accountName,
+    options.credentials.accountId,
     options.credentials.accountKey,
   ).withFilter(new azure.ExponentialRetryPolicyFilter());
 };

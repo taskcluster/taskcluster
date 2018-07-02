@@ -144,7 +144,7 @@ properties:
       `docker-worker` requires keys like: `image`, `commands` and
       `features`. Refer to the documentation of `docker-worker` for details.
     type:           object
-  metadata:         {$ref: "http://schemas.taskcluster.net/queue/v1/task-metadata.json#"}
+  metadata:         {$ref: "task-metadata.json#"}
   tags:
     title:            "Tags"
     description: |

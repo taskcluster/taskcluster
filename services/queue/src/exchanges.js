@@ -3,7 +3,10 @@ var assert    = require('assert');
 
 /** Declaration of exchanges offered by the queue */
 var exchanges = new Exchanges({
-  title:      'Queue AMQP Exchanges',
+  title:       'Queue AMQP Exchanges',
+  projectName: 'taskcluster-queue',
+  serviceName: 'queue',
+  version:     'v1',
   description: [
     'The queue, typically available at `queue.taskcluster.net`, is responsible',
     'for accepting tasks and track their state as they are executed by',
@@ -53,7 +56,6 @@ var exchanges = new Exchanges({
     'future. For now we suggest you ignore this corner case, and notify us',
     'if this corner case is of concern to you.',
   ].join('\n'),
-  schemaPrefix:         'http://schemas.taskcluster.net/queue/v1/',
 });
 
 // Export exchanges

@@ -1,28 +1,40 @@
-suite('Artifacts', function() {
-  var os            = require('os');
-  var path          = require('path');
-  var debug         = require('debug')('test:artifacts');
-  var assert        = require('assert');
-  var slugid        = require('slugid');
-  var _             = require('lodash');
-  var request       = require('superagent');
-  var assert        = require('assert');
-  var urljoin       = require('url-join');
-  var BlobUploader  = require('./azure-blob-uploader-sas');
-  var Bucket        = require('../src/bucket');
-  var BlobStore     = require('../src/blobstore');
-  var data          = require('../src/data');
-  var taskcluster   = require('taskcluster-client');
-  var {Netmask}     = require('netmask');
-  var assume        = require('assume');
-  var helper        = require('./helper');
-  var fs            = require('fs');
-  var crypto        = require('crypto');
-  var remoteS3      = require('remotely-signed-s3');
-  var qs            = require('querystring');
-  var urllib        = require('url');
-  var http          = require('http');
-  var https         = require('https');
+const os = require('os');
+const path = require('path');
+const debug = require('debug')('test:artifacts');
+const assert = require('assert');
+const slugid = require('slugid');
+const _ = require('lodash');
+const request = require('superagent');
+const urljoin = require('url-join');
+const BlobUploader = require('./azure-blob-uploader-sas');
+const Bucket = require('../src/bucket');
+const BlobStore = require('../src/blobstore');
+const data = require('../src/data');
+const taskcluster = require('taskcluster-client');
+const {Netmask} = require('netmask');
+const assume = require('assume');
+const helper = require('./helper');
+const fs = require('fs');
+const crypto = require('crypto');
+const remoteS3 = require('remotely-signed-s3');
+const qs = require('querystring');
+const urllib = require('url');
+const http = require('http');
+const https = require('https');
+
+helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+  helper.withAmazonIPRanges(mock, skipping);
+  helper.withPulse(mock, skipping);
+  helper.withS3(mock, skipping);
+  helper.withQueueService(mock, skipping);
+  helper.withBlobStore(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withServer(mock, skipping);
+
+  if (mock) {
+    // this uses signed S3 URLs, which cannot easily be mocked
+    return;
+  }
 
   // Static URL from which ip-ranges from AWS services can be fetched
   const AWS_IP_RANGES_URL = 'https://ip-ranges.amazonaws.com/ip-ranges.json';
@@ -30,8 +42,8 @@ suite('Artifacts', function() {
   // Make a get request with a 303 redirect, recent superagent versions does
   // this wrong with jumping between host, so this function just does the
   // redirect step, and makes sure it's done right.
-  var getWith303Redirect = async (url) => {
-    var res;
+  const getWith303Redirect = async (url) => {
+    let res;
     try {
       res = await request.get(url).redirects(0);
     } catch (err) {
@@ -42,8 +54,8 @@ suite('Artifacts', function() {
     return request.get(res.headers.location);
   };
 
-  var getWithoutRedirecting = async (url) => {
-    var res;
+  const getWithoutRedirecting = async (url) => {
+    let res;
     try {
       res = await request.get(url).redirects(0);
     } catch (err) {
@@ -117,8 +129,8 @@ suite('Artifacts', function() {
 
   // Get something we expect to return 404, this is just easier than having
   // try/catch blocks all over the code
-  var get404 = async (url) => {
-    var res;
+  const get404 = async (url) => {
+    let res;
     try {
       res = await request.get(url).redirects(0);
     } catch (err) {
@@ -129,7 +141,7 @@ suite('Artifacts', function() {
   };
 
   // Use the same task definition for everything
-  var taskDef = {
+  const taskDef = {
     provisionerId:    'no-provisioner',
     workerType:       'test-worker',
     schedulerId:      'my-scheduler',
@@ -153,6 +165,12 @@ suite('Artifacts', function() {
   this.timeout(3 * 60 * 1000);
 
   suite('Blob Storage Type', () => {
+    suiteSetup(function() {
+      if (skipping()) {
+        this.skip();
+      }
+    });
+
     let bigfilename = path.join(os.tmpdir(), slugid.v4());
     let bigfilehash;
     let bigfilesize = 10 * 1024 * 1024 + 512 * 1024; // 10.5 MB so we get a partial last part
@@ -164,14 +182,14 @@ suite('Artifacts', function() {
 
     debug(`Temporary file ${bigfilename} of size ${bigfilesize} bytes`);
 
-    before(() => {
+    suiteSetup(() => {
       let buf = crypto.randomBytes(bigfilesize);
       assert(buf.length === bigfilesize);
       bigfilehash = crypto.createHash('sha256').update(buf).digest('hex');
       fs.writeFileSync(bigfilename, buf);
     });
 
-    after(() => {
+    suiteTeardown(() => {
       fs.unlinkSync(bigfilename);
     });
 
@@ -465,7 +483,7 @@ suite('Artifacts', function() {
   });
 
   test('Post Public S3 artifact', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
 
@@ -481,7 +499,7 @@ suite('Artifacts', function() {
       'queue:create-artifact:public/s3.json',
       'assume:worker-id:my-worker-group/my-worker',
     );
-    var r1 = await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
+    const r1 = await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
       storageType:  's3',
       expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'application/json',
@@ -489,11 +507,11 @@ suite('Artifacts', function() {
     assume(r1.putUrl).is.ok();
 
     debug('### Uploading to putUrl');
-    var res = await request.put(r1.putUrl).send({message: 'Hello World'});
+    let res = await request.put(r1.putUrl).send({message: 'Hello World'});
     assume(res.ok).is.ok();
 
     debug('### Download Artifact (runId: 0)');
-    var url = helper.queue.buildUrl(
+    let url = helper.queue.buildUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/s3.json',
     );
@@ -503,7 +521,7 @@ suite('Artifacts', function() {
     assume(res.body).to.be.eql({message: 'Hello World'});
 
     debug('### Download Artifact Signed URL (runId: 0)');
-    var url = helper.queue.buildSignedUrl(
+    url = helper.queue.buildSignedUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/s3.json',
     );
@@ -513,7 +531,7 @@ suite('Artifacts', function() {
     assume(res.body).to.be.eql({message: 'Hello World'});
 
     debug('### Download Artifact (latest)');
-    var url = helper.queue.buildUrl(
+    url = helper.queue.buildUrl(
       helper.queue.getLatestArtifact,
       taskId, 'public/s3.json',
     );
@@ -523,24 +541,24 @@ suite('Artifacts', function() {
     assume(res.body).to.be.eql({message: 'Hello World'});
 
     debug('### List artifacts');
-    var r2 = await helper.queue.listArtifacts(taskId, 0);
+    const r2 = await helper.queue.listArtifacts(taskId, 0);
     assume(r2.artifacts.length).equals(1);
 
     debug('### List artifacts from latest run');
-    var r3 = await helper.queue.listLatestArtifacts(taskId);
+    const r3 = await helper.queue.listLatestArtifacts(taskId);
     assume(r3.artifacts.length).equals(1);
 
     debug('### Download Artifact (runId: 0) using proxy');
-    var url = helper.queue.buildUrl(
+    url = helper.queue.buildUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/s3.json',
     );
     debug('Get ip-ranges from EC2');
-    var {body} = await request.get(AWS_IP_RANGES_URL);
-    var ipRange = body.prefixes.filter(prefix => {
+    const {body} = await request.get(AWS_IP_RANGES_URL);
+    const ipRange = body.prefixes.filter(prefix => {
       return prefix.service === 'EC2' && prefix.region === 'us-east-1';
     })[0].ip_prefix;
-    var fakeIp = new Netmask(ipRange).first;
+    const fakeIp = new Netmask(ipRange).first;
     debug('Fetching artifact from: %s', url);
     try {
       res = await request
@@ -556,10 +574,10 @@ suite('Artifacts', function() {
 
     debug('### Expire artifacts');
     // config/test.js hardcoded to expire artifact 4 days in the future
-    await helper.expireArtifacts();
+    await helper.runExpiration('expire-artifacts');
 
     debug('### Attempt to download Artifact (runId: 0)');
-    var url = helper.queue.buildUrl(
+    url = helper.queue.buildUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/s3.json',
     );
@@ -568,7 +586,7 @@ suite('Artifacts', function() {
   });
 
   test('Post S3 artifact (with temp creds)', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     debug('### Creating task');
     let taskDef2 = _.defaults({
       scopes: ['queue:create-artifact:public/s3.json'],
@@ -583,8 +601,8 @@ suite('Artifacts', function() {
     });
 
     debug('### Send post artifact request');
-    let queue = new helper.Queue({credentials});
-    var r1 = await queue.createArtifact(taskId, 0, 'public/s3.json', {
+    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials});
+    const r1 = await queue.createArtifact(taskId, 0, 'public/s3.json', {
       storageType:  's3',
       expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'application/json',
@@ -592,11 +610,11 @@ suite('Artifacts', function() {
     assume(r1.putUrl).is.ok();
 
     debug('### Uploading to putUrl');
-    var res = await request.put(r1.putUrl).send({message: 'Hello World'});
+    let res = await request.put(r1.putUrl).send({message: 'Hello World'});
     assume(res.ok).is.ok();
 
     debug('### Download Artifact (runId: 0)');
-    var url = helper.queue.buildUrl(
+    let url = helper.queue.buildUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/s3.json',
     );
@@ -606,7 +624,7 @@ suite('Artifacts', function() {
     assume(res.body).to.be.eql({message: 'Hello World'});
 
     debug('### Download Artifact Signed URL (runId: 0)');
-    var url = helper.queue.buildSignedUrl(
+    url = helper.queue.buildSignedUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/s3.json',
     );
@@ -616,7 +634,7 @@ suite('Artifacts', function() {
     assume(res.body).to.be.eql({message: 'Hello World'});
 
     debug('### Download Artifact (latest)');
-    var url = helper.queue.buildUrl(
+    url = helper.queue.buildUrl(
       helper.queue.getLatestArtifact,
       taskId, 'public/s3.json',
     );
@@ -626,24 +644,24 @@ suite('Artifacts', function() {
     assume(res.body).to.be.eql({message: 'Hello World'});
 
     debug('### List artifacts');
-    var r2 = await helper.queue.listArtifacts(taskId, 0);
+    const r2 = await helper.queue.listArtifacts(taskId, 0);
     assume(r2.artifacts.length).equals(1);
 
     debug('### List artifacts from latest run');
-    var r3 = await helper.queue.listLatestArtifacts(taskId);
+    const r3 = await helper.queue.listLatestArtifacts(taskId);
     assume(r3.artifacts.length).equals(1);
 
     debug('### Download Artifact (runId: 0) using proxy');
-    var url = helper.queue.buildUrl(
+    url = helper.queue.buildUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/s3.json',
     );
     debug('Get ip-ranges from EC2');
-    var {body} = await request.get(AWS_IP_RANGES_URL);
-    var ipRange = body.prefixes.filter(prefix => {
+    const {body} = await request.get(AWS_IP_RANGES_URL);
+    const ipRange = body.prefixes.filter(prefix => {
       return prefix.service === 'EC2' && prefix.region === 'us-east-1';
     })[0].ip_prefix;
-    var fakeIp = new Netmask(ipRange).first;
+    const fakeIp = new Netmask(ipRange).first;
     debug('Fetching artifact from: %s', url);
     try {
       res = await request
@@ -659,10 +677,10 @@ suite('Artifacts', function() {
 
     debug('### Expire artifacts');
     // config/test.js hardcoded to expire artifact 4 days in the future
-    await helper.expireArtifacts();
+    await helper.runExpiration('expire-artifacts');
 
     debug('### Attempt to download Artifact (runId: 0)');
-    var url = helper.queue.buildUrl(
+    url = helper.queue.buildUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/s3.json',
     );
@@ -671,7 +689,7 @@ suite('Artifacts', function() {
   });
 
   test('Post S3 artifact (with bad scopes)', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
 
@@ -699,7 +717,7 @@ suite('Artifacts', function() {
   });
 
   test('Post S3 artifact (with creds from claimTask)', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     debug('### Creating task');
     let taskDef2 = _.defaults({
       scopes: ['queue:create-artifact:public/another-s3.json'],
@@ -714,7 +732,7 @@ suite('Artifacts', function() {
     });
 
     debug('### Send post artifact request');
-    let queue = new helper.Queue({credentials});
+    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials});
     await queue.createArtifact(taskId, 0, 'public/s3.json', {
       storageType:  's3',
       expires:      taskcluster.fromNowJSON('1 day'),
@@ -723,7 +741,7 @@ suite('Artifacts', function() {
   });
 
   test('Check expire doesn\'t drop table', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
 
@@ -735,8 +753,8 @@ suite('Artifacts', function() {
     });
 
     debug('### Send post artifact request');
-    let queue = new helper.Queue({credentials});
-    var r1 = await queue.createArtifact(taskId, 0, 'public/s3.json', {
+    let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials});
+    const r1 = await queue.createArtifact(taskId, 0, 'public/s3.json', {
       storageType:  's3',
       expires:      taskcluster.fromNowJSON('12 day'),
       contentType:  'application/json',
@@ -744,11 +762,11 @@ suite('Artifacts', function() {
     assume(r1.putUrl).is.ok();
 
     debug('### Uploading to putUrl');
-    var res = await request.put(r1.putUrl).send({message: 'Hello World'});
+    let res = await request.put(r1.putUrl).send({message: 'Hello World'});
     assume(res.ok).is.ok();
 
     debug('### Download Artifact (runId: 0)');
-    var url = helper.queue.buildUrl(
+    let url = helper.queue.buildUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/s3.json',
     );
@@ -758,17 +776,17 @@ suite('Artifacts', function() {
     assume(res.body).to.be.eql({message: 'Hello World'});
 
     debug('### List artifacts');
-    var r2 = await helper.queue.listArtifacts(taskId, 0);
+    const r2 = await helper.queue.listArtifacts(taskId, 0);
     assume(r2.artifacts.length).equals(1);
 
     debug('### Expire artifacts');
     // config/test.js hardcoded to expire artifact 4 days in the future
     // in this test we should see that the artifact is still present as we
     // set expiration to 12 days here
-    await helper.expireArtifacts();
+    await helper.runExpiration('expire-artifacts');
 
     debug('### Download Artifact (runId: 0)');
-    var url = helper.queue.buildUrl(
+    url = helper.queue.buildUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/s3.json',
     );
@@ -778,12 +796,12 @@ suite('Artifacts', function() {
     assume(res.body).to.be.eql({message: 'Hello World'});
 
     debug('### List artifacts');
-    var r2 = await helper.queue.listArtifacts(taskId, 0);
-    assume(r2.artifacts.length).equals(1);
+    const r3 = await helper.queue.listArtifacts(taskId, 0);
+    assume(r3.artifacts.length).equals(1);
   });
 
   test('Post Azure artifact', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
@@ -800,16 +818,16 @@ suite('Artifacts', function() {
       'queue:create-artifact:public/azure.json',
       'assume:worker-id:my-worker-group/my-worker'
     );
-    var r1 = await helper.queue.createArtifact(taskId, 0, 'public/azure.json', {
+    const r1 = await helper.queue.createArtifact(taskId, 0, 'public/azure.json', {
       storageType:  'azure',
       expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'application/json',
     });
 
     debug('### Uploading blocks');
-    var block1 = slugid.v4();
-    var block2 = slugid.v4();
-    var uploader = new BlobUploader(r1.putUrl);
+    const block1 = slugid.v4();
+    const block2 = slugid.v4();
+    const uploader = new BlobUploader(r1.putUrl);
     await Promise.all([
       uploader.putBlock(block1, '{"block1_says": "Hello world",\n'),
       uploader.putBlock(block2, '"block2_says": "Hello Again"}\n'),
@@ -819,12 +837,12 @@ suite('Artifacts', function() {
     await uploader.putBlockList([block1, block2], 'application/json');
 
     debug('### Downloading artifact');
-    var url = helper.queue.buildUrl(
+    const url = helper.queue.buildUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/azure.json',
     );
     debug('Fetching artifact from: %s', url);
-    var res = await getWith303Redirect(url);
+    const res = await getWith303Redirect(url);
     assume(res.ok).is.ok();
     assume(res.body).deep.equals({
       block1_says: 'Hello world',
@@ -833,15 +851,15 @@ suite('Artifacts', function() {
 
     debug('### Expire artifacts');
     // config/test.js hardcoded to expire artifact 4 days in the future
-    await helper.expireArtifacts();
+    await helper.runExpiration('expire-artifacts');
 
     debug('### Attempt to download artifact');
     await get404(url);
   });
 
   test('Post error artifact', async () => {
-    var taskId = slugid.v4();
-    var artifactCreated;
+    const taskId = slugid.v4();
+    let artifactCreated;
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
@@ -852,12 +870,6 @@ suite('Artifacts', function() {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
-
-    debug('### Start listenFor for artifact created message');
-    await helper.events.listenFor(
-      'artifact-created',
-      helper.queueEvents.artifactCreated({taskId}),
-    );
 
     debug('### Send post artifact request');
     helper.scopes(
@@ -872,15 +884,15 @@ suite('Artifacts', function() {
     });
 
     debug('### Wait for artifact created message');
-    await helper.events.waitFor('artifact-created');
+    helper.checkNextMessage('artifact-created');
 
     debug('### Downloading artifact');
-    var url = helper.queue.buildUrl(
+    const url = helper.queue.buildUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/error.json',
     );
     debug('Fetching artifact from: %s', url);
-    var res;
+    let res;
     try {
       res = await request.get(url);
     } catch (err) {
@@ -892,14 +904,14 @@ suite('Artifacts', function() {
 
     debug('### Expire artifacts');
     // config/test.js hardcoded to expire artifact 4 days in the future
-    await helper.expireArtifacts();
+    await helper.runExpiration('expire-artifacts');
 
     debug('### Attempt to download artifact');
     await get404(url);
   });
 
   test('Post redirect artifact', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
@@ -924,7 +936,7 @@ suite('Artifacts', function() {
     });
 
     debug('### Send post artifact request (again w. new URL)');
-    var pingUrl = helper.queue.buildUrl(helper.queue.ping);
+    const pingUrl = helper.queue.buildUrl(helper.queue.ping);
     await helper.queue.createArtifact(taskId, 0, 'public/redirect.json', {
       storageType:  'reference',
       expires:      taskcluster.fromNowJSON('1 day'),
@@ -933,24 +945,24 @@ suite('Artifacts', function() {
     });
 
     debug('### Downloading artifact');
-    var url = helper.queue.buildUrl(
+    const url = helper.queue.buildUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/redirect.json',
     );
     debug('Fetching artifact from: %s', url);
-    var res = await getWith303Redirect(url);
+    const res = await getWith303Redirect(url);
     assume(res.ok).is.ok();
 
     debug('### Expire artifacts');
     // config/test.js hardcoded to expire artifact 4 days in the future
-    await helper.expireArtifacts();
+    await helper.runExpiration('expire-artifacts');
 
     debug('### Attempt to download artifact');
     await get404(url);
   });
 
   test('Redirect artifact doesn\'t expire too soon', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
@@ -971,7 +983,7 @@ suite('Artifacts', function() {
     });
 
     debug('### Send post artifact request (again w. new URL)');
-    var pingUrl = helper.queue.buildUrl(helper.queue.ping);
+    const pingUrl = helper.queue.buildUrl(helper.queue.ping);
     await helper.queue.createArtifact(taskId, 0, 'public/redirect.json', {
       storageType:  'reference',
       expires:      taskcluster.fromNowJSON('12 day'),
@@ -980,31 +992,31 @@ suite('Artifacts', function() {
     });
 
     debug('### Downloading artifact');
-    var url = helper.queue.buildUrl(
+    let url = helper.queue.buildUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/redirect.json',
     );
     debug('Fetching artifact from: %s', url);
-    var res = await getWith303Redirect(url);
+    let res = await getWith303Redirect(url);
     assume(res.ok).is.ok();
 
     debug('### Expire artifacts');
     // config/test.js hardcoded to expire artifact 4 days in the future
     // In this test, we check that it doesn't expire...
-    await helper.expireArtifacts();
+    await helper.runExpiration('expire-artifacts');
 
     debug('### Downloading artifact');
-    var url = helper.queue.buildUrl(
+    url = helper.queue.buildUrl(
       helper.queue.getArtifact,
       taskId, 0, 'public/redirect.json',
     );
     debug('Fetching artifact from: %s', url);
-    var res = await getWith303Redirect(url);
+    res = await getWith303Redirect(url);
     assume(res.ok).is.ok();
   });
 
   test('Post artifact past resolution for \'exception\'', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
 
@@ -1021,7 +1033,7 @@ suite('Artifacts', function() {
     });
 
     debug('### Send post artifact request');
-    var r1 = await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
+    const r1 = await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
       storageType:  's3',
       expires:      taskcluster.fromNowJSON('1 day'),
       contentType:  'application/json',
@@ -1030,7 +1042,7 @@ suite('Artifacts', function() {
   });
 
   test('Can\'t post artifact past resolution for \'completed\'', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
 
@@ -1055,7 +1067,7 @@ suite('Artifacts', function() {
   });
 
   test('Can\'t post artifact past resolution for \'failed\'', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
 
@@ -1080,7 +1092,7 @@ suite('Artifacts', function() {
   });
 
   test('Can update expiration of artifact', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
 
@@ -1091,8 +1103,8 @@ suite('Artifacts', function() {
       workerId:       'my-worker',
     });
 
-    var expirationIn1Day = taskcluster.fromNowJSON('1 day');
-    var expirationIn2Days = taskcluster.fromNowJSON('2 days');
+    const expirationIn1Day = taskcluster.fromNowJSON('1 day');
+    const expirationIn2Days = taskcluster.fromNowJSON('2 days');
 
     debug('### Send post artifact request');
     await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
@@ -1111,19 +1123,19 @@ suite('Artifacts', function() {
       throw err;
     });
 
-    var artifacts = await helper.queue.listArtifacts(taskId, 0);
+    const artifacts = await helper.queue.listArtifacts(taskId, 0);
 
     debug('### reportCompleted');
     await helper.queue.reportCompleted(taskId, 0);
 
-    var savedExpiration = new Date(artifacts.artifacts[0].expires).getTime();
-    var originalExpiration = new Date(expirationIn1Day).getTime();
+    const savedExpiration = new Date(artifacts.artifacts[0].expires).getTime();
+    const originalExpiration = new Date(expirationIn1Day).getTime();
 
     assume(savedExpiration).is.greaterThan(originalExpiration);
   });
 
   test('Can not update content type of artifact', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
 
@@ -1157,8 +1169,8 @@ suite('Artifacts', function() {
     await helper.queue.reportCompleted(taskId, 0);
 
     debug('### listArtifacts');
-    var artifacts = await helper.queue.listArtifacts(taskId, 0);
-    var artifact = artifacts.artifacts[0];
+    const artifacts = await helper.queue.listArtifacts(taskId, 0);
+    const artifact = artifacts.artifacts[0];
 
     // Ensure content type was not updated
     assume(artifact.contentType).equals('application/json');

@@ -38,8 +38,8 @@ travis ci)
 The following processes are designed to run constantly:
 
  * `yarn run start`
- * `yarn run claim-reaper`
- * `yarn run deadline-reaper`
+ * `yarn run claim-resolver`
+ * `yarn run deadline-resolver`
 
 With the following processes running as cron jobs on daily basis:
 

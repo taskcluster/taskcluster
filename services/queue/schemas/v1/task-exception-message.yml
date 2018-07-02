@@ -5,7 +5,7 @@ description: |
 type:         object
 properties:
   version:    {$const: message-version}
-  status:     {$ref: http://schemas.taskcluster.net/queue/v1/task-status.json#}
+  status:     {$ref: 'task-status.json#'}
   runId:
     description: |
       Id of the last run for the task, not provided if `deadline`
