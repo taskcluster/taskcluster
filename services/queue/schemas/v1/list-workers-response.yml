@@ -46,7 +46,7 @@ properties:
           title:          "Most Recent Task"
           description: |
             The most recent claimed task
-          $ref:       "http://schemas.taskcluster.net/queue/v1/task-run.json#"
+          $ref:       "task-run.json#"
       additionalProperties: false
       required:
         - workerGroup

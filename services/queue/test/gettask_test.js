@@ -1,13 +1,21 @@
-suite('Get task', function() {
-  var debug       = require('debug')('test:get');
-  var assert      = require('assert');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var taskcluster = require('taskcluster-client');
-  var assume      = require('assume');
-  var helper      = require('./helper');
+const debug       = require('debug')('test:get');
+const assert      = require('assert');
+const slugid      = require('slugid');
+const _           = require('lodash');
+const taskcluster = require('taskcluster-client');
+const assume      = require('assume');
+const helper      = require('./helper');
 
-  var taskDef = {
+helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+  helper.withAmazonIPRanges(mock, skipping);
+  helper.withPulse(mock, skipping);
+  helper.withS3(mock, skipping);
+  helper.withQueueService(mock, skipping);
+  helper.withBlobStore(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withServer(mock, skipping);
+
+  const taskDef = {
     provisionerId:    'no-provisioner',
     workerType:       'test-worker',
     schedulerId:      'my-scheduler',
@@ -35,19 +43,19 @@ suite('Get task', function() {
   };
 
   test('task(taskId) is correct', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
 
     await helper.queue.createTask(taskId, taskDef);
-    var taskDef2 = await helper.queue.task(taskId);
+    const taskDef2 = await helper.queue.task(taskId);
     assume(taskDef2).deep.equals(taskDef);
   });
 
   test('task(taskId) doesn\'t require credentials', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
     await helper.queue.createTask(taskId, taskDef);
 
-    var queue = new helper.Queue();
-    var taskDef2 = await queue.task(taskId);
+    helper.scopes('none');
+    const taskDef2 = await helper.queue.task(taskId);
     assume(taskDef2).deep.equals(taskDef);
   });
 });

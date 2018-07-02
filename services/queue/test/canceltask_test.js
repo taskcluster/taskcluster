@@ -1,14 +1,22 @@
-suite('Rerun task', function() {
-  var debug       = require('debug')('test:cancel');
-  var assert      = require('assert');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var taskcluster = require('taskcluster-client');
-  var assume      = require('assume');
-  var helper      = require('./helper');
+const debug       = require('debug')('test:cancel');
+const assert      = require('assert');
+const slugid      = require('slugid');
+const _           = require('lodash');
+const taskcluster = require('taskcluster-client');
+const assume      = require('assume');
+const helper      = require('./helper');
+
+helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+  helper.withAmazonIPRanges(mock, skipping);
+  helper.withPulse(mock, skipping);
+  helper.withS3(mock, skipping);
+  helper.withQueueService(mock, skipping);
+  helper.withBlobStore(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withServer(mock, skipping);
 
   // Use the same task definition for everything
-  var taskDef = {
+  const taskDef = {
     provisionerId:    'no-provisioner',
     workerType:       'test-worker',
     schedulerId:      'my-scheduler',
@@ -31,97 +39,96 @@ suite('Rerun task', function() {
   };
 
   test('defineTask, cancelTask (idempotent)', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
 
     debug('### Define task');
-    var r1 = await helper.queue.defineTask(taskId, taskDef);
+    const r1 = await helper.queue.defineTask(taskId, taskDef);
     assume(r1.status.state).equals('unscheduled');
-
-    debug('### Listen for task-exception');
-    await helper.events.listenFor('except', helper.queueEvents.taskException({
-      taskId,
-    }));
+    helper.checkNextMessage('task-defined', message => assert(message.payload.status.taskId === taskId));
 
     debug('### Cancel Task');
-    var r2 = await helper.queue.cancelTask(taskId);
+    const r2 = await helper.queue.cancelTask(taskId);
     assume(r2.status.state).equals('exception');
     assume(r2.status.runs.length).equals(1);
     assume(r2.status.runs[0].state).equals('exception');
     assume(r2.status.runs[0].reasonCreated).equals('exception');
     assume(r2.status.runs[0].reasonResolved).equals('canceled');
 
-    var m1 = await helper.events.waitFor('except');
-    assume(m1.payload.status).deep.equals(r2.status);
+    helper.checkNextMessage('task-exception',
+      message => assume(message.payload.status).deep.equals(r2.status));
 
     debug('### Cancel Task (again)');
-    var r3 = await helper.queue.cancelTask(taskId);
+    const r3 = await helper.queue.cancelTask(taskId);
     assume(r3.status).deep.equals(r2.status);
+    // exception message is sent again..
+    helper.checkNextMessage('task-exception',
+      message => assume(message.payload.status).deep.equals(r2.status));
+    assume(helper.messages).to.deeply.equal([]);
   });
 
   test('createTask, cancelTask (idempotent)', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
 
     debug('### Create task');
-    var r1 = await helper.queue.createTask(taskId, taskDef);
+    const r1 = await helper.queue.createTask(taskId, taskDef);
     assume(r1.status.state).equals('pending');
     assume(r1.status.runs.length).equals(1);
     assume(r1.status.runs[0].state).equals('pending');
-
-    debug('### Listen for task-exception');
-    await helper.events.listenFor('except', helper.queueEvents.taskException({
-      taskId,
-    }));
+    helper.checkNextMessage('task-defined');
+    helper.checkNextMessage('task-pending');
 
     debug('### Cancel Task');
-    var r2 = await helper.queue.cancelTask(taskId);
+    const r2 = await helper.queue.cancelTask(taskId);
     assume(r2.status.state).equals('exception');
     assume(r2.status.runs.length).equals(1);
     assume(r2.status.runs[0].state).equals('exception');
     assume(r2.status.runs[0].reasonCreated).equals('scheduled');
     assume(r2.status.runs[0].reasonResolved).equals('canceled');
-
-    var m1 = await helper.events.waitFor('except');
-    assume(m1.payload.status).deep.equals(r2.status);
+    helper.checkNextMessage('task-exception',
+      message => assume(message.payload.status).deep.equals(r2.status));
 
     debug('### Cancel Task (again)');
-    var r3 = await helper.queue.cancelTask(taskId);
+    const r3 = await helper.queue.cancelTask(taskId);
     assume(r3.status).deep.equals(r2.status);
+    helper.checkNextMessage('task-exception',
+      message => assume(message.payload.status).deep.equals(r2.status));
+    assume(helper.messages).to.deeply.equal([]);
   });
 
   test('createTask, claimTask, cancelTask (idempotent)', async () => {
-    var taskId = slugid.v4();
+    const taskId = slugid.v4();
 
     debug('### Create task');
-    var r1 = await helper.queue.createTask(taskId, taskDef);
+    const r1 = await helper.queue.createTask(taskId, taskDef);
     assume(r1.status.state).equals('pending');
     assume(r1.status.runs.length).equals(1);
     assume(r1.status.runs[0].state).equals('pending');
+    helper.checkNextMessage('task-defined');
+    helper.checkNextMessage('task-pending');
 
     debug('### Claim task');
-    var r1 = await helper.queue.claimTask(taskId, 0, {
+    const r2 = await helper.queue.claimTask(taskId, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
-    assume(r1.status.state).equals('running');
-
-    debug('### Listen for task-exception');
-    await helper.events.listenFor('except', helper.queueEvents.taskException({
-      taskId,
-    }));
+    assume(r2.status.state).equals('running');
+    helper.checkNextMessage('task-running');
 
     debug('### Cancel Task');
-    var r3 = await helper.queue.cancelTask(taskId);
+    const r3 = await helper.queue.cancelTask(taskId);
     assume(r3.status.state).equals('exception');
     assume(r3.status.runs.length).equals(1);
     assume(r3.status.runs[0].state).equals('exception');
     assume(r3.status.runs[0].reasonCreated).equals('scheduled');
     assume(r3.status.runs[0].reasonResolved).equals('canceled');
-
-    var m1 = await helper.events.waitFor('except');
-    assume(m1.payload.status).deep.equals(r3.status);
+    helper.checkNextMessage('task-exception',
+      message => assume(message.payload.status).deep.equals(r3.status));
 
     debug('### Cancel Task (again)');
-    var r4 = await helper.queue.cancelTask(taskId);
+    const r4 = await helper.queue.cancelTask(taskId);
     assume(r4.status).deep.equals(r3.status);
+    helper.checkNextMessage('task-exception',
+      message => assume(message.payload.status).deep.equals(r3.status));
+    assume(helper.messages).to.deeply.equal([]);
   });
 });

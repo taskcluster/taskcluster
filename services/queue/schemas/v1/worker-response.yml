@@ -42,7 +42,7 @@ properties:
       List of 20 most recent tasks claimed by the worker.
     type:         array
     items:
-      $ref:       "http://schemas.taskcluster.net/queue/v1/task-run.json#"
+      $ref:       "task-run.json#"
   expires:
     title:        "Worker Expiration"
     description: |

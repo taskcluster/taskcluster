@@ -1,14 +1,24 @@
-suite('TaskGroup features', () => {
-  var debug       = require('debug')('test:taskGroup');
-  var assert      = require('assert');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var taskcluster = require('taskcluster-client');
-  var assume      = require('assume');
-  var helper      = require('./helper');
+const debug = require('debug')('test:taskGroup');
+const assert = require('assert');
+const slugid = require('slugid');
+const _ = require('lodash');
+const taskcluster = require('taskcluster-client');
+const assume = require('assume');
+const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
+
+helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+  helper.withAmazonIPRanges(mock, skipping);
+  helper.withPollingServices(mock, skipping);
+  helper.withPulse(mock, skipping);
+  helper.withS3(mock, skipping);
+  helper.withQueueService(mock, skipping);
+  helper.withBlobStore(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withServer(mock, skipping);
 
   // Use the same task definition for everything
-  var taskDef = {
+  const taskDef = {
     provisionerId:    'no-provisioner',
     workerType:       'test-worker',
     schedulerId:      'dummy-scheduler',
@@ -28,70 +38,60 @@ suite('TaskGroup features', () => {
     let taskIdA = slugid.v4();
     let taskGroupId = slugid.v4();
 
-    // Start dependency-resolver
-    await helper.dependencyResolver();
-
-    await helper.events.listenFor('is-defined', helper.queueEvents.taskDefined({
-      taskId:   taskIdA,
-    }));
-    await helper.events.listenFor('is-pending', helper.queueEvents.taskPending({
-      taskId:   taskIdA,
-    }));
-    await helper.events.listenFor('task-group-resolved', helper.queueEvents.taskGroupResolved({
-      taskGroupId: taskGroupId,
-    }));
-
-    let shouldveResolved = false;
-    let taskGroupResolvedHandler = helper.events.waitFor('task-group-resolved').then(message => {
-      assert(shouldveResolved, 'Task group resolved too soon!');
-      return message;
-    });
-
     debug('### Creating taskA');
-    var r1 = await helper.queue.createTask(taskIdA, _.defaults({
-      taskGroupId,
-    }, taskDef));
+    const r1 = await helper.queue.createTask(taskIdA, _.defaults({taskGroupId}, taskDef));
+
+    debug('### Listening for task-defined for taskA');
+    helper.checkNextMessage('task-defined', message => assert(message.payload.status.taskId === taskIdA));
+    helper.checkNextMessage('task-pending', message => assert(message.payload.status.taskId === taskIdA));
 
     debug('### Creating taskB');
     let taskIdB = slugid.v4();
-    await helper.queue.createTask(taskIdB, _.defaults({
-      taskGroupId,
-    }, taskDef));
+    await helper.queue.createTask(taskIdB, _.defaults({taskGroupId}, taskDef));
+    helper.checkNextMessage('task-defined', message => assert(message.payload.status.taskId === taskIdB));
+    helper.checkNextMessage('task-pending', message => assert(message.payload.status.taskId === taskIdB));
 
-    debug('### Listening for task-defined for taskA');
-    var m1 = await helper.events.waitFor('is-defined');
-    assume(r1.status).deep.equals(m1.payload.status);
-
-    // Wait for task-pending message for taskA
-    var m2 = await helper.events.waitFor('is-pending');
-    assume(m2.payload.status).deep.equals(m2.payload.status);
-
-    // Check taskA status
-    var r2 = await helper.queue.status(taskIdA);
+    // Check taskA status (still pending)
+    const r2 = await helper.queue.status(taskIdA);
     assume(r1.status).deep.equals(r2.status);
 
-    // Check that task group finishes
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
+    helper.checkNextMessage('task-running', message => message.payload.status.taskId === taskIdA);
     await helper.queue.reportCompleted(taskIdA, 0);
+    helper.checkNextMessage('task-completed', message => message.payload.status.taskId === taskIdA);
 
     debug('### Claim and resolve taskB');
     await helper.queue.claimTask(taskIdB, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
-    // Allow any message to arrive, so we're resonably sure
-    // there isn't one on the wire
-    await new Promise(resolve => setTimeout(resolve, 250));
-    shouldveResolved = true;
+    helper.checkNextMessage('task-running', message => message.payload.status.taskId === taskIdB);
     await helper.queue.reportCompleted(taskIdB, 0);
+    helper.checkNextMessage('task-completed', message => message.payload.status.taskId === taskIdB);
 
-    let tgf = await taskGroupResolvedHandler;
-    assume(tgf.payload.taskGroupId).equals(taskGroupId);
-    assume(tgf.payload.schedulerId).equals('dummy-scheduler');
+    // dependencies are resolved by an out-of-band process, so wait for it to complete
+    const dependencyResolver = await helper.startPollingService('dependency-resolver');
+
+    await testing.poll(async () => {
+      // When using real queues, we may get results from dependency resolution
+      // of other tests' tasks here, so we look specifically for the message we
+      // want to find and ignore the rest.
+      helper.messages.some(message => {
+        if (message.exchange.endsWith('task-group-resolved') &&
+          message.payload.taskGroupId === taskGroupId &&
+          message.payload.schedulerId === 'dummy-scheduler') {
+          return true;
+        }
+      });
+    }, Infinity);
+    // note that depending on timing we are likely to get two such
+    // messages; that's OK
+
+    dependencyResolver.terminate();
   });
 
   test('schedulerId is fixed per taskGroupId', async () => {
@@ -116,7 +116,9 @@ suite('TaskGroup features', () => {
       taskGroupId,
       schedulerId: 'dummy-scheduler-2',
     }, taskDef)).then(() => {assert(false, 'expected an error');}, err => {
-      assert(err.statusCode === 409, 'Expected a 409 error');
+      if (err.statusCode !== 409) {
+        throw err;
+      }
     });
   });
 
@@ -126,7 +128,7 @@ suite('TaskGroup features', () => {
     let taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
-    var r1 = await helper.queue.createTask(taskIdA, _.defaults({
+    const r1 = await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
     }, taskDef));
 
@@ -150,7 +152,7 @@ suite('TaskGroup features', () => {
     let taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
-    var r1 = await helper.queue.createTask(taskIdA, _.defaults({
+    const r1 = await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
     }, taskDef));
 
@@ -193,12 +195,12 @@ suite('TaskGroup features', () => {
     let taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
-    var r1 = await helper.queue.createTask(taskIdA, _.defaults({
+    const r1 = await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
     }, taskDef));
 
     debug('### Expire task-groups');
-    await helper.expireTaskGroups();
+    await helper.runExpiration('expire-task-groups');
 
     debug('### Creating taskB');
     // This only works because we've expired the taskGroup definition, otherwise
@@ -216,13 +218,13 @@ suite('TaskGroup features', () => {
     let taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
-    var r1 = await helper.queue.createTask(taskIdA, _.defaults({
+    const r1 = await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
       expires: taskcluster.fromNowJSON('10 days'),
     }, taskDef));
 
     debug('### Expire task-groups');
-    await helper.expireTaskGroups();
+    await helper.runExpiration('expire-task-groups');
 
     debug('### Creating taskB');
     await helper.queue.createTask(taskIdB, _.defaults({
@@ -238,7 +240,7 @@ suite('TaskGroup features', () => {
     let taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
-    var r1 = await helper.queue.createTask(taskIdA, _.defaults({
+    const r1 = await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
     }, taskDef));
 
@@ -249,7 +251,7 @@ suite('TaskGroup features', () => {
     assert(result.taskGroupId === taskGroupId);
 
     debug('### Expire task-group memberships');
-    await helper.expireTaskGroupMembers();
+    await helper.runExpiration('expire-task-group-members');
 
     result = await helper.queue.listTaskGroup(taskGroupId);
     assert(!result.continuationToken);
@@ -262,7 +264,7 @@ suite('TaskGroup features', () => {
     let taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
-    var r1 = await helper.queue.createTask(taskIdA, _.defaults({
+    const r1 = await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
       expires: taskcluster.fromNowJSON('10 days'),
     }, taskDef));
@@ -274,7 +276,7 @@ suite('TaskGroup features', () => {
     assert(result.taskGroupId === taskGroupId);
 
     debug('### Expire task-group memberships');
-    await helper.expireTaskGroupMembers();
+    await helper.runExpiration('expire-task-group-members');
 
     result = await helper.queue.listTaskGroup(taskGroupId);
     assert(!result.continuationToken);

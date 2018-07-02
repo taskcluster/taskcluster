@@ -1,13 +1,23 @@
-suite('task.dependencies', function() {
-  var debug       = require('debug')('test:dependencies');
-  var assert      = require('assert');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var taskcluster = require('taskcluster-client');
-  var assume      = require('assume');
-  var helper      = require('./helper');
+const debug = require('debug')('test:dependencies');
+const assert = require('assert');
+const slugid = require('slugid');
+const _ = require('lodash');
+const taskcluster = require('taskcluster-client');
+const testing = require('taskcluster-lib-testing');
+const assume = require('assume');
+const helper = require('./helper');
 
-  var taskDef = {
+helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
+  helper.withAmazonIPRanges(mock, skipping);
+  helper.withPollingServices(mock, skipping);
+  helper.withPulse(mock, skipping);
+  helper.withS3(mock, skipping);
+  helper.withQueueService(mock, skipping);
+  helper.withBlobStore(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withServer(mock, skipping);
+
+  const taskDef = () => ({
     provisionerId:    'no-provisioner',
     workerType:       'test-worker',
     created:          taskcluster.fromNowJSON(),
@@ -20,33 +30,26 @@ suite('task.dependencies', function() {
       owner:          'jonsafj@mozilla.com',
       source:         'https://github.com/taskcluster/taskcluster-queue',
     },
-  };
+  });
 
-  test('taskA <- taskB', async () => {
+  test('taskA <- taskB', helper.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
 
-    let taskA = _.cloneDeep(taskDef);
+    let taskA = taskDef();
     let taskB = _.defaults({
       dependencies: [taskIdA],
-    }, _.cloneDeep(taskDef));
+    }, taskDef());
 
     // Start dependency-resolver
-    await helper.dependencyResolver();
-
-    debug('### Listen for taskB pending');
-    await helper.events.listenFor(
-      'b-pending', helper.queueEvents.taskPending({taskId: taskIdB}),
-    );
-    let allowPendingNow = false;
-    let taskBPending = helper.events.waitFor('b-pending').then(m => {
-      assert(allowPendingNow, 'Pending at wrong time');
-      return m;
-    });
+    const dependencyResolver = await helper.startPollingService('dependency-resolver');
 
     debug('### Create taskA and taskB');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
     let r2 = await helper.queue.createTask(taskIdB, taskB);
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
     assume(r1.status.state).equals('pending');
     assume(r2.status.state).equals('unscheduled');
 
@@ -66,18 +69,23 @@ suite('task.dependencies', function() {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
-    allowPendingNow = true; // Allow taskB to becoming pending
+    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.reportCompleted(taskIdA, 0);
+    helper.checkNextMessage('task-completed', m => assert.equal(m.payload.status.taskId, taskIdA));
 
-    debug('### Wait for taskB to be pending');
-    await taskBPending;
+    // task B should become pending on next poll
+    await testing.poll(
+      async () => helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdB)),
+      Infinity);
 
     debug('### Claim and resolve taskB');
     await helper.queue.claimTask(taskIdB, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
+    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdB));
     await helper.queue.reportCompleted(taskIdB, 0);
+    helper.checkNextMessage('task-completed', m => assert.equal(m.payload.status.taskId, taskIdB));
 
     debug('### listTaskDependents');
     {
@@ -89,44 +97,32 @@ suite('task.dependencies', function() {
       assume(d2.taskId).equals(taskIdB);
       assume(d2.tasks).has.length(0);
     }
-  });
 
-  test('taskA <- taskB, taskC, taskD, taskE', async () => {
+    await dependencyResolver.terminate();
+  }, mock));
+
+  test('taskA <- taskB, taskC, taskD, taskE', helper.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
     let taskIdC = slugid.v4();
     let taskIdD = slugid.v4();
     let taskIdE = slugid.v4();
 
-    let taskA = _.cloneDeep(taskDef);
+    let taskA = taskDef();
     let taskB = _.defaults({
       dependencies: [taskIdA],
-    }, _.cloneDeep(taskDef));
+    }, taskDef());
     let taskC = _.cloneDeep(taskB);
     let taskD = _.cloneDeep(taskB);
     let taskE = _.cloneDeep(taskB);
 
     // Start dependency-resolver
-    await helper.dependencyResolver();
-
-    debug('### Listen for taskB pending');
-    await Promise.all([
-      helper.events.listenFor(
-        'b-pending', helper.queueEvents.taskPending({taskId: taskIdB})
-      ),
-      helper.events.listenFor(
-        'c-pending', helper.queueEvents.taskPending({taskId: taskIdC}),
-      ),
-      helper.events.listenFor(
-        'd-pending', helper.queueEvents.taskPending({taskId: taskIdD}),
-      ),
-      helper.events.listenFor(
-        'e-pending', helper.queueEvents.taskPending({taskId: taskIdE}),
-      ),
-    ]);
+    const dependencyResolver = await helper.startPollingService('dependency-resolver');
 
     debug('### Create taskA');
     await helper.queue.createTask(taskIdA, taskA);
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
 
     debug('### listTaskDependents');
     let d1 = await helper.queue.listDependentTasks(taskIdA);
@@ -135,9 +131,17 @@ suite('task.dependencies', function() {
 
     debug('### Create taskB, taskC, taskD, taskE');
     await helper.queue.createTask(taskIdB, taskB);
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
+    helper.checkNoNextMessage('task-pending');
     await helper.queue.createTask(taskIdC, taskC);
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdC));
+    helper.checkNoNextMessage('task-pending');
     await helper.queue.createTask(taskIdD, taskD);
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdD));
+    helper.checkNoNextMessage('task-pending');
     await helper.queue.createTask(taskIdE, taskE);
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdE));
+    helper.checkNoNextMessage('task-pending');
 
     debug('### listTaskDependents');
     let d2 = await helper.queue.listDependentTasks(taskIdA);
@@ -153,15 +157,16 @@ suite('task.dependencies', function() {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
+    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.reportCompleted(taskIdA, 0);
+    helper.checkNextMessage('task-completed', m => assert.equal(m.payload.status.taskId, taskIdA));
 
     debug('### Wait for taskB, taskC, taskD, taskE to be pending');
-    await Promise.all([
-      helper.events.waitFor('b-pending'),
-      helper.events.waitFor('c-pending'),
-      helper.events.waitFor('d-pending'),
-      helper.events.waitFor('e-pending'),
-    ]);
+    await testing.poll(async () => assert(helper.messages.length >= 4), Infinity);
+    const nowPending = new Set(helper.messages
+      .filter(m => m.exchange.endsWith('task-pending'))
+      .map(m => m.payload.status.taskId));
+    assume(nowPending).to.deeply.equal(new Set([taskIdB, taskIdC, taskIdD, taskIdE]));
 
     debug('### listTaskDependents, limit = 2');
     let d3 = await helper.queue.listDependentTasks(taskIdA, {limit: 2});
@@ -178,147 +183,174 @@ suite('task.dependencies', function() {
     assume(tids).contains(taskIdC);
     assume(tids).contains(taskIdD);
     assume(tids).contains(taskIdE);
-  });
 
-  test('taskA, taskB <- taskC && taskA <- taskD', async () => {
+    await dependencyResolver.terminate();
+  }, mock));
+
+  test('taskA, taskB <- taskC && taskA <- taskD', helper.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
     let taskIdC = slugid.v4();
     let taskIdD = slugid.v4();
 
-    let taskA = _.cloneDeep(taskDef);
-    let taskB = _.cloneDeep(taskDef);
+    let taskA = taskDef();
+    let taskB = taskDef();
     let taskC = _.defaults({
       dependencies: [taskIdA, taskIdB],
-    }, _.cloneDeep(taskDef));
+    }, taskDef());
     let taskD = _.defaults({
       dependencies: [taskIdA],
-    }, _.cloneDeep(taskDef));
+    }, taskDef());
 
     // Start dependency-resolver
-    await helper.dependencyResolver();
-
-    debug('### Listen for taskC pending');
-    await helper.events.listenFor(
-      'c-pending', helper.queueEvents.taskPending({taskId: taskIdC}),
-    );
-    let allowPendingNow = false;
-    let taskCPending = helper.events.waitFor('c-pending').then(m => {
-      assert(allowPendingNow, 'Pending at wrong time');
-      return m;
-    });
-    await helper.events.listenFor(
-      'd-pending', helper.queueEvents.taskPending({taskId: taskIdD}),
-    );
+    const dependencyResolver = await helper.startPollingService('dependency-resolver');
 
     debug('### Create taskA, taskB, taskC');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
     let r2 = await helper.queue.createTask(taskIdB, taskB);
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
+    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdB));
     let r3 = await helper.queue.createTask(taskIdC, taskC);
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdC));
+    helper.checkNoNextMessage('task-pending');
     let r4 = await helper.queue.createTask(taskIdD, taskD);
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdD));
+    helper.checkNoNextMessage('task-pending');
     assume(r1.status.state).equals('pending');
     assume(r2.status.state).equals('pending');
     assume(r3.status.state).equals('unscheduled');
     assume(r4.status.state).equals('unscheduled');
 
     debug('### Claim taskA and taskB');
-    await Promise.all([taskIdA, taskIdB].map(async (taskId) => {
-      await helper.queue.claimTask(taskId, 0, {
-        workerGroup:    'my-worker-group',
-        workerId:       'my-worker',
-      });
-    }));
+    await helper.queue.claimTask(taskIdA, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker',
+    });
+    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
+    await helper.queue.claimTask(taskIdB, 0, {
+      workerGroup:    'my-worker-group',
+      workerId:       'my-worker',
+    });
+    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdB));
+
     debug('### Resolve taskA');
     await helper.queue.reportCompleted(taskIdA, 0);
+    helper.checkNextMessage('task-completed', m => assert.equal(m.payload.status.taskId, taskIdA));
 
-    debug('### Wait for taskD');
-    await helper.events.waitFor('d-pending');
+    debug('### Wait for taskD to be pending');
+    await testing.poll(
+      async () => helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdD)),
+      Infinity);
 
     debug('### Resolve taskB');
-    allowPendingNow = true; // Allow taskC to becoming pending
     await helper.queue.reportCompleted(taskIdB, 0);
+    helper.checkNextMessage('task-completed', m => assert.equal(m.payload.status.taskId, taskIdB));
 
     debug('### Wait for taskC to be pending');
-    await taskCPending;
-  });
+    await testing.poll(
+      async () => helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdC)),
+      Infinity);
 
-  test('taskA <- taskA (self-dependency)', async () => {
+    await dependencyResolver.terminate();
+  }, mock));
+
+  test('taskA <- taskA (self-dependency)', helper.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskA = _.defaults({
       dependencies: [taskIdA],
-    }, _.cloneDeep(taskDef));
+    }, taskDef());
 
     debug('### Create taskA');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
     assume(r1.status.state).equals('unscheduled');
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.checkNoNextMessage('task-pending'); // because of the self-dep
 
-    debug('### sceduleTask');
+    debug('### scheduleTask');
     await helper.queue.scheduleTask(taskIdA);
+    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
 
     debug('### claimTask');
     await helper.queue.claimTask(taskIdA, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
-  });
+  }, mock));
 
-  test('taskA, taskB <- taskB (self-dependency)', async () => {
+  test('taskA, taskB <- taskB (self-dependency)', helper.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
 
-    let taskA = _.cloneDeep(taskDef);
+    let taskA = taskDef();
     let taskB = _.defaults({
       dependencies: [taskIdA, taskIdB],
-    }, _.cloneDeep(taskDef));
+    }, taskDef());
 
     debug('### Create taskA, taskB');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
     let r2 = await helper.queue.createTask(taskIdB, taskB);
     assume(r1.status.state).equals('pending');
     assume(r2.status.state).equals('unscheduled');
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
+    helper.checkNoNextMessage('task-pending'); // because of the dep and the self-dep
 
     debug('### claimTask and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
+    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.reportCompleted(taskIdA, 0);
+    helper.checkNextMessage('task-completed', m => assert.equal(m.payload.status.taskId, taskIdA));
 
     debug('### Check B is still unscheduled');
     let r3 = await helper.queue.status(taskIdB);
     assume(r3.status.state).equals('unscheduled');
-  });
+    helper.checkNoNextMessage('task-pending'); // because of the self-dep
+  }, mock));
 
   test('taskX <- taskA (missing dependency)', async () => {
     let taskIdA = slugid.v4();
     let taskA = _.defaults({
       dependencies: [slugid.v4()],
-    }, _.cloneDeep(taskDef));
+    }, taskDef());
 
     debug('### Create taskA');
     await helper.queue.createTask(taskIdA, taskA).then(
       ()  => assert(false, 'Expected an error!'),
-      err => assert(err.code == 'InputError', 'Expected InputError'),
+      err => {
+        if (err.code !== 'InputError') {
+          throw err;
+        }
+      },
     );
 
     debug('### get task');
     await helper.queue.task(taskIdA).then(
       ()  => assert(false, 'Expected an error!'),
-      err => assert(err.code == 'ResourceNotFound', 'Expected ResourceNotFound'),
+      err => {
+        if (err.code !== 'ResourceNotFound') {
+          throw err;
+        }
+      },
     );
   });
 
-  test('taskA <- taskB (reportFailed)', async () => {
+  test('taskA <- taskB (reportFailed)', helper.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
 
-    let taskA = _.cloneDeep(taskDef);
+    let taskA = taskDef();
     let taskB = _.defaults({
       dependencies: [taskIdA],
-    }, _.cloneDeep(taskDef));
+    }, taskDef());
 
     // Start dependency-resolver
-    await helper.dependencyResolver();
+    const dependencyResolver = await helper.startPollingService('dependency-resolver');
 
     debug('### Create taskA and taskB');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
@@ -334,22 +366,25 @@ suite('task.dependencies', function() {
     await helper.queue.reportFailed(taskIdA, 0);
 
     debug('### Wait and check that taskB is unscheduled');
-    await new Promise(accept => setTimeout(accept, 1000));
+    // wait long enough for the dependencyResolver to run (it's fake time anyway!)
+    await new Promise(accept => setTimeout(accept, 2000));
     let r3 = await helper.queue.status(taskIdB);
     assume(r3.status.state).equals('unscheduled');
-  });
 
-  test('taskA <- taskB (cancelTask)', async () => {
+    await dependencyResolver.terminate();
+  }, mock));
+
+  test('taskA <- taskB (cancelTask)', helper.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
 
-    let taskA = _.cloneDeep(taskDef);
+    let taskA = taskDef();
     let taskB = _.defaults({
       dependencies: [taskIdA],
-    }, _.cloneDeep(taskDef));
+    }, taskDef());
 
     // Start dependency-resolver
-    await helper.dependencyResolver();
+    const dependencyResolver = await helper.startPollingService('dependency-resolver');
 
     debug('### Create taskA and taskB');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
@@ -361,107 +396,106 @@ suite('task.dependencies', function() {
     await helper.queue.cancelTask(taskIdA);
 
     debug('### Wait and check that taskB is unscheduled');
+    // wait long enough for the dependencyResolver to run (it's fake time anyway!)
     await new Promise(accept => setTimeout(accept, 1000));
     let r3 = await helper.queue.status(taskIdB);
     assume(r3.status.state).equals('unscheduled');
-  });
 
-  test('taskA <- taskB (reportFailed w. all-resolved)', async () => {
+    await dependencyResolver.terminate();
+  }, mock));
+
+  test('taskA <- taskB (reportFailed w. all-resolved)', helper.runWithFakeTime(async () => {
     let taskIdA = slugid.v4();
     let taskIdB = slugid.v4();
 
-    let taskA = _.cloneDeep(taskDef);
+    let taskA = taskDef();
     let taskB = _.defaults({
       dependencies: [taskIdA],
       requires:     'all-resolved',
-    }, _.cloneDeep(taskDef));
+    }, taskDef());
 
     // Start dependency-resolver
-    await helper.dependencyResolver();
-
-    debug('### Listen for taskB pending');
-    await helper.events.listenFor(
-      'b-pending', helper.queueEvents.taskPending({taskId: taskIdB}),
-    );
-    let allowPendingNow = false;
-    let taskBPending = helper.events.waitFor('b-pending').then(m => {
-      assert(allowPendingNow, 'Pending at wrong time');
-      return m;
-    });
+    const dependencyResolver = await helper.startPollingService('dependency-resolver');
 
     debug('### Create taskA and taskB');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
     let r2 = await helper.queue.createTask(taskIdB, taskB);
     assume(r1.status.state).equals('pending');
     assume(r2.status.state).equals('unscheduled');
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
+    helper.checkNoNextMessage('task-pending');
 
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
       workerGroup:    'my-worker-group',
       workerId:       'my-worker',
     });
-    allowPendingNow = true; // Allow taskB to becoming pending
+    helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.reportFailed(taskIdA, 0);
+    helper.checkNextMessage('task-failed', m => assert.equal(m.payload.status.taskId, taskIdA));
 
     debug('### Wait for taskB to be pending');
-    await taskBPending;
-  });
+    await testing.poll(
+      async () => helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdB)),
+      Infinity);
 
-  test('expiration of relationships', async () => {
-    let taskId = slugid.v4();
-    let task = _.defaults({
-      dependencies: [taskId],
-    }, _.cloneDeep(taskDef));
+    await dependencyResolver.terminate();
+  }, mock));
+
+  test('expiration of relationships', helper.runWithFakeTime(async () => {
+    const taskIdA = slugid.v4();
+    const taskA = _.defaults({
+      dependencies: [taskIdA],
+    }, taskDef());
 
     // make an old task that doesn't expire to ensure the expiration doesn't
     // just drop the entire table..
-    let taskId2 = slugid.v4();
-    let task2 = _.defaults({
-      dependencies: [taskId2],
+    const taskIdB = slugid.v4();
+    const taskB = _.defaults({
+      dependencies: [taskIdB],
       // test config is set to expire 4 days early so we set expiration long
       expires:      taskcluster.fromNowJSON('30 days'),
-    }, _.cloneDeep(taskDef));
+    }, taskDef());
 
     debug('### Create tasks');
-    let r1 = await helper.queue.createTask(taskId, task);
-    let r2 = await helper.queue.createTask(taskId2, task2);
+    const r1 = await helper.queue.createTask(taskIdA, taskA);
+    const r2 = await helper.queue.createTask(taskIdB, taskB);
     assume(r1.status.state).equals('unscheduled');
     assume(r2.status.state).equals('unscheduled');
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdA));
+    helper.checkNextMessage('task-defined', m => assert.equal(m.payload.status.taskId, taskIdB));
+    helper.checkNoNextMessage('task-pending');
 
     debug('### Get new data wrappers');
-    let TaskDependency = await helper.load('TaskDependency', helper.loadOptions);
-    let TaskRequirement = await helper.load('TaskRequirement', helper.loadOptions);
+    const TaskDependency = helper.TaskDependency;
+    const TaskRequirement = helper.TaskRequirement;
 
     debug('### Load relations to ensure they are present');
-    let r3 = await TaskDependency.load({taskId, dependentTaskId: taskId}, true);
-    let r4 = await TaskRequirement.load({taskId, requiredTaskId: taskId}, true);
+    const r3 = await TaskDependency.load({taskId: taskIdA, dependentTaskId: taskIdA}, true);
+    const r4 = await TaskRequirement.load({taskId: taskIdA, requiredTaskId: taskIdA}, true);
     assert(r3, 'Expected TaskDependency');
     assert(r4, 'Expected TaskRequirement');
 
     debug('### expire task-requirement');
-    await helper.expireTaskRequirement();
-    let r5 = await TaskDependency.load({taskId, dependentTaskId: taskId}, true);
-    let r6 = await TaskRequirement.load({taskId, requiredTaskId: taskId}, true);
+    await helper.runExpiration('expire-task-requirement');
+    const r5 = await TaskDependency.load({taskId: taskIdA, dependentTaskId: taskIdA}, true);
+    const r6 = await TaskRequirement.load({taskId: taskIdA, requiredTaskId: taskIdA}, true);
     assert(r5, 'Expected TaskDependency');
     assert(!r6, 'Did not expect TaskRequirement');
 
     debug('### expire task-dependency');
-    await helper.expireTaskDependency();
-    let r7 = await TaskDependency.load({taskId, dependentTaskId: taskId}, true);
-    let r8 = await TaskRequirement.load({taskId, requiredTaskId: taskId}, true);
+    await helper.runExpiration('expire-task-dependency');
+    const r7 = await TaskDependency.load({taskId: taskIdA, dependentTaskId: taskIdA}, true);
+    const r8 = await TaskRequirement.load({taskId: taskIdA, requiredTaskId: taskIdA}, true);
     assert(!r7, 'Did not expect TaskDependency');
     assert(!r8, 'Did not expect TaskRequirement');
 
-    let r9 = await TaskDependency.load({
-      taskId:           taskId2,
-      dependentTaskId:  taskId2,
-    }, true);
-    let r10 = await TaskRequirement.load({
-      taskId:           taskId2,
-      requiredTaskId:   taskId2,
-    }, true);
+    const r9 = await TaskDependency.load({taskId: taskIdB, dependentTaskId: taskIdB}, true);
+    const r10 = await TaskRequirement.load({taskId: taskIdB, requiredTaskId: taskIdB}, true);
     assert(r9, 'Expected TaskDependency');
     assert(r10, 'Expected TaskRequirement');
-  });
+  }, mock));
 
 });

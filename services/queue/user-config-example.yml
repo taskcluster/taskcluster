@@ -3,6 +3,14 @@ defaults:
     accessKeyId:        '...'
     secretAccessKey:    '...'
     region:             us-west-2
+  app:
+    # these must be in aws.region
+    publicArtifactBucket: ...
+    privateArtifactBucket: ...
+    # these must be in blobArtifactRegion
+    publicBlobArtifactBucket: ...
+    privateBlobArtifactBucket: ...
+    blobArtifactRegion: us-west-2
   azure:
     accountName:        jungle
     accountKey:         '...'
