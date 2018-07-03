@@ -1,0 +1,242 @@
+$schema: 'http://json-schema.org/draft-06/schema#'
+title: API Reference File
+description: Reference of methods implemented by API
+type: object
+definitions:
+  scopeExpressionTemplateString:
+    title: Required-Scope
+    type: string
+    description: The most basic element of a scope expression
+    pattern: '^[\x20-\x7e]*$'
+  scopeExpressionTemplateAnyOf:
+    title: Disjunction
+    type: object
+    description: AnyOf objects will evaluate to true if any subexpressions are true
+    properties:
+      AnyOf:
+        type: array
+        items:
+          $ref: '#/definitions/scopeExpressionTemplate'
+    required:
+      - AnyOf
+    additionalProperties: false
+  scopeExpressionTemplateAllOf:
+    title: Conjunction
+    type: object
+    description: AllOf objects will evaluate to true if all subexpressions are true
+    properties:
+      AllOf:
+        type: array
+        items:
+          $ref: '#/definitions/scopeExpressionTemplate'
+    required:
+      - AllOf
+    additionalProperties: false
+  scopeExpressionTemplateIf:
+    title: Conditional
+    type: object
+    description: >-
+      if/then objects will replace themselves with the contents of then if the
+      `if` is true
+    properties:
+      if:
+        type: string
+        pattern: '^[a-zA-Z][a-zA-Z0-9_]*$'
+      then:
+        $ref: '#/definitions/scopeExpressionTemplate'
+      else:
+        $ref: '#/definitions/scopeExpressionTemplate'
+    required:
+      - if
+      - then
+    additionalProperties: false
+  scopeExpressionTemplate:
+    oneOf:
+      - $ref: '#/definitions/scopeExpressionTemplateString'
+      - $ref: '#/definitions/scopeExpressionTemplateAnyOf'
+      - $ref: '#/definitions/scopeExpressionTemplateAllOf'
+      - $ref: '#/definitions/scopeExpressionTemplateIf'
+      - title: For-All
+        type: object
+        description: >-
+          for/each/in objects will replace themselves with an array of basic
+          scopes. They will be flattened into the array this object is a part
+          of.
+        properties:
+          for:
+            type: string
+            pattern: '^[a-zA-Z][a-zA-Z0-9_]*$'
+          each:
+            type: string
+            pattern: '^[\x20-\x7e]*$'
+          in:
+            type: string
+            pattern: '^[a-zA-Z][a-zA-Z0-9_]*$'
+        required:
+          - for
+          - each
+          - in
+        additionalProperties: false
+properties:
+  version:
+    description: API reference version
+    type: integer
+    enum:
+      - 0
+  $schema:
+    description: >-
+      Link to schema for this reference. That is a link to this very document.
+      Typically used to identify what kind of reference this file is.
+    title: Schema Reference
+    type: string
+    format: uri
+  title:
+    description: API title in markdown
+    type: string
+  description:
+    description: API description in markdown
+    type: string
+  baseUrl:
+    description: BaseUrl for all _routes_ described in this document
+    type: string
+    format: uri
+  serviceName:
+    description: >-
+      Name of service for automation. Will be consumed by client generators to
+      produce URLs
+    type: string
+    minLength: 1
+    maxLength: 22
+    pattern: '^[a-z][a-z0-9_-]*$'
+  entries:
+    type: array
+    title: Entries
+    description: Array of methods in this reference
+    items:
+      type: object
+      title: API Entry
+      properties:
+        type:
+          description: 'Type of entry, currently only `function`.'
+          type: string
+          enum:
+            - function
+        method:
+          description: HTTP method (verb) used to access the function
+          type: string
+          enum:
+            - get
+            - post
+            - put
+            - head
+            - delete
+            - options
+            - trace
+            - copy
+            - lock
+            - mkcol
+            - move
+            - purge
+            - propfind
+            - proppatch
+            - unlock
+            - report
+            - mkactivity
+            - checkout
+            - merge
+            - m-search
+            - notify
+            - subscribe
+            - unsubscribe
+            - patch
+            - search
+        route:
+          type: string
+          description: >-
+            Route for the call, note that arguments wrapped with brackets, like
+            `/v1/user/<userId>/` must be replaced. And the route must be
+            appended to the `baseUrl`
+        args:
+          type: array
+          description: >-
+            Arguments from `route` that must be replaced, they'll appear wrapped
+            in brackets inside `route`.
+          items:
+            type: string
+            description: >-
+              Argument that appears in `route` warpped in angle brackets. It
+              must be replaced to call the function.
+        query:
+          type: array
+          description: 'List of accepted query-string parameters, these are always optional.'
+          items:
+            type: string
+            description: Optional query-string parameter
+        name:
+          type: string
+          description: >-
+            Name of the `function` this is a stable identifier for use in
+            auto-generated client libraries
+        stability:
+          title: Stability-Level
+          description: Stability level of the API
+          type: string
+          enum:
+            - deprecated
+            - experimental
+            - stable
+        scopes:
+          description: >-
+            Scope expression template specifying required scopes for a method.
+            Not provided if authentication isn't required.
+          oneOf:
+            - $ref: '#/definitions/scopeExpressionTemplateString'
+            - $ref: '#/definitions/scopeExpressionTemplateAnyOf'
+            - $ref: '#/definitions/scopeExpressionTemplateAllOf'
+            - $ref: '#/definitions/scopeExpressionTemplateIf'
+        input:
+          type: string
+          description: >-
+            JSON schema for input, if input is validated, otherwise not present.
+            The value must be a relative URI, based on the service's schema
+            location; that is, based at `<rootUrl>/schemas/<serviceName`.
+        output:
+          type: string
+          oneOf:
+            - title: Output Schema
+              type: string
+              description: >-
+                JSON schema for output, if output is validated, otherwise not
+                present. The value must be a relative URI, based on the
+                service's schema location; that is, based at
+                `<rootUrl>/schemas/<serviceName`.
+            - title: Blob
+              type: string
+              enum:
+                - blob
+              description: Output kind if not JSON matching a specific schema.
+        title:
+          type: string
+          description: Title of API entry
+        description:
+          type: string
+          description: Description (ie. documentation) for the API entry
+      additionalProperties: false
+      required:
+        - type
+        - method
+        - route
+        - args
+        - name
+        - stability
+        - title
+        - description
+additionalProperties: false
+required:
+  - version
+  - $schema
+  - title
+  - description
+  - baseUrl
+  - serviceName
+  - entries

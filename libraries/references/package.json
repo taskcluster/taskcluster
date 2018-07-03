@@ -24,6 +24,7 @@
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2",
     "taskcluster-lib-urls": "^10.0.0",
+    "taskcluster-lib-validate": "^11.0.2",
     "walk": "^2.3.13"
   },
   "devDependencies": {
