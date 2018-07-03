@@ -29,6 +29,7 @@ var schemas = function(options) {
   // Validate options
   assert(options.schemasetOptions, 'Options must be given for validator');
   assert(options.cases instanceof Array, 'Array of cases must be given');
+  assert(options.serviceName);
 
   let validate;
   setup(async function() {
@@ -49,7 +50,7 @@ var schemas = function(options) {
       var json = JSON.parse(data);
 
       // Find schema
-      var schema = testCase.schema;
+      var schema = libUrls.schema(libUrls.testRootUrl(), options.serviceName, testCase.schema);
 
       // Validate json
       var error = validate(json, schema);

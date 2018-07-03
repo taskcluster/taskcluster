@@ -8,13 +8,14 @@ suite('testing.schema', function() {
       folder: path.join(__dirname, 'schemas'),
       serviceName: 'test',
     },
+    serviceName: 'test',
     cases: [
       {
-        schema:   'https://tc-tests.localhost/schemas/test/case1.json#',
+        schema:   'case1.json#',
         path:     'case1.json',
         success:  true,
       }, {
-        schema:   'https://tc-tests.localhost/schemas/test/case1.json#',
+        schema:   'case1.json#',
         path:     'case2.json',
         success:  false,
       },
