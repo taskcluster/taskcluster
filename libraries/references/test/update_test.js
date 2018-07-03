@@ -1,14 +1,14 @@
 const fs = require('fs');
 const assert = require('assert');
-const {update} = require('../src/update');
+const {update, updateReferences, addCommonSchemas, updateSchemas} = require('../src/update');
 const libUrls = require('taskcluster-lib-urls');
 
 suite('updating', function() {
   const refTest = (description, input, output) => {
     test(description, function() {
       const data = {references: [input], schemas: []};
-      update(data);
-      assert.deepEqual(data.references, [output]);
+      updateReferences([input]);
+      assert.deepEqual(input, output);
     });
   };
 
@@ -33,10 +33,9 @@ suite('updating', function() {
     {serviceName: 'fake', version: 'v1'});
 
   const schemaTest = (description, input, output) => {
-    test(description, function() {
-      const data = {references: [], schemas: [input], rootUrl: libUrls.testRootUrl()};
-      update(data);
-      assert.deepEqual(data.schemas, [output]);
+    test(description, async function() {
+      updateSchemas([input], libUrls.testRootUrl());
+      assert.deepEqual(input, output);
     });
   };
 
@@ -55,5 +54,17 @@ suite('updating', function() {
   schemaTest('moves id to $id',
     {id: 'taskcluster:/schemas/fake/v1/fake-data.json#'},
     {$id: libUrls.schema(libUrls.testRootUrl(), 'fake', 'v1/fake-data.json#')});
+
+  test('adds common schemas', async function() {
+    const schemas = [];
+    await addCommonSchemas(schemas);
+    const ids = schemas.map(sch => sch.$id).sort();
+    assert.deepEqual(ids, [
+      'taskcluster:/schemas/common/action-schema-v1.json#',
+      'taskcluster:/schemas/common/api-reference-v0.json#',
+      'taskcluster:/schemas/common/exchanges-reference-v0.json#',
+      'taskcluster:/schemas/common/manifest-v2.json#',
+    ]);
+  });
 });
 

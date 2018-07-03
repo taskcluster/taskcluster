@@ -4,7 +4,7 @@ const {store} = require('./store');
 
 const build = async (input, output, rootUrl) => {
   const {references, schemas} = await load({input});
-  update({references, schemas, rootUrl});
+  await update({references, schemas, rootUrl});
   await store({references, schemas, output});
 };
 
