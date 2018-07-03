@@ -1,12 +1,16 @@
+const _ = require('lodash');
 const url = require('url');
+const SchemaSet = require('taskcluster-lib-validate');
 
 /**
  * Update the given references and schemas (in-place):
  *
+ *  * add common schemas from this repository's schemas/ directory
  *  * make schemas' $id's relative to rootUrl (and use $id rather than id)
  *  * set references' serviceName and version and remove deprecated fields
  */
-exports.update = ({references, schemas, rootUrl}) => {
+exports.update = async ({references, schemas, rootUrl}) => {
+  await addCommonSchemas(schemas);
   updateReferences(references);
   updateSchemas(schemas, rootUrl);
 };
@@ -37,7 +41,22 @@ const updateReferences = (references) => {
     delete reference.baseUrl;
   });
 };
+exports.updateReferences = updateReferences;
 
+/**
+ * Load common schemas stored in this (taskcluster-references) repository.
+ */
+const addCommonSchemas = async (schemas) => {
+  const schemaset = new SchemaSet({serviceName: 'common'});
+  _.values(schemaset.abstractSchemas()).forEach(schema => {
+    schemas.push(schema);
+  });
+};
+exports.addCommonSchemas = addCommonSchemas;
+
+/**
+ * Update the $id property in all schemas
+ */
 const updateSchemas = (schemas, rootUrl) => {
   schemas.forEach(schema => {
     const $id = url.parse(schema.$id || schema.id);
@@ -51,3 +70,4 @@ const updateSchemas = (schemas, rootUrl) => {
     delete schema.id;
   });
 };
+exports.updateSchemas = updateSchemas;
