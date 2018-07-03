@@ -16,22 +16,23 @@ properties:
     items:
       title: "Service"
       description: |-
-        A taskcluster service that exposes an HTTP/AMQP API.
+        A taskcluster microservice's APIs
       type: object
       properties:
         serviceName:
           title: Service Name
-          description: A short name for the service, such as `queue` / `purge-cache` / `ec2-manager`.
+          description: |
+            A short name for the service, such as `queue` / `purge-cache` / `ec2-manager`.
+            This matches the `serviceName` field in any references linked from here.
           type: string
-          # let's keep this super simple.
-          pattern: ^[a-z][a-z0-9\-]*$
+          pattern: "^[a-z][a-z0-9_-]*$"
         apis:
           title: HTTP APIs
           description: HTTP API exposed by this service.
           type: array
           default: []
           items:
-            title: "HTTP API"
+            title: "HTTP API Reference"
             description: |-
               HTTP API
             type: object
@@ -40,34 +41,34 @@ properties:
                 title: Version
                 description: Version of API, e.g. `v1`.
                 type: string
-                pattern: ^v[0-9][0-9\.\-]*$
+                pattern: ^v[0-9][0-9]*$
               reference:
-                title: HTTP API definition
-                description: A schema conformant to `$ROOT_URL/references/http.json` describing HTTP API exposed by service.
+                title: HTTP API reference
+                description: A document conformant to `$ROOT_URL/schemas/common/api-reference-v1.json#` describing the API exposed by service.
                 type: string
             additionalProperties: false
             required:
               - version
               - reference
         pulse:
-          title: AMQP APIs
-          description: AMQP 0.9 API exposed by this service.
+          title: "Pulse references"
+          description: Pulse exchanges exposed by this service.
           type: array
           default: []
           items:
-            title: "AMQP API"
+            title: "Pulse reference"
             description: |-
               AMQP API
             type: object
             properties:
               version:
-                title:
+                title: Version
                 description: Version of API, e.g. `v1`.
                 type: string
-                pattern: ^v[0-9][0-9\.\-]*$
+                pattern: ^v[0-9][0-9]*$
               reference:
-                title: AMQP API definition
-                description: A schema conformant to `$ROOT_URL/references/pulse.json` describing AMQP API exposed by service.
+                title: Pulse exchanges reference
+                description: A document conformant to `$ROOT_URL/schemas/common/exchanges-reference-v1.json#` describing the API exposed by service.
                 type: string
             additionalProperties: false
             required:
