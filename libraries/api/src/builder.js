@@ -273,3 +273,5 @@ const stability = {
 const STABILITY_LEVELS = _.values(stability);
 APIBuilder.stability = stability;
 
+// Re-export middleware
+APIBuilder.middleware = require('./middleware');
