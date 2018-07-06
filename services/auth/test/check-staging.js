@@ -1,8 +1,8 @@
-var taskcluster = require('taskcluster-client');
-var helper = require('./helper');
-var assume = require('assume');
-var slugid = require('slugid');
-var hawk = require('hawk');
+const taskcluster = require('taskcluster-client');
+const helper = require('./helper');
+const assume = require('assume');
+const slugid = require('slugid');
+const hawk = require('hawk');
 
 // Tests that run against an active staging instance of the service to
 // verify that it is, more or less, still functional.  This is not a full
@@ -21,7 +21,7 @@ suite('taskcluster-auth-staging check', function() {
     }
   });
 
-  var auth = new taskcluster.Auth({
+  let auth = new taskcluster.Auth({
     baseUrl: helper.cfg.checkStaging.baseUrl,
   });
 
@@ -34,7 +34,7 @@ suite('taskcluster-auth-staging check', function() {
   });
 
   test('can create and delete a client', async function() {
-    var auth = new taskcluster.Auth({
+    let auth = new taskcluster.Auth({
       baseUrl: helper.cfg.checkStaging.baseUrl,
       credentials: helper.cfg.checkStaging.credentials,
     });
@@ -51,8 +51,8 @@ suite('taskcluster-auth-staging check', function() {
 
   test('can answer authenticateHawk requests', async function() {
     // just use a very basic request
-    var credentials = helper.cfg.checkStaging.credentials;
-    var data = {
+    let credentials = helper.cfg.checkStaging.credentials;
+    let data = {
       method: 'get',
       resource: '/',
       host: 'test.taskcluster.net',
@@ -73,8 +73,8 @@ suite('taskcluster-auth-staging check', function() {
 
   test('can answer authenticateHawk requests with a hash', async function() {
     // just use a very basic request
-    var credentials = helper.cfg.checkStaging.credentials;
-    var data = {
+    let credentials = helper.cfg.checkStaging.credentials;
+    let data = {
       method: 'get',
       resource: '/',
       host: 'test.taskcluster.net',

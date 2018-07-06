@@ -1,15 +1,16 @@
-suite('scoperesolver', () => {
-  const ScopeResolver = require('../src/scoperesolver');
-  const {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
-  const Monitor = require('taskcluster-lib-monitor');
-  const assert = require('assert');
-  const _ = require('lodash');
-  const fs = require('fs');
-  const assume = require('assume');
+const helper = require('./helper');
+const ScopeResolver = require('../src/scoperesolver');
+const {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
+const Monitor = require('taskcluster-lib-monitor');
+const assert = require('assert');
+const _ = require('lodash');
+const fs = require('fs');
+const assume = require('assume');
 
+suite(helper.suiteName(__filename), () => {
   let monitor, scopeResolver;
-  before(async () => {
-    monitor = await Monitor({project: 'mock-auth', mock: true});
+  setup(async () => {
+    monitor = await Monitor({projectName: 'mock-auth', mock: true});
     scopeResolver = new ScopeResolver({monitor, disableCache: true});
   });
 

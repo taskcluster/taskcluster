@@ -1,33 +1,30 @@
-var Promise     = require('promise');
-var assert      = require('assert');
-var debug       = require('debug')('test:auth');
-var helper      = require('./helper');
-var slugid      = require('slugid');
-var _           = require('lodash');
-var assume      = require('assume');
-var taskcluster = require('taskcluster-client');
+const assert = require('assert');
+const debug = require('debug')('test:auth');
+const helper = require('./helper');
+const slugid = require('slugid');
+const _ = require('lodash');
+const assume = require('assume');
+const taskcluster = require('taskcluster-client');
 
-let credentials = {
+const credentials = {
   clientId: 'tester',
   accessToken: 'no-secret',
 };
 
-let badcreds = {
+const badcreds = {
   clientId: 'tester',
   accessToken: 'wrong',
 };
 
-suite('testAuthenticate', function() {
-  if (!helper.hasPulseCredentials()) {
-    setup(function() {
-      this.skip();
-    });
-    return;
-  }
+helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], function(mock, skipping) {
+  helper.withPulse(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withRoles(mock, skipping);
+  helper.withServers(mock, skipping);
 
   let testAuth = (name, {config, requiredScopes, clientScopes, errorCode}) => {
     test(name, async () => {
-      let auth = new helper.Auth(config);
+      let auth = new helper.AuthClient(config);
       await auth.testAuthenticate({requiredScopes, clientScopes}).then(() => {
         assert(!errorCode, 'Request was successful, but expected an error ' +
                            'with code: ' + errorCode);
@@ -40,75 +37,80 @@ suite('testAuthenticate', function() {
   };
 
   testAuth('valid creds', {
-    config: {credentials},
+    config: {rootUrl: helper.rootUrl, credentials},
     requiredScopes: ['test-scope:test'],
     clientScopes: ['test-scope:test'],
   });
 
   testAuth('valid creds (star scope)', {
-    config: {credentials},
+    config: {rootUrl: helper.rootUrl, credentials},
     requiredScopes: ['test-scope:test'],
     clientScopes: ['test-scope:*'],
   });
 
   testAuth('valid creds (scope subset)', {
-    config: {credentials},
+    config: {rootUrl: helper.rootUrl, credentials},
     requiredScopes: ['test-scope:test2'],
     clientScopes: ['test-scope:test1', 'test-scope:test2'],
   });
 
   testAuth('invalid creds (scope subset)', {
-    config: {credentials},
+    config: {rootUrl: helper.rootUrl, credentials},
     requiredScopes: ['test-scope:test2'],
     clientScopes: ['test-scope:test1', 'test-scope:test2'],
   });
 
   testAuth('invalid creds', {
-    config: {credentials: badcreds},
+    config: {rootUrl: helper.rootUrl, credentials: badcreds},
     requiredScopes: ['test-scope'],
     clientScopes: ['test-scope'],
     errorCode: 'AuthenticationFailed',
   });
 
   testAuth('insufficientScopes', {
-    config: {credentials},
+    config: {rootUrl: helper.rootUrl, credentials},
     requiredScopes: ['test-scope:*'],
     clientScopes: ['test-scope'],
     errorCode: 'InsufficientScopes',
   });
 
   testAuth('authorizedScopes', {
-    config: {credentials, authorizedScopes: ['test-scope:test']},
+    config: {rootUrl: helper.rootUrl, credentials, authorizedScopes: ['test-scope:test']},
     requiredScopes: ['test-scope:test'],
     clientScopes: ['test-scope:*'],
   });
 
   testAuth('authorizedScopes InsufficientScopes', {
-    config: {credentials, authorizedScopes: ['test-scope:test1']},
+    config: {rootUrl: helper.rootUrl, credentials, authorizedScopes: ['test-scope:test1']},
     requiredScopes: ['test-scope:test2'],
     clientScopes: ['test-scope:*'],
     errorCode: 'InsufficientScopes',
   });
 
   testAuth('authorizedScopes over-scoped', {
-    config: {credentials, authorizedScopes: ['test-scope:*']},
+    config: {rootUrl: helper.rootUrl, credentials, authorizedScopes: ['test-scope:*']},
     requiredScopes: ['test-scope:test2'],
     clientScopes: ['test-scope:test2'],
     errorCode: 'AuthenticationFailed',
   });
 
   testAuth('authorizedScopes badcreds', {
-    config: {credentials: badcreds, authorizedScopes: ['test-scope:test']},
+    config: {rootUrl: helper.rootUrl, credentials: badcreds, authorizedScopes: ['test-scope:test']},
     requiredScopes: ['test-scope:test'],
     clientScopes: ['test-scope:*'],
     errorCode: 'AuthenticationFailed',
   });
 });
 
-suite('testAuthenticateGet', function() {
+helper.secrets.mockSuite(`${helper.suiteName(__filename)} | get`, ['app', 'azure'], function(mock, skipping) {
+  helper.withPulse(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withRoles(mock, skipping);
+  helper.withServers(mock, skipping);
+
   let testAuthGet = (name, {config, errorCode}) => {
     test(name, async () => {
-      let auth = new helper.Auth(config);
+      let auth = new helper.AuthClient(config);
       await auth.testAuthenticateGet().then(() => {
         assert(!errorCode, 'Request was successful, but expected an error ' +
                            'with code: ' + errorCode);
@@ -121,16 +123,17 @@ suite('testAuthenticateGet', function() {
   };
 
   testAuthGet('valid creds', {
-    config: {credentials},
+    config: {rootUrl: helper.rootUrl, credentials},
   });
 
   testAuthGet('invalid creds', {
-    config: {credentials: badcreds},
+    config: {rootUrl: helper.rootUrl, credentials: badcreds},
     errorCode: 'AuthenticationFailed',
   });
 
   testAuthGet('authorizedScopes', {
     config: {
+      rootUrl: helper.rootUrl,
       credentials,
       authorizedScopes: ['test:scopes-abc'],
     },

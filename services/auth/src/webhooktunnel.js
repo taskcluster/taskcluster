@@ -1,14 +1,14 @@
-let api = require('./v1');
-let slugid = require('slugid');
-let jwt = require('jsonwebtoken');
-let taskcluster = require('taskcluster-client');
+const builder = require('./v1');
+const slugid = require('slugid');
+const jwt = require('jsonwebtoken');
+const taskcluster = require('taskcluster-client');
 
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/webhooktunnel',
   name:       'webhooktunnelToken',
   input:      undefined,
-  output:     'webhooktunnel-token-response.json#',
+  output:     'webhooktunnel-token-response.yml',
   stability:  'stable',
   scopes:     'auth:webhooktunnel',
   title:      'Get Token for Webhooktunnel Proxy',

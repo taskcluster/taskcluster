@@ -1,15 +1,13 @@
-
-var debug         = require('debug')('auth:signaturevalidator');
-var Promise       = require('promise');
-var hawk          = require('hawk');
-var assert        = require('assert');
-var _             = require('lodash');
+const debug = require('debug')('auth:signaturevalidator');
+const hawk = require('hawk');
+const assert = require('assert');
+const _ = require('lodash');
 require('superagent-hawk')(require('superagent'));
 // Someone should rename utils to scopes... 
-var utils         = require('taskcluster-lib-scopes');
-var hoek          = require('hoek');
-var https         = require('https');
-var crypto        = require('crypto');
+const utils = require('taskcluster-lib-scopes');
+const hoek = require('hoek');
+const https = require('https');
+const crypto = require('crypto');
 
 /**
  * Limit the client scopes and possibly use temporary keys.
@@ -18,7 +16,7 @@ var crypto        = require('crypto');
  * applies scope restrictions, certificate validation and returns a clone if
  * modified (otherwise it returns the original).
  */
-var parseExt = function(ext) {
+const parseExt = function(ext) {
   // Attempt to parse ext
   try {
     ext = JSON.parse(new Buffer(ext, 'base64').toString('utf-8'));
@@ -36,14 +34,14 @@ var parseExt = function(ext) {
  * applies scope restrictions, certificate validation and returns a clone if
  * modified (otherwise it returns the original).
  */
-var limitClientWithExt = function(credentialName, issuingClientId, accessToken, scopes,
+const limitClientWithExt = function(credentialName, issuingClientId, accessToken, scopes,
   expires, ext, expandScopes) {
   let issuingScopes = scopes;
   let res = {scopes, expires, accessToken};
 
   // Handle certificates
   if (ext.certificate) {
-    var cert = ext.certificate;
+    let cert = ext.certificate;
     // Validate the certificate
     if (!(cert instanceof Object)) {
       throw new Error('ext.certificate must be a JSON object');
@@ -71,7 +69,7 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
     }
 
     // Check start and expiry
-    var now = new Date().getTime();
+    let now = new Date().getTime();
     if (cert.start > now + 5 * 60 * 1000) {
       throw new Error('ext.certificate.start > now');
     }
@@ -103,7 +101,7 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
     }
 
     // Generate certificate signature
-    var sigContent = [];
+    let sigContent = [];
     sigContent.push('version:'    + '1');
     if (cert.issuer) {
       sigContent.push('clientId:' + credentialName);
@@ -114,7 +112,7 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
     sigContent.push('expiry:'     + cert.expiry);
     sigContent.push('scopes:');
     sigContent = sigContent.concat(cert.scopes);
-    var signature = crypto.createHmac('sha256', accessToken)
+    let signature = crypto.createHmac('sha256', accessToken)
       .update(sigContent.join('\n'))
       .digest('base64');
 
@@ -129,7 +127,7 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
     }
 
     // Regenerate temporary key
-    var temporaryKey = crypto.createHmac('sha256', accessToken)
+    let temporaryKey = crypto.createHmac('sha256', accessToken)
       .update(cert.seed)
       .digest('base64')
       .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
@@ -139,7 +137,7 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
     // Update expiration, scopes and accessToken
     res.accessToken = temporaryKey;
 
-    var cert_expires = new Date(cert.expiry);
+    let cert_expires = new Date(cert.expiry);
     if (res.expires > cert_expires) {
       res.expires = cert_expires;
     }
@@ -197,7 +195,7 @@ var limitClientWithExt = function(credentialName, issuingClientId, accessToken, 
  * The method returned by this function works as `signatureValidator` for
  * `remoteAuthentication`.
  */
-var createSignatureValidator = function(options) {
+const createSignatureValidator = function(options) {
   assert(typeof options === 'object', 'options must be an object');
   assert(options.clientLoader instanceof Function,
     'options.clientLoader must be a function');
@@ -208,7 +206,7 @@ var createSignatureValidator = function(options) {
   assert(options.expandScopes instanceof Function,
     'options.expandScopes must be a function');
   assert(options.monitor, 'options.monitor must be provided');
-  var loadCredentials = function(clientId, ext, callback) {
+  let loadCredentials = function(clientId, ext, callback) {
     // We may have two clientIds here: the credentialName (the one the caller
     // sent in the Hawk Authorization header) and the issuingClientId (the one
     // that signed the temporary credentials).
@@ -230,7 +228,7 @@ var createSignatureValidator = function(options) {
         }
       }
 
-      var accessToken, scopes, expires;
+      let accessToken, scopes, expires;
       ({clientId, expires, accessToken, scopes} = await options.clientLoader(issuingClientId));
 
       // apply restrictions based on the ext field
@@ -251,10 +249,10 @@ var createSignatureValidator = function(options) {
   };
   return function(req) {
     return new Promise(function(accept) {
-      var authenticated = function(err, credentials, artifacts) {
-        var result = null;
+      let authenticated = function(err, credentials, artifacts) {
+        let result = null;
         if (err) {
-          var message = 'Unknown authorization error';
+          let message = 'Unknown authorization error';
           if (err.output && err.output.payload && err.output.payload.error) {
             message = err.output.payload.error;
             if (err.output.payload.message) {
@@ -304,10 +302,10 @@ var createSignatureValidator = function(options) {
           port:             req.port,
           authorization:    req.authorization,
         }, function(clientId, callback) {
-          var ext = undefined;
+          let ext = undefined;
 
           // Parse authorization header for ext
-          var attrs = hawk.utils.parseAuthorizationHeader(
+          let attrs = hawk.utils.parseAuthorizationHeader(
             req.authorization
           );
           // Extra ext
@@ -332,21 +330,21 @@ var createSignatureValidator = function(options) {
           nonceFunc:    options.nonceManager,
         }, authenticated);
       } else {
-      // If there is no authorization header we'll attempt a login with bewit
+        // If there is no authorization header we'll attempt a login with bewit
         hawk.uri.authenticate({
           method:           req.method.toUpperCase(),
           url:              req.resource,
           host:             req.host,
           port:             req.port,
         }, function(clientId, callback) {
-          var ext = undefined;
+          let ext = undefined;
 
           // Get bewit string (stolen from hawk)
-          var parts = req.resource.match(
+          let parts = req.resource.match(
             /^(\/.*)([\?&])bewit\=([^&$]*)(?:&(.+))?$/
           );
 
-          var bewitString;
+          let bewitString;
           try {
             bewitString = hoek.base64urlDecode(parts[3]);
           } catch (err) {
@@ -355,7 +353,7 @@ var createSignatureValidator = function(options) {
 
           if (!(bewitString instanceof Error)) {
             // Split string as hawk does it
-            var parts = bewitString.split('\\');
+            let parts = bewitString.split('\\');
             if (parts.length === 4 && parts[3]) {
               ext = parts[3];
             }

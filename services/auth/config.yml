@@ -1,21 +1,15 @@
 defaults:
+  taskcluster:
+    rootUrl:                  !env TASKCLUSTER_ROOT_URL
   app:
     # Azure table for the client table
-    clientTableName:          Clients
+    clientTableName:          !env CLIENT_TABLE_NAME
 
     # Azure blob container for the role table
-    rolesContainerName:       auth-default-roles
-
-    # Key for signing in base.Entity (sufficiently random string required)
-    tableSigningKey:          !env TABLE_SIGNING_KEY
-    # Key for data encryption in base.Entity (32 random bytes as base64)
-    tableCryptoKey:           !env TABLE_CRYPTO_KEY
+    rolesContainerName:       !env ROLES_CONTAINER_NAME
 
     # Publish references and schemas
     publishMetaData:          !env:bool PUBLISH_METADATA
-
-    # Exchange prefix for exchanges declared
-    exchangePrefix:           v1/
 
     # Name of component in statistics
     statsComponent:           auth
@@ -26,14 +20,7 @@ defaults:
     # Each entry must have: clientId, accessToken, description, scopes
     # where clientId MUST start with 'static/', by convention these namespaced:
     #    static/<project>/<name>
-    staticClients:
-      # Must have clientId starting with "static/"
-    - clientId:     static/taskcluster/root
-      accessToken:  !env ROOT_ACCESS_TOKEN
-      description: |
-        Root client used for creating other clients (bootstrapping).
-      scopes:
-        - '*'
+    staticClients: !env:json STATIC_CLIENTS
 
     # Accounts that auth can delegate access to, as JSON
     azureAccounts:            !env:json AZURE_ACCOUNTS
@@ -46,11 +33,11 @@ defaults:
     # Sentry configuration
     # The authToken _must_ have at least project:{read,write,admin} and org:read
     sentry:
-      organization:             operations
-      hostname:                 sentry.prod.mozaws.net
+      organization:             !env SENTRY_ORGANIZATION
+      hostname:                 !env SENTRY_HOST
       authToken:                !env SENTRY_AUTH_TOKEN
-      initialTeam:              taskcluster
-      keyPrefix:                taskcluster-auth
+      initialTeam:              !env SENTRY_TEAM
+      keyPrefix:                !env SENTRY_KEY_PREFIX
 
     # Delay before expiring sentry keys, this should be negative!
     sentryExpirationDelay:      '- 15 minutes'
@@ -81,8 +68,6 @@ defaults:
     enable:                     !env:bool MONITORING_ENABLE
 
   server:
-    # Public URL from which the server can be accessed (used for persona)
-    publicUrl:                https://auth.taskcluster.net
 
     # Port to listen for requests on
     port:                     !env:number PORT
@@ -98,14 +83,22 @@ defaults:
 
   azure:
     # Azure table storage account name
-    accountName:              !env AZURE_ACCOUNT_NAME
-
+    accountId:                !env AZURE_ACCOUNT
     # Azure table storage account key
-    accountKey:               !env AZURE_ACCOUNT_KEY
+    accessKey:               !env AZURE_ACCOUNT_KEY
+
+    # Key for signing in base.Entity (sufficiently random string required)
+    signingKey:              !env AZURE_SIGNING_KEY
+
+    # Key for data encryption in base.Entity (32 random bytes as base64)
+    cryptoKey:               !env AZURE_CRYPTO_KEY
+
 
   pulse:
     username:                 !env PULSE_USERNAME
     password:                 !env PULSE_PASSWORD
+    hostname:                 !env PULSE_HOSTNAME
+    vhost:                    !env PULSE_VHOST
 
   # AWS SDK configuration for delegation of S3 access and publication of
   # schemas and references
@@ -122,17 +115,17 @@ production:
   app:
     clientTableName:          Clients
     rolesContainerName:       auth-production-roles
+    sentry:
+      organization:           operations
+      hostname:               sentry.prod.mozaws.net
+      initialTeam:            taskcluster
+      keyPrefix:              taskcluster-auth
   server:
-    forceSSL:                 true
-    trustProxy:               true
+    forceHSTS:                true
     env:                      'production'
     development:              false
 test:
   app:
-    clientTableName:          TestClients29
-    rolesContainerName:       auth-testing-roles
-    tableSigningKey:          not-a-secret-so-you-cant-guess-it
-    tableCryptoKey:           AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
     publishMetaData:          false
     statsComponent:           auth-tests
     # hardcoded into helper.js
@@ -146,7 +139,10 @@ test:
     # Special value for tests, as we don't want to wait forever
     maxLastUsedDelay:         '- 3 seconds'
     sentry:
-      authToken:                "no-key" # no-key skips tests
+      organization:             operations
+      hostname:                 sentry.prod.mozaws.net
+      authToken:                whatever
+      initialTeam:              taskcluster
       keyPrefix:                auth-test
     statsum:
       secret:                   'secret'
@@ -154,15 +150,17 @@ test:
     webhooktunnel:
       secret:                   'test-secret'
       proxyUrl:                 'ws://tcproxy.dev'
+  azure:
+    signingKey:          not-a-secret-so-you-cant-guess-it
+    cryptoKey:           AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
   monitoring:
     enable: false
   # Test bucket for STS credentials
   test:
     testBucket:               !env TEST_BUCKET
   server:
-    publicUrl:                http://localhost:60551
     forceSSL:                 false
-    port:                     60551
+    port:                     60552
     env:                      development
     development:              true
     trustProxy:               true
