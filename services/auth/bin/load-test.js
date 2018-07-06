@@ -1,33 +1,32 @@
-var debug         = require('debug')('queue:bin:load-test');
-var base          = require('taskcluster-base');
-var Promise       = require('promise');
-var _             = require('lodash');
-var v1            = require('../src/v1');
-var https         = require('https');
-var http          = require('http');
-var hawk          = require('hawk');
-var taskcluster   = require('taskcluster-client');
-var assert        = require('assert');
+const debug = require('debug')('queue:bin:load-test');
+const base = require('taskcluster-base');
+const _ = require('lodash');
+const v1 = require('../src/v1');
+const https = require('https');
+const http = require('http');
+const hawk = require('hawk');
+const taskcluster = require('taskcluster-client');
+const assert = require('assert');
 
 // run with:
 // heroku run -s performance-m --app tc-auth-load-test babel-node bin/load-test.js load-test
 
 /** Launch server */
-var launch = async function(profile) {
+const launch = async function(profile) {
   debug("Launching with profile: %s", profile);
 
   // Load configuration
-  var cfg = base.config({profile: 'load-test'});
+  let cfg = base.config({profile: 'load-test'});
 
-  var fmt = (n) => {
+  let fmt = (n) => {
     return Math.round(n * 100) / 100;
   };
 
   const CYCLE_SECONDS = 3 * 60;
 
-  var success = 0;
-  var failed  = 0;
-  var summary = () => {
+  let success = 0;
+  let failed  = 0;
+  let summary = () => {
     console.log("SUMMARY: %s req/s success: %s, failed: %s",
                 fmt(success / CYCLE_SECONDS), success, failed)
     success = 0;
@@ -40,8 +39,8 @@ var launch = async function(profile) {
                 fmt(success / CYCLE_SECONDS), success, failed)
   }, 10 * 60 * 1000);// */
 
-  var makeSignature = function() {
-    var tempCreds = taskcluster.createTemporaryCredentials({
+  let makeSignature = function() {
+    let tempCreds = taskcluster.createTemporaryCredentials({
       start: new Date(),
       expiry: taskcluster.fromNow("1 hour"),
       scopes: [
@@ -83,8 +82,8 @@ var launch = async function(profile) {
         accessToken: cfg.app.rootAccessToken,
       }
     });
-    var reqUrl = 'http://localhost:1207/v1/client/authed-client/credentials';
-    var header = hawk.client.header(reqUrl, 'GET', {
+    let reqUrl = 'http://localhost:1207/v1/client/authed-client/credentials';
+    let header = hawk.client.header(reqUrl, 'GET', {
       credentials: {
         id:         tempCreds.clientId,
         key:        tempCreds.accessToken,
@@ -103,23 +102,23 @@ var launch = async function(profile) {
     };
   };
 
-  var loops = 0;
-  var exiting = false;
-  var startLoop = () => {
+  let loops = 0;
+  let exiting = false;
+  let startLoop = () => {
     loops += 1;
     (async() => {
-      var agent = new https.Agent({keepAlive: true});
+      let agent = new https.Agent({keepAlive: true});
       if (cfg.server.publicUrl.substr(0, 5) != 'https') {
         agent = new http.Agent({keepAlive: true});
       }
-      var Auth = taskcluster.createClient(v1.reference({
+      let Auth = taskcluster.createClient(v1.reference({
         baseUrl:      cfg.server.publicUrl + '/v1',
       }));
-      var auth = new Auth({
+      let auth = new Auth({
         retries:      0,
         agent:        agent
       });
-      var reqForVerification = makeSignature();
+      let reqForVerification = makeSignature();
       setInterval(function() {
         reqForVerification = makeSignature();
       }, 3 * 60 * 1000);
@@ -197,7 +196,7 @@ var launch = async function(profile) {
 // If load-test.js is executed start the load-test
 if (!module.parent) {
   // Find configuration profile
-  var profile = process.argv[2];
+  let profile = process.argv[2];
   if (!profile) {
     console.log("Usage: load-test.js [profile]")
     console.error("ERROR: No configuration profile is provided");

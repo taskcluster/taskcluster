@@ -1,20 +1,20 @@
-var _           = require('lodash');
-var azure       = require('fast-azure-storage');
-var api         = require('./v1');
+const _ = require('lodash');
+const azure = require('fast-azure-storage');
+const builder = require('./v1');
 
 // keyed by account/tableName, the last time createTable was called for the
 // given table.  This is used to avoid lots of redundant calls to createTable
 // for the same table.
-var tableLastCreated = {};
+const tableLastCreated = {};
 // Similar for containers
-var containerLastCreated = {};
+const containerLastCreated = {};
 
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/azure/accounts',
   name:       'azureAccounts',
   input:      undefined,
-  output:     'azure-account-list-response.json#',
+  output:     'azure-account-list-response.yml',
   stability:  'stable',
   scopes:     'auth:azure-table:list-accounts',
   title:      'List Accounts Managed by Auth',
@@ -25,7 +25,7 @@ api.declare({
   return res.reply({accounts: _.keys(this.azureAccounts)});
 });
 
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/azure/:account/tables',
   name:       'azureTables',
@@ -33,7 +33,7 @@ api.declare({
     continuationToken: /^[A-Za-z][A-Za-z0-9]{2,62}$/,
   },
   input:      undefined,
-  output:     'azure-table-list-response.json#',
+  output:     'azure-table-list-response.yml',
   stability:  'stable',
   scopes:     'auth:azure-table:list-tables:<account>',
   title:      'List Tables in an Account Managed by Auth',
@@ -59,12 +59,12 @@ api.declare({
   return res.reply(data);
 });
 
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/azure/:account/table/:table/:level',
   name:       'azureTableSAS',
   input:      undefined,
-  output:     'azure-table-access-response.json#',
+  output:     'azure-table-access-response.yml',
   stability:  'stable',
   scopes: {
     if: 'levelIsReadOnly',
@@ -84,9 +84,9 @@ api.declare({
     'table if it doesn\'t already exist.',
   ].join('\n'),
 }, async function(req, res) {
-  var account   = req.params.account;
-  var tableName = req.params.table;
-  var level     = req.params.level;
+  let account   = req.params.account;
+  let tableName = req.params.table;
+  let level     = req.params.level;
 
   // We have a complicated scope situation for read-only since we want
   // read-write to grant read-only permissions as well
@@ -104,7 +104,7 @@ api.declare({
   }
 
   // Construct client
-  var table = new azure.Table({
+  let table = new azure.Table({
     accountId:  account,
     accessKey:  this.azureAccounts[account],
   });
@@ -128,8 +128,8 @@ api.declare({
   let perm = level === 'read-write';
 
   // Construct SAS
-  var expiry = new Date(Date.now() + 25 * 60 * 1000);
-  var sas = table.sas(tableName, {
+  let expiry = new Date(Date.now() + 25 * 60 * 1000);
+  let sas = table.sas(tableName, {
     start:    new Date(Date.now() - 15 * 60 * 1000),
     expiry:   expiry,
     permissions: {
@@ -147,7 +147,7 @@ api.declare({
   });
 });
 
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/azure/:account/containers',
   name:       'azureContainers',
@@ -155,7 +155,7 @@ api.declare({
     continuationToken: /^[A-Za-z][A-Za-z0-9]{2,62}$/,
   },
   input:      undefined,
-  output:     'azure-container-list-response.json#',
+  output:     'azure-container-list-response.yml',
   stability:  'stable',
   scopes:     'auth:azure-container:list-containers:<account>',
   title:      'List containers in an Account Managed by Auth',
@@ -179,12 +179,12 @@ api.declare({
   return res.reply(data);
 });
 
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/azure/:account/containers/:container/:level',
   name:       'azureContainerSAS',
   input:      undefined,
-  output:     'azure-container-response.json#',
+  output:     'azure-container-response.yml',
   stability:  'stable',
   scopes: {
     if: 'levelIsReadOnly',

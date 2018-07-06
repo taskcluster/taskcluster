@@ -1,9 +1,12 @@
-var Exchanges = require('pulse-publisher');
-var assert    = require('assert');
+const Exchanges = require('pulse-publisher');
+const assert = require('assert');
 
 /** Declaration of exchanges offered by the auth */
-var exchanges = new Exchanges({
-  title:      'Auth Pulse Exchanges',
+const exchanges = new Exchanges({
+  title: 'Auth Pulse Exchanges',
+  projectName: 'taskcluster-auth',
+  serviceName: 'auth',
+  version: 'v1',
   description: [
     'The auth service, typically available at `auth.taskcluster.net`',
     'is responsible for storing credentials, managing assignment of scopes,',
@@ -14,14 +17,13 @@ var exchanges = new Exchanges({
     'can purge their caches and synchronize state. But you are of course',
     'welcome to use these for other purposes, monitoring changes for example.',
   ].join('\n'),
-  schemaPrefix:         'http://schemas.taskcluster.net/auth/v1/',
 });
 
 // Export exchanges
 module.exports = exchanges;
 
 /** Build routing key construct for `exchanges.declare` */
-var buildRoutingKey = (options) => {
+const buildRoutingKey = (options) => {
   return [
     {
       name:             'reserved',
@@ -35,7 +37,7 @@ var buildRoutingKey = (options) => {
 };
 
 /** Build an AMQP compatible message from a message */
-var commonMessageBuilder = (message) => {
+const commonMessageBuilder = (message) => {
   message.version = 1;
   return message;
 };
@@ -48,7 +50,7 @@ exchanges.declare({
     'Message that a new client has been created.',
   ].join('\n'),
   routingKey:         buildRoutingKey(),
-  schema:             'client-message.json#',
+  schema:             'client-message.yml',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  () => '',
   CCBuilder:          () => [],
@@ -62,7 +64,7 @@ exchanges.declare({
     'Message that a new client has been updated.',
   ].join('\n'),
   routingKey:         buildRoutingKey(),
-  schema:             'client-message.json#',
+  schema:             'client-message.yml',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  () => '',
   CCBuilder:          () => [],
@@ -76,7 +78,7 @@ exchanges.declare({
     'Message that a new client has been deleted.',
   ].join('\n'),
   routingKey:         buildRoutingKey(),
-  schema:             'client-message.json#',
+  schema:             'client-message.yml',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  () => '',
   CCBuilder:          () => [],
@@ -90,7 +92,7 @@ exchanges.declare({
     'Message that a new role has been created.',
   ].join('\n'),
   routingKey:         buildRoutingKey(),
-  schema:             'role-message.json#',
+  schema:             'role-message.yml',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  () => '',
   CCBuilder:          () => [],
@@ -104,7 +106,7 @@ exchanges.declare({
     'Message that a new role has been updated.',
   ].join('\n'),
   routingKey:         buildRoutingKey(),
-  schema:             'role-message.json#',
+  schema:             'role-message.yml',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  () => '',
   CCBuilder:          () => [],
@@ -118,7 +120,7 @@ exchanges.declare({
     'Message that a new role has been deleted.',
   ].join('\n'),
   routingKey:         buildRoutingKey(),
-  schema:             'role-message.json#',
+  schema:             'role-message.yml',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  () => '',
   CCBuilder:          () => [],

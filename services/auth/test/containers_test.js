@@ -10,17 +10,18 @@ const sorted = (arr) => {
   return arr;
 };
 
-suite('containers', function() {
-  const containerName = `auth-test-${uuid.v4()}`;
-
-  let credentials;
-  if (helper.cfg.azure && helper.cfg.azure.accountName) {
-    credentials = helper.cfg.azure;
+helper.secrets.mockSuite(helper.suiteName(__filename), ['azure'], function(mock, skipping) {
+  if (mock) {
+    return; // This test file only works on real things apparently
   }
 
+  const containerName = `auth-test-${uuid.v4()}`;
+  let credentials;
   let roles;
+
   suiteSetup(async function() {
-    if (credentials) {
+    if (!mock && !skipping()) {
+      credentials = helper.cfg.azure;
       roles = new containers.Roles({
         containerName,
         credentials,
@@ -30,10 +31,24 @@ suite('containers', function() {
     }
   });
 
-  setup(function() {
-    // can't run these tests without real azure credentials
-    if (!credentials) {
-      this.skip();
+  // clean up the container manually at the end
+  suiteTeardown(async function() {
+    if (!mock && !skipping()) {
+      const blobService = new azure.Blob({
+        accountId: credentials.accountId,
+        accountKey: credentials.accountKey,
+      });
+      try {
+        await blobService.deleteContainer(containerName);
+      } catch (e) {
+        if (e.code !== 'ResourceNotFound') {
+          throw e;
+        }
+        // already deleted, so nothing to do
+        // NOTE: really, this doesn't work -- the container doesn't register as existing
+        // before the tests are complete, so we "leak" containers despite this effort to
+        // clean them up.
+      }
     }
   });
 
@@ -79,26 +94,5 @@ suite('containers', function() {
 
     assert.deepEqual(sorted((await roles2.get()).map(r => r.roleId)),
       sorted(['my-role', 'second-role']));
-  });
-
-  // clean up the container manually at the end
-  suiteTeardown(async function() {
-    if (credentials) {
-      const blobService = new azure.Blob({
-        accountId: credentials.accountName,
-        accountKey: credentials.accountKey,
-      });
-      try {
-        await blobService.deleteContainer(containerName);
-      } catch (e) {
-        if (e.code !== 'ResourceNotFound') {
-          throw e;
-        }
-        // already deleted, so nothing to do
-        // NOTE: really, this doesn't work -- the container doesn't register as existing
-        // before the tests are complete, so we "leak" containers despite this effort to
-        // clean them up.
-      }
-    }
   });
 });

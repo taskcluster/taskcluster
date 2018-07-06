@@ -1,8 +1,8 @@
-var taskcluster   = require('taskcluster-client');
+const taskcluster = require('taskcluster-client');
 
 if (!module.parent) {
   // use the root credentials from the environment (this is meant to be run from `heroku run`)
-  var auth = new taskcluster.Auth({
+  let auth = new taskcluster.Auth({
     baseUrl: "https://taskcluster-auth-staging.herokuapp.com/v1/",
     credentials: {
       clientId: "root",
@@ -11,7 +11,7 @@ if (!module.parent) {
   });
 
   // invent a client name
-  var clientId = "project/taskcluster/tc-auth/staging-check/" + taskcluster.slugid()
+  let clientId = "project/taskcluster/tc-auth/staging-check/" + taskcluster.slugid()
 
   auth.createClient(clientId, {
     expires: new Date(3000, 1, 1),

@@ -1,10 +1,10 @@
-var _           = require('lodash');
-var assert      = require('assert');
-var taskcluster = require('taskcluster-client');
-var events      = require('events');
-var LRU         = require('quick-lru');
-var debug       = require('debug')('auth:ScopeResolver');
-var {scopeCompare, mergeScopeSets, normalizeScopeSet} = require('taskcluster-lib-scopes');
+const _ = require('lodash');
+const assert = require('assert');
+const taskcluster = require('taskcluster-client');
+const events = require('events');
+const LRU = require('quick-lru');
+const debug = require('debug')('auth:ScopeResolver');
+const {scopeCompare, mergeScopeSets, normalizeScopeSet} = require('taskcluster-lib-scopes');
 const trie = require('./trie');
 const ScopeSetBuilder = require('./scopesetbuilder');
 
@@ -70,6 +70,7 @@ class ScopeResolver extends events.EventEmitter {
    *
    * options:
    * {
+   *   rootUrl:             // a Taskcluster rootUrl
    *   Client:              // data.Client object
    *   Roles:               // data.Roles object
    *   connection:          // PulseConnection object
@@ -91,8 +92,8 @@ class ScopeResolver extends events.EventEmitter {
     this._options       = options;
 
     // Create authEvents client
-    var AuthEvents = taskcluster.createClient(this._options.exchangeReference);
-    var authEvents = new AuthEvents();
+    let AuthEvents = taskcluster.createClient(this._options.exchangeReference);
+    let authEvents = new AuthEvents({rootUrl: this._options.rootUrl});
 
     // Create PulseListeners
     this._clientListener = new taskcluster.PulseListener({
