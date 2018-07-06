@@ -108,28 +108,28 @@ function createScopes(config, payload) {
 }
 
 /**
- * Returns a function that merges an existing taskcluster github config with
- * a pull request message's payload to generate a full task graph config.
- *  params {
- *    config:             '...', A yaml string
- *    payload:            {},    GitHub WebHook message payload
- *    schema:             url,   Url to the taskcluster config schema
- *  }
- **/
-module.exports.setup = async function({cfg, schemaset}) {
-  let slugids = {};
-  let as_slugid = (label) => {
-    let rv;
-    if (rv = slugids[label]) {
-      return rv;
-    } else {
-      return slugids[label] = slugid.nice();
-    }
-  };
-  const validate = await schemaset.validator(cfg.taskcluster.rootUrl);
+ * Performs parameter substitutions (for version 0 and 1)
+ */
+substituteParameters = {
+  0: (config, cfg, payload) => {
+    return jparam(config, _.merge(payload.details, {
+      $fromNow: (text) => tc.fromNowJSON(text),
+      timestamp: Math.floor(new Date()),
+      organization: payload.organization,
+      repository: payload.repository,
+      'taskcluster.docker.provisionerId': cfg.intree.provisionerId,
+      'taskcluster.docker.workerType': cfg.intree.workerType,
+    }));
+  },
 
-  return function({config, payload, schema}) {
-    config = yaml.safeLoad(config);
+  1: (config, cfg, payload) => {
+    if (!branchTest.test(payload.branch || '')) {
+      throw new Error('Cannot have unicode in branch names!');
+    }
+    if (!branchTest.test(payload.branch || '')) {
+      throw new Error('Cannot have unicode in branch names!');
+    }
+
     let slugids = {};
     let as_slugid = (label) => {
       let rv;
@@ -139,17 +139,111 @@ module.exports.setup = async function({cfg, schemaset}) {
         return slugids[label] = slugid.nice();
       }
     };
-    let version = config.version;
-    
-    let errors;
-    if (version == 0) {
-      errors = validate(config, schema);
-    } else {
-      errors = validate(config, schema.replace(/\.ya?ml$/, '.v1.yaml'));
+
+    return jsone(config, {
+      tasks_for: payload.tasks_for,
+      event: payload.body,
+      as_slugid,
+    });
+  },
+};
+
+/**
+ * Compile individual tasks, filtering any that are not intended
+ * for the current github event type. Append taskGroupId while
+ * we're at it.
+ */
+compileTasks = {
+  0: (config, cfg, payload) => {
+    config.tasks = config.tasks.map((task) => {
+      return {
+        taskId: slugid.nice(),
+        task,
+      };
+    }).filter((task) => {
+      // Filter out tasks that aren't associated with github at all, or with
+      // the current event being handled
+      if (!task.task.extra || !task.task.extra.github) {
+        return false;
+      }
+  
+      let event = payload.details['event.type'];
+      let events = task.task.extra.github.events;
+      let branch = payload.details['event.base.repo.branch'];
+      let includeBranches = task.task.extra.github.branches;
+      let excludeBranches = task.task.extra.github.excludeBranches;
+  
+      if (includeBranches && excludeBranches) {
+        throw new Error('Cannot specify both `branches` and `excludeBranches` in the same task!');
+      }
+  
+      return _.some(events, ev => { // TODO
+        if (!event.startsWith(_.trimEnd(ev, '*'))) {
+          return false;
+        }
+  
+        if (event !== 'push') {
+          return true;
+        }
+  
+        if (includeBranches) {
+          return _.includes(includeBranches, branch);
+        } else if (excludeBranches) {
+          return !_.includes(excludeBranches, branch);
+        } else {
+          return true;
+        }
+      });
+    });
+  
+    // Add common taskGroupId and schedulerId. taskGroupId is always the taskId of the first
+    // task in taskcluster.
+    if (config.tasks.length > 0) {
+      let taskGroupId = config.tasks[0].taskId;
+      config.tasks = config.tasks.map((task) => {
+        return {
+          taskId: task.taskId,
+          task: _.extend(task.task, {taskGroupId, schedulerId: cfg.taskcluster.schedulerId}),
+        };
+      });
     }
+    return completeInTreeConfig(config, payload);
+  },
+  1: (config, cfg, payload) => {
+    if (config.tasks.length > 0) {
+      config.tasks = config.tasks.map((task) => {
+        if (!task.taskId) { throw Error('The taskId is absent.'); }
+        return {
+          taskId: task.taskId,
+          task: _.extend(task, {schedulerId: cfg.taskcluster.schedulerId}),
+        };
+      });
+    }
+    return createScopes(config, payload);
+  },
+};
+
+/**
+ * Returns a function that merges an existing taskcluster github config with
+ * a pull request message's payload to generate a full task graph config.
+ *  params {
+ *    config:             '...', A yaml string
+ *    payload:            {},    GitHub WebHook message payload
+ *    schema:             url,   Url to the taskcluster config schema
+ *  }
+ **/
+module.exports.setup = async function({cfg, schemaset}) {
+  const validate = await schemaset.validator(cfg.taskcluster.rootUrl);
+
+  return function({config, payload, schema}) {
+    config = yaml.safeLoad(config);
+    const version = config.version;
+    
+    const errors = validate(config, schema[version]);
     if (errors) {
       throw new Error(errors);
     }
+    
     debug(`intree config for ${payload.organization}/${payload.repository} matches valid schema.`);
 
     // We need to toss out the config version number; it's the only
@@ -159,100 +253,13 @@ module.exports.setup = async function({cfg, schemaset}) {
     // Perform parameter substitutions. This happens after verification
     // because templating may change with schema version, and parameter
     // functions are used as default values for some fields.
-    if (version === 0) { // TODO: version 0 stuff to make a separate module
-      config = jparam(config, _.merge(payload.details, {
-        $fromNow: (text) => tc.fromNowJSON(text),
-        timestamp: Math.floor(new Date()),
-        organization: payload.organization,
-        repository: payload.repository,
-        'taskcluster.docker.provisionerId': cfg.intree.provisionerId,
-        'taskcluster.docker.workerType': cfg.intree.workerType,
-      }));
-    } else {
-      if (!branchTest.test(payload.branch || '')) {
-        throw new Error('Cannot have unicode in branch names!');
-      }
-      if (!branchTest.test(payload.branch || '')) {
-        throw new Error('Cannot have unicode in branch names!');
-      }
-      config = jsone(config, {
-        tasks_for: payload.tasks_for,
-        event: payload.body,
-        as_slugid,
-      });
-    }
+    config = substituteParameters[version](config, cfg, payload);
 
     // Compile individual tasks, filtering any that are not intended
     // for the current github event type. Append taskGroupId while
     // we're at it.
     try {
-      if (version === 0) {
-        config.tasks = config.tasks.map((task) => {
-          return {
-            taskId: slugid.nice(),
-            task,
-          };
-        }).filter((task) => {
-          // Filter out tasks that aren't associated with github at all, or with
-          // the current event being handled
-          if (!task.task.extra || !task.task.extra.github) {
-            return false;
-          }
-  
-          let event = payload.details['event.type'];
-          let events = task.task.extra.github.events;
-          let branch = payload.details['event.base.repo.branch'];
-          let includeBranches = task.task.extra.github.branches;
-          let excludeBranches = task.task.extra.github.excludeBranches;
-  
-          if (includeBranches && excludeBranches) {
-            throw new Error('Cannot specify both `branches` and `excludeBranches` in the same task!');
-          }
-  
-          return _.some(events, ev => { // TODO
-            if (!event.startsWith(_.trimEnd(ev, '*'))) {
-              return false;
-            }
-  
-            if (event !== 'push') {
-              return true;
-            }
-  
-            if (includeBranches) {
-              return _.includes(includeBranches, branch);
-            } else if (excludeBranches) {
-              return !_.includes(excludeBranches, branch);
-            } else {
-              return true;
-            }
-          });
-        });
-  
-        // Add common taskGroupId and schedulerId. taskGroupId is always the taskId of the first
-        // task in taskcluster.
-        if (config.tasks.length > 0) {
-          let taskGroupId = config.tasks[0].taskId;
-          config.tasks = config.tasks.map((task) => {
-            return {
-              taskId: task.taskId,
-              task: _.extend(task.task, {taskGroupId, schedulerId: cfg.taskcluster.schedulerId}),
-            };
-          });
-        }
-        return completeInTreeConfig(config, payload);
-      } else {
-        
-        if (config.tasks.length > 0) {
-          config.tasks = config.tasks.map((task) => {
-            if (!task.taskId) { throw Error('The taskId is absent.'); }
-            return {
-              taskId: task.taskId,
-              task: _.extend(task, {schedulerId: cfg.taskcluster.schedulerId}),
-            };
-          });
-        }
-        return createScopes(config, payload);
-      }
+      return compileTasks[version](config, cfg, payload);
     } catch (e) {
       debug('Error processing tasks!');
       throw e;

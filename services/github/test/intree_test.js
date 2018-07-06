@@ -62,7 +62,10 @@ suite('intree config', function() {
   let buildConfigTest = function(testName, configPath, params, expected, count=-1, shouldError=false) {
     test(testName, async function() {
       params.config = fs.readFileSync(configPath);
-      params.schema = libUrls.schema(libUrls.testRootUrl(), 'github', 'v1/taskcluster-github-config.yml');
+      params.schema = {
+        0: libUrls.schema(libUrls.testRootUrl(), 'github', 'v1/taskcluster-github-config.yml'),
+        1: libUrls.schema(libUrls.testRootUrl(), 'github', 'v1/taskcluster-github-config.v1.yml'),
+      };
       let config;
       try {
         config = intree(params);

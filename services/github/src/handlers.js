@@ -314,7 +314,10 @@ async function jobHandler(message) {
       config: repoconf,
       payload: message.payload,
       validator: context.validator,
-      schema: libUrls.schema(this.rootUrl, 'github', 'v1/taskcluster-github-config.yml'),
+      schema: {
+        0: libUrls.schema(this.rootUrl, 'github', 'v1/taskcluster-github-config.yml'),
+        1: libUrls.schema(this.rootUrl, 'github', 'v1/taskcluster-github-config.v1.yml'),
+      },
     });
     if (graphConfig.tasks.length === 0) {
       debug(`intree config for ${organization}/${repository} compiled with zero tasks. Skipping.`);
