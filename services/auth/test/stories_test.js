@@ -1,35 +1,36 @@
-suite('user stories', function() {
-  var Promise     = require('promise');
-  var assert      = require('assert');
-  var debug       = require('debug')('test:client');
-  var helper      = require('./helper');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var assume      = require('assume');
-  var taskcluster = require('taskcluster-client');
+const assert = require('assert');
+const debug = require('debug')('test:client');
+const helper = require('./helper');
+const slugid = require('slugid');
+const _ = require('lodash');
+const assume = require('assume');
+const taskcluster = require('taskcluster-client');
+
+helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], function(mock, skipping) {
+  helper.withPulse(mock, skipping);
+  helper.withEntities(mock, skipping, {orderedTests: true});
+  helper.withRoles(mock, skipping, {orderedTests: true});
+  helper.withServers(mock, skipping);
 
   suite('charlene creates permanent credentials for a test runner', function() {
-    if (!helper.hasPulseCredentials()) {
-      setup(function() {
+    suiteSetup(async function() {
+      if (skipping()) {
         this.skip();
-      });
-    } else {
-      let cleanup = async () => {
-        await helper.auth.deleteRole('client-id:test-users/test');
-        await helper.auth.deleteClient('test-users');
-        await helper.auth.deleteClient('test-users/charlene/travis-tests');
-      };
-      before(cleanup);
-    }
+      } else {
+        await helper.apiClient.deleteRole('client-id:test-users/test');
+        await helper.apiClient.deleteClient('test-users');
+        await helper.apiClient.deleteClient('test-users/charlene/travis-tests');
+      }
+    });
 
     // NOTE: these tests run in order
-    var identityProvider,
+    let identityProvider,
       identityProviderToken,
       charlene,
       travisTests;
 
     test('add a client for the identity provider', async () => {
-      let idp = await helper.auth.createClient('test-users', {
+      let idp = await helper.apiClient.createClient('test-users', {
         description: 'Test users identity provider',
         expires: taskcluster.fromNow('2 hours'),
         scopes: [
@@ -44,7 +45,8 @@ suite('user stories', function() {
       });
 
       identityProviderToken = idp.accessToken;
-      identityProvider = new helper.Auth({
+      identityProvider = new helper.AuthClient({
+        rootUrl: helper.rootUrl,
         credentials: {
           clientId: 'test-users',
           accessToken: identityProviderToken,
@@ -53,14 +55,15 @@ suite('user stories', function() {
     });
 
     test('add role3', async () => {
-      await helper.auth.createRole('test-role:role3', {
+      await helper.apiClient.createRole('test-role:role3', {
         description: 'role 3',
         scopes: ['scope3a', 'scope3b'],
       });
     });
 
     test('create temporary credentials for charlene\'s browser login', async () => {
-      charlene = new helper.Auth({
+      charlene = new helper.AuthClient({
+        rootUrl: helper.rootUrl,
         credentials: taskcluster.createTemporaryCredentials({
           start: new Date(),
           expiry: taskcluster.fromNow('1 hour'),
@@ -89,7 +92,8 @@ suite('user stories', function() {
         ],
       });
 
-      travisTests = new helper.Auth({
+      travisTests = new helper.AuthClient({
+        rootUrl: helper.rootUrl,
         credentials: {
           clientId: 'test-users/charlene/travis-tests',
           accessToken: travisClient.accessToken,
@@ -127,7 +131,7 @@ suite('user stories', function() {
     });
 
     test('root grants role3', async () => {
-      let newClient = await helper.auth.updateClient('test-users/charlene/travis-tests', {
+      let newClient = await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
         scopes: [
@@ -148,7 +152,7 @@ suite('user stories', function() {
     });
 
     test('root grants role3 again', async () => {
-      let newClient = await helper.auth.updateClient('test-users/charlene/travis-tests', {
+      let newClient = await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
         scopes: [
@@ -170,7 +174,7 @@ suite('user stories', function() {
 
     test('A disabled travis-tests client can\'t do things anymore', async function() {
       // give the user a scope we can use as a probe
-      await helper.auth.updateClient('test-users/charlene/travis-tests', {
+      await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
         scopes: [

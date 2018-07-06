@@ -1,10 +1,14 @@
-suite('api (role logic)', function() {
-  var Promise     = require('promise');
-  var helper      = require('./helper');
-  var _           = require('lodash');
-  var assume      = require('assume');
-  var taskcluster = require('taskcluster-client');
-  var mocha       = require('mocha');
+const helper = require('./helper');
+const _ = require('lodash');
+const assume = require('assume');
+const taskcluster = require('taskcluster-client');
+const mocha = require('mocha');
+
+helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], function(mock, skipping) {
+  helper.withPulse(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withRoles(mock, skipping);
+  helper.withServers(mock, skipping);
 
   /**
    * Customized test function, taking an object as follows:
@@ -34,22 +38,22 @@ suite('api (role logic)', function() {
 
       // Ensure all roles and clients from the test are deleted
       for (let c of t.clients) {
-        await helper.auth.deleteClient(c.clientId);
+        await helper.apiClient.deleteClient(c.clientId);
       }
       for (let r of t.roles) {
-        await helper.auth.deleteRole(r.roleId);
+        await helper.apiClient.deleteRole(r.roleId);
       }
 
       // Create all roles and clients
       for (let c of t.clients) {
-        await helper.auth.createClient(c.clientId, {
+        await helper.apiClient.createClient(c.clientId, {
           description:  'client for test case: ' + title,
           expires:      taskcluster.fromNowJSON('2 hours'),
           scopes:       c.scopes,
         });
       }
       for (let r of t.roles) {
-        await helper.auth.createRole(r.roleId, {
+        await helper.apiClient.createRole(r.roleId, {
           description:  'role for test case: ' + title,
           scopes:       r.scopes,
         });
@@ -58,7 +62,7 @@ suite('api (role logic)', function() {
       // Run tests for all clients
       let err = '';
       await Promise.all(t.clients.map(async (c) => {
-        let client = await helper.auth.client(c.clientId);
+        let client = await helper.apiClient.client(c.clientId);
         let missing = _.difference(c.includes, client.expandedScopes);
         let forbidden = _.intersection(c.exludes, client.expandedScopes);
         if (missing.length !== 0 || forbidden.length !== 0) {
@@ -78,10 +82,10 @@ suite('api (role logic)', function() {
 
       // delete all roles and clients from the tests
       for (let c of t.clients) {
-        await helper.auth.deleteClient(c.clientId);
+        await helper.apiClient.deleteClient(c.clientId);
       }
       for (let r of t.roles) {
-        await helper.auth.deleteRole(r.roleId);
+        await helper.apiClient.deleteRole(r.roleId);
       }
 
       if (err !== '') {

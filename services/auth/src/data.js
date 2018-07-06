@@ -1,10 +1,10 @@
-var debug       = require('debug')('auth:data');
-var Entity      = require('azure-entities');
-var assert      = require('assert');
-var _           = require('lodash');
-var taskcluster = require('taskcluster-client');
+const debug = require('debug')('auth:data');
+const Entity = require('azure-entities');
+const assert = require('assert');
+const _ = require('lodash');
+const taskcluster = require('taskcluster-client');
 
-var Client = Entity.configure({
+const Client = Entity.configure({
   version:          1,
   partitionKey:     Entity.keys.StringKey('clientId'),
   rowKey:           Entity.keys.ConstantKey('client'),
@@ -187,8 +187,8 @@ Client.syncStaticClients = async function(clients = []) {
  * details.deleteOnExpiration is false.
  */
 Client.purgeExpired = async function(now = new Date()) {
-  var count = 0;
-  var expired = await this.scan({
+  let count = 0;
+  let expired = await this.scan({
     expires: Entity.op.lessThan(now),
   }, {
     limit: 100,

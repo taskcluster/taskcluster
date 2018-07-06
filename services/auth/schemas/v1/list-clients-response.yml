@@ -7,7 +7,7 @@ properties:
   clients:
     type: array
     items:
-      $ref: 'http://schemas.taskcluster.net/auth/v1/get-client-response.json#'
+      $ref: 'get-client-response.json#'
   continuationToken:
     title:                "Continuation Token"
     type:                 string

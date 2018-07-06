@@ -1,35 +1,26 @@
-suite('static clients', function() {
-  var Promise     = require('promise');
-  var assert      = require('assert');
-  var debug       = require('debug')('test:static-clients');
-  var helper      = require('./helper');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var assume      = require('assume');
-  var testing     = require('taskcluster-lib-testing');
-  var taskcluster = require('taskcluster-client');
+const assert = require('assert');
+const debug = require('debug')('test:static-clients');
+const helper = require('./helper');
+const slugid = require('slugid');
+const _ = require('lodash');
+const assume = require('assume');
+const testing = require('taskcluster-lib-testing');
+const taskcluster = require('taskcluster-client');
 
-  if (!helper.hasPulseCredentials()) {
-    setup(function() {
-      this.skip();
-    });
-  } else {
-    const cleanup = async () => {
-      // Delete all clients not static and roles
-      await helper.Client.scan({}, {handler: c => c.clientId !== 'static/' ? null : c.remove()});
-      await helper.Roles.modify((roles) => roles.splice(0));
-    };
-    setup(cleanup);
-    teardown(cleanup);
-  }
+helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], function(mock, skipping) {
+  helper.withPulse(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withRoles(mock, skipping);
+  helper.withServers(mock, skipping);
+  helper.withCfg(mock, skipping);
 
   test('static/taskcluster/root exists', async () => {
-    await helper.auth.client('static/taskcluster/root');
+    await helper.apiClient.client('static/taskcluster/root');
   });
 
   test('static/taskcluster/test-static-client does not exist', async () => {
     try {
-      await helper.auth.client('static/taskcluster/test-static-client');
+      await helper.apiClient.client('static/taskcluster/test-static-client');
       assert(false, 'expected an error');
     } catch (err) {
       assume(err.code).equals('ResourceNotFound');
@@ -48,14 +39,14 @@ suite('static clients', function() {
     ]);
 
     debug('test that static client was created');
-    const c = await helper.auth.client('static/taskcluster/test-static-client');
+    const c = await helper.apiClient.client('static/taskcluster/test-static-client');
     assume(c.clientId).equals('static/taskcluster/test-static-client');
     assume(c.scopes).includes('dummy-scope');
 
     debug('test that we delete the static client again');
     await helper.Client.syncStaticClients(helper.cfg.app.staticClients);
     try {
-      await helper.auth.client('static/taskcluster/test-static-client');
+      await helper.apiClient.client('static/taskcluster/test-static-client');
       assert(false, 'expected an error');
     } catch (err) {
       assume(err.code).equals('ResourceNotFound');

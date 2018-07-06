@@ -1,20 +1,23 @@
-suite('azure table and blob (sas)', function() {
-  var assert      = require('assert');
-  var debug       = require('debug')('auth:test:azure');
-  var helper      = require('./helper');
-  var slugid      = require('slugid');
-  var _           = require('lodash');
-  var azure       = require('fast-azure-storage');
-  var taskcluster = require('taskcluster-client');
+const assert = require('assert');
+const debug = require('debug')('auth:test:azure');
+const helper = require('./helper');
+const slugid = require('slugid');
+const _ = require('lodash');
+const azure = require('fast-azure-storage');
+const taskcluster = require('taskcluster-client');
 
-  if (!helper.hasPulseCredentials()) {
-    setup(function() {
-      this.skip();
-    });
+helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], function(mock, skipping) {
+  if (mock) {
+    return; // We only test this with real creds
   }
+  helper.withPulse(mock, skipping);
+  helper.withEntities(mock, skipping);
+  helper.withRoles(mock, skipping);
+  helper.withServers(mock, skipping);
+  helper.withCfg(mock, skipping);
 
   test('azureAccounts', function() {
-    return helper.auth.azureAccounts(
+    return helper.apiClient.azureAccounts(
     ).then(function(result) {
       assert.deepEqual(result.accounts, _.keys(helper.cfg.app.azureAccounts));
     });
@@ -22,12 +25,12 @@ suite('azure table and blob (sas)', function() {
 
   test('azureTables', async function() {
     // First make sure the table exists
-    await helper.auth.azureTableSAS(
+    await helper.apiClient.azureTableSAS(
       helper.testaccount,
       'TestTable',
       'read-write'
     );
-    return helper.auth.azureTables(
+    return helper.apiClient.azureTables(
       helper.testaccount,
     ).then(function(result) {
       assert(result.tables.includes('TestTable'));
@@ -35,7 +38,7 @@ suite('azure table and blob (sas)', function() {
   });
 
   test('azureTableSAS', function() {
-    return helper.auth.azureTableSAS(
+    return helper.apiClient.azureTableSAS(
       helper.testaccount,
       'TestTable',
       'read-write'
@@ -47,7 +50,7 @@ suite('azure table and blob (sas)', function() {
   });
 
   test('azureTableSAS (read-write)', async function() {
-    let res = await helper.auth.azureTableSAS(
+    let res = await helper.apiClient.azureTableSAS(
       helper.testaccount,
       'TestTable',
       'read-write',
@@ -66,7 +69,7 @@ suite('azure table and blob (sas)', function() {
   });
 
   test('azureTableSAS (read-only)', async function() {
-    let res = await helper.auth.azureTableSAS(
+    let res = await helper.apiClient.azureTableSAS(
       helper.testaccount,
       'TestTable',
       'read-only',
@@ -89,7 +92,7 @@ suite('azure table and blob (sas)', function() {
   });
 
   test('azureTableSAS (invalid level)', function() {
-    return helper.auth.azureTableSAS(
+    return helper.apiClient.azureTableSAS(
       helper.testaccount,
       'TestTable',
       'foo-bar-baz',
@@ -100,17 +103,12 @@ suite('azure table and blob (sas)', function() {
     });
   });
 
-  var rootCredentials = {
-    clientId: 'static/taskcluster/root',
-    accessToken: helper.rootAccessToken,
-  };
-
   test('azureTableSAS (allowed table)', () => {
     // Restrict access a bit
-    helper.scopes(
+    helper.setupScopes(
       'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable',
     );
-    return helper.auth.azureTableSAS(
+    return helper.apiClient.azureTableSAS(
       helper.testaccount,
       'allowedTable',
       'read-write'
@@ -123,10 +121,10 @@ suite('azure table and blob (sas)', function() {
 
   test('azureTableSAS (allowed table rw -> ro)', function() {
     // Restrict access a bit
-    helper.scopes(
+    helper.setupScopes(
       'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable',
     );
-    return helper.auth.azureTableSAS(
+    return helper.apiClient.azureTableSAS(
       helper.testaccount,
       'allowedTable',
       'read-only'
@@ -139,10 +137,10 @@ suite('azure table and blob (sas)', function() {
 
   test('azureTableSAS (too high permission)', function() {
     // Restrict access a bit
-    let auth = helper.scopes(
+    let auth = helper.setupScopes(
       'auth:azure-table:read-only:' + helper.testaccount + '/allowedTable',
     );
-    return helper.auth.azureTableSAS(
+    return helper.apiClient.azureTableSAS(
       helper.testaccount,
       'allowedTable',
       'read-write'
@@ -155,10 +153,10 @@ suite('azure table and blob (sas)', function() {
 
   test('azureTableSAS (unauthorized table)', function() {
     // Restrict access a bit
-    let auth = helper.scopes(
+    let auth = helper.setupScopes(
       'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable',
     );
-    return helper.auth.azureTableSAS(
+    return helper.apiClient.azureTableSAS(
       helper.testaccount,
       'unauthorizedTable',
       'read-write'
@@ -170,7 +168,7 @@ suite('azure table and blob (sas)', function() {
   });
 
   test('azureContainerSAS', async () => {
-    let result = await helper.auth.azureContainerSAS(
+    let result = await helper.apiClient.azureContainerSAS(
       helper.testaccount,
       'container-test',
       'read-write'
@@ -182,7 +180,7 @@ suite('azure table and blob (sas)', function() {
   });
 
   test('azureContainerSAS (read-write)', async () => {
-    let result = await helper.auth.azureContainerSAS(
+    let result = await helper.apiClient.azureContainerSAS(
       helper.testaccount,
       'container-test',
       'read-write',
@@ -201,7 +199,7 @@ suite('azure table and blob (sas)', function() {
   });
 
   test('azureContainers', async function() {
-    return helper.auth.azureContainers(
+    return helper.apiClient.azureContainers(
       helper.testaccount,
     ).then(function(result) {
       assert(result.containers.includes('container-test'));
@@ -209,7 +207,7 @@ suite('azure table and blob (sas)', function() {
   });
 
   test('azureContainerSAS (read-only)', async () => {
-    let result = await helper.auth.azureContainerSAS(
+    let result = await helper.apiClient.azureContainerSAS(
       helper.testaccount,
       'container-test',
       'read-only',
@@ -234,7 +232,7 @@ suite('azure table and blob (sas)', function() {
 
   test('azureContainerSAS (invalid level)', async () => {
     try {
-      await helper.auth.azureContainerSAS(
+      await helper.apiClient.azureContainerSAS(
         helper.testaccount,
         'container-test',
         'foo-bar-baz',
@@ -247,11 +245,11 @@ suite('azure table and blob (sas)', function() {
   });
 
   test('azureContainerSAS (allowed container)', async () => {
-    helper.scopes(
+    helper.setupScopes(
       'auth:azure-container:read-write:' + helper.testaccount + '/allowed-container',
     );
 
-    let result = await helper.auth.azureContainerSAS(
+    let result = await helper.apiClient.azureContainerSAS(
       helper.testaccount,
       'allowed-container',
       'read-write'
@@ -263,11 +261,11 @@ suite('azure table and blob (sas)', function() {
   });
 
   test('azureContainerSAS (allowed read-write -> read-only)', async () => {
-    helper.scopes(
+    helper.setupScopes(
       'auth:azure-container:read-write:' + helper.testaccount + '/allowed-container',
     );
 
-    let result = await helper.auth.azureContainerSAS(
+    let result = await helper.apiClient.azureContainerSAS(
       helper.testaccount,
       'allowed-container',
       'read-only',
@@ -278,11 +276,11 @@ suite('azure table and blob (sas)', function() {
   });
 
   test('azureContainerSAS (unauthorized container)', async () => {
-    helper.scopes(
+    helper.setupScopes(
       'auth:azure-container:read-write:' + helper.testaccount + '/allowed-container',
     );
     try {
-      await helper.auth.azureContainerSAS(
+      await helper.apiClient.azureContainerSAS(
         helper.testaccount,
         'unauthorized-container',
         'read-write'

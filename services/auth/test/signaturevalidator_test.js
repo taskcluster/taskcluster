@@ -1,23 +1,23 @@
-suite('signature validation', function() {
-  var Promise      = require('promise');
-  var assert       = require('assert');
-  var mocha        = require('mocha');
-  var debug        = require('debug')('test:signaturevalidator');
-  var hawk         = require('hawk');
-  var _            = require('lodash');
-  var assume       = require('assume');
-  var slugid       = require('slugid');
-  var crypto       = require('crypto');
-  var taskcluster  = require('taskcluster-client');
-  var sigvalidator = require('../src/signaturevalidator');
-  var Monitor      = require('taskcluster-lib-monitor');
+const helper = require('./helper');
+const assert = require('assert');
+const mocha = require('mocha');
+const debug = require('debug')('test:signaturevalidator');
+const hawk = require('hawk');
+const _ = require('lodash');
+const assume = require('assume');
+const slugid = require('slugid');
+const crypto = require('crypto');
+const taskcluster = require('taskcluster-client');
+const sigvalidator = require('../src/signaturevalidator');
+const Monitor = require('taskcluster-lib-monitor');
 
-  var one_hour = taskcluster.fromNow('1 hour');
-  var two_hours = taskcluster.fromNow('2 hour');
-  var three_hours = taskcluster.fromNow('3 hour');
+suite(helper.suiteName(__filename), function() {
+  let one_hour = taskcluster.fromNow('1 hour');
+  let two_hours = taskcluster.fromNow('2 hour');
+  let three_hours = taskcluster.fromNow('3 hour');
 
-  var validator;
-  var clients = {
+  let validator;
+  let clients = {
     root: {
       clientId: 'root',
       accessToken: 'root-secret',
@@ -32,7 +32,7 @@ suite('signature validation', function() {
     },
   };
 
-  before(async function() {
+  suiteSetup(async function() {
     validator = sigvalidator.createSignatureValidator({
       clientLoader: async clientId => {
         if (!clients[clientId]) {
@@ -41,11 +41,11 @@ suite('signature validation', function() {
         return clients[clientId];
       },
       expandScopes: scopes => scopes,
-      monitor: await Monitor({project: 'foo', mock: true}),
+      monitor: await Monitor({projectName: 'foo', mock: true}),
     });
   });
 
-  var test = function(name, input, expected) {
+  let test = function(name, input, expected) {
     mocha.test(name, async function() {
       // defer creation of input until the test runs, if necessary
       if (typeof input == 'function') {
@@ -91,7 +91,7 @@ suite('signature validation', function() {
             .toString('base64');
         }
 
-        var bewit = hawk.client.getBewit('https://' + input.host + input.resource, {
+        let bewit = hawk.client.getBewit('https://' + input.host + input.resource, {
           credentials: {
             id: input.bewit.id,
             key: input.bewit.key,
@@ -109,7 +109,7 @@ suite('signature validation', function() {
     });
   };
 
-  var testWithTemp = function(name, options, inputFn, expected) {
+  let testWithTemp = function(name, options, inputFn, expected) {
     /**
      * Options is on the form
      * {
@@ -127,7 +127,7 @@ suite('signature validation', function() {
     let makeInput = () => {
       let id = options.id;
 
-      var start = new Date();
+      let start = new Date();
       start.setMinutes(start.getMinutes() - 5);
 
       // Set default options
@@ -139,7 +139,7 @@ suite('signature validation', function() {
       });
 
       // Construct certificate
-      var cert = {
+      let cert = {
         version:    1,
         scopes:     _.cloneDeep(options.scopes),
         start:      options.start.getTime(),
@@ -175,7 +175,7 @@ suite('signature validation', function() {
       }
 
       // Construct temporary key
-      var accessToken = crypto
+      let accessToken = crypto
         .createHmac('sha256', options.accessToken)
         .update(cert.seed)
         .digest('base64')

@@ -1,13 +1,19 @@
-suite('sentry', function() {
-  let helper = require('./helper');
-  let taskcluster = require('taskcluster-client');
-  let assert = require('assert');
+const helper = require('./helper');
+const taskcluster = require('taskcluster-client');
+const assert = require('assert');
 
-  // Skip tests if we don't an have an api auth token
-  this.pending = helper.cfg.app.sentry.authToken === 'no-key';
+helper.secrets.mockSuite(helper.suiteName(__filename), ['app'], function(mock, skipping) {
+  if (!mock) {
+    return; // We don't test this with real credentials for now!
+  }
+  helper.withSentry(mock, skipping);
+  helper.withPulse('mock', skipping);
+  helper.withEntities('mock', skipping);
+  helper.withRoles('mock', skipping);
+  helper.withServers(mock, skipping);
 
   test('sentryDSN', async () => {
-    await helper.auth.sentryDSN('playground');
+    await helper.apiClient.sentryDSN('playground');
   });
 
   test('purgeExpiredKeys', async () => {
