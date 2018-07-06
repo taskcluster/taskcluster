@@ -1,82 +1,82 @@
+const helper = require('./helper');
+const path = require('path');
+const testing = require('taskcluster-lib-testing');
+
 /**
  * Test cases each defined with relative path, schema identifier and success as
  * either true or false depending on whether or not validation should succeed
  *
  * Add your schema tests below...
  */
-var testCases = [
+const testCases = [
   {
     path:     'authenticate-hawk-request.json',
-    schema:   'auth/v1/authenticate-hawk-request.json#',
+    schema:   'v1/authenticate-hawk-request.yml',
     success:  true,
   }, {
     path:     'authenticate-hawk-request-ipv4.json',
-    schema:   'auth/v1/authenticate-hawk-request.json#',
+    schema:   'v1/authenticate-hawk-request.json#',
     success:  true,
   }, {
     path:     'create-role-request1.json',
-    schema:   'auth/v1/create-role-request.json#',
+    schema:   'v1/create-role-request.json#',
     success:  true,
   }, {
     path:     'create-role-request2.json',
-    schema:   'auth/v1/create-role-request.json#',
+    schema:   'v1/create-role-request.json#',
     success:  true,
   }, {
     path:     'create-role-request3.json',
-    schema:   'auth/v1/create-role-request.json#',
+    schema:   'v1/create-role-request.json#',
     success:  true,
   }, {
     path:     'create-role-request-bad-scope1.json',
-    schema:   'auth/v1/create-role-request.json#',
+    schema:   'v1/create-role-request.json#',
     success:  false,
   }, {
     path:     'create-role-request-bad-scope2.json',
-    schema:   'auth/v1/create-role-request.json#',
+    schema:   'v1/create-role-request.json#',
     success:  false,
   }, {
     path:     'create-role-request-bad-scope3.json',
-    schema:   'auth/v1/create-role-request.json#',
+    schema:   'v1/create-role-request.json#',
     success:  false,
   }, {
     path:     'create-role-request-bad-scope4.json',
-    schema:   'auth/v1/create-role-request.json#',
+    schema:   'v1/create-role-request.json#',
     success:  false,
   }, {
     path:     'create-role-request-bad-scope5.json',
-    schema:   'auth/v1/create-role-request.json#',
+    schema:   'v1/create-role-request.json#',
     success:  false,
   }, {
     path:     'create-role-request-unique.json',
-    schema:   'auth/v1/create-role-request.json#',
+    schema:   'v1/create-role-request.json#',
     success:  false,
   }, {
     path:     'authenticate-hawk-request-bad.json',
-    schema:   'auth/v1/authenticate-hawk-request.json#',
+    schema:   'v1/authenticate-hawk-request.json#',
     success:  false,
   }, {
     path:     'create-client-request-no-scopes.json',
-    schema:   'auth/v1/create-client-request.json#',
+    schema:   'v1/create-client-request.json#',
     success:  true,
   }, {
     path:     'create-client-request-with-scopes.json',
-    schema:   'auth/v1/create-client-request.json#',
+    schema:   'v1/create-client-request.json#',
     success:  true,
   },
 ];
 
-var path        = require('path');
-var testing     = require('taskcluster-lib-testing');
-
-suite('validate', function() {
+suite(helper.suiteName(__filename), function() {
   // Run test cases using schemas testing utility from taskcluster-lib-testing
   testing.schemas({
-    validator: {
-      folder:     path.join(__dirname, '..', 'schemas'),
-      constants:  path.join(__dirname, '..', 'schemas', 'constants.yml'),
-      prefix:     'auth/v1/',
+    schemasetOptions: {
+      serviceName: 'auth',
+      folder: path.join(__dirname, '..', 'schemas'),
     },
-    basePath:       path.join(__dirname, 'schemas'),
-    schemaPrefix:   'http://schemas.taskcluster.net/',
-    cases:          testCases,
+    serviceName: 'auth',
+    basePath: path.join(__dirname, 'schema-test-data'),
+    cases: testCases,
   });
 });

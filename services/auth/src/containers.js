@@ -16,7 +16,7 @@ class Roles {
 
   async setup() {
     this.container = new DataContainer({
-      container: this.containerName,
+      containerName: this.containerName,
       credentials: this.credentials,
       schema: {
         $schema: 'http://json-schema.org/draft-06/schema#',

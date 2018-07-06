@@ -1,9 +1,8 @@
 const debug = require('debug')('auth:api');
 const assert = require('assert');
-const API = require('taskcluster-lib-api');
+const APIBuilder = require('taskcluster-lib-api');
 const scopeUtils = require('taskcluster-lib-scopes');
 const slugid = require('slugid');
-const Promise = require('promise');
 const _ = require('lodash');
 const signaturevalidator = require('./signaturevalidator');
 const ScopeResolver = require('./scoperesolver');
@@ -18,9 +17,10 @@ const roleToJson = (role, context) => _.defaults(
 );
 
 /** API end-point for version v1/ */
-const api = new API({
+const builder = new APIBuilder({
   title:      'Authentication API',
-  name:       'auth',
+  serviceName:       'auth',
+  version:           'v1',
   description: [
     'Authentication related API end-points for Taskcluster and related',
     'services. These API end-points are of interest if you wish to:',
@@ -62,8 +62,6 @@ const api = new API({
     'Taskcluster credentials to grant access to a third-party service used',
     'by many Taskcluster components.',
   ].join('\n'),
-  name:         'auth',
-  schemaPrefix: 'http://schemas.taskcluster.net/auth/v1/',
   params: {
     // Patterns for auth
     clientId:   /^[A-Za-z0-9!@/:.+|_-]+$/, // should match schemas/constants.yml, prefix below
@@ -117,10 +115,10 @@ const api = new API({
 });
 
 // Export API
-module.exports = api;
+module.exports = builder;
 
 /** List clients */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/clients/',
   query: {
@@ -129,8 +127,7 @@ api.declare({
     limit: /^[0-9]+$/,
   },
   name:       'listClients',
-  input:      undefined,
-  output:     'list-clients-response.json#',
+  output:     'list-clients-response.yml',
   stability:  'stable',
   title:      'List Clients',
   description: [
@@ -171,13 +168,12 @@ api.declare({
 });
 
 /** Get client */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/clients/:clientId',
   name:       'client',
-  input:      undefined,
   stability:  'stable',
-  output:     'get-client-response.json#',
+  output:     'get-client-response.yml',
   title:      'Get Client',
   description: [
     'Get information about a single client.',
@@ -196,12 +192,12 @@ api.declare({
 });
 
 /** Create client */
-api.declare({
+builder.declare({
   method:     'put',
   route:      '/clients/:clientId',
   name:       'createClient',
-  input:      'create-client-request.json#',
-  output:     'create-client-response.json#',
+  input:      'create-client-request.yml',
+  output:     'create-client-response.yml',
   scopes: {
     AllOf: [
       'auth:create-client:<clientId>',
@@ -241,7 +237,7 @@ api.declare({
   // Check scopes
   await req.authorize({clientId, scopes});
 
-  var accessToken = slugid.v4() + slugid.v4();
+  let accessToken = slugid.v4() + slugid.v4();
   let client = await this.Client.create({
     clientId:     clientId,
     description:  input.description,
@@ -299,12 +295,11 @@ api.declare({
 });
 
 /** Reset access token for client */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/clients/:clientId/reset',
   name:       'resetAccessToken',
-  input:      undefined,
-  output:     'create-client-response.json#',
+  output:     'create-client-response.yml',
   scopes:     'auth:reset-access-token:<clientId>',
   stability:  'stable',
   title:      'Reset `accessToken`',
@@ -357,12 +352,12 @@ api.declare({
 });
 
 /** Update client */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/clients/:clientId',
   name:       'updateClient',
-  input:      'create-client-request.json#',
-  output:     'get-client-response.json#',
+  input:      'create-client-request.yml',
+  output:     'get-client-response.yml',
   scopes: {
     AllOf: [
       'auth:update-client:<clientId>',
@@ -425,12 +420,12 @@ api.declare({
 });
 
 /** Enable client */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/clients/:clientId/enable',
   name:       'enableClient',
   input:      undefined,
-  output:     'get-client-response.json#',
+  output:     'get-client-response.yml',
   scopes:     'auth:enable-client:<clientId>',
   stability:  'stable',
   title:      'Enable Client',
@@ -477,12 +472,12 @@ api.declare({
 });
 
 /** Disable client */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/clients/:clientId/disable',
   name:       'disableClient',
   input:      undefined,
-  output:     'get-client-response.json#',
+  output:     'get-client-response.yml',
   scopes:     'auth:disable-client:<clientId>',
   stability:  'stable',
   title:      'Disable Client',
@@ -528,7 +523,7 @@ api.declare({
 });
 
 /** Delete client */
-api.declare({
+builder.declare({
   method:     'delete',
   route:      '/clients/:clientId',
   name:       'deleteClient',
@@ -565,12 +560,12 @@ api.declare({
 });
 
 /** List roles */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/roles/',
   name:       'listRoles',
   input:      undefined,
-  output:     'list-roles-response.json#',
+  output:     'list-roles-response.yml',
   stability:  'stable',
   title:      'List Roles',
   description: [
@@ -584,12 +579,12 @@ api.declare({
 });
 
 /** Get role */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/roles/:roleId',
   name:       'role',
   input:      undefined,
-  output:     'get-role-response.json#',
+  output:     'get-role-response.yml',
   stability:  'stable',
   title:      'Get Role',
   description: [
@@ -611,12 +606,12 @@ api.declare({
 });
 
 /** Create role */
-api.declare({
+builder.declare({
   method:     'put',
   route:      '/roles/:roleId',
   name:       'createRole',
-  input:      'create-role-request.json#',
-  output:     'get-role-response.json#',
+  input:      'create-role-request.yml',
+  output:     'get-role-response.yml',
   scopes: {
     AllOf: [
       'auth:create-role:<roleId>',
@@ -705,12 +700,12 @@ api.declare({
 });
 
 /** Update role */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/roles/:roleId',
   name:       'updateRole',
-  input:      'create-role-request.json#',
-  output:     'get-role-response.json#',
+  input:      'create-role-request.yml',
+  output:     'get-role-response.yml',
   scopes: {
     AllOf: [
       'auth:update-role:<roleId>',
@@ -791,7 +786,7 @@ api.declare({
 });
 
 /** Delete role */
-api.declare({
+builder.declare({
   method:     'delete',
   route:      '/roles/:roleId',
   name:       'deleteRole',
@@ -830,12 +825,12 @@ api.declare({
 });
 
 /** Expand a scopeset */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/scopes/expand',
   name:       'expandScopesGet',
-  input:      'scopeset.json#',
-  output:     'scopeset.json#',
+  input:      'scopeset.yml',
+  output:     'scopeset.yml',
   stability:  'deprecated',
   title:      'Expand Scopes',
   description: [
@@ -850,12 +845,12 @@ api.declare({
   return res.reply({scopes: this.resolver.resolve(input.scopes)});
 });
 
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/scopes/expand',
   name:       'expandScopes',
-  input:      'scopeset.json#',
-  output:     'scopeset.json#',
+  input:      'scopeset.yml',
+  output:     'scopeset.yml',
   stability:  'stable',
   title:      'Expand Scopes',
   description: [
@@ -868,11 +863,11 @@ api.declare({
 });
 
 /** Get the request scopes */
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/scopes/current',
   name:       'currentScopes',
-  output:     'scopeset.json#',
+  output:     'scopeset.yml',
   stability:  'stable',
   title:      'Get Current Scopes',
   description: [
@@ -894,12 +889,12 @@ require('./statsum');
 require('./webhooktunnel');
 
 /** Get all client information */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/authenticate-hawk',
   name:       'authenticateHawk',
-  input:      'authenticate-hawk-request.json#',
-  output:     'authenticate-hawk-response.json#',
+  input:      'authenticate-hawk-request.yml',
+  output:     'authenticate-hawk-response.yml',
   stability:  'stable',
   title:      'Authenticate Hawk Request',
   description: [
@@ -919,12 +914,12 @@ api.declare({
   });
 });
 
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/test-authenticate',
   name:       'testAuthenticate',
-  input:      'test-authenticate-request.json#',
-  output:     'test-authenticate-response.json#',
+  input:      'test-authenticate-request.yml',
+  output:     'test-authenticate-response.yml',
   stability:  'stable',
   title:      'Test Authentication',
   description: [
@@ -941,7 +936,7 @@ api.declare({
     'and scopes as seen by the API method.',
   ].join('\n'),
 }, async function(req, res) {
-  await new Promise(next => API.remoteAuthentication({
+  await new Promise(next => APIBuilder.middleware.remoteAuthentication({
     signatureValidator: signaturevalidator.createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
@@ -955,11 +950,12 @@ api.declare({
       },
       monitor: this.monitor,
     }),
-  }, {
-    route: '/test-authenticate',
-    scopes: {AllOf: [
-      {for: 'scope', in: 'requiredScopes', each: '<scope>'},
-    ]},
+    entry: {
+      route: '/test-authenticate',
+      scopes: {AllOf: [
+        {for: 'scope', in: 'requiredScopes', each: '<scope>'},
+      ]},
+    },
   })(req, res, next));
   await req.authorize({requiredScopes: req.body.requiredScopes || []});
   const [clientId, scopes] = await Promise.all([
@@ -969,11 +965,11 @@ api.declare({
   res.reply({clientId, scopes});
 });
 
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/test-authenticate-get/',
   name:       'testAuthenticateGet',
-  output:     'test-authenticate-response.json#',
+  output:     'test-authenticate-response.yml',
   stability:  'stable',
   title:      'Test Authentication (GET)',
   description: [
@@ -994,7 +990,7 @@ api.declare({
     'required scopes via query arguments.',
   ].join('\n'),
 }, async function(req, res) {
-  await new Promise(next => API.remoteAuthentication({
+  await new Promise(next => APIBuilder.middleware.remoteAuthentication({
     signatureValidator: signaturevalidator.createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
@@ -1008,11 +1004,12 @@ api.declare({
       },
       monitor: this.monitor,
     }),
-  }, {
-    route: '/test-authenticate',
-    scopes: {AllOf: [
-      {for: 'scope', in: 'requiredScopes', each: '<scope>'},
-    ]},
+    entry: {
+      route: '/test-authenticate',
+      scopes: {AllOf: [
+        {for: 'scope', in: 'requiredScopes', each: '<scope>'},
+      ]},
+    },
   })(req, res, next));
   await req.authorize({requiredScopes: ['test:authenticate-get']});
   const [clientId, scopes] = await Promise.all([

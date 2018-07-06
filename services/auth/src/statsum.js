@@ -1,13 +1,13 @@
-let api = require('./v1');
-let Statsum = require('statsum');
-let taskcluster = require('taskcluster-client');
+const builder = require('./v1');
+const Statsum = require('statsum');
+const taskcluster = require('taskcluster-client');
 
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/statsum/:project/token',
   name:       'statsumToken',
   input:      undefined,
-  output:     'statsum-token-response.json#',
+  output:     'statsum-token-response.yml',
   stability:  'stable',
   scopes:     'auth:statsum:<project>',
   title:      'Get Token for Statsum Project',

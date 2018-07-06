@@ -1,43 +1,55 @@
-let Loader             = require('taskcluster-lib-loader');
-let Docs               = require('taskcluster-lib-docs');
-let Validate           = require('taskcluster-lib-validate');
-let Monitor            = require('taskcluster-lib-monitor');
-let App                = require('taskcluster-lib-app');
-let Config             = require('typed-env-config');
-let data               = require('./data');
-let containers         = require('./containers');
-let v1                 = require('./v1');
-let path               = require('path');
-let debug              = require('debug')('server');
-let Promise            = require('promise');
-let AWS                = require('aws-sdk');
-let exchanges          = require('./exchanges');
-let ScopeResolver      = require('./scoperesolver');
-let signaturevalidator = require('./signaturevalidator');
-let taskcluster        = require('taskcluster-client');
-let url                = require('url');
-let SentryManager      = require('./sentrymanager');
-let Statsum            = require('statsum');
-let _                  = require('lodash');
-let morganDebug        = require('morgan-debug');
+const Loader = require('taskcluster-lib-loader');
+const Docs = require('taskcluster-lib-docs');
+const SchemaSet = require('taskcluster-lib-validate');
+const Monitor = require('taskcluster-lib-monitor');
+const App = require('taskcluster-lib-app');
+const {sasCredentials} = require('taskcluster-lib-azure');
+const Config = require('typed-env-config');
+const data = require('./data');
+const containers = require('./containers');
+const builder = require('./v1');
+const path = require('path');
+const debug = require('debug')('server');
+const AWS = require('aws-sdk');
+const exchanges = require('./exchanges');
+const ScopeResolver = require('./scoperesolver');
+const signaturevalidator = require('./signaturevalidator');
+const taskcluster = require('taskcluster-client');
+const url = require('url');
+const SentryClient = require('sentry-api').Client;
+const SentryManager = require('./sentrymanager');
+const Statsum = require('statsum');
+const _ = require('lodash');
+const morganDebug = require('morgan-debug');
 
 // Create component loader
-let load = Loader({
+const load = Loader({
   cfg: {
     requires: ['profile'],
     setup: ({profile}) => Config({profile}),
   },
 
-  sentryManager: {
+  sentryClient: {
     requires: ['cfg'],
-    setup: ({cfg}) => new SentryManager(cfg.app.sentry),
+    setup: ({cfg}) => new SentryClient(`https://${cfg.app.sentry.hostname}`, {
+      token: cfg.app.sentry.authToken,
+    }),
+  },
+
+  sentryManager: {
+    requires: ['cfg', 'sentryClient'],
+    setup: ({cfg, sentryClient}) => new SentryManager({
+      sentryClient,
+      ...cfg.app.sentry,
+    }),
   },
 
   monitor: {
     requires: ['cfg', 'sentryManager', 'profile', 'process'],
     setup: ({cfg, sentryManager, profile, process}) => {
       return Monitor({
-        project: cfg.monitoring.project || 'taskcluster-auth',
+        projectName: cfg.monitoring.project || 'taskcluster-auth',
+        rootUrl: cfg.taskcluster.rootUrl,
         enable: cfg.monitoring.enable,
         process,
         mock: profile === 'test',
@@ -76,10 +88,10 @@ let load = Loader({
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) =>
       data.Client.setup({
-        table:        cfg.app.clientTableName,
+        tableName:    cfg.app.clientTableName,
         credentials:  cfg.azure || {},
-        signingKey:   cfg.app.tableSigningKey,
-        cryptoKey:    cfg.app.tableCryptoKey,
+        signingKey:   cfg.azure.signingKey,
+        cryptoKey:    cfg.azure.cryptoKey,
         monitor:      monitor.prefix('table.clients'),
       }),
   },
@@ -96,10 +108,10 @@ let load = Loader({
     },
   },
 
-  validator: {
+  schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => Validate({
-      prefix:  'auth/v1/',
+    setup: ({cfg}) => new SchemaSet({
+      serviceName: 'auth',
       publish:  cfg.app.publishMetaData,
       aws:      cfg.aws,
       bucket:   cfg.app.buckets.schemas,
@@ -107,21 +119,21 @@ let load = Loader({
   },
 
   docs: {
-    requires: ['cfg', 'validator'],
-    setup: ({cfg, validator}) => Docs.documenter({
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => Docs.documenter({
       aws: cfg.aws,
       tier: 'platform',
-      schemas: validator.schemas,
+      schemaset,
       bucket: cfg.app.buckets.docs,
       publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',
-          reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+          reference: builder.reference(),
         }, {
           name: 'events',
           reference: exchanges.reference({
-            exchangePrefix:   cfg.app.exchangePrefix,
+            rootUrl:          cfg.taskcluster.rootUrl,
             credentials:      cfg.pulse,
           }),
         },
@@ -135,13 +147,12 @@ let load = Loader({
   },
 
   publisher: {
-    requires: ['cfg', 'validator', 'monitor'],
-    setup: ({cfg, validator, monitor}) =>
+    requires: ['cfg', 'schemaset', 'monitor'],
+    setup: async ({cfg, schemaset, monitor}) =>
       exchanges.setup({
+        rootUrl:          cfg.taskcluster.rootUrl,
         credentials:      cfg.pulse,
-        exchangePrefix:   cfg.app.exchangePrefix,
-        validator:        validator,
-        referencePrefix:  'auth/v1/exchanges.json',
+        validator:        await schemaset.validator(cfg.taskcluster.rootUrl),
         publish:          cfg.app.publishMetaData,
         aws:              cfg.aws,
         referenceBucket:  cfg.app.buckets.references,
@@ -158,11 +169,11 @@ let load = Loader({
 
   api: {
     requires: [
-      'cfg', 'Client', 'Roles', 'validator', 'publisher', 'resolver',
+      'cfg', 'Client', 'Roles', 'schemaset', 'publisher', 'resolver',
       'sentryManager', 'monitor', 'connection',
     ],
     setup: async ({
-      cfg, Client, Roles, validator, publisher, resolver, sentryManager, monitor, connection,
+      cfg, Client, Roles, schemaset, publisher, resolver, sentryManager, monitor, connection,
     }) => {
       // Set up the Azure tables
       await Client.ensureTable();
@@ -172,6 +183,7 @@ let load = Loader({
 
       // Load everything for resolver
       await resolver.setup({
+        rootUrl: cfg.taskcluster.rootUrl,
         Client, Roles,
         exchangeReference: exchanges.reference({
           credentials:      cfg.pulse,
@@ -186,7 +198,8 @@ let load = Loader({
         monitor,
       });
 
-      return v1.setup({
+      return builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
         context: {
           Client, Roles,
           publisher,
@@ -199,11 +212,9 @@ let load = Loader({
           webhooktunnel:      cfg.app.webhooktunnel,
           monitor,
         },
-        validator,
+        schemaset,
         signatureValidator,
         publish:            cfg.app.publishMetaData,
-        baseUrl:            cfg.server.publicUrl + '/v1',
-        referencePrefix:    'auth/v1/api.json',
         aws:                cfg.aws,
         referenceBucket:    cfg.app.buckets.references,
         monitor:            monitor.prefix('api'),
@@ -213,27 +224,10 @@ let load = Loader({
 
   server: {
     requires: ['cfg', 'api', 'docs'],
-    setup: async ({cfg, api, docs}) => {
-      // Create app
-      let serverApp = App(Object.assign({}, {docs}, cfg.server));
-
-      serverApp.use(morganDebug('auth-request', 'dev'));
-      serverApp.use('/v1', api);
-
-      serverApp.get('/', (req, res) => {
-        res.redirect(302, url.format({
-          protocol:       'https',
-          host:           'login.taskcluster.net',
-          query: {
-            target:       req.query.target,
-            description:  req.query.description,
-          },
-        }));
-      });
-
-      // Create server
-      return serverApp.createServer();
-    },
+    setup: async ({cfg, api, docs}) => App({
+      apis: [api],
+      ...cfg.server,
+    }),
   },
 
   'expire-sentry': {

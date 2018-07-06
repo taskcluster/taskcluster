@@ -4,12 +4,12 @@
 /**
  * Compile DFA to a function equivalent to `executeDFA.bind(null, dfa)`.
  */
-let compileDFA = (dfa) => {
+const compileDFA = (dfa) => {
   // Render a DFA state to code
   let renderDFA = (state, depth) => {
-    var d = '';
+    let d = '';
     while (d.length < depth * 4) {d += '    ';}
-    var c = '';
+    let c = '';
     if (typeof state.end === 'number') {
       c += d + 'if (n === ' + depth + ') {\n';
       c += d + '  return ' + state.end;

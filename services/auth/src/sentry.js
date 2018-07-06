@@ -1,12 +1,12 @@
-var api         = require('./v1');
-let _           = require('lodash');
+const builder = require('./v1');
+const _ = require('lodash');
 
-api.declare({
+builder.declare({
   method:     'get',
   route:      '/sentry/:project/dsn',
   name:       'sentryDSN',
   input:      undefined,
-  output:     'sentry-dsn-response.json#',
+  output:     'sentry-dsn-response.yml',
   stability:  'stable',
   scopes:     'auth:sentry:<project>',
   title:      'Get DSN for Sentry Project',

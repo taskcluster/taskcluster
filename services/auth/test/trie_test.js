@@ -1,11 +1,12 @@
-suite('trie', () => {
-  const assume = require('assume');
-  const _ = require('lodash');
-  const debug = require('debug')('test:trie');
-  //const {patternMatch} = require('taskcluster-lib-scopes');
-  const ScopeSetBuilder = require('../src/scopesetbuilder');
-  const trie = require('../src/trie');
-  const trietestcases = require('./trietestcases');
+const helper = require('./helper');
+const assume = require('assume');
+const _ = require('lodash');
+const debug = require('debug')('test:trie');
+const ScopeSetBuilder = require('../src/scopesetbuilder');
+const trie = require('../src/trie');
+const trietestcases = require('./trietestcases');
+
+suite(helper.suiteName(__filename), () => {
 
   /**
    * Return scope without kleene '*' at the end if scope ends with kleene, otherwise
