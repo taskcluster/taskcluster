@@ -45,4 +45,8 @@ func Setup() {
 			AuthorizedScopes: authorizedScopes,
 		}
 	}
+	if ok1 || ok2 {
+		fmt.Println("Either ClientID or Access Token not set")
+		os.Exit(1)
+	}
 }
