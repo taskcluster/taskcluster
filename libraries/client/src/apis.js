@@ -2113,6 +2113,76 @@ module.exports = {
     },
     "referenceUrl": "http://references.taskcluster.net/notify/v1/api.json"
   },
+  "Pulse": {
+    "reference" : {	
+      "version": 0,
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "title": "Pulse Management Service",
+      "description": "The taskcluster-pulse service, typically available at `pulse.taskcluster.net`\nmanages pulse credentials for taskcluster users.\n\nA service to manage Pulse credentials for anything using\nTaskcluster credentials. This allows for self-service pulse\naccess and greater control within the Taskcluster project.",
+      "baseUrl": "https://pulse.taskcluster.net/v1/",
+      "serviceName": "pulse",
+      "entries": [
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/ping",
+          "query": [
+          ],
+          "args": [
+          ],
+          "name": "ping",
+          "stability": "stable",
+          "title": "Ping Server",
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up."
+        },
+        {	
+          "type": "function",
+          "method": "get",
+          "route": "/namespaces",
+          "query": ["limit","continuationToken"],
+          "args": [
+          ],
+          "name": "listNamespaces",
+          "stability": "experimental",
+          "title": "List Namespaces",
+          "output": "v1/list-namespaces-response.json#",
+          "description": "List the namespaces managed by this service.\n\nThis will list up to 1000 namespaces. If more namespaces are present a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, do not provide continuation token."
+        },
+        {
+          "type": "function",
+          "method": "get",
+          "route": "/namespace/<namespace>",
+          "query": [
+          ],
+          "args": ["namespace"],
+          "name": "namespace",
+          "stability": "experimental",
+          "title": "Get a namespace",
+          "output": "v1/namespace.json#",
+          "description": "Get public information about a single namespace. This is the same information\nas returned by `listNamespaces`."
+        },
+        {
+          "type": "function",
+          "method": "post",
+          "route": "/namespace/<namespace>",
+          "query": [
+          ],
+          "args": ["namespace"],
+          "name": "claimNamespace",
+          "stability": "experimental",
+          "title": "Claim a namespace",
+          "input": "v1/namespace-request.json#",
+          "output": "v1/namespace-response.json#",
+          "description": "Claim a namespace, returning a connection string with access to that namespace\ngood for use until the `reclaimAt` time in the response body. The connection\nstring can be used as many times as desired during this period, but must not\nbe used after `reclaimAt`.\n\nConnections made with this connection string may persist beyond `reclaimAt`,\nalthough it should not persist forever.  24 hours is a good maximum, and this\nservice will terminate connections after 72 hours (although this value is\nconfigurable).\n\nThe specified `expires` time updates any existing expiration times.  Connections\nfor expired namespaces will be terminated.",
+          "scopes": {"AllOf":["pulse:namespace:<namespace>"]}
+        }
+      ],
+      "name": "pulse",
+      "title": "Pulse Management Service",
+      "version": 0,
+    },
+    "referenceUrl": "http://references.taskcluster.net/pulse/v1/exchanges.json"
+  },
   "PurgeCache": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
