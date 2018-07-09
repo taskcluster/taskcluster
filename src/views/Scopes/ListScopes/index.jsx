@@ -31,7 +31,7 @@ import scopesQuery from '../scopes.graphql';
     marginBottom: theme.spacing.triple,
   },
 }))
-export default class ViewScopes extends PureComponent {
+export default class ListScopes extends PureComponent {
   state = {
     searchTerm: '',
     currentTabIndex: 0,

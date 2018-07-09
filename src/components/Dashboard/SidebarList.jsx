@@ -13,6 +13,7 @@ import MixcloudIcon from 'mdi-react/MixcloudIcon';
 import BackupRestoreIcon from 'mdi-react/BackupRestoreIcon';
 import AccountKeyIcon from 'mdi-react/AccountKeyIcon';
 import AccountStarIcon from 'mdi-react/AccountStarIcon';
+import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import AccountSettingsIcon from 'mdi-react/AccountSettingsIcon';
 import FileTreeIcon from 'mdi-react/FileTreeIcon';
 import WebhookIcon from 'mdi-react/WebhookIcon';
@@ -75,6 +76,10 @@ export default class SidebarList extends Component {
 
         <SidebarListItem to="/pulse-messages" icon={<PulseIcon />}>
           Pulse Messages
+        </SidebarListItem>
+
+        <SidebarListItem to="/expansions" icon={<ArrowExpandVerticalIcon />}>
+          Expand Scopesets
         </SidebarListItem>
 
         <SidebarListGroup

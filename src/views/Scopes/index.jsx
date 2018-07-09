@@ -4,11 +4,11 @@ import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
 import loadable from '../../utils/loadable';
 
-const ViewScopes = loadable(() =>
-  import(/* webpackChunkName: 'Clients.ViewScopes' */ './ViewScopes')
+const ListScopes = loadable(() =>
+  import(/* webpackChunkName: 'Scopes.ListScopes' */ './ListScopes')
 );
 const ViewScope = loadable(() =>
-  import(/* webpackChunkName: 'Clients.ViewScope' */ './ViewScope')
+  import(/* webpackChunkName: 'Scopes.ViewScope' */ './ViewScope')
 );
 
 @hot(module)
@@ -26,7 +26,7 @@ export default class Scopes extends Component {
           {...props}
           component={ViewScope}
         />
-        <RouteWithProps path={path} {...props} component={ViewScopes} />
+        <RouteWithProps path={path} {...props} component={ListScopes} />
       </Switch>
     );
   }

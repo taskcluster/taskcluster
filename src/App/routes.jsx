@@ -46,6 +46,12 @@ export default [
   },
   {
     component: loadable(() =>
+      import(/* webpackChunkName: 'ScopesetExpander' */ '../views/ScopesetExpander')
+    ),
+    path: '/expansions',
+  },
+  {
+    component: loadable(() =>
       import(/* webpackChunkName: 'Scopes' */ '../views/Scopes')
     ),
     path: '/auth/scopes',
