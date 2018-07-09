@@ -1927,9 +1927,9 @@ pseudomap@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/pseudomap/-/pseudomap-1.0.2.tgz#f052a28da70e618917ef0a8ac34c1ae5a68286b3"
 
-pulse-publisher@^10.0.0:
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/pulse-publisher/-/pulse-publisher-10.0.0.tgz#4a94fb5245961dbb419ea93ab89682fe65284c8a"
+pulse-publisher@^10.0.1:
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/pulse-publisher/-/pulse-publisher-10.0.1.tgz#db150103f87a0b508374fa0949191a6fead56db0"
   dependencies:
     ajv "^5.3.0"
     amqplib "^0.5.1"
@@ -2507,9 +2507,9 @@ taskcluster-client@10.0.0, taskcluster-client@^10.0.0:
     superagent "~3.8.1"
     taskcluster-lib-urls "^1.1.0"
 
-taskcluster-client@^11.0.0:
-  version "11.0.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-11.0.0.tgz#1eb1971a753e27b72476ab05ae0d8894046f8a43"
+taskcluster-client@^11.0.1:
+  version "11.0.1"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-11.0.1.tgz#0406a401c7848c18fe0580e7c3d8de8a3cb62f1b"
   dependencies:
     amqplib "^0.5.1"
     debug "^3.1.0"
@@ -2613,9 +2613,9 @@ taskcluster-lib-iterate@^10.0.0:
     request "^2.83.0"
     request-promise "^4.2.2"
 
-taskcluster-lib-loader@^10.0.0:
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-loader/-/taskcluster-lib-loader-10.0.0.tgz#c398cdce5ad0ad8a8ed86235bf304e49f2653d36"
+taskcluster-lib-loader@^10.0.1:
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-loader/-/taskcluster-lib-loader-10.0.1.tgz#a6f785261dbad36a78198b5597bc95c21ab58b75"
   dependencies:
     assume "^1.5.2"
     babel-runtime "^6.26.0"
@@ -2673,6 +2673,22 @@ taskcluster-lib-urls@^10.0.0:
 taskcluster-lib-validate@^11.0.1:
   version "11.0.1"
   resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-11.0.1.tgz#b15241cbe83a15997adf93b1face695781067ae6"
+  dependencies:
+    ajv "^6.5.0"
+    app-root-dir "^1.0.2"
+    aws-sdk "^2.142.0"
+    debug "^3.1.0"
+    js-yaml "^3.10.0"
+    lodash "^4.5.1"
+    mkdirp "^0.5.1"
+    promise "^8.0.1"
+    rimraf "^2.6.2"
+    taskcluster-lib-urls "^1.1.0"
+    walk "^2.3.9"
+
+taskcluster-lib-validate@^11.0.2:
+  version "11.0.2"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-11.0.2.tgz#e1270450c9f1e09ddd8ba2cb6be1123eac86a3a6"
   dependencies:
     ajv "^6.5.0"
     app-root-dir "^1.0.2"
