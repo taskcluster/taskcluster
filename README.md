@@ -12,6 +12,8 @@
   </p>
 </p>
 
+<br>
+
 ## Development and Contributing
 
 To get started:
