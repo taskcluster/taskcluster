@@ -178,6 +178,7 @@ const corsHeaders = allowedCORSOrigin => {
       'Authorization',
       'Accept',
       'Origin',
+      'Cache-Control',
     ].join(','));
     next();
   };
