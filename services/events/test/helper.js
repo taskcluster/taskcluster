@@ -1,49 +1,102 @@
-let mocha           = require('mocha');
-let debug           = require('debug')('test:helper');
-let load            = require('../src/main');
-let config          = require('typed-env-config');
-let testing         = require('taskcluster-lib-testing');
-let urlencode       = require('urlencode');
-let EventSource = require('eventsource');
-
-const profile = 'test';
-let loadOptions = {profile, process: 'test'};
+const mocha           = require('mocha');
+const debug           = require('debug')('test:helper');
+const load            = require('../src/main');
+const urlencode       = require('urlencode');
+const EventSource     = require('eventsource');
+const libUrls = require('taskcluster-lib-urls');
+const {stickyLoader, Secrets} = require('taskcluster-lib-testing');
 
 // Create and export helper object
-var helper = module.exports = {load, loadOptions};
+const helper = module.exports;
 
-// Load configuration
-var cfg = config({profile});
+exports.load = stickyLoader(load);
 
-// Configure PulseTestReceiver
-helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
-
-var webServer = null;
-
-// Setup before tests
-mocha.before(async () => {
-  // Create mock authentication server
-  webServer = await load('server', loadOptions);
-  debug('Server Setup');
+suiteSetup(async function() {
+  exports.load.inject('profile', 'test');
+  exports.load.inject('process', 'test');
 });
 
-helper.connect = bindings => {
-  let json = urlencode(JSON.stringify(bindings));
-  var es = new EventSource('http://localhost:12345/api/events/v1/connect/?bindings='+json);
+exports.secrets = new Secrets({
+  secretName: 'projects/taskcluster/testing/taskcluster-events',
+  secrets: {
+    taskcluster: [
+      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl',
+        mock: libUrls.testRootUrl()},
+    ],
+  },
+  load: exports.load,
+});
 
-  var pass, fail;
-  var resolve = new Promise((resolve, reject) => {pass = resolve; fail= reject;});
-  return {
-    es:      es,
-    resolve: resolve,
-    pass:    pass,
-    fail:    fail, 
-  };
+helper.rootUrl = 'http://localhost:12345';
+
+/**
+* Create the Listeners component with fake Pulselistener(s)
+* and add that to helper.listeners .
+*/
+exports.withPulse = (mock, skipping) => {
+  let Listener;
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+
+    helper.load.cfg('pulse.fake', true);
+    Listener = await helper.load('listeners');
+    helper.listeners = Listener.listeners;
+  });
+
+  suiteTeardown(async function() {
+    if (skipping()) {
+      return;
+    }
+    if (Listener) {
+      await Listener.terminate();
+      Listener = null;
+    }
+  });
 };
-  
-// Cleanup after tests
-mocha.after(async () => {
-  // Kill webServer
-  await webServer.terminate();
-  testing.fakeauth.stop();
-});
+
+/**
+ * Set up an API server.  Call this after withPulse, so the server
+ * uses fake listeners used to send fake messages.
+ */
+exports.withServer = (mock, skipping) => {
+  let webServer;
+
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+    const cfg = await exports.load('cfg');
+    exports.load.cfg('taskcluster.rootUrl', helper.rootUrl);
+
+    helper.connect = bindings => {
+      let json = urlencode(JSON.stringify(bindings));
+      debug('Connecting to api...');
+      const evtSource = new EventSource(libUrls.api(helper.rootUrl, 'events', 'v1', '/connect/?bindings=')+json);
+      let pass, fail;
+      const resolve = new Promise((resolve, reject) => {
+        pass = resolve;
+        fail = reject;
+      });
+      return {
+        evtSource,
+        resolve,
+        pass,
+        fail, 
+      };
+    };
+
+    webServer = await helper.load('server');
+  });
+
+  suiteTeardown(async function() {
+    if (skipping()) {
+      return;
+    }
+    if (webServer) {
+      await webServer.terminate();
+      webServer = null;
+    }
+  });
+};

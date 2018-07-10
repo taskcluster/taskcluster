@@ -1,68 +1,69 @@
-suite('Get messages', function() {
-  let debug       = require('debug')('test:get_msg');
-  let assert      = require('assert');
-  let helper = require('./helper');
-  let _ = require('lodash');
+const debug     = require('debug')('test:get_msg');
+const assert    = require('assert');
+const helper    = require('./helper');
+const _         = require('lodash');
 
-  // Everything is fine. We should receive pulse messages as usual
+helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
+  helper.withPulse(mock, skipping);
+  helper.withServer(mock, skipping);
+
   test('Exchange is correct', async () => {
     let bindings = {bindings : [ 
-      {exchange :  'exchange/taskcluster-queue/v1/task-completed', routingKey : '#'},
+      {exchange :  'exchange/taskcluster-foo/v1/bar', routingKeyPattern : '#'},
     ]};
 
-    let controls = helper.connect(bindings);
-    //controls = {es, resolve, pass, fail}
-    let es = controls.es;
-
-    es.addEventListener('message', (msg) => {
-      es.close();
-      controls.pass();
+    let {evtSource, resolve, pass, fail} = helper.connect(bindings);
+    
+    evtSource.addEventListener('ready', msg => {
+      const message = {
+        exchange: 'exchange/taskcluster-foo/v1/bar',
+        routingKey: 'some.route',
+        routes: ['some.other.routes'],
+        payload: {
+          status: 'fooIsBar',
+        },
+      };
+      _.last(helper.listeners).fakeMessage(message);
     });
 
-    es.addEventListener('error', (err) => {
-      es.close();
+    evtSource.addEventListener('message', (msg) => {
+      assert(JSON.parse(msg.data).payload.status === 'fooIsBar');
+      evtSource.close();
+      pass();
+    });
+
+    evtSource.addEventListener('error', (err) => {
+      evtSource.close();
       assert(false);
-      controls.fail(err);
+      fail(err);
     });
 
-    await controls.resolve;
+    await resolve;
   });
 
-  // Wrong exchange. Should get 404
-  test('Exchange does not exist', async () => {
+  // TODO : use fake time to not actually wait for 20s
+  test('Timeout if idle for 20 seconds', async () => {
+    // Send no messages after connecting. The connection should be 
+    // closed automatically after 20s 
     let bindings = {bindings : [ 
-      {exchange :  'exchange/random/does-not-exist', routingKey : '#'},
+      {exchange :  'exchange/taskcluster-foo/v1/bar', routingKeyPattern : '#'},
     ]};
+    
+    let {evtSource, resolve, pass, fail} = helper.connect(bindings);
 
-    let controls = helper.connect(bindings);
-    //controls = {es, resolve, pass, fail}
-    let es = controls.es;
-
-    es.addEventListener('error', (e) => {
-      error = e.data;
-      assert(_.includes(error, '404'));
-      assert(_.includes(error, 'no exchange'));
-      es.close();
-      controls.pass();
+    evtSource.addEventListener('message', (msg) => {
+      assert(false);
+      evtSource.close();
+      fail();
     });
 
-    await controls.resolve;
-  });
-
-  // Bad routingKey. Should not get any messages.
-  test.skip('Arbitrary routingKey', async () => {
-    let bindings = {bindings : [ 
-      {exchange :  'exchange/taskcluster-queue/v1/task-completed', routingKey : 'abc'},
-    ]};
-
-    let controls = helper.connect(bindings);
-    //controls = {es, resolve, pass, fail}
-    let es = controls.es;
-
-    es.addEventListener('message', (e) => {
-      es.close();
-      controls.fail();
+    evtSource.addEventListener('error', (err) => {
+      evtSource.close();
+      assert(JSON.parse(err.data) === 'No messages received for 20s. Aborting...');
+      pass();
     });
-    await controls.resolve;
+
+    await resolve;
   });
+
 });

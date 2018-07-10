@@ -1,13 +1,13 @@
 defaults:
   taskcluster:
-    rootUrl:        https://taskcluster-events-staging.herokuapp.com/ 
+    rootUrl:        !env TASKCLUSTER_ROOT_URL
     credentials:
       clientId:     !env TASKCLUSTER_CLIENT_ID
       accessToken:  !env TASKLCSUTER_ACCESS_TOKEN
   
   server:
     port:           !env:number PORT
-    env:            !env NODE_ENV
+    env:            'development'
     forceSSL:       !env:flag FORCE_SSL
     trustProxy:     false
   
@@ -31,19 +31,11 @@ production:
     mock:           false
 
 test:
-  taskcluster:
-    rootUrl:        http://localhost:12345
-
   monitor:
     enable:         false
 
   server:
     port:           12345
-    env:            development
 
   pulse:
-    username:       !env PULSE_USERNAME
-    password:       !env PULSE_PASSWORD
-    hostname:       pulse.mozilla.org
-    vhost:          /
-
+    fake:           true

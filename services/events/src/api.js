@@ -14,13 +14,13 @@ let builder = new APIBuilder({
   projectName: 'taskcluster-events',
   serviceName: 'events',
   version: 'v1',
-  context: ['connection'],
+  context: ['listeners'],
 });
 
 // Returns JSON.parse(bindings) if everything goes well
 //   {"bindings" : [ 
-//     {"exchange" :  "a/b/c", "routingKey" : "a.b.c"},
-//     {"exchange" :  "x/y/z", "routingKey" : "x.y.z"},
+//     {"exchange" :  "a/b/c", "routingKeyPattern" : "a.b.c"},
+//     {"exchange" :  "x/y/z", "routingKeyPattern" : "x.y.z"},
 //   ]};
 var parseAndValidateBindings = function(bindings) {
   return new Promise((resolve, reject) => {
@@ -33,11 +33,11 @@ var parseAndValidateBindings = function(bindings) {
       // Reduce json_bindings to an array of exchanges.
       json_bindings = json_bindings.bindings;
       if (!Array.isArray(json_bindings)) {
-        throw new Error('Bindings must be an array of {exchange, routingKey}');
+        throw new Error('Bindings must be an array of {exchange, routingKeyPattern}');
       }
       _.forEach(json_bindings, binding => {
-        if (!('routingKey' in binding) || !('exchange' in binding)) {
-          throw new Error('Binding must include `exchange` and `routingKey` fields');
+        if (!('routingKeyPattern' in binding) || !('exchange' in binding)) {
+          throw new Error('Binding must include `exchange` and `routingKeyPattern` fields');
         }
       });
       resolve(json_bindings);
@@ -92,33 +92,16 @@ builder.declare({
     headWritten = true;
 
     let json_bindings = await parseAndValidateBindings(req.query.bindings);
+    debug('Bindings parsed');
+    var listener = await this.listeners.createListener(json_bindings);
+    sendEvent('ready');
+    const idleMessage = {code:404, message:'No messages received for 20s. Aborting...'};
+    let idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);
     
-    var listener = new taskcluster.PulseListener({
-      prefetch:   5,
-      connection: this.connection,
-      maxLength:  50,
-    });
-    
-    _.forEach(json_bindings, entry => listener.bind({
-      exchange: entry.exchange,
-      routingKeyPattern: entry.routingKey,
-    }));
-    
-    listener.resume().then(
-      () => {sendEvent('ready');}, 
-      (err) => {
-        debug('Can\'t resume listener');
-        abort(err);
-      }
-    );
-
     listener.on('message', message => {
-      sendEvent('message', message.payload);
-    });
-
-    listener.on('error', err => {
-      debug('listener Error', err);
-      abort(err);
+      sendEvent('message', message);
+      clearTimeout(idleTimeout);
+      idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);  
     });
 
     pingEvent = setInterval(() => sendEvent('ping', {
@@ -161,7 +144,7 @@ builder.declare({
       clearInterval(pingEvent);
     }
     // Close the listener
-    listener.close();
+    this.listeners.closeListener(listener);
 
     if (!res.finished) {
       debug('Ending response');
@@ -173,3 +156,4 @@ builder.declare({
 
 // Export api
 module.exports = builder;
+    

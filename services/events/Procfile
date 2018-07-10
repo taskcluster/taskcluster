@@ -1,1 +1,1 @@
-web:    node src/main production server
+web:    node src/main server

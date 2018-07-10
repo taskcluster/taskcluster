@@ -6,6 +6,7 @@ let debug = require('debug')('events:main');
 let config = require('typed-env-config');
 let builder = require('./api');
 let taskcluster = require('taskcluster-client');
+let Listeners = require('./listeners');
 let _  = require('lodash');
 
 // Create component loader
@@ -27,12 +28,25 @@ let load = loader({
     }),
   },
 
+  listeners : {
+    requires: ['cfg'],
+    setup : async ({cfg}) => {
+      var listeners = new Listeners({
+        credentials: cfg.pulse,
+      });
+
+      // Start a PulseConnection to add listeners
+      await listeners.setup();
+      return listeners;
+    },
+  },
+
   api : {
-    requires: ['cfg', 'monitor'],
-    setup : ({cfg, monitor}) => builder.build({
+    requires: ['cfg', 'monitor', 'listeners'],
+    setup : ({cfg, monitor, listeners}) => builder.build({
       rootUrl:  cfg.taskcluster.rootUrl,
       context:  {
-        connection:  new taskcluster.PulseConnection(cfg.pulse),
+        listeners,
       },
       monitor:  monitor.prefix('api'),
     }),
@@ -53,10 +67,9 @@ let load = loader({
 
 // If this file is executed launch component from first argument
 if (!module.parent) {
-  console.log(process.argv);
-  load(process.argv[3], {
-    process: process.argv[3],
-    profile: process.argv[2],
+  load(process.argv[2], {
+    process: process.argv[2],
+    profile: process.env.NODE_ENV,
   }).catch(err => {
     console.log(err.stack);
     process.exit(1);
