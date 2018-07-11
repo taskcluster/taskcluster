@@ -292,11 +292,6 @@ async function jobHandler(message) {
   // This is a bit of a hack, but is needed for bug 1274077 for now
   try {
     let c = yaml.safeLoad(repoconf);
-    c.tasks = (Array.isArray(c.tasks) ? c.tasks : []).filter((task) => _.has(task, 'extra.github'));
-    if (c.tasks.length === 0) {
-      debug(`Skipping tasks in ${organization}/${repository} because no task with "extra.github" exists!`);
-      return;
-    }
   } catch (e) {
     if (e.name === 'YAMLException') {
       return await this.createExceptionComment({instGithub, organization, repository, sha, error: e, pullNumber});
