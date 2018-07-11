@@ -166,26 +166,26 @@ compileTasks = {
       if (!task.task.extra || !task.task.extra.github) {
         return false;
       }
-  
+
       let event = payload.details['event.type'];
       let events = task.task.extra.github.events;
       let branch = payload.details['event.base.repo.branch'];
       let includeBranches = task.task.extra.github.branches;
       let excludeBranches = task.task.extra.github.excludeBranches;
-  
+
       if (includeBranches && excludeBranches) {
         throw new Error('Cannot specify both `branches` and `excludeBranches` in the same task!');
       }
-  
+
       return _.some(events, ev => { // TODO
         if (!event.startsWith(_.trimEnd(ev, '*'))) {
           return false;
         }
-  
+
         if (event !== 'push') {
           return true;
         }
-  
+
         if (includeBranches) {
           return _.includes(includeBranches, branch);
         } else if (excludeBranches) {
@@ -195,7 +195,7 @@ compileTasks = {
         }
       });
     });
-  
+
     // Add common taskGroupId and schedulerId. taskGroupId is always the taskId of the first
     // task in taskcluster.
     if (config.tasks.length > 0) {
@@ -211,11 +211,15 @@ compileTasks = {
   },
   1: (config, cfg, payload) => {
     if (config.tasks.length > 0) {
+      const groupId = slugid.nice();
       config.tasks = config.tasks.map((task) => {
         if (!task.taskId) { throw Error('The taskId is absent.'); }
         return {
           taskId: task.taskId,
-          task: _.extend(task, {schedulerId: cfg.taskcluster.schedulerId}),
+          task: _.omit(_.extend(task, {
+            taskGroupId: task.taskGroupId || groupId,
+            schedulerId: cfg.taskcluster.schedulerId,
+          }), 'taskId'),
         };
       });
     }
@@ -238,12 +242,12 @@ module.exports.setup = async function({cfg, schemaset}) {
   return function({config, payload, schema}) {
     config = yaml.safeLoad(config);
     const version = config.version;
-    
+
     const errors = validate(config, schema[version]);
     if (errors) {
       throw new Error(errors);
     }
-    
+
     debug(`intree config for ${payload.organization}/${payload.repository} matches valid schema.`);
 
     // We need to toss out the config version number; it's the only

@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const _ = require('lodash');
+const slugid = require('slugid');
 const builder = require('../src/api');
 const Intree = require('../src/intree');
 const taskcluster = require('taskcluster-client');
@@ -88,6 +89,14 @@ exports.withEntities = (mock, skipping) => {
     if (skipping()) {
       return;
     }
+
+    // Need to generate these each time so that pushes and PRs can run at the same time
+    // Maybe at some point we should cook up a real solution to this.
+    const tableVersion = slugid.nice().replace(/[_-]/g, '');
+    exports.buildsTableName = `TaskclusterGithubBuildsV${tableVersion}`;
+    exports.ownersTableName = `TaskclusterIntegrationOwnersV${tableVersion}`;
+    exports.load.cfg('app.buildsTableName', exports.buildsTableName);
+    exports.load.cfg('app.ownersDirectoryTableName', exports.ownersTableName);
 
     if (mock) {
       const cfg = await exports.load('cfg');
