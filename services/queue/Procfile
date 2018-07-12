@@ -1,11 +1,7 @@
 web:                    node src/main server
 write-docs:             node src/main writeDocs
-claimResolver           node src/main claim-resolver
-# old name:
-claimReaper:            node src/main claim-resolver
+claimResolver:          node src/main claim-resolver
 deadlineResolver:       node src/main deadline-resolver
-# old name:
-deadlineReaper:         node src/main deadline-resolver
 dependencyResolver:     node src/main dependency-resolver
 expireArtifacts:        node src/main expire-artifacts
 expireTask:             node src/main expire-tasks
