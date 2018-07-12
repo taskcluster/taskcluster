@@ -1,11 +1,12 @@
 locals {
   context = {
-    docker_image = "${var.docker_image}"
-    project_name = "${var.project_name}"
-    service_name = "${var.service_name}"
-    secret_keys  = "${var.secret_keys}"
-    secret_name  = "${var.secret_name}"
-    root_url     = "${var.root_url}"
+    docker_image   = "${var.docker_image}"
+    project_name   = "${var.project_name}"
+    service_name   = "${var.service_name}"
+    secret_keys    = "${var.secret_keys}"
+    secret_name    = "${var.secret_name}"
+    root_url       = "${var.root_url}"
+    readiness_path = "${var.readiness_path}"
   }
 }
 
