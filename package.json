@@ -1,0 +1,57 @@
+{
+  "name": "@mozilla-frontend-infra/components",
+  "version": "1.0.0",
+  "description": "Mozilla Front End Infra Shareable React Components",
+  "repository": "mozilla-frontend-infra/components",
+  "license": "MPL-2.0",
+  "main": "build/index.js",
+  "scripts": {
+    "changelog": "auto-changelog",
+    "start": "neutrino styleguide:start",
+    "build": "neutrino build",
+    "prepare": "neutrino build",
+    "deploy": "neutrino styleguide:build && gh-pages --remote upstream -d styleguide",
+    "lint": "neutrino lint",
+    "update:authors": "scripts/authors"
+  },
+  "files": [
+    "build",
+    "es5"
+  ],
+  "devDependencies": {
+    "@material-ui/core": "^1.3.1",
+    "auto-changelog": "^1.7.2",
+    "babel-register": "^6.26.0",
+    "gh-pages": "^1.2.0",
+    "neutrino": "^8.3.0",
+    "neutrino-preset-mozilla-frontend-infra": "^4.1.0",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "verdaccio": "^3.2.0"
+  },
+  "peerDependencies": {
+    "@material-ui/core": "^1.3.1",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1"
+  },
+  "dependencies": {
+    "classnames": "^2.2.6",
+    "codemirror": "^5.39.0",
+    "error-stack-parser": "^2.0.2",
+    "highlight.js": "^9.12.0",
+    "is-absolute-url": "^2.1.0",
+    "markdown-it": "^8.4.1",
+    "markdown-it-highlightjs": "^3.0.0",
+    "markdown-it-link-attributes": "^2.1.0",
+    "mdi-react": "^4.0.0",
+    "prop-types": "^15.6.2",
+    "react-codemirror2": "^5.1.0",
+    "react-fout-stager": "^3.0.0",
+    "react-router-dom": "^4.3.1",
+    "redbox-react": "^1.6.0",
+    "typeface-roboto": "^0.0.54"
+  },
+  "bugs": {
+    "url": "https://github.com/mozilla-frontend-infra/components/issues"
+  }
+}
