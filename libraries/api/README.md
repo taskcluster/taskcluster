@@ -109,7 +109,8 @@ To declare an API method, call `builder.declare(options, handler)` with the foll
    containing the schema in `schemas/<version>`, i.e. `schema.yaml`
  * `skipInputValidation` - if true, don't do input validation (but include the schema in documentation)
  * `output` - the schema against which the output payload will be validated. This should be the path to the file
-   containing the schema in `schemas/<version>`, i.e. `schema.yaml`
+   containing the schema in `schemas/<version>`, i.e. `schema.yaml`.  If the value is 'blob', the output of the
+   method should be interpreted as a stream of bytes and not a JSON document
  * `skipOutputValidation` - if true, don't do output validation (but include the schema in documentation)
  * `cleanPayload` - a function taking and returning a payload, which will "clean" any values that should
    not appear in error messages (for example, removing secrets)
@@ -222,6 +223,12 @@ The `input` and `output` properties of an API method declration name
 JSON-schema files which the method input payload and output body must satisfy.
 The output property can also have the special property `blob` indicating that
 it is not a JSON value, but this is rarely used.
+
+A special value for `output` of `blob` informs client libraries that the output
+of the method is a stream of bytes and not a JSON document for the client to
+interpret as an API response.  This is useful when serving user content, like
+artifacts.  The response might be a JSON document, but the client should still
+treat it as an opaque stream of bytes instead of interpreting it.
 
 The schema declarations are expected to be in
 `schemas/<api.version>/<schemafile>`, as loaded by taskcluster-lib-validate.
