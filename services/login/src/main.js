@@ -54,6 +54,7 @@ let load = loader({
       credentials: cfg.app.credentials,
       tier: 'integrations',
       schemaset,
+      publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',
@@ -74,6 +75,7 @@ let load = loader({
       schemaset,
       context: {cfg, handlers},
       rootUrl: cfg.taskcluster.rootUrl,
+      publish: cfg.app.publishMetaData,
       monitor: monitor.prefix('api'),
     }),
   },
