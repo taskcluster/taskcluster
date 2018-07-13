@@ -20,6 +20,12 @@ variable "service_name" {
   description = "The name of the service."
 }
 
+variable "readiness_path" {
+  type        = "string"
+  default     = "/"
+  description = "Path on this service to probe for readiness (must return 200)"
+}
+
 variable "secret_keys" {
   type        = "list"
   description = "A set of environment variables to set via kubernetes secrets."

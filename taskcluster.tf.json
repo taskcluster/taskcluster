@@ -1,18 +1,18 @@
 {
   "locals": {
-    "taskcluster_image_ping": "imbstack/taskcluster-ping:SVC-19e6fb57073a",
-    "taskcluster_image_auth": "imbstack/taskcluster-auth:SVC-638991ce58e8",
-    "taskcluster_image_queue": "imbstack/taskcluster-queue:SVC-55d96b5194de",
-    "taskcluster_image_index": "imbstack/taskcluster-index:SVC-750cc4ce8209",
-    "taskcluster_image_purge-cache": "imbstack/taskcluster-purge-cache:SVC-00b500823267",
-    "taskcluster_image_github": "imbstack/taskcluster-github:SVC-8ad630cb7a68",
-    "taskcluster_image_login": "imbstack/taskcluster-login:SVC-4ae02be4d4c8",
-    "taskcluster_image_pulse": "imbstack/taskcluster-pulse:SVC-713c582de8c3",
-    "taskcluster_image_hooks": "imbstack/taskcluster-hooks:SVC-fb7c5c2a7b27",
-    "taskcluster_image_secrets": "imbstack/taskcluster-secrets:SVC-dd627eab35f2",
-    "taskcluster_image_notify": "imbstack/taskcluster-notify:SVC-37842109ccc9",
-    "taskcluster_image_docs": "imbstack/taskcluster-docs:SVC-1ce35ca71f69",
-    "taskcluster_image_tools": "imbstack/taskcluster-tools:SVC-3ea77ce3bff4",
-    "taskcluster_image_references": "imbstack/taskcluster-references:SVC-10c626865a00"
+    "taskcluster_image_ping": "djmitche/taskcluster-ping:SVC-8e3a1c8bc233",
+    "taskcluster_image_auth": "djmitche/taskcluster-auth:SVC-ece9d57fed1b",
+    "taskcluster_image_queue": "djmitche/taskcluster-queue:SVC-3e98380fd350",
+    "taskcluster_image_index": "djmitche/taskcluster-index:SVC-42fad835a637",
+    "taskcluster_image_purge-cache": "djmitche/taskcluster-purge-cache:SVC-00b500823267",
+    "taskcluster_image_github": "djmitche/taskcluster-github:SVC-5e94a8640150",
+    "taskcluster_image_login": "djmitche/taskcluster-login:SVC-26d019e625c0",
+    "taskcluster_image_pulse": "djmitche/taskcluster-pulse:SVC-9caabfb2eef1",
+    "taskcluster_image_hooks": "djmitche/taskcluster-hooks:SVC-b0e0fef89d52",
+    "taskcluster_image_secrets": "djmitche/taskcluster-secrets:SVC-196c9ddf2ef5",
+    "taskcluster_image_notify": "djmitche/taskcluster-notify:SVC-37842109ccc9",
+    "taskcluster_image_docs": "djmitche/taskcluster-docs:SVC-0001b8ab30f7",
+    "taskcluster_image_tools": "djmitche/taskcluster-tools:SVC-8ff0fb67e15e",
+    "taskcluster_image_references": "djmitche/taskcluster-references:SVC-00230c58bace"
   }
 }

@@ -15,6 +15,14 @@ spec:
           backend:
             serviceName: taskcluster-tools
             servicePort: 80
+        - path: '/docs'
+          backend:
+            serviceName: taskcluster-docs
+            servicePort: 80
+        - path: '/docs/*'
+          backend:
+            serviceName: taskcluster-docs
+            servicePort: 80
         - $map:
             - {service_name: auth, project_name: taskcluster-auth}
             - {service_name: secrets, project_name: taskcluster-secrets}
