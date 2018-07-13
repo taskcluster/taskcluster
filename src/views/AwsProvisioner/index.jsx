@@ -10,6 +10,9 @@ const ViewWorkerTypes = loadable(() =>
 const ViewAwsHealth = loadable(() =>
   import(/* webpackChunkName: 'AwsProvisioner.ViewAwsHealth' */ './ViewAwsHealth')
 );
+const CreateWorkerType = loadable(() =>
+  import(/* webpackChunkName: 'AwsProvisioner.CreateWorkerType' */ './CreateWorkerType')
+);
 
 @hot(module)
 export default class AwsProvisioner extends Component {
@@ -21,6 +24,11 @@ export default class AwsProvisioner extends Component {
 
     return (
       <Switch>
+        <RouteWithProps
+          path={`${path}/create`}
+          {...props}
+          component={CreateWorkerType}
+        />
         <RouteWithProps
           path={`${path}/aws-health`}
           {...props}

@@ -146,6 +146,46 @@ export const workerType = shape({
   actions: arrayOf(provisionerAction),
 });
 
+export const awsProvisionerWorkerType = shape({
+  workerType: string,
+  launchSpec: object,
+  userData: object,
+  secrets: object,
+  scopes: arrayOf(string),
+  minCapacity: number,
+  maxCapacity: number,
+  scalingRatio: number,
+  minPrice: number,
+  maxPrice: number,
+  lastModified: date,
+  instanceTypes: arrayOf(
+    shape({
+      instanceType: string,
+      capacity: number,
+      utility: number,
+      secrets: object,
+      scopes: arrayOf(string),
+      userData: object,
+      launchSpec: object,
+    })
+  ),
+  regions: arrayOf(
+    shape({
+      region: string,
+      secrets: object,
+      scopes: arrayOf(string),
+      userData: object,
+      launchSpec: shape({
+        ImageId: string,
+      }),
+    })
+  ),
+  canUseOndemand: bool,
+  canUseSpot: bool,
+  description: string,
+  owner: string,
+});
+
 export const awsProvisionerWorkerTypeSummary = shape({
   workerType: string,
   minCapacity: number,
