@@ -29,7 +29,7 @@ deploy:
   email: taskcluster-accounts@mozilla.com
   skip_cleanup: true
   api_key:
-    secure: hbOinxW/rvD2HHrZrfsEt3DE07oXlf07EYELc6lBrcy9xC1acBELevYcEedVjKhILzloZzcZ83hH+Cxqka5mLVVNxwh4IoG8JWU1fRiTaNhekhOlxDUV+CFRVbaz6bH2eJjNsUQlRF2PhmK5lA4kTx0q4BqDrI5ZagX+63oBseI=
+    secure: eeUOWW/p64zrzGCheIV5wipdZCM5e/qcbh4cZcTPekxbgAcVoLUEiO467TCNtZDc1PVpUbOVDUB14oVb2vq0G/9/eLqoWDJjm9B/yWm4xq/E70DcXHOQTM3rsFWR0heaUto1EyP3SxAso4hAQu9r7sdjkQvyA2qpVveCkmxT1rs=
   on:
     tags: true
     repo: taskcluster/taskcluster-client
