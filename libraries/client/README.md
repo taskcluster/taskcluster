@@ -246,9 +246,10 @@ a real scenario).  Every fake message is delivered to the listeners' bindings.
 ### Methods in `taskcluster.Auth`
 ```js
 // Create Auth client instance:
-//  - https://auth.taskcluster.net/v1
+//  - https://auth.taskcluster.net/v1/
 var auth = new taskcluster.Auth(options);
 ```
+ * `auth.ping() : void`
  * `auth.listClients([options]) : result`
  * `auth.client(clientId) : result`
  * `auth.createClient(clientId, payload) : result`
@@ -277,7 +278,6 @@ var auth = new taskcluster.Auth(options);
  * `auth.authenticateHawk(payload) : result`
  * `auth.testAuthenticate(payload) : result`
  * `auth.testAuthenticateGet() : result`
- * `auth.ping() : void`
 
 ### Methods in `taskcluster.AwsProvisioner`
 ```js
@@ -304,7 +304,7 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
 ### Methods in `taskcluster.EC2Manager`
 ```js
 // Create EC2Manager client instance:
-//  - localhost:5555/v1
+//  - https://ec2-manager.taskcluster.net/v1
 var eC2Manager = new taskcluster.EC2Manager(options);
 ```
  * `eC2Manager.listWorkerTypes() : result`
@@ -334,9 +334,10 @@ var eC2Manager = new taskcluster.EC2Manager(options);
 ### Methods in `taskcluster.Github`
 ```js
 // Create Github client instance:
-//  - https://github.taskcluster.net/v1
+//  - https://github.taskcluster.net/v1/
 var github = new taskcluster.Github(options);
 ```
+ * `github.ping() : void`
  * `github.githubWebHookConsumer() : void`
  * `github.builds([options]) : result`
  * `github.badge(owner, repo, branch) : void`
@@ -344,19 +345,18 @@ var github = new taskcluster.Github(options);
  * `github.latest(owner, repo, branch) : void`
  * `github.createStatus(owner, repo, sha, payload) : void`
  * `github.createComment(owner, repo, number, payload) : void`
- * `github.ping() : void`
 
 ### Methods in `taskcluster.Hooks`
 ```js
 // Create Hooks client instance:
-//  - https://hooks.taskcluster.net/v1
+//  - https://hooks.taskcluster.net/v1/
 var hooks = new taskcluster.Hooks(options);
 ```
+ * `hooks.ping() : void`
  * `hooks.listHookGroups() : result`
  * `hooks.listHooks(hookGroupId) : result`
  * `hooks.hook(hookGroupId, hookId) : result`
  * `hooks.getHookStatus(hookGroupId, hookId) : result`
- * `hooks.getHookSchedule(hookGroupId, hookId) : result`
  * `hooks.createHook(hookGroupId, hookId, payload) : result`
  * `hooks.updateHook(hookGroupId, hookId, payload) : result`
  * `hooks.removeHook(hookGroupId, hookId) : void`
@@ -364,20 +364,19 @@ var hooks = new taskcluster.Hooks(options);
  * `hooks.getTriggerToken(hookGroupId, hookId) : result`
  * `hooks.resetTriggerToken(hookGroupId, hookId) : result`
  * `hooks.triggerHookWithToken(hookGroupId, hookId, token, payload) : result`
- * `hooks.ping() : void`
 
 ### Methods in `taskcluster.Index`
 ```js
 // Create Index client instance:
-//  - https://index.taskcluster.net/v1
+//  - https://index.taskcluster.net/v1/
 var index = new taskcluster.Index(options);
 ```
+ * `index.ping() : void`
  * `index.findTask(indexPath) : result`
  * `index.listNamespaces(namespace, [options]) : result`
  * `index.listTasks(namespace, [options]) : result`
  * `index.insertTask(namespace, payload) : result`
  * `index.findArtifactFromTask(indexPath, name) : void`
- * `index.ping() : void`
 
 ### Methods in `taskcluster.Login`
 ```js
@@ -413,9 +412,10 @@ var purgeCache = new taskcluster.PurgeCache(options);
 ### Methods in `taskcluster.Queue`
 ```js
 // Create Queue client instance:
-//  - https://queue.taskcluster.net/v1
+//  - https://queue.taskcluster.net/v1/
 var queue = new taskcluster.Queue(options);
 ```
+ * `queue.ping() : void`
  * `queue.task(taskId) : result`
  * `queue.status(taskId) : result`
  * `queue.listTaskGroup(taskGroupId, [options]) : result`
@@ -425,7 +425,6 @@ var queue = new taskcluster.Queue(options);
  * `queue.scheduleTask(taskId) : result`
  * `queue.rerunTask(taskId) : result`
  * `queue.cancelTask(taskId) : result`
- * `queue.pollTaskUrls(provisionerId, workerType) : result`
  * `queue.claimWork(provisionerId, workerType, payload) : result`
  * `queue.claimTask(taskId, runId, payload) : result`
  * `queue.reclaimTask(taskId, runId) : result`
@@ -449,19 +448,18 @@ var queue = new taskcluster.Queue(options);
  * `queue.getWorker(provisionerId, workerType, workerGroup, workerId) : result`
  * `queue.quarantineWorker(provisionerId, workerType, workerGroup, workerId, payload) : result`
  * `queue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload) : result`
- * `queue.ping() : void`
 
 ### Methods in `taskcluster.Secrets`
 ```js
 // Create Secrets client instance:
-//  - https://secrets.taskcluster.net/v1
+//  - https://secrets.taskcluster.net/v1/
 var secrets = new taskcluster.Secrets(options);
 ```
+ * `secrets.ping() : void`
  * `secrets.set(name, payload) : void`
  * `secrets.remove(name) : void`
  * `secrets.get(name) : result`
  * `secrets.list([options]) : result`
- * `secrets.ping() : void`
 
 ### Exchanges in `taskcluster.AuthEvents`
 ```js
