@@ -46,7 +46,7 @@ func Setup() {
 		}
 	}
 	if ok1 || ok2 {
-		fmt.Println("Either ClientID or Access Token not set")
+		fmt.Fprintln(os.Stderr, "Either ClientID or Access Token not set")
 		os.Exit(1)
 	}
 }
