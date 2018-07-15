@@ -2,6 +2,7 @@ const events = require('events');
 const debug = require('debug');
 const amqplib = require('amqplib');
 const assert = require('assert');
+const {URL} = require('url');
 
 var clientCounter = 0;
 
@@ -14,7 +15,7 @@ var clientCounter = 0;
  * }
  */
 const buildConnectionString = function({username, password, hostname, vhost}) {
-  assert(username, 'options.username password is required');
+  assert(username, 'options.username is required');
   assert(password, 'options.password is required');
   assert(hostname, 'options.hostname is required');
   assert(vhost, 'options.vhost is required');
@@ -59,43 +60,51 @@ exports.buildConnectionString = buildConnectionString;
  * * vhost
  * * recycleInterval (ms; default 1h)
  * * retirementDelay (ms; default 30s)
+ * * minReconnectionInterval (ms; default 15s)
+ * * monitor (taskcluster-lib-monitor instance)
+ *
+ * The pulse namespace for this user is available as `client.namespace`.
  */
 class Client extends events.EventEmitter {
-  constructor({username, password, hostname, vhost, connectionString, recycleInterval, retirementDelay}) {
+  constructor({username, password, hostname, vhost, connectionString, recycleInterval,
+    retirementDelay, minReconnectionInterval, monitor}) {
     super();
 
     if (connectionString) {
       assert(!username, 'Can\'t use `username` along with `connectionString`');
       assert(!password, 'Can\'t use `password` along with `connectionString`');
       assert(!hostname, 'Can\'t use `hostname` along with `connectionString`');
-      assert(!vhost, 'Can\'t use `hostname` along with `connectionString`');
+      assert(!vhost, 'Can\'t use `vhost` along with `connectionString`');
       this.connectionString = connectionString;
+
+      // extract the username as namespace
+      const connURL = new URL(connectionString);
+      this.namespace = decodeURI(connURL.username);
     } else {
-      connectionString = buildConnectionString({username, password, hostname, vhost});
+      this.connectionString = buildConnectionString({username, password, hostname, vhost});
+      this.namespace = username;
     }
 
-    this.recycleInterval = recycleInterval || 3600 * 1000;
-    this.retirementDelay = retirementDelay || 30 * 1000;
+    assert(monitor, 'monitor is required');
+    this.monitor = monitor;
+
+    this._recycleInterval = recycleInterval || 3600 * 1000;
+    this._retirementDelay = retirementDelay || 30 * 1000;
+    this._minReconnectionInterval = minReconnectionInterval || 15 * 1000;
     this.running = false;
     this.connections = [];
-    this.connectionCounter = 0;
+    this.lastConnectionTime = 0;
 
     this.id = ++clientCounter;
-    this.debug = debug(`taskcluster-lib-pulse:client:${this.id}`);
-  }
+    this.debug = debug(`taskcluster-lib-pulse.client-${this.id}`);
 
-  /**
-   * Start connecting and stay connected until stop() is called
-   */
-  start() {
-    assert(!this.running, 'Already running');
     this.debug('starting');
     this.running = true;
     this.recycle();
 
     this._interval = setInterval(
       () => this.recycle(),
-      this.recycleInterval);
+      this._recycleInterval);
   }
 
   async stop() {
@@ -128,19 +137,111 @@ class Client extends events.EventEmitter {
     }
 
     if (this.running) {
-      const newConn = new Connection(this, ++this.connectionCounter);
+      const newConn = new Connection(this);
+
+      // don't actually start connecting until at lesat minReconnectionInterval has passed
+      const earliestConnectionTime = this.lastConnectionTime + this._minReconnectionInterval;
+      const now = new Date().getTime();
+      setTimeout(() => {
+        this.lastConnectionTime = new Date().getTime();
+        newConn.connect();
+      }, now < earliestConnectionTime ? earliestConnectionTime - now : 0);
+
       newConn.once('connected', () => {
         this.emit('connected', newConn);
       });
       newConn.once('finished', () => {
-        this.connections = this.connections.filter(conn => conn.id !== newConn.id);
+        this.connections = this.connections.filter(conn => conn !== newConn);
       });
       this.connections.unshift(newConn);
     }
   }
+
+  /**
+   * Get a full object name, following the Pulse security model,
+   * `<kind>/<namespace>/<name>`.  This is useful for manipulating these objects
+   * directly, for example to modify the bindings of an active queue.
+   */
+  fullObjectName(kind, name) {
+    assert(kind, 'kind is required');
+    assert(name, 'name is required');
+    return `${kind}/${this.namespace}/${name}`;
+  }
+
+  /**
+   * Listen for a `connected` event, but call the handler with the existing connection
+   * if this client is already connected.
+   */
+  onConnected(handler) {
+    const res = this.on('connected', handler);
+    const conn = this.activeConnection;
+    if (conn) {
+      handler(conn);
+    }
+    return res;
+  }
+
+  /**
+   * The active connection, if any.  This is useful when starting to use an already-
+   * running client:
+   *   client.on('connected', setupConnection);
+   *   if (client.activeConnection) {
+   *     await setupConnection(client.activeConnection);
+   *   }
+   */
+  get activeConnection() {
+    if (this.running && this.connections.length && this.connections[0].state === 'connected') {
+      return this.connections[0];
+    }
+  }
+
+  /**
+   * Run the given async function with a connection.  This is similar to
+   * client.once('connected', ..), except that it will fire immediately if
+   * the client is already connected.  This does *not* automatically re-run
+   * the function if the connection fails.
+   */
+  withConnection(fn) {
+    if (this.activeConnection) {
+      return fn(this.activeConnection);
+    }
+
+    return new Promise((resolve, reject) => {
+      this.once('connected', conn => Promise.resolve(fn(conn)).then(resolve, reject));
+    });
+  }
+
+  /**
+   * Run the given async function with an amqplib channel or confirmChannel. This wraps
+   * withConnection to handle closing the channel.
+   */
+  withChannel(fn, {confirmChannel} = {}) {
+    return this.withConnection(async conn => {
+      const method = confirmChannel ? 'createConfirmChannel' : 'createChannel';
+      const channel = await conn.amqp[method]();
+
+      // consider any errors on the channel to be potentially fatal to the whole
+      // connection, out of an abundance of caution
+      channel.on('error', () => this.recycle());
+
+      try {
+        return await fn(channel);
+      } finally {
+        try {
+          await channel.close();
+        } catch (err) {
+          // an error trying to close the channel suggests the connection is dead, so
+          // recycle, but continue to throw the first error
+          this.recycle();
+        }
+      }
+    });
+  }
 }
 
 exports.Client = Client;
+
+let nextConnectionId = 1;
 
 /**
  * A single connection to a pulse server.  This is a thin wrapper around a raw
@@ -167,6 +268,7 @@ exports.Client = Client;
  *
  * A connection's state can be one of
  *
+ *  - waiting -- waiting for a call to connect() (for minReconnectionInterval)
  *  - connecting -- waiting for a connection to complete
  *  - connected -- connection is up and running
  *  - retiring -- in the process of retiring
@@ -177,60 +279,63 @@ exports.Client = Client;
  *
  */
 class Connection extends events.EventEmitter {
-  constructor(client, id) {
+  constructor(client) {
     super();
 
     this.client = client;
-    this.id = id;
+    this.id = nextConnectionId++;
     this.amqp = null;
 
-    this.debug = debug(`taskcluster-lib-pulse:connection:${client.id}.${id}`);
+    this.debug = debug(`taskcluster-lib-pulse.conn-${this.id}`);
 
-    this.connect();
+    this.debug('waiting');
+    this.state = 'waiting';
   }
 
-  connect() {
+  async connect() {
+    if (this.state !== 'waiting') {
+      return;
+    }
+
     this.debug('connecting');
     this.state = 'connecting';
 
-    amqplib.connect(this.client.connectionString, {
+    const amqp = await amqplib.connect(this.client.connectionString, {
       heartbeat: 120,
       noDelay: true,
       timeout: 30 * 1000,
-    }).then(
-      amqp => {
-        if (this.state !== 'connecting') {
-          // we may have been retired already, in which case we do not need this
-          // connection
-          amqp.close();
-          return;
+    }).catch(err => {
+      this.debug(`Error while connecting: ${err}`);
+      this.failed();
+    });
+
+    if (amqp) {
+      if (this.state !== 'connecting') {
+        // we may have been retired already, in which case we do not need this
+        // connection
+        amqp.close();
+        return;
+      }
+      this.amqp = amqp;
+
+      amqp.on('error', err => {
+        if (this.state === 'connected') {
+          this.debug(`error from aqplib connection: ${err}`);
+          this.failed();
         }
-        this.amqp = amqp;
-
-        amqp.on('error', err => {
-          if (this.state === 'connected') {
-            this.debug(`error from aqplib connection: ${err}`);
-            this.failed();
-          }
-        });
-
-        amqp.on('close', err => {
-          if (this.state === 'connected') {
-            this.debug('connection closed unexpectedly');
-            this.failed();
-          }
-        });
-
-        this.debug('connected');
-        this.state = 'connected';
-        this.emit('connected');
-      },
-      err => {
-        // TODO: make a minimum interval between connection attempts, to avoid
-        // issue with bad credentials
-        this.debug(`Error while connecting: ${err}`);
-        this.failed();
       });
+
+      amqp.on('close', err => {
+        if (this.state === 'connected') {
+          this.debug('connection closed unexpectedly');
+          this.failed();
+        }
+      });
+
+      this.debug('connected');
+      this.state = 'connected';
+      this.emit('connected');
+    }
   }
 
   failed() {
@@ -262,7 +367,7 @@ class Connection extends events.EventEmitter {
       this.amqp = null;
       this.state = 'finished';
       this.emit('finished');
-    }, this.client.retirementDelay);
+    }, this.client._retirementDelay);
   }
 }
 
