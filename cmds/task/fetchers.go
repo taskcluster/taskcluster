@@ -59,8 +59,8 @@ func runStatus(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	return nil
 }
 // confirmMsg displays confirmation message when --confirm is used
-func confirmMsg(command string, credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet )(string) {
-	
+func confirmMsg(command string, credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet )string {
+
 	q := makeQueue(credentials)
 	taskID := args[0]
 
@@ -68,7 +68,7 @@ func confirmMsg(command string, credentials *tcclient.Credentials, args []string
 	run := c.Status.Runs[len(c.Status.Runs)-1]
 
 	t, _ := q.Task(taskID)
-	
+
 	fmt.Println(command, t.Metadata.Name ,"taskid:", taskID ,"(state:",run.State,"). Are you sure you want to proceed with given command? (y/N)")
 	var response string
 	fmt.Scanf("%s", &response)

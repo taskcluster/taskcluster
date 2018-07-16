@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 	"time"
-	
+
 	"github.com/spf13/pflag"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -14,19 +14,19 @@ import (
 
 // runCancel cancels the runs of a given task.
 func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, flagSet *pflag.FlagSet) error {
-	nooprunCancel, _ := flagSet.GetBool("noop")
-	confirmrunCancel, _ := flagSet.GetBool("confirm")
+	noop, _ := flagSet.GetBool("noop")
+	confirm, _ := flagSet.GetBool("confirm")
 
 	q := makeQueue(credentials)
 	taskID := args[0]
 
 
-	if nooprunCancel {
-		displayNoopMsg("Cancels", credentials, args, out, flagSet)
+	if noop {
+		displayNoopMsg("Would cancel", credentials, args, out, flagSet)
 		return nil
 	}
 
-	if confirmrunCancel {
+	if confirm {
 		var response = confirmMsg("Cancels", credentials, args, out, flagSet)
 		if response == "y" {
 			c, err := q.CancelTask(taskID)
@@ -43,7 +43,7 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 
 	c, err := q.CancelTask(taskID)
 	run := c.Status.Runs[len(c.Status.Runs)-1]
-		
+
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -59,19 +59,19 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 
 // runRerun re-runs a given task.
 func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, flagSet *pflag.FlagSet) error {
-	nooprunRerun, _ := flagSet.GetBool("noop")
-	confirmrunRerun, _ := flagSet.GetBool("confirm")
+	noop, _ := flagSet.GetBool("noop")
+	confirm, _ := flagSet.GetBool("confirm")
 
 	q := makeQueue(credentials)
 	taskID := args[0]
 
-	if nooprunRerun {
-		displayNoopMsg("Re-runs", credentials, args, out, flagSet)
+	if noop {
+		displayNoopMsg("Would re-run", credentials, args, out, flagSet)
 		return nil
 	}
-	
-	if confirmrunRerun {
-		var response = confirmMsg("Re-runs", credentials, args, out, flagSet)
+
+	if confirm {
+		var response = confirmMsg("Will re-run", credentials, args, out, flagSet)
 		if response == "y" {
 			c, err := q.RerunTask(taskID)
 			run := c.Status.Runs[len(c.Status.Runs)-1]
@@ -88,14 +88,14 @@ func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, f
 	c, err := q.RerunTask(taskID)
 
 	run := c.Status.Runs[len(c.Status.Runs)-1]
-	
+
 
 	if err != nil {
 		return fmt.Errorf("could not rerun the task %s: %v", taskID, err)
 
 	}
 
-	
+
 	fmt.Fprintln(out, getRunStatusString(run.State, run.ReasonResolved))
 	return nil
 
@@ -121,7 +121,7 @@ func runRetrigger(credentials *tcclient.Credentials, args []string, out io.Write
 
 	exactRetrigger, _ := flagSet.GetBool("exact")
 
-	newTaskID := slugid.V4()
+	newTaskID := slugid.Nice()
 	now := time.Now().UTC()
 
 	origCreated, err := time.Parse(time.RFC3339, t.Created.String())
@@ -181,8 +181,8 @@ func runRetrigger(credentials *tcclient.Credentials, args []string, out io.Write
 
 // runComplete completes a given task.
 func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer, flagSet *pflag.FlagSet) error {
-	nooprunComplete, _ := flagSet.GetBool("noop")
-	confirmrunComplete, _ := flagSet.GetBool("confirm")
+	noop, _ := flagSet.GetBool("noop")
+	confirm, _ := flagSet.GetBool("confirm")
 
 	q := makeQueue(credentials)
 	taskID := args[0]
@@ -210,9 +210,9 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 		return fmt.Errorf("could not complete the task %s: %v", taskID, err)
 	}
 
-	
-	if confirmrunComplete {
-		var response = confirmMsg("Completes", credentials, args, out, flagSet)
+
+	if confirm {
+		var response = confirmMsg("Will complete", credentials, args, out, flagSet)
 		if response == "y" {
 			c, err := q.ClaimTask(taskID, fmt.Sprint(len(s.Status.Runs)-1), &queue.TaskClaimRequest{
 				WorkerGroup: s.Status.WorkerType,
@@ -234,11 +234,11 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 			fmt.Fprintln(out, getRunStatusString(r.Status.Runs[c.RunID].State, r.Status.Runs[c.RunID].ReasonResolved))
 			return nil
 
-		} 
+		}
 	}
-	
-	if nooprunComplete {
-		displayNoopMsg("Completes", credentials, args, out, flagSet)
+
+	if noop {
+		displayNoopMsg("Would complete", credentials, args, out, flagSet)
 		return nil
 	}
 
