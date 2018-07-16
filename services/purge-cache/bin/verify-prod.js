@@ -5,7 +5,7 @@ let taskcluster = require('taskcluster-client');
 let cfg = config({profile: 'verify'});
 
 let purgeCache = new taskcluster.PurgeCache({
-  credentials: cfg.taskcluster.credentials
+  ...cfg.taskcluster,
 });
 
 purgeCache.purgeCache(

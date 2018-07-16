@@ -1,4 +1,4 @@
-TaskCluster Purge Worker Cache Service
+Taskcluster Purge Worker Cache Service
 ======================================
 
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-purge-cache.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-purge-cache)

@@ -1,12 +1,12 @@
-let Exchanges = require('pulse-publisher');
-let assert    = require('assert');
-let _         = require('lodash');
-
-// Common schema prefix
-let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/purge-cache/v1/';
+const Exchanges = require('pulse-publisher');
+const assert = require('assert');
+const _ = require('lodash');
 
 /** Declaration of exchanges offered by the purge-cache */
-let exchanges = new Exchanges({
+const exchanges = new Exchanges({
+  projectName: 'taskcluster-purge-cache',
+  serviceName: 'purge-cache',
+  version: 'v1',
   title:      'Purge-Cache Exchanges',
   description: [
     'The purge-cache service, typically available at',
@@ -47,7 +47,7 @@ exchanges.declare({
       maxSize:          22,
     },
   ],
-  schema:             SCHEMA_PREFIX_CONST + 'purge-cache-message.json#',
+  schema:             'purge-cache-message.yml',
   messageBuilder:     msg => {
     msg.version = 1;
     return msg;

@@ -4,11 +4,7 @@ description: |
   A list of currently open purge-cache requests.
 type:         object
 properties:
-  cacheHit:
-    type: boolean
-    description: True if the cache has been used in this request.
-  requests:   {$ref: "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#"}
+  requests:   {$ref: "purge-cache-requests.json#"}
 additionalProperties: false
 required:
   - requests
-  - cacheHit
