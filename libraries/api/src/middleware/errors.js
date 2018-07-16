@@ -31,24 +31,25 @@ const buildReportErrorMethod = ({errorCodes, monitor, entry}) => {
   const {name: method, cleanPayload} = entry;
   return (req, res, next) => {
     res.reportError = (code, message, details = {}) => {
-      const status = errorCodes[code];
+      let status = errorCodes[code];
       let payload = req.body;
       if (cleanPayload) {
         payload = cleanPayload(payload);
       }
 
       if (status === undefined || typeof message !== 'string') {
-        message = 'Internal error, unknown error code: ' + code + '\n' +
-                  (message || 'Missing message!');
+        const newMessage = 'Internal error, unknown error code: ' + code + '\n' +
+          (message || 'Missing message!');
         code = 'InternalServerError';
         status = 500;
         if (monitor) {
-          const err = new Error(message);
+          const err = new Error(newMessage);
           err.badMessage = message;
           err.badCode = code;
           err.details = details;
           monitor.reportError(err);
         }
+        message = newMessage;
       }
 
       const requestInfo = {
