@@ -30,5 +30,6 @@ Deployment
 ----------
 1) Supply configuration needed to run post-deploy verification tests. Example is in `user-config-example.yml`.
 2) Merge branch with master and push to origin. Heroku will automatically deploy.
-3) Once the new branch is deployed to Heroku, open [the pulse inspector](https://tools.taskcluster.net/pulse-inspector/#!((exchange:exchange/taskcluster-purge-cache/v1/purge-cache,routingKeyPattern:%23))) and start listening.
-4) Run `yarn verify` and ensure that a message shows up in the pulse inspector.
+3) Once the new branch is deployed to Heroku, open [the pulse inspector](https://tools.taskcluster.net/pulse-inspector?bindings%5B0%5D%5Bexchange%5D=exchange%2Ftaskcluster-purge-cache%2Fv1%2Fpurge-cache&bindings%5B0%5D%5BroutingKeyPattern%5D=%23) and start listening.
+4) Open https://tools.taskcluster.net/purge-caches.
+5) Run `yarn verify` and ensure that a message shows up in the pulse inspector and in the tools site.
