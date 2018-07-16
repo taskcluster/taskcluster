@@ -224,9 +224,9 @@ let pc = await pulse.consume({
 });
 ```
 
-If `queueName` is specified, this will create a durable queue using a
-pulse-compatible queue name based on `queueName` (prefixed with
-`queue/<namespace>`).
+This will create a durable queue using a pulse-compatible queue name based on
+`queueName` (prefixed with `queue/<namespace>`).  Ephemeral (auto-delete,
+exclusive) queues are not supported by `PulseConsumer`.
 
 If `routingKeyReference` is provided for the exchange from which messages
 arrive, then the listener will parse the routing key and make it available as a
