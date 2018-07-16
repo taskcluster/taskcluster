@@ -32,7 +32,7 @@ defaults:
   pulse:
     username:                 !env PULSE_USERNAME
     password:                 !env PULSE_PASSWORD
-    host:                     !env PULSE_HOSTNAME
+    hostname:                 !env PULSE_HOSTNAME
     vhost:                    !env PULSE_VHOST
 
   taskcluster:
