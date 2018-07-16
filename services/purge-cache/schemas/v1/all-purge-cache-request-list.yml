@@ -7,7 +7,7 @@ properties:
   continuationToken:
     type: string
     description: Passed back from Azure to allow us to page through long result sets.
-  requests:   {$ref: "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#"}
+  requests:   {$ref: "purge-cache-requests.json#"}
 additionalProperties: false
 required:
   - requests
