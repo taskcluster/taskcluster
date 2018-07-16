@@ -1,35 +1,39 @@
-let debug             = require('debug')('purge-cache');
-let assert            = require('assert');
-let path              = require('path');
-let _                 = require('lodash');
-let config            = require('typed-env-config');
-let loader            = require('taskcluster-lib-loader');
-let monitor           = require('taskcluster-lib-monitor');
-let validate          = require('taskcluster-lib-validate');
-let server            = require('taskcluster-lib-app');
-let docs              = require('taskcluster-lib-docs');
-let taskcluster       = require('taskcluster-client');
-let api               = require('./api');
-let exchanges         = require('./exchanges');
-let data              = require('./data');
+const debug = require('debug')('purge-cache');
+const assert = require('assert');
+const path = require('path');
+const _ = require('lodash');
+const config = require('typed-env-config');
+const loader = require('taskcluster-lib-loader');
+const monitor = require('taskcluster-lib-monitor');
+const SchemaSet = require('taskcluster-lib-validate');
+const {sasCredentials} = require('taskcluster-lib-azure');
+const App = require('taskcluster-lib-app');
+const docs = require('taskcluster-lib-docs');
+const taskcluster = require('taskcluster-client');
+const builder = require('./api');
+const exchanges = require('./exchanges');
+const data = require('./data');
 
-let load = loader({
+const load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({profile}) => config({profile}),
   },
-  validator: {
+
+  schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => validate({
-      prefix:   'purge-cache/v1/',
+    setup: ({cfg}) => new SchemaSet({
+      serviceName: 'purge-cache',
       publish:  cfg.app.publishMetaData,
       aws:      cfg.aws,
     }),
   },
+
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: cfg.monitoring.project || 'taskcluster-purge-cache',
+      rootUrl: cfg.taskcluster.rootUrl,
+      projectName: cfg.monitoring.project,
       enable: cfg.monitoring.enable,
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
@@ -40,10 +44,14 @@ let load = loader({
   CachePurge: {
     requires: ['cfg', 'monitor'],
     setup: async ({cfg, monitor}) => data.CachePurge.setup({
-      account: cfg.azure.account,
-      table: cfg.app.cachePurgeTableName,
-      credentials: cfg.taskcluster.credentials,
+      tableName: cfg.app.cachePurgeTableName,
       monitor: monitor.prefix('table.purgecaches'),
+      credentials: sasCredentials({
+        tableName: cfg.app.cachePurgeTableName,
+        accountId: cfg.azure.accountId,
+        rootUrl: cfg.taskcluster.rootUrl,
+        credentials: cfg.taskcluster.credentials,
+      }),
     }),
   },
 
@@ -65,51 +73,48 @@ let load = loader({
   },
 
   publisher: {
-    requires: ['cfg', 'validator', 'monitor'],
-    setup: ({cfg, validator, monitor}) =>
-      exchanges.setup({
-        credentials:        cfg.pulse,
-        exchangePrefix:     cfg.app.exchangePrefix,
-        validator:          validator,
-        referencePrefix:    'purge-cache/v1/exchanges.json',
-        publish:            cfg.app.publishMetaData,
-        aws:                cfg.aws,
-        monitor:            monitor.prefix('publisher'),
-      }),
+    requires: ['cfg', 'schemaset', 'monitor'],
+    setup: async ({cfg, schemaset, monitor}) => exchanges.setup({
+      credentials: cfg.pulse,
+      validator: await schemaset.validator(cfg.taskcluster.rootUrl),
+      rootUrl: cfg.taskcluster.rootUrl,
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
+      monitor: monitor.prefix('publisher'),
+    }),
   },
 
   api: {
-    requires: ['cfg', 'monitor', 'validator', 'publisher', 'CachePurge'],
-    setup: ({cfg, monitor, validator, publisher, CachePurge}) => api.setup({
-      context:          {cfg, publisher, CachePurge, cachePurgeCache: {}},
-      validator:        validator,
-      publish:          cfg.app.publishMetaData,
-      baseUrl:          cfg.server.publicUrl + '/v1',
-      aws:              cfg.aws,
-      referencePrefix:  'purge-cache/v1/api.json',
-      monitor:          monitor.prefix('api'),
+    requires: ['cfg', 'monitor', 'schemaset', 'publisher', 'CachePurge'],
+    setup: ({cfg, monitor, schemaset, publisher, CachePurge}) => builder.build({
+      context: {cfg, publisher, CachePurge, cachePurgeCache: {}},
+      rootUrl: cfg.taskcluster.rootUrl,
+      schemaset,
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
+      monitor: monitor.prefix('api'),
     }),
   },
 
   reference: {
     requires: ['cfg'],
     setup: ({cfg}) => exchanges.reference({
-      exchangePrefix:   cfg.app.exchangePrefix,
-      credentials:      cfg.pulse,
+      rootUrl: cfg.taskcluster.rootUrl,
+      credentials: cfg.pulse,
     }),
   },
 
   docs: {
-    requires: ['cfg', 'validator', 'reference'],
-    setup: ({cfg, validator, reference}) => docs.documenter({
+    requires: ['cfg', 'schemaset', 'reference'],
+    setup: ({cfg, schemaset, reference}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
-      schemas: validator.schemas,
+      schemaset,
       publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'api',
-          reference: api.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+          reference: builder.reference(),
         }, {
           name: 'events',
           reference: reference,
@@ -125,13 +130,10 @@ let load = loader({
 
   server: {
     requires: ['cfg', 'api', 'docs'],
-    setup: ({cfg, api, docs}) => {
-
-      debug('Launching server.');
-      let app = server(cfg.server);
-      app.use('/v1', api);
-      return app.createServer();
-    },
+    setup: ({cfg, api, docs}) => App({
+      ...cfg.server,
+      apis: [api],
+    }),
   },
 }, ['profile', 'process']);
 

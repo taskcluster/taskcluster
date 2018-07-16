@@ -1,82 +1,193 @@
-let assert      = require('assert');
-let path        = require('path');
-let _           = require('lodash');
-let api         = require('../src/api');
-let taskcluster = require('taskcluster-client');
-let mocha       = require('mocha');
-let exchanges   = require('../src/exchanges');
-let load        = require('../src/main');
-let config      = require('typed-env-config');
-let testing     = require('taskcluster-lib-testing');
+const assert = require('assert');
+const path = require('path');
+const _ = require('lodash');
+const builder = require('../src/api');
+const data = require('../src/data');
+const taskcluster = require('taskcluster-client');
+const mocha = require('mocha');
+const exchanges = require('../src/exchanges');
+const load = require('../src/main');
+const config = require('typed-env-config');
+const {stickyLoader, Secrets, fakeauth} = require('taskcluster-lib-testing');
 
-// Load configuration
-let cfg = config({profile: 'test'});
-
-let testclients = {
+const testclients = {
   'test-client': ['*'],
   'test-server': ['*'],
 };
 
-// Create and export helper object
-let helper = module.exports = {};
+exports.suiteName = path.basename;
+exports.rootUrl = 'http://localhost:60415';
 
-// Skip tests if no credentials is configured
-if (!cfg.pulse || !cfg.taskcluster) {
-  console.log('Skip tests due to missing credentials!');
-  process.exit(1);
-}
+exports.load = stickyLoader(load);
 
-// Configure PulseTestReceiver
-helper.events = new testing.PulseTestReceiver(cfg.pulse, mocha);
+suiteSetup(async function() {
+  exports.load.inject('profile', 'test');
+  exports.load.inject('process', 'test');
+});
 
-// Hold reference to authServer
-let authServer = null;
-let webServer = null;
+// set up the testing secrets
+exports.secrets = new Secrets({
+  secretName: 'project/taskcluster/testing/taskcluster-purge-cache',
+  secrets: {
+    taskcluster: [
+      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl'},
+      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
+      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
+    ],
+  },
+  load: exports.load,
+});
 
-// Setup before tests
-mocha.before(async () => {
-  // Create mock authentication server
-  testing.fakeauth.start(testclients);
+/**
+ * Set helper.<Class> for each of the Azure entities used in the service
+ */
+exports.withEntities = (mock, skipping, options={}) => {
+  const tables = [
+    {name: 'CachePurge'},
+  ];
 
-  await load('expire-cache-purges', {profile: 'test', process: 'test'});
-  webServer = await load('server', {profile: 'test', process: 'test'});
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+    exports.load.save();
 
-  // Create client for working with API
-  helper.baseUrl = 'http://localhost:' + webServer.address().port + '/v1';
-  let reference = api.reference({baseUrl: helper.baseUrl});
-  helper.PurgeCache = taskcluster.createClient(reference);
-  // Utility to create an PurgeCache instance with limited scopes
-  helper.scopes = (...scopes) => {
-    helper.purgeCache = new helper.PurgeCache({
-      // Ensure that we use global agent, to avoid problems with keepAlive
-      // preventing tests from exiting
-      agent:            require('http').globalAgent,
-      baseUrl:          helper.baseUrl,
+    const cfg = await exports.load('cfg');
+
+    if (mock) {
+      await Promise.all(tables.map(async tbl => {
+        exports.load.inject(tbl.name, data[tbl.className || tbl.name].setup({
+          tableName: tbl.name,
+          credentials: 'inMemory',
+          context: tbl.context ? await tbl.context() : undefined,
+        }));
+      }));
+    }
+
+    await Promise.all(tables.map(async tbl => {
+      exports[tbl.name] = await exports.load(tbl.name);
+      await exports[tbl.name].ensureTable();
+    }));
+  });
+
+  const cleanup = async () => {
+    if (skipping()) {
+      return;
+    }
+
+    await Promise.all(tables.map(async tbl => {
+      await exports[tbl.name].scan({}, {handler: e => {
+        e.remove();
+      }});
+    }));
+  };
+  if (!options.orderedTests) {
+    setup(cleanup);
+  }
+  suiteTeardown(async function() {
+    exports.load.restore();
+    await cleanup();
+  });
+};
+
+/**
+ * Set up PulsePublisher in fake mode, at helper.publisher. Messages are stored
+ * in helper.messages.  The `helper.checkNextMessage` function allows asserting the
+ * content of the next message, and `helper.checkNoNextMessage` is an assertion that
+ * no such message is in the queue.
+ */
+exports.withPulse = (mock, skipping) => {
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+    exports.load.save();
+
+    await exports.load('cfg');
+    exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
+    exports.load.cfg('pulse', {fake: true});
+    exports.publisher = await exports.load('publisher');
+
+    exports.checkNextMessage = (exchange, check) => {
+      for (let i = 0; i < exports.messages.length; i++) {
+        const message = exports.messages[i];
+        // skip messages for other exchanges; this allows us to ignore
+        // ordering of messages that occur in indeterminate order
+        if (!message.exchange.endsWith(exchange)) {
+          continue;
+        }
+        check && check(message);
+        exports.messages.splice(i, 1); // delete message from queue
+        return;
+      }
+      throw new Error(`No messages found on exchange ${exchange}; ` +
+        `message exchanges: ${JSON.stringify(exports.messages.map(m => m.exchange))}`);
+    };
+
+    exports.checkNoNextMessage = exchange => {
+      assert(!exports.messages.some(m => m.exchange.endsWith(exchange)));
+    };
+  });
+
+  suiteTeardown(async function() {
+    exports.load.restore();
+  });
+
+  const fakePublish = msg => { exports.messages.push(msg); };
+  setup(function() {
+    exports.messages = [];
+    exports.publisher.on('fakePublish', fakePublish);
+  });
+
+  teardown(function() {
+    exports.publisher.removeListener('fakePublish', fakePublish);
+  });
+};
+
+/**
+ * Set up an API server.
+ */
+exports.withServer = (mock, skipping) => {
+  let webServer;
+
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+    exports.load.save();
+
+    const cfg = await exports.load('cfg');
+
+    // even if we are using a "real" rootUrl for access to Azure, we use
+    // a local rootUrl to test the API, including mocking auth on that
+    // rootUrl.
+    exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
+    exports.load.cfg('taskcluster.clientId', null);
+    exports.load.cfg('taskcluster.accessToken', null);
+    fakeauth.start(testclients, {rootUrl: exports.rootUrl});
+
+    exports.PurgeCacheClient = taskcluster.createClient(builder.reference());
+
+    exports.apiClient = new exports.PurgeCacheClient({
       credentials: {
         clientId:       'test-client',
-        accessToken:    'none',
+        accessToken:    'doesnt-matter',
       },
-      authorizedScopes: scopes.length > 0 ? scopes : undefined,
+      rootUrl: exports.rootUrl,
     });
-  };
 
-  // Initialize purge-cache client
-  helper.scopes();
-
-  // Create client for binding to reference
-  let exchangeReference = exchanges.reference({
-    exchangePrefix:   cfg.app.exchangePrefix,
-    credentials:      cfg.pulse,
+    webServer = await exports.load('server');
   });
-  helper.PurgeCacheEvents = taskcluster.createClient(exchangeReference);
-  helper.purgeCacheEvents = new helper.PurgeCacheEvents();
-});
 
-mocha.beforeEach(() => {
-  helper.scopes();
-});
-
-mocha.after(async () => {
-  await webServer.terminate();
-  testing.fakeauth.stop();
-});
+  suiteTeardown(async function() {
+    if (skipping()) {
+      return;
+    }
+    if (webServer) {
+      await webServer.terminate();
+      webServer = null;
+    }
+    fakeauth.stop();
+    exports.load.restore();
+  });
+};

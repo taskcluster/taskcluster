@@ -1,5 +1,5 @@
-let assert = require('assert');
-let Entity = require('azure-entities');
+const assert = require('assert');
+const Entity = require('azure-entities');
 
 /**
  * Entity for tracking which caches are currently
@@ -8,7 +8,7 @@ let Entity = require('azure-entities');
  * be purged.
  *
  */
-let CachePurge = Entity.configure({
+const CachePurge = Entity.configure({
   version:          1,
   partitionKey:     Entity.keys.CompositeKey('provisionerId', 'workerType'),
   rowKey:           Entity.keys.StringKey('cacheName'),
@@ -28,7 +28,7 @@ let CachePurge = Entity.configure({
  */
 CachePurge.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
-  var count = 0;
+  let count = 0;
   await Entity.scan.call(this, {
     expires:          Entity.op.lessThan(now),
   }, {
