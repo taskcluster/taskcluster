@@ -23,6 +23,14 @@ spec:
           backend:
             serviceName: taskcluster-docs
             servicePort: 80
+        - path: '/references/*'
+          backend:
+            serviceName: taskcluster-references
+            servicePort: 80
+        - path: '/schemas/*'
+          backend:
+            serviceName: taskcluster-references
+            servicePort: 80
         - $map:
             - {service_name: auth, project_name: taskcluster-auth}
             - {service_name: secrets, project_name: taskcluster-secrets}
