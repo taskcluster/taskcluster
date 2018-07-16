@@ -24,23 +24,23 @@
     "cors": "^2.8.4",
     "dataloader": "^1.4.0",
     "deepmerge": "^2.0.1",
-    "dotenv": "^5.0.0",
+    "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "express-jwt": "^5.3.1",
     "graphql": "^0.13.2",
     "graphql-depth-limit": "^1.1.0",
     "graphql-iso-date": "^3.5.0",
     "graphql-playground-middleware-express": "^1.6.0",
-    "graphql-tools": "^2.23.1",
+    "graphql-tools": "^3.0.5",
     "graphql-type-json": "^0.2.0",
     "graphql-validation-complexity": "^0.2.3",
     "immutable": "^3.8.2",
     "iterall": "^1.2.2",
     "jwks-rsa": "^1.2.1",
     "node-fetch": "^2.1.2",
-    "sift": "^5.1.0",
+    "sift": "^6.0.0",
     "source-map-support": "^0.5.4",
     "subscriptions-transport-ws": "^0.9.7",
-    "taskcluster-client": "^4.0.0"
+    "taskcluster-client": "^11.0.3"
   }
 }

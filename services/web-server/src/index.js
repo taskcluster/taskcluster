@@ -23,6 +23,8 @@ const pulseEngine = new PulseEngine({
   connection: {
     username: process.env.PULSE_USERNAME,
     password: process.env.PULSE_PASSWORD,
+    hostname: process.env.PULSE_HOSTNAME,
+    vhost: process.env.PULSE_VHOST,
   },
 });
 let schema;

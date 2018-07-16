@@ -10,7 +10,10 @@ export default class PulseEngine {
     this.currentSubscriptionId = 0;
     this.subscriptions = new Map();
     this.connection = new PulseConnection(connection);
-    this.listener = new PulseListener({ connection: this.connection });
+    this.listener = new PulseListener({
+      connection: this.connection,
+      rootUrl: process.env.TASKCLUSTER_ROOT_URL,
+    });
 
     this.listener.on('message', this.handleMessage.bind(this));
   }

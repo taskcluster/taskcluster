@@ -16,6 +16,9 @@ place a `.env` file in the root of this repo with the following environment vari
 inside of it:
 
 ```sh
+# The Taskcluster service instance to connect to:
+TASKCLUSTER_ROOT_URL="https://taskcluster.net"
+
 # Network port to bind the service to:
 PORT="3050"
 
@@ -34,6 +37,12 @@ PULSE_USERNAME="<insert username here>"
 
 # Password for connecting to pulse for subscriptions:
 PULSE_PASSWORD="<insert password here>"
+
+# Hostname for connecting to pulse for subscriptions:
+PULSE_HOSTNAME="pulse.mozilla.org"
+
+# VHost for connecting to pulse for subscriptions:
+PULSE_VHOST="/"
 ```
 
 ## Launching locally
@@ -86,7 +95,7 @@ and select whether there is another page:
 
 ```graphql
 query Sample {
-  tasks(taskGroupId: "AMfy-mopRaOCQlNW5IhOeQ") {
+  taskGroup(taskGroupId: "AMfy-mopRaOCQlNW5IhOeQ") {
     pageInfo {
       hasNextPage
     }
