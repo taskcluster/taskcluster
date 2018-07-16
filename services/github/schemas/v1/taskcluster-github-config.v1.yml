@@ -6,7 +6,7 @@ description: |
 type:               object
 properties:
   version:
-    description:    "Version of the format of this file; must be 1"
+    description:    Version of the format of this file; must be 1
     enum:           [1]
     type:           integer
   policy:
@@ -20,13 +20,18 @@ properties:
         - public
         - collaborators
   tasks:
-    type:           array
-    default:        []
-    items:
-        title:              "Task definition template"
-        description: |
-          Definition of a task that can be scheduled. Rendered with JSON-e
-        type:               object
+    title: Task definition template"
+    description: |
+      Definitions of tasks that can be scheduled. Rendered with JSON-e
+    default: []
+    oneOf:
+      - type: array
+        description: Each element of this should evaluate to a task definition via json-e
+        items:
+            type:               object
+            additionalProperties: true
+      - type: object
+        description: This must evaluate to an array via json-e i.e. `$flatten`
         additionalProperties: true
 additionalProperties: false
 required:
