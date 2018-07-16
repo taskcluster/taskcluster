@@ -247,7 +247,6 @@ module.exports.setup = async function({cfg, schemaset}) {
     if (errors) {
       throw new Error(errors);
     }
-
     debug(`intree config for ${payload.organization}/${payload.repository} matches valid schema.`);
 
     // We need to toss out the config version number; it's the only
