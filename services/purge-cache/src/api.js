@@ -1,18 +1,18 @@
-let _           = require('lodash');
-let debug       = require('debug')('purge-cache');
-let API         = require('taskcluster-lib-api');
-let taskcluster = require('taskcluster-client');
-let Entity      = require('azure-entities');
+const _ = require('lodash');
+const debug = require('debug')('purge-cache');
+const APIBuilder = require('taskcluster-lib-api');
+const taskcluster = require('taskcluster-client');
+const Entity = require('azure-entities');
 
 // Common schema prefix
-let SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/purge-cache/v1/';
+const SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/purge-cache/v1/';
 
 // Common patterns URL parameters
 const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,22}$/;
 
 /** API end-point for version v1/ */
-let api = new API({
-  title:        'Purge Cache API Documentation',
+const builder = new APIBuilder({
+  title:        'Purge Cache API',
   context: [
     'cfg',              // A typed-env-config instance
     'publisher',        // A pulse-publisher instance
@@ -31,21 +31,22 @@ let api = new API({
     'This document describes the API end-point for publishing the pulse',
     'message. This is mainly intended to be used by tools.',
   ].join('\n'),
-  name:'purge-cache',
+  serviceName: 'purge-cache',
+  version: 'v1',
 });
 
 // Export API
-module.exports = api;
+module.exports = builder;
 
 /** Define tasks */
-api.declare({
+builder.declare({
   method:     'post',
   route:      '/purge-cache/:provisionerId/:workerType',
   name:       'purgeCache',
   scopes:     'purge-cache:<provisionerId>/<workerType>:<cacheName>',
-  input:      SCHEMA_PREFIX_CONST + 'purge-cache-request.json#',
+  input:      'purge-cache-request.yml',
   title:      'Purge Worker Cache',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   description: [
     'Publish a purge-cache message to purge caches named `cacheName` with',
     '`provisionerId` and `workerType` in the routing-key. Workers should',
@@ -90,7 +91,7 @@ api.declare({
   res.status(204).send();
 });
 
-api.declare({
+builder.declare({
   method:   'get',
   route:    '/purge-cache/list',
   query: {
@@ -98,9 +99,9 @@ api.declare({
     limit: /^[0-9]+$/,
   },
   name:     'allPurgeRequests',
-  output:   SCHEMA_PREFIX_CONST + 'all-purge-cache-request-list.json#',
+  output:   'all-purge-cache-request-list.yml',
   title:    'All Open Purge Requests',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   description: [
     'This is useful mostly for administors to view',
     'the set of open purge requests. It should not',
@@ -125,16 +126,16 @@ api.declare({
   });
 });
 
-api.declare({
+builder.declare({
   method:   'get',
   route:    '/purge-cache/:provisionerId/:workerType',
   query: {
     since: dt => Date.parse(dt) ? null : 'Invalid Date',
   },
   name:     'purgeRequests',
-  output:   SCHEMA_PREFIX_CONST + 'purge-cache-request-list.json#',
+  output:   'purge-cache-request-list.yml',
   title:    'Open Purge Requests for a provisionerId/workerType pair',
-  stability:  API.stability.stable,
+  stability:  APIBuilder.stability.stable,
   description: [
     'List of caches that need to be purged if they are from before',
     'a certain time. This is safe to be used in automation from',
@@ -144,12 +145,10 @@ api.declare({
 
   let {provisionerId, workerType} = req.params;
   let cacheKey = `${provisionerId}/${workerType}`;
-  let cacheHit = false;
   let since = new Date(req.query.since || 0);
 
   this.cachePurgeCache[cacheKey] = Promise.resolve(this.cachePurgeCache[cacheKey]).then(async cacheCache => {
     if (cacheCache && Date.now() - cacheCache.touched < this.cfg.app.cacheTime * 1000) {
-      cacheHit = true;
       return cacheCache;
     }
     return Promise.resolve({reqs: await this.CachePurge.query({provisionerId, workerType}), touched: Date.now()});
@@ -157,7 +156,6 @@ api.declare({
 
   let {reqs: openRequests} = await this.cachePurgeCache[cacheKey];
   return res.reply({
-    cacheHit,
     requests: _.reduce(openRequests.entries, (l, entry) => {
       if (entry.before >= since) {
         l.push({

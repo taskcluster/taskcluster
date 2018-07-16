@@ -14,18 +14,19 @@
     "url": "https://github.com/taskcluster/taskcluster-purge-cache.git"
   },
   "dependencies": {
-    "azure-entities": "^3.2.1",
+    "azure-entities": "^4.0.0",
     "debug": "^3.1.0",
     "lodash": "^4.15.0",
-    "pulse-publisher": "^3.0.3",
-    "taskcluster-client": "^3.1.1",
-    "taskcluster-lib-api": "8.0.0",
-    "taskcluster-lib-app": "^2.0.3",
-    "taskcluster-lib-docs": "^4.2.2",
-    "taskcluster-lib-loader": "^2.0.0",
-    "taskcluster-lib-monitor": "^5.4.0",
-    "taskcluster-lib-validate": "^3.0.1",
-    "typed-env-config": "^1.1.0"
+    "pulse-publisher": "^10.0.1",
+    "taskcluster-client": "^11.0.0",
+    "taskcluster-lib-api": "^12.2.0",
+    "taskcluster-lib-app": "^10.0.0",
+    "taskcluster-lib-azure": "^10.0.0",
+    "taskcluster-lib-docs": "^10.0.0",
+    "taskcluster-lib-loader": "^10.0.1",
+    "taskcluster-lib-monitor": "^10.0.0",
+    "taskcluster-lib-validate": "^11.0.2",
+    "typed-env-config": "^2.0.0"
   },
   "engine-strict": true,
   "engines": {
@@ -34,8 +35,8 @@
   },
   "devDependencies": {
     "assume": "^1.5.2",
-    "eslint-config-taskcluster": "^3.0.0",
+    "eslint-config-taskcluster": "^3.1.0",
     "mocha": "^4.0.1",
-    "taskcluster-lib-testing": "^2.0.2"
+    "taskcluster-lib-testing": "^12.0.0"
   }
 }
