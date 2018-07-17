@@ -210,13 +210,22 @@ class VersionOne extends TcYaml {
       }
     };
 
-    return jsone(config, {
-      tasks_for: payload.tasks_for,
-      event: payload.body,
-      as_slugid,
-    });
+    try {
+      return jsone(config, {
+        tasks_for: payload.tasks_for,
+        event: payload.body,
+        as_slugid,
+      });
+    } catch (err) {
+      // json-e creates errors that have properties in a format
+      // that taskcluster-github messes up. Just fixing it here.
+      if (err.toString && err.location) {
+        throw new Error(err.toString());
+      }
+      throw err;
+    }
   }
-    
+
   compileTasks(config, cfg, payload) {
     if (config.tasks.length > 0) {
       config.tasks = config.tasks.map((task) => {
