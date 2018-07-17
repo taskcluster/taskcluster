@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -exv
 
 ######
 # This script allows you to test a new generic-worker Windows release on
@@ -33,7 +33,7 @@ if [ -z "${NEW_VERSION}" ]; then
 fi
 
 echo "Checking system dependencies..."
-for command in curl jq grep sleep file git hg cat sed rm mktemp python go patch; do
+for command in curl jq grep sleep file git hg cat sed rm mktemp python go patch basename; do
   if ! which "${command}" >/dev/null; then
     echo -e "  \xE2\x9D\x8C ${command}"
     echo "${0} requires ${command} to be installed and available in your PATH - please fix and rerun" >&2
@@ -69,7 +69,7 @@ do
     echo "Download attempt failed, trying again..."
     sleep 3
   done
-  lib/tooltool.py add --visibility internal "${LOCAL_FILE}"
+  "${THIS_SCRIPT_DIR}/lib/tooltool.py" add --visibility internal "${LOCAL_FILE}"
 done
 
 # Bug 1460178 - sanity check binary downloads of generic-worker before publishing to tooltool...
@@ -87,13 +87,13 @@ if ! file "generic-worker-windows-amd64-v${NEW_VERSION}.exe" | grep -F 'x86-64' 
 fi
 
 cat manifest.tt
-lib/tooltool.py upload -v --authentication-file="$(echo ~/.tooltool-upload)" --message "Upgrade *STAGING* worker types to use generic-worker ${NEW_VERSION}"
+"${THIS_SCRIPT_DIR}/lib/tooltool.py" upload -v --authentication-file="$(echo ~/.tooltool-upload)" --message "Upgrade *STAGING* worker types to use generic-worker ${NEW_VERSION}"
 
 git clone git@github.com:mozilla-releng/OpenCloudConfig.git
 cd OpenCloudConfig/userdata/Manifest
 for MANIFEST in *-b.json *-cu.json *-beta.json; do
   cat "${MANIFEST}" > "${MANIFEST}.bak"
-  cat "${MANIFEST}.bak" | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-windows-\\)_\\1${NEW_VERSION}\\2_" | sed "s_\\(\"generic-worker \\)[^\"]*\\(\"\\)_\\1${NEW_VERSION}\\2_" > "${MANIFEST}"
+  cat "${MANIFEST}.bak" | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-windows-\\)_\\1${NEW_VERSION}\\2_" | sed "s_\\(\"generic-worker \\)[0-9\\.]*\\(.*\\)\$_\\1${NEW_VERSION}\\2_" > "${MANIFEST}"
   cat "${MANIFEST}" > "${MANIFEST}.bak"
   THIS_ARCH="$(cat "${MANIFEST}" | sed -n 's/.*\/generic-worker-windows-\(.*\)\.exe.*/\1/p' | sort -u)"
   if [ "${ARCH}" != "386" ] && [ "${ARCH}" != "amd64" ]; then
@@ -114,9 +114,9 @@ git commit -m "Testing generic-worker ${NEW_VERSION} on *STAGING*
 
 This change does _not_ affect any production workers. Commit made with:
 
-    ./upgrade-gw-betas-cu.sh ${NEW_VERSION}
+    ${0} ${@}
 
-See https://github.com/petemoore/myscrapbook/blob/master/upgrade-gw-betas-cu.sh" -m "${DEPLOY}"
+See https://github.com/taskcluster/generic-worker/blob/$(git -C "${THIS_SCRIPT_DIR}" rev-parse HEAD)/$(git -C "${THIS_SCRIPT_DIR}" ls-files --full-name "$(basename "${0}")")" -m "${DEPLOY}"
 OCC_COMMIT="$(git rev-parse HEAD)"
 git push
 
