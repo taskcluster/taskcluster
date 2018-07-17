@@ -198,6 +198,14 @@ client.on('connected', async (conn) => {
 });
 ```
 
+## Fakes for Testing
+
+The `FakeClient` class can be used instead of `Client` in testing situations,
+to avoid the need for an actual AMQP server.  The class itself has no
+functionality, but serves as a semaphore to activate a "fake" mode when passed
+to higher-level components such as `PulseConsumer`: `fakeConsumer =
+consume({client: new FakeClient(), ..})`.
+
 # PulseConsumer
 
 A PulseConsumer declares a queue and listens for messages on that queue,
@@ -290,6 +298,22 @@ still consuming.  Use `queue.withChannel` (above) for this purpose. In this
 case, it is simplest to provide an empty `bindings: []` to the PulseConsumer
 constructor and manage bindings entirely via `withChannel`. Note that with this
 arrangement, routing key reference is not supported.
+
+## Fake Mode
+
+If passed a `FakeClient`, `consume` will return a fake consumer.  That object
+does not interface with an AMQP server, but has an async `fakeMessage` method
+which will call back the message-handling function with the same arguments.
+
+```javascript
+const consumer = consume({
+  client: new FakeClient(),
+  ...
+}, async ({payload, exchange, routingKey, redelivered, routes, routing}) => {
+  // ...
+});
+await consumer.fakeMessage({payload: .., exchange: .., ..});
+```
 
 # Testing
 

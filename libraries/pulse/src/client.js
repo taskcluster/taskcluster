@@ -241,6 +241,18 @@ class Client extends events.EventEmitter {
 
 exports.Client = Client;
 
+/**
+ * A fake client is basically just a semaphore for users like PulseConsumer to
+ * invoke their own fakery.
+ */
+class FakeClient {
+  constructor() {
+    this.isFakeClient = true;
+  }
+}
+
+exports.FakeClient = FakeClient;
+
 let nextConnectionId = 1;
 
 /**
