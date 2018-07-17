@@ -23,11 +23,18 @@ spec:
           backend:
             serviceName: taskcluster-docs
             servicePort: 80
+        - path: '/references/*'
+          backend:
+            serviceName: taskcluster-references
+            servicePort: 80
+        - path: '/schemas/*'
+          backend:
+            serviceName: taskcluster-references
+            servicePort: 80
         - $map:
             - {service_name: auth, project_name: taskcluster-auth}
             - {service_name: secrets, project_name: taskcluster-secrets}
             - {service_name: queue, project_name: taskcluster-queue}
-            - {service_name: ping, project_name: taskcluster-ping}
           each(svc):
             $if: '!(svc.project_name in disabled_services)'
             then:
