@@ -371,10 +371,9 @@ class Connection extends events.EventEmitter {
     // actually close this connection 30 seconds later
     setTimeout(() => {
       this.debug('finished; closing AMQP connection');
-      try {
-        this.amqp.close();
-      } catch (err) {
-        // ignore..
+      if (this.amqp) {
+        // ignore errors in close
+        this.amqp.close().catch(err => {});
       }
       this.amqp = null;
       this.state = 'finished';
