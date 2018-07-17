@@ -181,8 +181,9 @@ type (
 		// based on exit code of task commands.
 		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty"`
 
-		// A list of OS Groups that the task user should be a member of. Requires
-		// scope `generic-worker:os-group:<os-group>` for each group listed.
+		// A list of OS Groups that the task user should be a member of. Requires scope
+		// `generic-worker:os-group:<provisionerId>/<workerType>/<os-group>` for each
+		// group listed.
 		//
 		// Since: generic-worker 6.0.0
 		OSGroups []string `json:"osGroups,omitempty"`
@@ -579,7 +580,7 @@ func taskPayloadSchema() string {
       "type": "object"
     },
     "osGroups": {
-      "description": "A list of OS Groups that the task user should be a member of. Requires\nscope ` + "`" + `generic-worker:os-group:\u003cos-group\u003e` + "`" + ` for each group listed.\n\nSince: generic-worker 6.0.0",
+      "description": "A list of OS Groups that the task user should be a member of. Requires scope\n` + "`" + `generic-worker:os-group:\u003cprovisionerId\u003e/\u003cworkerType\u003e/\u003cos-group\u003e` + "`" + ` for each\ngroup listed.\n\nSince: generic-worker 6.0.0",
       "items": {
         "type": "string"
       },

@@ -53,7 +53,7 @@ func validateArtifacts(
 
 func TestFileArtifactWithNames(t *testing.T) {
 
-	defer setup(t, "TestFileArtifactWithNames")()
+	defer setup(t)()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -81,7 +81,7 @@ func TestFileArtifactWithNames(t *testing.T) {
 
 func TestFileArtifactWithContentType(t *testing.T) {
 
-	defer setup(t, "TestFileArtifactWithContentType")()
+	defer setup(t)()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -110,7 +110,7 @@ func TestFileArtifactWithContentType(t *testing.T) {
 
 func TestDirectoryArtifactWithNames(t *testing.T) {
 
-	defer setup(t, "TestDirectoryArtifactWithNames")()
+	defer setup(t)()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -154,7 +154,7 @@ func TestDirectoryArtifactWithNames(t *testing.T) {
 
 func TestDirectoryArtifactWithContentType(t *testing.T) {
 
-	defer setup(t, "TestDirectoryArtifactWithContentType")()
+	defer setup(t)()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -203,7 +203,7 @@ func TestDirectoryArtifactWithContentType(t *testing.T) {
 // artifacts.
 func TestDirectoryArtifacts(t *testing.T) {
 
-	defer setup(t, "TestDirectoryArtifacts")()
+	defer setup(t)()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -245,7 +245,7 @@ func TestDirectoryArtifacts(t *testing.T) {
 // Task payload specifies a file artifact which doesn't exist on worker
 func TestMissingFileArtifact(t *testing.T) {
 
-	defer setup(t, "TestMissingFileArtifact")()
+	defer setup(t)()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -272,7 +272,7 @@ func TestMissingFileArtifact(t *testing.T) {
 // Task payload specifies a directory artifact which doesn't exist on worker
 func TestMissingDirectoryArtifact(t *testing.T) {
 
-	defer setup(t, "TestMissingDirectoryArtifact")()
+	defer setup(t)()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -299,7 +299,7 @@ func TestMissingDirectoryArtifact(t *testing.T) {
 // Task payload specifies a file artifact which is actually a directory on worker
 func TestFileArtifactIsDirectory(t *testing.T) {
 
-	defer setup(t, "TestFileArtifactIsDirectory")()
+	defer setup(t)()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -326,7 +326,7 @@ func TestFileArtifactIsDirectory(t *testing.T) {
 // TestDefaultArtifactExpiry tests that when providing no artifact expiry, task expiry is used
 func TestDefaultArtifactExpiry(t *testing.T) {
 
-	defer setup(t, "TestDefaultArtifactExpiry")()
+	defer setup(t)()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -352,7 +352,7 @@ func TestDefaultArtifactExpiry(t *testing.T) {
 // Task payload specifies a directory artifact which is a regular file on worker
 func TestDirectoryArtifactIsFile(t *testing.T) {
 
-	defer setup(t, "TestDirectoryArtifactIsFile")()
+	defer setup(t)()
 	validateArtifacts(t,
 
 		// what appears in task payload
@@ -379,7 +379,7 @@ func TestDirectoryArtifactIsFile(t *testing.T) {
 
 func TestMissingArtifactFailsTest(t *testing.T) {
 
-	defer setup(t, "TestMissingArtifactFailsTest")()
+	defer setup(t)()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -401,7 +401,7 @@ func TestMissingArtifactFailsTest(t *testing.T) {
 }
 
 func TestProtectedArtifactsReplaced(t *testing.T) {
-	defer setup(t, "TestProtectedArtifactsReplaced")()
+	defer setup(t)()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -504,7 +504,7 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 }
 
 func TestPublicDirectoryArtifact(t *testing.T) {
-	defer setup(t, "TestPublicDirectoryArtifact")()
+	defer setup(t)()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -549,7 +549,7 @@ func TestPublicDirectoryArtifact(t *testing.T) {
 }
 
 func TestConflictingFileArtifactsInPayload(t *testing.T) {
-	defer setup(t, "TestConflictingFileArtifactsInPayload")()
+	defer setup(t)()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -602,7 +602,7 @@ func TestConflictingFileArtifactsInPayload(t *testing.T) {
 }
 
 func TestFileArtifactTwiceInPayload(t *testing.T) {
-	defer setup(t, "TestFileArtifactTwiceInPayload")()
+	defer setup(t)()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -654,7 +654,7 @@ func TestFileArtifactTwiceInPayload(t *testing.T) {
 }
 
 func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
-	defer setup(t, "TestArtifactIncludedAsFileAndDirectoryInPayload")()
+	defer setup(t)()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -707,7 +707,7 @@ func TestArtifactIncludedAsFileAndDirectoryInPayload(t *testing.T) {
 
 func TestUpload(t *testing.T) {
 
-	defer setup(t, "TestUpload")()
+	defer setup(t)()
 
 	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
 
@@ -916,7 +916,7 @@ func TestUpload(t *testing.T) {
 
 func TestFileArtifactHasNoExpiry(t *testing.T) {
 
-	defer setup(t, "TestFileArtifactHasNoExpiry")()
+	defer setup(t)()
 
 	payload := GenericWorkerPayload{
 		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
@@ -953,7 +953,7 @@ func TestFileArtifactHasNoExpiry(t *testing.T) {
 
 func TestDirectoryArtifactHasNoExpiry(t *testing.T) {
 
-	defer setup(t, "TestDirectoryArtifactHasNoExpiry")()
+	defer setup(t)()
 
 	payload := GenericWorkerPayload{
 		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),

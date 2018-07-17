@@ -1,54 +1,52 @@
 package main
 
 import (
-	"os"
+	"path/filepath"
 	"testing"
 	"time"
-
-	"github.com/taskcluster/taskcluster-client-go"
 )
 
 // Makes sure that if a running task gets cancelled externally, the worker does not shut down
 func TestResolveResolvedTask(t *testing.T) {
-	defer setup(t, "TestResolveResolvedTask")()
-	payload := GenericWorkerPayload{
-		Command:    goRun("resolvetask.go"),
-		MaxRunTime: 60,
-		Artifacts: []Artifact{
-			{
-				Type:    "file",
-				Path:    "resolvetask.go",
-				Expires: inAnHour,
-			},
+	defer setup(t)()
+	td, payload := cancelTask(t)
+	_ = submitAndAssert(t, td, payload, "exception", "canceled")
+}
+
+func TestReclaimCancelledTask(t *testing.T) {
+	defer setup(t)()
+	mounts := []MountEntry{
+		// requires scope "generic-worker:cache:banana-cache"
+		&WritableDirectoryCache{
+			CacheName: "banana-cache",
+			Directory: filepath.Join("my-task-caches", "bananas"),
 		},
 	}
-	fullCreds := &tcclient.Credentials{
-		AccessToken: config.AccessToken,
-		ClientID:    config.ClientID,
-		Certificate: config.Certificate,
-	}
-	if fullCreds.AccessToken == "" || fullCreds.ClientID == "" || fullCreds.Certificate != "" {
-		t.Skip("Skipping TestResolveResolvedTask since I need permanent TC credentials for this test")
-	}
-	td := testTask(t)
-	tempCreds, err := fullCreds.CreateNamedTemporaryCredentials("project/taskcluster:generic-worker-tester/TestResolveResolvedTask", time.Minute, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/*")
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-	payload.Env = map[string]string{
-		"TASKCLUSTER_CLIENT_ID":    tempCreds.ClientID,
-		"TASKCLUSTER_ACCESS_TOKEN": tempCreds.AccessToken,
-		"TASKCLUSTER_CERTIFICATE":  tempCreds.Certificate,
-	}
-	for _, envVar := range []string{
-		"PATH",
-		"GOPATH",
-		"GOROOT",
-	} {
-		if v, exists := os.LookupEnv(envVar); exists {
-			payload.Env[envVar] = v
-		}
+
+	td, payload := cancelTask(t)
+	td.Scopes = []string{"generic-worker:cache:banana-cache"}
+	payload.Command = append(payload.Command, sleep(30)...)
+	payload.Mounts = toMountArray(t, &mounts)
+	reclaimEvery5Seconds = true
+	start := time.Now()
+	taskID := submitAndAssert(t, td, payload, "exception", "canceled")
+	end := time.Now()
+	reclaimEvery5Seconds = false
+
+	expectedArtifacts := ExpectedArtifacts{
+		"public/logs/live_backing.log": {
+			Extracts: []string{
+				"Preserving cache: Moving",
+			},
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+			Expires:         td.Expires,
+		},
 	}
 
-	_ = submitAndAssert(t, td, payload, "exception", "canceled")
+	expectedArtifacts.Validate(t, taskID, 0)
+
+	if duration := end.Sub(start); duration.Seconds() > 60 {
+		t.Fatalf("Task should have expired in around five seconds, but took %v", duration)
+	}
 }

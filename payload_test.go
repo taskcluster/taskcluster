@@ -232,7 +232,7 @@ func TestArtifactExpiresAfterTaskExpiry(t *testing.T) {
 }
 
 func TestInvalidPayload(t *testing.T) {
-	defer setup(t, "TestInvalidPayload")()
+	defer setup(t)()
 
 	td := testTask(t)
 	td.Payload = json.RawMessage(`

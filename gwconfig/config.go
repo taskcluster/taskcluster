@@ -2,14 +2,16 @@ package gwconfig
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
+	"reflect"
+	"runtime"
 
 	"github.com/taskcluster/generic-worker/fileutil"
 )
 
 type (
-
 	// Generic Worker config
 	Config struct {
 		AccessToken                    string                 `json:"accessToken"`
@@ -56,6 +58,10 @@ type (
 		WorkerType                     string                 `json:"workerType"`
 		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
 	}
+
+	MissingConfigError struct {
+		Setting string
+	}
 )
 
 // writes config to json file
@@ -73,4 +79,49 @@ func (c *Config) String() string {
 		panic(err)
 	}
 	return string(json)
+}
+
+func (c *Config) Validate() error {
+	// TODO: could probably do this with reflection to avoid explicitly listing
+	// all members
+
+	fields := []struct {
+		value      interface{}
+		name       string
+		disallowed interface{}
+	}{
+		{value: c.AccessToken, name: "accessToken", disallowed: ""},
+		{value: c.CachesDir, name: "cachesDir", disallowed: ""},
+		{value: c.ClientID, name: "clientId", disallowed: ""},
+		{value: c.DownloadsDir, name: "downloadsDir", disallowed: ""},
+		{value: c.LiveLogExecutable, name: "livelogExecutable", disallowed: ""},
+		{value: c.LiveLogPUTPort, name: "livelogPUTPort", disallowed: 0},
+		{value: c.LiveLogGETPort, name: "livelogGETPort", disallowed: 0},
+		{value: c.LiveLogSecret, name: "livelogSecret", disallowed: ""},
+		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
+		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
+		{value: c.SigningKeyLocation, name: "signingKeyLocation", disallowed: ""},
+		{value: c.Subdomain, name: "subdomain", disallowed: ""},
+		{value: c.TasksDir, name: "tasksDir", disallowed: ""},
+		{value: c.WorkerGroup, name: "workerGroup", disallowed: ""},
+		{value: c.WorkerID, name: "workerId", disallowed: ""},
+		{value: c.WorkerType, name: "workerType", disallowed: ""},
+	}
+
+	for _, f := range fields {
+		if reflect.DeepEqual(f.value, f.disallowed) {
+			return MissingConfigError{Setting: f.name}
+		}
+	}
+
+	// Platform specific checks...
+	if runtime.GOOS != "windows" && !c.RunTasksAsCurrentUser {
+		return fmt.Errorf("Only Windows platform supports running tasks as different users, config setting 'runTasksAsCurrentUser' must be set to true, but is currently set to false; detected platform is %v", runtime.GOOS)
+	}
+	// all required config set!
+	return nil
+}
+
+func (err MissingConfigError) Error() string {
+	return "Config setting \"" + err.Setting + "\" has not been defined"
 }

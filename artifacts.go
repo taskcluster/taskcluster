@@ -429,12 +429,14 @@ func (task *TaskRun) uploadArtifact(artifact TaskArtifact) *CommandExecutionErro
 		panic(err)
 	}
 	par := tcqueue.PostArtifactRequest(json.RawMessage(payload))
+	task.queueMux.RLock()
 	parsp, err := task.Queue.CreateArtifact(
 		task.TaskID,
 		strconv.Itoa(int(task.RunID)),
 		artifact.Base().Name,
 		&par,
 	)
+	task.queueMux.RUnlock()
 	if err != nil {
 		switch t := err.(type) {
 		case *tcclient.APICallException:

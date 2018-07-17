@@ -10,7 +10,7 @@ import (
 )
 
 func TestSupersede(t *testing.T) {
-	defer setup(t, "TestSupersede")()
+	defer setup(t)()
 
 	command := helloGoodbye()
 
@@ -83,7 +83,7 @@ func TestSupersede(t *testing.T) {
 }
 
 func TestEmptySupersedeList(t *testing.T) {
-	defer setup(t, "TestSupersede")()
+	defer setup(t)()
 
 	payload := GenericWorkerPayload{
 		Command:       helloGoodbye(),

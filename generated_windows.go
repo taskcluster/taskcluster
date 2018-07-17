@@ -106,6 +106,14 @@ type (
 		// Since: generic-worker 5.3.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 
+		// Runs commands as Administrator. Property `task.payload.osGroups`
+		// must include `"Administrators"`. Requires scope
+		// `generic-worker:run-as-administrator:<provisionerId>/<workerType>`.
+		// Cannot be used together with feature `chainOfTrust`.
+		//
+		// Since: generic-worker 10.11.0
+		RunAsAdministrator bool `json:"runAsAdministrator,omitempty"`
+
 		// The taskcluster proxy provides an easy and safe way to make authenticated
 		// taskcluster requests within the scope(s) of a particular task. See
 		// [the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.
@@ -186,8 +194,9 @@ type (
 		// based on exit code of task commands.
 		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty"`
 
-		// A list of OS Groups that the task user should be a member of. Requires
-		// scope `generic-worker:os-group:<os-group>` for each group listed.
+		// A list of OS Groups that the task user should be a member of. Requires scope
+		// `generic-worker:os-group:<provisionerId>/<workerType>/<os-group>` for each
+		// group listed.
 		//
 		// Since: generic-worker 6.0.0
 		OSGroups []string `json:"osGroups,omitempty"`
@@ -564,6 +573,11 @@ func taskPayloadSchema() string {
           "title": "Enable generation of a openpgp signed Chain of Trust artifact",
           "type": "boolean"
         },
+        "runAsAdministrator": {
+          "description": "Runs commands as Administrator. Property ` + "`" + `task.payload.osGroups` + "`" + `\nmust include ` + "`" + `\"Administrators\"` + "`" + `. Requires scope\n` + "`" + `generic-worker:run-as-administrator:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + `.\nCannot be used together with feature ` + "`" + `chainOfTrust` + "`" + `.\n\nSince: generic-worker 10.11.0",
+          "title": "Run commands with UAC process elevation",
+          "type": "boolean"
+        },
         "taskclusterProxy": {
           "description": "The taskcluster proxy provides an easy and safe way to make authenticated\ntaskcluster requests within the scope(s) of a particular task. See\n[the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.\n\nSince: generic-worker 10.6.0",
           "title": "Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services",
@@ -608,7 +622,7 @@ func taskPayloadSchema() string {
       "type": "object"
     },
     "osGroups": {
-      "description": "A list of OS Groups that the task user should be a member of. Requires\nscope ` + "`" + `generic-worker:os-group:\u003cos-group\u003e` + "`" + ` for each group listed.\n\nSince: generic-worker 6.0.0",
+      "description": "A list of OS Groups that the task user should be a member of. Requires scope\n` + "`" + `generic-worker:os-group:\u003cprovisionerId\u003e/\u003cworkerType\u003e/\u003cos-group\u003e` + "`" + ` for each\ngroup listed.\n\nSince: generic-worker 6.0.0",
       "items": {
         "type": "string"
       },

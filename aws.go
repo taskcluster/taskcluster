@@ -182,6 +182,7 @@ func Unzip(b []byte, dest string) error {
 }
 
 func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
+	log.Print("Querying AWS Metadata to get default worker type config settings...")
 	// these are just default values, will be overwritten if set in worker type config
 	c.ShutdownMachineOnInternalError = true
 	c.ShutdownMachineOnIdle = true

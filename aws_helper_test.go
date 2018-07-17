@@ -17,7 +17,6 @@ type MockAWSProvisionedEnvironment struct {
 	SecretFiles     []map[string]string
 	Terminating     bool
 	PretendMetadata string
-	TestName        string
 }
 
 func WriteJSON(t *testing.T, w http.ResponseWriter, resp interface{}) {
@@ -29,7 +28,7 @@ func WriteJSON(t *testing.T, w http.ResponseWriter, resp interface{}) {
 }
 
 func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) func() {
-	teardown := setupEnvironment(t, m.TestName)
+	teardown := setupEnvironment(t)
 	workerType := slugid.Nice()
 	configureForAws = true
 	oldEC2MetadataBaseURL := EC2MetadataBaseURL
@@ -118,7 +117,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) func() {
 		t.Log("HTTP server for mock Provisioner and EC2 metadata endpoints stopped")
 	}()
 	var err error
-	config, err = loadConfig(filepath.Join(testdataDir, m.TestName, "generic-worker.config"), true)
+	config, err = loadConfig(filepath.Join(testdataDir, t.Name(), "generic-worker.config"), true)
 	if err != nil {
 		t.Fatalf("Error: %v", err)
 	}
@@ -157,7 +156,7 @@ func (m *MockAWSProvisionedEnvironment) Secrets(t *testing.T) interface{} {
 			"shutdownMachineOnInternalError": false,
 			"signingKeyLocation":             filepath.Join(testdataDir, "private-opengpg-key"),
 			"subdomain":                      "taskcluster-worker.net",
-			"tasksDir":                       filepath.Join(testdataDir, m.TestName),
+			"tasksDir":                       filepath.Join(testdataDir, t.Name()),
 			"workerTypeMetadata": map[string]interface{}{
 				"machine-setup": map[string]string{
 					"pretend-metadata": m.PretendMetadata,

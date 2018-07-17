@@ -153,6 +153,16 @@ properties:
           [the github project](https://github.com/taskcluster/taskcluster-proxy) for more information.
 
           Since: generic-worker 10.6.0
+      runAsAdministrator:
+        type: boolean
+        title: Run commands with UAC process elevation
+        description: |-
+          Runs commands as Administrator. Property `task.payload.osGroups`
+          must include `"Administrators"`. Requires scope
+          `generic-worker:run-as-administrator:<provisionerId>/<workerType>`.
+          Cannot be used together with feature `chainOfTrust`.
+
+          Since: generic-worker 10.11.0
   mounts:
     type: array
     description: |-
@@ -166,8 +176,9 @@ properties:
     type: array
     title: OS Groups
     description: |-
-      A list of OS Groups that the task user should be a member of. Requires
-      scope `generic-worker:os-group:<os-group>` for each group listed.
+      A list of OS Groups that the task user should be a member of. Requires scope
+      `generic-worker:os-group:<provisionerId>/<workerType>/<os-group>` for each
+      group listed.
 
       Since: generic-worker 6.0.0
     items:

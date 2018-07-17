@@ -1,7 +1,6 @@
 package main
 
 import (
-	"path/filepath"
 	"testing"
 )
 
@@ -10,7 +9,7 @@ func TestAppDataNotShared(t *testing.T) {
 
 	t.Skip("It isn't possible to test this without rebooting, which we can't do in the middle of a test, so disabling")
 
-	defer setup(t, "TestAppDataNotShared")()
+	defer setup(t)()
 
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Not running, since APPDATA does not change when running as current user")
@@ -60,7 +59,7 @@ func TestAppDataNotShared(t *testing.T) {
 // Test we don't get weird error:
 //  c:\mozilla-build\msys\bin\bash.exe: *** CreateFileMappingA, Win32 error 0.  Terminating.
 func TestNoCreateFileMappingError(t *testing.T) {
-	defer setup(t, "TestNoCreateFileMappingError")()
+	defer setup(t)()
 
 	if config.RunTasksAsCurrentUser {
 		t.Skip("Not running, since we never want to call msys directly from LocalSystem account")
@@ -89,37 +88,4 @@ func TestNoCreateFileMappingError(t *testing.T) {
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
-}
-
-func TestChainOfTrustWithAdministratorPrivs(t *testing.T) {
-	defer setup(t, "TestChainOfTrustWithAdministratorPrivs")()
-	payload := GenericWorkerPayload{
-		Command: []string{
-			`type "` + filepath.Join(cwd, config.SigningKeyLocation) + `"`,
-		},
-		MaxRunTime: 5,
-		OSGroups:   []string{"Administrators"},
-		Features: FeatureFlags{
-			ChainOfTrust: true,
-		},
-	}
-	td := testTask(t)
-	td.Scopes = []string{
-		"generic-worker:os-group:Administrators",
-	}
-
-	if config.RunTasksAsCurrentUser {
-		// When running as current user, chain of trust key is not private so
-		// generic-worker should detect that it isn't secured from task user
-		// and cause malformed-payload exception.
-		expectChainOfTrustKeyNotSecureMessage(t, td, payload)
-		return
-
-	}
-
-	// When bug 1439588 lands, if runAsAdministrator feature is enabled, the
-	// task resolution should be "exception" / "malformed-payload". However,
-	// without process elevation, Administrator rights are not available, so
-	// the task should resolve as "failed" / "failed".
-	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }
