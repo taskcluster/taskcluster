@@ -59,7 +59,7 @@ func runStatus(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	return nil
 }
 // confirmMsg displays confirmation message when --confirm is used
-func confirmMsg(command string, credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet )string {
+func confirmMsg(command string, credentials *tcclient.Credentials, args []string)string {
 
 	q := makeQueue(credentials)
 	taskID := args[0]
@@ -78,7 +78,7 @@ func confirmMsg(command string, credentials *tcclient.Credentials, args []string
 }
 
 // displayNoopMsg displays details when --noop is used
-func displayNoopMsg(command string, credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet ) error {
+func displayNoopMsg(command string, credentials *tcclient.Credentials, args []string) error {
 	q := makeQueue(credentials)
 	taskID := args[0]
 
@@ -91,7 +91,7 @@ func displayNoopMsg(command string, credentials *tcclient.Credentials, args []st
 		return fmt.Errorf("could not get the task %s: %v", taskID, err)
 	}
 
-	fmt.Println(command, t.Metadata.Name ,"taskid:", taskID ,"(state:",run.State,")")
+	fmt.Printf("%s %s taskid: %s (state: %s)\n", command, t.Metadata.Name, taskID, run.State)
 
 	return nil
 

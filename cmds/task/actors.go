@@ -22,12 +22,12 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 
 
 	if noop {
-		displayNoopMsg("Would cancel", credentials, args, out, flagSet)
+		displayNoopMsg("Would cancel", credentials, args)
 		return nil
 	}
 
 	if confirm {
-		var response = confirmMsg("Cancels", credentials, args, out, flagSet)
+		var response = confirmMsg("Cancels", credentials, args)
 		if response == "y" {
 			c, err := q.CancelTask(taskID)
 			run := c.Status.Runs[len(c.Status.Runs)-1]
@@ -66,12 +66,12 @@ func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, f
 	taskID := args[0]
 
 	if noop {
-		displayNoopMsg("Would re-run", credentials, args, out, flagSet)
+		displayNoopMsg("Would re-run", credentials, args)
 		return nil
 	}
 
 	if confirm {
-		var response = confirmMsg("Will re-run", credentials, args, out, flagSet)
+		var response = confirmMsg("Will re-run", credentials, args)
 		if response == "y" {
 			c, err := q.RerunTask(taskID)
 			run := c.Status.Runs[len(c.Status.Runs)-1]
@@ -212,7 +212,7 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 
 
 	if confirm {
-		var response = confirmMsg("Will complete", credentials, args, out, flagSet)
+		var response = confirmMsg("Will complete", credentials, args)
 		if response == "y" {
 			c, err := q.ClaimTask(taskID, fmt.Sprint(len(s.Status.Runs)-1), &queue.TaskClaimRequest{
 				WorkerGroup: s.Status.WorkerType,
@@ -238,7 +238,7 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 	}
 
 	if noop {
-		displayNoopMsg("Would complete", credentials, args, out, flagSet)
+		displayNoopMsg("Would complete", credentials, args)
 		return nil
 	}
 
