@@ -1,0 +1,17 @@
+diff --git a/automation/taskcluster/graph/src/extend.js b/automation/taskcluster/graph/src/extend.js
+--- a/automation/taskcluster/graph/src/extend.js
++++ b/automation/taskcluster/graph/src/extend.js
+@@ -595,11 +595,11 @@ async function scheduleTestBuilds(base, 
+ 
+ /*****************************************************************************/
+ 
+ async function scheduleWindows(name, base, build_script) {
+   base = merge(base, {
+-    workerType: "nss-win2012r2",
++    workerType: "nss-win2012r2-new",
+     env: {
+       PATH: "c:\\mozilla-build\\python;c:\\mozilla-build\\msys\\local\\bin;" +
+             "c:\\mozilla-build\\7zip;c:\\mozilla-build\\info-zip;" +
+             "c:\\mozilla-build\\python\\Scripts;c:\\mozilla-build\\yasm;" +
+             "c:\\mozilla-build\\msys\\bin;c:\\Windows\\system32;" +
+
