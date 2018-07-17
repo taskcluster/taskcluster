@@ -161,46 +161,55 @@ version: 1
 policy:
   pullRequests: public
 tasks:
-  - $if: ' tasks_for == "github-push" || tasks_for == "github-pull-request"  && event.head.branch != "master" '
+  - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
     then:
-      taskId: "${as_slugid('push')}"
-      provisionerId: 'aws-provisioner-v1'
-      workerType: 'github-worker'
-      created: {$eval: 'now'}
+      taskId: {$eval: as_slugid("pr_task")}
+      created: {$fromNow: ''}
       deadline: {$fromNow: '1 hour'}
+      provisionerId: aws-provisioner-v1
+      workerType: github-worker
+      scopes:
+        - secrets:get:project/taskcluster/testing/taskcluster-github
       payload:
-        maxRunTime: 3600
+        maxRunTime: 600
         image: "node:8"
+        env:
+          DEBUG: "* -mocha* -nock* -express* -body-parser* -eslint*"
         features:
           taskclusterProxy: true
         command:
           - "/bin/bash"
           - "-lc"
-          - "git clone ${event.head.repo.url} repo && cd repo && git checkout ${event.head.sha} && yarn global add node-gyp && yarn && yarn test"
+          - "git clone ${event.pull_request.head.repo.git_url} repo && cd repo && git checkout ${event.pull_request.head.sha} && yarn && yarn test"
       metadata:
-        name: "TaskCluster GitHub Tests"
-        description: "All non-integration tests"
-        owner: ${event.head.user.email}
-        source: ${event.head.repo.url}
-  - $if: ' tasks_for == "github-release" && event.head.branch == "master" '
+        name: "Taskcluster GitHub Tests"
+        description: "All tests"
+        owner: ${event.pull_request.user.login}@users.noreply.github.com
+        source: ${event.repository.url}
+  - $if: 'tasks_for == "github-push"'
     then:
-      taskId: "${as_slugid('release')}"
-      provisionerId: 'aws-provisioner-v1'
-      workerType: 'github-worker'
-      created: {$eval: 'now'}
+      taskId: {$eval: as_slugid("push_task")}
+      created: {$fromNow: ''}
       deadline: {$fromNow: '1 hour'}
+      provisionerId: aws-provisioner-v1
+      workerType: github-worker
+      scopes:
+        - secrets:get:project/taskcluster/testing/taskcluster-github
       payload:
-        maxRunTime: 3600
+        maxRunTime: 600
         image: "node:8"
+        env:
+          DEBUG: "* -mocha* -nock* -express* -body-parser* -eslint*"
+          NO_TEST_SKIP: true
         features:
           taskclusterProxy: true
         command:
           - "/bin/bash"
           - "-lc"
-          - "git clone ${event.head.repo.url} repo && cd repo && git checkout ${event.head.sha} && yarn global add node-gyp && yarn && yarn integration test && node deploy-script.js"
+          - "git clone ${event.repository.url} repo && cd repo && git checkout ${event.after} && yarn && yarn test"
       metadata:
-        name: "TaskCluster GitHub Tests and Deployment"
-        description: "All integration tests and, if success, deployment"
-        owner: ${event.head.user.email}
-        source: ${event.head.repo.url}
+        name: "Taskcluster GitHub Tests"
+        description: "All tests"
+        owner: ${event.pusher.name}@users.noreply.github.com
+        source: ${event.repository.url}
 ```
