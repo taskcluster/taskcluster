@@ -67,6 +67,9 @@ This replaces any given options with new values.
 
 ## Listening for Events
 
+**NOTE** `PulseListener` is deprecated; instead, use `PulseConsumer` from
+[taskcluster-lib-pulse](https://github.com/taskcluster/taskcluster-lib-pulse).
+
 Many TaskCluster components publishes messages about current events to pulse.
 The JSON reference object also contains meta-data about declared pulse
 exchanges and their routing key construction. This is designed to make it easy
