@@ -1,6 +1,10 @@
 package main
 
-import "github.com/taskcluster/taskcluster-base-go/scopes"
+import (
+	"fmt"
+
+	"github.com/taskcluster/taskcluster-base-go/scopes"
+)
 
 // one instance overall - represents feature
 type OSGroupsFeature struct {
@@ -9,6 +13,8 @@ type OSGroupsFeature struct {
 // one instance per task
 type OSGroups struct {
 	Task *TaskRun
+	// keep track of which groups we successfully update
+	AddedGroups []string
 }
 
 func (feature *OSGroupsFeature) Name() string {
@@ -42,25 +48,36 @@ func (osGroups *OSGroups) ReservedArtifacts() []string {
 func (osGroups *OSGroups) RequiredScopes() scopes.Required {
 	requiredScopes := make([]string, len(osGroups.Task.Payload.OSGroups), len(osGroups.Task.Payload.OSGroups))
 	for i, osGroup := range osGroups.Task.Payload.OSGroups {
-		requiredScopes[i] = "generic-worker:os-group:" + osGroup
+		requiredScopes[i] = "generic-worker:os-group:" + config.ProvisionerID + "/" + config.WorkerType + "/" + osGroup
 	}
 	return scopes.Required{requiredScopes}
 }
 
-func (osGroups *OSGroups) Start() (err *CommandExecutionError) {
+func (osGroups *OSGroups) Start() *CommandExecutionError {
 	groups := osGroups.Task.Payload.OSGroups
 	if config.RunTasksAsCurrentUser {
 		if len(groups) > 0 {
-			osGroups.Task.Infof("Not adding user to groups %v since we are running as current user.", groups)
+			osGroups.Task.Infof("Not adding task user to group(s) %v since we are running as current user.", groups)
 		}
 		return nil
 	}
-	err = MalformedPayloadError(osGroups.Task.addGroupsToUser(groups))
-	if err != nil {
-		osGroups.Task.Errorf("Could not add os group(s) to task user: %v\n%v", groups, err)
+	updatedGroups, notUpdatedGroups := osGroups.Task.addUserToGroups(groups)
+	osGroups.AddedGroups = updatedGroups
+	if len(notUpdatedGroups) > 0 {
+		return MalformedPayloadError(fmt.Errorf("Could not add task user to os group(s): %v", notUpdatedGroups))
 	}
-	return
+	// On Windows we need to call LogonUser to get new access token with the group changes
+	osGroups.Task.RefreshLoginSession()
+	for _, command := range osGroups.Task.Commands {
+		command.SetLoginInfo(osGroups.Task.LoginInfo)
+	}
+	return nil
 }
 
 func (osGroups *OSGroups) Stop(err *ExecutionErrors) {
+	groups := osGroups.AddedGroups
+	_, notUpdatedGroups := osGroups.Task.removeUserFromGroups(groups)
+	if len(notUpdatedGroups) > 0 {
+		err.add(MalformedPayloadError(fmt.Errorf("Could not remove task user from os group(s): %v", notUpdatedGroups)))
+	}
 }

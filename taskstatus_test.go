@@ -46,7 +46,7 @@ func TestReclaimCancelledTask(t *testing.T) {
 
 	expectedArtifacts.Validate(t, taskID, 0)
 
-	if duration := end.Sub(start); duration.Seconds() > 20 {
+	if duration := end.Sub(start); duration.Seconds() > 60 {
 		t.Fatalf("Task should have expired in around five seconds, but took %v", duration)
 	}
 }

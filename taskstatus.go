@@ -57,7 +57,10 @@ type TaskStatusManager struct {
 }
 
 func (tsm *TaskStatusManager) DeregisterListener(listener *TaskStatusChangeListener) {
-	delete(tsm.statusChangeListeners, listener)
+	// if Start() failed, a listener might not be registered, so check before deleting it...
+	if tsm.statusChangeListeners[listener] {
+		delete(tsm.statusChangeListeners, listener)
+	}
 }
 
 func (tsm *TaskStatusManager) RegisterListener(listener *TaskStatusChangeListener) {
@@ -81,7 +84,9 @@ func (tsm *TaskStatusManager) ReportException(reason TaskUpdateReason) error {
 		func(task *TaskRun) error {
 			tsm.stopReclaims()
 			ter := tcqueue.TaskExceptionRequest{Reason: string(reason)}
+			task.queueMux.RLock()
 			tsr, err := task.Queue.ReportException(task.TaskID, strconv.FormatInt(int64(task.RunID), 10), &ter)
+			task.queueMux.RUnlock()
 			if err != nil {
 				log.Printf("Not able to report exception for task %v:", task.TaskID)
 				log.Printf("%v", err)
@@ -102,7 +107,9 @@ func (tsm *TaskStatusManager) ReportFailed() error {
 		failed,
 		func(task *TaskRun) error {
 			tsm.stopReclaims()
+			task.queueMux.RLock()
 			tsr, err := task.Queue.ReportFailed(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
+			task.queueMux.RUnlock()
 			if err != nil {
 				log.Printf("Not able to report failed completion for task %v:", task.TaskID)
 				log.Printf("%v", err)
@@ -124,7 +131,9 @@ func (tsm *TaskStatusManager) ReportCompleted() error {
 		func(task *TaskRun) error {
 			tsm.stopReclaims()
 			log.Printf("Task %v finished successfully!", task.TaskID)
+			task.queueMux.RLock()
 			tsr, err := task.Queue.ReportCompleted(task.TaskID, strconv.FormatInt(int64(task.RunID), 10))
+			task.queueMux.RUnlock()
 			if err != nil {
 				log.Printf("Not able to report successful completion for task %v:", task.TaskID)
 				log.Printf("%v", err)
@@ -144,7 +153,9 @@ func (tsm *TaskStatusManager) reclaim() error {
 		reclaimed,
 		func(task *TaskRun) error {
 			log.Printf("Reclaiming task %v...", task.TaskID)
+			task.queueMux.RLock()
 			tcrsp, err := task.Queue.ReclaimTask(task.TaskID, fmt.Sprintf("%d", task.RunID))
+			task.queueMux.RUnlock()
 
 			// check if an error occurred...
 			if err != nil {
@@ -155,12 +166,13 @@ func (tsm *TaskStatusManager) reclaim() error {
 			}
 
 			task.TaskReclaimResponse = *tcrsp
-			// Don't need a mutex here, since tsm.updateStatus is already mutex-protected
+			task.queueMux.Lock()
 			task.Queue = tcqueue.New(&tcclient.Credentials{
 				ClientID:    tcrsp.Credentials.ClientID,
 				AccessToken: tcrsp.Credentials.AccessToken,
 				Certificate: tcrsp.Credentials.Certificate,
 			})
+			task.queueMux.Unlock()
 			tsm.status = tcrsp.Status
 			tsm.takenUntil = tcrsp.TakenUntil
 			if err != nil {

@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	sysruntime "runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -17,8 +16,7 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/generic-worker/runtime"
-	"github.com/taskcluster/runlib/subprocess"
-	"github.com/taskcluster/runlib/win32"
+	"github.com/taskcluster/generic-worker/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
@@ -31,6 +29,7 @@ type TaskContext struct {
 func platformFeatures() []Feature {
 	return []Feature{
 		&RDPFeature{},
+		&RunAsAdministratorFeature{}, // depends on (must appear later in list than) OSGroups feature
 	}
 }
 
@@ -113,7 +112,7 @@ func prepareTaskUser(userName string) (reboot bool) {
 		if err != nil {
 			panic(err)
 		}
-		loginInfo := &subprocess.LoginInfo{
+		loginInfo := &process.LoginInfo{
 			HUser: hToken,
 		}
 		// At this point, we know we have already booted into the new task user, and the user
@@ -152,14 +151,16 @@ func prepareTaskUser(userName string) (reboot bool) {
 		panic(err)
 	}
 	// set APPDATA
-	var loginInfo *subprocess.LoginInfo
-	loginInfo, err = subprocess.NewLoginInfo(user.Name, user.Password)
+	var loginInfo *process.LoginInfo
+	loginInfo, err = process.NewLoginInfo(user.Name, user.Password)
 	if err != nil {
 		panic(err)
 	}
 	err = RedirectAppData(loginInfo.HUser, filepath.Join(taskContext.TaskDir, "AppData"))
-	// KeepAlive needed so that user isn't logged out before redirect completes
-	sysruntime.KeepAlive(loginInfo)
+	if err != nil {
+		panic(err)
+	}
+	err = loginInfo.Logout()
 	if err != nil {
 		panic(err)
 	}
@@ -212,11 +213,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
 	log.Printf("Creating wrapper script: %v", wrapper)
-	loginInfo, err := TaskUserLoginInfo()
-	if err != nil {
-		task.Errorf("Cannot get handle of interactive user: %v", err)
-		return err
-	}
+	loginInfo := task.LoginInfo
 	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, loginInfo)
 	if err != nil {
 		return err
@@ -228,15 +225,15 @@ func (task *TaskRun) generateCommand(index int) error {
 	return nil
 }
 
-func TaskUserLoginInfo() (loginInfo *subprocess.LoginInfo, err error) {
-	loginInfo = &subprocess.LoginInfo{}
+func (task *TaskRun) SetLoginInfo() (err error) {
+	task.LoginInfo = &process.LoginInfo{}
 	if !config.RunTasksAsCurrentUser {
 		var hToken syscall.Handle
 		hToken, err = win32.InteractiveUserToken(time.Minute)
 		if err != nil {
 			return
 		}
-		loginInfo.HUser = hToken
+		task.LoginInfo.HUser = hToken
 	}
 	return
 }
@@ -602,15 +599,34 @@ func RenameFolderCrossDevice(oldpath, newpath string) (err error) {
 	return
 }
 
-func (task *TaskRun) addGroupsToUser(groups []string) error {
+func (task *TaskRun) addUserToGroups(groups []string) (updatedGroups []string, notUpdatedGroups []string) {
 	if len(groups) == 0 {
-		return nil
+		return []string{}, []string{}
 	}
-	commands := make([][]string, len(groups), len(groups))
-	for i, group := range groups {
-		commands[i] = []string{"net", "localgroup", group, "/add", taskContext.LogonSession.User.Name}
+	for _, group := range groups {
+		err := runtime.RunCommands(false, []string{"net", "localgroup", group, "/add", taskContext.LogonSession.User.Name})
+		if err == nil {
+			updatedGroups = append(updatedGroups, group)
+		} else {
+			notUpdatedGroups = append(notUpdatedGroups, group)
+		}
 	}
-	return runtime.RunCommands(false, commands...)
+	return
+}
+
+func (task *TaskRun) removeUserFromGroups(groups []string) (updatedGroups []string, notUpdatedGroups []string) {
+	if len(groups) == 0 {
+		return []string{}, []string{}
+	}
+	for _, group := range groups {
+		err := runtime.RunCommands(false, []string{"net", "localgroup", group, "/delete", taskContext.LogonSession.User.Name})
+		if err == nil {
+			updatedGroups = append(updatedGroups, group)
+		} else {
+			notUpdatedGroups = append(notUpdatedGroups, group)
+		}
+	}
+	return
 }
 
 func RedirectAppData(hUser syscall.Handle, folder string) (err error) {
@@ -623,6 +639,20 @@ func RedirectAppData(hUser syscall.Handle, folder string) (err error) {
 
 func defaultTasksDir() string {
 	return win32.ProfilesDirectory()
+}
+
+func UACEnabled() bool {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System`, registry.QUERY_VALUE)
+	if err != nil {
+		return false
+	}
+	defer k.Close()
+	var enableLUA uint64
+	enableLUA, _, err = k.GetIntegerValue("EnableLUA")
+	if err != nil {
+		return false
+	}
+	return enableLUA == 1
 }
 
 func AutoLogonCredentials() (username, password string) {

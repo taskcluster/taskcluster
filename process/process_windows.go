@@ -11,9 +11,25 @@ import (
 	"time"
 
 	"github.com/taskcluster/generic-worker/runtime"
-	"github.com/taskcluster/runlib/subprocess"
-	"github.com/taskcluster/runlib/win32"
+	"github.com/taskcluster/generic-worker/win32"
 )
+
+type LoginInfo struct {
+	Username string
+	Password string
+	HUser    syscall.Handle
+	HProfile syscall.Handle
+}
+
+// It is the responsibility for the caller to call loginInfo.Logout() when finished with loginInfo
+func NewLoginInfo(username, password string) (loginInfo *LoginInfo, err error) {
+	loginInfo = &LoginInfo{Username: username, Password: password}
+	err = loginInfo.Prepare()
+	if err != nil {
+		return nil, err
+	}
+	return
+}
 
 type Command struct {
 	mutex sync.RWMutex
@@ -31,6 +47,10 @@ type Result struct {
 	Aborted     bool
 	KernelTime  time.Duration
 	UserTime    time.Duration
+}
+
+func (c *Command) SetLoginInfo(loginInfo *LoginInfo) {
+	c.SysProcAttr.Token = syscall.Token(loginInfo.HUser)
 }
 
 func (r *Result) Succeeded() bool {
@@ -53,7 +73,7 @@ func (r *Result) Crashed() bool {
 	return r.SystemError != nil && !r.Aborted
 }
 
-func NewCommand(commandLine []string, workingDirectory string, env []string, loginInfo *subprocess.LoginInfo) (*Command, error) {
+func NewCommand(commandLine []string, workingDirectory string, env []string, loginInfo *LoginInfo) (*Command, error) {
 	if loginInfo != nil && loginInfo.HUser != 0 {
 		environment, err := win32.CreateEnvironment(&env, loginInfo.HUser)
 		if err != nil {
@@ -201,5 +221,5 @@ func (c *Command) Kill() (killOutput []byte, err error) {
 
 type LogonSession struct {
 	User      *runtime.OSUser
-	LoginInfo *subprocess.LoginInfo
+	LoginInfo *LoginInfo
 }

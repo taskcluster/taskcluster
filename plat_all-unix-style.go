@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -136,11 +135,12 @@ func RenameCrossDevice(oldpath, newpath string) error {
 	return os.Rename(oldpath, newpath)
 }
 
-func (task *TaskRun) addGroupsToUser(groups []string) error {
-	if len(groups) == 0 {
-		return nil
-	}
-	return fmt.Errorf("Not able to add groups %v to user on platform %v - feature not supported", groups, runtime.GOOS)
+func (task *TaskRun) removeUserFromGroups(groups []string) (updatedGroups []string, notUpdatedGroups []string) {
+	return updatedGroups, groups
+}
+
+func (task *TaskRun) addUserToGroups(groups []string) (updatedGroups []string, notUpdatedGroups []string) {
+	return updatedGroups, groups
 }
 
 func (task *TaskRun) formatCommand(index int) string {
@@ -189,4 +189,8 @@ func unsetAutoLogon() {
 
 func deleteTaskDirs() {
 	removeTaskDirs(config.TasksDir)
+}
+
+func (task *TaskRun) SetLoginInfo() error {
+	return nil
 }

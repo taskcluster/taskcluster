@@ -432,7 +432,7 @@ func toMountArray(t *testing.T, x interface{}) []json.RawMessage {
 func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {
 	payload = GenericWorkerPayload{
 		Command:    goRun("resolvetask.go"),
-		MaxRunTime: 60,
+		MaxRunTime: 120,
 		Artifacts: []Artifact{
 			{
 				Type:    "file",
@@ -447,7 +447,7 @@ func cancelTask(t *testing.T) (td *tcqueue.TaskDefinitionRequest, payload Generi
 		Certificate: config.Certificate,
 	}
 	if fullCreds.AccessToken == "" || fullCreds.ClientID == "" || fullCreds.Certificate != "" {
-		t.Skip("Skipping TestResolveResolvedTask since I need permanent TC credentials for this test")
+		t.Skip("Skipping since I need permanent TC credentials for this test")
 	}
 	td = testTask(t)
 	tempCreds, err := fullCreds.CreateNamedTemporaryCredentials("project/taskcluster:generic-worker-tester/TestResolveResolvedTask", time.Minute, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/*")

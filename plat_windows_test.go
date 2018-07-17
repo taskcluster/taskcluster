@@ -1,7 +1,6 @@
 package main
 
 import (
-	"path/filepath"
 	"testing"
 )
 
@@ -89,37 +88,4 @@ func TestNoCreateFileMappingError(t *testing.T) {
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
-}
-
-func TestChainOfTrustWithAdministratorPrivs(t *testing.T) {
-	defer setup(t)()
-	payload := GenericWorkerPayload{
-		Command: []string{
-			`type "` + filepath.Join(cwd, config.SigningKeyLocation) + `"`,
-		},
-		MaxRunTime: 5,
-		OSGroups:   []string{"Administrators"},
-		Features: FeatureFlags{
-			ChainOfTrust: true,
-		},
-	}
-	td := testTask(t)
-	td.Scopes = []string{
-		"generic-worker:os-group:Administrators",
-	}
-
-	if config.RunTasksAsCurrentUser {
-		// When running as current user, chain of trust key is not private so
-		// generic-worker should detect that it isn't secured from task user
-		// and cause malformed-payload exception.
-		expectChainOfTrustKeyNotSecureMessage(t, td, payload)
-		return
-
-	}
-
-	// When bug 1439588 lands, if runAsAdministrator feature is enabled, the
-	// task resolution should be "exception" / "malformed-payload". However,
-	// without process elevation, Administrator rights are not available, so
-	// the task should resolve as "failed" / "failed".
-	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }

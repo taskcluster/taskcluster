@@ -344,12 +344,14 @@ func initialiseFeatures() (err error) {
 		&OSGroupsFeature{},
 		&MountsFeature{},
 		&SupersedeFeature{},
+	}
+	Features = append(Features, platformFeatures()...)
+	Features = append(Features,
 		// keep chain of trust as low down as possible, as it checks permissions
 		// of signing key file, and a feature could change them, so we want these
 		// checks as late as possible
 		&ChainOfTrustFeature{},
-	}
-	Features = append(Features, platformFeatures()...)
+	)
 	for _, feature := range Features {
 		log.Printf("Initialising task feature %v...", feature.Name())
 		err := feature.Initialise()
@@ -650,9 +652,13 @@ func RunWorker() (exitCode ExitCode) {
 			if errors.WorkerShutdown() {
 				return WORKER_SHUTDOWN
 			}
-			err := taskCleanup()
+			err := task.LoginInfo.Logout()
 			if err != nil {
-				log.Printf("Error cleaning up after task!\n%v", err)
+				log.Printf("ERROR: logging out user!\n%v", err)
+			}
+			err = taskCleanup()
+			if err != nil {
+				log.Printf("ERROR: cleaning up after task!\n%v", err)
 			}
 			tasksResolved++
 			// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
@@ -765,6 +771,10 @@ func ClaimWork() *TaskRun {
 			LocalClaimTime: localClaimTime,
 		}
 		task.StatusManager = NewTaskStatusManager(task)
+		err := task.SetLoginInfo()
+		if err != nil {
+			panic(err)
+		}
 		return task
 	}
 }
@@ -1163,13 +1173,17 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 
 		log.Printf("Starting task feature %v...", taskFeatureOrigin.feature.Name())
 		err.add(taskFeatureOrigin.taskFeature.Start())
-		if err.Occurred() {
-			return
-		}
+
+		// make sure we defer Stop() even if Start() returns an error, since the feature may have made
+		// changes that need cleaning up in Stop() before it hit the error that it returned...
 		defer func(taskFeatureOrigin TaskFeatureOrigin) {
 			log.Printf("Stopping task feature %v...", taskFeatureOrigin.feature.Name())
 			taskFeatureOrigin.taskFeature.Stop(err)
 		}(taskFeatureOrigin)
+
+		if err.Occurred() {
+			return
+		}
 	}
 
 	defer func() {
@@ -1337,4 +1351,21 @@ func removeTaskDirs(parentDir string) {
 			}
 		}
 	}
+}
+
+func (task *TaskRun) RefreshLoginSession() {
+	// On Windows we need to call LogonUser to get new access token with the group changes
+	if task.LoginInfo != nil {
+		logoutError := task.LoginInfo.Logout()
+		if logoutError != nil {
+			panic(logoutError)
+		}
+	}
+	user, pass := AutoLogonCredentials()
+	loginInfo, logonError := process.NewLoginInfo(user, pass)
+	if logonError != nil {
+		// implies a serious bug
+		panic(logonError)
+	}
+	task.LoginInfo = loginInfo
 }

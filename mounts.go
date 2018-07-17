@@ -158,8 +158,9 @@ func (feature *MountsFeature) Initialise() error {
 
 // Represents the Mounts feature for an individual task (one per task)
 type TaskMount struct {
-	task   *TaskRun
-	mounts []MountEntry
+	task    *TaskRun
+	mounts  []MountEntry
+	mounted []MountEntry
 	// payload errors are detected when creating feature but only reported when
 	// feature starts, so need to keep hold of any error raised...
 	payloadError      error
@@ -220,8 +221,9 @@ func (feature *MountsFeature) IsEnabled(task *TaskRun) bool {
 // Reads payload and initialises state...
 func (feature *MountsFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	tm := &TaskMount{
-		task:   task,
-		mounts: []MountEntry{},
+		task:    task,
+		mounts:  []MountEntry{},
+		mounted: []MountEntry{},
 	}
 	for i, taskMount := range task.Payload.Mounts {
 		// Each mount must be one of:
@@ -354,6 +356,7 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 		if err != nil {
 			return Failure(fmt.Errorf("[mounts] %s", err))
 		}
+		taskMount.mounted = append(taskMount.mounted, mount)
 	}
 	return nil
 }
@@ -361,7 +364,7 @@ func (taskMount *TaskMount) Start() *CommandExecutionError {
 // called when a task has completed
 func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 	// loop through all mounts described in payload
-	for i, mount := range taskMount.mounts {
+	for i, mount := range taskMount.mounted {
 		e := mount.Unmount(taskMount.task)
 		if e != nil {
 			fsc, errfsc := mount.FSContent()

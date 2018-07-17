@@ -148,7 +148,9 @@ func (l *LiveLogTask) Stop(err *ExecutionErrors) {
 func (l *LiveLogTask) reinstateBackingLog() {
 	l.task.logMux.Lock()
 	defer l.task.logMux.Unlock()
-	l.task.logWriter = l.backingLogFile
+	if l.backingLogFile != nil {
+		l.task.logWriter = l.backingLogFile
+	}
 }
 
 func (l *LiveLogTask) uploadLiveLog() error {

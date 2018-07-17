@@ -209,7 +209,7 @@ func TestMissingScopes(t *testing.T) {
 
 // TestMissingDependency tests that if artifact content is mounted, it must be included as a task dependency
 func TestMissingMountsDependency(t *testing.T) {
-	defer setup(t, "TestMissingMountsDependency")()
+	defer setup(t)()
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
 		&FileMount{
@@ -364,7 +364,7 @@ func TestCorruptZipDoesntCrashWorker(t *testing.T) {
 // TestNonExistentArtifact depends on an artifact that does not exist from a
 // task that *does* exist.
 func TestNonExistentArtifact(t *testing.T) {
-	defer setup(t, "TestNonExistentArtifact")()
+	defer setup(t)()
 	mounts := []MountEntry{
 		// requires scope "queue:get-artifact:SampleArtifacts/_/X.txt"
 		&ReadOnlyDirectory{
@@ -858,4 +858,66 @@ func TestCacheMoved(t *testing.T) {
 		},
 	)
 
+}
+
+func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
+
+	defer setup(t)()
+
+	mounts := []MountEntry{
+		&WritableDirectoryCache{
+			CacheName: "unknown-issuer-app-cache",
+			Directory: filepath.Join(t.Name(), "1"),
+		},
+		&ReadOnlyDirectory{
+			Directory: filepath.Join(t.Name(), "2"),
+			// Note: the task definition for taskId LK1Rz2UtT16d-HBSqyCtuA can be seen in the testdata/tasks directory
+			// SHA256 is intentionally incorrect to make sure that above cache is still persisted
+			Content: json.RawMessage(`{
+				"taskId": "LK1Rz2UtT16d-HBSqyCtuA",
+				"artifact": "public/build/unknown_issuer_app_1.zip",
+				"sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+			}`),
+			Format: "zip",
+		},
+	}
+
+	payload := GenericWorkerPayload{
+		Mounts:     toMountArray(t, &mounts),
+		Command:    helloGoodbye(),
+		MaxRunTime: 180,
+	}
+
+	td := testTask(t)
+	td.Dependencies = []string{
+		"LK1Rz2UtT16d-HBSqyCtuA",
+	}
+	td.Scopes = []string{
+		"generic-worker:cache:unknown-issuer-app-cache",
+	}
+
+	// check task failed due to bad SHA256
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
+
+	mounts = []MountEntry{
+		&WritableDirectoryCache{
+			CacheName: "unknown-issuer-app-cache",
+			Directory: filepath.Join(t.Name(), "1"),
+		},
+	}
+
+	payload = GenericWorkerPayload{
+		Mounts:     toMountArray(t, &mounts),
+		Command:    helloGoodbye(),
+		MaxRunTime: 180,
+	}
+
+	td = testTask(t)
+	td.Scopes = []string{
+		"generic-worker:cache:unknown-issuer-app-cache",
+	}
+
+	// check task succeeded, and worker didn't crash when trying to mount cache
+	// (which can happen if it wasn't unmounted after first task failed)
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }
