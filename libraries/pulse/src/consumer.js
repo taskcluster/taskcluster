@@ -7,7 +7,7 @@ const assert = require('assert');
  * queue, invoking a callback for each message.
  */
 class PulseConsumer extends events.EventEmitter {
-  constructor({client, bindings, queueName, ...options}, handleMessage) {
+  constructor({client, bindings, queueName, prefetch, ...queueOptions}, handleMessage) {
     super();
 
     assert(handleMessage, 'Must provide a message handler function');
@@ -15,7 +15,8 @@ class PulseConsumer extends events.EventEmitter {
     this.client = client;
     this.bindings = bindings;
     this.handleMessage = handleMessage;
-    this.options = {prefetch: 5, ...options};
+    this.prefetch = typeof prefetch !== 'undefined' ? prefetch : 5;
+    this.queueOptions = queueOptions;
 
     assert(queueName, 'Must pass a queueName');
     this.queueName = queueName;
@@ -96,7 +97,7 @@ class PulseConsumer extends events.EventEmitter {
       exclusive: false,
       durable: true,
       autoDelete: false,
-      maxLength: this.options.maxLength,
+      ...this.queueOptions,
     });
 
     for (let {exchange, routingKeyPattern} of this.bindings) {
@@ -118,7 +119,7 @@ class PulseConsumer extends events.EventEmitter {
 
       const amqp = conn.amqp;
       const channel = await amqp.createChannel();
-      await channel.prefetch(this.options.prefetch);
+      await channel.prefetch(this.prefetch);
       const queueName = await await this._createAndBindQueue(channel);
       this.channel = channel;
 
