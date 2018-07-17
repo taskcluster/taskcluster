@@ -201,8 +201,7 @@ client.on('connected', async (conn) => {
 # PulseConsumer
 
 A PulseConsumer declares a queue and listens for messages on that queue,
-invoking a callback for each message. Note that this does not support ephemeral
-(auto-delete / exclusive) queues.
+invoking a callback for each message.
 
 Construct a PulseConsumer with the async `consume` function:
 
@@ -218,15 +217,15 @@ let pc = await pulse.consume({
   queueName,             // Queue name (without `queues/<namespace>/` prefix)
   prefetch,              // Max number of messages unacknowledged to hold (optional)
   maxLength,             // Maximum queue size, undefined for none
+  ...queueOptions,       // passed to assertQueue
 }, async ({payload, exchange, routingKey, redelivered, routes, routing}) => {
   // handle message
   ...
 });
 ```
 
-This will create a durable queue using a pulse-compatible queue name based on
-`queueName` (prefixed with `queue/<namespace>`).  Ephemeral (auto-delete,
-exclusive) queues are not supported by `PulseConsumer`.
+This will create a queue using a pulse-compatible queue name based on
+`queueName` (prefixed with `queue/<namespace>`).
 
 If `routingKeyReference` is provided for the exchange from which messages
 arrive, then the listener will parse the routing key and make it available as a
