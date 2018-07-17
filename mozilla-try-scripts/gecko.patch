@@ -1,0 +1,54 @@
+diff --git a/taskcluster/taskgraph/transforms/task.py b/taskcluster/taskgraph/transforms/task.py
+--- a/taskcluster/taskgraph/transforms/task.py
++++ b/taskcluster/taskgraph/transforms/task.py
+@@ -1388,15 +1388,48 @@ def add_index_routes(config, tasks):
+         del task['index']
+         yield task
+ 
+ 
+ @transforms.add
++def replace_level_in_workertype(config, tasks):
++    """
++    This transform replaces {level} in workerType name with actual scm level.
++    """
++    for task in tasks:
++        level = str(config.params['level'])
++        task['worker-type'] = task['worker-type'].format(level=level)
++        yield task
++
++
++@transforms.add
++def use_beta_workertypes(config, tasks):
++    """
++    This transform uses a dictionary of worker type names to worker type names
++    in order to map one set of worker types to another set. This is typically
++    useful when you want to run a try push against a staging set of worker
++    types, that you want to test before rolling them out to production.
++    """
++    find_replace_dict = {
++        "aws-provisioner-v1/gecko-t-win7-32":      "aws-provisioner-v1/gecko-t-win7-32-beta",
++        "aws-provisioner-v1/gecko-t-win7-32-gpu":  "aws-provisioner-v1/gecko-t-win7-32-gpu-b",
++        "aws-provisioner-v1/gecko-t-win10-64":     "aws-provisioner-v1/gecko-t-win10-64-beta",
++        "aws-provisioner-v1/gecko-t-win10-64-gpu": "aws-provisioner-v1/gecko-t-win10-64-gpu-b",
++        "aws-provisioner-v1/gecko-1-b-win2012":    "aws-provisioner-v1/gecko-1-b-win2012-beta",
++        "aws-provisioner-v1/gecko-2-b-win2012":    "aws-provisioner-v1/gecko-2-b-win2012-beta",
++        "aws-provisioner-v1/gecko-3-b-win2012":    "aws-provisioner-v1/gecko-3-b-win2012-beta",
++    }
++    for task in tasks:
++        if task['worker-type'] in find_replace_dict:
++            task['worker-type'] = find_replace_dict[task['worker-type']]
++        yield task
++
++
++@transforms.add
+ def build_task(config, tasks):
+     for task in tasks:
+         level = str(config.params['level'])
+-        worker_type = task['worker-type'].format(level=level)
+-        provisioner_id, worker_type = worker_type.split('/', 1)
++        provisioner_id, worker_type = task['worker-type'].split('/', 1)
+         project = config.params['project']
+ 
+         routes = task.get('routes', [])
+         scopes = [s.format(level=level, project=project) for s in task.get('scopes', [])]
+ 
