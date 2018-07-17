@@ -232,7 +232,9 @@ class VersionOne extends TcYaml {
         if (!task.taskId) { throw Error('The taskId is absent.'); }
         return {
           taskId: task.taskId,
-          task: _.extend(task, {schedulerId: cfg.taskcluster.schedulerId}),
+          task: _.omit(
+            _.extend(task, {schedulerId: cfg.taskcluster.schedulerId}),
+            'taskId'),
         };
       });
     }
