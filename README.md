@@ -84,7 +84,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker 10.10.0
+generic-worker 10.11.0
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -262,9 +262,7 @@ and reports back results to the queue.
                                             option does *not* support running a command as
                                             Administrator.
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
-                                            the current OS user will be used. Useful if not an
-                                            administrator, e.g. when running tests. Should not
-                                            be used in production! [default: false]
+                                            the current OS user will be used. [default: true]
           sentryProject                     The project name used in https://sentry.io for
                                             reporting worker crashes. Permission to publish
                                             crash reports is granted via the scope
@@ -337,6 +335,7 @@ and reports back results to the queue.
     71     The worker was terminated via an interrupt signal (e.g. Ctrl-C pressed).
     72     The worker is running on spot infrastructure in AWS EC2 and has been served a
            spot termination notice, and therefore has shut down.
+    73     The config provided to the worker is invalid.
 ```
 
 # Start the generic worker
@@ -374,7 +373,7 @@ go test -v ./...
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 10.10.0
+$ ./release.sh 10.11.0
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
