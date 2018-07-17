@@ -1,3 +1,4 @@
+const debug = require('debug');
 const events = require('events');
 const amqplib = require('amqplib');
 const assert = require('assert');
@@ -239,7 +240,34 @@ class PulseConsumer extends events.EventEmitter {
   }
 }
 
+class FakePulseConsumer {
+  constructor(handleMessage) {
+    this.handleMessage = handleMessage;
+    this.debug = debug('FakePulseConsumer');
+  }
+
+  async stop() {
+    this.debug('stopping');
+    // do nothing
+  }
+
+  /**
+   * Inject a fake message.  This calls the supplied handleMessage
+   * function directly.
+   */
+  async fakeMessage(msg) {
+    this.debug(`injecting fake message ${JSON.stringify(msg)}`);
+    await this.handleMessage(msg);
+  }
+}
+
 const consume = async (options, handleMessage) => {
+  if (options.client.isFakeClient) {
+    const pq = new FakePulseConsumer(handleMessage);
+    options.client.pulseConsumer = pq;
+    return pq;
+  }
+
   const pq = new PulseConsumer(options, handleMessage);
   await pq._start();
   return pq;
