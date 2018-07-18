@@ -9,7 +9,7 @@ URLs Signed by Hawk credentials.  It can also generate routing keys for
 listening to pulse messages from Taskcluster.
 
 The library builds the REST API methods from the same [API Reference
-format](http://docs.taskcluster.net/tools/references/index.html) as the
+format](/docs/manual/design/apis/reference-format) as the
 Javascript client library.
 
 ## Generating Temporary Credentials
@@ -51,8 +51,7 @@ but unnamed temporary credentials can be created regardless of your scopes.
 
 ## API Documentation
 
-The REST API methods are documented on
-[http://docs.taskcluster.net/](http://docs.taskcluster.net/)
+The REST API methods are documented in the [reference docs](/docs/reference).
 
 ## Query-String arguments
 Query string arguments are now supported.  In order to use them, you can call
@@ -2090,7 +2089,7 @@ https://www.npmjs.com/package/cron-parser.  For example:
  * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
 
 The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
-https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks
+the documentation
 for more information.
 #### Ping Server
 Respond without doing anything.
