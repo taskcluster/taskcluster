@@ -5,7 +5,7 @@ generated from the [Manifest Reference](http://references.taskcluster.net/manife
 Detailed documentation with description, payload, and result formats is available on
 [Taskcluster Docs](https://docs.taskcluster.net/).
 
-On the [documentation site](https://docs.taskcluster.net/) entries often have a
+In the Taskcluster documentation, entries have a
 _signature_; you'll find that it corresponds with the signatures below. Note that all
 the methods return a `Promise`. A method marked with `Promise Result` is a promise that
 resolves with the API result. A method marked with `Promise Nothing` will also return a
