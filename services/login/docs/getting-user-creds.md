@@ -5,7 +5,7 @@ title: Getting User Credentials
 If you are building a web application that will interact with Taskcluster on
 behalf of your user, you will need your users' Taskcluster credentials.
 
-The [Taskcluster manual](/manual/using/integration) contains advice for
+The [Taskcluster manual](/docs/manual/using/integration) contains advice for
 intergrating with Taskcluster in general, including some important security
 considerations.  Here, we'll focus on the technical implementation.
 
@@ -70,7 +70,7 @@ needed, and should support automatically refreshing expired credentials as
 needed. The credentials may expire before the `access_token` or `id_token`.
 
 To get credentials, call the [`oidcCredentials`
-endpoint](/reference/integrations/taskcluster-login/references/api#oidcCredentials)
+endpoint](/docs/reference/integrations/taskcluster-login/references/api#oidcCredentials)
 with provider `mozilla-auth0`.  Pass the `access_token` from Auth0 in the
 `Authorization` header as described in the API documentation.
 
@@ -87,6 +87,6 @@ an `OIDCCredentialAgent` class that makes this easy.
 ## Tutorial
 
 The [Taskcluster
-manual](https://docs.taskcluster.net/manual/using/integration/frontend)
+manual](/docs/manual/using/integration/frontend)
 contains a tutorial which builds a simple single-page application that allows
 users to execute a Taskcluster API call.
