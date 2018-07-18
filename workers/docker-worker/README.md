@@ -28,7 +28,7 @@ and we can manage their overall usage.
 We manipulate the docker hosts through the use of the [docker remote
 api](https://docs.docker.com/engine/api/v1.24/)
 
-See the [doc site](http://docs.taskcluster.net/workers/docker-worker/index.html)
+See the [doc site](/docs/workers/docker-worker/index.html)
 for how to use the worker from an existing `worker-type` the docs here
 are for hacking on the worker itself.
 
@@ -267,7 +267,7 @@ folders.
     this file contains all the variables needed to deploy the
     application. The script
     [deploy/bin/import-docker-worker-secrets](/deploy/bin/import-docker-worker-secrets)
-    generates the file from [password store](http://passwordstore.org/).
+    generates the file from [password store](https://passwordstore.org/).
 
   - deploy/target : Contains the final files to be uploaded when creating the
     AMI all template values have been subsituted... It is useful to
@@ -328,7 +328,7 @@ schema has been changed, the run the upload-schema.js script to update.
 
 Before running the upload schema script, ensure that AWS credentials are loaded 
 into your environment. See
-[Configuring AWS with Node](http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html)
+[Configuring AWS with Node](https://docs.aws.amazon.com/AWSJavaScriptSDK/guide/node-configuring.html)
 
 Run the upload-schema.js script to update the schema:
 
