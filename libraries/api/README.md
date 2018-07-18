@@ -475,4 +475,4 @@ It should pass, although some tests will be skipped.
 If you are not modifing functionality tested by the skipped tests you're ready to get started: write some tests for the new functionality, then implement it!
 If you are modifying something requiring credentials, copy `user-config-example.yml` to `user-config.yml` and fill in the necessary credentials based on the comments in that file.
 
-The taskcluster team has a series of [best practices](https://docs.taskcluster.net/manual/devel/best-practices) which may help guide you in modifying the source code and making a pull request.
+The taskcluster team has a series of [best practices](/docs/manual/devel/best-practices) which may help guide you in modifying the source code and making a pull request.
