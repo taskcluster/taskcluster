@@ -47,8 +47,6 @@ indexing.
 
 When a task is indexed you can browse the namespaces, list tasks within a
 namespace. Or get the latest task from a fully qualified namespace.
-See [API documentation](https://docs.taskcluster.net/reference/core/index/api-docs)
-for further details.
 
 Deployment
 ----------
