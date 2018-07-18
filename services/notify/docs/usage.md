@@ -12,7 +12,7 @@ __IRC:__ This is only enabled on ``irc.mozilla.org`` for now. You can specify ei
 
 __Email:__ We can you both nicely formatted or plain text emails depending on which email client you want to use. You can send to any email address, so long as you have the correct scopes (we'll discuss scopes later).
 
-__Pulse:__ We can also send a Pulse message that is documented [on this page](https://docs.taskcluster.net/reference/core/notify/exchanges). The message is  pretty much just the status of the task.
+__Pulse:__ We can also send a Pulse message that is documented [on this page](/docs/reference/core/taskcluster-notify/exchanges). The message is  pretty much just the status of the task.
 
 ### Filters
 
@@ -24,7 +24,7 @@ __on-failed:__ Only when the task fails for non-internal reasons will this be tr
 
 __on-exception:__ This is triggered when the task didn't run due to some exception such as internal error, timeouts, deadlines, malformed-payload. Some exceptions can be ignored, using the `ignoreTaskReasonResolved` configuration parameter.  By default, this parameter contains `canceled` and `deadline-exceeded`.
 
-More thorough (and more correct) documentation of task exception `reasonResolved` codes can be found [on the docs site](https://docs.taskcluster.net/reference/platform/queue/api-docs#status).
+More thorough (and more correct) documentation of task exception `reasonResolved` codes can be found [on the docs site](/docs/reference/platform/taskcluster-queue/api-docs#status).
 
 ### Route Syntax
 
@@ -44,8 +44,8 @@ But what you've really been waiting for is to know how to use this, so here's a 
 ### Setting Custom Messages
 
 In both irc and email you can set custom messages by adding fields to your task definition. The fields will be rendered with [jsone](https://taskcluster.github.io/json-e/)
-given a context of the [task definition](https://docs.taskcluster.net/reference/platform/taskcluster-queue/references/api#get-task-definition)
-and the `status` section of [task status](https://docs.taskcluster.net/reference/platform/taskcluster-queue/references/events#message-payload-4).
+given a context of the [task definition](/docs/reference/platform/taskcluster-queue/references/api#get-task-definition)
+and the `status` section of [task status](/docs/reference/platform/taskcluster-queue/references/events#message-payload-4).
 The task definition is in the context under the key `task` and the status is in the context under the key `status`.
 The fields you add to your task definition are all in the `task.extra` section under a key `notify`. They are as follows:
 
@@ -64,7 +64,7 @@ __task.extra.notify.email.template:__ This should evaluate to string with a valu
 
 ### Scopes
 
-If you're using this from the api instead of via a task definition, you'll need some simple ``notify.<type>.*`` scopes of some sort. The specific ones you need are documented on the [api docs](https://docs.taskcluster.net/reference/core/notify/api-docs).
+If you're using this from the api instead of via a task definition, you'll need some simple ``notify.<type>.*`` scopes of some sort. The specific ones you need are documented on the [api docs](/docs/reference/core/taskcluster-notify/api-docs).
 
 If you're using this via task definitions, access to notifications is guarded with route scopes. As an example, to allow the taskcluster-github project to email and ping in irc when builds complete, it has the scopes
 
