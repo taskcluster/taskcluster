@@ -96,7 +96,7 @@ You may not specify both an `excludeBranches` and `branches` at the same time.
 
 ### Roles
 
-Pushes, pull requests, and releases all are given access to [scopes](/manual/design/apis/hawk/scopes) via [roles](/manual/design/apis/hawk/roles) in Taskcluster. Following are the roles assigned to each type of event:
+Pushes, pull requests, and releases all are given access to [scopes](/docs/manual/design/apis/hawk/scopes) via [roles](/docs/manual/design/apis/hawk/roles) in Taskcluster. Following are the roles assigned to each type of event:
 
 * `Push` -- `assume:repo:github.com/<organization>/<repository>:branch:<branch>`
 * `Pull Request` -- `assume:repo:github.com/<organization>/<repository>:pull-request`
