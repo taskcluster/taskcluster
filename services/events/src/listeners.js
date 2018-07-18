@@ -45,9 +45,8 @@ class Listeners {
       }));
 
       this.listeners.push(listener);
-      await listener.resume();
-
       return listener;
+      
     } catch (err) {
       err.code = 404;
       debug(err);

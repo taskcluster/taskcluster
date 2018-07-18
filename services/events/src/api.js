@@ -15,6 +15,9 @@ let builder = new APIBuilder({
   serviceName: 'events',
   version: 'v1',
   context: ['listeners'],
+  errorCodes: {
+    NoReconnects: 204,  // Not supporting automatic reconnects from EventSource
+  },
 });
 
 // Returns JSON.parse(bindings) if everything goes well
@@ -60,25 +63,32 @@ builder.declare({
   // Add input validation yml
   title: 'Events-Api',
 }, async function(req, res) {
-  debug('hello');
 
   // If the last event id is '-', send a 204 error blocking all reconnects.
   // No reconnect on 204 is not yet supported on EventSource.
   // Clients using that need to use es.close() to stop error messages.
   if (req.headers['last-event-id']) {
-    return res.reportError(204, 'Not allowing reconnects');
+    debug('no reconnects allowed');
+    return res.reportError('NoReconnects', 'Not allowing reconnects');
   }
 
-  let abort, headWritten, pingEvent;
+  let abort, headWritten, pingEvent, idleTimeout;
   const aborted = new Promise((resolve, reject) => abort = reject);
+  const idleMessage = {code:404, message:'No messages received for 20s. Aborting...'};
+
+  const createIdleTimeout = () => {
+    if (idleTimeout) {
+      clearTimeout(idleTimeout);
+    }
+    idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);
+  };
 
   const sendEvent = (kind, data={}) => {
     try {
       const event = `event: ${kind}\ndata: ${JSON.stringify(data)}\nid: -\n\n`;
       res.write(event);
-      debug('..sendEvent', event); 
+      debug('sending event : ', kind); 
     } catch (err) {
-      debug('Error in sendEvent:');
       abort(err);
     }
   };
@@ -94,14 +104,17 @@ builder.declare({
     let json_bindings = await parseAndValidateBindings(req.query.bindings);
     debug('Bindings parsed');
     var listener = await this.listeners.createListener(json_bindings);
-    sendEvent('ready');
-    const idleMessage = {code:404, message:'No messages received for 20s. Aborting...'};
-    let idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);
-    
+
+    listener.resume().then(() => {
+      sendEvent('ready');
+      createIdleTimeout();
+    }, (err) => {
+      abort(err);
+    });
+        
     listener.on('message', message => {
       sendEvent('message', message);
-      clearTimeout(idleTimeout);
-      idleTimeout = setTimeout(() => abort(idleMessage), 20*1000);  
+      createIdleTimeout();
     });
 
     pingEvent = setInterval(() => sendEvent('ping', {
@@ -118,7 +131,7 @@ builder.declare({
     ]);
 
   } catch (err) {
-    debug('Error : %j', err.message, err.code);
+    debug('Error : %j', err.code, err.message);
     var errorMessage = 'Unknown Internal Error';
     if (err.code === 404) {
       errorMessage = err.message;
@@ -135,12 +148,14 @@ builder.declare({
 
     // TODO : Find a suitable error message depending on err.
     // Most likely these will be PulseListener errors.
-    debug('Error message : ', errorMessage);
     sendEvent('error', errorMessage);
   } finally {
 
+    if (idleTimeout) {
+      clearTimeout(idleTimeout);
+    }
+
     if (pingEvent) {
-      debug('unping');
       clearInterval(pingEvent);
     }
     // Close the listener
