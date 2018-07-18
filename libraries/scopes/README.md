@@ -3,7 +3,7 @@ Taskcluster Scopes Utilities
 
 Simple utilities to validate scopes, scope-sets, and scope-expression satisfiability.
 
-For information on scopes, see [the Taskcluster documentation](https://docs.taskcluster.net/manual/integrations/apis/scopes).
+For information on scopes, see [the Taskcluster documentation](/docs/manual/integrations/apis/scopes).
 
 ## Usage
 
@@ -95,7 +95,7 @@ means that the following clauses are satisfied:
 **`AnyOf: [..]`** At least one sub-expression must be satisfied.
 
 **`"<scope>"`:** The `<scope>` is
-[satisfied](https://docs.taskcluster.net/reference/platform/taskcluster-auth/docs/scopes) by the scope-set.
+[satisfied](/docs/reference/platform/taskcluster-auth/docs/scopes) by the scope-set.
 
 
 Examples:
