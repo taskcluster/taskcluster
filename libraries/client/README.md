@@ -103,7 +103,7 @@ listener.bind(queueEvents.taskCompleted({taskId: '<myTaskId>'}));
 // Listen for messages
 listener.on('message', function(message) {
   message.exchange        // Exchange from which message came
-  message.payload         // Documented on docs.taskcluster.net
+  message.payload         // See documentation
   message.routingKey      // Message routing key in string format
   message.routing.taskId  // Element from parsed routing key
   message.routing.runId   // ...
@@ -164,8 +164,7 @@ var channel = listener.connect().then(function(channel) {
 
 The listener creates a AMQP queue, on the server side and subscribes to messages
 on the queue. It's possible to use named queues, see details below. For details
-on routing key entries refer to documentation on
-[docs.taskcluster.net](docs.taskcluster.net).
+on routing key entries refer to the documentation.
 
 **Remark,** API end-points and AMQP exchanges are typically documented in
 separate reference files. For this reason they also have separate Client
@@ -174,10 +173,10 @@ classes, even if they are from the same component.
 ## Documentation
 The set of API entries listed below is generated from the built-in references.
 Detailed documentation with description, payload and result format details is
-available on [docs.taskcluster.net](http://docs.taskcluster.net).
+available in the [docs reference section](/docs/reference).
 
-On the [documentation site](http://docs.taskcluster.net) entries often have a
-_signature_, you'll find that it matches the signatures below. Notice that all
+On the documentation site, entries have a
+_signature_.  You'll find that it matches the signatures below. Notice that all
 the methods returns a promise. A method with `: void` also returns a promise,
 that either resolves without giving a value or rejects with an error.
 
@@ -534,7 +533,7 @@ var treeherderEvents = new taskcluster.TreeherderEvents(options);
 Some API end-points may take query-string, this is indicated in the signature
 above as `[options]`. These options are always _optional_, commonly used for
 continuation tokens when paging a list. For list of supported options you
-should consult API documentation on `docs.taskcluster.net`.
+should consult API documentation.
 
 ## Construct Urls
 You can build a url for any request, but this feature is mostly useful for
