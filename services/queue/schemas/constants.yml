@@ -121,7 +121,7 @@ action-description: |
   | worker-type | Workers Explorer               |
   | worker      | Worker Explorer                |
 
-  See [actions docs](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions)
+  See [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)
   for more information.
 
 # Description of the url property in an action.
