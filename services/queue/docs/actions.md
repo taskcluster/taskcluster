@@ -15,7 +15,7 @@ worker will have a `context=worker` since it's operating on the worker level.
 An action to reboot a single worker would have `context=worker`.
 
 Queue Actions are conceptually related to [task
-actions](/manual/using/actions), in that both allow resources to expose
+actions](/docs/manual/using/actions), in that both allow resources to expose
 context-specific opportunities to manipulate those resources.  However, the
 implementations are completely different.
 
@@ -23,7 +23,7 @@ implementations are completely different.
 
 Actions are defined at the provisioner level. To set the actions to a
 provisioner, perform a call to the queue's
-[declareProvisioner](/reference/platform/taskcluster-queue/references/api#declareProvisioner)
+[declareProvisioner](/docs/reference/platform/taskcluster-queue/references/api#declareProvisioner)
 method, supplying a list of actions.
 
 An action is comprised with the following properties:
@@ -40,7 +40,7 @@ An action is comprised with the following properties:
 
 Note that the action endpoint should return early. In other words, if an action takes a while
 to finish, start it up and send the HTTP response. To notify a user with the action status,
-use [taskcluster-notify](https://docs.taskcluster.net/reference/core/taskcluster-notify).
+use [taskcluster-notify](/docs/reference/core/taskcluster-notify).
 
 
 ### Context
@@ -50,9 +50,9 @@ specific to a context will only be returned by the appropriate API method.
 
 | `context`     | API Method                                                                             |
 |---------------|----------------------------------------------------------------------------------------|
-| `provisioner` | [getProvisioner](/reference/platform/taskcluster-queue/references/api#getProvisioner)* |
-| `worker-type` | [getWorkerType](/reference/platform/taskcluster-queue/references/api#getWorkerType)    |
-| `worker`      | [getWorker](/reference/platform/taskcluster-queue/references/api#getWorker)            |
+| `provisioner` | [getProvisioner](/docs/reference/platform/taskcluster-queue/references/api#getProvisioner)* |
+| `worker-type` | [getWorkerType](/docs/reference/platform/taskcluster-queue/references/api#getWorkerType)    |
+| `worker`      | [getWorker](/docs/reference/platform/taskcluster-queue/references/api#getWorker)            |
 
 Note that all actions are declared at the provisioner level, regardless of
 context.  For symmetry, `getProvisioner` also returns all actions, not just
