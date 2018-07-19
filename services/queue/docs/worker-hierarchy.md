@@ -7,7 +7,7 @@ The queue defines a hierarchy of resources that consume tasks from queues:
 
 ## Provisioners
 
-[Provisioners](/manual/task-execution/provisioning), identified with a
+[Provisioners](/docs/manual/task-execution/provisioning), identified with a
 `provisionerId`, are responsible for groups of worker types. While some
 provisioners, such as the AWS provisioner, are active software components,
 others are simply identifiers within the Queue service's data structures.  For
@@ -16,26 +16,26 @@ example, there is no active management of the
 `provisionerId`.
 
 Provisioners can be declared, and metadata associated with them, via the
-[declareProvisioner](/reference/platform/taskcluster-queue/references/api#declareProvisioner)
+[declareProvisioner](/docs/reference/platform/taskcluster-queue/references/api#declareProvisioner)
 API method.
 
 ## Worker Types
 
-[Worker Types](/manual/tasks/workertypes), identified by
+[Worker Types](/docs/manual/tasks/workertypes), identified by
 `provisionerId/workerType`, are nested under a single provisioner and gather
 interchangeable workers that can all perform the same work. Tasks are queued
 for a specific worker type, and workers claim work for a single worker type.
 
 Worker types can be declared, and metadata associated with them, via the
-[declareWorkerType](/reference/platform/taskcluster-queue/references/api#declareWorkerType)
+[declareWorkerType](/docs/reference/platform/taskcluster-queue/references/api#declareWorkerType)
 API method.
 
 ## Workers
 
-[Workers](/manual/task-execution/workers) are the entities that actually
+[Workers](/docs/manual/task-execution/workers) are the entities that actually
 perform work, and are identified by `workerGroup/workerId`. A worker claims and
 performs work from a single worker type.
 
 Workers can be declared, and metadata associated with them, via the
-[declareWorker](/reference/platform/taskcluster-queue/references/api#declareWorker)
+[declareWorker](/docs/reference/platform/taskcluster-queue/references/api#declareWorker)
 API method.

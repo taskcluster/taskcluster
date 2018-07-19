@@ -1,7 +1,7 @@
 $schema:            http://json-schema.org/draft-06/schema#
 title:              "Actions"
 description: |
-  See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
+  See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.
 type:         array
 items:
   type:       object
