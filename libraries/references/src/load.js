@@ -18,6 +18,8 @@ const readFile = util.promisify(fs.readFile);
 const loadReferences = async (serviceDirectory, references) => {
   const filenames = [
     path.join(serviceDirectory, 'references', 'api.json'),
+    // allow either events.json or (more correctly) exchanges.json
+    path.join(serviceDirectory, 'references', 'events.json'),
     path.join(serviceDirectory, 'references', 'exchanges.json'),
   ];
 

@@ -15,7 +15,7 @@ services, with the following structure:
 ├── myservice
 │   ├── metadata.json
 │   ├── references
-│   │   ├── exchanges.json
+│   │   ├── events.json
 │   │   └── api.json
 │   └── schemas
 │       └── v1
@@ -27,7 +27,8 @@ services, with the following structure:
 
 This is a subset of the
 [taskcluster-lib-docs](https://github.com/taskcluster/taskcluster-lib-docs)
-documentation tarball format, and `metadata.json` is defined there.
+documentation tarball format, and `metadata.json` is defined there.  The library
+will load `exchanges.json` as an alternatie to `events.json`, if present.
 
 The transformation from `/app/input` to `/app/built` is performed by `yarn
 build`. It reads all of the references and schemas into memory, then writes
@@ -52,7 +53,7 @@ the following structure:
         {"version": "v1", "reference": "/references/someservice/v1/api.json"}
       ],
       "pulse": [
-        {"version": "v2", "reference": "/references/fake/v2/exchanges.json"}
+        {"version": "v2", "reference": "/references/fake/v2/events.json"}
       ]
     }
   ]
