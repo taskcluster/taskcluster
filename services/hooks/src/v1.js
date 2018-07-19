@@ -27,7 +27,7 @@ const builder = new APIBuilder({
     ' * `[\'0 0 9,21 * * 1-5\', \'0 0 12 * * 0,6\']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon',
     '',
     'The task definition is used as a JSON-e template, with a context depending on how it is fired.  See',
-    'https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks',
+    '[/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)',
     'for more information.',
   ].join('\n'),
   serviceName: 'hooks',
