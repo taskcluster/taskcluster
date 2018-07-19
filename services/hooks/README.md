@@ -3,9 +3,11 @@ TaskCluster Hooks
 
 A hooks service for triggering tasks from events.
 
-API Documentation
------------------
-Please see https://docs.taskcluster.net/reference/core/hooks/api-docs.
+Hooks supports automatically creating tasks:
+
+ * At specific times
+ * In respose to API calls
+ * In response to webhooks
 
 Development
 -----------
