@@ -3,7 +3,7 @@ FROM nginx:1.13.12-alpine
 ADD package.json yarn.lock /app/
 ADD input /app/input/
 ADD src /app/src/
-ADD schemas /app/src/schemas
+ADD schemas /app/schemas
 ADD nginx-site.conf /etc/nginx/conf.d/default.conf
 
 # install node 8.9.3 and yarn (the version available in this alpine), then do a
