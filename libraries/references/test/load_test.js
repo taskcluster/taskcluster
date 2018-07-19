@@ -34,7 +34,7 @@ suite('loading input', function() {
     mockFs({
       '/test/input/svc1/metadata.json': '{"version": 1}',
       '/test/input/svc1/references/api.json': '{"api": 1}',
-      '/test/input/svc1/references/exchanges.json': '{"exchanges": 1}',
+      '/test/input/svc1/references/events.json': '{"exchanges": 1}',
       '/test/input/svc2/metadata.json': '{"version": 1}',
       '/test/input/svc2/references/api.json': '{"api": 2}',
       '/test/input/svc3/metadata.json': '{"version": 1}',
