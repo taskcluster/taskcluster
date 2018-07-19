@@ -10,8 +10,8 @@
     "taskcluster_image_hooks": "djmitche/taskcluster-hooks:SVC-f0e0b1a1cf8f",
     "taskcluster_image_secrets": "djmitche/taskcluster-secrets:SVC-196c9ddf2ef5",
     "taskcluster_image_notify": "djmitche/taskcluster-notify:SVC-3904a481d57c",
-    "taskcluster_image_docs": "djmitche/taskcluster-docs:SVC-a583ad0cab53",
+    "taskcluster_image_docs": "djmitche/taskcluster-docs:SVC-c81a4c4e7bff",
     "taskcluster_image_tools": "djmitche/taskcluster-tools:SVC-8ff0fb67e15e",
-    "taskcluster_image_references": "djmitche/taskcluster-references:SVC-00430610ef7d"
+    "taskcluster_image_references": "djmitche/taskcluster-references:SVC-a25390f18c48"
   }
 }
