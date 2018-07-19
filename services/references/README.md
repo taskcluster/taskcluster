@@ -53,7 +53,7 @@ the following structure:
         {"version": "v1", "reference": "/references/someservice/v1/api.json"}
       ],
       "pulse": [
-        {"version": "v2", "reference": "/references/fake/v2/events.json"}
+        {"version": "v2", "reference": "/references/fake/v2/exchanges.json"}
       ]
     }
   ]
