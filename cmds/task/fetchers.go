@@ -4,9 +4,12 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"log"
 	"io"
 	"net/http"
 	"encoding/json"
+	"strings"
+	"os"
 
 	"github.com/spf13/pflag"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -59,7 +62,7 @@ func runStatus(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	return nil
 }
 // confirmMsg displays confirmation message when --confirm is used
-func confirmMsg(command string, credentials *tcclient.Credentials, args []string)string {
+func confirmMsg(command string, credentials *tcclient.Credentials, args []string)bool {
 
 	q := makeQueue(credentials)
 	taskID := args[0]
@@ -69,12 +72,26 @@ func confirmMsg(command string, credentials *tcclient.Credentials, args []string
 
 	t, _ := q.Task(taskID)
 
-	fmt.Println(command, t.Metadata.Name ,"taskid:", taskID ,"(state:",run.State,"). Are you sure you want to proceed with given command? (y/N)")
-	var response string
-	fmt.Scanf("%s", &response)
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Printf("%s %s taskId: %s (state: %s). Are you sure you want to proceed?(y/N) ", command, t.Metadata.Name, taskID, run.State)
+
+		response, err := reader.ReadString('\n')
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		response = strings.ToLower(strings.TrimSpace(response))
+
+		if response == "y" || response == "yes" {
+			return true
+		} else if response == "n" || response == "no" {
+			return false
+		}
+	}
 
 
-	return response
 }
 
 // displayNoopMsg displays details when --noop is used

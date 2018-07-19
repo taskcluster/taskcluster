@@ -27,14 +27,15 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	}
 
 	if confirm {
-		var response = confirmMsg("Cancels", credentials, args)
-		if response == "y" {
+		confirmMsg("Cancels", credentials, args)
+		if true {
 			c, err := q.CancelTask(taskID)
-			run := c.Status.Runs[len(c.Status.Runs)-1]
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				return fmt.Errorf("could not cancel the task %s: %v", taskID, err)
 			}
+			run := c.Status.Runs[len(c.Status.Runs)-1]
+
 			fmt.Fprintln(out, getRunStatusString(run.State, run.ReasonResolved))
 			return nil
 		}
@@ -71,8 +72,8 @@ func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, f
 	}
 
 	if confirm {
-		var response = confirmMsg("Will re-run", credentials, args)
-		if response == "y" {
+		confirmMsg("Will re-run", credentials, args)
+		if true {
 			c, err := q.RerunTask(taskID)
 			run := c.Status.Runs[len(c.Status.Runs)-1]
 			if err != nil {
@@ -192,28 +193,14 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 		return fmt.Errorf("could not get the status of the task %s: %v", taskID, err)
 	}
 
-	c, err := q.ClaimTask(taskID, fmt.Sprint(len(s.Status.Runs)-1), &queue.TaskClaimRequest{
-		WorkerGroup: s.Status.WorkerType,
-		WorkerID:    "taskcluster-cli",
-	})
-	if err != nil {
-		return fmt.Errorf("could not claim the task %s: %v", taskID, err)
+	if noop {
+		displayNoopMsg("Would complete", credentials, args)
+		return nil
 	}
-
-	wq := makeQueue(&tcclient.Credentials{
-		ClientID:    c.Credentials.ClientID,
-		AccessToken: c.Credentials.AccessToken,
-		Certificate: c.Credentials.Certificate,
-	})
-	r, err := wq.ReportCompleted(taskID, fmt.Sprint(c.RunID))
-	if err != nil {
-		return fmt.Errorf("could not complete the task %s: %v", taskID, err)
-	}
-
 
 	if confirm {
-		var response = confirmMsg("Will complete", credentials, args)
-		if response == "y" {
+		confirmMsg("Will complete", credentials, args)
+		if true {
 			c, err := q.ClaimTask(taskID, fmt.Sprint(len(s.Status.Runs)-1), &queue.TaskClaimRequest{
 				WorkerGroup: s.Status.WorkerType,
 				WorkerID:    "taskcluster-cli",
@@ -237,10 +224,24 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 		}
 	}
 
-	if noop {
-		displayNoopMsg("Would complete", credentials, args)
-		return nil
+	c, err := q.ClaimTask(taskID, fmt.Sprint(len(s.Status.Runs)-1), &queue.TaskClaimRequest{
+		WorkerGroup: s.Status.WorkerType,
+		WorkerID:    "taskcluster-cli",
+	})
+	if err != nil {
+		return fmt.Errorf("could not claim the task %s: %v", taskID, err)
 	}
+
+	wq := makeQueue(&tcclient.Credentials{
+		ClientID:    c.Credentials.ClientID,
+		AccessToken: c.Credentials.AccessToken,
+		Certificate: c.Credentials.Certificate,
+	})
+	r, err := wq.ReportCompleted(taskID, fmt.Sprint(c.RunID))
+	if err != nil {
+		return fmt.Errorf("could not complete the task %s: %v", taskID, err)
+	}
+
 
 	fmt.Fprintln(out, getRunStatusString(r.Status.Runs[c.RunID].State, r.Status.Runs[c.RunID].ReasonResolved))
 	return nil
