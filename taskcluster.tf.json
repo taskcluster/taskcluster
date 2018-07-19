@@ -1,18 +1,17 @@
 {
   "locals": {
-    "taskcluster_image_ping": "djmitche/taskcluster-ping:SVC-8e3a1c8bc233",
-    "taskcluster_image_auth": "djmitche/taskcluster-auth:SVC-ece9d57fed1b",
-    "taskcluster_image_queue": "djmitche/taskcluster-queue:SVC-3e98380fd350",
-    "taskcluster_image_index": "djmitche/taskcluster-index:SVC-42fad835a637",
-    "taskcluster_image_purge-cache": "djmitche/taskcluster-purge-cache:SVC-00b500823267",
-    "taskcluster_image_github": "djmitche/taskcluster-github:SVC-5e94a8640150",
-    "taskcluster_image_login": "djmitche/taskcluster-login:SVC-26d019e625c0",
+    "taskcluster_image_auth": "djmitche/taskcluster-auth:SVC-a1963fa2604c",
+    "taskcluster_image_queue": "djmitche/taskcluster-queue:SVC-2c54d7679218",
+    "taskcluster_image_index": "djmitche/taskcluster-index:SVC-d19646d1d4ac",
+    "taskcluster_image_purge-cache": "djmitche/taskcluster-purge-cache:SVC-a168082204c7",
+    "taskcluster_image_github": "djmitche/taskcluster-github:SVC-498ad6a9398b",
+    "taskcluster_image_login": "djmitche/taskcluster-login:SVC-fd0aeeec795d",
     "taskcluster_image_pulse": "djmitche/taskcluster-pulse:SVC-9caabfb2eef1",
-    "taskcluster_image_hooks": "djmitche/taskcluster-hooks:SVC-b0e0fef89d52",
+    "taskcluster_image_hooks": "djmitche/taskcluster-hooks:SVC-f0e0b1a1cf8f",
     "taskcluster_image_secrets": "djmitche/taskcluster-secrets:SVC-196c9ddf2ef5",
-    "taskcluster_image_notify": "djmitche/taskcluster-notify:SVC-37842109ccc9",
-    "taskcluster_image_docs": "djmitche/taskcluster-docs:SVC-0001b8ab30f7",
+    "taskcluster_image_notify": "djmitche/taskcluster-notify:SVC-3904a481d57c",
+    "taskcluster_image_docs": "djmitche/taskcluster-docs:SVC-a583ad0cab53",
     "taskcluster_image_tools": "djmitche/taskcluster-tools:SVC-8ff0fb67e15e",
-    "taskcluster_image_references": "djmitche/taskcluster-references:SVC-00230c58bace"
+    "taskcluster_image_references": "djmitche/taskcluster-references:SVC-00430610ef7d"
   }
 }
