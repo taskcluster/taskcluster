@@ -9,8 +9,9 @@ const libUrls = require('taskcluster-lib-urls');
 
 const writeFile = util.promisify(fs.writeFile);
 
-const storeManifest = async (output, references) => {
+const storeManifest = async (output, references, rootUrl) => {
   const manifest = {services: []};
+  manifest.$schema = libUrls.schema(rootUrl, 'common', 'manifest-v2.json#');
   references.forEach(({serviceName, version, ...reference}) => {
     let service = _.find(manifest.services, {serviceName});
     if (!service) {
@@ -55,13 +56,13 @@ const storeSchemas = async (output, schemas) => {
 /**
  * Load all schemas and references from `input`.
  */
-const store = async ({references, schemas, output}) => {
+const store = async ({references, schemas, output, rootUrl}) => {
   await rimraf(output);
   await mkdirp(output);
 
   await Promise.all([
     storeReferences(output, references),
-    storeManifest(output, references),
+    storeManifest(output, references, rootUrl),
     storeSchemas(output, schemas),
   ]);
 };
