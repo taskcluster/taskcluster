@@ -76,7 +76,7 @@ tasks:
       ...
 ```
 
-NOTE: A well-designed template should produce `tasks: []` for any unrecognized `task_for` values; this allows later expansion of this service to handle more events.
+NOTE: A well-designed template should produce `tasks: []` for any unrecognized `tasks_for` values; this allows later expansion of this service to handle more events.
 
 ### Branch Filtering
 
