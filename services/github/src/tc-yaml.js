@@ -228,8 +228,16 @@ class VersionOne extends TcYaml {
 
   compileTasks(config, cfg, payload) {
     if (config.tasks.length > 0) {
-      config.tasks = config.tasks.map((task) => {
-        if (!task.taskId) { throw Error('The taskId is absent.'); }
+      // default taskGroupId and taskId
+      // - if only one task, make these match (making the task appear to be a decision task)
+      // - if two or more tasks, make them different (so that the taskgroup has no decision task)
+      // of course, this can be overriden by users specifying these values.
+      const defaultTaskGroupId = slugid.nice();
+      let defaultTaskId = config.tasks.length == 1 ? defaultTaskGroupId : slugid.nice();
+      config.tasks = config.tasks.map(task => {
+        task = _.defaults(task, {taskId: defaultTaskId, taskGroupId: defaultTaskGroupId});
+        defaultTaskId = slugid.nice(); // invent a new taskId for the next task
+
         return {
           taskId: task.taskId,
           task: _.omit(

@@ -61,6 +61,41 @@ The `tasks` property in the YAML file is rendered using [JSON-e](https://github.
 
 Although the Github documentation does not make it clear, each ref that is updated in a `git push` operation triggers a distinct event.
 
+## Result
+
+After rendering, the resulting data structure should have a `tasks` property containing a list of task definitions. Each task definition should match the [task
+schema](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/task-schema) as it will be passed nearly unchanged to `Queue.createTask`, The exception is that the provided task definition must contain a `taskId` field, which the service will remove and pass to `Queue.createTask` directly.
+
+The result looks like this:
+
+```
+{
+    "tasks": [
+        {
+            "taskId": "fOF8Cqj0QPKbvczC2dnXiQ", // probably generated with as_slugid(..)
+            "provisionerId": "..",
+            "workerType": "..",
+            "payload": {
+                // ..
+            },
+            // ...
+        },
+        // ...
+    ]
+}
+```
+
+Taskcluster-Github will set the schedulerId of each task, as is required for proper status tracking of the resulting task.
+
+The `taskId` and `taskGroupId` properties can be set by the JSON-e template,
+but default values are also available.  If the JSON-e rendering produces only
+one task, then the default `taskGroupId` and `taskId` have the same value.
+This makes the resulting task follow the convention for a [decision
+task](/docs/manual/using/task-graph#conventions).  If the rendering process
+produces multiple tasks, then the same default `taskGroupId` will apply to all
+tasks, with each task getting a unique `taskId` distinct from the
+`taskGroupId`.
+
 ## Task Definition and Examples
  
 ### Github Events
@@ -116,32 +151,6 @@ tasks:
 ### Provisioner ID and Worker Type
 
 You need to know which provisioner and which worker type you want to use to run your tasks. If you plan on using AWS provisioner, you can look up or create a worker type [here](https://tools.taskcluster.net/aws-provisioner/).
-
-## Result
-
-After rendering, the resulting data structure should have a `tasks` property containing a list of task definitions. Each task definition should match the [task
-schema](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/task-schema) as it will be passed nearly unchanged to `Queue.createTask`, The exception is that the provided task definition must contain a `taskId` field, which the service will remove and pass to `Queue.createTask` directly.
-
-The result looks like this:
-
-```
-{
-    "tasks": [
-        {
-            "taskId": "fOF8Cqj0QPKbvczC2dnXiQ", // probably generated with as_slugid(..)
-            "provisionerId": "..",
-            "workerType": "..",
-            "payload": {
-                // ..
-            },
-            // ...
-        },
-        // ...
-    ]
-}
-```
-
-Taskcluster-Github will set the schedulerId of each task, as is required for proper status tracking of the resulting task.
 
 # Scopes and Roles
 
