@@ -3,8 +3,11 @@ const assert = require('assert');
 const {store} = require('../src/store');
 const mockFs = require('mock-fs');
 const {assert_rejects} = require('./helper');
+const libUrls = require('taskcluster-lib-urls');
 
 suite('storing output', function() {
+  const rootUrl = libUrls.testRootUrl();
+
   teardown(function() {
     mockFs.restore();
   });
@@ -14,7 +17,7 @@ suite('storing output', function() {
       '/test/output/junk': 'junk-data',
     });
     assert(fs.existsSync('/test/output/junk'));
-    await store({references: [], schemas: [], output: '/test/output'});
+    await store({references: [], schemas: [], output: '/test/output', rootUrl});
     assert(fs.existsSync('/test/output'));
     assert(!fs.existsSync('/test/output/junk'));
   });
@@ -28,6 +31,7 @@ suite('storing output', function() {
       ],
       schemas: [],
       output: '/test/output',
+      rootUrl,
     });
     assert(fs.existsSync('/test/output/references/fake/v1/api.json'));
     assert(!fs.existsSync('/test/output/references/fake/v1/exchanges.json'));
@@ -40,6 +44,7 @@ suite('storing output', function() {
     assert.deepEqual(ref2, {serviceName: 'fake', exchangePrefix: 'exchanges/taskcluster-fake/v2', version: 'v2'});
     const manifest = JSON.parse(fs.readFileSync('/test/output/references/manifest.json'));
     assert.deepEqual(manifest, {
+      $schema: 'https://tc-tests.localhost/schemas/common/manifest-v2.json#',
       services: [
         {
           serviceName: 'fake',
@@ -63,6 +68,7 @@ suite('storing output', function() {
         {$id: 'https://tc-tests.localhost/schemas/fake/v2/bar.json#'},
       ],
       output: '/test/output',
+      rootUrl,
     });
 
     assert(fs.existsSync('/test/output/schemas/fake/v1/foo.json'));
