@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const url = require('url');
 const SchemaSet = require('taskcluster-lib-validate');
+const libUrls = require('taskcluster-lib-urls');
 
 /**
  * Update the given references and schemas (in-place):
@@ -11,7 +12,7 @@ const SchemaSet = require('taskcluster-lib-validate');
  */
 exports.update = async ({references, schemas, rootUrl}) => {
   await addCommonSchemas(schemas);
-  updateReferences(references);
+  updateReferences(references, rootUrl);
   updateSchemas(schemas, rootUrl);
 };
 
@@ -19,7 +20,7 @@ exports.update = async ({references, schemas, rootUrl}) => {
  * Calculate the reference's serviceName and guess at version (v1), then remove
  * deprecated fields name and baseUrl.
  */
-const updateReferences = (references) => {
+const updateReferences = (references, rootUrl) => {
   references.forEach(reference => {
     let serviceName = reference.serviceName;
     if (!serviceName) {
@@ -39,6 +40,14 @@ const updateReferences = (references) => {
 
     delete reference.name;
     delete reference.baseUrl;
+
+    // Someday, when we are not munging the reference above, this can allow
+    // multiple versions of the schema. For now, assign the only schema.
+    if (reference.exchangePrefix) {
+      reference.$schema = libUrls.schema(rootUrl, 'common', 'exchanges-reference-v0.json#');
+    } else {
+      reference.$schema = libUrls.schema(rootUrl, 'common', 'api-reference-v0.json#');
+    }
   });
 };
 exports.updateReferences = updateReferences;
