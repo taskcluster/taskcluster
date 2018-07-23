@@ -1,143 +1,203 @@
-version: 0
-allowPullRequests: public
-metadata:
-  name: "TaskCluster .taskcluster.yml file"
-  description: "Tasks for taskcluster-cli"
-  owner: "{{ event.head.user.email }}"
-  source: "{{ event.head.repo.url }}"
+version: 1
+
+policy:
+  pullRequests: public
+
 tasks:
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: "{{ taskcluster.docker.workerType }}"
-    extra:
-      github:
-        env: true
-        events:
-          - pull_request.opened
-          - pull_request.synchronize
-          - pull_request.reopened
-          - push
-        branches:
-          - master
-    payload:
-      maxRunTime: 3600
-      image: 'golang:1.8'
-      command:
-        - /bin/bash
-        - '-c'
-        - >-
-          mkdir -p  /go/src/github.com/taskcluster/taskcluster-cli
-          && cd  /go/src/github.com/taskcluster/taskcluster-cli
-          && git init
-          && git fetch {{ event.head.repo.url }} {{ event.head.ref }}
-          && git checkout {{ event.head.sha }}
-          && make lint
-    metadata:
-      name: "TaskCluster GitHub Lint Checks"
-      description: "All non-integration tests"
-      owner: "{{ event.head.user.email }}"
-      source: "{{ event.head.repo.url }}"
+  
+# linting
+  - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
+    then:
+      $if: 'event.pull_request.base.ref == "master"'
+      then:
+        provisionerId: aws-provisioner-v1
+        workerType: github-worker
+        taskId: {$eval: as_slugid("pr_linting")}
+        created: {$fromNow: ''}
+        deadline: {$fromNow: '1 hour'}
+        payload:
+          maxRunTime: 3600
+          image: 'golang:1.8'
+          command:
+            - /bin/bash
+            - '-c'
+            - >-
+              mkdir -p  /go/src/github.com/taskcluster/taskcluster-cli
+              && cd  /go/src/github.com/taskcluster/taskcluster-cli
+              && git init
+              && git fetch ${event.pull_request.head.repo.git_url} ${event.pull_request.head.ref}
+              && git checkout ${event.pull_request.head.sha}
+              && make lint
+        metadata:
+          name: "TaskCluster GitHub Lint Checks"
+          description: "Linting"
+          owner: ${event.pull_request.user.login}@users.noreply.github.com
+          source: ${event.repository.url}
+    
+    $else:
+      $if: 'tasks_for == "github-push"'
+      then:
+        $if: 'event.ref == "refs/heads/master"'
+        then:
+          provisionerId: aws-provisioner-v1
+          workerType: github-worker
+          taskId: {$eval: as_slugid("push_linting")}
+          created: {$fromNow: ''}
+          deadline: {$fromNow: '1 hour'}
+          payload:
+            maxRunTime: 3600
+            image: 'golang:1.8'
+            command:
+              - /bin/bash
+              - '-c'
+              - >-
+                mkdir -p  /go/src/github.com/taskcluster/taskcluster-cli
+                && cd  /go/src/github.com/taskcluster/taskcluster-cli
+                && git init
+                && git fetch ${event.repository.url} ${event.ref}
+                && git checkout ${event.after}
+                && make lint
+          metadata:
+            name: "TaskCluster GitHub Lint Checks"
+            description: "All non-integration tests"
+            owner: ${event.pusher.name}@users.noreply.github.com
+            source: ${event.repository.url}
 
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: "{{ taskcluster.docker.workerType }}"
-    extra:
-      github:
-        env: true
-        events:
-          - pull_request.opened
-          - pull_request.synchronize
-          - pull_request.reopened
-          - push
-        branches:
-          - master
-    payload:
-      maxRunTime: 3600
-      image: 'golang:1.8'
-      command:
-        - /bin/bash
-        - '-c'
-        - >-
-          mkdir -p  /go/src/github.com/taskcluster/taskcluster-cli
-          && cd  /go/src/github.com/taskcluster/taskcluster-cli
-          && git init
-          && git fetch {{ event.head.repo.url }} {{ event.head.ref }}
-          && git checkout {{ event.head.sha }}
-          && make test
-      artifacts:
-        public/taskcluster-linux:
-          path: /go/src/github.com/taskcluster/taskcluster-cli/taskcluster
-          type: file
-    metadata:
-      name: "TaskCluster GitHub Tests"
-      description: "All non-integration tests"
-      owner: "{{ event.head.user.email }}"
-      source: "{{ event.head.repo.url }}"
+# testing
+  - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
+    then:
+      $if: 'event.pull_request.base.ref == "master"'
+      then:
+        provisionerId: aws-provisioner-v1
+        workerType: github-worker
+        taskId: {$eval: as_slugid("pr_testing")}
+        created: {$fromNow: ''}
+        deadline: {$fromNow: '1 hour'}
+        payload:
+          maxRunTime: 3600
+          image: 'golang:1.8'
+          command:
+            - /bin/bash
+            - '-c'
+            - >-
+              mkdir -p  /go/src/github.com/taskcluster/taskcluster-cli
+              && cd  /go/src/github.com/taskcluster/taskcluster-cli
+              && git init
+              && git fetch ${event.pull_request.head.repo.git_url} ${event.pull_request.head.ref}
+              && git checkout ${event.pull_request.head.sha}
+              && make test
+          artifacts:
+            public/taskcluster-linux:
+            path: /go/src/github.com/taskcluster/taskcluster-cli/taskcluster
+            type: file
+        metadata:
+          name: "TaskCluster GitHub Lint Checks"
+          description: "Linting"
+          owner: ${event.pull_request.user.login}@users.noreply.github.com
+          source: ${event.repository.url}
+      
+    $else:
+      $if: 'tasks_for == "github-push"'
+      then:
+        $if: 'event.ref == "refs/heads/master"'
+        then:
+          provisionerId: aws-provisioner-v1
+          workerType: github-worker
+          taskId: {$eval: as_slugid("push_testing")}
+          created: {$fromNow: ''}
+          deadline: {$fromNow: '1 hour'}
+          payload:
+            maxRunTime: 3600
+            image: 'golang:1.8'
+            command:
+              - /bin/bash
+              - '-c'
+              - >-
+                mkdir -p  /go/src/github.com/taskcluster/taskcluster-cli
+                && cd  /go/src/github.com/taskcluster/taskcluster-cli
+                && git init
+                && git fetch ${event.repository.url} ${event.ref}
+                && git checkout ${event.after}
+                && make test
+            artifacts:
+              public/taskcluster-linux:
+              path: /go/src/github.com/taskcluster/taskcluster-cli/taskcluster
+              type: file
+          metadata:
+            name: "TaskCluster GitHub Lint Checks"
+            description: "Linting"
+            owner: ${event.pusher.name}@users.noreply.github.com
+            source: ${event.repository.url}
 
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: "{{ taskcluster.docker.workerType }}"
-    extra:
-      github:
-        env: true
-        events:
-          # TODO: tag - https://bugzilla.mozilla.org/show_bug.cgi?id=1344912
-          - release
-    scopes:
-      - auth:aws-s3:read-write:downloads-taskcluster-net/taskcluster-cli/
-    routes:
-      - index.project.taskcluster.taskcluster-cli.latest
-      - index.project.taskcluster.taskcluster-cli.{{ event.version }}
-    payload:
-      maxRunTime: 3600
-      image: 'golang:1.8'
-      features:
-          taskclusterProxy: true
-      command:
-        - /bin/bash
-        - '-c'
-        - >-
-          mkdir -p  /go/src/github.com/taskcluster/taskcluster-cli
-          && cd  /go/src/github.com/taskcluster/taskcluster-cli
-          && git init
-          && git fetch {{ event.head.repo.url }} {{ event.version }}
-          && git checkout FETCH_HEAD
-          && make prep release
-      artifacts:
-        public:
-          path: /go/src/github.com/taskcluster/taskcluster-cli/build
-          type: directory
-    metadata:
-      name: "Build and upload binaries for release"
-      description: "Binary release"
-      owner: "{{ event.head.user.email }}"
-      source: "{{ event.head.repo.url }}"
-  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
-    workerType: '{{ taskcluster.docker.workerType }}'
-    extra:
-      github:
-        events:
-          - push
-        branches:
-          - master
-    scopes:
-      - auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-cli/
-    payload:
-      maxRunTime: 3600
-      image: taskcluster/upload-project-docs:latest
-      features:
-        taskclusterProxy:
-          true
-      command:
-        - /bin/bash
-        - '--login'
-        - '-cx'
-        - >-
-          git clone {{event.head.repo.url}} repo &&
-          cd repo &&
-          git config advice.detachedHead false &&
-          git checkout {{event.head.sha}} &&
-          export DOCS_PROJECT=taskcluster-cli DOCS_TIER=libraries DOCS_FOLDER=docs DOCS_README=README.md &&
-          upload-project-docs
-    metadata:
-      name: "taskcluster-cli docs upload"
-      description: "Upload documentation for this project"
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
+# releasing
+  - $if: 'tasks_for == "github-release"'
+    then:
+      provisionerId: aws-provisioner-v1
+      workerType: github-worker
+      taskId: {$eval: as_slugid("release_task")}
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '1 hour'}
+      scopes:
+        - auth:aws-s3:read-write:downloads-taskcluster-net/taskcluster-cli/
+      routes:
+        - index.project.taskcluster.taskcluster-cli.latest
+        - index.project.taskcluster.taskcluster-cli.${event.release.tag_name}
+      payload:
+        maxRunTime: 3600
+        image: 'golang:1.8'
+        features:
+            taskclusterProxy: true
+        command:
+          - /bin/bash
+          - '-c'
+          - >-
+            mkdir -p  /go/src/github.com/taskcluster/taskcluster-cli
+            && cd  /go/src/github.com/taskcluster/taskcluster-cli
+            && git init
+            && git fetch ${event.repository.url} ${event.release.tag_name}
+            && git checkout FETCH_HEAD
+            && make prep release
+        artifacts:
+          public:
+            path: /go/src/github.com/taskcluster/taskcluster-cli/build
+            type: directory
+      metadata:
+        name: "Build and upload binaries for release"
+        description: "Binary release"
+        owner: ${event.release.author.login}@users.noreply.github.com
+        source: ${event.repository.url}
+  
+# uploading documentation
+  - $if: 'tasks_for == "github-push"'
+    then:
+      $if: 'event.ref == "refs/heads/master"'
+      then:
+        provisionerId: aws-provisioner-v1
+        workerType: github-worker
+        taskId: {$eval: as_slugid("push_documentation")}
+        created: {$fromNow: ''}
+        deadline: {$fromNow: '1 hour'}
+        scopes:
+          - auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-cli/
+        payload:
+          maxRunTime: 3600
+          image: taskcluster/upload-project-docs:latest
+          features:
+            taskclusterProxy:
+              true
+          command:
+            - /bin/bash
+            - '--login'
+            - '-cx'
+            - >-
+              git clone ${event.repository.url} repo &&
+              cd repo &&
+              git config advice.detachedHead false &&
+              git checkout ${event.after} &&
+              export DOCS_PROJECT=taskcluster-cli DOCS_TIER=libraries DOCS_FOLDER=docs DOCS_README=README.md &&
+              upload-project-docs
+        metadata:
+          name: "taskcluster-cli docs upload"
+          description: "Upload documentation for this project"
+          owner: ${event.pusher.name}@users.noreply.github.com
+          source: ${event.repository.url}
