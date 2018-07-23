@@ -257,7 +257,7 @@ builder.declare({
       msg.installationId = body.installation.id;
       publisherKey = 'release';
 
-      msg.tasks_for = 'github-push';
+      msg.tasks_for = 'github-release';
       msg.branch = body.release.target_commitish;
     
     } else if (eventType == 'integration_installation') {
