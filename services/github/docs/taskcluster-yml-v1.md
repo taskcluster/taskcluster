@@ -50,7 +50,7 @@ The `tasks` property in the YAML file is rendered using [JSON-e](https://github.
 * `tasks_for` - defines the type of event, one of `github-push`,
   `github-pull-request` or `github-release`.
 
-* `event` - the raw Github event; see
+* `event` - the raw Github Webhook event; see
   * [PushEvent](https://developer.github.com/v3/activity/events/types/#pushevent)
   * [PullRequestEvent](https://developer.github.com/v3/activity/events/types/#pullrequestevent)
   * [ReleaseEvent](https://developer.github.com/v3/activity/events/types/#releaseevent)
