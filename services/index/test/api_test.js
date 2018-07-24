@@ -121,7 +121,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
         }
         opts.continuationToken = result.continuationToken;
       }
-      assert.equal(iterations, 4);
+      assume(iterations).at.least(4);
       assert.equal(results.length, 4);
       testValidNamespaces(results, ['abc', 'bbc', 'cbc', 'dbc']);
     });
