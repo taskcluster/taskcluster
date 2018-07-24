@@ -150,8 +150,8 @@ oneOf:
       - storageType
   - title:          "Error Artifact Response"
     description: |
-      Response to a request for the queue to reply `403` (forbidden) with
-      `reason` and `message` to any `GET` request for this artifact.
+      Response to a request for the queue to reply `424` (Failed Dependency)
+      with `reason` and `message` to any `GET` request for this artifact.
     type:           object
     properties:
       storageType:

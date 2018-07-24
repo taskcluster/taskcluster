@@ -899,7 +899,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       res = err.response;
     }
     assume(res.ok).to.not.be.ok();
-    assume(res.status).equals(403);
+    assume(res.status).equals(424);
     assume(res.body.message).equals('Some user-defined message');
 
     debug('### Expire artifacts');
