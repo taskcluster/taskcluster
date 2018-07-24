@@ -27,31 +27,20 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	}
 
 	if confirm {
-		confirmMsg("Cancels", credentials, args)
-		if true {
-			c, err := q.CancelTask(taskID)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				return fmt.Errorf("could not cancel the task %s: %v", taskID, err)
-			}
-			run := c.Status.Runs[len(c.Status.Runs)-1]
-
-			fmt.Fprintln(out, getRunStatusString(run.State, run.ReasonResolved))
+		var confirm = confirmMsg("Cancels", credentials, args)
+		if ! confirm {
 			return nil
 		}
-		return nil
+
 	}
 
 	c, err := q.CancelTask(taskID)
-	run := c.Status.Runs[len(c.Status.Runs)-1]
-
-
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return fmt.Errorf("could not cancel the task %s: %v", taskID, err)
 	}
 
-
+	run := c.Status.Runs[len(c.Status.Runs)-1]
 
 	fmt.Fprintln(out, getRunStatusString(run.State, run.ReasonResolved))
 	return nil
@@ -72,30 +61,19 @@ func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, f
 	}
 
 	if confirm {
-		confirmMsg("Will re-run", credentials, args)
-		if true {
-			c, err := q.RerunTask(taskID)
-			run := c.Status.Runs[len(c.Status.Runs)-1]
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				return fmt.Errorf("could not rerun the task %s: %v", taskID, err)
-			}
-			fmt.Fprintln(out, getRunStatusString(run.State, run.ReasonResolved))
+		var confirm = confirmMsg("Will re-run", credentials, args)
+		if ! confirm {
 			return nil
 
 		}
 	}
 
 	c, err := q.RerunTask(taskID)
-
-	run := c.Status.Runs[len(c.Status.Runs)-1]
-
-
 	if err != nil {
 		return fmt.Errorf("could not rerun the task %s: %v", taskID, err)
 
 	}
-
+	run := c.Status.Runs[len(c.Status.Runs)-1]
 
 	fmt.Fprintln(out, getRunStatusString(run.State, run.ReasonResolved))
 	return nil
@@ -199,28 +177,9 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 	}
 
 	if confirm {
-		confirmMsg("Will complete", credentials, args)
-		if true {
-			c, err := q.ClaimTask(taskID, fmt.Sprint(len(s.Status.Runs)-1), &queue.TaskClaimRequest{
-				WorkerGroup: s.Status.WorkerType,
-				WorkerID:    "taskcluster-cli",
-			})
-			if err != nil {
-				return fmt.Errorf("could not claim the task %s: %v", taskID, err)
-			}
-
-			wq := makeQueue(&tcclient.Credentials{
-				ClientID:    c.Credentials.ClientID,
-				AccessToken: c.Credentials.AccessToken,
-				Certificate: c.Credentials.Certificate,
-			})
-			r, err := wq.ReportCompleted(taskID, fmt.Sprint(c.RunID))
-			if err != nil {
-				return fmt.Errorf("could not complete the task %s: %v", taskID, err)
-			}
-			fmt.Fprintln(out, getRunStatusString(r.Status.Runs[c.RunID].State, r.Status.Runs[c.RunID].ReasonResolved))
+		var confirm = confirmMsg("Will complete", credentials, args)
+		if ! confirm {
 			return nil
-
 		}
 	}
 
