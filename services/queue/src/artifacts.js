@@ -80,9 +80,9 @@ builder.declare({
     'would otherwise have uploaded. For example docker-worker will upload an',
     'error artifact, if the file it was supposed to upload doesn\'t exists or',
     'turns out to be a directory. Clients requesting an error artifact will',
-    'get a `403` (Forbidden) response. This is mainly designed to ensure that',
-    'dependent tasks can distinguish between artifacts that were suppose to',
-    'be generated and artifacts for which the name is misspelled.',
+    'get a `424` (Failed Dependency) response. This is mainly designed to',
+    'ensure that dependent tasks can distinguish between artifacts that were',
+    'suppose to be generated and artifacts for which the name is misspelled.',
     '',
     '**Artifact immutability**, generally speaking you cannot overwrite an',
     'artifact when created. But if you repeat the request with the same',
@@ -624,7 +624,7 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
   // Handle error artifacts
   if (artifact.storageType === 'error') {
     // The caller is not expecting an API response, so send a JSON response
-    return res.status(403).json({
+    return res.status(424).json({
       reason:     artifact.details.reason,
       message:    artifact.details.message,
     });
