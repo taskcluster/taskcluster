@@ -4,46 +4,11 @@ description: |
   A representation of **task status** as known by the queue
 type:               object
 properties:
-  taskId:
-    title:          "Task Identifier"
-    description: |
-      Unique task identifier, this is UUID encoded as
-      [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-      stripped of `=` padding.
-    type:           string
-    pattern:        {$const: slugid-pattern}
-  provisionerId:
-    title:          "Provisioner Id"
-    description: |
-      Unique identifier for the provisioner that this task must be scheduled on
-    type:           string
-    minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
-    pattern:        {$const: identifier-pattern}
-  workerType:
-    title:          "Worker Type"
-    description: |
-      Identifier for worker type within the specified provisioner
-    type:           string
-    minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
-    pattern:        {$const: identifier-pattern}
-  schedulerId:
-    title:          "Scheduler Identifier"
-    description: |
-      Identifier for the scheduler that _defined_ this task.
-    type:           string
-    minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
-    pattern:        {$const: identifier-pattern}
-  taskGroupId:
-    title:          "Task-Group Identifier"
-    description: |
-      Identifier for a group of tasks scheduled together with this task, by
-      scheduler identified by `schedulerId`. For tasks scheduled by the
-      task-graph scheduler, this is the `taskGraphId`.
-    type:           string
-    pattern:        {$const: slugid-pattern}
+  taskId: {$const: "taskId"}
+  provisionerId: {$ref: "task.json#/properties/provisionerId"}
+  workerType: {$ref: "task.json#/properties/workerType"}
+  schedulerId: {$ref: "task.json#/properties/schedulerId", default: '-'}
+  taskGroupId: {$ref: "task.json#/properties/taskGroupId"}
   deadline:         {$const: deadline}
   expires:          {$const: expires}
   retriesLeft:
