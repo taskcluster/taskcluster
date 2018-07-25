@@ -55,7 +55,8 @@
     "taskcluster-generic",
     "tcvcs-cache",
     "tcvcs-cache-device",
-    "tutorial"
+    "tutorial",
+    "wpt-docker-worker"
   ],
   "hvm-builder-trusted": [
     "gecko-3-b-android",
