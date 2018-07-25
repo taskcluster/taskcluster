@@ -25,8 +25,20 @@ class Queue(AsyncBaseClient):
     """
 
     classOptions = {
-        "baseUrl": "https://queue.taskcluster.net/v1"
+        "baseUrl": "https://queue.taskcluster.net/v1/"
     }
+
+    async def ping(self, *args, **kwargs):
+        """
+        Ping Server
+
+        Respond without doing anything.
+        This endpoint is used to check that the service is up.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     async def task(self, *args, **kwargs):
         """
@@ -36,7 +48,7 @@ class Queue(AsyncBaseClient):
         definition may have been modified by queue, if an optional property is
         not specified the queue may provide a default value.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/task.json#``
+        This method gives output: ``v1/task.json#``
 
         This method is ``stable``
         """
@@ -49,7 +61,7 @@ class Queue(AsyncBaseClient):
 
         Get task status structure from `taskId`
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/task-status-response.json#``
+        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``stable``
         """
@@ -77,7 +89,7 @@ class Queue(AsyncBaseClient):
         If you are not interested in listing all the members at once, you may
         use the query-string option `limit` to return fewer.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#``
+        This method gives output: ``v1/list-task-group-response.json#``
 
         This method is ``stable``
         """
@@ -105,7 +117,7 @@ class Queue(AsyncBaseClient):
         If you are not interested in listing all the tasks at once, you may
         use the query-string option `limit` to return fewer.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#``
+        This method gives output: ``v1/list-dependent-tasks-response.json#``
 
         This method is ``stable``
         """
@@ -119,15 +131,15 @@ class Queue(AsyncBaseClient):
         Create a new task, this is an **idempotent** operation, so repeat it if
         you get an internal server error or network connection is dropped.
 
-        **Task `deadline´**, the deadline property can be no more than 5 days
+        **Task `deadline`**: the deadline property can be no more than 5 days
         into the future. This is to limit the amount of pending tasks not being
         taken care of. Ideally, you should use a much shorter deadline.
 
-        **Task expiration**, the `expires` property must be greater than the
+        **Task expiration**: the `expires` property must be greater than the
         task `deadline`. If not provided it will default to `deadline` + one
         year. Notice, that artifacts created by task must expire before the task.
 
-        **Task specific routing-keys**, using the `task.routes` property you may
+        **Task specific routing-keys**: using the `task.routes` property you may
         define task specific routing-keys. If a task has a task specific
         routing-key: `<route>`, then when the AMQP message about the task is
         published, the message will be CC'ed with the routing-key:
@@ -135,15 +147,21 @@ class Queue(AsyncBaseClient):
         for completed tasks you have posted.  The caller must have scope
         `queue:route:<route>` for each route.
 
-        **Dependencies**, any tasks referenced in `task.dependencies` must have
+        **Dependencies**: any tasks referenced in `task.dependencies` must have
         already been created at the time of this call.
 
-        **Important** Any scopes the task requires are also required for creating
-        the task. Please see the Request Payload (Task Definition) for details.
+        **Scopes**: Note that the scopes required to complete this API call depend
+        on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
+        `provisionerId`, and `workerType` properties of the task definition.
 
-        This method takes input: ``http://schemas.taskcluster.net/queue/v1/create-task-request.json#``
+        **Legacy Scopes**: The `queue:create-task:..` scope without a priority and
+        the `queue:define-task:..` and `queue:task-group-id:..` scopes are considered
+        legacy and should not be used. Note that the new, non-legacy scopes require
+        a `queue:scheduler-id:..` scope as well as scopes for the proper priority.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/task-status-response.json#``
+        This method takes input: ``v1/create-task-request.json#``
+
+        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``stable``
         """
@@ -157,9 +175,9 @@ class Queue(AsyncBaseClient):
         **Deprecated**, this is the same as `createTask` with a **self-dependency**.
         This is only present for legacy.
 
-        This method takes input: ``http://schemas.taskcluster.net/queue/v1/create-task-request.json#``
+        This method takes input: ``v1/create-task-request.json#``
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/task-status-response.json#``
+        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``deprecated``
         """
@@ -185,7 +203,7 @@ class Queue(AsyncBaseClient):
         if called with a `taskId` that is already scheduled, or even resolved.
         To reschedule a task previously resolved, use `rerunTask`.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/task-status-response.json#``
+        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``stable``
         """
@@ -209,7 +227,7 @@ class Queue(AsyncBaseClient):
         is not either `failed` or `completed`, this operation will just return
         the current task status.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/task-status-response.json#``
+        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``deprecated``
         """
@@ -233,37 +251,29 @@ class Queue(AsyncBaseClient):
         isn't `unscheduled`, `pending` or `running`, this operation will just
         return the current task status.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/task-status-response.json#``
+        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["cancelTask"], *args, **kwargs)
 
-    async def pollTaskUrls(self, *args, **kwargs):
-        """
-        Get Urls to Poll Pending Tasks
-
-        Get a signed URLs to get and delete messages from azure queue.
-        Once messages are polled from here, you can claim the referenced task
-        with `claimTask`, and afterwards you should always delete the message.
-
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#``
-
-        This method is ``stable``
-        """
-
-        return await self._makeApiCall(self.funcinfo["pollTaskUrls"], *args, **kwargs)
-
     async def claimWork(self, *args, **kwargs):
         """
         Claim Work
 
-        Claim any task, more to be added later... long polling up to 20s.
+        Claim pending task(s) for the given `provisionerId`/`workerType` queue.
 
-        This method takes input: ``http://schemas.taskcluster.net/queue/v1/claim-work-request.json#``
+        If any work is available (even if fewer than the requested number of
+        tasks, this will return immediately. Otherwise, it will block for tens of
+        seconds waiting for work.  If no work appears, it will return an emtpy
+        list of tasks.  Callers should sleep a short while (to avoid denial of
+        service in an error condition) and call the endpoint again.  This is a
+        simple implementation of "long polling".
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/claim-work-response.json#``
+        This method takes input: ``v1/claim-work-request.json#``
+
+        This method gives output: ``v1/claim-work-response.json#``
 
         This method is ``stable``
         """
@@ -274,13 +284,13 @@ class Queue(AsyncBaseClient):
         """
         Claim Task
 
-        claim a task, more to be added later...
+        claim a task - never documented
 
-        This method takes input: ``http://schemas.taskcluster.net/queue/v1/task-claim-request.json#``
+        This method takes input: ``v1/task-claim-request.json#``
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/task-claim-response.json#``
+        This method gives output: ``v1/task-claim-response.json#``
 
-        This method is ``stable``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["claimTask"], *args, **kwargs)
@@ -311,7 +321,7 @@ class Queue(AsyncBaseClient):
         should abort the task and forget about the given `runId`. There is no
         need to resolve the run or upload artifacts.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#``
+        This method gives output: ``v1/task-reclaim-response.json#``
 
         This method is ``stable``
         """
@@ -324,7 +334,7 @@ class Queue(AsyncBaseClient):
 
         Report a task completed, resolving the run as `completed`.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/task-status-response.json#``
+        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``stable``
         """
@@ -343,7 +353,7 @@ class Queue(AsyncBaseClient):
         payload, or other unexpected condition. In these cases we have a task
         exception, which should be reported with `reportException`.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/task-status-response.json#``
+        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``stable``
         """
@@ -368,9 +378,9 @@ class Queue(AsyncBaseClient):
         reason specific to this code. If user-specific code hits a resource that
         is temporarily unavailable worker should report task _failed_.
 
-        This method takes input: ``http://schemas.taskcluster.net/queue/v1/task-exception-request.json#``
+        This method takes input: ``v1/task-exception-request.json#``
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/task-status-response.json#``
+        This method gives output: ``v1/task-status-response.json#``
 
         This method is ``stable``
         """
@@ -436,9 +446,9 @@ class Queue(AsyncBaseClient):
         would otherwise have uploaded. For example docker-worker will upload an
         error artifact, if the file it was supposed to upload doesn't exists or
         turns out to be a directory. Clients requesting an error artifact will
-        get a `403` (Forbidden) response. This is mainly designed to ensure that
-        dependent tasks can distinguish between artifacts that were suppose to
-        be generated and artifacts for which the name is misspelled.
+        get a `424` (Failed Dependency) response. This is mainly designed to
+        ensure that dependent tasks can distinguish between artifacts that were
+        suppose to be generated and artifacts for which the name is misspelled.
 
         **Artifact immutability**, generally speaking you cannot overwrite an
         artifact when created. But if you repeat the request with the same
@@ -451,9 +461,9 @@ class Queue(AsyncBaseClient):
         updated. You should only use this to update the `url` property for
         reference artifacts your process has created.
 
-        This method takes input: ``http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#``
+        This method takes input: ``v1/post-artifact-request.json#``
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#``
+        This method gives output: ``v1/post-artifact-response.json#``
 
         This method is ``stable``
         """
@@ -474,7 +484,7 @@ class Queue(AsyncBaseClient):
         artifact is now present and a message published to pulse.  NOTE: This
         endpoint *must* be called for all artifacts of storageType 'blob'
 
-        This method takes input: ``http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#``
+        This method takes input: ``v1/put-artifact-request.json#``
 
         This method is ``experimental``
         """
@@ -608,7 +618,7 @@ class Queue(AsyncBaseClient):
         By default this end-point will list up-to 1000 artifacts in a single page
         you may limit this with the query-string parameter `limit`.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#``
+        This method gives output: ``v1/list-artifacts-response.json#``
 
         This method is ``experimental``
         """
@@ -630,7 +640,7 @@ class Queue(AsyncBaseClient):
         By default this end-point will list up-to 1000 artifacts in a single page
         you may limit this with the query-string parameter `limit`.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#``
+        This method gives output: ``v1/list-artifacts-response.json#``
 
         This method is ``experimental``
         """
@@ -652,7 +662,7 @@ class Queue(AsyncBaseClient):
         option. By default this end-point will list up to 1000 provisioners in a single
         page. You may limit this with the query-string parameter `limit`.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#``
+        This method gives output: ``v1/list-provisioners-response.json#``
 
         This method is ``experimental``
         """
@@ -669,7 +679,7 @@ class Queue(AsyncBaseClient):
         This does not necessarily mean there is an associated service performing any
         provisioning activity.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/provisioner-response.json#``
+        This method gives output: ``v1/provisioner-response.json#``
 
         This method is ``experimental``
         """
@@ -691,9 +701,9 @@ class Queue(AsyncBaseClient):
         This does not necessarily mean there is an associated service performing any
         provisioning activity.
 
-        This method takes input: ``http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#``
+        This method takes input: ``v1/update-provisioner-request.json#``
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/provisioner-response.json#``
+        This method gives output: ``v1/provisioner-response.json#``
 
         This method is ``experimental``
         """
@@ -712,7 +722,7 @@ class Queue(AsyncBaseClient):
         should be no means expect this to be an accurate number.
         It is, however, a solid estimate of the number of pending tasks.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#``
+        This method gives output: ``v1/pending-tasks-response.json#``
 
         This method is ``stable``
         """
@@ -730,7 +740,7 @@ class Queue(AsyncBaseClient):
         option. By default this end-point will list up to 1000 worker-types in a single
         page. You may limit this with the query-string parameter `limit`.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#``
+        This method gives output: ``v1/list-workertypes-response.json#``
 
         This method is ``experimental``
         """
@@ -743,7 +753,7 @@ class Queue(AsyncBaseClient):
 
         Get a worker-type from a provisioner.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/workertype-response.json#``
+        This method gives output: ``v1/workertype-response.json#``
 
         This method is ``experimental``
         """
@@ -761,9 +771,9 @@ class Queue(AsyncBaseClient):
         provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
         `queue:declare-worker-type:aws-provisioner-v1/gecko-b-1-w2008#description`.
 
-        This method takes input: ``http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#``
+        This method takes input: ``v1/update-workertype-request.json#``
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/workertype-response.json#``
+        This method gives output: ``v1/workertype-response.json#``
 
         This method is ``experimental``
         """
@@ -785,7 +795,7 @@ class Queue(AsyncBaseClient):
         option. By default this end-point will list up to 1000 workers in a single
         page. You may limit this with the query-string parameter `limit`.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/list-workers-response.json#``
+        This method gives output: ``v1/list-workers-response.json#``
 
         This method is ``experimental``
         """
@@ -798,7 +808,7 @@ class Queue(AsyncBaseClient):
 
         Get a worker from a worker-type.
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/worker-response.json#``
+        This method gives output: ``v1/worker-response.json#``
 
         This method is ``experimental``
         """
@@ -811,9 +821,9 @@ class Queue(AsyncBaseClient):
 
         Quarantine a worker
 
-        This method takes input: ``http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#``
+        This method takes input: ``v1/quarantine-worker-request.json#``
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/worker-response.json#``
+        This method gives output: ``v1/worker-response.json#``
 
         This method is ``experimental``
         """
@@ -829,57 +839,45 @@ class Queue(AsyncBaseClient):
         `declareWorker` allows updating one or more properties of a worker as long as the required scopes are
         possessed.
 
-        This method takes input: ``http://schemas.taskcluster.net/queue/v1/update-worker-request.json#``
+        This method takes input: ``v1/update-worker-request.json#``
 
-        This method gives output: ``http://schemas.taskcluster.net/queue/v1/worker-response.json#``
+        This method gives output: ``v1/worker-response.json#``
 
         This method is ``experimental``
         """
 
         return await self._makeApiCall(self.funcinfo["declareWorker"], *args, **kwargs)
 
-    async def ping(self, *args, **kwargs):
-        """
-        Ping Server
-
-        Respond without doing anything.
-        This endpoint is used to check that the service is up.
-
-        This method is ``stable``
-        """
-
-        return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
-
     funcinfo = {
         "cancelTask": {
             'args': ['taskId'],
             'method': 'post',
             'name': 'cancelTask',
-            'output': 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#',
+            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/cancel',
             'stability': 'stable',
         },
         "claimTask": {
             'args': ['taskId', 'runId'],
-            'input': 'http://schemas.taskcluster.net/queue/v1/task-claim-request.json#',
+            'input': 'v1/task-claim-request.json#',
             'method': 'post',
             'name': 'claimTask',
-            'output': 'http://schemas.taskcluster.net/queue/v1/task-claim-response.json#',
+            'output': 'v1/task-claim-response.json#',
             'route': '/task/<taskId>/runs/<runId>/claim',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "claimWork": {
             'args': ['provisionerId', 'workerType'],
-            'input': 'http://schemas.taskcluster.net/queue/v1/claim-work-request.json#',
+            'input': 'v1/claim-work-request.json#',
             'method': 'post',
             'name': 'claimWork',
-            'output': 'http://schemas.taskcluster.net/queue/v1/claim-work-response.json#',
+            'output': 'v1/claim-work-response.json#',
             'route': '/claim-work/<provisionerId>/<workerType>',
             'stability': 'stable',
         },
         "completeArtifact": {
             'args': ['taskId', 'runId', 'name'],
-            'input': 'http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#',
+            'input': 'v1/put-artifact-request.json#',
             'method': 'put',
             'name': 'completeArtifact',
             'route': '/task/<taskId>/runs/<runId>/artifacts/<name>',
@@ -887,55 +885,55 @@ class Queue(AsyncBaseClient):
         },
         "createArtifact": {
             'args': ['taskId', 'runId', 'name'],
-            'input': 'http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#',
+            'input': 'v1/post-artifact-request.json#',
             'method': 'post',
             'name': 'createArtifact',
-            'output': 'http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#',
+            'output': 'v1/post-artifact-response.json#',
             'route': '/task/<taskId>/runs/<runId>/artifacts/<name>',
             'stability': 'stable',
         },
         "createTask": {
             'args': ['taskId'],
-            'input': 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#',
+            'input': 'v1/create-task-request.json#',
             'method': 'put',
             'name': 'createTask',
-            'output': 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#',
+            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>',
             'stability': 'stable',
         },
         "declareProvisioner": {
             'args': ['provisionerId'],
-            'input': 'http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#',
+            'input': 'v1/update-provisioner-request.json#',
             'method': 'put',
             'name': 'declareProvisioner',
-            'output': 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#',
+            'output': 'v1/provisioner-response.json#',
             'route': '/provisioners/<provisionerId>',
             'stability': 'experimental',
         },
         "declareWorker": {
             'args': ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
-            'input': 'http://schemas.taskcluster.net/queue/v1/update-worker-request.json#',
+            'input': 'v1/update-worker-request.json#',
             'method': 'put',
             'name': 'declareWorker',
-            'output': 'http://schemas.taskcluster.net/queue/v1/worker-response.json#',
+            'output': 'v1/worker-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>',
             'stability': 'experimental',
         },
         "declareWorkerType": {
             'args': ['provisionerId', 'workerType'],
-            'input': 'http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#',
+            'input': 'v1/update-workertype-request.json#',
             'method': 'put',
             'name': 'declareWorkerType',
-            'output': 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#',
+            'output': 'v1/workertype-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>',
             'stability': 'experimental',
         },
         "defineTask": {
             'args': ['taskId'],
-            'input': 'http://schemas.taskcluster.net/queue/v1/create-task-request.json#',
+            'input': 'v1/create-task-request.json#',
             'method': 'post',
             'name': 'defineTask',
-            'output': 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#',
+            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/define',
             'stability': 'deprecated',
         },
@@ -957,7 +955,7 @@ class Queue(AsyncBaseClient):
             'args': ['provisionerId'],
             'method': 'get',
             'name': 'getProvisioner',
-            'output': 'http://schemas.taskcluster.net/queue/v1/provisioner-response.json#',
+            'output': 'v1/provisioner-response.json#',
             'route': '/provisioners/<provisionerId>',
             'stability': 'experimental',
         },
@@ -965,7 +963,7 @@ class Queue(AsyncBaseClient):
             'args': ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
             'method': 'get',
             'name': 'getWorker',
-            'output': 'http://schemas.taskcluster.net/queue/v1/worker-response.json#',
+            'output': 'v1/worker-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',
             'stability': 'experimental',
         },
@@ -973,7 +971,7 @@ class Queue(AsyncBaseClient):
             'args': ['provisionerId', 'workerType'],
             'method': 'get',
             'name': 'getWorkerType',
-            'output': 'http://schemas.taskcluster.net/queue/v1/workertype-response.json#',
+            'output': 'v1/workertype-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>',
             'stability': 'experimental',
         },
@@ -981,7 +979,7 @@ class Queue(AsyncBaseClient):
             'args': ['taskId', 'runId'],
             'method': 'get',
             'name': 'listArtifacts',
-            'output': 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#',
+            'output': 'v1/list-artifacts-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/task/<taskId>/runs/<runId>/artifacts',
             'stability': 'experimental',
@@ -990,7 +988,7 @@ class Queue(AsyncBaseClient):
             'args': ['taskId'],
             'method': 'get',
             'name': 'listDependentTasks',
-            'output': 'http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#',
+            'output': 'v1/list-dependent-tasks-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/task/<taskId>/dependents',
             'stability': 'stable',
@@ -999,7 +997,7 @@ class Queue(AsyncBaseClient):
             'args': ['taskId'],
             'method': 'get',
             'name': 'listLatestArtifacts',
-            'output': 'http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#',
+            'output': 'v1/list-artifacts-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/task/<taskId>/artifacts',
             'stability': 'experimental',
@@ -1008,7 +1006,7 @@ class Queue(AsyncBaseClient):
             'args': [],
             'method': 'get',
             'name': 'listProvisioners',
-            'output': 'http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#',
+            'output': 'v1/list-provisioners-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/provisioners',
             'stability': 'experimental',
@@ -1017,7 +1015,7 @@ class Queue(AsyncBaseClient):
             'args': ['taskGroupId'],
             'method': 'get',
             'name': 'listTaskGroup',
-            'output': 'http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#',
+            'output': 'v1/list-task-group-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/task-group/<taskGroupId>/list',
             'stability': 'stable',
@@ -1026,7 +1024,7 @@ class Queue(AsyncBaseClient):
             'args': ['provisionerId'],
             'method': 'get',
             'name': 'listWorkerTypes',
-            'output': 'http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#',
+            'output': 'v1/list-workertypes-response.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/provisioners/<provisionerId>/worker-types',
             'stability': 'experimental',
@@ -1035,7 +1033,7 @@ class Queue(AsyncBaseClient):
             'args': ['provisionerId', 'workerType'],
             'method': 'get',
             'name': 'listWorkers',
-            'output': 'http://schemas.taskcluster.net/queue/v1/list-workers-response.json#',
+            'output': 'v1/list-workers-response.json#',
             'query': ['continuationToken', 'limit', 'quarantined'],
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers',
             'stability': 'experimental',
@@ -1044,7 +1042,7 @@ class Queue(AsyncBaseClient):
             'args': ['provisionerId', 'workerType'],
             'method': 'get',
             'name': 'pendingTasks',
-            'output': 'http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#',
+            'output': 'v1/pending-tasks-response.json#',
             'route': '/pending/<provisionerId>/<workerType>',
             'stability': 'stable',
         },
@@ -1055,20 +1053,12 @@ class Queue(AsyncBaseClient):
             'route': '/ping',
             'stability': 'stable',
         },
-        "pollTaskUrls": {
-            'args': ['provisionerId', 'workerType'],
-            'method': 'get',
-            'name': 'pollTaskUrls',
-            'output': 'http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#',
-            'route': '/poll-task-url/<provisionerId>/<workerType>',
-            'stability': 'stable',
-        },
         "quarantineWorker": {
             'args': ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
-            'input': 'http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#',
+            'input': 'v1/quarantine-worker-request.json#',
             'method': 'put',
             'name': 'quarantineWorker',
-            'output': 'http://schemas.taskcluster.net/queue/v1/worker-response.json#',
+            'output': 'v1/worker-response.json#',
             'route': '/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',
             'stability': 'experimental',
         },
@@ -1076,7 +1066,7 @@ class Queue(AsyncBaseClient):
             'args': ['taskId', 'runId'],
             'method': 'post',
             'name': 'reclaimTask',
-            'output': 'http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#',
+            'output': 'v1/task-reclaim-response.json#',
             'route': '/task/<taskId>/runs/<runId>/reclaim',
             'stability': 'stable',
         },
@@ -1084,16 +1074,16 @@ class Queue(AsyncBaseClient):
             'args': ['taskId', 'runId'],
             'method': 'post',
             'name': 'reportCompleted',
-            'output': 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#',
+            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/runs/<runId>/completed',
             'stability': 'stable',
         },
         "reportException": {
             'args': ['taskId', 'runId'],
-            'input': 'http://schemas.taskcluster.net/queue/v1/task-exception-request.json#',
+            'input': 'v1/task-exception-request.json#',
             'method': 'post',
             'name': 'reportException',
-            'output': 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#',
+            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/runs/<runId>/exception',
             'stability': 'stable',
         },
@@ -1101,7 +1091,7 @@ class Queue(AsyncBaseClient):
             'args': ['taskId', 'runId'],
             'method': 'post',
             'name': 'reportFailed',
-            'output': 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#',
+            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/runs/<runId>/failed',
             'stability': 'stable',
         },
@@ -1109,7 +1099,7 @@ class Queue(AsyncBaseClient):
             'args': ['taskId'],
             'method': 'post',
             'name': 'rerunTask',
-            'output': 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#',
+            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/rerun',
             'stability': 'deprecated',
         },
@@ -1117,7 +1107,7 @@ class Queue(AsyncBaseClient):
             'args': ['taskId'],
             'method': 'post',
             'name': 'scheduleTask',
-            'output': 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#',
+            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/schedule',
             'stability': 'stable',
         },
@@ -1125,7 +1115,7 @@ class Queue(AsyncBaseClient):
             'args': ['taskId'],
             'method': 'get',
             'name': 'status',
-            'output': 'http://schemas.taskcluster.net/queue/v1/task-status-response.json#',
+            'output': 'v1/task-status-response.json#',
             'route': '/task/<taskId>/status',
             'stability': 'stable',
         },
@@ -1133,7 +1123,7 @@ class Queue(AsyncBaseClient):
             'args': ['taskId'],
             'method': 'get',
             'name': 'task',
-            'output': 'http://schemas.taskcluster.net/queue/v1/task.json#',
+            'output': 'v1/task.json#',
             'route': '/task/<taskId>',
             'stability': 'stable',
         },

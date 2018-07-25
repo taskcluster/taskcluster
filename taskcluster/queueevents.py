@@ -79,7 +79,7 @@ class QueueEvents(BaseClient):
         Please, note that messages are also published on this exchange if defined
         using `createTask`.
 
-        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-defined-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``v1/task-defined-message.json#``This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
@@ -148,7 +148,7 @@ class QueueEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'http://schemas.taskcluster.net/queue/v1/task-defined-message.json#',
+            'schema': 'v1/task-defined-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -164,7 +164,7 @@ class QueueEvents(BaseClient):
         efficiently and they would be able to reduce their polling interval
         significantly without affecting general responsiveness.
 
-        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-pending-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``v1/task-pending-message.json#``This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
@@ -233,7 +233,7 @@ class QueueEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'http://schemas.taskcluster.net/queue/v1/task-pending-message.json#',
+            'schema': 'v1/task-pending-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -244,7 +244,7 @@ class QueueEvents(BaseClient):
         Whenever a task is claimed by a worker, a run is started on the worker,
         and a message is posted on this exchange.
 
-        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-running-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``v1/task-running-message.json#``This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
@@ -313,7 +313,7 @@ class QueueEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'http://schemas.taskcluster.net/queue/v1/task-running-message.json#',
+            'schema': 'v1/task-running-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -340,7 +340,7 @@ class QueueEvents(BaseClient):
         smarter to index artifacts after the task in question have completed
         successfully.
 
-        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``v1/artifact-created-message.json#``This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
@@ -409,7 +409,7 @@ class QueueEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'http://schemas.taskcluster.net/queue/v1/artifact-created-message.json#',
+            'schema': 'v1/artifact-created-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -423,7 +423,7 @@ class QueueEvents(BaseClient):
         that completed the task. But information about additional runs is also
         available from the task status structure.
 
-        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-completed-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``v1/task-completed-message.json#``This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
@@ -492,7 +492,7 @@ class QueueEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'http://schemas.taskcluster.net/queue/v1/task-completed-message.json#',
+            'schema': 'v1/task-completed-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -504,7 +504,7 @@ class QueueEvents(BaseClient):
         to this exchange. This is same as worker ran task-specific code, but the
         task specific code exited non-zero.
 
-        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-failed-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``v1/task-failed-message.json#``This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
@@ -573,7 +573,7 @@ class QueueEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'http://schemas.taskcluster.net/queue/v1/task-failed-message.json#',
+            'schema': 'v1/task-failed-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -589,7 +589,7 @@ class QueueEvents(BaseClient):
         The specific _reason_ is evident from that task status structure, refer
         to the `reasonResolved` property for the last run.
 
-        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-exception-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``v1/task-exception-message.json#``This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
@@ -658,7 +658,7 @@ class QueueEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'http://schemas.taskcluster.net/queue/v1/task-exception-message.json#',
+            'schema': 'v1/task-exception-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
@@ -672,7 +672,7 @@ class QueueEvents(BaseClient):
         not. A task group may be resolved multiple times, since new tasks may
         be submitted against an already resolved task group.
 
-        This exchange outputs: ``http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#``This exchange takes the following keys:
+        This exchange outputs: ``v1/task-group-resolved.json#``This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
@@ -705,7 +705,7 @@ class QueueEvents(BaseClient):
                     'name': 'reserved',
                 },
             ],
-            'schema': 'http://schemas.taskcluster.net/queue/v1/task-group-resolved.json#',
+            'schema': 'v1/task-group-resolved.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 

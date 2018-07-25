@@ -22,8 +22,20 @@ class PurgeCache(AsyncBaseClient):
     """
 
     classOptions = {
-        "baseUrl": "https://purge-cache.taskcluster.net/v1"
+        "baseUrl": "https://purge-cache.taskcluster.net/v1/"
     }
+
+    async def ping(self, *args, **kwargs):
+        """
+        Ping Server
+
+        Respond without doing anything.
+        This endpoint is used to check that the service is up.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     async def purgeCache(self, *args, **kwargs):
         """
@@ -33,7 +45,7 @@ class PurgeCache(AsyncBaseClient):
         `provisionerId` and `workerType` in the routing-key. Workers should
         be listening for this message and purge caches when they see it.
 
-        This method takes input: ``http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#``
+        This method takes input: ``v1/purge-cache-request.json#``
 
         This method is ``stable``
         """
@@ -50,7 +62,7 @@ class PurgeCache(AsyncBaseClient):
         endpoint that is specific to their workerType and
         provisionerId.
 
-        This method gives output: ``http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#``
+        This method gives output: ``v1/all-purge-cache-request-list.json#``
 
         This method is ``stable``
         """
@@ -65,31 +77,19 @@ class PurgeCache(AsyncBaseClient):
         a certain time. This is safe to be used in automation from
         workers.
 
-        This method gives output: ``http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#``
+        This method gives output: ``v1/purge-cache-request-list.json#``
 
         This method is ``stable``
         """
 
         return await self._makeApiCall(self.funcinfo["purgeRequests"], *args, **kwargs)
 
-    async def ping(self, *args, **kwargs):
-        """
-        Ping Server
-
-        Respond without doing anything.
-        This endpoint is used to check that the service is up.
-
-        This method is ``stable``
-        """
-
-        return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
-
     funcinfo = {
         "allPurgeRequests": {
             'args': [],
             'method': 'get',
             'name': 'allPurgeRequests',
-            'output': 'http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#',
+            'output': 'v1/all-purge-cache-request-list.json#',
             'query': ['continuationToken', 'limit'],
             'route': '/purge-cache/list',
             'stability': 'stable',
@@ -103,7 +103,7 @@ class PurgeCache(AsyncBaseClient):
         },
         "purgeCache": {
             'args': ['provisionerId', 'workerType'],
-            'input': 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#',
+            'input': 'v1/purge-cache-request.json#',
             'method': 'post',
             'name': 'purgeCache',
             'route': '/purge-cache/<provisionerId>/<workerType>',
@@ -113,7 +113,7 @@ class PurgeCache(AsyncBaseClient):
             'args': ['provisionerId', 'workerType'],
             'method': 'get',
             'name': 'purgeRequests',
-            'output': 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#',
+            'output': 'v1/purge-cache-request-list.json#',
             'query': ['since'],
             'route': '/purge-cache/<provisionerId>/<workerType>',
             'stability': 'stable',

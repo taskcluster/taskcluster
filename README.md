@@ -310,6 +310,18 @@ to some guarded service such as AWS S3, or Azure Table Storage.
 Generally, we add API end-points to this server when we wish to use
 Taskcluster credentials to grant access to a third-party service used
 by many Taskcluster components.
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+auth.ping() # -> None`
+# Async call
+await asyncAuth.ping() # -> None
+```
+
 #### List Clients
 Get a list of all clients.  With `prefix`, only clients for which
 it is a prefix of the clientId are returned.
@@ -322,7 +334,7 @@ keep calling `listClients` with the last `continuationToken` until you
 get a result without a `continuationToken`.
 
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/list-clients-response.json#)
+Required [output schema](v1/list-clients-response.json#)
 
 ```python
 # Sync calls
@@ -340,7 +352,7 @@ Takes the following arguments:
 
   * `clientId`
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/get-client-response.json#)
+Required [output schema](v1/get-client-response.json#)
 
 ```python
 # Sync calls
@@ -371,9 +383,9 @@ Takes the following arguments:
 
   * `clientId`
 
-Required [input schema](http://schemas.taskcluster.net/auth/v1/create-client-request.json#)
+Required [input schema](v1/create-client-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/create-client-response.json#)
+Required [output schema](v1/create-client-response.json#)
 
 ```python
 # Sync calls
@@ -398,7 +410,7 @@ Takes the following arguments:
 
   * `clientId`
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/create-client-response.json#)
+Required [output schema](v1/create-client-response.json#)
 
 ```python
 # Sync calls
@@ -422,9 +434,9 @@ Takes the following arguments:
 
   * `clientId`
 
-Required [input schema](http://schemas.taskcluster.net/auth/v1/create-client-request.json#)
+Required [input schema](v1/create-client-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/get-client-response.json#)
+Required [output schema](v1/get-client-response.json#)
 
 ```python
 # Sync calls
@@ -448,7 +460,7 @@ Takes the following arguments:
 
   * `clientId`
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/get-client-response.json#)
+Required [output schema](v1/get-client-response.json#)
 
 ```python
 # Sync calls
@@ -471,7 +483,7 @@ Takes the following arguments:
 
   * `clientId`
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/get-client-response.json#)
+Required [output schema](v1/get-client-response.json#)
 
 ```python
 # Sync calls
@@ -506,7 +518,7 @@ Get a list of all roles, each role object also includes the list of
 scopes it expands to.
 
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/list-roles-response.json#)
+Required [output schema](v1/list-roles-response.json#)
 
 ```python
 # Sync calls
@@ -525,7 +537,7 @@ Takes the following arguments:
 
   * `roleId`
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/get-role-response.json#)
+Required [output schema](v1/get-role-response.json#)
 
 ```python
 # Sync calls
@@ -553,9 +565,9 @@ Takes the following arguments:
 
   * `roleId`
 
-Required [input schema](http://schemas.taskcluster.net/auth/v1/create-role-request.json#)
+Required [input schema](v1/create-role-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/get-role-response.json#)
+Required [output schema](v1/get-role-response.json#)
 
 ```python
 # Sync calls
@@ -581,9 +593,9 @@ Takes the following arguments:
 
   * `roleId`
 
-Required [input schema](http://schemas.taskcluster.net/auth/v1/create-role-request.json#)
+Required [input schema](v1/create-role-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/get-role-response.json#)
+Required [output schema](v1/get-role-response.json#)
 
 ```python
 # Sync calls
@@ -621,9 +633,9 @@ This call uses the GET method with an HTTP body.  It remains only for
 backward compatibility.
 
 
-Required [input schema](http://schemas.taskcluster.net/auth/v1/scopeset.json#)
+Required [input schema](v1/scopeset.json#)
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/scopeset.json#)
+Required [output schema](v1/scopeset.json#)
 
 ```python
 # Sync calls
@@ -637,9 +649,9 @@ Return an expanded copy of the given scopeset, with scopes implied by any
 roles included.
 
 
-Required [input schema](http://schemas.taskcluster.net/auth/v1/scopeset.json#)
+Required [input schema](v1/scopeset.json#)
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/scopeset.json#)
+Required [output schema](v1/scopeset.json#)
 
 ```python
 # Sync calls
@@ -654,7 +666,7 @@ of scopes and scope restrictions (temporary credentials, assumeScopes, client sc
 and roles).
 
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/scopeset.json#)
+Required [output schema](v1/scopeset.json#)
 
 ```python
 # Sync calls
@@ -738,7 +750,7 @@ Takes the following arguments:
   * `bucket`
   * `prefix`
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#)
+Required [output schema](v1/aws-s3-credentials-response.json#)
 
 ```python
 # Sync calls
@@ -753,7 +765,7 @@ await asyncAuth.awsS3Credentials(level='value', bucket='value', prefix='value') 
 Retrieve a list of all Azure accounts managed by Taskcluster Auth.
 
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#)
+Required [output schema](v1/azure-account-list-response.json#)
 
 ```python
 # Sync calls
@@ -771,7 +783,7 @@ Takes the following arguments:
 
   * `account`
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#)
+Required [output schema](v1/azure-table-list-response.json#)
 
 ```python
 # Sync calls
@@ -798,7 +810,7 @@ Takes the following arguments:
   * `table`
   * `level`
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#)
+Required [output schema](v1/azure-table-access-response.json#)
 
 ```python
 # Sync calls
@@ -818,7 +830,7 @@ Takes the following arguments:
 
   * `account`
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/azure-container-list-response.json#)
+Required [output schema](v1/azure-container-list-response.json#)
 
 ```python
 # Sync calls
@@ -845,7 +857,7 @@ Takes the following arguments:
   * `container`
   * `level`
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/azure-container-response.json#)
+Required [output schema](v1/azure-container-response.json#)
 
 ```python
 # Sync calls
@@ -871,7 +883,7 @@ Takes the following arguments:
 
   * `project`
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#)
+Required [output schema](v1/sentry-dsn-response.json#)
 
 ```python
 # Sync calls
@@ -893,7 +905,7 @@ Takes the following arguments:
 
   * `project`
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#)
+Required [output schema](v1/statsum-token-response.json#)
 
 ```python
 # Sync calls
@@ -909,7 +921,7 @@ Get temporary `token` and `id` for connecting to webhooktunnel
 The token is valid for 96 hours, clients should refresh after expiration.
 
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#)
+Required [output schema](v1/webhooktunnel-token-response.json#)
 
 ```python
 # Sync calls
@@ -927,9 +939,9 @@ credentials for authentication. This way we can use Hawk without having
 the secret credentials leave this service.
 
 
-Required [input schema](http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#)
+Required [input schema](v1/authenticate-hawk-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#)
+Required [output schema](v1/authenticate-hawk-response.json#)
 
 ```python
 # Sync calls
@@ -952,9 +964,9 @@ from the request body. On success, the response contains the clientId
 and scopes as seen by the API method.
 
 
-Required [input schema](http://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#)
+Required [input schema](v1/test-authenticate-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#)
+Required [output schema](v1/test-authenticate-response.json#)
 
 ```python
 # Sync calls
@@ -981,25 +993,13 @@ This method may later be extended to allow specification of client and
 required scopes via query arguments.
 
 
-Required [output schema](http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#)
+Required [output schema](v1/test-authenticate-response.json#)
 
 ```python
 # Sync calls
 auth.testAuthenticateGet() # -> result`
 # Async call
 await asyncAuth.testAuthenticateGet() # -> result
-```
-
-#### Ping Server
-Respond without doing anything.
-This endpoint is used to check that the service is up.
-
-
-```python
-# Sync calls
-auth.ping() # -> None`
-# Async call
-await asyncAuth.ping() # -> None
 ```
 
 
@@ -2089,7 +2089,7 @@ https://www.npmjs.com/package/cron-parser.  For example:
  * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
 
 The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
-the documentation
+https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks
 for more information.
 #### Ping Server
 Respond without doing anything.
@@ -2780,6 +2780,18 @@ message for workers, so they can purge cache upon request.
 
 This document describes the API end-point for publishing the pulse
 message. This is mainly intended to be used by tools.
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+purgeCache.ping() # -> None`
+# Async call
+await asyncPurgeCache.ping() # -> None
+```
+
 #### Purge Worker Cache
 Publish a purge-cache message to purge caches named `cacheName` with
 `provisionerId` and `workerType` in the routing-key. Workers should
@@ -2792,7 +2804,7 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [input schema](http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#)
+Required [input schema](v1/purge-cache-request.json#)
 
 ```python
 # Sync calls
@@ -2811,7 +2823,7 @@ endpoint that is specific to their workerType and
 provisionerId.
 
 
-Required [output schema](http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#)
+Required [output schema](v1/all-purge-cache-request-list.json#)
 
 ```python
 # Sync calls
@@ -2832,7 +2844,7 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [output schema](http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#)
+Required [output schema](v1/purge-cache-request-list.json#)
 
 ```python
 # Sync calls
@@ -2841,18 +2853,6 @@ purgeCache.purgeRequests(provisionerId='value', workerType='value') # -> result
 # Async call
 await asyncPurgeCache.purgeRequests(provisionerId, workerType) # -> result
 await asyncPurgeCache.purgeRequests(provisionerId='value', workerType='value') # -> result
-```
-
-#### Ping Server
-Respond without doing anything.
-This endpoint is used to check that the service is up.
-
-
-```python
-# Sync calls
-purgeCache.ping() # -> None`
-# Async call
-await asyncPurgeCache.ping() # -> None
 ```
 
 
@@ -2901,6 +2901,18 @@ end-points targets the following audience:
  * Schedulers, who create tasks to be executed,
  * Workers, who execute tasks, and
  * Tools, that wants to inspect the state of a task.
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+queue.ping() # -> None`
+# Async call
+await asyncQueue.ping() # -> None
+```
+
 #### Get Task Definition
 This end-point will return the task-definition. Notice that the task
 definition may have been modified by queue, if an optional property is
@@ -2912,7 +2924,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/task.json#)
+Required [output schema](v1/task.json#)
 
 ```python
 # Sync calls
@@ -2932,7 +2944,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+Required [output schema](v1/task-status-response.json#)
 
 ```python
 # Sync calls
@@ -2967,7 +2979,7 @@ Takes the following arguments:
 
   * `taskGroupId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#)
+Required [output schema](v1/list-task-group-response.json#)
 
 ```python
 # Sync calls
@@ -3002,7 +3014,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#)
+Required [output schema](v1/list-dependent-tasks-response.json#)
 
 ```python
 # Sync calls
@@ -3017,15 +3029,15 @@ await asyncQueue.listDependentTasks(taskId='value') # -> result
 Create a new task, this is an **idempotent** operation, so repeat it if
 you get an internal server error or network connection is dropped.
 
-**Task `deadline´**, the deadline property can be no more than 5 days
+**Task `deadline`**: the deadline property can be no more than 5 days
 into the future. This is to limit the amount of pending tasks not being
 taken care of. Ideally, you should use a much shorter deadline.
 
-**Task expiration**, the `expires` property must be greater than the
+**Task expiration**: the `expires` property must be greater than the
 task `deadline`. If not provided it will default to `deadline` + one
 year. Notice, that artifacts created by task must expire before the task.
 
-**Task specific routing-keys**, using the `task.routes` property you may
+**Task specific routing-keys**: using the `task.routes` property you may
 define task specific routing-keys. If a task has a task specific 
 routing-key: `<route>`, then when the AMQP message about the task is
 published, the message will be CC'ed with the routing-key: 
@@ -3033,11 +3045,17 @@ published, the message will be CC'ed with the routing-key:
 for completed tasks you have posted.  The caller must have scope
 `queue:route:<route>` for each route.
 
-**Dependencies**, any tasks referenced in `task.dependencies` must have
+**Dependencies**: any tasks referenced in `task.dependencies` must have
 already been created at the time of this call.
 
-**Important** Any scopes the task requires are also required for creating
-the task. Please see the Request Payload (Task Definition) for details.
+**Scopes**: Note that the scopes required to complete this API call depend
+on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
+`provisionerId`, and `workerType` properties of the task definition.
+
+**Legacy Scopes**: The `queue:create-task:..` scope without a priority and
+the `queue:define-task:..` and `queue:task-group-id:..` scopes are considered
+legacy and should not be used. Note that the new, non-legacy scopes require
+a `queue:scheduler-id:..` scope as well as scopes for the proper priority.
 
 
 
@@ -3045,9 +3063,9 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [input schema](http://schemas.taskcluster.net/queue/v1/create-task-request.json#)
+Required [input schema](v1/create-task-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+Required [output schema](v1/task-status-response.json#)
 
 ```python
 # Sync calls
@@ -3068,9 +3086,9 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [input schema](http://schemas.taskcluster.net/queue/v1/create-task-request.json#)
+Required [input schema](v1/create-task-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+Required [output schema](v1/task-status-response.json#)
 
 ```python
 # Sync calls
@@ -3103,7 +3121,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+Required [output schema](v1/task-status-response.json#)
 
 ```python
 # Sync calls
@@ -3134,7 +3152,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+Required [output schema](v1/task-status-response.json#)
 
 ```python
 # Sync calls
@@ -3165,7 +3183,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+Required [output schema](v1/task-status-response.json#)
 
 ```python
 # Sync calls
@@ -3176,31 +3194,15 @@ await asyncQueue.cancelTask(taskId) # -> result
 await asyncQueue.cancelTask(taskId='value') # -> result
 ```
 
-#### Get Urls to Poll Pending Tasks
-Get a signed URLs to get and delete messages from azure queue.
-Once messages are polled from here, you can claim the referenced task
-with `claimTask`, and afterwards you should always delete the message.
-
-
-
-Takes the following arguments:
-
-  * `provisionerId`
-  * `workerType`
-
-Required [output schema](http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#)
-
-```python
-# Sync calls
-queue.pollTaskUrls(provisionerId, workerType) # -> result`
-queue.pollTaskUrls(provisionerId='value', workerType='value') # -> result
-# Async call
-await asyncQueue.pollTaskUrls(provisionerId, workerType) # -> result
-await asyncQueue.pollTaskUrls(provisionerId='value', workerType='value') # -> result
-```
-
 #### Claim Work
-Claim any task, more to be added later... long polling up to 20s.
+Claim pending task(s) for the given `provisionerId`/`workerType` queue.
+
+If any work is available (even if fewer than the requested number of
+tasks, this will return immediately. Otherwise, it will block for tens of
+seconds waiting for work.  If no work appears, it will return an emtpy
+list of tasks.  Callers should sleep a short while (to avoid denial of
+service in an error condition) and call the endpoint again.  This is a
+simple implementation of "long polling".
 
 
 
@@ -3209,9 +3211,9 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [input schema](http://schemas.taskcluster.net/queue/v1/claim-work-request.json#)
+Required [input schema](v1/claim-work-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/claim-work-response.json#)
+Required [output schema](v1/claim-work-response.json#)
 
 ```python
 # Sync calls
@@ -3223,7 +3225,7 @@ await asyncQueue.claimWork(payload, provisionerId='value', workerType='value') #
 ```
 
 #### Claim Task
-claim a task, more to be added later...
+claim a task - never documented
 
 
 
@@ -3232,9 +3234,9 @@ Takes the following arguments:
   * `taskId`
   * `runId`
 
-Required [input schema](http://schemas.taskcluster.net/queue/v1/task-claim-request.json#)
+Required [input schema](v1/task-claim-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/task-claim-response.json#)
+Required [output schema](v1/task-claim-response.json#)
 
 ```python
 # Sync calls
@@ -3275,7 +3277,7 @@ Takes the following arguments:
   * `taskId`
   * `runId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#)
+Required [output schema](v1/task-reclaim-response.json#)
 
 ```python
 # Sync calls
@@ -3296,7 +3298,7 @@ Takes the following arguments:
   * `taskId`
   * `runId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+Required [output schema](v1/task-status-response.json#)
 
 ```python
 # Sync calls
@@ -3323,7 +3325,7 @@ Takes the following arguments:
   * `taskId`
   * `runId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+Required [output schema](v1/task-status-response.json#)
 
 ```python
 # Sync calls
@@ -3356,9 +3358,9 @@ Takes the following arguments:
   * `taskId`
   * `runId`
 
-Required [input schema](http://schemas.taskcluster.net/queue/v1/task-exception-request.json#)
+Required [input schema](v1/task-exception-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/task-status-response.json#)
+Required [output schema](v1/task-status-response.json#)
 
 ```python
 # Sync calls
@@ -3425,9 +3427,9 @@ worker or the task failed to generate a specific artifact, that you
 would otherwise have uploaded. For example docker-worker will upload an
 error artifact, if the file it was supposed to upload doesn't exists or
 turns out to be a directory. Clients requesting an error artifact will
-get a `403` (Forbidden) response. This is mainly designed to ensure that
-dependent tasks can distinguish between artifacts that were suppose to
-be generated and artifacts for which the name is misspelled.
+get a `424` (Failed Dependency) response. This is mainly designed to
+ensure that dependent tasks can distinguish between artifacts that were
+suppose to be generated and artifacts for which the name is misspelled.
 
 **Artifact immutability**, generally speaking you cannot overwrite an
 artifact when created. But if you repeat the request with the same
@@ -3448,9 +3450,9 @@ Takes the following arguments:
   * `runId`
   * `name`
 
-Required [input schema](http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#)
+Required [input schema](v1/post-artifact-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#)
+Required [output schema](v1/post-artifact-response.json#)
 
 ```python
 # Sync calls
@@ -3480,7 +3482,7 @@ Takes the following arguments:
   * `runId`
   * `name`
 
-Required [input schema](http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#)
+Required [input schema](v1/put-artifact-request.json#)
 
 ```python
 # Sync calls
@@ -3639,7 +3641,7 @@ Takes the following arguments:
   * `taskId`
   * `runId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#)
+Required [output schema](v1/list-artifacts-response.json#)
 
 ```python
 # Sync calls
@@ -3668,7 +3670,7 @@ Takes the following arguments:
 
   * `taskId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#)
+Required [output schema](v1/list-artifacts-response.json#)
 
 ```python
 # Sync calls
@@ -3692,7 +3694,7 @@ option. By default this end-point will list up to 1000 provisioners in a single
 page. You may limit this with the query-string parameter `limit`.
 
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#)
+Required [output schema](v1/list-provisioners-response.json#)
 
 ```python
 # Sync calls
@@ -3714,7 +3716,7 @@ Takes the following arguments:
 
   * `provisionerId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/provisioner-response.json#)
+Required [output schema](v1/provisioner-response.json#)
 
 ```python
 # Sync calls
@@ -3743,9 +3745,9 @@ Takes the following arguments:
 
   * `provisionerId`
 
-Required [input schema](http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#)
+Required [input schema](v1/update-provisioner-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/provisioner-response.json#)
+Required [output schema](v1/provisioner-response.json#)
 
 ```python
 # Sync calls
@@ -3772,7 +3774,7 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#)
+Required [output schema](v1/pending-tasks-response.json#)
 
 ```python
 # Sync calls
@@ -3797,7 +3799,7 @@ Takes the following arguments:
 
   * `provisionerId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#)
+Required [output schema](v1/list-workertypes-response.json#)
 
 ```python
 # Sync calls
@@ -3818,7 +3820,7 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/workertype-response.json#)
+Required [output schema](v1/workertype-response.json#)
 
 ```python
 # Sync calls
@@ -3844,9 +3846,9 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [input schema](http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#)
+Required [input schema](v1/update-workertype-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/workertype-response.json#)
+Required [output schema](v1/workertype-response.json#)
 
 ```python
 # Sync calls
@@ -3876,7 +3878,7 @@ Takes the following arguments:
   * `provisionerId`
   * `workerType`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/list-workers-response.json#)
+Required [output schema](v1/list-workers-response.json#)
 
 ```python
 # Sync calls
@@ -3899,7 +3901,7 @@ Takes the following arguments:
   * `workerGroup`
   * `workerId`
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/worker-response.json#)
+Required [output schema](v1/worker-response.json#)
 
 ```python
 # Sync calls
@@ -3922,9 +3924,9 @@ Takes the following arguments:
   * `workerGroup`
   * `workerId`
 
-Required [input schema](http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#)
+Required [input schema](v1/quarantine-worker-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/worker-response.json#)
+Required [output schema](v1/worker-response.json#)
 
 ```python
 # Sync calls
@@ -3950,9 +3952,9 @@ Takes the following arguments:
   * `workerGroup`
   * `workerId`
 
-Required [input schema](http://schemas.taskcluster.net/queue/v1/update-worker-request.json#)
+Required [input schema](v1/update-worker-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/queue/v1/worker-response.json#)
+Required [output schema](v1/worker-response.json#)
 
 ```python
 # Sync calls
@@ -3961,18 +3963,6 @@ queue.declareWorker(payload, provisionerId='value', workerType='value', workerGr
 # Async call
 await asyncQueue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload) # -> result
 await asyncQueue.declareWorker(payload, provisionerId='value', workerType='value', workerGroup='value', workerId='value') # -> result
-```
-
-#### Ping Server
-Respond without doing anything.
-This endpoint is used to check that the service is up.
-
-
-```python
-# Sync calls
-queue.ping() # -> None`
-# Async call
-await asyncQueue.ping() # -> None
 ```
 
 

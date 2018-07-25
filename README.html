@@ -73,7 +73,7 @@
 presents the entire REST API to consumers as well as being able to generate
 URLs Signed by Hawk credentials.  It can also generate routing keys for
 listening to pulse messages from Taskcluster.</p>
-<p>The library builds the REST API methods from the same <a href="http://docs.taskcluster.net/tools/references/index.html" rel="nofollow">API Reference
+<p>The library builds the REST API methods from the same <a href="/docs/manual/design/apis/reference-format">API Reference
 format</a> as the
 Javascript client library.</p>
 <h2>
@@ -110,8 +110,7 @@ must have <code>auth:create-client:&lt;name&gt;</code> to create a named tempora
 but unnamed temporary credentials can be created regardless of your scopes.</p>
 <h2>
 <a id="user-content-api-documentation" class="anchor" href="#api-documentation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>API Documentation</h2>
-<p>The REST API methods are documented on
-<a href="http://docs.taskcluster.net/" rel="nofollow">http://docs.taskcluster.net/</a></p>
+<p>The REST API methods are documented in the <a href="/docs/reference">reference docs</a>.</p>
 <h2>
 <a id="user-content-query-string-arguments" class="anchor" href="#query-string-arguments" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Query-String arguments</h2>
 <p>Query string arguments are now supported.  In order to use them, you can call
@@ -131,7 +130,7 @@ performance improvements. The code would look something like</p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span>!/usr/bin/env python</span>
 <span class="pl-k">import</span> aiohttp
 <span class="pl-k">import</span> asyncio
-<span class="pl-k">from</span> taskcluster.<span class="pl-k">async</span> <span class="pl-k">import</span> Auth
+<span class="pl-k">from</span> taskcluster.aio <span class="pl-k">import</span> Auth
 
 <span class="pl-k">async</span> <span class="pl-k">def</span> <span class="pl-en">do_ping</span>():
     <span class="pl-k">with</span> aiohttp.ClientSession() <span class="pl-k">as</span> session:
@@ -280,13 +279,13 @@ taskcluster.fromNow(<span class="pl-s"><span class="pl-pds">"</span>1 year<span 
 <div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> asyncio <span class="pl-c"><span class="pl-c">#</span> Only for async </span>
 <span class="pl-k">//</span> Create Auth client instance
 <span class="pl-k">import</span> taskcluster
-<span class="pl-k">import</span> taskcluster.<span class="pl-k">async</span>
+<span class="pl-k">import</span> taskcluster.aio
 
 auth <span class="pl-k">=</span> taskcluster.Auth(options)
 <span class="pl-c"><span class="pl-c">#</span> Below only for async instances, assume already in coroutine</span>
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
-session <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
-asyncAuth <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.Auth(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
+session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
+asyncAuth <span class="pl-k">=</span> taskcluster.aio.Auth(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
 <p>Authentication related API end-points for Taskcluster and related
 services. These API end-points are of interest if you wish to:</p>
 <ul>
@@ -326,6 +325,14 @@ Generally, we add API end-points to this server when we wish to use
 Taskcluster credentials to grant access to a third-party service used
 by many Taskcluster components.</p>
 <h4>
+<a id="user-content-ping-server" class="anchor" href="#ping-server" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
+<p>Respond without doing anything.
+This endpoint is used to check that the service is up.</p>
+<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
+auth.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
+<span class="pl-c"><span class="pl-c">#</span> Async call</span>
+<span class="pl-k">await</span> asyncAuth.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
+<h4>
 <a id="user-content-list-clients" class="anchor" href="#list-clients" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List Clients</h4>
 <p>Get a list of all clients.  With <code>prefix</code>, only clients for which
 it is a prefix of the clientId are returned.</p>
@@ -335,7 +342,7 @@ It may also return a <code>continuationToken</code> even though there are no mor
 results. However, you can only be sure to have seen all results if you
 keep calling <code>listClients</code> with the last <code>continuationToken</code> until you
 get a result without a <code>continuationToken</code>.</p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/list-clients-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/list-clients-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.listClients() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -347,7 +354,7 @@ auth.listClients() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`<
 <ul>
 <li><code>clientId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/get-client-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/get-client-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.client(clientId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.client(<span class="pl-v">clientId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -369,8 +376,8 @@ fail. Use <code>updateClient</code> if you wish to update an existing client.</p
 <ul>
 <li><code>clientId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/create-client-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/create-client-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/create-client-request.json#">input schema</a></p>
+<p>Required <a href="v1/create-client-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.createClient(clientId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.createClient(payload, <span class="pl-v">clientId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -389,7 +396,7 @@ you must reset the accessToken to acquire it again.</p>
 <ul>
 <li><code>clientId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/create-client-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/create-client-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.resetAccessToken(clientId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.resetAccessToken(<span class="pl-v">clientId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -407,8 +414,8 @@ unchanged</p>
 <ul>
 <li><code>clientId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/create-client-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/get-client-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/create-client-request.json#">input schema</a></p>
+<p>Required <a href="v1/get-client-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.updateClient(clientId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.updateClient(payload, <span class="pl-v">clientId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -425,7 +432,7 @@ had been disabled when the corresponding identity's scopes changed.</p>
 <ul>
 <li><code>clientId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/get-client-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/get-client-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.enableClient(clientId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.enableClient(<span class="pl-v">clientId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -441,7 +448,7 @@ corresponding identity's scopes no longer satisfy the client's scopes.</p>
 <ul>
 <li><code>clientId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/get-client-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/get-client-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.disableClient(clientId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.disableClient(<span class="pl-v">clientId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -466,7 +473,7 @@ auth.deleteClient(<span class="pl-v">clientId</span><span class="pl-k">=</span><
 <a id="user-content-list-roles" class="anchor" href="#list-roles" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List Roles</h4>
 <p>Get a list of all roles, each role object also includes the list of
 scopes it expands to.</p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/list-roles-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/list-roles-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.listRoles() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -479,7 +486,7 @@ role expands to.</p>
 <ul>
 <li><code>roleId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/get-role-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/get-role-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.role(roleId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.role(<span class="pl-v">roleId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -498,8 +505,8 @@ in an error response.</p>
 <ul>
 <li><code>roleId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/create-role-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/get-role-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/create-role-request.json#">input schema</a></p>
+<p>Required <a href="v1/get-role-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.createRole(roleId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.createRole(payload, <span class="pl-v">roleId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -517,8 +524,8 @@ in an error response.</p>
 <ul>
 <li><code>roleId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/create-role-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/get-role-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/create-role-request.json#">input schema</a></p>
+<p>Required <a href="v1/get-role-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.updateRole(roleId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.updateRole(payload, <span class="pl-v">roleId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -545,8 +552,8 @@ auth.deleteRole(<span class="pl-v">roleId</span><span class="pl-k">=</span><span
 roles included.</p>
 <p>This call uses the GET method with an HTTP body.  It remains only for
 backward compatibility.</p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/scopeset.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/scopeset.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/scopeset.json#">input schema</a></p>
+<p>Required <a href="v1/scopeset.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.expandScopesGet(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -555,8 +562,8 @@ auth.expandScopesGet(payload) <span class="pl-c"><span class="pl-c">#</span> -&g
 <a id="user-content-expand-scopes-1" class="anchor" href="#expand-scopes-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Expand Scopes</h4>
 <p>Return an expanded copy of the given scopeset, with scopes implied by any
 roles included.</p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/scopeset.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/scopeset.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/scopeset.json#">input schema</a></p>
+<p>Required <a href="v1/scopeset.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.expandScopes(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -566,7 +573,7 @@ auth.expandScopes(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; 
 <p>Return the expanded scopes available in the request, taking into account all sources
 of scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,
 and roles).</p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/scopeset.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/scopeset.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.currentScopes() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -635,7 +642,7 @@ For details on the format returned by EC2 metadata service see:
 <li><code>bucket</code></li>
 <li><code>prefix</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/aws-s3-credentials-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/aws-s3-credentials-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.awsS3Credentials(level, bucket, prefix) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.awsS3Credentials(<span class="pl-v">level</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">bucket</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">prefix</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -645,7 +652,7 @@ auth.awsS3Credentials(<span class="pl-v">level</span><span class="pl-k">=</span>
 <h4>
 <a id="user-content-list-accounts-managed-by-auth" class="anchor" href="#list-accounts-managed-by-auth" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List Accounts Managed by Auth</h4>
 <p>Retrieve a list of all Azure accounts managed by Taskcluster Auth.</p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/azure-account-list-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.azureAccounts() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -657,7 +664,7 @@ auth.azureAccounts() <span class="pl-c"><span class="pl-c">#</span> -&gt; result
 <ul>
 <li><code>account</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/azure-table-list-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.azureTables(account) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.azureTables(<span class="pl-v">account</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -677,7 +684,7 @@ table if it doesn't already exist.</p>
 <li><code>table</code></li>
 <li><code>level</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/azure-table-access-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/azure-table-access-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.azureTableSAS(account, table, level) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.azureTableSAS(<span class="pl-v">account</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">table</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">level</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -691,7 +698,7 @@ auth.azureTableSAS(<span class="pl-v">account</span><span class="pl-k">=</span><
 <ul>
 <li><code>account</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/azure-container-list-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/azure-container-list-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.azureContainers(account) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.azureContainers(<span class="pl-v">account</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -711,7 +718,7 @@ container if it doesn't already exist.</p>
 <li><code>container</code></li>
 <li><code>level</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/azure-container-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/azure-container-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.azureContainerSAS(account, container, level) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.azureContainerSAS(<span class="pl-v">account</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">container</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">level</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -730,7 +737,7 @@ to have the project transferred to a team you have access to if needed</p>
 <ul>
 <li><code>project</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/sentry-dsn-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/sentry-dsn-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.sentryDSN(project) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.sentryDSN(<span class="pl-v">project</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -745,7 +752,7 @@ auth.sentryDSN(<span class="pl-v">project</span><span class="pl-k">=</span><span
 <ul>
 <li><code>project</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/statsum-token-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/statsum-token-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.statsumToken(project) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 auth.statsumToken(<span class="pl-v">project</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -756,7 +763,7 @@ auth.statsumToken(<span class="pl-v">project</span><span class="pl-k">=</span><s
 <a id="user-content-get-token-for-webhooktunnel-proxy" class="anchor" href="#get-token-for-webhooktunnel-proxy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get Token for Webhooktunnel Proxy</h4>
 <p>Get temporary <code>token</code> and <code>id</code> for connecting to webhooktunnel
 The token is valid for 96 hours, clients should refresh after expiration.</p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/webhooktunnel-token-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/webhooktunnel-token-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.webhooktunnelToken() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -768,8 +775,8 @@ that the authenticating client has.</p>
 <p>This method is used by other services that wish rely on Taskcluster
 credentials for authentication. This way we can use Hawk without having
 the secret credentials leave this service.</p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/authenticate-hawk-request.json#">input schema</a></p>
+<p>Required <a href="v1/authenticate-hawk-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.authenticateHawk(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -785,8 +792,8 @@ based on <code>clientScopes</code> in the request body.</p>
 applied, and the resulting scopes are checked against <code>requiredScopes</code>
 from the request body. On success, the response contains the clientId
 and scopes as seen by the API method.</p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/test-authenticate-request.json#">input schema</a></p>
+<p>Required <a href="v1/test-authenticate-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.testAuthenticate(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -805,19 +812,11 @@ On success, the response contains the clientId and scopes as seen by
 the API method.</p>
 <p>This method may later be extended to allow specification of client and
 required scopes via query arguments.</p>
-<p>Required <a href="http://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/test-authenticate-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 auth.testAuthenticateGet() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
 <span class="pl-k">await</span> asyncAuth.testAuthenticateGet() <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
-<h4>
-<a id="user-content-ping-server" class="anchor" href="#ping-server" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
-<p>Respond without doing anything.
-This endpoint is used to check that the service is up.</p>
-<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-auth.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
-<span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncAuth.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
 <h3>
 <a id="user-content-exchanges-in-taskclusterauthevents" class="anchor" href="#exchanges-in-taskclusterauthevents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Exchanges in <code>taskcluster.AuthEvents</code>
 </h3>
@@ -903,13 +902,13 @@ welcome to use these for other purposes, monitoring changes for example.</p>
 <div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> asyncio <span class="pl-c"><span class="pl-c">#</span> Only for async </span>
 <span class="pl-k">//</span> Create AwsProvisioner client instance
 <span class="pl-k">import</span> taskcluster
-<span class="pl-k">import</span> taskcluster.<span class="pl-k">async</span>
+<span class="pl-k">import</span> taskcluster.aio
 
 awsProvisioner <span class="pl-k">=</span> taskcluster.AwsProvisioner(options)
 <span class="pl-c"><span class="pl-c">#</span> Below only for async instances, assume already in coroutine</span>
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
-session <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
-asyncAwsProvisioner <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.AwsProvisioner(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
+session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
+asyncAwsProvisioner <span class="pl-k">=</span> taskcluster.aio.AwsProvisioner(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
 <p>The AWS Provisioner is responsible for provisioning instances on EC2 for use in
 Taskcluster.  The provisioner maintains a set of worker configurations which
 can be managed with an API that is typically available at
@@ -1256,13 +1255,13 @@ awsProvisionerEvents <span class="pl-k">=</span> taskcluster.AwsProvisionerEvent
 <div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> asyncio <span class="pl-c"><span class="pl-c">#</span> Only for async </span>
 <span class="pl-k">//</span> Create EC2Manager client instance
 <span class="pl-k">import</span> taskcluster
-<span class="pl-k">import</span> taskcluster.<span class="pl-k">async</span>
+<span class="pl-k">import</span> taskcluster.aio
 
 eC2Manager <span class="pl-k">=</span> taskcluster.EC2Manager(options)
 <span class="pl-c"><span class="pl-c">#</span> Below only for async instances, assume already in coroutine</span>
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
-session <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
-asyncEC2Manager <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.EC2Manager(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
+session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
+asyncEC2Manager <span class="pl-k">=</span> taskcluster.aio.EC2Manager(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
 <p>A taskcluster service which manages EC2 instances.  This service does not understand any taskcluster concepts intrinsicaly other than using the name <code>workerType</code> to refer to a group of associated instances.  Unless you are working on building a provisioner for AWS, you almost certainly do not want to use this service</p>
 <h4>
 <a id="user-content-see-the-list-of-worker-types-which-are-known-to-be-managed" class="anchor" href="#see-the-list-of-worker-types-which-are-known-to-be-managed" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>See the list of worker types which are known to be managed</h4>
@@ -1513,13 +1512,13 @@ eC2Manager.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</sp
 <div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> asyncio <span class="pl-c"><span class="pl-c">#</span> Only for async </span>
 <span class="pl-k">//</span> Create Github client instance
 <span class="pl-k">import</span> taskcluster
-<span class="pl-k">import</span> taskcluster.<span class="pl-k">async</span>
+<span class="pl-k">import</span> taskcluster.aio
 
 github <span class="pl-k">=</span> taskcluster.Github(options)
 <span class="pl-c"><span class="pl-c">#</span> Below only for async instances, assume already in coroutine</span>
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
-session <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
-asyncGithub <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.Github(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
+session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
+asyncGithub <span class="pl-k">=</span> taskcluster.aio.Github(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
 <p>The github service, typically available at
 <code>github.taskcluster.net</code>, is responsible for publishing pulse
 messages in response to GitHub events.</p>
@@ -1702,13 +1701,13 @@ github service</p>
 <div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> asyncio <span class="pl-c"><span class="pl-c">#</span> Only for async </span>
 <span class="pl-k">//</span> Create Hooks client instance
 <span class="pl-k">import</span> taskcluster
-<span class="pl-k">import</span> taskcluster.<span class="pl-k">async</span>
+<span class="pl-k">import</span> taskcluster.aio
 
 hooks <span class="pl-k">=</span> taskcluster.Hooks(options)
 <span class="pl-c"><span class="pl-c">#</span> Below only for async instances, assume already in coroutine</span>
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
-session <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
-asyncHooks <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.Hooks(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
+session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
+asyncHooks <span class="pl-k">=</span> taskcluster.aio.Hooks(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
 <p>Hooks are a mechanism for creating tasks in response to events.</p>
 <p>Hooks are identified with a <code>hookGroupId</code> and a <code>hookId</code>.</p>
 <p>When an event occurs, the resulting task is automatically created.  The
@@ -1918,13 +1917,13 @@ hooks.triggerHookWithToken(payload, <span class="pl-v">hookGroupId</span><span c
 <div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> asyncio <span class="pl-c"><span class="pl-c">#</span> Only for async </span>
 <span class="pl-k">//</span> Create Index client instance
 <span class="pl-k">import</span> taskcluster
-<span class="pl-k">import</span> taskcluster.<span class="pl-k">async</span>
+<span class="pl-k">import</span> taskcluster.aio
 
 index <span class="pl-k">=</span> taskcluster.Index(options)
 <span class="pl-c"><span class="pl-c">#</span> Below only for async instances, assume already in coroutine</span>
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
-session <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
-asyncIndex <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.Index(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
+session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
+asyncIndex <span class="pl-k">=</span> taskcluster.aio.Index(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
 <p>The task index, typically available at <code>index.taskcluster.net</code>, is
 responsible for indexing tasks. The service ensures that tasks can be
 located by recency and/or arbitrary strings. Common use-cases include:</p>
@@ -2122,13 +2121,13 @@ index.findArtifactFromTask(<span class="pl-v">indexPath</span><span class="pl-k"
 <div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> asyncio <span class="pl-c"><span class="pl-c">#</span> Only for async </span>
 <span class="pl-k">//</span> Create Login client instance
 <span class="pl-k">import</span> taskcluster
-<span class="pl-k">import</span> taskcluster.<span class="pl-k">async</span>
+<span class="pl-k">import</span> taskcluster.aio
 
 login <span class="pl-k">=</span> taskcluster.Login(options)
 <span class="pl-c"><span class="pl-c">#</span> Below only for async instances, assume already in coroutine</span>
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
-session <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
-asyncLogin <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.Login(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
+session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
+asyncLogin <span class="pl-k">=</span> taskcluster.aio.Login(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
 <p>The Login service serves as the interface between external authentication
 systems and Taskcluster credentials.</p>
 <h4>
@@ -2176,13 +2175,13 @@ login.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
 <div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> asyncio <span class="pl-c"><span class="pl-c">#</span> Only for async </span>
 <span class="pl-k">//</span> Create Notify client instance
 <span class="pl-k">import</span> taskcluster
-<span class="pl-k">import</span> taskcluster.<span class="pl-k">async</span>
+<span class="pl-k">import</span> taskcluster.aio
 
 notify <span class="pl-k">=</span> taskcluster.Notify(options)
 <span class="pl-c"><span class="pl-c">#</span> Below only for async instances, assume already in coroutine</span>
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
-session <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
-asyncNotify <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.Notify(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
+session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
+asyncNotify <span class="pl-k">=</span> taskcluster.aio.Notify(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
 <p>The notification service, typically available at <code>notify.taskcluster.net</code>
 listens for tasks with associated notifications and handles requests to
 send emails and post pulse messages.</p>
@@ -2235,18 +2234,26 @@ notify.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
 <div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> asyncio <span class="pl-c"><span class="pl-c">#</span> Only for async </span>
 <span class="pl-k">//</span> Create PurgeCache client instance
 <span class="pl-k">import</span> taskcluster
-<span class="pl-k">import</span> taskcluster.<span class="pl-k">async</span>
+<span class="pl-k">import</span> taskcluster.aio
 
 purgeCache <span class="pl-k">=</span> taskcluster.PurgeCache(options)
 <span class="pl-c"><span class="pl-c">#</span> Below only for async instances, assume already in coroutine</span>
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
-session <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
-asyncPurgeCache <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.PurgeCache(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
+session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
+asyncPurgeCache <span class="pl-k">=</span> taskcluster.aio.PurgeCache(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
 <p>The purge-cache service, typically available at
 <code>purge-cache.taskcluster.net</code>, is responsible for publishing a pulse
 message for workers, so they can purge cache upon request.</p>
 <p>This document describes the API end-point for publishing the pulse
 message. This is mainly intended to be used by tools.</p>
+<h4>
+<a id="user-content-ping-server-8" class="anchor" href="#ping-server-8" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
+<p>Respond without doing anything.
+This endpoint is used to check that the service is up.</p>
+<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
+purgeCache.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
+<span class="pl-c"><span class="pl-c">#</span> Async call</span>
+<span class="pl-k">await</span> asyncPurgeCache.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
 <h4>
 <a id="user-content-purge-worker-cache" class="anchor" href="#purge-worker-cache" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Purge Worker Cache</h4>
 <p>Publish a purge-cache message to purge caches named <code>cacheName</code> with
@@ -2257,7 +2264,7 @@ be listening for this message and purge caches when they see it.</p>
 <li><code>provisionerId</code></li>
 <li><code>workerType</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#" rel="nofollow">input schema</a></p>
+<p>Required <a href="v1/purge-cache-request.json#">input schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 purgeCache.purgeCache(provisionerId, workerType, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
 purgeCache.purgeCache(payload, <span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span>
@@ -2271,7 +2278,7 @@ the set of open purge requests. It should not
 be used by workers. They should use the purgeRequests
 endpoint that is specific to their workerType and
 provisionerId.</p>
-<p>Required <a href="http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/all-purge-cache-request-list.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 purgeCache.allPurgeRequests() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -2286,21 +2293,13 @@ workers.</p>
 <li><code>provisionerId</code></li>
 <li><code>workerType</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/purge-cache-request-list.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 purgeCache.purgeRequests(provisionerId, workerType) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 purgeCache.purgeRequests(<span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
 <span class="pl-k">await</span> asyncPurgeCache.purgeRequests(provisionerId, workerType) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-k">await</span> asyncPurgeCache.purgeRequests(<span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
-<h4>
-<a id="user-content-ping-server-8" class="anchor" href="#ping-server-8" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
-<p>Respond without doing anything.
-This endpoint is used to check that the service is up.</p>
-<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-purgeCache.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
-<span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncPurgeCache.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
 <h3>
 <a id="user-content-exchanges-in-taskclusterpurgecacheevents" class="anchor" href="#exchanges-in-taskclusterpurgecacheevents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Exchanges in <code>taskcluster.PurgeCacheEvents</code>
 </h3>
@@ -2333,13 +2332,13 @@ cache-purge service.</p>
 <div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> asyncio <span class="pl-c"><span class="pl-c">#</span> Only for async </span>
 <span class="pl-k">//</span> Create Queue client instance
 <span class="pl-k">import</span> taskcluster
-<span class="pl-k">import</span> taskcluster.<span class="pl-k">async</span>
+<span class="pl-k">import</span> taskcluster.aio
 
 queue <span class="pl-k">=</span> taskcluster.Queue(options)
 <span class="pl-c"><span class="pl-c">#</span> Below only for async instances, assume already in coroutine</span>
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
-session <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
-asyncQueue <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.Queue(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
+session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
+asyncQueue <span class="pl-k">=</span> taskcluster.aio.Queue(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
 <p>The queue, typically available at <code>queue.taskcluster.net</code>, is responsible
 for accepting tasks and track their state as they are executed by
 workers. In order ensure they are eventually resolved.</p>
@@ -2351,6 +2350,14 @@ end-points targets the following audience:</p>
 <li>Tools, that wants to inspect the state of a task.</li>
 </ul>
 <h4>
+<a id="user-content-ping-server-9" class="anchor" href="#ping-server-9" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
+<p>Respond without doing anything.
+This endpoint is used to check that the service is up.</p>
+<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
+queue.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
+<span class="pl-c"><span class="pl-c">#</span> Async call</span>
+<span class="pl-k">await</span> asyncQueue.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
+<h4>
 <a id="user-content-get-task-definition" class="anchor" href="#get-task-definition" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get Task Definition</h4>
 <p>This end-point will return the task-definition. Notice that the task
 definition may have been modified by queue, if an optional property is
@@ -2359,7 +2366,7 @@ not specified the queue may provide a default value.</p>
 <ul>
 <li><code>taskId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/task.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.task(taskId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.task(<span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2373,7 +2380,7 @@ queue.task(<span class="pl-v">taskId</span><span class="pl-k">=</span><span clas
 <ul>
 <li><code>taskId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task-status-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/task-status-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.status(taskId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.status(<span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2399,7 +2406,7 @@ use the query-string option <code>limit</code> to return fewer.</p>
 <ul>
 <li><code>taskGroupId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/list-task-group-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.listTaskGroup(taskGroupId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.listTaskGroup(<span class="pl-v">taskGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2425,7 +2432,7 @@ use the query-string option <code>limit</code> to return fewer.</p>
 <ul>
 <li><code>taskId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/list-dependent-tasks-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.listDependentTasks(taskId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.listDependentTasks(<span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2436,29 +2443,34 @@ queue.listDependentTasks(<span class="pl-v">taskId</span><span class="pl-k">=</s
 <a id="user-content-create-new-task" class="anchor" href="#create-new-task" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create New Task</h4>
 <p>Create a new task, this is an <strong>idempotent</strong> operation, so repeat it if
 you get an internal server error or network connection is dropped.</p>
-<p><strong>Task `deadline´</strong>, the deadline property can be no more than 5 days
+<p><strong>Task <code>deadline</code></strong>: the deadline property can be no more than 5 days
 into the future. This is to limit the amount of pending tasks not being
 taken care of. Ideally, you should use a much shorter deadline.</p>
-<p><strong>Task expiration</strong>, the <code>expires</code> property must be greater than the
+<p><strong>Task expiration</strong>: the <code>expires</code> property must be greater than the
 task <code>deadline</code>. If not provided it will default to <code>deadline</code> + one
 year. Notice, that artifacts created by task must expire before the task.</p>
-<p><strong>Task specific routing-keys</strong>, using the <code>task.routes</code> property you may
+<p><strong>Task specific routing-keys</strong>: using the <code>task.routes</code> property you may
 define task specific routing-keys. If a task has a task specific
 routing-key: <code>&lt;route&gt;</code>, then when the AMQP message about the task is
 published, the message will be CC'ed with the routing-key:
 <code>route.&lt;route&gt;</code>. This is useful if you want another component to listen
 for completed tasks you have posted.  The caller must have scope
 <code>queue:route:&lt;route&gt;</code> for each route.</p>
-<p><strong>Dependencies</strong>, any tasks referenced in <code>task.dependencies</code> must have
+<p><strong>Dependencies</strong>: any tasks referenced in <code>task.dependencies</code> must have
 already been created at the time of this call.</p>
-<p><strong>Important</strong> Any scopes the task requires are also required for creating
-the task. Please see the Request Payload (Task Definition) for details.</p>
+<p><strong>Scopes</strong>: Note that the scopes required to complete this API call depend
+on the content of the <code>scopes</code>, <code>routes</code>, <code>schedulerId</code>, <code>priority</code>,
+<code>provisionerId</code>, and <code>workerType</code> properties of the task definition.</p>
+<p><strong>Legacy Scopes</strong>: The <code>queue:create-task:..</code> scope without a priority and
+the <code>queue:define-task:..</code> and <code>queue:task-group-id:..</code> scopes are considered
+legacy and should not be used. Note that the new, non-legacy scopes require
+a <code>queue:scheduler-id:..</code> scope as well as scopes for the proper priority.</p>
 <p>Takes the following arguments:</p>
 <ul>
 <li><code>taskId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/create-task-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task-status-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/create-task-request.json#">input schema</a></p>
+<p>Required <a href="v1/task-status-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.createTask(taskId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.createTask(payload, <span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2473,8 +2485,8 @@ This is only present for legacy.</p>
 <ul>
 <li><code>taskId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/create-task-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task-status-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/create-task-request.json#">input schema</a></p>
+<p>Required <a href="v1/task-status-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.defineTask(taskId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.defineTask(payload, <span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2498,7 +2510,7 @@ To reschedule a task previously resolved, use <code>rerunTask</code>.</p>
 <ul>
 <li><code>taskId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task-status-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/task-status-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.scheduleTask(taskId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.scheduleTask(<span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2521,7 +2533,7 @@ the current task status.</p>
 <ul>
 <li><code>taskId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task-status-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/task-status-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.rerunTask(taskId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.rerunTask(<span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2545,7 +2557,7 @@ return the current task status.</p>
 <ul>
 <li><code>taskId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task-status-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/task-status-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.cancelTask(taskId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.cancelTask(<span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2553,32 +2565,21 @@ queue.cancelTask(<span class="pl-v">taskId</span><span class="pl-k">=</span><spa
 <span class="pl-k">await</span> asyncQueue.cancelTask(taskId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-k">await</span> asyncQueue.cancelTask(<span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
 <h4>
-<a id="user-content-get-urls-to-poll-pending-tasks" class="anchor" href="#get-urls-to-poll-pending-tasks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get Urls to Poll Pending Tasks</h4>
-<p>Get a signed URLs to get and delete messages from azure queue.
-Once messages are polled from here, you can claim the referenced task
-with <code>claimTask</code>, and afterwards you should always delete the message.</p>
-<p>Takes the following arguments:</p>
-<ul>
-<li><code>provisionerId</code></li>
-<li><code>workerType</code></li>
-</ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#" rel="nofollow">output schema</a></p>
-<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-queue.pollTaskUrls(provisionerId, workerType) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
-queue.pollTaskUrls(<span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
-<span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncQueue.pollTaskUrls(provisionerId, workerType) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
-<span class="pl-k">await</span> asyncQueue.pollTaskUrls(<span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
-<h4>
 <a id="user-content-claim-work" class="anchor" href="#claim-work" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Claim Work</h4>
-<p>Claim any task, more to be added later... long polling up to 20s.</p>
+<p>Claim pending task(s) for the given <code>provisionerId</code>/<code>workerType</code> queue.</p>
+<p>If any work is available (even if fewer than the requested number of
+tasks, this will return immediately. Otherwise, it will block for tens of
+seconds waiting for work.  If no work appears, it will return an emtpy
+list of tasks.  Callers should sleep a short while (to avoid denial of
+service in an error condition) and call the endpoint again.  This is a
+simple implementation of "long polling".</p>
 <p>Takes the following arguments:</p>
 <ul>
 <li><code>provisionerId</code></li>
 <li><code>workerType</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/claim-work-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/claim-work-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/claim-work-request.json#">input schema</a></p>
+<p>Required <a href="v1/claim-work-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.claimWork(provisionerId, workerType, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.claimWork(payload, <span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2587,14 +2588,14 @@ queue.claimWork(payload, <span class="pl-v">provisionerId</span><span class="pl-
 <span class="pl-k">await</span> asyncQueue.claimWork(payload, <span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
 <h4>
 <a id="user-content-claim-task" class="anchor" href="#claim-task" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Claim Task</h4>
-<p>claim a task, more to be added later...</p>
+<p>claim a task - never documented</p>
 <p>Takes the following arguments:</p>
 <ul>
 <li><code>taskId</code></li>
 <li><code>runId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task-claim-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task-claim-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/task-claim-request.json#">input schema</a></p>
+<p>Required <a href="v1/task-claim-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.claimTask(taskId, runId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.claimTask(payload, <span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">runId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2628,7 +2629,7 @@ need to resolve the run or upload artifacts.</p>
 <li><code>taskId</code></li>
 <li><code>runId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/task-reclaim-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.reclaimTask(taskId, runId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.reclaimTask(<span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">runId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2643,7 +2644,7 @@ queue.reclaimTask(<span class="pl-v">taskId</span><span class="pl-k">=</span><sp
 <li><code>taskId</code></li>
 <li><code>runId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task-status-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/task-status-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.reportCompleted(taskId, runId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.reportCompleted(<span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">runId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2663,7 +2664,7 @@ exception, which should be reported with <code>reportException</code>.</p>
 <li><code>taskId</code></li>
 <li><code>runId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task-status-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/task-status-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.reportFailed(taskId, runId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.reportFailed(<span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">runId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2690,8 +2691,8 @@ is temporarily unavailable worker should report task <em>failed</em>.</p>
 <li><code>taskId</code></li>
 <li><code>runId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task-exception-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/task-status-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/task-exception-request.json#">input schema</a></p>
+<p>Required <a href="v1/task-status-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.reportException(taskId, runId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.reportException(payload, <span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">runId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2748,9 +2749,9 @@ worker or the task failed to generate a specific artifact, that you
 would otherwise have uploaded. For example docker-worker will upload an
 error artifact, if the file it was supposed to upload doesn't exists or
 turns out to be a directory. Clients requesting an error artifact will
-get a <code>403</code> (Forbidden) response. This is mainly designed to ensure that
-dependent tasks can distinguish between artifacts that were suppose to
-be generated and artifacts for which the name is misspelled.</p>
+get a <code>424</code> (Failed Dependency) response. This is mainly designed to
+ensure that dependent tasks can distinguish between artifacts that were
+suppose to be generated and artifacts for which the name is misspelled.</p>
 <p><strong>Artifact immutability</strong>, generally speaking you cannot overwrite an
 artifact when created. But if you repeat the request with the same
 properties the request will succeed as the operation is idempotent.
@@ -2766,8 +2767,8 @@ reference artifacts your process has created.</p>
 <li><code>runId</code></li>
 <li><code>name</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/post-artifact-request.json#">input schema</a></p>
+<p>Required <a href="v1/post-artifact-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.createArtifact(taskId, runId, name, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.createArtifact(payload, <span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">runId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">name</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2791,7 +2792,7 @@ endpoint <em>must</em> be called for all artifacts of storageType 'blob'</p>
 <li><code>runId</code></li>
 <li><code>name</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#" rel="nofollow">input schema</a></p>
+<p>Required <a href="v1/put-artifact-request.json#">input schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.completeArtifact(taskId, runId, name, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
 queue.completeArtifact(payload, <span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">runId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">name</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span>
@@ -2925,7 +2926,7 @@ you may limit this with the query-string parameter <code>limit</code>.</p>
 <li><code>taskId</code></li>
 <li><code>runId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/list-artifacts-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.listArtifacts(taskId, runId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.listArtifacts(<span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">runId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2946,7 +2947,7 @@ you may limit this with the query-string parameter <code>limit</code>.</p>
 <ul>
 <li><code>taskId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/list-artifacts-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.listLatestArtifacts(taskId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.listLatestArtifacts(<span class="pl-v">taskId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2963,7 +2964,7 @@ provisioning activity.</p>
 should call the end-point again with the <code>continuationToken</code> as a query-string
 option. By default this end-point will list up to 1000 provisioners in a single
 page. You may limit this with the query-string parameter <code>limit</code>.</p>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/list-provisioners-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.listProvisioners() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -2978,7 +2979,7 @@ provisioning activity.</p>
 <ul>
 <li><code>provisionerId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/provisioner-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/provisioner-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.getProvisioner(provisionerId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.getProvisioner(<span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2999,8 +3000,8 @@ provisioning activity.</p>
 <ul>
 <li><code>provisionerId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/provisioner-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/update-provisioner-request.json#">input schema</a></p>
+<p>Required <a href="v1/provisioner-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.declareProvisioner(provisionerId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.declareProvisioner(payload, <span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -3020,7 +3021,7 @@ It is, however, a solid estimate of the number of pending tasks.</p>
 <li><code>provisionerId</code></li>
 <li><code>workerType</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/pending-tasks-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.pendingTasks(provisionerId, workerType) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.pendingTasks(<span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -3038,7 +3039,7 @@ page. You may limit this with the query-string parameter <code>limit</code>.</p>
 <ul>
 <li><code>provisionerId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/list-workertypes-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.listWorkerTypes(provisionerId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.listWorkerTypes(<span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -3053,7 +3054,7 @@ queue.listWorkerTypes(<span class="pl-v">provisionerId</span><span class="pl-k">
 <li><code>provisionerId</code></li>
 <li><code>workerType</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/workertype-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/workertype-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.getWorkerType(provisionerId, workerType) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.getWorkerType(<span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -3072,8 +3073,8 @@ provisioner with a body <code>{description: 'This worker type is great'}</code> 
 <li><code>provisionerId</code></li>
 <li><code>workerType</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/workertype-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/update-workertype-request.json#">input schema</a></p>
+<p>Required <a href="v1/workertype-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.declareWorkerType(provisionerId, workerType, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.declareWorkerType(payload, <span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -3095,7 +3096,7 @@ page. You may limit this with the query-string parameter <code>limit</code>.</p>
 <li><code>provisionerId</code></li>
 <li><code>workerType</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/list-workers-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/list-workers-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.listWorkers(provisionerId, workerType) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.listWorkers(<span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -3112,7 +3113,7 @@ queue.listWorkers(<span class="pl-v">provisionerId</span><span class="pl-k">=</s
 <li><code>workerGroup</code></li>
 <li><code>workerId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/worker-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/worker-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.getWorker(provisionerId, workerType, workerGroup, workerId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.getWorker(<span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerGroup</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -3129,8 +3130,8 @@ queue.getWorker(<span class="pl-v">provisionerId</span><span class="pl-k">=</spa
 <li><code>workerGroup</code></li>
 <li><code>workerId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/worker-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/quarantine-worker-request.json#">input schema</a></p>
+<p>Required <a href="v1/worker-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.quarantineWorker(provisionerId, workerType, workerGroup, workerId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.quarantineWorker(payload, <span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerGroup</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -3149,22 +3150,14 @@ possessed.</p>
 <li><code>workerGroup</code></li>
 <li><code>workerId</code></li>
 </ul>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/update-worker-request.json#" rel="nofollow">input schema</a></p>
-<p>Required <a href="http://schemas.taskcluster.net/queue/v1/worker-response.json#" rel="nofollow">output schema</a></p>
+<p>Required <a href="v1/update-worker-request.json#">input schema</a></p>
+<p>Required <a href="v1/worker-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 queue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 queue.declareWorker(payload, <span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerGroup</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
 <span class="pl-k">await</span> asyncQueue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-k">await</span> asyncQueue.declareWorker(payload, <span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerGroup</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
-<h4>
-<a id="user-content-ping-server-9" class="anchor" href="#ping-server-9" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
-<p>Respond without doing anything.
-This endpoint is used to check that the service is up.</p>
-<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-queue.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
-<span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncQueue.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
 <h3>
 <a id="user-content-exchanges-in-taskclusterqueueevents" class="anchor" href="#exchanges-in-taskclusterqueueevents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Exchanges in <code>taskcluster.QueueEvents</code>
 </h3>
@@ -3438,13 +3431,13 @@ if this corner case is of concern to you.</p>
 <div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> asyncio <span class="pl-c"><span class="pl-c">#</span> Only for async </span>
 <span class="pl-k">//</span> Create Secrets client instance
 <span class="pl-k">import</span> taskcluster
-<span class="pl-k">import</span> taskcluster.<span class="pl-k">async</span>
+<span class="pl-k">import</span> taskcluster.aio
 
 secrets <span class="pl-k">=</span> taskcluster.Secrets(options)
 <span class="pl-c"><span class="pl-c">#</span> Below only for async instances, assume already in coroutine</span>
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
-session <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
-asyncSecrets <span class="pl-k">=</span> taskcluster.<span class="pl-k">async</span>.Secrets(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
+session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
+asyncSecrets <span class="pl-k">=</span> taskcluster.aio.Secrets(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
 <p>The secrets service provides a simple key/value store for small bits of secret
 data.  Access is limited by scopes, so values can be considered secret from
 those who do not have the relevant scopes.</p>

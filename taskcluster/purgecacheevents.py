@@ -33,7 +33,7 @@ class PurgeCacheEvents(BaseClient):
         exchange with designated `provisionerId` and `workerType` in the
         routing-key and the name of the `cacheFolder` as payload
 
-        This exchange outputs: ``http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``v1/purge-cache-message.json#``This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key. (required)
 
@@ -60,7 +60,7 @@ class PurgeCacheEvents(BaseClient):
                     'name': 'workerType',
                 },
             ],
-            'schema': 'http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#',
+            'schema': 'v1/purge-cache-message.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
