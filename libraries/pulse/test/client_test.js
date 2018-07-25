@@ -14,41 +14,6 @@ if (!PULSE_CONNECTION_STRING) {
   console.log('see README.md for details');
 }
 
-suite('buildConnectionString', function() {
-  test('missing arguments are an error', function() {
-    assume(() => buildConnectionString({password: 'pw', hostname: 'h', vhost: 'v'}))
-      .throws(/username/);
-    assume(() => buildConnectionString({username: 'me', hostname: 'h', vhost: 'v'}))
-      .throws(/password/);
-    assume(() => buildConnectionString({username: 'me', password: 'pw', vhost: 'v'}))
-      .throws(/hostname/);
-    assume(() => buildConnectionString({username: 'me', password: 'pw', hostname: 'v'}))
-      .throws(/vhost/);
-  });
-
-  test('builds a connection string with given host', function() {
-    assert.equal(
-      buildConnectionString({
-        username: 'me',
-        password: 'letmein',
-        hostname: 'pulse.abc.com',
-        vhost: '/',
-      }),
-      'amqps://me:letmein@pulse.abc.com:5671/%2F');
-  });
-
-  test('builds a connection string with urlencoded values', function() {
-    assert.equal(
-      buildConnectionString({
-        username: 'ali-escaper:/@\\|()<>&',
-        password: 'bobby-tables:/@\\|()<>&',
-        hostname: 'pulse.abc.com',
-        vhost: '/',
-      }),
-      'amqps://ali-escaper:/@%5C%7C()%3C%3E&:bobby-tables:/@%5C%7C()%3C%3E&@pulse.abc.com:5671/%2F');
-  });
-});
-
 const connectionTests = connectionString => {
   // use a unique name for each test run, just to ensure nothing interferes
   const unique = new Date().getTime().toString();
@@ -61,7 +26,7 @@ const connectionTests = connectionString => {
   let monitor;
 
   setup(async function() {
-    monitor = await libMonitor({project: 'tests', mock: true});
+    monitor = await libMonitor({projectName: 'tests', mock: true});
   });
 
   // publish a message to the exchange using just amqplib, declaring the
@@ -321,9 +286,48 @@ const connectionTests = connectionString => {
   });
 };
 
-suite('Client', function() {
-  suite('constructor', async function() {
-    const monitor = await libMonitor({project: 'tests', mock: true});
+suite('client_test.js', function() {
+  suite('buildConnectionString', function() {
+    test('missing arguments are an error', function() {
+      assume(() => buildConnectionString({password: 'pw', hostname: 'h', vhost: 'v'}))
+        .throws(/username/);
+      assume(() => buildConnectionString({username: 'me', hostname: 'h', vhost: 'v'}))
+        .throws(/password/);
+      assume(() => buildConnectionString({username: 'me', password: 'pw', vhost: 'v'}))
+        .throws(/hostname/);
+      assume(() => buildConnectionString({username: 'me', password: 'pw', hostname: 'v'}))
+        .throws(/vhost/);
+    });
+
+    test('builds a connection string with given host', function() {
+      assert.equal(
+        buildConnectionString({
+          username: 'me',
+          password: 'letmein',
+          hostname: 'pulse.abc.com',
+          vhost: '/',
+        }),
+        'amqps://me:letmein@pulse.abc.com:5671/%2F');
+    });
+
+    test('builds a connection string with urlencoded values', function() {
+      assert.equal(
+        buildConnectionString({
+          username: 'ali-escaper:/@\\|()<>&',
+          password: 'bobby-tables:/@\\|()<>&',
+          hostname: 'pulse.abc.com',
+          vhost: '/',
+        }),
+        'amqps://ali-escaper:/@%5C%7C()%3C%3E&:bobby-tables:/@%5C%7C()%3C%3E&@pulse.abc.com:5671/%2F');
+    });
+  });
+
+  suite('Client', function() {
+    let monitor;
+    suiteSetup(async function() {
+      monitor = await libMonitor({projectName: 'tests', mock: true});
+    });
+
     test('rejects connectionString *and* username', function() {
       assume(() => new Client({username: 'me', connectionString: 'amqps://..', monitor}))
         .throws(/along with/);
