@@ -4,189 +4,25 @@ description: |
   Definition of a task that can be scheduled
 type:               object
 properties:
-  provisionerId:
-    title:          "Provisioner Id"
-    description: |
-      Unique identifier for a provisioner, that can supply specified
-      `workerType`
-    type:           string
-    minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
-    pattern:        {$const: identifier-pattern}
-  workerType:
-    title:          "Worker Type"
-    description: |
-      Unique identifier for a worker-type within a specific provisioner
-    type:           string
-    minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
-    pattern:        {$const: identifier-pattern}
-  schedulerId:
-    title:          "Scheduler Identifier"
-    description: |
-      Identifier for the scheduler that _defined_ this task, this can be an
-      identifier for a user or a service like the `"task-graph-scheduler"`.
-      **Task submitter required scopes**
-      `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`.
-      This scope is also necessary to _schedule_ a defined task, or _rerun_ a
-      task.
-    type:           string
-    minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
-    pattern:        {$const: identifier-pattern}
-    default:        '-'
-  taskGroupId:
-    title:          "Task-Group Identifier"
-    description: |
-      Identifier for a group of tasks scheduled together with this task, by
-      scheduler identified by `schedulerId`. For tasks scheduled by the
-      task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
-      property isn't specified.
-    type:           string
-    pattern:        {$const: slugid-pattern}
-  dependencies:
-    title:          "Task Dependencies"
-    description: |
-      List of dependent tasks. These must either be _completed_ or _resolved_
-      before this task is scheduled. See `requires` for semantics.
-    type:           array
-    default:        []
-    items:
-      title:        "Task Dependency"
-      description: |
-        The `taskId` of a task that must be resolved before this task is
-        scheduled.
-      type:         string
-      pattern:      {$const: slugid-pattern}
-    maxItems:       {$const: max-task-dependencies}
-    uniqueItems:    true
-  requires:
-    title:          "Dependency Requirement Semantics"
-    description: |
-      The tasks relation to its dependencies. This property specifies the
-      semantics of the `task.dependencies` property.
-      If `all-completed` is given the task will be scheduled when all
-      dependencies are resolved _completed_ (successful resolution).
-      If `all-resolved` is given the task will be scheduled when all dependencies
-      have been resolved, regardless of what their resolution is.
-    type:           string
-    enum:           {$const: dependency-relation}
-    default:        'all-completed'
-  routes:
-    title:          "Task Specific Routes"
-    description: |
-      List of task specific routes, AMQP messages will be CC'ed to these routes.
-      **Task submitter required scopes** `queue:route:<route>` for
-      each route given.
-    type:           array
-    default:        []
-    items:
-      title:        "Task Specific Route"
-      description: |
-        A task specific route, AMQP messages will be CC'ed with a routing key
-        matching `route.<task-specific route>`. It's possible to dot (`.`) in
-        the task specific route to make sub-keys, etc. See the RabbitMQ
-        [tutorial](http://www.rabbitmq.com/tutorials/tutorial-five-python.html)
-        for examples on how to use routing-keys.
-      type:         string
-      maxLength:    249
-      minLength:    1
-    maxItems:       64
-    uniqueItems:    true
-  priority:
-    title:          "Task Priority"
-    description: |
-      Priority of task, this defaults to `lowest`, equivalent to the
-      _deprecated_ `normal`.
-      **Task submitter required scopes** `queue:task-priority:high` for high
-      priority tasks.
-    type:           string
-    enum:
-      - highest
-      - very-high
-      - high
-      - medium
-      - low
-      - very-low
-      - lowest
-      - normal  # deprecated, maybe we should remove it
-    default:        lowest
-  retries:
-    title:          "Retries"
-    description: |
-      Number of times to retry the task in case of infrastructure issues.
-      An _infrastructure issue_ is a worker node that crashes or is shutdown,
-      these events are to be expected.
-    type:           integer
-    minimum:        0
-    maximum:        49
-    default:        5
-  created:          {$const: created}
-  deadline:         {$const: deadline}
-  expires:
-    title:          "Expiration"
-    description: |
-      Task expiration, time at which task definition and status is deleted.
-      Notice that all artifacts for the task must have an expiration that is no
-      later than this. If this property isn't it will be set to `deadline`
-      plus one year (this default may subject to change).
-    type:           string
-    format:         date-time
-  scopes:
-    title:          "Scopes"
-    description: |
-      List of scopes (or scope-patterns) that the task is
-      authorized to use.
-    type:           array
-    default:        []
-    items:
-      title:        "Scope"
-      description: |
-        A scope (or scope-patterns) which the task is
-        authorized to use. This can be a string or a string
-        ending with `*` which will authorize all scopes for
-        which the string is a prefix.  Scopes must be composed of
-        printable ASCII characters and spaces.
-        **Task submitter required scopes** The same scope-pattern(s) given
-        (otherwise a task could be submitted to perform an action that the
-        task submitter is not authorized to perform).
-      type:         string
-      pattern:      {$const: scope-pattern}
-  payload:
-    title:          "Task Payload"
-    description: |
-      Task-specific payload following worker-specific format. For example the
-      `docker-worker` requires keys like: `image`, `commands` and
-      `features`. Refer to the documentation of `docker-worker` for details.
-    type:           object
-  metadata:         {$ref: "task-metadata.json#"}
-  tags:
-    title:            "Tags"
-    description: |
-      Arbitrary key-value tags (only strings limited to 4k). These can be used
-      to attach informal metadata to a task. Use this for informal tags that
-      tasks can be classified by. You can also think of strings here as
-      candidates for formal metadata. Something like
-      `purpose: 'build' || 'test'` is a good example.
-    type:             object
-    additionalProperties:
-      type:           string
-      maxLength:      4096
-    default:          {}
-  extra:
-    title:            "Extra Data"
-    description: |
-      Object with properties that can hold any kind of extra data that should be
-      associated with the task. This can be data for the task which doesn't
-      fit into `payload`, or it can supplementary data for use in services
-      listening for events from this task. For example this could be details to
-      display on _treeherder_, or information for indexing the task. Please, try
-      to put all related information under one property, so `extra` data keys
-      for treeherder reporting and task indexing don't conflict, hence, we have
-      reusable services. **Warning**, do not stuff large data-sets in here,
-      task definitions should not take-up multiple MiBs.
-    type:             object
-    default:          {}
+  # json-schema-defaults does not follow $ref before applying defaults, so
+  # they must be specified here as wel
+  provisionerId: {$ref: "task.json#/properties/provisionerId"}
+  workerType: {$ref: "task.json#/properties/workerType"}
+  schedulerId: {$ref: "task.json#/properties/schedulerId", default: '-'}
+  taskGroupId: {$ref: "task.json#/properties/taskGroupId"}
+  dependencies: {$ref: "task.json#/properties/dependencies", default: []}
+  requires: {$ref: "task.json#/properties/requires", default: 'all-completed'}
+  routes: {$ref: "task.json#/properties/routes", default: []}
+  priority: {$ref: "task.json#/properties/priority", default: 'lowest'}
+  retries: {$ref: "task.json#/properties/retries", default: 5}
+  expires: {$ref: "task.json#/properties/expires"}
+  created: {$const: created}
+  deadline: {$const: deadline}
+  scopes: {$ref: "task.json#/properties/scopes", default: []}
+  payload: {$ref: "task.json#/properties/payload", default: []}
+  metadata: {$ref: "task-metadata.json#"}
+  tags: {$ref: "task.json#/properties/tags", default: {}}
+  extra: {$ref: "task.json#/properties/extra", default: {}}
 additionalProperties: false
 required:
   - provisionerId

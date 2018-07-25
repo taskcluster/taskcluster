@@ -5,14 +5,7 @@ description: |
 type:                 object
 additionalProperties: false
 properties:
-  taskId:
-    title:            "Task Identifier"
-    description: |
-      Unique task identifier, this is UUID encoded as
-      [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
-      stripped of `=` padding.
-    type:             string
-    pattern:          {$const: slugid-pattern}
+  taskId: {$const: "taskId"}
   runId:
     title:            "Run Identifier"
     description: |

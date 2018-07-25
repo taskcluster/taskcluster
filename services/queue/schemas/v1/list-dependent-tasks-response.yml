@@ -12,7 +12,7 @@ properties:
     pattern:        {$const: slugid-pattern}
   tasks:
     type:           array
-    title:          "Tasks that depends on `taskId`"
+    title:          "Tasks that depend on `taskId`"
     description: |
       List of tasks that have `taskId` in the `task.dependencies` property.
     items:          {$ref: "task-definition-and-status.json#"}
