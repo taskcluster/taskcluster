@@ -46,7 +46,7 @@ class Exchanges {
       publisher = new PulsePublisher({rootUrl, schemaset, client, sendDeadline, exchanges: this});
     }
     if (publish) {
-      assert.equal(rootUrl, 'https://taskclutser.net',
+      assert.equal(rootUrl, 'https://taskcluster.net',
         'only taskcluster.net publishes references to S3');
       assert(aws, 'aws is required to publish references to S3');
       await publisher.publishReference(aws, this.reference());
