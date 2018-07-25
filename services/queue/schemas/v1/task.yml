@@ -24,22 +24,29 @@ properties:
   schedulerId:
     title:          "Scheduler Identifier"
     description: |
-      Identifier for the scheduler that _defined_ this task, this can be an
-      identifier for a user or a service like the `"task-graph-scheduler"`.
-      Along with the `taskGroupId` this is used to form the permission scope
-      `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
-      this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+        All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
+
+        * it can represent the entity that created the task;
+        * it can limit addition of new tasks to a task group: the caller of
+            `createTask` must have a scope related to the `schedulerId` of the task
+            group;
+        * it controls who can manipulate tasks, again by requiring
+            `schedulerId`-related scopes; and
+        * it appears in the routing key for Pulse messages about the task.
     type:           string
+    default:        '-'
     minLength:      {$const: identifier-min-length}
     maxLength:      {$const: identifier-max-length}
     pattern:        {$const: identifier-pattern}
   taskGroupId:
     title:          "Task-Group Identifier"
     description: |
-      Identifier for a group of tasks scheduled together with this task, by
-      scheduler identified by `schedulerId`. For tasks scheduled by the
-      task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
-      property isn't specified.
+      Identifier for a group of tasks scheduled together with this task.
+      Generally, all tasks related to a single event such as a version-control
+      push or a nightly build have the same `taskGroupId`.  This property
+      defaults to `taskId` if it isn't specified.  Tasks with `taskId` equal to
+      the `taskGroupId` are, [by convention](/docs/manual/using/task-graph),
+      decision tasks.
     type:           string
     pattern:        {$const: slugid-pattern}
   dependencies:
@@ -48,6 +55,7 @@ properties:
       List of dependent tasks. These must either be _completed_ or _resolved_
       before this task is scheduled. See `requires` for semantics.
     type:           array
+    default:        []
     items:
       title:        "Task Dependency"
       description: |
@@ -68,19 +76,18 @@ properties:
       have been resolved, regardless of what their resolution is.
     type:           string
     enum:           {$const: dependency-relation}
+    default:        'all-completed'
   routes:
     title:          "Task Specific Routes"
     description: |
-      List of task specific routes, AMQP messages will be CC'ed to these routes.
+      List of task-specific routes. Pulse messages about the task will be CC'ed to
+      `route.<value>` for each `<value>` in this array.
     type:           array
+    default:        []
     items:
       title:        "Task Specific Route"
       description: |
-        A task specific route, AMQP messages will be CC'ed with a routing key
-        matching `route.<task-specific route>`. It's possible to dot (`.`) in
-        the task specific route to make sub-keys, etc. See the RabbitMQ
-        [tutorial](http://www.rabbitmq.com/tutorials/tutorial-five-python.html)
-        for examples on how to use routing-keys.
+        A task specific route.
       type:         string
       maxLength:    249
       minLength:    1
@@ -89,10 +96,12 @@ properties:
   priority:
     title:          "Task Priority"
     description: |
-      Priority of task, this defaults to `lowest` and the scope
+      Priority of task. This defaults to `lowest` and the scope
       `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
-      to define a task with `<priority>`.
+      to define a task with `<priority>`. The `normal` priority is treated as
+      `lowest`.
     type:           string
+    default: 'lowest'
     enum:
       - highest
       - very-high
@@ -101,6 +110,7 @@ properties:
       - low
       - very-low
       - lowest
+      - normal
   retries:
     title:          "Retries"
     description: |
@@ -110,6 +120,7 @@ properties:
     type:           integer
     minimum:        0
     maximum:        49
+    default:        5
   created:          {$const: created}
   deadline:         {$const: deadline}
   expires:
@@ -118,7 +129,7 @@ properties:
       Task expiration, time at which task definition and status is deleted.
       Notice that all artifacts for the task must have an expiration that is no
       later than this. If this property isn't it will be set to `deadline`
-      plus one year (this default may subject to change).
+      plus one year (this default may change).
     type:           string
     format:         date-time
   scopes:
@@ -140,9 +151,9 @@ properties:
   payload:
     title:          "Task Payload"
     description: |
-      Task-specific payload following worker-specific format. For example the
-      `docker-worker` requires keys like: `image`, `commands` and
-      `features`. Refer to the documentation of `docker-worker` for details.
+      Task-specific payload following worker-specific format.
+      Refer to the documentation for the worker implementing
+      `<provisionerId>/<workerType>` for details.
     type:           object
   metadata:         {$ref: "task-metadata.json#"}
   tags:
@@ -154,6 +165,7 @@ properties:
       candidates for formal metadata. Something like
       `purpose: 'build' || 'test'` is a good example.
     type:             object
+    default:          {}
     additionalProperties:
       type:           string
       maxLength:      4096
@@ -167,7 +179,7 @@ properties:
       display on _treeherder_, or information for indexing the task. Please, try
       to put all related information under one property, so `extra` data keys
       for treeherder reporting and task indexing don't conflict, hence, we have
-      reusable services. **Warning**, do not stuff large data-sets in here,
+      reusable services. **Warning**, do not stuff large data-sets in here --
       task definitions should not take-up multiple MiBs.
     type:             object
     default:          {}

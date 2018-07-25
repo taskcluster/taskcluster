@@ -13,6 +13,15 @@ state:
   - completed
   - failed
 
+taskId:
+  title:            "Task Identifier"
+  description: |
+    Unique task identifier, this is UUID encoded as
+    [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+    stripped of `=` padding.
+  type:             string
+  pattern:          {$const: slugid-pattern}
+
 # Identifier pattern, min and max length, these limitations are applied to
 # all common identifiers. It's not personal, it's just that without these
 # limitation, the identifiers won't be useful as routing keys in RabbitMQ
