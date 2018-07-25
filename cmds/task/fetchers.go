@@ -3,13 +3,13 @@ package task
 import (
 	"bufio"
 	"bytes"
-	"fmt"
-	"log"
-	"io"
-	"net/http"
 	"encoding/json"
-	"strings"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
 	"os"
+	"strings"
 
 	"github.com/spf13/pflag"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -61,8 +61,9 @@ func runStatus(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	fmt.Fprintln(out, getRunStatusString(s.Status.Runs[runID].State, s.Status.Runs[runID].ReasonResolved))
 	return nil
 }
+
 // confirmMsg displays confirmation message when --confirm is used
-func confirmMsg(command string, credentials *tcclient.Credentials, args []string)bool {
+func confirmMsg(command string, credentials *tcclient.Credentials, args []string) bool {
 
 	q := makeQueue(credentials)
 	taskID := args[0]
@@ -90,8 +91,6 @@ func confirmMsg(command string, credentials *tcclient.Credentials, args []string
 			return false
 		}
 	}
-
-
 }
 
 // displayNoopMsg displays details when --noop is used
@@ -102,18 +101,15 @@ func displayNoopMsg(command string, credentials *tcclient.Credentials, args []st
 	c, _ := q.Status(taskID)
 	run := c.Status.Runs[len(c.Status.Runs)-1]
 
-
 	t, err := q.Task(taskID)
 	if err != nil {
 		return fmt.Errorf("could not get the task %s: %v", taskID, err)
 	}
 
 	fmt.Printf("%s %s taskid: %s (state: %s)\n", command, t.Metadata.Name, taskID, run.State)
-
 	return nil
-
-
 }
+
 // runName gets the name of a given task.
 func runName(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
 	q := makeQueue(credentials)

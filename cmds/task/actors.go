@@ -20,7 +20,6 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	q := makeQueue(credentials)
 	taskID := args[0]
 
-
 	if noop {
 		displayNoopMsg("Would cancel", credentials, args)
 		return nil
@@ -28,10 +27,9 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 
 	if confirm {
 		var confirm = confirmMsg("Cancels", credentials, args)
-		if ! confirm {
+		if !confirm {
 			return nil
 		}
-
 	}
 
 	c, err := q.CancelTask(taskID)
@@ -41,11 +39,9 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 	}
 
 	run := c.Status.Runs[len(c.Status.Runs)-1]
-
 	fmt.Fprintln(out, getRunStatusString(run.State, run.ReasonResolved))
 	return nil
 }
-
 
 // runRerun re-runs a given task.
 func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, flagSet *pflag.FlagSet) error {
@@ -62,9 +58,8 @@ func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, f
 
 	if confirm {
 		var confirm = confirmMsg("Will re-run", credentials, args)
-		if ! confirm {
+		if !confirm {
 			return nil
-
 		}
 	}
 
@@ -73,11 +68,10 @@ func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, f
 		return fmt.Errorf("could not rerun the task %s: %v", taskID, err)
 
 	}
-	run := c.Status.Runs[len(c.Status.Runs)-1]
 
+	run := c.Status.Runs[len(c.Status.Runs)-1]
 	fmt.Fprintln(out, getRunStatusString(run.State, run.ReasonResolved))
 	return nil
-
 }
 
 // runRetrigger re-triggers a given task.
@@ -122,10 +116,10 @@ func runRetrigger(credentials *tcclient.Credentials, args []string, out io.Write
 	// TaskDefinitionResponse: https://github.com/taskcluster/taskcluster-client-go/blob/88cfe471bfe2eb8fc9bc22d9cde6a65e74a9f3e5/tcqueue/types.go#L1554-L1716
 
 	newDependencies := []string{}
-	newRoutes       := []string{}
+	newRoutes := []string{}
 	if exactRetrigger {
 		newDependencies = t.Dependencies
-		newRoutes       = t.Routes
+		newRoutes = t.Routes
 	}
 
 	newT := &queue.TaskDefinitionRequest{
@@ -178,7 +172,7 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 
 	if confirm {
 		var confirm = confirmMsg("Will complete", credentials, args)
-		if ! confirm {
+		if !confirm {
 			return nil
 		}
 	}
@@ -200,7 +194,6 @@ func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer
 	if err != nil {
 		return fmt.Errorf("could not complete the task %s: %v", taskID, err)
 	}
-
 
 	fmt.Fprintln(out, getRunStatusString(r.Status.Runs[c.RunID].State, r.Status.Runs[c.RunID].ReasonResolved))
 	return nil
