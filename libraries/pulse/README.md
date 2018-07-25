@@ -17,6 +17,7 @@ It also provides higher-level components with simplified APIs for common
 applications. The higher-level components are:
 
 * [PulseConsumer](#PulseConsumer)
+* [PulsePublisher](#PulsePublisher)
 
 If you are using one of the higher-level components, then the details of
 interacting with a Client are not important -- just construct one and move on.
@@ -313,6 +314,174 @@ const consumer = consume({
   // ...
 });
 await consumer.fakeMessage({payload: .., exchange: .., ..});
+```
+
+# PulsePublisher
+
+The library provides high-level support for publishing messages, as well.  The
+support for sending messages is quite simple, but this component also handles
+declaring exchanges, message schemas, and so on, and producing a reference
+document that can be consumed by client libraries to generate easy-to-use
+clients. All of this is similar to what
+[taskcluster-lib-api](https://github.com/taskcluster/taskcluster-lib-api) does
+for HTTP APIs.
+
+## Declaring Exchanges
+
+Begin by creating an `Exchanges` instance. This will collect all exchange
+definitions for the service.
+
+```javascript
+const {Exchanges} = require('taskcluster-lib-pulse');
+
+const exchanges = new Exchanges({
+  serviceName: 'myservice',
+  projectName: 'taskcluster-myservice',
+  version: 'v1',
+  title: 'Title for Exchanges Docs',
+  description: [
+    'Description in **markdown**.',
+    'This will available in reference JSON',
+  ].join(''),
+});
+```
+
+The `serviceName` should match that passed to
+[taskcluster-lib-validate](https://github.com/taskcluster/taskcluster-lib-validate).
+The `projectName` is used to construct exchange and queue names.  It should
+match the pulse namespace (at least in production deployments) and the name
+passed to
+[taskcluster-lib-monitor](https://github.com/taskcluster/taskcluster-lib-monitor),
+
+Having created the `exchanges` instance, declare exchanges on it:
+
+```javascript
+exchanges.declare({
+  exchange: 'egg-hatched',
+  name:     'eggHatched',
+  title:    'Egg has Hatched',
+  description: [
+    'Description in **markdown**.',
+    'This will available in reference JSON',
+  ].join(''),
+  schema:   'egg-hatched-message.yml',
+  messageBuilder: ({eggId, nestId, hatchDate}) => ({eggId, nestId, hatchDate}),
+  routingKeyBuilder: ({eggId}) => ({eggId}),
+  routingKey: [
+    {
+      name: 'routingKeyKind',
+      summary: 'Routing key kind hardcoded to primary in primary routing-key',
+      constant: 'primary',
+      required: true,
+    }, {
+      name: 'eggId',
+      summary: 'The egg that has changed state',
+      required: true,
+      maxSize: 22,
+      multipleWords: false,
+    }, {
+      name:             'reserved',
+      summary:          'Space reserved for future use.',
+      multipleWords:    true,
+      maxSize:          1,
+    }
+  ],
+  CCBuilder: (message) => ([`route.nests.${message.nestId}`]),
+});
+```
+
+The first few arguments describe the exchange.
+ * `exchange` - the name of the exchange.  This will be qualified as `exchange/<projectName>/<name>`.
+ * `name` - the camelCased name of the exchange; used for function names
+ * `title` - short summary
+ * `description` - longer description
+ * `schema` - the schema against which the payload must validate
+
+A message will be sent by calling a method on the publisher named by the `name`
+argument. The arguments to that method are passed unchanged to
+`messageBuilder`, `routingKeyBuilder`, and `CCBuilder`.
+
+The `messageBuilder` returns the message payload. This payload is subsequently
+validated against the schema.
+
+The `routingKeyBuilder` returns the message's routing key either as an object
+containing routing key fields.  That object is then used along with
+`routingKey` to construct a routing key.  Each element in the `routingKey`
+array generates at least one element in the routing key, based on the following
+properties:
+
+ * `name` -- name of the field, drawn from the object returned by `routingKeyBuilder`
+ * `summary` -- short summary of the field
+ * `constant` -- if set, the only allowable value for the field
+ * `required` -- if false, the field is not required and will default to `_`
+ * `maxSize` -- maximum number of characters (or bytes, as this is ASCII) in the field
+ * `multipleWords` -- if true, the value can contain `.`; this can occur only once in the routing key.
+
+By convention, the first element of the routing key is always the constant
+`primary` and the last element is a multi-word field named `reserved`.
+
+Finally, the `CCBuilder` returns a list of strings giving CC'd routing keys for
+this message.  Queues bound with routing patterns matching a CC'd routing key
+will receive the message even if they do not match the primary routing key.
+By convention, these are prefixed with `route.`.
+
+## References
+
+The `exchanges.reference()` method will return a reference document suitable
+for publication under `<rootUrl>/references`.
+
+This is typically passed to [taskcluster-lib-docs](https://github.com/taskcluster/taskcluster-lib-docs) like this:
+
+```javascript
+Docs.documenter({
+  references: [
+    {name: 'events', reference: exchanges.reference()},
+  ], ..
+})
+```
+
+## Publishing
+
+To publish messages, create a new pulse publisher:
+
+```javascript
+const publisher = await exchanges.publisher({
+  rootUrl: cfg.taskcluster.rootUrl,
+  schemaset, // from taskcluster-lib-validate
+  client,    // taskcluster-lib-pulse Client instance
+  sendDeadline: 12000,
+});
+```
+
+Call the methods declared on the exchagnes instance; for example `await
+publisher.eggHatched({eggId, nestId, datehatched})`. The function's promise
+will resolve when the AMQP server has confirmed receipt of the message.
+
+The `sendDeadline` option gives a time (in ms) after which a send operation
+will not be retried.  This value is typically chosen so that operations sending
+messages (such as REST API handlers) can return an error instead of timing out.
+Default is 12 seconds.
+
+For compatibility with the deployment at `taskcluster.net`, this function also
+accepts parameters `publish` and `aws`, which control publishing the references
+to an Amazon S3 bucket.
+
+## Fake Mode
+
+If given a `FakeClient`, the resulting publisher will not actually send messages.
+Instead, it is an EventEmitter that will emit a `message` event for every message
+it sends, containing the processed exchange name, routing key, and so on:
+
+```javascript
+publisher.on('message', msg => {
+  assume(msg).to.deeply.equal({
+    exchange: 'exchange/taskcluster-lib-pulse/v2/egg-hatched',
+    routingKey: 'badEgg',
+    payload: {eggId: 'badEgg'},
+    CCs: [],
+  });
+});
+await publisher.eggHatched({eggId: 'badEgg'});
 ```
 
 # Testing
