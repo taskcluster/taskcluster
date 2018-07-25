@@ -13,7 +13,7 @@ const {makeDir, removeDir} = require('../util/fs');
 let debug = require('debug')('docker-worker:features:dind');
 
 // Maximum time to wait for dind-service to be ready
-const INIT_TIMEOUT = 30 * 1000;
+const INIT_TIMEOUT = 60 * 1000;
 
 class DockerInDocker {
   constructor() {
