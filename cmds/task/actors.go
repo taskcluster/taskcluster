@@ -13,9 +13,24 @@ import (
 )
 
 // runCancel cancels the runs of a given task.
-func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
+func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, flagSet *pflag.FlagSet) error {
+	noop, _ := flagSet.GetBool("noop")
+	confirm, _ := flagSet.GetBool("confirm")
+
 	q := makeQueue(credentials)
 	taskID := args[0]
+
+	if noop {
+		displayNoopMsg("Would cancel", credentials, args)
+		return nil
+	}
+
+	if confirm {
+		var confirm = confirmMsg("Cancels", credentials, args)
+		if !confirm {
+			return nil
+		}
+	}
 
 	c, err := q.CancelTask(taskID)
 	if err != nil {
@@ -29,13 +44,29 @@ func runCancel(credentials *tcclient.Credentials, args []string, out io.Writer, 
 }
 
 // runRerun re-runs a given task.
-func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
+func runRerun(credentials *tcclient.Credentials, args []string, out io.Writer, flagSet *pflag.FlagSet) error {
+	noop, _ := flagSet.GetBool("noop")
+	confirm, _ := flagSet.GetBool("confirm")
+
 	q := makeQueue(credentials)
 	taskID := args[0]
+
+	if noop {
+		displayNoopMsg("Would re-run", credentials, args)
+		return nil
+	}
+
+	if confirm {
+		var confirm = confirmMsg("Will re-run", credentials, args)
+		if !confirm {
+			return nil
+		}
+	}
 
 	c, err := q.RerunTask(taskID)
 	if err != nil {
 		return fmt.Errorf("could not rerun the task %s: %v", taskID, err)
+
 	}
 
 	run := c.Status.Runs[len(c.Status.Runs)-1]
@@ -122,13 +153,28 @@ func runRetrigger(credentials *tcclient.Credentials, args []string, out io.Write
 }
 
 // runComplete completes a given task.
-func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer, _ *pflag.FlagSet) error {
+func runComplete(credentials *tcclient.Credentials, args []string, out io.Writer, flagSet *pflag.FlagSet) error {
+	noop, _ := flagSet.GetBool("noop")
+	confirm, _ := flagSet.GetBool("confirm")
+
 	q := makeQueue(credentials)
 	taskID := args[0]
 
 	s, err := q.Status(taskID)
 	if err != nil {
 		return fmt.Errorf("could not get the status of the task %s: %v", taskID, err)
+	}
+
+	if noop {
+		displayNoopMsg("Would complete", credentials, args)
+		return nil
+	}
+
+	if confirm {
+		var confirm = confirmMsg("Will complete", credentials, args)
+		if !confirm {
+			return nil
+		}
 	}
 
 	c, err := q.ClaimTask(taskID, fmt.Sprint(len(s.Status.Runs)-1), &queue.TaskClaimRequest{
