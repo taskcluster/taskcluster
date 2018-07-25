@@ -28,3 +28,9 @@ Open a browser to http://localhost:6060 to preview the React components.
 Feel free to open an issue, submit a pull request, or contribute however you would like. Understand that this
 documentation is still a work in progress, so file an issue or submit a PR to ask questions or make improvements.
 Thanks!
+
+## Thanks
+
+[![BrowserStack](https://www.browserstack.com/images/mail/browserstack-logo-footer.png)](https://www.browserstack.com/)
+
+Thank you to [BrowserStack](https://www.browserstack.com/) for providing the infrastructure that allows us to test in real browsers.
