@@ -59,7 +59,8 @@ docker save taskcluster/taskcluster-proxy:4.0.1 taskcluster/livelog:v4 taskclust
 # Blow away local docker state because it is never used. On actual workers
 # per-instance storage is initialized and Docker state goes there.
 sudo service docker stop
-sudo rm -rf /var/lib/docker
+# this device is busy, even after docker has stopped..
+# sudo rm -rf /var/lib/docker
 # Blow away the upstart log so logs on worker instances don't contain
 # our logs.
 sudo rm /var/log/upstart/docker.log

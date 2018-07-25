@@ -4,7 +4,7 @@
   "variables": {
     "npmPackage":          "",
     "templateContents":    "",
-    "hvmSourceAMI":        "ami-f7492d8f",
+    "hvmSourceAMI":        "ami-82fea7fa",
     "workerRevision":      ""
   },
   "provisioners": [
