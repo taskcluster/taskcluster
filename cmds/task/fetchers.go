@@ -68,10 +68,16 @@ func confirmMsg(command string, credentials *tcclient.Credentials, args []string
 	q := makeQueue(credentials)
 	taskID := args[0]
 
-	c, _ := q.Status(taskID)
+	c, err := q.Status(taskID)
+	if err != nil {
+		log.Fatal(err)
+	}
 	run := c.Status.Runs[len(c.Status.Runs)-1]
 
-	t, _ := q.Task(taskID)
+	t, err := q.Task(taskID)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	reader := bufio.NewReader(os.Stdin)
 
