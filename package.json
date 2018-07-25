@@ -4,23 +4,19 @@
   "description": "Mozilla Front End Infra Shareable React Components",
   "repository": "mozilla-frontend-infra/components",
   "license": "MPL-2.0",
-  "main": "build/index.js",
+  "main": "./index.js",
   "scripts": {
     "changelog": "auto-changelog",
     "start": "neutrino styleguide:start",
     "build": "neutrino build",
-    "prepare": "neutrino build",
     "deploy": "neutrino styleguide:build && gh-pages --remote upstream -d styleguide",
     "lint": "neutrino lint",
+    "publish": "yarn build && npm publish build",
     "update:authors": "scripts/authors"
   },
-  "files": [
-    "build",
-    "es5"
-  ],
   "devDependencies": {
     "@material-ui/core": "^1.3.1",
-    "auto-changelog": "^1.7.2",
+    "auto-changelog": "^1.8.0",
     "babel-register": "^6.26.0",
     "gh-pages": "^1.2.0",
     "neutrino": "^8.3.0",

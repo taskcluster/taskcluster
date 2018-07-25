@@ -1,3 +1,4 @@
+const fs = require('fs-extra');
 const { join } = require('path');
 
 require('babel-register')({
@@ -25,12 +26,10 @@ module.exports = {
         StyleGuideRenderer: join(__dirname, 'src/styleguide/StyleGuideRenderer.jsx'),
       },
     }],
-    (neutrino) => {
-      if (neutrino.options.command === 'start') {
-        neutrino.config.module.rules.delete('lint');
-      }
-    },
     ['neutrino-preset-mozilla-frontend-infra/react-components', {
+      targets: {
+        browsers: 'ie 9',
+      },
       style: {
         extract: false,
       },
@@ -42,5 +41,16 @@ module.exports = {
         }
       },
     }],
+    (neutrino) => {
+      if (neutrino.options.command === 'start') {
+        neutrino.config.module.rules.delete('lint');
+      }
+
+      neutrino.on('build', () => {
+        ['package.json', 'logo.png', 'LICENSE', 'README.md', 'AUTHORS'].map(file => {
+          fs.copyFileSync(file, join(__dirname, `build/${file}`));
+        })
+      });
+    },
   ],
 };
