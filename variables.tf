@@ -24,16 +24,6 @@ variable "root_url" {
   description = "Taskcluster rootUrl"
 }
 
-variable "tls_crt" {
-  type        = "string"
-  description = "Taskcluster tls certificate"
-}
-
-variable "tls_key" {
-  type        = "string"
-  description = "Taskcluster tls private key"
-}
-
 variable "rabbitmq_hostname" {
   type        = "string"
   description = "rabbitmq hostname"

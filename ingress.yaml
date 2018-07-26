@@ -3,15 +3,13 @@ kind: Ingress
 metadata:
   name: taskcluster-ingress
   annotations:
-    kubernetes.io/ingress.allow-http: "false"
+    kubernetes.io/ingress.class: "nginx"
 spec:
-  tls:
-  - secretName: taskcluster-ingress-tls-secret
   rules:
   - http:
       paths:
         $flatten:
-        - path: '/*'
+        - path: '/'
           backend:
             serviceName: taskcluster-tools
             servicePort: 80
@@ -19,15 +17,11 @@ spec:
           backend:
             serviceName: taskcluster-docs
             servicePort: 80
-        - path: '/docs/*'
-          backend:
-            serviceName: taskcluster-docs
-            servicePort: 80
-        - path: '/references/*'
+        - path: '/references/'
           backend:
             serviceName: taskcluster-references
             servicePort: 80
-        - path: '/schemas/*'
+        - path: '/schemas/'
           backend:
             serviceName: taskcluster-references
             servicePort: 80
@@ -38,7 +32,7 @@ spec:
           each(svc):
             $if: '!(svc.project_name in disabled_services)'
             then:
-              path: '/api/${svc.service_name}/*'
+              path: '/api/${svc.service_name}/'
               backend:
                 serviceName: ${svc.project_name}
                 servicePort: 80
