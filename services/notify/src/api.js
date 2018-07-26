@@ -1,28 +1,28 @@
-let API = require('taskcluster-lib-api');
-let debug = require('debug')('notify');
+const APIBuilder = require('taskcluster-lib-api');
+const debug = require('debug')('notify');
 
-let api = new API({
+const builder = new APIBuilder({
   title: 'Notification Service',
   description: [
     'The notification service, typically available at `notify.taskcluster.net`',
     'listens for tasks with associated notifications and handles requests to',
     'send emails and post pulse messages.',
   ].join('\n'),
-  name: 'notify',
-  schemaPrefix: 'http://schemas.taskcluster.net/notify/v1/',
+  serviceName: 'notify',
+  version: 'v1',
   context: [
     'notifier',
   ],
 });
 
-module.exports = api;
+module.exports = builder;
 
-api.declare({
+builder.declare({
   method:       'post',
   route:        '/email',
   name:         'email',
   scopes:       'notify:email:<address>',
-  input:        'email-request.json',
+  input:        'email-request.yml',
   title:        'Send an Email',
   description: [
     'Send an email to `address`. The content is markdown and will be rendered',
@@ -37,12 +37,12 @@ api.declare({
   res.sendStatus(200);
 });
 
-api.declare({
+builder.declare({
   method:       'post',
   route:        '/pulse',
   name:         'pulse',
   scopes:       'notify:pulse:<routingKey>',
-  input:        'pulse-request.json',
+  input:        'pulse-request.yml',
   title:        'Publish a Pulse Message',
   description: [
     'Publish a message on pulse with the given `routingKey`.',
@@ -54,7 +54,7 @@ api.declare({
   res.sendStatus(200);
 });
 
-api.declare({
+builder.declare({
   method:       'post',
   route:        '/irc',
   name:         'irc',
@@ -63,7 +63,7 @@ api.declare({
     then: 'notify:irc-channel:<channel>',
     else: 'notify:irc-user:<user>',
   },
-  input:        'irc-request.json',
+  input:        'irc-request.yml',
   title:        'Post IRC Message',
   description: [
     'Post a message on IRC to a specific channel or user, or a specific user',

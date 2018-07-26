@@ -19,22 +19,21 @@
     "bluebird": "^3.5.1",
     "debug": "^3.1.0",
     "email-templates": "^2.4.1",
-    "eslint-config-taskcluster": "^3.0.0",
     "irc": "^0.5.0",
     "json-e": "^2.5.0",
     "lodash": "^4.11.1",
     "marked": "^0.3.12",
     "node-sass": "^3.8.0",
     "pug": "^2.0.0-rc.4",
-    "pulse-publisher": "^3.0.3",
+    "pulse-publisher": "^10.0.1",
     "slugid": "^1.1.0",
-    "taskcluster-client": "^3.1.1",
-    "taskcluster-lib-api": "8.0.0",
-    "taskcluster-lib-app": "^3.0.0",
-    "taskcluster-lib-docs": "^4.2.2",
-    "taskcluster-lib-loader": "^2.0.0",
-    "taskcluster-lib-monitor": "^5.4.0",
-    "taskcluster-lib-validate": "^3.0.3",
+    "taskcluster-client": "^11.0.1",
+    "taskcluster-lib-api": "^12.3.0",
+    "taskcluster-lib-app": "^10.0.0",
+    "taskcluster-lib-docs": "^10.0.0",
+    "taskcluster-lib-loader": "^10.0.1",
+    "taskcluster-lib-monitor": "^10.0.0",
+    "taskcluster-lib-validate": "^11.0.2",
     "typed-env-config": "^2.0.0"
   },
   "engine-strict": true,
@@ -43,9 +42,10 @@
     "yarn": "^1.0.0"
   },
   "devDependencies": {
+    "eslint-config-taskcluster": "^3.1.0",
     "mocha": "^5.0.0",
     "mockdate": "^2.0.2",
     "sinon": "^4.2.1",
-    "taskcluster-lib-testing": "^2.0.2"
+    "taskcluster-lib-testing": "^12.0.0"
   }
 }

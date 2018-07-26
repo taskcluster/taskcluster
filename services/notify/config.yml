@@ -20,7 +20,7 @@ defaults:
         - deadline-exceeded
 
   taskcluster:
-    authBaseUrl:      https://auth.taskcluster.net/v1
+    rootUrl:          !env TASKCLUSTER_ROOT_URL
     credentials:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
@@ -28,12 +28,12 @@ defaults:
   monitoring:
     project: !env MONITORING_PROJECT
     enable: !env:bool MONITORING_ENABLE
-  server :
+
+  server:
     port:             !env:number PORT
-    publicUrl:        !env PUBLIC_URL
     env:              !env NODE_ENV
-    forceSSL:         !env:flag FORCE_SSL
-    trustProxy:       false
+    forceSSL:         !env:bool FORCE_SSL
+    trustProxy:       !env:bool TRUST_PROXY
 
   aws:
     accessKeyId:      !env AWS_ACCESS_KEY_ID
@@ -44,6 +44,8 @@ defaults:
   pulse:
     username:         !env PULSE_USERNAME
     password:         !env PULSE_PASSWORD
+    hostname:         !env PULSE_HOSTNAME
+    vhost:            !env PULSE_VHOST
 
   irc:
     server:           !env IRC_SERVER
@@ -56,13 +58,8 @@ defaults:
 
 # Configuration in production
 production:
-  taskcluster:
-    authBaseUrl:      https://auth.taskcluster.net/v1
   server:
-    publicUrl:        https://notify.taskcluster.net
     env:              production
-    forceSSL:         true
-    trustProxy:       true
   irc:
     server:           irc.mozilla.org
     nick:             taskcluster
@@ -77,12 +74,14 @@ test:
     sourceEmail: '"Taskcluster Notify Testing" <taskcluster-noreply-testing@mozilla.com>'
     sqsQueueName: taskcluster-notify-test-irc
     routePrefix: test-notify
+    publishMetaData: false
   monitoring:
     enable: false
   server:
-    publicUrl:        http://localhost:60401
     port:             60401
     env:              development
+    forceSSL:         false
+    trustProxy:       true
   irc:
     server:           irc.mozilla.org
     nick:             taskcluster-test
@@ -90,5 +89,3 @@ test:
     realName:         Taskcluster Test Robot
     queueName:        irc-test-notifications
     port:             6697
-  pulse:
-    fake: true
