@@ -17,7 +17,7 @@ in the shell you are applying this from.
 ## Requirements not managed here
 
 - A kubernetes cluster
-- An ingress controller in said cluster
+- An (nginx ingress controller)[https://kubernetes.github.io/ingress-nginx/deploy/] in said cluster
 - A rabbitmq cluster with the RabbitMQ management plugin enabled
 
 ## Usage
