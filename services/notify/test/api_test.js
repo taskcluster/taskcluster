@@ -1,67 +1,64 @@
-suite('API', () => {
-  let assert = require('assert');
-  let helper = require('./helper');
+const assert = require('assert');
+const helper = require('./helper');
 
-  test('ping', () => {
-    return helper.notify.ping();
+helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, skipping) {
+  helper.withPulse(mock, skipping);
+  helper.withSES(mock, skipping);
+  helper.withSQS(mock, skipping);
+  helper.withServer(mock, skipping);
+
+  test('ping', async function() {
+    await helper.apiClient.ping();
   });
 
-  test('pulse', async () => {
-    let result = helper.publisher.on('fakePublish', message => {
-      assert.deepEqual(message.payload.message, {test: 123});
-      assert.deepEqual(message.CCs, ['route.notify-test']);
+  test('pulse', async function() {
+    await helper.apiClient.pulse({routingKey: 'notify-test', message: {test: 123}});
+    helper.checkNextMessage('notification', m => {
+      assert.deepEqual(m.payload.message, {test: 123});
+      assert.deepEqual(m.CCs, ['route.notify-test']);
     });
-    await helper.notify.pulse({routingKey: 'notify-test', message: {test: 123}});
-    return result;
   });
 
-  test('email', async () => {
-    let result = helper.checkSqsMessage(helper.emailSqsQueueUrl, body => {
-      let j = JSON.parse(body.Message);
-      assert.deepEqual(j.delivery.recipients, ['success@simulator.amazonses.com']);
-    });
-    await helper.notify.email({
+  test('email', async function() {
+    await helper.apiClient.email({
       address:'success@simulator.amazonses.com',
       subject:'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is Complete',
       content:'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes.',
       link: {text: 'Inspect Task', href: 'https://tools.taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ'},
     });
-    return result;
+    helper.checkEmails(email => {
+      assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
+    });
   });
 
-  test('email without link', async () => {
-    let result= helper.checkSqsMessage(helper.emailSqsQueueUrl, body => {
-      let j = JSON.parse(body.Message);
-      assert.deepEqual(j.delivery.recipients, ['success@simulator.amazonses.com']);
-    });
-    await helper.notify.email({
+  test('email without link', async function() {
+    await helper.apiClient.email({
       address:'success@simulator.amazonses.com',
       subject:'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is Complete',
       content:'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes.',
     });
-    return result;
+    helper.checkEmails(email => {
+      assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
+    });
   });
 
-  test('email with fullscreen template', async () => {
-    let result = helper.checkSqsMessage(helper.emailSqsQueueUrl, body => {
-      let j = JSON.parse(body.Message);
-      assert.deepEqual(j.delivery.recipients, ['success@simulator.amazonses.com']);
-    });
-    await helper.notify.email({
+  test('email with fullscreen template', async function() {
+    await helper.apiClient.email({
       address:'success@simulator.amazonses.com',
       subject:'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is Complete',
       content:'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes.',
       template:'fullscreen',
     });
-    return result;
+    helper.checkEmails(email => {
+      assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
+    });
   });
 
-  test('irc', async () => {
-    let result = helper.checkSqsMessage(helper.sqsQueueUrl, body => {
+  test('irc', async function() {
+    await helper.apiClient.irc({message: 'Does this work?', channel: '#taskcluster-test'});
+    await helper.checkSQSMessage(helper.ircSQSQueue, body => {
       assert.equal(body.channel, '#taskcluster-test');
       assert.equal(body.message, 'Does this work?');
     });
-    await helper.notify.irc({message: 'Does this work?', channel: '#taskcluster-test'});
-    return result;
   });
 });

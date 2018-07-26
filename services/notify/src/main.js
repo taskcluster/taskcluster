@@ -1,21 +1,22 @@
-let debug             = require('debug')('notify');
-let appsetup          = require('taskcluster-lib-app');
-let loader            = require('taskcluster-lib-loader');
-let config            = require('typed-env-config');
-let monitor           = require('taskcluster-lib-monitor');
-let validator         = require('taskcluster-lib-validate');
-let docs              = require('taskcluster-lib-docs');
-let taskcluster       = require('taskcluster-client');
-let _                 = require('lodash');
-let v1                = require('./api');
-let Notifier          = require('./notifier');
-let RateLimit         = require('./ratelimit');
-let Handler           = require('./handler');
-let exchanges         = require('./exchanges');
-let IRC               = require('./irc');
+const debug = require('debug')('notify');
+const aws = require('aws-sdk');
+const App = require('taskcluster-lib-app');
+const loader = require('taskcluster-lib-loader');
+const config = require('typed-env-config');
+const monitor = require('taskcluster-lib-monitor');
+const SchemaSet = require('taskcluster-lib-validate');
+const docs = require('taskcluster-lib-docs');
+const taskcluster = require('taskcluster-client');
+const _ = require('lodash');
+const builder = require('./api');
+const Notifier = require('./notifier');
+const RateLimit = require('./ratelimit');
+const Handler = require('./handler');
+const exchanges = require('./exchanges');
+const IRC = require('./irc');
 
 // Create component loader
-let load = loader({
+const load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({profile}) => config({profile}),
@@ -24,7 +25,8 @@ let load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: cfg.monitoring.project || 'taskcluster-notify',
+      rootUrl: cfg.taskcluster.rootUrl,
+      projectName: cfg.monitoring.project || 'taskcluster-notify',
       enable: cfg.monitoring.enable,
       credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
@@ -32,10 +34,10 @@ let load = loader({
     }),
   },
 
-  validator: {
+  schemaset: {
     requires: ['cfg'],
-    setup: ({cfg}) => validator({
-      prefix: 'notify/v1/',
+    setup: ({cfg}) => new SchemaSet({
+      serviceName: 'notify',
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
     }),
@@ -44,22 +46,22 @@ let load = loader({
   reference: {
     requires: ['cfg'],
     setup: ({cfg}) => exchanges.reference({
-      exchangePrefix:   cfg.app.exchangePrefix,
+      rootUrl:          cfg.taskcluster.rootUrl,
       credentials:      cfg.pulse,
     }),
   },
 
   docs: {
-    requires: ['cfg', 'validator', 'reference'],
-    setup: ({cfg, validator, reference}) => docs.documenter({
+    requires: ['cfg', 'schemaset', 'reference'],
+    setup: async ({cfg, schemaset, reference}) => await docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
       publish: cfg.app.publishMetaData,
-      schemas: validator.schemas,
+      schemaset,
       references: [
         {
           name: 'api',
-          reference: v1.reference({baseUrl: cfg.server.publicUrl + '/v1'}),
+          reference: builder.reference(),
         }, {
           name: 'events',
           reference: reference,
@@ -74,12 +76,11 @@ let load = loader({
   },
 
   publisher: {
-    requires: ['cfg', 'validator', 'monitor'],
-    setup: ({cfg, validator, monitor}) => exchanges.setup({
+    requires: ['cfg', 'schemaset', 'monitor'],
+    setup: async ({cfg, schemaset, monitor}) => exchanges.setup({
+      rootUrl:            cfg.taskcluster.rootUrl,
       credentials:        cfg.pulse,
-      exchangePrefix:     cfg.app.exchangePrefix,
-      validator:          validator,
-      referencePrefix:    'notify/v1/exchanges.json',
+      validator:          await schemaset.validator(cfg.taskcluster.rootUrl),
       publish:            cfg.app.publishMetaData,
       aws:                cfg.aws,
       monitor:            monitor.prefix('publisher'),
@@ -95,8 +96,18 @@ let load = loader({
   },
 
   queue: {
-    requires: [],
-    setup: () => new taskcluster.Queue(),
+    requires: ['cfg'],
+    setup: ({cfg}) => new taskcluster.Queue({
+      rootUrl: cfg.taskcluster.rootUrl,
+      credentials: cfg.taskcluster.credentials,
+    }),
+  },
+
+  queueEvents: {
+    requires: ['cfg'],
+    setup: ({cfg}) => new taskcluster.QueueEvents({
+      rootUrl: cfg.taskcluster.rootUrl,
+    }),
   },
 
   rateLimit: {
@@ -107,16 +118,37 @@ let load = loader({
     }),
   },
 
-  notifier: {
-    requires: ['cfg', 'publisher', 'rateLimit'],
-    setup: ({cfg, publisher, rateLimit}) => new Notifier({
-      email: cfg.app.sourceEmail,
-      aws: cfg.aws,
-      queueName: cfg.app.sqsQueueName,
-      emailBlacklist: cfg.app.emailBlacklist,
-      publisher,
-      rateLimit,
+  ses: {
+    requires: ['cfg'],
+    setup: ({cfg}) => new aws.SES({
+      params: {
+        Source: cfg.app.sourceEmail,
+      },
+      ...cfg.aws,
     }),
+  },
+
+  sqs: {
+    requires: ['cfg'],
+    setup: ({cfg}) => new aws.SQS({
+      ...cfg.aws,
+    }),
+  },
+
+  notifier: {
+    requires: ['cfg', 'publisher', 'rateLimit', 'ses', 'sqs'],
+    setup: async ({cfg, publisher, rateLimit, ses, sqs}) => {
+      const n = new Notifier({
+        queueName: cfg.app.sqsQueueName,
+        emailBlacklist: cfg.app.emailBlacklist,
+        publisher,
+        rateLimit,
+        ses,
+        sqs,
+      });
+      await n.setup();
+      return n;
+    },
   },
 
   irc: {
@@ -133,45 +165,41 @@ let load = loader({
   },
 
   handler: {
-    requires: ['profile', 'cfg', 'monitor', 'notifier', 'validator', 'listener', 'queue'],
-    setup: async ({profile, cfg, monitor, notifier, validator, listener, queue}) => {
+    requires: ['profile', 'cfg', 'monitor', 'notifier', 'listener', 'queue', 'queueEvents'],
+    setup: async ({profile, cfg, monitor, notifier, listener, queue, queueEvents}) => {
       let handler = new Handler({
         notifier,
-        validator,
         monitor:                  monitor.prefix('handler'),
         routePrefix:              cfg.app.routePrefix,
         ignoreTaskReasonResolved: cfg.app.ignoreTaskReasonResolved,
         listener,
         queue,
+        queueEvents,
         testing:                  profile === 'test',
       });
-      return handler.listen();
+      await handler.listen();
+      return handler;
     },
   },
 
   api: {
-    requires: ['cfg', 'monitor', 'validator', 'notifier'],
-    setup: ({cfg, monitor, validator, notifier}) => v1.setup({
+    requires: ['cfg', 'monitor', 'schemaset', 'notifier'],
+    setup: ({cfg, monitor, schemaset, notifier}) => builder.build({
+      rootUrl:          cfg.taskcluster.rootUrl,
       context:          {notifier},
-      authBaseUrl:      cfg.taskcluster.authBaseUrl,
       publish:          cfg.app.publishMetaData,
-      baseUrl:          cfg.server.publicUrl + '/v1',
-      referencePrefix:  'notify/v1/api.json',
       aws:              cfg.aws,
       monitor:          monitor.prefix('api'),
-      validator,
+      schemaset,
     }),
   },
 
   server: {
     requires: ['cfg', 'api', 'docs'],
-    setup: ({cfg, api, docs}) => {
-
-      debug('Launching server.');
-      let app = appsetup(_.defaults({}, cfg.server, {docs}));
-      app.use('/v1', api);
-      return app.createServer();
-    },
+    setup: ({cfg, api, docs}) => App({
+      ...cfg.server,
+      apis: [api],
+    }),
   },
 
 }, ['profile', 'process']);
