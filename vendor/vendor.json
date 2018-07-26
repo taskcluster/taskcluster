@@ -149,7 +149,7 @@
 			"revisionTime": "2017-03-30T08:48:43Z"
 		},
 		{
-			"checksumSHA1": "DCjamhJdcLN963jm6/yFoDbJvT4=",
+			"checksumSHA1": "GPl+4G/6LSTGEgPtxqlIQhXJ82U=",
 			"path": "github.com/shirou/gopsutil/disk",
 			"revision": "e49a95f3d5f824c3f9875ca49e54e4fef17f82cf",
 			"revisionTime": "2017-04-06T13:17:56Z"
@@ -161,7 +161,7 @@
 			"revisionTime": "2017-04-06T13:17:56Z"
 		},
 		{
-			"checksumSHA1": "zkNNauN735M7Jghr+MsARbb+/xQ=",
+			"checksumSHA1": "rLo31ffS0VeaRYKDTm+WSd8nUQ4=",
 			"path": "github.com/shirou/gopsutil/mem",
 			"revision": "e49a95f3d5f824c3f9875ca49e54e4fef17f82cf",
 			"revisionTime": "2017-04-06T13:17:56Z"
@@ -389,7 +389,7 @@
 			"revisionTime": "2016-12-29T22:47:41Z"
 		},
 		{
-			"checksumSHA1": "aQcK6fcqVIdpOQ7Gw6qkFiDtnrE=",
+			"checksumSHA1": "oBjdFvDUZpioGsB6URqe16hDQUg=",
 			"origin": "github.com/fatih/color/vendor/golang.org/x/sys/unix",
 			"path": "golang.org/x/sys/unix",
 			"revision": "9131ab34cf20d2f6d83fdc67168a5430d1c7dc23",
