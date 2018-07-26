@@ -1,5 +1,5 @@
 
-let IRCBot = require('./irc');
+const IRCBot = require('./irc');
 
 (async () => {
   let bot = new IRCBot({

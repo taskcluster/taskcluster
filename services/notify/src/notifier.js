@@ -1,12 +1,11 @@
-let debug = require('debug')('notify');
-let _ = require('lodash');
-let path = require('path');
-let assert = require('assert');
-let aws = require('aws-sdk');
-let crypto = require('crypto');
-let marked = require('marked');
-let EmailTemplate = require('email-templates').EmailTemplate;
-let RateLimit = require('./ratelimit');
+const debug = require('debug')('notify');
+const _ = require('lodash');
+const path = require('path');
+const assert = require('assert');
+const crypto = require('crypto');
+const marked = require('marked');
+const EmailTemplate = require('email-templates').EmailTemplate;
+const RateLimit = require('./ratelimit');
 
 /**
  * Object to send notifications, so the logic can be re-used in both the pulse
@@ -19,17 +18,17 @@ class Notifier {
       emailBlacklist: [],
     });
     this.hashCache = [];
-    this.ses = new aws.SES(_.defaults({
-      params: {
-        Source: options.email,
-      },
-    }, options.aws));
+    this.ses = options.ses;
     this.publisher = options.publisher;
-    this.sqs = new aws.SQS(options.aws);
-    this.queueUrl = this.sqs.createQueue({
-      QueueName:  this.options.queueName,
-    }).promise().then(req => req.QueueUrl);
+    this.sqs = options.sqs;
     this.rateLimit = options.rateLimit;
+    this.queueName = this.options.queueName;
+  }
+
+  async setup() {
+    this.queueUrl = (await this.sqs.createQueue({
+      QueueName:  this.queueName,
+    }).promise()).QueueUrl;
   }
 
   key(idents) {
@@ -133,7 +132,7 @@ class Notifier {
     }
     debug(`sending irc message to ${user || channel}.`);
     return this.sqs.sendMessage({
-      QueueUrl:       await this.queueUrl,
+      QueueUrl:       this.queueUrl,
       MessageBody:    JSON.stringify({channel, user, message}),
       DelaySeconds:   0,
     }).promise().then(res => {

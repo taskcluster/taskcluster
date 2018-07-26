@@ -1,22 +1,24 @@
-let Exchanges = require('pulse-publisher');
-let assert    = require('assert');
+const Exchanges = require('pulse-publisher');
+const assert = require('assert');
 
 /** Declaration of exchanges offered by the queue */
-let exchanges = new Exchanges({
+const exchanges = new Exchanges({
   title:      'Notify AMQP Exchanges',
   description: [
     'This pretty much only contains the simple free-form',
     'message that can be published from this service from a request',
     'by anybody with the proper scopes.',
   ].join('\n'),
-  schemaPrefix:         'http://schemas.taskcluster.net/notify/v1/',
+  serviceName: 'notify',
+  projectName: 'taskcluster-notify',
+  version: 'v1',
 });
 
 // Export exchanges
 module.exports = exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
-let buildCommonRoutingKey = function(options) {
+const buildCommonRoutingKey = function(options) {
   options = options || {};
   return [
     {
@@ -37,18 +39,18 @@ let buildCommonRoutingKey = function(options) {
 };
 
 /** Build an AMQP compatible message from a message */
-let commonMessageBuilder = function(message) {
+const commonMessageBuilder = function(message) {
   message.version = 1;
   return message;
 };
 
 /** Build a message from message */
-let commonRoutingKeyBuilder = function(message, routing) {
+const commonRoutingKeyBuilder = function(message, routing) {
   return {};
 };
 
 /** Build list of routing keys to CC */
-let commonCCBuilder = function(message, routes) {
+const commonCCBuilder = function(message, routes) {
   assert(routes instanceof Array, 'Routes must be an array');
   return routes.map(route => 'route.' + route);
 };
@@ -68,7 +70,7 @@ exchanges.declare({
     'when we notice a task is complete.',
   ].join('\n'),
   routingKey:         buildCommonRoutingKey(),
-  schema:             'notification-message.json#',
+  schema:             'notification-message.yml',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  commonRoutingKeyBuilder,
   CCBuilder:          commonCCBuilder,

@@ -1,31 +1,22 @@
-suite('Handler', () => {
-  let _ = require('lodash');
-  let assert = require('assert');
-  let mocha = require('mocha');
-  let debug = require('debug')('test');
-  let testing = require('taskcluster-lib-testing');
-  let sinon = require('sinon');
-  let helper = require('./helper');
-  let load = require('../src/main');
-  let RateLimit = require('../src/ratelimit');
+const _ = require('lodash');
+const assert = require('assert');
+const mocha = require('mocha');
+const debug = require('debug')('test');
+const testing = require('taskcluster-lib-testing');
+const sinon = require('sinon');
+const helper = require('./helper');
+const load = require('../src/main');
+const RateLimit = require('../src/ratelimit');
 
-  let publisher;
-  let listener;
-  let notifier;
-  let queue = {};
+helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, skipping) {
+  helper.withFakeQueue(mock, skipping);
+  helper.withSES(mock, skipping);
+  helper.withPulse(mock, skipping);
+  helper.withSQS(mock, skipping);
+  helper.withHandler(mock, skipping);
 
-  mocha.before(async () => {
-    publisher = await load('publisher', {profile: 'test', process: 'test'});
-    listener = await load('listener', {profile: 'test', process: 'test'});
-    // disable periodic purging so that mocha will exit
-    rateLimit = new RateLimit({count: 100, time: 100, noPeriodicPurge: true});
-    notifier = await load('notifier', {profile: 'test', process: 'test', publisher, rateLimit});
-    await load('handler', {profile: 'test', process: 'test', listener, queue, publisher, notifier});
-  });
-
-  // Create datetime for created and deadline as 25 minutes later
-  let created = new Date();
-  let deadline = new Date();
+  const created = new Date();
+  const deadline = new Date();
   deadline.setMinutes(deadline.getMinutes() + 25);
 
   let makeTask = function(routes) {
@@ -80,40 +71,32 @@ suite('Handler', () => {
 
   ['canceled', 'deadline-exceeded'].forEach(reasonResolved => {
     test(`does not publish for ${reasonResolved}`, async () => {
-      let notified = false;
-      notifier.pulse = () => { notified = true; };
-      try {
-        let route = 'test-notify.pulse.notify-test.on-any';
-        queue.task = sinon.stub().returns(makeTask([route]));
-        const status = _.cloneDeep(baseStatus);
-        status.state = 'exception';
-        status.runs[0].state = 'exception';
-        status.runs[0].reasonResolved = reasonResolved;
-        await listener.fakeMessage({
-          payload: {status},
-          exchange: 'exchange/taskcluster-queue/v1/task-completed',
-          routingKey: 'doesnt-matter',
-          routes: [route],
-        });
+      const route = 'test-notify.pulse.notify-test.on-any';
+      helper.queue.addTask(baseStatus.taskId, makeTask([route]));
+      const status = _.cloneDeep(baseStatus);
+      status.state = 'exception';
+      status.runs[0].state = 'exception';
+      status.runs[0].reasonResolved = reasonResolved;
+      await helper.listener.fakeMessage({
+        payload: {status},
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'doesnt-matter',
+        routes: [route],
+      });
 
-        // wait long enough for the promises to resolve..
-        await new Promise(resolve => setTimeout(resolve, 100));
+      // wait long enough for the promises to resolve..
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-        assert.equal(notified, false);
-      } finally {
-        delete notifier.pulse; // restore to method via prototype
-      }
+      helper.checkNoNextMessage('notification');
     });
   });
 
   test('pulse', async () => {
-    let published = new Promise(resolve => {
-      publisher.once('fakePublish', resolve);
-    });
+    const p = new Promise(resolve => helper.publisher.once('fakePublish', resolve));
 
-    let route = 'test-notify.pulse.notify-test.on-any';
-    queue.task = sinon.stub().returns(makeTask([route]));
-    await listener.fakeMessage({
+    const route = 'test-notify.pulse.notify-test.on-any';
+    helper.queue.addTask(baseStatus.taskId, makeTask([route]));
+    await helper.listener.fakeMessage({
       payload: {
         status: baseStatus,
       },
@@ -121,19 +104,14 @@ suite('Handler', () => {
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-
-    const {CCs} = await published;
-    assert.deepEqual(CCs, ['route.notify-test']);
+    await p;
+    helper.checkNextMessage('notification', m => assert.deepEqual(m.CCs, ['route.notify-test']));
   });
 
   test('email', async () => {
-    let result = helper.checkSqsMessage(helper.emailSqsQueueUrl, body => {
-      let j = JSON.parse(body.Message);
-      assert.deepEqual(j.delivery.recipients, ['success@simulator.amazonses.com']);
-    });
-    let route = 'test-notify.email.success@simulator.amazonses.com.on-any';
-    queue.task = sinon.stub().returns(makeTask([route]));
-    await listener.fakeMessage({
+    const route = 'test-notify.email.success@simulator.amazonses.com.on-any';
+    helper.queue.addTask(baseStatus.taskId, makeTask([route]));
+    await helper.handler.onMessage({
       payload: {
         status: baseStatus,
       },
@@ -141,19 +119,17 @@ suite('Handler', () => {
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    return result;
+    await helper.checkEmails(email => {
+      assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
+    });
   });
 
   test('irc', async () => {
-    let result = helper.checkSqsMessage(helper.sqsQueueUrl, body => {
-      assert.equal(body.channel, '#taskcluster-test');
-      assert.equal(body.message, 'it worked with taskid DKPZPsvvQEiw67Pb3rkdNg');
-    });
-    let route = 'test-notify.irc-channel.#taskcluster-test.on-any';
-    let task = makeTask([route]);
+    const route = 'test-notify.irc-channel.#taskcluster-test.on-any';
+    const task = makeTask([route]);
     task.extra = {notify: {ircChannelMessage: 'it worked with taskid ${status.taskId}'}};
-    queue.task = sinon.stub().returns(task);
-    listener.fakeMessage({
+    helper.queue.addTask(baseStatus.taskId, task);
+    await helper.handler.onMessage({
       payload: {
         status: baseStatus,
       },
@@ -161,6 +137,9 @@ suite('Handler', () => {
       routingKey: 'doesnt-matter',
       routes: [route],
     });
-    return result;
+    await helper.checkSQSMessage(helper.ircSQSQueue, body => {
+      assert.equal(body.channel, '#taskcluster-test');
+      assert.equal(body.message, 'it worked with taskid DKPZPsvvQEiw67Pb3rkdNg');
+    });
   });
 });
