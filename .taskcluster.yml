@@ -1,5 +1,6 @@
 # The version is always required
 version: 0
+allowPullRequests: public
 # Top level metadata is always required
 metadata:
   name: "Taskcluster Generic Worker Tests"
