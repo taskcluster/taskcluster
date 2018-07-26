@@ -3,8 +3,9 @@ const assert = require('assert');
 const MockDate = require('mockdate');
 const RateLimit = require('../src/ratelimit');
 const load = require('../src/main');
+const helper = require('./helper');
 
-suite('ratelimit_test.js', function() {
+suite(helper.suiteName(__filename), function() {
   let rateLimit;
 
   setup(async function() {

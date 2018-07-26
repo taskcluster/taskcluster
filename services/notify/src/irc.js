@@ -1,9 +1,9 @@
-let debug = require('debug')('notify');
-let Promise = require('bluebird');
-let irc = Promise.promisifyAll(require('irc'));
-let assert = require('assert');
-let aws = require('aws-sdk');
-let _  = require('lodash');
+const debug = require('debug')('notify');
+const Promise = require('bluebird');
+const irc = Promise.promisifyAll(require('irc'));
+const assert = require('assert');
+const aws = require('aws-sdk');
+const _ = require('lodash');
 
 const MAX_RETRIES = 5;
 

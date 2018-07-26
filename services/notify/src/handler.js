@@ -1,16 +1,15 @@
-let debug = require('debug')('notify');
-let _ = require('lodash');
-let assert = require('assert');
-let taskcluster = require('taskcluster-client');
-let jsone = require('json-e');
+const debug = require('debug')('notify');
+const _ = require('lodash');
+const assert = require('assert');
+const taskcluster = require('taskcluster-client');
+const jsone = require('json-e');
 
 /** Handler listening for tasks that carries notifications */
 class Handler {
-  constructor({notifier, validator, monitor, routePrefix, ignoreTaskReasonResolved, listener, queue, testing}) {
+  constructor({notifier, monitor, routePrefix, ignoreTaskReasonResolved, listener, queue, testing, queueEvents}) {
     this.queue = queue;
 
     this.notifier = notifier;
-    this.validator = validator;
     this.monitor = monitor;
     this.routePrefix = routePrefix;
     this.ignoreTaskReasonResolved = ignoreTaskReasonResolved;
@@ -19,13 +18,12 @@ class Handler {
     this.testing = testing;
 
     // Bind to exchanges with pattern for custom routing keys
-    let qe = new taskcluster.QueueEvents();
-    this.listener.bind(qe.taskCompleted(`route.${routePrefix}.#.on-completed.#`));
-    this.listener.bind(qe.taskCompleted(`route.${routePrefix}.#.on-any.#`));
-    this.listener.bind(qe.taskFailed(`route.${routePrefix}.#.on-failed.#`));
-    this.listener.bind(qe.taskFailed(`route.${routePrefix}.#.on-any.#`));
-    this.listener.bind(qe.taskException(`route.${routePrefix}.#.on-exception.#`));
-    this.listener.bind(qe.taskException(`route.${routePrefix}.#.on-any.#`));
+    this.listener.bind(queueEvents.taskCompleted(`route.${routePrefix}.#.on-completed.#`));
+    this.listener.bind(queueEvents.taskCompleted(`route.${routePrefix}.#.on-any.#`));
+    this.listener.bind(queueEvents.taskFailed(`route.${routePrefix}.#.on-failed.#`));
+    this.listener.bind(queueEvents.taskFailed(`route.${routePrefix}.#.on-any.#`));
+    this.listener.bind(queueEvents.taskException(`route.${routePrefix}.#.on-exception.#`));
+    this.listener.bind(queueEvents.taskException(`route.${routePrefix}.#.on-any.#`));
 
     // Handle messages
     this.listener.on('message', this.monitor.timedHandler('notification', this.onMessage.bind(this)));
