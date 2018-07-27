@@ -211,9 +211,6 @@ class Handler {
   }
 
   addRoles(profile, user) {
-    // grant the everybody role to anyone who authenticates
-    user.addRole('everybody');
-
     const mozGroupPrefix = 'mozilliansorg_';
     const hrisGroupPrefix = 'hris_';
     const groups = Array.from(new Set([
