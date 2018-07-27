@@ -41,8 +41,16 @@ async function getRepoPolicy({login, organization, repository, instGithub, debug
     throw e;
   }
 
-  // consult its `allowPullRequests` field
-  return taskclusterYml['allowPullRequests'] || DEFAULT_POLICY;
+  if (!taskclusterYml.version || taskclusterYml.version == 0) {
+    // consult its `allowPullRequests` field
+    return taskclusterYml['allowPullRequests'] || DEFAULT_POLICY;
+  } else if (taskclusterYml.version == 1) {
+    if (taskclusterYml.policy) {
+      return taskclusterYml.policy.pullRequests || DEFAULT_POLICY;
+    }
+  }
+
+  return DEFAULT_POLICY;
 }
 
 async function isCollaborator({login, organization, repository, sha, instGithub, debug}) {
