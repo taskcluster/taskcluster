@@ -61,6 +61,54 @@ suite('allowPullRequests', function() {
         debug,
       }), 'maybe');
     });
+
+    test('looks at policy.pullRequests for v1', async function() {
+      github.inst(9999).setTaskclusterYml({
+        owner: 'taskcluster',
+        repo: 'testing',
+        ref: 'development',
+        content: {version: 1, policy: {pullRequests: 'maybe'}},
+      });
+
+      assert.equal(await prAllowed.getRepoPolicy({
+        organization: 'taskcluster',
+        repository: 'testing',
+        instGithub: github.inst(9999),
+        debug,
+      }), 'maybe');
+    });
+
+    test('v1: handles policy without pullRequests property', async function() {
+      github.inst(9999).setTaskclusterYml({
+        owner: 'taskcluster',
+        repo: 'testing',
+        ref: 'development',
+        content: {version: 1, policy: {otherPolicy: 'sure'}},
+      });
+
+      assert.equal(await prAllowed.getRepoPolicy({
+        organization: 'taskcluster',
+        repository: 'testing',
+        instGithub: github.inst(9999),
+        debug,
+      }), 'collaborators');
+    });
+
+    test('v1: handles tc.yml without policy property', async function() {
+      github.inst(9999).setTaskclusterYml({
+        owner: 'taskcluster',
+        repo: 'testing',
+        ref: 'development',
+        content: {version: 1, tasks: []},
+      });
+
+      assert.equal(await prAllowed.getRepoPolicy({
+        organization: 'taskcluster',
+        repository: 'testing',
+        instGithub: github.inst(9999),
+        debug,
+      }), 'collaborators');
+    });
   });
 
   suite('isCollaborator', function() {
