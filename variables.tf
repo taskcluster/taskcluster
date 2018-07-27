@@ -39,3 +39,8 @@ variable "disabled_services" {
   default     = []
   description = "List of services to disable i.e. [\"taskcluster-notify\"]"
 }
+
+variable "cluster_name" {
+  type        = "string"
+  description = "Human readable cluster name"
+}
