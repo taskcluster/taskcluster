@@ -157,7 +157,7 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
       'event.head.user.email': 'someuser@github.com',
     },
     jsonFile:     'webhook.release.json',
-    tasks_for: 'github-push',
+    tasks_for: 'github-release',
     branch: 'master',
   });
 
