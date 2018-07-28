@@ -16,16 +16,17 @@ import (
 
 func init() {
 	root.Command.AddCommand(&cobra.Command{
-		Use:   "inspect-pulse <exchange> <routingKeyPattern>",
-		Short: "Bind to an exchange and receive pulse messages",
-		RunE:  inspectPulse,
+		Use:   "wait-for <taskId>",
+		Short: "Wait for a task to be finished",
+		RunE:  waitForTask,
 	})
 }
 
-func inspectPulse(cmd *cobra.Command, args []string) error {
-	if len(args) < 2 {
-		return errors.New("inspect-pulse requires arguments <exchange> and <routingKeyPattern>")
+func waitForTask(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return errors.New("%s expects argument <taskId>", cmd.Name())
 	}
+
 	type Binding struct {
 		Exchange   string `json:"exchange"`
 		RoutingKey string `json:"routingKeyPattern"`
@@ -42,7 +43,7 @@ func inspectPulse(cmd *cobra.Command, args []string) error {
 
 	json_bindings, _ := json.Marshal(Bindings{Bindings: bindings})
 	values := url.Values{"bindings": {string(json_bindings)}}
-	eventsUrl := "https://events.taskcluster.net/v1/connect/?" + values.Encode()
+	eventsUrl := "https://taskcluster-events-staging.herokuapp.com/v1/connect/?" + values.Encode()
 
 	stream, err := eventsource.Subscribe(eventsUrl, "")
 	if err != nil {
