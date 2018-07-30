@@ -1,11 +1,11 @@
 import { hot } from 'react-hot-loader';
 import { Component } from 'react';
 import { graphql } from 'react-apollo';
+import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
+import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import awsHealthQuery from './awsHealth.graphql';
 import Dashboard from '../../../components/Dashboard';
-import ErrorPanel from '../../../components/ErrorPanel';
 import AwsProvisionerHealthTable from '../../../components/AwsProvisionerHealthTable';
-import Spinner from '../../../components/Spinner';
 
 @hot(module)
 @graphql(awsHealthQuery)

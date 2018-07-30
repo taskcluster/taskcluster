@@ -1,6 +1,6 @@
 import { Component } from 'react';
+import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { MuiThemeProvider } from '@material-ui/core/styles';
-import ErrorPanel from '../components/ErrorPanel';
 import theme from '../theme';
 
 export default class ThemeWrapper extends Component {

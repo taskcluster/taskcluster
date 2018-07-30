@@ -2,6 +2,8 @@ import { hot } from 'react-hot-loader';
 import { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import { Link } from 'react-router-dom';
+import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
+import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import HeartPulseIcon from 'mdi-react/HeartPulseIcon';
@@ -10,8 +12,6 @@ import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import SpeedDial from '../../../components/SpeedDial';
-import Spinner from '../../../components/Spinner';
-import ErrorPanel from '../../../components/ErrorPanel';
 import AwsProvisionerWorkerTypeTable from '../../../components/AwsProvisionerWorkerTypeTable';
 import workerTypesQuery from './workerTypes.graphql';
 

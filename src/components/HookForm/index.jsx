@@ -1,6 +1,7 @@
 import { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { bool, func } from 'prop-types';
+import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -23,7 +24,6 @@ import RefreshIcon from 'mdi-react/RefreshIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import { docs } from 'taskcluster-lib-urls';
 import SpeedDial from '../../components/SpeedDial';
-import CodeEditor from '../../components/CodeEditor';
 import DateDistance from '../../components/DateDistance';
 import { HOOKS_LAST_FIRE_TYPE } from '../../utils/constants';
 import { hook } from '../../utils/prop-types';

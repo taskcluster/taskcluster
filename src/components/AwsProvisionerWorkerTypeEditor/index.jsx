@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { oneOfType, string, func } from 'prop-types';
-import CodeEditor from '../CodeEditor';
+import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import { awsProvisionerWorkerType } from '../../utils/prop-types';
 
 const defaultWorkerType = {

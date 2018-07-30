@@ -1,5 +1,6 @@
 import { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
+import Markdown from '@mozilla-frontend-infra/components/Markdown';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
@@ -17,7 +18,6 @@ import { camelCase } from 'change-case';
 import LinkIcon from 'mdi-react/LinkIcon';
 import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
-import Markdown from '../Markdown';
 import TableCellListItem from '../TableCellListItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../utils/constants';

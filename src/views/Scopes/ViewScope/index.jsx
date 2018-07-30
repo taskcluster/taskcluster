@@ -2,6 +2,8 @@ import { hot } from 'react-hot-loader';
 import { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
+import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
+import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -11,8 +13,6 @@ import TextField from '@material-ui/core/TextField';
 import CheckIcon from 'mdi-react/CheckIcon';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
-import Spinner from '../../../components/Spinner';
-import ErrorPanel from '../../../components/ErrorPanel';
 import ClientScopesTable from '../../../components/ClientScopesTable';
 import RoleScopesTable from '../../../components/RoleScopesTable';
 import {

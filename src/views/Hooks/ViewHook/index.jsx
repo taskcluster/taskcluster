@@ -1,9 +1,9 @@
 import { hot } from 'react-hot-loader';
 import { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
+import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
+import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../components/Dashboard';
-import ErrorPanel from '../../../components/ErrorPanel';
-import Spinner from '../../../components/Spinner';
 import HookForm from '../../../components/HookForm';
 import hookQuery from './hook.graphql';
 

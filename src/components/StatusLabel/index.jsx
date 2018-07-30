@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { bool, string } from 'prop-types';
-import Label from '../Label';
+import Label from '@mozilla-frontend-infra/components/Label';
 import labels from '../../utils/labels';
 
 /**

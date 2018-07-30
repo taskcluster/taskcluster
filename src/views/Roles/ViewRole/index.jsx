@@ -1,9 +1,9 @@
 import { hot } from 'react-hot-loader';
 import { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
+import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
+import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../components/Dashboard';
-import Spinner from '../../../components/Spinner';
-import ErrorPanel from '../../../components/ErrorPanel';
 import RoleForm from '../../../components/RoleForm';
 import roleQuery from './role.graphql';
 

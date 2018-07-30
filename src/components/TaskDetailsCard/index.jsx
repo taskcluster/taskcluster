@@ -1,6 +1,8 @@
 import { Component, Fragment } from 'react';
 import { arrayOf, shape, string } from 'prop-types';
 import { Link } from 'react-router-dom';
+import Code from '@mozilla-frontend-infra/components/Code';
+import Label from '@mozilla-frontend-infra/components/Label';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -15,8 +17,6 @@ import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import DateDistance from '../DateDistance';
-import Code from '../Code';
-import Label from '../Label';
 import StatusLabel from '../StatusLabel';
 import { task } from '../../utils/prop-types';
 

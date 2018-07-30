@@ -1,13 +1,13 @@
 import { hot } from 'react-hot-loader';
 import { PureComponent, Fragment } from 'react';
 import { graphql } from 'react-apollo';
+import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
+import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
-import Spinner from '../../../components/Spinner';
-import ErrorPanel from '../../../components/ErrorPanel';
 import RolesTable from '../../../components/RolesTable';
 import rolesQuery from './roles.graphql';
 

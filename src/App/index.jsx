@@ -9,12 +9,12 @@ import { HttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { CachePersistor } from 'apollo-cache-persist';
+import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { MuiThemeProvider, withStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { Authorize } from 'react-auth0-components';
 import RouteWithProps from '../components/RouteWithProps';
 import FontStager from '../components/FontStager';
-import ErrorPanel from '../components/ErrorPanel';
 import theme from '../theme';
 import routes from './routes';
 
@@ -33,6 +33,10 @@ import routes from './routes';
     },
     '.mdi-icon': {
       fill: theme.palette.common.white,
+    },
+    '.CodeMirror': {
+      fontSize: 13,
+      height: '100% !important',
     },
     '[disabled] .mdi-icon': {
       fill: theme.palette.primary.light,
