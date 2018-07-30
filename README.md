@@ -14,6 +14,8 @@
 
 <br>
 
+[![Known Vulnerabilities][snyk-image]][snyk-url]
+
 ## Requirements
 
 * `@material-ui/core` v1.3.1+
@@ -58,3 +60,6 @@ Thanks!
 [![BrowserStack](https://www.browserstack.com/images/mail/browserstack-logo-footer.png)](https://www.browserstack.com/)
 
 Thank you to [BrowserStack](https://www.browserstack.com/) for providing the infrastructure that allows us to test in real browsers.
+
+[snyk-image]: https://snyk.io/test/github/mozilla-frontend-infra/components/badge.svg?targetFile=package.json
+[snyk-url]: https://snyk.io/test/github/mozilla-frontend-infra/components?targetFile=package.json
