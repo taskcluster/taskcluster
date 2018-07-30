@@ -14,6 +14,7 @@
 
 <br>
 
+[![NPM version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
 [![Known Vulnerabilities][snyk-image]][snyk-url]
 
@@ -62,6 +63,8 @@ Thanks!
 
 Thank you to [BrowserStack](https://www.browserstack.com/) for providing the infrastructure that allows us to test in real browsers.
 
+[npm-image]: https://img.shields.io/npm/v/@mozilla-frontend-infra/components.svg
+[npm-url]: https://www.npmjs.com/package/@mozilla-frontend-infra/components
 [snyk-image]: https://snyk.io/test/github/mozilla-frontend-infra/components/badge.svg?targetFile=package.json
 [snyk-url]: https://snyk.io/test/github/mozilla-frontend-infra/components?targetFile=package.json
 [travis-image]: https://travis-ci.com/mozilla-frontend-infra/components.svg?branch=master
