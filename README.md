@@ -14,6 +14,7 @@
 
 <br>
 
+[![Build Status][travis-image]][travis-url]
 [![Known Vulnerabilities][snyk-image]][snyk-url]
 
 ## Requirements
@@ -63,3 +64,5 @@ Thank you to [BrowserStack](https://www.browserstack.com/) for providing the inf
 
 [snyk-image]: https://snyk.io/test/github/mozilla-frontend-infra/components/badge.svg?targetFile=package.json
 [snyk-url]: https://snyk.io/test/github/mozilla-frontend-infra/components?targetFile=package.json
+[travis-image]: https://travis-ci.com/mozilla-frontend-infra/components.svg?branch=master
+[travis-url]: https://travis-ci.com/mozilla-frontend-infra/components
