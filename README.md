@@ -14,6 +14,30 @@
 
 <br>
 
+## Requirements
+
+* `@material-ui/core` v1.3.1+
+* React, React DOM
+
+## Getting started
+
+```
+# If using Yarn:
+yarn add @mozilla-frontend-infra/components
+
+# If using npm:
+npm install --save @mozilla-frontend-infra/components
+```
+
+### Import
+
+```js
+import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
+
+// using require
+const ErrorPanel = require('@mozilla-frontend-infra/components/ErrorPanel').default;
+```
+
 ## Development and Contributing
 
 To get started:

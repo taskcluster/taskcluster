@@ -64,3 +64,6 @@ typings/
 build
 es5
 /styleguide
+
+# Webstorm's project specific settings
+.idea
