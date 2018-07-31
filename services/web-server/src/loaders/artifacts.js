@@ -34,14 +34,11 @@ export default ({ queue }, isAuthed) => {
     }
   );
   const latestArtifacts = new ConnectionLoader(
-    async ({ taskId, runId, filter, options }) => {
-      const raw = await queue.listLatestArtifacts(taskId, runId, options);
-      const withUrls = raw.artifacts.map(artifact =>
-        withUrl(taskId, runId, artifact)
-      );
-      const artifacts = filter ? sift(filter, withUrls) : withUrls;
+    async ({ taskId, filter, options }) => {
+      const raw = await queue.listLatestArtifacts(taskId, options);
+      const artifacts = filter ? sift(filter, raw.artifacts) : raw.artifacts;
 
-      return new Artifacts(taskId, runId, { ...raw, artifacts });
+      return new Artifacts(taskId, null, { ...raw, artifacts });
     }
   );
 
