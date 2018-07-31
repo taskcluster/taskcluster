@@ -167,8 +167,11 @@ and reports back results to the queue.
 
           authBaseURL                       The base URL for API calls to the auth service.
           availabilityZone                  The EC2 availability zone of the worker.
-          cachesDir                         The location where task caches should be stored on
-                                            the worker. [default: C:\generic-worker\caches]
+          cachesDir                         The directory where task caches should be stored on
+                                            the worker. The directory will be created if it does
+                                            not exist. This may be a relative path to the
+                                            current directory, or an absolute path.
+                                            [default: caches]
           certificate                       Taskcluster certificate, when using temporary
                                             credentials only.
           checkForNewDeploymentEverySecs    The number of seconds between consecutive calls
@@ -200,9 +203,11 @@ and reports back results to the queue.
                                             (such as formatting a hard drive) and then
                                             rebooting in the run-generic-worker.bat script.
                                             [default: false]
-          downloadsDir                      The location where resources are downloaded for
-                                            populating preloaded caches and readonly mounts.
-                                            [default: C:\generic-worker\downloads]
+          downloadsDir                      The directory to cache downloaded files for
+                                            populating preloaded caches and readonly mounts. The
+                                            directory will be created if it does not exist. This
+                                            may be a relative path to the current directory, or
+                                            an absolute path. [default: downloads]
           idleTimeoutSecs                   How many seconds to wait without getting a new
                                             task to perform, before the worker process exits.
                                             An integer, >= 0. A value of 0 means "never reach
@@ -444,11 +449,11 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 	// first assign defaults
 	c := &gwconfig.Config{
 		AuthBaseURL:                    tcauth.DefaultBaseURL,
-		CachesDir:                      "C:\\generic-worker\\caches",
+		CachesDir:                      "caches",
 		CheckForNewDeploymentEverySecs: 1800,
 		CleanUpTaskDirs:                true,
 		DisableReboots:                 false,
-		DownloadsDir:                   "C:\\generic-worker\\downloads",
+		DownloadsDir:                   "downloads",
 		IdleTimeoutSecs:                0,
 		LiveLogExecutable:              "livelog",
 		LiveLogGETPort:                 60023,
