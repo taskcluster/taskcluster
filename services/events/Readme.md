@@ -23,7 +23,7 @@ The browser exposes an instance of `EventSource` so there is no need to `require
 ## Events
 
 We have 4 types of events - 
-* __ping__  : sent every 3 seconds to make sure the connection is open.
+* __ping__  : sent every 20 seconds to make sure the connection is open.
 * __ready__ : sent after the binding is complete. Now you can expect pulse messages.
 * __message__ : sent when a pulse message arrives. Note that the actual message is in `message.data`.
 * __error__ : sent in case of errors like bad input.
@@ -38,8 +38,8 @@ listener.addEventListener('message', msg => {
 //Close the listener
 listener.close();
 ```
-The connection is closed by the server if no pulse messages have been received for more than 20 seconds.
-The `eventsource` in that case [tries to reconnect](https://www.w3.org/TR/2009/WD-eventsource-20090421/#reset-the-connection) which is rejected by the server. Even in cases of wrongly formatted query parameter the reconnect is attempted after the connection is closed with a `404`. Thus it makes sense to disable these reconnects altogether.
+The connection is closed by the server if the `bindings` is not in the correct format.
+The `eventsource` in that case automatically [tries to reconnect](https://www.w3.org/TR/2009/WD-eventsource-20090421/#reset-the-connection), without correcting the errors, which is rejected by the server. Thus it makes sense to disable these reconnects altogether.
 
 This is done by setting the `id` of each event to `-` and returning `204 : No input` when `Last-Event-Id : -` is sent in the request headers.The client can however, force it by closing and restarting the listener.
 

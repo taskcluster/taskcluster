@@ -40,30 +40,4 @@ helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
 
     await resolve;
   });
-
-  // TODO : use fake time to not actually wait for 20s
-  test('Timeout if idle for 20 seconds', async () => {
-    // Send no messages after connecting. The connection should be 
-    // closed automatically after 20s 
-    let bindings = {bindings : [ 
-      {exchange :  'exchange/taskcluster-foo/v1/bar', routingKeyPattern : '#'},
-    ]};
-    
-    let {evtSource, resolve, pass, fail} = helper.connect(bindings);
-
-    evtSource.addEventListener('message', (msg) => {
-      assert(false);
-      evtSource.close();
-      fail();
-    });
-
-    evtSource.addEventListener('error', (err) => {
-      evtSource.close();
-      assert(JSON.parse(err.data) === 'No messages received for 20s. Aborting...');
-      pass();
-    });
-
-    await resolve;
-  });
-
 });
