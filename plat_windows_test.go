@@ -89,3 +89,20 @@ func TestNoCreateFileMappingError(t *testing.T) {
 
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }
+
+func TestDesktopResizeAndMovePointer(t *testing.T) {
+	defer setup(t)()
+	if config.RunTasksAsCurrentUser {
+		t.Skip("Skipping since running as current user...")
+	}
+	commands := copyTestdataFile("mouse_and_screen_resolution.py")
+	commands = append(commands, copyTestdataFile("machine-configuration.json")...)
+	commands = append(commands, "python mouse_and_screen_resolution.py --configuration-file machine-configuration.json")
+	payload := GenericWorkerPayload{
+		Command:    commands,
+		MaxRunTime: 90,
+	}
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}

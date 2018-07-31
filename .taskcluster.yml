@@ -106,7 +106,7 @@ tasks:
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
         - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
-        - set GW_TESTS_GENERATE_USERS=true
+        - set GW_TESTS_RUN_AS_TASK_USER=true
         - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
         - ineffassign .
       artifacts:
@@ -177,7 +177,7 @@ tasks:
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
         - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v ./...'
-        - set GW_TESTS_GENERATE_USERS=true
+        - set GW_TESTS_RUN_AS_TASK_USER=true
         - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v'
         - ineffassign .
       artifacts:
@@ -259,7 +259,7 @@ tasks:
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
         - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
-        - set GW_TESTS_GENERATE_USERS=true
+        - set GW_TESTS_RUN_AS_TASK_USER=true
         - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
         - ineffassign .
       artifacts:

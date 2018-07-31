@@ -55,10 +55,11 @@ func (osGroups *OSGroups) RequiredScopes() scopes.Required {
 
 func (osGroups *OSGroups) Start() *CommandExecutionError {
 	groups := osGroups.Task.Payload.OSGroups
+	if len(groups) == 0 {
+		return nil
+	}
 	if config.RunTasksAsCurrentUser {
-		if len(groups) > 0 {
-			osGroups.Task.Infof("Not adding task user to group(s) %v since we are running as current user.", groups)
-		}
+		osGroups.Task.Infof("Not adding task user to group(s) %v since we are running as current user.", groups)
 		return nil
 	}
 	updatedGroups, notUpdatedGroups := osGroups.Task.addUserToGroups(groups)
@@ -66,10 +67,9 @@ func (osGroups *OSGroups) Start() *CommandExecutionError {
 	if len(notUpdatedGroups) > 0 {
 		return MalformedPayloadError(fmt.Errorf("Could not add task user to os group(s): %v", notUpdatedGroups))
 	}
-	// On Windows we need to call LogonUser to get new access token with the group changes
-	osGroups.Task.RefreshLoginSession()
+	osGroups.Task.PlatformData.RefreshLoginSession()
 	for _, command := range osGroups.Task.Commands {
-		command.SetLoginInfo(osGroups.Task.LoginInfo)
+		command.SysProcAttr.Token = osGroups.Task.PlatformData.LoginInfo.AccessToken()
 	}
 	return nil
 }

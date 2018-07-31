@@ -8,10 +8,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	stdlibruntime "runtime"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
+	"unsafe"
 
 	"github.com/dchest/uniuri"
 	"github.com/taskcluster/generic-worker/process"
@@ -21,6 +23,65 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
+var sidsThatCanControlDesktopAndWindowsStation map[string]bool = map[string]bool{}
+
+type PlatformData struct {
+	CommandAccessToken syscall.Token
+	LoginInfo          *process.LoginInfo
+}
+
+func (task *TaskRun) NewPlatformData() (pd *PlatformData, err error) {
+
+	pd = &PlatformData{}
+	if config.RunTasksAsCurrentUser {
+		pd.LoginInfo = &process.LoginInfo{}
+		return
+	}
+	pd.LoginInfo, err = process.InteractiveLoginInfo(3 * time.Minute)
+	if err != nil {
+		return
+	}
+	pd.CommandAccessToken = pd.LoginInfo.AccessToken()
+
+	// This is the SID of "Everyone" group
+	// TODO: we should probably change this to the logon SID of the user
+	sid := "S-1-1-0"
+	// no need to grant if already granted
+	if sidsThatCanControlDesktopAndWindowsStation[sid] {
+		log.Printf("SID %v found in %#v - no need to grant access!", sid, sidsThatCanControlDesktopAndWindowsStation)
+	} else {
+		log.Printf("SID %v NOT found in %#v - granting access...", sid, sidsThatCanControlDesktopAndWindowsStation)
+
+		// We want to run generic-worker exe, which is os.Args[0] if we are running generic-worker, but if
+		// we are running tests, os.Args[0] will be the test executable, so then we use relative path to
+		// installed binary. This hack will go if we can use ImpersonateLoggedOnUser / RevertToSelf instead.
+		var exe string
+		if filepath.Base(os.Args[0]) == "generic-worker.exe" {
+			exe = os.Args[0]
+		} else {
+			exe = `..\..\..\..\bin\generic-worker.exe`
+		}
+		cmd, err := process.NewCommand([]string{exe, "grant-winsta-access", "--sid", sid}, cwd, []string{}, pd.LoginInfo.AccessToken())
+		cmd.DirectOutput(os.Stdout)
+		log.Printf("About to run command: %#v", *(cmd.Cmd))
+		if err != nil {
+			panic(err)
+		}
+		result := cmd.Execute()
+		if !result.Succeeded() {
+			panic(fmt.Sprintf("Failed to grant everyone access to windows station and desktop:\n%v", result))
+		}
+		log.Printf("Granted %v full control of interactive windows station and desktop", sid)
+		sidsThatCanControlDesktopAndWindowsStation[sid] = true
+	}
+	return
+}
+
+func (pd *PlatformData) ReleaseResources() error {
+	pd.CommandAccessToken = 0
+	return pd.LoginInfo.Release()
+}
+
 type TaskContext struct {
 	TaskDir      string
 	LogonSession *process.LogonSession
@@ -29,6 +90,7 @@ type TaskContext struct {
 func platformFeatures() []Feature {
 	return []Feature{
 		&RDPFeature{},
+		&OSGroupsFeature{},
 		&RunAsAdministratorFeature{}, // depends on (must appear later in list than) OSGroups feature
 	}
 }
@@ -108,24 +170,28 @@ func prepareTaskUser(userName string) (reboot bool) {
 		// timeout of 3 minutes should be plenty - note, this function will
 		// return as soon as user has logged in *and* user profile directory
 		// has been created - the timeout just sets an upper cap
-		hToken, err := win32.InteractiveUserToken(3 * time.Minute)
+		accessToken, err := win32.InteractiveUserToken(3 * time.Minute)
 		if err != nil {
 			panic(err)
-		}
-		loginInfo := &process.LoginInfo{
-			HUser: hToken,
 		}
 		// At this point, we know we have already booted into the new task user, and the user
 		// is logged in.
 		// Note we don't create task directory before logging in, since
 		// if the task directory is also the user profile home, this
 		// would mess up the windows logon process.
-		err = os.MkdirAll(taskContext.TaskDir, 0777)
+		err = os.MkdirAll(taskContext.TaskDir, 0777) // note: 0777 is mostly ignored on windows
+		if err != nil {
+			panic(err)
+		}
+		// Make sure task user has full control of task directory. Due to
+		// https://bugzilla.mozilla.org/show_bug.cgi?id=1439588#c38 we can't
+		// assume previous MkdirAll has granted this permission.
+		err = exec.Command("icacls", taskContext.TaskDir, "/grant", taskContext.LogonSession.User.Name+":(OI)(CI)F").Run()
 		if err != nil {
 			panic(err)
 		}
 		if script := config.RunAfterUserCreation; script != "" {
-			command, err := process.NewCommand([]string{script}, taskContext.TaskDir, nil, loginInfo)
+			command, err := process.NewCommand([]string{script}, taskContext.TaskDir, nil, accessToken)
 			if err != nil {
 				panic(err)
 			}
@@ -156,11 +222,11 @@ func prepareTaskUser(userName string) (reboot bool) {
 	if err != nil {
 		panic(err)
 	}
-	err = RedirectAppData(loginInfo.HUser, filepath.Join(taskContext.TaskDir, "AppData"))
+	err = RedirectAppData(loginInfo.AccessToken(), filepath.Join(taskContext.TaskDir, "AppData"))
 	if err != nil {
 		panic(err)
 	}
-	err = loginInfo.Logout()
+	err = loginInfo.Release()
 	if err != nil {
 		panic(err)
 	}
@@ -186,13 +252,14 @@ func generatePassword() string {
 	return "pWd0_" + uniuri.NewLen(24)
 }
 
-func deleteExistingOSUsers() {
+func deleteExistingOSUsers() error {
 	log.Print("Looking for existing task users to delete...")
 	err := processCommandOutput(deleteOSUserAccount, "wmic", "useraccount", "get", "name")
 	if err != nil {
 		log.Print("WARNING: could not list existing Windows user accounts")
 		log.Printf("%v", err)
 	}
+	return nil
 }
 
 func deleteOSUserAccount(line string) {
@@ -213,8 +280,8 @@ func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
 	log.Printf("Creating wrapper script: %v", wrapper)
-	loginInfo := task.LoginInfo
-	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, loginInfo)
+	loginInfo := task.PlatformData.LoginInfo
+	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, loginInfo.AccessToken())
 	if err != nil {
 		return err
 	}
@@ -223,19 +290,6 @@ func (task *TaskRun) generateCommand(index int) error {
 	command.DirectOutput(task.logWriter)
 	task.Commands[index] = command
 	return nil
-}
-
-func (task *TaskRun) SetLoginInfo() (err error) {
-	task.LoginInfo = &process.LoginInfo{}
-	if !config.RunTasksAsCurrentUser {
-		var hToken syscall.Handle
-		hToken, err = win32.InteractiveUserToken(time.Minute)
-		if err != nil {
-			return
-		}
-		task.LoginInfo.HUser = hToken
-	}
-	return
 }
 
 func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
@@ -322,9 +376,8 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	err := ioutil.WriteFile(
 		wrapper,
 		[]byte(contents),
-		0755,
+		0755, // note this is mostly ignored on windows
 	)
-
 	if err != nil {
 		panic(err)
 	}
@@ -338,8 +391,11 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	err = ioutil.WriteFile(
 		script,
 		fileContents,
-		0755,
+		0755, // note this is mostly ignored on windows
 	)
+	if err != nil {
+		panic(err)
+	}
 
 	// log.Printf("Script %q:", script)
 	// log.Print("Contents:")
@@ -349,19 +405,23 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	// log.Print("Contents:")
 	// log.Print(contents)
 
-	if err != nil {
-		panic(err)
-	}
 	return nil
 }
 
-func taskCleanup() error {
+// Only return critical errors
+func purgeOldTasks() error {
 	if config.CleanUpTaskDirs {
-		deleteTaskDirs()
+		err := deleteTaskDirs()
+		if err != nil {
+			log.Printf("Could not delete old task directories:\n%v", err)
+		}
 	}
 	// note if this fails, we carry on without throwing an error
 	if !config.RunTasksAsCurrentUser {
-		deleteExistingOSUsers()
+		err := deleteExistingOSUsers()
+		if err != nil {
+			log.Printf("Could not delete old task users:\n%v", err)
+		}
 	}
 	return nil
 }
@@ -400,9 +460,9 @@ func CreateRunGenericWorkerBatScript(batScriptFilePath string) error {
 		`::   70: deployment ID changed - system shutdown has been triggered`,
 		``,
 	}, "\r\n"))
-	err := ioutil.WriteFile(batScriptFilePath, batScriptContents, 0755)
+	err := ioutil.WriteFile(batScriptFilePath, batScriptContents, 0755) // note 0755 is mostly ignored on windows
 	if err != nil {
-		return fmt.Errorf("Was not able to create file %q with access permissions 0755 due to %s", batScriptFilePath, err)
+		return fmt.Errorf("Was not able to create file %q due to %s", batScriptFilePath, err)
 	}
 	return nil
 }
@@ -505,9 +565,8 @@ func (task *TaskRun) formatCommand(index int) string {
 
 // see http://ss64.com/nt/icacls.html
 func makeDirReadableForTaskUser(task *TaskRun, dir string) error {
-	if config.RunTasksAsCurrentUser {
-		return nil
-	}
+	// It doesn't concern us if config.RunTasksAsCurrentUser is set or not
+	// because files inside task directory should be owned/managed by task user
 	task.Infof("[mounts] Granting %v full control of '%v'", taskContext.LogonSession.User.Name, dir)
 	err := runtime.RunCommands(
 		false,
@@ -521,9 +580,8 @@ func makeDirReadableForTaskUser(task *TaskRun, dir string) error {
 
 // see http://ss64.com/nt/icacls.html
 func makeDirUnreadableForTaskUser(task *TaskRun, dir string) error {
-	if config.RunTasksAsCurrentUser {
-		return nil
-	}
+	// It doesn't concern us if config.RunTasksAsCurrentUser is set or not
+	// because files inside task directory should be owned/managed by task user
 	task.Infof("[mounts] Denying %v access to '%v'", taskContext.LogonSession.User.Name, dir)
 	err := runtime.RunCommands(
 		false,
@@ -629,7 +687,7 @@ func (task *TaskRun) removeUserFromGroups(groups []string) (updatedGroups []stri
 	return
 }
 
-func RedirectAppData(hUser syscall.Handle, folder string) (err error) {
+func RedirectAppData(hUser syscall.Token, folder string) (err error) {
 	err = win32.SetAndCreateFolder(hUser, &win32.FOLDERID_RoamingAppData, filepath.Join(folder, "Roaming"))
 	if err != nil {
 		return
@@ -692,7 +750,140 @@ func unsetAutoLogon() {
 	}
 }
 
-func deleteTaskDirs() {
-	removeTaskDirs(win32.ProfilesDirectory())
-	removeTaskDirs(config.TasksDir)
+func deleteTaskDirs() error {
+	err := removeTaskDirs(win32.ProfilesDirectory())
+	if err != nil {
+		return err
+	}
+	return removeTaskDirs(config.TasksDir)
+}
+
+func (pd *PlatformData) RefreshLoginSession() {
+	err := pd.LoginInfo.Release()
+	if err != nil {
+		panic(err)
+	}
+	user, pass := AutoLogonCredentials()
+	pd.LoginInfo, err = process.NewLoginInfo(user, pass)
+	if err != nil {
+		// implies a serious bug
+		panic(err)
+	}
+	err = pd.LoginInfo.SetActiveConsoleSessionId()
+	if err != nil {
+		// implies a serious bug
+		panic(fmt.Sprintf("Could not set token session information: %v", err))
+	}
+	pd.CommandAccessToken = pd.LoginInfo.AccessToken()
+	DumpTokenInfo(pd.LoginInfo.AccessToken())
+}
+
+func DumpTokenInfo(token syscall.Token) {
+	log.Print("==================================================")
+	primaryGroup, err := token.GetTokenPrimaryGroup()
+	if err != nil {
+		panic(err)
+	}
+	account, domain, accType, err := primaryGroup.PrimaryGroup.LookupAccount("")
+	if err != nil {
+		panic(err)
+	}
+	primaryGroupSid, err := primaryGroup.PrimaryGroup.String()
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Token Primary Group (%v): %v/%v (%#x)", primaryGroupSid, account, domain, accType)
+	tokenUser, err := token.GetTokenUser()
+	if err != nil {
+		panic(err)
+	}
+	tokenUserSid, err := tokenUser.User.Sid.String()
+	if err != nil {
+		panic(err)
+	}
+	account, domain, accType, err = tokenUser.User.Sid.LookupAccount("")
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Token User (%v): %v/%v (%#x) - with attributes: %#x", tokenUserSid, account, domain, accType, tokenUser.User.Attributes)
+	tokenSessionID, err := win32.GetTokenSessionID(token)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Token Session ID: %#x", tokenSessionID)
+	tokenUIAccess, err := win32.GetTokenUIAccess(token)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Token UI Access: %#x", tokenUIAccess)
+	wt := windows.Token(token)
+	tokenGroups, err := wt.GetTokenGroups()
+	if err != nil {
+		panic(err)
+	}
+	groups := make([]windows.SIDAndAttributes, tokenGroups.GroupCount, tokenGroups.GroupCount)
+	for i := uint32(0); i < tokenGroups.GroupCount; i++ {
+		groups[i] = *(*windows.SIDAndAttributes)(unsafe.Pointer(uintptr(unsafe.Pointer(&tokenGroups.Groups[0])) + uintptr(i)*unsafe.Sizeof(tokenGroups.Groups[0])))
+		groupSid, err := groups[i].Sid.String()
+		if err != nil {
+			panic(fmt.Errorf("WEIRD: got error: %v", err))
+		}
+		account, domain, accType, err := groups[i].Sid.LookupAccount("")
+		if err != nil {
+			log.Printf("Token Group (%v): <<NO_SID>> - with attributes: %#x", groupSid, groups[i].Attributes)
+		} else {
+			log.Printf("Token Group (%v): %v/%v (%#x) - with attributes: %#x", groupSid, account, domain, accType, groups[i].Attributes)
+		}
+	}
+
+	log.Print("==================================================")
+}
+
+func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err error) {
+
+	stdlibruntime.LockOSThread()
+	defer stdlibruntime.UnlockOSThread()
+
+	var winsta win32.Hwinsta
+	if winsta, err = win32.GetProcessWindowStation(); err != nil {
+		return
+	}
+
+	var winstaName string
+	winstaName, err = win32.GetUserObjectName(syscall.Handle(winsta))
+	if err != nil {
+		return
+	}
+
+	var desktop win32.Hdesk
+	desktop, err = win32.GetThreadDesktop(win32.GetCurrentThreadId())
+	if err != nil {
+		return
+	}
+
+	var desktopName string
+	desktopName, err = win32.GetUserObjectName(syscall.Handle(desktop))
+	if err != nil {
+		return
+	}
+
+	fmt.Printf("Windows Station:   %v\n", winstaName)
+	fmt.Printf("Desktop:           %v\n", desktopName)
+
+	var everyone *syscall.SID
+	everyone, err = syscall.StringToSid(sid)
+	if err != nil {
+		return
+	}
+
+	err = win32.AddAceToWindowStation(winsta, everyone)
+	if err != nil {
+		return
+	}
+
+	err = win32.AddAceToDesktop(desktop, everyone)
+	if err != nil {
+		return
+	}
+	return
 }

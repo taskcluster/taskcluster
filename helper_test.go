@@ -78,8 +78,9 @@ func setupEnvironment(t *testing.T) (teardown func()) {
 
 	return func() {
 		// note for tests that don't submit a task, they will have
-		// taskContext.TasksDir set to the testdata subfolder, and we don't
-		// want to delete that, which is why we delete the TasksDir
+		// taskContext.TaskDir set to the testdata subfolder, and we don't
+		// want to delete that, which is why we delete testDir and not
+		// config.TasksDir or taskContext.TaskDir
 		err := os.RemoveAll(testDir)
 		if err != nil {
 			t.Logf("WARNING: Not able to clean up after test: %v", err)
@@ -132,7 +133,7 @@ func setup(t *testing.T) (teardown func()) {
 		// have a lot of free disk
 		RequiredDiskSpaceMegabytes:     16,
 		RunAfterUserCreation:           "",
-		RunTasksAsCurrentUser:          os.Getenv("GW_TESTS_GENERATE_USERS") == "",
+		RunTasksAsCurrentUser:          os.Getenv("GW_TESTS_RUN_AS_TASK_USER") == "",
 		SentryProject:                  "generic-worker-tests",
 		ShutdownMachineOnIdle:          false,
 		ShutdownMachineOnInternalError: false,

@@ -13,7 +13,12 @@ func TestRunAfterUserCreation(t *testing.T) {
 	}
 	config.RunAfterUserCreation = filepath.Join(testdataDir, "run-after-user.bat")
 	PrepareTaskEnvironment()
-	defer taskCleanup()
+	defer func() {
+		err := purgeOldTasks()
+		if err != nil {
+			t.Fatalf("Problem deleting old tasks: %v", err)
+		}
+	}()
 	file := filepath.Join(taskContext.TaskDir, "run-after-user.txt")
 	_, err := os.Stat(file)
 	if err != nil {

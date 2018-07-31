@@ -53,11 +53,6 @@ type (
 		ContentEncoding string
 	}
 
-	AzureArtifact struct {
-		*BaseArtifact
-		Path string
-	}
-
 	RedirectArtifact struct {
 		*BaseArtifact
 		URL string

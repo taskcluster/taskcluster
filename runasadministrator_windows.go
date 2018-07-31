@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"syscall"
 
 	"github.com/taskcluster/generic-worker/win32"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
@@ -64,13 +63,13 @@ func (l *RunAsAdministratorTask) Start() *CommandExecutionError {
 		if err != nil {
 			return MalformedPayloadError(fmt.Errorf(`Could not obtain UAC elevated auth token; you probably need to add group "Administrators" to task.payload.osGroups: %v`, err))
 		}
-		c.Cmd.SysProcAttr.Token = adminToken
+		c.SysProcAttr.Token = adminToken
 	}
-	adminToken, err := win32.GetLinkedToken(syscall.Token(l.task.LoginInfo.HUser))
+	adminToken, err := l.task.PlatformData.LoginInfo.ElevatedAccessToken()
 	if err != nil {
 		return MalformedPayloadError(fmt.Errorf(`Could not obtain UAC elevated auth token; you probably need to add group "Administrators" to task.payload.osGroups: %v`, err))
 	}
-	l.task.LoginInfo.HUser = syscall.Handle(adminToken)
+	l.task.PlatformData.CommandAccessToken = adminToken
 	return nil
 }
 

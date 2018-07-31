@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -703,9 +703,10 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 
 func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 
-	// whether permission is granted to task user depends if running task as current user...
+	// whether permission is granted to task user depends if running under windows or not
+	// and is independent of whether running as current user or not
 	granting, denying := []string{}, []string{}
-	if os.Getenv("GW_TESTS_GENERATE_USERS") != "" {
+	if runtime.GOOS == "windows" {
 		granting = []string{
 			`Granting task_.* full control of '.*TestWritableDirectoryCacheNoSHA256'`,
 		}
@@ -779,9 +780,10 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 // different location, that the test fails, and the worker doesn't crash.
 func TestCacheMoved(t *testing.T) {
 
-	// whether permission is granted to task user depends if running task as current user...
+	// whether permission is granted to task user depends if running under windows or not
+	// and is independent of whether running as current user or not
 	granting := []string{}
-	if os.Getenv("GW_TESTS_GENERATE_USERS") != "" {
+	if runtime.GOOS == "windows" {
 		granting = []string{
 			`Granting task_.* full control of '.*TestCacheMoved'`,
 		}

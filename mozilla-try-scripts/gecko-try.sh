@@ -93,7 +93,7 @@ git clone git@github.com:mozilla-releng/OpenCloudConfig.git
 cd OpenCloudConfig/userdata/Manifest
 for MANIFEST in *-b.json *-cu.json *-beta.json; do
   cat "${MANIFEST}" > "${MANIFEST}.bak"
-  cat "${MANIFEST}.bak" | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-windows-\\)_\\1${NEW_VERSION}\\2_" | sed "s_\\(\"generic-worker \\)[0-9\\.]*\\(.*\\)\$_\\1${NEW_VERSION}\\2_" > "${MANIFEST}"
+  cat "${MANIFEST}.bak" | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-windows-\\)_\\1${NEW_VERSION}\\2_" | sed "s_\\(\"generic-worker \\)[^ ]*\\(.*\\)\$_\\1${NEW_VERSION}\\2_" > "${MANIFEST}"
   cat "${MANIFEST}" > "${MANIFEST}.bak"
   THIS_ARCH="$(cat "${MANIFEST}" | sed -n 's/.*\/generic-worker-windows-\(.*\)\.exe.*/\1/p' | sort -u)"
   if [ "${ARCH}" != "386" ] && [ "${ARCH}" != "amd64" ]; then
