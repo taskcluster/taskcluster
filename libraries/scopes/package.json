@@ -10,7 +10,7 @@
     "test": "mocha test/*_test.js"
   },
   "engines": {
-    "node": "^8.0.0"
+    "node": ">=8.0.0"
   },
   "main": "./src/index",
   "files": [
