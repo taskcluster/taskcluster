@@ -13,8 +13,7 @@ exports.start = function(clients, {rootUrl}={}) {
     .persist()
     .filteringRequestBody(/.*/, '*')
     .post(authPath, '*')
-    .reply(200, function(uri, requestBody) {
-      let body = JSON.parse(requestBody);
+    .reply(200, function(uri, body) {
       let scopes = [];
       let from = 'client config';
       let ext = null;
