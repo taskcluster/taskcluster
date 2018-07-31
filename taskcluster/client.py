@@ -168,7 +168,7 @@ class BaseClient(object):
         route = self._subArgsInRoute(entry, routeParams)
         if query:
             route += '?' + urllib.parse.urlencode(query)
-        return self.options['baseUrl'] + '/' + route
+        return self._joinBaseUrlAndRoute(route)
 
     def buildSignedUrl(self, methodName, *args, **kwargs):
         """ Build a signed URL.  This URL contains the credentials needed to access
@@ -236,6 +236,12 @@ class BaseClient(object):
             qs,
             u.fragment,
         ))
+
+    def _joinBaseUrlAndRoute(self, route):
+        return urllib.parse.urljoin(
+            '{}/'.format(self.options['baseUrl'].rstrip('/')),
+            route.lstrip('/')
+        )
 
     def _makeApiCall(self, entry, *args, **kwargs):
         """ This function is used to dispatch calls to other functions
@@ -431,13 +437,7 @@ class BaseClient(object):
         the logic about doing failure retry and passes off the actual work
         of doing an HTTP request to another method."""
 
-        baseUrl = self.options['baseUrl']
-        # urljoin ignores the last param of the baseUrl if the base url doesn't end
-        # in /.  I wonder if it's better to just do something basic like baseUrl +
-        # route instead
-        if not baseUrl.endswith('/'):
-            baseUrl += '/'
-        url = urllib.parse.urljoin(baseUrl, route.lstrip('/'))
+        url = self._joinBaseUrlAndRoute(route)
         log.debug('Full URL used is: %s', url)
 
         hawkExt = self.makeHawkExt()
