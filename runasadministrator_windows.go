@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/taskcluster/generic-worker/win32"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
@@ -47,9 +46,6 @@ func (l *RunAsAdministratorTask) RequiredScopes() scopes.Required {
 	}}
 }
 
-type RunAsAdministratorHandler struct {
-}
-
 func (l *RunAsAdministratorTask) Start() *CommandExecutionError {
 	if config.RunTasksAsCurrentUser {
 		// already running as LocalSystem with UAC elevation
@@ -73,12 +69,5 @@ func (l *RunAsAdministratorTask) Start() *CommandExecutionError {
 	return nil
 }
 
-func ProcessRequests(s *http.Server) {
-	// s.ListenAndServe()
-}
-
 func (l *RunAsAdministratorTask) Stop(err *ExecutionErrors) {
-}
-
-func (handler *RunAsAdministratorHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 }
