@@ -84,7 +84,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker 10.11.0
+generic-worker 10.11.1
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -99,6 +99,7 @@ and reports back results to the queue.
                                             [--config         CONFIG-FILE]
     generic-worker show-payload-schema
     generic-worker new-openpgp-keypair      --file PRIVATE-KEY-FILE
+    generic-worker grant-winsta-access      --sid SID
     generic-worker --help
     generic-worker --version
 
@@ -125,20 +126,23 @@ and reports back results to the queue.
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
                                             key will be written to the specified file.
+    grant-winsta-access                     Windows only. Used internally by generic-
+                                            worker to grant a logon SID full control of the
+                                            interactive windows station and desktop.
 
   Options:
     --config CONFIG-FILE                    Json configuration file to use. See
                                             configuration section below to see what this
                                             file should contain. When calling the install
                                             target, this is the config file that the
-                                            installation should use, rather than the
-                                            config to use during install.
+                                            installation should use, rather than the config
+                                            to use during install.
                                             [default: generic-worker.config]
     --configure-for-aws                     This will create the CONFIG-FILE for an AWS
                                             installation by querying the AWS environment
                                             and setting appropriate values.
-    --nssm NSSM-EXE                         The full path to nssm.exe to use for
-                                            installing the service.
+    --nssm NSSM-EXE                         The full path to nssm.exe to use for installing
+                                            the service.
                                             [default: C:\nssm-2.24\win64\nssm.exe]
     --service-name SERVICE-NAME             The name that the Windows service should be
                                             installed under. [default: Generic Worker]
@@ -146,6 +150,9 @@ and reports back results to the queue.
                                             to. The parent directory must already exist.
                                             If the file exists it will be overwritten,
                                             otherwise it will be created.
+    --sid SID                               A SID to be granted full control of the
+                                            interactive windows station and desktop, for
+                                            example: 'S-1-5-5-0-41431533'.
     --help                                  Display this help text.
     --version                               The release version of the generic-worker.
 
@@ -179,8 +186,11 @@ and reports back results to the queue.
 
           authBaseURL                       The base URL for API calls to the auth service.
           availabilityZone                  The EC2 availability zone of the worker.
-          cachesDir                         The location where task caches should be stored on
-                                            the worker. [default: C:\generic-worker\caches]
+          cachesDir                         The directory where task caches should be stored on
+                                            the worker. The directory will be created if it does
+                                            not exist. This may be a relative path to the
+                                            current directory, or an absolute path.
+                                            [default: caches]
           certificate                       Taskcluster certificate, when using temporary
                                             credentials only.
           checkForNewDeploymentEverySecs    The number of seconds between consecutive calls
@@ -212,9 +222,11 @@ and reports back results to the queue.
                                             (such as formatting a hard drive) and then
                                             rebooting in the run-generic-worker.bat script.
                                             [default: false]
-          downloadsDir                      The location where resources are downloaded for
-                                            populating preloaded caches and readonly mounts.
-                                            [default: C:\generic-worker\downloads]
+          downloadsDir                      The directory to cache downloaded files for
+                                            populating preloaded caches and readonly mounts. The
+                                            directory will be created if it does not exist. This
+                                            may be a relative path to the current directory, or
+                                            an absolute path. [default: downloads]
           idleTimeoutSecs                   How many seconds to wait without getting a new
                                             task to perform, before the worker process exits.
                                             An integer, >= 0. A value of 0 means "never reach
@@ -336,6 +348,8 @@ and reports back results to the queue.
     72     The worker is running on spot infrastructure in AWS EC2 and has been served a
            spot termination notice, and therefore has shut down.
     73     The config provided to the worker is invalid.
+    74     Could not grant provided SID full control of interactive windows stations and
+           desktop.
 ```
 
 # Start the generic worker
@@ -373,7 +387,7 @@ go test -v ./...
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 10.11.0
+$ ./release.sh 10.11.1
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
