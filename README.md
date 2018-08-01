@@ -20,7 +20,7 @@ A generic worker for [taskcluster](https://tools.taskcluster.net/), written in g
 
 If you prefer not to use a prepackaged binary, or want to have the latest unreleased version from the development head:
 
-* Head over to http://golang.org/doc/install and follow the instructions for your platform. __Note, go 1.8 or higher is required__. Be sure to set your GOPATH to something appropriate.
+* Head over to https://golang.org/dl/ and follow the instructions for your platform. __Note, go 1.8 or higher is required__. Be sure to set your GOPATH to something appropriate.
 * Run `go get github.com/taskcluster/generic-worker`
 * Run `go get github.com/taskcluster/livelog`
 
@@ -390,3 +390,10 @@ Please see:
 * [Generic Worker presentations](https://docs.taskcluster.net/presentations) (focus on Windows platform)
 * [Taskcluster Web Tools](https://tools.taskcluster.net/)
 * [Generic Worker Open Bugs](https://bugzilla.mozilla.org/buglist.cgi?f1=product&resolution=---&o1=equals&o2=equals&query_format=advanced&f2=component&v1=Taskcluster&v2=Generic-Worker)
+
+Useful information on win32 APIs:
+
+* [Starting an Interactive Client Process in C++](https://msdn.microsoft.com/en-us/9e9ed9b7-ea23-4dec-8b92-a86aa81267ab?f=255&MSPPError=-2147217396)
+* [Getting the Logon SID in C++](https://msdn.microsoft.com/en-us/aa446670?f=255&MSPPError=-2147217396)
+* [Modifying the ACLs of an Object in C++](https://docs.microsoft.com/en-us/windows/desktop/secauthz/modifying-the-acls-of-an-object-in-c--)
+* [Window Station Security and Access Rights](https://docs.microsoft.com/en-us/windows/desktop/winstation/window-station-security-and-access-rights)

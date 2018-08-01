@@ -151,6 +151,7 @@ func (m *MockAWSProvisionedEnvironment) Secrets(t *testing.T) interface{} {
 			// should be enough for tests, and travis-ci.org CI environments
 			// don't have a lot of free disk
 			"requiredDiskSpaceMegabytes":     16,
+			"runTasksAsCurrentUser":          os.Getenv("GW_TESTS_RUN_AS_TASK_USER") == "",
 			"sentryProject":                  "generic-worker-tests",
 			"shutdownMachineOnIdle":          false,
 			"shutdownMachineOnInternalError": false,

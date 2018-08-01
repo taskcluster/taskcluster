@@ -58,17 +58,18 @@ type ExitCode int
 
 // These constants represent all possible exit codes from the generic-worker process.
 const (
-	TASKS_COMPLETE              ExitCode = 0
-	CANT_LOAD_CONFIG            ExitCode = 65
-	CANT_INSTALL_GENERIC_WORKER ExitCode = 65
-	CANT_CREATE_OPENPGP_KEYPAIR ExitCode = 66
-	REBOOT_REQUIRED             ExitCode = 67
-	IDLE_TIMEOUT                ExitCode = 68
-	INTERNAL_ERROR              ExitCode = 69
-	NONCURRENT_DEPLOYMENT_ID    ExitCode = 70
-	WORKER_STOPPED              ExitCode = 71
-	WORKER_SHUTDOWN             ExitCode = 72
-	INVALID_CONFIG              ExitCode = 73
+	TASKS_COMPLETE                           ExitCode = 0
+	CANT_LOAD_CONFIG                         ExitCode = 65
+	CANT_INSTALL_GENERIC_WORKER              ExitCode = 65
+	CANT_CREATE_OPENPGP_KEYPAIR              ExitCode = 66
+	REBOOT_REQUIRED                          ExitCode = 67
+	IDLE_TIMEOUT                             ExitCode = 68
+	INTERNAL_ERROR                           ExitCode = 69
+	NONCURRENT_DEPLOYMENT_ID                 ExitCode = 70
+	WORKER_STOPPED                           ExitCode = 71
+	WORKER_SHUTDOWN                          ExitCode = 72
+	INVALID_CONFIG                           ExitCode = 73
+	CANT_GRANT_CONTROL_OF_WINSTA_AND_DESKTOP ExitCode = 74
 )
 
 func usage(versionName string) string {
@@ -87,6 +88,7 @@ and reports back results to the queue.
                                             [--config         CONFIG-FILE]
     generic-worker show-payload-schema
     generic-worker new-openpgp-keypair      --file PRIVATE-KEY-FILE
+    generic-worker grant-winsta-access      --sid SID
     generic-worker --help
     generic-worker --version
 
@@ -113,20 +115,23 @@ and reports back results to the queue.
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
                                             key will be written to the specified file.
+    grant-winsta-access                     Windows only. Used internally by generic-
+                                            worker to grant a logon SID full control of the
+                                            interactive windows station and desktop.
 
   Options:
     --config CONFIG-FILE                    Json configuration file to use. See
                                             configuration section below to see what this
                                             file should contain. When calling the install
                                             target, this is the config file that the
-                                            installation should use, rather than the
-                                            config to use during install.
+                                            installation should use, rather than the config
+                                            to use during install.
                                             [default: generic-worker.config]
     --configure-for-aws                     This will create the CONFIG-FILE for an AWS
                                             installation by querying the AWS environment
                                             and setting appropriate values.
-    --nssm NSSM-EXE                         The full path to nssm.exe to use for
-                                            installing the service.
+    --nssm NSSM-EXE                         The full path to nssm.exe to use for installing
+                                            the service.
                                             [default: C:\nssm-2.24\win64\nssm.exe]
     --service-name SERVICE-NAME             The name that the Windows service should be
                                             installed under. [default: Generic Worker]
@@ -134,6 +139,9 @@ and reports back results to the queue.
                                             to. The parent directory must already exist.
                                             If the file exists it will be overwritten,
                                             otherwise it will be created.
+    --sid SID                               A SID to be granted full control of the
+                                            interactive windows station and desktop, for
+                                            example: 'S-1-5-5-0-41431533'.
     --help                                  Display this help text.
     --version                               The release version of the generic-worker.
 
@@ -329,6 +337,8 @@ and reports back results to the queue.
     72     The worker is running on spot infrastructure in AWS EC2 and has been served a
            spot termination notice, and therefore has shut down.
     73     The config provided to the worker is invalid.
+    74     Could not grant provided SID full control of interactive windows stations and
+           desktop.
 `
 }
 
@@ -346,7 +356,6 @@ func initialiseFeatures() (err error) {
 	Features = []Feature{
 		&LiveLogFeature{},
 		&TaskclusterProxyFeature{},
-		&OSGroupsFeature{},
 		&MountsFeature{},
 		&SupersedeFeature{},
 	}
@@ -438,6 +447,14 @@ func main() {
 			log.Println("Error generating OpenPGP keypair for worker:")
 			log.Printf("%#v\n", err)
 			os.Exit(int(CANT_CREATE_OPENPGP_KEYPAIR))
+		}
+	case arguments["grant-winsta-access"]:
+		sid := arguments["--sid"].(string)
+		err := GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid)
+		if err != nil {
+			log.Printf("Error granting %v full control of interactive windows station and desktop:", sid)
+			log.Printf("%v", err)
+			os.Exit(int(CANT_GRANT_CONTROL_OF_WINSTA_AND_DESKTOP))
 		}
 	}
 }
@@ -585,7 +602,7 @@ func RunWorker() (exitCode ExitCode) {
 			panic(err)
 		}
 	}(&tasksResolved)
-	err = taskCleanup()
+	err = purgeOldTasks()
 	// any errors are fatal
 	if err != nil {
 		log.Printf("OH NO!!!\n\n%#v", err)
@@ -657,13 +674,13 @@ func RunWorker() (exitCode ExitCode) {
 			if errors.WorkerShutdown() {
 				return WORKER_SHUTDOWN
 			}
-			err := task.LoginInfo.Logout()
+			err := task.ReleaseResources()
 			if err != nil {
-				log.Printf("ERROR: logging out user!\n%v", err)
+				log.Printf("ERROR: releasing resources\n%v", err)
 			}
-			err = taskCleanup()
+			err = purgeOldTasks()
 			if err != nil {
-				log.Printf("ERROR: cleaning up after task!\n%v", err)
+				panic(err)
 			}
 			tasksResolved++
 			// remainingTasks will be -ve, if config.NumberOfTasksToRun is not set (=0)
@@ -693,7 +710,7 @@ func RunWorker() (exitCode ExitCode) {
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
-					taskCleanup()
+					purgeOldTasks()
 					log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
 					return IDLE_TIMEOUT
 				}
@@ -776,7 +793,8 @@ func ClaimWork() *TaskRun {
 			LocalClaimTime: localClaimTime,
 		}
 		task.StatusManager = NewTaskStatusManager(task)
-		err := task.SetLoginInfo()
+		var err error
+		task.PlatformData, err = task.NewPlatformData()
 		if err != nil {
 			panic(err)
 		}
@@ -1331,13 +1349,13 @@ func PrepareTaskEnvironment() (reboot bool) {
 	return
 }
 
-func removeTaskDirs(parentDir string) {
+func removeTaskDirs(parentDir string) error {
 	activeTaskUser, _ := AutoLogonCredentials()
 	taskDirsParent, err := os.Open(parentDir)
 	if err != nil {
 		log.Print("WARNING: Could not open " + parentDir + " directory to find old home directories to delete")
 		log.Printf("%v", err)
-		return
+		return nil
 	}
 	defer taskDirsParent.Close()
 	fi, err := taskDirsParent.Readdir(-1)
@@ -1351,26 +1369,16 @@ func removeTaskDirs(parentDir string) {
 		path := filepath.Join(parentDir, fileName)
 		if file.IsDir() {
 			if strings.HasPrefix(fileName, "task_") && fileName != activeTaskUser {
-				// ignore any error occuring here, not a lot we can do about it...
-				deleteTaskDir(path)
+				err = deleteTaskDir(path)
+				if err != nil {
+					log.Printf("WARNING: Could not delete task directory %v: %v", path, err)
+				}
 			}
 		}
 	}
+	return nil
 }
 
-func (task *TaskRun) RefreshLoginSession() {
-	// On Windows we need to call LogonUser to get new access token with the group changes
-	if task.LoginInfo != nil {
-		logoutError := task.LoginInfo.Logout()
-		if logoutError != nil {
-			panic(logoutError)
-		}
-	}
-	user, pass := AutoLogonCredentials()
-	loginInfo, logonError := process.NewLoginInfo(user, pass)
-	if logonError != nil {
-		// implies a serious bug
-		panic(logonError)
-	}
-	task.LoginInfo = loginInfo
+func (task *TaskRun) ReleaseResources() error {
+	return task.PlatformData.ReleaseResources()
 }

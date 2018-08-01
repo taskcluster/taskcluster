@@ -11,8 +11,8 @@ import (
 )
 
 func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error {
-	loginInfo := cot.task.LoginInfo
-	c, err := process.NewCommand([]string{"cmd.exe", "/c", "type", config.SigningKeyLocation}, cwd, nil, loginInfo)
+	accessToken := cot.task.PlatformData.CommandAccessToken
+	c, err := process.NewCommand([]string{"cmd.exe", "/c", "type", config.SigningKeyLocation}, cwd, nil, accessToken)
 	if err != nil {
 		panic(fmt.Errorf("SERIOUS BUG: Could not create command (not even trying to execute it yet) to cat private chain of trust key - %v", err))
 	}

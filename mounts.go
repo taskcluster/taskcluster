@@ -460,12 +460,13 @@ func (w *WritableDirectoryCache) Mount(task *TaskRun) error {
 			MkdirAllOrDie(task, target, 0700)
 		}
 	}
-	// if not running task as current user, grant task user access
-	if !config.RunTasksAsCurrentUser {
-		err := makeDirReadableForTaskUser(task, target)
-		if err != nil {
-			panic(err)
-		}
+	// Regardless of whether we are running as current user, grant task user access
+	// since the mounted folder sits inside the task directory of the task user,
+	// which is owned and controlled by the task user, even if commands execute as
+	// LocalSystem, the file system resources should still be owned by task user.
+	err := makeDirReadableForTaskUser(task, target)
+	if err != nil {
+		panic(err)
 	}
 	task.Infof("[mounts] Successfully mounted writable directory cache '%v'", target)
 	return nil
@@ -510,12 +511,13 @@ func (w *WritableDirectoryCache) Unmount(task *TaskRun) error {
 		// with it.
 		return Failure(fmt.Errorf("Could not persist cache %q due to %v", cache.Key, err))
 	}
-	// if not running task as current user, remove task user access
-	if !config.RunTasksAsCurrentUser {
-		err = makeDirUnreadableForTaskUser(task, cacheDir)
-		if err != nil {
-			panic(err)
-		}
+	// Regardless of whether we are running as current user, remove task user access
+	// since the mounted folder sits inside the task directory of the task user,
+	// and would have been granted access, which should be removed since next time
+	// it is mounted, a different task user account should be active.
+	err = makeDirUnreadableForTaskUser(task, cacheDir)
+	if err != nil {
+		panic(err)
 	}
 	return nil
 }

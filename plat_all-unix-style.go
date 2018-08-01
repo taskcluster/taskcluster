@@ -3,12 +3,12 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -19,6 +19,17 @@ import (
 
 func platformFeatures() []Feature {
 	return []Feature{}
+}
+
+type PlatformData struct {
+}
+
+func (task *TaskRun) NewPlatformData() (pd *PlatformData, err error) {
+	return &PlatformData{}, nil
+}
+
+func (pd *PlatformData) ReleaseResources() error {
+	return nil
 }
 
 type OSUser struct {
@@ -82,7 +93,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	return nil
 }
 
-func taskCleanup() error {
+func purgeOldTasks() error {
 	if config.CleanUpTaskDirs {
 		deleteTaskDirs()
 	}
@@ -119,12 +130,12 @@ func (task *TaskRun) EnvVars() []string {
 
 func makeDirReadableForTaskUser(task *TaskRun, dir string) error {
 	// No user separation yet
-	return errors.New("Task user separation is not yet implemented on non-Windows platforms")
+	return nil
 }
 
 func makeDirUnreadableForTaskUser(task *TaskRun, dir string) error {
 	// No user separation yet
-	return errors.New("Task user separation is not yet implemented on non-Windows platforms")
+	return nil
 }
 
 func RenameCrossDevice(oldpath, newpath string) error {
@@ -133,14 +144,6 @@ func RenameCrossDevice(oldpath, newpath string) error {
 	// currently don't have non-windows platforms in production, so not
 	// currently high priority
 	return os.Rename(oldpath, newpath)
-}
-
-func (task *TaskRun) removeUserFromGroups(groups []string) (updatedGroups []string, notUpdatedGroups []string) {
-	return updatedGroups, groups
-}
-
-func (task *TaskRun) addUserToGroups(groups []string) (updatedGroups []string, notUpdatedGroups []string) {
-	return updatedGroups, groups
 }
 
 func (task *TaskRun) formatCommand(index int) string {
@@ -191,6 +194,6 @@ func deleteTaskDirs() {
 	removeTaskDirs(config.TasksDir)
 }
 
-func (task *TaskRun) SetLoginInfo() error {
-	return nil
+func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err error) {
+	return fmt.Errorf("Cannot grant %v full control of interactive windows station and desktop; platform %v does not have such entities", sid, runtime.GOOS)
 }

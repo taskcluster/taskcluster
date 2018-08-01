@@ -7,27 +7,11 @@ import (
 	"io"
 	"log"
 	"os/exec"
-	"runtime"
 	"strconv"
 	"sync"
 	"syscall"
 	"time"
 )
-
-type LoginInfo struct {
-}
-
-func (c *Command) SetLoginInfo(loginInfo *LoginInfo) {
-}
-
-// It is the responsibility for the caller to call loginInfo.Logout() when finished with loginInfo
-func NewLoginInfo(username, password string) (loginInfo *LoginInfo, err error) {
-	return nil, fmt.Errorf("NewLoginInfo not implemented on %v - only implemented on windows", runtime.GOOS)
-}
-
-func (loginInfo *LoginInfo) Logout() error {
-	return fmt.Errorf("Logout() not implemented on %v - only implemented on windows", runtime.GOOS)
-}
 
 type Command struct {
 	mutex sync.RWMutex
