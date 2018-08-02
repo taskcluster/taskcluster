@@ -135,7 +135,7 @@ go run "${THIS_SCRIPT_DIR}/waitforOCC.go" "${OCC_COMMIT}"
 
 hg pull -u -r default
 patch -p1 -i "${THIS_SCRIPT_DIR}/gecko.patch"
-hg commit -m 'Enable windows beta worker types; try: -b do -p win32,win64 -u all -t none'
+hg commit -m "Testing generic-worker ${NEW_VERSION} on Windows; try: -b do -p win32,win64 -u all -t none"
 hg push -f ssh://hg.mozilla.org/try/ -r .
 
 open_browser_page 'https://treeherder.mozilla.org/#/jobs?repo=try'
