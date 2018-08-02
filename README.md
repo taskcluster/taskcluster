@@ -407,10 +407,6 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 * [Bug 1439588 - Add feature to support running Windows tasks in an elevated process (Administrator)](https://bugzil.la/1439588)
 
-### In v10.11.0 since v10.10.0
-
-* [Bug 1439588 - Add feature to support running Windows tasks in an elevated process (Administrator)](https://bugzil.la/1439588)
-
 ### In v10.10.0 since v10.9.0
 
 * [Bug 1469402 - Support for onExitStatus on generic-worker](https://bugzil.la/1469402)
@@ -454,10 +450,6 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 * [Bug 1180187 - generic-worker: listen for and handle worker shutdown](https://bugzil.la/1180187)
 
-### In v10.7.0 since v10.6.1
-
-* [Bug 1180187 - generic-worker: listen for and handle worker shutdown](https://bugzil.la/1180187)
-
 ### In v10.6.1 since v10.6.0
 
 * [Bug 1443595 - github binary downloads are broken in occ due to the tls upgrade](https://bugzil.la/1443595)
@@ -475,14 +467,6 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 ### In v10.5.0 since v10.5.0alpha4
 
 * [Bug 1172273 - generic-worker (windows): RDP into task users](https://bugzil.la/1172273)
-* [Bug 1429370 - Changing PR title causes new tasks to be triggered](https://bugzil.la/1429370)
-
-### In v10.5.0alpha4 since v10.5.0alpha3
-
-* [Bug 1172273 - generic-worker (windows): RDP into task users](https://bugzil.la/1172273)
-
-### In v10.5.0alpha3 since v10.5.0alpha2
-
 * [Bug 1429370 - Changing PR title causes new tasks to be triggered](https://bugzil.la/1429370)
 
 ### In v10.4.1 since v10.4.0
@@ -534,15 +518,6 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 ### In v10.1.4 since v10.1.3
 
-* [Bug 1360198 - Don't explicitly set artifact expiry for generic-worker tasks, if it is just task expiry](https://bugzil.la/1360198)
-* [Bug 1380978 - generic-worker: chain of trust artifacts should be indexed by artifact name, not artifact path](https://bugzil.la/1380978)
-
-### In v10.1.3 since v10.1.2
-
-* [Bug 1380978 - generic-worker: chain of trust artifacts should be indexed by artifact name, not artifact path](https://bugzil.la/1380978)
-
-### In v10.1.2 since v10.1.1
-
 * [Bug 1380978 - generic-worker: chain of trust artifacts should be indexed by artifact name, not artifact path](https://bugzil.la/1380978)
 
 ### In v10.0.5 since v10.0.4
@@ -552,10 +527,6 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 ### In v8.5.0 since v8.4.1
 
 * [Bug 1360539 - generic-worker 8.3.0 to 8.4.1 causing process failures on win2012r2 worker types (runTasksAsCurrentUser: false)](https://bugzil.la/1360539)
-
-### In v8.4.0 since v8.3.0
-
-* [Bug 1360198 - Don't explicitly set artifact expiry for generic-worker tasks, if it is just task expiry](https://bugzil.la/1360198)
 
 ### In v8.3.0 since v8.2.0
 
@@ -597,19 +568,7 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 * [Bug 1303455 - TC Windows tests run without JOB_OBJECT_LIMIT_BREAKAWAY_OK](https://bugzil.la/1303455)
 
-### In v7.0.1alpha1 since v7.0.0
-
-* [Bug 1303455 - TC Windows tests run without JOB_OBJECT_LIMIT_BREAKAWAY_OK](https://bugzil.la/1303455)
-
-### In v7.0.0alpha6 since v7.0.0alpha5
-
-* [Bug 1303455 - TC Windows tests run without JOB_OBJECT_LIMIT_BREAKAWAY_OK](https://bugzil.la/1303455)
-
 ### In v6.1.0 since v6.1.0alpha1
-
-* [Bug 1298010 - update Generic Worker to terminate host instance if the worker type definition has changed since the instance was started](https://bugzil.la/1298010)
-
-### In v6.1.0alpha1 since v6.0.9
 
 * [Bug 1298010 - update Generic Worker to terminate host instance if the worker type definition has changed since the instance was started](https://bugzil.la/1298010)
 
@@ -638,10 +597,6 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 * [Bug 1285197 - package github.com/taskcluster/taskcluster-client-go: no buildable Go source files in x3cGOPATHx3e/src/github.com/taskcluster/taskcluster-client-go](https://bugzil.la/1285197)
 
 ### In v3.0.0alpha1 since v2.1.0
-
-* [Bug 1279019 - Generic worker should log metadata about itself and the worker type it is running on](https://bugzil.la/1279019)
-
-### In v2.0.1alpha1 since v2.0.0
 
 * [Bug 1279019 - Generic worker should log metadata about itself and the worker type it is running on](https://bugzil.la/1279019)
 
