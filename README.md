@@ -2694,6 +2694,18 @@ asyncNotify = taskcluster.aio.Notify(options, session=session)
 The notification service, typically available at `notify.taskcluster.net`
 listens for tasks with associated notifications and handles requests to
 send emails and post pulse messages.
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+notify.ping() # -> None`
+# Async call
+await asyncNotify.ping() # -> None
+```
+
 #### Send an Email
 Send an email to `address`. The content is markdown and will be rendered
 to HTML, but both the HTML and raw markdown text will be sent in the
@@ -2701,7 +2713,7 @@ email. If a link is included, it will be rendered to a nice button in the
 HTML version of the email
 
 
-Required [input schema](http://schemas.taskcluster.net/notify/v1/email-request.json)
+Required [input schema](v1/email-request.json#)
 
 ```python
 # Sync calls
@@ -2714,7 +2726,7 @@ await asyncNotify.email(payload) # -> None
 Publish a message on pulse with the given `routingKey`.
 
 
-Required [input schema](http://schemas.taskcluster.net/notify/v1/pulse-request.json)
+Required [input schema](v1/pulse-request.json#)
 
 ```python
 # Sync calls
@@ -2737,25 +2749,13 @@ error. We maybe improve this behavior in the future. For now just keep
 in mind that IRC is a best-effort service.
 
 
-Required [input schema](http://schemas.taskcluster.net/notify/v1/irc-request.json)
+Required [input schema](v1/irc-request.json#)
 
 ```python
 # Sync calls
 notify.irc(payload) # -> None`
 # Async call
 await asyncNotify.irc(payload) # -> None
-```
-
-#### Ping Server
-Respond without doing anything.
-This endpoint is used to check that the service is up.
-
-
-```python
-# Sync calls
-notify.ping() # -> None`
-# Async call
-await asyncNotify.ping() # -> None
 ```
 
 

@@ -2186,12 +2186,20 @@ asyncNotify <span class="pl-k">=</span> taskcluster.aio.Notify(options, <span cl
 listens for tasks with associated notifications and handles requests to
 send emails and post pulse messages.</p>
 <h4>
+<a id="user-content-ping-server-7" class="anchor" href="#ping-server-7" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
+<p>Respond without doing anything.
+This endpoint is used to check that the service is up.</p>
+<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
+notify.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
+<span class="pl-c"><span class="pl-c">#</span> Async call</span>
+<span class="pl-k">await</span> asyncNotify.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
+<h4>
 <a id="user-content-send-an-email" class="anchor" href="#send-an-email" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Send an Email</h4>
 <p>Send an email to <code>address</code>. The content is markdown and will be rendered
 to HTML, but both the HTML and raw markdown text will be sent in the
 email. If a link is included, it will be rendered to a nice button in the
 HTML version of the email</p>
-<p>Required <a href="http://schemas.taskcluster.net/notify/v1/email-request.json" rel="nofollow">input schema</a></p>
+<p>Required <a href="v1/email-request.json#">input schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 notify.email(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -2199,7 +2207,7 @@ notify.email(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None`
 <h4>
 <a id="user-content-publish-a-pulse-message" class="anchor" href="#publish-a-pulse-message" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Publish a Pulse Message</h4>
 <p>Publish a message on pulse with the given <code>routingKey</code>.</p>
-<p>Required <a href="http://schemas.taskcluster.net/notify/v1/pulse-request.json" rel="nofollow">input schema</a></p>
+<p>Required <a href="v1/pulse-request.json#">input schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 notify.pulse(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
@@ -2215,19 +2223,11 @@ This allows us to re-send the message in face of connection issues.</p>
 <p>However, if the user isn't online the message will be dropped without
 error. We maybe improve this behavior in the future. For now just keep
 in mind that IRC is a best-effort service.</p>
-<p>Required <a href="http://schemas.taskcluster.net/notify/v1/irc-request.json" rel="nofollow">input schema</a></p>
+<p>Required <a href="v1/irc-request.json#">input schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 notify.irc(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
 <span class="pl-k">await</span> asyncNotify.irc(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
-<h4>
-<a id="user-content-ping-server-7" class="anchor" href="#ping-server-7" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
-<p>Respond without doing anything.
-This endpoint is used to check that the service is up.</p>
-<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-notify.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
-<span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncNotify.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
 <h3>
 <a id="user-content-methods-in-taskclusterpurgecache" class="anchor" href="#methods-in-taskclusterpurgecache" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Methods in <code>taskcluster.PurgeCache</code>
 </h3>

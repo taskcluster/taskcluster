@@ -19,8 +19,20 @@ class Notify(AsyncBaseClient):
     """
 
     classOptions = {
-        "baseUrl": "https://notify.taskcluster.net/v1"
+        "baseUrl": "https://notify.taskcluster.net/v1/"
     }
+
+    async def ping(self, *args, **kwargs):
+        """
+        Ping Server
+
+        Respond without doing anything.
+        This endpoint is used to check that the service is up.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
     async def email(self, *args, **kwargs):
         """
@@ -31,7 +43,7 @@ class Notify(AsyncBaseClient):
         email. If a link is included, it will be rendered to a nice button in the
         HTML version of the email
 
-        This method takes input: ``http://schemas.taskcluster.net/notify/v1/email-request.json``
+        This method takes input: ``v1/email-request.json#``
 
         This method is ``experimental``
         """
@@ -44,7 +56,7 @@ class Notify(AsyncBaseClient):
 
         Publish a message on pulse with the given `routingKey`.
 
-        This method takes input: ``http://schemas.taskcluster.net/notify/v1/pulse-request.json``
+        This method takes input: ``v1/pulse-request.json#``
 
         This method is ``experimental``
         """
@@ -67,29 +79,17 @@ class Notify(AsyncBaseClient):
         error. We maybe improve this behavior in the future. For now just keep
         in mind that IRC is a best-effort service.
 
-        This method takes input: ``http://schemas.taskcluster.net/notify/v1/irc-request.json``
+        This method takes input: ``v1/irc-request.json#``
 
         This method is ``experimental``
         """
 
         return await self._makeApiCall(self.funcinfo["irc"], *args, **kwargs)
 
-    async def ping(self, *args, **kwargs):
-        """
-        Ping Server
-
-        Respond without doing anything.
-        This endpoint is used to check that the service is up.
-
-        This method is ``stable``
-        """
-
-        return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
-
     funcinfo = {
         "email": {
             'args': [],
-            'input': 'http://schemas.taskcluster.net/notify/v1/email-request.json',
+            'input': 'v1/email-request.json#',
             'method': 'post',
             'name': 'email',
             'route': '/email',
@@ -97,7 +97,7 @@ class Notify(AsyncBaseClient):
         },
         "irc": {
             'args': [],
-            'input': 'http://schemas.taskcluster.net/notify/v1/irc-request.json',
+            'input': 'v1/irc-request.json#',
             'method': 'post',
             'name': 'irc',
             'route': '/irc',
@@ -112,7 +112,7 @@ class Notify(AsyncBaseClient):
         },
         "pulse": {
             'args': [],
-            'input': 'http://schemas.taskcluster.net/notify/v1/pulse-request.json',
+            'input': 'v1/pulse-request.json#',
             'method': 'post',
             'name': 'pulse',
             'route': '/pulse',

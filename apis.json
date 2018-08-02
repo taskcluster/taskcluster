@@ -1884,13 +1884,24 @@
   "Notify": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "baseUrl": "https://notify.taskcluster.net/v1",
+      "baseUrl": "https://notify.taskcluster.net/v1/",
       "description": "The notification service, typically available at `notify.taskcluster.net`\nlistens for tasks with associated notifications and handles requests to\nsend emails and post pulse messages.",
       "entries": [
         {
           "args": [],
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "ping",
+          "query": [],
+          "route": "/ping",
+          "stability": "stable",
+          "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [],
           "description": "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email",
-          "input": "http://schemas.taskcluster.net/notify/v1/email-request.json",
+          "input": "v1/email-request.json#",
           "method": "post",
           "name": "email",
           "query": [],
@@ -1903,7 +1914,7 @@
         {
           "args": [],
           "description": "Publish a message on pulse with the given `routingKey`.",
-          "input": "http://schemas.taskcluster.net/notify/v1/pulse-request.json",
+          "input": "v1/pulse-request.json#",
           "method": "post",
           "name": "pulse",
           "query": [],
@@ -1916,7 +1927,7 @@
         {
           "args": [],
           "description": "Post a message on IRC to a specific channel or user, or a specific user\non a specific channel.\n\nSuccess of this API method does not imply the message was successfully\nposted. This API method merely inserts the IRC message into a queue\nthat will be processed by a background process.\nThis allows us to re-send the message in face of connection issues.\n\nHowever, if the user isn't online the message will be dropped without\nerror. We maybe improve this behavior in the future. For now just keep\nin mind that IRC is a best-effort service.",
-          "input": "http://schemas.taskcluster.net/notify/v1/irc-request.json",
+          "input": "v1/irc-request.json#",
           "method": "post",
           "name": "irc",
           "query": [],
@@ -1929,20 +1940,9 @@
           "stability": "experimental",
           "title": "Post IRC Message",
           "type": "function"
-        },
-        {
-          "args": [],
-          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
-          "method": "get",
-          "name": "ping",
-          "query": [],
-          "route": "/ping",
-          "stability": "stable",
-          "title": "Ping Server",
-          "type": "function"
         }
       ],
-      "name": "notify",
+      "serviceName": "notify",
       "title": "Notification Service",
       "version": 0
     },
