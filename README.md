@@ -396,6 +396,260 @@ This will perform some checks, tag the repo, push the tag to github, which will 
 
 See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/master/worker_types/README.md).
 
+# Release notes
+
+
+### In v10.11.2 since v10.11.1
+
+* [Bug 1475689 - osx generic-worker not rebooting after some failed jobs](https://bugzil.la/1475689)
+
+### In v10.11.1 since v10.11.1alpha1
+
+* [Bug 1439588 - Add feature to support running Windows tasks in an elevated process (Administrator)](https://bugzil.la/1439588)
+
+### In v10.11.0 since v10.10.0
+
+* [Bug 1439588 - Add feature to support running Windows tasks in an elevated process (Administrator)](https://bugzil.la/1439588)
+
+### In v10.10.0 since v10.9.0
+
+* [Bug 1469402 - Support for onExitStatus on generic-worker](https://bugzil.la/1469402)
+
+### In v10.8.5 since v10.8.4
+
+* [Bug 1468155 - Enforce that tasks depend on the tasks whose content they mount](https://bugzil.la/1468155)
+
+### In v10.8.4 since v10.8.3
+
+* [Bug 1433854 - clean up after tasks on windows test workers](https://bugzil.la/1433854)
+* [Bug 1465479 - Don't block task abortion waiting for cmd.Wait() to complete](https://bugzil.la/1465479)
+* [Bug 1466803 - Could not copy from backing log to livelog: io: read/write on closed pipe](https://bugzil.la/1466803)
+
+### In v10.8.2 since v10.8.1
+
+* [Bug 1462369 - Kill entire process tree when aborting a task](https://bugzil.la/1462369)
+
+### In v10.8.0 since v10.7.12
+
+* [Bug 1459376 - Log information about files downloaded via "mounts"](https://bugzil.la/1459376)
+
+### In v10.7.12 since v10.7.11
+
+* [Bug 1452095 - Upgrade mac taskcluster workers to generic-worker 10.8.4](https://bugzil.la/1452095)
+* [Bug 1458873 - Process termination when aborting task not always successful on Windows](https://bugzil.la/1458873)
+
+### In v10.7.11 since v10.7.10
+
+* [Bug 1456357 - Intermittent [taskcluster:error] Get http://schemas.taskcluster.net/generic-worker/v1/payload.json: dial tcp 52.84.128.102:80: i/o timeout](https://bugzil.la/1456357)
+
+### In v10.7.10 since v10.7.9
+
+* [Bug 1444118 - Better log message if chain of trust key is not valid](https://bugzil.la/1444118)
+
+### In v10.7.6 since v10.7.5
+
+* [Bug 1447265 - Use go 1.10 os/exec package for running processes with CreateProcessAsUser on Windows](https://bugzil.la/1447265)
+
+### In v10.7.3 since v10.7.2
+
+* [Bug 1180187 - generic-worker: listen for and handle worker shutdown](https://bugzil.la/1180187)
+
+### In v10.7.0 since v10.6.1
+
+* [Bug 1180187 - generic-worker: listen for and handle worker shutdown](https://bugzil.la/1180187)
+
+### In v10.6.1 since v10.6.0
+
+* [Bug 1443595 - github binary downloads are broken in occ due to the tls upgrade](https://bugzil.la/1443595)
+
+### In v10.6.0 since v10.5.1
+
+* [Bug 1358545 - [generic-worker] startup tests for CoT privkey protection](https://bugzil.la/1358545)
+* [Bug 1439517 - generic-worker: support taskcluster-proxy](https://bugzil.la/1439517)
+* [Bug 1441482 - generic-worker should free up disk space *before* claiming a task](https://bugzil.la/1441482)
+
+### In v10.5.1 since v10.5.0
+
+* [Bug 1333957 - Make "Aborting task - max run time exceeded!" a Treeherder-parseable message](https://bugzil.la/1333957)
+
+### In v10.5.0 since v10.5.0alpha4
+
+* [Bug 1172273 - generic-worker (windows): RDP into task users](https://bugzil.la/1172273)
+* [Bug 1429370 - Changing PR title causes new tasks to be triggered](https://bugzil.la/1429370)
+
+### In v10.5.0alpha4 since v10.5.0alpha3
+
+* [Bug 1172273 - generic-worker (windows): RDP into task users](https://bugzil.la/1172273)
+
+### In v10.5.0alpha3 since v10.5.0alpha2
+
+* [Bug 1429370 - Changing PR title causes new tasks to be triggered](https://bugzil.la/1429370)
+
+### In v10.4.1 since v10.4.0
+
+* [Bug 1424986 - No attempt in logs to reclaim task](https://bugzil.la/1424986)
+* [Bug 1425438 - Idle time inaccurate when (and after) computer sleeps/hibernates/is not being watched](https://bugzil.la/1425438)
+
+### In v10.4.0 since v10.3.1
+
+* [Bug 1423215 - Uploaded gzipped job artifacts (such as runnable-jobs.json.gz) have incorrect Content-Encoding/Type](https://bugzil.la/1423215)
+
+### In v10.3.0 since v10.2.3
+
+* [Bug 1415088 - Include generic worker version number when reporting crashes to sentry](https://bugzil.la/1415088)
+
+### In v10.2.3 since v10.2.2
+
+* [Bug 1397373 - Move superseding docs out of docker-worker](https://bugzil.la/1397373)
+* [Bug 1401007 - Ensure generic worker runs on Windows Server 2016](https://bugzil.la/1401007)
+* [Bug 1402152 - Use temporary credentials from claimWork, reclaimTask in reclaimTask, createArtifact, reportCompleted](https://bugzil.la/1402152)
+
+### In v10.2.2 since v10.2.1
+
+* [Bug 1382204 - Enable coalescing for scm level 2,3 test tasks on macOS and win10 gpu and linux](https://bugzil.la/1382204)
+
+### In v10.2.1 since v10.2.0
+
+* [Bug 1394557 - Intermittent "400 Bad Request" errors when uploading to the TC queue causing Windows job failures](https://bugzil.la/1394557)
+
+### In v10.2.0 since v10.1.8
+
+* [Bug 1383024 - generic-worker: Implement coalescing/superseding](https://bugzil.la/1383024)
+
+### In v10.1.8 since v10.1.7
+
+* [Bug 1387015 - Python wheel artifact should not be gzipped](https://bugzil.la/1387015)
+
+### In v10.1.7 since v10.1.6
+
+* [Bug 1385870 - generic-worker: Do not gzip content encode artifacts with .xz extension](https://bugzil.la/1385870)
+
+### In v10.1.6 since v10.1.5
+
+* [Bug 1381801 - Task payload timestamps have inconsistent precision with top level task timestamps](https://bugzil.la/1381801)
+
+### In v10.1.5 since v10.1.4
+
+* [Bug 1360198 - Don't explicitly set artifact expiry for generic-worker tasks, if it is just task expiry](https://bugzil.la/1360198)
+
+### In v10.1.4 since v10.1.3
+
+* [Bug 1360198 - Don't explicitly set artifact expiry for generic-worker tasks, if it is just task expiry](https://bugzil.la/1360198)
+* [Bug 1380978 - generic-worker: chain of trust artifacts should be indexed by artifact name, not artifact path](https://bugzil.la/1380978)
+
+### In v10.1.3 since v10.1.2
+
+* [Bug 1380978 - generic-worker: chain of trust artifacts should be indexed by artifact name, not artifact path](https://bugzil.la/1380978)
+
+### In v10.1.2 since v10.1.1
+
+* [Bug 1380978 - generic-worker: chain of trust artifacts should be indexed by artifact name, not artifact path](https://bugzil.la/1380978)
+
+### In v10.0.5 since v10.0.4
+
+* [Bug 1372210 - CoT on generic worker for windows uploads to 'public/logs/' when it should upload to 'public/'](https://bugzil.la/1372210)
+
+### In v8.5.0 since v8.4.1
+
+* [Bug 1360539 - generic-worker 8.3.0 to 8.4.1 causing process failures on win2012r2 worker types (runTasksAsCurrentUser: false)](https://bugzil.la/1360539)
+
+### In v8.4.0 since v8.3.0
+
+* [Bug 1360198 - Don't explicitly set artifact expiry for generic-worker tasks, if it is just task expiry](https://bugzil.la/1360198)
+
+### In v8.3.0 since v8.2.0
+
+* [Bug 1347956 - Some public-artifacts.taskcluster.net files are not served gzipped](https://bugzil.la/1347956)
+
+### In v8.2.0 since v8.1.1
+
+* [Bug 1356800 - [generic-worker] Handle some errors during artifact uploading more gracefully](https://bugzil.la/1356800)
+
+### In v8.1.0 since v8.0.1
+
+* [Bug 1352457 - Support artifact name in task payload](https://bugzil.la/1352457)
+
+### In v8.0.1 since v8.0.0
+
+* [Bug 1337132 - 64-bit Windows static builds are very frequently timing out since the worker change from bug 1336948 happened](https://bugzil.la/1337132)
+
+### In v7.2.13 since v7.2.12
+
+* [Bug 1261188 - test_Edge_availability.js fails on Win10 in automation](https://bugzil.la/1261188)
+
+### In v7.2.6 since v7.2.5
+
+* [Bug 1329617 - generic-worker 7.2.5 stops claiming tasks after a task it is running gets cancelled](https://bugzil.la/1329617)
+
+### In v7.2.2 since v7.2.1
+
+* [Bug 1323827 - [generic-worker] Worker tries reclaiming resolved task](https://bugzil.la/1323827)
+
+### In v7.1.1 since v7.1.0
+
+* [Bug 1312383 - taskcluster windows 7 ec2 instances underperform](https://bugzil.la/1312383)
+
+### In v7.1.0 since v7.0.3alpha1
+
+* [Bug 1307204 - Convert gecko-L-b-win2012 workers to c4.4xlarge](https://bugzil.la/1307204)
+
+### In v7.0.3alpha1 since v7.0.2alpha1
+
+* [Bug 1303455 - TC Windows tests run without JOB_OBJECT_LIMIT_BREAKAWAY_OK](https://bugzil.la/1303455)
+
+### In v7.0.1alpha1 since v7.0.0
+
+* [Bug 1303455 - TC Windows tests run without JOB_OBJECT_LIMIT_BREAKAWAY_OK](https://bugzil.la/1303455)
+
+### In v7.0.0alpha6 since v7.0.0alpha5
+
+* [Bug 1303455 - TC Windows tests run without JOB_OBJECT_LIMIT_BREAKAWAY_OK](https://bugzil.la/1303455)
+
+### In v6.1.0 since v6.1.0alpha1
+
+* [Bug 1298010 - update Generic Worker to terminate host instance if the worker type definition has changed since the instance was started](https://bugzil.la/1298010)
+
+### In v6.1.0alpha1 since v6.0.9
+
+* [Bug 1298010 - update Generic Worker to terminate host instance if the worker type definition has changed since the instance was started](https://bugzil.la/1298010)
+
+### In v6.0.0 since v5.4.0
+
+* [Bug 1306988 - GenericWorker task user groups should be configurable or task dependent](https://bugzil.la/1306988)
+* [Bug 1307383 - win2012r2 hung / didn't run correctly](https://bugzil.la/1307383)
+
+### In v5.4.0 since v5.3.1
+
+* [Bug 1182451 - preloaded writable directory caches / empty writable directory caches / preloaded readonly directory mounts / preloaded readonly files](https://bugzil.la/1182451)
+* [Bug 1305048 - Add node/npm to the generic "win2012r2" worker](https://bugzil.la/1305048)
+
+### In v5.3.0 since v5.2.0
+
+* [Bug 1287112 - enable chain-of-trust artifact generation in generic-worker](https://bugzil.la/1287112)
+
+### In v5.1.0 since v5.0.3
+
+* [Bug 1291249 - Logs uploaded by generic-worker to public-artifacts.taskcluster.net aren't using gzip](https://bugzil.la/1291249)
+
+### In v4.0.0alpha1 since v3.0.0alpha1
+
+* [Bug 1181524 - generic-worker: Reject tasks w. malformed-payload if artifact.expires x3c task.deadline](https://bugzil.la/1181524)
+* [Bug 1191524 - [Browser] Suggestions in youtube search bar overlap with icon.](https://bugzil.la/1191524)
+* [Bug 1285197 - package github.com/taskcluster/taskcluster-client-go: no buildable Go source files in x3cGOPATHx3e/src/github.com/taskcluster/taskcluster-client-go](https://bugzil.la/1285197)
+
+### In v3.0.0alpha1 since v2.1.0
+
+* [Bug 1279019 - Generic worker should log metadata about itself and the worker type it is running on](https://bugzil.la/1279019)
+
+### In v2.0.1alpha1 since v2.0.0
+
+* [Bug 1279019 - Generic worker should log metadata about itself and the worker type it is running on](https://bugzil.la/1279019)
+
+### In v2.0.0alpha44 since v2.0.0alpha43
+
+* [Bug 1277568 - Generic worker live log artifacts are unreachable after task completes](https://bugzil.la/1277568)
+
+
 # Further information
 
 Please see:
