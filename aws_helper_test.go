@@ -117,7 +117,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) func() {
 		t.Log("HTTP server for mock Provisioner and EC2 metadata endpoints stopped")
 	}()
 	var err error
-	config, err = loadConfig(filepath.Join(testdataDir, t.Name(), "generic-worker.config"), true)
+	config, err = loadConfig(filepath.Join(testdataDir, t.Name(), "generic-worker.config"), true, false)
 	if err != nil {
 		t.Fatalf("Error: %v", err)
 	}
