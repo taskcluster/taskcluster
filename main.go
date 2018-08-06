@@ -225,5 +225,6 @@ func main() {
 
 	// Listen forever on the PUT side...
 	log.Printf("input server listening... %s", server.Addr)
-	server.ListenAndServe()
+	err := server.ListenAndServe()
+	log.Fatalf("%s", err)
 }
