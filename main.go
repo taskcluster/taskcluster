@@ -356,6 +356,7 @@ func initialiseFeatures() (err error) {
 	Features = []Feature{
 		&LiveLogFeature{},
 		&TaskclusterProxyFeature{},
+		&OSGroupsFeature{},
 		&MountsFeature{},
 		&SupersedeFeature{},
 	}

@@ -90,7 +90,6 @@ type TaskContext struct {
 func platformFeatures() []Feature {
 	return []Feature{
 		&RDPFeature{},
-		&OSGroupsFeature{},
 		&RunAsAdministratorFeature{}, // depends on (must appear later in list than) OSGroups feature
 	}
 }

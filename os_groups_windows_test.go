@@ -12,7 +12,7 @@ func TestMissingScopesOSGroups(t *testing.T) {
 	defer setup(t)()
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),
-		MaxRunTime: 1,
+		MaxRunTime: 30,
 		OSGroups:   []string{"abc", "def"},
 	}
 	td := testTask(t)
