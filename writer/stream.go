@@ -6,8 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-
-	"gopkg.in/fatih/set.v0"
 )
 
 const READ_BUFFER_SIZE = 4 * 1024 // XXX: 4kb chosen at random
@@ -21,6 +19,12 @@ type Event struct {
 	Offset int64
 }
 
+// Handles represents a set of *StreamHandles
+type Handles map[*StreamHandle]struct{}
+
+// emptyStruct cannot be declared as a constant, so var is next best option
+var emptyStruct = struct{}{}
+
 type Stream struct {
 	Path    string
 	Offset  int64
@@ -29,7 +33,7 @@ type Stream struct {
 	Ended   bool
 	Reading bool
 
-	handles *set.Set
+	handles Handles
 }
 
 func NewStream(read io.Reader) (*Stream, error) {
@@ -56,19 +60,19 @@ func NewStream(read io.Reader) (*Stream, error) {
 		Ended:   false,
 		File:    *file,
 
-		handles: set.New(),
+		handles: Handles{},
 	}, nil
 }
 
 func (self *Stream) Unobserve(handle *StreamHandle) {
 	log.Print("unobserve")
-	self.handles.Remove(handle)
+	delete(self.handles, handle)
 }
 
 func (self *Stream) Observe(start, stop int64) *StreamHandle {
 	// Buffering the channel is very important to avoid writing blocks, etc..
 	handle := newStreamHandle(self, start, stop)
-	self.handles.Add(&handle)
+	self.handles[&handle] = emptyStruct
 	return &handle
 }
 
@@ -84,8 +88,10 @@ func (self *Stream) Consume() error {
 		self.File.Close()
 
 		// Cleanup all handles after the consumption is complete...
-		log.Printf("removing %d handles", self.handles.Size())
-		self.handles.Clear()
+		log.Printf("removing %d handles", len(self.handles))
+		for k := range self.handles {
+			delete(self.handles, k)
+		}
 	}()
 
 	tee := io.TeeReader(*self.Reader, &self.File)
@@ -122,9 +128,7 @@ func (self *Stream) Consume() error {
 		eventNumber++
 
 		// Emit all the messages...
-		handles := self.handles.List()
-		for i := 0; i < len(handles); i++ {
-			handle := handles[i].(*StreamHandle)
+		for handle := range self.handles {
 
 			// Don't write anything that starts after we end...
 			if event.Offset > handle.Stop || event.Offset+event.Length <= handle.Start {
@@ -139,7 +143,7 @@ func (self *Stream) Consume() error {
 				close(handle.events)
 				continue
 			}
-			handles[i].(*StreamHandle).events <- &event
+			handle.events <- &event
 		}
 
 		// Return the reader errors (except for EOF) and abort.
