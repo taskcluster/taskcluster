@@ -110,12 +110,12 @@ markdown.use(linkAttributes, {
         fontFamily: 'Consolas, "Liberation Mono", Menlo, monospace',
       },
       '& .required': {
-        color: theme.palette.type === 'light' ? '#006500' : '#9bc89b',
+        color: theme.palette.type === 'dark' ? '#9bc89b' : '#006500',
       },
       '& .prop-type': {
         fontSize: 13,
         fontFamily: 'Consolas, "Liberation Mono", Menlo, monospace',
-        color: theme.palette.type === 'light' ? '#932981' : '#dbb0d0',
+        color: theme.palette.type === 'dark' ? '#dbb0d0' : '#932981',
       },
       '& .prop-default': {
         fontSize: 13,

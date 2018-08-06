@@ -9,7 +9,10 @@ import ListItemText from '@material-ui/core/ListItemText';
 
 @withStyles(theme => ({
   active: {
-    backgroundColor: theme.palette.text.active,
+    backgroundColor: theme.palette.secondary.dark,
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.dark,
+    },
     '& $text': {
       color: theme.palette.common.white,
     },
@@ -54,7 +57,9 @@ export default class SidebarListItem extends Component {
         component={NavLink}
         activeClassName={classes.active}
         {...props}>
-        {icon && <ListItemIcon className={classes.icon}>{icon}</ListItemIcon>}
+        {icon && (
+          <ListItemIcon classes={{ root: classes.icon }}>{icon}</ListItemIcon>
+        )}
         <ListItemText
           disableTypography
           className={classes.text}

@@ -7,6 +7,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import { user } from '../../utils/prop-types';
 
@@ -18,6 +19,13 @@ import { user } from '../../utils/prop-types';
     [theme.breakpoints.up('sm')]: {
       padding: `${theme.spacing.unit / 2}px ${theme.spacing.double}px`,
     },
+  },
+  text: {
+    color: theme.palette.text.primary,
+    fontFamily: 'Roboto500',
+  },
+  icon: {
+    fill: theme.palette.text.primary,
   },
 }))
 export default class UserMenu extends Component {
@@ -65,7 +73,15 @@ export default class UserMenu extends Component {
             aria-controls="user-menu"
             aria-label="user menu"
             onClick={this.handleClickSignIn}>
-            <AccountCircleIcon />&nbsp;&nbsp;Sign In
+            <ListItemIcon className={classes.icon}>
+              <AccountCircleIcon />
+            </ListItemIcon>
+            <ListItemText
+              disableTypography
+              className={classes.text}
+              inset
+              primary="Sign In"
+            />
           </ListItem>
         </List>
       );

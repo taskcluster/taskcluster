@@ -10,12 +10,17 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import Hidden from '@material-ui/core/Hidden';
 import Divider from '@material-ui/core/Divider';
+import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import MenuIcon from 'mdi-react/MenuIcon';
+import LightBulbOn from 'mdi-react/LightbulbOnIcon';
+import LightBulbOnOutline from 'mdi-react/LightbulbOnOutlineIcon';
 import PageTitle from '../PageTitle';
 import UserMenu from './UserMenu';
 import SidebarList from './SidebarList';
 import { user } from '../../utils/prop-types';
+import { THEME } from '../../utils/constants';
+import ThemeContext from '../../App/ThemeContext';
 
 @withStyles(
   theme => ({
@@ -39,6 +44,7 @@ import { user } from '../../utils/prop-types';
     appBarTitle: {
       fontFamily: 'Roboto300',
       flex: 1,
+      color: THEME.PRIMARY_TEXT_DARK,
     },
     navIconHide: {
       [theme.breakpoints.up('md')]: {
@@ -60,10 +66,11 @@ import { user } from '../../utils/prop-types';
         position: 'fixed',
       },
       borderRight: 0,
+      backgroundColor: theme.palette.primary.main,
     },
     title: {
       textDecoration: 'none',
-      color: theme.palette.common.white,
+      color: theme.palette.text.primary,
     },
     contentPadding: {
       paddingTop: theme.spacing.triple,
@@ -85,6 +92,12 @@ import { user } from '../../utils/prop-types';
         marginLeft: theme.drawerWidth,
         width: `calc(100% - ${theme.drawerWidth}px)`,
       },
+    },
+    lightBulbButton: {
+      marginLeft: theme.spacing.unit,
+    },
+    appIcon: {
+      fill: theme.palette.common.white,
     },
   }),
   { withTheme: true }
@@ -187,63 +200,81 @@ export default class Dashboard extends Component {
     );
 
     return (
-      <div className={classes.root}>
-        <PageTitle>{title}</PageTitle>
-        <AppBar className={classes.appBar}>
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={this.handleDrawerToggle}
-              className={classes.navIconHide}>
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="title" noWrap className={classes.appBarTitle}>
-              {title}
-            </Typography>
-            {search}
-          </Toolbar>
-        </AppBar>
-        <Hidden mdUp>
-          <Drawer
-            variant="temporary"
-            anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-            open={mobileOpen}
-            onClose={this.handleDrawerToggle}
-            classes={{
-              paper: classes.drawerPaper,
-            }}
-            ModalProps={{
-              keepMounted: true,
-            }}>
-            {drawer}
-          </Drawer>
-        </Hidden>
-        <Hidden smDown implementation="css">
-          <Drawer
-            variant="permanent"
-            open
-            PaperProps={{
-              elevation: 2,
-            }}
-            classes={{
-              paper: classes.drawerPaper,
-            }}>
-            {drawer}
-          </Drawer>
-        </Hidden>
-        <main
-          className={classNames(
-            classes.content,
-            {
-              [classes.contentPadding]: !disablePadding,
-            },
-            className
-          )}
-          {...props}>
-          {error ? <ErrorPanel error={error} /> : children}
-        </main>
-      </div>
+      <ThemeContext.Consumer>
+        {toggleTheme => (
+          <div className={classes.root}>
+            <PageTitle>{title}</PageTitle>
+            <AppBar className={classes.appBar}>
+              <Toolbar>
+                <IconButton
+                  color="inherit"
+                  aria-label="open drawer"
+                  onClick={this.handleDrawerToggle}
+                  className={classes.navIconHide}>
+                  <MenuIcon className={classes.appIcon} />
+                </IconButton>
+                <Typography
+                  variant="title"
+                  noWrap
+                  className={classes.appBarTitle}>
+                  {title}
+                </Typography>
+                {search}
+                <Tooltip placement="bottom" title="Toggle light/dark theme">
+                  <IconButton
+                    className={classes.lightBulbButton}
+                    onClick={toggleTheme}>
+                    {theme.palette.type === 'dark' ? (
+                      <LightBulbOn className={classes.appIcon} />
+                    ) : (
+                      <LightBulbOnOutline className={classes.appIcon} />
+                    )}
+                  </IconButton>
+                </Tooltip>
+              </Toolbar>
+            </AppBar>
+            <Hidden mdUp>
+              <Drawer
+                variant="temporary"
+                anchor={theme.direction === 'rtl' ? 'right' : 'left'}
+                open={mobileOpen}
+                onClose={this.handleDrawerToggle}
+                classes={{
+                  paper: classes.drawerPaper,
+                }}
+                ModalProps={{
+                  keepMounted: true,
+                }}>
+                {drawer}
+              </Drawer>
+            </Hidden>
+            <Hidden smDown implementation="css">
+              <Drawer
+                variant="permanent"
+                open
+                PaperProps={{
+                  elevation: 2,
+                }}
+                classes={{
+                  paper: classes.drawerPaper,
+                }}>
+                {drawer}
+              </Drawer>
+            </Hidden>
+            <main
+              className={classNames(
+                classes.content,
+                {
+                  [classes.contentPadding]: !disablePadding,
+                },
+                className
+              )}
+              {...props}>
+              {error ? <ErrorPanel error={error} /> : children}
+            </main>
+          </div>
+        )}
+      </ThemeContext.Consumer>
     );
   }
 }

@@ -59,7 +59,7 @@ export default class Home extends Component {
         </Typography>
         <Divider className={classes.divider} />
         <div className={classes.actions}>
-          <Button variant="raised" color="inherit" onClick={onSignIn}>
+          <Button variant="raised" color="default" onClick={onSignIn}>
             Sign in to get started
             <ArrowRightIcon className={classes.icon} />
           </Button>

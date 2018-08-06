@@ -14,7 +14,7 @@ export default class ThemeWrapper extends Component {
 
   render() {
     return (
-      <MuiThemeProvider theme={theme}>
+      <MuiThemeProvider theme={theme.darkTheme}>
         {this.state.error ? (
           <ErrorPanel error={this.state.error} />
         ) : (

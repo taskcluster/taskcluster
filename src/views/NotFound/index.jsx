@@ -3,32 +3,32 @@ import { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../components/Dashboard';
-import emoticonUrl from './emoticon-neutral.svg';
+import Emoticon from './Emoticon';
 
 @hot(module)
-@withStyles(theme => ({
-  root: {
-    textAlign: 'center',
-    backgroundImage: `url(${emoticonUrl})`,
-    backgroundAttachment: 'fixed',
-    backgroundSize: '50%',
-    backgroundPosition: 'center center',
-    backgroundRepeat: 'no-repeat',
-    [theme.breakpoints.up('md')]: {
-      backgroundPosition: `calc(50% + ${theme.drawerWidth / 2}px) center`,
-      backgroundSize: '30%',
+@withStyles(
+  theme => ({
+    root: {
+      textAlign: 'center',
     },
-  },
-  typography: {
-    fontFamily: 'Roboto500',
-  },
-  icon: {
-    fill: theme.palette.primary.main,
-  },
-}))
+    emoticon: {
+      position: 'fixed',
+      width: `calc(100% - ${theme.drawerWidth}px)`,
+      height: '50%',
+      right: 0,
+    },
+    typography: {
+      fontFamily: 'Roboto500',
+    },
+    icon: {
+      fill: theme.palette.primary.main,
+    },
+  }),
+  { withTheme: true }
+)
 export default class NotFound extends Component {
   render() {
-    const { classes, user, onSignIn, onSignOut } = this.props;
+    const { classes, user, onSignIn, onSignOut, theme } = this.props;
 
     return (
       <Dashboard
@@ -44,6 +44,10 @@ export default class NotFound extends Component {
           <br />
           <br />
         </Typography>
+        <Emoticon
+          className={classes.emoticon}
+          fill={theme.palette.text.primary}
+        />
       </Dashboard>
     );
   }

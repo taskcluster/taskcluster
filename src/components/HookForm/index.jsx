@@ -75,6 +75,12 @@ const initialHook = {
   },
   iconButton: {
     marginRight: -14,
+    '& svg': {
+      fill: theme.palette.text.primary,
+    },
+  },
+  listItemButton: {
+    ...theme.mixins.listItemButton,
   },
   saveIcon: {
     ...theme.mixins.successIcon,
@@ -339,6 +345,7 @@ export default class HookForm extends Component {
                 <ListItem
                   button
                   component={Link}
+                  className={classes.listItemButton}
                   to={`/tasks/${hook.status.lastFire.taskId}`}>
                   <ListItemText
                     primary="Last Fired Result"
