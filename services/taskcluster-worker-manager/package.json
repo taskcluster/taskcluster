@@ -1,0 +1,9 @@
+{
+  "name": "taskcluster-worker-manager",
+  "version": "1.0.0",
+  "description": "Taskcluster Worker Manager",
+  "main": "index.js",
+  "repository": "git@github.com:taskcluster/taskcluster-worker-manager.git",
+  "author": "John Ford <john@johnford.org>",
+  "license": "MPL-2.0"
+}
