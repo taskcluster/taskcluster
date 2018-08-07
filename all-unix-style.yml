@@ -159,6 +159,18 @@ properties:
     items:
       title: Mount
       "$ref": "#/definitions/mount"
+  osGroups:
+    type: array
+    title: OS Groups
+    description: |-
+      A list of OS Groups that the task user should be a member of. Not yet implemented on
+      non-Windows platforms, therefore this optional property may only be an empty array if
+      provided.
+
+      Since: generic-worker 6.0.0
+    items:
+      type: string
+    maxItems: 0
   supersederUrl:
     type: string
     title: Superseder URL

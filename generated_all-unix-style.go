@@ -181,6 +181,13 @@ type (
 		// based on exit code of task commands.
 		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitempty"`
 
+		// A list of OS Groups that the task user should be a member of. Not yet implemented on
+		// non-Windows platforms, therefore this optional property may only be an empty array if
+		// provided.
+		//
+		// Since: generic-worker 6.0.0
+		OSGroups []string `json:"osGroups,omitempty"`
+
 		// URL of a service that can indicate tasks superseding this one; the current `taskId`
 		// will be appended as a query argument `taskId`. The service should return an object with
 		// a `supersedes` key containing a list of `taskId`s, including the supplied `taskId`. The
@@ -571,6 +578,15 @@ func taskPayloadSchema() string {
       },
       "title": "Exit code handling",
       "type": "object"
+    },
+    "osGroups": {
+      "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 0,
+      "title": "OS Groups",
+      "type": "array"
     },
     "supersederUrl": {
       "description": "URL of a service that can indicate tasks superseding this one; the current ` + "`" + `taskId` + "`" + `\nwill be appended as a query argument ` + "`" + `taskId` + "`" + `. The service should return an object with\na ` + "`" + `supersedes` + "`" + ` key containing a list of ` + "`" + `taskId` + "`" + `s, including the supplied ` + "`" + `taskId` + "`" + `. The\ntasks should be ordered such that each task supersedes all tasks appearing later in the\nlist.\n\nSee [superseding](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/superseding) for more detail.\n\nSince: generic-worker 10.2.2",
