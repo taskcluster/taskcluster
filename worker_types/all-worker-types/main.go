@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
 )
 
@@ -99,7 +100,7 @@ func (wtf *WorkerTypeFetcher) fetch(workerType string) (err error) {
 		return
 	}
 	var resp *http.Response
-	resp, err = http.Get(u.String())
+	resp, _, err = httpbackoff.Get(u.String())
 	if err != nil {
 		return
 	}
