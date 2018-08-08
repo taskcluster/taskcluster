@@ -821,8 +821,7 @@ func (job *Job) loadJsonSchema(URL string) (subSchema *JsonSubSchema, err error)
 			}
 			body = resp.Body
 		default:
-			fmt.Printf("Unknown scheme: '%s'\n", u.Scheme)
-			fmt.Printf("URL: '%s'\n", URL)
+			return nil, fmt.Errorf("Unknown scheme '%s' for URL '%s'", u.Scheme, URL)
 		}
 	}
 	defer body.Close()
