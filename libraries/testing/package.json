@@ -18,30 +18,24 @@
     "url": "https://github.com/taskcluster/taskcluster-lib-testing.git"
   },
   "dependencies": {
-    "aws-sdk": "^2.144.0",
     "azure-table-node": "1.5.0",
     "debug": "^3.1.0",
     "express": "4.16.2",
-    "express-sslify": "1.2.0",
-    "hawk": "2.3.0",
+    "hawk": "^4.1.2",
     "lodash": "4.17.4",
     "nock": "^9.4.3",
     "promise": "^8.0.1",
-    "slugid": "^1.0.3",
     "superagent": "3.8.2",
-    "superagent-hawk": "0.0.6",
     "taskcluster-client": "10.0.0",
     "taskcluster-lib-urls": "^10.0.0",
-    "taskcluster-lib-validate": "^11.0.1",
-    "uuid": "^3.1.0"
+    "taskcluster-lib-validate": "^11.0.1"
   },
   "devDependencies": {
     "eslint-config-taskcluster": "^3.0.0",
     "mocha": "4.0.1",
     "source-map-support": "^0.4.0",
     "taskcluster-lib-api": "^10.0.0",
-    "taskcluster-lib-app": "^10.0.0",
-    "typed-env-config": "^2.0.0"
+    "taskcluster-lib-app": "^10.0.0"
   },
   "engines": {
     "node": ">=8"
