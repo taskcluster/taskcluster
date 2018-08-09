@@ -111,7 +111,7 @@
 //
 // and then call one or more of index's methods, e.g.:
 //
-//  data, err := index.FindTask(.....)
+//  err := index.Ping(.....)
 //
 // handling any errors...
 //
@@ -135,7 +135,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "https://index.taskcluster.net/v1"
+	DefaultBaseURL = "https://index.taskcluster.net/v1/"
 )
 
 type Index tcclient.Client
@@ -146,7 +146,7 @@ type Index tcclient.Client
 //
 //  index := tcindex.New(nil)                              // client without authentication
 //  index.BaseURL = "http://localhost:1234/api/Index/v1"   // alternative API endpoint (production by default)
-//  data, err := index.FindTask(.....)                     // for example, call the FindTask(.....) API endpoint (described further down)...
+//  err := index.Ping(.....)                               // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -173,6 +173,16 @@ func NewFromEnv() *Index {
 		BaseURL:      DefaultBaseURL,
 		Authenticate: c.ClientID != "",
 	}
+}
+
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See https://docs.taskcluster.net/reference/core/index/api-docs#ping
+func (index *Index) Ping() error {
+	cd := tcclient.Client(*index)
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	return err
 }
 
 // Find a task by index path, returning the highest-rank task with that path. If no
@@ -284,14 +294,4 @@ func (index *Index) FindArtifactFromTask(indexPath, name string) error {
 func (index *Index) FindArtifactFromTask_SignedURL(indexPath, name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*index)
 	return (&cd).SignedURL("/task/"+url.QueryEscape(indexPath)+"/artifacts/"+url.QueryEscape(name), nil, duration)
-}
-
-// Respond without doing anything.
-// This endpoint is used to check that the service is up.
-//
-// See https://docs.taskcluster.net/reference/core/index/api-docs#ping
-func (index *Index) Ping() error {
-	cd := tcclient.Client(*index)
-	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
-	return err
 }

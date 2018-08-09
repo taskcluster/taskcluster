@@ -58,7 +58,7 @@
 //
 // and then call one or more of auth's methods, e.g.:
 //
-//  data, err := auth.ListClients(.....)
+//  err := auth.Ping(.....)
 //
 // handling any errors...
 //
@@ -82,7 +82,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "https://auth.taskcluster.net/v1"
+	DefaultBaseURL = "https://auth.taskcluster.net/v1/"
 )
 
 type Auth tcclient.Client
@@ -93,7 +93,7 @@ type Auth tcclient.Client
 //
 //  auth := tcauth.New(nil)                              // client without authentication
 //  auth.BaseURL = "http://localhost:1234/api/Auth/v1"   // alternative API endpoint (production by default)
-//  data, err := auth.ListClients(.....)                 // for example, call the ListClients(.....) API endpoint (described further down)...
+//  err := auth.Ping(.....)                              // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -120,6 +120,16 @@ func NewFromEnv() *Auth {
 		BaseURL:      DefaultBaseURL,
 		Authenticate: c.ClientID != "",
 	}
+}
+
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See https://docs.taskcluster.net/reference/platform/auth/api-docs#ping
+func (auth *Auth) Ping() error {
+	cd := tcclient.Client(*auth)
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	return err
 }
 
 // Get a list of all clients.  With `prefix`, only clients for which
@@ -759,14 +769,4 @@ func (auth *Auth) TestAuthenticateGet() (*TestAuthenticateResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/test-authenticate-get/", new(TestAuthenticateResponse), nil)
 	return responseObject.(*TestAuthenticateResponse), err
-}
-
-// Respond without doing anything.
-// This endpoint is used to check that the service is up.
-//
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#ping
-func (auth *Auth) Ping() error {
-	cd := tcclient.Client(*auth)
-	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
-	return err
 }
