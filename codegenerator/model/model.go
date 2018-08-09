@@ -19,16 +19,11 @@ import (
 
 	"github.com/taskcluster/jsonschema2go"
 	"github.com/taskcluster/jsonschema2go/text"
-	// Canonical source is
-	// "github.com/xeipuuv/gojsonschema"
-	// but we require https://github.com/xeipuuv/gojsonschema/pull/196
-	// to land, so as a temporary workaround, i've forked until this lands
-	"github.com/petemoore/gojsonschema"
+	"github.com/xeipuuv/gojsonschema"
 	"golang.org/x/tools/imports"
 )
 
 var (
-	apiDefs        []APIDefinition
 	err            error
 	downloadedTime time.Time
 )
@@ -131,6 +126,7 @@ func LoadAPIs(apiManifestURL, supplementaryDataFile string) []APIDefinition {
 	err = apiManifestDecoder.Decode(&apiMan)
 	exitOnFail(err)
 	supDataDecoder := json.NewDecoder(supDataReader)
+	var apiDefs []APIDefinition
 	err = supDataDecoder.Decode(&apiDefs)
 	exitOnFail(err)
 	sort.Sort(SortedAPIDefs(apiDefs))
@@ -148,7 +144,7 @@ func LoadAPIs(apiManifestURL, supplementaryDataFile string) []APIDefinition {
 			fmt.Printf(
 				"\nFATAL: Manifest from url '%v' contains key '%v' with url '%v', but this url does not exist in supplementary data file '%v', therefore exiting...\n\n",
 				apiManifestURL, i, apiMan[i], supplementaryDataFile)
-			os.Exit(64)
+			//	os.Exit(64)
 		}
 	}
 	for i := range apiDefs {
@@ -213,7 +209,7 @@ func formatSourceAndSave(sourceFile string, sourceCode []byte) {
 
 // GenerateCode takes the objects loaded into memory in LoadAPIs
 // and writes them out as go code.
-func GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
+func GenerateCode(goOutputDir, modelData string, downloaded time.Time, apiDefs []APIDefinition) {
 	downloadedTime = downloaded
 	for i := range apiDefs {
 		apiDefs[i].PackageName = "tc" + strings.ToLower(apiDefs[i].Name)

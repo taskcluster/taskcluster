@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/taskcluster/jsonschema2go/text"
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -221,17 +222,19 @@ type APIEntry struct {
 	*Entry
 	MethodName string
 	Parent     *API
+	InputURL   string
+	OutputURL  string
 }
 
 // Add entry.Input and entry.Output to schemaURLs, if they are set
 func (entry *APIEntry) postPopulate(apiDef *APIDefinition) {
-	for _, v := range []string{
-		entry.Input,
-		entry.Output,
-	} {
-		if x := &entry.Parent.apiDef.schemaURLs; v != "" {
-			*x = append(*x, v)
-		}
+	if x := &entry.Parent.apiDef.schemaURLs; entry.Input != "" {
+		entry.InputURL = tcurls.Schema("https://taskcluster.net", entry.Parent.ServiceName, entry.Input)
+		*x = append(*x, entry.InputURL)
+	}
+	if x := &entry.Parent.apiDef.schemaURLs; entry.Output != "" {
+		entry.OutputURL = tcurls.Schema("https://taskcluster.net", entry.Parent.ServiceName, entry.Output)
+		*x = append(*x, entry.OutputURL)
 	}
 }
 
@@ -246,12 +249,15 @@ func (entry *APIEntry) String() string {
 			"    Entry Stability   = '%v'\n"+
 			"    Entry Scopes      = '%v'\n"+
 			"    Entry Input       = '%v'\n"+
+			"    Entry InputURL    = '%v'\n"+
 			"    Entry Output      = '%v'\n"+
+			"    Entry OutputURL   = '%v'\n"+
 			"    Entry Title       = '%v'\n"+
 			"    Entry Description = '%v'\n",
 		entry.Type, entry.Method, entry.Route, entry.Args,
 		entry.Query, entry.Name, entry.Stability, &entry.Scopes,
-		entry.Input, entry.Output, entry.Title, entry.Description,
+		entry.Input, entry.InputURL, entry.Output, entry.OutputURL,
+		entry.Title, entry.Description,
 	)
 }
 
@@ -304,9 +310,9 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	inputParams, queryCode, queryExpr := entry.getInputParamsAndQueryStringCode()
 
 	apiArgsPayload := "nil"
-	if entry.Input != "" {
+	if entry.InputURL != "" {
 		apiArgsPayload = "payload"
-		p := "payload *" + entry.Parent.apiDef.schemas.SubSchema(entry.Input).TypeName
+		p := "payload *" + entry.Parent.apiDef.schemas.SubSchema(entry.InputURL).TypeName
 		if inputParams == "" {
 			inputParams = p
 		} else {
@@ -315,17 +321,17 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	}
 
 	responseType := "error"
-	if entry.Output != "" {
-		responseType = "(*" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + ", error)"
+	if entry.OutputURL != "" {
+		responseType = "(*" + entry.Parent.apiDef.schemas.SubSchema(entry.OutputURL).TypeName + ", error)"
 	}
 
 	content := comment
 	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
 	content += queryCode
 	content += "\tcd := tcclient.Client(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
-	if entry.Output != "" {
-		content += "\tresponseObject, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + "), " + queryExpr + ")\n"
-		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + "), err\n"
+	if entry.OutputURL != "" {
+		content += "\tresponseObject, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas.SubSchema(entry.OutputURL).TypeName + "), " + queryExpr + ")\n"
+		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas.SubSchema(entry.OutputURL).TypeName + "), err\n"
 	} else {
 		content += "\t_, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil, " + queryExpr + ")\n"
 		content += "\treturn err\n"
