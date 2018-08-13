@@ -135,7 +135,7 @@ artifact bucket:
 Service Owner
 -------------
 
-Service Owner: jonasfj@mozilla.com
+Service Owner: jhford@mozilla.com
 
 Deployment Testing
 ------------------

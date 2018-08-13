@@ -30,6 +30,10 @@ defaults:
     workerTypeTableName:          WorkerType
     provisionerTableName:         Provisioner
 
+    # Azure monitoring knobs
+    azureReportChance:            !env:number AZURE_REPORT_CHANCE # range [0.0, 1.0]
+    azureReportThreshold:         !env:number AZURE_REPORT_THRESHOLD # in milliseconds
+
     # Time delay before expiring artifacts, in readable format, see:
     # taskcluster.fromNow, notice this should be negative!
     artifactExpirationDelay:      '- 30 minutes'
@@ -222,6 +226,8 @@ load-test:
     deadlineQueue:                'load-test-deadline-queue'
     publicArtifactBucketProxies:
       'us-east-1':    'proxy-for-us-east-1'
+    azureReportChance:            0.0
+    azureReportThreshold:         1000000
   monitoring:
     enable: false
   server:
