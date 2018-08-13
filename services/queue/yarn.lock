@@ -233,12 +233,11 @@ aws4@^1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.6.0.tgz#83ef5ca860b2b32e4a0deedee8c771b9db57471e"
 
-azure-entities@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-4.0.0.tgz#cb629af76cb4abfb0a6e835ac31d9ecf73fbe63d"
+azure-entities@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-5.0.0.tgz#b0297a808963e4f1628b2059b0f24cecd2b40ff0"
   dependencies:
     ajv "^5.3.0"
-    babel-runtime "^6.22.0"
     buffertools "^2.1.3"
     debug "^3.1.0"
     fast-azure-storage "^2.2.1"
@@ -280,7 +279,7 @@ babel-code-frame@^6.22.0:
     esutils "^2.0.2"
     js-tokens "^3.0.0"
 
-babel-runtime@^6.22.0, babel-runtime@^6.23.0:
+babel-runtime@^6.23.0:
   version "6.23.0"
   resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-6.23.0.tgz#0a9489f144de70efb3ce4300accdb329e2fc543b"
   dependencies:

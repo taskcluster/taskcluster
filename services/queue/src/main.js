@@ -150,7 +150,9 @@ let load = loader({
     setup: async ({cfg, monitor, process, blobStore, publicArtifactBucket,
       privateArtifactBucket, s3Controller}) => {
       let Artifact = data.Artifact.setup({
-        tableName:        cfg.app.artifactTableName,
+        tableName: cfg.app.artifactTableName,
+        operationReportChance: cfg.app.azureReportChance,
+        operationReportThreshold: cfg.app.azureReportThreshold,
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.artifactTableName,
@@ -176,7 +178,9 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let Task = data.Task.setup({
-        tableName:        cfg.app.taskTableName,
+        tableName: cfg.app.taskTableName,
+        operationReportChance: cfg.app.azureReportChance,
+        operationReportThreshold: cfg.app.azureReportThreshold,
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.taskTableName,
@@ -196,6 +200,8 @@ let load = loader({
     setup: async ({cfg, monitor, process}) => {
       let TaskGroup = data.TaskGroup.setup({
         tableName: cfg.app.taskGroupTableName,
+        operationReportChance: cfg.app.azureReportChance,
+        operationReportThreshold: cfg.app.azureReportThreshold,
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.taskGroupTableName,
@@ -214,7 +220,9 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let TaskGroupMember = data.TaskGroupMember.setup({
-        tableName:        cfg.app.taskGroupMemberTableName,
+        tableName: cfg.app.taskGroupMemberTableName,
+        operationReportChance: cfg.app.azureReportChance,
+        operationReportThreshold: cfg.app.azureReportThreshold,
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.taskGroupMemberTableName,
@@ -235,7 +243,9 @@ let load = loader({
       // NOTE: this uses the same entity type definition as TaskGroupMember,
       // but presence in either table indicates different things
       let TaskGroupActiveSet = data.TaskGroupMember.setup({
-        tableName:        cfg.app.taskGroupActiveSetTableName,
+        tableName: cfg.app.taskGroupActiveSetTableName,
+        operationReportChance: cfg.app.azureReportChance,
+        operationReportThreshold: cfg.app.azureReportThreshold,
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.taskGroupActiveSetTableName,
@@ -254,7 +264,9 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let TaskRequirement = data.TaskRequirement.setup({
-        tableName:        cfg.app.taskRequirementTableName,
+        tableName: cfg.app.taskRequirementTableName,
+        operationReportChance: cfg.app.azureReportChance,
+        operationReportThreshold: cfg.app.azureReportThreshold,
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.taskRequirementTableName,
@@ -273,7 +285,9 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let TaskDependency = data.TaskDependency.setup({
-        tableName:        cfg.app.taskDependencyTableName,
+        tableName: cfg.app.taskDependencyTableName,
+        operationReportChance: cfg.app.azureReportChance,
+        operationReportThreshold: cfg.app.azureReportThreshold,
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.taskDependencyTableName,
@@ -292,7 +306,9 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let Provisioner = data.Provisioner.setup({
-        tableName:        cfg.app.provisionerTableName,
+        tableName: cfg.app.provisionerTableName,
+        operationReportChance: cfg.app.azureReportChance,
+        operationReportThreshold: cfg.app.azureReportThreshold,
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.provisionerTableName,
@@ -311,7 +327,9 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let WorkerType = data.WorkerType.setup({
-        tableName:        cfg.app.workerTypeTableName,
+        tableName: cfg.app.workerTypeTableName,
+        operationReportChance: cfg.app.azureReportChance,
+        operationReportThreshold: cfg.app.azureReportThreshold,
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.workerTypeTableName,
@@ -330,7 +348,9 @@ let load = loader({
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
       let Worker = data.Worker.setup({
-        tableName:        cfg.app.workerTableName,
+        tableName: cfg.app.workerTableName,
+        operationReportChance: cfg.app.azureReportChance,
+        operationReportThreshold: cfg.app.azureReportThreshold,
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.workerTableName,
