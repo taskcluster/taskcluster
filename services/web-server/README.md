@@ -22,15 +22,13 @@ TASKCLUSTER_ROOT_URL="https://taskcluster.net"
 # Network port to bind the service to:
 PORT="3050"
 
-# The issuer used when provided JWTs. Use the following by default:
-JWT_ISSUER="https://auth.mozilla.auth0.com/"
+# Taskcluster credentials bound to this service for generating temporary
+# user credentials
+TASKCLUSTER_CLIENT_ID="<insert client ID here>"
+TASKCLUSTER_ACCESS_TOKEN="<insert access token here>"
 
-# The service used to verify JWTs. Use the following by default:
-JWKS_URI="https://auth.mozilla.auth0.com/.well-known/jwks.json"
-
-# The Login service to get a Taskcluster API token from JWT (auth0) credentials.
-# Use the following by default:
-LOGIN_URL="https://login.taskcluster.net/v1/oidc-credentials/mozilla-auth0"
+# The public URL *root* which will be redirected to upon authentication
+PUBLIC_URL="http://locahost:5080"
 
 # Username for connecting to pulse for subscriptions:
 PULSE_USERNAME="<insert username here>"
@@ -43,6 +41,10 @@ PULSE_HOSTNAME="pulse.mozilla.org"
 
 # VHost for connecting to pulse for subscriptions:
 PULSE_VHOST="/"
+
+# A space-separated string of login strategies. Each login strategy may require
+# its own environment variables for configuration. See below for details.
+LOGIN_STRATEGIES="github"
 ```
 
 ## Launching locally
@@ -71,6 +73,32 @@ section, and paste a JSON object with a key of "Authorization" with a value of
 ```
 
 <img src="https://cldup.com/XDpBc-qY5Q.png" alt="authorization header" height="75%" width="75%" />
+
+## Login Strategies
+
+### GitHub
+
+In order to enable the GitHub login strategy, add `github` to the
+space-separated `LOGIN_STRATEGIES` environment variable, or set it if not
+currently specified:
+
+```sh
+LOGIN_STRATEGIES="github"
+```
+
+Next, specify the GitHub client ID and secret for an OAuth application created
+for use against this service and its web UI:
+
+```sh
+GITHUB_CLIENT_ID="<insert GitHub client ID here>"
+GITHUB_CLIENT_SECRET="<insert GitHub client secret here>"
+```
+
+Now, start the service as you normally would.
+
+**Note: be sure to not commit these environment variables to source control,
+and use a separate client ID and secret for production than used in
+development.**
 
 ## Sample Queries
 

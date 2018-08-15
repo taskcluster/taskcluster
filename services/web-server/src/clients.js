@@ -11,8 +11,7 @@ import {
   Secrets,
 } from 'taskcluster-client';
 
-export default user => {
-  const credentials = user && user.oidc.credentials;
+export default credentials => {
   const options = credentials
     ? { credentials, rootUrl: process.env.TASKCLUSTER_ROOT_URL }
     : { rootUrl: process.env.TASKCLUSTER_ROOT_URL };

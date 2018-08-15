@@ -10,13 +10,19 @@ import PulseEngine from './PulseEngine';
 
 const port = +process.env.PORT || 3050;
 
-process.on('uncaughtException', err => {
-  console.error(err); // eslint-disable-line no-console
-  process.exit(1);
-});
-
-process.on('unhandledRejection', reason => {
-  console.error(reason); // eslint-disable-line no-console
+[
+  'PULSE_USERNAME',
+  'PULSE_PASSWORD',
+  'PULSE_HOSTNAME',
+  'PULSE_VHOST',
+  'TASKCLUSTER_ROOT_URL',
+  'TASKCLUSTER_CLIENT_ID',
+  'TASKCLUSTER_ACCESS_TOKEN',
+  'PUBLIC_URL',
+].forEach(env => {
+  if (!(env in process.env)) {
+    throw new Error(`Missing required environment variable "${env}"`);
+  }
 });
 
 const pulseEngine = new PulseEngine({

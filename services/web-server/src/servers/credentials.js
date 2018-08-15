@@ -1,36 +1,19 @@
-import fetch, { Headers } from 'node-fetch';
-
-const cache = new Map();
-
-export default ({ url }) => async (request, response, next) => {
+export default () => async (request, response, next) => {
   if (
-    !request.user ||
-    !request.headers.authorization ||
+    (!request.credentials && !request.headers.authorization) ||
     !request.headers.authorization.startsWith('Bearer')
   ) {
     return next();
   }
 
-  const accessToken = request.headers.authorization.replace('Bearer ', '');
+  const credentials = JSON.parse(
+    Buffer.from(
+      request.headers.authorization.replace('Bearer ', ''),
+      'base64'
+    ).toString()
+  );
 
-  if (!cache.has(accessToken)) {
-    const login = await fetch(url, {
-      headers: new Headers({
-        Authorization: `Bearer ${accessToken}`,
-      }),
-    });
-
-    if (!login.ok) {
-      return next();
-    }
-
-    cache.set(accessToken, {
-      oidc: await login.json(),
-      accessToken,
-    });
-  }
-
-  Object.assign(request.user, cache.get(accessToken));
+  Object.assign(request, { credentials });
 
   return next();
 };
