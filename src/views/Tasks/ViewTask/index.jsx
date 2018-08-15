@@ -115,9 +115,6 @@ export default class ViewTask extends Component {
   render() {
     const {
       classes,
-      user,
-      onSignIn,
-      onSignOut,
       data: { loading, error, task, dependentTasks },
       match,
     } = this.props;
@@ -125,9 +122,6 @@ export default class ViewTask extends Component {
 
     return (
       <Dashboard
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}
         search={
           <Search
             value={taskSearch}

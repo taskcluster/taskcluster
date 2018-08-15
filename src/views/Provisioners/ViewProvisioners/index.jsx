@@ -19,19 +19,12 @@ import ProvisionerDetailsCard from '../../../components/ProvisionerDetailsCard';
 export default class ViewProvisioners extends Component {
   render() {
     const {
-      user,
-      onSignIn,
-      onSignOut,
       classes,
       data: { loading, error, provisioners },
     } = this.props;
 
     return (
-      <Dashboard
-        title="Provisioners"
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
+      <Dashboard title="Provisioners">
         {loading && <Spinner loading />}
         {error &&
           error.graphQLErrors && (

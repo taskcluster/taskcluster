@@ -35,15 +35,11 @@ export default class NoTask extends Component {
   };
 
   render() {
-    const { user, onSignIn, onSignOut } = this.props;
     const { taskSearch } = this.state;
 
     // TODO: If there isn't a selected task, fill with recent task cards
     return (
       <Dashboard
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}
         search={
           <Search
             value={taskSearch}

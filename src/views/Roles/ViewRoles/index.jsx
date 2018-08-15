@@ -34,9 +34,6 @@ export default class ViewRoles extends PureComponent {
   render() {
     const {
       classes,
-      user,
-      onSignIn,
-      onSignOut,
       data: { loading, error, roles },
     } = this.props;
     const { roleSearch } = this.state;
@@ -51,10 +48,7 @@ export default class ViewRoles extends PureComponent {
             onChange={this.handleRoleSearchChange}
             placeholder="Role starts with"
           />
-        }
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
+        }>
         <Fragment>
           {!roles && loading && <Spinner loading />}
           {error && error.graphQLErrors && <ErrorPanel error={error} />}

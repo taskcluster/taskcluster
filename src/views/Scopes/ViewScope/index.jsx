@@ -96,9 +96,6 @@ export default class ViewScope extends Component {
     const {
       classes,
       match: { params },
-      user,
-      onSignIn,
-      onSignOut,
       data: { loading, error, clients, roles },
     } = this.props;
     const {
@@ -115,16 +112,13 @@ export default class ViewScope extends Component {
     return (
       <Dashboard
         title={selectedScope}
-        user={user}
         search={
           <Search
             value={searchTerm}
             onChange={this.handleSearchChange}
             placeholder="Result contains"
           />
-        }
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
+        }>
         <Fragment>
           <div className={classes.toolbox}>
             <TextField

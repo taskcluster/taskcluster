@@ -1,24 +1,11 @@
 import loadable from '../utils/loadable';
 
-const Home = loadable(() =>
-  import(/* webpackChunkName: 'Home' */ '../views/Home')
-);
-const Dashboard = loadable(() =>
-  import(/* webpackChunkName: 'Dashboard' */ '../views/Dashboard')
-);
-
 export default [
   {
     component: loadable(() =>
       import(/* webpackChunkName: 'Documentation' */ '../views/Documentation')
     ),
     path: '/docs',
-  },
-  {
-    component: loadable(() =>
-      import(/* webpackChunkName: 'AuthCallback' */ '../views/AuthCallback')
-    ),
-    path: '/login',
   },
   {
     component: loadable(() =>
@@ -69,13 +56,6 @@ export default [
     path: '/aws-provisioner',
   },
   {
-    // eslint-disable-next-line
-    component: props =>
-      props.user ? <Dashboard {...props} /> : <Home {...props} />,
-    path: '/',
-    exact: true,
-  },
-  {
     component: loadable(() =>
       import(/* webpackChunkName: 'Hooks' */ '../views/AwsProvisioner')
     ),
@@ -98,6 +78,12 @@ export default [
       import(/* webpackChunkName: 'Quickstart' */ '../views/Quickstart')
     ),
     path: '/quickstart',
+  },
+  {
+    component: loadable(() =>
+      import(/* webpackChunkName: 'HomeOrDashboard' */ '../views/HomeOrDashboard')
+    ),
+    path: '/',
   },
   {
     component: loadable(() =>

@@ -1,5 +1,4 @@
 import { Component, Fragment } from 'react';
-import { func } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Avatar from '@material-ui/core/Avatar';
 import Menu from '@material-ui/core/Menu';
@@ -9,7 +8,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
-import { user } from '../../utils/prop-types';
+import { withAuth } from '../../utils/Auth';
+import SignInDialog from '../SignInDialog';
 
 @withStyles(theme => ({
   avatar: {
@@ -28,19 +28,11 @@ import { user } from '../../utils/prop-types';
     fill: theme.palette.text.primary,
   },
 }))
+@withAuth
 export default class UserMenu extends Component {
-  static propTypes = {
-    onSignIn: func.isRequired,
-    onSignOut: func.isRequired,
-    user,
-  };
-
-  static defaultProps = {
-    user: null,
-  };
-
   state = {
     anchorEl: null,
+    signInDialogOpen: false,
   };
 
   handleMenuClick = e => {
@@ -51,18 +43,22 @@ export default class UserMenu extends Component {
     this.setState({ anchorEl: null });
   };
 
-  handleClickSignIn = () => {
-    this.props.onSignIn();
+  handleSignInDialogOpen = () => {
+    this.setState({ signInDialogOpen: true });
+  };
+
+  handleSignInDialogClose = () => {
+    this.setState({ signInDialogOpen: false });
   };
 
   handleClickSignOut = () => {
     this.handleMenuClose();
-    this.props.onSignOut();
+    this.props.onUnauthorize();
   };
 
   render() {
     const { classes, user } = this.props;
-    const { anchorEl } = this.state;
+    const { anchorEl, signInDialogOpen } = this.state;
 
     if (!user) {
       return (
@@ -72,7 +68,7 @@ export default class UserMenu extends Component {
             aria-haspopup="true"
             aria-controls="user-menu"
             aria-label="user menu"
-            onClick={this.handleClickSignIn}>
+            onClick={this.handleSignInDialogOpen}>
             <ListItemIcon className={classes.icon}>
               <AccountCircleIcon />
             </ListItemIcon>
@@ -82,10 +78,16 @@ export default class UserMenu extends Component {
               inset
               primary="Sign In"
             />
+            <SignInDialog
+              open={signInDialogOpen}
+              onClose={this.handleSignInDialogClose}
+            />
           </ListItem>
         </List>
       );
     }
+
+    const { profile } = user;
 
     return (
       <Fragment>
@@ -97,14 +99,14 @@ export default class UserMenu extends Component {
             aria-controls="user-menu"
             aria-label="user menu"
             onClick={this.handleMenuClick}>
-            {user.picture ? (
-              <Avatar alt={`${user.name}: ${user.sub}`} src={user.picture} />
+            {profile.photos && profile.photos.length ? (
+              <Avatar alt={profile.displayName} src={profile.photos[0].value} />
             ) : (
-              <Avatar alt={`${user.name}: ${user.sub}`}>
-                {(user.nickname || user.name)[0]}
+              <Avatar alt={profile.displayName}>
+                {profile.displayName[0]}
               </Avatar>
             )}
-            <ListItemText primary={user.nickname || user.name} />
+            <ListItemText primary={profile.displayName} />
           </ListItem>
         </List>
         <Menu

@@ -73,18 +73,11 @@ export default class ViewCachePurges extends Component {
   render() {
     const {
       classes,
-      user,
-      onSignIn,
-      onSignOut,
       data: { loading, error, cachePurges },
     } = this.props;
 
     return (
-      <Dashboard
-        title="Cache Purges"
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
+      <Dashboard title="Cache Purges">
         <Fragment>
           <Typography className={classes.description}>
             All currently active cache purges are displayed below. 24 hours

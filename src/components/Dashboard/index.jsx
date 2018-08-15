@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { bool, func, node, string } from 'prop-types';
+import { bool, node, string } from 'prop-types';
 import { Link } from 'react-router-dom';
 import classNames from 'classnames';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
@@ -18,9 +18,8 @@ import LightBulbOnOutline from 'mdi-react/LightbulbOnOutlineIcon';
 import PageTitle from '../PageTitle';
 import UserMenu from './UserMenu';
 import SidebarList from './SidebarList';
-import { user } from '../../utils/prop-types';
 import { THEME } from '../../utils/constants';
-import ThemeContext from '../../App/ThemeContext';
+import { withThemeToggler } from '../../utils/ToggleTheme';
 
 @withStyles(
   theme => ({
@@ -102,6 +101,7 @@ import ThemeContext from '../../App/ThemeContext';
   }),
   { withTheme: true }
 )
+@withThemeToggler
 /**
  * Render the layout for application-based views.
  */
@@ -111,14 +111,6 @@ export default class Dashboard extends Component {
      * The content to render within the main view body.
      */
     children: node.isRequired,
-    /**
-     * A function to execute to trigger the sign in flow.
-     */
-    onSignIn: func.isRequired,
-    /**
-     * A function to execute to trigger the sign out flow.
-     */
-    onSignOut: func.isRequired,
     /**
      * An optional title to display in the title bar and app bar.
      */
@@ -132,15 +124,10 @@ export default class Dashboard extends Component {
      * Render elements in the app bar for searching purposes.
      */
     search: node,
-    /**
-     * The current user instance.
-     */
-    user,
   };
 
   static defaultProps = {
     title: '',
-    user: null,
     disablePadding: false,
     search: null,
   };
@@ -166,10 +153,8 @@ export default class Dashboard extends Component {
       disablePadding,
       theme,
       title,
-      user,
-      onSignIn,
-      onSignOut,
       search,
+      onToggleTheme,
       ...props
     } = this.props;
     const { error, mobileOpen } = this.state;
@@ -193,88 +178,81 @@ export default class Dashboard extends Component {
           </Typography>
         </div>
         <Divider />
-        <UserMenu user={user} onSignIn={onSignIn} onSignOut={onSignOut} />
+        <UserMenu />
         <Divider />
         <SidebarList />
       </div>
     );
 
     return (
-      <ThemeContext.Consumer>
-        {toggleTheme => (
-          <div className={classes.root}>
-            <PageTitle>{title}</PageTitle>
-            <AppBar className={classes.appBar}>
-              <Toolbar>
-                <IconButton
-                  color="inherit"
-                  aria-label="open drawer"
-                  onClick={this.handleDrawerToggle}
-                  className={classes.navIconHide}>
-                  <MenuIcon className={classes.appIcon} />
-                </IconButton>
-                <Typography
-                  variant="title"
-                  noWrap
-                  className={classes.appBarTitle}>
-                  {title}
-                </Typography>
-                {search}
-                <Tooltip placement="bottom" title="Toggle light/dark theme">
-                  <IconButton
-                    className={classes.lightBulbButton}
-                    onClick={toggleTheme}>
-                    {theme.palette.type === 'dark' ? (
-                      <LightBulbOn className={classes.appIcon} />
-                    ) : (
-                      <LightBulbOnOutline className={classes.appIcon} />
-                    )}
-                  </IconButton>
-                </Tooltip>
-              </Toolbar>
-            </AppBar>
-            <Hidden mdUp>
-              <Drawer
-                variant="temporary"
-                anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-                open={mobileOpen}
-                onClose={this.handleDrawerToggle}
-                classes={{
-                  paper: classes.drawerPaper,
-                }}
-                ModalProps={{
-                  keepMounted: true,
-                }}>
-                {drawer}
-              </Drawer>
-            </Hidden>
-            <Hidden smDown implementation="css">
-              <Drawer
-                variant="permanent"
-                open
-                PaperProps={{
-                  elevation: 2,
-                }}
-                classes={{
-                  paper: classes.drawerPaper,
-                }}>
-                {drawer}
-              </Drawer>
-            </Hidden>
-            <main
-              className={classNames(
-                classes.content,
-                {
-                  [classes.contentPadding]: !disablePadding,
-                },
-                className
-              )}
-              {...props}>
-              {error ? <ErrorPanel error={error} /> : children}
-            </main>
-          </div>
-        )}
-      </ThemeContext.Consumer>
+      <div className={classes.root}>
+        <PageTitle>{title}</PageTitle>
+        <AppBar className={classes.appBar}>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={this.handleDrawerToggle}
+              className={classes.navIconHide}>
+              <MenuIcon className={classes.appIcon} />
+            </IconButton>
+            <Typography variant="title" noWrap className={classes.appBarTitle}>
+              {title}
+            </Typography>
+            {search}
+            <Tooltip placement="bottom" title="Toggle light/dark theme">
+              <IconButton
+                className={classes.lightBulbButton}
+                onClick={onToggleTheme}>
+                {theme.palette.type === 'dark' ? (
+                  <LightBulbOn className={classes.appIcon} />
+                ) : (
+                  <LightBulbOnOutline className={classes.appIcon} />
+                )}
+              </IconButton>
+            </Tooltip>
+          </Toolbar>
+        </AppBar>
+        <Hidden mdUp>
+          <Drawer
+            variant="temporary"
+            anchor={theme.direction === 'rtl' ? 'right' : 'left'}
+            open={mobileOpen}
+            onClose={this.handleDrawerToggle}
+            classes={{
+              paper: classes.drawerPaper,
+            }}
+            ModalProps={{
+              keepMounted: true,
+            }}>
+            {drawer}
+          </Drawer>
+        </Hidden>
+        <Hidden smDown implementation="css">
+          <Drawer
+            variant="permanent"
+            open
+            PaperProps={{
+              elevation: 2,
+            }}
+            classes={{
+              paper: classes.drawerPaper,
+            }}>
+            {drawer}
+          </Drawer>
+        </Hidden>
+        <main
+          className={classNames(
+            classes.content,
+            {
+              [classes.contentPadding]: !disablePadding,
+            },
+            className
+          )}
+          {...props}>
+          {error ? <ErrorPanel error={error} /> : children}
+        </main>
+      </div>
     );
   }
 }

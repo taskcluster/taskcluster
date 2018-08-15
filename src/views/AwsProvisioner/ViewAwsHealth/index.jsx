@@ -12,18 +12,11 @@ import AwsProvisionerHealthTable from '../../../components/AwsProvisionerHealthT
 export default class ViewAwsHealth extends Component {
   render() {
     const {
-      user,
-      onSignIn,
-      onSignOut,
       data: { loading, error, awsProvisionerHealth },
     } = this.props;
 
     return (
-      <Dashboard
-        title="AWS Provisioner Health"
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
+      <Dashboard title="AWS Provisioner Health">
         {loading && <Spinner loading />}
         {error &&
           error.graphQLErrors && (

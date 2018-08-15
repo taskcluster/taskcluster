@@ -105,9 +105,6 @@ export default class ViewWorker extends PureComponent {
   render() {
     const {
       classes,
-      user,
-      onSignIn,
-      onSignOut,
       data: { loading, error, clients },
     } = this.props;
     const { clientSearch } = this.state;
@@ -123,10 +120,7 @@ export default class ViewWorker extends PureComponent {
             onSubmit={this.handleClientSearchSubmit}
             placeholder="Client starts with"
           />
-        }
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
+        }>
         <Fragment>
           {!clients && loading && <Spinner loading />}
           {error && error.graphQLErrors && <ErrorPanel error={error} />}

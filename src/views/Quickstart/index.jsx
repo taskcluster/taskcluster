@@ -243,7 +243,7 @@ export default class QuickStart extends Component {
   };
 
   render() {
-    const { classes, user, onSignIn, onSignOut } = this.props;
+    const { classes } = this.props;
     const {
       repo,
       owner,
@@ -257,11 +257,7 @@ export default class QuickStart extends Component {
     } = this.state;
 
     return (
-      <Dashboard
-        title="GitHub Quick Start"
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
+      <Dashboard title="GitHub Quick Start">
         <Fragment>
           <div className={classes.orgRepo}>
             <TextField

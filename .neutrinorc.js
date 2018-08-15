@@ -38,6 +38,9 @@ module.exports = {
         port: process.env.PORT || 9000,
         historyApiFallback: { disableDotRule: true },
         proxy: {
+          '/login': {
+            target: 'http://localhost:3050',
+          },
           '/graphql': {
             target: 'http://localhost:3050',
           },
@@ -59,11 +62,7 @@ module.exports = {
     ['@neutrinojs/env', [
       'NODE_ENV',
       'APPLICATION_NAME',
-      'AUTH0_DOMAIN',
-      'AUTH0_CLIENT_ID',
-      'AUTH0_REDIRECT_URI',
-      'AUTH0_RESPONSE_TYPE',
-      'AUTH0_SCOPE',
+      'LOGIN_STRATEGIES',
       'TASKCLUSTER_ROOT_URL',
     ]],
     (neutrino) => {

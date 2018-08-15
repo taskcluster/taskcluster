@@ -28,14 +28,10 @@ import Emoticon from './Emoticon';
 )
 export default class NotFound extends Component {
   render() {
-    const { classes, user, onSignIn, onSignOut, theme } = this.props;
+    const { classes, theme } = this.props;
 
     return (
-      <Dashboard
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}
-        className={classes.root}>
+      <Dashboard className={classes.root}>
         <Typography variant="display4" className={classes.typography}>
           404
         </Typography>

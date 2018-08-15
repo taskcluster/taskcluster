@@ -8,6 +8,7 @@ import HexagonMultipleIcon from 'mdi-react/HexagonMultipleIcon';
 import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
 import LibraryIcon from 'mdi-react/LibraryIcon';
 import Dashboard from '../../components/Dashboard';
+import { withAuth } from '../../utils/Auth';
 
 @hot(module)
 @withStyles(theme => ({
@@ -15,14 +16,15 @@ import Dashboard from '../../components/Dashboard';
     marginRight: theme.spacing.double,
   },
 }))
+@withAuth
 export default class DashboardView extends Component {
   render() {
-    const { classes, user, onSignIn, onSignOut } = this.props;
+    const { classes, user } = this.props;
 
     return (
-      <Dashboard user={user} onSignIn={onSignIn} onSignOut={onSignOut}>
+      <Dashboard>
         <Typography variant="display1">
-          Hello, {user.nickname || user.name}!
+          Hello, {user.profile.displayName}!
         </Typography>
         <br />
         <br />

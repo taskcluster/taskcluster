@@ -44,9 +44,6 @@ export default class ListHooks extends Component {
   render() {
     const {
       classes,
-      user,
-      onSignIn,
-      onSignOut,
       data: { loading, error, hookGroups },
     } = this.props;
     const { hookSearch } = this.state;
@@ -60,9 +57,6 @@ export default class ListHooks extends Component {
     return (
       <Dashboard
         title="Hooks"
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}
         search={
           <Search
             value={hookSearch}

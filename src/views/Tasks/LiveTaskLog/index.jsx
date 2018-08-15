@@ -33,15 +33,11 @@ import Log from '../../../components/Log';
 }))
 export default class LiveTaskLog extends Component {
   render() {
-    const { classes, user, onSignIn, onSignOut, match } = this.props;
+    const { classes, match } = this.props;
     const url = decodeURIComponent(match.params.logUrl);
 
     return (
-      <Dashboard
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}
-        disablePadding>
+      <Dashboard disablePadding>
         <Log
           url={url}
           stream

@@ -10,20 +10,37 @@ import { InMemoryCache } from 'apollo-cache-inmemory';
 import { CachePersistor } from 'apollo-cache-persist';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import { Authorize } from 'react-auth0-components';
 import FontStager from '../components/FontStager';
-import Main from './main';
-import ThemeContext from './ThemeContext';
+import Main from './Main';
+import { ToggleThemeContext } from '../utils/ToggleTheme';
+import { AuthContext } from '../utils/Auth';
 import theme from '../theme';
+
+const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
 
 @hot(module)
 export default class App extends Component {
-  state = {
-    authResult: null,
-    userInfo: null,
-    error: null,
-    authorize: Authorize.AUTHORIZATION_DONE || false,
-    theme: theme.darkTheme,
+  authorize = async (user, persist = true) => {
+    if (persist) {
+      localStorage.setItem(AUTH_STORE, JSON.stringify(user));
+    }
+
+    this.setState({
+      auth: {
+        ...this.state.auth,
+        user,
+      },
+    });
+  };
+
+  unauthorize = () => {
+    localStorage.removeItem(AUTH_STORE);
+    this.setState({
+      auth: {
+        ...this.state.auth,
+        user: null,
+      },
+    });
   };
 
   cache = new InMemoryCache();
@@ -34,17 +51,52 @@ export default class App extends Component {
   apolloClient = new ApolloClient({
     cache: this.cache,
     link: from([
-      setContext((request, { headers }) => ({
-        headers: {
-          ...headers,
-          ...(this.state.authResult && this.state.authResult.accessToken
-            ? { Authorization: `Bearer ${this.state.authResult.accessToken}` }
-            : null),
-        },
-      })),
+      setContext((request, { headers }) => {
+        const { user } = this.state.auth;
+
+        if (!user || !user.credentials) {
+          return;
+        }
+
+        return {
+          headers: {
+            ...headers,
+            Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
+          },
+        };
+      }),
       new HttpLink(),
     ]),
   });
+
+  constructor(props) {
+    super(props);
+    const state = {
+      error: null,
+      theme: theme.darkTheme,
+      auth: {
+        user: null,
+        authorize: this.authorize,
+        unauthorize: this.unauthorize,
+      },
+    };
+    const auth = localStorage.getItem(AUTH_STORE);
+
+    if (auth) {
+      const user = JSON.parse(auth);
+      const expires = new Date(user.expires);
+      const now = new Date();
+
+      if (expires > now) {
+        Object.assign(state.auth, { user });
+        setTimeout(this.unauthorize, expires.getTime() - now.getTime());
+      } else {
+        localStorage.removeItem(AUTH_STORE);
+      }
+    }
+
+    this.state = state;
+  }
 
   componentDidCatch(error) {
     this.setState({ error });
@@ -59,63 +111,20 @@ export default class App extends Component {
     });
   };
 
-  handleError = error => {
-    if (error.error && error.error === 'login_required') {
-      this.setState({
-        authorize: false,
-        error: null,
-        authResult: null,
-        userInfo: null,
-      });
-    } else if (error.error_description) {
-      this.setState({
-        error: new Error(error.error_description),
-        authResult: null,
-        userInfo: null,
-      });
-    }
-  };
-
-  handleStartAuthorization = () => {
-    this.setState({ authorize: true });
-  };
-
-  handleSignOut = () => {
-    this.setState({ authorize: false, authResult: null, userInfo: null });
-  };
-
-  handleAuthorization = ({ authResult, userInfo }) => {
-    this.setState({ authResult, userInfo });
-  };
-
   render() {
-    const { authorize, error, userInfo, theme } = this.state;
+    const { auth, error, theme } = this.state;
 
     return (
       <ApolloProvider client={this.apolloClient}>
-        <ThemeContext.Provider value={this.toggleTheme}>
-          <MuiThemeProvider theme={theme}>
-            <FontStager />
-            <CssBaseline />
-            <Authorize
-              popup
-              authorize={authorize}
-              onError={this.handleError}
-              onAuthorize={this.handleAuthorization}
-              domain={process.env.AUTH0_DOMAIN}
-              clientID={process.env.AUTH0_CLIENT_ID}
-              redirectUri={process.env.AUTH0_REDIRECT_URI}
-              responseType={process.env.AUTH0_RESPONSE_TYPE}
-              scope={process.env.AUTH0_SCOPE}
-            />
-            <Main
-              error={error}
-              userInfo={userInfo}
-              onSignIn={this.handleStartAuthorization}
-              onSignOut={this.handleSignOut}
-            />
-          </MuiThemeProvider>
-        </ThemeContext.Provider>
+        <AuthContext.Provider value={auth}>
+          <ToggleThemeContext.Provider value={this.toggleTheme}>
+            <MuiThemeProvider theme={theme}>
+              <FontStager />
+              <CssBaseline />
+              <Main error={error} />
+            </MuiThemeProvider>
+          </ToggleThemeContext.Provider>
+        </AuthContext.Provider>
       </ApolloProvider>
     );
   }

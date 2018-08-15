@@ -47,52 +47,42 @@ export default class CreateWorkerType extends Component {
   handleCreateClick = () => {};
 
   render() {
-    const { classes, user, onSignIn, onSignOut } = this.props;
+    const { classes } = this.props;
     const { definition, workerType, invalidDefinition } = this.state;
 
     return (
-      <Dashboard
-        title="AWS Provisioner Create Worker Type"
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
-        <div>
-          <List>
-            <ListItem>
-              <TextField
-                label="Worker Type"
-                name="workerType"
-                error={
-                  Boolean(workerType) && !isWorkerTypeNameValid(workerType)
-                }
-                onChange={this.handleInputChange}
-                fullWidth
-                value={workerType}
-              />
-            </ListItem>
-            <ListItem>
-              <AwsProvisionerWorkerTypeEditor
-                value={definition}
-                onEditorChange={this.handleEditorChange}
-              />
-            </ListItem>
-          </List>
+      <Dashboard title="AWS Provisioner Create Worker Type">
+        <List>
+          <ListItem>
+            <TextField
+              label="Worker Type"
+              name="workerType"
+              error={Boolean(workerType) && !isWorkerTypeNameValid(workerType)}
+              onChange={this.handleInputChange}
+              fullWidth
+              value={workerType}
+            />
+          </ListItem>
+          <ListItem>
+            <AwsProvisionerWorkerTypeEditor
+              value={definition}
+              onEditorChange={this.handleEditorChange}
+            />
+          </ListItem>
+        </List>
 
-          <Tooltip placement="bottom" title="Create Worker Type">
-            <div>
-              <Button
-                onClick={this.handleCreateClick}
-                disabled={
-                  invalidDefinition || !isWorkerTypeNameValid(workerType)
-                }
-                variant="fab"
-                className={classes.fab}
-                color="secondary">
-                <PlusIcon />
-              </Button>
-            </div>
-          </Tooltip>
-        </div>
+        <Tooltip placement="bottom" title="Create Worker Type">
+          <div>
+            <Button
+              onClick={this.handleCreateClick}
+              disabled={invalidDefinition || !isWorkerTypeNameValid(workerType)}
+              variant="fab"
+              className={classes.fab}
+              color="secondary">
+              <PlusIcon />
+            </Button>
+          </div>
+        </Tooltip>
       </Dashboard>
     );
   }

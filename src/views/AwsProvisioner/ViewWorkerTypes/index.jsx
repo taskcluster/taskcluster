@@ -49,9 +49,6 @@ export default class ViewRoles extends Component {
   render() {
     const {
       classes,
-      user,
-      onSignIn,
-      onSignOut,
       data: { loading, error, awsProvisionerWorkerTypeSummaries },
     } = this.props;
     const { workerTypeSearch } = this.state;
@@ -66,10 +63,7 @@ export default class ViewRoles extends Component {
             onChange={this.handleWorkerTypeSearchChange}
             placeholder="Worker type starts with"
           />
-        }
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
+        }>
         <Fragment>
           {!awsProvisionerWorkerTypeSummaries && loading && <Spinner loading />}
           {error && error.graphQLErrors && <ErrorPanel error={error} />}

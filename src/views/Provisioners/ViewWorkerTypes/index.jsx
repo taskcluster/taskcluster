@@ -92,9 +92,6 @@ export default class ViewWorkerTypes extends Component {
       match: {
         params: { provisionerId },
       },
-      user,
-      onSignIn,
-      onSignOut,
       data: {
         loading,
         error,
@@ -105,11 +102,7 @@ export default class ViewWorkerTypes extends Component {
     } = this.props;
 
     return (
-      <Dashboard
-        title="Worker Types"
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
+      <Dashboard title="Worker Types">
         <Fragment>
           {!workerTypes && loading && <Spinner loading />}
           {error && error.graphQLErrors && <ErrorPanel error={error} />}

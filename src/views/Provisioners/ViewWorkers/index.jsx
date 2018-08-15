@@ -109,19 +109,12 @@ export default class ViewWorkers extends Component {
     const { filterBy } = this.state;
     const {
       classes,
-      user,
-      onSignIn,
-      onSignOut,
       match: { params },
       data: { loading, error, workers, workerType },
     } = this.props;
 
     return (
-      <Dashboard
-        title="Workers"
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
+      <Dashboard title="Workers">
         <Fragment>
           {(!workers || !workerType) && loading && <Spinner loading />}
           {error && error.graphQLErrors && <ErrorPanel error={error} />}

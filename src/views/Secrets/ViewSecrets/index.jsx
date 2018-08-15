@@ -68,18 +68,11 @@ export default class ViewSecrets extends Component {
   render() {
     const {
       classes,
-      user,
-      onSignIn,
-      onSignOut,
       data: { loading, error, secrets },
     } = this.props;
 
     return (
-      <Dashboard
-        title="Secrets"
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
+      <Dashboard title="Secrets">
         <Fragment>
           {!secrets && loading && <Spinner loading />}
           {error && error.graphQLErrors && <ErrorPanel error={error} />}

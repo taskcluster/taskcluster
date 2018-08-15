@@ -5,8 +5,9 @@ import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
 import Hidden from '@material-ui/core/Hidden';
 import Typography from '@material-ui/core/Typography';
-import ArrowRightIcon from 'mdi-react/ArrowRightIcon';
+import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import Landing from '../../components/Landing';
+import SignInDialog from '../../components/SignInDialog';
 
 @hot(module)
 @withStyles(theme => ({
@@ -34,12 +35,25 @@ import Landing from '../../components/Landing';
   },
   icon: {
     fill: theme.palette.primary.main,
-    marginLeft: theme.spacing.double,
+    marginRight: theme.spacing.unit,
   },
 }))
 export default class Home extends Component {
+  state = {
+    signInDialogOpen: false,
+  };
+
+  handleOpenSignInDialog = () => {
+    this.setState({ signInDialogOpen: true });
+  };
+
+  handleCloseSignInDialog = () => {
+    this.setState({ signInDialogOpen: false });
+  };
+
   render() {
-    const { classes, onSignIn } = this.props;
+    const { classes } = this.props;
+    const { signInDialogOpen } = this.state;
 
     return (
       <Landing className={classes.root}>
@@ -59,10 +73,17 @@ export default class Home extends Component {
         </Typography>
         <Divider className={classes.divider} />
         <div className={classes.actions}>
-          <Button variant="raised" color="default" onClick={onSignIn}>
-            Sign in to get started
-            <ArrowRightIcon className={classes.icon} />
+          <Button
+            variant="raised"
+            color="default"
+            onClick={this.handleOpenSignInDialog}>
+            <AccountCircleIcon className={classes.icon} />
+            Sign in
           </Button>
+          <SignInDialog
+            open={signInDialogOpen}
+            onClose={this.handleCloseSignInDialog}
+          />
         </div>
       </Landing>
     );

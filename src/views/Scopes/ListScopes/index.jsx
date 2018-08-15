@@ -82,9 +82,6 @@ export default class ListScopes extends PureComponent {
   render() {
     const {
       classes,
-      user,
-      onSignIn,
-      onSignOut,
       data: { loading, error, clients, roles },
     } = this.props;
     const { searchTerm, currentTabIndex } = this.state;
@@ -92,9 +89,6 @@ export default class ListScopes extends PureComponent {
     return (
       <Dashboard
         title="Scopes"
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}
         search={
           <Search
             value={searchTerm}

@@ -70,9 +70,6 @@ export default class ViewWorker extends Component {
 
   render() {
     const {
-      user,
-      onSignIn,
-      onSignOut,
       data: { loading, error, worker },
     } = this.props;
     const {
@@ -83,11 +80,7 @@ export default class ViewWorker extends Component {
     } = this.state;
 
     return (
-      <Dashboard
-        title="Worker"
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
+      <Dashboard title="Worker">
         <Fragment>
           {loading && <Spinner loading />}
           {error && error.graphQLErrors && <ErrorPanel error={error} />}

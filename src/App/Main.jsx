@@ -1,6 +1,6 @@
 import { Component, Fragment } from 'react';
 import { BrowserRouter, Switch } from 'react-router-dom';
-import { func, object } from 'prop-types';
+import { object } from 'prop-types';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { withStyles } from '@material-ui/core/styles';
 import RouteWithProps from '../components/RouteWithProps';
@@ -45,18 +45,14 @@ import routes from './routes';
 export default class Main extends Component {
   static propTypes = {
     error: object,
-    userInfo: object,
-    onSignIn: func.isRequired,
-    onSignOut: func.isRequired,
   };
 
   static defaultProps = {
     error: null,
-    userInfo: null,
   };
 
   render() {
-    const { userInfo, error, onSignIn, onSignOut } = this.props;
+    const { error } = this.props;
 
     return (
       <Fragment>
@@ -64,13 +60,7 @@ export default class Main extends Component {
         <BrowserRouter>
           <Switch>
             {routes.map(props => (
-              <RouteWithProps
-                key={props.path || 'not-found'}
-                {...props}
-                user={userInfo}
-                onSignIn={onSignIn}
-                onSignOut={onSignOut}
-              />
+              <RouteWithProps key={props.path || 'not-found'} {...props} />
             ))}
           </Switch>
         </BrowserRouter>

@@ -18,14 +18,10 @@ import clientQuery from './client.graphql';
 })
 export default class ViewClient extends Component {
   render() {
-    const { user, onSignIn, onSignOut, isNewClient, data } = this.props;
+    const { isNewClient, data } = this.props;
 
     return (
-      <Dashboard
-        title={isNewClient ? 'Create Client' : 'Client'}
-        user={user}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}>
+      <Dashboard title={isNewClient ? 'Create Client' : 'Client'}>
         {isNewClient ? (
           <ClientForm isNewClient />
         ) : (
