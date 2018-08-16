@@ -10,6 +10,7 @@
   "scripts": {
     "build": "neutrino build --require dotenv/config",
     "start": "neutrino start --require dotenv/config",
+    "test": "neutrino test",
     "lint": "neutrino lint",
     "precommit": "neutrino stage",
     "styleguide": "neutrino styleguide:start --require dotenv/config"
@@ -62,6 +63,7 @@
   },
   "devDependencies": {
     "@neutrinojs/env": "^8.3.0",
+    "@neutrinojs/jest": "^8.3.0",
     "babel-register": "^6.26.0",
     "dotenv": "^5.0.1",
     "graphql-tag": "^2.8.0",
