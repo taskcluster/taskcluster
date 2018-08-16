@@ -28,3 +28,5 @@ export const THEME = {
   PRIMARY_TEXT_LIGHT: 'rgba(0, 0, 0, 0.9)',
   SECONDARY: '#4177a5',
 };
+// eslint-disable-next-line max-len
+export const VALID_TASK = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;

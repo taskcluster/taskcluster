@@ -1,29 +1,33 @@
 import { hot } from 'react-hot-loader';
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
+import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
+import RecentTasks from './RecentTasks';
+import db from '../../../utils/db';
 
 @hot(module)
 @withStyles(theme => ({
-  title: {
+  infoText: {
     marginBottom: theme.spacing.unit,
-  },
-  divider: {
-    margin: `${theme.spacing.triple}px 0`,
-  },
-  owner: {
-    textAlign: 'right',
-    [theme.breakpoints.down('xs')]: {
-      textAlign: 'left',
-    },
   },
 }))
 export default class NoTask extends Component {
   state = {
+    recentTasks: null,
     taskSearch: '',
   };
+
+  async componentDidMount() {
+    const recentTasks = await db.taskIdsHistory
+      .limit(5)
+      .reverse()
+      .toArray();
+
+    this.setState({ recentTasks });
+  }
 
   handleTaskSearchChange = e => {
     this.setState({ taskSearch: e.target.value || '' });
@@ -35,9 +39,9 @@ export default class NoTask extends Component {
   };
 
   render() {
-    const { taskSearch } = this.state;
+    const { classes } = this.props;
+    const { taskSearch, recentTasks } = this.state;
 
-    // TODO: If there isn't a selected task, fill with recent task cards
     return (
       <Dashboard
         search={
@@ -47,7 +51,12 @@ export default class NoTask extends Component {
             onSubmit={this.handleTaskSearchSubmit}
           />
         }>
-        <Typography>Enter a task ID in the search box</Typography>
+        <Fragment>
+          <Typography className={classes.infoText}>
+            Enter a task ID in the search box
+          </Typography>
+          {recentTasks ? <RecentTasks tasks={recentTasks} /> : <Spinner />}
+        </Fragment>
       </Dashboard>
     );
   }

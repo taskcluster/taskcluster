@@ -1,0 +1,11 @@
+query RecentTasks($taskIds: [ID]!) {
+  tasks(taskIds: $taskIds) {
+    taskId
+    status {
+      state
+    }
+    metadata {
+      name
+    }
+  }
+}

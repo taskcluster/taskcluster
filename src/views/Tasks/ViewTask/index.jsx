@@ -14,9 +14,18 @@ import Dashboard from '../../../components/Dashboard';
 import TaskDetailsCard from '../../../components/TaskDetailsCard';
 import TaskRunsCard from '../../../components/TaskRunsCard';
 import Search from '../../../components/Search';
-import { ARTIFACTS_PAGE_SIZE } from '../../../utils/constants';
+import { ARTIFACTS_PAGE_SIZE, VALID_TASK } from '../../../utils/constants';
 import taskQuery from './task.graphql';
 import pageArtifactsQuery from './pageArtifacts.graphql';
+import db from '../../../utils/db';
+
+const updateTaskIdHistory = id => {
+  if (!VALID_TASK.test(id)) {
+    return;
+  }
+
+  db.taskIdsHistory.put({ taskId: id });
+};
 
 @hot(module)
 @withStyles(theme => ({
@@ -43,20 +52,38 @@ import pageArtifactsQuery from './pageArtifacts.graphql';
   }),
 })
 export default class ViewTask extends Component {
-  static getDerivedStateFromProps(nextProps, prevState) {
-    return {
-      taskSearch:
-        nextProps.match.params.taskId !== prevState.taskSearch
-          ? nextProps.match.params.taskId || ''
-          : prevState.taskSearch,
-      showError: !!nextProps.data.error,
-    };
-  }
-
   state = {
     taskSearch: '',
     showError: false,
   };
+
+  componentDidUpdate(prevProps) {
+    const { taskId } = this.props.match.params;
+
+    if (prevProps.match.params.taskId !== taskId) {
+      updateTaskIdHistory(taskId);
+    }
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    // initialize
+    if (!state.taskSearch) {
+      const taskId = props.match.params.taskId || '';
+
+      if (taskId) {
+        updateTaskIdHistory(taskId);
+      }
+
+      return {
+        taskSearch: taskId,
+        showError: false,
+      };
+    }
+
+    return {
+      showError: Boolean(props.data.error),
+    };
+  }
 
   handleHideError = () => {
     this.setState({
@@ -70,7 +97,12 @@ export default class ViewTask extends Component {
 
   handleTaskSearchSubmit = e => {
     e.preventDefault();
-    this.props.history.push(`/tasks/${this.state.taskSearch}`);
+
+    const { taskSearch } = this.state;
+
+    if (this.props.match.params.taskId !== taskSearch) {
+      this.props.history.push(`/tasks/${this.state.taskSearch}`);
+    }
   };
 
   handleArtifactsPageChange = ({ cursor, previousCursor }) => {
