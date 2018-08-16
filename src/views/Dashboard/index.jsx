@@ -2,12 +2,12 @@ import { hot } from 'react-hot-loader';
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import HexagonMultipleIcon from 'mdi-react/HexagonMultipleIcon';
 import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
 import LibraryIcon from 'mdi-react/LibraryIcon';
 import Dashboard from '../../components/Dashboard';
+import Button from '../../components/Button';
 import { withAuth } from '../../utils/Auth';
 
 @hot(module)

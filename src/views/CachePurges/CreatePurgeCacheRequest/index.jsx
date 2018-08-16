@@ -4,10 +4,10 @@ import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Dashboard from '../../../components/Dashboard';
+import Button from '../../../components/Button';
 
 @hot(module)
 @withStyles(theme => ({
@@ -79,6 +79,7 @@ export default class CreatePurgeCacheRequest extends Component {
             id="create-purge-cache-request-tooltip"
             title="Create Request">
             <Button
+              requiresAuth
               disabled={!this.isFormFilled()}
               onClick={this.handleCreate}
               variant="fab"

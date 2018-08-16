@@ -5,12 +5,12 @@ import { withRouter } from 'react-router-dom';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
 import storage from 'localforage';
 import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import ArrowDownBoldCircleOutlineIcon from 'mdi-react/ArrowDownBoldCircleOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import GoToLineButton from './GoToLineButton';
 import Loading from './Loading';
+import Button from '../Button';
 
 const LINE_NUMBER_MATCH = /L(\d+)-?(\d+)?/;
 const FOLLOW_STORAGE_KEY = 'follow-log';

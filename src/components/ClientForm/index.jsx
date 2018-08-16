@@ -4,7 +4,6 @@ import { bool } from 'prop-types';
 import { addYears } from 'date-fns';
 import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -19,6 +18,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import LockResetIcon from 'mdi-react/LockResetIcon';
 import SpeedDial from '../SpeedDial';
 import DatePicker from '../DatePicker';
+import Button from '../Button';
 import { client } from '../../utils/prop-types';
 // import splitLines from '../../utils/splitLines';
 
@@ -261,6 +261,7 @@ export default class ClientForm extends Component {
         {isNewClient ? (
           <Tooltip title="Save">
             <Button
+              requiresAuth
               variant="fab"
               onClick={this.handleSaveClient}
               classes={{ root: classes.saveIcon }}

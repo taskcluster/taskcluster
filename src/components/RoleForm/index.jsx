@@ -2,7 +2,6 @@ import { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { bool } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -10,6 +9,7 @@ import TextField from '@material-ui/core/TextField';
 import Tooltip from '@material-ui/core/Tooltip';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
+import Button from '../Button';
 import { role } from '../../utils/prop-types';
 // import splitLines from '../../utils/splitLines';
 
@@ -183,6 +183,7 @@ export default class RoleForm extends Component {
         </List>
         <Tooltip title="Save">
           <Button
+            requiresAuth
             variant="fab"
             onClick={this.handleSaveRole}
             classes={{ root: classes.saveIcon }}

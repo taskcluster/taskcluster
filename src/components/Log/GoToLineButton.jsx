@@ -1,6 +1,5 @@
 import { Component, Fragment } from 'react';
 import { func } from 'prop-types';
-import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -8,6 +7,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import TextField from '@material-ui/core/TextField';
 import Tooltip from '@material-ui/core/Tooltip';
 import NumericIcon from 'mdi-react/NumericIcon';
+import Button from '../Button';
 
 export default class GoToLineButton extends Component {
   static propTypes = {

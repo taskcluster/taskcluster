@@ -11,11 +11,11 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
-import Button from '@material-ui/core/Button';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import DateDistance from '../DateDistance';
+import Button from '../Button';
 import StatusLabel from '../StatusLabel';
 import { provisioner } from '../../utils/prop-types';
 
@@ -101,6 +101,7 @@ export default class ProvisionerDetailsCard extends Component {
             id={`${action.title}-tooltip`}
             title={action.description}>
             <Button
+              requiresAuth
               onClick={this.handleActionClick}
               className={classes.actionButton}
               size="small"

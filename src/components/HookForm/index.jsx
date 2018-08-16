@@ -12,7 +12,6 @@ import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Tooltip from '@material-ui/core/Tooltip';
-import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
@@ -23,6 +22,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import RefreshIcon from 'mdi-react/RefreshIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import { docs } from 'taskcluster-lib-urls';
+import Button from '../../components/Button';
 import SpeedDial from '../../components/SpeedDial';
 import DateDistance from '../../components/DateDistance';
 import { HOOKS_LAST_FIRE_TYPE } from '../../utils/constants';
@@ -464,6 +464,7 @@ export default class HookForm extends Component {
           <Tooltip title="Save Hook">
             <div className={classes.actionButton}>
               <Button
+                requiresAuth
                 color="secondary"
                 variant="fab"
                 disabled={!this.validHook()}

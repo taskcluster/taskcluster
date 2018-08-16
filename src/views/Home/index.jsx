@@ -1,11 +1,11 @@
 import { hot } from 'react-hot-loader';
 import { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
 import Hidden from '@material-ui/core/Hidden';
 import Typography from '@material-ui/core/Typography';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
+import Button from '../../components/Button';
 import Landing from '../../components/Landing';
 import SignInDialog from '../../components/SignInDialog';
 

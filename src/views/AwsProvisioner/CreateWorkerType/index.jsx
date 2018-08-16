@@ -2,12 +2,12 @@ import { hot } from 'react-hot-loader';
 import { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Tooltip from '@material-ui/core/Tooltip';
-import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import TextField from '@material-ui/core/TextField';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Dashboard from '../../../components/Dashboard';
+import Button from '../../../components/Button';
 import AwsProvisionerWorkerTypeEditor from '../../../components/AwsProvisionerWorkerTypeEditor';
 import isWorkerTypeNameValid from '../../../utils/isWorkerTypeNameValid';
 
@@ -74,6 +74,7 @@ export default class CreateWorkerType extends Component {
         <Tooltip placement="bottom" title="Create Worker Type">
           <div>
             <Button
+              requiresAuth
               onClick={this.handleCreateClick}
               disabled={invalidDefinition || !isWorkerTypeNameValid(workerType)}
               variant="fab"

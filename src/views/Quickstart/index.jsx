@@ -5,7 +5,6 @@ import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListSubheader from '@material-ui/core/ListSubheader';
@@ -24,6 +23,7 @@ import RestartIcon from 'mdi-react/RestartIcon';
 import { safeDump } from 'js-yaml';
 import debounce from 'lodash.debounce';
 import Dashboard from '../../components/Dashboard';
+import Button from '../../components/Button';
 import githubQuery from './github.graphql';
 
 const initialYaml = {
