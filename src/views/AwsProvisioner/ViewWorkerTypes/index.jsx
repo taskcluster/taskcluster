@@ -8,10 +8,10 @@ import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import HeartPulseIcon from 'mdi-react/HeartPulseIcon';
 import AlertCircleOutlineIcon from 'mdi-react/AlertCircleOutlineIcon';
-import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import SpeedDial from '../../../components/SpeedDial';
+import SpeedDialAction from '../../../components/SpeedDialAction';
 import AwsProvisionerWorkerTypeTable from '../../../components/AwsProvisionerWorkerTypeTable';
 import workerTypesQuery from './workerTypes.graphql';
 

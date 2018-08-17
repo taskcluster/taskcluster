@@ -7,9 +7,9 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
-import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import HammerIcon from 'mdi-react/HammerIcon';
 import SpeedDial from '../../../components/SpeedDial';
+import SpeedDialAction from '../../../components/SpeedDialAction';
 import WorkersTable from '../../../components/WorkersTable';
 import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';
@@ -146,6 +146,7 @@ export default class ViewWorkers extends Component {
                   <SpeedDial>
                     {workerType.actions.map(action => (
                       <SpeedDialAction
+                        requiresAuth
                         key={action.title}
                         ButtonProps={{ color: 'secondary' }}
                         icon={<HammerIcon />}

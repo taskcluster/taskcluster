@@ -2,7 +2,6 @@ import { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { bool } from 'prop-types';
 import { addYears } from 'date-fns';
-import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
@@ -17,6 +16,7 @@ import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import LockResetIcon from 'mdi-react/LockResetIcon';
 import SpeedDial from '../SpeedDial';
+import SpeedDialAction from '../SpeedDialAction';
 import DatePicker from '../DatePicker';
 import Button from '../Button';
 import { client } from '../../utils/prop-types';
@@ -272,12 +272,14 @@ export default class ClientForm extends Component {
         ) : (
           <SpeedDial>
             <SpeedDialAction
+              requiresAuth
               icon={<ContentSaveIcon className={classes.saveIcon} />}
               onClick={this.handleSaveClient}
               classes={{ button: classes.saveIcon }}
               tooltipTitle="Save"
             />
             <SpeedDialAction
+              requiresAuth
               icon={<LockResetIcon />}
               onClick={this.handleResetAccessToken}
               ButtonProps={{ color: 'secondary' }}

@@ -14,7 +14,6 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
-import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import FlashIcon from 'mdi-react/FlashIcon';
 import PlusIcon from 'mdi-react/PlusIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -24,6 +23,7 @@ import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import { docs } from 'taskcluster-lib-urls';
 import Button from '../../components/Button';
 import SpeedDial from '../../components/SpeedDial';
+import SpeedDialAction from '../../components/SpeedDialAction';
 import DateDistance from '../../components/DateDistance';
 import { HOOKS_LAST_FIRE_TYPE } from '../../utils/constants';
 import { hook } from '../../utils/prop-types';
@@ -476,6 +476,7 @@ export default class HookForm extends Component {
         ) : (
           <SpeedDial>
             <SpeedDialAction
+              requiresAuth
               icon={<ContentSaveIcon className={classes.saveIcon} />}
               onClick={this.handleSaveHook}
               classes={{ button: classes.saveIcon }}
@@ -485,6 +486,7 @@ export default class HookForm extends Component {
               }}
             />
             <SpeedDialAction
+              requiresAuth
               icon={<FlashIcon />}
               onClick={this.handleTriggerHook}
               ButtonProps={{ color: 'secondary' }}

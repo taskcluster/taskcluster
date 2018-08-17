@@ -4,7 +4,6 @@ import { graphql } from 'react-apollo';
 import { format, addYears, isAfter } from 'date-fns';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
-import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import HammerIcon from 'mdi-react/HammerIcon';
 import TextField from '@material-ui/core/TextField';
 import HomeLockIcon from 'mdi-react/HomeLockIcon';
@@ -13,6 +12,7 @@ import Dashboard from '../../../components/Dashboard';
 import WorkerDetailsCard from '../../../components/WorkerDetailsCard';
 import DialogAction from '../../../components/DialogAction';
 import SpeedDial from '../../../components/SpeedDial';
+import SpeedDialAction from '../../../components/SpeedDialAction';
 import WorkerTable from '../../../components/WorkerTable';
 import workerQuery from './worker.graphql';
 import sleep from '../../../utils/sleep';
@@ -91,6 +91,7 @@ export default class ViewWorker extends Component {
               <WorkerTable worker={worker} />
               <SpeedDial>
                 <SpeedDialAction
+                  requiresAuth
                   icon={
                     isAfter(
                       worker.quarantineUntil || new Date(),
@@ -109,6 +110,7 @@ export default class ViewWorker extends Component {
                 />
                 {worker.actions.map(action => (
                   <SpeedDialAction
+                    requiresAuth
                     key={action.title}
                     icon={<HammerIcon />}
                     onClick={() => this.handleDialogOpen(action)}
