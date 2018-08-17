@@ -75,6 +75,12 @@ export default [
   },
   {
     component: loadable(() =>
+      import(/* webpackChunkName: 'PulseMessages' */ '../views/PulseMessages')
+    ),
+    path: '/pulse-messages',
+  },
+  {
+    component: loadable(() =>
       import(/* webpackChunkName: 'Quickstart' */ '../views/Quickstart')
     ),
     path: '/quickstart',

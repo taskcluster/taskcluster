@@ -86,8 +86,12 @@ const createTheme = isDarkTheme => ({
   mixins: {
     highlight: {
       fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
-      backgroundColor: THEME.TEN_PERCENT_WHITE,
-      border: `1px solid ${THEME.TEN_PERCENT_WHITE}`,
+      backgroundColor: isDarkTheme
+        ? THEME.TEN_PERCENT_WHITE
+        : THEME.TEN_PERCENT_BLACK,
+      border: `1px solid ${
+        isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK
+      }`,
       borderRadius: 2,
       paddingLeft: 4,
       paddingRight: 4,

@@ -53,11 +53,16 @@ export default class DataTable extends Component {
      * the list is represented by a row and each element represents a column.
      */
     items: arrayOf(oneOfType([object, string])).isRequired,
+    /**
+     * A message to display when there is no items to display.
+     */
+    noItemsMessage: string,
   };
 
   static defaultProps = {
     sortByHeader: null,
     sortDirection: 'desc',
+    noItemsMessage: 'No items for this page.',
   };
 
   handleHeaderClick = ({ target }) => {
@@ -74,6 +79,7 @@ export default class DataTable extends Component {
       headers,
       sortByHeader,
       sortDirection,
+      noItemsMessage,
     } = this.props;
     const colSpan = columnsSize || (headers && headers.length) || 0;
 
@@ -100,7 +106,7 @@ export default class DataTable extends Component {
           {items.length === 0 ? (
             <TableRow>
               <TableCell colSpan={colSpan}>
-                <em>No items for this page.</em>
+                <em>{noItemsMessage}</em>
               </TableCell>
             </TableRow>
           ) : (
