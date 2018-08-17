@@ -1,0 +1,28 @@
+query Task($taskId: ID!) {
+  task(taskId: $taskId) {
+    provisionerId
+    workerType
+    schedulerId
+    taskGroupId
+    dependencies
+    requires
+    routes
+    priority
+    retries
+    created
+    deadline
+    expires
+    scopes
+    payload
+
+    metadata {
+      name
+      description
+      owner
+      source
+    }
+
+    tags
+    extra
+  }
+}

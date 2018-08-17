@@ -70,12 +70,6 @@ module.exports = {
         neutrino.config.devtool('cheap-module-source-map');
       }
 
-      // There's a bug in @neutrinojs/jest where globals are injected in `src`.
-      // To that end, we should only inject this middleware when NODE_ENV is 'test'.
-      if (process.env.NODE_ENV === 'test') {
-        neutrino.use('@neutrinojs/jest');
-      }
-
       neutrino.config.output.publicPath('/');
       neutrino.config.module
         .rule('graphql')
@@ -86,5 +80,6 @@ module.exports = {
           .use('gql-loader')
             .loader(require.resolve('graphql-tag/loader'));
     },
+    '@neutrinojs/karma',
   ],
 };

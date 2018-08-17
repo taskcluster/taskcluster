@@ -283,7 +283,6 @@ export default class ClientForm extends Component {
               icon={<LockResetIcon />}
               onClick={this.handleResetAccessToken}
               ButtonProps={{ color: 'secondary' }}
-              className={classes.saveIcon}
               tooltipTitle="Reset Access Token"
             />
           </SpeedDial>

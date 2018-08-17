@@ -25,6 +25,9 @@ const TaskGroup = loadable(() =>
 const TaskIndex = loadable(() =>
   import(/* webpackChunkName: 'Tasks.TaskGroup' */ './TaskGroup')
 );
+const TaskRedirect = loadable(() =>
+  import(/* webpackChunkName: 'Tasks.TaskRedirect' */ './TaskRedirect')
+);
 
 @hot(module)
 export default class Task extends Component {
@@ -47,6 +50,11 @@ export default class Task extends Component {
           component={TaskIndex}
         />
         <RouteWithProps
+          path={`${path}/create/interactive`}
+          component={CreateTask}
+          interactive
+        />
+        <RouteWithProps
           path={`${path}/create`}
           {...props}
           component={CreateTask}
@@ -65,6 +73,10 @@ export default class Task extends Component {
           path={`${path}/:taskId/runs/:runId`}
           {...props}
           component={ViewTask}
+        />
+        <RouteWithProps
+          path={`${path}/:taskId/:action`}
+          component={TaskRedirect}
         />
         <RouteWithProps
           path={`${path}/:taskId`}

@@ -18,7 +18,14 @@ export default class Button extends Component {
   };
 
   render() {
-    const { requiresAuth, ButtonProps, user, ...props } = this.props;
+    const {
+      onAuthorize,
+      onUnauthorize,
+      requiresAuth,
+      ButtonProps,
+      user,
+      ...props
+    } = this.props;
     const disabled = requiresAuth && !user;
     const buttonProps = {
       ...ButtonProps,
