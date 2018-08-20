@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/taskcluster/jsonschema2go/text"
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 )
 
 ////////////////////////////////////////////////////////////////////////
@@ -20,6 +21,7 @@ type Exchange struct {
 	Schema         string          `json:"$schema"`
 	Title          string          `json:"title"`
 	Version        interface{}     `json:"version"`
+	ServiceName    string          `json:"serviceName"`
 
 	apiDef *APIDefinition
 }
@@ -62,13 +64,15 @@ type ExchangeEntry struct {
 	Title       string         `json:"title"`
 	Type        string         `json:"type"`
 
-	Parent   *Exchange
-	typeName string
+	Parent    *Exchange
+	typeName  string
+	schemaURL string
 }
 
 func (entry *ExchangeEntry) postPopulate(apiDef *APIDefinition) {
 	entry.typeName = text.GoIdentifierFrom(entry.Name, true, entry.Parent.apiDef.members)
-	entry.Parent.apiDef.schemaURLs = append(entry.Parent.apiDef.schemaURLs, entry.Schema)
+	entry.schemaURL = tcurls.Schema("https://taskcluster.net", entry.Parent.ServiceName, entry.Schema)
+	entry.Parent.apiDef.schemaURLs = append(entry.Parent.apiDef.schemaURLs, entry.schemaURL)
 }
 
 func (entry *ExchangeEntry) String() string {
@@ -84,6 +88,7 @@ func (entry *ExchangeEntry) String() string {
 		result += fmt.Sprintf("    Routing Key Element %-6v= \n%v", i, element.String())
 	}
 	result += fmt.Sprintf("    Entry Schema      = '%v'\n", entry.Schema)
+	result += fmt.Sprintf("    Entry SchemaURL   = '%v'\n", entry.schemaURL)
 	return result
 }
 
@@ -206,7 +211,7 @@ func (entry *ExchangeEntry) generateAPICode() string {
 	content += "}\n"
 	content += "\n"
 	content += "func (binding " + entry.typeName + ") NewPayloadObject() interface{} {\n"
-	content += "\treturn new(" + entry.Parent.apiDef.schemas.SubSchema(entry.Schema).TypeName + ")\n"
+	content += "\treturn new(" + entry.Parent.apiDef.schemas.SubSchema(entry.schemaURL).TypeName + ")\n"
 	content += "}\n"
 	content += "\n"
 	return content

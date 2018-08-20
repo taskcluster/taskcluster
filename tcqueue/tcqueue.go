@@ -28,7 +28,7 @@
 //
 // and then call one or more of queue's methods, e.g.:
 //
-//  data, err := queue.Task(.....)
+//  err := queue.Ping(.....)
 //
 // handling any errors...
 //
@@ -52,7 +52,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "https://queue.taskcluster.net/v1"
+	DefaultBaseURL = "https://queue.taskcluster.net/v1/"
 )
 
 type Queue tcclient.Client
@@ -63,7 +63,7 @@ type Queue tcclient.Client
 //
 //  queue := tcqueue.New(nil)                              // client without authentication
 //  queue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
-//  data, err := queue.Task(.....)                         // for example, call the Task(.....) API endpoint (described further down)...
+//  err := queue.Ping(.....)                               // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -90,6 +90,16 @@ func NewFromEnv() *Queue {
 		BaseURL:      DefaultBaseURL,
 		Authenticate: c.ClientID != "",
 	}
+}
+
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See https://docs.taskcluster.net/reference/platform/queue/api-docs#ping
+func (queue *Queue) Ping() error {
+	cd := tcclient.Client(*queue)
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	return err
 }
 
 // This end-point will return the task-definition. Notice that the task
@@ -177,15 +187,15 @@ func (queue *Queue) ListDependentTasks(taskId, continuationToken, limit string) 
 // Create a new task, this is an **idempotent** operation, so repeat it if
 // you get an internal server error or network connection is dropped.
 //
-// **Task `deadline´**, the deadline property can be no more than 5 days
+// **Task `deadline`**: the deadline property can be no more than 5 days
 // into the future. This is to limit the amount of pending tasks not being
 // taken care of. Ideally, you should use a much shorter deadline.
 //
-// **Task expiration**, the `expires` property must be greater than the
+// **Task expiration**: the `expires` property must be greater than the
 // task `deadline`. If not provided it will default to `deadline` + one
 // year. Notice, that artifacts created by task must expire before the task.
 //
-// **Task specific routing-keys**, using the `task.routes` property you may
+// **Task specific routing-keys**: using the `task.routes` property you may
 // define task specific routing-keys. If a task has a task specific
 // routing-key: `<route>`, then when the AMQP message about the task is
 // published, the message will be CC'ed with the routing-key:
@@ -193,11 +203,17 @@ func (queue *Queue) ListDependentTasks(taskId, continuationToken, limit string) 
 // for completed tasks you have posted.  The caller must have scope
 // `queue:route:<route>` for each route.
 //
-// **Dependencies**, any tasks referenced in `task.dependencies` must have
+// **Dependencies**: any tasks referenced in `task.dependencies` must have
 // already been created at the time of this call.
 //
-// **Important** Any scopes the task requires are also required for creating
-// the task. Please see the Request Payload (Task Definition) for details.
+// **Scopes**: Note that the scopes required to complete this API call depend
+// on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
+// `provisionerId`, and `workerType` properties of the task definition.
+//
+// **Legacy Scopes**: The `queue:create-task:..` scope without a priority and
+// the `queue:define-task:..` and `queue:task-group-id:..` scopes are considered
+// legacy and should not be used. Note that the new, non-legacy scopes require
+// a `queue:scheduler-id:..` scope as well as scopes for the proper priority.
 //
 // Required scopes:
 //   All of:
@@ -335,40 +351,14 @@ func (queue *Queue) CancelTask(taskId string) (*TaskStatusResponse, error) {
 	return responseObject.(*TaskStatusResponse), err
 }
 
-// Get a signed URLs to get and delete messages from azure queue.
-// Once messages are polled from here, you can claim the referenced task
-// with `claimTask`, and afterwards you should always delete the message.
+// Claim pending task(s) for the given `provisionerId`/`workerType` queue.
 //
-// Required scopes:
-//   Any of:
-//   - queue:poll-task-urls:<provisionerId>/<workerType>
-//   - All of:
-//     * queue:poll-task-urls
-//     * assume:worker-type:<provisionerId>/<workerType>
-//
-// See https://docs.taskcluster.net/reference/platform/queue/api-docs#pollTaskUrls
-func (queue *Queue) PollTaskUrls(provisionerId, workerType string) (*PollTaskUrlsResponse, error) {
-	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(PollTaskUrlsResponse), nil)
-	return responseObject.(*PollTaskUrlsResponse), err
-}
-
-// Returns a signed URL for PollTaskUrls, valid for the specified duration.
-//
-// Required scopes:
-//   Any of:
-//   - queue:poll-task-urls:<provisionerId>/<workerType>
-//   - All of:
-//     * queue:poll-task-urls
-//     * assume:worker-type:<provisionerId>/<workerType>
-//
-// See PollTaskUrls for more details.
-func (queue *Queue) PollTaskUrls_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.Client(*queue)
-	return (&cd).SignedURL("/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, duration)
-}
-
-// Claim any task, more to be added later... long polling up to 20s.
+// If any work is available (even if fewer than the requested number of
+// tasks, this will return immediately. Otherwise, it will block for tens of
+// seconds waiting for work.  If no work appears, it will return an emtpy
+// list of tasks.  Callers should sleep a short while (to avoid denial of
+// service in an error condition) and call the endpoint again.  This is a
+// simple implementation of "long polling".
 //
 // Required scopes:
 //   All of:
@@ -382,7 +372,9 @@ func (queue *Queue) ClaimWork(provisionerId, workerType string, payload *ClaimWo
 	return responseObject.(*ClaimWorkResponse), err
 }
 
-// claim a task, more to be added later...
+// Stability: *** DEPRECATED ***
+//
+// claim a task - never documented
 //
 // Required scopes:
 //   Any of:
@@ -558,9 +550,9 @@ func (queue *Queue) ReportException(taskId, runId string, payload *TaskException
 // would otherwise have uploaded. For example docker-worker will upload an
 // error artifact, if the file it was supposed to upload doesn't exists or
 // turns out to be a directory. Clients requesting an error artifact will
-// get a `403` (Forbidden) response. This is mainly designed to ensure that
-// dependent tasks can distinguish between artifacts that were suppose to
-// be generated and artifacts for which the name is misspelled.
+// get a `424` (Failed Dependency) response. This is mainly designed to
+// ensure that dependent tasks can distinguish between artifacts that were
+// suppose to be generated and artifacts for which the name is misspelled.
 //
 // **Artifact immutability**, generally speaking you cannot overwrite an
 // artifact when created. But if you repeat the request with the same
@@ -1010,14 +1002,4 @@ func (queue *Queue) DeclareWorker(provisionerId, workerType, workerGroup, worker
 	cd := tcclient.Client(*queue)
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.QueryEscape(provisionerId)+"/worker-types/"+url.QueryEscape(workerType)+"/"+url.QueryEscape(workerGroup)+"/"+url.QueryEscape(workerId), new(WorkerResponse), nil)
 	return responseObject.(*WorkerResponse), err
-}
-
-// Respond without doing anything.
-// This endpoint is used to check that the service is up.
-//
-// See https://docs.taskcluster.net/reference/platform/queue/api-docs#ping
-func (queue *Queue) Ping() error {
-	cd := tcclient.Client(*queue)
-	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
-	return err
 }

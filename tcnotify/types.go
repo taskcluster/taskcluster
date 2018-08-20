@@ -10,7 +10,7 @@ import (
 type (
 	// Request to post a message on IRC.
 	//
-	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]
+	// See https://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]
 	ChannelMessage struct {
 
 		// Channel to post the message in.
@@ -18,7 +18,7 @@ type (
 		// Syntax:     ^[#&][^ ,\u0007]{1,199}$
 		// Min length: 1
 		//
-		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/properties/channel
+		// See https://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[0]/properties/channel
 		Channel string `json:"channel"`
 
 		// IRC message to send as plain text.
@@ -26,13 +26,13 @@ type (
 		// Min length: 1
 		// Max length: 510
 		//
-		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+		// See https://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
 		Message string `json:"message"`
 	}
 
 	// Optional link that can be added as a button to the email.
 	//
-	// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link
+	// See https://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link
 	Link struct {
 
 		// Where the link should point to.
@@ -40,7 +40,7 @@ type (
 		// Min length: 1
 		// Max length: 1024
 		//
-		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link/properties/href
+		// See https://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link/properties/href
 		Href string `json:"href"`
 
 		// Text to display on link.
@@ -48,7 +48,7 @@ type (
 		// Min length: 1
 		// Max length: 40
 		//
-		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link/properties/text
+		// See https://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link/properties/text
 		Text string `json:"text"`
 	}
 
@@ -58,32 +58,32 @@ type (
 	//   * ChannelMessage
 	//   * PrivateMessage
 	//
-	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#
+	// See https://schemas.taskcluster.net/notify/v1/irc-request.json#
 	PostIRCMessageRequest json.RawMessage
 
 	// Request to post a message on pulse.
 	//
-	// See http://schemas.taskcluster.net/notify/v1/pulse-request.json#
+	// See https://schemas.taskcluster.net/notify/v1/pulse-request.json#
 	PostPulseMessageRequest struct {
 
 		// IRC message to send as plain text.
 		//
 		// Additional properties allowed
 		//
-		// See http://schemas.taskcluster.net/notify/v1/pulse-request.json#/properties/message
+		// See https://schemas.taskcluster.net/notify/v1/pulse-request.json#/properties/message
 		Message json.RawMessage `json:"message"`
 
 		// Routing-key to use when posting the message.
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/notify/v1/pulse-request.json#/properties/routingKey
+		// See https://schemas.taskcluster.net/notify/v1/pulse-request.json#/properties/routingKey
 		RoutingKey string `json:"routingKey"`
 	}
 
 	// Request to post a message on IRC.
 	//
-	// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]
+	// See https://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]
 	PrivateMessage struct {
 
 		// IRC message to send as plain text.
@@ -91,7 +91,7 @@ type (
 		// Min length: 1
 		// Max length: 510
 		//
-		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
+		// See https://schemas.taskcluster.net/notify/v1/irc-request.json#/definitions/message
 		Message string `json:"message"`
 
 		// User to post the message to.
@@ -100,18 +100,18 @@ type (
 		// Min length: 1
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/properties/user
+		// See https://schemas.taskcluster.net/notify/v1/irc-request.json#/oneOf[1]/properties/user
 		User string `json:"user"`
 	}
 
 	// Request to send an email
 	//
-	// See http://schemas.taskcluster.net/notify/v1/email-request.json#
+	// See https://schemas.taskcluster.net/notify/v1/email-request.json#
 	SendEmailRequest struct {
 
 		// E-mail address to which the message should be sent
 		//
-		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/address
+		// See https://schemas.taskcluster.net/notify/v1/email-request.json#/properties/address
 		Address string `json:"address"`
 
 		// Content of the e-mail as **markdown**, will be rendered to HTML before
@@ -121,17 +121,17 @@ type (
 		// Min length: 1
 		// Max length: 102400
 		//
-		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/content
+		// See https://schemas.taskcluster.net/notify/v1/email-request.json#/properties/content
 		Content string `json:"content"`
 
 		// Optional link that can be added as a button to the email.
 		//
-		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link
+		// See https://schemas.taskcluster.net/notify/v1/email-request.json#/properties/link
 		Link Link `json:"link,omitempty"`
 
 		// Reply-to e-mail (this property is optional)
 		//
-		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/replyTo
+		// See https://schemas.taskcluster.net/notify/v1/email-request.json#/properties/replyTo
 		ReplyTo string `json:"replyTo,omitempty"`
 
 		// Subject line of the e-mail, this is plain-text
@@ -139,7 +139,7 @@ type (
 		// Min length: 1
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/subject
+		// See https://schemas.taskcluster.net/notify/v1/email-request.json#/properties/subject
 		Subject string `json:"subject"`
 
 		// E-mail html template used to format your content.
@@ -150,7 +150,7 @@ type (
 		//
 		// Default:    "simple"
 		//
-		// See http://schemas.taskcluster.net/notify/v1/email-request.json#/properties/template
+		// See https://schemas.taskcluster.net/notify/v1/email-request.json#/properties/template
 		Template string `json:"template,omitempty"`
 	}
 )

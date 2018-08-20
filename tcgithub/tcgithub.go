@@ -28,7 +28,7 @@
 //
 // and then call one or more of github's methods, e.g.:
 //
-//  err := github.GithubWebHookConsumer(.....)
+//  err := github.Ping(.....)
 //
 // handling any errors...
 //
@@ -51,7 +51,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "https://github.taskcluster.net/v1"
+	DefaultBaseURL = "https://github.taskcluster.net/v1/"
 )
 
 type Github tcclient.Client
@@ -62,7 +62,7 @@ type Github tcclient.Client
 //
 //  github := tcgithub.New(nil)                              // client without authentication
 //  github.BaseURL = "http://localhost:1234/api/Github/v1"   // alternative API endpoint (production by default)
-//  err := github.GithubWebHookConsumer(.....)               // for example, call the GithubWebHookConsumer(.....) API endpoint (described further down)...
+//  err := github.Ping(.....)                                // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -89,6 +89,16 @@ func NewFromEnv() *Github {
 		BaseURL:      DefaultBaseURL,
 		Authenticate: c.ClientID != "",
 	}
+}
+
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See https://docs.taskcluster.net/reference/core/github/api-docs#ping
+func (github *Github) Ping() error {
+	cd := tcclient.Client(*github)
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	return err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -199,15 +209,5 @@ func (github *Github) CreateStatus(owner, repo, sha string, payload *CreateStatu
 func (github *Github) CreateComment(owner, repo, number string, payload *CreateCommentRequest) error {
 	cd := tcclient.Client(*github)
 	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/issues/"+url.QueryEscape(number)+"/comments", nil, nil)
-	return err
-}
-
-// Respond without doing anything.
-// This endpoint is used to check that the service is up.
-//
-// See https://docs.taskcluster.net/reference/core/github/api-docs#ping
-func (github *Github) Ping() error {
-	cd := tcclient.Client(*github)
-	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return err
 }

@@ -22,7 +22,7 @@
 //
 // and then call one or more of notify's methods, e.g.:
 //
-//  err := notify.Email(.....)
+//  err := notify.Ping(.....)
 //
 // handling any errors...
 //
@@ -43,7 +43,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "https://notify.taskcluster.net/v1"
+	DefaultBaseURL = "https://notify.taskcluster.net/v1/"
 )
 
 type Notify tcclient.Client
@@ -54,7 +54,7 @@ type Notify tcclient.Client
 //
 //  notify := tcnotify.New(nil)                              // client without authentication
 //  notify.BaseURL = "http://localhost:1234/api/Notify/v1"   // alternative API endpoint (production by default)
-//  err := notify.Email(.....)                               // for example, call the Email(.....) API endpoint (described further down)...
+//  err := notify.Ping(.....)                                // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -81,6 +81,16 @@ func NewFromEnv() *Notify {
 		BaseURL:      DefaultBaseURL,
 		Authenticate: c.ClientID != "",
 	}
+}
+
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See https://docs.taskcluster.net/reference/core/notify/api-docs#ping
+func (notify *Notify) Ping() error {
+	cd := tcclient.Client(*notify)
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	return err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -136,15 +146,5 @@ func (notify *Notify) Pulse(payload *PostPulseMessageRequest) error {
 func (notify *Notify) Irc(payload *PostIRCMessageRequest) error {
 	cd := tcclient.Client(*notify)
 	_, _, err := (&cd).APICall(payload, "POST", "/irc", nil, nil)
-	return err
-}
-
-// Respond without doing anything.
-// This endpoint is used to check that the service is up.
-//
-// See https://docs.taskcluster.net/reference/core/notify/api-docs#ping
-func (notify *Notify) Ping() error {
-	cd := tcclient.Client(*notify)
-	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return err
 }

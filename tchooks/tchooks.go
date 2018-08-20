@@ -38,7 +38,7 @@
 //
 // and then call one or more of hooks's methods, e.g.:
 //
-//  data, err := hooks.ListHookGroups(.....)
+//  err := hooks.Ping(.....)
 //
 // handling any errors...
 //
@@ -62,7 +62,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "https://hooks.taskcluster.net/v1"
+	DefaultBaseURL = "https://hooks.taskcluster.net/v1/"
 )
 
 type Hooks tcclient.Client
@@ -73,7 +73,7 @@ type Hooks tcclient.Client
 //
 //  hooks := tchooks.New(nil)                              // client without authentication
 //  hooks.BaseURL = "http://localhost:1234/api/Hooks/v1"   // alternative API endpoint (production by default)
-//  data, err := hooks.ListHookGroups(.....)               // for example, call the ListHookGroups(.....) API endpoint (described further down)...
+//  err := hooks.Ping(.....)                               // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -100,6 +100,16 @@ func NewFromEnv() *Hooks {
 		BaseURL:      DefaultBaseURL,
 		Authenticate: c.ClientID != "",
 	}
+}
+
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See https://docs.taskcluster.net/reference/core/hooks/api-docs#ping
+func (hooks *Hooks) Ping() error {
+	cd := tcclient.Client(*hooks)
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	return err
 }
 
 // This endpoint will return a list of all hook groups with at least one hook.
@@ -139,18 +149,6 @@ func (hooks *Hooks) GetHookStatus(hookGroupId, hookId string) (*HookStatusRespon
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/status", new(HookStatusResponse), nil)
 	return responseObject.(*HookStatusResponse), err
-}
-
-// Stability: *** DEPRECATED ***
-//
-// This endpoint will return the schedule and next scheduled creation time
-// for the given hook.
-//
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#getHookSchedule
-func (hooks *Hooks) GetHookSchedule(hookGroupId, hookId string) (*HookScheduleResponse, error) {
-	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/schedule", new(HookScheduleResponse), nil)
-	return responseObject.(*HookScheduleResponse), err
 }
 
 // This endpoint will create a new hook.
@@ -262,14 +260,4 @@ func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payl
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger/"+url.QueryEscape(token), new(TaskStatusStructure), nil)
 	return responseObject.(*TaskStatusStructure), err
-}
-
-// Respond without doing anything.
-// This endpoint is used to check that the service is up.
-//
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#ping
-func (hooks *Hooks) Ping() error {
-	cd := tcclient.Client(*hooks)
-	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
-	return err
 }

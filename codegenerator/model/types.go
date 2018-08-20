@@ -16,7 +16,7 @@ type (
 		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/description
 		Description string `json:"description"`
 
-		// JSON schema for input, if input is taken otherwise not present.
+		// JSON schema for input, if input is validated, otherwise not present. The value must be a relative URI, based on the service's schema location; that is, based at `<rootUrl>/schemas/<serviceName`.
 		//
 		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/input
 		Input string `json:"input,omitempty"`
@@ -141,8 +141,8 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/name
-		Name string `json:"name"`
+		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/serviceName
+		ServiceName string `json:"serviceName"`
 
 		// API title in markdown
 		//
@@ -236,7 +236,7 @@ type (
 		In string `json:"in"`
 	}
 
-	// JSON schema for output, if output is provided otherwise not present.
+	// JSON schema for output, if output is validated, otherwise not present. The value must be a relative URI, based on the service's schema location; that is, based at `<rootUrl>/schemas/<serviceName`.
 	//
 	// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/output/oneOf[0]
 	OutputSchema string

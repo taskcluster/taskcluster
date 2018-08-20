@@ -37,10 +37,10 @@ type (
 	// | worker-type | Workers Explorer               |
 	// | worker      | Worker Explorer                |
 	//
-	// See [actions docs](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions)
+	// See [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)
 	// for more information.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/actions.json#/items
+	// See https://schemas.taskcluster.net/queue/v1/actions.json#/items
 	Action struct {
 
 		// Actions have a "context" that is one of provisioner, worker-type, or worker, indicating
@@ -57,12 +57,12 @@ type (
 		//   * "worker-type"
 		//   * "worker"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/context
+		// See https://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/context
 		Context string `json:"context"`
 
 		// Description of the provisioner.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/description
+		// See https://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/description
 		Description string `json:"description"`
 
 		// Method to indicate the desired action to be performed for a given resource.
@@ -73,17 +73,17 @@ type (
 		//   * "DELETE"
 		//   * "PATCH"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/method
+		// See https://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/method
 		Method string `json:"method"`
 
 		// Short names for things like logging/error messages.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/name
+		// See https://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/name
 		Name string `json:"name"`
 
 		// Appropriate title for any sort of Modal prompt.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/title
+		// See https://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/title
 		Title json.RawMessage `json:"title"`
 
 		// When an action is triggered, a request is made using the `url` and `method`.
@@ -97,26 +97,26 @@ type (
 		//
 		// _Note: The request needs to be signed with the user's Taskcluster credentials._
 		//
-		// See http://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/url
+		// See https://schemas.taskcluster.net/queue/v1/actions.json#/items/properties/url
 		URL string `json:"url"`
 	}
 
 	// Information about an artifact for the given `taskId` and `runId`.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items
+	// See https://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items
 	Artifact struct {
 
 		// Mimetype for the artifact that was created.
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items/properties/contentType
+		// See https://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items/properties/contentType
 		ContentType string `json:"contentType"`
 
 		// Date and time after which the artifact created will be automatically
 		// deleted by the queue.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Name of the artifact that was created, this is useful if you want to
@@ -124,7 +124,7 @@ type (
 		//
 		// Max length: 1024
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items/properties/name
+		// See https://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items/properties/name
 		Name string `json:"name"`
 
 		// This is the `storageType` for the request that was used to create
@@ -137,7 +137,7 @@ type (
 		//   * "reference"
 		//   * "error"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items/properties/storageType
+		// See https://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts/items/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
@@ -145,7 +145,7 @@ type (
 	// you to upload an artifact to an Azure blob storage container managed
 	// by the queue.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]
 	AzureArtifactRequest struct {
 
 		// Artifact mime-type, when uploading artifact please use the same
@@ -155,7 +155,7 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/contentType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/contentType
 		ContentType string `json:"contentType"`
 
 		// Date-time after which the artifact should be deleted.
@@ -164,7 +164,7 @@ type (
 		// identified in azure table storage and explicitly deleted in the
 		// azure storage container after expiration.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Artifact storage type, in this case `azure`
@@ -172,7 +172,7 @@ type (
 		// Possible values:
 		//   * "azure"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/storageType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[2]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
@@ -180,7 +180,7 @@ type (
 	// that will allow you to upload an artifact to an Azure blob storage
 	// container managed by the queue.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]
 	AzureArtifactResponse struct {
 
 		// Artifact mime-type, should be specified with the
@@ -188,13 +188,13 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/contentType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/contentType
 		ContentType string `json:"contentType"`
 
 		// Date-time after which Shared Access Signature (SAS) will
 		// seize to work.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Shared Access Signature (SAS) with write permissions, see
@@ -202,7 +202,7 @@ type (
 		// (http://msdn.microsoft.com/en-US/library/azure/dn140256.aspx)
 		// reference for details on how to use this.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/putUrl
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/putUrl
 		PutURL string `json:"putUrl"`
 
 		// Artifact storage type, in this case `azure`
@@ -210,14 +210,14 @@ type (
 		// Possible values:
 		//   * "azure"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/storageType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[2]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
 	// Request a list of requests in a generalized format which can be run to
 	// upload an artifact to storage managed by the queue.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]
 	BlobArtifactRequest struct {
 
 		// Optionally provide an encoding type which should be set as the HTTP
@@ -225,7 +225,7 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentEncoding
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentEncoding
 		ContentEncoding string `json:"contentEncoding,omitempty"`
 
 		// The number of bytes of the entire artifact.  This must be the number
@@ -239,7 +239,7 @@ type (
 		//
 		// Mininum:    0
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentLength
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentLength
 		ContentLength int64 `json:"contentLength"`
 
 		// The complete SHA256 value of the entire artifact.  This must be the
@@ -249,7 +249,7 @@ type (
 		//
 		// Syntax:     ^[a-fA-F0-9]{64}$
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentSha256
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentSha256
 		ContentSha256 string `json:"contentSha256"`
 
 		// Artifact mime-type, when uploading artifact to the signed
@@ -260,7 +260,7 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentType
 		ContentType string `json:"contentType"`
 
 		// Date-time after which the artifact should be deleted. Note, that
@@ -268,7 +268,7 @@ type (
 		// available after expiration. S3 based artifacts are identified in
 		// azure table storage and explicitly deleted on S3 after expiration.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// A list of parts for a multipart upload.  The presence of this list is
@@ -285,7 +285,7 @@ type (
 		//
 		// Min length: 1
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts
 		Parts []MultipartPart `json:"parts,omitempty"`
 
 		// Artifact storage type, in this case `'blob'`
@@ -293,7 +293,7 @@ type (
 		// Possible values:
 		//   * "blob"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/storageType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/storageType
 		StorageType string `json:"storageType"`
 
 		// The number of bytes transfered across the wire to the backing
@@ -302,7 +302,7 @@ type (
 		//
 		// Mininum:    0
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/transferLength
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/transferLength
 		TransferLength int64 `json:"transferLength,omitempty"`
 
 		// This is the sha256 of the bytes transfered across the wire to the
@@ -311,24 +311,24 @@ type (
 		//
 		// Syntax:     ^[a-fA-F0-9]{64}$
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/transferSha256
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/transferSha256
 		TransferSha256 string `json:"transferSha256,omitempty"`
 	}
 
 	// Response to a request for creating a new blob artifact
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]
 	BlobArtifactResponse struct {
 
 		// Date-time after which the signed `requests` no longer work
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// A list of generalized HTTP requests which must be run to upload the
 		// artifact.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests
 		Requests []HTTPRequest `json:"requests"`
 
 		// Artifact storage type, in this case `'blob'`
@@ -336,13 +336,13 @@ type (
 		// Possible values:
 		//   * "blob"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/storageType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
 	// Request to claim a task for a worker to process.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/claim-work-request.json#
+	// See https://schemas.taskcluster.net/queue/v1/claim-work-request.json#
 	ClaimWorkRequest struct {
 
 		// Number of tasks to attempt to claim.
@@ -351,7 +351,7 @@ type (
 		// Mininum:    1
 		// Maximum:    32
 		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-request.json#/properties/tasks
+		// See https://schemas.taskcluster.net/queue/v1/claim-work-request.json#/properties/tasks
 		Tasks int64 `json:"tasks"`
 
 		// Identifier for group that worker claiming the task is a part of.
@@ -360,7 +360,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-request.json#/properties/workerGroup
+		// See https://schemas.taskcluster.net/queue/v1/claim-work-request.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for worker within the given workerGroup
@@ -369,38 +369,38 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-request.json#/properties/workerId
+		// See https://schemas.taskcluster.net/queue/v1/claim-work-request.json#/properties/workerId
 		WorkerID string `json:"workerId"`
 	}
 
 	// Response to an attempt to claim tasks for a worker to process.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/claim-work-response.json#
 	ClaimWorkResponse struct {
 
 		// List of task claims, may be empty if no tasks was claimed, in which case
 		// the worker should sleep a tiny bit before polling again.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks
+		// See https://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks
 		Tasks []TaskClaim `json:"tasks"`
 	}
 
 	// Complete an aritifact
 	//
-	// See http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#
+	// See https://schemas.taskcluster.net/queue/v1/put-artifact-request.json#
 	CompleteArtifactRequest struct {
 
 		// A list of the etags given by the API of the blob storage provider.  This is an opaque
 		// string value provided by the API.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/put-artifact-request.json#/properties/etags
+		// See https://schemas.taskcluster.net/queue/v1/put-artifact-request.json#/properties/etags
 		Etags []string `json:"etags"`
 	}
 
 	// Response to a request for the number of pending tasks for a given
 	// `provisionerId` and `workerType`.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#
 	CountPendingTasksResponse struct {
 
 		// An approximate number of pending tasks for the given `provisionerId` and
@@ -411,7 +411,7 @@ type (
 		//
 		// Mininum:    0
 		//
-		// See http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#/properties/pendingTasks
+		// See https://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#/properties/pendingTasks
 		PendingTasks int64 `json:"pendingTasks"`
 
 		// Unique identifier for the provisioner
@@ -420,7 +420,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#/properties/provisionerId
+		// See https://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// Identifier for worker type within the specified provisioner
@@ -429,29 +429,29 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#/properties/workerType
+		// See https://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 
-	// Request the queue to reply `403` (forbidden) with `reason` and `message`
-	// to any `GET` request for this artifact. This is mainly useful as a way
-	// for a task to declare that it failed to provide an artifact it wanted
-	// to upload.
+	// Request the queue to reply `424` (Failed Dependency) with `reason` and
+	// `message` to any `GET` request for this artifact. This is mainly useful
+	// as a way for a task to declare that it failed to provide an artifact it
+	// wanted to upload.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]
 	ErrorArtifactRequest struct {
 
 		// Date-time after which the queue should stop replying with the error
 		// and forget about the artifact.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Human readable explanation of why the artifact is missing
 		//
 		// Max length: 4096
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/message
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/message
 		Message string `json:"message"`
 
 		// Reason why the artifact doesn't exist.
@@ -461,7 +461,7 @@ type (
 		//   * "invalid-resource-on-worker"
 		//   * "too-large-file-on-worker"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/reason
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/reason
 		Reason string `json:"reason"`
 
 		// Artifact storage type, in this case `error`
@@ -469,14 +469,14 @@ type (
 		// Possible values:
 		//   * "error"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/storageType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[4]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
-	// Response to a request for the queue to reply `403` (forbidden) with
-	// `reason` and `message` to any `GET` request for this artifact.
+	// Response to a request for the queue to reply `424` (Failed Dependency)
+	// with `reason` and `message` to any `GET` request for this artifact.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[4]
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[4]
 	ErrorArtifactResponse struct {
 
 		// Artifact storage type, in this case `error`
@@ -484,16 +484,16 @@ type (
 		// Possible values:
 		//   * "error"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[4]/properties/storageType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[4]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items
 	HTTPRequest struct {
 
 		// Headers of request
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/headers
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/headers
 		Headers map[string]string `json:"headers"`
 
 		// HTTP 1.1 method of request
@@ -507,23 +507,23 @@ type (
 		//   * "HEAD"
 		//   * "PATCH"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/method
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/method
 		Method string `json:"method"`
 
 		// URL of request
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/url
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/url
 		URL string `json:"url"`
 	}
 
 	// List of artifacts for a given `taskId` and `runId`.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#
 	ListArtifactsResponse struct {
 
 		// List of artifacts for given `taskId` and `runId`.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts
+		// See https://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/artifacts
 		Artifacts []Artifact `json:"artifacts"`
 
 		// Opaque `continuationToken` to be given as query-string option to get the
@@ -534,13 +534,13 @@ type (
 		// all the results if you've called with `continuationToken` until you get a
 		// result without a `continuationToken`.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/continuationToken
+		// See https://schemas.taskcluster.net/queue/v1/list-artifacts-response.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken,omitempty"`
 	}
 
 	// Response from a `listDependentTasks` request.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#
 	ListDependentTasksResponse struct {
 
 		// Opaque `continuationToken` to be given as query-string option to get the
@@ -551,23 +551,23 @@ type (
 		// all the results if you've called `listDependentTasks` with
 		// `continuationToken` until you get a result without a `continuationToken`.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#/properties/continuationToken
+		// See https://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// Identifier for the task whose dependents are being listed.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#/properties/taskId
+		// See https://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#/properties/taskId
 		TaskID string `json:"taskId"`
 
 		// List of tasks that have `taskId` in the `task.dependencies` property.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#/properties/tasks
+		// See https://schemas.taskcluster.net/queue/v1/list-dependent-tasks-response.json#/properties/tasks
 		Tasks []TaskDefinitionAndStatus `json:"tasks"`
 	}
 
-	// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#
 	ListProvisionersResponse struct {
 
 		// Opaque `continuationToken` to be given as query-string option to get the
@@ -578,16 +578,16 @@ type (
 		// all the results if you've called with `continuationToken` until you get a
 		// result without a `continuationToken`.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/continuationToken
+		// See https://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
-		// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners
+		// See https://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners
 		Provisioners []ProvisionerInformation `json:"provisioners"`
 	}
 
 	// Response from a `listTaskGroup` request.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/list-task-group-response.json#
 	ListTaskGroupResponse struct {
 
 		// Opaque `continuationToken` to be given as query-string option to get the
@@ -598,25 +598,25 @@ type (
 		// all the results if you've called `listTaskGroup` with `continuationToken`
 		// until you get a result without a `continuationToken`.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/continuationToken
+		// See https://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// Identifier for the task-group being listed.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/taskGroupId
+		// See https://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/taskGroupId
 		TaskGroupID string `json:"taskGroupId"`
 
 		// List of tasks in this task-group.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/tasks
+		// See https://schemas.taskcluster.net/queue/v1/list-task-group-response.json#/properties/tasks
 		Tasks []TaskDefinitionAndStatus `json:"tasks"`
 	}
 
 	// Response from a `listWorkerTypes` request.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#
 	ListWorkerTypesResponse struct {
 
 		// Opaque `continuationToken` to be given as query-string option to get the
@@ -627,18 +627,18 @@ type (
 		// all the results if you've called `listWorkerTypes` with `continuationToken`
 		// until you get a result without a `continuationToken`.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/continuationToken
+		// See https://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// List of worker-types in this provisioner.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes
+		// See https://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes
 		WorkerTypes []WorkerType `json:"workerTypes"`
 	}
 
 	// Response from a `listWorkers` request.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/list-workers-response.json#
 	ListWorkersResponse struct {
 
 		// Opaque `continuationToken` to be given as query-string option to get the
@@ -649,16 +649,16 @@ type (
 		// all the results if you've called `listWorkerTypes` with `continuationToken`
 		// until you get a result without a `continuationToken`.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/continuationToken
+		// See https://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// List of workers in this worker-type.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers
+		// See https://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers
 		Workers []Worker `json:"workers"`
 	}
 
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items
 	MultipartPart struct {
 
 		// The sha256 hash of the part.
@@ -667,7 +667,7 @@ type (
 		// Min length: 64
 		// Max length: 64
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties/sha256
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties/sha256
 		Sha256 string `json:"sha256,omitempty"`
 
 		// The number of bytes in this part.  Keep in mind for S3 that
@@ -676,27 +676,8 @@ type (
 		//
 		// Mininum:    0
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties/size
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties/size
 		Size int64 `json:"size,omitempty"`
-	}
-
-	// Response to request for poll task urls.
-	//
-	// See http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#
-	PollTaskUrlsResponse struct {
-
-		// Date and time after which the signed URLs provided in this response
-		// expires and not longer works for authentication.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#/properties/expires
-		Expires tcclient.Time `json:"expires"`
-
-		// List of signed URLs for queues to poll tasks from, they must be called
-		// in the order they are given. As the first entry in this array **may**
-		// have higher priority.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#/properties/queues
-		Queues []SignedURLsForAQueue `json:"queues"`
 	}
 
 	// Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well.
@@ -708,7 +689,7 @@ type (
 	//   * RedirectArtifactRequest
 	//   * ErrorArtifactRequest
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#
 	PostArtifactRequest json.RawMessage
 
 	// Response to a request for posting an artifact.
@@ -721,38 +702,38 @@ type (
 	//   * RedirectArtifactResponse
 	//   * ErrorArtifactResponse
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#
 	PostArtifactResponse json.RawMessage
 
-	// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items
+	// See https://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items
 	ProvisionerInformation struct {
 
-		// See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
+		// See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/actions.json#
+		// See https://schemas.taskcluster.net/queue/v1/actions.json#
 		Actions []Action `json:"actions"`
 
 		// Description of the provisioner.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/description
+		// See https://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/description
 		Description string `json:"description"`
 
 		// Date and time after which the provisioner created will be automatically
 		// deleted by the queue.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Date and time where the provisioner was last seen active
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/lastDateActive
+		// See https://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/lastDateActive
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/provisionerId
+		// See https://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// This is the stability of the provisioner. Accepted values:
@@ -765,29 +746,29 @@ type (
 		//   * "stable"
 		//   * "deprecated"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/stability
+		// See https://schemas.taskcluster.net/queue/v1/list-provisioners-response.json#/properties/provisioners/items/properties/stability
 		Stability string `json:"stability"`
 	}
 
 	// Request to update a provisioner.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#
+	// See https://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#
 	ProvisionerRequest struct {
 
-		// See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
+		// See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/actions.json#
+		// See https://schemas.taskcluster.net/queue/v1/actions.json#
 		Actions []Action `json:"actions,omitempty"`
 
 		// Description of the provisioner.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/description
+		// See https://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/description
 		Description string `json:"description,omitempty"`
 
 		// Date and time after which the provisioner will be automatically
 		// deleted by the queue.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/expires
 		Expires tcclient.Time `json:"expires,omitempty"`
 
 		// This is the stability of the provisioner. Accepted values:
@@ -800,43 +781,43 @@ type (
 		//   * "stable"
 		//   * "deprecated"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/stability
+		// See https://schemas.taskcluster.net/queue/v1/update-provisioner-request.json#/properties/stability
 		Stability string `json:"stability,omitempty"`
 	}
 
 	// Response containing information about a provisioner.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/provisioner-response.json#
 	ProvisionerResponse struct {
 
-		// See taskcluster [actions](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions) documentation.
+		// See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/actions.json#
+		// See https://schemas.taskcluster.net/queue/v1/actions.json#
 		Actions []Action `json:"actions"`
 
 		// Description of the provisioner.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/description
+		// See https://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/description
 		Description string `json:"description"`
 
 		// Date and time after which the provisioner will be automatically
 		// deleted by the queue.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Date of the last time this provisioner was seen active. `lastDateActive` is updated every 6 hours
 		// but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
 		// of when the provisioner was last seen active.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/lastDateActive
+		// See https://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/lastDateActive
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/provisionerId
+		// See https://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// This is the stability of the provisioner. Accepted values:
@@ -849,13 +830,13 @@ type (
 		//   * "stable"
 		//   * "deprecated"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/stability
+		// See https://schemas.taskcluster.net/queue/v1/provisioner-response.json#/properties/stability
 		Stability string `json:"stability"`
 	}
 
 	// Request to update a worker's quarantineUntil property.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#
+	// See https://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#
 	QuarantineWorkerRequest struct {
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
@@ -863,7 +844,7 @@ type (
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
 		//
-		// See http://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#/properties/quarantineUntil
+		// See https://schemas.taskcluster.net/queue/v1/quarantine-worker-request.json#/properties/quarantineUntil
 		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
 	}
 
@@ -875,7 +856,7 @@ type (
 	// stored on the worker host and only available there for a specific
 	// amount of time.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]
 	RedirectArtifactRequest struct {
 
 		// Artifact mime-type for the resource to which the queue should
@@ -885,14 +866,14 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/contentType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/contentType
 		ContentType string `json:"contentType"`
 
 		// Date-time after which the queue should no longer redirect to this URL.
 		// Note, that the queue will and cannot delete the resource your URL
 		// references, you are responsible for doing that yourself.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Artifact storage type, in this case `reference`
@@ -900,20 +881,20 @@ type (
 		// Possible values:
 		//   * "reference"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/storageType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/storageType
 		StorageType string `json:"storageType"`
 
 		// URL to which the queue should redirect using a `303` (See other)
 		// redirect.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/url
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[3]/properties/url
 		URL string `json:"url"`
 	}
 
 	// Response to a request for the queue to redirect to a URL for a given
 	// artifact.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]
 	RedirectArtifactResponse struct {
 
 		// Artifact storage type, in this case `reference`
@@ -921,13 +902,13 @@ type (
 		// Possible values:
 		//   * "reference"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]/properties/storageType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[3]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
 	// JSON object with information about a run
 	//
-	// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items
+	// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items
 	RunInformation struct {
 
 		// Reason for the creation of this run,
@@ -940,7 +921,7 @@ type (
 		//   * "rerun"
 		//   * "exception"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonCreated
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonCreated
 		ReasonCreated string `json:"reasonCreated"`
 
 		// Reason that run was resolved, this is mainly
@@ -963,14 +944,14 @@ type (
 		//   * "internal-error"
 		//   * "intermittent-task"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonResolved
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/reasonResolved
 		ReasonResolved string `json:"reasonResolved,omitempty"`
 
 		// Date-time at which this run was resolved, ie. when the run changed
 		// state from `running` to either `completed`, `failed` or `exception`.
 		// This property is only present after the run as been resolved.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/resolved
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/resolved
 		Resolved tcclient.Time `json:"resolved,omitempty"`
 
 		// Id of this task run, `run-id`s always starts from `0`
@@ -978,20 +959,20 @@ type (
 		// Mininum:    0
 		// Maximum:    1000
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/runId
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/runId
 		RunID int64 `json:"runId"`
 
 		// Date-time at which this run was scheduled, ie. when the run was
 		// created in state `pending`.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/scheduled
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/scheduled
 		Scheduled tcclient.Time `json:"scheduled"`
 
 		// Date-time at which this run was claimed, ie. when the run changed
 		// state from `pending` to `running`. This property is only present
 		// after the run has been claimed.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/started
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/started
 		Started tcclient.Time `json:"started,omitempty"`
 
 		// State of this run
@@ -1003,14 +984,14 @@ type (
 		//   * "failed"
 		//   * "exception"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/state
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/state
 		State string `json:"state"`
 
 		// Time at which the run expires and is resolved as `failed`, if the
 		// run isn't reclaimed. Note, only present after the run has been
 		// claimed.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/takenUntil
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/takenUntil
 		TakenUntil tcclient.Time `json:"takenUntil,omitempty"`
 
 		// Identifier for group that worker who executes this run is a part of,
@@ -1021,7 +1002,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerGroup
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerGroup
 		WorkerGroup string `json:"workerGroup,omitempty"`
 
 		// Identifier for worker evaluating this run within given
@@ -1032,14 +1013,14 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerId
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/workerId
 		WorkerID string `json:"workerId,omitempty"`
 	}
 
 	// Request for a signed PUT URL that will allow you to upload an artifact
 	// to an S3 bucket managed by the queue.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]
 	S3ArtifactRequest struct {
 
 		// Artifact mime-type, when uploading artifact to the signed
@@ -1050,7 +1031,7 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/contentType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/contentType
 		ContentType string `json:"contentType"`
 
 		// Date-time after which the artifact should be deleted. Note, that
@@ -1058,7 +1039,7 @@ type (
 		// available after expiration. S3 based artifacts are identified in
 		// azure table storage and explicitly deleted on S3 after expiration.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Artifact storage type, in this case `'s3'`
@@ -1066,14 +1047,14 @@ type (
 		// Possible values:
 		//   * "s3"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/storageType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[1]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
 	// Response to a request for a signed PUT URL that will allow you to
 	// upload an artifact to an S3 bucket managed by the queue.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]
+	// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]
 	S3ArtifactResponse struct {
 
 		// Artifact mime-type, must be specified as header when uploading with
@@ -1081,19 +1062,19 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/contentType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/contentType
 		ContentType string `json:"contentType"`
 
 		// Date-time after which the signed `putUrl` no longer works
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// URL to which a `PUT` request can be made to upload the artifact
 		// requested. Note, the `Content-Length` must be specified correctly,
 		// and the `ContentType` header must be set the value specified below.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/putUrl
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/putUrl
 		PutURL string `json:"putUrl"`
 
 		// Artifact storage type, in this case `'s3'`
@@ -1101,54 +1082,11 @@ type (
 		// Possible values:
 		//   * "s3"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/storageType
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[1]/properties/storageType
 		StorageType string `json:"storageType"`
 	}
 
-	// Object holding two signed URLs for an azure queue, one for fetching
-	// messages, and another for deleting messages. Remember to `claimTask`
-	// before deleting the message, and delete message even if the `claimTask`
-	// operation fails with a 400 status code. Don't delete it on other status
-	// codes!
-	//
-	// See http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#/properties/queues/items
-	SignedURLsForAQueue struct {
-
-		// Signed URL to delete messages that have been received using the
-		// `signedPollUrl`. You **must** do this to avoid receiving the same
-		// message again.
-		// To use this URL you must substitute `{{messageId}}` and
-		// `{{popReceipt}}` with `MessageId` and `PopReceipt` from the XML
-		// response the `signedPollUrl` gave you. It is important that you
-		// `encodeURIComponent` both `MessageId` and `PopReceipt` prior to
-		// substitution, otherwise you will experience intermittent failures!
-		// Note this URL only works with `DELETE` request.
-		//
-		// Syntax:     ^https://
-		//
-		// See http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#/properties/queues/items/properties/signedDeleteUrl
-		SignedDeleteURL string `json:"signedDeleteUrl"`
-
-		// Signed URL to get message from the Azure Queue Storage queue,
-		// that holds messages for the given `provisionerId` and `workerType`.
-		// Note that this URL returns XML, see documentation for the Azure
-		// Queue Storage
-		// [REST API](http://msdn.microsoft.com/en-us/library/azure/dd179474.aspx)
-		// for details.
-		// When you have a message you can use `claimTask` to claim the task.
-		// You will need to parse the XML response and base64 decode and
-		// JSON parse the `MessageText`.
-		// After you have called `claimTask` you **must** us the
-		// `signedDeleteUrl` to delete the message.
-		// **Remark**, you are allowed to append `&numofmessages=N`,
-		// where N < 32, to the URLs if you wish to obtain more than one
-		// message at the time.
-		//
-		// See http://schemas.taskcluster.net/queue/v1/poll-task-urls-response.json#/properties/queues/items/properties/signedPollUrl
-		SignedPollURL string `json:"signedPollUrl"`
-	}
-
-	// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items
+	// See https://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items
 	TaskClaim struct {
 
 		// Temporary credentials granting `task.scopes` and the scope:
@@ -1167,7 +1105,7 @@ type (
 		// Note, a new set of temporary credentials is issued when the worker
 		// reclaims the task.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+		// See https://schemas.taskcluster.net/queue/v1/task-credentials.json#
 		Credentials TaskCredentials `json:"credentials"`
 
 		// `run-id` assigned to this run of the task
@@ -1175,23 +1113,23 @@ type (
 		// Mininum:    0
 		// Maximum:    1000
 		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/runId
+		// See https://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/runId
 		RunID int64 `json:"runId"`
 
 		// A representation of **task status** as known by the queue
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Time at which the run expires and is resolved as `exception`,
 		// with reason `claim-expired` if the run haven't been reclaimed.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/takenUntil
+		// See https://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/takenUntil
 		TakenUntil tcclient.Time `json:"takenUntil"`
 
 		// Definition of a task that can be scheduled
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#
+		// See https://schemas.taskcluster.net/queue/v1/task.json#
 		Task TaskDefinitionResponse `json:"task"`
 
 		// Identifier for the worker-group within which this run started.
@@ -1200,7 +1138,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/workerGroup
+		// See https://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for the worker executing this run.
@@ -1209,13 +1147,13 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/workerId
+		// See https://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/workerId
 		WorkerID string `json:"workerId"`
 	}
 
 	// Request to claim (or reclaim) a task
 	//
-	// See http://schemas.taskcluster.net/queue/v1/task-claim-request.json#
+	// See https://schemas.taskcluster.net/queue/v1/task-claim-request.json#
 	TaskClaimRequest struct {
 
 		// Identifier for group that worker claiming the task is a part of.
@@ -1224,7 +1162,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-claim-request.json#/properties/workerGroup
+		// See https://schemas.taskcluster.net/queue/v1/task-claim-request.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for worker within the given workerGroup
@@ -1233,13 +1171,13 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-claim-request.json#/properties/workerId
+		// See https://schemas.taskcluster.net/queue/v1/task-claim-request.json#/properties/workerId
 		WorkerID string `json:"workerId"`
 	}
 
 	// Response to a successful task claim
 	//
-	// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/task-claim-response.json#
 	TaskClaimResponse struct {
 
 		// Temporary credentials granting `task.scopes` and the scope:
@@ -1258,7 +1196,7 @@ type (
 		// Note, a new set of temporary credentials is issued when the worker
 		// reclaims the task.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+		// See https://schemas.taskcluster.net/queue/v1/task-credentials.json#
 		Credentials TaskCredentials `json:"credentials"`
 
 		// `run-id` assigned to this run of the task
@@ -1266,23 +1204,23 @@ type (
 		// Mininum:    0
 		// Maximum:    1000
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/runId
+		// See https://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/runId
 		RunID int64 `json:"runId"`
 
 		// A representation of **task status** as known by the queue
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Time at which the run expires and is resolved as `exception`,
 		// with reason `claim-expired` if the run haven't been reclaimed.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/takenUntil
+		// See https://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/takenUntil
 		TakenUntil tcclient.Time `json:"takenUntil"`
 
 		// Definition of a task that can be scheduled
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#
+		// See https://schemas.taskcluster.net/queue/v1/task.json#
 		Task TaskDefinitionResponse `json:"task"`
 
 		// Identifier for the worker-group within which this run started.
@@ -1291,7 +1229,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/workerGroup
+		// See https://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for the worker executing this run.
@@ -1300,7 +1238,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/workerId
+		// See https://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/workerId
 		WorkerID string `json:"workerId"`
 	}
 
@@ -1320,14 +1258,14 @@ type (
 	// Note, a new set of temporary credentials is issued when the worker
 	// reclaims the task.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+	// See https://schemas.taskcluster.net/queue/v1/task-credentials.json#
 	TaskCredentials struct {
 
 		// The `accessToken` for the temporary credentials.
 		//
 		// Min length: 1
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/accessToken
+		// See https://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/accessToken
 		AccessToken string `json:"accessToken"`
 
 		// The `certificate` for the temporary credentials, these are required
@@ -1335,41 +1273,41 @@ type (
 		//
 		// Min length: 1
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/certificate
+		// See https://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/certificate
 		Certificate string `json:"certificate"`
 
 		// The `clientId` for the temporary credentials.
 		//
 		// Min length: 1
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/clientId
+		// See https://schemas.taskcluster.net/queue/v1/task-credentials.json#/properties/clientId
 		ClientID string `json:"clientId"`
 	}
 
 	// Task Definition and task status structure.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/task-definition-and-status.json#
+	// See https://schemas.taskcluster.net/queue/v1/task-definition-and-status.json#
 	TaskDefinitionAndStatus struct {
 
 		// A representation of **task status** as known by the queue
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Definition of a task that can be scheduled
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#
+		// See https://schemas.taskcluster.net/queue/v1/task.json#
 		Task TaskDefinitionResponse `json:"task"`
 	}
 
 	// Definition of a task that can be scheduled
 	//
-	// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#
+	// See https://schemas.taskcluster.net/queue/v1/create-task-request.json#
 	TaskDefinitionRequest struct {
 
 		// Creation time of task
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/created
+		// See https://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/created
 		Created tcclient.Time `json:"created"`
 
 		// Deadline of the task, `pending` and `running` runs are
@@ -1377,7 +1315,7 @@ type (
 		// before the deadline. Note, deadline cannot be more than
 		// 5 days into the future
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/deadline
+		// See https://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/deadline
 		Deadline tcclient.Time `json:"deadline"`
 
 		// List of dependent tasks. These must either be _completed_ or _resolved_
@@ -1385,15 +1323,15 @@ type (
 		//
 		// Default:    []
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/dependencies
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/dependencies
 		Dependencies []string `json:"dependencies,omitempty"`
 
 		// Task expiration, time at which task definition and status is deleted.
 		// Notice that all artifacts for the task must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
-		// plus one year (this default may subject to change).
+		// plus one year (this default may change).
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/expires
 		Expires tcclient.Time `json:"expires,omitempty"`
 
 		// Object with properties that can hold any kind of extra data that should be
@@ -1403,34 +1341,34 @@ type (
 		// display on _treeherder_, or information for indexing the task. Please, try
 		// to put all related information under one property, so `extra` data keys
 		// for treeherder reporting and task indexing don't conflict, hence, we have
-		// reusable services. **Warning**, do not stuff large data-sets in here,
+		// reusable services. **Warning**, do not stuff large data-sets in here --
 		// task definitions should not take-up multiple MiBs.
 		//
 		// Default:    {}
 		//
 		// Additional properties allowed
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/extra
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/extra
 		Extra json.RawMessage `json:"extra,omitempty"`
 
 		// Required task metadata
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+		// See https://schemas.taskcluster.net/queue/v1/task-metadata.json#
 		Metadata TaskMetadata `json:"metadata"`
 
-		// Task-specific payload following worker-specific format. For example the
-		// `docker-worker` requires keys like: `image`, `commands` and
-		// `features`. Refer to the documentation of `docker-worker` for details.
+		// Task-specific payload following worker-specific format.
+		// Refer to the documentation for the worker implementing
+		// `<provisionerId>/<workerType>` for details.
 		//
 		// Additional properties allowed
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/payload
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/payload
 		Payload json.RawMessage `json:"payload"`
 
-		// Priority of task, this defaults to `lowest`, equivalent to the
-		// _deprecated_ `normal`.
-		// **Task submitter required scopes** `queue:task-priority:high` for high
-		// priority tasks.
+		// Priority of task. This defaults to `lowest` and the scope
+		// `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
+		// to define a task with `<priority>`. The `normal` priority is treated as
+		// `lowest`.
 		//
 		// Possible values:
 		//   * "highest"
@@ -1444,7 +1382,7 @@ type (
 		//
 		// Default:    "lowest"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/priority
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/priority
 		Priority string `json:"priority,omitempty"`
 
 		// Unique identifier for a provisioner, that can supply specified
@@ -1454,7 +1392,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/provisionerId
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// The tasks relation to its dependencies. This property specifies the
@@ -1470,7 +1408,7 @@ type (
 		//
 		// Default:    "all-completed"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/requires
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/requires
 		Requires string `json:"requires,omitempty"`
 
 		// Number of times to retry the task in case of infrastructure issues.
@@ -1481,39 +1419,39 @@ type (
 		// Mininum:    0
 		// Maximum:    49
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/retries
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/retries
 		Retries int64 `json:"retries,omitempty"`
 
-		// List of task specific routes, AMQP messages will be CC'ed to these routes.
-		// **Task submitter required scopes** `queue:route:<route>` for
-		// each route given.
+		// List of task-specific routes. Pulse messages about the task will be CC'ed to
+		// `route.<value>` for each `<value>` in this array.
 		//
 		// Default:    []
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/routes
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/routes
 		Routes []string `json:"routes,omitempty"`
 
-		// Identifier for the scheduler that _defined_ this task, this can be an
-		// identifier for a user or a service like the `"task-graph-scheduler"`.
-		// **Task submitter required scopes**
-		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`.
-		// This scope is also necessary to _schedule_ a defined task, or _rerun_ a
-		// task.
+		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
+		//
+		// * it can represent the entity that created the task;
+		// * it can limit addition of new tasks to a task group: the caller of
+		//     `createTask` must have a scope related to the `schedulerId` of the task
+		//     group;
+		// * it controls who can manipulate tasks, again by requiring
+		//     `schedulerId`-related scopes; and
+		// * it appears in the routing key for Pulse messages about the task.
 		//
 		// Default:    "-"
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/schedulerId
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/schedulerId
 		SchedulerID string `json:"schedulerId,omitempty"`
 
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
 		//
-		// Default:    []
-		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/scopes
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
 		Scopes []string `json:"scopes,omitempty"`
 
 		// Arbitrary key-value tags (only strings limited to 4k). These can be used
@@ -1525,17 +1463,19 @@ type (
 		// Default:    {}
 		// Max length: 4096
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/tags
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/tags
 		Tags map[string]string `json:"tags,omitempty"`
 
-		// Identifier for a group of tasks scheduled together with this task, by
-		// scheduler identified by `schedulerId`. For tasks scheduled by the
-		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
-		// property isn't specified.
+		// Identifier for a group of tasks scheduled together with this task.
+		// Generally, all tasks related to a single event such as a version-control
+		// push or a nightly build have the same `taskGroupId`.  This property
+		// defaults to `taskId` if it isn't specified.  Tasks with `taskId` equal to
+		// the `taskGroupId` are, [by convention](/docs/manual/using/task-graph),
+		// decision tasks.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/taskGroupId
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/taskGroupId
 		TaskGroupID string `json:"taskGroupId,omitempty"`
 
 		// Unique identifier for a worker-type within a specific provisioner
@@ -1544,18 +1484,18 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/workerType
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 
 	// Definition of a task that can be scheduled
 	//
-	// See http://schemas.taskcluster.net/queue/v1/task.json#
+	// See https://schemas.taskcluster.net/queue/v1/task.json#
 	TaskDefinitionResponse struct {
 
 		// Creation time of task
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/created
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/created
 		Created tcclient.Time `json:"created"`
 
 		// Deadline of the task, `pending` and `running` runs are
@@ -1563,21 +1503,23 @@ type (
 		// before the deadline. Note, deadline cannot be more than
 		// 5 days into the future
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/deadline
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/deadline
 		Deadline tcclient.Time `json:"deadline"`
 
 		// List of dependent tasks. These must either be _completed_ or _resolved_
 		// before this task is scheduled. See `requires` for semantics.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/dependencies
+		// Default:    []
+		//
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/dependencies
 		Dependencies []string `json:"dependencies"`
 
 		// Task expiration, time at which task definition and status is deleted.
 		// Notice that all artifacts for the task must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
-		// plus one year (this default may subject to change).
+		// plus one year (this default may change).
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/expires
 		Expires tcclient.Time `json:"expires,omitempty"`
 
 		// Object with properties that can hold any kind of extra data that should be
@@ -1587,33 +1529,34 @@ type (
 		// display on _treeherder_, or information for indexing the task. Please, try
 		// to put all related information under one property, so `extra` data keys
 		// for treeherder reporting and task indexing don't conflict, hence, we have
-		// reusable services. **Warning**, do not stuff large data-sets in here,
+		// reusable services. **Warning**, do not stuff large data-sets in here --
 		// task definitions should not take-up multiple MiBs.
 		//
 		// Default:    {}
 		//
 		// Additional properties allowed
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/extra
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/extra
 		Extra json.RawMessage `json:"extra"`
 
 		// Required task metadata
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+		// See https://schemas.taskcluster.net/queue/v1/task-metadata.json#
 		Metadata TaskMetadata `json:"metadata"`
 
-		// Task-specific payload following worker-specific format. For example the
-		// `docker-worker` requires keys like: `image`, `commands` and
-		// `features`. Refer to the documentation of `docker-worker` for details.
+		// Task-specific payload following worker-specific format.
+		// Refer to the documentation for the worker implementing
+		// `<provisionerId>/<workerType>` for details.
 		//
 		// Additional properties allowed
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/payload
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/payload
 		Payload json.RawMessage `json:"payload"`
 
-		// Priority of task, this defaults to `lowest` and the scope
+		// Priority of task. This defaults to `lowest` and the scope
 		// `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
-		// to define a task with `<priority>`.
+		// to define a task with `<priority>`. The `normal` priority is treated as
+		// `lowest`.
 		//
 		// Possible values:
 		//   * "highest"
@@ -1623,8 +1566,11 @@ type (
 		//   * "low"
 		//   * "very-low"
 		//   * "lowest"
+		//   * "normal"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/priority
+		// Default:    "lowest"
+		//
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/priority
 		Priority string `json:"priority"`
 
 		// Unique identifier for a provisioner, that can supply specified
@@ -1634,7 +1580,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/provisionerId
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// The tasks relation to its dependencies. This property specifies the
@@ -1648,41 +1594,52 @@ type (
 		//   * "all-completed"
 		//   * "all-resolved"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/requires
+		// Default:    "all-completed"
+		//
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/requires
 		Requires string `json:"requires"`
 
 		// Number of times to retry the task in case of infrastructure issues.
 		// An _infrastructure issue_ is a worker node that crashes or is shutdown,
 		// these events are to be expected.
 		//
+		// Default:    5
 		// Mininum:    0
 		// Maximum:    49
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/retries
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/retries
 		Retries int64 `json:"retries"`
 
-		// List of task specific routes, AMQP messages will be CC'ed to these routes.
+		// List of task-specific routes. Pulse messages about the task will be CC'ed to
+		// `route.<value>` for each `<value>` in this array.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/routes
+		// Default:    []
+		//
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/routes
 		Routes []string `json:"routes"`
 
-		// Identifier for the scheduler that _defined_ this task, this can be an
-		// identifier for a user or a service like the `"task-graph-scheduler"`.
-		// Along with the `taskGroupId` this is used to form the permission scope
-		// `queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`,
-		// this scope is necessary to _schedule_ a defined task, or _rerun_ a task.
+		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
 		//
+		// * it can represent the entity that created the task;
+		// * it can limit addition of new tasks to a task group: the caller of
+		//     `createTask` must have a scope related to the `schedulerId` of the task
+		//     group;
+		// * it controls who can manipulate tasks, again by requiring
+		//     `schedulerId`-related scopes; and
+		// * it appears in the routing key for Pulse messages about the task.
+		//
+		// Default:    "-"
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/schedulerId
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/schedulerId
 		SchedulerID string `json:"schedulerId"`
 
 		// List of scopes (or scope-patterns) that the task is
 		// authorized to use.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
 		Scopes []string `json:"scopes"`
 
 		// Arbitrary key-value tags (only strings limited to 4k). These can be used
@@ -1690,19 +1647,23 @@ type (
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal metadata. Something like
 		// `purpose: 'build' || 'test'` is a good example.
+		//
+		// Default:    {}
 		// Max length: 4096
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/tags
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/tags
 		Tags map[string]string `json:"tags"`
 
-		// Identifier for a group of tasks scheduled together with this task, by
-		// scheduler identified by `schedulerId`. For tasks scheduled by the
-		// task-graph scheduler, this is the `taskGraphId`.  Defaults to `taskId` if
-		// property isn't specified.
+		// Identifier for a group of tasks scheduled together with this task.
+		// Generally, all tasks related to a single event such as a version-control
+		// push or a nightly build have the same `taskGroupId`.  This property
+		// defaults to `taskId` if it isn't specified.  Tasks with `taskId` equal to
+		// the `taskGroupId` are, [by convention](/docs/manual/using/task-graph),
+		// decision tasks.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/taskGroupId
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/taskGroupId
 		TaskGroupID string `json:"taskGroupId"`
 
 		// Unique identifier for a worker-type within a specific provisioner
@@ -1711,13 +1672,13 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/workerType
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 
 	// Request for a run of a task to be resolved with an exception
 	//
-	// See http://schemas.taskcluster.net/queue/v1/task-exception-request.json#
+	// See https://schemas.taskcluster.net/queue/v1/task-exception-request.json#
 	TaskExceptionRequest struct {
 
 		// Reason that the task is resolved with an exception. This is a subset
@@ -1764,13 +1725,13 @@ type (
 		//   * "superseded"
 		//   * "intermittent-task"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-exception-request.json#/properties/reason
+		// See https://schemas.taskcluster.net/queue/v1/task-exception-request.json#/properties/reason
 		Reason string `json:"reason"`
 	}
 
 	// Required task metadata
 	//
-	// See http://schemas.taskcluster.net/queue/v1/task-metadata.json#
+	// See https://schemas.taskcluster.net/queue/v1/task-metadata.json#
 	TaskMetadata struct {
 
 		// Human readable description of the task, please **explain** what the
@@ -1778,7 +1739,7 @@ type (
 		//
 		// Max length: 32768
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/description
+		// See https://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/description
 		Description string `json:"description"`
 
 		// Human readable name of task, used to very briefly given an idea about
@@ -1786,7 +1747,7 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/name
+		// See https://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/name
 		Name string `json:"name"`
 
 		// E-mail of person who caused this task, e.g. the person who did
@@ -1794,7 +1755,7 @@ type (
 		//
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/owner
+		// See https://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/owner
 		Owner string `json:"owner"`
 
 		// Link to source of this task, should specify a file, revision and
@@ -1804,13 +1765,13 @@ type (
 		// Syntax:     ^https?://
 		// Max length: 4096
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/source
+		// See https://schemas.taskcluster.net/queue/v1/task-metadata.json#/properties/source
 		Source string `json:"source"`
 	}
 
 	// Response to a successful task claim
 	//
-	// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#
 	TaskReclaimResponse struct {
 
 		// Temporary credentials granting `task.scopes` and the scope:
@@ -1829,7 +1790,7 @@ type (
 		// Note, a new set of temporary credentials is issued when the worker
 		// reclaims the task.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-credentials.json#
+		// See https://schemas.taskcluster.net/queue/v1/task-credentials.json#
 		Credentials TaskCredentials `json:"credentials"`
 
 		// `run-id` assigned to this run of the task
@@ -1837,18 +1798,18 @@ type (
 		// Mininum:    0
 		// Maximum:    1000
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/runId
+		// See https://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/runId
 		RunID int64 `json:"runId"`
 
 		// A representation of **task status** as known by the queue
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 
 		// Time at which the run expires and is resolved as `exception`,
 		// with reason `claim-expired` if the run haven't been reclaimed.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/takenUntil
+		// See https://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/takenUntil
 		TakenUntil tcclient.Time `json:"takenUntil"`
 
 		// Identifier for the worker-group within which this run started.
@@ -1857,7 +1818,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/workerGroup
+		// See https://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for the worker executing this run.
@@ -1866,13 +1827,13 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/workerId
+		// See https://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/workerId
 		WorkerID string `json:"workerId"`
 	}
 
 	// A run of a task.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/task-run.json#
+	// See https://schemas.taskcluster.net/queue/v1/task-run.json#
 	TaskRun struct {
 
 		// Id of this task run, `run-id`s always starts from `0`
@@ -1880,7 +1841,7 @@ type (
 		// Mininum:    0
 		// Maximum:    1000
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-run.json#/properties/runId
+		// See https://schemas.taskcluster.net/queue/v1/task-run.json#/properties/runId
 		RunID int64 `json:"runId"`
 
 		// Unique task identifier, this is UUID encoded as
@@ -1889,24 +1850,24 @@ type (
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-run.json#/properties/taskId
+		// See https://schemas.taskcluster.net/queue/v1/task-run.json#/properties/taskId
 		TaskID string `json:"taskId"`
 	}
 
 	// Response to a task status request
 	//
-	// See http://schemas.taskcluster.net/queue/v1/task-status-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/task-status-response.json#
 	TaskStatusResponse struct {
 
 		// A representation of **task status** as known by the queue
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#
 		Status TaskStatusStructure `json:"status"`
 	}
 
 	// A representation of **task status** as known by the queue
 	//
-	// See http://schemas.taskcluster.net/queue/v1/task-status.json#
+	// See https://schemas.taskcluster.net/queue/v1/task-status.json#
 	TaskStatusStructure struct {
 
 		// Deadline of the task, `pending` and `running` runs are
@@ -1914,23 +1875,24 @@ type (
 		// before the deadline. Note, deadline cannot be more than
 		// 5 days into the future
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/deadline
 		Deadline tcclient.Time `json:"deadline"`
 
 		// Task expiration, time at which task definition and
 		// status is deleted. Notice that all artifacts for the task
 		// must have an expiration that is no later than this.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
-		// Unique identifier for the provisioner that this task must be scheduled on
+		// Unique identifier for a provisioner, that can supply specified
+		// `workerType`
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/provisionerId
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// Number of retries left for the task in case of infrastructure issues
@@ -1938,21 +1900,30 @@ type (
 		// Mininum:    0
 		// Maximum:    999
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/retriesLeft
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/retriesLeft
 		RetriesLeft int64 `json:"retriesLeft"`
 
 		// List of runs, ordered so that index `i` has `runId == i`
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs
 		Runs []RunInformation `json:"runs"`
 
-		// Identifier for the scheduler that _defined_ this task.
+		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
 		//
+		// * it can represent the entity that created the task;
+		// * it can limit addition of new tasks to a task group: the caller of
+		//     `createTask` must have a scope related to the `schedulerId` of the task
+		//     group;
+		// * it controls who can manipulate tasks, again by requiring
+		//     `schedulerId`-related scopes; and
+		// * it appears in the routing key for Pulse messages about the task.
+		//
+		// Default:    "-"
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/schedulerId
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/schedulerId
 		SchedulerID string `json:"schedulerId"`
 
 		// State of this task. This is just an auxiliary property derived from state
@@ -1966,16 +1937,19 @@ type (
 		//   * "failed"
 		//   * "exception"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/state
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/state
 		State string `json:"state"`
 
-		// Identifier for a group of tasks scheduled together with this task, by
-		// scheduler identified by `schedulerId`. For tasks scheduled by the
-		// task-graph scheduler, this is the `taskGraphId`.
+		// Identifier for a group of tasks scheduled together with this task.
+		// Generally, all tasks related to a single event such as a version-control
+		// push or a nightly build have the same `taskGroupId`.  This property
+		// defaults to `taskId` if it isn't specified.  Tasks with `taskId` equal to
+		// the `taskGroupId` are, [by convention](/docs/manual/using/task-graph),
+		// decision tasks.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/taskGroupId
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/taskGroupId
 		TaskGroupID string `json:"taskGroupId"`
 
 		// Unique task identifier, this is UUID encoded as
@@ -1984,30 +1958,30 @@ type (
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/taskId
+		// See https://schemas.taskcluster.net/queue/v1/task-status.json#/properties/taskId
 		TaskID string `json:"taskId"`
 
-		// Identifier for worker type within the specified provisioner
+		// Unique identifier for a worker-type within a specific provisioner
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/workerType
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 
-	// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items
+	// See https://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items
 	Worker struct {
 
 		// Date of the first time this worker claimed a task.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/firstClaim
+		// See https://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/firstClaim
 		FirstClaim tcclient.Time `json:"firstClaim"`
 
 		// A run of a task.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/task-run.json#
+		// See https://schemas.taskcluster.net/queue/v1/task-run.json#
 		LatestTask TaskRun `json:"latestTask,omitempty"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
@@ -2015,7 +1989,7 @@ type (
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/quarantineUntil
+		// See https://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/quarantineUntil
 		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
 
 		// Identifier for the worker group containing this worker.
@@ -2024,7 +1998,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/workerGroup
+		// See https://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for this worker (unique within this worker group).
@@ -2033,7 +2007,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/workerId
+		// See https://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/workerId
 		WorkerID string `json:"workerId"`
 	}
 
@@ -2064,10 +2038,10 @@ type (
 	// | worker-type | Workers Explorer               |
 	// | worker      | Worker Explorer                |
 	//
-	// See [actions docs](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions)
+	// See [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)
 	// for more information.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items
+	// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items
 	WorkerAction struct {
 
 		// Only actions with the context `worker` are included.
@@ -2075,12 +2049,12 @@ type (
 		// Possible values:
 		//   * "worker"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/context
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/context
 		Context string `json:"context"`
 
 		// Description of the provisioner.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/description
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/description
 		Description string `json:"description"`
 
 		// Method to indicate the desired action to be performed for a given resource.
@@ -2091,17 +2065,17 @@ type (
 		//   * "DELETE"
 		//   * "PATCH"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/method
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/method
 		Method string `json:"method"`
 
 		// Short names for things like logging/error messages.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/name
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/name
 		Name string `json:"name"`
 
 		// Appropriate title for any sort of Modal prompt.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/title
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/title
 		Title json.RawMessage `json:"title"`
 
 		// When an action is triggered, a request is made using the `url` and `method`.
@@ -2115,46 +2089,46 @@ type (
 		//
 		// _Note: The request needs to be signed with the user's Taskcluster credentials._
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/url
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions/items/properties/url
 		URL string `json:"url"`
 	}
 
 	// Request to update a worker.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/update-worker-request.json#
+	// See https://schemas.taskcluster.net/queue/v1/update-worker-request.json#
 	WorkerRequest struct {
 
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/update-worker-request.json#/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/update-worker-request.json#/properties/expires
 		Expires tcclient.Time `json:"expires,omitempty"`
 	}
 
 	// Response containing information about a worker.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/worker-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/worker-response.json#
 	WorkerResponse struct {
 
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/actions
 		Actions []WorkerAction `json:"actions"`
 
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Date of the first time this worker claimed a task.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/firstClaim
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/firstClaim
 		FirstClaim tcclient.Time `json:"firstClaim"`
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/provisionerId
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
@@ -2162,12 +2136,12 @@ type (
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/quarantineUntil
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/quarantineUntil
 		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
 
 		// List of 20 most recent tasks claimed by the worker.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks
 		RecentTasks []TaskRun `json:"recentTasks"`
 
 		// Identifier for group that worker who executes this run is a part of,
@@ -2177,7 +2151,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerGroup
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerGroup
 		WorkerGroup string `json:"workerGroup"`
 
 		// Identifier for worker evaluating this run within given
@@ -2187,7 +2161,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerId
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerId
 		WorkerID string `json:"workerId"`
 
 		// WorkerType name.
@@ -2196,34 +2170,34 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerType
+		// See https://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 
-	// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items
+	// See https://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items
 	WorkerType struct {
 
 		// Description of the worker-type.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/description
+		// See https://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/description
 		Description string `json:"description,omitempty"`
 
 		// Date and time after which the worker-type will be automatically
 		// deleted by the queue.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/expires
 		Expires tcclient.Time `json:"expires,omitempty"`
 
 		// Date and time where the worker-type was last seen active
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/lastDateActive
+		// See https://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/lastDateActive
 		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/provisionerId
+		// See https://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/provisionerId
 		ProvisionerID string `json:"provisionerId,omitempty"`
 
 		// This is the stability of the worker-type. Accepted values:
@@ -2236,7 +2210,7 @@ type (
 		//   * "stable"
 		//   * "deprecated"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/stability
+		// See https://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/stability
 		Stability string `json:"stability,omitempty"`
 
 		// WorkerType name.
@@ -2245,7 +2219,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/workerType
+		// See https://schemas.taskcluster.net/queue/v1/list-workertypes-response.json#/properties/workerTypes/items/properties/workerType
 		WorkerType string `json:"workerType,omitempty"`
 	}
 
@@ -2276,10 +2250,10 @@ type (
 	// | worker-type | Workers Explorer               |
 	// | worker      | Worker Explorer                |
 	//
-	// See [actions docs](https://docs.taskcluster.net/reference/platform/taskcluster-queue/docs/actions)
+	// See [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)
 	// for more information.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items
+	// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items
 	WorkerTypeAction struct {
 
 		// Only actions with the context `worker-type` are included.
@@ -2287,12 +2261,12 @@ type (
 		// Possible values:
 		//   * "worker-type"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/context
+		// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/context
 		Context string `json:"context"`
 
 		// Description of the provisioner.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/description
+		// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/description
 		Description string `json:"description"`
 
 		// Method to indicate the desired action to be performed for a given resource.
@@ -2303,17 +2277,17 @@ type (
 		//   * "DELETE"
 		//   * "PATCH"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/method
+		// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/method
 		Method string `json:"method"`
 
 		// Short names for things like logging/error messages.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/name
+		// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/name
 		Name string `json:"name"`
 
 		// Appropriate title for any sort of Modal prompt.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/title
+		// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/title
 		Title json.RawMessage `json:"title"`
 
 		// When an action is triggered, a request is made using the `url` and `method`.
@@ -2327,24 +2301,24 @@ type (
 		//
 		// _Note: The request needs to be signed with the user's Taskcluster credentials._
 		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/url
+		// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions/items/properties/url
 		URL string `json:"url"`
 	}
 
 	// Request to update a worker-type.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#
+	// See https://schemas.taskcluster.net/queue/v1/update-workertype-request.json#
 	WorkerTypeRequest struct {
 
 		// Description of the provisioner.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#/properties/description
+		// See https://schemas.taskcluster.net/queue/v1/update-workertype-request.json#/properties/description
 		Description string `json:"description,omitempty"`
 
 		// Date and time after which the worker-type will be automatically
 		// deleted by the queue.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/update-workertype-request.json#/properties/expires
 		Expires tcclient.Time `json:"expires,omitempty"`
 
 		// This is the stability of the provisioner. Accepted values:
@@ -2357,41 +2331,41 @@ type (
 		//   * "stable"
 		//   * "deprecated"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/update-workertype-request.json#/properties/stability
+		// See https://schemas.taskcluster.net/queue/v1/update-workertype-request.json#/properties/stability
 		Stability string `json:"stability,omitempty"`
 	}
 
 	// Response to a worker-type request from a provisioner.
 	//
-	// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#
+	// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#
 	WorkerTypeResponse struct {
 
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions
+		// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/actions
 		Actions []WorkerTypeAction `json:"actions"`
 
 		// Description of the worker-type.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/description
+		// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/description
 		Description string `json:"description"`
 
 		// Date and time after which the worker-type will be automatically
 		// deleted by the queue.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/expires
+		// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// Date of the last time this worker-type was seen active. `lastDateActive` is updated every 6 hours
 		// but may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator
 		// of when the worker-type was last seen active.
 		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/lastDateActive
+		// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/lastDateActive
 		LastDateActive tcclient.Time `json:"lastDateActive"`
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/provisionerId
+		// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// This is the stability of the worker-type. Accepted values:
@@ -2404,7 +2378,7 @@ type (
 		//   * "stable"
 		//   * "deprecated"
 		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/stability
+		// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/stability
 		Stability string `json:"stability"`
 
 		// WorkerType name.
@@ -2413,7 +2387,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/workerType
+		// See https://schemas.taskcluster.net/queue/v1/workertype-response.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 )

@@ -5,14 +5,14 @@ package tcpurgecacheevents
 type (
 	// Message reporting that a specific cache should be purged
 	//
-	// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#
+	// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#
 	PurgeCacheMessage struct {
 
 		// Name of cache to purge. Notice that if a `workerType` have multiple kinds
 		// of caches (with independent names), it should purge all caches identified
 		// by `cacheName` regardless of cache type.
 		//
-		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#/properties/cacheName
+		// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#/properties/cacheName
 		CacheName string `json:"cacheName"`
 
 		// `provisionerId` under which the `workerType` we want to purge for exists.
@@ -21,7 +21,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#/properties/provisionerId
+		// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// Message version
@@ -29,7 +29,7 @@ type (
 		// Possible values:
 		//   * 1
 		//
-		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#/properties/version
+		// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#/properties/version
 		Version int64 `json:"version"`
 
 		// `workerType` we wish to purge cache for.
@@ -38,7 +38,7 @@ type (
 		// Min length: 1
 		// Max length: 22
 		//
-		// See http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#/properties/workerType
+		// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 )

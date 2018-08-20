@@ -25,7 +25,7 @@
 //
 // and then call one or more of purgeCache's methods, e.g.:
 //
-//  err := purgeCache.PurgeCache(.....)
+//  err := purgeCache.Ping(.....)
 //
 // handling any errors...
 //
@@ -48,7 +48,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "https://purge-cache.taskcluster.net/v1"
+	DefaultBaseURL = "https://purge-cache.taskcluster.net/v1/"
 )
 
 type PurgeCache tcclient.Client
@@ -59,7 +59,7 @@ type PurgeCache tcclient.Client
 //
 //  purgeCache := tcpurgecache.New(nil)                              // client without authentication
 //  purgeCache.BaseURL = "http://localhost:1234/api/PurgeCache/v1"   // alternative API endpoint (production by default)
-//  err := purgeCache.PurgeCache(.....)                              // for example, call the PurgeCache(.....) API endpoint (described further down)...
+//  err := purgeCache.Ping(.....)                                    // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -86,6 +86,16 @@ func NewFromEnv() *PurgeCache {
 		BaseURL:      DefaultBaseURL,
 		Authenticate: c.ClientID != "",
 	}
+}
+
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#ping
+func (purgeCache *PurgeCache) Ping() error {
+	cd := tcclient.Client(*purgeCache)
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	return err
 }
 
 // Publish a purge-cache message to purge caches named `cacheName` with
@@ -135,14 +145,4 @@ func (purgeCache *PurgeCache) PurgeRequests(provisionerId, workerType, since str
 	cd := tcclient.Client(*purgeCache)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(OpenPurgeRequestList), v)
 	return responseObject.(*OpenPurgeRequestList), err
-}
-
-// Respond without doing anything.
-// This endpoint is used to check that the service is up.
-//
-// See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#ping
-func (purgeCache *PurgeCache) Ping() error {
-	cd := tcclient.Client(*purgeCache)
-	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
-	return err
 }

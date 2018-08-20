@@ -69,6 +69,6 @@ func main() {
 		downloadedTime = time.Unix(i, 0)
 	}
 
-	model.LoadAPIs(arguments["-u"].(string), arguments["-f"].(string))
-	model.GenerateCode(arguments["-o"].(string), arguments["-m"].(string), downloadedTime)
+	apiDefs := model.LoadAPIs(arguments["-u"].(string), arguments["-f"].(string))
+	model.GenerateCode(arguments["-o"].(string), arguments["-m"].(string), downloadedTime, apiDefs)
 }

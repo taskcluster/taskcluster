@@ -11,25 +11,25 @@ import (
 type (
 	// Message containing a TaskCluster Secret
 	//
-	// See http://schemas.taskcluster.net/secrets/v1/secret.json#
+	// See https://schemas.taskcluster.net/secrets/v1/secret.json#
 	Secret struct {
 
 		// An expiration date for this secret.
 		//
-		// See http://schemas.taskcluster.net/secrets/v1/secret.json#/properties/expires
+		// See https://schemas.taskcluster.net/secrets/v1/secret.json#/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
 		// The secret value to be encrypted.
 		//
 		// Additional properties allowed
 		//
-		// See http://schemas.taskcluster.net/secrets/v1/secret.json#/properties/secret
+		// See https://schemas.taskcluster.net/secrets/v1/secret.json#/properties/secret
 		Secret json.RawMessage `json:"secret"`
 	}
 
 	// Message containing a list of secret names
 	//
-	// See http://schemas.taskcluster.net/secrets/v1/secret-list.json#
+	// See https://schemas.taskcluster.net/secrets/v1/secret-list.json#
 	SecretsList struct {
 
 		// Opaque `continuationToken` to be given as query-string option to get the
@@ -40,12 +40,12 @@ type (
 		// all the results if you've called with `continuationToken` until you get a
 		// result without a `continuationToken`.
 		//
-		// See http://schemas.taskcluster.net/secrets/v1/secret-list.json#/properties/continuationToken
+		// See https://schemas.taskcluster.net/secrets/v1/secret-list.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// Secret names
 		//
-		// See http://schemas.taskcluster.net/secrets/v1/secret-list.json#/properties/secrets
+		// See https://schemas.taskcluster.net/secrets/v1/secret-list.json#/properties/secrets
 		Secrets []string `json:"secrets"`
 	}
 )

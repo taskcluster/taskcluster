@@ -26,7 +26,7 @@
 //
 // and then call one or more of secrets's methods, e.g.:
 //
-//  err := secrets.Set(.....)
+//  err := secrets.Ping(.....)
 //
 // handling any errors...
 //
@@ -50,7 +50,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "https://secrets.taskcluster.net/v1"
+	DefaultBaseURL = "https://secrets.taskcluster.net/v1/"
 )
 
 type Secrets tcclient.Client
@@ -61,7 +61,7 @@ type Secrets tcclient.Client
 //
 //  secrets := tcsecrets.New(nil)                              // client without authentication
 //  secrets.BaseURL = "http://localhost:1234/api/Secrets/v1"   // alternative API endpoint (production by default)
-//  err := secrets.Set(.....)                                  // for example, call the Set(.....) API endpoint (described further down)...
+//  err := secrets.Ping(.....)                                 // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -88,6 +88,16 @@ func NewFromEnv() *Secrets {
 		BaseURL:      DefaultBaseURL,
 		Authenticate: c.ClientID != "",
 	}
+}
+
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See https://docs.taskcluster.net/reference/core/secrets/api-docs#ping
+func (secrets *Secrets) Ping() error {
+	cd := tcclient.Client(*secrets)
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	return err
 }
 
 // Set the secret associated with some key.  If the secret already exists, it is
@@ -165,14 +175,4 @@ func (secrets *Secrets) List(continuationToken, limit string) (*SecretsList, err
 	cd := tcclient.Client(*secrets)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/secrets", new(SecretsList), v)
 	return responseObject.(*SecretsList), err
-}
-
-// Respond without doing anything.
-// This endpoint is used to check that the service is up.
-//
-// See https://docs.taskcluster.net/reference/core/secrets/api-docs#ping
-func (secrets *Secrets) Ping() error {
-	cd := tcclient.Client(*secrets)
-	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
-	return err
 }
