@@ -128,7 +128,7 @@ type (
 		ExclusiveMaximum     *bool                  `json:"exclusiveMaximum,omitempty"`
 		ExclusiveMinimum     *bool                  `json:"exclusiveMinimum,omitempty"`
 		Format               *string                `json:"format,omitempty"`
-		ID                   *string                `json:"id,omitempty"`
+		ID                   *string                `json:"$id,omitempty"`
 		Items                *JsonSubSchema         `json:"items,omitempty"`
 		Maximum              *int                   `json:"maximum,omitempty"`
 		MaxItems             *int                   `json:"maxItems,omitempty"`
@@ -716,25 +716,51 @@ func (subSchema *JsonSubSchema) postPopulate(job *Job) (err error) {
 	} {
 		err = subSchema.postPopulateIfNotNil(s.subItem, job, s.subPath)
 		if err != nil {
-			return err
+			return
 		}
 	}
 
 	// If we have a $ref pointing to another schema, keep a reference so we can
 	// discover TypeName later when we generate the type definition
 	if ref := subSchema.Ref; ref != nil && *ref != "" {
-		// only need to cache a schema if it isn't relative to the current document
-		if !strings.HasPrefix(*ref, "#") {
-			subSchema.RefSubSchema, err = job.cacheJsonSchema(*subSchema.Ref)
-			if err != nil {
-				return err
-			}
-			subSchema.RefSchemaURL = sanitizeURL(*subSchema.Ref)
-		} else {
-			subSchema.RefSchemaURL = subSchema.SourceURL[:strings.Index(subSchema.SourceURL, "#")] + *subSchema.Ref
+		// relative references within current document are relatively simple...
+		if strings.HasPrefix(*ref, "#") {
+			subSchema.RefSchemaURL = subSchema.SourceURL[:strings.Index(subSchema.SourceURL, "#")] + *ref
+			return
 		}
+		// looks like it's pointing to a different document - better make sure we've loaded/cached it
+		// first need to determine if id property has been specified for a base url to resolve against...
+		// see https://json-schema.org/understanding-json-schema/structuring.html#the-id-property
+		var absURL string
+		// note json schemas are nested, so we need to get to the root json schema of the document we're in
+		// using the source URL we can strip off the internal path within the document (everything after '#')
+		docURLRoot := strings.SplitN(subSchema.SourceURL, "#", 2)
+		docBaseSchema := job.result.SchemaSet.SubSchema(docURLRoot[0] + "#")
+		if id := docBaseSchema.ID; id != nil && *id != "" {
+			// '$id' property is specified in doc, so let's use it!
+			var refURL *url.URL
+			refURL, err = url.Parse(*ref)
+			if err != nil {
+				return
+			}
+			var idURL *url.URL
+			idURL, err = url.Parse(*id)
+			if err != nil {
+				return
+			}
+			absURL = idURL.ResolveReference(refURL).String()
+		} else {
+			// no '$id' property is specified, we must assume this is an absolute URL
+			absURL = *subSchema.Ref
+		}
+		// make sure the doc is loaded (if in cache it won't be loaded again)
+		subSchema.RefSubSchema, err = job.cacheJsonSchema(absURL)
+		if err != nil {
+			return
+		}
+		subSchema.RefSchemaURL = sanitizeURL(absURL)
 	}
-	return nil
+	return
 }
 
 func (subSchema *JsonSubSchema) TargetSchema() *JsonSubSchema {
