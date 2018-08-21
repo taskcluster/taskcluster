@@ -877,11 +877,31 @@ func (job *Job) cacheJsonSchema(url string) (*JsonSubSchema, error) {
 	}
 	sanitizedURL := sanitizeURL(url)
 	// only fetch if we haven't fetched already...
-	if _, ok := job.result.SchemaSet.all[sanitizedURL]; !ok {
-		return job.loadJsonSchema(sanitizedURL)
+	if _, ok := job.result.SchemaSet.all[sanitizedURL]; ok {
+		log.Printf("Schema already cached: %v", url)
+		return job.result.SchemaSet.SubSchema(sanitizedURL), nil
 	}
-	log.Printf("Schema already cached: %v", url)
-	return job.result.SchemaSet.SubSchema(sanitizedURL), nil
+
+	// The URL we load here could be a subschema nested inside a root document, e.g.
+	// https://foo.com/schema.json#/definitions/bar/monkey
+	// Therefore we need to load the schema from the URL portion up to the '#' char
+	// (this char is guaranteed to be present) but return the particular subschema
+	// that is located at the path underneath.
+
+	// Containing document URL (sanitized URL up to and including '#' char)
+	rootSchemaURL := sanitizedURL[:strings.Index(sanitizedURL, "#")+1]
+
+	// Path to subschema from root of parent document (sanitized URL after '#' char)
+	subschemaPath := sanitizedURL[strings.Index(sanitizedURL, "#")+1:]
+
+	job.loadJsonSchema(rootSchemaURL)
+
+	// check that the required subschema is contained in the document we loaded
+	subschema, found := job.result.SchemaSet.all[sanitizedURL]
+	if !found {
+		return nil, fmt.Errorf("Subschema %v not found under URL %v", subschemaPath, rootSchemaURL)
+	}
+	return subschema, nil
 }
 
 // This is where we generate nested and compoound types in go to represent json payloads
