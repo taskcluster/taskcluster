@@ -85,13 +85,13 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       const r2 = await helper.hooks.hook('foo', 'bar');
       assume(r1).deep.equals(r2);
     });
-    
+
     test('creates a hook with slash in hookId', async () => {
       const r1 = await helper.hooks.createHook('foo', 'bar/slash', hookWithTriggerSchema);
       const r2 = await helper.hooks.hook('foo', 'bar/slash');
       assume(r1).deep.equals(r2);
     });
-    
+
     test('with invalid scopes', async () => {
       helper.scopes('hooks:modify-hook:wrong/scope');
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema).then(
@@ -156,7 +156,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       await helper.hooks.createHook('foo', 'bar', invalidHookDef).then(
         () => { throw new Error('Expected an error'); },
         (err) => { assume(err.statusCode).equals(400); });
-    }); 
+    });
 
     test('succeeds if hookIds match', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithHookIds);
@@ -335,7 +335,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
 
     test('returns the last run status for triggerHook', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG', 
+      await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG',
         foo: 'triggerHook'});
       const r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).contains('lastFire');
@@ -353,7 +353,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     subSkip();
     test('should launch task with the given payload', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG', 
+      await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG',
         foo: 'triggerHook'});
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
@@ -361,23 +361,6 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
         context: {firedBy: 'triggerHook', payload: {location: 'Belo Horizonte, MG', foo: 'triggerHook'}},
         options: {},
       }]);
-    });
-
-    test('checking schema validation', async () => {
-      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {location: 28}).then(
-        () => { throw new Error('Expected an error'); },
-        (err) => { debug('Got expected error: %s', err); });
-    });
-
-    test('checking more than one schema validation error', async () => {
-      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {
-        location: 28, 
-        otherVariable: 'twelve',
-        foo: 'triggerHook',
-      }).then(() => { throw new Error('Expected an error'); },
-        (err) => { debug('Got expected error: %s', err); });
     });
 
     test('fails when creating the task fails', async () => {
@@ -389,7 +372,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       };
       helper.scopes('hooks:trigger-hook:foo/bar');
       try {
-        await helper.hooks.triggerHook('foo', 'bar', {bar: {location: 'Belo Horizonte, MG'}, 
+        await helper.hooks.triggerHook('foo', 'bar', {bar: {location: 'Belo Horizonte, MG'},
           foo: 'triggerHook'});
       } catch (err) {
         assume(err.statusCode).equals(400);
@@ -453,10 +436,73 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     });
 
     test('fails if no hook exists', async () => {
-      await helper.hooks.triggerHook('foo', 'bar', {bar: {location: 'Belo Horizonte, MG'}, 
+      await helper.hooks.triggerHook('foo', 'bar', {bar: {location: 'Belo Horizonte, MG'},
         foo: 'triggerHook'}).then(
         () => { throw new Error('The resource should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
+    });
+  });
+
+  suite('schemaTests', function() {
+    subSkip();
+
+    test('checking schema validation', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.triggerHook('foo', 'bar', {location: 28}).then(
+        () => { throw new Error('Expected an error'); },
+        (err) => { debug('Got expected error: %s', err); });
+    });
+
+    test('checking more than one schema validation error', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.triggerHook('foo', 'bar', {
+        location: 28,
+        otherVariable: 'twelve',
+        foo: 'triggerHook',
+      }).then(() => { throw new Error('Expected an error'); },
+        (err) => { debug('Got expected error: %s', err); });
+    });
+
+    test('handle an invalid schema - createHook', async () => {
+      nHookDef = _.defaults({
+        triggerSchema: {
+          type: 'beer',
+          properties: {
+            location: {
+              type: 'fruit',
+              default: 'Niskayuna, NY',
+            },
+            otherVariable: {
+              type: 'number',
+              default: '12',
+            },
+          },
+          additionalProperties: true,
+        },
+      }, hookDef);
+      await helper.hooks.createHook('foo', 'bar', nHookDef).then(() => { throw new Error('Expected an error'); },
+        (err) => { debug('Got expected error: %s', err); });
+    });
+
+    test('handle an invalid schema - updateHook', async () => {
+      nHookDef = _.defaults({
+        triggerSchema: {
+          type: 'beer',
+          properties: {
+            location: {
+              type: 'fruit',
+              default: 'Niskayuna, NY',
+            },
+            otherVariable: {
+              type: 'number',
+              default: '12',
+            },
+          },
+          additionalProperties: true,
+        },
+      }, hookDef);
+      await helper.hooks.updateHook('foo', 'bar', nHookDef).then(() => { throw new Error('Expected an error'); },
+        (err) => { debug('Got expected error: %s', err); });
     });
   });
 
