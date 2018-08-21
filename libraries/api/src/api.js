@@ -66,8 +66,8 @@ class API {
    */
   async publish() {
     // Check that required options are provided
-    assert(this.options.referenceBucket, '`referenceBucket` is required in order ot publish');
-    assert(this.options.aws, '`aws` is required in order ot publish');
+    assert(this.options.referenceBucket, '`referenceBucket` is required in order to publish');
+    assert(this.options.aws, '`aws` is required in order to publish');
 
     // Create S3 object
     const s3 = new aws.S3(this.options.aws);
