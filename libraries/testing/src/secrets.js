@@ -148,9 +148,10 @@ class Secrets {
         await that.setup();
         that.load.save();
 
-        if (!secretList.every(name => that.have(name))) {
+        const missing = secretList.filter(name => !that.have(name));
+        if (missing.length) {
           if (process.env.NO_TEST_SKIP) {
-            throw new Error(`secrets missing and NO_TEST_SKIP is set: ${secretList.join(' ')}`);
+            throw new Error(`secrets missing and NO_TEST_SKIP is set: ${missing.join(' ')}`);
           }
           skipping = true;
           this.skip();
