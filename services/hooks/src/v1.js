@@ -180,6 +180,7 @@ builder.declare({
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
   const hookDef = req.body;
+  const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
     return res.reportError('InputError', 'Hook Group Ids do not match', {});
@@ -202,6 +203,11 @@ builder.declare({
       return res.reportError('InputError',
         '{{message}} in {{schedElement}}', {message: err.message, schedElement});
     }
+  }
+
+  //handle an invalid schema
+  if (!ajv.validateSchema(hookDef.triggerSchema)) {
+    return res.reportError('InputError', 'Invalid Schema', {});
   }
 
   // Try to create a Hook entity
@@ -253,6 +259,7 @@ builder.declare({
   const hookGroupId = req.params.hookGroupId;
   const hookId = req.params.hookId;
   const hookDef = req.body;
+  const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
 
   if (req.body.hookGroupId && hookGroupId !== req.body.hookGroupId) {
     return res.reportError('InputError', 'Hook Group Ids do not match', {});
@@ -271,6 +278,11 @@ builder.declare({
 
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
+  }
+
+  //handle an invalid schema
+  if (!ajv.validateSchema(hookDef.triggerSchema)) {
+    return res.reportError('InputError', 'Invalid Schema', {});
   }
 
   // Attempt to modify properties of the hook
@@ -473,7 +485,7 @@ const triggerHookCommon = async function({req, res, hook, payload, firedBy}) {
     return res.reportError('InputError', '{{message}}', {
       message: ajv.errorsText(validate.errors, {separator: '; '}),
     });
-  } 
+  }
 
   try {
     resp = await this.taskcreator.fire(hook, context);
