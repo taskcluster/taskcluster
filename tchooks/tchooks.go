@@ -25,7 +25,7 @@
 //  * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
 //
 // The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
-// https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks
+// [/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)
 // for more information.
 //
 // See: https://docs.taskcluster.net/reference/core/hooks/api-docs
@@ -50,7 +50,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 7 May 2018 at 13:22:00 UTC. The code was generated
+// Wed, 22 Aug 2018 at 09:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tchooks
 

@@ -67,7 +67,7 @@ type (
 		Schedule []string `json:"schedule,omitempty"`
 
 		// Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)
-		// as described in https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks to produce
+		// as described in [firing hooks](/docs/reference/core/taskcluster-hooks/docs/firing-hooks) to produce
 		// a task definition that is submitted to the Queue service.
 		//
 		// Additional properties allowed
@@ -118,7 +118,7 @@ type (
 		Schedule json.RawMessage `json:"schedule"`
 
 		// Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)
-		// as described in https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks to produce
+		// as described in [firing hooks](/docs/reference/core/taskcluster-hooks/docs/firing-hooks) to produce
 		// a task definition that is submitted to the Queue service.
 		//
 		// Additional properties allowed
