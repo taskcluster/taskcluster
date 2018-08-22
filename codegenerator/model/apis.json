@@ -18,6 +18,9 @@
         "url": "https://references.taskcluster.net/index/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/index/api-docs"
     }, {
+        "url": "https://references.taskcluster.net/login/v1/api.json",
+        "docroot": "https://docs.taskcluster.net/reference/core/login/api-docs"
+    }, {
         "url": "https://references.taskcluster.net/notify/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/notify/api-docs"
     }, {
@@ -29,6 +32,9 @@
     }, {
         "url": "https://references.taskcluster.net/queue/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/platform/queue/api-docs"
+    }, {
+        "url": "https://references.taskcluster.net/queue/v1/exchanges.json",
+        "docroot": "https://docs.taskcluster.net/reference/platform/queue/exchanges"
     }, {
         "url": "https://references.taskcluster.net/secrets/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/secrets/api-docs"

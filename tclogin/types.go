@@ -9,37 +9,37 @@ import (
 type (
 	// A response containing credentials corresponding to a supplied OIDC `access_token`.
 	//
-	// See http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#
+	// See https://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#
 	CredentialsResponse struct {
 
 		// Taskcluster credentials. Note that the credentials may not contain a certificate!
 		//
-		// See http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials
+		// See https://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials
 		Credentials TaskclusterCredentials `json:"credentials,omitempty"`
 
 		// Time after which the credentials are no longer valid.  Callers should
 		// call `oidcCredentials` again to get fresh credentials before this time.
 		//
-		// See http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/expires
+		// See https://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/expires
 		Expires tcclient.Time `json:"expires,omitempty"`
 	}
 
 	// Taskcluster credentials. Note that the credentials may not contain a certificate!
 	//
-	// See http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials
+	// See https://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials
 	TaskclusterCredentials struct {
 
 		// Syntax:     ^[a-zA-Z0-9_-]{22,66}$
 		//
-		// See http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials/properties/accessToken
+		// See https://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials/properties/accessToken
 		AccessToken string `json:"accessToken"`
 
-		// See http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials/properties/certificate
+		// See https://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials/properties/certificate
 		Certificate string `json:"certificate,omitempty"`
 
 		// Syntax:     ^[A-Za-z0-9!@/:.+|_-]+$
 		//
-		// See http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials/properties/clientId
+		// See https://schemas.taskcluster.net/login/v1/oidc-credentials-response.json#/properties/credentials/properties/clientId
 		ClientID string `json:"clientId"`
 	}
 )

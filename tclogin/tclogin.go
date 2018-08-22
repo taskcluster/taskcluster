@@ -21,7 +21,7 @@
 //
 // and then call one or more of login's methods, e.g.:
 //
-//  data, err := login.OidcCredentials(.....)
+//  err := login.Ping(.....)
 //
 // handling any errors...
 //
@@ -33,7 +33,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://references.taskcluster.net/login/v1/api.json together with the input and output schemas it references, downloaded on
-// Mon, 7 May 2018 at 13:22:00 UTC. The code was generated
+// Wed, 22 Aug 2018 at 09:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tclogin
 
@@ -44,7 +44,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "https://login.taskcluster.net/v1"
+	DefaultBaseURL = "https://login.taskcluster.net/v1/"
 )
 
 type Login tcclient.Client
@@ -55,7 +55,7 @@ type Login tcclient.Client
 //
 //  login := tclogin.New(nil)                              // client without authentication
 //  login.BaseURL = "http://localhost:1234/api/Login/v1"   // alternative API endpoint (production by default)
-//  data, err := login.OidcCredentials(.....)              // for example, call the OidcCredentials(.....) API endpoint (described further down)...
+//  err := login.Ping(.....)                               // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
@@ -84,6 +84,16 @@ func NewFromEnv() *Login {
 	}
 }
 
+// Respond without doing anything.
+// This endpoint is used to check that the service is up.
+//
+// See https://docs.taskcluster.net/reference/core/login/api-docs#ping
+func (login *Login) Ping() error {
+	cd := tcclient.Client(*login)
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	return err
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Given an OIDC `access_token` from a trusted OpenID provider, return a
@@ -98,7 +108,7 @@ func NewFromEnv() *Login {
 // ```
 //
 // The `access_token` is first verified against the named
-// :provider, then passed to the provider's API to retrieve a user
+// :provider, then passed to the provider's APIBuilder to retrieve a user
 // profile. That profile is then used to generate Taskcluster credentials
 // appropriate to the user. Note that the resulting credentials may or may
 // not include a `certificate` property. Callers should be prepared for either
@@ -113,14 +123,4 @@ func (login *Login) OidcCredentials(provider string) (*CredentialsResponse, erro
 	cd := tcclient.Client(*login)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/oidc-credentials/"+url.QueryEscape(provider), new(CredentialsResponse), nil)
 	return responseObject.(*CredentialsResponse), err
-}
-
-// Respond without doing anything.
-// This endpoint is used to check that the service is up.
-//
-// See https://docs.taskcluster.net/reference/core/login/api-docs#ping
-func (login *Login) Ping() error {
-	cd := tcclient.Client(*login)
-	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
-	return err
 }
