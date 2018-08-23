@@ -49,7 +49,7 @@ module "secrets_web_service" {
 }
 
 module "secrets_expire_job" {
-  source           = "modules/background-job"
+  source           = "modules/scheduled-job"
   project_name     = "taskcluster-secrets"
   job_name         = "expire"
   schedule         = "0 * * * *"

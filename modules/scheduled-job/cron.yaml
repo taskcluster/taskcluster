@@ -1,7 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: ${project_name}-${job_name}
+  name: ${project_name}-${lowercase(job_name)}
 spec:
   schedule: ${schedule}
   jobTemplate:
@@ -15,7 +15,7 @@ spec:
           restartPolicy: OnFailure
           activeDeadlineSeconds: {$eval: number(deadline_seconds)}
           containers:
-          - name: ${project_name}-${job_name}
+          - name: ${project_name}-${lowercase(job_name)}
             image: ${docker_image}
             imagePullPolicy: Always
             args: ['${job_name}']
