@@ -127,14 +127,14 @@ func processCommandOutput(callback func(line string), prog string, options ...st
 }
 
 func deleteTaskDir(path string) error {
-	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call as GenericWorker user...")
+	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call...")
 	err := os.RemoveAll(path)
 	if err == nil {
 		return nil
 	}
 	log.Print("WARNING: could not delete directory '" + path + "' with os.RemoveAll(path) method")
 	log.Printf("%v", err)
-	log.Print("Trying to remove directory '" + path + "' via del command as GenericWorker user...")
+	log.Print("Trying to remove directory '" + path + "' via del command...")
 	err = runtime.RunCommands(
 		false,
 		[]string{
