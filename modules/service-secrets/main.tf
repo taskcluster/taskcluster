@@ -24,6 +24,6 @@ data "jsone_template" "secrets_resource" {
 
 resource "k8s_manifest" "secrets_resource" {
   depends_on = ["k8s_manifest.service_account"]
-  count   = "${local.is_enabled}"
-  content = "${data.jsone_template.secrets_resource.rendered}"
+  count      = "${local.is_enabled}"
+  content    = "${data.jsone_template.secrets_resource.rendered}"
 }
