@@ -57,6 +57,8 @@ module "queue_rabbitmq_user" {
   rabbitmq_vhost = "${var.rabbitmq_vhost}"
 }
 
+// TODO: On advice of ajvb, swap these out for stored secrets from
+//       sops
 resource "random_string" "queue_access_token" {
   length           = 65
   override_special = "_-"
