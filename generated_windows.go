@@ -106,10 +106,22 @@ type (
 		// Since: generic-worker 5.3.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 
-		// Runs commands as Administrator. Property `task.payload.osGroups`
-		// must include `"Administrators"`. Requires scope
+		// Runs commands with UAC elevation. Only set to true when UAC is
+		// enabled on the worker and Administrative privileges are required by
+		// task commands. When UAC is disabled on the worker, task commands will
+		// already run with full user privileges, and therefore a value of true
+		// will result in a malformed-payload task exception.
+		//
+		// A value of true does not add the task user to the `Administrators`
+		// group - see the `osGroups` property for that. Typically
+		// `task.payload.osGroups` should include an Administrative group, such
+		// as `Administrators`, when setting to true.
+		//
+		// For security, `runAsAdministrator` feature cannot be used in
+		// conjunction with `chainOfTrust` feature.
+		//
+		// Requires scope
 		// `generic-worker:run-as-administrator:<provisionerId>/<workerType>`.
-		// Cannot be used together with feature `chainOfTrust`.
 		//
 		// Since: generic-worker 10.11.0
 		RunAsAdministrator bool `json:"runAsAdministrator,omitempty"`
@@ -574,7 +586,7 @@ func taskPayloadSchema() string {
           "type": "boolean"
         },
         "runAsAdministrator": {
-          "description": "Runs commands as Administrator. Property ` + "`" + `task.payload.osGroups` + "`" + `\nmust include ` + "`" + `\"Administrators\"` + "`" + `. Requires scope\n` + "`" + `generic-worker:run-as-administrator:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + `.\nCannot be used together with feature ` + "`" + `chainOfTrust` + "`" + `.\n\nSince: generic-worker 10.11.0",
+          "description": "Runs commands with UAC elevation. Only set to true when UAC is\nenabled on the worker and Administrative privileges are required by\ntask commands. When UAC is disabled on the worker, task commands will\nalready run with full user privileges, and therefore a value of true\nwill result in a malformed-payload task exception.\n\nA value of true does not add the task user to the ` + "`" + `Administrators` + "`" + `\ngroup - see the ` + "`" + `osGroups` + "`" + ` property for that. Typically\n` + "`" + `task.payload.osGroups` + "`" + ` should include an Administrative group, such\nas ` + "`" + `Administrators` + "`" + `, when setting to true.\n\nFor security, ` + "`" + `runAsAdministrator` + "`" + ` feature cannot be used in\nconjunction with ` + "`" + `chainOfTrust` + "`" + ` feature.\n\nRequires scope\n` + "`" + `generic-worker:run-as-administrator:\u003cprovisionerId\u003e/\u003cworkerType\u003e` + "`" + `.\n\nSince: generic-worker 10.11.0",
           "title": "Run commands with UAC process elevation",
           "type": "boolean"
         },
