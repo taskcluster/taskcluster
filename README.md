@@ -400,7 +400,7 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 ### In v10.11.3 since v10.11.2
 
-* [Bug 1480412 - Upgrade generic-worker to at least version 10.11.3 on macOS workers (releng-hardware/gecko-t-osx-1010)](https://bugzil.la/1480412)
+* [Bug 1480412 - allow empty osGroups list on non-Windows platforms](https://bugzil.la/1480412)
 
 ### In v10.11.2 since v10.11.1
 
