@@ -3,7 +3,7 @@ defaults:
     rootUrl:        !env TASKCLUSTER_ROOT_URL
     credentials:
       clientId:     !env TASKCLUSTER_CLIENT_ID
-      accessToken:  !env TASKLCSUTER_ACCESS_TOKEN
+      accessToken:  !env TASKLCUSTER_ACCESS_TOKEN
   
   server:
     port:           !env:number PORT
