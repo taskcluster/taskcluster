@@ -63,6 +63,32 @@ locals {
       ]
     },
     {
+      clientId    = "static/taskcluster/index"
+      accessToken = "${random_string.index_access_token.result}"
+      description = "..."
+
+      scopes = [
+        "auth:azure-table-access:${azurerm_storage_account.base.name}/IndexedTasks",
+        "auth:azure-table-access:${azurerm_storage_account.base.name}/Namespaces",
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/IndexedTasks",
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/Namespaces",
+        "queue:get-artifact:*",
+      ]
+    },
+    {
+      clientId    = "static/taskcluster/hooks"
+      accessToken = "${random_string.hooks_access_token.result}"
+      description = "..."
+
+      scopes = [
+        "auth:azure-table-access:${azurerm_storage_account.base.name}/Hooks",
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/Hooks",
+        "assume:hook-id:*",
+        "notify:email:*",
+        "queue:create-task:*",
+      ]
+    },
+    {
       clientId    = "static/taskcluster/queue"
       accessToken = "${random_string.queue_access_token.result}"
       description = "..."

@@ -18,8 +18,9 @@ resource "random_string" "secrets_access_token" {
 }
 
 module "secrets_secrets" {
-  source       = "modules/service-secrets"
-  project_name = "taskcluster-secrets"
+  source            = "modules/service-secrets"
+  project_name      = "taskcluster-secrets"
+  disabled_services = "${var.disabled_services}"
 
   secrets = {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/secrets"
