@@ -133,3 +133,29 @@ module "auth_web_service" {
   secret_keys       = "${module.auth_secrets.env_var_keys}"
   docker_image      = "${local.taskcluster_image_auth}"
 }
+
+module "auth_expire_sentry" {
+  source           = "modules/scheduled-job"
+  project_name     = "taskcluster-auth"
+  job_name         = "expireSentry"
+  schedule         = "0 0 * * *"
+  deadline_seconds = 86400
+  secret_name      = "${module.auth_secrets.secret_name}"
+  secrets_hash     = "${module.auth_secrets.secrets_hash}"
+  root_url         = "${var.root_url}"
+  secret_keys      = "${module.auth_secrets.env_var_keys}"
+  docker_image     = "${local.taskcluster_image_auth}"
+}
+
+module "auth_purge_expired_clients" {
+  source           = "modules/scheduled-job"
+  project_name     = "taskcluster-auth"
+  job_name         = "purgeExpiredClients"
+  schedule         = "0 0 * * *"
+  deadline_seconds = 86400
+  secret_name      = "${module.auth_secrets.secret_name}"
+  secrets_hash     = "${module.auth_secrets.secrets_hash}"
+  root_url         = "${var.root_url}"
+  secret_keys      = "${module.auth_secrets.env_var_keys}"
+  docker_image     = "${local.taskcluster_image_auth}"
+}
