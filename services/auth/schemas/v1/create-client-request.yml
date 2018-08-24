@@ -24,13 +24,9 @@ properties:
     maxLength:              10240
   scopes:
     description: |
-      List of scopes the client has.  Scopes must be composed of
-      printable ASCII characters and spaces.
+      List of scopes the client has (unexpanded).
     type:                   array
-    items:
-      description: Scope
-      type:                 string
-      pattern: "^[\x20-\x7e]*$"
+    items: {$const: scope}
     uniqueItems:            true
 additionalProperties:       false
 required:

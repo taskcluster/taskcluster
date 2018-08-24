@@ -9,11 +9,7 @@ properties:
       List of scopes the role grants access to.  Scopes must be composed of
       printable ASCII characters and spaces.
     type:                   array
-    items:
-      description: |
-        Scope the role grants access to
-      type:                 string
-      pattern: "^[\x20-\x7e]*$"
+    items: {$const: scope}
     uniqueItems:            true
   description:
     description: |

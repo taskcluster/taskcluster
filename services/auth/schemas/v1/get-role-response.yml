@@ -14,11 +14,7 @@ properties:
       List of scopes the role grants access to.  Scopes must be composed of
       printable ASCII characters and spaces.
     type:                   array
-    items:
-      description: |
-        Scope the role grants access to
-      type:                 string
-      pattern:              "^[\x20-\x7e]*$"
+    items: {$const: scope}
   description:
     description: |
       Description of what this role is used for in markdown.
@@ -42,11 +38,7 @@ properties:
       granted by roles that can be assumed when you have this role.
       Hence, this includes any scopes in-directly granted as well.
     type:                   array
-    items:
-      description: |
-        Scope this role grants
-      type:                 string
-      pattern:              "^[\x20-\x7e]*$"
+    items: {$const: scope}
 additionalProperties:       false
 required:
   - roleId

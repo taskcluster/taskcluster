@@ -115,6 +115,14 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     await helper.apiClient.deleteRole('test*');
   });
 
+  test('createRole with a **-scope', async () => {
+    await helper.apiClient.createRole('other', {
+      description: 'other',
+      scopes: ['foo:***'],
+    }).then(() => assert(false, 'Expected error'),
+      err => assert(err.statusCode === 400, 'Expected 400'));
+  });
+
   test('getRole', async () => {
     let role = await helper.apiClient.role('thing-id:' + clientId);
     assume(role.expandedScopes.sort()).deep.equals([
@@ -128,6 +136,14 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('listRoles', async () => {
     let roles = await helper.apiClient.listRoles();
     assert(roles.some(role => role.roleId === 'thing-id:' + clientId));
+  });
+
+  test('updateRole with a **-scope', async () => {
+    await helper.apiClient.updateRole('thing-id:' + clientId, {
+      description: 'other',
+      scopes: ['foo:***'],
+    }).then(() => assert(false, 'Expected error'),
+      err => assert(err.statusCode === 400, 'Expected 400'));
   });
 
   test('updateRole (add scope)', async () => {
