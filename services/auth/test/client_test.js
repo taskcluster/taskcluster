@@ -111,6 +111,20 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     helper.checkNextMessage('client-created', m => assert.equal(m.payload.clientId, CLIENT_ID));
   });
 
+  test('create client with a **-scope', async () => {
+    try {
+      await helper.apiClient.createClient(CLIENT_ID, {
+        expires: taskcluster.fromNow('1 hour'),
+        description: 'client',
+        scopes: ['scope1:**'],
+      });
+    } catch (err) {
+      assert.equal(err.code, 'InputValidationError');
+      return;
+    }
+    assert(false, 'Expected an error');
+  });
+
   const createTestClient = async () => {
     let expires = taskcluster.fromNow('1 hour');
     let description = 'Test client...';
@@ -236,6 +250,20 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     assume(client2.expandedScopes).not.contains('scope1');
     assume(client2.expandedScopes).contains('scope2');
     assume(client2.expandedScopes).contains('scope3');
+  });
+
+  test('update client adding a **-scope', async () => {
+    try {
+      await helper.apiClient.updateClient(CLIENT_ID, {
+        expires: taskcluster.fromNow('1 hour'),
+        description: 'client',
+        scopes: ['scope1:**'],
+      });
+    } catch (err) {
+      assert.equal(err.code, 'InputValidationError');
+      return;
+    }
+    assert(false, 'Expected an error');
   });
 
   test('auth.disableClient / enableClient', async () => {
