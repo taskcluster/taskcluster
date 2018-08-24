@@ -135,19 +135,9 @@ properties:
   scopes:
     title:          "Scopes"
     description: |
-      List of scopes (or scope-patterns) that the task is
-      authorized to use.
+      List of scopes that the task is authorized to use during its execution.
     type:           array
-    items:
-      title:        "Scope"
-      description: |
-        A scope (or scope-patterns) which the task is
-        authorized to use. This can be a string or a string
-        ending with `*` which will authorize all scopes for
-        which the string is a prefix.  Scopes must be composed of
-        printable ASCII characters and spaces.
-      type:         string
-      pattern:      {$const: scope-pattern}
+    items: {$const: scope}
   payload:
     title:          "Task Payload"
     description: |
