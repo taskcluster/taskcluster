@@ -1448,8 +1448,7 @@ type (
 		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/schedulerId
 		SchedulerID string `json:"schedulerId,omitempty"`
 
-		// List of scopes (or scope-patterns) that the task is
-		// authorized to use.
+		// List of scopes that the task is authorized to use during its execution.
 		//
 		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
 		Scopes []string `json:"scopes,omitempty"`
@@ -1636,8 +1635,7 @@ type (
 		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/schedulerId
 		SchedulerID string `json:"schedulerId"`
 
-		// List of scopes (or scope-patterns) that the task is
-		// authorized to use.
+		// List of scopes that the task is authorized to use during its execution.
 		//
 		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
 		Scopes []string `json:"scopes"`

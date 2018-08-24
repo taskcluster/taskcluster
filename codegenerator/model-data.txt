@@ -1,4 +1,4 @@
-Generated: 1534929786
+Generated: 1535131391
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -1583,15 +1583,17 @@ properties:
       SOURCE_URL: https://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/scopes
       TYPE_NAME: ""
       description: |
-        List of scopes the client has.  Scopes must be composed of
-        printable ASCII characters and spaces.
+        List of scopes the client has (unexpanded).
       items:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: https://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/scopes/items
         TYPE_NAME: ""
-        description: Scope
-        pattern: ^[ -~]*$
+        description: |
+          A single scope. A scope must be composed of
+          printable ASCII characters and spaces.  Scopes ending in more than
+          one `*` character are forbidden.
+        pattern: ^[ -~]*(?<!\*\*)$
         type: string
       type: array
       uniqueItems: true
@@ -1707,8 +1709,10 @@ properties:
         SOURCE_URL: https://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/expandedScopes/items
         TYPE_NAME: ""
         description: |
-          Scope that client is granted
-        pattern: ^[ -~]*$
+          A single scope. A scope must be composed of
+          printable ASCII characters and spaces.  Scopes ending in more than
+          one `*` character are forbidden.
+        pattern: ^[ -~]*(?<!\*\*)$
         type: string
       type: array
     expires:
@@ -1756,15 +1760,17 @@ properties:
       TYPE_NAME: ""
       default: []
       description: |
-        List of scopes the client has (unexpanded).  Scopes must be composed of
-        printable ASCII characters and spaces.
+        List of scopes the client has (unexpanded).
       items:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: https://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/scopes/items
         TYPE_NAME: ""
-        description: Scope
-        pattern: ^[ -~]*$
+        description: |
+          A single scope. A scope must be composed of
+          printable ASCII characters and spaces.  Scopes ending in more than
+          one `*` character are forbidden.
+        pattern: ^[ -~]*(?<!\*\*)$
         type: string
       type: array
       uniqueItems: true
@@ -1841,8 +1847,10 @@ properties:
         SOURCE_URL: https://schemas.taskcluster.net/auth/v1/create-role-request.json#/properties/scopes/items
         TYPE_NAME: ""
         description: |
-          Scope the role grants access to
-        pattern: ^[ -~]*$
+          A single scope. A scope must be composed of
+          printable ASCII characters and spaces.  Scopes ending in more than
+          one `*` character are forbidden.
+        pattern: ^[ -~]*(?<!\*\*)$
         type: string
       type: array
       uniqueItems: true
@@ -2091,8 +2099,10 @@ properties:
         SOURCE_URL: https://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/expandedScopes/items
         TYPE_NAME: ""
         description: |
-          Scope this role grants
-        pattern: ^[ -~]*$
+          A single scope. A scope must be composed of
+          printable ASCII characters and spaces.  Scopes ending in more than
+          one `*` character are forbidden.
+        pattern: ^[ -~]*(?<!\*\*)$
         type: string
       type: array
     lastModified:
@@ -2127,8 +2137,10 @@ properties:
         SOURCE_URL: https://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/scopes/items
         TYPE_NAME: ""
         description: |
-          Scope the role grants access to
-        pattern: ^[ -~]*$
+          A single scope. A scope must be composed of
+          printable ASCII characters and spaces.  Scopes ending in more than
+          one `*` character are forbidden.
+        pattern: ^[ -~]*(?<!\*\*)$
         type: string
       type: array
   SortedPropertyNames:
@@ -2447,8 +2459,10 @@ items:
             SOURCE_URL: https://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/expandedScopes/items
             TYPE_NAME: ""
             description: |
-              Scope this role grants
-            pattern: ^[ -~]*$
+              A single scope. A scope must be composed of
+              printable ASCII characters and spaces.  Scopes ending in more than
+              one `*` character are forbidden.
+            pattern: ^[ -~]*(?<!\*\*)$
             type: string
           type: array
         lastModified:
@@ -2483,8 +2497,10 @@ items:
             SOURCE_URL: https://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/scopes/items
             TYPE_NAME: ""
             description: |
-              Scope the role grants access to
-            pattern: ^[ -~]*$
+              A single scope. A scope must be composed of
+              printable ASCII characters and spaces.  Scopes ending in more than
+              one `*` character are forbidden.
+            pattern: ^[ -~]*(?<!\*\*)$
             type: string
           type: array
       SortedPropertyNames:
@@ -10650,21 +10666,17 @@ properties:
                       SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
                       TYPE_NAME: ""
                       description: |
-                        List of scopes (or scope-patterns) that the task is
-                        authorized to use.
+                        List of scopes that the task is authorized to use during its execution.
                       items:
                         IS_REQUIRED: false
                         PROPERTY_NAME: ""
                         SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes/items
                         TYPE_NAME: ""
                         description: |
-                          A scope (or scope-patterns) which the task is
-                          authorized to use. This can be a string or a string
-                          ending with `*` which will authorize all scopes for
-                          which the string is a prefix.  Scopes must be composed of
-                          printable ASCII characters and spaces.
-                        pattern: ^[\x20-\x7e]*$
-                        title: Scope
+                          A single scope. A scope must be composed of
+                          printable ASCII characters and spaces.  Scopes ending in more than
+                          one `*` character are forbidden.
+                        pattern: ^[ -~]*(?<!\*\*)$
                         type: string
                       title: Scopes
                       type: array
@@ -11662,21 +11674,17 @@ properties:
               SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
               TYPE_NAME: ""
               description: |
-                List of scopes (or scope-patterns) that the task is
-                authorized to use.
+                List of scopes that the task is authorized to use during its execution.
               items:
                 IS_REQUIRED: false
                 PROPERTY_NAME: ""
                 SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes/items
                 TYPE_NAME: ""
                 description: |
-                  A scope (or scope-patterns) which the task is
-                  authorized to use. This can be a string or a string
-                  ending with `*` which will authorize all scopes for
-                  which the string is a prefix.  Scopes must be composed of
-                  printable ASCII characters and spaces.
-                pattern: ^[\x20-\x7e]*$
-                title: Scope
+                  A single scope. A scope must be composed of
+                  printable ASCII characters and spaces.  Scopes ending in more than
+                  one `*` character are forbidden.
+                pattern: ^[ -~]*(?<!\*\*)$
                 type: string
               title: Scopes
               type: array
@@ -12222,21 +12230,17 @@ properties:
         SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
         TYPE_NAME: ""
         description: |
-          List of scopes (or scope-patterns) that the task is
-          authorized to use.
+          List of scopes that the task is authorized to use during its execution.
         items:
           IS_REQUIRED: false
           PROPERTY_NAME: ""
           SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes/items
           TYPE_NAME: ""
           description: |
-            A scope (or scope-patterns) which the task is
-            authorized to use. This can be a string or a string
-            ending with `*` which will authorize all scopes for
-            which the string is a prefix.  Scopes must be composed of
-            printable ASCII characters and spaces.
-          pattern: ^[\x20-\x7e]*$
-          title: Scope
+            A single scope. A scope must be composed of
+            printable ASCII characters and spaces.  Scopes ending in more than
+            one `*` character are forbidden.
+          pattern: ^[ -~]*(?<!\*\*)$
           type: string
         title: Scopes
         type: array
@@ -13365,21 +13369,17 @@ properties:
                         SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
                         TYPE_NAME: ""
                         description: |
-                          List of scopes (or scope-patterns) that the task is
-                          authorized to use.
+                          List of scopes that the task is authorized to use during its execution.
                         items:
                           IS_REQUIRED: false
                           PROPERTY_NAME: ""
                           SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes/items
                           TYPE_NAME: ""
                           description: |
-                            A scope (or scope-patterns) which the task is
-                            authorized to use. This can be a string or a string
-                            ending with `*` which will authorize all scopes for
-                            which the string is a prefix.  Scopes must be composed of
-                            printable ASCII characters and spaces.
-                          pattern: ^[\x20-\x7e]*$
-                          title: Scope
+                            A single scope. A scope must be composed of
+                            printable ASCII characters and spaces.  Scopes ending in more than
+                            one `*` character are forbidden.
+                          pattern: ^[ -~]*(?<!\*\*)$
                           type: string
                         title: Scopes
                         type: array
@@ -14857,21 +14857,17 @@ properties:
                         SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
                         TYPE_NAME: ""
                         description: |
-                          List of scopes (or scope-patterns) that the task is
-                          authorized to use.
+                          List of scopes that the task is authorized to use during its execution.
                         items:
                           IS_REQUIRED: false
                           PROPERTY_NAME: ""
                           SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes/items
                           TYPE_NAME: ""
                           description: |
-                            A scope (or scope-patterns) which the task is
-                            authorized to use. This can be a string or a string
-                            ending with `*` which will authorize all scopes for
-                            which the string is a prefix.  Scopes must be composed of
-                            printable ASCII characters and spaces.
-                          pattern: ^[\x20-\x7e]*$
-                          title: Scope
+                            A single scope. A scope must be composed of
+                            printable ASCII characters and spaces.  Scopes ending in more than
+                            one `*` character are forbidden.
+                          pattern: ^[ -~]*(?<!\*\*)$
                           type: string
                         title: Scopes
                         type: array
@@ -18657,21 +18653,17 @@ properties:
               SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
               TYPE_NAME: ""
               description: |
-                List of scopes (or scope-patterns) that the task is
-                authorized to use.
+                List of scopes that the task is authorized to use during its execution.
               items:
                 IS_REQUIRED: false
                 PROPERTY_NAME: ""
                 SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes/items
                 TYPE_NAME: ""
                 description: |
-                  A scope (or scope-patterns) which the task is
-                  authorized to use. This can be a string or a string
-                  ending with `*` which will authorize all scopes for
-                  which the string is a prefix.  Scopes must be composed of
-                  printable ASCII characters and spaces.
-                pattern: ^[\x20-\x7e]*$
-                title: Scope
+                  A single scope. A scope must be composed of
+                  printable ASCII characters and spaces.  Scopes ending in more than
+                  one `*` character are forbidden.
+                pattern: ^[ -~]*(?<!\*\*)$
                 type: string
               title: Scopes
               type: array
@@ -19636,21 +19628,17 @@ properties:
               SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
               TYPE_NAME: ""
               description: |
-                List of scopes (or scope-patterns) that the task is
-                authorized to use.
+                List of scopes that the task is authorized to use during its execution.
               items:
                 IS_REQUIRED: false
                 PROPERTY_NAME: ""
                 SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes/items
                 TYPE_NAME: ""
                 description: |
-                  A scope (or scope-patterns) which the task is
-                  authorized to use. This can be a string or a string
-                  ending with `*` which will authorize all scopes for
-                  which the string is a prefix.  Scopes must be composed of
-                  printable ASCII characters and spaces.
-                pattern: ^[\x20-\x7e]*$
-                title: Scope
+                  A single scope. A scope must be composed of
+                  printable ASCII characters and spaces.  Scopes ending in more than
+                  one `*` character are forbidden.
+                pattern: ^[ -~]*(?<!\*\*)$
                 type: string
               title: Scopes
               type: array
@@ -21880,21 +21868,17 @@ properties:
       SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
       TYPE_NAME: ""
       description: |
-        List of scopes (or scope-patterns) that the task is
-        authorized to use.
+        List of scopes that the task is authorized to use during its execution.
       items:
         IS_REQUIRED: false
         PROPERTY_NAME: ""
         SOURCE_URL: https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes/items
         TYPE_NAME: ""
         description: |
-          A scope (or scope-patterns) which the task is
-          authorized to use. This can be a string or a string
-          ending with `*` which will authorize all scopes for
-          which the string is a prefix.  Scopes must be composed of
-          printable ASCII characters and spaces.
-        pattern: ^[\x20-\x7e]*$
-        title: Scope
+          A single scope. A scope must be composed of
+          printable ASCII characters and spaces.  Scopes ending in more than
+          one `*` character are forbidden.
+        pattern: ^[ -~]*(?<!\*\*)$
         type: string
       title: Scopes
       type: array

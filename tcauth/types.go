@@ -227,8 +227,7 @@ type (
 		// See https://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/expires
 		Expires tcclient.Time `json:"expires"`
 
-		// List of scopes the client has.  Scopes must be composed of
-		// printable ASCII characters and spaces.
+		// List of scopes the client has (unexpanded).
 		//
 		// See https://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/scopes
 		Scopes []string `json:"scopes,omitempty"`
@@ -308,8 +307,7 @@ type (
 		// See https://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/lastRotated
 		LastRotated tcclient.Time `json:"lastRotated"`
 
-		// List of scopes the client has (unexpanded).  Scopes must be composed of
-		// printable ASCII characters and spaces.
+		// List of scopes the client has (unexpanded).
 		//
 		// Default:    []
 		//
