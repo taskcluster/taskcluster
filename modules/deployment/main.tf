@@ -12,6 +12,7 @@ locals {
     cpu            = "${var.cpu}"
     memory         = "${var.memory}"
     replicas       = "${var.replicas}"
+    background_job = "${var.background_job}"
   }
 
   is_enabled = "${contains(var.disabled_services, var.project_name) ? 0 : 1}"
@@ -33,6 +34,6 @@ data "jsone_template" "service" {
 }
 
 resource "k8s_manifest" "service" {
-  count   = "${local.is_enabled}"
+  count   = "${local.is_enabled * (1 - var.background_job)}"
   content = "${data.jsone_template.service.rendered}"
 }

@@ -43,6 +43,7 @@ variable "disabled_services" {
 
 variable "readiness_path" {
   type        = "string"
+  default     = "/"
   description = "Path on this service to probe for readiness (must return 200)"
 }
 
@@ -68,4 +69,10 @@ variable "replicas" {
   type        = "string"
   description = "How many copies of this to run"
   default     = 1
+}
+
+variable "background_job" {
+  type        = "string"
+  description = "If true, this is a background job and will not have web traffic."
+  default     = false
 }

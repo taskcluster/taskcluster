@@ -108,6 +108,48 @@ module "queue_web_service" {
   docker_image      = "${local.taskcluster_image_queue}"
 }
 
+module "queue_claim_resolver" {
+  source            = "modules/deployment"
+  project_name      = "taskcluster-queue"
+  service_name      = "queue"
+  proc_name         = "claimResolver"
+  background_job    = true
+  disabled_services = "${var.disabled_services}"
+  secret_name       = "${module.queue_secrets.secret_name}"
+  secrets_hash      = "${module.queue_secrets.secrets_hash}"
+  root_url          = "${var.root_url}"
+  secret_keys       = "${module.queue_secrets.env_var_keys}"
+  docker_image      = "${local.taskcluster_image_queue}"
+}
+
+module "queue_deadline_resolver" {
+  source            = "modules/deployment"
+  project_name      = "taskcluster-queue"
+  service_name      = "queue"
+  proc_name         = "deadlineResolver"
+  background_job    = true
+  disabled_services = "${var.disabled_services}"
+  secret_name       = "${module.queue_secrets.secret_name}"
+  secrets_hash      = "${module.queue_secrets.secrets_hash}"
+  root_url          = "${var.root_url}"
+  secret_keys       = "${module.queue_secrets.env_var_keys}"
+  docker_image      = "${local.taskcluster_image_queue}"
+}
+
+module "queue_dependency_resolver" {
+  source            = "modules/deployment"
+  project_name      = "taskcluster-queue"
+  service_name      = "queue"
+  proc_name         = "dependencyResolver"
+  background_job    = true
+  disabled_services = "${var.disabled_services}"
+  secret_name       = "${module.queue_secrets.secret_name}"
+  secrets_hash      = "${module.queue_secrets.secrets_hash}"
+  root_url          = "${var.root_url}"
+  secret_keys       = "${module.queue_secrets.env_var_keys}"
+  docker_image      = "${local.taskcluster_image_queue}"
+}
+
 module "queue_expire_artifacts" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-queue"
