@@ -33,3 +33,15 @@ wildcard, matching any suffix. So `queue:create-task:test-provisioner/*`
 satisfies `queue:create-task:test-provisioner/worker3`. The reverse is not
 true. The wildcard only works at the end of a string: no more advanced
 pattern-matching functionality is available.
+
+### Double-Stars
+
+The scope `foo:**` satisfies, on its face, any scope beginning with `foo:*`, including `foo:*123` and `foo:*` but not `foo:abc`.
+If scope `foo:**` is used to create a temporary credential with `foo:*`, the operation will succeed (`foo:**` satisfies `foo:*`).
+But the resulting temporary credential has `foo:*`, which *does* satisfy `foo:abc`, unlike the original credential.
+In fact, this can occur anywhere a scope is delegated, including temporary credentials, authorizedScopes, task creation, client creation, and role creation.
+
+The issue is a minor one, though, if we think of a scope ending with `**` (or any number of stars greater than one) as equivalent to a scope ending with a single star.
+
+Taskcluster encourages this perspective by prohibiting scopes ending with `**` in clients and roles, and when creating tasks.
+Instead, use the single-star form, avoiding any ambiguity.
