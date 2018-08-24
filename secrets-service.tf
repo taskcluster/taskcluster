@@ -38,14 +38,16 @@ module "secrets_secrets" {
 }
 
 module "secrets_web_service" {
-  source       = "modules/web-service"
-  project_name = "taskcluster-secrets"
-  service_name = "secrets"
-  secret_name  = "${module.secrets_secrets.secret_name}"
-  secrets_hash = "${module.secrets_secrets.secrets_hash}"
-  root_url     = "${var.root_url}"
-  secret_keys  = "${module.secrets_secrets.env_var_keys}"
-  docker_image = "${local.taskcluster_image_secrets}"
+  source         = "modules/deployment"
+  project_name   = "taskcluster-secrets"
+  service_name   = "secrets"
+  proc_name      = "web"
+  readiness_path = "/api/secrets/v1/ping"
+  secret_name    = "${module.secrets_secrets.secret_name}"
+  secrets_hash   = "${module.secrets_secrets.secrets_hash}"
+  root_url       = "${var.root_url}"
+  secret_keys    = "${module.secrets_secrets.env_var_keys}"
+  docker_image   = "${local.taskcluster_image_secrets}"
 }
 
 module "secrets_expire_job" {

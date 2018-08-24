@@ -5,30 +5,37 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: taskcluster
-      tc-service: ${project_name}
-      tc-proc: web
-  replicas: 1 # TODO: make configurable
+      application: taskcluster
+      taskcluster-service: ${project_name}
+      taskcluster-proc:
+        $if: 'proc_name != "0"'
+        then: '${proc_name}'
+        else: 'static'
+  replicas: {$eval: number(replicas)}
   template:
     metadata:
       annotations:
         secrets_hash: ${secrets_hash}
       labels:
-        app: taskcluster
-        tc-service: ${project_name}
-        tc-proc: web
+        application: taskcluster
+        taskcluster-service: ${project_name}
+        taskcluster-proc:
+          $if: 'proc_name != "0"'
+          then: '${proc_name}'
+          else: 'static'
     spec:
       serviceAccountName: ${project_name}
       containers:
       - name: ${project_name}
         image: ${docker_image}
         imagePullPolicy: Always
-        args: [web]
+        args:
+          $if: 'proc_name != "0"'
+          then: ['${proc_name}']
         resources:
-          # TODO: Make configurable
           requests:
-            cpu: 50m
-            memory: 100Mi
+            cpu: ${cpu}
+            memory: ${memory}
         env:
           $flatten:
             - name: PORT
@@ -46,7 +53,7 @@ spec:
         - containerPort: 80
         readinessProbe:
           httpGet:
-            path: /api/${service_name}/v1/ping # TODO: configurable
+            path: ${readiness_path}
             port: 80
           timeoutSeconds: 5
           periodSeconds: 10

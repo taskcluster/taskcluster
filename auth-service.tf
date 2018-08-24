@@ -121,10 +121,12 @@ module "auth_secrets" {
 }
 
 module "auth_web_service" {
-  source            = "modules/web-service"
+  source            = "modules/deployment"
   project_name      = "taskcluster-auth"
   disabled_services = "${var.disabled_services}"
   service_name      = "auth"
+  proc_name         = "web"
+  readiness_path    = "/api/auth/v1/ping"
   secret_name       = "${module.auth_secrets.secret_name}"
   secrets_hash      = "${module.auth_secrets.secrets_hash}"
   root_url          = "${var.root_url}"

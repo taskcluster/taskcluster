@@ -7,8 +7,8 @@ spec:
   jobTemplate:
     metadata:
       labels:
-        app: taskcluster
-        tc-service: ${project_name}
+        application: taskcluster
+        taskcluster-service: ${project_name}
     spec:
       template:
         spec:
