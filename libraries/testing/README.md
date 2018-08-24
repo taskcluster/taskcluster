@@ -30,11 +30,6 @@ The `load.inject(component, value)` method sets a loader overwrite without
 attempting to load it. There is a corresponding `load.remove(component)` to
 remove a component.
 
-The last line of this `suiteSetup` is important: it loads the `cfg` component
-so that the configuration can be edited in-place (stickyLoader has special
-support for a component with this name).  If `cfg` is not loaded, the
-`load.cfg()` method will not work.
-
 In test scripts:
 
 ```javascript
@@ -43,6 +38,7 @@ const {load} = require('./helper');
 suite('SomeTable', function() {
   suiteSetup(async function() {
     load.save(); // save the state of the loader to restore in tearDown
+    await load('cfg'); // load the cfg so we can edit it
     load.cfg('azure.accountName', 'inMemory'); // edit the cfg in-place
     const SomeTable = await load('SomeTable');
     await SomeTable.ensureTable({ /* ... */ });
@@ -60,6 +56,7 @@ suite('SomeTable', function() {
 });
 ```
 
+
 The `load.save()` and `load.restore()` methods push and pull loader states in a
 stack, and are best used in setup/teardown methods to ensure that one suite
 does not "pollute" the loader state for the next.
@@ -68,6 +65,9 @@ The `load.cfg(path, value)` method edits the `cfg` component in place, using a
 dotted path to specify the config value. The `save` and `restore` methods are
 careful to deep-copy `cfg` so that these in-place modifications affect only
 the current loader state.
+
+If `cfg` is not loaded, the `load.cfg()` method will not work, so generally (as
+in the example above) a bare `load('cfg')` is used to ensure its presence.
 
 Secrets
 -------
