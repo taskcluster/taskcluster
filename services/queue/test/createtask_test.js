@@ -88,6 +88,23 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     });
   });
 
+  test('createTask (with ** scope)', async () => {
+    const taskId = slugid.v4();
+    helper.scopes(
+      'queue:create-task:*',
+      'abc:**',
+      'queue:route:*',
+    );
+    await helper.queue.createTask(taskId, _.defaults({scopes: ['abc:**']}, taskDef))
+      .then(
+        () => { throw new Error('Expected an authentication error'); },
+        (err) => {
+          if (err.code != 'InputValidationError') {
+            throw err;
+          }
+        });
+  });
+
   test('createTask is idempotent', async () => {
     const taskId = slugid.v4();
 
