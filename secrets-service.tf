@@ -18,8 +18,9 @@ resource "random_string" "secrets_access_token" {
 }
 
 module "secrets_secrets" {
-  source       = "modules/service-secrets"
-  project_name = "taskcluster-secrets"
+  source            = "modules/service-secrets"
+  project_name      = "taskcluster-secrets"
+  disabled_services = "${var.disabled_services}"
 
   secrets = {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/secrets"
@@ -38,18 +39,20 @@ module "secrets_secrets" {
 }
 
 module "secrets_web_service" {
-  source       = "modules/web-service"
-  project_name = "taskcluster-secrets"
-  service_name = "secrets"
-  secret_name  = "${module.secrets_secrets.secret_name}"
-  secrets_hash = "${module.secrets_secrets.secrets_hash}"
-  root_url     = "${var.root_url}"
-  secret_keys  = "${module.secrets_secrets.env_var_keys}"
-  docker_image = "${local.taskcluster_image_secrets}"
+  source         = "modules/deployment"
+  project_name   = "taskcluster-secrets"
+  service_name   = "secrets"
+  proc_name      = "web"
+  readiness_path = "/api/secrets/v1/ping"
+  secret_name    = "${module.secrets_secrets.secret_name}"
+  secrets_hash   = "${module.secrets_secrets.secrets_hash}"
+  root_url       = "${var.root_url}"
+  secret_keys    = "${module.secrets_secrets.env_var_keys}"
+  docker_image   = "${local.taskcluster_image_secrets}"
 }
 
 module "secrets_expire_job" {
-  source           = "modules/background-job"
+  source           = "modules/scheduled-job"
   project_name     = "taskcluster-secrets"
   job_name         = "expire"
   schedule         = "0 * * * *"

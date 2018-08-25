@@ -40,3 +40,39 @@ variable "disabled_services" {
   description = "list of disabled services."
   default     = []
 }
+
+variable "readiness_path" {
+  type        = "string"
+  default     = "/"
+  description = "Path on this service to probe for readiness (must return 200)"
+}
+
+variable "proc_name" {
+  type        = "string"
+  default     = false
+  description = "The process in the Procfile to run."
+}
+
+variable "cpu" {
+  type        = "string"
+  description = "Amount of cpu to assign the process"
+  default     = "50m"
+}
+
+variable "memory" {
+  type        = "string"
+  description = "Amount of memory to assign the process"
+  default     = "100Mi"
+}
+
+variable "replicas" {
+  type        = "string"
+  description = "How many copies of this to run"
+  default     = 1
+}
+
+variable "background_job" {
+  type        = "string"
+  description = "If true, this is a background job and will not have web traffic."
+  default     = false
+}

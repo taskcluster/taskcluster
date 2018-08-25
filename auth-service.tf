@@ -63,6 +63,32 @@ locals {
       ]
     },
     {
+      clientId    = "static/taskcluster/index"
+      accessToken = "${random_string.index_access_token.result}"
+      description = "..."
+
+      scopes = [
+        "auth:azure-table-access:${azurerm_storage_account.base.name}/IndexedTasks",
+        "auth:azure-table-access:${azurerm_storage_account.base.name}/Namespaces",
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/IndexedTasks",
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/Namespaces",
+        "queue:get-artifact:*",
+      ]
+    },
+    {
+      clientId    = "static/taskcluster/hooks"
+      accessToken = "${random_string.hooks_access_token.result}"
+      description = "..."
+
+      scopes = [
+        "auth:azure-table-access:${azurerm_storage_account.base.name}/Hooks",
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/Hooks",
+        "assume:hook-id:*",
+        "notify:email:*",
+        "queue:create-task:*",
+      ]
+    },
+    {
       clientId    = "static/taskcluster/queue"
       accessToken = "${random_string.queue_access_token.result}"
       description = "..."
@@ -121,13 +147,41 @@ module "auth_secrets" {
 }
 
 module "auth_web_service" {
-  source            = "modules/web-service"
+  source            = "modules/deployment"
   project_name      = "taskcluster-auth"
   disabled_services = "${var.disabled_services}"
   service_name      = "auth"
+  proc_name         = "web"
+  readiness_path    = "/api/auth/v1/ping"
   secret_name       = "${module.auth_secrets.secret_name}"
   secrets_hash      = "${module.auth_secrets.secrets_hash}"
   root_url          = "${var.root_url}"
   secret_keys       = "${module.auth_secrets.env_var_keys}"
   docker_image      = "${local.taskcluster_image_auth}"
+}
+
+module "auth_expire_sentry" {
+  source           = "modules/scheduled-job"
+  project_name     = "taskcluster-auth"
+  job_name         = "expireSentry"
+  schedule         = "0 0 * * *"
+  deadline_seconds = 86400
+  secret_name      = "${module.auth_secrets.secret_name}"
+  secrets_hash     = "${module.auth_secrets.secrets_hash}"
+  root_url         = "${var.root_url}"
+  secret_keys      = "${module.auth_secrets.env_var_keys}"
+  docker_image     = "${local.taskcluster_image_auth}"
+}
+
+module "auth_purge_expired_clients" {
+  source           = "modules/scheduled-job"
+  project_name     = "taskcluster-auth"
+  job_name         = "purgeExpiredClients"
+  schedule         = "0 0 * * *"
+  deadline_seconds = 86400
+  secret_name      = "${module.auth_secrets.secret_name}"
+  secrets_hash     = "${module.auth_secrets.secrets_hash}"
+  root_url         = "${var.root_url}"
+  secret_keys      = "${module.auth_secrets.env_var_keys}"
+  docker_image     = "${local.taskcluster_image_auth}"
 }

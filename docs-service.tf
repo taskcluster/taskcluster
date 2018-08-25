@@ -8,12 +8,13 @@ module "docs_secrets" {
 }
 
 module "docs_ui" {
-  source         = "modules/static-service"
+  source         = "modules/deployment"
   project_name   = "taskcluster-docs"
   service_name   = "docs"
   secret_name    = "taskcluster-docs"
   root_url       = "${var.root_url}"
   secret_keys    = "${module.docs_secrets.env_var_keys}"
   docker_image   = "${local.taskcluster_image_docs}"
+  secrets_hash   = "${module.docs_secrets.secrets_hash}"
   readiness_path = "/docs"
 }

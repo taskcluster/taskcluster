@@ -29,6 +29,8 @@ spec:
             - {service_name: auth, project_name: taskcluster-auth}
             - {service_name: secrets, project_name: taskcluster-secrets}
             - {service_name: queue, project_name: taskcluster-queue}
+            - {service_name: hooks, project_name: taskcluster-hooks}
+            - {service_name: index, project_name: taskcluster-index}
           each(svc):
             $if: '!(svc.project_name in disabled_services)'
             then:

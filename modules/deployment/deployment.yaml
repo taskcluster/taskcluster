@@ -1,0 +1,69 @@
+$let:
+  proc_name:
+    $if: 'proc_name != "0"'
+    then: '${proc_name}'
+    else: 'static'
+in:
+  apiVersion: apps/v1beta2
+  kind: Deployment
+  metadata:
+    name: ${project_name}-${lowercase(proc_name)}
+  spec:
+    selector:
+      matchLabels:
+        application: taskcluster
+        taskcluster-service: ${project_name}
+        taskcluster-proc: ${proc_name}
+    replicas: {$eval: number(replicas)}
+    template:
+      metadata:
+        annotations:
+          secrets_hash: ${secrets_hash}
+        labels:
+          application: taskcluster
+          taskcluster-service: ${project_name}
+          taskcluster-proc:
+            $if: 'proc_name != "0"'
+            then: '${proc_name}'
+            else: 'static'
+      spec:
+        serviceAccountName: ${project_name}
+        containers:
+        - name: ${project_name}
+          image: ${docker_image}
+          imagePullPolicy: Always
+          args:
+            $if: 'proc_name != "static"'
+            then: ['${proc_name}']
+          resources:
+            requests:
+              cpu: ${cpu}
+              memory: ${memory}
+          env:
+            $flatten:
+              - $if: 'background_job == "0"'
+                then:
+                  name: PORT
+                  value: '80'
+              - name: TASKCLUSTER_ROOT_URL
+                value: ${root_url}
+              - $map: {$eval: 'secret_keys'}
+                each(k):
+                  name: '${k}'
+                  valueFrom:
+                    secretKeyRef:
+                      name: '${secret_name}'
+                      key: '${k}'
+          ports:
+          - $if: 'background_job == "0"'
+            then:
+              containerPort: 80
+          readinessProbe:
+            $if: 'background_job == "0"'
+            then:
+              httpGet:
+                path: ${readiness_path}
+                port: 80
+              timeoutSeconds: 5
+              periodSeconds: 10
+              initialDelaySeconds: 3

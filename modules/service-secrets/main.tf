@@ -12,8 +12,10 @@ data "jsone_templates" "service_account" {
   yaml_context = "${jsonencode(local.context)}"
 }
 
+// length(data.jsone_templates.service_account.rendered) === 3
+// We need to set this directly sometimes due to https://github.com/hashicorp/terraform/issues/12570
 resource "k8s_manifest" "service_account" {
-  count   = "${local.is_enabled * length(data.jsone_templates.service_account.rendered)}"
+  count   = "${local.is_enabled * 3}"
   content = "${data.jsone_templates.service_account.rendered[count.index]}"
 }
 

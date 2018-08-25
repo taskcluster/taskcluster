@@ -1,21 +1,21 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: ${project_name}-${job_name}
+  name: ${project_name}-${lowercase(job_name)}
 spec:
   schedule: ${schedule}
   jobTemplate:
     metadata:
       labels:
-        app: taskcluster
-        tc-service: ${project_name}
+        application: taskcluster
+        taskcluster-service: ${project_name}
     spec:
       template:
         spec:
           restartPolicy: OnFailure
           activeDeadlineSeconds: {$eval: number(deadline_seconds)}
           containers:
-          - name: ${project_name}-${job_name}
+          - name: ${project_name}-${lowercase(job_name)}
             image: ${docker_image}
             imagePullPolicy: Always
             args: ['${job_name}']
