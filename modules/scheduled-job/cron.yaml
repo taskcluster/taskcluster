@@ -14,6 +14,17 @@ spec:
         spec:
           restartPolicy: OnFailure
           activeDeadlineSeconds: {$eval: number(deadline_seconds)}
+          volumes:
+            $if: 'len(volume_mounts) > 0'
+            then:
+              $map: {$eval: volume_mounts}
+              each(mount):
+                name: ${mount.source}
+                secret:
+                  secretName: ${secret_name}
+                  items:
+                    - key: ${mount.source}
+                      path: ${mount.name}
           containers:
           - name: ${project_name}-${lowercase(job_name)}
             image: ${docker_image}
@@ -24,6 +35,14 @@ spec:
               requests:
                 cpu: 100m
                 memory: 100Mi
+            volumeMounts:
+              $if: 'len(volume_mounts) > 0'
+              then:
+                $map: {$eval: volume_mounts}
+                each(mount):
+                  name: ${mount.source}
+                  mountPath: ${mount.path}
+                  readOnly: true
             env:
               $flatten:
                 - name: TASKCLUSTER_ROOT_URL
