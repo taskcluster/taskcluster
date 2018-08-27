@@ -2360,9 +2360,9 @@ taskcluster-client@^3.0.3:
     slugid "^1.1.0"
     superagent "~3.8.1"
 
-taskcluster-lib-api@^12.0.2:
-  version "12.0.2"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-api/-/taskcluster-lib-api-12.0.2.tgz#af496b644694995002dbb383492f0219ddea7167"
+taskcluster-lib-api@^12.3.2:
+  version "12.3.2"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-api/-/taskcluster-lib-api-12.3.2.tgz#3fbff167e0c0e12bc10b8c0eff23465c8b7d6fd3"
   dependencies:
     ajv "^5.3.0"
     aws-sdk "^2.151.0"
