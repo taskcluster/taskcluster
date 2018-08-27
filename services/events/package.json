@@ -20,7 +20,6 @@
     "taskcluster-lib-app": "^10.0.0",
     "taskcluster-lib-loader": "^10.0.0",
     "taskcluster-lib-monitor": "^10.0.0",
-    "taskcluster-lib-docs": "^10.0.1",
     "typed-env-config": "^2.0.0",
     "urlencode": "^1.1.0",
     "uuid": "^3.1.0"
