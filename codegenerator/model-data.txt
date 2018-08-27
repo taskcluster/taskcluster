@@ -1,4 +1,4 @@
-Generated: 1535131391
+Generated: 1535390612
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -7272,7 +7272,7 @@ Schema      = 'http://schemas.taskcluster.net/base/v1/api-reference.json#'
 Title       = 'Login API'
 Description = 'The Login service serves as the interface between external authentication
 systems and Taskcluster credentials.'
-Base URL    = 'https://login.taskcluster.net/v1/'
+Base URL    = 'https://login.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'get'

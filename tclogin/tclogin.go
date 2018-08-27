@@ -33,7 +33,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://references.taskcluster.net/login/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 24 Aug 2018 at 17:23:00 UTC. The code was generated
+// Mon, 27 Aug 2018 at 17:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tclogin
 
@@ -44,7 +44,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "https://login.taskcluster.net/v1/"
+	DefaultBaseURL = "https://login.taskcluster.net/v1"
 )
 
 type Login tcclient.Client
