@@ -2,15 +2,28 @@ const assert = require('assert');
 const taskDefinition = require('./fixtures/task');
 const Monitor = require('taskcluster-lib-monitor');
 const artifactLinkTransform = require('../src/transform/artifact_links');
+const helper = require('./helper');
+const taskcluster = require('taskcluster-client');
 
-let monitor;
+let monitor, queue, fakeArtifacts;
 
 suite('artifact link transform', () => {
+  helper.withLoader();
+
   suiteSetup(async () => {
-    monitor = await Monitor({
-      project: 'tc-treeherder-test',
-      credentials: {},
-      mock: true,
+    monitor = await helper.load('monitor');
+  });
+
+  setup(async function() {
+    const cfg = await helper.load('cfg');
+    fakeArtifacts = [];
+    queue = new taskcluster.Queue({
+      rootUrl: cfg.taskcluster.rootUrl,
+      fake: {
+        listArtifacts: async (taskId, runId) => ({
+          artifacts: fakeArtifacts[`${taskId}/${runId}`],
+        }),
+      },
     });
   });
 
@@ -26,12 +39,7 @@ suite('artifact link transform', () => {
         links: links,
       },
     };
-    let queue = {
-      listArtifacts: () => {
-        return {artifacts: [{name: 'public/test.log'}]};
-      },
-    };
-
+    fakeArtifacts['123/0'] = [{name: 'public/test.log'}];
     job = await artifactLinkTransform(queue, monitor, '123', 0, job);
     links.push(expectedLink);
 
@@ -56,15 +64,10 @@ suite('artifact link transform', () => {
         links: [],
       },
     };
-    let queue = {
-      listArtifacts: () => {
-        return {
-          artifacts: [
-            {name: 'public/test.log'},
-            {name: 'public/test/test.log'},
-          ]};
-      },
-    };
+    fakeArtifacts['123/0'] = [
+      {name: 'public/test.log'},
+      {name: 'public/test/test.log'},
+    ];
 
     job = await artifactLinkTransform(queue, monitor, '123', 0, job);
     assert.deepEqual(expectedLinks, job.jobInfo.links);
@@ -93,31 +96,29 @@ suite('artifact link transform', () => {
       {name: 'public/test.log'},
       {name: 'public/fatal.log'},
     ];
-    let queue = {
-      listArtifacts: () => {
-        let artifact = [artifacts[attempt]];
-        let token = attempt === 0 ? 'token' : undefined;
-        attempt += 1;
-        return {
-          artifacts: artifact,
-          continuationToken: token,
-        };
-      },
+    queue.listArtifacts = async () => {
+      let artifact = [artifacts[attempt]];
+      let token = attempt === 0 ? 'token' : undefined;
+      attempt += 1;
+      return {
+        artifacts: artifact,
+        continuationToken: token,
+      };
     };
 
     job = await artifactLinkTransform(queue, monitor, '123', 0, job);
     assert.deepEqual(expectedLinks, job.jobInfo.links);
   });
 
-  test('error retrieving artifacts', async () => {
+  test('error retrieving artifacts (ignored)', async () => {
     let links = ['foo'];
     let job = {
       jobInfo: {
         links: links,
       },
     };
-    let queue = {
-      listArtifacts: () => { throw new Error('bad things happened'); },
+    queue.listArtifacts = async () => {
+      throw new Error('bad things happened');
     };
 
     job = await artifactLinkTransform(queue, monitor, '123', 0, job);

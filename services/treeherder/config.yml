@@ -8,11 +8,14 @@ defaults:
     credentials:
       username: !env PULSE_USERNAME
       password: !env PULSE_PASSWORD
+      hostname: !env PULSE_HOSTNAME
+      vhost: !env PULSE_VHOST
     prefetch:   40
     queueName:  null
   treeherder:
     routePrefix: !env TREEHERDER_ROUTE_PREFIX
   taskcluster:
+    rootUrl: !env TASKCLUSTER_ROOT_URL
     credentials:
       clientId: !env TASKCLUSTER_CLIENT_ID
       accessToken: !env TASKCLUSTER_ACCESS_TOKEN

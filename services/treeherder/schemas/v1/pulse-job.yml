@@ -272,7 +272,6 @@ properties:
       Definition of the Job Info for a job.  These are extra data
       fields that go along with a job that will be displayed in
       the details panel within Treeherder.
-    id: "jobInfo"
     type: object
     properties:
       summary:
