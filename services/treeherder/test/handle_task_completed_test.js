@@ -1,25 +1,17 @@
 const assert = require('assert');
-const Handler = require('../src/handler');
 const taskDefinition = require('./fixtures/task');
 const statusMessage = require('./fixtures/task_status');
 const jobMessage = require('./fixtures/job_message');
 const parseRoute = require('../src/util/route_parser');
-const Monitor = require('taskcluster-lib-monitor');
-const taskcluster = require('taskcluster-client');
+const helper = require('./helper');
 
-let handler, task, status, expected, pushInfo;
+let task, status, expected, pushInfo;
 
 suite('handle completed job', () => {
-  beforeEach(async () => {
-    handler = new Handler({
-      prefix: 'treeherder',
-      queue: new taskcluster.Queue(),
-      monitor: await Monitor({
-        project: 'tc-treeherder-test',
-        credentials: {},
-        mock: true,
-      }),
-    });
+  helper.withLoader();
+  helper.withHandler();
+
+  setup(function() {
     task = JSON.parse(taskDefinition);
     status = JSON.parse(statusMessage);
     expected = JSON.parse(jobMessage);
@@ -27,10 +19,7 @@ suite('handle completed job', () => {
   });
 
   test('valid message', async () => {
-    let actual;
-    handler.publishJobMessage = (pushInfo, job) => {
-      actual = job;
-    };
+    helper.handler.fakeArtifacts['5UMTRzgESFG3Bn8kCBwxxQ/0'] = [];
 
     let scheduled = new Date();
     let started = new Date();
@@ -58,7 +47,7 @@ suite('handle completed job', () => {
       },
     ];
 
-    let job = await handler.handleTaskCompleted(pushInfo, task, status);
-    assert.deepEqual(actual, expected);
+    await helper.handler.handleTaskCompleted(pushInfo, task, status);
+    assert.deepEqual(helper.handler.publishedMessages[0].job, expected);
   });
 });
