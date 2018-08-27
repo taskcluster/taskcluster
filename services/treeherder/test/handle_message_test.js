@@ -2,44 +2,32 @@ const assert = require('assert');
 const path = require('path');
 const Handler = require('../src/handler');
 const Monitor = require('taskcluster-lib-monitor');
-const validator = require('taskcluster-lib-validate');
+const SchemaSet = require('taskcluster-lib-validate');
+const taskcluster = require('taskcluster-client');
+const libUrls = require('taskcluster-lib-urls');
+const helper = require('./helper');
 
-let monitor;
-
-suite('handle message', () => {
-  suiteSetup(async () => {
-    monitor = await Monitor({
-      project: 'tc-treeherder-test',
-      credentials: {},
-      mock: true,
-    });
-  });
+suite('handle message', function() {
+  helper.withLoader();
+  helper.withHandler();
 
   test('invalid message - more than one matching route', async () => {
-    let handler = new Handler({
-      monitor: monitor,
-      prefix: 'foo',
-      queue: {
-        task: (taskId) => {
-          return {
-            payload: {
-              image: 'foo:latest',
-            },
-            extra: {
-              treeherder: {
-                reason: 'scheduled',
-                tier: 1,
-              },
-            },
-          };
+    helper.handler.fakeTasks['abc'] = {
+      payload: {
+        image: 'foo:latest',
+      },
+      extra: {
+        treeherder: {
+          reason: 'scheduled',
+          tier: 1,
         },
       },
-    });
+    };
 
     let err;
 
     try {
-      await handler.handleMessage({
+      await helper.handler.handleMessage({
         routes: ['foo.bar', 'foo.thing'],
         payload: {
           status: {
@@ -56,29 +44,21 @@ suite('handle message', () => {
   });
 
   test('invalid message - no matching route', async () => {
-    let handler = new Handler({
-      monitor: monitor,
-      prefix: 'foo',
-      queue: {
-        task: (taskId) => {
-          return {
-            payload: {
-              image: 'foo:latest',
-            },
-            extra: {
-              treeherder: {
-                reason: 'scheduled',
-                tier: 1,
-              },
-            },
-          };
+    helper.handler.fakeTasks['abc'] = {
+      payload: {
+        image: 'foo:latest',
+      },
+      extra: {
+        treeherder: {
+          reason: 'scheduled',
+          tier: 1,
         },
       },
-    });
+    };
     let err;
 
     try {
-      await handler.handleMessage({
+      await helper.handler.handleMessage({
         routes: ['foo1.bar', 'foo1.thing'],
         payload: {
           status: {
@@ -95,23 +75,13 @@ suite('handle message', () => {
   });
 
   test('invalid message - missing treeherder configuration', async () => {
-    let called;
-    let handler = new Handler({
-      monitor: monitor,
-      prefix: 'foo',
-      queue: {
-        task: (taskId) => {
-          called = true;
-          return {
-            payload: {
-              image: 'foo:latest',
-            },
-          };
-        },
+    helper.handler.fakeTasks['abc'] = {
+      payload: {
+        image: 'foo:latest',
       },
-    });
+    };
 
-    await handler.handleMessage({
+    await helper.handler.handleMessage({
       routes: ['foo.bar.123'],
       payload: {
         status: {
@@ -120,39 +90,24 @@ suite('handle message', () => {
       },
     });
 
-    assert(called, 'Task was not retrieved by the queue');
-    assert.equal(monitor.counts['tc-treeherder-test.validateTask.no-config'], 1);
+    assert.deepEqual(helper.handler.taskCalls, ['abc'], 'Task was retrieved by the queue');
+    assert.equal(helper.monitor.counts['taskcluster-treeherder.validateTask.no-config'], 1);
   });
 
   test('invalid message - invalid treeherder config', async () => {
-    let called;
-    let handler = new Handler({
-      monitor: monitor,
-      prefix: 'foo',
-      queue: {
-        task: (taskId) => {
-          called = true;
-          return {
-            payload: {
-              image: 'foo:latest',
-            },
-            extra: {
-              treeherder: {
-                reason: 'scheduled',
-                tier: 1,
-              },
-            },
-          };
+    helper.handler.fakeTasks['abc'] = {
+      payload: {
+        image: 'foo:latest',
+      },
+      extra: {
+        treeherder: {
+          reason: 'scheduled',
+          tier: 1,
         },
       },
-    });
-    handler.validator = await validator({
-      folder: path.join(__dirname, '..', 'schemas'),
-      prefix: 'taskcluster-treeherder/v1/',
-      aws:    {},
-    });
+    };
 
-    await handler.handleMessage({
+    await helper.handler.handleMessage({
       routes: ['foo.bar.123'],
       payload: {
         status: {
@@ -161,7 +116,7 @@ suite('handle message', () => {
       },
     });
 
-    assert(called, 'Task was retrieved by the queue');
-    assert.equal(monitor.counts['tc-treeherder-test.validateTask.invalid-config'], 1);
+    assert.deepEqual(helper.handler.taskCalls, ['abc'], 'Task was retrieved by the queue');
+    assert.equal(helper.monitor.counts['taskcluster-treeherder.validateTask.invalid-config'], 1);
   });
 });

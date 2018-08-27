@@ -1,15 +1,25 @@
+const taskcluster = require('taskcluster-client');
 const assert = require('assert');
 const Handler = require('../src/handler');
 const taskDefinition = require('./fixtures/task');
 const statusMessage = require('./fixtures/task_status');
 const jobMessage = require('./fixtures/job_message');
 const parseRoute = require('../src/util/route_parser');
+const libUrls = require('taskcluster-lib-urls');
+const helper = require('./helper');
 
-let handler, task, status, expected, pushInfo;
+let handler, task, status, expected, pushInfo, cfg;
 
 suite('build job message', () => {
-  beforeEach(() => {
-    handler = new Handler({prefix: 'treeherder'});
+  helper.withLoader();
+
+  suiteSetup(async () => {
+    cfg = await helper.load('cfg');
+    helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
+  });
+
+  setup(() => {
+    handler = new Handler({cfg, prefix: 'treeherder'});
     task = JSON.parse(taskDefinition);
     status = JSON.parse(statusMessage);
     expected = JSON.parse(jobMessage);

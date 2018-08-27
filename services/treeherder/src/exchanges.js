@@ -2,6 +2,9 @@ const Exchanges = require('pulse-publisher');
 
 let exchanges = new Exchanges({
   title: 'Taskcluster-treeherder Pulse Exchange',
+  serviceName: 'treeherder',
+  projectName: 'taskcluster-treeherder',
+  version: 'v1',
   description: [
     'The taskcluster-treeherder service is responsible for processing',
     'task events published by TaskCluster Queue and producing job messages',
@@ -11,8 +14,6 @@ let exchanges = new Exchanges({
     'attached to the exchange.  This could be a production Treeheder instance,',
     'a local development environment, or a custom dashboard.',
   ].join('\n'),
-
-  schemaPrefix: 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/',
 });
 
 module.exports = exchanges;

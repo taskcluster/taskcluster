@@ -1,4 +1,3 @@
-const Debug = require('debug');
 const path = require('path');
 const taskcluster = require('taskcluster-client');
 const Handler = require('./handler');
@@ -7,9 +6,7 @@ const loader = require('taskcluster-lib-loader');
 const docs = require('taskcluster-lib-docs');
 const config = require('typed-env-config');
 const monitor = require('taskcluster-lib-monitor');
-const validator = require('taskcluster-lib-validate');
-
-let debug = Debug('taskcluster-treeherder:main');
+const SchemaSet = require('taskcluster-lib-validate');
 
 let load = loader({
   cfg: {
@@ -17,13 +14,13 @@ let load = loader({
     setup: ({profile}) => config({profile}),
   },
 
-  validator: {
+  schemaset: {
     requires: ['cfg'],
     setup: ({cfg}) => {
-      debug('Configuring validator');
-      return validator({
-        prefix:       'taskcluster-treeherder/v1/',
-        aws:           cfg.aws,
+      return new SchemaSet({
+        serviceName: 'treeherder',
+        publish: cfg.app.publishMetaData,
+        aws: cfg.aws,
       });
     },
   },
@@ -31,60 +28,59 @@ let load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitor({
-      project: cfg.monitoring.project || 'taskcluster-treeherder',
+      rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-treeherder',
       enable: cfg.monitoring.enable,
       credentials: cfg.taskcluster.credentials,
-      mock: profile === 'test',
+      mock: profile !== 'production',
       process,
     }),
   },
 
-  reference: {
-    requires: ['cfg'],
-    setup: ({cfg}) => exchanges.reference({
-      exchangePrefix:   cfg.app.exchangePrefix,
-      credentials:      cfg.pulse.credentials,
-    }),
+  validator: {
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => schemaset.validator(cfg.taskcluster.rootUrl),
   },
 
   publisher: {
-    requires: ['cfg', 'validator', 'process', 'monitor'],
-    setup: ({cfg, validator, process, monitor}) => {
-      debug('Configuring exchanges');
-      return exchanges.setup({
-        credentials:      cfg.pulse.credentials,
-        exchangePrefix:   cfg.app.exchangePrefix,
-        validator:        validator,
-        referencePrefix:  'taskcluster-treeherder/v1/exchanges.json',
-        publish:          cfg.app.publishMetaData,
-        aws:              cfg.aws,
-        monitor: monitor.prefix('publisher'),
-        process,
-      });
-    },
+    requires: ['cfg', 'schemaset', 'process', 'monitor', 'validator'],
+    setup: async ({cfg, schemaset, process, monitor, validator}) => exchanges.setup({
+      rootUrl: cfg.taskcluster.rootUrl,
+      credentials: cfg.pulse.credentials,
+      validator,
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
+      monitor: monitor.prefix('publisher'),
+    }),
   },
 
   docs: {
-    requires: ['cfg', 'validator', 'reference'],
-    setup: ({cfg, validator, reference}) => docs.documenter({
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'integrations',
-      schemas: validator.schemas,
+      schemaset,
       references: [
         {
           name: 'events',
-          reference: reference,
+          reference: exchanges.reference({
+            rootUrl: cfg.taskcluster.rootUrl,
+            credentials: cfg.pulse.credentials,
+          }),
         },
       ],
     }),
   },
 
   server: {
-    requires: ['cfg', 'publisher', 'validator', 'monitor', 'docs'],
-    setup: async ({cfg, publisher, validator, monitor, docs}) => {
-      debug('Configuring handler');
-      let queue = new taskcluster.Queue();
-      let queueEvents = new taskcluster.QueueEvents();
+    requires: ['cfg', 'publisher', 'schemaset', 'monitor', 'docs', 'validator'],
+    setup: async ({cfg, publisher, schemaset, monitor, docs, validator}) => {
+      const queue = new taskcluster.Queue({
+        rootUrl: cfg.taskcluster.rootUrl,
+      });
+      const queueEvents = new taskcluster.QueueEvents({
+        rootUrl: cfg.taskcluster.rootUrl,
+      });
 
       // TODO add queue name for durable queues
       let listener = new taskcluster.PulseListener({
@@ -104,6 +100,7 @@ let load = loader({
       ]);
 
       let handler = new Handler({
+        cfg,
         queue,
         listener,
         prefix,

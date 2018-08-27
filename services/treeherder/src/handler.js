@@ -3,20 +3,11 @@ const Debug = require('debug');
 const _ = require('lodash');
 const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
+const libUrls = require('taskcluster-lib-urls');
 const parseRoute = require('./util/route_parser');
 const addArtifactUploadedLinks = require('./transform/artifact_links');
 
-let events = new taskcluster.QueueEvents();
 let debug = Debug('taskcluster-treeherder:handler');
-
-const TASK_TREEHERDER_SCHEMA = 'http://schemas.taskcluster.net/taskcluster-treeherder/v1/task-treeherder-config.json#';
-const EVENT_MAP = {
-  [events.taskPending().exchange]: 'pending',
-  [events.taskRunning().exchange]: 'running',
-  [events.taskCompleted().exchange]: 'completed',
-  [events.taskFailed().exchange]: 'failed',
-  [events.taskException().exchange]: 'exception',
-};
 
 function stateFromRun(run) {
   switch (run.state) {
@@ -108,12 +99,25 @@ function validateTask(monitor, validate, taskId, task, schema) {
 
 module.exports = class Handler {
   constructor(options) {
+    this.cfg = options.cfg;
     this.queue = options.queue;
     this.listener = options.listener;
     this.prefix = options.prefix;
     this.publisher = options.publisher;
     this.validator = options.validator;
     this.monitor = options.monitor;
+
+    // build a mapping from exchange name to status
+    const queueEvents = new taskcluster.QueueEvents({
+      rootUrl: this.cfg.taskcluster.rootUrl,
+    });
+    this.eventMap = {
+      [queueEvents.taskPending().exchange]: 'pending',
+      [queueEvents.taskRunning().exchange]: 'running',
+      [queueEvents.taskCompleted().exchange]: 'completed',
+      [queueEvents.taskFailed().exchange]: 'failed',
+      [queueEvents.taskException().exchange]: 'exception',
+    };
   }
 
   // Starts up the message handler and listens for messages
@@ -150,11 +154,13 @@ module.exports = class Handler {
     this.monitor.count(`${parsedRoute.project}.handle-message`);
 
     // validation failures are common and logged, so do nothing more.
-    if (!validateTask(this.monitor, this.validator, taskId, task, TASK_TREEHERDER_SCHEMA)) {
+    const schema = libUrls.schema(this.cfg.taskcluster.rootUrl,
+      'treeherder', 'v1/task-treeherder-config.json#');
+    if (!validateTask(this.monitor, this.validator, taskId, task, schema)) {
       return;
     }
 
-    switch (EVENT_MAP[message.exchange]) {
+    switch (this.eventMap[message.exchange]) {
       case 'pending':
         let runId = message.payload.runId;
         let run = message.payload.status.runs[message.payload.runId];
