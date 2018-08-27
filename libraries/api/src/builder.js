@@ -185,7 +185,7 @@ class APIBuilder {
       title:              this.title,
       description:        this.description,
       // We hardcode taskcluster.net here because no other system uses baseUrl
-      baseUrl:            libUrls.api('https://taskcluster.net', this.serviceName, this.version, ''),
+      baseUrl:            `https://${this.serviceName}.taskcluster.net/${this.version}`,
       serviceName:        this.serviceName,
       entries: this.entries.filter(entry => !entry.noPublish).map(entry => {
         const [route, params] = utils.cleanRouteAndParams(entry.route);
