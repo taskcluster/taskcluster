@@ -173,7 +173,6 @@ tasks:
   - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
     then:
       taskId: {$eval: as_slugid("pr_task")}
-      created: {$fromNow: ''}
       deadline: {$fromNow: '1 hour'}
       provisionerId: aws-provisioner-v1
       workerType: github-worker
@@ -198,7 +197,6 @@ tasks:
   - $if: 'tasks_for == "github-push"'
     then:
       taskId: {$eval: as_slugid("push_task")}
-      created: {$fromNow: ''}
       deadline: {$fromNow: '1 hour'}
       provisionerId: aws-provisioner-v1
       workerType: github-worker
@@ -222,3 +220,157 @@ tasks:
         owner: ${event.pusher.name}@users.noreply.github.com
         source: ${event.repository.url}
 ```
+
+# Transitioning from v0
+## Pull Request Metadata
+
+```
+  v1 reference                           | v0 equivalent                  | Example Value(s)
+  ---------------------------------------+--------------------------------+-----------------------------------------
+  event.action                           | GITHUB_EVENT                   | assigned
+                                         | "{{ event.type }}"             | unassigned
+                                         |                                | review_requested
+                                         |                                | review_request_removed
+                                         |                                | labeled
+                                         |                                | unlabeled
+                                         |                                | opened
+                                         |                                | edited
+                                         |                                | closed
+                                         |                                | reopened
+                                         |                                |
+  event.number                           | GITHUB_PULL_REQUEST            | 18
+                                         | "{{ event.pullNumber }}"       | 
+  event.pull_request.title               | GITHUB_PULL_TITLE              | Update README.md
+                                         | "{{ event.title }}"            |
+  event.pull_request.head.ref            | GITHUB_BRANCH                  | master
+                                         | "{{ event.head.repo.branch }}" |
+  event.pull_request.base.user.login     | GITHUB_BASE_USER               | johndoe
+                                         | "{{ event.base.user.login }}"  |
+  event.pull_request.base.repo.name      | GITHUB_BASE_REPO_NAME          | somerepo
+                                         | "{{ event.base.repo.name }}"   |
+  event.pull_request.base.repo.clone_url | GITHUB_BASE_REPO_URL           | https://github.com/johndoe/somerepo
+                                         | "{{ event.base.repo.url }}"    |
+  event.pull_request.base.sha            | GITHUB_BASE_SHA                | ee6a2fc800cdab6a98bf24b5af1cd34bf36d41ec
+                                         | "{{ event.base.sha }}"         |
+  event.pull_request.base.ref            | GITHUB_BASE_BRANCH             | master
+                                         | "{{ event.base.repo.branch }}" |
+  -                                      | GITHUB_BASE_REF                | refs/heads/master
+                                         | "{{ event.base.ref }}"         |
+                                         |                                |
+  event.sender.login                     | GITHUB_HEAD_USER               | maryscott
+                                         | "{{ event.head.user.login }}"  |
+  event.pull_request.head.repo.name      | GITHUB_HEAD_REPO_NAME          | somerepo
+                                         | "{{ event.head.repo.name }}"   |
+  event.pull_request.head.repo.clone_url | GITHUB_HEAD_REPO_URL           | https://github.com/maryscott/somerepo
+                                         | "{{ event.head.repo.url }}"    |
+  event.pull_request.head.sha            | GITHUB_HEAD_SHA                | e8f57659c7400e225d2f70f8d17ed11b7f914abb
+                                         | "{{ event.head.sha }}"         |
+  event.pull_request.head.ref            | GITHUB_HEAD_BRANCH             | bug1394856
+                                         | "{{ event.head.repo.branch }}" |
+  -                                      | GITHUB_HEAD_REF                | refs/heads/bug1394856
+                                         | "{{ event.head.ref }}"         |
+  -                                      | GITHUB_HEAD_USER_EMAIL         | mary.scott@buccleuch.co.uk
+                                         | "{{ event.head.user.email }}"  |
+```
+
+## Push Metadata
+
+```
+  v1 reference                           | v0 equivalent                  | Example Value(s)
+  ---------------------------------------+--------------------------------+-----------------------------------------
+  -                                      | GITHUB_EVENT                   | push
+                                         | "{{ event.type }}"             |
+  -                                      | GITHUB_BRANCH                  | simple-branch
+                                         | "{{ event.base.repo.branch }}" |
+  event.ref                              | GITHUB_BASE_REF                | refs/heads/simple-branch
+                                         | "{{ event.base.ref }}"         |
+                                         | GITHUB_HEAD_REF                |
+                                         | "{{ event.head.ref }}"         |
+                                         |                                |
+  event.sender.login                     | GITHUB_BASE_USER               | maryscott
+                                         | "{{ event.base.user.login }}"  |
+                                         | GITHUB_HEAD_USER               |
+                                         | "{{ event.head.user.login }}"  |
+  event.repository.name                  | GITHUB_BASE_REPO_NAME          | somerepo
+                                         | "{{ event.base.repo.name }}"   |
+  event.repository.clone_url             | GITHUB_BASE_REPO_URL           | https://github.com/maryscott/somerepo
+                                         | "{{ event.base.repo.url }}"    |
+                                         | GITHUB_HEAD_REPO_URL           |
+                                         | "{{ event.head.repo.url }}"    |
+  event.before                           | GITHUB_BASE_SHA                | ee6a2fc800cdab6a98bf24b5af1cd34bf36d41ec
+                                         | "{{ event.base.sha }}"         |
+  -                                      | GITHUB_BASE_BRANCH             | bug1394856
+                                         | "{{ event.base.repo.branch }}" |
+                                         |                                |
+  event.repository.name                  | GITHUB_HEAD_REPO_NAME          | somerepo
+                                         | "{{ event.head.repo.name }}"   |
+  event.after                            | GITHUB_HEAD_SHA                | e8f57659c7400e225d2f70f8d17ed11b7f914abb
+                                         | "{{ event.head.sha }}"         |
+  -                                      | GITHUB_HEAD_BRANCH             | bug1394856
+                                         | "{{ event.head.repo.branch }}" |
+  -                                      | GITHUB_HEAD_USER_EMAIL         | mary.scott@buccleuch.co.uk
+                                         | "{{ event.head.user.email }}"  |
+```
+
+## Release Metadata
+
+```
+  v1 reference                           | v0 equivalent                  | Example Value(s)
+  ---------------------------------------+--------------------------------+-----------------------------------------
+  -                                      | GITHUB_EVENT                   | release
+                                         | "{{ event.type }}"
+  event.action                           | -                              | published
+  event.release.target_commitish         | GITHUB_BRANCH                  | master
+                                         | "{{ event.base.repo.branch }}" |
+                                         |                                |
+  event.sender.login                     | GITHUB_HEAD_USER               | maryscott
+                                         | "{{ event.head.user.login }}"  |
+  event.repository.name                  | GITHUB_HEAD_REPO_NAME          | somerepo
+                                         | "{{ event.head.repo.name }}"   |
+  event.repository.clone_url             | GITHUB_HEAD_REPO_URL           | https://github.com/maryscott/somerepo
+                                         | "{{ event.head.repo.url }}"    |
+                                         |                                |
+  event.release.tag_name                 | "{{ event.version }}"          | v1.0.3 (tag name)
+  event.release.name                     | "{{ event.name }}"             | Now more Awesome (release description)
+  event.release.url                      | "{{ event.release.url }}"      | https://api.github.com/repos/taskcluster/generic-worker/releases/5108386
+  event.release.prerelease               | "{{ event.prerelease }}"       | false
+  event.release.draft                    | "{{ event.draft }}"            | false
+  event.release.tarball_url              | "{{ event.tar }}"              | https://api.github.com/repos/taskcluster/generic-worker/tarball/v7.2.6
+  event.release.zipball_url              | "{{ event.zip }}"              | https://api.github.com/repos/taskcluster/generic-worker/zipball/v7.2.6
+```
+
+## Tag Metadata
+
+```
+  v1 reference                           | v0 equivalent                  | Example Value(s)
+  ---------------------------------------+--------------------------------+-----------------------------------------
+  -                                      | GITHUB_EVENT                   | tag
+                                         | "{{ event.type }}"             |
+                                         |                                |
+  event.sender.login                     | GITHUB_BASE_USER               | maryscott
+                                         | "{{ event.base.user.login }}"  |
+  event.repository.name                  | GITHUB_BASE_REPO_NAME          | somerepo
+                                         | "{{ event.base.repo.name }}"   |
+                                         | GITHUB_HEAD_REPO_NAME          |
+                                         | "{{ event.head.repo.name }}"   |
+  event.repository.clone_url             | GITHUB_BASE_REPO_URL           | https://github.com/maryscott/somerepo
+                                         | "{{ event.base.repo.url }}"    |
+                                         | GITHUB_HEAD_REPO_URL           |
+                                         | "{{ event.head.repo.url }}"    |
+  event.before                           | GITHUB_BASE_SHA                | 0000000000000000000000000000000000000000
+                                         | "{{ event.base.sha }}"         |
+  event.ref                              | GITHUB_BASE_REF                | refs/tags/v1.0.2
+                                         | "{{ event.base.ref }}"         |
+                                         | GITHUB_HEAD_REF                |
+                                         | "{{ event.head.ref }}"         |
+                                         |                                |
+  event.sender.login                     | GITHUB_HEAD_USER               | maryscott
+                                         | "{{ event.head.user.login }}"  |
+  event.after                            | GITHUB_HEAD_SHA                | e8f57659c7400e225d2f70f8d17ed11b7f914abb
+                                         | "{{ event.head.sha }}"         |
+  -                                      | GITHUB_HEAD_TAG                | v1.0.2
+                                         | "{{ event.head.tag }}"         |
+  -                                      | GITHUB_HEAD_USER_EMAIL         | mary.scott@buccleuch.co.uk
+                                         | "{{ event.head.user.email }}"  |
+```
+

@@ -215,6 +215,7 @@ class VersionOne extends TcYaml {
         tasks_for: payload.tasks_for,
         event: payload.body,
         as_slugid,
+        created: new Date().toJSON(),
       });
     } catch (err) {
       // json-e creates errors that have properties in a format
