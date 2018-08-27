@@ -1,7 +1,5 @@
-const {Client} = require('../src');
-const {buildConnectionString} = require('../src/client');
+const {Client, connectionStringCredentials} = require('../src');
 const amqplib = require('amqplib');
-const assert = require('assert');
 const assume = require('assume');
 const debugModule = require('debug');
 const libMonitor = require('taskcluster-lib-monitor');
@@ -47,13 +45,16 @@ const connectionTests = connectionString => {
     debug('publish complete');
   };
 
+  const credentials = connectionStringCredentials(connectionString);
+
   test('start and immediately stop', async function() {
     let gotConnection = false;
     const client = new Client({
-      connectionString,
+      credentials,
       retirementDelay: 50,
       minReconnectionInterval: 20,
       monitor,
+      namespace: 'guest',
     });
     client.on('connected', () => { gotConnection = true; });
     await client.stop();
@@ -62,10 +63,11 @@ const connectionTests = connectionString => {
 
   test('activeConnection', async function() {
     const client = new Client({
-      connectionString,
+      credentials,
       retirementDelay: 50,
       minReconnectionInterval: 20,
       monitor,
+      namespace: 'guest',
     });
     assume(client.activeConnection).to.equal(undefined);
     await new Promise((resolve, reject) => {
@@ -88,12 +90,12 @@ const connectionTests = connectionString => {
     Client.prototype.recycle = () => { recycles++; };
     try {
       const client = new Client({
-        connectionString,
+        credentials,
         recycleInterval: 10,
         retirementDelay: 50,
         monitor,
+        namespace: 'guest',
       });
-
       await new Promise(resolve => setTimeout(resolve, 100));
       await client.stop();
       assume(recycles).is.gt(5);
@@ -111,14 +113,15 @@ const connectionTests = connectionString => {
     };
 
     const client = new Client({
-      connectionString,
+      credentials,
       retirementDelay: 50,
-      minReconnectionInterval: 10,
+      minReconnectionInterval: 20,
       monitor,
+      namespace: 'guest',
     });
 
     try {
-      // Run the client for 100ms.  At 10ms per connection, wes should get about 10
+      // Run the Client for 100ms.  At 10ms per connection, wes should get about 10
       // connections; if the minReconnectionInterval doesn't work, we'll get a lot
       // more than that!
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -131,10 +134,11 @@ const connectionTests = connectionString => {
 
   test('start and stop after connection is established', async function() {
     const client = new Client({
-      connectionString,
+      credentials,
       retirementDelay: 50,
       minReconnectionInterval: 20,
       monitor,
+      namespace: 'guest',
     });
 
     await new Promise((resolve, reject) => {
@@ -146,10 +150,11 @@ const connectionTests = connectionString => {
 
   test('start, fail, and then stop', async function() {
     const client = new Client({
-      connectionString,
+      credentials,
       retirementDelay: 50,
       minReconnectionInterval: 20,
       monitor,
+      namespace: 'guest',
     });
 
     await new Promise((resolve, reject) => {
@@ -164,10 +169,11 @@ const connectionTests = connectionString => {
 
   test('withConnection', async function() {
     const client = new Client({
-      connectionString,
+      credentials,
       retirementDelay: 50,
       minReconnectionInterval: 20,
       monitor,
+      namespace: 'guest',
     });
 
     let gotConnection = false;
@@ -189,16 +195,18 @@ const connectionTests = connectionString => {
 
   test('withChannel', async function() {
     const client = new Client({
-      connectionString,
+      credentials,
       retirementDelay: 50,
       minReconnectionInterval: 20,
       monitor,
+      namespace: 'guest',
     });
 
     const queueName = client.fullObjectName('queue', slugid.v4());
 
     let gotException;
     try {
+      
       await client.withChannel(async chan => {
         await chan.assertQueue(queueName);
         // throw an error to exercise error-handling code
@@ -226,16 +234,18 @@ const connectionTests = connectionString => {
 
   test('consumer (with failures)', async function() {
     const client = new Client({
-      connectionString,
+      credentials,
       retirementDelay: 50,
       minReconnectionInterval: 20,
       monitor,
+      namespace: 'guest',
     });
 
     let failureCount = 0;
     let messageReceived = 0;
 
     try {
+      
       await new Promise((resolve, reject) => {
         client.on('connected', async (conn) => {
           let chan, consumer;
@@ -286,58 +296,7 @@ const connectionTests = connectionString => {
   });
 };
 
-suite('client_test.js', function() {
-  suite('buildConnectionString', function() {
-    test('missing arguments are an error', function() {
-      assume(() => buildConnectionString({password: 'pw', hostname: 'h', vhost: 'v'}))
-        .throws(/username/);
-      assume(() => buildConnectionString({username: 'me', hostname: 'h', vhost: 'v'}))
-        .throws(/password/);
-      assume(() => buildConnectionString({username: 'me', password: 'pw', vhost: 'v'}))
-        .throws(/hostname/);
-      assume(() => buildConnectionString({username: 'me', password: 'pw', hostname: 'v'}))
-        .throws(/vhost/);
-    });
-
-    test('builds a connection string with given host', function() {
-      assert.equal(
-        buildConnectionString({
-          username: 'me',
-          password: 'letmein',
-          hostname: 'pulse.abc.com',
-          vhost: '/',
-        }),
-        'amqps://me:letmein@pulse.abc.com:5671/%2F');
-    });
-
-    test('builds a connection string with urlencoded values', function() {
-      assert.equal(
-        buildConnectionString({
-          username: 'ali-escaper:/@\\|()<>&',
-          password: 'bobby-tables:/@\\|()<>&',
-          hostname: 'pulse.abc.com',
-          vhost: '/',
-        }),
-        'amqps://ali-escaper:/@%5C%7C()%3C%3E&:bobby-tables:/@%5C%7C()%3C%3E&@pulse.abc.com:5671/%2F');
-    });
-  });
-
-  suite('Client', function() {
-    let monitor;
-    suiteSetup(async function() {
-      monitor = await libMonitor({projectName: 'tests', mock: true});
-    });
-
-    test('rejects connectionString *and* username', function() {
-      assume(() => new Client({username: 'me', connectionString: 'amqps://..', monitor}))
-        .throws(/along with/);
-    });
-    test('requires either connectionString *or* username', function() {
-      assume(() => new Client({monitor}))
-        .throws(/is required/);
-    });
-  });
-
+suite('Client', function() {
   suite('with RabbitMQ', function() {
     suiteSetup(function() {
       if (!PULSE_CONNECTION_STRING) {
