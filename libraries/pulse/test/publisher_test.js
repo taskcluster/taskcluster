@@ -1,4 +1,4 @@
-const {FakeClient, Client, Exchanges} = require('../src');
+const {FakeClient, Client, Exchanges, connectionStringCredentials} = require('../src');
 const path = require('path');
 const amqplib = require('amqplib');
 const assume = require('assume');
@@ -142,10 +142,11 @@ suite('publisher_test.js', function() {
 
       const monitor = await libMonitor({projectName: exchangeOptions.projectName, mock: true});
       client = new Client({
-        connectionString: PULSE_CONNECTION_STRING,
+        credentials: connectionStringCredentials(PULSE_CONNECTION_STRING),
         retirementDelay: 50,
         minReconnectionInterval: 20,
         monitor,
+        namespace: 'guest',
       });
       // this won't be necessary when namespace is a proper argument to the
       // Client class..
