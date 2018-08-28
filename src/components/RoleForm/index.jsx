@@ -1,6 +1,6 @@
 import { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import { bool } from 'prop-types';
+import { bool, func } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -8,10 +8,13 @@ import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
 import Tooltip from '@material-ui/core/Tooltip';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
+import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Button from '../Button';
+import SpeedDial from '../SpeedDial';
+import SpeedDialAction from '../SpeedDialAction';
 import { role } from '../../utils/prop-types';
-// import splitLines from '../../utils/splitLines';
+import splitLines from '../../utils/splitLines';
 
 @withStyles(theme => ({
   saveButton: {
@@ -30,6 +33,9 @@ import { role } from '../../utils/prop-types';
   saveIcon: {
     ...theme.mixins.successIcon,
   },
+  deleteIcon: {
+    ...theme.mixins.errorIcon,
+  },
 }))
 /** A form to view/edit/create a role */
 export default class RoleForm extends Component {
@@ -38,11 +44,18 @@ export default class RoleForm extends Component {
     role,
     /** Set to `true` when creating a new role. */
     isNewRole: bool,
+    /** Callback function fired when a role is created/updated. */
+    onSaveRole: func.isRequired,
+    /** Callback function fired when a role is deleted. */
+    onDeleteRole: func,
+    /** If true, form actions will be disabled. */
+    loading: bool,
   };
 
   static defaultProps = {
     isNewRole: false,
     role: null,
+    onDeleteRole: null,
   };
 
   state = {
@@ -54,8 +67,8 @@ export default class RoleForm extends Component {
     expandedScopes: null,
   };
 
-  static getDerivedStateFromProps({ isNewRole, role }) {
-    if (isNewRole) {
+  static getDerivedStateFromProps({ isNewRole, role }, state) {
+    if (isNewRole || state.roleId) {
       return null;
     }
 
@@ -73,14 +86,23 @@ export default class RoleForm extends Component {
     this.setState({ [name]: value });
   };
 
-  // TODO: Handle save role request
   handleSaveRole = () => {
-    // const { scopeText } = this.state;
-    // const scopes = splitLines(scopeText);
+    const { roleId, scopeText, description } = this.state;
+    const scopes = splitLines(scopeText);
+    const role = {
+      scopes,
+      description,
+    };
+
+    this.props.onSaveRole(role, roleId);
+  };
+
+  handleDeleteRole = () => {
+    this.props.onDeleteRole(this.state.roleId);
   };
 
   render() {
-    const { role, classes, isNewRole } = this.props;
+    const { role, classes, isNewRole, loading } = this.props;
     const {
       description,
       scopeText,
@@ -181,16 +203,40 @@ export default class RoleForm extends Component {
             </Fragment>
           ) : null}
         </List>
-        <Tooltip title="Save">
-          <Button
-            requiresAuth
-            variant="fab"
-            onClick={this.handleSaveRole}
-            classes={{ root: classes.saveIcon }}
-            className={classes.saveButton}>
-            <ContentSaveIcon />
-          </Button>
-        </Tooltip>
+        {isNewRole ? (
+          <Tooltip title="Save">
+            <Button
+              requiresAuth
+              disabled={loading}
+              variant="fab"
+              onClick={this.handleSaveRole}
+              classes={{ root: classes.saveIcon }}
+              className={classes.saveButton}>
+              <ContentSaveIcon />
+            </Button>
+          </Tooltip>
+        ) : (
+          <SpeedDial>
+            <SpeedDialAction
+              requiresAuth
+              icon={<ContentSaveIcon />}
+              onClick={this.handleSaveRole}
+              classes={{ button: classes.saveIcon }}
+              tooltipTitle="Save"
+              ButtonProps={{ disabled: loading }}
+            />
+            <SpeedDialAction
+              requiresAuth
+              icon={<DeleteIcon />}
+              onClick={this.handleDeleteRole}
+              tooltipTitle="Delete"
+              classes={{ button: classes.deleteIcon }}
+              ButtonProps={{
+                disabled: loading,
+              }}
+            />
+          </SpeedDial>
+        )}
       </Fragment>
     );
   }

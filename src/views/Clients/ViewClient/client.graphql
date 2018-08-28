@@ -10,5 +10,6 @@ query Client($clientId: ID!) {
     scopes
     expandedScopes
     deleteOnExpiration
+    disabled
   }
 }

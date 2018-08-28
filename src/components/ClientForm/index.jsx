@@ -1,6 +1,6 @@
 import { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import { bool } from 'prop-types';
+import { bool, func } from 'prop-types';
 import { addYears } from 'date-fns';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -13,14 +13,17 @@ import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
+import CancelIcon from 'mdi-react/CancelIcon';
+import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
+import PowerIcon from 'mdi-react/PowerIcon';
 import LockResetIcon from 'mdi-react/LockResetIcon';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
 import DatePicker from '../DatePicker';
 import Button from '../Button';
 import { client } from '../../utils/prop-types';
-// import splitLines from '../../utils/splitLines';
+import splitLines from '../../utils/splitLines';
 
 @withStyles(theme => ({
   saveButton: {
@@ -39,6 +42,15 @@ import { client } from '../../utils/prop-types';
   saveIcon: {
     ...theme.mixins.successIcon,
   },
+  deleteIcon: {
+    ...theme.mixins.errorIcon,
+  },
+  disableIcon: {
+    ...theme.mixins.warningIcon,
+  },
+  enableIcon: {
+    ...theme.mixins.successIcon,
+  },
 }))
 /** A form to view/edit/create a client */
 export default class ClientForm extends Component {
@@ -47,11 +59,25 @@ export default class ClientForm extends Component {
     client,
     /** Set to `true` when creating a new client. */
     isNewClient: bool,
+    /** Callback function fired when a client is created/updated. */
+    onSaveClient: func.isRequired,
+    /** Callback function fired when a client is deleted. */
+    onDeleteClient: func,
+    /** Callback function fired when a client is disabled. */
+    onDisableClient: func,
+    /** Callback function fired when a client is enabled. */
+    onEnableClient: func,
+    /** If true, form actions will be disabled. */
+    loading: bool,
   };
 
   static defaultProps = {
     isNewClient: false,
     client: null,
+    loading: false,
+    onDeleteClient: null,
+    onDisableClient: null,
+    onEnableClient: null,
   };
 
   state = {
@@ -62,13 +88,16 @@ export default class ClientForm extends Component {
     lastModified: null,
     lastDateUsed: null,
     lastRotated: null,
-    expires: null,
+    expires: addYears(new Date(), 1000),
     deleteOnExpiration: true,
     expandedScopes: null,
+    disabled: null,
+    // eslint-disable-next-line react/no-unused-state
+    prevClient: null,
   };
 
-  static getDerivedStateFromProps({ isNewClient, client }) {
-    if (isNewClient) {
+  static getDerivedStateFromProps({ isNewClient, client }, state) {
+    if (isNewClient || (state.clientId && state.prevClient === client)) {
       return null;
     }
 
@@ -83,6 +112,8 @@ export default class ClientForm extends Component {
       deleteOnExpiration: client.deleteOnExpiration,
       scopeText: client.scopes.join('\n'),
       expandedScopes: client.expandedScopes,
+      disabled: client.disabled,
+      prevClient: client,
     };
   }
 
@@ -103,14 +134,39 @@ export default class ClientForm extends Component {
   // TODO: Reset accessToken
   handleResetAccessToken = () => {};
 
-  // TODO: Handle save client request
   handleSaveClient = () => {
-    // const { scopeText } = this.state;
-    // const scopes = splitLines(scopeText);
+    const {
+      clientId,
+      scopeText,
+      description,
+      expires,
+      deleteOnExpiration,
+    } = this.state;
+    const scopes = splitLines(scopeText);
+    const client = {
+      expires,
+      description,
+      deleteOnExpiration,
+      scopes,
+    };
+
+    this.props.onSaveClient(client, clientId);
+  };
+
+  handleDeleteClient = () => {
+    this.props.onDeleteClient(this.state.clientId);
+  };
+
+  handleDisableClient = () => {
+    this.props.onDisableClient(this.state.clientId);
+  };
+
+  handleEnableClient = () => {
+    this.props.onEnableClient(this.state.clientId);
   };
 
   render() {
-    const { client, classes, isNewClient } = this.props;
+    const { client, classes, isNewClient, loading } = this.props;
     const {
       description,
       scopeText,
@@ -122,6 +178,7 @@ export default class ClientForm extends Component {
       expires,
       deleteOnExpiration,
       expandedScopes,
+      disabled,
     } = this.state;
 
     return (
@@ -189,7 +246,7 @@ export default class ClientForm extends Component {
               }
               secondary={
                 <DatePicker
-                  value={isNewClient ? addYears(new Date(), 1000) : expires}
+                  value={expires}
                   onChange={this.handleExpirationChange}
                   format="YYYY/MM/DD"
                   maxDate={addYears(new Date(), 1001)}
@@ -262,6 +319,7 @@ export default class ClientForm extends Component {
           <Tooltip title="Save">
             <Button
               requiresAuth
+              disabled={loading}
               variant="fab"
               onClick={this.handleSaveClient}
               classes={{ root: classes.saveIcon }}
@@ -277,13 +335,38 @@ export default class ClientForm extends Component {
               onClick={this.handleSaveClient}
               classes={{ button: classes.saveIcon }}
               tooltipTitle="Save"
+              ButtonProps={{ disabled: loading }}
+            />
+            <SpeedDialAction
+              requiresAuth
+              icon={<DeleteIcon />}
+              onClick={this.handleDeleteClient}
+              classes={{ button: classes.deleteIcon }}
+              tooltipTitle="Delete"
+              ButtonProps={{ disabled: loading }}
+            />
+            <SpeedDialAction
+              icon={disabled ? <PowerIcon /> : <CancelIcon />}
+              onClick={
+                disabled ? this.handleEnableClient : this.handleDisableClient
+              }
+              tooltipTitle={disabled ? 'Enable' : 'Disable'}
+              classes={{
+                button: disabled ? classes.enableIcon : classes.disableIcon,
+              }}
+              ButtonProps={{
+                disabled: loading,
+              }}
             />
             <SpeedDialAction
               requiresAuth
               icon={<LockResetIcon />}
               onClick={this.handleResetAccessToken}
-              ButtonProps={{ color: 'secondary' }}
               tooltipTitle="Reset Access Token"
+              ButtonProps={{
+                color: 'secondary',
+                disabled: loading,
+              }}
             />
           </SpeedDial>
         )}

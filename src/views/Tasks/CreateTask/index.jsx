@@ -66,6 +66,7 @@ export default class CreateTask extends Component {
     invalid: null,
     createdTaskError: null,
     interactive: false,
+    loading: false,
   };
 
   static propTypes = {
@@ -169,6 +170,8 @@ export default class CreateTask extends Component {
       const taskId = nice();
       const payload = safeLoad(task);
 
+      this.setState({ loading: true });
+
       try {
         await this.props.client.mutate({
           mutation: createTaskQuery,
@@ -178,10 +181,14 @@ export default class CreateTask extends Component {
           },
         });
 
-        this.setState({ createdTaskId: taskId });
+        this.setState({ loading: false, createdTaskId: taskId });
         storage.setItem(TASKS_CREATE_STORAGE_KEY, payload);
       } catch (err) {
-        this.setState({ createdTaskError: err, createdTaskId: null });
+        this.setState({
+          loading: false,
+          createdTaskError: err,
+          createdTaskId: null,
+        });
       }
     }
   };
@@ -208,6 +215,7 @@ export default class CreateTask extends Component {
       invalid,
       interactive,
       createdTaskId,
+      loading,
     } = this.state;
 
     if (createdTaskId && interactive) {
@@ -252,7 +260,7 @@ export default class CreateTask extends Component {
                   tooltipTitle="Create Task"
                   classes={{ button: classes.createIcon }}
                   ButtonProps={{
-                    disabled: !task || invalid,
+                    disabled: !task || invalid || loading,
                   }}
                 />
                 <SpeedDialAction
