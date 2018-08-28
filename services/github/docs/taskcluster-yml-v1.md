@@ -158,6 +158,7 @@ You need to know which provisioner and which worker type you want to use to run 
 * `assume:repo:github.com/<owner>/<repo>:branch:<branch>` for a push event
 * `assume:repo:github.com/<owner>/<repo>:pull-request` for a pull request
 * `assume:repo:github.com/<owner>/<repo>:release` for a release event
+* `assume:repo:github.com/<organization>/<repository>:tag:<tag>` for a tag event
 
 In the [role manager](https://tools.taskcluster.net/auth/roles/), you can set up roles however you like. To give permissions to every event in your repository, you can make a role `repo:github.com/<organization>/<repository>:*` or you can give fine-grained permissions to specific github events or specific branches.
 
