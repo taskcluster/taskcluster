@@ -3,7 +3,7 @@ type AwsProvisionerWorkerTypeLaunchSpec {
 }
 
 input AwsProvisionerWorkerTypeLaunchSpecInput {
-  ImageId: ID!
+  ImageId: ID
 }
 
 type AwsProvisionerWorkerTypeInstanceType {
@@ -152,7 +152,7 @@ type AwsProvisionerWorkerType {
   maxPrice: Float!
 
   # Whether this worker-type is allowed on-demand instances. Currently ignored.
-  canUseOnDemand: Boolean
+  canUseOndemand: Boolean
 
   # Whether this worker-type is allowed spot instances. Currently ignored
   # as all instances are Spot.
@@ -304,21 +304,21 @@ type AwsProvisionerHealth {
 }
 
 input AwsProvisionerWorkerTypeInput {
-  launchSpec: AwsProvisionerWorkerTypeLaunchSpecInput!
-  description: String!
-  owner: String!
-  secrets: JSON!
-  userData: JSON!
-  scopes: [String!]!
+  launchSpec: AwsProvisionerWorkerTypeLaunchSpecInput
+  description: String
+  owner: String
+  secrets: JSON
+  userData: JSON
+  scopes: [String]
   minCapacity: Int
-  maxCapacity: Int!
-  scalingRatio: Float!
-  minPrice: Float!
-  maxPrice: Float!
-  canUseOnDemand: Boolean
+  maxCapacity: Int
+  scalingRatio: Float
+  minPrice: Float
+  maxPrice: Float
+  canUseOndemand: Boolean
   canUseSpot: Boolean
-  instanceTypes: [AwsProvisionerWorkerTypeInstanceTypeInput!]!
-  regions: [AwsProvisionerWorkerTypeRegionInput!]!
+  instanceTypes: [AwsProvisionerWorkerTypeInstanceTypeInput]
+  regions: [AwsProvisionerWorkerTypeRegionInput]
   availabilityZones: [AwsProvisionerWorkerTypeAvailabilityZoneInput]
 }
 
