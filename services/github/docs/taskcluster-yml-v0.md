@@ -101,6 +101,7 @@ Pushes, pull requests, and releases all are given access to [scopes](/docs/manua
 * `Push` -- `assume:repo:github.com/<organization>/<repository>:branch:<branch>`
 * `Pull Request` -- `assume:repo:github.com/<organization>/<repository>:pull-request`
 * `Release` -- `assume:repo:github.com/<organization>/<repository>:release`
+* `Tag` -- `assume:repo:github.com/<organization>/<repository>:tag:<tag>`
 
 In the [role manager](https://tools.taskcluster.net/auth/roles/), you can set up roles however you like. To give permissions to every event in your repository, you can make a role `repo:github.com/<organization>/<repository>:*` or you can give fine-grained permissions to only releases or specific branches, etc. [Read more](/manual/design/apis/hawk/scopes) about how scopes and roles work to see what you can do. There are lots of examples in the roles inspector for other repositories that have been set up. Look for roles that begin with `repo:github.com/` to see how they work.
 
