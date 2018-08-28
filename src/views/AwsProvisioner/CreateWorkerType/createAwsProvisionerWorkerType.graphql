@@ -1,0 +1,5 @@
+mutation CreateAwsProvisionerWorkerType($workerType: String!, $payload: AwsProvisionerWorkerTypeInput!) {
+  createAwsProvisionerWorkerType(workerType: $workerType, payload: $payload) {
+    workerType
+  }
+}

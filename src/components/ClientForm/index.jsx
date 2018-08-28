@@ -26,7 +26,7 @@ import { client } from '../../utils/prop-types';
 import splitLines from '../../utils/splitLines';
 
 @withStyles(theme => ({
-  saveButton: {
+  fab: {
     ...theme.mixins.fab,
   },
   expandedScopesListItem: {
@@ -317,15 +317,16 @@ export default class ClientForm extends Component {
         </List>
         {isNewClient ? (
           <Tooltip title="Save">
-            <Button
-              requiresAuth
-              disabled={loading}
-              variant="fab"
-              onClick={this.handleSaveClient}
-              classes={{ root: classes.saveIcon }}
-              className={classes.saveButton}>
-              <ContentSaveIcon />
-            </Button>
+            <div className={classes.fab}>
+              <Button
+                requiresAuth
+                disabled={loading}
+                variant="fab"
+                onClick={this.handleSaveClient}
+                classes={{ root: classes.saveIcon }}>
+                <ContentSaveIcon />
+              </Button>
+            </div>
           </Tooltip>
         ) : (
           <SpeedDial>

@@ -32,3 +32,38 @@ export const THEME = {
 export const VALID_TASK = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
 export const TASKS_CREATE_STORAGE_KEY = 'tasks:create';
 export const ISO_8601_REGEX = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/;
+export const DEFAULT_AWS_WORKER_TYPE = {
+  minCapacity: 0,
+  maxCapacity: 5,
+  scalingRatio: 0,
+  minPrice: 0,
+  maxPrice: 0.6,
+  canUseOndemand: false,
+  canUseSpot: true,
+  instanceTypes: [
+    {
+      instanceType: 'c3.xlarge',
+      capacity: 1,
+      utility: 1,
+      secrets: {},
+      scopes: [],
+      userData: {},
+      launchSpec: {},
+    },
+  ],
+  regions: [
+    {
+      region: 'us-west-2',
+      secrets: {},
+      scopes: [],
+      userData: {},
+      launchSpec: {
+        ImageId: 'ami-xx',
+      },
+    },
+  ],
+  userData: {},
+  launchSpec: {},
+  secrets: {},
+  scopes: [],
+};

@@ -17,7 +17,7 @@ import { role } from '../../utils/prop-types';
 import splitLines from '../../utils/splitLines';
 
 @withStyles(theme => ({
-  saveButton: {
+  fab: {
     ...theme.mixins.fab,
   },
   expandedScopesListItem: {
@@ -205,15 +205,16 @@ export default class RoleForm extends Component {
         </List>
         {isNewRole ? (
           <Tooltip title="Save">
-            <Button
-              requiresAuth
-              disabled={loading}
-              variant="fab"
-              onClick={this.handleSaveRole}
-              classes={{ root: classes.saveIcon }}
-              className={classes.saveButton}>
-              <ContentSaveIcon />
-            </Button>
+            <div className={classes.fab}>
+              <Button
+                requiresAuth
+                disabled={loading}
+                variant="fab"
+                onClick={this.handleSaveRole}
+                classes={{ root: classes.saveIcon }}>
+                <ContentSaveIcon />
+              </Button>
+            </div>
           </Tooltip>
         ) : (
           <SpeedDial>
