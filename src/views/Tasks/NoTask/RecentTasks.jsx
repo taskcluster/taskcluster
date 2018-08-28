@@ -11,7 +11,7 @@ import ListSubheader from '@material-ui/core/ListSubheader';
 import ListItemText from '@material-ui/core/ListItemText';
 import LinkIcon from 'mdi-react/LinkIcon';
 import StatusLabel from '../../../components/StatusLabel';
-import recentTasksQuery from './recentTask.graphql';
+import recentTasksQuery from './recentTasks.graphql';
 
 @graphql(recentTasksQuery, {
   options: props => ({
