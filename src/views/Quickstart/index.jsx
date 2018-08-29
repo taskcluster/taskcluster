@@ -257,7 +257,7 @@ export default class QuickStart extends Component {
     } = this.state;
 
     return (
-      <Dashboard title="GitHub Quick Start">
+      <Dashboard title="GitHub Quickstart">
         <Fragment>
           <div className={classes.orgRepo}>
             <TextField

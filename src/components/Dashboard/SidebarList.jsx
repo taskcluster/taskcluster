@@ -15,6 +15,7 @@ import AccountKeyIcon from 'mdi-react/AccountKeyIcon';
 import AccountStarIcon from 'mdi-react/AccountStarIcon';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import AccountSettingsIcon from 'mdi-react/AccountSettingsIcon';
+import GithubBoxIcon from 'mdi-react/GithubBoxIcon';
 import FileTreeIcon from 'mdi-react/FileTreeIcon';
 import WebhookIcon from 'mdi-react/WebhookIcon';
 import KeyIcon from 'mdi-react/KeyIcon';
@@ -80,6 +81,10 @@ export default class SidebarList extends Component {
 
         <SidebarListItem to="/expansions" icon={<ArrowExpandVerticalIcon />}>
           Expand Scopesets
+        </SidebarListItem>
+
+        <SidebarListItem to="/quickstart" icon={<GithubBoxIcon />}>
+          GitHub Quickstart
         </SidebarListItem>
 
         <SidebarListGroup
