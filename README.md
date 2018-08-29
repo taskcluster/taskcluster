@@ -14,6 +14,11 @@ Clone that repo and follow the instructions for starting it prior to launching
 the web UI. You will need to launch the web-server in a terminal
 instance separate from the UI in order to run both simultaneously.
 
+For development, the tc-web-server process must be serving on
+http://localhost:3050, but otherwise need not be publicly accessible. The
+development server for this repo will proxy requests as necessary to
+http://localhost:3050.
+
 ## Environment
 
 To get started local development, create a file in the root of the repo named
@@ -22,6 +27,14 @@ To get started local development, create a file in the root of the repo named
 ```bash
 APPLICATION_NAME="Taskcluster"
 ```
+
+You can optionally specify the port on which the development server serves with
+
+```bash
+PORT=9000
+```
+
+### Auth0 Config
 
 **Note:** At the preset, this web application relies on an Auth0 client for
 performing authenticated interactions with the Taskcluster APIs via the
@@ -39,7 +52,9 @@ AUTH0_SCOPE="openid profile"
 PORT="5080"
 ```
 
-This Auth0 client can only be used locally on `localhost:5080`.
+This Auth0 client is real, but can only be used locally on `localhost:5080`, so
+the development server must be run with `PORT=5080`, and accessed at
+http://localhost:5080 in the browser.
 
 ## Icons
 
