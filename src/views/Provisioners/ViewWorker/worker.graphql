@@ -1,4 +1,4 @@
-query ViewWorker($provisionerId: ID!, $workerType: String!, $workerGroup: String!, $workerId: ID!, $workerTypesConnection: PageConnection) {
+query ViewWorker($provisionerId: String!, $workerType: String!, $workerGroup: String!, $workerId: ID!, $workerTypesConnection: PageConnection) {
   worker(provisionerId: $provisionerId, workerType: $workerType, workerGroup: $workerGroup, workerId: $workerId) {
     provisionerId
     workerType

@@ -302,7 +302,7 @@ export const secret = shape({
 });
 
 export const cachePurge = shape({
-  provisionerId: number,
+  provisionerId: string,
   workerType: string,
   cacheName: string,
   before: date,

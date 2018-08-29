@@ -1,4 +1,4 @@
-query ViewWorkerTypes($provisionerId: ID!, $workerTypesConnection: PageConnection, $isAwsProvisioner: Boolean!) {
+query ViewWorkerTypes($provisionerId: String!, $workerTypesConnection: PageConnection, $isAwsProvisioner: Boolean!) {
   awsProvisionerWorkerTypeSummaries @include(if: $isAwsProvisioner) {
     workerType
     runningCapacity

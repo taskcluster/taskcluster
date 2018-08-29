@@ -61,14 +61,13 @@ export default class DialogAction extends Component {
       await this.props.onSubmit();
 
       this.setState({ executing: false });
+      this.props.onClose();
     } catch (error) {
       this.setState({
         executing: false,
         error,
       });
     }
-
-    this.props.onClose();
   };
 
   render() {

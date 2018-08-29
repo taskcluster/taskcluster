@@ -1,4 +1,4 @@
-query ViewWorkers($provisionerId: ID!, $workerType: String!, $workersConnection: PageConnection, $quarantined: Boolean) {
+query ViewWorkers($provisionerId: String!, $workerType: String!, $workersConnection: PageConnection, $quarantined: Boolean) {
   workers(provisionerId: $provisionerId, workerType: $workerType, connection: $workersConnection, isQuarantined: $quarantined) {
     pageInfo {
       hasNextPage

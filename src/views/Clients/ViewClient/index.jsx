@@ -79,8 +79,8 @@ export default class ViewClient extends Component {
       await this.props.client.mutate({
         mutation: disableClientQuery,
         variables: { clientId },
+        refetchQueries: ['Client'],
       });
-      await this.props.data.refetch({ clientId });
 
       this.setState({ error: null, loading: false });
     } catch (error) {
@@ -95,8 +95,8 @@ export default class ViewClient extends Component {
       await this.props.client.mutate({
         mutation: enableClientQuery,
         variables: { clientId },
+        refetchQueries: ['Client'],
       });
-      await this.props.data.refetch({ clientId });
 
       this.setState({ error: null, loading: false });
     } catch (error) {

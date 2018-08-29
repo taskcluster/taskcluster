@@ -1,6 +1,6 @@
 import { hot } from 'react-hot-loader';
 import { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
+import { graphql, withApollo } from 'react-apollo';
 import { format, addYears, isAfter } from 'date-fns';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -15,9 +15,10 @@ import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import WorkerTable from '../../../components/WorkerTable';
 import workerQuery from './worker.graphql';
-import sleep from '../../../utils/sleep';
+import quarantineWorkerQuery from './quarantineWorker.graphql';
 
 @hot(module)
+@withApollo
 @graphql(workerQuery, {
   skip: props => !props.match.params.provisionerId,
   options: ({ match: { params } }) => ({
@@ -59,9 +60,32 @@ export default class ViewWorker extends Component {
     });
   };
 
-  // TODO: Add action request
-  handleDialogSubmit = async () => {
-    await sleep(2000);
+  // TODO: Add action logic
+  handleDialogSubmit = () => {};
+
+  handleQuarantineDialogSubmit = () => {
+    const {
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+    } = this.props.match.params;
+
+    return this.props.client.mutate({
+      mutation: quarantineWorkerQuery,
+      variables: {
+        provisionerId,
+        workerType,
+        workerGroup,
+        workerId,
+        payload: {
+          quarantineUntil: new Date(
+            this.state.quarantineUntilInput
+          ).toISOString(),
+        },
+      },
+      refetchQueries: ['ViewWorker'],
+    });
   };
 
   handleQuarantineChange = ({ target }) => {
@@ -131,7 +155,7 @@ export default class ViewWorker extends Component {
                     title={dialogTitle}
                     body={dialogBody}
                     confirmText={dialogTitle}
-                    onSubmit={this.handleDialogSubmit}
+                    onSubmit={this.handleQuarantineDialogSubmit}
                     onClose={this.handleDialogClose}
                   />
                 ) : (
