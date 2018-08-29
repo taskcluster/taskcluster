@@ -7,6 +7,9 @@ import loadable from '../../utils/loadable';
 const ViewSecrets = loadable(() =>
   import(/* webpackChunkName: 'Secrets.ViewSecrets' */ './ViewSecrets')
 );
+const ViewSecret = loadable(() =>
+  import(/* webpackChunkName: 'Secrets.ViewSecret' */ './ViewSecret')
+);
 
 @hot(module)
 export default class Secrets extends Component {
@@ -18,6 +21,17 @@ export default class Secrets extends Component {
 
     return (
       <Switch>
+        <RouteWithProps
+          path={`${path}/create`}
+          {...props}
+          isNewSecret
+          component={ViewSecret}
+        />
+        <RouteWithProps
+          path={`${path}/:secret`}
+          {...props}
+          component={ViewSecret}
+        />
         <RouteWithProps path={path} {...props} component={ViewSecrets} />
       </Switch>
     );

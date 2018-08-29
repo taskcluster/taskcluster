@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { func, shape, arrayOf } from 'prop-types';
+import { func, shape } from 'prop-types';
 import { memoizeWith, pipe, map, sort as rSort } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
@@ -12,7 +12,7 @@ import TableCellListItem from '../../components/TableCellListItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_SECRETS_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
-import { pageInfo, secret } from '../../utils/prop-types';
+import { pageInfo, secrets } from '../../utils/prop-types';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.name, b.node.name)),
@@ -33,7 +33,7 @@ export default class SecretsTable extends Component {
     onPageChange: func.isRequired,
     /** Secrets GraphQL PageConnection instance. */
     secretsConnection: shape({
-      edges: arrayOf(secret),
+      edges: secrets,
       pageInfo,
     }).isRequired,
   };
