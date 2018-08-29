@@ -13,7 +13,16 @@ export default ({ secrets }) => {
     };
   });
   const secret = new DataLoader(names =>
-    Promise.all(names.map(async name => secrets.get(name)))
+    Promise.all(
+      names.map(async name => {
+        const secret = await secrets.get(name);
+
+        return {
+          name,
+          ...secret,
+        };
+      })
+    )
   );
 
   return {
