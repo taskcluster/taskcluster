@@ -13,7 +13,7 @@ input HookMetadataInput {
 }
 
 type HookTask {
-  provisionerId: ID!
+  provisionerId: String!
   workerType: String!
   schedulerId: ID
   taskGroupId: ID

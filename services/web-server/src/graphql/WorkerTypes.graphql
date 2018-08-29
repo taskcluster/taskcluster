@@ -14,18 +14,18 @@ type WorkerType {
   actions: [ProvisionerAction]!
 
   workers(
-    provisionerId: ID = provisionerId,
+    provisionerId: String = provisionerId,
     workerType: String = workerType,
     connection: PageConnection,
     filter: JSON
   ): WorkersCompactConnection
   worker(
-    provisionerId: ID = provisionerId,
+    provisionerId: String = provisionerId,
     workerType: String = workerType,
     workerGroup: String!,
     workerId: ID!
   ): Worker
-  pendingTasks(provisionerId: ID = provisionerId, workerType: String = workerType): Int!
+  pendingTasks(provisionerId: String = provisionerId, workerType: String = workerType): Int!
 }
 
 type WorkerTypesEdge implements Edge {
@@ -39,7 +39,7 @@ type WorkerTypesConnection implements Connection {
 }
 
 extend type Query {
-  workerType(provisionerId: ID!, workerType: String!): WorkerType
-  pendingTasks(provisionerId: ID!, workerType: String!): Int!
-  workerTypes(provisionerId: ID!, connection: PageConnection, filter: JSON): WorkerTypesConnection
+  workerType(provisionerId: String!, workerType: String!): WorkerType
+  pendingTasks(provisionerId: String!, workerType: String!): Int!
+  workerTypes(provisionerId: String!, connection: PageConnection, filter: JSON): WorkerTypesConnection
 }

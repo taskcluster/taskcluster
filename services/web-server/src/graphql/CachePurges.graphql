@@ -1,6 +1,6 @@
 type CachePurge {
   # ProvisionerId associated with the workerType.
-  provisionerId: ID!
+  provisionerId: String!
 
   # Workertype cache exists on.
   workerType: String!
@@ -18,7 +18,7 @@ input PurgeCacheInput {
 }
 
 type PurgeCache {
-  provisionerId: ID
+  provisionerId: String
   workerType: ID
 }
 
@@ -43,5 +43,5 @@ extend type Mutation {
   # Publish a purge-cache message to purge caches in payload with `cacheName`
   # for a `provisionerId` and `workerType`. Workers should be listening for
   # this message and purge caches when they see it.
-  purgeCache(provisionerId: ID!, workerType: ID!, payload: PurgeCacheInput): PurgeCache
+  purgeCache(provisionerId: String!, workerType: ID!, payload: PurgeCacheInput): PurgeCache
 }
