@@ -1539,8 +1539,8 @@ json-buffer@3.0.0:
   resolved "https://registry.yarnpkg.com/json-buffer/-/json-buffer-3.0.0.tgz#5b1f397afc75d677bde8bcfc0e47e1f9a3d9a898"
 
 json-e@^2.5.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/json-e/-/json-e-2.5.0.tgz#5416b595777e2946d5e065e7e384c19ffa8b409f"
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/json-e/-/json-e-2.7.0.tgz#2f0fdb6bb7a0d410b045687f379bfae8ddadcfab"
   dependencies:
     json-stable-stringify "^1.0.1"
 
