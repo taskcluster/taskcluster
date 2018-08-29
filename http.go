@@ -9,6 +9,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
+
 	// "net/http/httputil"
 	"net/url"
 	"reflect"
@@ -81,9 +83,15 @@ var defaultHTTPClient ReducedHTTPClient = &http.Client{}
 
 // utility function to create a URL object based on given data
 func setURL(client *Client, route string, query url.Values) (u *url.URL, err error) {
-	u, err = url.Parse(client.BaseURL + route)
+	URL := client.BaseURL
+	// avoid double separator...
+	if !strings.HasSuffix(URL, "/") {
+		URL += "/"
+	}
+	URL += route
+	u, err = url.Parse(URL)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot parse url: '%v', is BaseURL (%v) set correctly?\n%v\n", client.BaseURL+route, client.BaseURL, err)
+		return nil, fmt.Errorf("Cannot parse url: '%v', is BaseURL (%v) set correctly?\n%v\n", URL, client.BaseURL, err)
 	}
 	if query != nil {
 		u.RawQuery = query.Encode()
