@@ -38,5 +38,8 @@
     }, {
         "url": "https://references.taskcluster.net/secrets/v1/api.json",
         "docroot": "https://docs.taskcluster.net/reference/core/secrets/api-docs"
+    }, {
+        "url": "https://references.taskcluster.net/treeherder/v1/exchanges.json",
+        "docroot": "https://docs.taskcluster.net/reference/core/treeherder/exchanges"
     }
 ]
