@@ -1,11 +1,3 @@
-type AwsProvisionerWorkerTypeLaunchSpec {
-  ImageId: ID!
-}
-
-input AwsProvisionerWorkerTypeLaunchSpecInput {
-  ImageId: ID
-}
-
 type AwsProvisionerWorkerTypeInstanceType {
   # InstanceType name for Amazon.
   instanceType: String!
@@ -21,7 +13,7 @@ type AwsProvisionerWorkerTypeInstanceType {
   utility: Float!
 
   # LaunchSpecification entries unique to this InstanceType.
-  launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+  launchSpec: JSON!
 
   # Static Secrets unique to this InstanceType.
   secrets: JSON!
@@ -38,7 +30,7 @@ input AwsProvisionerWorkerTypeInstanceTypeInput {
   instanceType: String!
   capacity: Int!
   utility: Float!
-  launchSpec: AwsProvisionerWorkerTypeLaunchSpecInput!
+  launchSpec: JSON!
   secrets: JSON!
   userData: JSON!
   scopes: [String]!
@@ -49,7 +41,7 @@ type AwsProvisionerWorkerTypeRegion {
   region: String!
 
   # LaunchSpecification entries unique to this Region.
-  launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+  launchSpec: JSON!
 
   # Static Secrets unique to this Region.
   secrets: JSON!
@@ -64,7 +56,7 @@ type AwsProvisionerWorkerTypeRegion {
 
 input AwsProvisionerWorkerTypeRegionInput {
   region: String!
-  launchSpec: AwsProvisionerWorkerTypeLaunchSpecInput!
+  launchSpec: JSON!
   secrets: JSON!
   userData: JSON!
   scopes: [String]!
@@ -78,7 +70,7 @@ type AwsProvisionerWorkerTypeAvailabilityZone {
   region: String
 
   # LaunchSpecification entries unique to this AZ.
-  launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+  launchSpec: JSON!
 
   # Static Secrets unique to this AZ.
   secrets: JSON
@@ -90,7 +82,7 @@ type AwsProvisionerWorkerTypeAvailabilityZone {
 input AwsProvisionerWorkerTypeAvailabilityZoneInput {
   availabilityZone: String!
   region: String
-  launchSpec: AwsProvisionerWorkerTypeLaunchSpecInput!
+  launchSpec: JSON!
   secrets: JSON
   userData: JSON
 }
@@ -101,7 +93,7 @@ type AwsProvisionerWorkerType {
   workerType: String!
 
   # Launch Specification entries which are used in all regions and all instance types.
-  launchSpec: AwsProvisionerWorkerTypeLaunchSpec!
+  launchSpec: JSON!
 
   # A string which describes what this image is for and hints on using it.
   description: String!
@@ -304,7 +296,7 @@ type AwsProvisionerHealth {
 }
 
 input AwsProvisionerWorkerTypeInput {
-  launchSpec: AwsProvisionerWorkerTypeLaunchSpecInput
+  launchSpec: JSON
   description: String
   owner: String
   secrets: JSON
