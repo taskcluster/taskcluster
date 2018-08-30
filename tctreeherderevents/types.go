@@ -9,66 +9,66 @@ import (
 )
 
 type (
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display
+	// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display
 	Display struct {
 
 		// Mininum:    1
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/chunkCount
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/chunkCount
 		ChunkCount int64 `json:"chunkCount,omitempty"`
 
 		// Mininum:    1
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/chunkId
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/chunkId
 		ChunkID int64 `json:"chunkId,omitempty"`
 
 		// Min length: 1
 		// Max length: 100
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/groupName
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/groupName
 		GroupName string `json:"groupName,omitempty"`
 
 		// Min length: 1
 		// Max length: 25
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/groupSymbol
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/groupSymbol
 		GroupSymbol string `json:"groupSymbol"`
 
 		// Min length: 1
 		// Max length: 100
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/jobName
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/jobName
 		JobName string `json:"jobName"`
 
 		// Min length: 0
 		// Max length: 25
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display/properties/jobSymbol
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/jobSymbol
 		JobSymbol string `json:"jobSymbol"`
 	}
 
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items
+	// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items
 	Error struct {
 
 		// Min length: 1
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/line
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/line
 		Line string `json:"line,omitempty"`
 
 		// Mininum:    0
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/linenumber
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/linenumber
 		Linenumber int64 `json:"linenumber,omitempty"`
 	}
 
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]
+	// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]
 	GithubPullRequest struct {
 
 		// Possible values:
 		//   * "github.com"
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/kind
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/kind
 		Kind string `json:"kind"`
 
 		// This could be the organization or the individual git username
@@ -78,63 +78,63 @@ type (
 		// Min length: 1
 		// Max length: 50
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/owner
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/owner
 		Owner string `json:"owner,omitempty"`
 
 		// Syntax:     ^[\w-]+$
 		// Min length: 1
 		// Max length: 50
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/project
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/project
 		Project string `json:"project"`
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/pullRequestID
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/pullRequestID
 		PullRequestID int64 `json:"pullRequestID,omitempty"`
 
 		// Min length: 40
 		// Max length: 40
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/revision
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/revision
 		Revision string `json:"revision"`
 	}
 
 	// PREFERRED: An HG job that only has a revision.  This is for all
 	// jobs going forward.
 	//
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]
+	// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]
 	HGPush struct {
 
 		// Possible values:
 		//   * "hg.mozilla.org"
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/kind
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/kind
 		Kind string `json:"kind"`
 
 		// Syntax:     ^[\w-]+$
 		// Min length: 1
 		// Max length: 50
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/project
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/project
 		Project string `json:"project"`
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/pushLogID
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/pushLogID
 		PushLogID int64 `json:"pushLogID,omitempty"`
 
 		// Syntax:     ^[0-9a-f]+$
 		// Min length: 40
 		// Max length: 40
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/revision
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/revision
 		Revision string `json:"revision"`
 	}
 
 	// Definition of a single job that can be added to Treeherder
 	// Project is determined by the routing key, so we don't need to specify it here.
 	//
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#
+	// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#
 	JobDefinition struct {
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine
 		BuildMachine Machine `json:"buildMachine,omitempty"`
 
 		// The name of the build system that initiated this content.  Some examples
@@ -146,34 +146,34 @@ type (
 		// Min length: 1
 		// Max length: 25
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/buildSystem
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/buildSystem
 		BuildSystem string `json:"buildSystem"`
 
 		// The job guids that were coalesced to this job.
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/coalesced
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/coalesced
 		Coalesced []string `json:"coalesced,omitempty"`
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/display
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display
 		Display Display `json:"display"`
 
 		// Extra information that Treeherder reads on a best-effort basis
 		//
 		// Additional properties allowed
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/extra
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/extra
 		Extra json.RawMessage `json:"extra,omitempty"`
 
 		// True indicates this job has been retried.
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/isRetried
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/isRetried
 		IsRetried bool `json:"isRetried,omitempty"`
 
 		// Definition of the Job Info for a job.  These are extra data
 		// fields that go along with a job that will be displayed in
 		// the details panel within Treeherder.
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo
 		JobInfo JobInfo `json:"jobInfo,omitempty"`
 
 		// Possible values:
@@ -183,7 +183,7 @@ type (
 		//
 		// Default:    "other"
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobKind
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobKind
 		JobKind string `json:"jobKind"`
 
 		// Labels are a dimension of a platform.  The values here can vary wildly,
@@ -201,17 +201,17 @@ type (
 		//   asan   Address Sanitizer
 		//   tsan   Thread Sanitizer Build
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/labels
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/labels
 		Labels []string `json:"labels,omitempty"`
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs
 		Logs []Log `json:"logs,omitempty"`
 
 		// One of:
 		//   * HGPush
 		//   * GithubPullRequest
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/origin
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin
 		Origin json.RawMessage `json:"origin"`
 
 		// Description of who submitted the job: gaia | scheduler name | username | email
@@ -219,7 +219,7 @@ type (
 		// Min length: 1
 		// Max length: 50
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/owner
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/owner
 		Owner string `json:"owner,omitempty"`
 
 		// Examples include:
@@ -231,7 +231,7 @@ type (
 		// Min length: 1
 		// Max length: 125
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/productName
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/productName
 		ProductName string `json:"productName,omitempty"`
 
 		// Examples include:
@@ -245,7 +245,7 @@ type (
 		// Min length: 1
 		// Max length: 125
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/reason
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/reason
 		Reason string `json:"reason,omitempty"`
 
 		// fail: A failure
@@ -263,7 +263,7 @@ type (
 		//   * "superseded"
 		//   * "unknown"
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/result
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/result
 		Result string `json:"result,omitempty"`
 
 		// The infrastructure retry iteration on this job.  The number of times this
@@ -274,10 +274,10 @@ type (
 		// Default:    0
 		// Mininum:    0
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/retryId
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/retryId
 		RetryID int64 `json:"retryId,omitempty"`
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine
 		RunMachine Machine `json:"runMachine,omitempty"`
 
 		// unscheduled: not yet scheduled
@@ -291,7 +291,7 @@ type (
 		//   * "running"
 		//   * "completed"
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/state
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/state
 		State string `json:"state"`
 
 		// This could just be what was formerly submitted as a job_guid in the
@@ -301,22 +301,22 @@ type (
 		// Min length: 1
 		// Max length: 50
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/taskId
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/taskId
 		TaskID string `json:"taskId"`
 
 		// Mininum:    1
 		// Maximum:    3
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/tier
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/tier
 		Tier int64 `json:"tier,omitempty"`
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/timeCompleted
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/timeCompleted
 		TimeCompleted tcclient.Time `json:"timeCompleted,omitempty"`
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/timeScheduled
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/timeScheduled
 		TimeScheduled tcclient.Time `json:"timeScheduled,omitempty"`
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/timeStarted
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/timeStarted
 		TimeStarted tcclient.Time `json:"timeStarted,omitempty"`
 
 		// Message version
@@ -324,7 +324,7 @@ type (
 		// Possible values:
 		//   * 1
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/version
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/version
 		Version int64 `json:"version"`
 	}
 
@@ -332,56 +332,56 @@ type (
 	// fields that go along with a job that will be displayed in
 	// the details panel within Treeherder.
 	//
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo
+	// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo
 	JobInfo struct {
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links
 		Links []Link `json:"links,omitempty"`
 
 		// Plain text description of the job and its state.  Submitted with
 		// the final message about a task.
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/summary
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/summary
 		Summary string `json:"summary,omitempty"`
 	}
 
 	// List of URLs shown as key/value pairs.  Shown as:
 	// "<label>: <linkText>" where linkText will be a link to the url.
 	//
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items
+	// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items
 	Link struct {
 
 		// Min length: 1
 		// Max length: 70
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/label
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/label
 		Label string `json:"label"`
 
 		// Min length: 1
 		// Max length: 125
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/linkText
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/linkText
 		LinkText string `json:"linkText"`
 
 		// Max length: 512
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/url
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/url
 		URL string `json:"url"`
 	}
 
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items
+	// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items
 	Log struct {
 
 		// If true, indicates that the number of errors in the log was too
 		// large and not all of those lines are indicated here.
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/errorsTruncated
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/errorsTruncated
 		ErrorsTruncated bool `json:"errorsTruncated,omitempty"`
 
 		// Min length: 1
 		// Max length: 50
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/name
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/name
 		Name string `json:"name"`
 
 		// This object defines what is seen in the Treeherder Log Viewer.
@@ -390,68 +390,68 @@ type (
 		// submitted log.  If this value is submitted, Treeherder will
 		// consider the log already parsed and skip parsing.
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps
 		Steps []Step `json:"steps,omitempty"`
 
 		// Min length: 1
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/url
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/url
 		URL string `json:"url"`
 	}
 
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine
+	// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine
 	Machine struct {
 
 		// Syntax:     ^[\w-]+$
 		// Min length: 1
 		// Max length: 25
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine/properties/architecture
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/architecture
 		Architecture string `json:"architecture"`
 
 		// Syntax:     ^[\w-]+$
 		// Min length: 1
 		// Max length: 50
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine/properties/name
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/name
 		Name string `json:"name,omitempty"`
 
 		// Syntax:     ^[\w-]+$
 		// Min length: 1
 		// Max length: 25
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine/properties/os
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/os
 		OS string `json:"os"`
 
 		// Syntax:     ^[\w-]+$
 		// Min length: 1
 		// Max length: 100
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/definitions/machine/properties/platform
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/platform
 		Platform string `json:"platform"`
 	}
 
-	// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items
+	// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items
 	Step struct {
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors
 		Errors []Error `json:"errors,omitempty"`
 
 		// Mininum:    0
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineFinished
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineFinished
 		LineFinished int64 `json:"lineFinished"`
 
 		// Mininum:    0
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineStarted
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineStarted
 		LineStarted int64 `json:"lineStarted"`
 
 		// Min length: 1
 		// Max length: 255
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/name
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/name
 		Name string `json:"name"`
 
 		// Possible values:
@@ -461,13 +461,13 @@ type (
 		//   * "canceled"
 		//   * "unknown"
 		//
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/result
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/result
 		Result string `json:"result"`
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/timeFinished
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/timeFinished
 		TimeFinished tcclient.Time `json:"timeFinished"`
 
-		// See http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/timeStarted
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/timeStarted
 		TimeStarted tcclient.Time `json:"timeStarted"`
 	}
 )

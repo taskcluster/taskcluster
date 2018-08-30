@@ -28218,3 +28218,1862 @@ title: Secret
 type: object
 
 
+https://references.taskcluster.net/treeherder/v1/exchanges.json
+===============================================================
+Version         = '0'
+Schema          = 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#'
+Title           = 'Taskcluster-treeherder Pulse Exchange'
+Description     = 'The taskcluster-treeherder service is responsible for processing
+task events published by TaskCluster Queue and producing job messages
+that are consumable by Treeherder.
+
+This exchange provides that job messages to be consumed by any queue that
+attached to the exchange.  This could be a production Treeheder instance,
+a local development environment, or a custom dashboard.'
+Exchange Prefix = 'exchange/taskcluster-treeherder/v1/'
+Entry 0     = 
+    Entry Type        = 'topic-exchange'
+    Entry Exchange    = 'jobs'
+    Entry Name        = 'jobs'
+    Entry Title       = 'Job Messages'
+    Entry Description = 'When a task run is scheduled or resolved, a message is posted to
+this exchange in a Treeherder consumable format.'
+    Routing Key Element 0     = 
+        Element Name      = 'destination'
+        Element Summary   = 'destination'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 1     = 
+        Element Name      = 'project'
+        Element Summary   = 'project'
+        Element Constant  = ''
+        Element M Words   = 'false'
+        Element Required  = 'true'
+    Routing Key Element 2     = 
+        Element Name      = 'reserved'
+        Element Summary   = 'Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.'
+        Element Constant  = ''
+        Element M Words   = 'true'
+        Element Required  = 'false'
+    Entry Schema      = 'v1/pulse-job.json#'
+    Entry SchemaURL   = 'https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#'
+
+
+https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#
+=============================================================
+$id: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#
+$schema: http://json-schema.org/draft-06/schema#
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#
+TYPE_NAME: JobDefinition
+additionalProperties:
+  Boolean: false
+  Properties: null
+definitions:
+  MemberNames:
+    machine: Machine
+  Properties:
+    machine:
+      IS_REQUIRED: false
+      PROPERTY_NAME: machine
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine
+      TYPE_NAME: Machine
+      additionalProperties:
+        Boolean: false
+        Properties: null
+      properties:
+        MemberNames:
+          architecture: Architecture
+          name: Name
+          os: OS
+          platform: Platform
+        Properties:
+          architecture:
+            IS_REQUIRED: true
+            PROPERTY_NAME: architecture
+            SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/architecture
+            TYPE_NAME: ""
+            maxLength: 25
+            minLength: 1
+            pattern: ^[\w-]+$
+            type: string
+          name:
+            IS_REQUIRED: false
+            PROPERTY_NAME: name
+            SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/name
+            TYPE_NAME: ""
+            maxLength: 50
+            minLength: 1
+            pattern: ^[\w-]+$
+            type: string
+          os:
+            IS_REQUIRED: true
+            PROPERTY_NAME: os
+            SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/os
+            TYPE_NAME: ""
+            maxLength: 25
+            minLength: 1
+            pattern: ^[\w-]+$
+            type: string
+          platform:
+            IS_REQUIRED: true
+            PROPERTY_NAME: platform
+            SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/platform
+            TYPE_NAME: ""
+            maxLength: 100
+            minLength: 1
+            pattern: ^[\w-]+$
+            type: string
+        SortedPropertyNames:
+        - architecture
+        - name
+        - os
+        - platform
+        SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties
+      required:
+      - platform
+      - os
+      - architecture
+      type: object
+  SortedPropertyNames:
+  - machine
+  SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions
+description: |
+  Definition of a single job that can be added to Treeherder
+  Project is determined by the routing key, so we don't need to specify it here.
+properties:
+  MemberNames:
+    buildMachine: BuildMachine
+    buildSystem: BuildSystem
+    coalesced: Coalesced
+    display: Display
+    extra: Extra
+    isRetried: IsRetried
+    jobInfo: JobInfo
+    jobKind: JobKind
+    labels: Labels
+    logs: Logs
+    origin: Origin
+    owner: Owner
+    productName: ProductName
+    reason: Reason
+    result: Result
+    retryId: RetryID
+    runMachine: RunMachine
+    state: State
+    taskId: TaskID
+    tier: Tier
+    timeCompleted: TimeCompleted
+    timeScheduled: TimeScheduled
+    timeStarted: TimeStarted
+    version: Version
+  Properties:
+    buildMachine:
+      $ref: '#/definitions/machine'
+      IS_REQUIRED: false
+      PROPERTY_NAME: buildMachine
+      REF_SCHEMA_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine
+      REF_SUBSCHEMA:
+        IS_REQUIRED: false
+        PROPERTY_NAME: machine
+        SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine
+        TYPE_NAME: Machine
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        properties:
+          MemberNames:
+            architecture: Architecture
+            name: Name
+            os: OS
+            platform: Platform
+          Properties:
+            architecture:
+              IS_REQUIRED: true
+              PROPERTY_NAME: architecture
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/architecture
+              TYPE_NAME: ""
+              maxLength: 25
+              minLength: 1
+              pattern: ^[\w-]+$
+              type: string
+            name:
+              IS_REQUIRED: false
+              PROPERTY_NAME: name
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/name
+              TYPE_NAME: ""
+              maxLength: 50
+              minLength: 1
+              pattern: ^[\w-]+$
+              type: string
+            os:
+              IS_REQUIRED: true
+              PROPERTY_NAME: os
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/os
+              TYPE_NAME: ""
+              maxLength: 25
+              minLength: 1
+              pattern: ^[\w-]+$
+              type: string
+            platform:
+              IS_REQUIRED: true
+              PROPERTY_NAME: platform
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/platform
+              TYPE_NAME: ""
+              maxLength: 100
+              minLength: 1
+              pattern: ^[\w-]+$
+              type: string
+          SortedPropertyNames:
+          - architecture
+          - name
+          - os
+          - platform
+          SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties
+        required:
+        - platform
+        - os
+        - architecture
+        type: object
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/buildMachine
+      TYPE_NAME: ""
+    buildSystem:
+      IS_REQUIRED: true
+      PROPERTY_NAME: buildSystem
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/buildSystem
+      TYPE_NAME: ""
+      description: |
+        The name of the build system that initiated this content.  Some examples
+        are "buildbot" and "taskcluster".  But this could be any name.  This
+        value will be used in the routing key for retriggering jobs in the
+        publish-job-action task.
+      maxLength: 25
+      minLength: 1
+      pattern: ^[\w-]+$
+      type: string
+    coalesced:
+      IS_REQUIRED: false
+      PROPERTY_NAME: coalesced
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/coalesced
+      TYPE_NAME: ""
+      description: The job guids that were coalesced to this job.
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/coalesced/items
+        TYPE_NAME: ""
+        maxLength: 50
+        minLength: 1
+        pattern: ^[\w/+-]+$
+        title: Job GUID
+        type: string
+      title: Coalesced job GUID
+      type: array
+    display:
+      IS_REQUIRED: true
+      PROPERTY_NAME: display
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display
+      TYPE_NAME: Display
+      additionalProperties:
+        Boolean: false
+        Properties: null
+      properties:
+        MemberNames:
+          chunkCount: ChunkCount
+          chunkId: ChunkID
+          groupName: GroupName
+          groupSymbol: GroupSymbol
+          jobName: JobName
+          jobSymbol: JobSymbol
+        Properties:
+          chunkCount:
+            IS_REQUIRED: false
+            PROPERTY_NAME: chunkCount
+            SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/chunkCount
+            TYPE_NAME: ""
+            minimum: 1
+            title: Chunk Count
+            type: integer
+          chunkId:
+            IS_REQUIRED: false
+            PROPERTY_NAME: chunkId
+            SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/chunkId
+            TYPE_NAME: ""
+            minimum: 1
+            title: Chunk ID
+            type: integer
+          groupName:
+            IS_REQUIRED: false
+            PROPERTY_NAME: groupName
+            SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/groupName
+            TYPE_NAME: ""
+            maxLength: 100
+            minLength: 1
+            title: Group Name
+            type: string
+          groupSymbol:
+            IS_REQUIRED: true
+            PROPERTY_NAME: groupSymbol
+            SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/groupSymbol
+            TYPE_NAME: ""
+            maxLength: 25
+            minLength: 1
+            title: Group Symbol
+            type: string
+          jobName:
+            IS_REQUIRED: true
+            PROPERTY_NAME: jobName
+            SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/jobName
+            TYPE_NAME: ""
+            maxLength: 100
+            minLength: 1
+            title: Job Name
+            type: string
+          jobSymbol:
+            IS_REQUIRED: true
+            PROPERTY_NAME: jobSymbol
+            SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/jobSymbol
+            TYPE_NAME: ""
+            maxLength: 25
+            minLength: 0
+            title: Job Symbol
+            type: string
+        SortedPropertyNames:
+        - chunkCount
+        - chunkId
+        - groupName
+        - groupSymbol
+        - jobName
+        - jobSymbol
+        SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties
+      required:
+      - jobName
+      - jobSymbol
+      - groupSymbol
+      type: object
+    extra:
+      IS_REQUIRED: false
+      PROPERTY_NAME: extra
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/extra
+      TYPE_NAME: ""
+      description: Extra information that Treeherder reads on a best-effort basis
+      type: object
+    isRetried:
+      IS_REQUIRED: false
+      PROPERTY_NAME: isRetried
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/isRetried
+      TYPE_NAME: ""
+      description: True indicates this job has been retried.
+      type: boolean
+    jobInfo:
+      IS_REQUIRED: false
+      PROPERTY_NAME: jobInfo
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo
+      TYPE_NAME: JobInfo
+      additionalProperties:
+        Boolean: false
+        Properties: null
+      description: |
+        Definition of the Job Info for a job.  These are extra data
+        fields that go along with a job that will be displayed in
+        the details panel within Treeherder.
+      properties:
+        MemberNames:
+          links: Links
+          summary: Summary
+        Properties:
+          links:
+            IS_REQUIRED: false
+            PROPERTY_NAME: links
+            SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links
+            TYPE_NAME: ""
+            items:
+              IS_REQUIRED: false
+              PROPERTY_NAME: ""
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items
+              TYPE_NAME: Link
+              additionalProperties:
+                Boolean: false
+                Properties: null
+              description: |
+                List of URLs shown as key/value pairs.  Shown as:
+                "<label>: <linkText>" where linkText will be a link to the url.
+              properties:
+                MemberNames:
+                  label: Label
+                  linkText: LinkText
+                  url: URL
+                Properties:
+                  label:
+                    IS_REQUIRED: true
+                    PROPERTY_NAME: label
+                    SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/label
+                    TYPE_NAME: ""
+                    maxLength: 70
+                    minLength: 1
+                    type: string
+                  linkText:
+                    IS_REQUIRED: true
+                    PROPERTY_NAME: linkText
+                    SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/linkText
+                    TYPE_NAME: ""
+                    maxLength: 125
+                    minLength: 1
+                    type: string
+                  url:
+                    IS_REQUIRED: true
+                    PROPERTY_NAME: url
+                    SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/url
+                    TYPE_NAME: ""
+                    format: uri
+                    maxLength: 512
+                    type: string
+                SortedPropertyNames:
+                - label
+                - linkText
+                - url
+                SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties
+              required:
+              - url
+              - linkText
+              - label
+              title: Link
+              type: object
+            type: array
+          summary:
+            IS_REQUIRED: false
+            PROPERTY_NAME: summary
+            SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/summary
+            TYPE_NAME: ""
+            description: |
+              Plain text description of the job and its state.  Submitted with
+              the final message about a task.
+            type: string
+        SortedPropertyNames:
+        - links
+        - summary
+        SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties
+      type: object
+    jobKind:
+      IS_REQUIRED: true
+      PROPERTY_NAME: jobKind
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobKind
+      TYPE_NAME: ""
+      default: other
+      enum:
+      - build
+      - test
+      - other
+      type: string
+    labels:
+      IS_REQUIRED: false
+      PROPERTY_NAME: labels
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/labels
+      TYPE_NAME: ""
+      description: |
+        Labels are a dimension of a platform.  The values here can vary wildly,
+        so most strings are valid for this.  The list of labels that are used
+        is maleable going forward.
+
+        These were formerly known as "Options" within "Option Collections" but
+        calling labels now so they can be understood to be just strings that
+        denotes a characteristic of the job.
+
+        Some examples of labels that have been used:
+          opt    Optimize Compiler GCC optimize flags
+          debug  Debug flags passed in
+          pgo    Profile Guided Optimization - Like opt, but runs with profiling, then builds again using that profiling
+          asan   Address Sanitizer
+          tsan   Thread Sanitizer Build
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/labels/items
+        TYPE_NAME: ""
+        maxLength: 50
+        minLength: 1
+        pattern: ^[\w-]+$
+        title: Label
+        type: string
+      title: Labels
+      type: array
+    logs:
+      IS_REQUIRED: false
+      PROPERTY_NAME: logs
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs
+      TYPE_NAME: ""
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items
+        TYPE_NAME: Log
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        properties:
+          MemberNames:
+            errorsTruncated: ErrorsTruncated
+            name: Name
+            steps: Steps
+            url: URL
+          Properties:
+            errorsTruncated:
+              IS_REQUIRED: false
+              PROPERTY_NAME: errorsTruncated
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/errorsTruncated
+              TYPE_NAME: ""
+              description: |
+                If true, indicates that the number of errors in the log was too
+                large and not all of those lines are indicated here.
+              type: boolean
+            name:
+              IS_REQUIRED: true
+              PROPERTY_NAME: name
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/name
+              TYPE_NAME: ""
+              maxLength: 50
+              minLength: 1
+              type: string
+            steps:
+              IS_REQUIRED: false
+              PROPERTY_NAME: steps
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps
+              TYPE_NAME: ""
+              description: |
+                This object defines what is seen in the Treeherder Log Viewer.
+                These values can be submitted here, or they will be generated
+                by Treeherder's internal log parsing process from the
+                submitted log.  If this value is submitted, Treeherder will
+                consider the log already parsed and skip parsing.
+              items:
+                IS_REQUIRED: false
+                PROPERTY_NAME: ""
+                SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items
+                TYPE_NAME: Step
+                additionalProperties:
+                  Boolean: false
+                  Properties: null
+                properties:
+                  MemberNames:
+                    errors: Errors
+                    lineFinished: LineFinished
+                    lineStarted: LineStarted
+                    name: Name
+                    result: Result
+                    timeFinished: TimeFinished
+                    timeStarted: TimeStarted
+                  Properties:
+                    errors:
+                      IS_REQUIRED: false
+                      PROPERTY_NAME: errors
+                      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors
+                      TYPE_NAME: ""
+                      items:
+                        IS_REQUIRED: false
+                        PROPERTY_NAME: ""
+                        SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items
+                        TYPE_NAME: Error
+                        additionalProperties:
+                          Boolean: false
+                          Properties: null
+                        properties:
+                          MemberNames:
+                            line: Line
+                            linenumber: Linenumber
+                          Properties:
+                            line:
+                              IS_REQUIRED: false
+                              PROPERTY_NAME: line
+                              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/line
+                              TYPE_NAME: ""
+                              maxLength: 255
+                              minLength: 1
+                              type: string
+                            linenumber:
+                              IS_REQUIRED: false
+                              PROPERTY_NAME: linenumber
+                              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/linenumber
+                              TYPE_NAME: ""
+                              minimum: 0
+                              type: integer
+                          SortedPropertyNames:
+                          - line
+                          - linenumber
+                          SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties
+                        title: Error
+                        type: object
+                      type: array
+                    lineFinished:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: lineFinished
+                      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineFinished
+                      TYPE_NAME: ""
+                      minimum: 0
+                      type: integer
+                    lineStarted:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: lineStarted
+                      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineStarted
+                      TYPE_NAME: ""
+                      minimum: 0
+                      type: integer
+                    name:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: name
+                      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/name
+                      TYPE_NAME: ""
+                      maxLength: 255
+                      minLength: 1
+                      type: string
+                    result:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: result
+                      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/result
+                      TYPE_NAME: ""
+                      enum:
+                      - success
+                      - fail
+                      - exception
+                      - canceled
+                      - unknown
+                      type: string
+                    timeFinished:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: timeFinished
+                      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/timeFinished
+                      TYPE_NAME: ""
+                      format: date-time
+                      type: string
+                    timeStarted:
+                      IS_REQUIRED: true
+                      PROPERTY_NAME: timeStarted
+                      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/timeStarted
+                      TYPE_NAME: ""
+                      format: date-time
+                      type: string
+                  SortedPropertyNames:
+                  - errors
+                  - lineFinished
+                  - lineStarted
+                  - name
+                  - result
+                  - timeFinished
+                  - timeStarted
+                  SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties
+                required:
+                - name
+                - timeStarted
+                - lineStarted
+                - lineFinished
+                - timeFinished
+                - result
+                title: Step
+                type: object
+              type: array
+            url:
+              IS_REQUIRED: true
+              PROPERTY_NAME: url
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/url
+              TYPE_NAME: ""
+              format: uri
+              maxLength: 255
+              minLength: 1
+              type: string
+          SortedPropertyNames:
+          - errorsTruncated
+          - name
+          - steps
+          - url
+          SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties
+        required:
+        - url
+        - name
+        title: Log
+        type: object
+      type: array
+    origin:
+      IS_REQUIRED: true
+      PROPERTY_NAME: origin
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin
+      TYPE_NAME: ""
+      oneOf:
+        Items:
+        - IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]
+          TYPE_NAME: HGPush
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          description: |
+            PREFERRED: An HG job that only has a revision.  This is for all
+            jobs going forward.
+          properties:
+            MemberNames:
+              kind: Kind
+              project: Project
+              pushLogID: PushLogID
+              revision: Revision
+            Properties:
+              kind:
+                IS_REQUIRED: true
+                PROPERTY_NAME: kind
+                SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/kind
+                TYPE_NAME: ""
+                enum:
+                - hg.mozilla.org
+                type: string
+              project:
+                IS_REQUIRED: true
+                PROPERTY_NAME: project
+                SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/project
+                TYPE_NAME: ""
+                maxLength: 50
+                minLength: 1
+                pattern: ^[\w-]+$
+                type: string
+              pushLogID:
+                IS_REQUIRED: false
+                PROPERTY_NAME: pushLogID
+                SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/pushLogID
+                TYPE_NAME: ""
+                type: integer
+              revision:
+                IS_REQUIRED: true
+                PROPERTY_NAME: revision
+                SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/revision
+                TYPE_NAME: ""
+                maxLength: 40
+                minLength: 40
+                pattern: ^[0-9a-f]+$
+                type: string
+            SortedPropertyNames:
+            - kind
+            - project
+            - pushLogID
+            - revision
+            SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties
+          required:
+          - kind
+          - project
+          - revision
+          title: HG Push
+          type: object
+        - IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]
+          TYPE_NAME: GithubPullRequest
+          additionalProperties:
+            Boolean: false
+            Properties: null
+          properties:
+            MemberNames:
+              kind: Kind
+              owner: Owner
+              project: Project
+              pullRequestID: PullRequestID
+              revision: Revision
+            Properties:
+              kind:
+                IS_REQUIRED: true
+                PROPERTY_NAME: kind
+                SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/kind
+                TYPE_NAME: ""
+                enum:
+                - github.com
+                type: string
+              owner:
+                IS_REQUIRED: false
+                PROPERTY_NAME: owner
+                SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/owner
+                TYPE_NAME: ""
+                description: |
+                  This could be the organization or the individual git username
+                  depending on who owns the repo.
+                maxLength: 50
+                minLength: 1
+                pattern: ^[\w-]+$
+                type: string
+              project:
+                IS_REQUIRED: true
+                PROPERTY_NAME: project
+                SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/project
+                TYPE_NAME: ""
+                maxLength: 50
+                minLength: 1
+                pattern: ^[\w-]+$
+                type: string
+              pullRequestID:
+                IS_REQUIRED: false
+                PROPERTY_NAME: pullRequestID
+                SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/pullRequestID
+                TYPE_NAME: ""
+                type: integer
+              revision:
+                IS_REQUIRED: true
+                PROPERTY_NAME: revision
+                SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/revision
+                TYPE_NAME: ""
+                maxLength: 40
+                minLength: 40
+                type: string
+            SortedPropertyNames:
+            - kind
+            - owner
+            - project
+            - pullRequestID
+            - revision
+            SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties
+          required:
+          - kind
+          - project
+          - revision
+          title: Github Pull Request
+          type: object
+        SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf
+      type: object
+    owner:
+      IS_REQUIRED: false
+      PROPERTY_NAME: owner
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/owner
+      TYPE_NAME: ""
+      description: |
+        Description of who submitted the job: gaia | scheduler name | username | email
+      maxLength: 50
+      minLength: 1
+      title: Owner
+      type: string
+    productName:
+      IS_REQUIRED: false
+      PROPERTY_NAME: productName
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/productName
+      TYPE_NAME: ""
+      description: |
+        Examples include:
+        -  'b2g'
+        -  'firefox'
+        -  'taskcluster'
+        -  'xulrunner'
+      maxLength: 125
+      minLength: 1
+      type: string
+    reason:
+      IS_REQUIRED: false
+      PROPERTY_NAME: reason
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/reason
+      TYPE_NAME: ""
+      description: |
+        Examples include:
+        - scheduled
+        - scheduler
+        - Self-serve: Rebuilt by foo@example.com
+        - Self-serve: Requested by foo@example.com
+        - The Nightly scheduler named 'b2g_mozilla-inbound periodic' triggered this build
+        - unknown
+      maxLength: 125
+      minLength: 1
+      type: string
+    result:
+      IS_REQUIRED: false
+      PROPERTY_NAME: result
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/result
+      TYPE_NAME: ""
+      description: |
+        fail: A failure
+        exception: An infrastructure error/exception
+        success: Build/Test executed without error or failure
+        canceled: The job was cancelled by a user
+        unknown: When the job is not yet completed
+        superseded: When a job has been superseded by another job
+      enum:
+      - success
+      - fail
+      - exception
+      - canceled
+      - superseded
+      - unknown
+      title: Result
+      type: string
+    retryId:
+      IS_REQUIRED: false
+      PROPERTY_NAME: retryId
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/retryId
+      TYPE_NAME: ""
+      default: 0
+      description: |
+        The infrastructure retry iteration on this job.  The number of times this
+        job has been retried by the infrastructure.
+        If it's the 1st time running, then it should be 0. If this is the first
+        retry, it will be 1, etc.
+      minimum: 0
+      title: Retry ID
+      type: integer
+    runMachine:
+      $ref: '#/definitions/machine'
+      IS_REQUIRED: false
+      PROPERTY_NAME: runMachine
+      REF_SCHEMA_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine
+      REF_SUBSCHEMA:
+        IS_REQUIRED: false
+        PROPERTY_NAME: machine
+        SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine
+        TYPE_NAME: Machine
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        properties:
+          MemberNames:
+            architecture: Architecture
+            name: Name
+            os: OS
+            platform: Platform
+          Properties:
+            architecture:
+              IS_REQUIRED: true
+              PROPERTY_NAME: architecture
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/architecture
+              TYPE_NAME: ""
+              maxLength: 25
+              minLength: 1
+              pattern: ^[\w-]+$
+              type: string
+            name:
+              IS_REQUIRED: false
+              PROPERTY_NAME: name
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/name
+              TYPE_NAME: ""
+              maxLength: 50
+              minLength: 1
+              pattern: ^[\w-]+$
+              type: string
+            os:
+              IS_REQUIRED: true
+              PROPERTY_NAME: os
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/os
+              TYPE_NAME: ""
+              maxLength: 25
+              minLength: 1
+              pattern: ^[\w-]+$
+              type: string
+            platform:
+              IS_REQUIRED: true
+              PROPERTY_NAME: platform
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/platform
+              TYPE_NAME: ""
+              maxLength: 100
+              minLength: 1
+              pattern: ^[\w-]+$
+              type: string
+          SortedPropertyNames:
+          - architecture
+          - name
+          - os
+          - platform
+          SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties
+        required:
+        - platform
+        - os
+        - architecture
+        type: object
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/runMachine
+      TYPE_NAME: ""
+    state:
+      IS_REQUIRED: true
+      PROPERTY_NAME: state
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/state
+      TYPE_NAME: ""
+      description: |
+        unscheduled: not yet scheduled
+        pending: not yet started
+        running: currently in progress
+        completed: Job ran through to completion
+      enum:
+      - unscheduled
+      - pending
+      - running
+      - completed
+      title: State
+      type: string
+    taskId:
+      IS_REQUIRED: true
+      PROPERTY_NAME: taskId
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/taskId
+      TYPE_NAME: ""
+      description: |
+        This could just be what was formerly submitted as a job_guid in the
+        REST API.
+      maxLength: 50
+      minLength: 1
+      pattern: ^[A-Za-z0-9/+-]+$
+      title: Task ID
+      type: string
+    tier:
+      IS_REQUIRED: false
+      PROPERTY_NAME: tier
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/tier
+      TYPE_NAME: ""
+      maximum: 3
+      minimum: 1
+      type: integer
+    timeCompleted:
+      IS_REQUIRED: false
+      PROPERTY_NAME: timeCompleted
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/timeCompleted
+      TYPE_NAME: ""
+      format: date-time
+      type: string
+    timeScheduled:
+      IS_REQUIRED: false
+      PROPERTY_NAME: timeScheduled
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/timeScheduled
+      TYPE_NAME: ""
+      format: date-time
+      type: string
+    timeStarted:
+      IS_REQUIRED: false
+      PROPERTY_NAME: timeStarted
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/timeStarted
+      TYPE_NAME: ""
+      format: date-time
+      type: string
+    version:
+      IS_REQUIRED: true
+      PROPERTY_NAME: version
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/version
+      TYPE_NAME: ""
+      description: Message version
+      enum:
+      - 1
+      type: integer
+  SortedPropertyNames:
+  - buildMachine
+  - buildSystem
+  - coalesced
+  - display
+  - extra
+  - isRetried
+  - jobInfo
+  - jobKind
+  - labels
+  - logs
+  - origin
+  - owner
+  - productName
+  - reason
+  - result
+  - retryId
+  - runMachine
+  - state
+  - taskId
+  - tier
+  - timeCompleted
+  - timeScheduled
+  - timeStarted
+  - version
+  SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties
+required:
+- taskId
+- origin
+- buildSystem
+- display
+- state
+- jobKind
+- version
+title: Job Definition
+type: object
+
+
+https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine
+=================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: machine
+SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine
+TYPE_NAME: Machine
+additionalProperties:
+  Boolean: false
+  Properties: null
+properties:
+  MemberNames:
+    architecture: Architecture
+    name: Name
+    os: OS
+    platform: Platform
+  Properties:
+    architecture:
+      IS_REQUIRED: true
+      PROPERTY_NAME: architecture
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/architecture
+      TYPE_NAME: ""
+      maxLength: 25
+      minLength: 1
+      pattern: ^[\w-]+$
+      type: string
+    name:
+      IS_REQUIRED: false
+      PROPERTY_NAME: name
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/name
+      TYPE_NAME: ""
+      maxLength: 50
+      minLength: 1
+      pattern: ^[\w-]+$
+      type: string
+    os:
+      IS_REQUIRED: true
+      PROPERTY_NAME: os
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/os
+      TYPE_NAME: ""
+      maxLength: 25
+      minLength: 1
+      pattern: ^[\w-]+$
+      type: string
+    platform:
+      IS_REQUIRED: true
+      PROPERTY_NAME: platform
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties/platform
+      TYPE_NAME: ""
+      maxLength: 100
+      minLength: 1
+      pattern: ^[\w-]+$
+      type: string
+  SortedPropertyNames:
+  - architecture
+  - name
+  - os
+  - platform
+  SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/definitions/machine/properties
+required:
+- platform
+- os
+- architecture
+type: object
+
+
+https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display
+================================================================================
+IS_REQUIRED: true
+PROPERTY_NAME: display
+SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display
+TYPE_NAME: Display
+additionalProperties:
+  Boolean: false
+  Properties: null
+properties:
+  MemberNames:
+    chunkCount: ChunkCount
+    chunkId: ChunkID
+    groupName: GroupName
+    groupSymbol: GroupSymbol
+    jobName: JobName
+    jobSymbol: JobSymbol
+  Properties:
+    chunkCount:
+      IS_REQUIRED: false
+      PROPERTY_NAME: chunkCount
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/chunkCount
+      TYPE_NAME: ""
+      minimum: 1
+      title: Chunk Count
+      type: integer
+    chunkId:
+      IS_REQUIRED: false
+      PROPERTY_NAME: chunkId
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/chunkId
+      TYPE_NAME: ""
+      minimum: 1
+      title: Chunk ID
+      type: integer
+    groupName:
+      IS_REQUIRED: false
+      PROPERTY_NAME: groupName
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/groupName
+      TYPE_NAME: ""
+      maxLength: 100
+      minLength: 1
+      title: Group Name
+      type: string
+    groupSymbol:
+      IS_REQUIRED: true
+      PROPERTY_NAME: groupSymbol
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/groupSymbol
+      TYPE_NAME: ""
+      maxLength: 25
+      minLength: 1
+      title: Group Symbol
+      type: string
+    jobName:
+      IS_REQUIRED: true
+      PROPERTY_NAME: jobName
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/jobName
+      TYPE_NAME: ""
+      maxLength: 100
+      minLength: 1
+      title: Job Name
+      type: string
+    jobSymbol:
+      IS_REQUIRED: true
+      PROPERTY_NAME: jobSymbol
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties/jobSymbol
+      TYPE_NAME: ""
+      maxLength: 25
+      minLength: 0
+      title: Job Symbol
+      type: string
+  SortedPropertyNames:
+  - chunkCount
+  - chunkId
+  - groupName
+  - groupSymbol
+  - jobName
+  - jobSymbol
+  SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/display/properties
+required:
+- jobName
+- jobSymbol
+- groupSymbol
+type: object
+
+
+https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo
+================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: jobInfo
+SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo
+TYPE_NAME: JobInfo
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: |
+  Definition of the Job Info for a job.  These are extra data
+  fields that go along with a job that will be displayed in
+  the details panel within Treeherder.
+properties:
+  MemberNames:
+    links: Links
+    summary: Summary
+  Properties:
+    links:
+      IS_REQUIRED: false
+      PROPERTY_NAME: links
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links
+      TYPE_NAME: ""
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items
+        TYPE_NAME: Link
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        description: |
+          List of URLs shown as key/value pairs.  Shown as:
+          "<label>: <linkText>" where linkText will be a link to the url.
+        properties:
+          MemberNames:
+            label: Label
+            linkText: LinkText
+            url: URL
+          Properties:
+            label:
+              IS_REQUIRED: true
+              PROPERTY_NAME: label
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/label
+              TYPE_NAME: ""
+              maxLength: 70
+              minLength: 1
+              type: string
+            linkText:
+              IS_REQUIRED: true
+              PROPERTY_NAME: linkText
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/linkText
+              TYPE_NAME: ""
+              maxLength: 125
+              minLength: 1
+              type: string
+            url:
+              IS_REQUIRED: true
+              PROPERTY_NAME: url
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/url
+              TYPE_NAME: ""
+              format: uri
+              maxLength: 512
+              type: string
+          SortedPropertyNames:
+          - label
+          - linkText
+          - url
+          SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties
+        required:
+        - url
+        - linkText
+        - label
+        title: Link
+        type: object
+      type: array
+    summary:
+      IS_REQUIRED: false
+      PROPERTY_NAME: summary
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/summary
+      TYPE_NAME: ""
+      description: |
+        Plain text description of the job and its state.  Submitted with
+        the final message about a task.
+      type: string
+  SortedPropertyNames:
+  - links
+  - summary
+  SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties
+type: object
+
+
+https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items
+=======================================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items
+TYPE_NAME: Link
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: |
+  List of URLs shown as key/value pairs.  Shown as:
+  "<label>: <linkText>" where linkText will be a link to the url.
+properties:
+  MemberNames:
+    label: Label
+    linkText: LinkText
+    url: URL
+  Properties:
+    label:
+      IS_REQUIRED: true
+      PROPERTY_NAME: label
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/label
+      TYPE_NAME: ""
+      maxLength: 70
+      minLength: 1
+      type: string
+    linkText:
+      IS_REQUIRED: true
+      PROPERTY_NAME: linkText
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/linkText
+      TYPE_NAME: ""
+      maxLength: 125
+      minLength: 1
+      type: string
+    url:
+      IS_REQUIRED: true
+      PROPERTY_NAME: url
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties/url
+      TYPE_NAME: ""
+      format: uri
+      maxLength: 512
+      type: string
+  SortedPropertyNames:
+  - label
+  - linkText
+  - url
+  SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/jobInfo/properties/links/items/properties
+required:
+- url
+- linkText
+- label
+title: Link
+type: object
+
+
+https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items
+===================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items
+TYPE_NAME: Log
+additionalProperties:
+  Boolean: false
+  Properties: null
+properties:
+  MemberNames:
+    errorsTruncated: ErrorsTruncated
+    name: Name
+    steps: Steps
+    url: URL
+  Properties:
+    errorsTruncated:
+      IS_REQUIRED: false
+      PROPERTY_NAME: errorsTruncated
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/errorsTruncated
+      TYPE_NAME: ""
+      description: |
+        If true, indicates that the number of errors in the log was too
+        large and not all of those lines are indicated here.
+      type: boolean
+    name:
+      IS_REQUIRED: true
+      PROPERTY_NAME: name
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/name
+      TYPE_NAME: ""
+      maxLength: 50
+      minLength: 1
+      type: string
+    steps:
+      IS_REQUIRED: false
+      PROPERTY_NAME: steps
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps
+      TYPE_NAME: ""
+      description: |
+        This object defines what is seen in the Treeherder Log Viewer.
+        These values can be submitted here, or they will be generated
+        by Treeherder's internal log parsing process from the
+        submitted log.  If this value is submitted, Treeherder will
+        consider the log already parsed and skip parsing.
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items
+        TYPE_NAME: Step
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        properties:
+          MemberNames:
+            errors: Errors
+            lineFinished: LineFinished
+            lineStarted: LineStarted
+            name: Name
+            result: Result
+            timeFinished: TimeFinished
+            timeStarted: TimeStarted
+          Properties:
+            errors:
+              IS_REQUIRED: false
+              PROPERTY_NAME: errors
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors
+              TYPE_NAME: ""
+              items:
+                IS_REQUIRED: false
+                PROPERTY_NAME: ""
+                SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items
+                TYPE_NAME: Error
+                additionalProperties:
+                  Boolean: false
+                  Properties: null
+                properties:
+                  MemberNames:
+                    line: Line
+                    linenumber: Linenumber
+                  Properties:
+                    line:
+                      IS_REQUIRED: false
+                      PROPERTY_NAME: line
+                      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/line
+                      TYPE_NAME: ""
+                      maxLength: 255
+                      minLength: 1
+                      type: string
+                    linenumber:
+                      IS_REQUIRED: false
+                      PROPERTY_NAME: linenumber
+                      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/linenumber
+                      TYPE_NAME: ""
+                      minimum: 0
+                      type: integer
+                  SortedPropertyNames:
+                  - line
+                  - linenumber
+                  SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties
+                title: Error
+                type: object
+              type: array
+            lineFinished:
+              IS_REQUIRED: true
+              PROPERTY_NAME: lineFinished
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineFinished
+              TYPE_NAME: ""
+              minimum: 0
+              type: integer
+            lineStarted:
+              IS_REQUIRED: true
+              PROPERTY_NAME: lineStarted
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineStarted
+              TYPE_NAME: ""
+              minimum: 0
+              type: integer
+            name:
+              IS_REQUIRED: true
+              PROPERTY_NAME: name
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/name
+              TYPE_NAME: ""
+              maxLength: 255
+              minLength: 1
+              type: string
+            result:
+              IS_REQUIRED: true
+              PROPERTY_NAME: result
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/result
+              TYPE_NAME: ""
+              enum:
+              - success
+              - fail
+              - exception
+              - canceled
+              - unknown
+              type: string
+            timeFinished:
+              IS_REQUIRED: true
+              PROPERTY_NAME: timeFinished
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/timeFinished
+              TYPE_NAME: ""
+              format: date-time
+              type: string
+            timeStarted:
+              IS_REQUIRED: true
+              PROPERTY_NAME: timeStarted
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/timeStarted
+              TYPE_NAME: ""
+              format: date-time
+              type: string
+          SortedPropertyNames:
+          - errors
+          - lineFinished
+          - lineStarted
+          - name
+          - result
+          - timeFinished
+          - timeStarted
+          SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties
+        required:
+        - name
+        - timeStarted
+        - lineStarted
+        - lineFinished
+        - timeFinished
+        - result
+        title: Step
+        type: object
+      type: array
+    url:
+      IS_REQUIRED: true
+      PROPERTY_NAME: url
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/url
+      TYPE_NAME: ""
+      format: uri
+      maxLength: 255
+      minLength: 1
+      type: string
+  SortedPropertyNames:
+  - errorsTruncated
+  - name
+  - steps
+  - url
+  SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties
+required:
+- url
+- name
+title: Log
+type: object
+
+
+https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items
+==========================================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items
+TYPE_NAME: Step
+additionalProperties:
+  Boolean: false
+  Properties: null
+properties:
+  MemberNames:
+    errors: Errors
+    lineFinished: LineFinished
+    lineStarted: LineStarted
+    name: Name
+    result: Result
+    timeFinished: TimeFinished
+    timeStarted: TimeStarted
+  Properties:
+    errors:
+      IS_REQUIRED: false
+      PROPERTY_NAME: errors
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors
+      TYPE_NAME: ""
+      items:
+        IS_REQUIRED: false
+        PROPERTY_NAME: ""
+        SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items
+        TYPE_NAME: Error
+        additionalProperties:
+          Boolean: false
+          Properties: null
+        properties:
+          MemberNames:
+            line: Line
+            linenumber: Linenumber
+          Properties:
+            line:
+              IS_REQUIRED: false
+              PROPERTY_NAME: line
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/line
+              TYPE_NAME: ""
+              maxLength: 255
+              minLength: 1
+              type: string
+            linenumber:
+              IS_REQUIRED: false
+              PROPERTY_NAME: linenumber
+              SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/linenumber
+              TYPE_NAME: ""
+              minimum: 0
+              type: integer
+          SortedPropertyNames:
+          - line
+          - linenumber
+          SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties
+        title: Error
+        type: object
+      type: array
+    lineFinished:
+      IS_REQUIRED: true
+      PROPERTY_NAME: lineFinished
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineFinished
+      TYPE_NAME: ""
+      minimum: 0
+      type: integer
+    lineStarted:
+      IS_REQUIRED: true
+      PROPERTY_NAME: lineStarted
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/lineStarted
+      TYPE_NAME: ""
+      minimum: 0
+      type: integer
+    name:
+      IS_REQUIRED: true
+      PROPERTY_NAME: name
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/name
+      TYPE_NAME: ""
+      maxLength: 255
+      minLength: 1
+      type: string
+    result:
+      IS_REQUIRED: true
+      PROPERTY_NAME: result
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/result
+      TYPE_NAME: ""
+      enum:
+      - success
+      - fail
+      - exception
+      - canceled
+      - unknown
+      type: string
+    timeFinished:
+      IS_REQUIRED: true
+      PROPERTY_NAME: timeFinished
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/timeFinished
+      TYPE_NAME: ""
+      format: date-time
+      type: string
+    timeStarted:
+      IS_REQUIRED: true
+      PROPERTY_NAME: timeStarted
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/timeStarted
+      TYPE_NAME: ""
+      format: date-time
+      type: string
+  SortedPropertyNames:
+  - errors
+  - lineFinished
+  - lineStarted
+  - name
+  - result
+  - timeFinished
+  - timeStarted
+  SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties
+required:
+- name
+- timeStarted
+- lineStarted
+- lineFinished
+- timeFinished
+- result
+title: Step
+type: object
+
+
+https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items
+==================================================================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items
+TYPE_NAME: Error
+additionalProperties:
+  Boolean: false
+  Properties: null
+properties:
+  MemberNames:
+    line: Line
+    linenumber: Linenumber
+  Properties:
+    line:
+      IS_REQUIRED: false
+      PROPERTY_NAME: line
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/line
+      TYPE_NAME: ""
+      maxLength: 255
+      minLength: 1
+      type: string
+    linenumber:
+      IS_REQUIRED: false
+      PROPERTY_NAME: linenumber
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties/linenumber
+      TYPE_NAME: ""
+      minimum: 0
+      type: integer
+  SortedPropertyNames:
+  - line
+  - linenumber
+  SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/logs/items/properties/steps/items/properties/errors/items/properties
+title: Error
+type: object
+
+
+https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]
+========================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]
+TYPE_NAME: HGPush
+additionalProperties:
+  Boolean: false
+  Properties: null
+description: |
+  PREFERRED: An HG job that only has a revision.  This is for all
+  jobs going forward.
+properties:
+  MemberNames:
+    kind: Kind
+    project: Project
+    pushLogID: PushLogID
+    revision: Revision
+  Properties:
+    kind:
+      IS_REQUIRED: true
+      PROPERTY_NAME: kind
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/kind
+      TYPE_NAME: ""
+      enum:
+      - hg.mozilla.org
+      type: string
+    project:
+      IS_REQUIRED: true
+      PROPERTY_NAME: project
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/project
+      TYPE_NAME: ""
+      maxLength: 50
+      minLength: 1
+      pattern: ^[\w-]+$
+      type: string
+    pushLogID:
+      IS_REQUIRED: false
+      PROPERTY_NAME: pushLogID
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/pushLogID
+      TYPE_NAME: ""
+      type: integer
+    revision:
+      IS_REQUIRED: true
+      PROPERTY_NAME: revision
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties/revision
+      TYPE_NAME: ""
+      maxLength: 40
+      minLength: 40
+      pattern: ^[0-9a-f]+$
+      type: string
+  SortedPropertyNames:
+  - kind
+  - project
+  - pushLogID
+  - revision
+  SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[0]/properties
+required:
+- kind
+- project
+- revision
+title: HG Push
+type: object
+
+
+https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]
+========================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]
+TYPE_NAME: GithubPullRequest
+additionalProperties:
+  Boolean: false
+  Properties: null
+properties:
+  MemberNames:
+    kind: Kind
+    owner: Owner
+    project: Project
+    pullRequestID: PullRequestID
+    revision: Revision
+  Properties:
+    kind:
+      IS_REQUIRED: true
+      PROPERTY_NAME: kind
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/kind
+      TYPE_NAME: ""
+      enum:
+      - github.com
+      type: string
+    owner:
+      IS_REQUIRED: false
+      PROPERTY_NAME: owner
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/owner
+      TYPE_NAME: ""
+      description: |
+        This could be the organization or the individual git username
+        depending on who owns the repo.
+      maxLength: 50
+      minLength: 1
+      pattern: ^[\w-]+$
+      type: string
+    project:
+      IS_REQUIRED: true
+      PROPERTY_NAME: project
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/project
+      TYPE_NAME: ""
+      maxLength: 50
+      minLength: 1
+      pattern: ^[\w-]+$
+      type: string
+    pullRequestID:
+      IS_REQUIRED: false
+      PROPERTY_NAME: pullRequestID
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/pullRequestID
+      TYPE_NAME: ""
+      type: integer
+    revision:
+      IS_REQUIRED: true
+      PROPERTY_NAME: revision
+      SOURCE_URL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties/revision
+      TYPE_NAME: ""
+      maxLength: 40
+      minLength: 40
+      type: string
+  SortedPropertyNames:
+  - kind
+  - owner
+  - project
+  - pullRequestID
+  - revision
+  SourceURL: https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/origin/oneOf[1]/properties
+required:
+- kind
+- project
+- revision
+title: Github Pull Request
+type: object
+
+
