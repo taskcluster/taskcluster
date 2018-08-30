@@ -8,36 +8,37 @@
 const removeKeys = (obj, keys) => {
   let index;
 
-  Object.keys(obj).forEach(prop => {
-    // important check that this is objects own property
-    // not from prototype prop inherited
-    if (Object.prototype.hasOwnProperty.call(obj, prop)) {
-      switch (typeof obj[prop]) {
-        case 'string':
-          index = keys.indexOf(prop);
+  obj &&
+    Object.keys(obj).forEach(prop => {
+      // important check that this is objects own property
+      // not from prototype prop inherited
+      if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+        switch (typeof obj[prop]) {
+          case 'string':
+            index = keys.indexOf(prop);
 
-          if (index > -1) {
-            // eslint-disable-next-line no-param-reassign
-            delete obj[prop];
-          }
+            if (index > -1) {
+              // eslint-disable-next-line no-param-reassign
+              delete obj[prop];
+            }
 
-          break;
-        case 'object':
-          index = keys.indexOf(prop);
+            break;
+          case 'object':
+            index = keys.indexOf(prop);
 
-          if (index > -1) {
-            // eslint-disable-next-line no-param-reassign
-            delete obj[prop];
-          } else {
-            removeKeys(obj[prop], keys);
-          }
+            if (index > -1) {
+              // eslint-disable-next-line no-param-reassign
+              delete obj[prop];
+            } else {
+              removeKeys(obj[prop], keys);
+            }
 
-          break;
-        default:
-          break;
+            break;
+          default:
+            break;
+        }
       }
-    }
-  });
+    });
 
   return obj;
 };
