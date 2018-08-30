@@ -16,10 +16,12 @@
     "eventsource": "^1.0.5",
     "lodash": "^4.17.10",
     "taskcluster-client": "^10.0.0",
-    "taskcluster-lib-api": "^11.0.0",
+    "taskcluster-lib-api": "^12.3.2",
     "taskcluster-lib-app": "^10.0.0",
+    "taskcluster-lib-docs": "^10.0.1",
     "taskcluster-lib-loader": "^10.0.0",
     "taskcluster-lib-monitor": "^10.0.0",
+    "taskcluster-lib-validate": "11.0.2",
     "typed-env-config": "^2.0.0",
     "urlencode": "^1.1.0",
     "uuid": "^3.1.0"

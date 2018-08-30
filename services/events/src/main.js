@@ -1,13 +1,14 @@
 #!usr/bin/env node
-let loader = require('taskcluster-lib-loader');
-let App = require('taskcluster-lib-app');
-let monitor = require('taskcluster-lib-monitor');
-let debug = require('debug')('events:main');
-let config = require('typed-env-config');
-let builder = require('./api');
-let taskcluster = require('taskcluster-client');
-let Listeners = require('./listeners');
-let _  = require('lodash');
+const loader = require('taskcluster-lib-loader');
+const App = require('taskcluster-lib-app');
+const monitor = require('taskcluster-lib-monitor');
+const debug = require('debug')('events:main');
+const config = require('typed-env-config');
+const builder = require('./api');
+const taskcluster = require('taskcluster-client');
+const SchemaSet = require('taskcluster-lib-validate');
+const Listeners = require('./listeners');
+const docs = require('taskcluster-lib-docs');
 
 // Create component loader
 let load = loader({
@@ -28,6 +29,34 @@ let load = loader({
     }),
   },
 
+  // Create a validator
+  schemaset: {
+    requires: ['cfg'],
+    setup: ({cfg}) => new SchemaSet({
+      serviceName: 'events',
+      
+    }),
+  },
+
+  docs: {
+    requires: ['cfg'],
+    setup: ({cfg}) => docs.documenter({
+      credentials: cfg.taskcluster.credentials,
+      tier: 'core',
+      references: [
+        {
+          name: 'api', 
+          reference: builder.reference(),
+        },
+      ],
+    }),
+  },
+
+  writeDocs: {
+    requires: ['docs'],
+    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
+  },
+
   listeners : {
     requires: ['cfg'],
     setup : async ({cfg}) => {
@@ -42,13 +71,14 @@ let load = loader({
   },
 
   api : {
-    requires: ['cfg', 'monitor', 'listeners'],
-    setup : ({cfg, monitor, listeners}) => builder.build({
+    requires: ['cfg', 'monitor', 'listeners', 'docs', 'schemaset'],
+    setup : ({cfg, monitor, listeners, docs, schemaset}) => builder.build({
       rootUrl:  cfg.taskcluster.rootUrl,
       context:  {
         listeners,
       },
       monitor:  monitor.prefix('api'),
+      schemaset
     }),
   },
 
