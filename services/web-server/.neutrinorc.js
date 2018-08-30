@@ -7,7 +7,6 @@ module.exports = {
         ],
       },
       eslint: {
-        fix: true,
         rules: {
           'no-nested-ternary': 'off',
         },
