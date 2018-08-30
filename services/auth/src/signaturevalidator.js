@@ -278,8 +278,9 @@ const createSignatureValidator = function(options) {
           }
         }
         options.monitor.log({
+          time: new Date(),
           event: 'signature-validation',
-          version: 1,
+          version: 2,
           expires: credentials? credentials.expires : '',
           scopes: credentials? credentials.scopes : [],
           clientId: credentials? credentials.clientId : '',
