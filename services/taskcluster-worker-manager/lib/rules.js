@@ -206,6 +206,8 @@ function assign (target, values) {
       delete target[targetProperty];
     } else if (['string', 'number', 'boolean'].includes(typeof value)) {
       target[targetProperty] = value;
+    } else if (Array.isArray(value)) {
+      target[targetProperty] = value.slice();
     } else if (typeof value === 'object') {
       if (typeof target[targetProperty] !== 'object') {
         target[targetProperty] = {};
