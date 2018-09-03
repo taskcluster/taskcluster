@@ -5,5 +5,31 @@
   "main": "index.js",
   "repository": "git@github.com:taskcluster/taskcluster-worker-manager.git",
   "author": "John Ford <john@johnford.org>",
-  "license": "MPL-2.0"
+  "license": "MPL-2.0",
+  "engine-strict": true,
+  "engines": {
+    "node": "10.9.0",
+    "yarn": "^1.9.2"
+  },
+  "scripts": {
+    "lint": "eslint src/*.js test/*.js",
+    "fixlint": "eslint --fix src/*.js test/*.js",
+    "pretest": "yarn lint",
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "assume": "^2.1.0",
+    "eslint-config-taskcluster": "^3.1.0",
+    "mocha": "^5.2.0",
+    "sinon": "^6.1.5"
+  },
+  "dependencies": {
+    "taskcluster-lib-api": "^12.3.1",
+    "taskcluster-lib-app": "^10.0.0",
+    "taskcluster-lib-loader": "^10.0.1",
+    "taskcluster-lib-log": "^10.0.0",
+    "taskcluster-lib-monitor": "^10.0.0",
+    "taskcluster-lib-validate": "^11.0.2",
+    "typed-env-config": "^2.0.0"
+  }
 }
