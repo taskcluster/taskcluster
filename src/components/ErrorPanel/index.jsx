@@ -24,6 +24,11 @@ import palette from '../../utils/palette';
       display: 'flex',
       justifyContent: 'space-between',
     },
+    // Make sure the markdown doesn't overflow the panel
+    markdownContent: {
+      minWidth: 0,
+      overflow: 'auto',
+    },
     pad: {
       paddingTop: 9,
       paddingBottom: 9,
@@ -102,7 +107,7 @@ export default class ErrorPanel extends Component {
     const showStack = !disableStackTrace && error instanceof Error;
     const markdown = (
       <Markdown
-        className={classNames({
+        className={classNames(classes.markdownContent, {
           [classes.errorText]: !warning,
           [classes.warningText]: warning,
           [classes.pad]: !showStack,
