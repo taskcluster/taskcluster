@@ -66,8 +66,8 @@ export default {
     indexedTask(parent, { indexPath }, { loaders }) {
       return loaders.indexedTask.load(indexPath);
     },
-    taskGroup(parent, { taskGroupId, connection }, { loaders }) {
-      return loaders.taskGroup.load({ taskGroupId, connection });
+    taskGroup(parent, { taskGroupId, connection, filter }, { loaders }) {
+      return loaders.taskGroup.load({ taskGroupId, connection, filter });
     },
   },
   Mutation: {
