@@ -113,7 +113,7 @@ export default class UserMenu extends Component {
           id="user-menu"
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
-          onClose={this.handleClose}>
+          onClose={this.handleMenuClose}>
           <MenuItem onClick={this.handleMenuClose}>Manage Credentials</MenuItem>
           <MenuItem onClick={this.handleClickSignOut}>Sign Out</MenuItem>
         </Menu>
