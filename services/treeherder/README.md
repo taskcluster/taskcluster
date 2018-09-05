@@ -11,7 +11,7 @@ to report task status to Treeherder.
 ## Task Route
 
 For a task to be reported to treeherder, it must have the custom route in the form of:
-`<treeherder destination>.<project>.<revision>.<push/pullrequest ID>`
+`<treeherder destination>.v2.<project>.<revision>.<push/pullrequest ID>`
 
 For job messages to appear on Treeherder production, the destination of `tc-treeherder` should
 be used.  Also, `tc-treeherder-staging` could be used for reporting jobs to the Treeherder
@@ -33,7 +33,7 @@ and is validated against a [published schema](https://schemas.taskcluster.net/ta
 ```js
 {
   routes: [
-    'treeherder.mozilla-inbound.8faa67ad6d0fda3ccf884c90acfd061d37e8558d.1246'
+    'tc-treeherder.v2.mozilla-inbound.8faa67ad6d0fda3ccf884c90acfd061d37e8558d.1246'
   ],
   ...,
   metadata: {
