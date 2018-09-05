@@ -4,12 +4,10 @@ import cors from 'cors';
 import express from 'express';
 import playground from 'graphql-playground-middleware-express';
 import passport from 'passport';
-import { createServer as httpServer } from 'http';
-import { createServer as httpsServer } from 'https';
 import credentials from './credentials';
 import graphql from './graphql';
 
-export default ({ server, schema, context, https }) => {
+export default ({ schema, context }) => {
   const app = express();
 
   app.set('view engine', 'ejs');
@@ -48,8 +46,5 @@ export default ({ server, schema, context, https }) => {
     );
   }
 
-  return {
-    app,
-    server: server || https ? httpsServer(https, app) : httpServer(app),
-  };
+  return app;
 };

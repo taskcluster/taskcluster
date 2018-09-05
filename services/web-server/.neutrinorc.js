@@ -1,6 +1,7 @@
 module.exports = {
   use: [
     ['neutrino-preset-mozilla-frontend-infra/node', {
+      hot: false,
       babel: {
         plugins: [
           require.resolve('babel-plugin-transform-object-rest-spread'),
@@ -18,6 +19,6 @@ module.exports = {
           .test(/\.graphql$/)
           .use('raw')
             .loader(require.resolve('raw-loader'));
-    }
+    },
   ],
 };
