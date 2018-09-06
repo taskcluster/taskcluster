@@ -93,10 +93,10 @@ properties:
       minLength: 1
       maxLength: 50
       pattern: "^[A-Za-z0-9_-]+$"
-  jobSymbol:
-    title: "jobSymbol"
+  symbol:
+    title: "symbol"
     description: |
-      Job Symbol is the symbol that will appear in a Treeherder resultset for a
+      This is the symbol that will appear in a Treeherder resultset for a
       given push.  This symbol could be something such as "B" or a number representing
       the current chunk.
     type: "string"
