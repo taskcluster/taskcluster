@@ -21,9 +21,6 @@ import sort from '../../utils/sort';
     marginLeft: -theme.spacing.unit,
     padding: theme.spacing.unit,
   },
-  listItemButton: {
-    ...theme.mixins.listItemButton,
-  },
   taskName: {
     marginRight: theme.spacing.unit,
     maxWidth: 250,

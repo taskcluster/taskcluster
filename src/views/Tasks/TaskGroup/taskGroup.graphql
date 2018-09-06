@@ -1,0 +1,23 @@
+query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter: JSON) {
+  taskGroup(taskGroupId: $taskGroupId, connection: $taskGroupConnection, filter: $filter) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        metadata {
+          name
+        }
+
+        status {
+          taskId
+          state
+        }
+      }
+    }
+  }
+}

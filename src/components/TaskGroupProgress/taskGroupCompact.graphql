@@ -1,0 +1,22 @@
+query TaskGroupCompact($taskGroupId: ID!, $taskGroupCompactConnection: PageConnection) {
+  taskGroup(taskGroupId: $taskGroupId, connection: $taskGroupCompactConnection) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        metadata {
+          name
+        }
+        taskGroupId
+        status {
+          state
+        }
+      }
+    }
+  }
+}

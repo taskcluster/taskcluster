@@ -53,15 +53,17 @@ export const run = shape({
 
 export const runs = arrayOf(run);
 
+export const taskState = oneOf([
+  'RUNNING',
+  'PENDING',
+  'UNSCHEDULED',
+  'COMPLETED',
+  'FAILED',
+  'EXCEPTION',
+]);
+
 export const status = shape({
-  state: oneOf([
-    'RUNNING',
-    'PENDING',
-    'UNSCHEDULED',
-    'COMPLETED',
-    'FAILED',
-    'EXCEPTION',
-  ]),
+  state: taskState,
   retriesLeft: number,
   runs,
 });

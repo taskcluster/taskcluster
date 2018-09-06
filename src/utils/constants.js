@@ -2,6 +2,8 @@ import { fade } from '@material-ui/core/styles/colorManipulator';
 
 // eslint-disable-next-line import/prefer-default-export
 export const ARTIFACTS_PAGE_SIZE = 10;
+export const TASK_GROUP_PAGE_SIZE = 10;
+export const TASK_GROUP_PROGRESS_SIZE = 100;
 export const VIEW_WORKER_TYPES_PAGE_SIZE = 50;
 export const VIEW_WORKERS_PAGE_SIZE = 15;
 export const VIEW_CLIENTS_PAGE_SIZE = 20;
@@ -67,3 +69,15 @@ export const DEFAULT_AWS_WORKER_TYPE = {
   secrets: {},
   scopes: [],
 };
+export const TASK_STATE = {
+  COMPLETED: 'COMPLETED',
+  RUNNING: 'RUNNING',
+  FAILED: 'FAILED',
+  EXCEPTION: 'EXCEPTION',
+  PENDING: 'PENDING',
+  UNSCHEDULED: 'UNSCHEDULED',
+};
+// 30 seconds
+// export const TASK_GROUP_POLLING_INTERVAL = 30000;
+export const TASK_GROUP_POLLING_INTERVAL = 30000;
+export const INITIAL_CURSOR = '$$FIRST$$';

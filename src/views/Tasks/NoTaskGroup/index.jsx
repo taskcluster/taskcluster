@@ -1,13 +1,13 @@
 import { hot } from 'react-hot-loader';
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import LinkIcon from 'mdi-react/LinkIcon';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import db from '../../../utils/db';
@@ -17,62 +17,67 @@ import db from '../../../utils/db';
   infoText: {
     marginBottom: theme.spacing.unit,
   },
+  listItemButton: {
+    ...theme.mixins.listItemButton,
+  },
 }))
-export default class NoTask extends Component {
+export default class NoTaskGroup extends Component {
   state = {
-    recentTasks: null,
-    taskSearch: '',
+    recentTaskGroups: null,
+    taskGroupSearch: '',
   };
 
   async componentDidMount() {
-    const recentTasks = await db.taskIdsHistory
+    const recentTaskGroups = await db.taskGroupIdsHistory
       .limit(5)
       .reverse()
       .toArray();
 
-    this.setState({ recentTasks });
+    this.setState({ recentTaskGroups });
   }
 
-  handleTaskSearchChange = e => {
-    this.setState({ taskSearch: e.target.value || '' });
+  handleTaskGroupSearchChange = e => {
+    this.setState({ taskGroupSearch: e.target.value || '' });
   };
 
-  handleTaskSearchSubmit = e => {
+  handleTaskGroupSearchSubmit = e => {
     e.preventDefault();
-    this.props.history.push(`/tasks/${this.state.taskSearch}`);
+    this.props.history.push(`/tasks/groups/${this.state.taskGroupSearch}`);
   };
 
   render() {
     const { classes } = this.props;
-    const { taskSearch, recentTasks } = this.state;
+    const { taskGroupSearch, recentTaskGroups } = this.state;
 
     return (
       <Dashboard
         search={
           <Search
-            value={taskSearch}
-            onChange={this.handleTaskSearchChange}
-            onSubmit={this.handleTaskSearchSubmit}
+            value={taskGroupSearch}
+            onChange={this.handleTaskGroupSearchChange}
+            onSubmit={this.handleTaskGroupSearchSubmit}
           />
         }>
         <Typography className={classes.infoText}>
-          Enter a task ID in the search box
+          Enter a task group ID in the search box
         </Typography>
-        {recentTasks &&
-          Boolean(recentTasks.length) && (
+        {recentTaskGroups &&
+          Boolean(recentTaskGroups.length) && (
             <List
               dense
               subheader={
-                <ListSubheader component="div">Recent Tasks</ListSubheader>
+                <ListSubheader component="div">
+                  Recent Task Groups
+                </ListSubheader>
               }>
-              {recentTasks.map(({ taskId }) => (
+              {recentTaskGroups.map(({ taskGroupId }) => (
                 <ListItem
                   button
                   className={classes.listItemButton}
                   component={Link}
-                  to={`/tasks/${taskId}`}
-                  key={taskId}>
-                  <ListItemText primary={taskId} />
+                  to={`/tasks/groups/${taskGroupId}`}
+                  key={taskGroupId}>
+                  <ListItemText primary={taskGroupId} />
                   <LinkIcon />
                 </ListItem>
               ))}

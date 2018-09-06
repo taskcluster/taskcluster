@@ -12,7 +12,7 @@ const Roboto400 = { fontFamily: 'Roboto400, sans-serif' };
 const Roboto500 = { fontFamily: 'Roboto500, sans-serif' };
 const success = {
   main: green[500],
-  dark: green[800],
+  dark: green[700],
 };
 const warning = {
   main: amber[500],

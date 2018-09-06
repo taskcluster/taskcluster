@@ -7,6 +7,9 @@ import loadable from '../../utils/loadable';
 const NoTask = loadable(() =>
   import(/* webpackChunkName: 'Tasks.NoTask' */ './NoTask')
 );
+const NoTaskGroup = loadable(() =>
+  import(/* webpackChunkName: 'Tasks.NoTaskGroup' */ './NoTaskGroup')
+);
 const ViewTask = loadable(() =>
   import(/* webpackChunkName: 'Tasks.ViewTask' */ './ViewTask')
 );
@@ -40,9 +43,14 @@ export default class Task extends Component {
     return (
       <Switch>
         <RouteWithProps
-          path={`${path}/groups`}
+          path={`${path}/groups/:taskGroupId`}
           {...props}
           component={TaskGroup}
+        />
+        <RouteWithProps
+          path={`${path}/groups`}
+          {...props}
+          component={NoTaskGroup}
         />
         <RouteWithProps
           path={`${path}/index`}
