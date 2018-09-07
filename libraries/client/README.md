@@ -386,30 +386,41 @@ var index = new taskcluster.Index(options);
 //  - https://login.taskcluster.net/v1
 var login = new taskcluster.Login(options);
 ```
- * `login.oidcCredentials(provider) : result`
  * `login.ping() : void`
+ * `login.oidcCredentials(provider) : result`
 
 ### Methods in `taskcluster.Notify`
 ```js
 // Create Notify client instance:
-//  - https://notify.taskcluster.net/v1
+//  - https://notify.taskcluster.net/v1/
 var notify = new taskcluster.Notify(options);
 ```
+ * `notify.ping() : void`
  * `notify.email(payload) : void`
  * `notify.pulse(payload) : void`
  * `notify.irc(payload) : void`
- * `notify.ping() : void`
+
+### Methods in `taskcluster.Pulse`
+```js
+// Create Pulse client instance:
+//  - https://pulse.taskcluster.net/v1/
+var pulse = new taskcluster.Pulse(options);
+```
+ * `pulse.ping() : void`
+ * `pulse.listNamespaces([options]) : result`
+ * `pulse.namespace(namespace) : result`
+ * `pulse.claimNamespace(namespace, payload) : result`
 
 ### Methods in `taskcluster.PurgeCache`
 ```js
 // Create PurgeCache client instance:
-//  - https://purge-cache.taskcluster.net/v1
+//  - https://purge-cache.taskcluster.net/v1/
 var purgeCache = new taskcluster.PurgeCache(options);
 ```
+ * `purgeCache.ping() : void`
  * `purgeCache.purgeCache(provisionerId, workerType, payload) : void`
  * `purgeCache.allPurgeRequests([options]) : result`
  * `purgeCache.purgeRequests(provisionerId, workerType, [options]) : result`
- * `purgeCache.ping() : void`
 
 ### Methods in `taskcluster.Queue`
 ```js
