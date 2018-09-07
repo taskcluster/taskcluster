@@ -1639,7 +1639,7 @@ module.exports = {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://hooks.taskcluster.net/v1/",
-      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a \"schedule\" indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `['0 0 1 * * *']` -- daily at 1:00 UTC\n * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon\n\nThe task definition is used as a JSON-e template, with a context depending on how it is fired.  See\nhttps://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks\nfor more information.",
+      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a \"schedule\" indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `['0 0 1 * * *']` -- daily at 1:00 UTC\n * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon\n\nThe task definition is used as a JSON-e template, with a context depending on how it is fired.  See\n[/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)\nfor more information.",
       "entries": [
         {
           "args": [
@@ -1973,19 +1973,45 @@ module.exports = {
       "entries": [
         {
           "args": [
+          ],
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "ping",
+          "query": [
+          ],
+          "route": "/ping",
+          "stability": "stable",
+          "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [
             "provider"
           ],
-          "description": "Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider's API to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.\n\nThe given credentials will expire in a relatively short time. Callers should\nmonitor this expiration and refresh the credentials if necessary, by calling\nthis endpoint again, if they have expired.",
+          "description": "Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider's APIBuilder to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.\n\nThe given credentials will expire in a relatively short time. Callers should\nmonitor this expiration and refresh the credentials if necessary, by calling\nthis endpoint again, if they have expired.",
           "method": "get",
           "name": "oidcCredentials",
-          "output": "http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json",
+          "output": "v1/oidc-credentials-response.json#",
           "query": [
           ],
           "route": "/oidc-credentials/<provider>",
           "stability": "experimental",
           "title": "Get Taskcluster credentials given a suitable `access_token`",
           "type": "function"
-        },
+        }
+      ],
+      "serviceName": "login",
+      "title": "Login API",
+      "version": 0
+    },
+    "referenceUrl": "https://references.taskcluster.net/login/v1/api.json"
+  },
+  "Notify": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "baseUrl": "https://notify.taskcluster.net/v1/",
+      "description": "The notification service, typically available at `notify.taskcluster.net`\nlistens for tasks with associated notifications and handles requests to\nsend emails and post pulse messages.",
+      "entries": [
         {
           "args": [
           ],
@@ -1998,25 +2024,12 @@ module.exports = {
           "stability": "stable",
           "title": "Ping Server",
           "type": "function"
-        }
-      ],
-      "name": "login",
-      "title": "Login API",
-      "version": 0
-    },
-    "referenceUrl": "https://references.taskcluster.net/login/v1/api.json"
-  },
-  "Notify": {
-    "reference": {
-      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "baseUrl": "https://notify.taskcluster.net/v1",
-      "description": "The notification service, typically available at `notify.taskcluster.net`\nlistens for tasks with associated notifications and handles requests to\nsend emails and post pulse messages.",
-      "entries": [
+        },
         {
           "args": [
           ],
           "description": "Send an email to `address`. The content is markdown and will be rendered\nto HTML, but both the HTML and raw markdown text will be sent in the\nemail. If a link is included, it will be rendered to a nice button in the\nHTML version of the email",
-          "input": "http://schemas.taskcluster.net/notify/v1/email-request.json",
+          "input": "v1/email-request.json#",
           "method": "post",
           "name": "email",
           "query": [
@@ -2031,7 +2044,7 @@ module.exports = {
           "args": [
           ],
           "description": "Publish a message on pulse with the given `routingKey`.",
-          "input": "http://schemas.taskcluster.net/notify/v1/pulse-request.json",
+          "input": "v1/pulse-request.json#",
           "method": "post",
           "name": "pulse",
           "query": [
@@ -2046,7 +2059,7 @@ module.exports = {
           "args": [
           ],
           "description": "Post a message on IRC to a specific channel or user, or a specific user\non a specific channel.\n\nSuccess of this API method does not imply the message was successfully\nposted. This API method merely inserts the IRC message into a queue\nthat will be processed by a background process.\nThis allows us to re-send the message in face of connection issues.\n\nHowever, if the user isn't online the message will be dropped without\nerror. We maybe improve this behavior in the future. For now just keep\nin mind that IRC is a best-effort service.",
-          "input": "http://schemas.taskcluster.net/notify/v1/irc-request.json",
+          "input": "v1/irc-request.json#",
           "method": "post",
           "name": "irc",
           "query": [
@@ -2060,7 +2073,20 @@ module.exports = {
           "stability": "experimental",
           "title": "Post IRC Message",
           "type": "function"
-        },
+        }
+      ],
+      "serviceName": "notify",
+      "title": "Notification Service",
+      "version": 0
+    },
+    "referenceUrl": "https://references.taskcluster.net/notify/v1/api.json"
+  },
+  "Pulse": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "baseUrl": "https://pulse.taskcluster.net/v1/",
+      "description": "The taskcluster-pulse service, typically available at `pulse.taskcluster.net`\nmanages pulse credentials for taskcluster users.\n\nA service to manage Pulse credentials for anything using\nTaskcluster credentials. This allows for self-service pulse\naccess and greater control within the Taskcluster project.",
+      "entries": [
         {
           "args": [
           ],
@@ -2073,27 +2099,92 @@ module.exports = {
           "stability": "stable",
           "title": "Ping Server",
           "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "List the namespaces managed by this service.\n\nThis will list up to 1000 namespaces. If more namespaces are present a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, do not provide continuation token.",
+          "method": "get",
+          "name": "listNamespaces",
+          "output": "v1/list-namespaces-response.json#",
+          "query": [
+            "limit",
+            "continuationToken"
+          ],
+          "route": "/namespaces",
+          "stability": "experimental",
+          "title": "List Namespaces",
+          "type": "function"
+        },
+        {
+          "args": [
+            "namespace"
+          ],
+          "description": "Get public information about a single namespace. This is the same information\nas returned by `listNamespaces`.",
+          "method": "get",
+          "name": "namespace",
+          "output": "v1/namespace.json#",
+          "query": [
+          ],
+          "route": "/namespace/<namespace>",
+          "stability": "experimental",
+          "title": "Get a namespace",
+          "type": "function"
+        },
+        {
+          "args": [
+            "namespace"
+          ],
+          "description": "Claim a namespace, returning a connection string with access to that namespace\ngood for use until the `reclaimAt` time in the response body. The connection\nstring can be used as many times as desired during this period, but must not\nbe used after `reclaimAt`.\n\nConnections made with this connection string may persist beyond `reclaimAt`,\nalthough it should not persist forever.  24 hours is a good maximum, and this\nservice will terminate connections after 72 hours (although this value is\nconfigurable).\n\nThe specified `expires` time updates any existing expiration times.  Connections\nfor expired namespaces will be terminated.",
+          "input": "v1/namespace-request.json#",
+          "method": "post",
+          "name": "claimNamespace",
+          "output": "v1/namespace-response.json#",
+          "query": [
+          ],
+          "route": "/namespace/<namespace>",
+          "scopes": {
+            "AllOf": [
+              "pulse:namespace:<namespace>"
+            ]
+          },
+          "stability": "experimental",
+          "title": "Claim a namespace",
+          "type": "function"
         }
       ],
-      "name": "notify",
-      "title": "Notification Service",
+      "serviceName": "pulse",
+      "title": "Pulse Management Service",
       "version": 0
     },
-    "referenceUrl": "https://references.taskcluster.net/notify/v1/api.json"
+    "referenceUrl": "https://references.taskcluster.net/pulse/v1/api.json"
   },
   "PurgeCache": {
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "baseUrl": "https://purge-cache.taskcluster.net/v1",
+      "baseUrl": "https://purge-cache.taskcluster.net/v1/",
       "description": "The purge-cache service, typically available at\n`purge-cache.taskcluster.net`, is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the API end-point for publishing the pulse\nmessage. This is mainly intended to be used by tools.",
       "entries": [
+        {
+          "args": [
+          ],
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "ping",
+          "query": [
+          ],
+          "route": "/ping",
+          "stability": "stable",
+          "title": "Ping Server",
+          "type": "function"
+        },
         {
           "args": [
             "provisionerId",
             "workerType"
           ],
           "description": "Publish a purge-cache message to purge caches named `cacheName` with\n`provisionerId` and `workerType` in the routing-key. Workers should\nbe listening for this message and purge caches when they see it.",
-          "input": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#",
+          "input": "v1/purge-cache-request.json#",
           "method": "post",
           "name": "purgeCache",
           "query": [
@@ -2110,7 +2201,7 @@ module.exports = {
           "description": "This is useful mostly for administors to view\nthe set of open purge requests. It should not\nbe used by workers. They should use the purgeRequests\nendpoint that is specific to their workerType and\nprovisionerId.",
           "method": "get",
           "name": "allPurgeRequests",
-          "output": "http://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#",
+          "output": "v1/all-purge-cache-request-list.json#",
           "query": [
             "continuationToken",
             "limit"
@@ -2128,7 +2219,7 @@ module.exports = {
           "description": "List of caches that need to be purged if they are from before\na certain time. This is safe to be used in automation from\nworkers.",
           "method": "get",
           "name": "purgeRequests",
-          "output": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#",
+          "output": "v1/purge-cache-request-list.json#",
           "query": [
             "since"
           ],
@@ -2136,23 +2227,10 @@ module.exports = {
           "stability": "stable",
           "title": "Open Purge Requests for a provisionerId/workerType pair",
           "type": "function"
-        },
-        {
-          "args": [
-          ],
-          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
-          "method": "get",
-          "name": "ping",
-          "query": [
-          ],
-          "route": "/ping",
-          "stability": "stable",
-          "title": "Ping Server",
-          "type": "function"
         }
       ],
-      "name": "purge-cache",
-      "title": "Purge Cache API Documentation",
+      "serviceName": "purge-cache",
+      "title": "Purge Cache API",
       "version": 0
     },
     "referenceUrl": "https://references.taskcluster.net/purge-cache/v1/api.json"
@@ -2187,12 +2265,13 @@ module.exports = {
               "summary": "`workerType` for which to purge cache."
             }
           ],
-          "schema": "http://schemas.taskcluster.net/purge-cache/v1/purge-cache-message.json#",
+          "schema": "v1/purge-cache-message.json#",
           "title": "Purge Cache Messages",
           "type": "topic-exchange"
         }
       ],
       "exchangePrefix": "exchange/taskcluster-purge-cache/v1/",
+      "serviceName": "purge-cache",
       "title": "Purge-Cache Exchanges",
       "version": 0
     },
@@ -2285,7 +2364,7 @@ module.exports = {
           "args": [
             "taskId"
           ],
-          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline´**, the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**, the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**, using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**, any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Important** Any scopes the task requires are also required for creating\nthe task. Please see the Request Payload (Task Definition) for details.",
+          "description": "Create a new task, this is an **idempotent** operation, so repeat it if\nyou get an internal server error or network connection is dropped.\n\n**Task `deadline`**: the deadline property can be no more than 5 days\ninto the future. This is to limit the amount of pending tasks not being\ntaken care of. Ideally, you should use a much shorter deadline.\n\n**Task expiration**: the `expires` property must be greater than the\ntask `deadline`. If not provided it will default to `deadline` + one\nyear. Notice, that artifacts created by task must expire before the task.\n\n**Task specific routing-keys**: using the `task.routes` property you may\ndefine task specific routing-keys. If a task has a task specific \nrouting-key: `<route>`, then when the AMQP message about the task is\npublished, the message will be CC'ed with the routing-key: \n`route.<route>`. This is useful if you want another component to listen\nfor completed tasks you have posted.  The caller must have scope\n`queue:route:<route>` for each route.\n\n**Dependencies**: any tasks referenced in `task.dependencies` must have\nalready been created at the time of this call.\n\n**Scopes**: Note that the scopes required to complete this API call depend\non the content of the `scopes`, `routes`, `schedulerId`, `priority`,\n`provisionerId`, and `workerType` properties of the task definition.\n\n**Legacy Scopes**: The `queue:create-task:..` scope without a priority and\nthe `queue:define-task:..` and `queue:task-group-id:..` scopes are considered\nlegacy and should not be used. Note that the new, non-legacy scopes require\na `queue:scheduler-id:..` scope as well as scopes for the proper priority.",
           "input": "v1/create-task-request.json#",
           "method": "put",
           "name": "createTask",
@@ -2657,7 +2736,7 @@ module.exports = {
             "runId",
             "name"
           ],
-          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 3 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\nWe also have 2 deprecated `storageType`s which are only maintained for\nbackwards compatiability and should not be used in new implementations\n\n**Blob artifacts**, are useful for storing large files.  Currently, these\nare all stored in S3 but there are facilities for adding support for other\nbackends in futre.  A call for this type of artifact must provide information\nabout the file which will be uploaded.  This includes sha256 sums and sizes.\nThis method will return a list of general form HTTP requests which are signed\nby AWS S3 credentials managed by the Queue.  Once these requests are completed\nthe list of `ETag` values returned by the requests must be passed to the\nqueue `completeArtifact` method\n\n**S3 artifacts**, DEPRECATED is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Azure artifacts**, DEPRECATED are stored in _Azure Blob Storage_ service\nwhich given the consistency guarantees and API interface offered by Azure\nis more suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n**Warning: azure artifact is currently an experimental feature subject\nto changes and data-drops.**\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `403` (Forbidden) response. This is mainly designed to ensure that\ndependent tasks can distinguish between artifacts that were suppose to\nbe generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
+          "description": "This API end-point creates an artifact for a specific run of a task. This\nshould **only** be used by a worker currently operating on this task, or\nfrom a process running within the task (ie. on the worker).\n\nAll artifacts must specify when they `expires`, the queue will\nautomatically take care of deleting artifacts past their\nexpiration point. This features makes it feasible to upload large\nintermediate artifacts from data processing applications, as the\nartifacts can be set to expire a few days later.\n\nWe currently support 3 different `storageType`s, each storage type have\nslightly different features and in some cases difference semantics.\nWe also have 2 deprecated `storageType`s which are only maintained for\nbackwards compatiability and should not be used in new implementations\n\n**Blob artifacts**, are useful for storing large files.  Currently, these\nare all stored in S3 but there are facilities for adding support for other\nbackends in futre.  A call for this type of artifact must provide information\nabout the file which will be uploaded.  This includes sha256 sums and sizes.\nThis method will return a list of general form HTTP requests which are signed\nby AWS S3 credentials managed by the Queue.  Once these requests are completed\nthe list of `ETag` values returned by the requests must be passed to the\nqueue `completeArtifact` method\n\n**S3 artifacts**, DEPRECATED is useful for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`.\n\n**Azure artifacts**, DEPRECATED are stored in _Azure Blob Storage_ service\nwhich given the consistency guarantees and API interface offered by Azure\nis more suitable for artifacts that will be modified during the execution\nof the task. For example docker-worker has a feature that persists the\ntask log to Azure Blob Storage every few seconds creating a somewhat\nlive log. A request to create an Azure artifact will return a URL\nfeaturing a [Shared-Access-Signature](http://msdn.microsoft.com/en-us/library/azure/dn140256.aspx),\nrefer to MSDN for further information on how to use these.\n**Warning: azure artifact is currently an experimental feature subject\nto changes and data-drops.**\n\n**Reference artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts really only have a `url` property and\nwhen the artifact is requested the client will be redirect the URL\nprovided with a `303` (See Other) redirect. Please note that we cannot\ndelete artifacts you upload to other service, we can only delete the\nreference to the artifact, when it expires.\n\n**Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n\n**Artifact immutability**, generally speaking you cannot overwrite an\nartifact when created. But if you repeat the request with the same\nproperties the request will succeed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nAs a special case the `url` property on _reference artifacts_ can be\nupdated. You should only use this to update the `url` property for\nreference artifacts your process has created.",
           "input": "v1/post-artifact-request.json#",
           "method": "post",
           "name": "createArtifact",
@@ -3680,15 +3759,16 @@ module.exports = {
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
             }
           ],
-          "schema": "http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#",
+          "schema": "v1/pulse-job.json#",
           "title": "Job Messages",
           "type": "topic-exchange"
         }
       ],
       "exchangePrefix": "exchange/taskcluster-treeherder/v1/",
+      "serviceName": "treeherder",
       "title": "Taskcluster-treeherder Pulse Exchange",
       "version": 0
     },
-    "referenceUrl": "https://references.taskcluster.net/taskcluster-treeherder/v1/exchanges.json"
+    "referenceUrl": "https://references.taskcluster.net/treeherder/v1/exchanges.json"
   }
 };
