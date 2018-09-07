@@ -39,6 +39,12 @@
 			"revisionTime": "2016-10-29T20:57:26Z"
 		},
 		{
+			"checksumSHA1": "MT58r0hh82Igj2em/QMUNPPW708=",
+			"path": "github.com/donovanhide/eventsource",
+			"revision": "3ed64d21fb0b6bd8b49bcfec08f3004daee8723d",
+			"revisionTime": "2017-10-31T11:33:27Z"
+		},
+		{
 			"checksumSHA1": "kR64D1QzAOSM9LHOnTPdbigC8q0=",
 			"path": "github.com/fatih/camelcase",
 			"revision": "f6a740d52f961c60348ebb109adde9f4635d7540",

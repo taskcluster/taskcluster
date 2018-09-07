@@ -3,11 +3,11 @@ package pulse
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 
 	"github.com/taskcluster/taskcluster-cli/cmds/root"
+	"github.com/taskcluster/taskcluster-client-go/queue"
 
 	"github.com/spf13/cobra"
 
@@ -24,7 +24,7 @@ func init() {
 
 func waitForTask(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
-		return errors.New("%s expects argument <taskId>", cmd.Name())
+		return fmt.Errorf("%s expects argument <taskId>", cmd.Name())
 	}
 
 	type Binding struct {
@@ -36,28 +36,52 @@ func waitForTask(cmd *cobra.Command, args []string) error {
 		Bindings []Binding `json:"bindings"`
 	}
 
+	routingKeyPattern := fmt.Sprintf("primary.%s.#", args[0])
 	bindings := []Binding{
 		Binding{
-			args[0],
-			args[1]}}
+			"exchange/taskcluster-queue/v1/task-completed",
+			routingKeyPattern},
+		Binding{
+			"exchange/taskcluster-queue/v1/task-failed",
+			routingKeyPattern},
+		Binding{
+			"exchange/taskcluster-queue/v1/task-exception",
+			routingKeyPattern},
+	}
 
-	json_bindings, _ := json.Marshal(Bindings{Bindings: bindings})
-	values := url.Values{"bindings": {string(json_bindings)}}
-	eventsUrl := "https://taskcluster-events-staging.herokuapp.com/v1/connect/?" + values.Encode()
+	jsonBindings, _ := json.Marshal(Bindings{Bindings: bindings})
+	values := url.Values{"bindings": {string(jsonBindings)}}
+	eventsURL := "https://events.taskcluster.net/v1/connect/?" + values.Encode()
 
-	stream, err := eventsource.Subscribe(eventsUrl, "")
+	stream, err := eventsource.Subscribe(eventsURL, "")
 	if err != nil {
 		return fmt.Errorf("Error getting request: %v", err)
 	}
+	q := queue.New(nil)
+	var pulseMessage map[string]interface{}
 
 	for {
 		event, ok := <-stream.Events
-		if ok == false {
+		if !ok {
 			err := <-stream.Errors
 			stream.Close()
 			return fmt.Errorf("Error: %v", err)
 		}
-		fmt.Println(event.Event(), event.Data())
+		if event.Event() == "ready" {
+			status, err := q.Status(args[0])
+			if err != nil {
+				return fmt.Errorf("Error: %v", err)
+			}
+			state := status.Status.State
+			if state == "completed" || state == "failed" || state == "exception" {
+				fmt.Println(status.Status)
+				return nil
+			}
+		}
+		if event.Event() == "message" {
+			json.Unmarshal([]byte(event.Data()), &pulseMessage)
+			fmt.Println(pulseMessage["payload"])
+			return nil
+		}
 	}
-	return nil
 }

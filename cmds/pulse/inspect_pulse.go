@@ -40,23 +40,22 @@ func inspectPulse(cmd *cobra.Command, args []string) error {
 			args[0],
 			args[1]}}
 
-	json_bindings, _ := json.Marshal(Bindings{Bindings: bindings})
-	values := url.Values{"bindings": {string(json_bindings)}}
-	eventsUrl := "https://events.taskcluster.net/v1/connect/?" + values.Encode()
+	jsonBindings, _ := json.Marshal(Bindings{Bindings: bindings})
+	values := url.Values{"bindings": {string(jsonBindings)}}
+	eventsURL := "https://events.taskcluster.net/v1/connect/?" + values.Encode()
 
-	stream, err := eventsource.Subscribe(eventsUrl, "")
+	stream, err := eventsource.Subscribe(eventsURL, "")
 	if err != nil {
 		return fmt.Errorf("Error getting request: %v", err)
 	}
 
 	for {
 		event, ok := <-stream.Events
-		if ok == false {
+		if !ok {
 			err := <-stream.Errors
 			stream.Close()
 			return fmt.Errorf("Error: %v", err)
 		}
 		fmt.Println(event.Event(), event.Data())
 	}
-	return nil
 }
