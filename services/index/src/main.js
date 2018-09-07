@@ -15,7 +15,7 @@ const {sasCredentials} = require('taskcluster-lib-azure');
 
 // Create component loader
 var load = loader({
-  cfg: {   
+  cfg: {
     requires: ['profile'],
     setup: ({profile}) => Config({profile}),
   },
@@ -24,12 +24,12 @@ var load = loader({
   IndexedTask: {
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => data.IndexedTask.setup({
-      tableName:    cfg.app.indexedTaskTableName,
-      credentials:  sasCredentials({
-        accountId:  cfg.azure.accountId,
-        tableName:  cfg.app.indexedTaskTableName,
-        rootUrl:    cfg.taskcluster.rootUrl,
-        credentials:cfg.taskcluster.credentials,  
+      tableName: cfg.app.indexedTaskTableName,
+      credentials: sasCredentials({
+        accountId: cfg.azure.accountId,
+        tableName: cfg.app.indexedTaskTableName,
+        rootUrl: cfg.taskcluster.rootUrl,
+        credentials: cfg.taskcluster.credentials,
       }),
     }),
   },
