@@ -1875,9 +1875,9 @@ taskcluster-client@10.0.0, taskcluster-client@^10.0.0:
     superagent "~3.8.1"
     taskcluster-lib-urls "^1.1.0"
 
-taskcluster-client@^11.0.1:
-  version "11.0.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-11.0.1.tgz#0406a401c7848c18fe0580e7c3d8de8a3cb62f1b"
+taskcluster-client@^11.0.4:
+  version "11.0.4"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-11.0.4.tgz#ea8df77d78ac72de5fb087bb6b884a25f33c90ee"
   dependencies:
     amqplib "^0.5.1"
     debug "^3.1.0"
