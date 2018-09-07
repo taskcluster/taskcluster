@@ -26,7 +26,7 @@ defaults:
     port:             !env:number PORT
     env:              !env NODE_ENV
     forceSSL:         !env:bool FORCE_SSL
-    trustProxy:       false
+    trustProxy:       !env:bool TRUST_PROXY
   aws:
     ses:
       # Credentials with access to SES to send hook failure emails
@@ -46,8 +46,6 @@ defaults:
 production:
   server:
     env:              production
-    forceSSL:         true
-    trustProxy:       true
 
 test:
   # See user-config-example.yml for secrets credentials required for tests
