@@ -4,17 +4,18 @@ defaults:
     credentials:
       clientId:     !env TASKCLUSTER_CLIENT_ID
       accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
-  
+
   server:
     port:           !env:number PORT
     env:            'development'
-    forceSSL:       !env:flag FORCE_SSL
-    trustProxy:     false
-  
+    forceSSL:       !env:bool FORCE_SSL
+    trustProxy:     !env:bool TRUST_PROXY
+
+
   monitor:
     mock:           true
     enable:         !env:bool MONITORING_ENABLE
-  
+
   pulse:
     username:       !env PULSE_USERNAME
     password:       !env PULSE_PASSWORD
@@ -25,7 +26,6 @@ defaults:
 production:
   server:
     env:            production
-    trustProxy:     true
 
   monitor:
     mock:           false
