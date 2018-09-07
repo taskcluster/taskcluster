@@ -83,10 +83,10 @@ production:
 
   server:
     env:                            'production'
-    forceSSL:                       true
+    forceSSL:                       !env:bool FORCE_SSL
     # We trust the proxy on heroku, as the SSL end-point provided by heroku
     # is a proxy, so we have to trust it.
-    trustProxy:                     true
+    trustProxy:                     !env:bool TRUST_PROXY
 
 test:
   app:
