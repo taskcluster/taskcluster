@@ -1,0 +1,43 @@
+defaults:
+  app:
+    # the URL at which this service will be available, without a trailing `/`
+    publicUrl: !env PUBLIC_URL
+    loginStrategies: !env:list LOGIN_STRATEGIES
+
+  monitoring:
+    project: !env MONITORING_PROJECT
+    enable: !env:bool MONITORING_ENABLE
+
+  # Server configuration
+  server:
+    # Port to listen for requests on
+    port: !env:number PORT
+
+  # Configuration of access to other taskcluster components
+  taskcluster:
+    rootUrl: !env TASKCLUSTER_ROOT_URL
+    credentials:
+      clientId: !env TASKCLUSTER_CLIENT_ID
+      accessToken: !env TASKCLUSTER_ACCESS_TOKEN
+
+  # Pulse credentials
+  pulse:
+    username: !env PULSE_USERNAME
+    password: !env PULSE_PASSWORD
+    hostname: !env PULSE_HOSTNAME
+    vhost: !env PULSE_VHOST
+
+  # config for the github login strategy
+  githubLogin:
+      # client ID and secret for the github OAuth application
+    clientId: !env GITHUB_CLIENT_ID
+    clientSecret: !env GITHUB_CLIENT_SECRET
+
+development:
+  app:
+    # this assumes that taskcluster-web's dev server is running on port 5080
+    publicUrl: http://localhost:5080
+    loginStrategies: []
+  server:
+    # taskcluster-web's dev server assumes port 3050
+    port: 3050

@@ -6,8 +6,8 @@
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
   "scripts": {
-    "build": "neutrino build --require dotenv/config",
-    "start": "neutrino start --require dotenv/config",
+    "build": "neutrino build",
+    "start": "neutrino start",
     "lint": "neutrino lint",
     "precommit": "neutrino stage"
   },
@@ -24,7 +24,6 @@
     "cors": "^2.8.4",
     "dataloader": "^1.4.0",
     "deepmerge": "^2.0.1",
-    "dotenv": "^6.0.0",
     "ejs": "^2.6.1",
     "express": "^4.16.3",
     "graphql": "^0.13.2",
@@ -43,6 +42,7 @@
     "source-map-support": "^0.5.4",
     "subscriptions-transport-ws": "^0.9.7",
     "taskcluster-client": "^11.0.3",
-    "taskcluster-lib-loader": "^10.0.1"
+    "taskcluster-lib-loader": "^10.0.1",
+    "typed-env-config": "^2.0.0"
   }
 }

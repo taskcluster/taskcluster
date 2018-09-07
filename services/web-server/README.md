@@ -9,49 +9,17 @@ to the gateway instead of putting extra logic on the web consumer.
 Supports the queries, mutations, and subscriptions of Taskcluster APIs used
 by the web application.
 
-## Environment variables
-
-To launch this service, either set the following environment variables or
-place a `.env` file in the root of this repo with the following environment variables
-inside of it:
-
-```sh
-# The Taskcluster service instance to connect to:
-TASKCLUSTER_ROOT_URL="https://taskcluster.net"
-
-# Network port to bind the service to:
-PORT="3050"
-
-# Taskcluster credentials bound to this service for generating temporary
-# user credentials
-TASKCLUSTER_CLIENT_ID="<insert client ID here>"
-TASKCLUSTER_ACCESS_TOKEN="<insert access token here>"
-
-# The public URL *root* which will be redirected to upon authentication
-PUBLIC_URL="http://locahost:5080"
-
-# Username for connecting to pulse for subscriptions:
-PULSE_USERNAME="<insert username here>"
-
-# Password for connecting to pulse for subscriptions:
-PULSE_PASSWORD="<insert password here>"
-
-# Hostname for connecting to pulse for subscriptions:
-PULSE_HOSTNAME="pulse.mozilla.org"
-
-# VHost for connecting to pulse for subscriptions:
-PULSE_VHOST="/"
-
-# A space-separated string of login strategies. Each login strategy may require
-# its own environment variables for configuration. See below for details.
-LOGIN_STRATEGIES="github"
-```
+## Configuration
 
 ## Launching locally
 
-To start the service up locally, be sure to set the above environment variables.
-Then install dependencies using `yarn`. Use the command `yarn start` to start the
-service, which launches on the `PORT` set in `.env`.
+To run this service locally, install dependencies using `yarn`.
+
+This service requires a pulse user to run. Set that up at
+https://pulseguardian.mozilla.org. Then copy `user-config-template.yml` to
+`user-config.yml` and edit it to include the new username and password.
+
+Use the command `yarn start` to start the service.
 
 You should see the following message in the console, for example, using port 3050:
 
@@ -79,20 +47,17 @@ section, and paste a JSON object with a key of "Authorization" with a value of
 ### GitHub
 
 In order to enable the GitHub login strategy, add `github` to the
-space-separated `LOGIN_STRATEGIES` environment variable, or set it if not
-currently specified:
-
-```sh
-LOGIN_STRATEGIES="github"
-```
+space-separated `LOGIN_STRATEGIES` environment variable, or set `app.loginStrategies` in `user-config.yml`.
 
 Next, specify the GitHub client ID and secret for an OAuth application created
-for use against this service and its web UI:
+for use against this service and its web UI, either as environment variables:
 
 ```sh
 GITHUB_CLIENT_ID="<insert GitHub client ID here>"
 GITHUB_CLIENT_SECRET="<insert GitHub client secret here>"
 ```
+
+or as `githubLogin.clientId` and `githubLogin.clientSecret` in `user-config.yml`.
 
 Now, start the service as you normally would.
 

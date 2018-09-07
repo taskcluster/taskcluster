@@ -7,7 +7,7 @@ import passport from 'passport';
 import credentials from './credentials';
 import graphql from './graphql';
 
-export default ({ schema, context }) => {
+export default ({ cfg, schema, context }) => {
   const app = express();
 
   app.set('view engine', 'ejs');
@@ -32,19 +32,11 @@ export default ({ schema, context }) => {
     })
   );
 
-  if (process.env.LOGIN_STRATEGIES) {
-    process.env.LOGIN_STRATEGIES.split(' ').forEach(async strategy => {
-      const { default: loginStrategy } = await import(`../login/${strategy}`);
+  cfg.app.loginStrategies.forEach(async strategy => {
+    const { default: loginStrategy } = await import(`../login/${strategy}`);
 
-      loginStrategy(app);
-    });
-  } else {
-    // eslint-disable-next-line no-console
-    console.warn(
-      '\x1b[33m%s\x1b[0m',
-      'Application started with no LOGIN_STRATEGIES defined.'
-    );
-  }
+    loginStrategy(app, cfg);
+  });
 
   return app;
 };

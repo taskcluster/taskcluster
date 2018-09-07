@@ -2,11 +2,10 @@ import passport from 'passport';
 import { Strategy } from 'passport-github';
 import { createTemporaryCredentials, fromNow } from 'taskcluster-client';
 
-export default app => {
-  if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
+export default (app, cfg) => {
+  if (!cfg.githubLogin.clientId || !cfg.githubLogin.clientSecret) {
     throw new Error(
-      'Unable to use "github" login strategy without GITHUB_CLIENT_ID ' +
-        'and GITHUB_CLIENT_SECRET environment variables'
+      'Unable to use "github" login strategy without client ID or secret'
     );
   }
 
@@ -15,9 +14,9 @@ export default app => {
   passport.use(
     new Strategy(
       {
-        clientID: process.env.GITHUB_CLIENT_ID,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        callbackURL: `${process.env.PUBLIC_URL}${callback}`,
+        clientID: cfg.githubLogin.clientId,
+        clientSecret: cfg.githubLogin.clientSecret,
+        callbackURL: `${cfg.app.publicUrl}${callback}`,
       },
       (accessToken, refreshToken, profile, next) => {
         const expires = fromNow('7 days');
@@ -29,10 +28,7 @@ export default app => {
           start: fromNow(),
           expiry: expires,
           scopes: [`assume:login-identity:${identity}`],
-          credentials: {
-            clientId: process.env.TASKCLUSTER_CLIENT_ID,
-            accessToken: process.env.TASKCLUSTER_ACCESS_TOKEN,
-          },
+          credentials: cfg.taskcluster.credentials,
         });
 
         next(null, {

@@ -4,7 +4,7 @@ import AsyncIterator from './AsyncIterator';
 
 export default class PulseEngine {
   constructor(options = {}) {
-    const { connection } = options;
+    const { connection, rootUrl } = options;
 
     this.listening = false;
     this.currentSubscriptionId = 0;
@@ -12,7 +12,7 @@ export default class PulseEngine {
     this.connection = new PulseConnection(connection);
     this.listener = new PulseListener({
       connection: this.connection,
-      rootUrl: process.env.TASKCLUSTER_ROOT_URL,
+      rootUrl,
     });
 
     this.listener.on('message', this.handleMessage.bind(this));
