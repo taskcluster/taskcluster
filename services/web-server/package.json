@@ -36,6 +36,7 @@
     "graphql-validation-complexity": "^0.2.3",
     "immutable": "^3.8.2",
     "iterall": "^1.2.2",
+    "neutrino-middleware-restart-server": "^1.0.1",
     "passport": "^0.4.0",
     "passport-github": "^1.1.0",
     "sift": "^6.0.0",

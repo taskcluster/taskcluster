@@ -6371,6 +6371,10 @@ neo-async@^2.5.0:
   version "2.5.2"
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.5.2.tgz#489105ce7bc54e709d736b195f82135048c50fcc"
 
+neutrino-middleware-restart-server@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/neutrino-middleware-restart-server/-/neutrino-middleware-restart-server-1.0.1.tgz#ab5b4197b973d602a204bb47916a5f57e1c045c6"
+
 neutrino-middleware-styleguidist@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/neutrino-middleware-styleguidist/-/neutrino-middleware-styleguidist-1.0.2.tgz#fac72b7d475f0e7737833f44ca66d5a1bb3e59a5"
