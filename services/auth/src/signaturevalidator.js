@@ -2,7 +2,6 @@ const debug = require('debug')('auth:signaturevalidator');
 const hawk = require('hawk');
 const assert = require('assert');
 const _ = require('lodash');
-require('superagent-hawk')(require('superagent'));
 // Someone should rename utils to scopes... 
 const utils = require('taskcluster-lib-scopes');
 const hoek = require('hoek');
@@ -175,7 +174,6 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
  * options:
  * {
  *    clientLoader:   async (clientId) => {clientId, expires, accessToken, scopes},
- *    nonceManager:   nonceManager({size: ...}),
  *    expandScopes:   (scopes) => scopes,
  *    monitor:        // an instance of taskcluster-lib-monitor
  * }
@@ -206,6 +204,7 @@ const createSignatureValidator = function(options) {
   assert(options.expandScopes instanceof Function,
     'options.expandScopes must be a function');
   assert(options.monitor, 'options.monitor must be provided');
+  assert(!options.nonceManager, 'nonceManager is not supported');
   let loadCredentials = function(clientId, ext, callback) {
     // We may have two clientIds here: the credentialName (the one the caller
     // sent in the Hawk Authorization header) and the issuingClientId (the one
@@ -326,9 +325,6 @@ const createSignatureValidator = function(options) {
           // since all our services require https we hardcode the allowed skew
           // to a very high number (15 min) similar to AWS.
           timestampSkewSec: 15 * 60,
-
-          // Provide nonce manager
-          nonceFunc:    options.nonceManager,
         }, authenticated);
       } else {
         // If there is no authorization header we'll attempt a login with bewit

@@ -45,11 +45,11 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   });
 
   test('header auth (no creds)', async () => {
-    let myClient2 = new helper.TestClient({rootUrl: helper.rootUrl});
+    let myClient2 = new helper.TestClient({rootUrl: helper.rootUrl, credentials: {}});
     await myClient2.resource().then(() => {
       assert(false, 'expected an error!');
     }, err => {
-      assert(err.statusCode === 403, 'expected 403');
+      assert.equal(err.statusCode, 403, 'expected 403');
     });
   });
 
