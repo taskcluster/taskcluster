@@ -88,8 +88,8 @@ tasks:
               && make test
           artifacts:
             public/taskcluster-linux:
-            path: /go/src/github.com/taskcluster/taskcluster-cli/taskcluster
-            type: file
+              path: /go/src/github.com/taskcluster/taskcluster-cli/taskcluster
+              type: file
         metadata:
           name: "TaskCluster GitHub Lint Checks"
           description: "Linting"
@@ -121,8 +121,8 @@ tasks:
                 && make test
             artifacts:
               public/taskcluster-linux:
-              path: /go/src/github.com/taskcluster/taskcluster-cli/taskcluster
-              type: file
+                path: /go/src/github.com/taskcluster/taskcluster-cli/taskcluster
+                type: file
           metadata:
             name: "TaskCluster GitHub Lint Checks"
             description: "Linting"
