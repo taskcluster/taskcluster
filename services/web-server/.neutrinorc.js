@@ -20,5 +20,11 @@ module.exports = {
           .use('raw')
             .loader(require.resolve('raw-loader'));
     },
+    // work around https://bugzilla.mozilla.org/show_bug.cgi?id=1489273
+    (neutrino) => {
+      neutrino.config.when(neutrino.options.command === 'build', config => {
+        config.plugins.delete('named-chunks');
+      });
+    },
   ],
 };
