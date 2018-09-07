@@ -32,7 +32,13 @@ variable "secret_name" {
 
 variable "secrets_hash" {
   type        = "string"
-  description = "Used to know if the deployment needs to be updated"
+  description = "Used to know if the deployment needs to be updated."
+}
+
+variable "volume_mounts" {
+  type        = "list"
+  default     = []
+  description = "A set of fields from the secrets to mount as files."
 }
 
 variable "disabled_services" {

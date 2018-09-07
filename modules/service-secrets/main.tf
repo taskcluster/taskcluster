@@ -1,6 +1,6 @@
 locals {
   context = {
-    secrets      = "${var.secrets}"
+    secrets      = "${merge(var.secret_files, var.secrets)}"
     project_name = "${var.project_name}"
   }
 

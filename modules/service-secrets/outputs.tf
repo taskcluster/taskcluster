@@ -7,5 +7,5 @@ output "secret_name" {
 }
 
 output "secrets_hash" {
-  value = "${sha512(join("", k8s_manifest.secrets_resource.*.content))}"
+  value = "${sha512(data.jsone_template.secrets_resource.rendered)}"
 }

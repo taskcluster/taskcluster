@@ -28,6 +28,17 @@ in:
             else: 'static'
       spec:
         serviceAccountName: ${project_name}
+        volumes:
+          $if: 'len(volume_mounts) > 0'
+          then:
+            $map: {$eval: volume_mounts}
+            each(mount):
+              name: ${mount.source}
+              secret:
+                secretName: ${secret_name}
+                items:
+                  - key: ${mount.source}
+                    path: ${mount.name}
         containers:
         - name: ${project_name}
           image: ${docker_image}
@@ -54,6 +65,14 @@ in:
                     secretKeyRef:
                       name: '${secret_name}'
                       key: '${k}'
+          volumeMounts:
+            $if: 'len(volume_mounts) > 0'
+            then:
+              $map: {$eval: volume_mounts}
+              each(mount):
+                name: ${mount.source}
+                mountPath: ${mount.path}
+                readOnly: true
           ports:
           - $if: 'background_job == "0"'
             then:

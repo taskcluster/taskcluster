@@ -89,6 +89,26 @@ locals {
       ]
     },
     {
+      clientId    = "static/taskcluster/gce-provider"
+      accessToken = "${random_string.gce_provider_access_token.result}"
+      description = "..."
+
+      scopes = [
+        "queue:claim-work:gce-provider/*",
+        "assume:worker-id:*",
+        "assume:worker-type:gce-provider/*",
+        "queue:worker-id:gce-worker-test/*",                          // TODO: Probably not right
+        "auth:create-client:worker/gce/taskcluster-staging-214020/*", // TODO: configure
+      ]
+    },
+    {
+      clientId    = "static/taskcluster/events"
+      accessToken = "${random_string.events_access_token.result}"
+      description = "..."
+
+      scopes = []
+    },
+    {
       clientId    = "static/taskcluster/queue"
       accessToken = "${random_string.queue_access_token.result}"
       description = "..."
@@ -158,19 +178,6 @@ module "auth_web_service" {
   root_url          = "${var.root_url}"
   secret_keys       = "${module.auth_secrets.env_var_keys}"
   docker_image      = "${local.taskcluster_image_auth}"
-}
-
-module "auth_expire_sentry" {
-  source           = "modules/scheduled-job"
-  project_name     = "taskcluster-auth"
-  job_name         = "expireSentry"
-  schedule         = "0 0 * * *"
-  deadline_seconds = 86400
-  secret_name      = "${module.auth_secrets.secret_name}"
-  secrets_hash     = "${module.auth_secrets.secrets_hash}"
-  root_url         = "${var.root_url}"
-  secret_keys      = "${module.auth_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_auth}"
 }
 
 module "auth_purge_expired_clients" {

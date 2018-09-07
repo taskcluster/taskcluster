@@ -44,3 +44,9 @@ variable "secret_name" {
   type        = "string"
   description = "The kubernetes secret to pull the variables from."
 }
+
+variable "volume_mounts" {
+  type        = "list"
+  default     = []
+  description = "A set of fields from the secrets to mount as files."
+}
