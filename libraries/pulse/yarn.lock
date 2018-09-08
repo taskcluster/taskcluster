@@ -1321,6 +1321,20 @@ nock@^9.0.27:
     qs "^6.5.1"
     semver "^5.5.0"
 
+nock@^9.6.1:
+  version "9.6.1"
+  resolved "https://registry.yarnpkg.com/nock/-/nock-9.6.1.tgz#d96e099be9bc1d0189a77f4490bbbb265c381b49"
+  dependencies:
+    chai "^4.1.2"
+    debug "^3.1.0"
+    deep-equal "^1.0.0"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.17.5"
+    mkdirp "^0.5.0"
+    propagate "^1.0.0"
+    qs "^6.5.1"
+    semver "^5.5.0"
+
 node-status-codes@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/node-status-codes/-/node-status-codes-1.0.0.tgz#5ae5541d024645d32a58fcddc9ceecea7ae3ac2f"
