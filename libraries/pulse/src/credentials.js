@@ -53,12 +53,12 @@ exports.connectionStringCredentials = connectionStringCredentials;
    * using taskcluster pulse service.
    * Further it caches the connection credentials with an expiry date of reclaimAt
 */
-const claimedCredentials = ({rootUrl, credentials, namespace, expires, contact}) => {
+const claimedCredentials = ({rootUrl, credentials, namespace, expiresAfter, contact}) => {
   assert(rootUrl, 'rootUrl is required');
   assert(credentials, 'credentials is required');
   assert(namespace, 'namespace is required');
 
-  const pulse = taskcluster.Pulse({
+  const pulse = new taskcluster.Pulse({
     credentials,
     rootUrl,
   });
@@ -67,7 +67,7 @@ const claimedCredentials = ({rootUrl, credentials, namespace, expires, contact})
 
   return async () => {
     const res = await pulse.claimNamespace(namespace, {
-      expires,
+      expires: taskcluster.fromNow(expiresAfter || '4 hours'),
       contact,
     });
     connectionString = res.connectionString;

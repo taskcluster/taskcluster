@@ -24,22 +24,46 @@ interacting with a Client are not important -- just construct one and move on.
 
 # Client
 
-Create a `Client` to handle (re)connecting to Pulse:
+Create a credentials function, choosing among:
 
 ```javascript
 const pulse = require('taskcluster-lib-pulse');
 
-const client = new pulse.Client({
-  connectionString: 'amqps://...',
-  monitor: .., // taskcluster-lib-monitor instance
+let credentials;
+// Taskcluster credentials, to claim from taskcluster-pulse
+credentials = pulse.claimedCredentials({
+  rootUrl: cfg.taskcluster.rootUrl,
+  credentials: cfg.taskcluster.credentials, // {clientId, accessToken}
+  namespace: 'my-service',
+  expiresAfter: '4 hours',    // expiration time difference
+  contact: cfg.pulse.contact, // email address for queue alerts
 });
-// or
-const client = new pulse.Client({
+
+// raw AMQP credentials
+credentials = pulse.pulseCredentials({
   username: 'sendr',
   password: 'sekrit',
   hostname: 'pulse.mycompany.com',
   vhost: '/',
-  monitor: ..,
+});
+
+// ..or a connection string
+credentials = pulse.connectionStringCredentials(
+  'amqps://me:sekrit@foo.com/%2Fvhost');
+```
+
+For the first option, it's recommended to use a short `expiresAfter` for
+temporary work such as testing, and a long expiration for production services
+that do not want to lose messages if there is service downtime. See the
+Taskcluster-pulse documentation for details.
+
+Next, create a `Client` to handle (re)connecting to Pulse:
+
+```javascript
+const client = new pulse.Client({
+  namespace: 'my-service',
+  credentials, // from above
+  monitor: .., // taskcluster-lib-monitor instance
 });
 ```
 
