@@ -23,6 +23,7 @@
     "assume": "^2.1.0",
     "eslint-config-taskcluster": "^3.1.0",
     "mocha": "^5.2.0",
+    "nock": "^9.6.1",
     "slugid": "^2.0.0",
     "taskcluster-lib-monitor": "^10.0.0",
     "taskcluster-lib-testing": "^12.1.0",
