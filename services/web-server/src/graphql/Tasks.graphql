@@ -327,7 +327,7 @@ type TaskActionJson {
 
 type TaskActionsJson {
   actions: [TaskActionJson]!
-  variables: [JSON]!
+  variables: JSON!
   version: Int!
 }
 
