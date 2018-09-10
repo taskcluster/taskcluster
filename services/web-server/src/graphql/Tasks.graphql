@@ -313,6 +313,24 @@ type TaskException {
   workerId: ID
 }
 
+type TaskActionJson {
+  context: [JSON]
+  description: String!
+  hookGroupId: String!
+  hookId: String!
+  hookPayload: JSON!
+  kind: String!
+  name: String!
+  schema: JSON
+  title: String!
+}
+
+type TaskActionsJson {
+  actions: [TaskActionJson]!
+  variables: [JSON]!
+  version: Int!
+}
+
 enum TaskSubscriptions {
   tasksDefined
   tasksPending
@@ -356,6 +374,9 @@ extend type Query {
   # It may also return a page connection even though there are no more results.
   # Use the connection limit to specify smaller page sizes.
   taskGroup(taskGroupId: ID!, connection: PageConnection, filter: JSON): TasksConnection
+
+  # Actions exposed by the decision task defined in the public/actions.json artifact.
+  taskActions(taskGroupId: ID!, filter: JSON): TaskActionsJson
 }
 
 extend type Mutation {

@@ -69,6 +69,9 @@ export default {
     taskGroup(parent, { taskGroupId, connection, filter }, { loaders }) {
       return loaders.taskGroup.load({ taskGroupId, connection, filter });
     },
+    taskActions(parent, { taskGroupId, filter }, { loaders }) {
+      return loaders.taskActions.load({ taskGroupId, filter });
+    },
   },
   Mutation: {
     async createTask(parent, { taskId, task }, { clients }) {

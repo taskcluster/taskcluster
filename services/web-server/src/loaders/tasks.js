@@ -1,5 +1,6 @@
 import DataLoader from 'dataloader';
 import sift from 'sift';
+import request from 'superagent';
 import ConnectionLoader from '../ConnectionLoader';
 import Task from '../entities/Task';
 
@@ -29,10 +30,28 @@ export default ({ queue, index }) => {
       };
     }
   );
+  const taskActions = new DataLoader(queries =>
+    Promise.all(
+      queries.map(async ({ taskGroupId, filter }) => {
+        const url = await queue.buildUrl(
+          queue.getLatestArtifact,
+          taskGroupId,
+          'public/actions.json'
+        );
+        const { body: actions } = await request
+          .get(url)
+          // retry on 5xx
+          .retry(2, (err, res) => res && res.status >= 500);
+
+        return filter ? sift(filter, actions) : actions;
+      })
+    )
+  );
 
   return {
     task,
     indexedTask,
     taskGroup,
+    taskActions,
   };
 };
