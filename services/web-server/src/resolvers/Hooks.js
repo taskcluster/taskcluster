@@ -40,8 +40,14 @@ export default {
     },
   },
   Mutation: {
-    triggerHook(parent, { hookGroupId, hookId, payload }, { clients }) {
-      return clients.hooks.triggerHook(hookGroupId, hookId, payload);
+    async triggerHook(parent, { hookGroupId, hookId, payload }, { clients }) {
+      const { status } = await clients.hooks.triggerHook(
+        hookGroupId,
+        hookId,
+        payload
+      );
+
+      return status;
     },
     createHook(parent, { hookGroupId, hookId, payload }, { clients }) {
       return clients.hooks.createHook(hookGroupId, hookId, payload);

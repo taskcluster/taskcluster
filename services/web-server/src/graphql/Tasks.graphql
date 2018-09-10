@@ -313,20 +313,8 @@ type TaskException {
   workerId: ID
 }
 
-type TaskActionJson {
-  context: [JSON]
-  description: String!
-  hookGroupId: String!
-  hookId: String!
-  hookPayload: JSON!
-  kind: String!
-  name: String!
-  schema: JSON
-  title: String!
-}
-
 type TaskActionsJson {
-  actions: [TaskActionJson]!
+  actions: [JSON]!
   variables: JSON!
   version: Int!
 }
