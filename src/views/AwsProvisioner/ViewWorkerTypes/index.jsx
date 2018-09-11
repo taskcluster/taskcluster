@@ -1,7 +1,6 @@
 import { hot } from 'react-hot-loader';
 import { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
-import { Link } from 'react-router-dom';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
@@ -75,27 +74,26 @@ export default class ViewRoles extends Component {
           )}
           <SpeedDial>
             <SpeedDialAction
+              tooltipOpen
               icon={<PlusIcon />}
               tooltipTitle="Create Worker Type"
               onClick={this.handleCreate}
               ButtonProps={{ color: 'secondary' }}
             />
             <SpeedDialAction
+              tooltipOpen
               icon={<AlertCircleOutlineIcon />}
               tooltipTitle="Recent Errors"
               classes={{ button: classes.alertIcon }}
-              component={Link}
-              onChange={this.handleRecentErrorsClick}
-              to="/aws-provisioner/recent-errors"
+              onClick={this.handleRecentErrorsClick}
               ButtonProps={{ color: 'secondary' }}
             />
             <SpeedDialAction
+              tooltipOpen
               icon={<HeartPulseIcon />}
               tooltipTitle="Health"
               classes={{ button: classes.heartIcon }}
               onClick={this.handleHealthClick}
-              component={Link}
-              to="/aws-provisioner/aws-health"
               ButtonProps={{ color: 'secondary' }}
             />
           </SpeedDial>

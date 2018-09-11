@@ -10,6 +10,9 @@ const ViewWorkerTypes = loadable(() =>
 const ViewAwsHealth = loadable(() =>
   import(/* webpackChunkName: 'AwsProvisioner.ViewAwsHealth' */ './ViewAwsHealth')
 );
+const ViewRecentErrors = loadable(() =>
+  import(/* webpackChunkName: 'AwsProvisioner.ViewRecentErrors' */ './ViewRecentErrors')
+);
 const ViewWorkerType = loadable(() =>
   import(/* webpackChunkName: 'AwsProvisioner.ViewWorkerType' */ './ViewWorkerType')
 );
@@ -39,6 +42,11 @@ export default class AwsProvisioner extends Component {
           path={`${path}/aws-health`}
           {...props}
           component={ViewAwsHealth}
+        />
+        <RouteWithProps
+          path={`${path}/recent-errors`}
+          {...props}
+          component={ViewRecentErrors}
         />
         <RouteWithProps path={path} {...props} component={ViewWorkerTypes} />
       </Switch>

@@ -1,0 +1,12 @@
+query RecentErrors {
+  awsProvisionerRecentErrors {
+    region
+    az
+    instanceType
+    code
+    type
+    workerType
+    time
+    message
+  }
+}

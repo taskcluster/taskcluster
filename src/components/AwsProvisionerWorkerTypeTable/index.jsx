@@ -111,9 +111,15 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
                   <LinkIcon size={iconSize} />
                 </TableCellListItem>
               </TableCell>
-              <TableCell>{workerType.pendingTasks}</TableCell>
-              <TableCell>{workerType.runningCapacity}</TableCell>
-              <TableCell>{workerType.pendingCapacity}</TableCell>
+              <TableCell>
+                <Typography>{workerType.pendingTasks}</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography>{workerType.runningCapacity}</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography>{workerType.pendingCapacity}</Typography>
+              </TableCell>
             </TableRow>
           )}
         />
