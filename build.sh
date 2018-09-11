@@ -43,6 +43,7 @@ echo "${OUTPUT_ALL_PLATFORMS}"
 echo "${OUTPUT_TEST}"
 
 go get github.com/taskcluster/generic-worker/gw-codegen
+export PATH="$(go env GOPATH)/bin:${PATH}"
 go generate ./...
 
 function install {
@@ -108,9 +109,11 @@ CGO_ENABLED=0 go get github.com/taskcluster/livelog
 git clean -fdX
 
 if $TEST; then
+  go get github.com/taskcluster/taskcluster-proxy
   CGO_ENABLED=1 GORACE="history_size=7" go test -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
 fi
 go vet ./...
+go get github.com/golang/lint/golint
 golint ./...
 go get github.com/gordonklaus/ineffassign
 ineffassign .
