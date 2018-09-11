@@ -400,7 +400,10 @@ class Task extends EventEmitter {
         Env: taskEnvToDockerEnv(env),
         HostConfig: {
           Privileged: privilegedTask,
-          ShmSize: 1800000000
+          ShmSize: 1800000000,
+          ExtraHosts: [
+            'localhost.localdomain:127.0.0.1', // Bug 1488148
+          ],
         }
       }
     };
