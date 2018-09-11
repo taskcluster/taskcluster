@@ -276,7 +276,7 @@ export const awsProvisionerHealth = shape({
   terminationHealth: arrayOf(
     shape({
       ...aws,
-      clean_shutdown: number,
+      cleanShutdown: number,
       spotKill: number,
       insufficientCapacity: number,
       volumeLimitExceeded: number,

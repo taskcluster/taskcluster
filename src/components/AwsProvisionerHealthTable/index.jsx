@@ -1,12 +1,6 @@
 import { Fragment, Component } from 'react';
-import {
-  memoizeWith,
-  pipe,
-  map,
-  isEmpty,
-  defaultTo,
-  sort as rSort,
-} from 'ramda';
+import { pipe, map, isEmpty, defaultTo, sort as rSort } from 'ramda';
+import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
@@ -64,12 +58,7 @@ export default class AwsProvisionerHealthTable extends Component {
     this.setState({ sortBy, sortDirection });
   };
 
-  createSortedHealth = memoizeWith(
-    (healthData, sortBy, sortDirection) => {
-      const ids = sorted(healthData.running);
-
-      return `${ids.join('-')}-${sortBy}-${sortDirection}`;
-    },
+  createSortedHealth = memoize(
     (healthData, sortBy, sortDirection) => {
       const healthSummary = {};
       const { requestHealth, terminationHealth, running } = healthData;
@@ -97,7 +86,7 @@ export default class AwsProvisionerHealthTable extends Component {
 
       Object.entries(healthSummary).forEach(([key, item]) => {
         healthSummary[key].healthy =
-          or0(item.successful) + or0(item.clean_shutdown) + or0(item.running);
+          or0(item.successful) + or0(item.cleanShutdown) + or0(item.running);
         healthSummary[key].unhealthy =
           or0(item.failed) +
           or0(item.spotKill) +
@@ -124,6 +113,13 @@ export default class AwsProvisionerHealthTable extends Component {
 
         return sort(firstElement, secondElement);
       });
+    },
+    {
+      serializer: ([healthData, sortBy, sortDirection]) => {
+        const ids = sorted(healthData.running);
+
+        return `${ids.join('-')}-${sortBy}-${sortDirection}`;
+      },
     }
   );
 
@@ -223,7 +219,7 @@ export default class AwsProvisionerHealthTable extends Component {
                   <ListItem>
                     <ListItemText
                       primary="Clean Shutdown"
-                      secondary={or0(drawerItem.clean_shutdown)}
+                      secondary={or0(drawerItem.cleanShutdown)}
                     />
                   </ListItem>
                   <ListItem>
@@ -246,37 +242,37 @@ export default class AwsProvisionerHealthTable extends Component {
                   <ListItem>
                     <ListItemText
                       primary="Spot Kill"
-                      secondary={or0(drawerItem.spot_kill)}
+                      secondary={or0(drawerItem.spotKill)}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Insufficient Capacity"
-                      secondary={or0(drawerItem.insufficient_capacity)}
+                      secondary={or0(drawerItem.insufficientCapacity)}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Volume Limit Exceeded"
-                      secondary={or0(drawerItem.volume_limit_exceeded)}
+                      secondary={or0(drawerItem.volumeLimitExceeded)}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Missing AMI"
-                      secondary={or0(drawerItem.missing_ami)}
+                      secondary={or0(drawerItem.missingAmi)}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Unknown Codes"
-                      secondary={or0(drawerItem.unknown_codes)}
+                      secondary={or0(drawerItem.unknownCodes)}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="No Codes"
-                      secondary={or0(drawerItem.no_code)}
+                      secondary={or0(drawerItem.noCode)}
                     />
                   </ListItem>
                 </List>
