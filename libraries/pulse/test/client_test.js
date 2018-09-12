@@ -1,4 +1,5 @@
 const {Client, connectionStringCredentials} = require('../src');
+const {Connection} = require('../src/client');
 const amqplib = require('amqplib');
 const assume = require('assume');
 const debugModule = require('debug');
@@ -84,24 +85,50 @@ const connectionTests = connectionString => {
     assume(client.activeConnection).to.equal(undefined);
   });
 
-  test('recycle interval', async function() {
+  test('recycle interval (no recycleAt)', async function() {
     let recycles = 0;
-    const oldMethod = Client.prototype.recycle;
-    Client.prototype.recycle = () => { recycles++; };
-    try {
-      const client = new Client({
-        credentials,
-        recycleInterval: 10,
-        retirementDelay: 50,
-        monitor,
-        namespace: 'guest',
-      });
-      await new Promise(resolve => setTimeout(resolve, 100));
-      await client.stop();
-      assume(recycles).is.gt(5);
-    } finally {
-      Client.prototype.recycle = oldMethod;
-    }
+    const client = new Client({
+      credentials,
+      recycleInterval: 10,
+      retirementDelay: 50,
+      monitor,
+      namespace: 'guest',
+    });
+
+    // simplify _startConnection to the important part for this test:
+    // updating the timer (and counting calls)
+    client._startConnection = () => {
+      recycles++;
+      client._updateRecycleTimer();
+      return new Connection(50);
+    };
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await client.stop();
+    assume(recycles).is.gt(5);
+  });
+
+  test('recycle interval (with recycleAt)', async function() {
+    let recycles = 0;
+    const client = new Client({
+      credentials,
+      recycleInterval: 10,
+      retirementDelay: 50,
+      monitor,
+      namespace: 'guest',
+    });
+
+    // simplify _startConnection to the important part for this test:
+    // updating the timer (and counting calls)
+    client._startConnection = () => {
+      recycles++;
+      client._updateRecycleTimer(new Date(new Date().getTime() + 10));
+      return new Connection(50);
+    };
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await client.stop();
+    assume(recycles).is.gt(5);
   });
 
   test('minReconnectionInterval', async function() {
@@ -115,7 +142,7 @@ const connectionTests = connectionString => {
     const client = new Client({
       credentials,
       retirementDelay: 50,
-      minReconnectionInterval: 20,
+      minReconnectionInterval: 10,
       monitor,
       namespace: 'guest',
     });

@@ -71,7 +71,7 @@ const claimedCredentials = ({rootUrl, credentials, namespace, expiresAfter, cont
       contact,
     });
     connectionString = res.connectionString;
-    recycleAt = res.reclaimAt;
+    recycleAt = new Date(res.reclaimAt);
     return {connectionString, recycleAt};
   };
 };
@@ -87,7 +87,7 @@ const mockClaimedCredentials = (connectionString, recycleAt) => {
   recycleAfter = recycleAt || taskcluster.fromNow('5 seconds');
 
   return async () => {
-    return {connectionString, recycleAt};
+    return {connectionString, recycleAt: new Date(recycleAt)};
   };
 };
 
