@@ -153,6 +153,9 @@ type Task {
   # Get task status structure
   status(taskId: ID = taskId): TaskStatus!
 
+  # Actions exposed by the decision task defined in the public/actions.json artifact.
+  taskActions(taskGroupId: String = taskGroupId, filter: JSON): TaskActionsJson!
+
   # Returns a list of the artifacts and associated metadata for latest run of this task.
   # As a task run may have many artifacts, this may return cursors to page through artifacts.
   # To continue listing artifacts, use the returned connection with the desired

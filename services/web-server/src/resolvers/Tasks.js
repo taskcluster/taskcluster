@@ -50,6 +50,16 @@ export default {
 
       return loaders.status.load(parent.taskId);
     },
+    taskActions(parent, { filter }, { loaders }) {
+      if (parent.taskActions) {
+        return parent.taskActions;
+      }
+
+      return loaders.taskActions.load({
+        taskGroupId: parent.taskGroupId,
+        filter,
+      });
+    },
   },
   Query: {
     task(parent, { taskId }, { loaders }) {
