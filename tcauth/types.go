@@ -543,6 +543,12 @@ type (
 		//
 		// See https://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/resource
 		Resource string `json:"resource"`
+
+		// Source IP of the authentication request or request that requires
+		// authentication. This is only used for audit logging.
+		//
+		// See https://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/sourceIp
+		SourceIP string `json:"sourceIp,omitempty"`
 	}
 
 	// Response from a request to authenticate a hawk request.
