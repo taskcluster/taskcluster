@@ -61,10 +61,6 @@ class Client extends events.EventEmitter {
     this.debug('starting');
     this.running = true;
     this.recycle();
-
-    this._interval = setInterval(
-      () => this.recycle(),
-      this._recycleInterval);
   }
 
   async stop() {
@@ -73,8 +69,6 @@ class Client extends events.EventEmitter {
     this.running = false;
     clearTimeout(this._recycleTimer);
     this._recycleTimer = null;
-    clearInterval(this._interval);
-    this._interval = null;
 
     this.recycle();
 
@@ -98,21 +92,7 @@ class Client extends events.EventEmitter {
     }
 
     if (this.running) {
-      const newConn = new Connection(this._retirementDelay);
-
-      // don't actually start connecting until at least minReconnectionInterval has passed
-      const earliestConnectionTime = this.lastConnectionTime + this._minReconnectionInterval;
-      const now = new Date().getTime();
-      setTimeout(async () => {
-        try {
-          this.lastConnectionTime = new Date().getTime();
-          const connectionString = await this._fetchCredentials();
-          newConn.connect(connectionString);
-        } catch (err) {
-          this.debug(`Error while fetching credentials: ${err}`);
-          this.recycle();
-        }
-      }, now < earliestConnectionTime ? earliestConnectionTime - now : 0);    
+      const newConn = this._startConnection();
 
       newConn.once('connected', () => {
         this.emit('connected', newConn);
@@ -125,6 +105,34 @@ class Client extends events.EventEmitter {
       });
       this.connections.unshift(newConn);
     }
+  }
+
+  _startConnection() {
+    const newConn = new Connection(this._retirementDelay);
+
+    // don't actually start connecting until at least minReconnectionInterval has passed
+    const earliestConnectionTime = this.lastConnectionTime + this._minReconnectionInterval;
+    const now = new Date().getTime();
+    setTimeout(async () => {
+      if (newConn.state !== 'waiting') {
+        // the connection is no longer waiting, so don't proceed with
+        // connecting (this is rare, but can occur if the recycle timer
+        // occurs at just the wrong moment)
+        return;
+      }
+
+      try {
+        this.lastConnectionTime = new Date().getTime();
+        const {connectionString, recycleAt} = await this.credentials();
+        this._updateRecycleTimer(recycleAt);
+        newConn.connect(connectionString);
+      } catch (err) {
+        this.debug(`Error while fetching credentials: ${err}`);
+        newConn.failed();
+      }
+    }, now < earliestConnectionTime ? earliestConnectionTime - now : 0);
+
+    return newConn;
   }
 
   /**
@@ -209,28 +217,15 @@ class Client extends events.EventEmitter {
   }
 
   /**
-   * Using credentials return connectionstring  and set _recycleAfter of client.
-   * recycleAfter is the recycle interval which may be suggested by the service from which 
-   * credentials are claimed
+   * Update the _recycleTimer, either to expire at recycleAt or, if that's omitted,
+   * after recycleInterval.
    */
-  async _fetchCredentials() {
-    const {connectionString, recycleAt} = await this.credentials();
-    if (recycleAt) {
-      this._recycleAfter = recycleAt - new Date();
-      this._recycleTimer = setTimeout(() => this.recycle(), this._recycleAfter);
-      if (this._interval) {
-        clearInterval(this._interval);
-        this._interval = null;
-        this._recycleInterval = null;
-      }
+  async _updateRecycleTimer(recycleAt) {
+    const recycleAfter = recycleAt ?  recycleAt - new Date() : this._recycleInterval;
+    if (this._recycleTimer) {
+      clearTimeout(this._recycleTimer);
     }
-    
-    if (!recycleAt && !this._interval) {
-      // If recycleAt doesn't provide a value previous value is used
-      this._recycleTimer = setTimeout(() => this.recycle(), this._recycleAfter);
-    }
-
-    return connectionString;
+    this._recycleTimer = setTimeout(() => this.recycle(), recycleAfter);
   }
 }
 
