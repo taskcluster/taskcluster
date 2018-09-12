@@ -269,7 +269,7 @@ type MockHTTPClient struct {
 type MockHTTPRequest struct {
 	URL    string
 	Method string
-	Body   string
+	Body   []byte
 }
 
 func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
@@ -282,7 +282,7 @@ func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	mockRequest := MockHTTPRequest{
 		URL:    req.URL.String(),
 		Method: req.Method,
-		Body:   string(mockRequestBody),
+		Body:   mockRequestBody,
 	}
 	if m.requests == nil {
 		m.requests = []MockHTTPRequest{mockRequest}
@@ -337,7 +337,7 @@ func TestHTTPRequestGeneration(t *testing.T) {
 		// test a request with a payload body and query string parameters
 		{
 			BaseURL:         "https://my.taskcluster.queue.deployment/v1/",
-			RequestBody:     []byte("request payload"),
+			RequestBody:     []byte{1, 2, 3, 4, 5},
 			Method:          "POST",
 			Route:           "/a/b",
 			QueryParameters: url.Values{"a": []string{"A", "B"}},
@@ -357,19 +357,22 @@ func TestHTTPRequestGeneration(t *testing.T) {
 		{
 			URL:    "https://queue.taskcluster.net/v1/a/b",
 			Method: "GET",
-			Body:   ""},
+			Body:   []byte{},
+		},
 		{
 			URL:    "https://my.taskcluster.queue.deployment/v1/a/b",
 			Method: "GET",
-			Body:   ""},
+			Body:   []byte{},
+		},
 		{
 			URL:    "https://my.taskcluster.queue.deployment/v1/a/b?a=A&a=B",
 			Method: "POST",
-			Body:   "request payload"},
+			Body:   []byte{1, 2, 3, 4, 5},
+		},
 		{
 			URL:    "https://localhost:12345/a/b",
 			Method: "GET",
-			Body:   "",
+			Body:   []byte{},
 		},
 	}
 
