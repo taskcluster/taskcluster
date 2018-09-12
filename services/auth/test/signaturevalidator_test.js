@@ -57,6 +57,7 @@ suite(helper.suiteName(__filename), function() {
         resource: '/',
         host: 'test.taskcluster.net',
         port: 443,
+        sourceIp: '127.0.0.1',
       });
 
       if (input.authorization) {

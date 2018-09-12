@@ -179,7 +179,7 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
  * }
  *
  * The function returned takes an object:
- *     {method, resource, host, port, authorization}
+ *     {method, resource, host, port, authorization, sourceIp}
  * And returns promise for an object on one of the forms:
  *     {status: 'auth-failed', message},
  *     {status: 'auth-success', clientId, scheme, scopes}, or
@@ -279,7 +279,7 @@ const createSignatureValidator = function(options) {
         options.monitor.log({
           time: new Date(),
           event: 'signature-validation',
-          version: 2,
+          version: 3,
           expires: credentials? credentials.expires : '',
           scopes: credentials? credentials.scopes : [],
           clientId: credentials? credentials.clientId : '',
@@ -291,6 +291,7 @@ const createSignatureValidator = function(options) {
           port: req.port,
           resource: req.resource,
           method: req.method.toUpperCase(),
+          sourceIp: req.sourceIp || '0.0.0.0',
         });
         return accept(result);
       };
