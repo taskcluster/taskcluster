@@ -234,7 +234,7 @@ const nonceManager = (options) => {
  * }
  *
  * The function returns takes an object:
- *     {method, resource, host, port, authorization}
+ *     {method, resource, host, port, authorization, sourceIp}
  * And return promise for an object on one of the forms:
  *     {status: 'auth-failed', message},
  *     {status: 'auth-success', scheme, scopes}, or,
