@@ -63,6 +63,13 @@ properties:
     description: |
       Authorization header, **must** only be specified if request being
       authenticated has a `Authorization` header.
+  sourceIp:
+    type:                 string
+    format:               ipv4
+    title:                Source IP
+    description: |
+      Source IP of the authentication request or request that requires
+      authentication. This is only used for audit logging.
 additionalProperties:     false
 required:
   - method
