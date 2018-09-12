@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { object, string, func } from 'prop-types';
 import { Controlled } from 'react-codemirror2';
+import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/yaml/yaml';
@@ -25,6 +26,8 @@ export default class CodeEditor extends Component {
     value: string.isRequired,
     /** Code mirror options */
     options: object,
+    /** The CSS class name of the wrapper element */
+    className: string,
   };
 
   static defaultProps = {
@@ -39,7 +42,7 @@ export default class CodeEditor extends Component {
   };
 
   render() {
-    const { classes, value, onChange: _, ...options } = this.props;
+    const { classes, className, value, onChange: _, ...options } = this.props;
     const opts = {
       mode: 'application/json',
       theme: 'material',
@@ -51,7 +54,7 @@ export default class CodeEditor extends Component {
 
     return (
       <Controlled
-        className={classes.root}
+        className={classNames(classes.root, className)}
         options={opts}
         onBeforeChange={this.handleTextUpdate}
         value={value}

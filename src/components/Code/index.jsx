@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { string } from 'prop-types';
 import { getLanguage, highlight } from 'highlight.js';
+import classNames from 'classnames';
 import 'highlight.js/styles/atom-one-dark.css';
 
 const validLanguage = (props, propName) => {
@@ -24,6 +25,8 @@ export default class Code extends Component {
      * A highlight.js language identifier.
      */
     language: validLanguage,
+    /** The CSS class name of the wrapper element */
+    className: string,
   };
 
   state = {
@@ -39,12 +42,12 @@ export default class Code extends Component {
   }
 
   render() {
-    const { language, ...props } = this.props;
+    const { language, className, ...props } = this.props;
     const { code } = this.state;
 
     /* eslint-disable react/no-danger */
     return (
-      <pre className={`language-${language}`} {...props}>
+      <pre className={classNames(`language-${language}`, className)} {...props}>
         {code && <code dangerouslySetInnerHTML={{ __html: code }} />}
       </pre>
     );

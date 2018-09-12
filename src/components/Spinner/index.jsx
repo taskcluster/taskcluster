@@ -1,5 +1,5 @@
 import { PureComponent } from 'react';
-import { bool, oneOf } from 'prop-types';
+import { bool, oneOf, string } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -24,6 +24,8 @@ export default class Spinner extends PureComponent {
      * It supports those theme colors that make sense for this component.
      */
     color: oneOf(['primary', 'secondary', 'inherit']),
+    /** The CSS class name of the wrapper element */
+    className: string,
   };
 
   static defaultProps = {

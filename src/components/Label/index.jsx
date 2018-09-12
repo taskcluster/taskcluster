@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { bool, node, oneOf } from 'prop-types';
+import { bool, node, oneOf, string } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -58,6 +58,8 @@ export default class Label extends Component {
      * Show label using dense styling.
      */
     mini: bool,
+    /** The CSS class name of the wrapper element */
+    className: string,
   };
 
   static defaultProps = {
@@ -73,7 +75,7 @@ export default class Label extends Component {
         disabled
         className={classNames({
           [classes.mini]: mini,
-          [className]: true,
+          className,
         })}
         classes={{
           sizeSmall: classes.dense,
