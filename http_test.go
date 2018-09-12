@@ -1,13 +1,17 @@
 package tcclient
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -253,5 +257,138 @@ func TestContentTypeHeader(t *testing.T) {
 	}
 	if ct := cs.HTTPResponseBody; ct != "application/json" {
 		t.Errorf("Expected Content-Type application/json header, but got '%v'", ct)
+	}
+}
+
+type MockHTTPClient struct {
+	mu       sync.Mutex
+	requests []MockHTTPRequest
+	T        *testing.T
+}
+
+type MockHTTPRequest struct {
+	URL    string
+	Method string
+	Body   string
+}
+
+func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	mockRequestBody, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		m.T.Fatalf("Hit error reading mock http request request body: %s", err)
+	}
+	mockRequest := MockHTTPRequest{
+		URL:    req.URL.String(),
+		Method: req.Method,
+		Body:   string(mockRequestBody),
+	}
+	if m.requests == nil {
+		m.requests = []MockHTTPRequest{mockRequest}
+	} else {
+		m.requests = append(m.requests, mockRequest)
+	}
+	return &http.Response{
+		Status: "200 OK",
+		Body:   ioutil.NopCloser(&bytes.Buffer{}),
+	}, nil
+}
+
+// Requests returns an array of all http requests made since this method was
+// last called.
+func (m *MockHTTPClient) Requests() []MockHTTPRequest {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	defer func() {
+		m.requests = nil
+	}()
+	return m.requests
+}
+
+type RequestTestCase struct {
+	BaseURL         string
+	RequestBody     []byte
+	Method          string
+	Route           string
+	QueryParameters url.Values
+}
+
+func TestHTTPRequestGeneration(t *testing.T) {
+
+	testCases := []RequestTestCase{
+		// routes should always start with '/', however base URLs can be
+		// configured by user, so we should test with both trailing and
+		// non-trailing slash; see https://bugzil.la/1484702
+		{
+			BaseURL:         "https://queue.taskcluster.net/v1",
+			RequestBody:     nil,
+			Method:          "GET",
+			Route:           "/a/b",
+			QueryParameters: nil,
+		},
+		{
+			BaseURL:         "https://my.taskcluster.queue.deployment/v1/",
+			RequestBody:     nil,
+			Method:          "GET",
+			Route:           "/a/b",
+			QueryParameters: nil,
+		},
+		// test a request with a payload body and query string parameters
+		{
+			BaseURL:         "https://my.taskcluster.queue.deployment/v1/",
+			RequestBody:     []byte("request payload"),
+			Method:          "POST",
+			Route:           "/a/b",
+			QueryParameters: url.Values{"a": []string{"A", "B"}},
+		},
+		// fully qualified routes with empty base urls are used by
+		// taskcluster-proxy
+		{
+			BaseURL:         "",
+			RequestBody:     nil,
+			Method:          "GET",
+			Route:           "https://localhost:12345/a/b",
+			QueryParameters: nil,
+		},
+	}
+
+	expectedRequests := []MockHTTPRequest{
+		{
+			URL:    "https://queue.taskcluster.net/v1/a/b",
+			Method: "GET",
+			Body:   ""},
+		{
+			URL:    "https://my.taskcluster.queue.deployment/v1/a/b",
+			Method: "GET",
+			Body:   ""},
+		{
+			URL:    "https://my.taskcluster.queue.deployment/v1/a/b?a=A&a=B",
+			Method: "POST",
+			Body:   "request payload"},
+		{
+			URL:    "https://localhost:12345/a/b",
+			Method: "GET",
+			Body:   "",
+		},
+	}
+
+	mockHTTPClient := &MockHTTPClient{T: t}
+	c := Client{
+		Authenticate: false,
+		HTTPClient:   mockHTTPClient,
+	}
+	for _, testCase := range testCases {
+		c.BaseURL = testCase.BaseURL
+		c.Request(testCase.RequestBody, testCase.Method, testCase.Route, testCase.QueryParameters)
+	}
+	actualRequests := mockHTTPClient.Requests()
+
+	if !reflect.DeepEqual(expectedRequests, actualRequests) {
+		t.Log("Expected requests:")
+		t.Logf("%#v", expectedRequests)
+		t.Log("Actual requests:")
+		t.Logf("%#v", actualRequests)
+		t.Fail()
 	}
 }

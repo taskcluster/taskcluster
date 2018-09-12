@@ -84,9 +84,11 @@ var defaultHTTPClient ReducedHTTPClient = &http.Client{}
 // utility function to create a URL object based on given data
 func setURL(client *Client, route string, query url.Values) (u *url.URL, err error) {
 	URL := client.BaseURL
-	// avoid double separator...
-	if !strings.HasSuffix(URL, "/") {
-		URL += "/"
+	// See https://bugzil.la/1484702
+	// Avoid double separator; routes must start with `/`, so baseURL shouldn't
+	// end with `/`.
+	if strings.HasSuffix(URL, "/") {
+		URL = URL[:len(URL)-1]
 	}
 	URL += route
 	u, err = url.Parse(URL)
