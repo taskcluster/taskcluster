@@ -32,6 +32,38 @@ suite('tc-yaml_test.js', function() {
       }]);
     });
 
+    test('compileTasks with one taskId sets taskGroupId', function() {
+      const config = {
+        tasks: [{
+          taskId: 'task-1',
+        }],
+      };
+      tcyaml.compileTasks(config, cfg, {});
+      assume(config.tasks).to.deeply.equal([{
+        taskId: 'task-1',
+        task: {
+          taskGroupId: 'task-1',
+          schedulerId: 'test-sched',
+        },
+      }]);
+    });
+
+    test('compileTasks with taskGroupId and one task sets taskId', function() {
+      const config = {
+        tasks: [{
+          taskGroupId: 'tgid-1',
+        }],
+      };
+      tcyaml.compileTasks(config, cfg, {});
+      assume(config.tasks).to.deeply.equal([{
+        taskId: 'tgid-1',
+        task: {
+          taskGroupId: 'tgid-1',
+          schedulerId: 'test-sched',
+        },
+      }]);
+    });
+
     test('compileTasks with two tasks sets default properties', function() {
       const config = {
         tasks: [{}, {}],
