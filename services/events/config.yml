@@ -22,6 +22,9 @@ defaults:
     hostname:       !env PULSE_HOSTNAME
     vhost:          !env PULSE_VHOST
 
+  app:
+    publishMetaData: !env:bool PUBLISH_METADATA
+
 
 production:
   server:

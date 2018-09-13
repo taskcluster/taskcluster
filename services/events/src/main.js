@@ -34,7 +34,6 @@ let load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'events',
-      
     }),
   },
 
@@ -43,9 +42,10 @@ let load = loader({
     setup: ({cfg}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
+      publish: cfg.app.publishMetaData,
       references: [
         {
-          name: 'api', 
+          name: 'api',
           reference: builder.reference(),
         },
       ],
