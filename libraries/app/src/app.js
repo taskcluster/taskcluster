@@ -8,6 +8,7 @@ var http            = require('http');
 var sslify          = require('express-sslify');
 var hsts            = require('hsts');
 var csp             = require('content-security-policy');
+var uuidv4          = require('uuid/v4');
 
 /** Notify LocalApp if running under this */
 var notifyLocalAppInParentProcess = function(port) {
@@ -108,6 +109,14 @@ var app = async function(options) {
   app.disable('x-powered-by');
   app.use((req, res, next) => {
     res.setHeader('x-content-type-options', 'nosniff');
+    next();
+  });
+
+  // attach request-id to request object and response
+  app.use((req, res, next) => {
+    let reqId = req.headers['x-request-id'] || uuidv4();
+    req.requestId = reqId;
+    res.setHeader('x-for-request-id', reqId);
     next();
   });
 
