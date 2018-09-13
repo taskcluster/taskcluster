@@ -106,9 +106,12 @@ export default {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.taskDefined(routingKey);
 
-        return pulseEngine.asyncIterator('tasksDefined', {
-          [binding.routingKeyPattern]: [binding.exchange],
-        });
+        return pulseEngine.asyncIterator('tasksDefined', [
+          {
+            exchange: binding.exchange,
+            pattern: binding.routingKeyPattern,
+          },
+        ]);
       },
     },
     tasksPending: {
@@ -116,9 +119,12 @@ export default {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.taskPending(routingKey);
 
-        return pulseEngine.asyncIterator('tasksPending', {
-          [binding.routingKeyPattern]: [binding.exchange],
-        });
+        return pulseEngine.asyncIterator('tasksPending', [
+          {
+            exchange: binding.exchange,
+            pattern: binding.routingKeyPattern,
+          },
+        ]);
       },
     },
     tasksRunning: {
@@ -126,9 +132,12 @@ export default {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.taskRunning(routingKey);
 
-        return pulseEngine.asyncIterator('tasksRunning', {
-          [binding.routingKeyPattern]: [binding.exchange],
-        });
+        return pulseEngine.asyncIterator('tasksRunning', [
+          {
+            exchange: binding.exchange,
+            pattern: binding.routingKeyPattern,
+          },
+        ]);
       },
     },
     tasksCompleted: {
@@ -136,9 +145,12 @@ export default {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.taskCompleted(routingKey);
 
-        return pulseEngine.asyncIterator('tasksCompleted', {
-          [binding.routingKeyPattern]: [binding.exchange],
-        });
+        return pulseEngine.asyncIterator('tasksCompleted', [
+          {
+            exchange: binding.exchange,
+            pattern: binding.routingKeyPattern,
+          },
+        ]);
       },
     },
     tasksFailed: {
@@ -146,9 +158,12 @@ export default {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.taskFailed(routingKey);
 
-        return pulseEngine.asyncIterator('tasksFailed', {
-          [binding.routingKeyPattern]: [binding.exchange],
-        });
+        return pulseEngine.asyncIterator('tasksFailed', [
+          {
+            exchange: binding.exchange,
+            pattern: binding.routingKeyPattern,
+          },
+        ]);
       },
     },
     tasksException: {
@@ -156,9 +171,12 @@ export default {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.taskException(routingKey);
 
-        return pulseEngine.asyncIterator('tasksException', {
-          [binding.routingKeyPattern]: [binding.exchange],
-        });
+        return pulseEngine.asyncIterator('tasksException', [
+          {
+            exchange: binding.exchange,
+            pattern: binding.routingKeyPattern,
+          },
+        ]);
       },
     },
     tasksSubscriptions: {
@@ -168,20 +186,19 @@ export default {
         { pulseEngine, clients }
       ) {
         const routingKey = { taskGroupId };
-        const triggers = subscriptions.reduce((triggers, eventName) => {
-          const method = eventName.replace('tasks', 'task');
-          const binding = clients.queueEvents[method](routingKey);
 
-          return {
-            ...triggers,
-            [binding.routingKeyPattern]: [
-              ...(triggers[binding.routingKeyPattern] || []),
-              binding.exchange,
-            ],
-          };
-        }, {});
+        return pulseEngine.asyncIterator(
+          'tasksSubscriptions',
+          subscriptions.map(eventName => {
+            const method = eventName.replace('tasks', 'task');
+            const binding = clients.queueEvents[method](routingKey);
 
-        return pulseEngine.asyncIterator('tasksSubscriptions', triggers);
+            return {
+              exchange: binding.exchange,
+              pattern: binding.routingKeyPattern,
+            };
+          })
+        );
       },
     },
   },

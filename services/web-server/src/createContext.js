@@ -17,9 +17,11 @@ export default ({ pulseEngine, rootUrl }) => ({ request, connection }) => {
       loaders: currentLoaders,
     };
   } else if (connection) {
+    // if connection is set, this is for a subscription
     return {
       pulseEngine,
-      clients: clients(connection.credentials),
+      // subscriptions do not need credentials (all public data)
+      clients: clients({ rootUrl }),
     };
   }
 

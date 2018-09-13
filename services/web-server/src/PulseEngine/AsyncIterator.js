@@ -2,8 +2,8 @@ import { $$asyncIterator } from 'iterall';
 import { List } from 'immutable';
 
 export default class AsyncIterator {
-  constructor(pubsub, eventNames) {
-    this.pubsub = pubsub;
+  constructor(pulseEngine, eventNames) {
+    this.pulseEngine = pulseEngine;
     this.pullQueue = List(); // eslint-disable-line babel/new-cap
     this.pushQueue = List(); // eslint-disable-line babel/new-cap
     this.listening = true;
@@ -75,14 +75,14 @@ export default class AsyncIterator {
   subscribeAll() {
     return Promise.all(
       this.events.map(eventName =>
-        this.pubsub.subscribe(eventName, this.pushValue.bind(this), {})
+        this.pulseEngine.subscribe(eventName, this.pushValue.bind(this), {})
       )
     );
   }
 
   unsubscribeAll(subscriptionIds) {
     subscriptionIds.forEach(subscriptionId =>
-      this.pubsub.unsubscribe(subscriptionId)
+      this.pulseEngine.unsubscribe(subscriptionId)
     );
   }
 }

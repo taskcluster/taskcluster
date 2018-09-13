@@ -13,13 +13,31 @@ by the web application.
 
 ## Launching locally
 
-To run this service locally, install dependencies using `yarn`.
+To run this service locally, install dependencies using `yarn`.  Copy
+`user-config-template.yml` to `user-config.yml` and edit it to include the
+`rootUrl` for the Taskcluster instance you are accessing; for example
+`https://taskcluster.net`.
 
-This service requires a pulse user to run. Set that up at
-https://pulseguardian.mozilla.org. Then copy `user-config-template.yml` to
-`user-config.yml` and edit it to include the new username and password.
+This service requires Taskcluster credentials to support user login, but this
+is not required for development of most features.  This service additionally
+requires a pulse namespace in order to support subscribing to pulse messages,
+but again this is not required for development of other features.
 
-Use the command `yarn start` to start the service.
+To set up Taskcluster credentials, if they are necessary, use
+[taskcluster-cli](https://github.com/taskcluster/taskcluster-cli) to set
+`TASKCLUSTER_ROOT_URL`, `TASKCLUSTER_CLIENT_ID`, and `TASKCLUSTER_ACCESS_TOKEN`
+in your shell:
+
+```shell
+$ eval $(./taskcluster signin --name taskcluster-web-server)
+```
+
+To set up pulse access, you will need a Pulse namespace and the Taskcluster
+credentials you select must have the scope `pulse:namespace:<namespace>`. A
+member of the Taskcluster team can help set that up.  Add the namespace in
+`user-config.yml` as `pulse.namespace`.
+
+In any case, use the command `yarn start` to start the service.
 
 You should see the following message in the console, for example, using port 3050:
 

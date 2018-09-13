@@ -1,6 +1,6 @@
 defaults:
-  pulse:
-    hostname: pulse.mozilla.org
-    username: <username>
-    password: <password>
-    vhost: /
+  taskcluster:
+      rootUrl: ...
+  # only set this if you want to receive pulse messages; see the README
+  #pulse:
+    #namespace:

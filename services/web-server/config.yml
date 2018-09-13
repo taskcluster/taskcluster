@@ -7,6 +7,7 @@ defaults:
   monitoring:
     project: !env MONITORING_PROJECT
     enable: !env:bool MONITORING_ENABLE
+    mock: false
 
   # Server configuration
   server:
@@ -22,10 +23,9 @@ defaults:
 
   # Pulse credentials
   pulse:
-    username: !env PULSE_USERNAME
-    password: !env PULSE_PASSWORD
-    hostname: !env PULSE_HOSTNAME
-    vhost: !env PULSE_VHOST
+    namespace: !env PULSE_NAMESPACE
+    contact: !env PULSE_CONTACT
+    expiresAfter: !env PULSE_EXPIRES_AFTER
 
   # config for the github login strategy
   githubLogin:
@@ -41,3 +41,6 @@ development:
   server:
     # taskcluster-web's dev server assumes port 3050
     port: 3050
+  monitoring:
+    project: taskcluster-web-server
+    mock: true
