@@ -233,8 +233,25 @@ class VersionOne extends TcYaml {
       // - if only one task, make these match (making the task appear to be a decision task)
       // - if two or more tasks, make them different (so that the taskgroup has no decision task)
       // of course, this can be overriden by users specifying these values.
-      const defaultTaskGroupId = slugid.nice();
-      let defaultTaskId = config.tasks.length == 1 ? defaultTaskGroupId : slugid.nice();
+      let defaultTaskId;
+      let defaultTaskGroupId;
+      if (config.tasks.length == 1) {
+        let soleTask = config.tasks[0];
+        if (soleTask.taskId && soleTask.taskGroupId) {
+          // Nothing to do. Everything is already defined.
+        } else if (soleTask.taskId) {
+          defaultTaskGroupId = soleTask.taskId;
+        } else if (soleTask.taskGroupId) {
+          defaultTaskId = soleTask.taskGroupId;
+        } else {
+          defaultTaskId = slugid.nice();
+          defaultTaskGroupId = defaultTaskId;
+        }
+      } else {
+        defaultTaskId = slugid.nice();
+        defaultTaskGroupId = slugid.nice();
+      }
+
       config.tasks = config.tasks.map(task => {
         task = _.defaults(task, {taskId: defaultTaskId, taskGroupId: defaultTaskGroupId});
         defaultTaskId = slugid.nice(); // invent a new taskId for the next task
