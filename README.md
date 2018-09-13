@@ -1,13 +1,6 @@
 # taskcluster-proxy
 
-[![logo](https://tools.taskcluster.net/b2d854df0391f8b777f39a486ebbc868.png)](https://tools.taskcluster.net/b2d854df0391f8b777f39a486ebbc868.png)
-
-[![Build Status](https://travis-ci.org/taskcluster/taskcluster-proxy.svg?branch=master)](http://travis-ci.org/taskcluster/taskcluster-proxy)
-[![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster-proxy?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster-proxy)
-[![Coverage Status](https://coveralls.io/repos/taskcluster/taskcluster-proxy/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/taskcluster-proxy?branch=master)
-[![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
-
-taskcluster-proxy is the proxy server which is used by Taskcluster workers to
+<img align="right" src="https://avatars3.githubusercontent.com/u/6257436?s=256" /> taskcluster-proxy is the proxy server which is used by Taskcluster workers to
 enable individual tasks to talk to various Taskcluster services (auth, queue,
 scheduler, ...) without hardcoding credentials into the containers themselves.
 
@@ -15,6 +8,12 @@ scheduler, ...) without hardcoding credentials into the containers themselves.
   container linked to the task docker container.
 * When used by generic-worker, the taskcluster-proxy runs as a separate
   native executable on the host.
+
+[![Build Status](https://travis-ci.org/taskcluster/taskcluster-proxy.svg?branch=master)](http://travis-ci.org/taskcluster/taskcluster-proxy)
+[![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster-proxy?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster-proxy)
+[![Coverage Status](https://coveralls.io/repos/taskcluster/taskcluster-proxy/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/taskcluster-proxy?branch=master)
+[![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
+
 
 ## Download binary release
 
