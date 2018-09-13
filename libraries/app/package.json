@@ -22,7 +22,7 @@
     "express": "4.16.2",
     "express-sslify": "1.2.0",
     "hsts": "^2.1.0",
-    "lodash": "4.17.4",
+    "lodash": "4.17.11",
     "morgan": "^1.9.0",
     "morgan-debug": "^2.0.0",
     "promise": "^8.0.1",
