@@ -2,7 +2,6 @@ defaults:
   app:
     sourceEmail:                  !env EMAIL_SOURCE_ADDRESS
     sqsQueueName:                 !env SQS_QUEUE
-    exchangePrefix:               v1/
     listenerQueueName:            !env LISTENER_QUEUE_NAME
     routePrefix:                  notify
     publishMetaData:              !env:bool PUBLISH_METADATA
@@ -38,8 +37,7 @@ defaults:
   aws:
     accessKeyId:      !env AWS_ACCESS_KEY_ID
     secretAccessKey:  !env AWS_SECRET_ACCESS_KEY
-    region:           us-east-1
-    apiVersion:       2014-01-01
+    region:           !env AWS_REGION
 
   pulse:
     username:         !env PULSE_USERNAME
@@ -61,15 +59,13 @@ production:
   server:
     env:              production
   irc:
-    server:           irc.mozilla.org
-    nick:             taskcluster
-    userName:         taskcluster
-    realName:         Taskcluster Robot
     queueName:        irc-notifications
     port:             6697
 
 # Configuration of tests
 test:
+  aws:
+    region:           us-east-1
   app:
     sourceEmail: '"Taskcluster Notify Testing" <taskcluster-noreply-testing@mozilla.com>'
     sqsQueueName: taskcluster-notify-test-irc
