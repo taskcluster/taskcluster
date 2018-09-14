@@ -123,10 +123,10 @@ while ! curl -s -I "https://github.com/taskcluster/taskcluster-proxy/releases/do
   echo -n '.'
 done
 echo
-echo "======================================================================================================
+echo "======================================================================================================"
 echo "The github release of taskcluster-proxy ${NEW_VERSION} has been published to:"
 echo "  * https://github.com/taskcluster/taskcluster-proxy/releases"
-echo "======================================================================================================
+echo "======================================================================================================"
 echo
 
 uid="$(date +%s)"
@@ -151,10 +151,10 @@ docker push "taskcluster/taskcluster-proxy:${NEW_VERSION}"
 docker push "taskcluster/taskcluster-proxy:latest"
 echo
 echo
-echo "======================================================================================================
+echo "======================================================================================================"
 echo "The docker image for taskcluster-proxy ${NEW_VERSION} has been published to:"
 echo "  * https://hub.docker.com/r/taskcluster/taskcluster-proxy/tags/"
-echo "======================================================================================================
+echo "======================================================================================================"
 echo
 echo "It is HIGHLY RECOMMENDED to test the new docker-worker release before using it:"
 echo "  * https://github.com/taskcluster/taskcluster-proxy/tree/v${NEW_VERSION}#testing-your-locally-built-docker-container"
