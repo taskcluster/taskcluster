@@ -34,8 +34,8 @@ Start-Process "cmd.exe" -ArgumentList "/c del /f /q `"C:\Program Files\Citrix\Xe
 md "C:\log"
 
 # NxLog: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.9.1716.msi", "C:\binaries\404.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\404.msi /quiet" -Wait -NoNewWindow
+$client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.9.1716.msi", "C:\binaries\nxlog-ce-2.9.1716.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\nxlog-ce-2.9.1716.msi /quiet" -Wait -NoNewWindow
 
 # PaperTrailEncryptionCertificate: Maintenance Toolchain - not essential for building firefox
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/papertrail-bundle.pem", "C:\Program Files\nxlog\cert\papertrail-bundle.pem")
@@ -59,8 +59,8 @@ $client.DownloadFile("http://files.gpg4win.org/gpg4win-2.3.0.exe", "C:\binaries\
 Start-Process "C:\binaries\gpg4win-2.3.0.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SevenZip: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("http://7-zip.org/a/7z1602.exe", "C:\binaries\download?use_mirror=netix.exe")
-Start-Process "C:\binaries\download?use_mirror=netix.exe" -ArgumentList "/S" -Wait -NoNewWindow
+$client.DownloadFile("http://7-zip.org/a/7z1602.exe", "C:\binaries\7z1602.exe")
+Start-Process "C:\binaries\7z1602.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SublimeText3: Maintenance Toolchain - not essential for building firefox
 $client.DownloadFile("https://download.sublimetext.com/Sublime%20Text%20Build%203114%20Setup.exe", "C:\binaries\Sublime Text Build 3114 Setup.exe")

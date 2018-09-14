@@ -188,10 +188,33 @@ func main() {
 }
 
 func FilenameFromURL(url string, extension string) (filename string) {
-	// Follow redirects to reach the target url
+	stripFromPath := func(url string, extension string) (filename string) {
+		filename = path.Base(url)
+		unescaped, err := pkgurl.QueryUnescape(filename)
+		if err == nil {
+			filename = unescaped
+		}
+		if strings.HasSuffix(strings.ToLower(filename), strings.ToLower(extension)) {
+			return filename
+		}
+		return ""
+	}
+
+	if firstTry := stripFromPath(url, extension); firstTry != "" {
+		return firstTry
+	}
+
+	// URL provided does not have filename explicitly in it, so next strategy
+	// to obtain the filename is to make an http request to the url, and keep
+	// following http redirects until a url is found that filename can be
+	// extracted from.
 	client := http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			url = req.URL.String()
+			filename = stripFromPath(url, extension)
+			if filename != "" {
+				return http.ErrUseLastResponse
+			}
 			return nil
 		},
 	}
@@ -199,15 +222,9 @@ func FilenameFromURL(url string, extension string) (filename string) {
 	if err != nil {
 		log.Fatal("Could not reach URL " + url)
 	}
-	filename = path.Base(url)
-	unescaped, err := pkgurl.QueryUnescape(filename)
-	if err == nil {
-		filename = unescaped
+	if filename == "" {
+		log.Fatalf("HEEEEEELLLLLLPPPPP")
 	}
-	if strings.HasSuffix(strings.ToLower(filename), strings.ToLower(extension)) {
-		return
-	}
-	filename += extension
 	return
 }
 
