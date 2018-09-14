@@ -7,6 +7,7 @@ from six.moves import urllib
 import os
 import re
 import json
+import copy
 
 import mock
 import httmock
@@ -54,6 +55,34 @@ class ClientTest(base.TCTest):
 
     def tearDown(self):
         time.sleep = self.realTimeSleep
+
+
+class TestConstructorOptions(ClientTest):
+
+    def test_default_set_correct(self):
+        expected = self.apiRef.get('baseUrl')
+        client = self.clientClass({'baseUrl': expected})
+        self.assertEqual(client.options.get('baseUrl'), expected)
+
+    def test_baseUrl_set_correct(self):
+        expected = 'https://www.taskcluster.net/v1'
+        client = self.clientClass({'baseUrl': expected})
+        self.assertEqual(client.options.get('baseUrl'), expected)
+
+    def test_rootUrl_set_correct_without_name_in_ref(self):
+        rootUrl = 'https://bogus.net'
+        expected = '%s/api/%s/v%s/' % (rootUrl, 'fake', self.apiRef['reference']['version'])
+        client = self.clientClass({'rootUrl': rootUrl})
+        self.assertEqual(client.options.get('baseUrl'), expected)
+
+    def test_rootUrl_set_correct_with_name_in_ref(self):
+        apiRef = copy.deepcopy(self.apiRef)
+        apiRef['reference']['name'] = 'fake2'
+        clientClass = subject.createApiClient('testApi', apiRef)
+        rootUrl = 'https://bogus.net'
+        expected = '%s/api/%s/v%s/' % (rootUrl, apiRef['reference']['name'], apiRef['reference']['version'])
+        client = clientClass({'rootUrl': rootUrl})
+        self.assertEqual(client.options.get('baseUrl'), expected)
 
 
 class TestSubArgsInRoute(ClientTest):

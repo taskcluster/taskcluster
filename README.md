@@ -125,6 +125,10 @@ Here's a slide deck for an [introduction to async python](https://gitpitch.com/e
     qEvt.taskCompleted(taskId='atask')
     ```
 
+## Root Url
+This client supports the `TASKCLUSTER_ROOT_URL` environment variable to
+determine the URL of each endpoint used.
+
 ## Pagination
 There are two ways to accomplish pagination easily with the python client.  The first is
 to implement pagination in your code:

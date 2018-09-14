@@ -22,7 +22,7 @@ class TCTest(unittest.TestCase):
 
 def createApiRef(**kwargs):
     default = {
-        'version': '0.0.1',
+        'version': '3',
         'title': 'API Title',
         'description': 'API Description',
         'baseUrl': 'https://fake.taskcluster.net/v1',

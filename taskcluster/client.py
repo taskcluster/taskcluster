@@ -21,6 +21,7 @@ import mohawk.bewit
 
 import taskcluster.exceptions as exceptions
 import taskcluster.utils as utils
+import taskcluster_urls as liburl
 
 log = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ _defaultConfig = config = {
         'accessToken': os.environ.get('TASKCLUSTER_ACCESS_TOKEN'),
         'certificate': os.environ.get('TASKCLUSTER_CERTIFICATE'),
     },
+    'rootUrl': os.environ.get('TASKCLUSTER_ROOT_URL'),
     'maxRetries': 5,
     'signedUrlExpiration': 15 * 60,
 }
@@ -55,6 +57,12 @@ class BaseClient(object):
         o = copy.deepcopy(self.classOptions)
         o.update(_defaultConfig)
         if options:
+            # We can only check for mutual exclusivity of baseUrl and rootUrl at
+            # this point because by default the reference will have a baseUrl,
+            # and so if we check if the class or default baseUrl options, it'll
+            # always be set so it'll always fail when using the rootUrl option.
+            if options.get('baseUrl') and o.get('rootUrl'):
+                raise exceptions.TaskclusterFailure('baseUrl and rootUrl are mutually exclusive')
             o.update(options)
 
         credentials = o.get('credentials')
@@ -67,6 +75,17 @@ class BaseClient(object):
                     except:
                         s = '%s (%s) must be unicode encodable' % (x, credentials[x])
                         raise exceptions.TaskclusterAuthFailure(s)
+
+        baseUrl = o.get('baseUrl')
+        rootUrl = o.get('rootUrl')
+
+        if rootUrl and not o.get('version'):
+            s = 'specifying a rootUrl requires a version in the API reference'
+            raise exceptions.TaskclusterFailure(s)
+        elif rootUrl:
+            name = o.get('name', urllib.parse.urlparse(baseUrl).netloc.split('.', 1)[0])
+            o['baseUrl'] = liburl.api(rootUrl, name, 'v' + o['version'], '')
+
         self.options = o
         if 'credentials' in o:
             log.debug('credentials key scrubbed from logging output')
@@ -552,7 +571,7 @@ def createApiClient(name, api):
         funcinfo={},
     )
 
-    copiedOptions = ('baseUrl', 'exchangePrefix')
+    copiedOptions = ('baseUrl', 'exchangePrefix', 'name', 'version')
     for opt in copiedOptions:
         if opt in api['reference']:
             attributes['classOptions'][opt] = api['reference'][opt]
