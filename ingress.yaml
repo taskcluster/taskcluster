@@ -33,6 +33,7 @@ spec:
             - {service_name: index, project_name: taskcluster-index}
             - {service_name: gce-provider, project_name: gce-provider}
             - {service_name: events, project_name: taskcluster-events}
+            - {service_name: notify, project_name: taskcluster-notify}
           each(svc):
             $if: '!(svc.project_name in disabled_services)'
             then:

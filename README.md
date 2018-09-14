@@ -1,6 +1,6 @@
 # Taskcluster Terraform
 
-A simple module to set up some requirements for a taskcluster deployment.
+A simple module to set up some requirements for a Taskcluster deployment.
 
 To use this module, you must have configured the following terraform providers
 in your module:
@@ -19,6 +19,7 @@ in the shell you are applying this from.
 - A kubernetes cluster
 - An (nginx ingress controller)[https://kubernetes.github.io/ingress-nginx/deploy/] in said cluster
 - A rabbitmq cluster with the RabbitMQ management plugin enabled
+- An SES email address set up in AWS. This cannot be created automatically by Terraform.
 
 ## Usage
 

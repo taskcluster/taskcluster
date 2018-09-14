@@ -1,11 +1,9 @@
-// TODO: This service pretty much won't work yet. The aws things need some work
-//       but also the service itself needs some assumptions changed in config.yml
-// TODO: Probably need to tell people to manually set up
-//       an email sender in aws. there is no terraform way to do this.
-// TODO: Need to actually get the correct arn's for the following resources
-/*
 resource "aws_sqs_queue" "notify_irc_queue" {
   name = "tasklcuster-notify-irc"
+}
+
+locals {
+  email_source_address = "${element(split("identity/", var.notify_ses_arn), 1)}"
 }
 
 module "notify_user" {
@@ -26,7 +24,7 @@ module "notify_user" {
               "sqs:DeleteMessage"
             ],
             "Resource": [
-              "arn:aws:sqs:us-east-2:*:taskcluster-notify-*"
+              "${aws_sqs_queue.notify_irc_queue.arn}"
             ]
         },
         {
@@ -34,9 +32,12 @@ module "notify_user" {
             "Action": [
                 "ses:SendEmail"
             ],
-            "Resource": [
-              "arn:aws:ses:us-east-2:<account>:identity/taskcluster-noreply@something.com"
-            ]
+            "Resource": "*",
+            "Condition": {
+              "StringEquals": {
+                "ses:FromAddress": "${local.email_source_address}"
+              }
+            }
         }
     ]
 }
@@ -61,6 +62,7 @@ module "notify_secrets" {
   secrets = {
     AWS_ACCESS_KEY_ID        = "${module.notify_user.access_key_id}"
     AWS_SECRET_ACCESS_KEY    = "${module.notify_user.secret_access_key}"
+    AWS_REGION               = "us-east-1"                                   // TODO: Make this come from tf
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/secrets"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.notify_access_token.result}"
     DEBUG                    = "*"
@@ -71,10 +73,17 @@ module "notify_secrets" {
     PUBLISH_METADATA         = "false"
     PULSE_USERNAME           = "taskcluster-notify"
     PULSE_PASSWORD           = "${module.notify_rabbitmq_user.password}"
+    PULSE_HOSTNAME           = "${var.rabbitmq_hostname}"
+    PULSE_VHOST              = "${var.rabbitmq_vhost}"
     EMAIL_BLACKLIST          = "[]"
-    EMAIL_SOURCE_ADDRESS     = "\"${var.cluster_name}\" <TODO: ???>"
-    IRC_PASSWORD             = "TODO"
-    SQS_QUEUE                = "TODO"
+    EMAIL_SOURCE_ADDRESS     = "${local.email_source_address}"
+    SQS_QUEUE                = "${aws_sqs_queue.notify_irc_queue.name}"
+    IRC_USER_NAME            = "${var.irc_name}"
+    IRC_REAL_NAME            = "${var.irc_real_name}"
+    IRC_NICK                 = "${var.irc_nick}"
+    IRC_PORT                 = "${var.irc_port}"
+    IRC_SERVER               = "${var.irc_server}"
+    IRC_PASSWORD             = "${var.irc_password}"
   }
 }
 
@@ -116,5 +125,3 @@ module "notify_irc" {
   secret_keys    = "${module.notify_secrets.env_var_keys}"
   docker_image   = "${local.taskcluster_image_notify}"
 }
-*/
-

@@ -89,6 +89,13 @@ locals {
       ]
     },
     {
+      clientId    = "static/taskcluster/notify"
+      accessToken = "${random_string.notify_access_token.result}"
+      description = "..."
+
+      scopes = []
+    },
+    {
       clientId    = "static/taskcluster/gce-provider"
       accessToken = "${random_string.gce_provider_access_token.result}"
       description = "..."
