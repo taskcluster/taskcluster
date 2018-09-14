@@ -71,7 +71,7 @@ class TestConstructorOptions(ClientTest):
 
     def test_rootUrl_set_correct_without_name_in_ref(self):
         rootUrl = 'https://bogus.net'
-        expected = '%s/api/%s/v%s/' % (rootUrl, 'fake', self.apiRef['reference']['version'])
+        expected = '%s/api/%s/v%s/' % (rootUrl, 'fake', self.apiRef['reference']['apiVersion'])
         client = self.clientClass({'rootUrl': rootUrl})
         self.assertEqual(client.options.get('baseUrl'), expected)
 
@@ -80,7 +80,7 @@ class TestConstructorOptions(ClientTest):
         apiRef['reference']['name'] = 'fake2'
         clientClass = subject.createApiClient('testApi', apiRef)
         rootUrl = 'https://bogus.net'
-        expected = '%s/api/%s/v%s/' % (rootUrl, apiRef['reference']['name'], apiRef['reference']['version'])
+        expected = '%s/api/%s/v%s/' % (rootUrl, apiRef['reference']['name'], apiRef['reference']['apiVersion'])
         client = clientClass({'rootUrl': rootUrl})
         self.assertEqual(client.options.get('baseUrl'), expected)
 

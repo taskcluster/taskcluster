@@ -79,12 +79,9 @@ class BaseClient(object):
         baseUrl = o.get('baseUrl')
         rootUrl = o.get('rootUrl')
 
-        if rootUrl and not o.get('version'):
-            s = 'specifying a rootUrl requires a version in the API reference'
-            raise exceptions.TaskclusterFailure(s)
-        elif rootUrl:
+        if rootUrl:
             name = o.get('name', urllib.parse.urlparse(baseUrl).netloc.split('.', 1)[0])
-            o['baseUrl'] = liburl.api(rootUrl, name, 'v' + o['version'], '')
+            o['baseUrl'] = liburl.api(rootUrl, name, 'v%d' % o.get('apiVersion', 1), '')
 
         self.options = o
         if 'credentials' in o:
