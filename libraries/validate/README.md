@@ -59,10 +59,10 @@ When the Taskcluster instance is running, the schema will be available via HTTP 
 
 You must get a `validator` out of a `SchemaSet` to use it.
 A validator is a function that will validate a document's adherence to a schema, given that schema's *absolute* id.
+Note that `schemaset.validator` is async.
 
 ```javascript
-
-const validate = schemaset.validator('https://some-taskcluster-root-url.com');
+const validate = await schemaset.validator('https://some-taskcluster-root-url.com');
 // Check whatever object you wish against whichever schema you wish
 let error = validate(
   doc,
