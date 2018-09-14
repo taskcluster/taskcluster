@@ -156,6 +156,9 @@ type Task {
   # Actions exposed by the decision task defined in the public/actions.json artifact.
   taskActions(taskGroupId: String = taskGroupId, filter: JSON): TaskActionsJson!
 
+  # Definition of the task group ID.
+  taskGroup: Task
+
   # Returns a list of the artifacts and associated metadata for latest run of this task.
   # As a task run may have many artifacts, this may return cursors to page through artifacts.
   # To continue listing artifacts, use the returned connection with the desired
@@ -252,6 +255,10 @@ input TaskInput {
   # **Warning**, do not stuff large datasets in here.
   # Task definitions should not take-up multiple MBs.
   extra: JSON
+
+  # If you need to create a client similar to an existing client, but with some option updated,
+  # use this field.
+  options: JSON
 }
 
 type IndexedTask {
