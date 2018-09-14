@@ -53,8 +53,8 @@ $client.DownloadFile("http://files.gpg4win.org/gpg4win-2.3.0.exe", "C:\binaries\
 Start-Process "C:\binaries\gpg4win-2.3.0.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SevenZip: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("http://7-zip.org/a/7z1514-x64.exe", "C:\binaries\download?use_mirror=netcologne.exe")
-Start-Process "C:\binaries\download?use_mirror=netcologne.exe" -ArgumentList "/S" -Wait -NoNewWindow
+$client.DownloadFile("http://7-zip.org/a/7z1514-x64.exe", "C:\binaries\download?use_mirror=netix.exe")
+Start-Process "C:\binaries\download?use_mirror=netix.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SublimeText3: Maintenance Toolchain - not essential for building firefox
 $client.DownloadFile("https://download.sublimetext.com/Sublime%20Text%20Build%203114%20x64%20Setup.exe", "C:\binaries\Sublime Text Build 3114 x64 Setup.exe")
@@ -120,7 +120,7 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting"
 md "C:\generic-worker"
 
 # GenericWorkerDownload
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.11.3/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.11.2/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # LiveLogDownload
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
@@ -365,6 +365,16 @@ Start-Process "C:\binaries\vc_redist.x86.exe" -ArgumentList "/install /passive /
 # vcredist_vs2015_x64: https://bugzilla.mozilla.org/show_bug.cgi?id=1460042
 $client.DownloadFile("http://download.microsoft.com/download/4/c/b/4cbd5757-0dd4-43a7-bac0-2a492cedbacb/vc_redist.x64.exe", "C:\binaries\vc_redist.x64.exe")
 Start-Process "C:\binaries\vc_redist.x64.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2015_x64-install.log" -Wait -NoNewWindow
+
+# WindowsPerformanceToolkit: https://bugzilla.mozilla.org/show_bug.cgi?id=1485757
+$client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/WindowsPerformanceToolkit/WPTx64-x86_en-us.msi", "C:\binaries\WPTx64-x86_en-us.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\WPTx64-x86_en-us.msi /quiet" -Wait -NoNewWindow
+
+# mozprofilerprobe: https://bugzilla.mozilla.org/show_bug.cgi?id=1485757
+$client.DownloadFile("http://hg.mozilla.org/mozilla-central/raw-file/360ab7771e27/toolkit/components/startup/mozprofilerprobe.mof", "C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\mozprofilerprobe.mof")
+
+# mofcomp_mozprofilerprobe: https://bugzilla.mozilla.org/show_bug.cgi?id=1485757
+Start-Process "mofcomp" -ArgumentList "`"C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\mozprofilerprobe.mof`"" -Wait -NoNewWindow
 
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead

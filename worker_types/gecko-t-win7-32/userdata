@@ -34,8 +34,8 @@ Start-Process "cmd.exe" -ArgumentList "/c del /f /q `"C:\Program Files\Citrix\Xe
 md "C:\log"
 
 # NxLog: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.9.1716.msi", "C:\binaries\nxlog-ce-2.9.1716.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\nxlog-ce-2.9.1716.msi /quiet" -Wait -NoNewWindow
+$client.DownloadFile("https://nxlog.co/system/files/products/files/348/nxlog-ce-2.9.1716.msi", "C:\binaries\404.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\404.msi /quiet" -Wait -NoNewWindow
 
 # PaperTrailEncryptionCertificate: Maintenance Toolchain - not essential for building firefox
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/nxlog/papertrail-bundle.pem", "C:\Program Files\nxlog\cert\papertrail-bundle.pem")
@@ -59,8 +59,8 @@ $client.DownloadFile("http://files.gpg4win.org/gpg4win-2.3.0.exe", "C:\binaries\
 Start-Process "C:\binaries\gpg4win-2.3.0.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SevenZip: Maintenance Toolchain - not essential for building firefox
-$client.DownloadFile("http://7-zip.org/a/7z1602.exe", "C:\binaries\download?use_mirror=vorboss.exe")
-Start-Process "C:\binaries\download?use_mirror=vorboss.exe" -ArgumentList "/S" -Wait -NoNewWindow
+$client.DownloadFile("http://7-zip.org/a/7z1602.exe", "C:\binaries\download?use_mirror=kent.exe")
+Start-Process "C:\binaries\download?use_mirror=kent.exe" -ArgumentList "/S" -Wait -NoNewWindow
 
 # SublimeText3: Maintenance Toolchain - not essential for building firefox
 $client.DownloadFile("https://download.sublimetext.com/Sublime%20Text%20Build%203114%20Setup.exe", "C:\binaries\Sublime Text Build 3114 Setup.exe")
@@ -97,6 +97,10 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Python\PythonCore\2.7\InstallPath" -Name "
 # reg_PythonPath
 New-ItemProperty -Path "HKLM:SOFTWARE\Python\PythonCore\2.7\PythonPath" -Name "(Default)" -Value "C:\mozilla-build\python\Lib;C:\mozilla-build\python\DLLs;C:\mozilla-build\python\Lib\lib-tk" -PropertyType String -Force
 
+# Python3: https://bugzilla.mozilla.org/show_bug.cgi?id=1451107, https://docs.python.org/3/using/windows.html
+$client.DownloadFile("https://www.python.org/ftp/python/3.6.3/python-3.6.3.exe", "C:\binaries\python-3.6.3.exe")
+Start-Process "C:\binaries\python-3.6.3.exe" -ArgumentList "/quiet InstallAllUsers=1 TargetDir=C:\mozilla-build\python3" -Wait -NoNewWindow
+
 # DeleteMozillaBuildMercurial
 Start-Process "cmd.exe" -ArgumentList "/c del C:\mozilla-build\python\Scripts\hg*" -Wait -NoNewWindow
 
@@ -117,7 +121,7 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloud
 [Environment]::SetEnvironmentVariable("MOZILLABUILD", "C:\mozilla-build", "Machine")
 
 # env_PATH
-[Environment]::SetEnvironmentVariable("PATH", "C:\Program Files\Mercurial;C:\mozilla-build\7zip;C:\mozilla-build\info-zip;C:\mozilla-build\kdiff3;C:\mozilla-build\moztools-x64\bin;C:\mozilla-build\mozmake;C:\mozilla-build\msys\bin;C:\mozilla-build\msys\local\bin;C:\mozilla-build\nsis-3.0b3;C:\mozilla-build\nsis-2.46u;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\mozilla-build\upx391w;C:\mozilla-build\wget;C:\mozilla-build\yasm;%PATH%", "Machine")
+[Environment]::SetEnvironmentVariable("PATH", "C:\Program Files\Mercurial;C:\mozilla-build\7zip;C:\mozilla-build\info-zip;C:\mozilla-build\kdiff3;C:\mozilla-build\moztools-x64\bin;C:\mozilla-build\mozmake;C:\mozilla-build\msys\bin;C:\mozilla-build\msys\local\bin;C:\mozilla-build\nsis-3.0b3;C:\mozilla-build\nsis-2.46u;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\mozilla-build\upx391w;C:\mozilla-build\wget;C:\mozilla-build\yasm;C:\Program Files\Microsoft Windows Performance Toolkit;%PATH%", "Machine")
 
 # ToolToolInstall
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py", "C:\mozilla-build\tooltool.py")
@@ -132,7 +136,7 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting"
 md "C:\generic-worker"
 
 # GenericWorkerDownload
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.11.3/generic-worker-windows-386.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.11.2/generic-worker-windows-386.exe", "C:\generic-worker\generic-worker.exe")
 
 # LiveLogDownload
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-386.exe", "C:\generic-worker\livelog.exe")

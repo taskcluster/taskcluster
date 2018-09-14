@@ -186,10 +186,10 @@ $client.DownloadFile("https://hg.mozilla.org/mozilla-central/raw-file/tip/browse
 $client.DownloadFile("https://hg.mozilla.org/mozilla-central/raw-file/tip/browser/config/tooltool-manifests/win64/releng.manifest", "C:\Windows\Temp\releng.manifest.win64.tt")
 
 # ToolToolPreCacheWin32: Prepopulates the local tooltool cache
-Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\tooltool.py fetch --url https://api.pub.build.mozilla.org/tooltool -c C:\builds\tooltool_cache --authentication-file C:\builds\relengapi.tok -m C:\Windows\Temp\releng.manifest.win32.tt" -Wait -NoNewWindow
+Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\tooltool.py fetch --url https://tooltool.mozilla-releng.net -c C:\builds\tooltool_cache --authentication-file C:\builds\relengapi.tok -m C:\Windows\Temp\releng.manifest.win32.tt" -Wait -NoNewWindow
 
 # ToolToolPreCacheWin64: Prepopulates the local tooltool cache
-Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\tooltool.py fetch --url https://api.pub.build.mozilla.org/tooltool -c C:\builds\tooltool_cache --authentication-file C:\builds\relengapi.tok -m C:\Windows\Temp\releng.manifest.win64.tt" -Wait -NoNewWindow
+Start-Process "C:\mozilla-build\python\python.exe" -ArgumentList "C:\mozilla-build\tooltool.py fetch --url https://tooltool.mozilla-releng.net -c C:\builds\tooltool_cache --authentication-file C:\builds\relengapi.tok -m C:\Windows\Temp\releng.manifest.win64.tt" -Wait -NoNewWindow
 
 # env_TOOLTOOL_CACHE: Tells the build system where to find the local tooltool cache
 [Environment]::SetEnvironmentVariable("TOOLTOOL_CACHE", "C:\builds\tooltool_cache", "Machine")
@@ -213,7 +213,7 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Microsoft\Windows\Windows Error Reporting"
 md "C:\generic-worker"
 
 # GenericWorkerDownload
-$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.11.3/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
+$client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/download/v10.11.2/generic-worker-windows-amd64.exe", "C:\generic-worker\generic-worker.exe")
 
 # LiveLogDownload
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
