@@ -38,6 +38,11 @@
   ],
   "additionalProperties": false,
   "properties": {
+    "log": {
+      "title": "Custom log location",
+      "description": "Specifies a custom location for the livelog artifact",
+      "type": "string"
+    },
     "image": {
       "title": "Docker image.",
       "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",

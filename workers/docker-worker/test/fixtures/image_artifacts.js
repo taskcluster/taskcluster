@@ -7,7 +7,7 @@ const IMAGE_TASK_ID = 'Xx0aPfyOTU2o_0FZnr_AJg';
 module.exports = {
   NAMESPACE: 'garbage.docker-worker-tests.docker-images',
 
-  TASK_ID: 'X00vIUcwSxiPjo7vqfbXuw',
+  TASK_ID: IMAGE_TASK_ID,
 
   TASK_IMAGE_ARTIFACT_HASH: 'sha256:0d79355a83063d592285e529460af86e429754a5b98cdbc0366962b521af8006',
 

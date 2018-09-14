@@ -46,7 +46,6 @@ suite('use dind-service', () => {
     let result = await worker.postToQueue({
       payload: {
         image: 'taskcluster/dind-test:v1',
-        routes: 'index.garbage.docker-worker-tests.docker-images.' + slugid.v4(),
         command: cmd(
           'mkdir artifacts',
           'docker pull busybox:buildroot-2014.02',

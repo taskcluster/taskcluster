@@ -68,8 +68,6 @@ suite('encrypted private env variables', () => {
       payload: {
         image: 'taskcluster/test-ubuntu',
         command: ['/bin/bash', '-c', 'echo "$' + envVar1 + '";' + 'echo "$' + envVar2 + '";'],
-        created: data.startTime || Date.now(),
-        deadline: data.endTime || (Date.now() + 60000),
         env: { ENV_VAR: 'env var value'},
       }
     };
