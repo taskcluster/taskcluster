@@ -1,4 +1,4 @@
-TOX_ENV ?= py35
+TOX_ENV ?= py37
 VENV := .tox/$(TOX_ENV)
 PYTHON := $(VENV)/bin/python
 APIS_JSON=$(PWD)/apis.json

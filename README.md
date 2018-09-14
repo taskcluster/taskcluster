@@ -70,7 +70,7 @@ python2-compatible and operate synchronously.
 
 
 The objects under `taskcluster.aio` (e.g., `taskcluster.aio.Queue`) require
-`python>=3.5`. The async objects use asyncio coroutines for concurrency; this
+`python>=3.6`. The async objects use asyncio coroutines for concurrency; this
 allows us to put I/O operations in the background, so operations that require
 the cpu can happen sooner. Given dozens of operations that can run concurrently
 (e.g., cancelling a medium-to-large task graph), this can result in significant
