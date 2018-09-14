@@ -1,5 +1,15 @@
 <powershell>
 
+#### Before making changes to nss-win2012r2 worker type, please first apply
+#### your changes to nss-win2012r2-new worker type, which is the staging worker
+#### type for nss windows tasks. Then please ask for these changes to be
+#### deployed to production, and you can then make a new try push which uses
+#### nss-win2012r2-new instead of nss-win2012r2 to test that the worker type
+#### changes are ok. If that try push is successful, you can then copy over
+#### the staging worker type definition over the production worker type
+#### definition, and request a new deployment in order to get your changes in
+#### production.
+
 # use TLS 1.2 (see bug 1443595)
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
