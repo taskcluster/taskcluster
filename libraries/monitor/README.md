@@ -31,20 +31,17 @@ This library must be provided with Taskcluster credentials that have the followi
 * `auth:sentry:<name of project>`
 * `auth:statsum:<name of project>`
 
-First, create a monitor.  This is most often done in a [taskcluster-lib-loader](https://github.com/taskcluster/taskcluster-lib/loader) component.
+First, create a monitor by calling this module asynchronously.  This is typically
+done in a [taskcluster-lib-loader](https://github.com/taskcluster/taskcluster-lib/loader)
+component, but otherwise would look like:
 
 ```js
-let load = loader({
-  monitor: {
-    requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitor({
-      rootUrl: 'https://taskcluster.example.com',
-      credentials: cfg.taskcluster.credentials,
-      projectName: 'taskcluster-foo',
-      mock: cfg.monitor.mock,  // false in production, true in testing
-      process,
-    }),
-  },
+const mon = await monitor({
+  rootUrl: 'https://taskcluster.example.com',
+  credentials: cfg.taskcluster.credentials,
+  projectName: 'taskcluster-foo',
+  mock: cfg.monitor.mock,  // false in production, true in testing
+  process: 'server',       // or otherwise for e.g., periodic tasks
 });
 ```
 
