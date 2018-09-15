@@ -74,6 +74,26 @@ export default {
     awsProvisionerHealth(parent, { filter }, { loaders }) {
       return loaders.awsProvisionerHealth.load({ filter });
     },
+    awsProvisionerWorkerTypeErrors(
+      parent,
+      { workerType, filter },
+      { loaders }
+    ) {
+      return loaders.awsProvisionerWorkerTypeErrors.load({
+        filter,
+        workerType,
+      });
+    },
+    awsProvisionerWorkerTypeHealth(
+      parent,
+      { workerType, filter },
+      { loaders }
+    ) {
+      return loaders.awsProvisionerWorkerTypeHealth.load({
+        filter,
+        workerType,
+      });
+    },
   },
   Mutation: {
     createAwsProvisionerWorkerType(

@@ -199,7 +199,7 @@ interface Aws {
   instanceType: String
 }
 
-type AwsProvisionerErrors implements Aws {
+type AwsProvisionerError implements Aws {
   region: String!
   az: String!
   instanceType: String!
@@ -289,6 +289,17 @@ type AwsProvisionerRequestHealth implements Aws {
   limitExceeded: Int!
 }
 
+type AwsProvisionerWorkerTypeError implements Aws {
+  code: String!
+  type: AwsProvisionerErrorType!
+  region: String!
+  az: String!
+  instanceType: String!
+  workerType: String!
+  time: DateTime!
+  message: String!
+}
+
 type AwsProvisionerHealth {
   running: [AwsProvisionerRunning]!
   terminationHealth: [AwsProvisionerTerminationHealth]!
@@ -334,11 +345,19 @@ extend type Query {
   awsProvisionerWorkerTypeState(workerType: String!): AwsProvisionerWorkerTypeState
 
   # Query the most recent errors in the provisioner across all worker types.
-  awsProvisionerRecentErrors(filter: JSON): [AwsProvisionerErrors]
+  awsProvisionerRecentErrors(filter: JSON): [AwsProvisionerError]
 
   # Query EC2 account health metric.
   # This returns basic stats on the health of our EC2 account.
   awsProvisionerHealth(filter: JSON): AwsProvisionerHealth
+
+  # Look up the most recent errors of a workerType.
+  # This returns a list of the most recent errors encountered by the worker type.
+  awsProvisionerWorkerTypeErrors(workerType: String!, filter: JSON): [AwsProvisionerWorkerTypeError]
+
+  # Look up the resource health for a worker type.
+  # This returns a view of the health of the worker type.
+  awsProvisionerWorkerTypeHealth(workerType: String!, filter: JSON): AwsProvisionerHealth
 }
 
 extend type Mutation {

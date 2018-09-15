@@ -67,6 +67,24 @@ export default ({ queue, awsProvisioner, ec2Manager }) => {
       })
     )
   );
+  const awsProvisionerWorkerTypeHealth = new DataLoader(queries =>
+    Promise.all(
+      queries.map(async ({ workerType, filter }) => {
+        const health = await ec2Manager.workerTypeHealth(workerType);
+
+        return filter ? sift(filter, health) : health;
+      })
+    )
+  );
+  const awsProvisionerWorkerTypeErrors = new DataLoader(queries =>
+    Promise.all(
+      queries.map(async ({ workerType, filter }) => {
+        const { errors } = await ec2Manager.workerTypeErrors(workerType);
+
+        return filter ? sift(filter, errors) : errors;
+      })
+    )
+  );
 
   return {
     workerType,
@@ -74,6 +92,8 @@ export default ({ queue, awsProvisioner, ec2Manager }) => {
     pendingTasks,
     awsProvisionerRecentErrors,
     awsProvisionerHealth,
+    awsProvisionerWorkerTypeErrors,
+    awsProvisionerWorkerTypeHealth,
     awsProvisionerWorkerType,
     awsProvisionerWorkerTypeState,
     awsProvisionerWorkerTypeSummaries,
