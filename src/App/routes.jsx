@@ -87,6 +87,12 @@ export default [
   },
   {
     component: loadable(() =>
+      import(/* webpackChunkName: 'Profile' */ '../views/Profile')
+    ),
+    path: '/profile',
+  },
+  {
+    component: loadable(() =>
       import(/* webpackChunkName: 'HomeOrDashboard' */ '../views/HomeOrDashboard')
     ),
     path: '/',

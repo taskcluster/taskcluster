@@ -1,4 +1,5 @@
 import { Component, Fragment } from 'react';
+import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Avatar from '@material-ui/core/Avatar';
 import Menu from '@material-ui/core/Menu';
@@ -8,6 +9,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
+import AccountIcon from 'mdi-react/AccountIcon';
+import HandPeaceIcon from 'mdi-react/HandPeaceIcon';
 import { withAuth } from '../../utils/Auth';
 import SignInDialog from '../SignInDialog';
 
@@ -26,6 +29,9 @@ import SignInDialog from '../SignInDialog';
   },
   icon: {
     fill: theme.palette.text.primary,
+  },
+  leftIcon: {
+    marginRight: theme.spacing.unit,
   },
 }))
 @withAuth
@@ -114,8 +120,16 @@ export default class UserMenu extends Component {
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={this.handleMenuClose}>
-          <MenuItem onClick={this.handleMenuClose}>Manage Credentials</MenuItem>
-          <MenuItem onClick={this.handleClickSignOut}>Sign Out</MenuItem>
+          <MenuItem title="Your Profile" component={Link} to="/profile">
+            <AccountIcon className={classes.leftIcon} />
+            Account
+          </MenuItem>
+          <MenuItem
+            title={`Sign Out of ${process.env.APPLICATION_NAME}`}
+            onClick={this.handleClickSignOut}>
+            <HandPeaceIcon className={classes.leftIcon} />
+            Sign Out
+          </MenuItem>
         </Menu>
       </Fragment>
     );
