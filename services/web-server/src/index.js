@@ -26,10 +26,6 @@ const load = loader(
           cfg.taskcluster.rootUrl,
           'config taskcluster.rootUrl is required'
         );
-        assert(
-          cfg.taskcluster.credentials.clientId,
-          'config taskcluster.credentials.clientId is required'
-        );
 
         return cfg;
       },

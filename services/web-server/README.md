@@ -11,19 +11,31 @@ by the web application.
 
 ## Configuration
 
-## Launching locally
+Configuration is done via
+[typed-env-config](https://github.com/taskcluster/typed-env-config) like all
+other Taskcluster services. The main configuration file is `config.yml`, and
+that refers to environment variables.  In production, those environment
+variables are provided as part of the deployment.  During development,
+configuration can be overridden in `user-config.yml`.
 
-To run this service locally, install dependencies using `yarn`.  Copy
-`user-config-template.yml` to `user-config.yml` and edit it to include the
-`rootUrl` for the Taskcluster instance you are accessing; for example
-`https://taskcluster.net`.
+## Running Taskcluster-Web-Server locally
 
-This service requires Taskcluster credentials to support user login, but this
-is not required for development of most features.  This service additionally
-requires a pulse namespace in order to support subscribing to pulse messages,
-but again this is not required for development of other features.
+To run this service locally, install dependencies using `yarn`.
 
-To set up Taskcluster credentials, if they are necessary, use
+The `taskcluster.rootUrl` configuration setting is required. Either set
+`TASKCLUSTER_ROOT_URL` in your environment, or copy `user-config-template.yml`
+to `user-config.yml` and edit it to include the `rootUrl` for the Taskcluster
+instance you are accessing; for example `https://taskcluster.net`.
+
+That is enough to run the service, so if that's all you need, skip down to "Starting".
+
+### Taskcluster Credentials
+
+This service requires Taskcluster credentials to support user login and
+receiving pulse messages, but this is not required for development of most
+features.
+
+To set up Taskcluster credentials, use
 [taskcluster-cli](https://github.com/taskcluster/taskcluster-cli) to set
 `TASKCLUSTER_ROOT_URL`, `TASKCLUSTER_CLIENT_ID`, and `TASKCLUSTER_ACCESS_TOKEN`
 in your shell:
@@ -32,10 +44,15 @@ in your shell:
 $ eval $(./taskcluster signin --name taskcluster-web-server)
 ```
 
-To set up pulse access, you will need a Pulse namespace and the Taskcluster
-credentials you select must have the scope `pulse:namespace:<namespace>`. A
-member of the Taskcluster team can help set that up.  Add the namespace in
+### Pulse
+
+To receive pulse messages, you will also need a Pulse namespace and the
+Taskcluster credentials you select must have the scope
+`pulse:namespace:<namespace>`. A member of the administrators for the
+Taskcluster instance you are using can help set that up.  Add the namespace in
 `user-config.yml` as `pulse.namespace`.
+
+### Starting
 
 In any case, use the command `yarn start` to start the service.
 
@@ -47,6 +64,10 @@ Web server running on port 3050.
 Open the interactive GraphQL Playground, schema explorer and docs in your browser at:
     http://localhost:3050
 ```
+
+The `taskcluster-web` service expects this service to run on port 3050.
+
+### Passing Credentials in the Playground
 
 To pass credentials to the server from the GraphQL Playground, click the "HTTP Headers"
 section, and paste a JSON object with a key of "Authorization" with a value of

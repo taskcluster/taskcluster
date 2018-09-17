@@ -3,9 +3,17 @@ import { Strategy } from 'passport-github';
 import { createTemporaryCredentials, fromNow } from 'taskcluster-client';
 
 export default (app, cfg) => {
+  const { credentials } = cfg.taskcluster;
+
   if (!cfg.githubLogin.clientId || !cfg.githubLogin.clientSecret) {
     throw new Error(
-      'Unable to use "github" login strategy without client ID or secret'
+      'Unable to use "github" login strategy without GitHub client ID or secret'
+    );
+  }
+
+  if (!credentials || !credentials.clientId || !credentials.accessToken) {
+    throw new Error(
+      'Unable to use "github" login strategy without taskcluster clientId and accessToken'
     );
   }
 

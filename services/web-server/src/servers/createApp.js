@@ -7,7 +7,7 @@ import passport from 'passport';
 import credentials from './credentials';
 import graphql from './graphql';
 
-export default ({ cfg, schema, context }) => {
+export default async ({ cfg, schema, context }) => {
   const app = express();
 
   app.set('view engine', 'ejs');
@@ -32,11 +32,13 @@ export default ({ cfg, schema, context }) => {
     })
   );
 
-  cfg.app.loginStrategies.forEach(async strategy => {
-    const { default: loginStrategy } = await import(`../login/${strategy}`);
+  await Promise.all(
+    cfg.app.loginStrategies.map(async strategy => {
+      const { default: loginStrategy } = await import(`../login/${strategy}`);
 
-    loginStrategy(app, cfg);
-  });
+      loginStrategy(app, cfg);
+    })
+  );
 
   return app;
 };

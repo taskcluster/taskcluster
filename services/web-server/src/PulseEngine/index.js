@@ -1,4 +1,5 @@
 import Debug from 'debug';
+import assert from 'assert';
 import { Client, claimedCredentials } from 'taskcluster-lib-pulse';
 import { slugid } from 'taskcluster-client';
 import { serialize } from 'async-decorators';
@@ -101,11 +102,25 @@ export default class PulseEngine {
     this.monitor = monitor;
     this.subscriptions = new Map();
 
-    if (!namespace && process.env.NODE_ENV !== 'production') {
-      // bail out of setup; this.connected will never be called, so no
-      // subscriptions will ever return messages
-      debug('NOTE: pulse.namespace is not set; no subscriptions will succeed');
+    if (process.env.NODE_ENV === 'production') {
+      assert(namespace, 'namespace is required');
+      assert(
+        credentials && credentials.clientId && credentials.accessToken,
+        'credentials are required'
+      );
+    } else if (
+      !namespace ||
+      !credentials ||
+      !credentials.clientId ||
+      !credentials.accessToken
+    ) {
+      debug(
+        'NOTE: pulse.namespace or taskcluster.credentials not set; no subscription messages will be recieved'
+      );
 
+      // bail out of setup; this.connected will never be called, so no
+      // subscriptions will ever return messages, but subscription requests
+      // will succeed.
       return;
     }
 
