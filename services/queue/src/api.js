@@ -151,7 +151,7 @@ builder.declare({
   // Handle cases where the task doesn't exist
   if (!task) {
     return res.reportError('ResourceNotFound', [
-      '{{taskId}} does not correspond to a task that exists.',
+      '`{{taskId}}` does not correspond to a task that exists.',
       'Are you sure this task has already been submitted?',
     ].join('\n'), {
       taskId: req.params.taskId,
@@ -185,7 +185,7 @@ builder.declare({
   // Handle cases where the task doesn't exist
   if (!task) {
     return res.reportError('ResourceNotFound', [
-      '{{taskId}} does not correspond to a task that exists.',
+      '`{{taskId}}` does not correspond to a task that exists.',
       'Are you sure this task exists?',
     ].join('\n'), {
       taskId: req.params.taskId,
@@ -248,7 +248,7 @@ builder.declare({
   // If no taskGroup was found
   if (!taskGroup) {
     return res.reportError('ResourceNotFound',
-      'No task-group with taskGroupId: {{taskGroupId}}', {
+      'No task-group with taskGroupId: `{{taskGroupId}}`', {
         taskGroupId,
       },
     );
@@ -334,7 +334,7 @@ builder.declare({
   if (!task) {
     return res.reportError(
       'ResourceNotFound',
-      'Task with taskId: {{taskId}} was not found',
+      'Task with taskId: `{{taskId}}` was not found',
       {taskId},
     );
   }
@@ -466,9 +466,9 @@ let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
   if (taskGroup.schedulerId !== taskDef.schedulerId) {
     res.reportError(
       'RequestConflict', [
-        'Task group {{taskGroupId}} contains tasks with',
-        'schedulerId {{taskGroupSchedulerId}}. You are attempting',
-        'to include tasks from schedulerId {{taskSchedulerId}},',
+        'Task group `{{taskGroupId}}` contains tasks with',
+        'schedulerId `{{taskGroupSchedulerId}}`. You are attempting',
+        'to include tasks from schedulerId `{{taskSchedulerId}}`,',
         'which is not permitted.',
         'All tasks in the same task-group must have the same schedulerId.',
       ].join('\n'), {
@@ -512,7 +512,7 @@ let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
 
     if (!_.isEqual(new Date(active.expires), expires)) {
       return res.reportError('RequestConflict', [
-        'taskId {{taskId}} already used by another task.',
+        'taskId `{{taskId}}` already used by another task.',
         'This could be the result of faulty idempotency!',
       ].join('\n'), {
         taskId,
@@ -684,7 +684,7 @@ builder.declare({
     // Compare the two task definitions
     if (!_.isEqual(taskDef, def)) {
       return res.reportError('RequestConflict', [
-        'taskId {{taskId}} already used by another task.',
+        'taskId `{{taskId}}` already used by another task.',
         'This could be the result of faulty idempotency!',
         'Existing task definition was:\n ```js\n{{existingTask}}\n```',
         'This request tried to define:\n ```js\n{{taskDefinition}}\n```',
@@ -870,7 +870,7 @@ builder.declare({
     // (ignore runs as this method don't create them)
     if (!_.isEqual(taskDef, def)) {
       return res.reportError('RequestConflict', [
-        'taskId {{taskId}} already used by another task.',
+        'taskId `{{taskId}}` already used by another task.',
         'This could be the result of faulty idempotency!',
         'Existing task definition was:\n ```js\n{{existingTask}}\n```',
         'This request tried to define:\n ```js\n{{taskDefinition}}\n```',
@@ -956,7 +956,7 @@ builder.declare({
   if (!task) {
     return res.reportError(
       'ResourceNotFound',
-      'taskId {{taskId}} not found. Are you sure it exists?',
+      'taskId `{{taskId}}` not found. Are you sure it exists?',
       {taskId},
     );
   }
@@ -974,7 +974,7 @@ builder.declare({
   if (status === null) {
     return res.reportError(
       'RequestConflict',
-      'Task {{taskId}} Can\'t be scheduled past its deadline at ' +
+      'Task `{{taskId}}` Can\'t be scheduled past its deadline at ' +
       '{{deadline}}.', {
         taskId,
         deadline: task.deadline.toJSON(),
@@ -1023,7 +1023,7 @@ builder.declare({
   // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
     return res.reportError('ResourceNotFound', [
-      '{{taskId}} does not correspond to a task that exists.',
+      '`{{taskId}}` does not correspond to a task that exists.',
       'Are you sure this task has been submitted before?',
     ].join('\n'), {
       taskId,
@@ -1040,7 +1040,7 @@ builder.declare({
   if (task.deadline.getTime() < new Date().getTime()) {
     return res.reportError(
       'RequestConflict',
-      'Task {{taskId}} Can\'t be rescheduled past it\'s deadline of ' +
+      'Task `{{taskId}}` Can\'t be rescheduled past it\'s deadline of ' +
       '{{deadline}}.', {
         taskId,
         deadline: task.deadline.toJSON(),
@@ -1085,7 +1085,7 @@ builder.declare({
       task.runs.length >= MAX_RUNS_ALLOWED) {
     return res.reportError(
       'RequestConflict',
-      'Maximum number of runs reached. ({{max_runs_allowed}})', {
+      'Maximum number of runs reached ({{max_runs_allowed}}).', {
         max_runs_allowed: MAX_RUNS_ALLOWED,
       },
     );
@@ -1146,7 +1146,7 @@ builder.declare({
   // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
     return res.reportError('ResourceNotFound',
-      'Task {{taskId}} not found. Are you sure it was created?', {
+      'Task `{{taskId}}` not found. Are you sure it was created?', {
         taskId,
       },
     );
@@ -1162,7 +1162,7 @@ builder.declare({
   if (task.deadline.getTime() < new Date().getTime()) {
     return res.reportError(
       'RequestConflict',
-      'Task {{taskId}} Can\'t be canceled past it\'s deadline of ' +
+      'Task `{{taskId}}` Can\'t be canceled past it\'s deadline of ' +
       '{{deadline}}.', {
         taskId,
         deadline: task.deadline.toJSON(),
@@ -1396,7 +1396,7 @@ builder.declare({
   if (!task) {
     return res.reportError(
       'ResourceNotFound',
-      'Task {{taskId}} not found. Are you sure it was created?', {
+      'Task `{{taskId}}` not found. Are you sure it was created?', {
         taskId,
       },
     );
@@ -1413,7 +1413,7 @@ builder.declare({
   if (task.deadline.getTime() <= Date.now()) {
     return res.reportError(
       'RequestConflict',
-      'Task {{taskId}} Can\'t be claimed past it\'s deadline of ' +
+      'Task `{{taskId}}` Can\'t be claimed past its deadline of ' +
       '{{deadline}}.', {
         taskId,
         deadline: task.deadline.toJSON(),
@@ -1445,7 +1445,7 @@ builder.declare({
   if (result === 'run-not-found') {
     return res.reportError(
       'ResourceNotFound',
-      'Run {{runId}} not found on task {{taskId}}.', {
+      'Run {{runId}} not found on task `{{taskId}}`.', {
         taskId,
         runId,
       },
@@ -1517,7 +1517,7 @@ builder.declare({
   if (!task) {
     return res.reportError(
       'ResourceNotFound',
-      'Task {{taskId}} not found. Are you sure it was created?', {
+      'Task `{{taskId}}` not found. Are you sure it was created?', {
         taskId,
       }
     );
@@ -1528,7 +1528,7 @@ builder.declare({
   if (!run) {
     return res.reportError(
       'ResourceNotFound',
-      'Run {{runId}} not found on task {{taskId}}.', {
+      'Run {{runId}} not found on task `{{taskId}}`.', {
         taskId,
         runId,
       }
@@ -1546,7 +1546,7 @@ builder.declare({
   if (task.deadline.getTime() <= Date.now()) {
     return res.reportError(
       'RequestConflict',
-      'Task {{taskId}} Can\'t be reclaimed past it\'s deadline of ' +
+      'Task `{{taskId}}` Can\'t be reclaimed past its deadline of ' +
       '{{deadline}}.', {
         taskId,
         deadline: task.deadline.toJSON(),
@@ -1592,7 +1592,7 @@ builder.declare({
   if (task.runs.length - 1 !== runId || run.state !== 'running') {
     return res.reportError(
       'RequestConflict',
-      'Run {{runId}} on task {{taskId}} is resolved or not running.', {
+      'Run {{runId}} on task `{{taskId}}` is resolved or not running.', {
         taskId,
         runId,
       }
@@ -1634,7 +1634,7 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   // Handle cases where the task doesn't exist
   if (!task) {
     return res.reportError('ResourceNotFound',
-      'Task {{taskId}} not found. Are you sure it was created?', {
+      'Task `{{taskId}}` not found. Are you sure it was created?', {
         taskId,
       },
     );
@@ -1644,7 +1644,7 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   var run = task.runs[runId];
   if (!run) {
     return res.reportError('ResourceNotFound',
-      'Run {{runId}} not found on task {{taskId}}.', {
+      'Run {{runId}} not found on task `{{taskId}}`.', {
         taskId,
         runId,
       },
@@ -1674,7 +1674,7 @@ var resolveTask = async function(req, res, taskId, runId, target) {
 
     if (!haveAllBlobs) {
       return res.reportError('RequestConflict',
-        'All blob artifacts must be present to resolve taskas completed');
+        'All blob artifacts must be present to resolve task as completed');
     }
   }
 
@@ -1702,7 +1702,7 @@ var resolveTask = async function(req, res, taskId, runId, target) {
       run.state             !== target ||
       run.reasonResolved    !== target) {
     return res.reportError('RequestConflict',
-      'Run {{runId}} on task {{taskId}} is resolved or not running.', {
+      'Run {{runId}} on task `{{taskId}}` is resolved or not running.', {
         taskId,
         runId,
       },
@@ -1843,7 +1843,7 @@ builder.declare({
   // Handle cases where the task doesn't exist
   if (!task) {
     return res.reportError('ResourceNotFound',
-      'Task {{taskId}} not found. Are you sure it exists?', {
+      'Task `{{taskId}}` not found. Are you sure it exists?', {
         taskId,
       },
     );
@@ -1854,7 +1854,7 @@ builder.declare({
   if (!run) {
     return res.reportError(
       'ResourceNotFound',
-      'Run {{runId}} not found on task {{taskId}}.', {
+      'Run {{runId}} not found on task `{{taskId}}`.', {
         taskId,
         runId,
       },
@@ -1913,7 +1913,7 @@ builder.declare({
       run.state             !== 'exception' ||
       run.reasonResolved    !== reason) {
     return res.reportError('RequestConflict',
-      'Run {{runId}} on task {{taskId}} is resolved or not running.', {
+      'Run {{runId}} on task `{{taskId}}` is resolved or not running.', {
         taskId,
         runId,
       },
@@ -2029,7 +2029,7 @@ builder.declare({
 
   if (!provisioner) {
     return res.reportError('ResourceNotFound',
-      'Provisioner {{provisionerId}} not found. Are you sure it was created?', {
+      'Provisioner `{{provisionerId}}` not found. Are you sure it was created?', {
         provisionerId,
       },
     );
@@ -2181,7 +2181,7 @@ builder.declare({
 
   if (!wType || !provisioner) {
     return res.reportError('ResourceNotFound',
-      'Worker-type {{workerType}} with Provisioner {{provisionerId}} not found. Are you sure it was created?', {
+      'Worker-type `{{workerType}}` with Provisioner `{{provisionerId}}` not found. Are you sure it was created?', {
         workerType,
         provisionerId,
       },
@@ -2340,8 +2340,8 @@ builder.declare({
 
   if (!worker || !wType || !provisioner) {
     return res.reportError('ResourceNotFound',
-      'Worker with workerId {{workerId}}, workerGroup {{workerGroup}},' +
-      'worker-type {{workerType}} and provisionerId {{provisionerId}} not found. ' +
+      'Worker with workerId `{{workerId}}`, workerGroup `{{workerGroup}}`,' +
+      'worker-type `{{workerType}}` and provisionerId `{{provisionerId}}` not found. ' +
       'Are you sure it was created?', {
         workerId,
         workerGroup,
@@ -2381,8 +2381,8 @@ builder.declare({
 
   if (!worker) {
     return res.reportError('ResourceNotFound',
-      'Worker with workerId {{workerId}}, workerGroup {{workerGroup}},' +
-      'worker-type {{workerType}} and provisionerId {{provisionerId}} not found. ' +
+      'Worker with workerId `{{workerId}}`, workerGroup `{{workerGroup}}`,' +
+      'worker-type `{{workerType}}` and provisionerId `{{provisionerId}}` not found. ' +
       'Are you sure it was created?', {
         workerId,
         workerGroup,
