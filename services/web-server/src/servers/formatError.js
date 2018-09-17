@@ -28,13 +28,6 @@ export default error => {
     data.code = error.originalError.body.code;
     data.requestInfo = error.originalError.body.requestInfo;
     data.statusCode = error.originalError.statusCode;
-
-    if (data.requestInfo.method === 'task') {
-      data.message = data.message.replace(
-        data.requestInfo.params.taskId,
-        `\`${data.requestInfo.params.taskId}\``
-      );
-    }
   }
 
   return data;
