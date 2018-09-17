@@ -994,7 +994,7 @@ builder.declare({
   if (!task) {
     return res.reportError(
       'ResourceNotFound',
-      'No task with taskId: {{taskId}} found',
+      'No task with taskId: `{{taskId}}` found',
       {taskId},
     );
   }
@@ -1003,7 +1003,7 @@ builder.declare({
   if (!task.runs[runId]) {
     return res.reportError(
       'ResourceNotFound',
-      'Task with taskId: {{taskId}} run with runId: {{runId}}\n' +
+      'Task with taskId: `{{taskId}}` run with runId: {{runId}}\n' +
       'task status: {{status}}', {
         taskId,
         runId,
@@ -1059,7 +1059,7 @@ builder.declare({
   if (!task) {
     return res.reportError(
       'ResourceNotFound',
-      'No task with taskId: {{taskId}} found',
+      'No task with taskId: `{{taskId}}` found',
       {taskId},
     );
   }
@@ -1068,7 +1068,7 @@ builder.declare({
   if (task.runs.length === 0) {
     return res.reportError(
       'ResourceNotFound',
-      'Task with taskId: {{taskId}} does not have any runs',
+      'Task with taskId: `{{taskId}}` does not have any runs',
       {taskId},
     );
   }
