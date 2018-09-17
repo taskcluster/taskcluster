@@ -6,7 +6,6 @@ const expires = require('./helper/expires');
 const TestWorker = require('../testworker');
 const DockerWorker = require('../dockerworker');
 const _ = require('lodash');
-const retryUtil = require('./helper/retry_util');
 
 suite('Directory artifact', function() {
   test('attempt to upload file as directory', async () => {
@@ -82,87 +81,5 @@ suite('Directory artifact', function() {
     assert.ok(Buffer.byteLength(testHtml) === 1000000,
       'Size of uploaded contents of test.html does not match original.'
     );
-  });
-
-  test('retry directory upload', async () => {
-    await retryUtil.init();
-
-    try {
-      this.timeout(15 * 60 * 1000);
-
-      const ARTIFACT_COUNT = 5;
-
-      const worker = new TestWorker(DockerWorker);
-      await worker.launch();
-
-      let retried = false;
-      let blocked = false;
-
-      let rejectConnection = function() {
-        if (!blocked) {
-          retryUtil.blockArtifact();
-          blocked = true;
-        }
-      };
-
-      let cmdArgs = ['mkdir "/xfoo"'];
-      for (let i = 1; i <= ARTIFACT_COUNT; ++i) {
-        cmdArgs.push(`dd if=/dev/zero of=/xfoo/test${i}.html bs=1 count=${1000000*i}`);
-        worker.once(`Uploading public/dir/test${i}.html`, rejectConnection);
-      }
-
-      worker.on('retrying artifact upload', function() {
-        retryUtil.allowArtifact();
-        retried = true;
-        blocked = false;
-      });
-
-      let result = await worker.postToQueue({
-        payload: {
-          image: 'taskcluster/test-ubuntu',
-          command: cmd.apply(this, cmdArgs),
-          features: {
-            localLiveLog: false
-          },
-          artifacts: {
-            'public/dir': {
-              type: 'directory',
-              path: '/xfoo/',
-              expires: expires()
-            },
-          },
-          maxRunTime: 5 * 60
-        }
-      });
-
-      await worker.terminate();
-
-      assert.equal(result.run.state, 'completed', 'task should be successful');
-      assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
-
-      let artifacts = [];
-      for (let i of _.range(1, ARTIFACT_COUNT+1)) {
-        artifacts.push(`public/dir/test${i}.html`);
-      }
-
-      assert.deepEqual(
-        Object.keys(result.artifacts).sort(),
-        artifacts.sort()
-      );
-
-      for (let i = 1; i <= ARTIFACT_COUNT; ++i) {
-        let testHtml = await getArtifact(result, 'public/dir/test' + i + '.html');
-        assert.ok(Buffer.byteLength(testHtml) === 1000000*i,
-          'Size of uploaded contents of test.html does not match original.'
-        );
-      }
-
-      // The test mechanism is not so deterministic, we may loose a retry or two
-      // due to the asynchronous nature of nodejs, so, we in ARTIFACT_COUNT attempts
-      // we could retry at least once, we are good.
-      assert(retried, 'No upload retry');
-    } finally {
-      retryUtil.allowArtifact();
-    }
   });
 });
