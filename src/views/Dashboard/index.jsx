@@ -36,7 +36,7 @@ export default class DashboardView extends Component {
         <br />
         <br />
 
-        <Button component={Link} to="/tasks/new">
+        <Button component={Link} to="/tasks/create">
           <PlusCircleIcon className={classes.buttonIcon} />
           I want to create a task or build.
         </Button>

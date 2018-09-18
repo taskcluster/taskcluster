@@ -1,297 +1,167 @@
 import { hot } from 'react-hot-loader';
 import { Component } from 'react';
 import { graphql, withApollo } from 'react-apollo';
-import { bool } from 'prop-types';
-import cloneDeep from 'lodash.clonedeep';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import TextField from '@material-ui/core/TextField';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import Tooltip from '@material-ui/core/Tooltip';
-import PlusIcon from 'mdi-react/PlusIcon';
-import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
-import DeleteIcon from 'mdi-react/DeleteIcon';
-import Button from '../../../components/Button';
+import DeleteEmptyIcon from 'mdi-react/DeleteEmptyIcon';
 import Dashboard from '../../../components/Dashboard';
-import SpeedDial from '../../../components/SpeedDial';
-import SpeedDialAction from '../../../components/SpeedDialAction';
-import AwsProvisionerWorkerTypeEditor from '../../../components/AwsProvisionerWorkerTypeEditor';
-import removeKeys from '../../../utils/removeKeys';
+import Button from '../../../components/Button';
+import AwsProvisionerErrorsTable from '../../../components/AwsProvisionerErrorsTable';
+import AwsProvisionerHealthTable from '../../../components/AwsProvisionerHealthTable';
+import AwsProvisionerWorkerTypeStatus from '../../../components/AwsProvisionerWorkerTypeStatus';
+import Ec2ResourcesTable from '../../../components/Ec2ResourcesTable';
 import formatError from '../../../utils/formatError';
-import isWorkerTypeNameValid from '../../../utils/isWorkerTypeNameValid';
-import { DEFAULT_AWS_WORKER_TYPE } from '../../../utils/constants';
 import workerTypeQuery from './workerType.graphql';
-import updateAwsProvisionerWorkerTypeQuery from './updateAwsProvisionerWorkerType.graphql';
-import createAwsProvisionerWorkerTypeQuery from './createAwsProvisionerWorkerType.graphql';
-import deleteAwsProvisionerWorkerTypeQuery from './deleteAwsProvisionerWorkerType.graphql';
-
-/* eslint-disable no-param-reassign */
-/** Encode/decode UserData property of object */
-const encodeUserData = obj => {
-  if (obj && obj.UserData) {
-    obj.UserData = window.btoa(JSON.stringify(obj.UserData));
-  }
-};
+import terminateInstanceQuery from './terminateInstance.graphql';
+import terminateWorkerTypeQuery from './terminateWorkerType.graphql';
 
 @hot(module)
 @withApollo
 @graphql(workerTypeQuery, {
-  skip: props => !props.match.params.workerType,
-  options: ({ match: { params } }) => ({
+  options: props => ({
     variables: {
-      workerType: decodeURIComponent(params.workerType),
+      workerType: props.match.params.workerType,
     },
   }),
 })
 @withStyles(theme => ({
-  successIcon: {
-    ...theme.mixins.successIcon,
-  },
-  deleteIcon: {
-    ...theme.mixins.errorIcon,
-  },
   fab: {
     ...theme.mixins.fab,
   },
+  spinner: {
+    marginTop: theme.spacing.double,
+  },
+  terminateButton: {
+    ...theme.mixins.errorIcon,
+  },
 }))
 export default class ViewWorkerType extends Component {
-  static propTypes = {
-    /** Set to `true` when creating a new worker type. */
-    isNewWorkerType: bool,
-  };
-
-  static defaultProps = {
-    isNewWorkerType: false,
-  };
-
   state = {
-    workerType: '',
-    editorValue: null,
-    invalidDefinition: false,
+    currentTab: 0,
     actionLoading: false,
-    error: null,
   };
 
-  static getDerivedStateFromProps(props, state) {
-    if (
-      props.data &&
-      props.data.awsProvisionerWorkerType &&
-      !state.editorValue
-    ) {
-      return {
-        // Apollo feature request: https://github.com/apollographql/apollo-feature-requests/issues/6
-        editorValue: removeKeys(
-          cloneDeep(props.data.awsProvisionerWorkerType),
-          ['__typename']
-        ),
-        workerType: props.match.params.workerType,
-      };
-    }
-
-    if (props.isNewWorkerType && !state.editorValue) {
-      return {
-        editorValue: DEFAULT_AWS_WORKER_TYPE,
-      };
-    }
-
-    return null;
-  }
-
-  cleanDefinition(original) {
-    const definition =
-      typeof original === 'string' ? JSON.parse(original) : original;
-
-    /** * LEGACY NOTICE: This check and the actions it does are
-     leftovers.  We'll soon be able to delete the check,
-     the actions and the functions ** */
-    if (definition.launchSpecification) {
-      encodeUserData(definition.launchSpecification);
-      definition.regions.forEach(({ overwrites }) =>
-        encodeUserData(overwrites)
-      );
-      definition.instanceTypes.forEach(({ overwrites }) =>
-        encodeUserData(overwrites)
-      );
-      /* END LEGACY */
-    } else {
-      // Remember that the provisioner api sets this
-      delete definition.lastModified;
-    }
-
-    return definition;
-  }
-
-  handleEditorChange = editorValue => {
-    try {
-      JSON.parse(editorValue);
-
-      this.setState({
-        editorValue,
-        invalidDefinition: false,
-      });
-    } catch (err) {
-      this.setState({
-        editorValue,
-        invalidDefinition: true,
-      });
-    }
+  handleTabChange = (e, currentTab) => {
+    this.setState({ currentTab });
   };
 
-  handleCreateWorkerType = async () => {
-    const { workerType } = this.state;
-    const definition = this.cleanDefinition(this.state.editorValue);
-
-    this.setState({ error: null, actionLoading: true });
+  handleTerminateAllInstances = async () => {
+    const {
+      client,
+      match: {
+        params: { workerType },
+      },
+    } = this.props;
 
     try {
-      await this.props.client.mutate({
-        mutation: createAwsProvisionerWorkerTypeQuery,
-        variables: {
-          workerType,
-          payload: definition,
-        },
+      this.setState({ actionLoading: true, error: null });
+
+      await client.mutate({
+        mutation: terminateWorkerTypeQuery,
+        variables: { workerType },
       });
 
-      this.setState({ actionLoading: false, error: null });
-      this.props.history.push(
-        `/aws-provisioner/${encodeURIComponent(workerType)}`
-      );
+      this.setState({ actionLoading: false });
     } catch (error) {
       this.setState({ actionLoading: false, error: formatError(error) });
     }
   };
 
-  handleUpdateWorkerType = async () => {
-    const { editorValue } = this.state;
-    const payload = this.cleanDefinition(editorValue);
-
-    this.setState({ error: null, actionLoading: true });
-
+  handleTerminateInstance = async ({ region, id }) => {
     try {
+      this.setState({ actionLoading: true, error: null });
+
       await this.props.client.mutate({
-        mutation: updateAwsProvisionerWorkerTypeQuery,
-        variables: { workerType: this.props.match.params.workerType, payload },
+        mutation: terminateInstanceQuery,
+        variables: { region, instanceId: id },
       });
 
-      this.setState({ error: null, actionLoading: false });
+      this.setState({ actionLoading: false });
     } catch (error) {
-      this.setState({ error: formatError(error), actionLoading: false });
+      this.setState({ actionLoading: false, error: formatError(error) });
     }
-  };
-
-  handleDeleteWorkerType = async () => {
-    this.setState({ error: null, actionLoading: true });
-
-    try {
-      await this.props.client.mutate({
-        mutation: deleteAwsProvisionerWorkerTypeQuery,
-        variables: { workerType: this.props.match.params.workerType },
-      });
-
-      this.setState({ error: null, actionLoading: false });
-
-      this.props.history.push(`/aws-provisioner`);
-    } catch (error) {
-      this.setState({ error: formatError(error), actionLoading: false });
-    }
-  };
-
-  handleInputChange = ({ target: { name, value } }) => {
-    this.setState({ [name]: value });
   };
 
   render() {
     const {
-      invalidDefinition,
-      editorValue,
-      actionLoading,
-      workerType,
-      error,
-    } = this.state;
-    const { isNewWorkerType, classes, data } = this.props;
+      classes,
+      data: {
+        awsProvisionerWorkerTypeState,
+        awsProvisionerWorkerTypeErrors,
+        awsProvisionerWorkerTypeHealth,
+        awsProvisionerWorkerType,
+        loading,
+        error,
+      },
+      match: {
+        params: { workerType },
+      },
+    } = this.props;
+    const { currentTab, actionLoading } = this.state;
 
     return (
-      <Dashboard
-        title={
-          isNewWorkerType
-            ? 'AWS Provisioner Create Worker Type'
-            : 'AWS Provisioner Worker Type Definition'
-        }>
-        {data &&
-          !data.awsProvisionerWorkerType &&
-          data.loading && <Spinner loading />}
-        {data &&
-          data.error &&
-          data.error.graphQLErrors && <ErrorPanel error={data.error} />}
-        {error && <ErrorPanel error={error} />}
-        <List>
-          <ListItem>
-            {isNewWorkerType ? (
-              <TextField
-                label="Worker Type"
-                name="workerType"
-                error={
-                  Boolean(workerType) && !isWorkerTypeNameValid(workerType)
-                }
-                onChange={this.handleInputChange}
-                fullWidth
-                value={workerType}
-              />
-            ) : (
-              workerType && (
-                <ListItemText primary="Worker Type" secondary={workerType} />
-              )
-            )}
-          </ListItem>
-          {editorValue && (
-            <ListItem>
-              <AwsProvisionerWorkerTypeEditor
-                value={editorValue}
-                onEditorChange={this.handleEditorChange}
-              />
-            </ListItem>
+      <Dashboard title={`AWS Provisioner ${workerType}`}>
+        {error && error.graphQLErrors && <ErrorPanel error={error} />}
+        {this.state.error && <ErrorPanel error={this.state.error} />}
+        <Tabs fullWidth value={currentTab} onChange={this.handleTabChange}>
+          <Tab label="Status" />
+          <Tab label="Errors" />
+          <Tab label="Health" />
+          <Tab label="EC2 Resources" />
+        </Tabs>
+        {loading && <Spinner className={classes.spinner} loading />}
+        {!error &&
+          !loading &&
+          currentTab === 0 && (
+            <AwsProvisionerWorkerTypeStatus
+              workerType={awsProvisionerWorkerType}
+              awsState={awsProvisionerWorkerTypeState}
+            />
           )}
-        </List>
-        {isNewWorkerType ? (
-          <Tooltip title="Create Worker Type">
-            <div className={classes.fab}>
-              <Button
-                requiresAuth
-                onClick={this.handleCreateWorkerType}
-                disabled={
-                  invalidDefinition ||
-                  !isWorkerTypeNameValid(workerType) ||
-                  actionLoading
-                }
-                classes={{ root: classes.successIcon }}
-                variant="fab">
-                <PlusIcon />
-              </Button>
-            </div>
-          </Tooltip>
-        ) : (
-          <SpeedDial>
-            <SpeedDialAction
-              requiresAuth
-              icon={<ContentSaveIcon />}
-              classes={{ button: classes.successIcon }}
-              tooltipTitle="Update Worker Type"
-              onClick={this.handleUpdateWorkerType}
-              ButtonProps={{ disabled: invalidDefinition || actionLoading }}
+        {!error &&
+          !loading &&
+          currentTab === 1 && (
+            <AwsProvisionerErrorsTable
+              errors={awsProvisionerWorkerTypeErrors}
             />
-            <SpeedDialAction
-              requiresAuth
-              icon={<DeleteIcon />}
-              tooltipTitle="Delete Worker Type"
-              classes={{ button: classes.deleteIcon }}
-              onClick={this.handleDeleteWorkerType}
-              ButtonProps={{ disabled: actionLoading }}
+          )}
+        {!error &&
+          !loading &&
+          currentTab === 2 && (
+            <AwsProvisionerHealthTable
+              healthData={awsProvisionerWorkerTypeHealth}
             />
-          </SpeedDial>
-        )}
+          )}
+        {!error &&
+          !loading &&
+          currentTab === 3 && (
+            <Ec2ResourcesTable
+              onTerminateInstance={this.handleTerminateInstance}
+              workerType={awsProvisionerWorkerType}
+              awsState={awsProvisionerWorkerTypeState}
+              actionLoading={actionLoading}
+            />
+          )}
+        {!error &&
+          !loading &&
+          currentTab === 3 && (
+            <Tooltip title="Terminate All">
+              <div className={classes.fab}>
+                <Button
+                  disabled={actionLoading}
+                  requiresAuth
+                  onClick={this.handleTerminateAllInstances}
+                  variant="fab"
+                  className={classes.terminateButton}>
+                  <DeleteEmptyIcon />
+                </Button>
+              </div>
+            </Tooltip>
+          )}
       </Dashboard>
     );
   }

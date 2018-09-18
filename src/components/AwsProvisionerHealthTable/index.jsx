@@ -38,6 +38,9 @@ const or0 = defaultTo(0);
     paddingLeft: theme.spacing.triple,
     paddingRight: theme.spacing.triple,
   },
+  emptyText: {
+    marginTop: theme.spacing.unit,
+  },
 }))
 export default class AwsProvisionerHealthTable extends Component {
   static propTypes = {
@@ -149,10 +152,6 @@ export default class AwsProvisionerHealthTable extends Component {
       sortDirection
     );
 
-    if (isEmpty(sortedHealth)) {
-      return <Typography>Health stats not available</Typography>;
-    }
-
     return (
       <Fragment>
         <DataTable
@@ -161,6 +160,7 @@ export default class AwsProvisionerHealthTable extends Component {
           sortByHeader={sortBy}
           sortDirection={sortDirection}
           onHeaderClick={this.handleHeaderClick}
+          noItemsMessage="Health stats not available"
           renderRow={item => (
             <TableRow key={`${item.az}-${item.region}-${item.instanceType}`}>
               <TableCell>

@@ -1,41 +1,55 @@
 query AwsProvisionerWorkerType($workerType: String!) {
+  awsProvisionerWorkerTypeErrors(workerType: $workerType) {
+    code
+    type
+    region
+    az
+    instanceType
+    workerType
+    time
+    message
+  }
+
+  awsProvisionerWorkerTypeHealth(workerType: $workerType) {
+    running {
+      region
+      az
+      instanceType
+      running
+    }
+    terminationHealth {
+      region
+      az
+      instanceType
+      cleanShutdown
+      spotKill
+      insufficientCapacity
+      volumeLimitExceeded
+      missingAmi
+      startupFailed
+      unknownCodes
+      noCode
+    }
+    requestHealth {
+      region
+      az
+      instanceType
+      successful
+      failed
+      configurationIssue
+      throttledCalls
+      insufficientCapacity
+      limitExceeded
+    }
+  }
+
+  awsProvisionerWorkerTypeState(workerType: $workerType)
+
   awsProvisionerWorkerType(workerType: $workerType) {
-    launchSpec
-    description
-    owner
-    secrets
-    userData
-    minCapacity
-    maxCapacity
-    scalingRatio
-    minPrice
-    maxPrice
-    canUseOndemand
-    canUseSpot
-    lastModified
     instanceTypes {
       instanceType
       capacity
-      utility
-      launchSpec
-      secrets
-      userData
-      scopes
     }
-    regions {
-      region
-      launchSpec
-      secrets
-      userData
-      scopes
-    }
-    availabilityZones {
-      availabilityZone
-      region
-      launchSpec
-      secrets
-      userData
-    }
-    scopes
+    launchSpec
   }
 }

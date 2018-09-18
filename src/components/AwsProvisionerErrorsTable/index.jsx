@@ -1,31 +1,36 @@
 import { Fragment, Component } from 'react';
-import { pipe, map, isEmpty, sort as rSort } from 'ramda';
 import { arrayOf } from 'prop-types';
+import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
+import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography';
-import DateDistance from '../DateDistance';
-import { awsProvisionerRecentErrors } from '../../utils/prop-types';
+import { awsProvisionerErrors } from '../../utils/prop-types';
 import sort from '../../utils/sort';
 import DataTable from '../DataTable';
+import DateDistance from '../DateDistance';
 
 const sorted = pipe(
   rSort((a, b) =>
     sort(
-      `${a.type}-${a.az}-${a.workerType}-${a.time}`,
-      `${b.type}-${b.az}-${b.workerType}-${b.time}`
+      `${a.az}-${a.instanceType}-${a.type}-${a.time}`,
+      `${b.az}-${b.instanceType}-${b.type}-${b.time}`
     )
   ),
-  map(({ type, az, workerType, time }) => `${type}-${az}-${workerType}-${time}`)
+  map(({ region, az, instanceType }) => `${region}-${az}-${instanceType}`)
 );
 
-export default class AwsRecentErrorsTable extends Component {
+@withStyles(theme => ({
+  emptyText: {
+    marginTop: theme.spacing.unit,
+  },
+}))
+export default class AwsProvisionerErrorsTable extends Component {
   static propTypes = {
-    /** A GraphQL awsProvisionerRecentErrors response. */
-    // TODO: Add prop-types
-    recentErrors: arrayOf(awsProvisionerRecentErrors).isRequired,
+    /** A GraphQL roles response. */
+    errors: arrayOf(awsProvisionerErrors).isRequired,
   };
 
   state = {
@@ -40,19 +45,15 @@ export default class AwsRecentErrorsTable extends Component {
     this.setState({ sortBy, sortDirection });
   };
 
-  createSortedRecentErrors = memoize(
-    (recentErrors, sortBy, sortDirection) => {
+  createSortedErrors = memoize(
+    (errors, sortBy, sortDirection) => {
       const sortByProperty = camelCase(sortBy);
 
-      if (!recentErrors) {
+      if (!errors) {
         return null;
       }
 
-      if (!sortBy) {
-        return recentErrors;
-      }
-
-      return [...recentErrors].sort((a, b) => {
+      return [...errors].sort((a, b) => {
         const firstElement =
           sortDirection === 'desc' ? b[sortByProperty] : a[sortByProperty];
         const secondElement =
@@ -62,8 +63,8 @@ export default class AwsRecentErrorsTable extends Component {
       });
     },
     {
-      serializer: ([recentErrors, sortBy, sortDirection]) => {
-        const ids = sorted(recentErrors);
+      serializer: ([errors, sortBy, sortDirection]) => {
+        const ids = sorted(errors);
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
@@ -71,57 +72,54 @@ export default class AwsRecentErrorsTable extends Component {
   );
 
   render() {
-    const { recentErrors } = this.props;
+    const { errors } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const sortedRecentErrors = this.createSortedRecentErrors(
-      recentErrors,
-      sortBy,
-      sortDirection
-    );
-
-    if (isEmpty(sortedRecentErrors)) {
-      return <Typography>Health stats not available</Typography>;
-    }
+    const sortedErrors = this.createSortedErrors(errors, sortBy, sortDirection);
 
     return (
       <Fragment>
         <DataTable
-          items={sortedRecentErrors}
+          items={sortedErrors}
           headers={[
             'AZ',
             'Type',
-            'Region',
             'Instance Type',
             'Code',
+            'Region',
             'Time',
             'Message',
           ]}
           sortByHeader={sortBy}
           sortDirection={sortDirection}
           onHeaderClick={this.handleHeaderClick}
-          renderRow={item => (
+          noItemsMessage="Errors not available"
+          renderRow={error => (
             <TableRow
-              key={`${item.type}-${item.az}-${item.workerType}-${item.time}`}>
+              key={`${error.az}-${error.instanceType}-${error.type}-${
+                error.time
+              }`}>
               <TableCell>
-                <Typography>{item.az}</Typography>
+                <Typography>{error.az}</Typography>
               </TableCell>
               <TableCell>
-                <Typography>{item.type}</Typography>
+                <Typography>{error.type}</Typography>
               </TableCell>
               <TableCell>
-                <Typography>{item.region}</Typography>
+                <Typography>{error.instanceType}</Typography>
               </TableCell>
               <TableCell>
-                <Typography>{item.instanceType}</Typography>
+                <Typography>
+                  <code>{error.code}</code>
+                </Typography>
               </TableCell>
               <TableCell>
-                <Typography>{<code>{item.code}</code>}</Typography>
+                <Typography>{error.region}</Typography>
               </TableCell>
               <TableCell>
-                <DateDistance from={item.time} />
+                <DateDistance from={error.time} />
               </TableCell>
               <TableCell>
-                <Typography>{item.message}</Typography>
+                <Typography>{error.message}</Typography>
               </TableCell>
             </TableRow>
           )}

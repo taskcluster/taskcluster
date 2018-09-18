@@ -7,14 +7,17 @@ import loadable from '../../utils/loadable';
 const ViewWorkerTypes = loadable(() =>
   import(/* webpackChunkName: 'AwsProvisioner.ViewWorkerTypes' */ './ViewWorkerTypes')
 );
+const ViewWorkerType = loadable(() =>
+  import(/* webpackChunkName: 'AwsProvisioner.ViewWorkerType' */ './ViewWorkerType')
+);
 const ViewAwsHealth = loadable(() =>
   import(/* webpackChunkName: 'AwsProvisioner.ViewAwsHealth' */ './ViewAwsHealth')
 );
 const ViewRecentErrors = loadable(() =>
   import(/* webpackChunkName: 'AwsProvisioner.ViewRecentErrors' */ './ViewRecentErrors')
 );
-const ViewWorkerType = loadable(() =>
-  import(/* webpackChunkName: 'AwsProvisioner.ViewWorkerType' */ './ViewWorkerType')
+const ViewWorkerTypeDefinition = loadable(() =>
+  import(/* webpackChunkName: 'AwsProvisioner.ViewWorkerTypeDefinition' */ './ViewWorkerTypeDefinition')
 );
 
 @hot(module)
@@ -30,13 +33,13 @@ export default class AwsProvisioner extends Component {
         <RouteWithProps
           path={`${path}/:workerType/edit`}
           {...props}
-          component={ViewWorkerType}
+          component={ViewWorkerTypeDefinition}
         />
         <RouteWithProps
           path={`${path}/create`}
           {...props}
           isNewWorkerType
-          component={ViewWorkerType}
+          component={ViewWorkerTypeDefinition}
         />
         <RouteWithProps
           path={`${path}/aws-health`}
@@ -47,6 +50,11 @@ export default class AwsProvisioner extends Component {
           path={`${path}/recent-errors`}
           {...props}
           component={ViewRecentErrors}
+        />
+        <RouteWithProps
+          path={`${path}/:workerType`}
+          {...props}
+          component={ViewWorkerType}
         />
         <RouteWithProps path={path} {...props} component={ViewWorkerTypes} />
       </Switch>

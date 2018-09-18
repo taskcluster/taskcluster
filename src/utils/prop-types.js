@@ -299,10 +299,8 @@ export const awsProvisionerHealth = shape({
   ),
 });
 
-export const awsProvisionerRecentErrors = shape({
-  region: string,
-  az: string,
-  instanceType: string,
+export const awsProvisionerErrors = shape({
+  ...aws,
   code: string,
   type: oneOf(['INSTANCE_REQUEST', 'TERMINATION']),
   workerType: string,
