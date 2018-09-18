@@ -91,6 +91,11 @@ type (
 		// List of scopes the client is authorized to access.  Scopes must be
 		// composed of printable ASCII characters and spaces.
 		//
+		// Array items:
+		// Syntax:     ^[ -~]*$
+		//
+		// See https://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/scopes/items
+		//
 		// See https://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#/oneOf[0]/properties/scopes
 		Scopes []string `json:"scopes"`
 
@@ -131,6 +136,9 @@ type (
 		// the accounts that can have SAS credentials fetched for tables
 		// within them.
 		//
+		// Array items:
+		// See https://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#/properties/accounts/items
+		//
 		// See https://schemas.taskcluster.net/auth/v1/azure-account-list-response.json#/properties/accounts
 		Accounts []string `json:"accounts"`
 	}
@@ -142,6 +150,9 @@ type (
 
 		// A list of containers that are in an account.  Credentials are available for
 		// these containers from the `azureBlobSAS` method.
+		//
+		// Array items:
+		// See https://schemas.taskcluster.net/auth/v1/azure-container-list-response.json#/properties/containers/items
 		//
 		// See https://schemas.taskcluster.net/auth/v1/azure-container-list-response.json#/properties/containers
 		Containers []string `json:"containers"`
@@ -176,6 +187,9 @@ type (
 
 		// A list of tables that are in an account. These are
 		// the tables that can have SAS credentials fetched for them.
+		//
+		// Array items:
+		// See https://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#/properties/tables/items
 		//
 		// See https://schemas.taskcluster.net/auth/v1/azure-table-list-response.json#/properties/tables
 		Tables []string `json:"tables"`
@@ -228,6 +242,15 @@ type (
 		Expires tcclient.Time `json:"expires"`
 
 		// List of scopes the client has (unexpanded).
+		//
+		// Array items:
+		// A single scope. A scope must be composed of
+		// printable ASCII characters and spaces.  Scopes ending in more than
+		// one `*` character are forbidden.
+		//
+		// Syntax:     ^[ -~]*(?<!\*\*)$
+		//
+		// See https://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/scopes/items
 		//
 		// See https://schemas.taskcluster.net/auth/v1/create-client-request.json#/properties/scopes
 		Scopes []string `json:"scopes,omitempty"`
@@ -282,6 +305,15 @@ type (
 		// List of scopes granted to this client by matching roles, including the
 		// client's scopes and the implicit role `client-id:<clientId>`.
 		//
+		// Array items:
+		// A single scope. A scope must be composed of
+		// printable ASCII characters and spaces.  Scopes ending in more than
+		// one `*` character are forbidden.
+		//
+		// Syntax:     ^[ -~]*(?<!\*\*)$
+		//
+		// See https://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/expandedScopes/items
+		//
 		// See https://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/expandedScopes
 		ExpandedScopes []string `json:"expandedScopes"`
 
@@ -311,6 +343,15 @@ type (
 		//
 		// Default:    []
 		//
+		// Array items:
+		// A single scope. A scope must be composed of
+		// printable ASCII characters and spaces.  Scopes ending in more than
+		// one `*` character are forbidden.
+		//
+		// Syntax:     ^[ -~]*(?<!\*\*)$
+		//
+		// See https://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/scopes/items
+		//
 		// See https://schemas.taskcluster.net/auth/v1/create-client-response.json#/properties/scopes
 		Scopes []string `json:"scopes"`
 	}
@@ -330,6 +371,15 @@ type (
 
 		// List of scopes the role grants access to.  Scopes must be composed of
 		// printable ASCII characters and spaces.
+		//
+		// Array items:
+		// A single scope. A scope must be composed of
+		// printable ASCII characters and spaces.  Scopes ending in more than
+		// one `*` character are forbidden.
+		//
+		// Syntax:     ^[ -~]*(?<!\*\*)$
+		//
+		// See https://schemas.taskcluster.net/auth/v1/create-role-request.json#/properties/scopes/items
 		//
 		// See https://schemas.taskcluster.net/auth/v1/create-role-request.json#/properties/scopes
 		Scopes []string `json:"scopes"`
@@ -399,6 +449,13 @@ type (
 		// List of scopes granted to this client by matching roles.  Scopes must be
 		// composed of printable ASCII characters and spaces.
 		//
+		// Array items:
+		// Scope that client is granted by a role
+		//
+		// Syntax:     ^[ -~]*$
+		//
+		// See https://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/expandedScopes/items
+		//
 		// See https://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/expandedScopes
 		ExpandedScopes []string `json:"expandedScopes"`
 
@@ -429,6 +486,13 @@ type (
 		//
 		// Default:    []
 		//
+		// Array items:
+		// Scope
+		//
+		// Syntax:     ^[ -~]*$
+		//
+		// See https://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/scopes/items
+		//
 		// See https://schemas.taskcluster.net/auth/v1/get-client-response.json#/properties/scopes
 		Scopes []string `json:"scopes"`
 	}
@@ -455,6 +519,15 @@ type (
 		// granted by roles that can be assumed when you have this role.
 		// Hence, this includes any scopes in-directly granted as well.
 		//
+		// Array items:
+		// A single scope. A scope must be composed of
+		// printable ASCII characters and spaces.  Scopes ending in more than
+		// one `*` character are forbidden.
+		//
+		// Syntax:     ^[ -~]*(?<!\*\*)$
+		//
+		// See https://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/expandedScopes/items
+		//
 		// See https://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/expandedScopes
 		ExpandedScopes []string `json:"expandedScopes"`
 
@@ -472,6 +545,15 @@ type (
 
 		// List of scopes the role grants access to.  Scopes must be composed of
 		// printable ASCII characters and spaces.
+		//
+		// Array items:
+		// A single scope. A scope must be composed of
+		// printable ASCII characters and spaces.  Scopes ending in more than
+		// one `*` character are forbidden.
+		//
+		// Syntax:     ^[ -~]*(?<!\*\*)$
+		//
+		// See https://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/scopes/items
 		//
 		// See https://schemas.taskcluster.net/auth/v1/get-role-response.json#/properties/scopes
 		Scopes []string `json:"scopes"`
@@ -613,6 +695,13 @@ type (
 
 		// List of scopes.  Scopes must be composed of printable ASCII characters and spaces.
 		//
+		// Array items:
+		// Scope
+		//
+		// Syntax:     ^[ -~]*$
+		//
+		// See https://schemas.taskcluster.net/auth/v1/scopeset.json#/properties/scopes/items
+		//
 		// See https://schemas.taskcluster.net/auth/v1/scopeset.json#/properties/scopes
 		Scopes []string `json:"scopes,omitempty"`
 	}
@@ -675,12 +764,26 @@ type (
 		//
 		// Default:    []
 		//
+		// Array items:
+		// Scope
+		//
+		// Syntax:     ^[ -~]*$
+		//
+		// See https://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#/properties/clientScopes/items
+		//
 		// See https://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#/properties/clientScopes
 		ClientScopes []string `json:"clientScopes,omitempty"`
 
 		// List of scopes the request should require.
 		//
 		// Default:    []
+		//
+		// Array items:
+		// Scope
+		//
+		// Syntax:     ^[ -~]*$
+		//
+		// See https://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#/properties/requiredScopes/items
 		//
 		// See https://schemas.taskcluster.net/auth/v1/test-authenticate-request.json#/properties/requiredScopes
 		RequiredScopes []string `json:"requiredScopes,omitempty"`
@@ -701,6 +804,13 @@ type (
 		// List of scopes the request was authorized.
 		//
 		// Default:    []
+		//
+		// Array items:
+		// Scope
+		//
+		// Syntax:     ^[ -~]*$
+		//
+		// See https://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#/properties/scopes/items
 		//
 		// See https://schemas.taskcluster.net/auth/v1/test-authenticate-response.json#/properties/scopes
 		Scopes []string `json:"scopes,omitempty"`

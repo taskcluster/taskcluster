@@ -8,6 +8,11 @@ type (
 
 		// Arguments from `route` that must be replaced, they'll appear wrapped in brackets inside `route`.
 		//
+		// Array items:
+		// Argument that appears in `route` warpped in angle brackets. It must be replaced to call the function.
+		//
+		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/args/items
+		//
 		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/args
 		Args []string `json:"args"`
 
@@ -66,6 +71,11 @@ type (
 		Output string `json:"output,omitempty"`
 
 		// List of accepted query-string parameters, these are always optional.
+		//
+		// Array items:
+		// Optional query-string parameter
+		//
+		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/query/items
 		//
 		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/query
 		Query []string `json:"query,omitempty"`
@@ -202,6 +212,16 @@ type (
 	// See https://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateAllOf
 	Conjunction struct {
 
+		// Array items:
+		// One of:
+		//   * RequiredScope
+		//   * Disjunction
+		//   * Conjunction
+		//   * Conditional
+		//   * ForAll
+		//
+		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate
+		//
 		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateAllOf/properties/AllOf
 		AllOf []ScopeExpressionTemplate `json:"AllOf"`
 	}
@@ -211,6 +231,16 @@ type (
 	// See https://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateAnyOf
 	Disjunction struct {
 
+		// Array items:
+		// One of:
+		//   * RequiredScope
+		//   * Disjunction
+		//   * Conjunction
+		//   * Conditional
+		//   * ForAll
+		//
+		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate
+		//
 		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplateAnyOf/properties/AnyOf
 		AnyOf []ScopeExpressionTemplate `json:"AnyOf"`
 	}

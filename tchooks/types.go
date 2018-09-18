@@ -63,6 +63,14 @@ type (
 		//
 		// Default:    []
 		//
+		// Array items:
+		// Cron-like specification for when tasks should be created.  The pattern is
+		// parsed in a UTC context.
+		// See [cron-parser on npm](https://www.npmjs.com/package/cron-parser).
+		// Note that tasks may not be created at exactly the time specified.
+		//
+		// See https://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/schedule/items
+		//
 		// See https://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/schedule
 		Schedule []string `json:"schedule,omitempty"`
 
@@ -137,6 +145,9 @@ type (
 	// See https://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json#
 	HookGroups struct {
 
+		// Array items:
+		// See https://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json#/properties/groups/items
+		//
 		// See https://schemas.taskcluster.net/hooks/v1/list-hook-groups-response.json#/properties/groups
 		Groups []string `json:"groups"`
 	}

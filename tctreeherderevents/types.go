@@ -151,6 +151,13 @@ type (
 
 		// The job guids that were coalesced to this job.
 		//
+		// Array items:
+		// Syntax:     ^[\w/+-]+$
+		// Min length: 1
+		// Max length: 50
+		//
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/coalesced/items
+		//
 		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/coalesced
 		Coalesced []string `json:"coalesced,omitempty"`
 
@@ -200,6 +207,13 @@ type (
 		//   pgo    Profile Guided Optimization - Like opt, but runs with profiling, then builds again using that profiling
 		//   asan   Address Sanitizer
 		//   tsan   Thread Sanitizer Build
+		//
+		// Array items:
+		// Syntax:     ^[\w-]+$
+		// Min length: 1
+		// Max length: 50
+		//
+		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/labels/items
 		//
 		// See https://schemas.taskcluster.net/treeherder/v1/pulse-job.json#/properties/labels
 		Labels []string `json:"labels,omitempty"`

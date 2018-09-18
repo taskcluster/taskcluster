@@ -393,6 +393,9 @@ type (
 		// A list of the etags given by the API of the blob storage provider.  This is an opaque
 		// string value provided by the API.
 		//
+		// Array items:
+		// See https://schemas.taskcluster.net/queue/v1/put-artifact-request.json#/properties/etags/items
+		//
 		// See https://schemas.taskcluster.net/queue/v1/put-artifact-request.json#/properties/etags
 		Etags []string `json:"etags"`
 	}
@@ -492,6 +495,9 @@ type (
 	HTTPRequest struct {
 
 		// Headers of request
+		//
+		// Map entries:
+		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/headers/additionalProperties
 		//
 		// See https://schemas.taskcluster.net/queue/v1/post-artifact-response.json#/oneOf[0]/properties/requests/items/properties/headers
 		Headers map[string]string `json:"headers"`
@@ -1323,6 +1329,14 @@ type (
 		//
 		// Default:    []
 		//
+		// Array items:
+		// The `taskId` of a task that must be resolved before this task is
+		// scheduled.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/dependencies/items
+		//
 		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/dependencies
 		Dependencies []string `json:"dependencies,omitempty"`
 
@@ -1427,6 +1441,14 @@ type (
 		//
 		// Default:    []
 		//
+		// Array items:
+		// A task specific route.
+		//
+		// Min length: 1
+		// Max length: 249
+		//
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/routes/items
+		//
 		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/routes
 		Routes []string `json:"routes,omitempty"`
 
@@ -1450,6 +1472,15 @@ type (
 
 		// List of scopes that the task is authorized to use during its execution.
 		//
+		// Array items:
+		// A single scope. A scope must be composed of
+		// printable ASCII characters and spaces.  Scopes ending in more than
+		// one `*` character are forbidden.
+		//
+		// Syntax:     ^[ -~]*(?<!\*\*)$
+		//
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes/items
+		//
 		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
 		Scopes []string `json:"scopes,omitempty"`
 
@@ -1460,7 +1491,11 @@ type (
 		// `purpose: 'build' || 'test'` is a good example.
 		//
 		// Default:    {}
+		//
+		// Map entries:
 		// Max length: 4096
+		//
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/tags/additionalProperties
 		//
 		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/tags
 		Tags map[string]string `json:"tags,omitempty"`
@@ -1509,6 +1544,14 @@ type (
 		// before this task is scheduled. See `requires` for semantics.
 		//
 		// Default:    []
+		//
+		// Array items:
+		// The `taskId` of a task that must be resolved before this task is
+		// scheduled.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		//
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/dependencies/items
 		//
 		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/dependencies
 		Dependencies []string `json:"dependencies"`
@@ -1614,6 +1657,14 @@ type (
 		//
 		// Default:    []
 		//
+		// Array items:
+		// A task specific route.
+		//
+		// Min length: 1
+		// Max length: 249
+		//
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/routes/items
+		//
 		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/routes
 		Routes []string `json:"routes"`
 
@@ -1637,6 +1688,15 @@ type (
 
 		// List of scopes that the task is authorized to use during its execution.
 		//
+		// Array items:
+		// A single scope. A scope must be composed of
+		// printable ASCII characters and spaces.  Scopes ending in more than
+		// one `*` character are forbidden.
+		//
+		// Syntax:     ^[ -~]*(?<!\*\*)$
+		//
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes/items
+		//
 		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/scopes
 		Scopes []string `json:"scopes"`
 
@@ -1647,7 +1707,11 @@ type (
 		// `purpose: 'build' || 'test'` is a good example.
 		//
 		// Default:    {}
+		//
+		// Map entries:
 		// Max length: 4096
+		//
+		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/tags/additionalProperties
 		//
 		// See https://schemas.taskcluster.net/queue/v1/task.json#/properties/tags
 		Tags map[string]string `json:"tags"`

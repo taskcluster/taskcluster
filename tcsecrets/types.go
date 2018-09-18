@@ -45,6 +45,11 @@ type (
 
 		// Secret names
 		//
+		// Array items:
+		// Secret name
+		//
+		// See https://schemas.taskcluster.net/secrets/v1/secret-list.json#/properties/secrets/items
+		//
 		// See https://schemas.taskcluster.net/secrets/v1/secret-list.json#/properties/secrets
 		Secrets []string `json:"secrets"`
 	}
