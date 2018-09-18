@@ -16,10 +16,10 @@
     "styleguide": "neutrino styleguide:start --require dotenv/config"
   },
   "dependencies": {
-    "@material-ui/core": "^3.1.0",
+    "@material-ui/core": "^1.5.1",
     "@material-ui/icons": "^1.1.1",
     "@material-ui/lab": "1.0.0-alpha.5",
-    "@mozilla-frontend-infra/components": "^1.1.0",
+    "@mozilla-frontend-infra/components": "^1.0.1",
     "apollo-cache-inmemory": "^1.2.9",
     "apollo-cache-persist": "^0.1.1",
     "apollo-client": "^2.4.1",
@@ -47,7 +47,7 @@
     "markdown-it-highlightjs": "^3.0.0",
     "markdown-it-link-attributes": "^2.1.0",
     "material-ui-pickers": "^1.0.0-rc.9",
-    "material-ui-treeview": "^1.2.0",
+    "material-ui-treeview": "^1.1.0",
     "mdi-react": "^4.3.0",
     "prop-types": "^15.6.2",
     "react": "^16.5.0",
