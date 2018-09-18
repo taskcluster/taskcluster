@@ -130,8 +130,8 @@ $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/
 Start-Process "msiexec" -ArgumentList "/i C:\binaries\BinScope_x64.msi /quiet" -Wait -NoNewWindow
 
 # MozillaBuildSetup: Base Firefox on Windows build requirement
-$client.DownloadFile("http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-3.1.exe", "C:\binaries\MozillaBuildSetup-3.1.exe")
-Start-Process "C:\binaries\MozillaBuildSetup-3.1.exe" -ArgumentList "/S /D=C:\mozilla-build" -Wait -NoNewWindow
+$client.DownloadFile("http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-3.2.exe", "C:\binaries\MozillaBuildSetup-3.2.exe")
+Start-Process "C:\binaries\MozillaBuildSetup-3.2.exe" -ArgumentList "/S /D=C:\mozilla-build" -Wait -NoNewWindow
 
 # msys_home: Maintenance Toolchain - not essential for building firefox
 cmd /c mklink "C:\mozilla-build\msys\home" "C:\Users"
