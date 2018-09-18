@@ -117,6 +117,7 @@ var builder = new APIBuilder({
     'workerInfo',         // Instance of WorkerInfo
     's3Controller',       // Instance of remotely-signed-s3.Controller
     's3Runner',           // Instance of remotely-signed-s3.Runner
+    'useCloudMirror',     // If true, use the cloud-mirror service
     'cloudMirrorHost',    // Hostname of the cloud-mirror service
     'artifactRegion',     // Region where artifacts are stored (no cloud-mirror)
     'blobRegion',         // Region where blobs are stored (no cloud-mirror)
