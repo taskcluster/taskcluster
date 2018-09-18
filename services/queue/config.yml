@@ -93,12 +93,12 @@ defaults:
     # Mapping from EC2 region to public artifact bucket proxy
     # (Must not end with a slash!)
     publicArtifactBucketProxies:  !env:json PUBLIC_ARTIFACT_EC2_PROXIES
-    usePublicArtifactBucketProxy: true
 
     # CDN for public artifact bucket
     publicArtifactBucketCDN:      !env PUBLIC_ARTIFACT_BUCKET_CDN
 
     # Cloud mirror configuration
+    useCloudMirror:               !env:bool USE_CLOUD_MIRROR
     cloudMirrorHost:              'cloud-mirror.taskcluster.net'
 
 
@@ -162,7 +162,6 @@ production:
       - us-east-2
       - us-west-1
       - eu-central-1
-    useCloudMirror: !env:bool USE_PUBLIC_ARTIFACT_BUCKET_PROXY
   server:
     env:              production
     trustProxy:       true

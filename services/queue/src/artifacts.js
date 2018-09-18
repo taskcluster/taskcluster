@@ -567,6 +567,10 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
         skipCache = true;
       }
 
+      if (!this.useCloudMirror) {
+        skipCache = true;
+      }
+
       if (skipCache && skipCDN) {
         url = this.publicBucket.createGetUrl(prefix, true);
       } else if (skipCache || !region) {
