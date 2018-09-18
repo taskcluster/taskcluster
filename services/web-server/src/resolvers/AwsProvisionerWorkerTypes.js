@@ -115,5 +115,17 @@ export default {
 
       return workerType;
     },
+    async terminateAwsProvisionerInstance(
+      parent,
+      { region, instanceId },
+      { clients }
+    ) {
+      await clients.ec2Manager.terminateInstance(region, instanceId);
+
+      return { region, instanceId };
+    },
+    terminateWorkerType(parent, { workerType }, { clients }) {
+      return clients.ec2Manager.terminateWorkerType(workerType);
+    },
   },
 };

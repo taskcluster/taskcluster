@@ -325,6 +325,11 @@ input AwsProvisionerWorkerTypeInput {
   availabilityZones: [AwsProvisionerWorkerTypeAvailabilityZoneInput]
 }
 
+type AwsProvisionerInstance {
+  region: String!
+  instanceId: ID!
+}
+
 extend type Query {
   # Query an unorderred list of worker types, including some summary information
   # about current capacity for each. While this list includes all defined worker
@@ -342,7 +347,7 @@ extend type Query {
   # This state is stored: one for running instances, one for pending requests.
   # The `summary` property contains an updated summary similar to that returned
   # from `awsProvisionerWorkerTypeSummaries`.
-  awsProvisionerWorkerTypeState(workerType: String!): AwsProvisionerWorkerTypeState
+  awsProvisionerWorkerTypeState(workerType: String!): JSON
 
   # Query the most recent errors in the provisioner across all worker types.
   awsProvisionerRecentErrors(filter: JSON): [AwsProvisionerError]
@@ -397,4 +402,10 @@ extend type Mutation {
   # tasks are created with that worker-type name or you could theoretically set
   # `maxCapacity` to `0`, though this is not a supported or tested action.
   deleteAwsProvisionerWorkerType(workerType: String!): String
+
+  # Terminate an instance in a specified region
+  terminateAwsProvisionerInstance(region: String!, instanceId: ID!): AwsProvisionerInstance
+
+  # Destroy all EC2 resources of a given worker type
+  terminateWorkerType(workerType: String!): Boolean
 }
