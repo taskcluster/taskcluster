@@ -1,0 +1,20 @@
+query TaskNamespace($namespace: String!, $taskConnection: PageConnection) {
+  taskNamespace(namespace:$namespace, connection: $taskConnection) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        namespace
+        taskId
+        rank
+        data
+        expires
+      }
+    }
+  }
+}

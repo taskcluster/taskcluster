@@ -1,0 +1,17 @@
+query Namespaces($namespace: String!, $namespaceConnection: PageConnection) {
+  namespaces(namespace:$namespace, connection: $namespaceConnection) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        namespace
+        name
+      }
+    }
+  }
+}

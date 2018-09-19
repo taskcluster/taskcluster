@@ -318,6 +318,20 @@ export const secrets = arrayOf(
   })
 );
 
+export const namespace = shape({
+  name: string,
+  namespace: string,
+  expires: date,
+});
+
+export const indexedTask = shape({
+  namespace: string,
+  taskId: string,
+  rank: number,
+  data: object,
+  expires: date,
+});
+
 export const cachePurge = shape({
   provisionerId: string,
   workerType: string,

@@ -1,12 +1,13 @@
 import { Component, cloneElement } from 'react';
 import { node, string } from 'prop-types';
 import classNames from 'classnames';
-import { NavLink } from 'react-router-dom';
+import { withRouter, NavLink } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 
+@withRouter
 @withStyles(theme => ({
   active: {
     backgroundColor: theme.palette.secondary.dark,
@@ -46,6 +47,36 @@ export default class SidebarListItem extends Component {
     rightIcon: null,
   };
 
+  // Some items have the same url prefix, however should not
+  // be set active at the same time.
+  isItemActive = route => {
+    if (!route) {
+      return false;
+    }
+
+    const taskIndexPath = '/tasks/index';
+    const taskGroupsPath = '/tasks/index';
+    const taskPath = '/tasks';
+    const isTaskView =
+      route.url === taskPath &&
+      window.location.pathname.startsWith(taskPath) &&
+      !window.location.pathname.startsWith(taskIndexPath) &&
+      !window.location.pathname.startsWith(taskGroupsPath);
+    const isTaskIndexView =
+      route.url === taskIndexPath &&
+      window.location.pathname.startsWith(taskIndexPath);
+    const isTaskGroupView =
+      route.url === taskGroupsPath &&
+      window.location.pathname.startsWith(taskGroupsPath);
+
+    return Boolean(
+      !route.url.startsWith(taskPath) ||
+        isTaskIndexView ||
+        isTaskView ||
+        isTaskGroupView
+    );
+  };
+
   render() {
     const { classes, icon, children, rightIcon, ...props } = this.props;
 
@@ -55,6 +86,7 @@ export default class SidebarListItem extends Component {
         disableGutters
         className={classes.listItem}
         component={NavLink}
+        isActive={this.isItemActive}
         activeClassName={classes.active}
         {...props}>
         {icon && (

@@ -40,6 +40,88 @@ import routes from './routes';
     'pre, :not(pre) > code': {
       ...theme.mixins.highlight,
     },
+    '.json-inspector__leaf': {
+      '&.json-inspector__leaf_root': {
+        paddingLeft: '0 !important',
+      },
+    },
+    '.json-inspector__not-found': {
+      color: '#F77669 !important',
+    },
+    ...(theme.palette.type === 'dark'
+      ? {
+          '.json-inspector__key': {
+            color: '#80CBAE !important',
+          },
+          '.json-inspector__value_string': {
+            color: '#C3E88D !important',
+          },
+          '.json-inspector__value_boolean': {
+            color: '#F77669 !important',
+          },
+          '.json-inspector__value_number': {
+            color: '#F77669 !important',
+          },
+          '.json-inspector__hl': {
+            background: '#505050 !important',
+            boxShadow: '0 -1px 0 2px #505050 !important',
+          },
+          '.json-inspector__search': {
+            '&:hover': {
+              borderBottom: '1px solid #fff',
+            },
+            '&:focus': {
+              borderBottom: '1px solid #485460',
+            },
+            outline: 'none',
+            display: 'block',
+            width: 300,
+            height: 32,
+            padding: '0 !important',
+            fontSize: theme.typography.fontSize - 1,
+            color: '#fff',
+            background: 'transparent',
+            borderBottom: '1px solid #b8bdc0',
+            borderLeft: 0,
+            borderRight: 0,
+            borderTop: 0,
+            '-webkitBoxShadow': 'inset 0 1px 1px rgba(0, 0, 0, .075)',
+            boxShadow: 'inset 0 1px 1px rgba(0, 0, 0, .075)',
+            '-webkitTransition':
+              'border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s',
+            '-oTransition':
+              'border-color ease-in-out .15s, box-shadow ease-in-out .15s',
+            transition:
+              'border-color ease-in-out .15s, box-shadow ease-in-out .15s',
+          },
+        }
+      : {
+          '.json-inspector__search': {
+            outline: 'none',
+            display: 'block',
+            width: 300,
+            height: 32,
+            padding: '0 !important',
+            fontSize: theme.typography.fontSize - 1,
+            background: 'transparent',
+            borderBottom: `1px solid #949494`,
+            '&:hover': {
+              borderBottom: `1px solid ${theme.palette.text.primary}`,
+            },
+            '&:focus': {
+              borderBottom: `1px solid ${theme.palette.text.primary}`,
+            },
+            borderLeft: 0,
+            borderRight: 0,
+            borderTop: 0,
+            '-webkitTransition':
+              'border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s',
+            '-oTransition':
+              'border-color ease-in-out .15s, box-shadow ease-in-out .15s',
+            transition:
+              'border-color ease-in-out .15s, box-shadow ease-in-out .15s',
+          },
+        }),
   },
 }))
 export default class Main extends Component {

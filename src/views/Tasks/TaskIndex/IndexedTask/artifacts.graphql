@@ -1,0 +1,23 @@
+query IndexEntry($taskId: ID!, $entryConnection: PageConnection, $skip: Boolean!) {
+  latestArtifacts(taskId: $taskId, connection: $entryConnection) @skip(if: $skip) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        name
+        url
+        isPublicLog
+        contentType
+      }
+    }
+  }
+
+  task(taskId: $taskId) @skip(if: $skip) {
+    created
+  }
+}

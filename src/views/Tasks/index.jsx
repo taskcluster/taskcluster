@@ -26,7 +26,7 @@ const TaskGroup = loadable(() =>
   import(/* webpackChunkName: 'Tasks.TaskGroup' */ './TaskGroup')
 );
 const TaskIndex = loadable(() =>
-  import(/* webpackChunkName: 'Tasks.TaskGroup' */ './TaskGroup')
+  import(/* webpackChunkName: 'Tasks.TaskIndex' */ './TaskIndex')
 );
 const TaskRedirect = loadable(() =>
   import(/* webpackChunkName: 'Tasks.TaskRedirect' */ './TaskRedirect')
