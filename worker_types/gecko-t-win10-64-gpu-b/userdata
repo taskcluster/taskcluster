@@ -88,9 +88,9 @@ cmd /c mklink "C:\mozilla-build\msys\home" "C:\Users"
 # DeleteMozillaBuildMercurial
 Start-Process "cmd.exe" -ArgumentList "/c del C:\mozilla-build\python\Scripts\hg*" -Wait -NoNewWindow
 
-# Mercurial: https://bugzilla.mozilla.org/show_bug.cgi?id=1456395
-$client.DownloadFile("https://www.mercurial-scm.org/release/windows/mercurial-4.5.3-x64.msi", "C:\binaries\mercurial-4.5.3-x64.msi")
-Start-Process "msiexec" -ArgumentList "/i C:\binaries\mercurial-4.5.3-x64.msi /quiet" -Wait -NoNewWindow
+# Mercurial: https://bugzilla.mozilla.org/show_bug.cgi?id=1490703
+$client.DownloadFile("https://www.mercurial-scm.org/release/windows/mercurial-4.7.1-x64.msi", "C:\binaries\mercurial-4.7.1-x64.msi")
+Start-Process "msiexec" -ArgumentList "/i C:\binaries\mercurial-4.7.1-x64.msi /quiet" -Wait -NoNewWindow
 
 # MercurialConfig: Required by clonebundle and share hg extensions
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloudConfig/master/userdata/Configuration/Mercurial/mercurial.ini", "C:\Program Files\Mercurial\Mercurial.ini")
