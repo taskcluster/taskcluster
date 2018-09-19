@@ -99,3 +99,8 @@ variable "github_webhook_secret" {
   type        = "string"
   description = "taskcluster-github webhook secret."
 }
+
+variable "audit_log_stream" {
+  type        = "string"
+  description = "kinesis stream for audit logs."
+}
