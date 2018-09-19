@@ -90,6 +90,9 @@ type (
 		// See [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.
 		//
 		// Since: generic-worker 10.10.0
+		//
+		// Array items:
+		// Mininum:    1
 		Retry []int64 `json:"retry,omitempty"`
 	}
 
@@ -167,6 +170,8 @@ type (
 		// ```
 		//
 		// Since: generic-worker 0.0.1
+		//
+		// Array items:
 		Command []string `json:"command"`
 
 		// Env vars must be string to __string__ mappings (not number or boolean). For example:
@@ -180,6 +185,8 @@ type (
 		// ```
 		//
 		// Since: generic-worker 0.0.1
+		//
+		// Map entries:
 		Env map[string]string `json:"env,omitempty"`
 
 		// Feature flags enable additional functionality.
@@ -198,6 +205,12 @@ type (
 		// Directories and/or files to be mounted.
 		//
 		// Since: generic-worker 5.4.0
+		//
+		// Array items:
+		// One of:
+		//   * FileMount
+		//   * WritableDirectoryCache
+		//   * ReadOnlyDirectory
 		Mounts []json.RawMessage `json:"mounts,omitempty"`
 
 		// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
@@ -211,6 +224,8 @@ type (
 		// group listed.
 		//
 		// Since: generic-worker 6.0.0
+		//
+		// Array items:
 		OSGroups []string `json:"osGroups,omitempty"`
 
 		// Specifies an artifact name for publishing RDP connection information.
