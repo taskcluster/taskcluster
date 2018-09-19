@@ -9109,6 +9109,10 @@ taskcluster-lib-urls@^10.0.0:
   version "10.0.0"
   resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-10.0.0.tgz#ee4c687b4539171d8aef39b38a63c8b9bc82f82e"
 
+taskcluster-lib-urls@^10.1.1:
+  version "10.1.1"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-10.1.1.tgz#67d5b9449b947e5234eafdd15c46267dde29bf74"
+
 temp-dir@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/temp-dir/-/temp-dir-1.0.0.tgz#0a7c0ea26d3a39afa7e0ebea9c1fc0bc4daa011d"

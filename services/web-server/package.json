@@ -40,6 +40,7 @@
     "neutrino-middleware-restart-server": "^1.0.1",
     "passport": "^0.4.0",
     "passport-github": "^1.1.0",
+    "ramda": "^0.25.0",
     "sift": "^6.0.0",
     "source-map-support": "^0.5.4",
     "subscriptions-transport-ws": "^0.9.7",
@@ -48,6 +49,7 @@
     "taskcluster-lib-loader": "^10.0.1",
     "taskcluster-lib-monitor": "^10.0.0",
     "taskcluster-lib-pulse": "^2.0.2",
+    "taskcluster-lib-urls": "^10.1.1",
     "typed-env-config": "^2.0.0"
   }
 }

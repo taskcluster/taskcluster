@@ -9,7 +9,8 @@ export default ({ pulseEngine, rootUrl }) => ({ request, connection }) => {
     });
     const currentLoaders = loaders(
       currentClients,
-      Boolean(request.credentials)
+      Boolean(request.credentials),
+      rootUrl
     );
 
     return {
