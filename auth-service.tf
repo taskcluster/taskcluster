@@ -76,6 +76,21 @@ locals {
       ]
     },
     {
+      clientId    = "static/taskcluster/github"
+      accessToken = "${random_string.github_access_token.result}"
+      description = "..."
+
+      scopes = [
+        "assume:repo:github.com/*",
+        "assume:scheduler-id:taskcluster-github/*",
+        "queue:create-task:*",
+        "auth:azure-table-access:${azurerm_storage_account.base.name}/TaskclusterGithubBuilds",
+        "auth:azure-table-access:${azurerm_storage_account.base.name}/TaskclusterIntegrationOwners",
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/TaskclusterGithubBuilds",
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/TaskclusterIntegrationOwners",
+      ]
+    },
+    {
       clientId    = "static/taskcluster/hooks"
       accessToken = "${random_string.hooks_access_token.result}"
       description = "..."
