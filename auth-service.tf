@@ -25,6 +25,16 @@ module "auth_user" {
               "${aws_s3_bucket.backups.arn}",
               "${aws_s3_bucket.backups.arn}/*"
             ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "kinesis:PutRecord",
+                "kinesis:DescribeStream"
+            ],
+            "Resource": [
+                "${var.audit_log_stream}"
+            ]
         }
     ]
 }
@@ -51,6 +61,8 @@ module "auth_rabbitmq_user" {
 }
 
 locals {
+  audit_log_name = "${element(split("stream/", var.audit_log_stream), 1)}"
+
   static_clients = [
     {
       clientId    = "static/taskcluster/secrets"
@@ -154,6 +166,7 @@ module "auth_secrets" {
   secrets = {
     AWS_ACCESS_KEY_ID     = "${module.auth_user.access_key_id}"
     AWS_SECRET_ACCESS_KEY = "${module.auth_user.secret_access_key}"
+    AWS_REGION            = "us-east-1"                                          // TODO: From config
     AZURE_ACCOUNT_KEY     = "${azurerm_storage_account.base.primary_access_key}"
     AZURE_ACCOUNT         = "${azurerm_storage_account.base.name}"
 
@@ -169,10 +182,11 @@ module "auth_secrets" {
     AZURE_CRYPTO_KEY  = "${base64encode(random_string.auth_table_crypto_key.result)}"
     AZURE_SIGNING_KEY = "${random_string.auth_table_signing_key.result}"
 
+    AUDIT_LOG               = "${local.audit_log_name}"
     FORCE_SSL               = "false"
     TRUST_PROXY             = "true"
     LOCK_ROLES              = "false"
-    MONITORING_ENABLE       = "false"
+    MONITORING_ENABLE       = "true"
     NODE_ENV                = "production"
     OWNER_EMAIL             = "bstack@mozilla.com"
     PROFILE                 = "production"
