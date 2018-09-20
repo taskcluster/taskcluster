@@ -89,7 +89,9 @@ var taskcluster = require('taskcluster-client');
 var listener = new taskcluster.PulseListener({
   credentials: {
     username:           '...',      // Pulse username from pulse guardian
-    password:           '...'       // Pulse password from pulse guardian
+    password:           '...',      // Pulse password from pulse guardian
+    hostname:           '...',      // hostname to connect to using username/password
+    vhost   :           '...'       // virtual host to use on the AMQP host   
   }
 });
 
@@ -150,8 +152,12 @@ var taskcluster = require('taskcluster-client');
 
 // Create a listener
 var listener = new taskcluster.PulseListener({
-  username:     '...',
-  password:     '...'
+ credentials: {
+    username:           '...',      // Pulse username from pulse guardian
+    password:           '...',      // Pulse password from pulse guardian
+    hostname:           '...',      // hostname to connect to using username/password
+    vhost   :           '...'       // virtual host to use on the AMQP host   
+  }
 });
 
 // See: http://www.squaremobius.net/amqp.node/channel_api.html
@@ -755,7 +761,9 @@ var listener = new taskcluster.PulseListener({
   prefetch:             5,          // Number of tasks to process in parallel
   credentials: {                    // If not instance of PulseConnection
     username:           '...',      // Pulse username from pulse guardian
-    password:           '...'       // Pulse password from pulse guardian
+    password:           '...',      // Pulse password from pulse guardian
+    hostname:           '...',      // hostname to connect to using username/password
+    vhost   :           '...'       // virtual host to use on the AMQP host   
   },
   connection:           connection, // If credentials isn't provided
   // If no queue name is given, the queue is:
@@ -797,7 +805,9 @@ not be closed with the `Listener`s, so you must `close()` it manually.
 ```js
 var connection = new taskcluster.PulseConnection({
   username:           '...',        // Pulse username from pulse guardian
-  password:           '...'         // Pulse password from pulse guardian
+  password:           '...',        // Pulse password from pulse guardian
+  hostname:           '...',        // hostname to connect to using username/password
+  vhost   :           '...'         // virtual host to use on the AMQP host   
 });
 
 // Create listener
