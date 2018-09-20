@@ -83,6 +83,10 @@ properties:
     type: integer
     enum:
       - 0
+  apiVersion:
+    description: Version of the API
+    type: string
+    pattern: '^v[0-9]+$'
   $schema:
     description: >-
       Link to schema for this reference. That is a link to this very document.
