@@ -308,6 +308,9 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows Defender" -Name
 # Reg_WinDefend_DisableAntiSpyware: https://bugzilla.mozilla.org/show_bug.cgi?id=1365909
 New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Value "0x00000001" -PropertyType Dword -Force
 
+# DisableWinDefend: https://bugzilla.mozilla.org/show_bug.cgi?id=1365909
+Set-Service "WinDefend" -StartupType Manual -Status Stopped
+
 # OpenSshDownload: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
 $client.DownloadFile("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.1.0p1-Beta/OpenSSH-Win64.zip", "C:\Windows\Temp\OpenSSH-Win64.zip")
 
