@@ -181,6 +181,7 @@ class APIBuilder {
   reference() {
     const reference = {
       version:            0,
+      apiVersion:         this.version || 'v1',
       $schema:            'http://schemas.taskcluster.net/base/v1/api-reference.json#',
       title:              this.title,
       description:        this.description,
