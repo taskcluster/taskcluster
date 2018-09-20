@@ -5,6 +5,9 @@
 const IMAGE_TASK_ID = 'Xx0aPfyOTU2o_0FZnr_AJg';
 
 module.exports = {
+  // the taskcluster instance containing all of these resources
+  ROOT_URL: 'https://taskcluster.net',
+
   NAMESPACE: 'garbage.docker-worker-tests.docker-images',
 
   TASK_ID: IMAGE_TASK_ID,

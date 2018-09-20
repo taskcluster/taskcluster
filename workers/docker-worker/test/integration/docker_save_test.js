@@ -1,5 +1,4 @@
 const assert = require('assert');
-const base = require('taskcluster-base');
 const Docker = require('dockerode-promise');
 const dockerOpts = require('dockerode-options');
 const DockerWorker = require('../dockerworker');
@@ -12,6 +11,8 @@ const TestWorker = require('../testworker');
 const Debug = require('debug');
 const {removeImage} = require('../../src/lib/util/remove_image');
 const pipe = require('promisepipe');
+const testing = require('taskcluster-lib-testing');
+const taskcluster = require('taskcluster-client');
 
 let debug = Debug('docker-worker:test:docker-save-test');
 
@@ -50,13 +51,15 @@ suite('use docker-save', () => {
     let taskId = result.taskId;
     let runId = result.runId;
 
-    let url = `https://queue.taskcluster.net/v1/task/${taskId}/runs/${runId}/artifacts/public/dockerImage.tar`;
+    // expects rootUrl and credentials from env vars
+    let queue = new taskcluster.Queue();
+    let url = queue.buildUrl(queue.getArtifact, taskId, runId, 'public/dockerImage.tar');
 
     let res = got.stream(url);
     const tarStream = fs.createWriteStream('/tmp/dockerload.tar');
     await pipe(res, tarStream);
     //make sure it finishes unzipping
-    await base.testing.sleep(2000);
+    await testing.sleep(2000);
 
     let docker = new Docker(dockerOpts());
     let imageName = createImageName(taskId, runId);
@@ -86,7 +89,7 @@ suite('use docker-save', () => {
       // stream.on('end', () => {reject(new Error('stream ended too early'))});
       setTimeout(reject, 15000, new Error('timed out waiting for docker container'));
     });
-    await base.testing.sleep(100);
+    await testing.sleep(100);
     await Promise.all([container.remove(), fs.unlink('/tmp/dockerload.tar')]);
     await removeImage(docker, imageName);
   });
@@ -113,13 +116,15 @@ suite('use docker-save', () => {
     let taskId = result.taskId;
     let runId = result.runId;
 
-    let url = `https://queue.taskcluster.net/v1/task/${taskId}/runs/${runId}/artifacts/public/cache/docker-worker-garbage-caches-test-cache.tar`;
+    // expects rootUrl and credentials from env vars
+    let queue = new taskcluster.Queue();
+    let url = queue.buildUrl(queue.getArtifact, taskId, runId, 'public/cache/docker-worker-garbage-caches-test-cache.tar');
 
     let res = got.stream(url);
     let tarStream = tar.extract('/tmp/cacheload');
     await pipe(res, tarStream);
     //so the tar actually finishes extracting; tarStream doesn't have an end event
-    await base.testing.sleep(1000);
+    await testing.sleep(1000);
 
     let testStr = await fs.readFile('/tmp/cacheload/test.log', {encoding: 'utf-8'});
     assert.equal(testStr, 'testString\n');

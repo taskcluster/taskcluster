@@ -24,6 +24,7 @@ suite('configuration/aws', () => {
   test('configuration', async () => {
     let response = await got(url + '/generate-secrets');
     let data = JSON.parse(response.body);
+    // expects credentials and rootUrl in env vars
     let provisioner = new taskcluster.AwsProvisioner();
     await provisioner.createSecret(
       data.token,

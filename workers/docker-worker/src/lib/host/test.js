@@ -38,7 +38,8 @@ module.exports = {
       workerNodeType: 'test-worker',
       instanceId: 'test-worker-instance',
       region: 'us-middle-1a',
-      instanceType: 'r3-superlarge'
+      instanceType: 'r3-superlarge',
+      rootUrl: process.env.TASKCLUSTER_ROOT_URL,
     };
     try {
       let content = fs.readFileSync(path, 'utf8');

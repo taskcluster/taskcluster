@@ -23,6 +23,7 @@ module.exports = class IndexedImage extends ArtifactImage {
     this.namespace = imageDetails.namespace;
     this.artifactPath = imageDetails.path;
     this.index = new taskcluster.Index({
+      rootUrl: this.runtime.rootUrl,
       credentials: this.runtime.taskcluster,
       authorizedScopes: this.taskScopes
     });

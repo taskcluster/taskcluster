@@ -1,15 +1,17 @@
 const assert = require('assert');
-const base = require('taskcluster-base');
+const SchemaSet = require('taskcluster-lib-validate');
 const path = require('path');
 const _ = require('lodash');
-
-const { PAYLOAD_SCHEMA } = require('../../src/lib/task.js');
+const libUrls = require('taskcluster-lib-urls');
 
 suite('Task validation', async function() {
+  const payloadSchema = libUrls.schema(libUrls.testRootUrl(), 'docker-worker', 'v1/payload.json#');
   before(async function() {
-    this.validator = await base.validator({
-      prefix: 'docker-worker/v1/'
+    const schemaset = new SchemaSet({
+      serviceName: 'docker-worker',
+      publish: false,
     });
+    this.validator = await schemaset.validator(libUrls.testRootUrl());
   });
 
   test('accept valid schema', async function () {
@@ -19,7 +21,7 @@ suite('Task validation', async function() {
       maxRunTime: 5 * 60
     };
 
-    let errors = this.validator(payload, PAYLOAD_SCHEMA);
+    let errors = this.validator(payload, payloadSchema);
     assert(errors === null, `Valid payload considered invalid. ${JSON.stringify(errors)}`);
   });
 
@@ -29,7 +31,7 @@ suite('Task validation', async function() {
       // No maxRunTime is an invalid schema.
     };
 
-    let errors = this.validator(payload, PAYLOAD_SCHEMA);
+    let errors = this.validator(payload, payloadSchema);
     assert(!_.isEmpty(errors), `Invalid payload considered valid. ${JSON.stringify(errors)}`);
   });
 
@@ -40,7 +42,7 @@ suite('Task validation', async function() {
       maxRunTime: 5 * 60
     };
 
-    let errors = this.validator(payload, PAYLOAD_SCHEMA);
+    let errors = this.validator(payload, payloadSchema);
     assert(errors === null, `Valid payload considered invalid. ${JSON.stringify(errors)}`);
   });
 
@@ -53,7 +55,7 @@ suite('Task validation', async function() {
       maxRunTime: 60
     };
 
-    let errors = this.validator(payload, PAYLOAD_SCHEMA);
+    let errors = this.validator(payload, payloadSchema);
     assert(errors === null, `Valid payload considered invalid. ${JSON.stringify(errors)}`);
   });
 
@@ -63,7 +65,7 @@ suite('Task validation', async function() {
       maxRunTime: 60
     };
 
-    let errors = this.validator(payload, PAYLOAD_SCHEMA);
+    let errors = this.validator(payload, payloadSchema);
     assert(errors === null, `Valid payload considered invalid. ${JSON.stringify(errors)}`);
   });
 
@@ -76,7 +78,7 @@ suite('Task validation', async function() {
       maxRunTime: 60
     };
 
-    let errors = this.validator(payload, PAYLOAD_SCHEMA);
+    let errors = this.validator(payload, payloadSchema);
     assert(!_.isEmpty(errors), `Invalid payload considered valid. ${JSON.stringify(errors)}`);
   });
 
@@ -90,7 +92,7 @@ suite('Task validation', async function() {
       maxRunTime: 60
     };
 
-    let errors = this.validator(payload, PAYLOAD_SCHEMA);
+    let errors = this.validator(payload, payloadSchema);
     assert(errors === null, `Valid payload considered invalid. ${JSON.stringify(errors)}`);
   });
 
@@ -103,7 +105,7 @@ suite('Task validation', async function() {
       maxRunTime: 60
     };
 
-    let errors = this.validator(payload, PAYLOAD_SCHEMA);
+    let errors = this.validator(payload, payloadSchema);
     assert(!_.isEmpty(errors), `Invalid payload considered valid. ${JSON.stringify(errors)}`);
   });
 });

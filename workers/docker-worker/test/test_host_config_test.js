@@ -1,13 +1,17 @@
 const assert = require('assert');
 const subject = require('../src/lib/host/test');
 const settings = require('./settings');
+const libUrls = require('taskcluster-lib-urls');
 
 suite('test host', () => {
   setup(settings.cleanup);
   teardown(settings.cleanup);
 
   test('configure', async () => {
-    settings.configure({capacity: 2});
+    settings.configure({
+      capacity: 2,
+      rootUrl: libUrls.testRootUrl(),
+    });
     assert.deepEqual(
       {
         capacity: 2,
@@ -16,7 +20,8 @@ suite('test host', () => {
         instanceId: 'test-worker-instance',
         instanceType: 'r3-superlarge',
         privateIp: '169.254.1.1',
-        region: 'us-middle-1a'
+        region: 'us-middle-1a',
+        rootUrl: libUrls.testRootUrl(),
       },
       subject.configure()
     );

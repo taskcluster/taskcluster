@@ -1,5 +1,6 @@
 const Debug = require('debug');
 const get = require('./get');
+const taskcluster = require('taskcluster-client');
 
 let debug = Debug('test:helper:getArtifact');
 
@@ -14,8 +15,9 @@ module.exports = async (result, path) => {
   let taskId = result.taskId;
   let runId = result.runId;
 
-  let url = 'https://queue.taskcluster.net/v1/task/' +
-            taskId + '/runs/' + runId + '/artifacts/' + path;
+  // expects rootUrl and credentials from env vars
+  let queue = new taskcluster.Queue();
+  let url = queue.buildUrl(queue.getArtifact, taskId, runId, path);
   debug('get artifact: '+url);
 
   return await get(url);

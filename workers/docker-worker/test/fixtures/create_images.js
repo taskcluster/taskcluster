@@ -14,12 +14,9 @@ function removeFile(filename) {
 }
 
 function createQueue() {
+  // expects rootUrl and credentials in env vars
   return new taskcluster.Queue({
     timeout: 30 * 1000,
-    credentials: {
-      clientId: process.env.TASKCLUSTER_CLIENT_ID,
-      accessToken: process.env.TASKCLUSTER_ACCESS_TOKEN
-    }
   });
 }
 

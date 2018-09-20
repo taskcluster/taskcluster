@@ -19,12 +19,8 @@ suite('volume cache tests', () => {
   var purgeCache;
 
   setup(() => {
-    purgeCache = new taskcluster.PurgeCache({
-      credentials: {
-        clientId: process.env.TASKCLUSTER_CLIENT_ID,
-        accessToken: process.env.TASKCLUSTER_ACCESS_TOKEN
-      }
-    });
+    // expects rootUrl, credentials in env vars
+    purgeCache = new taskcluster.PurgeCache();
   });
 
   teardown(() => {
@@ -66,13 +62,14 @@ suite('volume cache tests', () => {
     var result = await testworker(task);
 
     // Get task specific results
-    assert.equal(result.run.state, 'completed');
-    assert.equal(result.run.reasonResolved, 'completed');
-    assert.ok(result.log.indexOf(cacheName) !== -1, 'lists cache');
-    assert.ok(result.log.indexOf(cacheName) !== -1, '/tmp-obj-dir');
+    const failureInfo = `log:\n${result.log}`;
+    assert.equal(result.run.state, 'completed', failureInfo);
+    assert.equal(result.run.reasonResolved, 'completed', failureInfo);
+    assert.ok(result.log.indexOf(cacheName) !== -1, 'lists cache', failureInfo);
+    assert.ok(result.log.indexOf(cacheName) !== -1, '/tmp-obj-dir', failureInfo);
 
     var objDir = fs.readdirSync(fullCacheDir);
-    assert.ok(fs.existsSync(path.join(fullCacheDir, objDir[0], 'foo.txt')));
+    assert.ok(fs.existsSync(path.join(fullCacheDir, objDir[0], 'foo.txt')), failureInfo);
   });
 
   test('mount cached volume in docker worker using role', async () => {
@@ -107,13 +104,14 @@ suite('volume cache tests', () => {
     var result = await testworker(task);
 
     // Get task specific results
-    assert.equal(result.run.state, 'completed');
-    assert.equal(result.run.reasonResolved, 'completed');
-    assert.ok(result.log.indexOf(cacheName) !== -1, 'lists cache');
-    assert.ok(result.log.indexOf(cacheName) !== -1, '/tmp-obj-dir');
+    const failureInfo = `log:\n${result.log}`;
+    assert.equal(result.run.state, 'completed', failureInfo);
+    assert.equal(result.run.reasonResolved, 'completed', failureInfo);
+    assert.ok(result.log.indexOf(cacheName) !== -1, 'lists cache', failureInfo);
+    assert.ok(result.log.indexOf(cacheName) !== -1, '/tmp-obj-dir', failureInfo);
 
     var objDir = fs.readdirSync(fullCacheDir);
-    assert.ok(fs.existsSync(path.join(fullCacheDir, objDir[0], 'foo.txt')));
+    assert.ok(fs.existsSync(path.join(fullCacheDir, objDir[0], 'foo.txt')), failureInfo);
   });
 
   test('mounted cached volumes are not reused between tasks', async () => {

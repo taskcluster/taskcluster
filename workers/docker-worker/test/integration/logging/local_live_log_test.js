@@ -63,7 +63,9 @@ suite('live logging', () => {
     worker.postToQueue(task, taskId);
     await waitForEvent(worker, 'task run');
 
-    let artifactUrl = `https://queue.taskcluster.net/v1/task/${taskId}/runs/0/artifacts/public/logs/live.log`;
+    // expects rootUrl, credentials from env vars
+    const queue = new taskcluster.Queue();
+    let artifactUrl = queue.buildUrl(queue.getLatestArtifact, taskId, 'public/logs/live.log');
 
     // Don't follow redirect, we just care about where it's going
     let res = await got(artifactUrl, { followRedirect: false });

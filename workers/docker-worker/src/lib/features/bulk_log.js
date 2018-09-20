@@ -11,7 +11,6 @@ const temporary = require('temporary');
 const uploadToS3 = require('../upload_to_s3');
 const url = require('url');
 const zlib = require('zlib');
-const taskcluster = require('taskcluster-client');
 
 var debug = Debug('taskcluster-docker-worker:features:bulk_log');
 

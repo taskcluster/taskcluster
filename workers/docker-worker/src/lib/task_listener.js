@@ -5,7 +5,6 @@ execution of tasks.
 const TaskQueue = require('./queueservice');
 const DeviceManager = require('./devices/device_manager');
 const Debug = require('debug');
-const taskcluster = require('taskcluster-client');
 const got = require('got');
 const { Task } = require('./task');
 const { EventEmitter } = require('events');

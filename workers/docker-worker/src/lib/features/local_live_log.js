@@ -8,7 +8,6 @@
 const Debug = require('debug');
 const http = require('http');
 const slugid = require('slugid');
-const taskcluster = require('taskcluster-client');
 const URL = require('url');
 
 const BulkLog = require('./bulk_log');

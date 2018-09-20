@@ -16,6 +16,8 @@ const waitForSocket = require('../wait_for_socket');
 const net = require('net');
 const express = require('express');
 const {makeDir, removeDir} = require('../util/fs');
+const libUrls = require('taskcluster-lib-urls');
+const queryString = require('query-string');
 
 let debug = Debug('docker-worker:features:interactive');
 
@@ -336,17 +338,13 @@ class WebsocketServer {
         storageType: 'reference',
         expires: expiration.toJSON(),
         contentType: 'text/html',
-        url: url.format({
-          protocol: 'https',
-          host: 'tools.taskcluster.net',
-          pathname: '/shell/',
-          query: {
+        url: libUrls.ui(task.runtime.rootUrl, '/shell/?' +
+          queryString.stringify({
             v: '1',
             socketUrl: shellSocketUrl,
             taskId: task.status.taskId,
             runId: task.runId,
-          },
-        })
+          })),
       }
     );
     let toolsDisplayArtifact = queue.createArtifact(
@@ -356,18 +354,14 @@ class WebsocketServer {
         storageType: 'reference',
         expires: expiration.toJSON(),
         contentType: 'text/html',
-        url: url.format({
-          protocol: 'https',
-          host: 'tools.taskcluster.net',
-          pathname: '/display/',
-          query: {
+        url: libUrls.ui(task.runtime.rootUrl, '/display/?' +
+          queryString.stringify({
             v: '1',
             socketUrl: displaySocketUrl,
             displaysUrl: listDisplayUrl,
             taskId: task.status.taskId,
             runId: task.runId,
-          },
-        })
+          })),
       }
     );
 

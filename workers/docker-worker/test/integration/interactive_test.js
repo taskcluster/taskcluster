@@ -1,5 +1,4 @@
 const assert = require('assert');
-const base = require('taskcluster-base');
 const cmd = require('./helper/cmd');
 const crypto = require('crypto');
 const Debug = require('debug');
@@ -11,6 +10,7 @@ const Promise = require('promise');
 const settings = require('../settings');
 const slugid = require('slugid');
 const URL = require('url');
+const testing = require('taskcluster-lib-testing');
 
 suite('use docker exec websocket server', () => {
   let debug = Debug('docker-worker:test:interactive');
@@ -58,7 +58,7 @@ suite('use docker exec websocket server', () => {
       'private/docker-worker-tests/shell.html',
       {expiration: 60 * 5});
 
-    return base.testing.poll(() => getWithoutRedirect(signedUrl), 45, 1000);
+    return testing.poll(() => getWithoutRedirect(signedUrl), 45, 1000);
   }
 
   test('cat', async () => {
@@ -147,7 +147,7 @@ suite('use docker exec websocket server', () => {
       client.close();
     });
 
-    await base.testing.sleep(minTime * 1000 + 10000);
+    await testing.sleep(minTime * 1000 + 10000);
     let failClient = new DockerExecClient({
       tty: false,
       command: ['echo'],
@@ -200,7 +200,7 @@ suite('use docker exec websocket server', () => {
       connected = true;
     });
 
-    await base.testing.sleep(minTime * 1000 + 1000);
+    await testing.sleep(minTime * 1000 + 1000);
     //should still be alive here, even though it was dead here last time
     //This is because cat is still alive
     let status = await worker.queue.status(taskId);

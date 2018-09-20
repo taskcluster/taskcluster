@@ -2,6 +2,7 @@ const https = require('https');
 const slugid = require('slugid');
 const url = require('url');
 const assert = require('assert');
+const taskcluster = require('taskcluster-client');
 
 const DockerWorker = require('../../dockerworker');
 const settings = require('../../settings');
@@ -60,7 +61,9 @@ suite('secure local live logging', () => {
     worker.postToQueue(task, taskId);
     await waitForEvent(worker, 'task run');
 
-    let artifactUrl = `https://queue.taskcluster.net/v1/task/${taskId}/runs/0/artifacts/public/logs/live.log`;
+    // expects rootUrl and credentials from env vars
+    let queue = new taskcluster.Queue();
+    let artifactUrl = queue.buildUrl(queue.getArtifact, taskId, '0', 'public/logs/live.log');
 
     // Don't follow redirect, we just care about where it's going
     let res = await getWithoutRedirect(artifactUrl);
@@ -101,7 +104,9 @@ suite('secure local live logging', () => {
     worker.postToQueue(task, taskId);
     await waitForEvent(worker, 'task run');
 
-    let artifactUrl = `https://queue.taskcluster.net/v1/task/${taskId}/runs/0/artifacts/public/logs/live.log`;
+    // expects rootUrl and credentials from env vars
+    let queue = new taskcluster.Queue();
+    let artifactUrl = queue.buildUrl(queue.getArtifact, taskId, '0', 'public/logs/live.log');
 
     // Don't follow redirect, we just care about where it's going
     let res = await getWithoutRedirect(artifactUrl);

@@ -116,6 +116,7 @@ defaults:
   taskcluster:
     clientId:    !env TASKCLUSTER_CLIENT_ID
     accessToken: !env TASKCLUSTER_ACCESS_TOKEN
+  rootUrl:     !env TASKCLUSTER_ROOT_URL
 
   # When true will create durable queue on pulse.
   createQueue: true

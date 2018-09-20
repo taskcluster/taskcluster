@@ -1,5 +1,4 @@
 const assert = require('assert');
-const base = require('taskcluster-base');
 const cmd = require('./helper/cmd');
 const DockerWorker = require('../dockerworker');
 const settings = require('../settings');

@@ -24,11 +24,9 @@ let debug = new Debug('artifactDownload');
  */
 module.exports = async function(queue, stream, taskId, artifactPath, destination, retryConfig=RETRY_CONFIG) {
   let {maxAttempts, delayFactor, randomizationFactor} = retryConfig;
-  let artifactUrl = queue.buildSignedUrl(
-    queue.getLatestArtifact,
-    taskId,
-    artifactPath
-  );
+  let artifactUrl = artifactPath.startsWith('public/') ?
+    queue.buildUrl(queue.getLatestArtifact, taskId, artifactPath) :
+    queue.buildSignedUrl(queue.getLatestArtifact, taskId, artifactPath);
   let attempts = 0;
 
   stream.write(

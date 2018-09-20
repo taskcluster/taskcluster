@@ -17,6 +17,7 @@ suite('Cancel Task', () => {
       }
     });
 
+    // expects rootUrl, credentials in env vars
     let queue = new taskcluster.Queue();
     let task = {
       payload: {

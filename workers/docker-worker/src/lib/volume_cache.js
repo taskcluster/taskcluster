@@ -35,7 +35,9 @@ class VolumeCache {
     this.log = config.log;
     this.cache = {};
     this.monitor = config.monitor;
-    this.purgeClient = new taskcluster.PurgeCache();
+    this.purgeClient = new taskcluster.PurgeCache({
+      rootUrl: config.rootUrl,
+    });
     this.lastPurgeRequest = new Date();
   }
 

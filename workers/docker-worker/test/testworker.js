@@ -13,12 +13,11 @@ const Task = require('taskcluster-task-factory/task');
 const Graph = require('taskcluster-task-factory/graph');
 const LocalWorker = require('./localworker');
 const taskcluster = require('taskcluster-client');
-const base = require('taskcluster-base');
+const typedEnvConfig = require('typed-env-config');
 const Promise = require('promise');
 const {EventEmitter} = require('events');
 const getLogsLocationsFromTask = require('../src/lib/features/logs_location.js');
 
-let queueEvents = new taskcluster.QueueEvents();
 let debug = Debug('docker-worker:test:testworker');
 
 /** Test provisioner id, don't change this... */
@@ -37,7 +36,7 @@ class TestWorker extends EventEmitter {
     // During capacity tests
     this.setMaxListeners(30);
 
-    var config = base.config({
+    var config = typedEnvConfig({
       files: [`${__dirname}/../config.yml`],
       profile: 'test',
       env: process.env
@@ -55,6 +54,7 @@ class TestWorker extends EventEmitter {
     this.pulse = config.pulse;
 
     this.queue = new taskcluster.Queue({
+      rootUrl: config.rootUrl,
       credentials: config.taskcluster
     });
 

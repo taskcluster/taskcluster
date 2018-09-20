@@ -1,5 +1,4 @@
 const assert = require('assert');
-const base  = require('taskcluster-base');
 const Docker = require('dockerode-promise');
 const dockerOpts = require('dockerode-options');
 const DockerWorker = require('../dockerworker');

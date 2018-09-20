@@ -3,7 +3,7 @@
  * All of the interesting action takes place in `lib/task.js`.
  */
 
-const { scopeMatch } = require('taskcluster-base/utils');
+const { scopeMatch } = require('taskcluster-lib-scopes');
 
 // Prefix used in scope matching for docker-worker features
 const FEATURE_SCOPE_PREFIX = 'docker-worker:feature:';

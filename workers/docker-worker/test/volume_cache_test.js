@@ -36,7 +36,7 @@ suite('volume cache test', function () {
   setup(async () => {
     monitor = await monitoring({
       credentials: {},
-      project: 'docker-worker-tests',
+      projectName: 'docker-worker-tests',
       mock: true
     });
   }),

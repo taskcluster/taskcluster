@@ -12,7 +12,6 @@ const fs = require('fs');
 const os = require('os');
 const program = require('commander');
 const taskcluster = require('taskcluster-client');
-const base = require('taskcluster-base');
 const createLogger = require('../lib/log').createLogger;
 const Debug = require('debug');
 const _ = require('lodash');
@@ -24,6 +23,8 @@ const GarbageCollector = require('../lib/gc');
 const VolumeCache = require('../lib/volume_cache');
 const PrivateKey = require('../lib/private_key');
 const ImageManager = require('../lib/docker/image_manager');
+const typedEnvConfig = require('typed-env-config');
+const SchemaSet = require('taskcluster-lib-validate');
 
 // Available target configurations.
 var allowedHosts = ['aws', 'test'];
@@ -111,7 +112,7 @@ program.parse(process.argv);
     return process.exit(1);
   }
 
-  var config = base.config({
+  var config = typedEnvConfig({
     files: [`${__dirname}/../../config.yml`],
     profile: profile,
     env: process.env
@@ -142,7 +143,7 @@ program.parse(process.argv);
     config[field] = program[field];
   });
 
-  // If restrict CPU is set override capacity (as long as capacity is > 0
+  // If restrict CPU is set override capacity (as long as capacity is > 0)
   // Capacity could be set to zero by the host configuration if the credentials and
   // other necessary information could not be retrieved from the meta/user/secret-data
   // endpoints.  We set capacity to zero so no tasks are claimed and wait out the billng
@@ -159,7 +160,8 @@ program.parse(process.argv);
   config.docker = require('../lib/docker')();
 
   let monitor = await monitoring({
-    project: config.monitorProject,
+    rootUrl: config.rootUrl,
+    projectName: config.monitorProject,
     credentials: config.taskcluster,
     mock: profile === 'test',
     reportUsage: false
@@ -176,12 +178,15 @@ program.parse(process.argv);
   config.monitor.count('workerStart');
 
   config.queue = new taskcluster.Queue({
+    rootUrl: config.rootUrl,
     credentials: config.taskcluster
   });
 
-  config.validator = await base.validator({
-    prefix: config.schema.path
+  const schemaset = new SchemaSet({
+    serviceName: 'docker-worker',
+    publish: false,
   });
+  config.validator = await schemaset.validator(config.rootUrl);
 
   setInterval(
     reportHostMetrics.bind(this, {
@@ -285,5 +290,8 @@ program.parse(process.argv);
       taskListener.once('idle', halt);
     });
   }
-})();
+})().catch(err => {
+  console.error(err.stack);
+  process.exit(1);
+});
 

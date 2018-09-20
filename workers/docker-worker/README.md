@@ -51,11 +51,10 @@ node bin/worker.js <config>
 The [defaults](config.yml) contains all configuration options
 for the docker worker in particular these are important:
 
+  - `rootUrl` the rootUrl of the taskcluster instance to run against
+
   - `taskcluster` the credentials needed to authenticate all pull jobs
     from taskcluster.
-
-  - `pulse` the credentials for listening to [pulse](pulse.mozilla.org)
-    exchanges.
 
 ### Directory Structure
 
@@ -130,17 +129,15 @@ what Vagrant would produce.
 
 #### Logging into virtual machine and configuring environment
 
-Many tests require the `TASKCLUSTER_ACCESS_TOKEN`, `TASKCLUSTER_CLIENT_ID`,
-`PULSE_USERNAME`, and `PULSE_PASSWORD` environment variables. These variables
+Many tests require the `TASKCLUSTER_ROOT_URL`, `TASKCLUSTER_ACCESS_TOKEN`, and `TASKCLUSTER_CLIENT_ID`
+environment variables. These variables
 define credentials used to connect to external services.
 
 To obtain Taskcluster client credentials, run
-`eval $(cat scopes.txt | xargs taskcluster-cli signin)`. This will open a web
+`eval $(cat scopes.txt | xargs taskcluster signin)`. This will open a web
 browser and you'll be prompted to log into Taskcluster. This command requires
 the `taskcluster-cli` Go application. Find one at
 https://github.com/taskcluster/taskcluster-cli/releases.
-
-Pulse credentials can be created at https://pulseguardian.mozilla.org/.
 
 If using Vagrant, setting these environment variables in the shell used
 to run `vagrant ssh` will cause the variables to get inherited inside the
