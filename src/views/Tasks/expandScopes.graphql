@@ -1,0 +1,3 @@
+query ExpandScopes($scopes: [String]!) {
+  expandScopes(scopes: $scopes)
+}

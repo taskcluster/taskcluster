@@ -60,6 +60,12 @@
     esutils "^2.0.2"
     js-tokens "^3.0.0"
 
+"@babel/runtime@7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.0.0.tgz#adeb78fedfc855aa05bc041640f3f6f98e85424c"
+  dependencies:
+    regenerator-runtime "^0.12.0"
+
 "@babel/runtime@7.0.0-beta.42":
   version "7.0.0-beta.42"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.0.0-beta.42.tgz#352e40c92e0460d3e82f49bd7e79f6cda76f919f"
@@ -163,13 +169,17 @@
     "@babel/runtime" "7.0.0-beta.42"
     recompose "^0.26.0 || ^0.27.0"
 
-"@material-ui/lab@1.0.0-alpha.5":
-  version "1.0.0-alpha.5"
-  resolved "https://registry.yarnpkg.com/@material-ui/lab/-/lab-1.0.0-alpha.5.tgz#2f53a76c4b53aca044c91392ad5e4b47f9a4b241"
+"@material-ui/lab@3.0.0-alpha.15":
+  version "3.0.0-alpha.15"
+  resolved "https://registry.yarnpkg.com/@material-ui/lab/-/lab-3.0.0-alpha.15.tgz#a7c8526e7d5cf39543d84f04f62f974a12be26b5"
+  dependencies:
+    "@babel/runtime" "7.0.0"
+    classnames "^2.2.5"
+    keycode "^2.1.9"
 
-"@mozilla-frontend-infra/components@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-1.0.1.tgz#1da7400d1cb61bc09a9a4111cbb6a144a45f8722"
+"@mozilla-frontend-infra/components@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-1.1.0.tgz#76b9b70505289f99368067b9e579753f468cb374"
   dependencies:
     classnames "^2.2.6"
     codemirror "^5.39.0"
@@ -853,7 +863,7 @@ are-we-there-yet@~1.1.2:
     delegates "^1.0.0"
     readable-stream "^2.0.6"
 
-argparse@^1.0.7:
+argparse@^1.0.7, argparse@^1.0.9:
   version "1.0.10"
   resolved "https://registry.yarnpkg.com/argparse/-/argparse-1.0.10.tgz#bcd6791ea5ae09725e17e5ad988134cd40b3d911"
   dependencies:
@@ -7119,6 +7129,12 @@ jsesc@~0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-0.5.0.tgz#e7dee66e35d6fc16f710fe91d5cf69f70f08911d"
 
+json-e@^2.7.0:
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/json-e/-/json-e-2.7.0.tgz#2f0fdb6bb7a0d410b045687f379bfae8ddadcfab"
+  dependencies:
+    json-stable-stringify "^1.0.1"
+
 json-loader@^0.5.4:
   version "0.5.7"
   resolved "https://registry.yarnpkg.com/json-loader/-/json-loader-0.5.7.tgz#dca14a70235ff82f0ac9a3abeb60d337a365185d"
@@ -7126,6 +7142,12 @@ json-loader@^0.5.4:
 json-parse-better-errors@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/json-parse-better-errors/-/json-parse-better-errors-1.0.2.tgz#bb867cfb3450e69107c131d1c514bab3dc8bcaa9"
+
+json-schema-defaults@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/json-schema-defaults/-/json-schema-defaults-0.4.0.tgz#b63ee7e7aa83f29b54cb31d31ecddeb056c3306c"
+  dependencies:
+    argparse "^1.0.9"
 
 json-schema-traverse@^0.3.0:
   version "0.3.1"
@@ -7982,11 +8004,7 @@ mdast-util-compact@^1.0.0:
     unist-util-modify-children "^1.0.0"
     unist-util-visit "^1.1.0"
 
-mdi-react@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/mdi-react/-/mdi-react-4.0.0.tgz#dc0f06e6c9ae69c5ce468f8ae51a8bd76e3409db"
-
-mdi-react@^4.3.0:
+mdi-react@^4.0.0, mdi-react@^4.3.0:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/mdi-react/-/mdi-react-4.3.0.tgz#adb66402d847132abca18e021c4fecad3b1f92ab"
 
@@ -11612,6 +11630,10 @@ tar@^4:
     mkdirp "^0.5.0"
     safe-buffer "^5.1.2"
     yallist "^3.0.2"
+
+taskcluster-lib-scopes@^10.0.1:
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-10.0.1.tgz#f3921b2b86e7c09581b045b9b880a4c35fd243e0"
 
 taskcluster-lib-urls@^10.0.0:
   version "10.0.0"

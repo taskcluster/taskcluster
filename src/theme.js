@@ -28,7 +28,9 @@ const error = {
 const createTheme = isDarkTheme => ({
   palette: {
     type: isDarkTheme ? 'dark' : 'light',
-    background: isDarkTheme ? THEME.DARK_THEME_BACKGROUND : 'white',
+    background: {
+      default: isDarkTheme ? THEME.DARK_THEME_BACKGROUND : '#fff',
+    },
     primary: {
       main: isDarkTheme ? THEME.PRIMARY_DARK : THEME.PRIMARY_LIGHT,
     },

@@ -184,6 +184,7 @@ export default class SecretForm extends Component {
           <SpeedDial>
             <SpeedDialAction
               requiresAuth
+              tooltipOpen
               icon={<ContentSaveIcon />}
               onClick={this.handleSaveSecret}
               classes={{ button: classes.saveIcon }}
@@ -194,6 +195,7 @@ export default class SecretForm extends Component {
             />
             <SpeedDialAction
               requiresAuth
+              tooltipOpen
               icon={<DeleteIcon />}
               onClick={this.handleDeleteSecret}
               classes={{ button: classes.deleteIcon }}

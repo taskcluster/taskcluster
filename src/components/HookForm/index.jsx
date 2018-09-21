@@ -477,6 +477,7 @@ export default class HookForm extends Component {
           <SpeedDial>
             <SpeedDialAction
               requiresAuth
+              tooltipOpen
               icon={<ContentSaveIcon className={classes.saveIcon} />}
               onClick={this.handleSaveHook}
               classes={{ button: classes.saveIcon }}
@@ -487,6 +488,7 @@ export default class HookForm extends Component {
             />
             <SpeedDialAction
               requiresAuth
+              tooltipOpen
               icon={<FlashIcon />}
               onClick={this.handleTriggerHook}
               ButtonProps={{ color: 'secondary' }}

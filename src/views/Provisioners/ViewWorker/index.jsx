@@ -115,6 +115,7 @@ export default class ViewWorker extends Component {
               <WorkerTable worker={worker} />
               <SpeedDial>
                 <SpeedDialAction
+                  tooltipOpen
                   requiresAuth
                   icon={
                     isAfter(
@@ -135,6 +136,7 @@ export default class ViewWorker extends Component {
                 {worker.actions.map(action => (
                   <SpeedDialAction
                     requiresAuth
+                    tooltipOpen
                     key={action.title}
                     icon={<HammerIcon />}
                     onClick={() => this.handleDialogOpen(action)}

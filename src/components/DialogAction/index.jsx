@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { node, string, func, bool } from 'prop-types';
+import { oneOfType, object, node, string, func, bool } from 'prop-types';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
@@ -25,7 +25,7 @@ import Button from '../Button';
   },
 })
 /**
- * A button that displays a dialog when clicked.
+ * A Material UI Dialog augmented with application specific props.
  */
 export default class DialogAction extends Component {
   static propTypes = {
@@ -36,42 +36,61 @@ export default class DialogAction extends Component {
     /** The body of the Dialog. */
     body: node,
     /** The text content of the executing action button */
-    confirmText: string,
+    confirmText: string.isRequired,
     /** Callback fired when the executing action button is clicked */
     onSubmit: func.isRequired,
+    /**
+     * Callback fired when the action is complete with
+     * the return value of onSubmit. This function will not
+     * be called if onSubmit throws an error.
+     * */
+    onComplete: func,
+    /** Callback fired when onSubmit throws an error.
+     * The error will be provided in the callback. */
+    onError: func,
     /** Callback fired when the component requests to be closed. */
     onClose: func.isRequired,
+    /** Error to display. */
+    error: oneOfType([string, object]),
   };
 
   static defaultProps = {
     title: '',
     body: '',
     confirmText: '',
+    error: null,
   };
 
   state = {
     executing: false,
-    error: null,
   };
 
   handleSubmit = async () => {
-    this.setState({ executing: true, error: null });
+    const { onSubmit, onComplete, onError } = this.props;
+
+    this.setState({ executing: true });
 
     try {
-      await this.props.onSubmit();
+      const result = await onSubmit();
+
+      if (onComplete) {
+        onComplete(result);
+      }
 
       this.setState({ executing: false });
-      this.props.onClose();
     } catch (error) {
+      if (onError) {
+        onError(error);
+      }
+
       this.setState({
         executing: false,
-        error,
       });
     }
   };
 
   render() {
-    const { executing, error } = this.state;
+    const { executing } = this.state;
     const {
       fullScreen,
       title,
@@ -81,6 +100,7 @@ export default class DialogAction extends Component {
       onSubmit: _,
       onClose,
       open,
+      error,
       ...props
     } = this.props;
 
@@ -93,10 +113,10 @@ export default class DialogAction extends Component {
               <ErrorPanel error={error} />
             </DialogContentText>
           )}
-          <DialogContentText component="div">{body}</DialogContentText>
+          <DialogContentText>{body}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button disabled={executing} onClick={onClose} color="secondary">
+          <Button disabled={executing} onClick={onClose}>
             Cancel
           </Button>
           <div className={classes.executingActionWrapper}>

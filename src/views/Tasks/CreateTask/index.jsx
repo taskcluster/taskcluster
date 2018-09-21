@@ -27,7 +27,7 @@ import {
   TASKS_CREATE_STORAGE_KEY,
   ISO_8601_REGEX,
 } from '../../../utils/constants';
-import createTaskQuery from './createTask.graphql';
+import createTaskQuery from '../createTask.graphql';
 
 const defaultTask = {
   provisionerId: 'aws-provisioner-v1',
@@ -255,6 +255,7 @@ export default class CreateTask extends Component {
               <SpeedDial>
                 <SpeedDialAction
                   requiresAuth
+                  tooltipOpen
                   icon={<PlusIcon />}
                   onClick={this.handleCreateTask}
                   tooltipTitle="Create Task"
@@ -264,6 +265,7 @@ export default class CreateTask extends Component {
                   }}
                 />
                 <SpeedDialAction
+                  tooltipOpen
                   icon={<RotateLeftIcon />}
                   onClick={this.handleResetEditor}
                   tooltipTitle="Reset Editor"
@@ -272,6 +274,7 @@ export default class CreateTask extends Component {
                   }}
                 />
                 <SpeedDialAction
+                  tooltipOpen
                   icon={<ClockOutlineIcon />}
                   onClick={this.handleUpdateTimestamps}
                   tooltipTitle="Update Timestamps"

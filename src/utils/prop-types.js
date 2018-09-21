@@ -96,9 +96,14 @@ export const taskPriority = oneOf([
   'LOWEST',
 ]);
 
+export const taskActions = shape({
+  actions: arrayOf(object),
+  variables: object,
+  version: number,
+});
+
 export const task = shape({
   metadata: taskMetadata,
-  status,
   retries: number,
   created: date,
   deadline: date,
@@ -108,12 +113,17 @@ export const task = shape({
   workerType: string,
   schedulerId: string,
   dependencies: arrayOf(string),
-  tags: object, // eslint-disable-line
+  tags: object,
   scopes: arrayOf(string),
   routes: arrayOf(string),
-  payload: object, // eslint-disable-line
-  extra: object, // eslint-disable-line
+  payload: object,
+  extra: object,
+  status,
+  taskActions,
+  latestArtifacts: artifacts,
 });
+
+Object.assign(task, { taskGroup: task });
 
 export const worker = shape({
   provisionerId: string,

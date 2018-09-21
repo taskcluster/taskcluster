@@ -1,4 +1,4 @@
-query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter: JSON) {
+query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter: JSON, $taskActionsFilter: JSON) {
   taskGroup(taskGroupId: $taskGroupId, connection: $taskGroupConnection, filter: $filter) {
     pageInfo {
       hasNextPage
@@ -19,5 +19,36 @@ query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter
         }
       }
     }
+  }
+
+  task(taskId: $taskGroupId) {
+    provisionerId
+    workerType
+    schedulerId
+    taskId
+    taskGroupId
+    dependencies
+    requires
+    routes
+    priority
+    retries
+    created
+    deadline
+    scopes
+    payload
+    metadata {
+      name
+      description
+      owner
+      source
+    }
+    tags
+    extra
+  }
+
+  taskActions(taskGroupId: $taskGroupId, filter: $taskActionsFilter) {
+    actions
+    variables
+    version
   }
 }

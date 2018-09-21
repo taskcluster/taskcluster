@@ -138,3 +138,13 @@ export const MIMETYPE_ICONS = [
   [FileMusicIcon, [/^audio\//]],
   [FileIcon, [/.*/]],
 ];
+export const ACTIONS_JSON_KNOWN_KINDS = ['task', 'hook'];
+// Before doing a mutation on a task, be sure to
+// remove parent fields added by the GraphQL gateway.
+export const TASK_ADDED_FIELDS = [
+  'taskId',
+  'taskGroup',
+  'status',
+  'latestArtifacts',
+  'taskActions',
+];

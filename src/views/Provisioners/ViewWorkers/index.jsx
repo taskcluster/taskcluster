@@ -147,6 +147,7 @@ export default class ViewWorkers extends Component {
                     {workerType.actions.map(action => (
                       <SpeedDialAction
                         requiresAuth
+                        tooltipOpen
                         key={action.title}
                         ButtonProps={{ color: 'secondary' }}
                         icon={<HammerIcon />}

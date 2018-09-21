@@ -2,12 +2,14 @@ import { omit } from 'ramda';
 import merge from 'deepmerge';
 import cloneDeep from 'lodash.clonedeep';
 import fromNowJSON from './fromNowJSON';
+import { TASK_ADDED_FIELDS } from './constants';
 
 // Transform task to an interactive task
 export default task =>
   merge(
     omit(
       [
+        ...TASK_ADDED_FIELDS,
         'taskGroupId',
         'routes',
         'dependencies',

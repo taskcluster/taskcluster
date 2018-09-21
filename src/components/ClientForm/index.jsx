@@ -332,6 +332,7 @@ export default class ClientForm extends Component {
           <SpeedDial>
             <SpeedDialAction
               requiresAuth
+              tooltipOpen
               icon={<ContentSaveIcon className={classes.saveIcon} />}
               onClick={this.handleSaveClient}
               classes={{ button: classes.saveIcon }}
@@ -340,6 +341,7 @@ export default class ClientForm extends Component {
             />
             <SpeedDialAction
               requiresAuth
+              tooltipOpen
               icon={<DeleteIcon />}
               onClick={this.handleDeleteClient}
               classes={{ button: classes.deleteIcon }}
@@ -347,6 +349,7 @@ export default class ClientForm extends Component {
               ButtonProps={{ disabled: loading }}
             />
             <SpeedDialAction
+              tooltipOpen
               icon={disabled ? <PowerIcon /> : <CancelIcon />}
               onClick={
                 disabled ? this.handleEnableClient : this.handleDisableClient
@@ -361,6 +364,7 @@ export default class ClientForm extends Component {
             />
             <SpeedDialAction
               requiresAuth
+              tooltipOpen
               icon={<LockResetIcon />}
               onClick={this.handleResetAccessToken}
               tooltipTitle="Reset Access Token"

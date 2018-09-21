@@ -18,8 +18,8 @@
   "dependencies": {
     "@material-ui/core": "^1.5.1",
     "@material-ui/icons": "^1.1.1",
-    "@material-ui/lab": "1.0.0-alpha.5",
-    "@mozilla-frontend-infra/components": "^1.0.1",
+    "@material-ui/lab": "3.0.0-alpha.15",
+    "@mozilla-frontend-infra/components": "^1.1.0",
     "apollo-cache-inmemory": "^1.2.9",
     "apollo-cache-persist": "^0.1.1",
     "apollo-client": "^2.4.1",
@@ -40,6 +40,8 @@
     "highlight.js": "^9.12.0",
     "is-absolute-url": "^2.1.0",
     "js-yaml": "^3.12.0",
+    "json-e": "^2.7.0",
+    "json-schema-defaults": "^0.4.0",
     "localforage": "^1.7.2",
     "lodash.clonedeep": "^4.5.0",
     "lodash.debounce": "^4.0.8",
@@ -62,6 +64,7 @@
     "react-loadable": "^5.3.1",
     "react-router-dom": "^4.3.1",
     "redbox-react": "^1.5.0",
+    "taskcluster-lib-scopes": "^10.0.1",
     "taskcluster-lib-urls": "^10.0.0",
     "typeface-roboto": "^0.0.54"
   },

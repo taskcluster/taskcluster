@@ -1,8 +1,9 @@
 #import "../../../fragments/artifacts.graphql"
 
-query Task($taskId: ID!, $artifactsConnection: PageConnection) {
+query Task($taskId: ID!, $artifactsConnection: PageConnection, $taskActionsFilter: JSON) {
   task(taskId: $taskId) {
     taskId
+    taskGroupId
     retries
     created
     deadline
@@ -45,6 +46,16 @@ query Task($taskId: ID!, $artifactsConnection: PageConnection) {
           ...Artifacts
         }
       }
+    }
+
+    taskActions(filter: $taskActionsFilter) {
+      actions
+      variables
+      version
+    }
+
+    taskGroup {
+      scopes
     }
   }
 
