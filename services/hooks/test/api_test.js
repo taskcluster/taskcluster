@@ -7,6 +7,7 @@ const helper = require('./helper');
 helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping) {
   helper.withHook(mock, skipping);
   helper.withTaskCreator(mock, skipping);
+  helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
 
   // Use the same hook definition for everything
@@ -84,12 +85,16 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       const r2 = await helper.hooks.hook('foo', 'bar');
       assume(r1).deep.equals(r2);
+      helper.checkNextMessage('hook-created', ({payload}) =>
+        assume({hookGroupId: 'foo', hookId: 'bar'}).deep.equals(payload));
     });
 
     test('creates a hook with slash in hookId', async () => {
       const r1 = await helper.hooks.createHook('foo', 'bar/slash', hookWithTriggerSchema);
       const r2 = await helper.hooks.hook('foo', 'bar/slash');
       assume(r1).deep.equals(r2);
+      helper.checkNextMessage('hook-created', ({payload}) =>
+        assume({hookGroupId: 'foo', hookId: 'bar/slash'}).deep.equals(payload));
     });
 
     test('with invalid scopes', async () => {
@@ -195,6 +200,8 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       const r2 = await helper.hooks.updateHook('foo', 'bar', inputWithTriggerSchema);
       assume(r2.metadata).deep.not.equals(r1.metadata);
       assume(r2.task).deep.equals(r1.task);
+      helper.checkNextMessage('hook-updated', ({payload}) =>
+        assume({hookId: 'bar', hookGroupId: 'foo'}).deep.equals(payload));
     });
 
     test('fails if resource doesn\'t exist', async () => {
@@ -231,6 +238,8 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       await helper.hooks.hook('foo', 'bar').then(
         () => { throw new Error('The resource should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
+      helper.checkNextMessage('hook-deleted', ({payload}) =>
+        assume({hookGroupId: 'foo', hookId: 'bar'}).deep.equals(payload));
     });
 
     test('removed empty groups', async () => {

@@ -6,6 +6,7 @@ const builder = require('../src/v1');
 const load = require('../src/main');
 const config = require('typed-env-config');
 const _ = require('lodash');
+const libUrls = require('taskcluster-lib-urls');
 
 const helper = module.exports = {};
 
@@ -22,7 +23,7 @@ helper.secrets = new Secrets({
     taskcluster: [
       {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
       {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
-      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl'},
+      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: libUrls.testRootUrl()},
     ],
   },
 });
@@ -80,6 +81,54 @@ helper.withTaskCreator = function(mock, skipping) {
   setup(function() {
     helper.creator.fireCalls = [];
     helper.creator.shouldFail = false;
+  });
+};
+
+/**
+ * Set up PulsePublisher in fake mode, at helper.publisher. Messages are stored
+ * in helper.messages.  The `helper.checkNextMessage` function allows asserting the
+ * content of the next message, and `helper.checkNoNextMessage` is an assertion that
+ * no such message is in the queue.
+ */
+helper.withPulse = (mock, skipping) => {
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+
+    await helper.load('cfg');
+    helper.load.cfg('pulse', {fake: true});
+    helper.publisher = await helper.load('publisher');
+
+    helper.checkNextMessage = (exchange, check) => {
+      for (let i = 0; i < helper.messages.length; i++) {
+        const message = helper.messages[i];
+        // skip messages for other exchanges; this allows us to ignore
+        // ordering of messages that occur in indeterminate order
+        if (!message.exchange.endsWith(exchange)) {
+          continue;
+        }
+        check && check(message);
+        helper.messages.splice(i, 1); // delete message from queue
+        return;
+      }
+      throw new Error(`No messages found on exchange ${exchange}; ` +
+        `message exchanges: ${JSON.stringify(helper.messages.map(m => m.exchange))}`);
+    };
+
+    helper.checkNoNextMessage = exchange => {
+      assert(!helper.messages.some(m => m.exchange.endsWith(exchange)));
+    };
+  });
+
+  const fakePublish = msg => { helper.messages.push(msg); };
+  setup(function() {
+    helper.messages = [];
+    helper.publisher.on('fakePublish', fakePublish);
+  });
+
+  suiteTeardown(async function() {
+    helper.publisher.removeListener('fakePublish', fakePublish);
   });
 };
 
