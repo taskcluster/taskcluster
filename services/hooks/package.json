@@ -25,6 +25,7 @@
     "json-e": "^2.3.5",
     "lodash": "^4.17.4",
     "promise": "^8.0.1",
+    "pulse-publisher": "^10.0.1",
     "taskcluster-client": "^11.0.0",
     "taskcluster-lib-api": "^12.0.2",
     "taskcluster-lib-app": "10.0.0",

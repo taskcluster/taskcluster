@@ -14,7 +14,8 @@ const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
 const monitor = require('taskcluster-lib-monitor');
 const taskcluster = require('taskcluster-client');
-const {sasCredentials} = require('taskcluster-lib-azure'); 
+const {sasCredentials} = require('taskcluster-lib-azure');
+const exchanges = require('./exchanges');
 
 // Create component loader
 const load = loader({
@@ -64,6 +65,18 @@ const load = loader({
     },
   },
 
+  publisher: {
+    requires: ['cfg', 'schemaset', 'monitor'],
+    setup: async ({cfg, schemaset, monitor}) => exchanges.setup({
+      rootUrl:            cfg.taskcluster.rootUrl,
+      credentials:        cfg.pulse,
+      publish:            cfg.app.publishMetaData,
+      validator:          await schemaset.validator(cfg.taskcluster.rootUrl),
+      aws:                cfg.aws.validator,
+      monitor:            monitor.prefix('publisher'),
+    }),
+  },
+
   taskcreator: {
     requires: ['cfg'],
     setup: ({cfg}) => new taskcreator.TaskCreator(cfg.taskcluster),
@@ -79,10 +92,10 @@ const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'schemaset', 'Hook', 'taskcreator', 'monitor'],
-    setup: ({cfg, schemaset, Hook, taskcreator, monitor}) => builder.build({
+    requires: ['cfg', 'schemaset', 'Hook', 'taskcreator', 'monitor', 'publisher'],
+    setup: ({cfg, schemaset, Hook, taskcreator, monitor, publisher}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {Hook, taskcreator},
+      context: {Hook, taskcreator, publisher},
       schemaset,
       publish: cfg.app.publishMetaData,
       aws: cfg.aws.validator,

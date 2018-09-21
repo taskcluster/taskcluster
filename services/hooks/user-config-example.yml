@@ -5,3 +5,8 @@ test:
     credentials:
       clientId:       '...'
       accessToken:    '...'
+  pulse:
+    username:                 '...'
+    password:                 '...'
+    hostname:                 '...'
+    vhost:                    '...'

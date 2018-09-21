@@ -1,0 +1,18 @@
+$schema:  http://json-schema.org/draft-06/schema#
+title:        "Hook Changed Message"
+description: |
+  Message reporting that a hook has changed
+type:         object
+properties:
+  hookGroupId:
+    description: |
+      `hookGroupId` of the hook that was changed
+    type:                 string
+  hookId:
+    description: |
+      `hookId` of the hook that was changed
+    type:                 string
+additionalProperties: true
+required:
+  - hookId
+  - hookGroupId
