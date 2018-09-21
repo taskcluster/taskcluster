@@ -1,10 +1,7 @@
 {
-  "name": "taskcluster-references",
-  "version": "1.0.0",
-  "main": "src/main.js",
-  "bin": {
-    "taskcluster-installer": "./src/main.js"
-  },
+  "name": "taskcluster-lib-references",
+  "version": "0.0.0",
+  "main": "src/index.js",
   "engine-strict": true,
   "engines": {
     "node": "^8.0.0",
@@ -13,10 +10,9 @@
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js",
-    "pretest": "yarn lint",
-    "build": "node src/main.js /app/input /app/built"
+    "pretest": "yarn lint"
   },
-  "repository": "https://github.com/taskcluster/taskcluster-references",
+  "repository": "https://github.com/taskcluster/taskcluster-lib-references",
   "author": "Dustin J. Mitchell <dustin@mozilla.com>",
   "license": "MPL-2.0",
   "dependencies": {
