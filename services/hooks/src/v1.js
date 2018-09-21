@@ -36,7 +36,7 @@ const builder = new APIBuilder({
     hookGroupId: /^[a-zA-Z0-9-_]{1,64}$/,
     hookId: /^[a-zA-Z0-9-_\/]{1,64}$/,
   },
-  context: ['Hook', 'taskcreator'],
+  context: ['Hook', 'taskcreator', 'publisher'],
 });
 
 module.exports = builder;
@@ -233,7 +233,7 @@ builder.declare({
         {});
     }
   }
-
+  this.publisher.hookCreated({hookGroupId, hookId});
   // Reply with the hook definition
   return res.reply(hookDef);
 });
@@ -306,6 +306,8 @@ builder.declare({
   });
 
   let definition = await hook.definition();
+  this.publisher.hookUpdated({hookGroupId, hookId});
+
   return res.reply(definition);
 });
 
@@ -329,6 +331,7 @@ builder.declare({
 
   // Remove the resource if it exists
   await this.Hook.remove({hookGroupId, hookId}, true);
+  this.publisher.hookDeleted({hookGroupId, hookId});
 
   return res.status(200).json({});
 });
