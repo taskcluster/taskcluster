@@ -77,12 +77,22 @@ def createStaticClient(name, api, genAsync=False):
 
     lines.append('    classOptions = {')
 
-    copiedOptions = ('baseUrl', 'exchangePrefix')
+    # apply a default for apiVersion; this can be removed when all services have
+    # been upgraded to provide apiVersion
+    if 'apiVersion' not in api:
+        api['apiVersion'] = 'v1'
+
+    copiedOptions = ('exchangePrefix',)
     for opt in copiedOptions:
         if api.get(opt):
-            lines.append('        "%s": "%s"' % (opt, api[opt]))
+            lines.append('        "%s": "%s",' % (opt, api[opt]))
+    lines.append('    }')
 
-    lines.extend(['    }', ''])
+    copiedProperties = ('serviceName', 'apiVersion')
+    for opt in copiedProperties:
+        if api.get(opt):
+            lines.append('    %s = %s' % (opt, repr(api[opt])))
+    lines.append('')
 
     # We need to build up some information about how the functions work
     functionInfo = {}

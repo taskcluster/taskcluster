@@ -24,8 +24,10 @@ class AuthEvents(BaseClient):
     """
 
     classOptions = {
-        "exchangePrefix": "exchange/taskcluster-auth/v1/"
+        "exchangePrefix": "exchange/taskcluster-auth/v1/",
     }
+    serviceName = 'auth'
+    apiVersion = 'v1'
 
     def clientCreated(self, *args, **kwargs):
         """

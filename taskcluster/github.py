@@ -25,8 +25,9 @@ class Github(BaseClient):
     """
 
     classOptions = {
-        "baseUrl": "https://github.taskcluster.net/v1/"
     }
+    serviceName = 'github'
+    apiVersion = 'v1'
 
     def ping(self, *args, **kwargs):
         """

@@ -21,7 +21,7 @@ import mohawk.bewit
 
 import taskcluster.exceptions as exceptions
 import taskcluster.utils as utils
-import taskcluster_urls as liburl
+import taskcluster_urls as liburls
 
 log = logging.getLogger(__name__)
 
@@ -54,16 +54,14 @@ class BaseClient(object):
     """
 
     def __init__(self, options=None, session=None):
+        if options and options.get('baseUrl'):
+            raise exceptions.TaskclusterFailure('baseUrl option is no longer allowed')
         o = copy.deepcopy(self.classOptions)
         o.update(_defaultConfig)
         if options:
-            # We can only check for mutual exclusivity of baseUrl and rootUrl at
-            # this point because by default the reference will have a baseUrl,
-            # and so if we check if the class or default baseUrl options, it'll
-            # always be set so it'll always fail when using the rootUrl option.
-            if options.get('baseUrl') and o.get('rootUrl'):
-                raise exceptions.TaskclusterFailure('baseUrl and rootUrl are mutually exclusive')
             o.update(options)
+        if not o.get('rootUrl'):
+            raise exceptions.TaskclusterFailure('rootUrl option is required')
 
         credentials = o.get('credentials')
         if credentials:
@@ -75,13 +73,6 @@ class BaseClient(object):
                     except:
                         s = '%s (%s) must be unicode encodable' % (x, credentials[x])
                         raise exceptions.TaskclusterAuthFailure(s)
-
-        baseUrl = o.get('baseUrl')
-        rootUrl = o.get('rootUrl')
-
-        if rootUrl:
-            name = o.get('name', urllib.parse.urlparse(baseUrl).netloc.split('.', 1)[0])
-            o['baseUrl'] = liburl.api(rootUrl, name, 'v%d' % o.get('apiVersion', 1), '')
 
         self.options = o
         if 'credentials' in o:
@@ -184,7 +175,7 @@ class BaseClient(object):
         route = self._subArgsInRoute(entry, routeParams)
         if query:
             route += '?' + urllib.parse.urlencode(query)
-        return self._joinBaseUrlAndRoute(route)
+        return liburls.api(self.options['rootUrl'], self.serviceName, self.apiVersion, route)
 
     def buildSignedUrl(self, methodName, *args, **kwargs):
         """ Build a signed URL.  This URL contains the credentials needed to access
@@ -253,11 +244,14 @@ class BaseClient(object):
             u.fragment,
         ))
 
-    def _joinBaseUrlAndRoute(self, route):
-        return urllib.parse.urljoin(
-            '{}/'.format(self.options['baseUrl'].rstrip('/')),
-            route.lstrip('/')
-        )
+    def _constructUrl(self, route):
+        """Construct a URL for the given route on this service, based on the
+        rootUrl"""
+        return liburls.api(
+            self.options['rootUrl'],
+            self.serviceName,
+            self.apiVersion,
+            route.rstrip('/'))
 
     def _makeApiCall(self, entry, *args, **kwargs):
         """ This function is used to dispatch calls to other functions
@@ -453,7 +447,7 @@ class BaseClient(object):
         the logic about doing failure retry and passes off the actual work
         of doing an HTTP request to another method."""
 
-        url = self._joinBaseUrlAndRoute(route)
+        url = self._constructUrl(route)
         log.debug('Full URL used is: %s', url)
 
         hawkExt = self.makeHawkExt()
@@ -561,6 +555,8 @@ class BaseClient(object):
 
 
 def createApiClient(name, api):
+    api = api['reference']
+
     attributes = dict(
         name=name,
         __doc__=api.get('description'),
@@ -568,12 +564,22 @@ def createApiClient(name, api):
         funcinfo={},
     )
 
-    copiedOptions = ('baseUrl', 'exchangePrefix', 'name', 'version')
-    for opt in copiedOptions:
-        if opt in api['reference']:
-            attributes['classOptions'][opt] = api['reference'][opt]
+    # apply a default for apiVersion; this can be removed when all services
+    # have apiVersion
+    if 'apiVersion' not in api:
+        api['apiVersion'] = 'v1'
 
-    for entry in api['reference']['entries']:
+    copiedOptions = ('exchangePrefix',)
+    for opt in copiedOptions:
+        if opt in api:
+            attributes['classOptions'][opt] = api[opt]
+
+    copiedProperties = ('serviceName', 'apiVersion')
+    for opt in copiedProperties:
+        if opt in api:
+            attributes[opt] = api[opt]
+
+    for entry in api['entries']:
         if entry['type'] == 'function':
             def addApiCall(e):
                 def apiCall(self, *args, **kwargs):

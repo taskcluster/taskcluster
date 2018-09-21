@@ -25,8 +25,9 @@ class Github(AsyncBaseClient):
     """
 
     classOptions = {
-        "baseUrl": "https://github.taskcluster.net/v1/"
     }
+    serviceName = 'github'
+    apiVersion = 'v1'
 
     async def ping(self, *args, **kwargs):
         """

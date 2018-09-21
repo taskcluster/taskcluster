@@ -17,6 +17,7 @@ import base
 import taskcluster.auth as subject
 import taskcluster.exceptions as exc
 import taskcluster.utils as utils
+import taskcluster_urls as liburls
 
 
 class ClientTest(base.TCTest):
@@ -46,7 +47,7 @@ class ClientTest(base.TCTest):
         ]
         self.apiRef = base.createApiRef(entries=entries)
         self.clientClass = subject.createApiClient('testApi', self.apiRef)
-        self.client = self.clientClass()
+        self.client = self.clientClass({'rootUrl': self.test_root_url})
         # Patch time.sleep so that we don't delay tests
         sleepPatcher = mock.patch('time.sleep')
         sleepSleep = sleepPatcher.start()
@@ -59,30 +60,28 @@ class ClientTest(base.TCTest):
 
 class TestConstructorOptions(ClientTest):
 
-    def test_default_set_correct(self):
-        expected = self.apiRef.get('baseUrl')
-        client = self.clientClass({'baseUrl': expected})
-        self.assertEqual(client.options.get('baseUrl'), expected)
+    def test_baseUrl_not_allowed(self):
+        with self.assertRaises(exc.TaskclusterFailure):
+            self.clientClass({'baseUrl': 'https://bogus.net'})
 
-    def test_baseUrl_set_correct(self):
-        expected = 'https://www.taskcluster.net/v1'
-        client = self.clientClass({'baseUrl': expected})
-        self.assertEqual(client.options.get('baseUrl'), expected)
+    def test_rootUrl_set_correctly(self):
+        client = self.clientClass({'rootUrl': self.test_root_url})
+        self.assertEqual(client.options['rootUrl'], self.test_root_url)
 
-    def test_rootUrl_set_correct_without_name_in_ref(self):
-        rootUrl = 'https://bogus.net'
-        expected = '%s/api/%s/v%s/' % (rootUrl, 'fake', self.apiRef['reference']['apiVersion'])
-        client = self.clientClass({'rootUrl': rootUrl})
-        self.assertEqual(client.options.get('baseUrl'), expected)
+    def test_apiVersion_set_correctly(self):
+        client = self.clientClass({'rootUrl': self.test_root_url})
+        self.assertEqual(client.apiVersion, 'v1')
 
-    def test_rootUrl_set_correct_with_name_in_ref(self):
+    def test_apiVersion_set_correctly_default(self):
         apiRef = copy.deepcopy(self.apiRef)
-        apiRef['reference']['name'] = 'fake2'
+        del apiRef['reference']['apiVersion']
         clientClass = subject.createApiClient('testApi', apiRef)
-        rootUrl = 'https://bogus.net'
-        expected = '%s/api/%s/v%s/' % (rootUrl, apiRef['reference']['name'], apiRef['reference']['apiVersion'])
-        client = clientClass({'rootUrl': rootUrl})
-        self.assertEqual(client.options.get('baseUrl'), expected)
+        client = clientClass({'rootUrl': self.test_root_url})
+        self.assertEqual(client.apiVersion, 'v1')
+
+    def test_serviceName_set_correctly(self):
+        client = self.clientClass({'rootUrl': self.test_root_url})
+        self.assertEqual(client.serviceName, 'fake')
 
 
 class TestSubArgsInRoute(ClientTest):
@@ -197,10 +196,10 @@ class TestProcessArgs(ClientTest):
 
     def test_calling_convention_1_with_payload(self):
         params, payload, query, _, _ = self.client._processArgs(
-          {'args': ['k1', 'k2'], 'name': 'test', 'input': True},
-          1,
-          2,
-          {'A': 123}
+            {'args': ['k1', 'k2'], 'name': 'test', 'input': True},
+            1,
+            2,
+            {'A': 123}
         )
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, {'A': 123})
@@ -214,8 +213,8 @@ class TestProcessArgs(ClientTest):
 
     def test_calling_convention_2_with_payload(self):
         params, payload, query, _, _ = self.client._processArgs(
-          {'args': ['k1', 'k2'], 'name': 'test', 'input': True},
-          {'A': 123}, k1=1, k2=2
+            {'args': ['k1', 'k2'], 'name': 'test', 'input': True},
+            {'A': 123}, k1=1, k2=2
         )
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, {'A': 123})
@@ -223,8 +222,8 @@ class TestProcessArgs(ClientTest):
 
     def test_calling_convention_3_without_payload_without_query(self):
         params, payload, query, _, _ = self.client._processArgs(
-          {'args': ['k1', 'k2'], 'name': 'test'},
-          params={'k1': 1, 'k2': 2}
+            {'args': ['k1', 'k2'], 'name': 'test'},
+            params={'k1': 1, 'k2': 2}
         )
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, None)
@@ -232,9 +231,9 @@ class TestProcessArgs(ClientTest):
 
     def test_calling_convention_3_with_payload_without_query(self):
         params, payload, query, _, _ = self.client._processArgs(
-          {'args': ['k1', 'k2'], 'name': 'test'},
-          params={'k1': 1, 'k2': 2},
-          payload={'A': 123}
+            {'args': ['k1', 'k2'], 'name': 'test'},
+            params={'k1': 1, 'k2': 2},
+            payload={'A': 123}
         )
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, {'A': 123})
@@ -242,10 +241,10 @@ class TestProcessArgs(ClientTest):
 
     def test_calling_convention_3_with_payload_with_query(self):
         params, payload, query, _, _ = self.client._processArgs(
-          {'args': ['k1', 'k2'], 'name': 'test'},
-          params={'k1': 1, 'k2': 2},
-          payload={'A': 123},
-          query={'B': 456}
+            {'args': ['k1', 'k2'], 'name': 'test'},
+            params={'k1': 1, 'k2': 2},
+            payload={'A': 123},
+            query={'B': 456}
         )
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, {'A': 123})
@@ -253,9 +252,9 @@ class TestProcessArgs(ClientTest):
 
     def test_calling_convention_3_without_payload_with_query(self):
         params, payload, query, _, _ = self.client._processArgs(
-          {'args': ['k1', 'k2'], 'name': 'test'},
-          params={'k1': 1, 'k2': 2},
-          query={'B': 456}
+            {'args': ['k1', 'k2'], 'name': 'test'},
+            params={'k1': 1, 'k2': 2},
+            query={'B': 456}
         )
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, None)
@@ -263,11 +262,11 @@ class TestProcessArgs(ClientTest):
 
     def test_calling_convention_3_with_positional_arguments_with_payload_with_query(self):
         params, payload, query, _, _ = self.client._processArgs(
-          {'args': ['k1', 'k2'], 'name': 'test'},
-          1,
-          2,
-          query={'B': 456},
-          payload={'A': 123}
+            {'args': ['k1', 'k2'], 'name': 'test'},
+            1,
+            2,
+            query={'B': 456},
+            payload={'A': 123}
         )
         self.assertEqual(params, {'k1': 1, 'k2': 2})
         self.assertEqual(payload, {'A': 123})
@@ -287,12 +286,12 @@ class TestProcessArgs(ClientTest):
     def test_calling_convention_3_with_pos_args_same_as_param_kwarg_dict_vals_with_payload_with_query(self):
         with self.assertRaises(exc.TaskclusterFailure):
             params, payload, query, _, _ = self.client._processArgs(
-              {'args': ['k1', 'k2'], 'name': 'test'},
-              1,
-              2,
-              params={'k1': 1, 'k2': 2},
-              query={'B': 456},
-              payload={'A': 123}
+                {'args': ['k1', 'k2'], 'name': 'test'},
+                1,
+                2,
+                params={'k1': 1, 'k2': 2},
+                query={'B': 456},
+                payload={'A': 123}
             )
 
 
@@ -313,6 +312,8 @@ class ObjWithDotJson(object):
 
 class TestMakeHttpRequest(ClientTest):
 
+    apiPath = liburls.api(ClientTest.test_root_url, 'fake', 'v1', 'test')
+
     def setUp(self):
 
         ClientTest.setUp(self)
@@ -322,8 +323,8 @@ class TestMakeHttpRequest(ClientTest):
             expected = {'test': 'works'}
             p.return_value = ObjWithDotJson(200, expected)
 
-            v = self.client._makeHttpRequest('GET', 'http://www.example.com', None)
-            p.assert_called_once_with('GET', 'http://www.example.com', None, mock.ANY)
+            v = self.client._makeHttpRequest('GET', 'test', None)
+            p.assert_called_once_with('GET', self.apiPath, None, mock.ANY)
             self.assertEqual(expected, v)
 
     def test_success_first_try_payload(self):
@@ -331,8 +332,8 @@ class TestMakeHttpRequest(ClientTest):
             expected = {'test': 'works'}
             p.return_value = ObjWithDotJson(200, expected)
 
-            v = self.client._makeHttpRequest('GET', 'http://www.example.com', {'payload': 2})
-            p.assert_called_once_with('GET', 'http://www.example.com',
+            v = self.client._makeHttpRequest('GET', 'test', {'payload': 2})
+            p.assert_called_once_with('GET', self.apiPath,
                                       utils.dumpJson({'payload': 2}), mock.ANY)
             self.assertEqual(expected, v)
 
@@ -347,10 +348,10 @@ class TestMakeHttpRequest(ClientTest):
                 ObjWithDotJson(200, expected)
             ]
             p.side_effect = sideEffect
-            expectedCalls = [mock.call('GET', 'http://www.example.com', None, mock.ANY)
+            expectedCalls = [mock.call('GET', self.apiPath, None, mock.ANY)
                              for x in range(self.client.options['maxRetries'])]
 
-            v = self.client._makeHttpRequest('GET', 'http://www.example.com', None)
+            v = self.client._makeHttpRequest('GET', 'test', None)
             p.assert_has_calls(expectedCalls)
             self.assertEqual(expected, v)
 
@@ -372,12 +373,12 @@ class TestMakeHttpRequest(ClientTest):
                 ObjWithDotJson(200, {'got this': 'wrong'})
             ]
             p.side_effect = sideEffect
-            expectedCalls = [mock.call('GET', 'http://www.example.com', None, mock.ANY)
+            expectedCalls = [mock.call('GET', self.apiPath, None, mock.ANY)
                              for x in range(self.client.options['maxRetries'] + 1)]
 
             with self.assertRaises(exc.TaskclusterRestFailure):
                 try:
-                    self.client._makeHttpRequest('GET', 'http://www.example.com', None)
+                    self.client._makeHttpRequest('GET', 'test', None)
                 except exc.TaskclusterRestFailure as err:
                     self.assertEqual('msg', str(err))
                     self.assertEqual(500, err.status_code)
@@ -396,42 +397,33 @@ class TestMakeHttpRequest(ClientTest):
                 ObjWithDotJson(200, expected)
             ]
             p.side_effect = sideEffect
-            expectedCalls = [mock.call('GET', 'http://www.example.com', None, mock.ANY)
+            expectedCalls = [mock.call('GET', self.apiPath, None, mock.ANY)
                              for x in range(self.client.options['maxRetries'])]
 
-            v = self.client._makeHttpRequest('GET', 'http://www.example.com', None)
+            v = self.client._makeHttpRequest('GET', 'test', None)
             p.assert_has_calls(expectedCalls)
             self.assertEqual(expected, v)
 
     def test_failure_status_code(self):
         with mock.patch.object(utils, 'makeSingleHttpRequest') as p:
             p.return_value = ObjWithDotJson(500, None)
-            expectedCalls = [mock.call('GET', 'http://www.example.com', None, mock.ANY)
+            expectedCalls = [mock.call('GET', self.apiPath, None, mock.ANY)
                              for x in range(self.client.options['maxRetries'])]
             with self.assertRaises(exc.TaskclusterRestFailure):
-                self.client._makeHttpRequest('GET', 'http://www.example.com', None)
+                self.client._makeHttpRequest('GET', 'test', None)
             p.assert_has_calls(expectedCalls)
 
     def test_failure_connection_errors(self):
         with mock.patch.object(utils, 'makeSingleHttpRequest') as p:
             p.side_effect = requests.exceptions.RequestException
-            expectedCalls = [mock.call('GET', 'http://www.example.com', None, mock.ANY)
+            expectedCalls = [mock.call('GET', self.apiPath, None, mock.ANY)
                              for x in range(self.client.options['maxRetries'])]
             with self.assertRaises(exc.TaskclusterConnectionError):
-                self.client._makeHttpRequest('GET', 'http://www.example.com', None)
+                self.client._makeHttpRequest('GET', 'test', None)
             p.assert_has_calls(expectedCalls)
 
 
 class TestOptions(ClientTest):
-
-    def setUp(self):
-        ClientTest.setUp(self)
-        self.clientClass2 = subject.createApiClient('testApi', base.createApiRef())
-        self.client2 = self.clientClass2({'baseUrl': 'http://notlocalhost:5888/v2'})
-
-    def test_defaults_should_work(self):
-        self.assertEqual(self.client.options['baseUrl'], 'https://fake.taskcluster.net/v1')
-        self.assertEqual(self.client2.options['baseUrl'], 'http://notlocalhost:5888/v2')
 
     def test_change_default_doesnt_change_previous_instances(self):
         prevMaxRetries = subject._defaultConfig['maxRetries']
@@ -444,7 +436,10 @@ class TestOptions(ClientTest):
             'clientId': u"\U0001F4A9",
         }
         with self.assertRaises(exc.TaskclusterAuthFailure):
-            subject.Auth({'credentials': badCredentials})
+            subject.Auth({
+                'rootUrl': self.real_root_url,
+                'credentials': badCredentials,
+            })
 
 
 class TestMakeApiCall(ClientTest):
@@ -547,13 +542,13 @@ class TestTopicExchange(ClientTest):
         self.assertEqual(expected, actual['routingKeyPattern'])
 
     def test_exchange(self):
-        expected = 'test/v1/topicExchange'
+        expected = 'exchange/taskcluster-fake/v1/topicExchange'
         actual = self.client.topicName('')
         self.assertEqual(expected, actual['exchange'])
 
     def test_exchange_trailing_slash(self):
-        self.client.options['exchangePrefix'] = 'test/v1/'
-        expected = 'test/v1/topicExchange'
+        self.client.options['exchangePrefix'] = 'exchange/taskcluster-fake2/v1/'
+        expected = 'exchange/taskcluster-fake2/v1/topicExchange'
         actual = self.client.topicName('')
         self.assertEqual(expected, actual['exchange'])
 
@@ -585,18 +580,17 @@ class TestTopicExchange(ClientTest):
 
 class TestBuildUrl(ClientTest):
 
+    apiPath = liburls.api(ClientTest.test_root_url, 'fake', 'v1', 'two_args_no_input/arg0/arg1')
+
     def test_build_url_positional(self):
-        expected = 'https://fake.taskcluster.net/v1/two_args_no_input/arg0/arg1'
         actual = self.client.buildUrl('two_args_no_input', 'arg0', 'arg1')
-        self.assertEqual(expected, actual)
+        self.assertEqual(self.apiPath, actual)
 
     def test_build_url_keyword(self):
-        expected = 'https://fake.taskcluster.net/v1/two_args_no_input/arg0/arg1'
         actual = self.client.buildUrl('two_args_no_input', arg0='arg0', arg1='arg1')
-        self.assertEqual(expected, actual)
+        self.assertEqual(self.apiPath, actual)
 
     def test_build_url_query_string(self):
-        expected = 'https://fake.taskcluster.net/v1/two_args_no_input/arg0/arg1?qs0=1'
         actual = self.client.buildUrl(
             'two_args_no_input',
             params={
@@ -605,7 +599,7 @@ class TestBuildUrl(ClientTest):
             },
             query={'qs0': 1}
         )
-        self.assertEqual(expected, actual)
+        self.assertEqual(self.apiPath + '?qs0=1', actual)
 
     def test_fails_to_build_url_for_missing_method(self):
         with self.assertRaises(exc.TaskclusterFailure):
@@ -618,17 +612,17 @@ class TestBuildUrl(ClientTest):
 
 class TestBuildSignedUrl(ClientTest):
 
+    apiPath = liburls.api(ClientTest.test_root_url, 'fake', 'v1', 'two_args_no_input/arg0/arg1')
+
     def test_builds_surl_positional(self):
-        expected = 'https://fake.taskcluster.net/v1/two_args_no_input/arg0/arg1?bewit=X'
         actual = self.client.buildSignedUrl('two_args_no_input', 'arg0', 'arg1')
         actual = re.sub('bewit=[^&]*', 'bewit=X', actual)
-        self.assertEqual(expected, actual)
+        self.assertEqual(self.apiPath + '?bewit=X', actual)
 
     def test_builds_surl_keyword(self):
-        expected = 'https://fake.taskcluster.net/v1/two_args_no_input/arg0/arg1?bewit=X'
         actual = self.client.buildSignedUrl('two_args_no_input', arg0='arg0', arg1='arg1')
         actual = re.sub('bewit=[^&]*', 'bewit=X', actual)
-        self.assertEqual(expected, actual)
+        self.assertEqual(self.apiPath + '?bewit=X', actual)
 
 
 class TestMockHttpCalls(ClientTest):
@@ -651,30 +645,30 @@ class TestMockHttpCalls(ClientTest):
     def test_no_args_no_input(self):
         with httmock.HTTMock(self.fakeSite):
             self.client.no_args_no_input()
-        self.assertEqual(self.gotUrl, 'https://fake.taskcluster.net/v1/no_args_no_input')
+        self.assertEqual(self.gotUrl, 'https://tc-tests.example.com/api/fake/v1/no_args_no_input')
 
     def test_two_args_no_input(self):
         with httmock.HTTMock(self.fakeSite):
             self.client.two_args_no_input('1', '2')
-        self.assertEqual(self.gotUrl, 'https://fake.taskcluster.net/v1/two_args_no_input/1/2')
+        self.assertEqual(self.gotUrl, 'https://tc-tests.example.com/api/fake/v1/two_args_no_input/1/2')
 
     def test_no_args_with_input(self):
         with httmock.HTTMock(self.fakeSite):
             self.client.no_args_with_input({'x': 1})
-        self.assertEqual(self.gotUrl, 'https://fake.taskcluster.net/v1/no_args_with_input')
+        self.assertEqual(self.gotUrl, 'https://tc-tests.example.com/api/fake/v1/no_args_with_input')
         self.assertEqual(json.loads(self.gotRequest.body), {"x": 1})
 
     def test_no_args_with_empty_input(self):
         with httmock.HTTMock(self.fakeSite):
             self.client.no_args_with_input({})
-        self.assertEqual(self.gotUrl, 'https://fake.taskcluster.net/v1/no_args_with_input')
+        self.assertEqual(self.gotUrl, 'https://tc-tests.example.com/api/fake/v1/no_args_with_input')
         self.assertEqual(json.loads(self.gotRequest.body), {})
 
     def test_two_args_with_input(self):
         with httmock.HTTMock(self.fakeSite):
             self.client.two_args_with_input('a', 'b', {'x': 1})
         self.assertEqual(self.gotUrl,
-                         'https://fake.taskcluster.net/v1/two_args_with_input/a/b')
+                         'https://tc-tests.example.com/api/fake/v1/two_args_with_input/a/b')
         self.assertEqual(json.loads(self.gotRequest.body), {"x": 1})
 
     def test_kwargs(self):
@@ -682,7 +676,7 @@ class TestMockHttpCalls(ClientTest):
             self.client.two_args_with_input(
                 {'x': 1}, arg0='a', arg1='b')
         self.assertEqual(self.gotUrl,
-                         'https://fake.taskcluster.net/v1/two_args_with_input/a/b')
+                         'https://tc-tests.example.com/api/fake/v1/two_args_with_input/a/b')
         self.assertEqual(json.loads(self.gotRequest.body), {"x": 1})
 
 
@@ -696,14 +690,14 @@ class TestAuthentication(base.TCTest):
         @httmock.all_requests
         def auth_response(url, request):
             self.assertEqual(urllib.parse.urlunsplit(url),
-                             'https://auth.taskcluster.net/v1/clients/abc')
+                             'https://tc-tests.example.com/api/auth/v1/clients/abc')
             self.failIf('Authorization' in request.headers)
             headers = {'content-type': 'application/json'}
             content = {"clientId": "abc"}
             return httmock.response(200, content, headers, None, 5, request)
 
         with httmock.HTTMock(auth_response):
-            client = subject.Auth({"credentials": {}})
+            client = subject.Auth({"rootUrl": "https://tc-tests.example.com", "credentials": {}})
             result = client.client('abc')
             self.assertEqual(result, {"clientId": "abc"})
 
@@ -711,6 +705,7 @@ class TestAuthentication(base.TCTest):
         """we can call methods which require authentication with valid
         permacreds"""
         client = subject.Auth({
+            'rootUrl': self.real_root_url,
             'credentials': {
                 'clientId': 'tester',
                 'accessToken': 'no-secret',
@@ -724,6 +719,7 @@ class TestAuthentication(base.TCTest):
 
     def test_permacred_simple_authorizedScopes(self):
         client = subject.Auth({
+            'rootUrl': self.real_root_url,
             'credentials': {
                 'clientId': 'tester',
                 'accessToken': 'no-secret',
@@ -740,6 +736,7 @@ class TestAuthentication(base.TCTest):
     def test_unicode_permacred_simple(self):
         """Unicode strings that encode to ASCII in credentials do not cause issues"""
         client = subject.Auth({
+            'rootUrl': self.real_root_url,
             'credentials': {
                 'clientId': u'tester',
                 'accessToken': u'no-secret',
@@ -755,6 +752,7 @@ class TestAuthentication(base.TCTest):
         """Unicode strings that do not encode to ASCII in credentials cause issues"""
         with self.assertRaises(exc.TaskclusterAuthFailure):
             subject.Auth({
+                'rootUrl': self.test_root_url,
                 'credentials': {
                     'clientId': u"\U0001F4A9",
                     'accessToken': u"\U0001F4A9",
@@ -764,6 +762,7 @@ class TestAuthentication(base.TCTest):
     def test_permacred_insufficient_scopes(self):
         """A call with insufficient scopes results in an error"""
         client = subject.Auth({
+            'rootUrl': self.real_root_url,
             'credentials': {
                 'clientId': 'tester',
                 'accessToken': 'no-secret',
@@ -788,6 +787,7 @@ class TestAuthentication(base.TCTest):
             ['test:xyz'],
         )
         client = subject.Auth({
+            'rootUrl': self.real_root_url,
             'credentials': tempCred,
         })
 
@@ -807,6 +807,7 @@ class TestAuthentication(base.TCTest):
             name='credName'
         )
         client = subject.Auth({
+            'rootUrl': self.real_root_url,
             'credentials': tempCred,
         })
 
@@ -825,6 +826,7 @@ class TestAuthentication(base.TCTest):
             ['test:xyz:*'],
         )
         client = subject.Auth({
+            'rootUrl': self.real_root_url,
             'credentials': tempCred,
             'authorizedScopes': ['test:xyz:abc'],
         })
@@ -846,6 +848,7 @@ class TestAuthentication(base.TCTest):
             name='credName'
         )
         client = subject.Auth({
+            'rootUrl': self.real_root_url,
             'credentials': tempCred,
             'authorizedScopes': ['test:xyz:abc'],
         })
@@ -860,6 +863,7 @@ class TestAuthentication(base.TCTest):
     def test_signed_url(self):
         """we can use a signed url built with the python client"""
         client = subject.Auth({
+            'rootUrl': self.real_root_url,
             'credentials': {
                 'clientId': 'tester',
                 'accessToken': 'no-secret',
@@ -877,6 +881,7 @@ class TestAuthentication(base.TCTest):
 
     def test_signed_url_bad_credentials(self):
         client = subject.Auth({
+            'rootUrl': self.real_root_url,
             'credentials': {
                 'clientId': 'tester',
                 'accessToken': 'wrong-secret',
@@ -897,6 +902,7 @@ class TestAuthentication(base.TCTest):
             ['test:*'],
         )
         client = subject.Auth({
+            'rootUrl': self.real_root_url,
             'credentials': tempCred,
         })
         signedUrl = client.buildSignedUrl('testAuthenticateGet')
@@ -910,6 +916,7 @@ class TestAuthentication(base.TCTest):
 
     def test_signed_url_authorizedScopes(self):
         client = subject.Auth({
+            'rootUrl': self.real_root_url,
             'credentials': {
                 'clientId': 'tester',
                 'accessToken': 'no-secret',
@@ -934,6 +941,7 @@ class TestAuthentication(base.TCTest):
             ['test:*'],
         )
         client = subject.Auth({
+            'rootUrl': self.real_root_url,
             'credentials': tempCred,
             'authorizedScopes': ['test:authenticate-get'],
         })

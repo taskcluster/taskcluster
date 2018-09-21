@@ -22,8 +22,10 @@ class GithubEvents(AsyncBaseClient):
     """
 
     classOptions = {
-        "exchangePrefix": "exchange/taskcluster-github/v1/"
+        "exchangePrefix": "exchange/taskcluster-github/v1/",
     }
+    serviceName = 'github'
+    apiVersion = 'v1'
 
     def pullRequest(self, *args, **kwargs):
         """

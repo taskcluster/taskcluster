@@ -22,8 +22,9 @@ class PurgeCache(BaseClient):
     """
 
     classOptions = {
-        "baseUrl": "https://purge-cache.taskcluster.net/v1/"
     }
+    serviceName = 'purge-cache'
+    apiVersion = 'v1'
 
     def ping(self, *args, **kwargs):
         """

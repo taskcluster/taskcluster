@@ -831,6 +831,7 @@
         }
       ],
       "name": "aws-provisioner",
+      "serviceName": "aws-provisioner",
       "title": "AWS Provisioner API Documentation",
       "version": 0
     },
@@ -943,10 +944,21 @@
       "entries": [
         {
           "args": [],
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "ping",
+          "query": [],
+          "route": "/ping",
+          "stability": "stable",
+          "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [],
           "description": "This method is only for debugging the ec2-manager",
           "method": "get",
           "name": "listWorkerTypes",
-          "output": "http://schemas.taskcluster.net/ec2-manager/v1/list-worker-types.json#",
+          "output": "v1/list-worker-types.json#",
           "query": [],
           "route": "/worker-types",
           "stability": "experimental",
@@ -958,16 +970,12 @@
             "workerType"
           ],
           "description": "Request an instance of a worker type",
-          "input": "http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#",
+          "input": "v1/run-instance-request.json#",
           "method": "put",
           "name": "runInstance",
           "query": [],
           "route": "/worker-types/<workerType>/instance",
-          "scopes": [
-            [
-              "ec2-manager:manage-resources:<workerType>"
-            ]
-          ],
+          "scopes": "ec2-manager:manage-resources:<workerType>",
           "stability": "experimental",
           "title": "Run an instance",
           "type": "function"
@@ -981,11 +989,7 @@
           "name": "terminateWorkerType",
           "query": [],
           "route": "/worker-types/<workerType>/resources",
-          "scopes": [
-            [
-              "ec2-manager:manage-resources:<workerType>"
-            ]
-          ],
+          "scopes": "ec2-manager:manage-resources:<workerType>",
           "stability": "experimental",
           "title": "Terminate all resources from a worker type",
           "type": "function"
@@ -997,7 +1001,7 @@
           "description": "Return an object which has a generic state description. This only contains counts of instances",
           "method": "get",
           "name": "workerTypeStats",
-          "output": "http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#",
+          "output": "v1/worker-type-resources.json#",
           "query": [],
           "route": "/worker-types/<workerType>/stats",
           "stability": "experimental",
@@ -1011,7 +1015,7 @@
           "description": "Return a view of the health of a given worker type",
           "method": "get",
           "name": "workerTypeHealth",
-          "output": "http://schemas.taskcluster.net/ec2-manager/v1/health.json#",
+          "output": "v1/health.json#",
           "query": [],
           "route": "/worker-types/<workerType>/health",
           "stability": "experimental",
@@ -1025,7 +1029,7 @@
           "description": "Return a list of the most recent errors encountered by a worker type",
           "method": "get",
           "name": "workerTypeErrors",
-          "output": "http://schemas.taskcluster.net/ec2-manager/v1/errors.json#",
+          "output": "v1/errors.json#",
           "query": [],
           "route": "/worker-types/<workerType>/errors",
           "stability": "experimental",
@@ -1039,7 +1043,7 @@
           "description": "Return state information for a given worker type",
           "method": "get",
           "name": "workerTypeState",
-          "output": "http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#",
+          "output": "v1/worker-type-state.json#",
           "query": [],
           "route": "/worker-types/<workerType>/state",
           "stability": "experimental",
@@ -1051,16 +1055,12 @@
             "name"
           ],
           "description": "Idempotently ensure that a keypair of a given name exists",
-          "input": "http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#",
+          "input": "v1/create-key-pair.json#",
           "method": "get",
           "name": "ensureKeyPair",
           "query": [],
           "route": "/key-pairs/<name>",
-          "scopes": [
-            [
-              "ec2-manager:manage-key-pairs:<name>"
-            ]
-          ],
+          "scopes": "ec2-manager:manage-key-pairs:<name>",
           "stability": "experimental",
           "title": "Ensure a KeyPair for a given worker type exists",
           "type": "function"
@@ -1074,11 +1074,7 @@
           "name": "removeKeyPair",
           "query": [],
           "route": "/key-pairs/<name>",
-          "scopes": [
-            [
-              "ec2-manager:manage-key-pairs:<name>"
-            ]
-          ],
+          "scopes": "ec2-manager:manage-key-pairs:<name>",
           "stability": "experimental",
           "title": "Ensure a KeyPair for a given worker type does not exist",
           "type": "function"
@@ -1093,14 +1089,15 @@
           "name": "terminateInstance",
           "query": [],
           "route": "/region/<region>/instance/<instanceId>",
-          "scopes": [
-            [
-              "ec2-manager:manage-instances:<region>:<instanceId>"
-            ],
-            [
-              "ec2-manager:manage-resources:<workerType>"
+          "scopes": {
+            "AnyOf": [
+              "ec2-manager:manage-instances:<region>:<instanceId>",
+              {
+                "if": "hasWorkerType",
+                "then": "ec2-manager:manage-resources:<workerType>"
+              }
             ]
-          ],
+          },
           "stability": "experimental",
           "title": "Terminate an instance",
           "type": "function"
@@ -1110,7 +1107,7 @@
           "description": "Return a list of possible prices for EC2",
           "method": "get",
           "name": "getPrices",
-          "output": "http://schemas.taskcluster.net/ec2-manager/v1/prices.json#",
+          "output": "v1/prices.json#",
           "query": [],
           "route": "/prices",
           "stability": "experimental",
@@ -1120,10 +1117,10 @@
         {
           "args": [],
           "description": "Return a list of possible prices for EC2",
-          "input": "http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#",
+          "input": "v1/prices-request.json#",
           "method": "post",
           "name": "getSpecificPrices",
-          "output": "http://schemas.taskcluster.net/ec2-manager/v1/prices.json#",
+          "output": "v1/prices.json#",
           "query": [],
           "route": "/prices",
           "stability": "experimental",
@@ -1135,7 +1132,7 @@
           "description": "Give some basic stats on the health of our EC2 account",
           "method": "get",
           "name": "getHealth",
-          "output": "http://schemas.taskcluster.net/ec2-manager/v1/health.json#",
+          "output": "v1/health.json#",
           "query": [],
           "route": "/health",
           "stability": "experimental",
@@ -1147,7 +1144,7 @@
           "description": "Return a list of recent errors encountered",
           "method": "get",
           "name": "getRecentErrors",
-          "output": "http://schemas.taskcluster.net/ec2-manager/v1/errors.json#",
+          "output": "v1/errors.json#",
           "query": [],
           "route": "/errors",
           "stability": "experimental",
@@ -1161,11 +1158,7 @@
           "name": "regions",
           "query": [],
           "route": "/internal/regions",
-          "scopes": [
-            [
-              "ec2-manager:internals"
-            ]
-          ],
+          "scopes": "ec2-manager:internals",
           "stability": "experimental",
           "title": "See the list of regions managed by this ec2-manager",
           "type": "function"
@@ -1177,11 +1170,7 @@
           "name": "amiUsage",
           "query": [],
           "route": "/internal/ami-usage",
-          "scopes": [
-            [
-              "ec2-manager:internals"
-            ]
-          ],
+          "scopes": "ec2-manager:internals",
           "stability": "experimental",
           "title": "See the list of AMIs and their usage",
           "type": "function"
@@ -1193,11 +1182,7 @@
           "name": "ebsUsage",
           "query": [],
           "route": "/internal/ebs-usage",
-          "scopes": [
-            [
-              "ec2-manager:internals"
-            ]
-          ],
+          "scopes": "ec2-manager:internals",
           "stability": "experimental",
           "title": "See the current EBS volume usage list",
           "type": "function"
@@ -1209,11 +1194,7 @@
           "name": "dbpoolStats",
           "query": [],
           "route": "/internal/db-pool-stats",
-          "scopes": [
-            [
-              "ec2-manager:internals"
-            ]
-          ],
+          "scopes": "ec2-manager:internals",
           "stability": "experimental",
           "title": "Statistics on the Database client pool",
           "type": "function"
@@ -1225,11 +1206,7 @@
           "name": "allState",
           "query": [],
           "route": "/internal/all-state",
-          "scopes": [
-            [
-              "ec2-manager:internals"
-            ]
-          ],
+          "scopes": "ec2-manager:internals",
           "stability": "experimental",
           "title": "List out the entire internal state",
           "type": "function"
@@ -1241,11 +1218,7 @@
           "name": "sqsStats",
           "query": [],
           "route": "/internal/sqs-stats",
-          "scopes": [
-            [
-              "ec2-manager:internals"
-            ]
-          ],
+          "scopes": "ec2-manager:internals",
           "stability": "experimental",
           "title": "Statistics on the sqs queues",
           "type": "function"
@@ -1257,38 +1230,13 @@
           "name": "purgeQueues",
           "query": [],
           "route": "/internal/purge-queues",
-          "scopes": [
-            [
-              "ec2-manager:internals"
-            ]
-          ],
+          "scopes": "ec2-manager:internals",
           "stability": "experimental",
           "title": "Purge the SQS queues",
           "type": "function"
-        },
-        {
-          "args": [],
-          "description": "Generate an API reference for this service",
-          "method": "get",
-          "name": "apiReference",
-          "query": [],
-          "route": "/internal/api-reference",
-          "stability": "experimental",
-          "title": "API Reference",
-          "type": "function"
-        },
-        {
-          "args": [],
-          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
-          "method": "get",
-          "name": "ping",
-          "query": [],
-          "route": "/ping",
-          "stability": "stable",
-          "title": "Ping Server",
-          "type": "function"
         }
       ],
+      "serviceName": "ec2-manager",
       "title": "EC2 Instance Manager",
       "version": 0
     },
@@ -1536,7 +1484,7 @@
     "reference": {
       "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
       "baseUrl": "https://hooks.taskcluster.net/v1/",
-      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a \"schedule\" indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `['0 0 1 * * *']` -- daily at 1:00 UTC\n * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon\n\nThe task definition is used as a JSON-e template, with a context depending on how it is fired.  See\nhttps://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks\nfor more information.",
+      "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a \"schedule\" indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `['0 0 1 * * *']` -- daily at 1:00 UTC\n * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon\n\nThe task definition is used as a JSON-e template, with a context depending on how it is fired.  See\n[/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)\nfor more information.",
       "entries": [
         {
           "args": [],
@@ -1850,20 +1798,6 @@
       "description": "The Login service serves as the interface between external authentication\nsystems and Taskcluster credentials.",
       "entries": [
         {
-          "args": [
-            "provider"
-          ],
-          "description": "Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider's API to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.\n\nThe given credentials will expire in a relatively short time. Callers should\nmonitor this expiration and refresh the credentials if necessary, by calling\nthis endpoint again, if they have expired.",
-          "method": "get",
-          "name": "oidcCredentials",
-          "output": "http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json",
-          "query": [],
-          "route": "/oidc-credentials/<provider>",
-          "stability": "experimental",
-          "title": "Get Taskcluster credentials given a suitable `access_token`",
-          "type": "function"
-        },
-        {
           "args": [],
           "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
           "method": "get",
@@ -1873,9 +1807,23 @@
           "stability": "stable",
           "title": "Ping Server",
           "type": "function"
+        },
+        {
+          "args": [
+            "provider"
+          ],
+          "description": "Given an OIDC `access_token` from a trusted OpenID provider, return a\nset of Taskcluster credentials for use on behalf of the identified\nuser.\n\nThis method is typically not called with a Taskcluster client library\nand does not accept Hawk credentials. The `access_token` should be\ngiven in an `Authorization` header:\n```\nAuthorization: Bearer abc.xyz\n```\n\nThe `access_token` is first verified against the named\n:provider, then passed to the provider's APIBuilder to retrieve a user\nprofile. That profile is then used to generate Taskcluster credentials\nappropriate to the user. Note that the resulting credentials may or may\nnot include a `certificate` property. Callers should be prepared for either\nalternative.\n\nThe given credentials will expire in a relatively short time. Callers should\nmonitor this expiration and refresh the credentials if necessary, by calling\nthis endpoint again, if they have expired.",
+          "method": "get",
+          "name": "oidcCredentials",
+          "output": "v1/oidc-credentials-response.json#",
+          "query": [],
+          "route": "/oidc-credentials/<provider>",
+          "stability": "experimental",
+          "title": "Get Taskcluster credentials given a suitable `access_token`",
+          "type": "function"
         }
       ],
-      "name": "login",
+      "serviceName": "login",
       "title": "Login API",
       "version": 0
     },
@@ -1947,6 +1895,79 @@
       "version": 0
     },
     "referenceUrl": "https://references.taskcluster.net/notify/v1/api.json"
+  },
+  "Pulse": {
+    "reference": {
+      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
+      "baseUrl": "https://pulse.taskcluster.net/v1/",
+      "description": "The taskcluster-pulse service, typically available at `pulse.taskcluster.net`\nmanages pulse credentials for taskcluster users.\n\nA service to manage Pulse credentials for anything using\nTaskcluster credentials. This allows for self-service pulse\naccess and greater control within the Taskcluster project.",
+      "entries": [
+        {
+          "args": [],
+          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
+          "method": "get",
+          "name": "ping",
+          "query": [],
+          "route": "/ping",
+          "stability": "stable",
+          "title": "Ping Server",
+          "type": "function"
+        },
+        {
+          "args": [],
+          "description": "List the namespaces managed by this service.\n\nThis will list up to 1000 namespaces. If more namespaces are present a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, do not provide continuation token.",
+          "method": "get",
+          "name": "listNamespaces",
+          "output": "v1/list-namespaces-response.json#",
+          "query": [
+            "limit",
+            "continuationToken"
+          ],
+          "route": "/namespaces",
+          "stability": "experimental",
+          "title": "List Namespaces",
+          "type": "function"
+        },
+        {
+          "args": [
+            "namespace"
+          ],
+          "description": "Get public information about a single namespace. This is the same information\nas returned by `listNamespaces`.",
+          "method": "get",
+          "name": "namespace",
+          "output": "v1/namespace.json#",
+          "query": [],
+          "route": "/namespace/<namespace>",
+          "stability": "experimental",
+          "title": "Get a namespace",
+          "type": "function"
+        },
+        {
+          "args": [
+            "namespace"
+          ],
+          "description": "Claim a namespace, returning a connection string with access to that namespace\ngood for use until the `reclaimAt` time in the response body. The connection\nstring can be used as many times as desired during this period, but must not\nbe used after `reclaimAt`.\n\nConnections made with this connection string may persist beyond `reclaimAt`,\nalthough it should not persist forever.  24 hours is a good maximum, and this\nservice will terminate connections after 72 hours (although this value is\nconfigurable).\n\nThe specified `expires` time updates any existing expiration times.  Connections\nfor expired namespaces will be terminated.",
+          "input": "v1/namespace-request.json#",
+          "method": "post",
+          "name": "claimNamespace",
+          "output": "v1/namespace-response.json#",
+          "query": [],
+          "route": "/namespace/<namespace>",
+          "scopes": {
+            "AllOf": [
+              "pulse:namespace:<namespace>"
+            ]
+          },
+          "stability": "experimental",
+          "title": "Claim a namespace",
+          "type": "function"
+        }
+      ],
+      "serviceName": "pulse",
+      "title": "Pulse Management Service",
+      "version": 0
+    },
+    "referenceUrl": "https://references.taskcluster.net/pulse/v1/api.json"
   },
   "PurgeCache": {
     "reference": {
@@ -3510,15 +3531,16 @@
               "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified."
             }
           ],
-          "schema": "http://schemas.taskcluster.net/taskcluster-treeherder/v1/pulse-job.json#",
+          "schema": "v1/pulse-job.json#",
           "title": "Job Messages",
           "type": "topic-exchange"
         }
       ],
       "exchangePrefix": "exchange/taskcluster-treeherder/v1/",
+      "serviceName": "treeherder",
       "title": "Taskcluster-treeherder Pulse Exchange",
       "version": 0
     },
-    "referenceUrl": "https://references.taskcluster.net/taskcluster-treeherder/v1/exchanges.json"
+    "referenceUrl": "https://references.taskcluster.net/treeherder/v1/exchanges.json"
   }
 }

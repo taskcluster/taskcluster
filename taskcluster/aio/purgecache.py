@@ -22,8 +22,9 @@ class PurgeCache(AsyncBaseClient):
     """
 
     classOptions = {
-        "baseUrl": "https://purge-cache.taskcluster.net/v1/"
     }
+    serviceName = 'purge-cache'
+    apiVersion = 'v1'
 
     async def ping(self, *args, **kwargs):
         """

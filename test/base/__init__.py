@@ -17,17 +17,19 @@ if os.environ.get('DEBUG_TASKCLUSTER_CLIENT'):
 
 class TCTest(unittest.TestCase):
     """ Let's have a common base class for all Taskcluster-client tests."""
-    pass
+    test_root_url = 'https://tc-tests.example.com'
+    # rootUrl of a real deployment (that needs no pre-configuration)
+    real_root_url = 'https://taskcluster.net'
 
 
 def createApiRef(**kwargs):
     default = {
         'version': 0,
-        'apiVersion': 1,
+        'apiVersion': 'v1',
         'title': 'API Title',
         'description': 'API Description',
-        'baseUrl': 'https://fake.taskcluster.net/v1',
-        'exchangePrefix': 'test/v1',
+        'serviceName': 'fake',
+        'exchangePrefix': 'exchange/taskcluster-fake/v1',
         'entries': []
     }
     default.update(kwargs)
