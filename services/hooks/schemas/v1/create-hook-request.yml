@@ -4,25 +4,6 @@ description: |
   Definition of a hook that can create tasks at defined times.
 type:                       object
 properties:
-  bindings:
-    title:                'Bindings List'
-    description: |
-      List of bindings for the hook with given `hookGroupId` and `hookId`.
-    type:                 array
-    items:
-      title:              "Binding"
-      description: |
-        Exchange and RoutingKeyPattern for each binding
-      type:               object
-      properties:
-        exchange:
-          type:           string
-        routingKeyPattern:
-          type:           string
-      additionalProperties:     false
-      required:
-        - exchange
-        - routingKeyPattern
   hookGroupId:            {$const: hookGroupId}
   hookId:                 {$const: hookId}
   metadata:               {$ref: "hook-metadata.json#"}
