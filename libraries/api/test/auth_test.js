@@ -311,6 +311,58 @@ suite('api/auth', function() {
 
   testEndpoint({
     method: 'get',
+    route: '/test-id-scope',
+    name: 'test-id-scope',
+    scopes: {AllOf: [{for: 'scope', in: 'scopes', each: '<scope>'}]},
+    handler: async (req, res) => {
+      res.status(200).json({
+        clientId: await req.clientId(),
+      });
+    },
+    tests : [
+      {
+        label: 'client has sufficient scopes',
+        id: 'admin',
+        tester: (auth, url) => request.get(url).hawk(auth)
+          .then(function(res) {
+            assert(res.body.clientId == 'admin');
+            return res;
+          }),
+      },
+    ],
+  });
+
+  testEndpoint({
+    method: 'get',
+    route: '/test-scope',
+    name: 'test-scope',
+    scopes: {AllOf: ['service:<param>']},
+    handler: async (req, res) => {
+      try {
+        await req.authorize({param: 'myfolder/other-resource'});
+        res.reply({});
+      } catch (err) {
+        if (err.code === 'AuthorizationError') {
+          assert(err.messageTemplate.indexOf('Client ID nobody does not have sufficient scopes')!==-1);
+          return res.reportError('InsufficientScopes', err.messageTemplate, err.details);
+        }
+        throw err;
+      }
+    },
+    tests: [
+      {
+        label: 'client lacks scopes',
+        desiredStatus: 403,
+        id: 'nobody',
+        tester: (auth, url) => request
+          .get(url)
+          .hawk(auth),
+      },
+    ],
+  });
+
+  testEndpoint({
+    method: 'get',
     route: '/test-dyn-auth',
     name: 'testDynAuth',
     scopes: {AllOf: [{for: 'scope', in: 'scopes', each: '<scope>'}]},
