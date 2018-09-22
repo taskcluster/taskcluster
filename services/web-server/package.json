@@ -9,9 +9,11 @@
     "build": "neutrino build",
     "start": "neutrino start",
     "lint": "neutrino lint",
-    "precommit": "neutrino stage"
+    "precommit": "neutrino stage",
+    "test": "neutrino test"
   },
   "devDependencies": {
+    "@neutrinojs/mocha": "^8.3.0",
     "neutrino": "^8.2.1",
     "neutrino-preset-mozilla-frontend-infra": "^4.1.0",
     "raw-loader": "^0.5.1"
