@@ -67,6 +67,13 @@ export default {
 
       return loaders.task.load(parent.taskGroupId);
     },
+    latestArtifacts(parent, { taskId, connection, filter }, { loaders }) {
+      if (parent.latestArtifacts) {
+        return parent.latestArtifacts;
+      }
+
+      return loaders.latestArtifacts.load({ taskId, connection, filter });
+    },
   },
   Query: {
     task(parent, { taskId }, { loaders }) {
