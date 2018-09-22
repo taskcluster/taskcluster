@@ -268,7 +268,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
           err.name = 'AuthorizationError';
           err.code = 'AuthorizationError';
           err.messageTemplate = [
-            'You do not have sufficient scopes. You are missing the following scopes:',
+            'Client ID ' + result.clientId + ' does not have sufficient scopes and are missing the following scopes:',
             '',
             '```',
             '{{unsatisfied}}',
