@@ -73,9 +73,8 @@ export default class Label extends Component {
       <Button
         size="small"
         disabled
-        className={classNames({
+        className={classNames(className, {
           [classes.mini]: mini,
-          className,
         })}
         classes={{
           sizeSmall: classes.dense,
