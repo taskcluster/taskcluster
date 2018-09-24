@@ -287,13 +287,6 @@ New-NetFirewallRule -DisplayName "KmsOut (TCP 1688 Outbound): Allow" -Direction 
 # DisableFirewall: Bug 1358301 - Disable Windows Firewall
 Start-Process "netsh" -ArgumentList "advfirewall set allprofiles state off" -Wait -NoNewWindow
 
-# NvidiaK520DriverPackage: Required for hardware acceleration on EC2 g2 (GPU) instances. http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/accelerated-computing-instances.html#install-nvidia-driver-windows
-$client.DownloadFile("http://uk.download.nvidia.com/Windows/Quadro_Certified/GRID/369.95/369.95-quadro-grid-desktop-notebook-win10-64bit-international-whql.exe", "C:\binaries\369.95-quadro-grid-desktop-notebook-win10-64bit-international-whql.exe")
-Start-Process "C:\binaries\369.95-quadro-grid-desktop-notebook-win10-64bit-international-whql.exe" -ArgumentList "/s" -Wait -NoNewWindow
-
-# NvidiaK520DriverInstall: Required for hardware acceleration on EC2 g2 (GPU) instances. http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/accelerated-computing-instances.html#install-nvidia-driver-windows
-Start-Process "C:\NVIDIA\369.95\setup.exe" -ArgumentList "/s" -Wait -NoNewWindow
-
 # nircmd
 $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/nircmd/nircmd.exe", "C:\Windows\System32\nircmd.exe")
 
@@ -321,9 +314,6 @@ New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows Defender" -Name
 
 # Reg_WinDefend_DisableAntiSpyware: https://bugzilla.mozilla.org/show_bug.cgi?id=1365909
 New-ItemProperty -Path "HKLM:SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Value "0x00000001" -PropertyType Dword -Force
-
-# DisableWinDefend: https://bugzilla.mozilla.org/show_bug.cgi?id=1365909
-Set-Service "WinDefend" -StartupType Manual -Status Stopped
 
 # OpenSshDownload: https://bugzilla.mozilla.org/show_bug.cgi?id=1454578
 $client.DownloadFile("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.1.0p1-Beta/OpenSSH-Win64.zip", "C:\Windows\Temp\OpenSSH-Win64.zip")
