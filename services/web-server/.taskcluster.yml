@@ -1,0 +1,40 @@
+version: 0
+allowPullRequests: public
+tasks:
+  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    workerType: '{{ taskcluster.docker.workerType }}'
+    extra:
+      github:
+        events:
+          - pull_request.opened
+          - pull_request.reopened
+          - pull_request.synchronize
+          - push
+          - release
+    scopes:
+        - secrets:get:project/taskcluster/testing/taskcluster-web-server
+    payload:
+      env:
+        NO_TEST_SKIP: true
+      features:
+        taskclusterProxy: true
+      maxRunTime: 3600
+      image: node:10
+      command:
+        - /bin/bash
+        - '--login'
+        - '-c'
+        - >-
+          git clone {{event.head.repo.url}} repo &&
+          cd repo &&
+          git config advice.detachedHead false &&
+          git checkout {{event.head.sha}} &&
+          yarn install --frozen-lockfile &&
+          yarn lint &&
+          yarn build &&
+          yarn test
+    metadata:
+      name: taskcluster-web-server tests
+      description: Run tests and lint for taskcluster-web-server
+      owner: '{{ event.head.user.email }}'
+      source: '{{ event.head.repo.url }}'
