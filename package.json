@@ -9,10 +9,11 @@
     "changelog": "auto-changelog",
     "start": "neutrino styleguide:start",
     "build": "neutrino build",
-    "deploy": "neutrino styleguide:build && gh-pages --remote upstream -d styleguide",
+    "deploy": "yarn styleguide:build && gh-pages --remote upstream -d styleguide",
     "lint": "neutrino lint",
     "publish": "yarn build && npm publish build",
-    "update:authors": "scripts/authors"
+    "update:authors": "scripts/authors",
+    "styleguide:build": "neutrino styleguide:build"
   },
   "devDependencies": {
     "@material-ui/core": "^1.3.1",
