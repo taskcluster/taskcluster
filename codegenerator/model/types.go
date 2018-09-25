@@ -63,7 +63,7 @@ type (
 		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/name
 		Name string `json:"name"`
 
-		// One of:
+		// Any of:
 		//   * OutputSchema
 		//   * Blob
 		//
@@ -130,6 +130,13 @@ type (
 		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/$schema
 		Schema string `json:"$schema"`
 
+		// Version of the API
+		//
+		// Syntax:     ^v[0-9]+$
+		//
+		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/apiVersion
+		APIVersion string `json:"apiVersion,omitempty"`
+
 		// BaseUrl for all _routes_ described in this document
 		//
 		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/baseUrl
@@ -173,7 +180,7 @@ type (
 	// Possible values:
 	//   * "blob"
 	//
-	// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/output/oneOf[1]
+	// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/output/anyOf[1]
 	Blob string
 
 	// if/then objects will replace themselves with the contents of then if the `if` is true
@@ -268,7 +275,7 @@ type (
 
 	// JSON schema for output, if output is validated, otherwise not present. The value must be a relative URI, based on the service's schema location; that is, based at `<rootUrl>/schemas/<serviceName`.
 	//
-	// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/output/oneOf[0]
+	// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/entries/items/properties/output/anyOf[0]
 	OutputSchema string
 
 	// The most basic element of a scope expression
