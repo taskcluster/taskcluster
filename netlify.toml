@@ -1,0 +1,6 @@
+[build]
+  command = "yarn styleguide:build"
+  publish = "styleguide"
+
+[build.environment]
+  YARN_FLAGS = "--frozen-lockfile"
