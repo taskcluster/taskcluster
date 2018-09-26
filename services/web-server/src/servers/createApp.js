@@ -18,7 +18,9 @@ export default async ({ cfg, schema, context }) => {
   app.use(compression());
   app.post(
     '/graphql',
-    bodyParser.graphql(),
+    bodyParser.graphql({
+      limit: '1mb',
+    }),
     graphql({
       schema,
       context,
