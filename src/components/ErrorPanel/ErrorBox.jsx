@@ -2,6 +2,7 @@ import { instanceOf } from 'prop-types';
 import { RedBoxError } from 'redbox-react';
 import ErrorStackParser from 'error-stack-parser';
 import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
 
 @withStyles({
@@ -9,15 +10,8 @@ import CardContent from '@material-ui/core/CardContent';
     width: '100%',
     color: 'white',
     textAlign: 'left',
-    fontSize: 16,
     lineHeight: 1.2,
     overflow: 'auto',
-  },
-  stack: {
-    fontFamily: 'monospace',
-  },
-  frame: {
-    marginTop: '1em',
   },
 })
 export default class ErrorBox extends RedBoxError {
@@ -35,21 +29,18 @@ export default class ErrorBox extends RedBoxError {
       const frames = ErrorStackParser.parse(error);
 
       return (
-        <CardContent className={classes.redbox}>
-          <div className={classes.stack}>{this.renderFrames(frames)}</div>
+        <CardContent>
+          <Typography className={classes.redbox}>
+            {this.renderFrames(frames)}
+          </Typography>
         </CardContent>
       );
     } catch (err) {
       return (
-        <CardContent className={classes.redbox}>
-          <div className={classes.stack}>
-            <div className={classes.frame}>
-              <div>
-                Failed to parse stack trace. Stack trace information
-                unavailable.
-              </div>
-            </div>
-          </div>
+        <CardContent>
+          <Typography className={classes.redbox}>
+            Failed to parse stack trace. Stack trace information unavailable.
+          </Typography>
         </CardContent>
       );
     }
