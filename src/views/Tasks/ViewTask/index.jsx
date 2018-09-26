@@ -579,6 +579,10 @@ export default class ViewTask extends Component {
         return <RestartIcon />;
       }
 
+      case 'create-interactive': {
+        return <ConsoleLineIcon />;
+      }
+
       case 'cancel': {
         return <CloseIcon />;
       }

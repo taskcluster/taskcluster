@@ -21,4 +21,7 @@ export default {
   EXPERIMENTAL: 'info',
   STABLE: 'success',
   DEPRECATED: 'warning',
+  WAITING: 'default',
+  RESOLVED: 'success',
+  READY: 'info',
 };

@@ -1,4 +1,5 @@
 const { join } = require('path');
+const merge = require('deepmerge');
 
 require('babel-register')({
   plugins: [
@@ -70,6 +71,14 @@ module.exports = {
         neutrino.config.devtool('cheap-module-source-map');
       }
 
+      neutrino.config.node.set('Buffer', true);
+
+      // The shell view requires this
+      neutrino.config
+        .externals(merge(neutrino.config.get('externals'), {
+          bindings: 'bindings'
+        }));
+
       neutrino.config.output.publicPath('/');
       neutrino.config.module
         .rule('graphql')
@@ -79,6 +88,14 @@ module.exports = {
             .end()
           .use('gql-loader')
             .loader(require.resolve('graphql-tag/loader'));
+
+      // The JSONStream module's main file has a Node.js shebang
+      // which Webpack doesn't like loading as JS
+      neutrino.config.module
+        .rule('shebang')
+          .test(/JSONStream/)
+          .use('shebang')
+            .loader('shebang-loader');
     },
     '@neutrinojs/karma',
   ],

@@ -250,6 +250,7 @@ export default class TaskGroupProgress extends Component {
       !equals(statusCount, newStatusCount)
     ) {
       this.setState({ statusCount: newStatusCount });
+      previousCursor = INITIAL_CURSOR;
 
       return onCountUpdate();
     }

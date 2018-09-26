@@ -16,17 +16,23 @@ export default class StatusLabel extends Component {
      * Render the label using dense styling.
      */
     mini: bool,
+    /** The CSS class name of the wrapper element */
+    className: string,
   };
 
   static defaultProps = {
     mini: true,
+    className: null,
   };
 
   render() {
-    const { state, mini } = this.props;
+    const { state, mini, className } = this.props;
 
     return (
-      <Label mini={mini} status={labels[state] || 'default'}>
+      <Label
+        mini={mini}
+        status={labels[state] || 'default'}
+        className={className}>
         {state || 'UNKNOWN'}
       </Label>
     );
