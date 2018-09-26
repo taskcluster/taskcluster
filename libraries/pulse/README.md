@@ -16,8 +16,8 @@ with a Pulse service, automatically reconnecting as necessary.
 It also provides higher-level components with simplified APIs for common
 applications. The higher-level components are:
 
-* [PulseConsumer](#PulseConsumer)
-* [PulsePublisher](#PulsePublisher)
+* [PulseConsumer](#pulseconsumer)
+* [PulsePublisher](#pulsepublisher)
 
 If you are using one of the higher-level components, then the details of
 interacting with a Client are not important -- just construct one and move on.
@@ -477,7 +477,7 @@ const publisher = await exchanges.publisher({
 });
 ```
 
-Call the methods declared on the exchagnes instance; for example `await
+Call the methods declared on the Exchanges instance; for example `await
 publisher.eggHatched({eggId, nestId, datehatched})`. The function's promise
 will resolve when the AMQP server has confirmed receipt of the message.
 
