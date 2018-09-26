@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://mozilla-frontend-infra.github.io/components">
+  <a href="https://mozilla-frontend-infra-components.netlify.com">
     <img src="https://raw.githubusercontent.com/mozilla-frontend-infra/components/master/logo.png" alt="Logo" width=72 height=72>
   </a>
 
@@ -8,7 +8,7 @@
   <p align="center">
     Shareable React Components
     <br>
-    <a href="https://mozilla-frontend-infra.github.io/components"><strong>Explore Components styleguide</strong></a>
+    <a href="https://mozilla-frontend-infra-components.netlify.com"><strong>Explore Components styleguide</strong></a>
   </p>
 </p>
 
