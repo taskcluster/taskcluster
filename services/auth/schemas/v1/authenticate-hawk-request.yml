@@ -65,7 +65,9 @@ properties:
       authenticated has a `Authorization` header.
   sourceIp:
     type:                 string
-    format:               ipv4
+    oneOf:
+      - format: ipv6
+      - format: ipv4
     title:                Source IP
     description: |
       Source IP of the authentication request or request that requires
