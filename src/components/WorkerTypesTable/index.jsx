@@ -12,7 +12,8 @@ import Drawer from '@material-ui/core/Drawer';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import { string, func, array, shape, arrayOf } from 'prop-types';
-import { memoizeWith, pipe, map, sort as rSort } from 'ramda';
+import { pipe, map, sort as rSort } from 'ramda';
+import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Button from '../Button';
@@ -93,15 +94,17 @@ export default class WorkerTypesTable extends Component {
   };
 
   handleDrawerOpen = ({ target: { name } }) =>
-    memoizeWith(
-      name => name,
+    memoize(
       name =>
         this.setState({
           drawerOpen: true,
           drawerWorkerType: this.workerTypes.edges.find(
             ({ node }) => node.workerType === name
           ).node,
-        })
+        }),
+      {
+        serializer: name => name,
+      }
     )(name);
 
   handleHeaderClick = sortBy => {
@@ -111,17 +114,7 @@ export default class WorkerTypesTable extends Component {
     this.setState({ sortBy, sortDirection });
   };
 
-  createSortedWorkerTypesConnection = memoizeWith(
-    (
-      workerTypesConnection,
-      awsProvisionerWorkerTypeSummaries,
-      sortBy,
-      sortDirection
-    ) => {
-      const ids = sorted(workerTypesConnection.edges);
-
-      return `${ids.join('-')}-${sortBy}-${sortDirection}`;
-    },
+  createSortedWorkerTypesConnection = memoize(
     (
       workerTypesConnection,
       awsProvisionerWorkerTypeSummaries,
@@ -154,6 +147,19 @@ export default class WorkerTypesTable extends Component {
           return sort(firstElement, secondElement);
         }),
       };
+    },
+    {
+      serializer: ([
+        workerTypesConnection,
+        // eslint-disable-next-line no-unused-vars
+        awsProvisionerWorkerTypeSummaries,
+        sortBy,
+        sortDirection,
+      ]) => {
+        const ids = sorted(workerTypesConnection.edges);
+
+        return `${ids.join('-')}-${sortBy}-${sortDirection}`;
+      },
     }
   );
 

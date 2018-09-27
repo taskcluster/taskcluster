@@ -4,7 +4,6 @@ import { Link, withRouter } from 'react-router-dom';
 import {
   uniq,
   flatten,
-  memoizeWith,
   filter,
   pipe,
   map,
@@ -15,6 +14,7 @@ import {
   pluck,
   sort as rSort,
 } from 'ramda';
+import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
 import ListItemText from '@material-ui/core/ListItemText';
 import TableRow from '@material-ui/core/TableRow';
@@ -61,11 +61,7 @@ export default class RoleScopesTable extends Component {
     searchProperty: 'expandedScopes',
   };
 
-  createSortedRolesScopes = memoizeWith(
-    (roles, searchMode, selectedScope, searchProperty) =>
-      `${sorted(roles).join(
-        '-'
-      )}-${searchMode}-${selectedScope}-${searchProperty}`,
+  createSortedRolesScopes = memoize(
     (roles, searchMode, selectedScope, searchProperty) => {
       const match = scopeMatch(searchMode, selectedScope);
       const extractExpandedScopes = pipe(
@@ -87,6 +83,12 @@ export default class RoleScopesTable extends Component {
       );
 
       return selectedScope ? extractRoles(roles) : extractExpandedScopes(roles);
+    },
+    {
+      serializer: ([roles, searchMode, selectedScope, searchProperty]) =>
+        `${sorted(roles).join(
+          '-'
+        )}-${searchMode}-${selectedScope}-${searchProperty}`,
     }
   );
 

@@ -5,7 +5,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
 import ListItemText from '@material-ui/core/ListItemText';
 import { camelCase } from 'change-case';
-import { memoizeWith } from 'ramda';
+import { memoize } from 'fast-memoize';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withStyles } from '@material-ui/core/styles';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
@@ -49,8 +49,7 @@ export default class WorkerTable extends Component {
     sortDirection: null,
   };
 
-  getTableData = memoizeWith(
-    ({ sortBy, sortDirection }) => `${sortBy}-${sortDirection}`,
+  getTableData = memoize(
     ({ sortBy, sortDirection, worker }) => {
       const sortByProperty = camelCase(sortBy);
 
@@ -79,6 +78,9 @@ export default class WorkerTable extends Component {
 
         return sort(firstElement, secondElement);
       });
+    },
+    {
+      serializer: ({ sortBy, sortDirection }) => `${sortBy}-${sortDirection}`,
     }
   );
 

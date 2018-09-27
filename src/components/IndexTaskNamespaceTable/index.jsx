@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { func, shape, arrayOf } from 'prop-types';
-import { memoizeWith, pipe, map, sort as rSort } from 'ramda';
+import { pipe, map, sort as rSort } from 'ramda';
+import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -59,12 +60,7 @@ export default class IndexTaskNamespaceTable extends Component {
 
   taskFromNamespace = namespace => namespace.split('.').slice(-1)[0];
 
-  createSortedTaskNamespaceConnection = memoizeWith(
-    (connection, sortBy, sortDirection) => {
-      const ids = sorted(connection.edges);
-
-      return `${ids.join('-')}-${sortBy}-${sortDirection}`;
-    },
+  createSortedTaskNamespaceConnection = memoize(
     (connection, sortBy, sortDirection) => {
       if (!sortBy) {
         return connection;
@@ -85,6 +81,13 @@ export default class IndexTaskNamespaceTable extends Component {
           return sort(firstElement, secondElement);
         }),
       };
+    },
+    {
+      serializer: ([connection, sortBy, sortDirection]) => {
+        const ids = sorted(connection.edges);
+
+        return `${ids.join('-')}-${sortBy}-${sortDirection}`;
+      },
     }
   );
 

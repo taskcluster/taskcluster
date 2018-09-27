@@ -1,15 +1,8 @@
 import { Fragment, Component } from 'react';
 import { Link } from 'react-router-dom';
 import { string, arrayOf } from 'prop-types';
-import {
-  memoizeWith,
-  pipe,
-  map,
-  ifElse,
-  isEmpty,
-  identity,
-  sort as rSort,
-} from 'ramda';
+import { pipe, map, ifElse, isEmpty, identity, sort as rSort } from 'ramda';
+import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
@@ -56,12 +49,7 @@ export default class RolesTable extends Component {
     this.setState({ sortBy, sortDirection });
   };
 
-  createSortedRoles = memoizeWith(
-    (roles, sortBy, sortDirection, searchTerm) => {
-      const ids = sorted(roles);
-
-      return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
-    },
+  createSortedRoles = memoize(
     (roles, sortBy, sortDirection, searchTerm) => {
       const sortByProperty = camelCase(sortBy);
       const filteredRoles = searchTerm
@@ -80,6 +68,13 @@ export default class RolesTable extends Component {
           return sort(firstElement, secondElement);
         })
       )(filteredRoles);
+    },
+    {
+      serializer: ([roles, sortBy, sortDirection, searchTerm]) => {
+        const ids = sorted(roles);
+
+        return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
+      },
     }
   );
 

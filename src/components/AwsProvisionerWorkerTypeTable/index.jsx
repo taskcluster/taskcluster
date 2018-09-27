@@ -1,7 +1,8 @@
 import { Fragment, Component } from 'react';
 import { Link } from 'react-router-dom';
 import { string, arrayOf } from 'prop-types';
-import { memoizeWith, pipe, map, isEmpty, sort as rSort } from 'ramda';
+import { pipe, map, isEmpty, sort as rSort } from 'ramda';
+import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
@@ -42,12 +43,7 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
     this.setState({ sortBy, sortDirection });
   };
 
-  createSortedWorkerTypes = memoizeWith(
-    (workerTypes, sortBy, sortDirection, searchTerm) => {
-      const ids = sorted(workerTypes);
-
-      return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
-    },
+  createSortedWorkerTypes = memoize(
     (workerTypes, sortBy, sortDirection, searchTerm) => {
       const sortByProperty = camelCase(sortBy);
       const filteredWorkerTypes = searchTerm
@@ -66,6 +62,13 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
 
             return sort(firstElement, secondElement);
           });
+    },
+    {
+      serializer: ([workerTypes, sortBy, sortDirection, searchTerm]) => {
+        const ids = sorted(workerTypes);
+
+        return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
+      },
     }
   );
 

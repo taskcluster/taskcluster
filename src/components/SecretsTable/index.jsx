@@ -1,7 +1,8 @@
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { func, shape } from 'prop-types';
-import { memoizeWith, pipe, map, sort as rSort } from 'ramda';
+import { pipe, map, sort as rSort } from 'ramda';
+import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -58,12 +59,7 @@ export default class SecretsTable extends Component {
     return mapping[this.state.sortBy];
   }
 
-  createSortedSecretsConnection = memoizeWith(
-    (secretsConnection, sortBy, sortDirection) => {
-      const ids = sorted(secretsConnection.edges);
-
-      return `${ids.join('-')}-${sortBy}-${sortDirection}`;
-    },
+  createSortedSecretsConnection = memoize(
     (secretsConnection, sortBy, sortDirection) => {
       if (!sortBy) {
         return secretsConnection;
@@ -84,6 +80,13 @@ export default class SecretsTable extends Component {
           return sort(firstElement, secondElement);
         }),
       };
+    },
+    {
+      serializer: ([secretsConnection, sortBy, sortDirection]) => {
+        const ids = sorted(secretsConnection.edges);
+
+        return `${ids.join('-')}-${sortBy}-${sortDirection}`;
+      },
     }
   );
 

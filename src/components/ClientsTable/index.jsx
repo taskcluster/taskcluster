@@ -1,7 +1,8 @@
 import { Fragment, Component } from 'react';
 import { Link } from 'react-router-dom';
 import { shape, func, arrayOf } from 'prop-types';
-import { memoizeWith, pipe, map, sort as rSort } from 'ramda';
+import { pipe, map, sort as rSort } from 'ramda';
+import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
@@ -34,12 +35,7 @@ export default class ClientsTable extends Component {
     sortDirection: null,
   };
 
-  createSortedClientsConnection = memoizeWith(
-    (clientsConnection, sortBy, sortDirection) => {
-      const ids = sorted(clientsConnection.edges);
-
-      return `${ids.join('-')}-${sortBy}-${sortDirection}`;
-    },
+  createSortedClientsConnection = memoize(
     (clientsConnection, sortBy, sortDirection) => {
       const sortByProperty = camelCase(sortBy);
 
@@ -62,6 +58,13 @@ export default class ClientsTable extends Component {
           return sort(firstElement, secondElement);
         }),
       };
+    },
+    {
+      serializer: ([clientsConnection, sortBy, sortDirection]) => {
+        const ids = sorted(clientsConnection.edges);
+
+        return `${ids.join('-')}-${sortBy}-${sortDirection}`;
+      },
     }
   );
 
