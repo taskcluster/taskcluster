@@ -55,8 +55,8 @@ export default {
     updateHook(parent, { hookGroupId, hookId, payload }, { clients }) {
       return clients.hooks.updateHook(hookGroupId, hookId, payload);
     },
-    async deleteHook(parent, { hookGroupId, hookId, payload }, { clients }) {
-      await clients.hooks.removeHook(hookGroupId, hookId, payload);
+    async deleteHook(parent, { hookGroupId, hookId }, { clients }) {
+      await clients.hooks.removeHook(hookGroupId, hookId);
 
       return { hookGroupId, hookId };
     },
