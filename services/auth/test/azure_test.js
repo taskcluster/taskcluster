@@ -30,11 +30,15 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
       'TestTable',
       'read-write'
     );
-    return helper.apiClient.azureTables(
-      helper.testaccount,
-    ).then(function(result) {
-      assert(result.tables.includes('TestTable'));
-    });
+    let extra = {};
+    do {
+      result = await helper.apiClient.azureTables(helper.testaccount, extra);
+      extra.continuationToken = result.continuationToken;
+      if (result.tables.includes('TestTable')) {
+        return;
+      }
+    } while (extra.continuationToken);
+    assert(false, 'TestTable was not in account!');
   });
 
   test('azureTableSAS', function() {
