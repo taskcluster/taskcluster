@@ -30,7 +30,7 @@ builder.declare({
   route:      '/azure/:account/tables',
   name:       'azureTables',
   query: {
-    continuationToken: /^[A-Za-z][A-Za-z0-9]{2,62}$/,
+    continuationToken: /^.*$/,
   },
   input:      undefined,
   output:     'azure-table-list-response.yml',
@@ -44,14 +44,12 @@ builder.declare({
   let account = req.params.account;
   let continuationToken  = req.query.continuationToken || null;
 
-  await req.authorize({account});
-
   let table = new azure.Table({
     accountId:  account,
     accessKey:  this.azureAccounts[account],
   });
 
-  let result = await table.queryTables({continuationToken});
+  let result = await table.queryTables({nextTableName: continuationToken});
   let data = {tables: result.tables};
   if (result.nextTableName) {
     data.continuationToken = result.nextTableName;
