@@ -2,9 +2,7 @@ sudo: required
 dist: trusty
 language: node_js
 cache: yarn
-node_js:
-- '8'
-- '10'
+node_js: 10
 before_install:
 # Use newer yarn than that pre-installed in the Travis image.
 - curl -sSfL https://yarnpkg.com/install.sh | bash
@@ -13,3 +11,10 @@ install:
 - yarn install --frozen-lockfile
 script:
 - yarn build
+deploy:
+  provider: script
+  email: '$NPM_EMAIL'
+  api_key: '$NPM_TOKEN'
+  skip_cleanup: true
+  script:
+  - yarn semantic-release

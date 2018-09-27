@@ -67,3 +67,6 @@ es5
 
 # Webstorm's project specific settings
 .idea
+
+# Environment variables
+.env
