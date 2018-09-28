@@ -34,7 +34,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://references.taskcluster.net/notify/v1/api.json together with the input and output schemas it references, downloaded on
-// Tue, 25 Sep 2018 at 15:23:00 UTC. The code was generated
+// Fri, 28 Sep 2018 at 11:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcnotify
 

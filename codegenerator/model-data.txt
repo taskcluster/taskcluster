@@ -1,4 +1,4 @@
-Generated: 1537889006
+Generated: 1538133809
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -46,7 +46,7 @@ to some guarded service such as AWS S3, or Azure Table Storage.
 Generally, we add API end-points to this server when we wish to use
 Taskcluster credentials to grant access to a third-party service used
 by many Taskcluster components.'
-Base URL    = 'https://auth.taskcluster.net/v1/'
+Base URL    = 'https://auth.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -781,7 +781,29 @@ properties:
       description: |
         Source IP of the authentication request or request that requires
         authentication. This is only used for audit logging.
-      format: ipv4
+      oneOf:
+        Items:
+        - IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: https://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/sourceIp/oneOf[0]
+          TYPE_NAME: SourceIP
+          description: |
+            Source IP of the authentication request or request that requires
+            authentication. This is only used for audit logging.
+          format: ipv6
+          title: Source IP
+          type: string
+        - IS_REQUIRED: false
+          PROPERTY_NAME: ""
+          SOURCE_URL: https://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/sourceIp/oneOf[1]
+          TYPE_NAME: SourceIP1
+          description: |
+            Source IP of the authentication request or request that requires
+            authentication. This is only used for audit logging.
+          format: ipv4
+          title: Source IP
+          type: string
+        SourceURL: https://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/sourceIp/oneOf
       title: Source IP
       type: string
   SortedPropertyNames:
@@ -799,6 +821,34 @@ required:
 - port
 title: Hawk Signature Authentication Request
 type: object
+
+
+https://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/sourceIp/oneOf[0]
+====================================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/sourceIp/oneOf[0]
+TYPE_NAME: SourceIP
+description: |
+  Source IP of the authentication request or request that requires
+  authentication. This is only used for audit logging.
+format: ipv6
+title: Source IP
+type: string
+
+
+https://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/sourceIp/oneOf[1]
+====================================================================================================
+IS_REQUIRED: false
+PROPERTY_NAME: ""
+SOURCE_URL: https://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/sourceIp/oneOf[1]
+TYPE_NAME: SourceIP1
+description: |
+  Source IP of the authentication request or request that requires
+  authentication. This is only used for audit logging.
+format: ipv4
+title: Source IP
+type: string
 
 
 https://schemas.taskcluster.net/auth/v1/authenticate-hawk-response.json#

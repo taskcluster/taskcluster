@@ -135,7 +135,7 @@ type (
 		// Syntax:     ^v[0-9]+$
 		//
 		// See https://schemas.taskcluster.net/base/v1/api-reference.json#/properties/apiVersion
-		APIVersion string `json:"apiVersion,omitempty"`
+		APIVersion string `json:"apiVersion"`
 
 		// BaseUrl for all _routes_ described in this document
 		//

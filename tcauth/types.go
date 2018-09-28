@@ -629,6 +629,10 @@ type (
 		// Source IP of the authentication request or request that requires
 		// authentication. This is only used for audit logging.
 		//
+		// One of:
+		//   * SourceIP
+		//   * SourceIP1
+		//
 		// See https://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/sourceIp
 		SourceIP string `json:"sourceIp,omitempty"`
 	}
@@ -705,6 +709,18 @@ type (
 		// See https://schemas.taskcluster.net/auth/v1/scopeset.json#/properties/scopes
 		Scopes []string `json:"scopes,omitempty"`
 	}
+
+	// Source IP of the authentication request or request that requires
+	// authentication. This is only used for audit logging.
+	//
+	// See https://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/sourceIp/oneOf[0]
+	SourceIP string
+
+	// Source IP of the authentication request or request that requires
+	// authentication. This is only used for audit logging.
+	//
+	// See https://schemas.taskcluster.net/auth/v1/authenticate-hawk-request.json#/properties/sourceIp/oneOf[1]
+	SourceIP1 string
 
 	// Token for submitting statistics to statsum.
 	//
