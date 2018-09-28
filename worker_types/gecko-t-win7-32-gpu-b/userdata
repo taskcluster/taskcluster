@@ -353,6 +353,9 @@ Start-Process "C:\binaries\vc_redist.x86.exe" -ArgumentList "/install /passive /
 $client.DownloadFile("http://download.microsoft.com/download/4/c/b/4cbd5757-0dd4-43a7-bac0-2a492cedbacb/vc_redist.x64.exe", "C:\binaries\vc_redist.x64.exe")
 Start-Process "C:\binaries\vc_redist.x64.exe" -ArgumentList "/install /passive /norestart /log C:\log\vcredist_vs2015_x64-install.log" -Wait -NoNewWindow
 
+# ProgramData_Mozilla_AccessRights: https://bugzilla.mozilla.org/show_bug.cgi?id=1494048
+Start-Process "icacls.exe" -ArgumentList "c:\ProgramData\Mozilla /grant Everyone:(OI)(CI)F" -Wait -NoNewWindow
+
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead
 #   * https://www.reddit.com/r/PowerShell/comments/65250s/windows_10_creators_update_stopcomputer_not/dgfofug/?st=j1o3oa29&sh=e0c29c6d

@@ -78,7 +78,7 @@ Start-Process "fsutil.exe" -ArgumentList "behavior set disablelastaccess 1" -Wai
 # home: Maintenance Toolchain - not essential for building firefox
 cmd /c mklink "C:\home" "C:\Users"
 
-# MozillaBuildSetup: Base Firefox on Windows build requirement
+# MozillaBuildSetup: https://bugzilla.mozilla.org/show_bug.cgi?id=1461340
 $client.DownloadFile("http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-3.2.exe", "C:\binaries\MozillaBuildSetup-3.2.exe")
 Start-Process "C:\binaries\MozillaBuildSetup-3.2.exe" -ArgumentList "/S /D=C:\mozilla-build" -Wait -NoNewWindow
 
@@ -365,6 +365,9 @@ $client.DownloadFile("http://hg.mozilla.org/mozilla-central/raw-file/360ab7771e2
 
 # mofcomp_mozprofilerprobe: https://bugzilla.mozilla.org/show_bug.cgi?id=1485757
 Start-Process "mofcomp" -ArgumentList "`"C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\mozprofilerprobe.mof`"" -Wait -NoNewWindow
+
+# ProgramData_Mozilla_AccessRights: https://bugzilla.mozilla.org/show_bug.cgi?id=1494048
+Start-Process "icacls.exe" -ArgumentList "c:\ProgramData\Mozilla /grant Everyone:(OI)(CI)F" -Wait -NoNewWindow
 
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead

@@ -78,9 +78,9 @@ Start-Process "fsutil.exe" -ArgumentList "behavior set disablelastaccess 1" -Wai
 # home: Maintenance Toolchain - not essential for building firefox
 cmd /c mklink "C:\home" "C:\Users"
 
-# MozillaBuildSetup: Base Firefox on Windows build requirement
-$client.DownloadFile("http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-3.1.exe", "C:\binaries\MozillaBuildSetup-3.1.exe")
-Start-Process "C:\binaries\MozillaBuildSetup-3.1.exe" -ArgumentList "/S /D=C:\mozilla-build" -Wait -NoNewWindow
+# MozillaBuildSetup: https://bugzilla.mozilla.org/show_bug.cgi?id=1461340
+$client.DownloadFile("http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-3.2.exe", "C:\binaries\MozillaBuildSetup-3.2.exe")
+Start-Process "C:\binaries\MozillaBuildSetup-3.2.exe" -ArgumentList "/S /D=C:\mozilla-build" -Wait -NoNewWindow
 
 # msys_home: Maintenance Toolchain - not essential for building firefox
 cmd /c mklink "C:\mozilla-build\msys\home" "C:\Users"
@@ -105,7 +105,7 @@ $client.DownloadFile("https://raw.githubusercontent.com/mozilla-releng/OpenCloud
 [Environment]::SetEnvironmentVariable("MOZILLABUILD", "C:\mozilla-build", "Machine")
 
 # env_PATH
-[Environment]::SetEnvironmentVariable("PATH", "C:\Program Files\Mercurial;C:\mozilla-build\7zip;C:\mozilla-build\info-zip;C:\mozilla-build\kdiff3;C:\mozilla-build\moztools-x64\bin;C:\mozilla-build\mozmake;C:\mozilla-build\msys\bin;C:\mozilla-build\msys\local\bin;C:\mozilla-build\nsis-3.01;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;C:\mozilla-build\upx394w;C:\mozilla-build\wget;C:\mozilla-build\yasm;%PATH%", "Machine")
+[Environment]::SetEnvironmentVariable("PATH", "C:\Program Files\Mercurial;C:\mozilla-build\bin;C:\mozilla-build\kdiff3;C:\mozilla-build\moztools-x64\bin;C:\mozilla-build\mozmake;C:\mozilla-build\msys\bin;C:\mozilla-build\msys\local\bin;C:\mozilla-build\nsis-3.01;C:\mozilla-build\python;C:\mozilla-build\python\Scripts;%PATH%", "Machine")
 
 # ToolToolInstall
 $client.DownloadFile("https://raw.githubusercontent.com/mozilla/build-tooltool/master/tooltool.py", "C:\mozilla-build\tooltool.py")
@@ -375,6 +375,9 @@ $client.DownloadFile("http://hg.mozilla.org/mozilla-central/raw-file/360ab7771e2
 
 # mofcomp_mozprofilerprobe: https://bugzilla.mozilla.org/show_bug.cgi?id=1485757
 Start-Process "mofcomp" -ArgumentList "`"C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\mozprofilerprobe.mof`"" -Wait -NoNewWindow
+
+# ProgramData_Mozilla_AccessRights: https://bugzilla.mozilla.org/show_bug.cgi?id=1494048
+Start-Process "icacls.exe" -ArgumentList "c:\ProgramData\Mozilla /grant Everyone:(OI)(CI)F" -Wait -NoNewWindow
 
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead

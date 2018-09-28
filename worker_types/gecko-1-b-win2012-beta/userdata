@@ -129,7 +129,7 @@ Start-Process "C:\binaries\sdksetup.exe" -ArgumentList "/features + /quiet /nore
 $client.DownloadFile("https://s3.amazonaws.com/windows-opencloudconfig-packages/binscope/BinScope_x64.msi", "C:\binaries\BinScope_x64.msi")
 Start-Process "msiexec" -ArgumentList "/i C:\binaries\BinScope_x64.msi /quiet" -Wait -NoNewWindow
 
-# MozillaBuildSetup: Base Firefox on Windows build requirement
+# MozillaBuildSetup: https://bugzilla.mozilla.org/show_bug.cgi?id=1461340
 $client.DownloadFile("http://ftp.mozilla.org/pub/mozilla/libraries/win32/MozillaBuildSetup-3.2.exe", "C:\binaries\MozillaBuildSetup-3.2.exe")
 Start-Process "C:\binaries\MozillaBuildSetup-3.2.exe" -ArgumentList "/S /D=C:\mozilla-build" -Wait -NoNewWindow
 
