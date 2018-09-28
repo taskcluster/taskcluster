@@ -19,9 +19,11 @@ tasks:
       metadata:
         name: "taskcluster-lib-api test"
         description: "tests for metrics and monitoring library"
-        owner: ${event.pull_request.user.login}@users.noreply.github.com
+        owner:
+          $if: 'event.pull_request.user.type == "User"'
+          then: ${event.pull_request.user.login}@users.noreply.github.com
         source: ${event.repository.url}
-  
+
   - $if: 'tasks_for == "github-push"'
     then:
       $if: 'event.ref == "refs/heads/master"'
@@ -53,9 +55,9 @@ tasks:
         metadata:
           name: "taskcluster-lib-api docs upload"
           description: "Upload documentation for this project"
-          owner: ${event.pusher.name}@users.noreply.github.com
+          owner: ${event.pusher.email}
           source: ${event.repository.url}
-        
+
       else:
         provisionerId: aws-provisioner-v1
         workerType: github-worker
@@ -72,5 +74,5 @@ tasks:
         metadata:
           name: "taskcluster-lib-api test"
           description: "tests for metrics and monitoring library"
-          owner: ${event.pusher.name}@users.noreply.github.com
+          owner: ${event.pusher.email}
           source: ${event.repository.url}
