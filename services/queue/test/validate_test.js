@@ -8,10 +8,11 @@ suite('validate_test.js', () => {
       folder: path.join(__dirname, '..', 'schemas'),
       serviceName: 'queue',
     },
-    basePath:       path.join(__dirname, 'validate_test'),
+    basePath: path.join(__dirname, 'validate_test'),
+    serviceName: 'queue',
     cases: [
       {
-        schema:   'https://tc-tests.localhost/schemas/queue/v1/create-task-request.json#',
+        schema:   'v1/create-task-request.json#',
         path:     'task.json',
         success:  true,
       },
