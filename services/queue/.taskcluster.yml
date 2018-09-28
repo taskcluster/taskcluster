@@ -1,7 +1,7 @@
 version: 0
 allowPullRequests: public
 metadata:
-  name: "TaskCluster Queue Tests"
+  name: "Taskcluster Queue Tests"
   description: "All non-integration tests for taskcluster github"
   owner: "{{ event.head.user.email }}"
   source: "{{ event.head.repo.url }}"
@@ -31,7 +31,7 @@ tasks:
         # too much DEBUG here can cause Docker to lock up
         - "git clone {{event.head.repo.url}} repo && cd repo && git checkout {{event.head.sha}} && yarn global add node-gyp && yarn install && DEBUG=*,-eslint*,-mocha*,-nock.*,-express* yarn test"
     metadata:
-      name: "TaskCluster Queue Tests"
+      name: "Taskcluster Queue Tests"
       description: "All non-integration tests"
       owner: "{{ event.head.user.email }}"
       source: "{{ event.head.repo.url }}"
@@ -60,7 +60,7 @@ tasks:
         # too much DEBUG here can cause Docker to lock up
         - "git clone {{event.head.repo.url}} repo && cd repo && git checkout {{event.head.sha}} && yarn global add node-gyp && yarn install && DEBUG=*,-eslint*,-mocha*,-nock.*,-express* yarn test"
     metadata:
-      name: "TaskCluster Queue Tests"
+      name: "Taskcluster Queue Tests"
       description: "All non-integration tests"
       owner: "{{ event.head.user.email }}"
       source: "{{ event.head.repo.url }}"

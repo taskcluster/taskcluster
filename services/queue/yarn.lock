@@ -188,7 +188,7 @@ aws-sdk@2.1.22:
     xml2js "0.2.8"
     xmlbuilder "0.4.2"
 
-aws-sdk@^2.142.0, aws-sdk@^2.144.0, aws-sdk@^2.147.0, aws-sdk@^2.148.0, aws-sdk@^2.151.0:
+aws-sdk@^2.142.0, aws-sdk@^2.147.0, aws-sdk@^2.148.0, aws-sdk@^2.151.0:
   version "2.174.0"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.174.0.tgz#4063b5beb27af34fef054b6b02dc791703395556"
   dependencies:
@@ -362,17 +362,17 @@ body-parser@1.18.2:
     raw-body "2.3.2"
     type-is "~1.6.15"
 
-boom@0.4.x:
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/boom/-/boom-0.4.2.tgz#7a636e9ded4efcefb19cef4947a3c67dfaee911b"
-  dependencies:
-    hoek "0.9.x"
-
 boom@2.x.x:
   version "2.10.1"
   resolved "https://registry.yarnpkg.com/boom/-/boom-2.10.1.tgz#39c8918ceff5799f83f9492a848f625add0c766f"
   dependencies:
     hoek "2.x.x"
+
+boom@3.x.x:
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/boom/-/boom-3.2.2.tgz#0f0cc5d04adc5003b8c7d71f42cca7271fef0e78"
+  dependencies:
+    hoek "4.x.x"
 
 boom@4.x.x:
   version "4.3.1"
@@ -453,14 +453,6 @@ capture-stack-trace@^1.0.0:
 caseless@~0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
-
-"chai@>=1.9.2 <4.0.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/chai/-/chai-3.5.0.tgz#4d02637b067fe958bdbfdd3a40ec56fef7373247"
-  dependencies:
-    assertion-error "^1.0.1"
-    deep-eql "^0.1.3"
-    type-detect "^1.0.0"
 
 chai@^4.1.2:
   version "4.1.2"
@@ -615,12 +607,6 @@ crypt@~0.0.1:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/crypt/-/crypt-0.0.2.tgz#88d7ff7ec0dfb86f713dc87bbb42d044d3e6c41b"
 
-cryptiles@0.2.x:
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/cryptiles/-/cryptiles-0.2.2.tgz#ed91ff1f17ad13d3748288594f8a48a0d26f325c"
-  dependencies:
-    boom "0.4.x"
-
 cryptiles@2.x.x:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/cryptiles/-/cryptiles-2.0.5.tgz#3bdfecdc608147c1c67202fa291e7dca59eaa3b8"
@@ -661,7 +647,7 @@ debug@^2.6.8:
   dependencies:
     ms "2.0.0"
 
-deep-eql@0.1.x, deep-eql@^0.1.3:
+deep-eql@0.1.x:
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/deep-eql/-/deep-eql-0.1.3.tgz#ef558acab8de25206cd713906d74e56930eb69f2"
   dependencies:
@@ -1213,15 +1199,6 @@ hash-base@^3.0.0:
     inherits "^2.0.1"
     safe-buffer "^5.0.1"
 
-hawk@2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/hawk/-/hawk-2.3.0.tgz#20864369707c2264bb823d1c4172acd5d77ed509"
-  dependencies:
-    boom "2.x.x"
-    cryptiles "2.x.x"
-    hoek "2.x.x"
-    sntp "1.x.x"
-
 hawk@3.1.3, hawk@~3.1.3:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/hawk/-/hawk-3.1.3.tgz#078444bd7c1640b0fe540d2c9b73d59678e8e1c4"
@@ -1240,26 +1217,26 @@ hawk@6.0.2, hawk@^6.0.2, hawk@~6.0.2:
     hoek "4.x.x"
     sntp "2.x.x"
 
-hawk@~1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/hawk/-/hawk-1.0.0.tgz#b90bb169807285411da7ffcb8dd2598502d3b52d"
+hawk@^4.1.2:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/hawk/-/hawk-4.1.2.tgz#ba067b0885e9c0726c8cd4f0b000c0edb324aa3c"
   dependencies:
-    boom "0.4.x"
-    cryptiles "0.2.x"
-    hoek "0.9.x"
-    sntp "0.2.x"
+    boom "3.x.x"
+    cryptiles "3.x.x"
+    hoek "3.x.x"
+    sntp "2.x.x"
 
 he@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/he/-/he-1.1.1.tgz#93410fd21b009735151f8868c2f271f3427e23fd"
 
-hoek@0.9.x:
-  version "0.9.1"
-  resolved "https://registry.yarnpkg.com/hoek/-/hoek-0.9.1.tgz#3d322462badf07716ea7eb85baf88079cddce505"
-
 hoek@2.x.x:
   version "2.16.3"
   resolved "https://registry.yarnpkg.com/hoek/-/hoek-2.16.3.tgz#20bb7403d3cea398e91dc4710a8ff1b8274a25ed"
+
+hoek@3.x.x:
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/hoek/-/hoek-3.0.4.tgz#268adff66bb6695c69b4789a88b1e0847c3f3123"
 
 hoek@4.x.x:
   version "4.2.0"
@@ -1557,9 +1534,13 @@ libxmljs@^0.18.7:
     nan "~2.5.0"
     node-pre-gyp "~0.6.32"
 
-lodash@4.17.4, lodash@^4.0.0, lodash@^4.13.1, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.17.4, lodash@^4.3.0, lodash@^4.5.1, lodash@^4.6.1, lodash@~4.17.2:
+lodash@4.17.4, lodash@^4.0.0, lodash@^4.13.1, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.17.4, lodash@^4.3.0, lodash@^4.5.1, lodash@^4.6.1:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
+
+lodash@^4.17.10:
+  version "4.17.11"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
 
 lodash@^4.17.5:
   version "4.17.10"
@@ -1756,23 +1737,23 @@ netmask@^1.0.5:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/netmask/-/netmask-1.0.6.tgz#20297e89d86f6f6400f250d9f4f6b4c1945fcd35"
 
-nock@^9.0.27:
-  version "9.1.5"
-  resolved "https://registry.yarnpkg.com/nock/-/nock-9.1.5.tgz#9e4878e0e1c050bdd93ae1e326e89461ea15618b"
-  dependencies:
-    chai ">=1.9.2 <4.0.0"
-    debug "^2.2.0"
-    deep-equal "^1.0.0"
-    json-stringify-safe "^5.0.1"
-    lodash "~4.17.2"
-    mkdirp "^0.5.0"
-    propagate "0.4.0"
-    qs "^6.5.1"
-    semver "^5.3.0"
-
 nock@^9.3.3:
   version "9.3.3"
   resolved "https://registry.yarnpkg.com/nock/-/nock-9.3.3.tgz#d9f4cd3c011afeadaf5ccf1b243f6e353781cda0"
+  dependencies:
+    chai "^4.1.2"
+    debug "^3.1.0"
+    deep-equal "^1.0.0"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.17.5"
+    mkdirp "^0.5.0"
+    propagate "^1.0.0"
+    qs "^6.5.1"
+    semver "^5.5.0"
+
+nock@^9.4.3:
+  version "9.6.1"
+  resolved "https://registry.yarnpkg.com/nock/-/nock-9.6.1.tgz#d96e099be9bc1d0189a77f4490bbbb265c381b49"
   dependencies:
     chai "^4.1.2"
     debug "^3.1.0"
@@ -1984,10 +1965,6 @@ promise@^8.0.1:
   dependencies:
     asap "~2.0.3"
 
-propagate@0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/propagate/-/propagate-0.4.0.tgz#f3fcca0a6fe06736a7ba572966069617c130b481"
-
 propagate@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/propagate/-/propagate-1.0.0.tgz#00c2daeedda20e87e3782b344adba1cddd6ad709"
@@ -2036,10 +2013,6 @@ punycode@^2.1.0:
 qs@6.5.1, qs@^6.5.1, qs@~6.5.1:
   version "6.5.1"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.5.1.tgz#349cdf6eef89ec45c12d7d5eb3fc0c870343a6d8"
-
-qs@^0.6.6:
-  version "0.6.6"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-0.6.6.tgz#6e015098ff51968b8a3c819001d5f2c89bc4b107"
 
 qs@~6.4.0:
   version "6.4.0"
@@ -2387,12 +2360,6 @@ slugid@^2.0.0:
     uuid "^3.2.1"
     uuid-parse "^1.0.0"
 
-sntp@0.2.x:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/sntp/-/sntp-0.2.4.tgz#fb885f18b0f3aad189f824862536bceeec750900"
-  dependencies:
-    hoek "0.9.x"
-
 sntp@1.x.x:
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/sntp/-/sntp-1.0.9.tgz#6541184cc90aeea6c6e7b35e2659082443c66198"
@@ -2497,13 +2464,6 @@ strip-ansi@^4.0.0:
 strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
-
-superagent-hawk@0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/superagent-hawk/-/superagent-hawk-0.0.6.tgz#0cfb70e21546e3a3e902da208a28edd965f82dab"
-  dependencies:
-    hawk "~1.0.0"
-    qs "^0.6.6"
 
 superagent@3.8.2, superagent@^3.8.2, superagent@~3.8.1:
   version "3.8.2"
@@ -2630,9 +2590,9 @@ taskcluster-client@^5.0.0:
     superagent "~3.8.1"
     taskcluster-lib-urls "^1.0.0"
 
-taskcluster-lib-api@12.0.2:
-  version "12.0.2"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-api/-/taskcluster-lib-api-12.0.2.tgz#af496b644694995002dbb383492f0219ddea7167"
+taskcluster-lib-api@12.5.1:
+  version "12.5.1"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-api/-/taskcluster-lib-api-12.5.1.tgz#b0d024188de18a2cd05f1e4b71248579d046cda8"
   dependencies:
     ajv "^5.3.0"
     aws-sdk "^2.151.0"
@@ -2644,7 +2604,7 @@ taskcluster-lib-api@12.0.2:
     promise "^8.0.1"
     slugid "^1.1.0"
     taskcluster-client "^10.0.0"
-    taskcluster-lib-scopes "^10.0.0"
+    taskcluster-lib-scopes "^10.0.1"
     type-is "^1.6.15"
     uuid "^3.1.0"
 
@@ -2709,30 +2669,25 @@ taskcluster-lib-monitor@^10.0.0:
     statsum "^0.6.0"
     taskcluster-client "^10.0.0"
 
-taskcluster-lib-scopes@^10.0.0:
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-10.0.0.tgz#2b90666b8e5127a1d367b726de84c7829b57efef"
+taskcluster-lib-scopes@^10.0.1:
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-scopes/-/taskcluster-lib-scopes-10.0.1.tgz#f3921b2b86e7c09581b045b9b880a4c35fd243e0"
 
-taskcluster-lib-testing@^11.2.0:
-  version "11.2.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-testing/-/taskcluster-lib-testing-11.2.0.tgz#c9bae5e312fedf7c867f9fb32d9eff5edb5fa52a"
+taskcluster-lib-testing@^12.1.2:
+  version "12.1.2"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-testing/-/taskcluster-lib-testing-12.1.2.tgz#8259fd8861ff52407c4a116f97e21a357477d806"
   dependencies:
-    aws-sdk "^2.144.0"
     azure-table-node "1.5.0"
     debug "^3.1.0"
     express "4.16.2"
-    express-sslify "1.2.0"
-    hawk "2.3.0"
-    lodash "4.17.4"
-    nock "^9.0.27"
+    hawk "^4.1.2"
+    lodash "^4.17.10"
+    nock "^9.4.3"
     promise "^8.0.1"
-    slugid "^1.0.3"
     superagent "3.8.2"
-    superagent-hawk "0.0.6"
     taskcluster-client "10.0.0"
     taskcluster-lib-urls "^10.0.0"
     taskcluster-lib-validate "^11.0.1"
-    uuid "^3.1.0"
 
 taskcluster-lib-urls@^1.0.0, taskcluster-lib-urls@^1.1.0:
   version "1.1.0"
@@ -2854,10 +2809,6 @@ type-check@~0.3.2:
 type-detect@0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-0.1.1.tgz#0ba5ec2a885640e470ea4e8505971900dac58822"
-
-type-detect@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-1.0.0.tgz#762217cc06db258ec48908a1298e8b95121e8ea2"
 
 type-detect@^4.0.0:
   version "4.0.8"
