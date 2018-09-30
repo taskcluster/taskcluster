@@ -1,4 +1,4 @@
-Generated: 1538133809
+Generated: 1538324334
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -8694,7 +8694,7 @@ end-points targets the following audience:
  * Schedulers, who create tasks to be executed,
  * Workers, who execute tasks, and
  * Tools, that wants to inspect the state of a task.'
-Base URL    = 'https://queue.taskcluster.net/v1/'
+Base URL    = 'https://queue.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'get'

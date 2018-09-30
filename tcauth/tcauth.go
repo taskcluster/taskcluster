@@ -70,7 +70,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // https://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Fri, 28 Sep 2018 at 11:23:00 UTC. The code was generated
+// Sun, 30 Sep 2018 at 16:18:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcauth
 
