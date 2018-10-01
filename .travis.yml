@@ -12,11 +12,11 @@ install:
 script:
 - yarn build
 deploy:
-  provider: script
-  email: '$NPM_EMAIL'
   on:
     branch: master
-  api_key: '$NPM_TOKEN'
+  provider: script
+  api_key:
+    secure: zSDtE+ygxheu6/3q7ntY5KXeGMCNs7kOLocFpMRtvEj0PNSXYu93cZy9SfEK3pSILVglS9xm4idtWBOC7lD0rcWhmBQrzAOFheLlxYs1RNLT2waZssUe4+4aKGK1MeVcaIVytGQZG8lQ8g+QxSjckt0BvAuhrUsbd2PAEae4IWsPLav6/mLA+bYOy1i+XfBpM8J7OB5PXm+YDlXdQm0huu5q29k9WJl3cLx4c2KYZ1Ju67lm4N7E+JiEAd+udfXUBTNxt2Ffp6MaE5a9UNiS62Szvfotlez1iGMO4OwnblPmFE/+tOgOBBMapFnP/Mt1vf5ceIjHRZCyF2gOlLA+4LUWZfEcFb6BUqgb2hL9x2qlSOujLRetwNikPW6sg7GzDBxZBu5j5EL3395cuPvjPCimrcZoHu2cYgprvXh2O6976QK8N5UdiJ0679qg2mMl2E4K7lOHDohSVOrTb9Ncp3nWLI6yBQHrRiNzuAgXhkGmjMtdyhUvLk5L/Vxh4ONrBV0V6L5eOnYT0KSc5CsAyF43ACTT8FpbIqonhTECu0+lYVsG9VFFAN3H9/oOHW4/Am0dAzcd/HmNMcnD6LtF+uHwQ2wWMI//2QCd78pxqMBH5unZkQdOeUlEVBywHNKC7SacLVkyDAepuhOdVq5x26HWl8nfvUFXgLSyKSI2/EQ=
   skip_cleanup: true
   script:
   - yarn semantic-release
