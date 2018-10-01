@@ -82,8 +82,11 @@ const initialHook = {
   listItemButton: {
     ...theme.mixins.listItemButton,
   },
-  saveIcon: {
+  successIcon: {
     ...theme.mixins.successIcon,
+  },
+  deleteIcon: {
+    ...theme.mixins.errorIcon,
   },
 }))
 /** A form to view/edit/create a hook */
@@ -95,12 +98,27 @@ export default class HookForm extends Component {
     isNewHook: bool,
     /** Callback function fired when a hook status is refreshed. */
     onRefreshHookStatus: func,
+    /** Callback function fired when a hook is triggered. */
+    onTriggerHook: func,
+    /** Callback function fired when a hook is created. */
+    onCreateHook: func,
+    /** Callback function fired when a hook is updated. */
+    onUpdateHook: func,
+    /** Callback function fired when a hook is deleted. */
+    onDeleteHook: func,
+    /** If true, action buttons will be disabled. */
+    actionLoading: bool,
   };
 
   static defaultProps = {
     isNewHook: false,
     hook: initialHook,
     onRefreshHookStatus: null,
+    onTriggerHook: null,
+    onCreateHook: null,
+    onUpdateHook: null,
+    onDeleteHook: null,
+    actionLoading: false,
   };
 
   state = {
@@ -145,14 +163,68 @@ export default class HookForm extends Component {
     this.setState({ [name]: value });
   };
 
+  getHookDefinition = () => {
+    const {
+      name,
+      description,
+      owner,
+      emailOnError,
+      schedule,
+      task,
+      triggerSchema,
+    } = this.state;
+
+    return {
+      metadata: {
+        name,
+        description,
+        owner,
+        emailOnError,
+      },
+      schedule,
+      task,
+      triggerSchema,
+    };
+  };
+
   // TODO: Handle trigger hook
   handleTriggerHook = () => {
     // const hook = this.state.triggerSchema;
   };
 
-  // TODO: Handle save hook
-  handleSaveHook = () => {
-    // const hook = this.state.hook;
+  handleUpdateHook = () => {
+    const { onUpdateHook } = this.props;
+    const { hookId, hookGroupId } = this.state;
+
+    onUpdateHook &&
+      onUpdateHook({
+        hookId,
+        hookGroupId,
+        payload: this.getHookDefinition(),
+      });
+  };
+
+  handleDeleteHook = () => {
+    const { onDeleteHook } = this.props;
+    const { hookId, hookGroupId } = this.state;
+
+    onDeleteHook &&
+      onDeleteHook({
+        hookId,
+        hookGroupId,
+      });
+  };
+
+  handleCreateHook = () => {
+    const { onCreateHook } = this.props;
+    const { hookId, hookGroupId } = this.state;
+
+    onCreateHook &&
+      onCreateHook({
+        hookId,
+        hookGroupId,
+        payload: this.getHookDefinition(),
+      });
   };
 
   handleEmailOnErrorChange = () => {
@@ -235,6 +307,7 @@ export default class HookForm extends Component {
       hookId,
       hookGroupId,
       owner,
+      name,
       emailOnError,
       scheduleTextField,
       schedule,
@@ -290,7 +363,17 @@ export default class HookForm extends Component {
           <ListItem>
             <TextField
               required
-              label="Owner"
+              label="Name"
+              name="name"
+              onChange={this.handleInputChange}
+              fullWidth
+              value={name}
+            />
+          </ListItem>
+          <ListItem>
+            <TextField
+              required
+              label="Owner Email"
               name="owner"
               onChange={this.handleInputChange}
               fullWidth
@@ -302,6 +385,7 @@ export default class HookForm extends Component {
               required
               label="Description"
               name="description"
+              placeholder="Hook description (markdown)"
               onChange={this.handleInputChange}
               fullWidth
               multiline
@@ -465,10 +549,10 @@ export default class HookForm extends Component {
             <div className={classes.actionButton}>
               <Button
                 requiresAuth
-                color="secondary"
+                classes={{ root: classes.successIcon }}
                 variant="fab"
                 disabled={!this.validHook()}
-                onClick={this.handleSaveHook}>
+                onClick={this.handleCreateHook}>
                 <ContentSaveIcon />
               </Button>
             </div>
@@ -478,20 +562,31 @@ export default class HookForm extends Component {
             <SpeedDialAction
               requiresAuth
               tooltipOpen
-              icon={<ContentSaveIcon className={classes.saveIcon} />}
-              onClick={this.handleSaveHook}
-              classes={{ button: classes.saveIcon }}
+              icon={<ContentSaveIcon />}
+              onClick={this.handleUpdateHook}
               tooltipTitle="Save Hook"
               ButtonProps={{
+                color: 'secondary',
                 disabled: !this.validHook(),
               }}
             />
             <SpeedDialAction
               requiresAuth
               tooltipOpen
+              icon={<DeleteIcon />}
+              onClick={this.handleDeleteHook}
+              classes={{ button: classes.deleteIcon }}
+              tooltipTitle="Delete Hook"
+            />
+            <SpeedDialAction
+              requiresAuth
+              tooltipOpen
               icon={<FlashIcon />}
               onClick={this.handleTriggerHook}
-              ButtonProps={{ color: 'secondary' }}
+              classes={{ button: classes.successIcon }}
+              ButtonProps={{
+                disabled: !this.validHook(),
+              }}
               tooltipTitle="Trigger Hook"
             />
           </SpeedDial>
