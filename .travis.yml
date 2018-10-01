@@ -14,6 +14,8 @@ script:
 deploy:
   provider: script
   email: '$NPM_EMAIL'
+  on:
+    branch: master
   api_key: '$NPM_TOKEN'
   skip_cleanup: true
   script:
