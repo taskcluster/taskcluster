@@ -2,7 +2,5 @@
   "analyzeCommits": {
     "preset": "eslint"
   },
-  "publishConfig": {
-    "pkgRoot": "build"
-  }
+  "pkgRoot": "build"
 }
