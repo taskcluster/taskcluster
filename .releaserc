@@ -1,6 +1,6 @@
 {
+  "pkgRoot": "build",
   "analyzeCommits": {
     "preset": "eslint"
-  },
-  "pkgRoot": "build"
+  }
 }
