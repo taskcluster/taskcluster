@@ -5,7 +5,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
 import ListItemText from '@material-ui/core/ListItemText';
 import { camelCase } from 'change-case';
-import { memoize } from 'fast-memoize';
+import memoize from 'fast-memoize';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withStyles } from '@material-ui/core/styles';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
