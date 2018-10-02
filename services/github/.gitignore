@@ -7,3 +7,4 @@ npm-debug.log
 lib/
 user-config.yml
 yarn-error.log
+package-lock.json
