@@ -154,7 +154,7 @@ type Task {
   status(taskId: ID = taskId): TaskStatus!
 
   # Actions exposed by the decision task defined in the public/actions.json artifact.
-  taskActions(taskGroupId: String = taskGroupId, filter: JSON): TaskActionsJson!
+  taskActions(taskGroupId: String = taskGroupId, filter: JSON): TaskActionsJson
 
   # Definition of the task group ID.
   taskGroup: Task

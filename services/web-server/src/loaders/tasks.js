@@ -38,15 +38,24 @@ export default ({ queue, index }) => {
           taskGroupId,
           'public/actions.json'
         );
-        const { body: raw } = await request
-          .get(url)
-          // retry on 5xx
-          .retry(2, (err, res) => res && res.status >= 500);
 
-        return {
-          ...raw,
-          actions: filter ? sift(filter, raw.actions) : raw.actions,
-        };
+        try {
+          const { body: raw } = await request
+            .get(url)
+            // retry on 5xx
+            .retry(2, (err, res) => res && res.status >= 500);
+
+          return {
+            ...raw,
+            actions: filter ? sift(filter, raw.actions) : raw.actions,
+          };
+        } catch (e) {
+          if (e.status === 404) {
+            return null;
+          }
+
+          return e;
+        }
       })
     )
   );
