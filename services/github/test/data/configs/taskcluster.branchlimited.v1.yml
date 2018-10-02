@@ -1,12 +1,10 @@
 version: 1
 tasks:
-  - $if: ' tasks_for == "github-push" && event.ref == "refs/heads/master" '
-    then:
+  $match:
+    'tasks_for == "github-push" && event.ref == "refs/heads/master"':
       taskId: {$eval: as_slugid('apple')}
       provisionerId: aprovisioner
       workerType: worker
-      created: {$eval: 'now'}
-      deadline: {$fromNow: '1 hour'}
       payload:
         image: "ubuntu:latest"
         command:
