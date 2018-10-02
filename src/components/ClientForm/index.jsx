@@ -20,6 +20,7 @@ import PowerIcon from 'mdi-react/PowerIcon';
 import LockResetIcon from 'mdi-react/LockResetIcon';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
+import DateDistance from '../DateDistance';
 import DatePicker from '../DatePicker';
 import Button from '../Button';
 import { client } from '../../utils/prop-types';
@@ -67,6 +68,8 @@ export default class ClientForm extends Component {
     onDisableClient: func,
     /** Callback function fired when a client is enabled. */
     onEnableClient: func,
+    /** Callback function fired when a client resets its access token. */
+    onResetAccessToken: func,
     /** If true, form actions will be disabled. */
     loading: bool,
   };
@@ -78,6 +81,7 @@ export default class ClientForm extends Component {
     onDeleteClient: null,
     onDisableClient: null,
     onEnableClient: null,
+    onResetAccessToken: null,
   };
 
   state = {
@@ -131,8 +135,9 @@ export default class ClientForm extends Component {
     this.setState({ deleteOnExpiration: !this.state.deleteOnExpiration });
   };
 
-  // TODO: Reset accessToken
-  handleResetAccessToken = () => {};
+  handleResetAccessToken = () => {
+    this.props.onResetAccessToken(this.state.clientId);
+  };
 
   handleSaveClient = () => {
     const {
@@ -214,24 +219,27 @@ export default class ClientForm extends Component {
                 <ListItemText primary="Client ID" secondary={clientId} />
               </ListItem>
               <ListItem>
-                <ListItemText primary="Date Created" secondary={created} />
+                <ListItemText
+                  primary="Date Created"
+                  secondary={<DateDistance from={created} />}
+                />
               </ListItem>
               <ListItem>
                 <ListItemText
                   primary="Date Last Modified"
-                  secondary={lastModified}
+                  secondary={<DateDistance from={lastModified} />}
                 />
               </ListItem>
               <ListItem>
                 <ListItemText
                   primary="Date Last Used"
-                  secondary={lastDateUsed}
+                  secondary={<DateDistance from={lastDateUsed} />}
                 />
               </ListItem>
               <ListItem>
                 <ListItemText
                   primary="Date Last Rotated"
-                  secondary={lastRotated}
+                  secondary={<DateDistance from={lastRotated} />}
                 />
               </ListItem>
             </Fragment>
