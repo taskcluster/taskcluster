@@ -23,7 +23,7 @@ tasks:
           $if: 'event.pull_request.user.type == "User"'
           then: ${event.pull_request.user.login}@users.noreply.github.com
           else:
-            $if: '"[bot]" in event.pusher.name'
+            $if: '"[bot]" in event.pull_request.user.login'
             then: ${event.pull_request.user.login[:-5]}@users.noreply.github.com
             else: ${event.pull_request.user.login}@users.noreply.github.com
         source: ${event.repository.url}
