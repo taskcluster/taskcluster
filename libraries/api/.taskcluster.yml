@@ -22,7 +22,10 @@ tasks:
         owner:
           $if: 'event.pull_request.user.type == "User"'
           then: ${event.pull_request.user.login}@users.noreply.github.com
-          else: robot@example.com
+          else:
+            $if: '"[bot]" in event.pusher.name'
+            then: ${event.pull_request.user.login[:-5]}@users.noreply.github.com
+            else: ${event.pull_request.user.login}@users.noreply.github.com
         source: ${event.repository.url}
 
   - $if: 'tasks_for == "github-push"'
@@ -56,7 +59,13 @@ tasks:
         metadata:
           name: "taskcluster-lib-api docs upload"
           description: "Upload documentation for this project"
-          owner: ${event.pusher.email}
+          owner:
+            $if: 'event.pusher.email'
+            then: ${event.pusher.email}
+            else:
+              $if: '"[bot]" in event.pusher.name'
+              then: ${event.pusher.name[:-5]}@users.noreply.github.com
+              else: ${event.pusher.name}@users.noreply.github.com
           source: ${event.repository.url}
 
       else:
@@ -75,5 +84,11 @@ tasks:
         metadata:
           name: "taskcluster-lib-api test"
           description: "tests for metrics and monitoring library"
-          owner: ${event.pusher.email}
+          owner:
+            $if: 'event.pusher.email'
+            then: ${event.pusher.email}
+            else:
+              $if: '"[bot]" in event.pusher.name'
+              then: ${event.pusher.name[:-5]}@users.noreply.github.com
+              else: ${event.pusher.name}@users.noreply.github.com
           source: ${event.repository.url}
