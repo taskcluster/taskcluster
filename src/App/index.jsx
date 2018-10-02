@@ -6,7 +6,10 @@ import { ApolloClient } from 'apollo-client';
 import { from } from 'apollo-link';
 import { HttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
-import { InMemoryCache } from 'apollo-cache-inmemory';
+import {
+  InMemoryCache,
+  IntrospectionFragmentMatcher,
+} from 'apollo-cache-inmemory';
 import { CachePersistor } from 'apollo-cache-persist';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -15,6 +18,7 @@ import Main from './Main';
 import { ToggleThemeContext } from '../utils/ToggleTheme';
 import { AuthContext } from '../utils/Auth';
 import theme from '../theme';
+import introspectionQueryResultData from '../fragments/fragmentTypes.json';
 
 const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
 
@@ -43,7 +47,10 @@ export default class App extends Component {
     });
   };
 
-  cache = new InMemoryCache();
+  fragmentMatcher = new IntrospectionFragmentMatcher({
+    introspectionQueryResultData,
+  });
+  cache = new InMemoryCache({ fragmentMatcher: this.fragmentMatcher });
   persistence = new CachePersistor({
     cache: this.cache,
     storage,

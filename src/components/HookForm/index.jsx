@@ -1,7 +1,9 @@
 import { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import { bool, func } from 'prop-types';
+import { string, bool, func, oneOfType, object } from 'prop-types';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
+import Code from '@mozilla-frontend-infra/components/Code';
+import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -12,6 +14,7 @@ import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Tooltip from '@material-ui/core/Tooltip';
+import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import FlashIcon from 'mdi-react/FlashIcon';
@@ -24,9 +27,11 @@ import { docs } from 'taskcluster-lib-urls';
 import Button from '../../components/Button';
 import SpeedDial from '../../components/SpeedDial';
 import SpeedDialAction from '../../components/SpeedDialAction';
+import DialogAction from '../../components/DialogAction';
 import DateDistance from '../../components/DateDistance';
 import { HOOKS_LAST_FIRE_TYPE } from '../../utils/constants';
 import { hook } from '../../utils/prop-types';
+import removeKeys from '../../utils/removeKeys';
 
 const initialHook = {
   metadata: {
@@ -88,6 +93,14 @@ const initialHook = {
   deleteIcon: {
     ...theme.mixins.errorIcon,
   },
+  code: {
+    maxHeight: '70vh',
+    margin: 0,
+  },
+  codeEditor: {
+    overflow: 'auto',
+    maxHeight: '70vh',
+  },
 }))
 /** A form to view/edit/create a hook */
 export default class HookForm extends Component {
@@ -108,6 +121,8 @@ export default class HookForm extends Component {
     onDeleteHook: func,
     /** If true, action buttons will be disabled. */
     actionLoading: bool,
+    /** Error to display. */
+    error: oneOfType([string, object]),
   };
 
   static defaultProps = {
@@ -119,6 +134,7 @@ export default class HookForm extends Component {
     onUpdateHook: null,
     onDeleteHook: null,
     actionLoading: false,
+    error: null,
   };
 
   state = {
@@ -133,10 +149,12 @@ export default class HookForm extends Component {
     taskInput: null,
     // eslint-disable-next-line react/no-unused-state
     triggerSchema: null,
+    triggerContextInput: JSON.stringify({}),
     taskValidJson: true,
     triggerSchemaValidJson: true,
     scheduleTextField: '',
     schedule: null,
+    dialogOpen: false,
   };
 
   static getDerivedStateFromProps({ hook }, state) {
@@ -173,8 +191,7 @@ export default class HookForm extends Component {
       task,
       triggerSchema,
     } = this.state;
-
-    return {
+    const definition = {
       metadata: {
         name,
         description,
@@ -185,11 +202,19 @@ export default class HookForm extends Component {
       task,
       triggerSchema,
     };
+
+    return removeKeys(definition, ['__typename']);
   };
 
-  // TODO: Handle trigger hook
-  handleTriggerHook = () => {
-    // const hook = this.state.triggerSchema;
+  handleTriggerHookSubmit = () => {
+    const { onTriggerHook } = this.props;
+    const { hookId, hookGroupId, triggerContextInput } = this.state;
+
+    return onTriggerHook({
+      hookId,
+      hookGroupId,
+      payload: JSON.parse(triggerContextInput),
+    });
   };
 
   handleUpdateHook = () => {
@@ -300,8 +325,20 @@ export default class HookForm extends Component {
     });
   };
 
+  handleActionDialogClose = () => {
+    this.setState({ dialogOpen: false });
+  };
+
+  handleTriggerHookClick = () => {
+    this.setState({ dialogOpen: true });
+  };
+
+  handleTriggerContextChange = triggerContextInput => {
+    this.setState({ triggerContextInput });
+  };
+
   render() {
-    const { hook, classes, isNewHook } = this.props;
+    const { error, hook, classes, isNewHook } = this.props;
     const {
       description,
       hookId,
@@ -313,12 +350,15 @@ export default class HookForm extends Component {
       schedule,
       taskInput,
       triggerSchemaInput,
+      triggerContextInput,
+      dialogOpen,
     } = this.state;
     /* eslint-disable-next-line no-underscore-dangle */
     const lastFireTypeName = !isNewHook && hook.status.lastFire.__typename;
 
     return (
       <Fragment>
+        {error && !dialogOpen && <ErrorPanel error={error} />}
         <List>
           {isNewHook && (
             <Fragment>
@@ -582,7 +622,7 @@ export default class HookForm extends Component {
               requiresAuth
               tooltipOpen
               icon={<FlashIcon />}
-              onClick={this.handleTriggerHook}
+              onClick={this.handleTriggerHookClick}
               classes={{ button: classes.successIcon }}
               ButtonProps={{
                 disabled: !this.validHook(),
@@ -590,6 +630,50 @@ export default class HookForm extends Component {
               tooltipTitle="Trigger Hook"
             />
           </SpeedDial>
+        )}
+        {dialogOpen && (
+          <DialogAction
+            fullScreen
+            open={dialogOpen}
+            onSubmit={this.handleTriggerHookSubmit}
+            onComplete={this.handleActionDialogClose}
+            onClose={this.handleActionDialogClose}
+            confirmText="Trigger Hook"
+            body={
+              <Fragment>
+                {error && dialogOpen && <ErrorPanel error={error} />}
+                <Typography gutterBottom>
+                  Trigger Hook{' '}
+                  <code>
+                    {hookGroupId}/{hookId}
+                  </code>{' '}
+                  with the following context:
+                </Typography>
+                <Grid container spacing={16}>
+                  <Grid item lg={6} md={6} sm={12}>
+                    <Typography gutterBottom variant="subheading">
+                      Context
+                    </Typography>
+                    <CodeEditor
+                      className={classes.codeEditor}
+                      options={{ mode: 'json' }}
+                      lint
+                      value={triggerContextInput}
+                      onChange={this.handleTriggerContextChange}
+                    />
+                  </Grid>
+                  <Grid item lg={6} md={6} sm={12}>
+                    <Typography gutterBottom variant="subheading">
+                      Schema
+                    </Typography>
+                    <Code language="json" className={classes.code}>
+                      {JSON.stringify(triggerSchemaInput, null, 2)}
+                    </Code>
+                  </Grid>
+                </Grid>
+              </Fragment>
+            }
+          />
         )}
       </Fragment>
     );

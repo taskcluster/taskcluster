@@ -139,27 +139,30 @@ export default class ViewTask extends Component {
 
       updateTaskIdHistory(taskId);
 
-      actions.actions.forEach(action => {
-        const schema = action.schema || {};
+      actions &&
+        actions.actions.forEach(action => {
+          const schema = action.schema || {};
 
-        // if an action with this name has already been selected,
-        // don't consider this version
-        if (
-          task &&
-          task.tags &&
-          taskInContext(action.context, task.tags) &&
-          !taskActions.some(({ name }) => name === action.name)
-        ) {
-          taskActions.push(action);
-        } else {
-          return;
-        }
+          // if an action with this name has already been selected,
+          // don't consider this version
+          if (
+            task &&
+            task.tags &&
+            taskInContext(action.context, task.tags) &&
+            !taskActions.some(({ name }) => name === action.name)
+          ) {
+            taskActions.push(action);
+          } else {
+            return;
+          }
 
-        actionInputs[action.name] = safeDump(jsonSchemaDefaults(schema) || {});
-        actionData[action.name] = {
-          action,
-        };
-      });
+          actionInputs[action.name] = safeDump(
+            jsonSchemaDefaults(schema) || {}
+          );
+          actionData[action.name] = {
+            action,
+          };
+        });
       const caches = getCachesFromTask(task);
 
       return {

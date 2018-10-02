@@ -9,6 +9,7 @@ import hookQuery from './hook.graphql';
 import createHookQuery from './createHook.graphql';
 import deleteHookQuery from './deleteHook.graphql';
 import updateHookQuery from './updateHook.graphql';
+import triggerHookQuery from './triggerHook.graphql';
 
 @hot(module)
 @withApollo
@@ -87,8 +88,25 @@ export default class ViewHook extends Component {
     }
   };
 
-  // TODO: Attach action
-  handleTriggerHook = () => {};
+  handleTriggerHook = async ({ hookGroupId, hookId, payload }) => {
+    this.setState({ error: null, actionLoading: true });
+
+    try {
+      await this.props.client.mutate({
+        mutation: triggerHookQuery,
+        variables: {
+          hookId,
+          hookGroupId,
+          payload,
+        },
+      });
+      await this.props.data.refetch();
+
+      this.setState({ error: null, actionLoading: false });
+    } catch (error) {
+      this.setState({ error, actionLoading: false });
+    }
+  };
 
   render() {
     const { isNewHook, data } = this.props;
@@ -98,8 +116,11 @@ export default class ViewHook extends Component {
       <Dashboard title={isNewHook ? 'Create Hook' : 'Hook'}>
         {isNewHook ? (
           <Fragment>
-            {error && <ErrorPanel error={error} />}
-            <HookForm isNewHook onCreateHook={this.handleCreateHook} />
+            <HookForm
+              error={error}
+              isNewHook
+              onCreateHook={this.handleCreateHook}
+            />
           </Fragment>
         ) : (
           <Fragment>
@@ -109,6 +130,7 @@ export default class ViewHook extends Component {
               data.error.graphQLErrors && <ErrorPanel error={data.error} />}
             {data.hook && (
               <HookForm
+                error={error}
                 hook={data.hook}
                 onTriggerHook={this.handleTriggerHook}
                 onUpdateHook={this.handleUpdateHook}
