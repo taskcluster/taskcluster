@@ -100,7 +100,7 @@ tasks, with each task getting a unique `taskId` distinct from the
  
 ### Github Events
 
-You can put a task definition inside an `$if` - `then` statement so that it will only run for specific Github events:
+You can put a task definition inside an `$if` - `then` statement or a `$match` statement so that it will only run for specific Github events:
 
 ```yaml
 version: 1
@@ -110,6 +110,16 @@ tasks:
       ...
       ...
 ```
+OR
+```yaml
+version: 1
+tasks:
+  $match:
+    'tasks_for == "github-push"':
+      ...
+      ...
+```
+
 
 NOTE: A well-designed template should produce `tasks: []` for any unrecognized `tasks_for` values; this allows later expansion of this service to handle more events.
 
@@ -171,10 +181,9 @@ version: 1
 policy:
   pullRequests: public
 tasks:
-  - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
-    then:
+  $match:
+    'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]':
       taskId: {$eval: as_slugid("pr_task")}
-      deadline: {$fromNow: '1 hour'}
       provisionerId: aws-provisioner-v1
       workerType: github-worker
       scopes:
@@ -195,10 +204,8 @@ tasks:
         description: "All tests"
         owner: ${event.pull_request.user.login}@users.noreply.github.com
         source: ${event.repository.url}
-  - $if: 'tasks_for == "github-push"'
-    then:
+    'tasks_for == "github-push"':
       taskId: {$eval: as_slugid("push_task")}
-      deadline: {$fromNow: '1 hour'}
       provisionerId: aws-provisioner-v1
       workerType: github-worker
       scopes:

@@ -9,12 +9,13 @@ suite('tc-yaml_test.js', function() {
         schedulerId: 'test-sched',
       },
     };
+    const now = new Date().toJSON();
 
     test('compileTasks with no tasks', function() {
       const config = {
         tasks: [],
       };
-      tcyaml.compileTasks(config, cfg, {});
+      tcyaml.compileTasks(config, cfg, {}, now);
       assume(config.tasks).to.deeply.equal([]);
     });
 
@@ -22,10 +23,12 @@ suite('tc-yaml_test.js', function() {
       const config = {
         tasks: [{}],
       };
-      tcyaml.compileTasks(config, cfg, {});
+
+      tcyaml.compileTasks(config, cfg, {}, now);
       assume(config.tasks).to.deeply.equal([{
         taskId: config.tasks[0].taskId,
         task: {
+          created: now,
           taskGroupId: config.tasks[0].taskId, // matches taskId
           schedulerId: 'test-sched',
         },
@@ -38,10 +41,11 @@ suite('tc-yaml_test.js', function() {
           taskId: 'task-1',
         }],
       };
-      tcyaml.compileTasks(config, cfg, {});
+      tcyaml.compileTasks(config, cfg, {}, now);
       assume(config.tasks).to.deeply.equal([{
         taskId: 'task-1',
         task: {
+          created: now,
           taskGroupId: 'task-1',
           schedulerId: 'test-sched',
         },
@@ -54,10 +58,11 @@ suite('tc-yaml_test.js', function() {
           taskGroupId: 'tgid-1',
         }],
       };
-      tcyaml.compileTasks(config, cfg, {});
+      tcyaml.compileTasks(config, cfg, {}, now);
       assume(config.tasks).to.deeply.equal([{
         taskId: 'tgid-1',
         task: {
+          created: now,
           taskGroupId: 'tgid-1',
           schedulerId: 'test-sched',
         },
@@ -68,7 +73,7 @@ suite('tc-yaml_test.js', function() {
       const config = {
         tasks: [{}, {}],
       };
-      tcyaml.compileTasks(config, cfg, {});
+      tcyaml.compileTasks(config, cfg, {}, now);
       // taskGroupIds match
       assume(config.tasks[0].task.taskGroupId).to.equal(config.tasks[1].task.taskGroupId);
       // taskIds don't
@@ -90,16 +95,18 @@ suite('tc-yaml_test.js', function() {
           schedulerId: 'my-scheduler-id',
         }],
       };
-      tcyaml.compileTasks(config, cfg, {});
+      tcyaml.compileTasks(config, cfg, {}, now);
       assume(config.tasks).to.deeply.equal([{
         taskId: 'task-1',
         task: {
+          created: now,
           taskGroupId: 'tgid-1',
           schedulerId: 'test-sched',
         },
       }, {
         taskId: 'task-2',
         task: {
+          created: now,
           taskGroupId: 'tgid-2',
           schedulerId: 'test-sched',
         },
