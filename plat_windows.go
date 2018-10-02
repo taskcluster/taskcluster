@@ -424,21 +424,27 @@ func install(arguments map[string]interface{}) (err error) {
 	case arguments["service"]:
 		nssm := convertNilToEmptyString(arguments["--nssm"])
 		serviceName := convertNilToEmptyString(arguments["--service-name"])
+		configureForAws := arguments["--configure-for-aws"].(bool)
 		dir := filepath.Dir(exePath)
-		return deployService(configFile, nssm, serviceName, exePath, dir)
+		return deployService(configFile, nssm, serviceName, exePath, dir, configureForAws)
 	}
 	log.Fatal("Unknown install target - only 'service' is allowed")
 	return nil
 }
 
-func CreateRunGenericWorkerBatScript(batScriptFilePath string) error {
+func CreateRunGenericWorkerBatScript(batScriptFilePath string, configureForAws bool) error {
+	runCommand := `.\generic-worker.exe run`
+	if configureForAws {
+		runCommand += ` --configure-for-aws`
+	}
+	runCommand += ` > .\generic-worker.log 2>&1`
 	batScriptContents := []byte(strings.Join([]string{
 		`:: Run generic-worker`,
 		``,
 		`:: step inside folder containing this script`,
 		`pushd %~dp0`,
 		``,
-		`.\generic-worker.exe run --configure-for-aws > .\generic-worker.log 2>&1`,
+		runCommand,
 		``,
 		`:: Possible exit codes:`,
 		`::    0: all tasks completed   - only occurs when numberOfTasksToRun > 0`,
@@ -482,9 +488,9 @@ func SetAutoLogin(user *runtime.OSUser) error {
 // is required to install the service, specified as a file system path. The
 // serviceName is the service name given to the newly created service. if the
 // service already exists, it is simply updated.
-func deployService(configFile, nssm, serviceName, exePath, dir string) error {
+func deployService(configFile, nssm, serviceName, exePath, dir string, configureForAws bool) error {
 	targetScript := filepath.Join(filepath.Dir(exePath), "run-generic-worker.bat")
-	err := CreateRunGenericWorkerBatScript(targetScript)
+	err := CreateRunGenericWorkerBatScript(targetScript, configureForAws)
 	if err != nil {
 		return err
 	}

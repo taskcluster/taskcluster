@@ -86,6 +86,7 @@ and reports back results to the queue.
     generic-worker install service          [--nssm           NSSM-EXE]
                                             [--service-name   SERVICE-NAME]
                                             [--config         CONFIG-FILE]
+                                            [--configure-for-aws]
     generic-worker show-payload-schema
     generic-worker new-openpgp-keypair      --file PRIVATE-KEY-FILE
     generic-worker grant-winsta-access      --sid SID
@@ -127,9 +128,13 @@ and reports back results to the queue.
                                             installation should use, rather than the config
                                             to use during install.
                                             [default: generic-worker.config]
-    --configure-for-aws                     This will create the CONFIG-FILE for an AWS
-                                            installation by querying the AWS environment
-                                            and setting appropriate values.
+    --configure-for-aws                     Use this option when installing or running a worker
+                                            that is spawned by the AWS provisioner. It will cause
+                                            the worker to query the EC2 metadata service when it
+                                            is run, in order to retrieve data that will allow it
+                                            to self-configure, based on AWS metadata, information
+                                            from the provisioner, and the worker type definition
+                                            that the provisioner holds for the worker type.
     --nssm NSSM-EXE                         The full path to nssm.exe to use for installing
                                             the service.
                                             [default: C:\nssm-2.24\win64\nssm.exe]
