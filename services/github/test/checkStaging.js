@@ -1,4 +1,4 @@
-const Github = require('github');
+const Github = require('@octokit/rest');
 const load = require('../src/main');
 const child_process = require('child_process');
 const fs = require('fs-extra');

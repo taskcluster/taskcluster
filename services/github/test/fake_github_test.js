@@ -1,6 +1,6 @@
 const assert = require('assert');
 const _ = require('lodash');
-const github = require('github');
+const github = require('@octokit/rest');
 const fakeGithubAuth = require('./github-auth');
 
 suite('fake github', function() {
