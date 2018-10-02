@@ -25,13 +25,12 @@ type (
 		Status    TaskStatus              `json:"-"`
 		Commands  []*process.Command      `json:"-"`
 		// not exported
-		logMux             sync.RWMutex
-		logWriter          io.Writer
-		maxRunTimeDeadline time.Time
-		queueMux           sync.RWMutex
-		Queue              *tcqueue.Queue     `json:"-"`
-		StatusManager      *TaskStatusManager `json:"-"`
-		LocalClaimTime     time.Time          `json:"-"`
+		logMux         sync.RWMutex
+		logWriter      io.Writer
+		queueMux       sync.RWMutex
+		Queue          *tcqueue.Queue     `json:"-"`
+		StatusManager  *TaskStatusManager `json:"-"`
+		LocalClaimTime time.Time          `json:"-"`
 		// PlatformData contains platform-specific data related to the
 		// execution environment, such as access tokens on Windows
 		PlatformData *PlatformData `json:"-"`
