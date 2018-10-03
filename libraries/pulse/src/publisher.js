@@ -39,7 +39,7 @@ class Exchanges {
 
   async publisher({rootUrl, schemaset, client, sendDeadline, publish, aws}) {
     let publisher;
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env.NODE_ENV !== 'production') {
       this.exchangePrefix = `exchange/${client.namespace}/${this.version}/`;
     }
 
