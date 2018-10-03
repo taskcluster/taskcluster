@@ -5,13 +5,17 @@ let Promise = require('bluebird');
 let AWS = require('aws-sdk');
 let utils = require('./utils');
 
-// These numbers come from the Firehose docs.
+// This number comes from the Kinesis docs.
 const MAX_RECORD_SIZE = 1000 * 1000;
 
 // This is just a number I picked.
 const MAX_RETRIES = 5;
 
-class FirehoseLog extends events.EventEmitter {
+// Consistent partition key for all records. This can be changed later if the volume of audit
+// logs greatly increases.
+const AUDITLOG_PARTITION_KEY = 'auditlog';
+
+class KinesisLog extends events.EventEmitter {
 
   constructor({aws, logName, reportAuditLogErrors, resourceInterval, crashTimeout, statsum}) {
     super();
@@ -21,7 +25,7 @@ class FirehoseLog extends events.EventEmitter {
 
     this._flushInterval = resourceInterval * 1000;
     this._crashTimeout = crashTimeout;
-    this._firehose = new AWS.Firehose(aws);
+    this._kinesis = new AWS.Kinesis(aws);
     this._logName = logName;
     this._records = [];
     this._flushTimer = setTimeout(this.flush.bind(this), this._flushInterval);
@@ -30,11 +34,11 @@ class FirehoseLog extends events.EventEmitter {
   }
 
   async setup() {
-    let stat = await this._firehose.describeDeliveryStream({
-      DeliveryStreamName: this._logName,
+    let stat = await this._kinesis.describeStream({
+      StreamName: this._logName,
     }).promise();
-    if (stat.DeliveryStreamDescription.DeliveryStreamStatus !== 'ACTIVE') {
-      throw new Error(`Delivery Stream ${this._logName} is not yet active!`);
+    if (stat.StreamDescription.StreamStatus !== 'ACTIVE') {
+      throw new Error(`Stream ${this._logName} is not yet active!`);
     }
   }
 
@@ -95,9 +99,12 @@ class FirehoseLog extends events.EventEmitter {
       let {records} = chunk;
       let res;
       try {
-        res = await this._firehose.putRecord({
-          DeliveryStreamName: this._logName,
-          Record: {Data: records.map(line => line.line).join('')},
+        let krecords = records.map(line => {
+          return {Data: line.line, PartitionKey: AUDITLOG_PARTITION_KEY};
+        });
+        res = await this._kinesis.putRecords({
+          StreamName: this._logName,
+          Records: krecords,
         }).promise();
       } catch (err) {
         if (!err.statusCode) {
@@ -146,4 +153,4 @@ class NoopLog extends events.EventEmitter {
   }
 }
 
-module.exports = {NoopLog, FirehoseLog};
+module.exports = {NoopLog, KinesisLog};
