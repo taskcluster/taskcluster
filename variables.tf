@@ -1,11 +1,6 @@
-variable "bucket_prefix" {
+variable "prefix" {
   type        = "string"
-  description = "The prefix of all s3 buckets needed for a taskcluster cluster to function."
-}
-
-variable "azure_resource_group_name" {
-  type        = "string"
-  description = "Name of azure storage resource group"
+  description = "Short prefix applied to all cloud resources needed for a taskcluster cluster to function. This should be different for each deployment sharing a cloud account."
 }
 
 variable "azure_region" {
