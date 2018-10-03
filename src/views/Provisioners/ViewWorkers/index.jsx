@@ -10,12 +10,15 @@ import TextField from '@material-ui/core/TextField';
 import HammerIcon from 'mdi-react/HammerIcon';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
+import DialogAction from '../../../components/DialogAction';
 import WorkersTable from '../../../components/WorkersTable';
 import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';
+import { withAuth } from '../../../utils/Auth';
 import workersQuery from './workers.graphql';
 
 @hot(module)
+@withAuth
 @graphql(workersQuery, {
   skip: props => !props.match.params.provisionerId,
   options: ({ match: { params } }) => ({
@@ -41,6 +44,10 @@ import workersQuery from './workers.graphql';
 export default class ViewWorkers extends Component {
   state = {
     filterBy: null,
+    actionLoading: false,
+    dialogError: null,
+    dialogOpen: false,
+    selectedAction: null,
   };
 
   handlePageChange = ({ cursor, previousCursor }) => {
@@ -80,6 +87,10 @@ export default class ViewWorkers extends Component {
     });
   };
 
+  handleDialogClose = () => {
+    this.setState({ dialogOpen: false, selectedAction: null });
+  };
+
   handleFilterChange = ({ target }) => {
     const {
       data: { refetch },
@@ -102,11 +113,44 @@ export default class ViewWorkers extends Component {
     });
   };
 
-  // TODO: Handle action request
-  handleActionClick() {}
+  // TODO: Action not working
+  handleActionSubmit = async () => {
+    const { selectedAction } = this.state;
+    const {
+      match: { params },
+    } = this.props;
+    const url = selectedAction.url
+      .replace('<provisionerId>', params.provisionerId)
+      .replace('<workerType>', params.workerType);
+
+    this.setState({ actionLoading: true, dialogError: null });
+
+    await fetch(url, {
+      method: selectedAction.method,
+      Authorization: `Bearer ${btoa(
+        JSON.stringify(this.props.user.credentials)
+      )}`,
+    });
+
+    this.setState({ actionLoading: false });
+  };
+
+  handleActionClick = async selectedAction => {
+    this.setState({ dialogOpen: true, selectedAction });
+  };
+
+  handleActionError = dialogError => {
+    this.setState({ dialogError, actionLoading: false });
+  };
 
   render() {
-    const { filterBy } = this.state;
+    const {
+      filterBy,
+      actionLoading,
+      selectedAction,
+      dialogOpen,
+      dialogError,
+    } = this.state;
     const {
       classes,
       match: { params },
@@ -117,6 +161,7 @@ export default class ViewWorkers extends Component {
       <Dashboard title="Workers">
         <Fragment>
           {(!workers || !workerType) && loading && <Spinner loading />}
+          {this.state.error && <ErrorPanel error={this.state.error} />}
           {error && error.graphQLErrors && <ErrorPanel error={error} />}
           {workers &&
             workerType && (
@@ -149,16 +194,32 @@ export default class ViewWorkers extends Component {
                         requiresAuth
                         tooltipOpen
                         key={action.title}
-                        ButtonProps={{ color: 'secondary' }}
+                        ButtonProps={{
+                          color: 'secondary',
+                          disabled: actionLoading,
+                        }}
                         icon={<HammerIcon />}
                         tooltipTitle={action.title}
-                        onClick={this.handleActionClick}
+                        onClick={() => this.handleActionClick(action)}
                       />
                     ))}
                   </SpeedDial>
                 ) : null}
               </Fragment>
             )}
+          {dialogOpen && (
+            <DialogAction
+              error={dialogError}
+              open={dialogOpen}
+              title={`${selectedAction.title}?`}
+              body={selectedAction.description}
+              confirmText={selectedAction.title}
+              onSubmit={this.handleActionSubmit}
+              onError={this.handleActionError}
+              onComplete={this.handleDialogClose}
+              onClose={this.handleDialogClose}
+            />
+          )}
         </Fragment>
       </Dashboard>
     );

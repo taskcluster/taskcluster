@@ -2,7 +2,6 @@ import { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { bool } from 'prop-types';
 import Markdown from '@mozilla-frontend-infra/components/Markdown';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -18,6 +17,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import DateDistance from '../DateDistance';
 import Button from '../Button';
 import StatusLabel from '../StatusLabel';
+import DialogAction from '../DialogAction';
 import { provisioner } from '../../utils/prop-types';
 import { withAuth } from '../../utils/Auth';
 import { ACTION_CONTEXT } from '../../utils/constants';
@@ -80,6 +80,9 @@ export default class ProvisionerDetailsCard extends Component {
   state = {
     showDescription: false,
     actionLoading: false,
+    dialogOpen: false,
+    dialogError: null,
+    selectedAction: null,
   };
 
   handleToggleDescription = () => {
@@ -93,26 +96,35 @@ export default class ProvisionerDetailsCard extends Component {
   };
 
   // TODO: Action not working.
-  handleActionClick = async action => {
-    const url = action.url.replace(
+  handleActionSubmit = async () => {
+    const { selectedAction } = this.state;
+    const url = selectedAction.url.replace(
       '<provisionerId>',
       this.props.provisioner.provisionerId
     );
 
-    this.setState({ actionLoading: true, error: null });
+    this.setState({ actionLoading: true, dialogError: null });
 
-    try {
-      await fetch(url, {
-        method: action.method,
-        Authorization: `Bearer ${btoa(
-          JSON.stringify(this.props.user.credentials)
-        )}`,
-      });
+    await fetch(url, {
+      method: selectedAction.method,
+      Authorization: `Bearer ${btoa(
+        JSON.stringify(this.props.user.credentials)
+      )}`,
+    });
 
-      this.setState({ actionLoading: false });
-    } catch (error) {
-      this.setState({ error, actionLoading: false });
-    }
+    this.setState({ actionLoading: false, dialogError: null });
+  };
+
+  handleActionClick = selectedAction => {
+    this.setState({ dialogOpen: true, selectedAction });
+  };
+
+  handleActionError = dialogError => {
+    this.setState({ dialogError, actionLoading: false });
+  };
+
+  handleDialogClose = () => {
+    this.setState({ dialogOpen: false });
   };
 
   renderActions = () => {
@@ -145,80 +157,95 @@ export default class ProvisionerDetailsCard extends Component {
 
   render() {
     const { classes, provisioner, dense } = this.props;
-    const { showDescription, error } = this.state;
+    const {
+      showDescription,
+      dialogError,
+      dialogOpen,
+      selectedAction,
+    } = this.state;
 
     return (
-      <Card raised>
-        <CardContent classes={{ root: classes.cardContent }}>
-          <Typography variant="headline" className={classes.headline}>
-            {provisioner.provisionerId}
-          </Typography>
-          <List dense={dense}>
-            {error && (
+      <Fragment>
+        <Card raised>
+          <CardContent classes={{ root: classes.cardContent }}>
+            <Typography variant="headline" className={classes.headline}>
+              {provisioner.provisionerId}
+            </Typography>
+            <List dense={dense}>
               <ListItem>
-                <ErrorPanel className={classes.errorPanel} error={error} />
+                <ListItemText
+                  primary="Last Active"
+                  secondary={<DateDistance from={provisioner.lastDateActive} />}
+                />
               </ListItem>
-            )}
-            <ListItem>
-              <ListItemText
-                primary="Last Active"
-                secondary={<DateDistance from={provisioner.lastDateActive} />}
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                primary="Expires"
-                secondary={<DateDistance from={provisioner.expires} />}
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                primary="Stability"
-                secondary={<StatusLabel state={provisioner.stability} />}
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                primary="Actions"
-                secondary={this.renderActions()}
-              />
-            </ListItem>
-            <ListItem
-              className={classes.listItemButton}
-              button
-              onClick={this.handleProvisionerChange}>
-              <ListItemText primary="Explore worker type" />
-              <LinkIcon />
-            </ListItem>
-            {provisioner.description ? (
-              <Fragment>
-                <ListItem
-                  button
-                  className={classes.listItemButton}
-                  onClick={this.handleToggleDescription}>
-                  <ListItemText primary="Description" />
-                  {showDescription ? <ChevronUpIcon /> : <ChevronDownIcon />}
+              <ListItem>
+                <ListItemText
+                  primary="Expires"
+                  secondary={<DateDistance from={provisioner.expires} />}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Stability"
+                  secondary={<StatusLabel state={provisioner.stability} />}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Actions"
+                  secondary={this.renderActions()}
+                />
+              </ListItem>
+              <ListItem
+                className={classes.listItemButton}
+                button
+                onClick={this.handleProvisionerChange}>
+                <ListItemText primary="Explore worker type" />
+                <LinkIcon />
+              </ListItem>
+              {provisioner.description ? (
+                <Fragment>
+                  <ListItem
+                    button
+                    className={classes.listItemButton}
+                    onClick={this.handleToggleDescription}>
+                    <ListItemText primary="Description" />
+                    {showDescription ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                  </ListItem>
+                  <Collapse in={showDescription} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                      <ListItem>
+                        <ListItemText
+                          secondary={
+                            <Markdown>{provisioner.description}</Markdown>
+                          }
+                        />
+                      </ListItem>
+                    </List>
+                  </Collapse>
+                </Fragment>
+              ) : (
+                <ListItem>
+                  <ListItemText primary="Description" secondary="n/a" />
                 </ListItem>
-                <Collapse in={showDescription} timeout="auto" unmountOnExit>
-                  <List component="div" disablePadding>
-                    <ListItem>
-                      <ListItemText
-                        secondary={
-                          <Markdown>{provisioner.description}</Markdown>
-                        }
-                      />
-                    </ListItem>
-                  </List>
-                </Collapse>
-              </Fragment>
-            ) : (
-              <ListItem>
-                <ListItemText primary="Description" secondary="n/a" />
-              </ListItem>
-            )}
-          </List>
-        </CardContent>
-      </Card>
+              )}
+            </List>
+          </CardContent>
+        </Card>
+        {dialogOpen && (
+          <DialogAction
+            error={dialogError}
+            open={dialogOpen}
+            title={`${selectedAction.title}?`}
+            body={selectedAction.description}
+            confirmText={selectedAction.title}
+            onSubmit={this.handleActionSubmit}
+            onError={this.handleActionError}
+            onComplete={this.handleDialogClose}
+            onClose={this.handleDialogClose}
+          />
+        )}
+      </Fragment>
     );
   }
 }
