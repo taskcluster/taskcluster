@@ -14,11 +14,13 @@ import DialogAction from '../../../components/DialogAction';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import WorkerTable from '../../../components/WorkerTable';
+import { withAuth } from '../../../utils/Auth';
 import workerQuery from './worker.graphql';
 import quarantineWorkerQuery from './quarantineWorker.graphql';
 
 @hot(module)
 @withApollo
+@withAuth
 @graphql(workerQuery, {
   skip: props => !props.match.params.provisionerId,
   options: ({ match: { params } }) => ({
@@ -30,9 +32,8 @@ export default class ViewWorker extends Component {
     super(props);
 
     this.state = {
+      dialogError: null,
       dialogOpen: false,
-      dialogTitle: null,
-      dialogBody: null,
       quarantineUntilInput:
         props.worker && props.worker.quarantineUntil
           ? props.worker.quarantineUntil
@@ -40,30 +41,57 @@ export default class ViewWorker extends Component {
     };
   }
 
-  handleDialogOpen = action => {
+  handleActionDialogOpen = selectedAction => {
     this.setState({
       dialogOpen: true,
-      ...(action
-        ? {
-            dialogTitle: action.title,
-            dialogBody: action.description,
-          }
-        : null),
+      selectedAction,
+    });
+  };
+
+  handleDialogOpen = () => {
+    this.setState({
+      dialogOpen: true,
     });
   };
 
   handleDialogClose = () => {
     this.setState({
       dialogOpen: false,
-      dialogTitle: null,
-      dialogBody: null,
+      selectedAction: null,
     });
   };
 
-  // TODO: Add action logic
-  handleDialogSubmit = () => {};
+  handleWorkerContextActionSubmit = async () => {
+    const { selectedAction } = this.state;
+    const {
+      user,
+      match: { params },
+    } = this.props;
+    const url = selectedAction.url
+      .replace('<provisionerId>', params.provisionerId)
+      .replace('<workerType>', params.workerType)
+      .replace('<workerGroup>', params.workerGroup)
+      .replace('<workerId>', params.workerId);
 
-  handleQuarantineDialogSubmit = () => {
+    this.setState({ actionLoading: true, dialogError: null });
+
+    // TODO: Action not working.
+    await fetch(url, {
+      method: selectedAction.method,
+      headers: new Headers({
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
+      }),
+    });
+
+    this.setState({ actionLoading: false });
+  };
+
+  handleActionError = e => {
+    this.setState({ dialogError: e, actionLoading: false });
+  };
+
+  handleQuarantineDialogSubmit = async () => {
     const {
       provisionerId,
       workerType,
@@ -71,7 +99,9 @@ export default class ViewWorker extends Component {
       workerId,
     } = this.props.match.params;
 
-    return this.props.client.mutate({
+    this.setState({ actionLoading: true, dialogError: null });
+
+    await this.props.client.mutate({
       mutation: quarantineWorkerQuery,
       variables: {
         provisionerId,
@@ -86,6 +116,8 @@ export default class ViewWorker extends Component {
       },
       refetchQueries: ['ViewWorker'],
     });
+
+    this.setState({ actionLoading: false });
   };
 
   handleQuarantineChange = ({ target }) => {
@@ -98,9 +130,10 @@ export default class ViewWorker extends Component {
     } = this.props;
     const {
       dialogOpen,
-      dialogTitle,
-      dialogBody,
+      selectedAction,
+      actionLoading,
       quarantineUntilInput,
+      dialogError,
     } = this.state;
 
     return (
@@ -131,7 +164,10 @@ export default class ViewWorker extends Component {
                     worker.quarantineUntil ? 'Update Quarantine' : 'Quarantine'
                   }
                   onClick={this.handleDialogOpen}
-                  ButtonProps={{ color: 'secondary' }}
+                  ButtonProps={{
+                    color: 'secondary',
+                    disabled: actionLoading,
+                  }}
                 />
                 {worker.actions.map(action => (
                   <SpeedDialAction
@@ -139,29 +175,30 @@ export default class ViewWorker extends Component {
                     tooltipOpen
                     key={action.title}
                     icon={<HammerIcon />}
-                    onClick={() => this.handleDialogOpen(action)}
-                    ButtonProps={{ color: 'secondary' }}
-                    tooltipTitle={
-                      <div>
-                        <div>{action.title}</div>
-                        <div>{action.description}</div>
-                      </div>
-                    }
+                    onClick={() => this.handleActionDialogOpen(action)}
+                    ButtonProps={{
+                      color: 'secondary',
+                      disabled: actionLoading,
+                    }}
+                    tooltipTitle={action.title}
                   />
                 ))}
               </SpeedDial>
               {dialogOpen &&
-                (dialogTitle ? (
+                (selectedAction ? (
                   <DialogAction
+                    error={dialogError}
                     open={dialogOpen}
-                    title={dialogTitle}
-                    body={dialogBody}
-                    confirmText={dialogTitle}
-                    onSubmit={this.handleQuarantineDialogSubmit}
+                    title={`${selectedAction.title}?`}
+                    body={selectedAction.description}
+                    confirmText={selectedAction.title}
+                    onSubmit={this.handleWorkerContextActionSubmit}
+                    onError={this.handleActionError}
                     onClose={this.handleDialogClose}
                   />
                 ) : (
                   <DialogAction
+                    error={dialogError}
                     open={dialogOpen}
                     title="Quarantine?"
                     body={
@@ -186,7 +223,9 @@ export default class ViewWorker extends Component {
                     confirmText={
                       worker.quarantineUntil ? 'Update' : 'Quarantine'
                     }
-                    onSubmit={this.handleDialogSubmit}
+                    onSubmit={this.handleQuarantineDialogSubmit}
+                    onError={this.handleActionError}
+                    onComplete={this.handleDialogClose}
                     onClose={this.handleDialogClose}
                   />
                 ))}

@@ -153,3 +153,8 @@ export const TASK_ADDED_FIELDS = [
   'latestArtifacts',
   'taskActions',
 ];
+export const ACTION_CONTEXT = {
+  PROVISIONER: 'PROVISIONER',
+  WORKER_TYPE: 'WORKER_TYPE',
+  WORKER: 'WORKER',
+};

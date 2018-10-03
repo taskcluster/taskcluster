@@ -2,6 +2,7 @@ import { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { bool } from 'prop-types';
 import Markdown from '@mozilla-frontend-infra/components/Markdown';
+import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -18,8 +19,11 @@ import DateDistance from '../DateDistance';
 import Button from '../Button';
 import StatusLabel from '../StatusLabel';
 import { provisioner } from '../../utils/prop-types';
+import { withAuth } from '../../utils/Auth';
+import { ACTION_CONTEXT } from '../../utils/constants';
 
 @withRouter
+@withAuth
 @withStyles(theme => ({
   actionButton: {
     marginRight: theme.spacing.unit,
@@ -54,6 +58,9 @@ import { provisioner } from '../../utils/prop-types';
     margin: 0,
     fontSize: theme.typography.body2.fontSize,
   },
+  errorPanel: {
+    width: '100%',
+  },
 }))
 /**
  * Render information in a card layout about a provisioner.
@@ -72,6 +79,7 @@ export default class ProvisionerDetailsCard extends Component {
 
   state = {
     showDescription: false,
+    actionLoading: false,
   };
 
   handleToggleDescription = () => {
@@ -84,13 +92,34 @@ export default class ProvisionerDetailsCard extends Component {
     );
   };
 
-  // TODO: Handle action request
-  handleActionClick = () => {};
+  // TODO: Action not working.
+  handleActionClick = async action => {
+    const url = action.url.replace(
+      '<provisionerId>',
+      this.props.provisioner.provisionerId
+    );
+
+    this.setState({ actionLoading: true, error: null });
+
+    try {
+      await fetch(url, {
+        method: action.method,
+        Authorization: `Bearer ${btoa(
+          JSON.stringify(this.props.user.credentials)
+        )}`,
+      });
+
+      this.setState({ actionLoading: false });
+    } catch (error) {
+      this.setState({ error, actionLoading: false });
+    }
+  };
 
   renderActions = () => {
     const { classes, provisioner } = this.props;
+    const { actionLoading } = this.state;
     const actions = provisioner.actions.filter(
-      ({ context }) => context === 'provisioner'
+      ({ context }) => context === ACTION_CONTEXT.PROVISIONER
     );
 
     return actions.length
@@ -102,8 +131,9 @@ export default class ProvisionerDetailsCard extends Component {
             title={action.description}>
             <Button
               requiresAuth
-              onClick={this.handleActionClick}
+              onClick={() => this.handleActionClick(action)}
               className={classes.actionButton}
+              disabled={actionLoading}
               size="small"
               variant="raised">
               {action.title}
@@ -115,7 +145,7 @@ export default class ProvisionerDetailsCard extends Component {
 
   render() {
     const { classes, provisioner, dense } = this.props;
-    const { showDescription } = this.state;
+    const { showDescription, error } = this.state;
 
     return (
       <Card raised>
@@ -124,6 +154,11 @@ export default class ProvisionerDetailsCard extends Component {
             {provisioner.provisionerId}
           </Typography>
           <List dense={dense}>
+            {error && (
+              <ListItem>
+                <ErrorPanel className={classes.errorPanel} error={error} />
+              </ListItem>
+            )}
             <ListItem>
               <ListItemText
                 primary="Last Active"
