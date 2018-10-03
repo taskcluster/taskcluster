@@ -62,7 +62,7 @@ The available options are:
  * `mock` - If true, the monitoring object will be a fake that stores data for testing but does not report it (for testing).
  * `enable` - If false, the monitoring object will only report to the console (but not store data; for deployments without monitoring)
  * `aws` - If provided, these should be of the form `{credentials: {accessKeyId: '...', secretAccessKey: '...'}, region: '...'}`
- * `logName` - If provided, this should be the name of a AWS Firehose deliveryStream that can be written to with the aws creds
+ * `logName` - If provided, this should be the name of a AWS Kinesis stream that can be written to with the aws creds
  * `gitVersion` -  git version (for correlating errors); or..
  * `gitVersionFile` -  file containing git version (relative to app root)
 
@@ -237,7 +237,7 @@ doodad.measure();
 
 ###  Audit Logs
 For the time being, this is restricted to services that have use AWS credentials directly rather than via accessing via the
-auth service. Given a set of credentials that allow writing to a Kinesis Firehose and the name of that Firehose, this will
+auth service. Given a set of credentials that allow writing to a Kinesis stream and the name of that Kinesis stream, this will
 allow writing arbitrary JSON blobs to that endpoint. The blobs will end up in S3 for permanent storage. We use this for things
 like audit logs that we want to keep for a long time. Records must be less than 1MB when stringified.
 

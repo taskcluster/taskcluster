@@ -100,7 +100,7 @@ async function monitor(options) {
 
   let auditlog;
   if (options.enable && options.aws && options.logName) {
-    auditlog = new auditlogs.FirehoseLog(Object.assign({}, options, {statsum}));
+    auditlog = new auditlogs.KinesisLog(Object.assign({}, options, {statsum}));
   } else {
     auditlog = new auditlogs.NoopLog();
   }
