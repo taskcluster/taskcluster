@@ -13,7 +13,6 @@ class Exchanges {
 
     Object.assign(this, options);
     this.entries = [];
-
     this.exchangePrefix = `exchange/${this.projectName}/${this.version}/`;
   }
 
@@ -40,6 +39,10 @@ class Exchanges {
 
   async publisher({rootUrl, schemaset, client, sendDeadline, publish, aws}) {
     let publisher;
+    if (process.env.NODE_ENV !== 'development') {
+      this.exchangePrefix = `exchange/${client.namespace}/${this.version}/`;
+    }
+
     if (client.isFakeClient) {
       publisher = new FakePulsePublisher({rootUrl, schemaset, exchanges: this});
     } else {
@@ -165,8 +168,10 @@ class PulsePublisher {
     this.exchanges = exchanges;
     this.sendDeadline = sendDeadline || 12000;
 
-    assert.equal(client.namespace, exchanges.projectName,
-      'client namespace must match projectName');
+    if (process.env.NODE_ENV === 'production') {
+      assert.equal(client.namespace, exchanges.projectName,
+        'client namespace must match projectName');
+    }
 
     this._handleConnection = this._handleConnection.bind(this);
   }
