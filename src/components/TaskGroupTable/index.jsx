@@ -122,7 +122,7 @@ export default class TaskGroupTable extends Component {
         onHeaderClick={this.handleHeaderClick}
         renderRow={({ node: taskGroup }) => (
           <TableRow
-            key={`task-group-${taskGroup.metadata.name}`}
+            key={`task-group-${taskGroup.status.taskId}`}
             className={classes.listItemButton}>
             <TableCell>
               <TableCellListItem

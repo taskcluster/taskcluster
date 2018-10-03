@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import { Component } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
-import { lowerCase } from 'change-case';
 import { isEmpty } from 'ramda';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { safeDump } from 'js-yaml';
@@ -168,7 +167,7 @@ export default class TaskGroup extends Component {
           ? {
               status: {
                 state: {
-                  $eq: lowerCase(filter),
+                  $eq: filter,
                 },
               },
             }
@@ -220,7 +219,7 @@ export default class TaskGroup extends Component {
         ? {
             status: {
               state: {
-                $eq: lowerCase(filter),
+                $eq: filter,
               },
             },
           }
