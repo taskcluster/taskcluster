@@ -177,9 +177,9 @@
     classnames "^2.2.5"
     keycode "^2.1.9"
 
-"@mozilla-frontend-infra/components@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-1.1.0.tgz#76b9b70505289f99368067b9e579753f468cb374"
+"@mozilla-frontend-infra/components@^1.3.1":
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-1.3.1.tgz#2dec67c0e0124597acca58b97efb4989fe098500"
   dependencies:
     classnames "^2.2.6"
     codemirror "^5.39.0"
