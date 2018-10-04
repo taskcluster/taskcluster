@@ -297,7 +297,7 @@ def putFile(filename, url, contentType):
     with open(filename, 'rb') as f:
         contentLength = os.fstat(f.fileno()).st_size
         return makeHttpRequest('put', url, f, headers={
-            'Content-Length': contentLength,
+            'Content-Length': str(contentLength),
             'Content-Type': contentType,
         })
 
