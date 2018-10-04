@@ -1046,7 +1046,6 @@ func (task *TaskRun) resolve(e *ExecutionErrors) *CommandExecutionError {
 
 func (task *TaskRun) setMaxRunTimer() *time.Timer {
 	return time.AfterFunc(
-		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
 		time.Second*time.Duration(task.Payload.MaxRunTime),
 		func() {
 			// ignore any error the Abort function returns - we are in the
