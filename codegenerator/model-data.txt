@@ -1,4 +1,4 @@
-Generated: 1538324334
+Generated: 1538641404
 The following file is an auto-generated static dump of the API models at time of code generation.
 It is provided here for reference purposes, but is not used by any code.
 
@@ -4422,7 +4422,7 @@ https://www.npmjs.com/package/cron-parser.  For example:
 The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
 [/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)
 for more information.'
-Base URL    = 'https://hooks.taskcluster.net/v1/'
+Base URL    = 'https://hooks.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'get'
@@ -6643,7 +6643,7 @@ example one could bind to `route.index.some-app.*.release-build`,
 and pick up all messages about release builds. Hence, it is a
 good idea to document task index hierarchies, as these make up extension
 points in their own.'
-Base URL    = 'https://index.taskcluster.net/v1/'
+Base URL    = 'https://index.taskcluster.net/v1'
 Entry 0     =
     Entry Type        = 'function'
     Entry Method      = 'get'
