@@ -84,7 +84,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker 10.11.3
+generic-worker 11.0.0
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -97,6 +97,7 @@ and reports back results to the queue.
     generic-worker install service          [--nssm           NSSM-EXE]
                                             [--service-name   SERVICE-NAME]
                                             [--config         CONFIG-FILE]
+                                            [--configure-for-aws]
     generic-worker show-payload-schema
     generic-worker new-openpgp-keypair      --file PRIVATE-KEY-FILE
     generic-worker grant-winsta-access      --sid SID
@@ -138,9 +139,13 @@ and reports back results to the queue.
                                             installation should use, rather than the config
                                             to use during install.
                                             [default: generic-worker.config]
-    --configure-for-aws                     This will create the CONFIG-FILE for an AWS
-                                            installation by querying the AWS environment
-                                            and setting appropriate values.
+    --configure-for-aws                     Use this option when installing or running a worker
+                                            that is spawned by the AWS provisioner. It will cause
+                                            the worker to query the EC2 metadata service when it
+                                            is run, in order to retrieve data that will allow it
+                                            to self-configure, based on AWS metadata, information
+                                            from the provisioner, and the worker type definition
+                                            that the provisioner holds for the worker type.
     --nssm NSSM-EXE                         The full path to nssm.exe to use for installing
                                             the service.
                                             [default: C:\nssm-2.24\win64\nssm.exe]
@@ -387,7 +392,7 @@ go test -v ./...
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 10.11.3
+$ ./release.sh 11.0.0
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
