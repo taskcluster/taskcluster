@@ -1492,11 +1492,23 @@ session = taskcluster.aio.createSession(loop=loop)
 asyncEC2Manager = taskcluster.aio.EC2Manager(options, session=session)
 ```
 A taskcluster service which manages EC2 instances.  This service does not understand any taskcluster concepts intrinsicaly other than using the name `workerType` to refer to a group of associated instances.  Unless you are working on building a provisioner for AWS, you almost certainly do not want to use this service
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+eC2Manager.ping() # -> None`
+# Async call
+await asyncEC2Manager.ping() # -> None
+```
+
 #### See the list of worker types which are known to be managed
 This method is only for debugging the ec2-manager
 
 
-Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/list-worker-types.json#)
+Required [output schema](v1/list-worker-types.json#)
 
 ```python
 # Sync calls
@@ -1514,7 +1526,7 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [input schema](http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#)
+Required [input schema](v1/run-instance-request.json#)
 
 ```python
 # Sync calls
@@ -1552,7 +1564,7 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#)
+Required [output schema](v1/worker-type-resources.json#)
 
 ```python
 # Sync calls
@@ -1572,7 +1584,7 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/health.json#)
+Required [output schema](v1/health.json#)
 
 ```python
 # Sync calls
@@ -1592,7 +1604,7 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/errors.json#)
+Required [output schema](v1/errors.json#)
 
 ```python
 # Sync calls
@@ -1612,7 +1624,7 @@ Takes the following arguments:
 
   * `workerType`
 
-Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/worker-type-state.json#)
+Required [output schema](v1/worker-type-state.json#)
 
 ```python
 # Sync calls
@@ -1632,7 +1644,7 @@ Takes the following arguments:
 
   * `name`
 
-Required [input schema](http://schemas.taskcluster.net/ec2-manager/v1/create-key-pair.json#)
+Required [input schema](v1/create-key-pair.json#)
 
 ```python
 # Sync calls
@@ -1684,7 +1696,7 @@ await asyncEC2Manager.terminateInstance(region='value', instanceId='value') # ->
 Return a list of possible prices for EC2
 
 
-Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/prices.json#)
+Required [output schema](v1/prices.json#)
 
 ```python
 # Sync calls
@@ -1697,9 +1709,9 @@ await asyncEC2Manager.getPrices() # -> result
 Return a list of possible prices for EC2
 
 
-Required [input schema](http://schemas.taskcluster.net/ec2-manager/v1/prices-request.json#)
+Required [input schema](v1/prices-request.json#)
 
-Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/prices.json#)
+Required [output schema](v1/prices.json#)
 
 ```python
 # Sync calls
@@ -1712,7 +1724,7 @@ await asyncEC2Manager.getSpecificPrices(payload) # -> result
 Give some basic stats on the health of our EC2 account
 
 
-Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/health.json#)
+Required [output schema](v1/health.json#)
 
 ```python
 # Sync calls
@@ -1725,7 +1737,7 @@ await asyncEC2Manager.getHealth() # -> result
 Return a list of recent errors encountered
 
 
-Required [output schema](http://schemas.taskcluster.net/ec2-manager/v1/errors.json#)
+Required [output schema](v1/errors.json#)
 
 ```python
 # Sync calls
@@ -1823,29 +1835,6 @@ This method is only for debugging the ec2-manager
 eC2Manager.purgeQueues() # -> None`
 # Async call
 await asyncEC2Manager.purgeQueues() # -> None
-```
-
-#### API Reference
-Generate an API reference for this service
-
-
-```python
-# Sync calls
-eC2Manager.apiReference() # -> None`
-# Async call
-await asyncEC2Manager.apiReference() # -> None
-```
-
-#### Ping Server
-Respond without doing anything.
-This endpoint is used to check that the service is up.
-
-
-```python
-# Sync calls
-eC2Manager.ping() # -> None`
-# Async call
-await asyncEC2Manager.ping() # -> None
 ```
 
 
@@ -2093,7 +2082,7 @@ https://www.npmjs.com/package/cron-parser.  For example:
  * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon
 
 The task definition is used as a JSON-e template, with a context depending on how it is fired.  See
-https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks
+[/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)
 for more information.
 #### Ping Server
 Respond without doing anything.
@@ -2627,6 +2616,18 @@ asyncLogin = taskcluster.aio.Login(options, session=session)
 ```
 The Login service serves as the interface between external authentication
 systems and Taskcluster credentials.
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+login.ping() # -> None`
+# Async call
+await asyncLogin.ping() # -> None
+```
+
 #### Get Taskcluster credentials given a suitable `access_token`
 Given an OIDC `access_token` from a trusted OpenID provider, return a
 set of Taskcluster credentials for use on behalf of the identified
@@ -2640,7 +2641,7 @@ Authorization: Bearer abc.xyz
 ```
 
 The `access_token` is first verified against the named
-:provider, then passed to the provider's API to retrieve a user
+:provider, then passed to the provider's APIBuilder to retrieve a user
 profile. That profile is then used to generate Taskcluster credentials
 appropriate to the user. Note that the resulting credentials may or may
 not include a `certificate` property. Callers should be prepared for either
@@ -2656,7 +2657,7 @@ Takes the following arguments:
 
   * `provider`
 
-Required [output schema](http://schemas.taskcluster.net/login/v1/oidc-credentials-response.json)
+Required [output schema](v1/oidc-credentials-response.json#)
 
 ```python
 # Sync calls
@@ -2665,18 +2666,6 @@ login.oidcCredentials(provider='value') # -> result
 # Async call
 await asyncLogin.oidcCredentials(provider) # -> result
 await asyncLogin.oidcCredentials(provider='value') # -> result
-```
-
-#### Ping Server
-Respond without doing anything.
-This endpoint is used to check that the service is up.
-
-
-```python
-# Sync calls
-login.ping() # -> None`
-# Async call
-await asyncLogin.ping() # -> None
 ```
 
 
@@ -2760,6 +2749,111 @@ Required [input schema](v1/irc-request.json#)
 notify.irc(payload) # -> None`
 # Async call
 await asyncNotify.irc(payload) # -> None
+```
+
+
+
+
+### Methods in `taskcluster.Pulse`
+```python
+import asyncio # Only for async 
+// Create Pulse client instance
+import taskcluster
+import taskcluster.aio
+
+pulse = taskcluster.Pulse(options)
+# Below only for async instances, assume already in coroutine
+loop = asyncio.get_event_loop()
+session = taskcluster.aio.createSession(loop=loop)
+asyncPulse = taskcluster.aio.Pulse(options, session=session)
+```
+The taskcluster-pulse service, typically available at `pulse.taskcluster.net`
+manages pulse credentials for taskcluster users.
+
+A service to manage Pulse credentials for anything using
+Taskcluster credentials. This allows for self-service pulse
+access and greater control within the Taskcluster project.
+#### Ping Server
+Respond without doing anything.
+This endpoint is used to check that the service is up.
+
+
+```python
+# Sync calls
+pulse.ping() # -> None`
+# Async call
+await asyncPulse.ping() # -> None
+```
+
+#### List Namespaces
+List the namespaces managed by this service.
+
+This will list up to 1000 namespaces. If more namespaces are present a
+`continuationToken` will be returned, which can be given in the next
+request. For the initial request, do not provide continuation token.
+
+
+Required [output schema](v1/list-namespaces-response.json#)
+
+```python
+# Sync calls
+pulse.listNamespaces() # -> result`
+# Async call
+await asyncPulse.listNamespaces() # -> result
+```
+
+#### Get a namespace
+Get public information about a single namespace. This is the same information
+as returned by `listNamespaces`.
+
+
+
+Takes the following arguments:
+
+  * `namespace`
+
+Required [output schema](v1/namespace.json#)
+
+```python
+# Sync calls
+pulse.namespace(namespace) # -> result`
+pulse.namespace(namespace='value') # -> result
+# Async call
+await asyncPulse.namespace(namespace) # -> result
+await asyncPulse.namespace(namespace='value') # -> result
+```
+
+#### Claim a namespace
+Claim a namespace, returning a connection string with access to that namespace
+good for use until the `reclaimAt` time in the response body. The connection
+string can be used as many times as desired during this period, but must not
+be used after `reclaimAt`.
+
+Connections made with this connection string may persist beyond `reclaimAt`,
+although it should not persist forever.  24 hours is a good maximum, and this
+service will terminate connections after 72 hours (although this value is
+configurable).
+
+The specified `expires` time updates any existing expiration times.  Connections
+for expired namespaces will be terminated.
+
+
+
+Takes the following arguments:
+
+  * `namespace`
+
+Required [input schema](v1/namespace-request.json#)
+
+Required [output schema](v1/namespace-response.json#)
+
+```python
+# Sync calls
+pulse.claimNamespace(namespace, payload) # -> result`
+pulse.claimNamespace(payload, namespace='value') # -> result
+# Async call
+await asyncPulse.claimNamespace(namespace, payload) # -> result
+await asyncPulse.claimNamespace(payload, namespace='value') # -> result
 ```
 
 
