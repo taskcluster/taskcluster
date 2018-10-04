@@ -154,7 +154,8 @@ func (l *LiveLogTask) reinstateBackingLog() {
 }
 
 func (l *LiveLogTask) uploadLiveLog() error {
-	maxRunTimeDeadline := l.task.LocalClaimTime.Add(time.Duration(l.task.Payload.MaxRunTime) * time.Second)
+	// add an extra 15 minutes, to adequately cover client/server clock drift or task initialisation delays
+	maxRunTimeDeadline := time.Now().Add(time.Duration(l.task.Payload.MaxRunTime+900) * time.Second)
 	// deduce stateless DNS name to use
 	statelessHostname := hostname.New(config.PublicIP, config.Subdomain, maxRunTimeDeadline, config.LiveLogSecret)
 	getURL, err := url.Parse(l.liveLog.GetURL)
