@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, Fragment } from 'react';
 import { bool, node, string } from 'prop-types';
 import { Link } from 'react-router-dom';
 import classNames from 'classnames';
@@ -13,6 +13,8 @@ import Divider from '@material-ui/core/Divider';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import MenuIcon from 'mdi-react/MenuIcon';
+import CloseIcon from 'mdi-react/CloseIcon';
+import HelpIcon from 'mdi-react/HelpIcon';
 import LightBulbOn from 'mdi-react/LightbulbOnIcon';
 import LightBulbOnOutline from 'mdi-react/LightbulbOnOutlineIcon';
 import PageTitle from '../PageTitle';
@@ -67,6 +69,14 @@ import { withThemeToggler } from '../../utils/ToggleTheme';
       borderRight: 0,
       backgroundColor: theme.palette.primary.main,
     },
+    helpDrawerPaper: {
+      width: '40vw',
+      [theme.breakpoints.down('sm')]: {
+        width: '90vw',
+      },
+      backgroundColor: theme.palette.primary.main,
+      padding: theme.spacing.triple,
+    },
     title: {
       textDecoration: 'none',
       color: theme.palette.text.primary,
@@ -92,11 +102,16 @@ import { withThemeToggler } from '../../utils/ToggleTheme';
         width: `calc(100% - ${theme.drawerWidth}px)`,
       },
     },
-    lightBulbButton: {
+    appBarButton: {
       marginLeft: theme.spacing.unit,
     },
     appIcon: {
       fill: theme.palette.common.white,
+    },
+    helpCloseIcon: {
+      position: 'absolute',
+      top: theme.spacing.unit,
+      right: theme.spacing.unit,
     },
   }),
   { withTheme: true }
@@ -124,16 +139,24 @@ export default class Dashboard extends Component {
      * Render elements in the app bar for searching purposes.
      */
     search: node,
+    /**
+     * Each page could contain important information for the new user
+     * of a particular view, but often doesn't warrant needing to
+     * be shown every time.
+     */
+    helpView: node,
   };
 
   static defaultProps = {
     title: '',
     disablePadding: false,
     search: null,
+    helpView: null,
   };
 
   state = {
     mobileOpen: false,
+    showHelpView: false,
     error: null,
   };
 
@@ -145,6 +168,10 @@ export default class Dashboard extends Component {
     this.setState({ mobileOpen: !this.state.mobileOpen });
   };
 
+  handleHelpViewToggle = () => {
+    this.setState({ showHelpView: !this.state.showHelpView });
+  };
+
   render() {
     const {
       classes,
@@ -154,10 +181,11 @@ export default class Dashboard extends Component {
       theme,
       title,
       search,
+      helpView,
       onToggleTheme,
       ...props
     } = this.props;
-    const { error, mobileOpen } = this.state;
+    const { error, mobileOpen, showHelpView } = this.state;
     const drawer = (
       <div>
         <div className={classes.toolbar}>
@@ -202,7 +230,7 @@ export default class Dashboard extends Component {
             {search}
             <Tooltip placement="bottom" title="Toggle light/dark theme">
               <IconButton
-                className={classes.lightBulbButton}
+                className={classes.appBarButton}
                 onClick={onToggleTheme}>
                 {theme.palette.type === 'dark' ? (
                   <LightBulbOn className={classes.appIcon} />
@@ -211,6 +239,15 @@ export default class Dashboard extends Component {
                 )}
               </IconButton>
             </Tooltip>
+            {helpView && (
+              <Tooltip placement="bottom" title="Page Information">
+                <IconButton
+                  onClick={this.handleHelpViewToggle}
+                  className={classes.appBarButton}>
+                  <HelpIcon />
+                </IconButton>
+              </Tooltip>
+            )}
           </Toolbar>
         </AppBar>
         <Hidden mdUp>
@@ -241,6 +278,26 @@ export default class Dashboard extends Component {
             {drawer}
           </Drawer>
         </Hidden>
+        <Drawer
+          variant="temporary"
+          anchor={theme.direction === 'rtl' ? 'left' : 'right'}
+          open={showHelpView}
+          onClose={this.handleHelpViewToggle}
+          classes={{
+            paper: classes.helpDrawerPaper,
+          }}
+          ModalProps={{
+            keepMounted: true,
+          }}>
+          <Fragment>
+            <IconButton
+              onClick={this.handleHelpViewToggle}
+              className={classes.helpCloseIcon}>
+              <CloseIcon />
+            </IconButton>
+            {helpView}
+          </Fragment>
+        </Drawer>
         <main
           className={classNames(
             classes.content,
