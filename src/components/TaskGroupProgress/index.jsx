@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import { bool, func, shape, arrayOf, string } from 'prop-types';
-import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import memoize from 'fast-memoize';
 import { equals, pipe, filter, map, sort as rSort } from 'ramda';
@@ -29,7 +28,6 @@ import {
   THEME,
   INITIAL_CURSOR,
 } from '../../utils/constants';
-import taskGroupCompactQuery from './taskGroupCompact.graphql';
 import sort from '../../utils/sort';
 
 const sorted = pipe(
@@ -102,17 +100,6 @@ const getStatusCount = memoize(
   }
 );
 
-@graphql(taskGroupCompactQuery, {
-  options: props => ({
-    pollInterval: TASK_GROUP_POLLING_INTERVAL,
-    variables: {
-      taskGroupId: props.taskGroupId,
-      taskGroupConnection: {
-        limit: TASK_GROUP_PROGRESS_SIZE,
-      },
-    },
-  }),
-})
 @withStyles(theme => ({
   statusButton: {
     display: 'flex',
@@ -196,6 +183,11 @@ export default class TaskGroupProgress extends Component {
       pageInfo,
       edges: arrayOf(task),
     }),
+    // TODO: Add comment
+    /** A GraphQL Apollo fetchMore function. */
+    onFetchMore: func,
+    /** A GraphQL Apollo refetch function. */
+    onRefetch: func,
     /** If true, the state cards will be disabled. */
     disabled: bool,
   };
@@ -220,44 +212,62 @@ export default class TaskGroupProgress extends Component {
   componentDidUpdate(prevProps) {
     const {
       onCountUpdate,
+      onRefetch,
+      onFetchMore,
       taskGroupId,
-      data: { taskGroup, fetchMore, refetch },
+      taskGroup,
     } = this.props;
+
+    if (!taskGroup) {
+      return;
+    }
+
     const { statusCount } = this.state;
 
     if (prevProps.taskGroupId !== taskGroupId) {
       previousCursor = INITIAL_CURSOR;
       this.setState({ statusCount: initialStatusCount });
 
-      return refetch({
+      return onRefetch({
         pollInterval: TASK_GROUP_POLLING_INTERVAL,
         variables: {
           taskGroupId,
-          taskGroupConnection: {
+          taskGroupCompactConnection: {
             limit: TASK_GROUP_PROGRESS_SIZE,
           },
         },
       });
     }
 
-    const newStatusCount =
-      taskGroup && taskGroup.edges ? getStatusCount(taskGroup.edges) : {};
+    const newStatusCount = taskGroup.edges
+      ? getStatusCount(taskGroup.edges)
+      : {};
+    // Make sure data is not from another task group which
+    // can happen when a user searches for a different task group
+    const isFromSameTaskGroupId = taskGroup.edges[0]
+      ? taskGroup.edges[0].node.taskGroupId === taskGroupId
+      : true;
 
     // We're done counting
     if (
-      taskGroup &&
       !taskGroup.pageInfo.hasNextPage &&
-      !equals(statusCount, newStatusCount)
+      !equals(statusCount, newStatusCount) &&
+      isFromSameTaskGroupId
     ) {
       this.setState({ statusCount: newStatusCount });
 
       return onCountUpdate();
     }
 
-    if (taskGroup && previousCursor === taskGroup.pageInfo.cursor) {
-      fetchMore({
+    if (
+      previousCursor === taskGroup.pageInfo.cursor &&
+      taskGroup.pageInfo.hasNextPage
+    ) {
+      const { taskGroup } = this.props;
+
+      onFetchMore({
         variables: {
-          taskGroupId,
+          taskGroupId: this.props.taskGroupId,
           taskGroupCompactConnection: {
             limit: TASK_GROUP_PROGRESS_SIZE,
             cursor: taskGroup.pageInfo.nextCursor,

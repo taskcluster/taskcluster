@@ -2,6 +2,7 @@ import { hot } from 'react-hot-loader';
 import { Component } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
+import { lowerCase } from 'change-case';
 import { isEmpty } from 'ramda';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { safeDump } from 'js-yaml';
@@ -22,8 +23,10 @@ import {
   TASK_GROUP_POLLING_INTERVAL,
   VALID_TASK,
   ACTIONS_JSON_KNOWN_KINDS,
+  TASK_GROUP_PROGRESS_SIZE,
 } from '../../../utils/constants';
 import taskGroupQuery from './taskGroup.graphql';
+import taskGroupCompactQuery from './taskGroupCompact.graphql';
 import db from '../../../utils/db';
 import submitTaskAction from '../submitTaskAction';
 
@@ -37,7 +40,21 @@ const updateTaskGroupIdHistory = id => {
 
 @hot(module)
 @withApollo
+@withStyles(theme => ({
+  code: {
+    maxHeight: '70vh',
+    margin: 0,
+  },
+  codeEditor: {
+    overflow: 'auto',
+    maxHeight: '70vh',
+  },
+  description: {
+    marginBottom: theme.spacing.triple,
+  },
+}))
 @graphql(taskGroupQuery, {
+  name: 'taskGroup',
   options: props => ({
     pollInterval: TASK_GROUP_POLLING_INTERVAL,
     variables: {
@@ -56,19 +73,18 @@ const updateTaskGroupIdHistory = id => {
     },
   }),
 })
-@withStyles(theme => ({
-  code: {
-    maxHeight: '70vh',
-    margin: 0,
-  },
-  codeEditor: {
-    overflow: 'auto',
-    maxHeight: '70vh',
-  },
-  description: {
-    marginBottom: theme.spacing.triple,
-  },
-}))
+@graphql(taskGroupCompactQuery, {
+  name: 'taskGroupCompact',
+  options: props => ({
+    pollInterval: TASK_GROUP_POLLING_INTERVAL,
+    variables: {
+      taskGroupId: props.match.params.taskGroupId,
+      taskGroupCompactConnection: {
+        limit: TASK_GROUP_PROGRESS_SIZE,
+      },
+    },
+  }),
+})
 export default class TaskGroup extends Component {
   state = {
     taskGroupSearch: '',
@@ -87,7 +103,7 @@ export default class TaskGroup extends Component {
 
   static getDerivedStateFromProps(props, state) {
     const taskGroupId = props.match.params.taskGroupId || '';
-    const { taskActions } = props.data;
+    const { taskActions } = props.taskGroup;
     const groupActions = [];
     const actionInputs = state.actionInputs || {};
     const actionData = state.actionData || {};
@@ -143,11 +159,12 @@ export default class TaskGroup extends Component {
 
     const { taskGroupSearch } = this.state;
 
-    if (this.props.match.params.taskGroupId !== taskGroupSearch) {
-      this.props.history.push(`/tasks/groups/${this.state.taskGroupSearch}`);
+    if (this.props.match.params.taskGroupId === taskGroupSearch) {
+      return;
     }
 
     this.setState({ taskGroupProgressDisabled: true });
+    this.props.history.push(`/tasks/groups/${this.state.taskGroupSearch}`);
   };
 
   handlePageChange = ({ cursor, previousCursor }) => {
@@ -155,7 +172,7 @@ export default class TaskGroup extends Component {
       match: {
         params: { taskGroupId },
       },
-      data: { fetchMore },
+      taskGroup: { fetchMore },
     } = this.props;
     const { filter } = this.state;
 
@@ -167,7 +184,7 @@ export default class TaskGroup extends Component {
           ? {
               status: {
                 state: {
-                  $eq: filter,
+                  $eq: lowerCase(filter),
                 },
               },
             }
@@ -202,7 +219,7 @@ export default class TaskGroup extends Component {
 
   handleStatusClick = async ({ target: { name } }) => {
     const {
-      data: { refetch },
+      taskGroup: { refetch },
       match: {
         params: { taskGroupId },
       },
@@ -210,6 +227,7 @@ export default class TaskGroup extends Component {
     const filter = this.state.filter === name ? null : name;
 
     this.setState({ taskGroupProgressDisabled: true });
+
     await refetch({
       taskGroupId,
       taskGroupConnection: {
@@ -219,7 +237,7 @@ export default class TaskGroup extends Component {
         ? {
             status: {
               state: {
-                $eq: filter,
+                $eq: lowerCase(filter),
               },
             },
           }
@@ -263,7 +281,7 @@ export default class TaskGroup extends Component {
   handleActionSubmit = ({ name }) => async () => {
     this.preRunningAction();
 
-    const { taskActions, task } = this.props.data;
+    const { taskActions, task } = this.props.taskGroup;
     const { actionInputs, actionData } = this.state;
     const form = actionInputs[name];
     const { action } = actionData[name];
@@ -303,8 +321,10 @@ export default class TaskGroup extends Component {
       match: {
         params: { taskGroupId },
       },
-      data: { loading, error, taskGroup },
+      taskGroup,
+      taskGroupCompact,
     } = this.props;
+    const error = taskGroup.error || taskGroupCompact.error;
 
     return (
       <Dashboard
@@ -319,19 +339,26 @@ export default class TaskGroup extends Component {
           error.graphQLErrors && (
             <ErrorPanel error={error.graphQLErrors[0].message} />
           )}
-        <TaskGroupProgress
-          taskGroupId={taskGroupId}
-          disabled={taskGroupProgressDisabled}
-          filter={filter}
-          onStatusClick={this.handleStatusClick}
-          onCountUpdate={this.handleCountUpdate}
-        />
+        {!error && (
+          <TaskGroupProgress
+            // eslint-disable-next-line react/jsx-handler-names
+            onFetchMore={taskGroupCompact.fetchMore}
+            // eslint-disable-next-line react/jsx-handler-names
+            onRefetch={taskGroupCompact.refetch}
+            taskGroup={taskGroupCompact.taskGroup}
+            taskGroupId={taskGroupId}
+            disabled={taskGroupProgressDisabled}
+            filter={filter}
+            onStatusClick={this.handleStatusClick}
+            onCountUpdate={this.handleCountUpdate}
+          />
+        )}
         <br />
-        {loading && <Spinner loading />}
-        {taskGroup && (
+        {taskGroup.loading && <Spinner loading />}
+        {taskGroup.taskGroup && (
           <TaskGroupTable
             onPageChange={this.handlePageChange}
-            taskGroupConnection={taskGroup}
+            taskGroupConnection={taskGroup.taskGroup}
           />
         )}
         {groupActions && groupActions.length ? (
