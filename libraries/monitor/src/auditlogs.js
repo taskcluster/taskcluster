@@ -15,6 +15,9 @@ const MAX_RETRIES = 5;
 // logs greatly increases.
 const AUDITLOG_PARTITION_KEY = 'auditlog';
 
+// Limit on number of records we send in one PutRecords call (max is 500)
+const KINESIS_BATCH_SIZE = 500;
+
 class KinesisLog extends events.EventEmitter {
 
   constructor({aws, logName, reportAuditLogErrors, resourceInterval, crashTimeout, statsum}) {
@@ -82,7 +85,7 @@ class KinesisLog extends events.EventEmitter {
 
     // First break up the records into chunks that kinesis will accept
     this._records.forEach(rec => {
-      if (chunks[c].chunkSize + rec.size > MAX_RECORD_SIZE) {
+      if (chunks[c].chunkSize + rec.size > MAX_RECORD_SIZE || chunks[c].records.length === KINESIS_BATCH_SIZE) {
         chunks[++c] = {chunkSize: 0, records: []};
       }
       totalSize += rec.size;
