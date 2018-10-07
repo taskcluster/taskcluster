@@ -53,6 +53,13 @@ Open a browser to http://localhost:6060 to preview the React components.
 - Use CTRL-C to exit the styleguide.
 - Use `yarn build` to generate the compiled component for publishing to npm.
 
+### Committing and Pushing changes
+
+This project uses [semantic-release](https://github.com/semantic-release/semantic-release#readme)
+to do automatic releases and generate a changelog based on the commit history. Please follow the
+[ESLint convention](https://github.com/conventional-changelog/conventional-changelog/blob/master/packages/conventional-changelog-eslint/README.md)
+for commit messages so that we could properly determine the next semantic version number to publish and generate a changelog.
+
 Feel free to open an issue, submit a pull request, or contribute however you would like. Understand that this
 documentation is still a work in progress, so file an issue or submit a PR to ask questions or make improvements.
 Thanks!
