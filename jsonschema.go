@@ -520,7 +520,7 @@ func (p *Properties) postPopulate(job *Job) error {
 
 func (job *Job) SetTypeName(subSchema *JsonSubSchema, blacklist map[string]bool) {
 	if r := subSchema.Ref; r != nil {
-		log.Printf("Not setting type name for %v - has $ref to ", subSchema.SourceURL, subSchema.RefSubSchema.SourceURL)
+		log.Printf("Not setting type name for %v - has $ref to %v", subSchema.SourceURL, subSchema.RefSubSchema.SourceURL)
 		job.SetTypeName(subSchema.RefSubSchema, blacklist)
 		return
 	}
