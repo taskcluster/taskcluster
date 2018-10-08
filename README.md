@@ -125,9 +125,10 @@ Here's a slide deck for an [introduction to async python](https://gitpitch.com/e
     qEvt.taskCompleted(taskId='atask')
     ```
 
-## Root Url
-This client supports the `TASKCLUSTER_ROOT_URL` environment variable to
-determine the URL of each endpoint used.
+## Root URL
+This client requires the `TASKCLUSTER_ROOT_URL` environment variable to be set,
+in order to know which taskcluster deployment to talk to. For interfacing with
+the production taskcluster deployment, set to `https://taskcluster.net`.
 
 ## Pagination
 There are two ways to accomplish pagination easily with the python client.  The first is
