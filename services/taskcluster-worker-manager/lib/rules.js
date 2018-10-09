@@ -132,6 +132,9 @@ class Conditions {
    * ruleset
    */
   requiredSatisfiers() {
+    if (!this.conditions) {
+      return [];
+    }
     return Object.keys(this.conditions);
   }
 }
@@ -260,15 +263,14 @@ class Ruleset {
    */
   requiredSatisfiers() {
     let requiredSatisfiers = [];
-
     for (let rule of this.rules) {
       for (let requiredSatisfier of rule.requiredSatisfiers()) {
         if (!requiredSatisfiers.includes(requiredSatisfier)) {
-          requiredSatisfiers.push(requiredSatisfiers);
+          requiredSatisfiers.push(requiredSatisfier);
         }
       }
     }
-    return requiredSatisfiers.sort();
+    return requiredSatisfiers;
   }
 
 }

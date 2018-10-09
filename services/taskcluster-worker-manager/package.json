@@ -8,7 +8,7 @@
   "license": "MPL-2.0",
   "engine-strict": true,
   "engines": {
-    "node": "10.9.0",
+    "node": "10.11.0",
     "yarn": "^1.9.2"
   },
   "scripts": {
