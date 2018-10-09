@@ -215,7 +215,7 @@ tasks:
         image: "node:8"
         env:
           DEBUG: "* -mocha* -nock* -express* -body-parser* -eslint*"
-          NO_TEST_SKIP: true
+          NO_TEST_SKIP: "true"
         features:
           taskclusterProxy: true
         command:
