@@ -1,37 +1,7 @@
 'use strict';
 
-// note that Regions is no longer a supported concept, this needs to be
-// represented as part of the provider id.  In otherwords the us-west-2 region
-// would become "ec2_us-west-2".  This will need to be provided by the provider
-// as a provider specific satisfier, since we still wish to be able to use it.
-
-const ErrorCodes = Object.freeze({
-  // InvalidWorkerConfiguration represents an error caused by a generally
-  // malformed worker configuration
-  InvalidWorkerConfiguration: 'InvalidWorkerConfiguration',
-
-  // MethodUnimplemented represents a call to a method which is not implemented
-  MethodUnimplemented: 'MethodUnimplemented',
-
-  // InvalidSatisfiers represents an error caused by passing an invalid object
-  // for the satisfiers object needed
-  InvalidSatisfiers: 'InvalidSatisfiers',
-
-  // MissingSatisfiers represents an error caused by passing an object for the
-  // satisfiers object missing a required satisfier key
-  MissingSatisfiers: 'MissingSatisfiers',
-
-  // InvalidProvider represents an error caused by specifying a providerId which
-  // does not exist in the providers map
-  InvalidProvider: 'InvalidProvider',
-
-  // MissingProvider represents an error caused by specifying a providerId which
-  // does not exist in the providers map
-  MissingProvider: 'MissingProvider',
-});
-
+const errors = require('./errors');
 const {Ruleset} = require('./rules')
-
 
 /**
  * This class is the base WorkerConfiguration class.  It represents an
@@ -44,7 +14,7 @@ const {Ruleset} = require('./rules')
 class WorkerConfiguration {
   constructor({id}) {
     if (typeof id !== 'string') {
-      this._throw(ErrorCodes.InvalidWorkerConfiguration, 'id must be provided');
+      this._throw(errors.InvalidWorkerConfiguration, 'id must be provided');
     }
     this.id = id;
   }
@@ -53,24 +23,24 @@ class WorkerConfiguration {
    * Standardize exceptions thrown
    */
   _throw(code, msg) {
-    let err = new Error(msg);
-    err.workerConfigurationId = this.id || '<unknown-worker-configuration-id>';
-    err.code = code;
-    throw err;
+    throw new code(msg, {
+      'class': this.constructor.name, 
+      id: this.id,
+    });
   }
 
   /**
    * Evaluate a worker configuration
    */
   evaluate(satisfiers) {
-    this._throw(ErrorCodes.MethodUnimplemented, 'WorkerConfiguration.evaluate()');
+    this._throw(errors.MethodUnimplemented, 'WorkerConfiguration.evaluate()');
   }
 
   /**
    * Must return an iterator of strings
    */
   workerTypes() {
-    this._throw(ErrorCodes.MethodUnimplemented, 'WorkerConfiguration.workerTypes()');
+    this._throw(errors.MethodUnimplemented, 'WorkerConfiguration.workerTypes()');
   }
 }
 
@@ -85,18 +55,18 @@ class StaticWorkerConfiguration extends WorkerConfiguration {
     super({id});
 
     if (!Array.isArray(workerTypes)) {
-      this._throw(ErrorCodes.InvalidWorkerConfiguration, 'workerTypes must be array');
+      this._throw(errors.InvalidWorkerConfiguration, 'workerTypes must be array');
     }
 
     for (let workerType of workerTypes) {
       if (typeof workerType !== 'string') {
-        this._throw(ErrorCodes.InvalidWorkerConfiguration, 'workerTypes entries must be strings');
+        this._throw(errors.InvalidWorkerConfiguration, 'workerTypes entries must be strings');
       }
     }
 
     this._workerTypes = workerTypes;
     if (typeof configuration !== 'object') {
-        this._throw(ErrorCodes.InvalidWorkerConfiguration, 'configuration must be object');
+        this._throw(errors.InvalidWorkerConfiguration, 'configuration must be object');
     }
     this.configuration = configuration;
   }
@@ -135,21 +105,21 @@ class ProvisionedWorkerConfiguration extends WorkerConfiguration {
       let biddingStrategyId = workerTypeConfiguration.get('biddingStrategyId');
 
       if (typeof workerType !== 'string') {
-        this._throw(ErrorCodes.InvalidWorkerConfiguration, 'worker type name must be string');
+        this._throw(errors.InvalidWorkerConfiguration, 'worker type name must be string');
       }
       this.workerType = workerType;
 
       if (typeof biddingStrategyId !== 'string') {
-        this._throw(ErrorCodes.InvalidWorkerConfiguration, 'bidding strategy id must be string');
+        this._throw(errors.InvalidWorkerConfiguration, 'bidding strategy id must be string');
       }
       this.biddingStrategyId = biddingStrategyId;
 
       if (!Array.isArray(providerIds)) {
-        this._throw(ErrorCodes.InvalidWorkerConfiguration, 'provider ids must be array');
+        this._throw(errors.InvalidWorkerConfiguration, 'provider ids must be array');
       }
       for (let providerId of providerIds) {
         if (typeof providerId !== 'string') {
-          this._throw(ErrorCodes.InvalidWorkerConfiguration, 'provider id must be string');
+          this._throw(errors.InvalidWorkerConfiguration, 'provider id must be string');
         }
       }
       this.provider = providerIds;
@@ -158,7 +128,7 @@ class ProvisionedWorkerConfiguration extends WorkerConfiguration {
     this.workerTypeConfigurations = workerTypeConfigurations;
 
     if (typeof rules !== 'object') {
-      this._throw(ErrorCodes.InvalidWorkerConfiguration, 'rules must be provided');
+      this._throw(errors.InvalidWorkerConfiguration, 'rules must be provided');
     }
     this.rules = rules;
   }
@@ -170,26 +140,26 @@ class ProvisionedWorkerConfiguration extends WorkerConfiguration {
    */
   evaluate({providers, satisfiers}) {
     if (typeof satisfiers !== 'object') {
-      this._throw(ErrorCodes.InvalidSatisfiers, 'invalid satisfiers provided'); 
+      this._throw(errors.InvalidSatisfiers, 'invalid satisfiers provided'); 
     }
     let providerId = satisfiers.providerId;
     let provider = providers.get(providerId);
 
     if (!provider) {
-      this._throw(ErrorCodes.MissingProvider, 'unknown provider, id: ' + providerId);
+      this._throw(errors.InvalidProvider, `unknown provider: ${providerId}`);
     }
 
     let requiredSatisfiers = this.rules.requiredSatisfiers().sort();
     let providedSatisfiers = provider.providedSatisfiers();
     if (!Array.isArray(providedSatisfiers)) {
-      this._throw(ErrorCode.InvalidProvider, 'provider did not provide satifiers');
+      this._throw(ErrorCode.InvalidProvider, `${providerId} gave invalid satisfiers`);
     }
     providedSatisfiers = providedSatisfiers.concat(Object.keys(satisfiers));
     providedSatisfiers.sort();
 
     for (let requiredSatisfier of requiredSatisfiers) {
       if (!providedSatisfiers.includes(requiredSatisfier)) {
-        this._throw(ErrorCodes.MissingSatisfier, 'missing satisfier');
+        this._throw(errors.InvalidSatisfiers, `required satisfier ${requiredSatisfier} not provided`);
       }
     }
 
@@ -217,13 +187,17 @@ function buildWorkerConfiguration(config) {
   // Error with a reasons property.  This will make the UI much nicer to work
   // with
 
-  function assertArrayOfStrings(array) {
+  function err(msg) {
+    throw new errors.InvalidWorkerConfiguration(msg);
+  }
+
+  function assertArrayOfStrings(array, msg) {
     if (!Array.isArray(array)) {
-      throw new Error('Expected array');
+      err(msg);
     }
     for (let i of array) {
       if (typeof i !== 'string') {
-        throw new Error('Expected array of strings');
+        err(msg);
       }
     }
   } 
@@ -233,7 +207,7 @@ function buildWorkerConfiguration(config) {
   }
 
   if (typeof config !== 'object') {
-    throw new Error('Worker Configuration format invalid');
+    err();
   }
 
   if (config.rules && config.configuration) {
@@ -248,7 +222,7 @@ function buildWorkerConfiguration(config) {
     } = config;
 
     if (defaultBiddingStrategyId && typeof defaultBiddingStrategyId !== 'string') {
-      throw new Error('if provided, default bidding strategy must be string');
+      err('default bidding strategy id must be string');
     }
 
     if (defaultProviderIds) {
@@ -256,7 +230,7 @@ function buildWorkerConfiguration(config) {
     }
 
     if (!Array.isArray(workerTypeConfigurations)) {
-      throw new Error('worker types must be an array');
+      err('worker types must be array');
     }
 
     return new ProvisionedWorkerConfiguration({
@@ -268,17 +242,17 @@ function buildWorkerConfiguration(config) {
           workerTypeConfiguration.set('workerType', workerType);
         } else {
           if (typeof workerType.workerType !== 'string') {
-            throw new Error('worker type name must be string');
+            err('worker type name be string');
           }
           workerTypeConfiguration.set('workerType', workerType.workerType);
         }
 
         let providerIds = workerType.providerIds;
         if (!providerIds && !defaultProviderIds) {
-          throw new Error('acceptable provider ids and default provider ids not provided');
+          err('no provider ids specified');
         }
         if (providerIds) {
-          assertArrayOfStrings(providerIds);
+          assertArrayOfStrings(providerIds, 'provider ids must be array of strings');
           workerTypeConfiguration.set('providerIds', providerIds);
         } else {
           workerTypeConfiguration.set('providerIds', defaultProviderIds);
@@ -287,11 +261,11 @@ function buildWorkerConfiguration(config) {
 
         let biddingStrategyId = workerType.biddingStrategyId;
         if (!biddingStrategyId && !defaultBiddingStrategyId) {
-          throw new Error('acceptable bidding strategy id default and bidding strategy not provided');
+          err('no bidding strategy id specified');
         }
         if (biddingStrategyId) {
           if (typeof biddingStrategyId !== 'string') {
-            throw new Error('if provided, biddingStrategyId must be a string');
+            err('bidding strategy id must be string');
           }
           workerTypeConfiguration.set('biddingStrategyId', biddingStrategyId);
         } else {
@@ -303,10 +277,10 @@ function buildWorkerConfiguration(config) {
       rules: new Ruleset({rules}),
     });
   } else if (config.configuration) {
-    assertArrayOfStrings(config.workerTypes);
+    assertArrayOfStrings(config.workerTypes, 'worker types must be an array of strings');
     return new StaticWorkerConfiguration(config);
   } else {
-    throw new Error('Worker Configuration is invalid');
+    err();
   }
 
 }

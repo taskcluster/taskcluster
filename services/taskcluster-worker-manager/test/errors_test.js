@@ -13,4 +13,11 @@ suite('errors', () => {
       throw error;
     }).throws(errors.InvalidProvider);
   });
+
+  test('should throw when trying to use an unknown error type', () => {
+    assume(() => {
+      // Let's hope we never have an error named this!
+      errors.alkdjflaksdfhjlksadhlasdfhslkdfjh;
+    }).throws(errors.UnknownError);
+  });
 });

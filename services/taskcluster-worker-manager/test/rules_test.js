@@ -2,6 +2,7 @@
 const sinon = require('sinon');
 const assume = require('assume');
 
+const errors = require('../lib/errors');
 const {Ruleset, Rule, Conditions, assign} = require('../lib/rules');
 
 suite('assign()', () => {
@@ -56,7 +57,7 @@ suite('assign()', () => {
   test('should throw for a function property', () => {
     assume(() => {
       assign({}, {a: () => {}});
-    }).throws(/^assigned values must be/);
+    }).throws(errors.InvalidValues);
   });
 
 });
@@ -112,14 +113,14 @@ suite('Conditions', () => {
       let conditions = new Conditions({string: 'test'});
       assume(() => {
         conditions.evaluate(() => {});
-      }).throws(/^satisfiers must be an object/);
+      }).throws(errors.InvalidSatisfiers);
     });
 
     test('should throw when a condition has no satisfier', () => {
       let conditions = new Conditions({string: 'test'});
       assume(() => {
         conditions.evaluate({other: 'test'});
-      }).throws(/^required satisfier for condition/);
+      }).throws(errors.InvalidSatisfiers);
     });
 
     test('should return true when all requirements are met', () => {
@@ -139,7 +140,7 @@ suite('Conditions', () => {
         new Conditions({
           property: () => {},
         });
-      }).throws(/^condition must be a string or list/);
+      }).throws(errors.InvalidConditions);
     });
 
     test('should not allow a non-string condition in a list', () => {
@@ -147,7 +148,7 @@ suite('Conditions', () => {
         new Conditions({
           property: [() => {}],
         });
-      }).throws(/^each condition must be string$/);
+      }).throws(errors.InvalidConditions);
     });
   });
 });
@@ -162,7 +163,7 @@ suite('Rule', () => {
         rule1val: 'not-set',
       };
       rule = new Rule({
-        ruleId: 'rule-1',
+        id: 'rule-1',
         conditions: {
           string: 'test',
         },
@@ -187,27 +188,27 @@ suite('Rule', () => {
   });
 
   suite('invalid input', () => {
-    test('should throw with invalid ruleId', () => {
+    test('should throw with invalid id', () => {
       assume(() => {
-        new Rule({ruleId: 123, conditions: {}, values: {}, description: ''});
-      }).throws(/^ruleId must be string/);
+        new Rule({id: 123, conditions: {}, values: {}, description: ''});
+      }).throws(/^id must be string/);
     });
 
     test('should throw with invalid conditions', () => {
       assume(() => {
-        new Rule({ruleId: 'id', conditions: 123, values: {}, description: ''});
+        new Rule({id: 'id', conditions: 123, values: {}, description: ''});
       }).throws(/^conditions must be an object/);
     });
 
     test('should throw with invalid values', () => {
       assume(() => {
-        new Rule({ruleId: 'id', conditions: {}, values: 123, description: ''});
+        new Rule({id: 'id', conditions: {}, values: 123, description: ''});
       }).throws(/^values must be an object/);
     });
 
     test('should throw with invalid description', () => {
       assume(() => {
-        new Rule({ruleId: 'id', conditions: {}, values: {}, description: 123});
+        new Rule({id: 'id', conditions: {}, values: {}, description: 123});
       }).throws(/^description must be a string/);
     });
   });
@@ -220,7 +221,7 @@ suite('Ruleset', () => {
   setup(() => {
     rules = new Ruleset({
       rules: [{
-        ruleId: 'rule1',
+        id: 'rule1',
         conditions: {
           workerType: 'worker1',
           provider: ['ec2', 'gcp'],
@@ -230,7 +231,7 @@ suite('Ruleset', () => {
         },
         description: 'worker1 in ec2 or gcp',
       }, {
-        ruleId: 'rule2',
+        id: 'rule2',
         conditions: {
           workerType: 'worker1',
           provider: 'ec2',
@@ -240,7 +241,7 @@ suite('Ruleset', () => {
         },
         description: 'worker1 in ec2 only',
       }, {
-        ruleId: 'rule3',
+        id: 'rule3',
         conditions: {
           workerType: 'worker2',
           provider: ['ec2', 'gcp'],
@@ -250,7 +251,7 @@ suite('Ruleset', () => {
         },
         description: 'worker2 in ec2 or gcp',
       }, {
-        ruleId: 'rule4',
+        id: 'rule4',
         conditions: {
           workerType: 'worker2',
           provider: 'gcp',
@@ -298,7 +299,7 @@ suite('Required Satisfiers', () => {
   
   test('should be able to list required satisfiers on Rules', () => {
     let rule = new Rule({
-      ruleId: 'rule-1',
+      id: 'rule-1',
       conditions: {string1: 'abc', string2: 'def'},
       values: {},
       description: '',
@@ -309,7 +310,7 @@ suite('Required Satisfiers', () => {
   test('should be able to list required satisfiers on Conditions', () => {
     let rules = new Ruleset({
       rules: [{
-        ruleId: 'rule1',
+        id: 'rule1',
         conditions: {
           string1: 'worker1',
           string2: ['ec2', 'gcp'],
@@ -317,14 +318,14 @@ suite('Required Satisfiers', () => {
         values: {},
         description: '',
       }, {
-        ruleId: 'rule2',
+        id: 'rule2',
         conditions: {
           string2: 'worker1',
         },
         values: {},
         description: '',
       }, {
-        ruleId: 'rule3',
+        id: 'rule3',
         conditions: {
           string3: 'worker2',
           string4: ['ec2', 'gcp'],
@@ -332,7 +333,7 @@ suite('Required Satisfiers', () => {
         values: {},
         description: '',
       }, {
-        ruleId: 'rule4',
+        id: 'rule4',
         conditions: {
           string5: 'worker2',
         },

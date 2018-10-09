@@ -13,7 +13,7 @@ class UnknownError extends Error {
   constructor(msg, properties) {
     super(msg);
     if (typeof properties === 'object') {
-      Object.assign(properties);
+      Object.assign(this, properties);
     }
     this.code = this.constructor.name;
   }
@@ -22,15 +22,29 @@ class UnknownError extends Error {
 const errors = [
   UnknownError,
   class MethodUnimplemented extends UnknownError {},
-  class InvalidWorkerConfiguration extends UnknownError {},
   class InvalidSatisfiers extends UnknownError {},
+  class InvalidConditions extends UnknownError {},
+  class InvalidValues extends UnknownError {},
+  class InvalidRules extends UnknownError {},
+  class InvalidWorkerConfiguration extends UnknownError {},
   class InvalidProvider extends UnknownError {},
 ];
 
+let x = {} 
 for (let error of errors) {
-  if (module.exports[error.name]) {
+  if (x[error.name]) {
     throw new Error('Duplicated Error: ' + error.name);
   }
-  module.exports[error.name] = error;
+  x[error.name] = error;
 }
+
+module.exports = new Proxy(x, {
+  get: function (target, prop, receiver) {
+    const e = Reflect.get(...arguments);
+    if (!e) {
+      throw new UnknownError('Unknown Error Type: ' + prop);
+    }
+    return e;
+  }
+});
 

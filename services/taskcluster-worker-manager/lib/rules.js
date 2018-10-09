@@ -1,21 +1,6 @@
-"use strict";
+'use strict';
 
-const ErrorCodes = Object.freeze({
-  // InvalidConditions represents an error while converting the object literal
-  // representation of a Conditions object into a Conditions object
-  InvalidConditions: 'InvalidConditions',
-
-  // InvalidSatisfiers represents an error caused by passing an invalid object
-  // for the satisfiers object needed
-  InvalidSatisfiers: 'InvalidSatisfiers',
-
-  // InvalidRule represents an error caused by a malformed Rule
-  InvalidRule: 'InvalidRule',
-
-  // InvalidValues represents an error caused by passing in an invalid
-  // values object for assignment
-  InvalidValues: 'InvalidValues',
-});
+const errors = require('./errors');
 
 /**
  * Conditions encapsulate how a set of conditions are evaluated.  Conditions
@@ -40,7 +25,7 @@ class Conditions {
     }
 
     if (conditions !== null && typeof conditions !== 'object') {
-        this._throw(ErrorCodes.InvalidConditions, 'conditions must be null or an object');
+        this._throw(errors.InvalidConditions, 'conditions must be null or an object');
     }
 
     // Validate that every condition is either a string or a list of strings
@@ -50,11 +35,11 @@ class Conditions {
           if (Array.isArray(conditions[condition])) {
             for (let aCondition of conditions[condition]) {
               if (typeof aCondition !== 'string') {
-                this._throw(ErrorCodes.InvalidConditions, 'each condition must be string');
+                this._throw(errors.InvalidConditions, `condition ${condition} ${aCondition} must be string`);
               }
             }
           } else {
-            this._throw(ErrorCodes.InvalidConditions, 'condition must be a string or list of strings');
+            this._throw(errors.InvalidConditions, `condition ${condition} must be a string or list of strings`);
           }
         }
       }
@@ -68,9 +53,9 @@ class Conditions {
    * to the rule they came from
    */
   _throw(code, msg) {
-    let err = new Error(msg);
-    err.code = code;
-    throw err;
+    throw new code(msg, {
+      ruleId: this._rule ? this._rule.id : undefined,
+    });
   }
 
   /**
@@ -112,12 +97,12 @@ class Conditions {
     }
 
     if (typeof satisfiers !== 'object') {
-      this._throw(ErrorCodes.InvalidSatisfiers, 'satisfiers must be an object');
+      this._throw(errors.InvalidSatisfiers);
     }
 
     for (let condition of Object.keys(this.conditions)) {
       if (!satisfiers[condition]) {
-        this._throw(ErrorCodes.InvalidSatisfiers, `required satisfier for condition ${condition} not specified`);
+        this._throw(errors.InvalidSatisfiers, `required satisfier for ${condition} not specified`);
       }
       if (!this._evaluateCondition(this.conditions[condition], satisfiers[condition])) {
         return false;
@@ -143,33 +128,32 @@ class Conditions {
  * Rule encapsulates how a rule is to be evaluated.
  */
 class Rule {
-  constructor({ruleId, conditions, values, description}) {
-    if (typeof ruleId !== 'string') {
-      this._throw(ErrorCodes.InvalidRule, 'ruleId must be string');
+  constructor({id, conditions, values, description}) {
+    if (typeof id !== 'string') {
+      this._throw(errors.InvalidRules, 'id must be string');
     }
-    this.ruleId = ruleId
+    this.id = id;
 
     if (typeof conditions !== 'object') {
-      this._throw(ErrorCodes.InvalidConditions, 'conditions must be an object');
+      this._throw(errors.InvalidConditions, 'conditions must be an object');
     }
     this.conditions = new Conditions(conditions, this);
 
     if (typeof values !== 'object') {
-      this._throw(ErrorCodes.InvalidValues, 'values must be an object');
+      this._throw(errors.InvalidValues, 'values must be an object');
     }
     this.values = values;
 
     if (typeof description !== 'string') {
-      this._throw(ErrorCodes.InvalidRule, 'description must be a string');
+      this._throw(errors.InvalidRules, 'description must be a string');
     }
   }
 
   _throw(code, msg) {
-    let err = new Error(msg);
-    err.code = code;
-    err.ruleId = this.ruleId || '<unknown>';
-    err.description = this.description || '<unknown>';
-    throw err;
+    throw new code(msg, {
+      id: this.id || '<unknown-rule>',
+      description: this.description || undefined,
+    });
   }
 
   /**
@@ -219,7 +203,7 @@ function assign (target, values) {
         assignProperty(target[targetProperty], valueProperty, value[valueProperty]);
       }
     } else {
-      throw new Error('assigned values must be null, string, number, boolean or objects');
+      throw new errors.InvalidValues('Only null, string, number, boolean and objects are supported');
     }
   }
 
@@ -276,7 +260,6 @@ class Ruleset {
 }
 
 module.exports = {
-  ErrorCodes,
   Conditions,
   Rule,
   Ruleset,

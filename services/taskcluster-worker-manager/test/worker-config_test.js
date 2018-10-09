@@ -2,6 +2,8 @@
 const sinon = require('sinon');
 const assume = require('assume');
 
+const errors = require('../lib/errors');
+
 const {Ruleset} = require('../lib/rules');
 const {
   ProvisionedWorkerConfiguration,
@@ -18,7 +20,7 @@ const fakeProviders = new Map([['provider-1', {
 // we can evaluate
 function mockRules() {
   return [{
-    ruleId: 'rule-1',
+    id: 'rule-1',
     description: 'sample-rule-1',
     conditions: {
       workerType: 'worker-type-1',
@@ -27,7 +29,7 @@ function mockRules() {
       info1: 'rule-1-applied',
     },
   }, {
-    ruleId: 'rule-2',
+    id: 'rule-2',
     description: 'sample-rule-2',
     conditions: {
       workerType: 'worker-type-2',
@@ -36,7 +38,7 @@ function mockRules() {
       info2: 'rule-2-applied',
     },
   }, {
-    ruleId: 'rule-3',
+    id: 'rule-3',
     description: 'sample-rule-2',
     conditions: null,
     values: {
@@ -118,7 +120,7 @@ suite('ProvisionedWorkerConfiguration', () => {
       workerConfiguration.evaluate({
         providers: fakeProviders,
       });
-    }).throws(/^invalid satisfiers/);
+    }).throws(errors.InvalidSatisfiers);
   });
 
   test('should throw when one satisfier is missing', () => {
@@ -129,7 +131,7 @@ suite('ProvisionedWorkerConfiguration', () => {
         },
         providers: fakeProviders,
       });
-    }).throws(/^missing satisfier/);
+    }).throws(errors.InvalidSatisfiers);
   });
 
   test('should be able to list worker types', () => {
@@ -143,7 +145,7 @@ suite('buildWorkerConfiguration', () => {
   test('should throw error when missing config and rules/workerTypeConfigurations', () => {
     assume(() => {
       buildWorkerConfiguration({});
-    }).throws(/^Worker Configuration is invalid/);
+    }).throws(errors.InvalidWorkerConfiguration);
   });
 
   test('should build static configuration as appropriate', () => {
@@ -245,7 +247,7 @@ suite('buildWorkerConfiguration', () => {
           }],
           rules: mockRules(),
         });
-      }).throws(/^acceptable provider ids/);
+      }).throws(errors.InvalidWorkerConfiguration);
     });
 
     test('should throw without setting bidding strategy id', () => {
@@ -258,7 +260,7 @@ suite('buildWorkerConfiguration', () => {
           }],
           rules: mockRules(),
         });
-      }).throws(/^acceptable bidding strategy id/);
+      }).throws(errors.InvalidWorkerConfiguration);
     });    
 
     test('should throw with string worker types and no defaults', () => {
@@ -268,7 +270,7 @@ suite('buildWorkerConfiguration', () => {
           workerTypes: ['worker-type-1'],
           rules: mockRules(),
         });
-      }).throws(/^acceptable provider ids/);
+      }).throws(errors.InvalidWorkerConfiguration);
     });
   });
 });
