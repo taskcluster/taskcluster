@@ -54,26 +54,31 @@ export default class SidebarListItem extends Component {
       return false;
     }
 
-    const taskIndexPath = '/tasks/index';
-    const taskGroupsPath = '/tasks/index';
-    const taskPath = '/tasks';
+    const paths = {
+      index: '/tasks/index',
+      groups: '/tasks/groups',
+      create: '/tasks/create',
+      tasks: '/tasks',
+    };
+    const { pathname } = window.location;
     const isTaskView =
-      route.url === taskPath &&
-      window.location.pathname.startsWith(taskPath) &&
-      !window.location.pathname.startsWith(taskIndexPath) &&
-      !window.location.pathname.startsWith(taskGroupsPath);
+      route.url === paths.tasks &&
+      !pathname.startsWith(paths.index) &&
+      !pathname.startsWith(paths.groups) &&
+      !pathname.startsWith(paths.create);
     const isTaskIndexView =
-      route.url === taskIndexPath &&
-      window.location.pathname.startsWith(taskIndexPath);
+      route.url === paths.index && pathname.startsWith(paths.index);
     const isTaskGroupView =
-      route.url === taskGroupsPath &&
-      window.location.pathname.startsWith(taskGroupsPath);
+      route.url === paths.groups && pathname.startsWith(paths.groups);
+    const isTaskCreateView =
+      route.url === paths.create && pathname.startsWith(paths.create);
 
     return Boolean(
-      !route.url.startsWith(taskPath) ||
+      !route.url.startsWith(paths.tasks) ||
         isTaskIndexView ||
         isTaskView ||
-        isTaskGroupView
+        isTaskGroupView ||
+        isTaskCreateView
     );
   };
 
