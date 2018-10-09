@@ -32,7 +32,12 @@ export default class Hooks extends Component {
           {...props}
           component={ViewHook}
         />
-        <RouteWithProps path={path} {...props} component={ListHooks} />
+        <RouteWithProps
+          path={path}
+          {...props}
+          component={ListHooks}
+          description="Manage hooks: tasks that are created in response to events within CI."
+        />
       </Switch>
     );
   }

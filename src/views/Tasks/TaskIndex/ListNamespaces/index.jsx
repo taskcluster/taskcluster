@@ -7,6 +7,7 @@ import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../../components/Dashboard';
+import HelpView from '../../../../components/HelpView';
 import IndexNamespacesTable from '../../../../components/IndexNamespacesTable';
 import IndexTaskNamespaceTable from '../../../../components/IndexTaskNamespaceTable';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../../../utils/constants';
@@ -126,6 +127,7 @@ export default class ListNamespaces extends Component {
         loading: taskNamespaceLoading,
         error: taskNamespaceError,
       },
+      description,
     } = this.props;
     const hasIndexedTasks =
       taskNamespace && taskNamespace.edges && taskNamespace.edges.length > 0;
@@ -134,7 +136,9 @@ export default class ListNamespaces extends Component {
     const loading = namespacesLoading || taskNamespaceLoading;
 
     return (
-      <Dashboard title="Index Browser">
+      <Dashboard
+        title="Index Browser"
+        helpView={<HelpView description={description} />}>
         <Fragment>
           {loading && <Spinner loading />}
           {namespacesError &&

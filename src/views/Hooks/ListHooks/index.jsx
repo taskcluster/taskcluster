@@ -9,6 +9,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import MuiTreeView from 'material-ui-treeview';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Dashboard from '../../../components/Dashboard';
+import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import hooksQuery from './hooks.graphql';
@@ -44,6 +45,7 @@ export default class ListHooks extends Component {
   render() {
     const {
       classes,
+      description,
       data: { loading, error, hookGroups },
     } = this.props;
     const { hookSearch } = this.state;
@@ -57,6 +59,7 @@ export default class ListHooks extends Component {
     return (
       <Dashboard
         title="Hooks"
+        helpView={<HelpView description={description} />}
         search={
           <Search
             value={hookSearch}

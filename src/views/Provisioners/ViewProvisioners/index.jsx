@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import provisionersQuery from './provisioners.graphql';
 import Dashboard from '../../../components/Dashboard';
+import HelpView from '../../../components/HelpView';
 import ProvisionerDetailsCard from '../../../components/ProvisionerDetailsCard';
 
 @hot(module)
@@ -20,11 +21,14 @@ export default class ViewProvisioners extends Component {
   render() {
     const {
       classes,
+      description,
       data: { loading, error, provisioners },
     } = this.props;
 
     return (
-      <Dashboard title="Provisioners">
+      <Dashboard
+        title="Provisioners"
+        helpView={<HelpView description={description} />}>
         {loading && <Spinner loading />}
         {error &&
           error.graphQLErrors && (

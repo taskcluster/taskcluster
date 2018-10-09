@@ -56,7 +56,12 @@ export default class AwsProvisioner extends Component {
           {...props}
           component={ViewWorkerType}
         />
-        <RouteWithProps path={path} {...props} component={ViewWorkerTypes} />
+        <RouteWithProps
+          path={path}
+          {...props}
+          component={ViewWorkerTypes}
+          description="Manage worker types known to the AWS Provisioner and check on the status of AWS nodes."
+        />
       </Switch>
     );
   }

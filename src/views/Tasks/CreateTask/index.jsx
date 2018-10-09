@@ -15,18 +15,21 @@ import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import { withStyles } from '@material-ui/core/styles';
 import Switch from '@material-ui/core/Switch';
+import Typography from '@material-ui/core/Typography';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import PlusIcon from 'mdi-react/PlusIcon';
 import RotateLeftIcon from 'mdi-react/RotateLeftIcon';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
+import HelpView from '../../../components/HelpView';
 import Dashboard from '../../../components/Dashboard';
 import { nice } from '../../../utils/slugid';
 import {
   TASKS_CREATE_STORAGE_KEY,
   ISO_8601_REGEX,
 } from '../../../utils/constants';
+import urls from '../../../utils/urls';
 import createTaskQuery from '../createTask.graphql';
 
 const defaultTask = {
@@ -207,7 +210,7 @@ export default class CreateTask extends Component {
     });
 
   render() {
-    const { classes } = this.props;
+    const { description, classes } = this.props;
     const {
       task,
       error,
@@ -229,7 +232,25 @@ export default class CreateTask extends Component {
     }
 
     return (
-      <Dashboard title="Create Task">
+      <Dashboard
+        title="Create Task"
+        helpView={
+          <HelpView description={description}>
+            <Typography>
+              For details on what you can write, refer to the{' '}
+              <a
+                href={urls.docs('/')}
+                target="_blank"
+                rel="noopener noreferrer">
+                documentation
+              </a>. When you submit a task here, you will be taken to{' '}
+              {interactive
+                ? 'connect to the interactive task'
+                : 'inspect the created task'}. Your task will be saved so you
+              can come back and experiment with variations.
+            </Typography>
+          </HelpView>
+        }>
         <Fragment>
           {error ? (
             <ErrorPanel error={error} />

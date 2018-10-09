@@ -26,7 +26,13 @@ export default class Scopes extends Component {
           {...props}
           component={ViewScope}
         />
-        <RouteWithProps path={path} {...props} component={ListScopes} />
+        <RouteWithProps
+          path={path}
+          {...props}
+          component={ListScopes}
+          description="Explore scopes on the Auth service. This tool allows you to find roles and
+      clients with a given scope. This is effectively reverse client and role lookup."
+        />
       </Switch>
     );
   }

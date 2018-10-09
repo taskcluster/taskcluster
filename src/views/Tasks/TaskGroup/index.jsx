@@ -15,6 +15,7 @@ import SpeedDialAction from '../../../components/SpeedDialAction';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import DialogAction from '../../../components/DialogAction';
+import HelpView from '../../../components/HelpView';
 import TaskGroupProgress from '../../../components/TaskGroupProgress';
 import TaskGroupTable from '../../../components/TaskGroupTable';
 import TaskActionForm from '../../../components/TaskActionForm';
@@ -318,6 +319,7 @@ export default class TaskGroup extends Component {
       dialogError,
     } = this.state;
     const {
+      description,
       match: {
         params: { taskGroupId },
       },
@@ -328,6 +330,7 @@ export default class TaskGroup extends Component {
 
     return (
       <Dashboard
+        helpView={<HelpView description={description} />}
         search={
           <Search
             value={taskGroupSearch}

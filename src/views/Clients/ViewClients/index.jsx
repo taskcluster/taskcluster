@@ -8,6 +8,7 @@ import PlusIcon from 'mdi-react/PlusIcon';
 import dotProp from 'dot-prop-immutable';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
+import HelpView from '../../../components/HelpView';
 import Button from '../../../components/Button';
 import ClientsTable from '../../../components/ClientsTable';
 import { VIEW_CLIENTS_PAGE_SIZE } from '../../../utils/constants';
@@ -105,6 +106,7 @@ export default class ViewWorker extends PureComponent {
   render() {
     const {
       classes,
+      description,
       data: { loading, error, clients },
     } = this.props;
     const { clientSearch } = this.state;
@@ -112,6 +114,7 @@ export default class ViewWorker extends PureComponent {
     return (
       <Dashboard
         title="Clients"
+        helpView={<HelpView description={description} />}
         search={
           <Search
             disabled={loading}

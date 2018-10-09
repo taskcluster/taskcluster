@@ -9,6 +9,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Dashboard from '../../../components/Dashboard';
 import SecretsTable from '../../../components/SecretsTable';
+import HelpView from '../../../components/HelpView';
 import Button from '../../../components/Button';
 import { VIEW_SECRETS_PAGE_SIZE } from '../../../utils/constants';
 import secretsQuery from './secrets.graphql';
@@ -68,11 +69,14 @@ export default class ViewSecrets extends Component {
   render() {
     const {
       classes,
+      description,
       data: { loading, error, secrets },
     } = this.props;
 
     return (
-      <Dashboard title="Secrets">
+      <Dashboard
+        title="Secrets"
+        helpView={<HelpView description={description} />}>
         <Fragment>
           {!secrets && loading && <Spinner loading />}
           {error && error.graphQLErrors && <ErrorPanel error={error} />}

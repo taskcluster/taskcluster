@@ -29,6 +29,7 @@ import RestartIcon from 'mdi-react/RestartIcon';
 import Dashboard from '../../../components/Dashboard';
 import TaskDetailsCard from '../../../components/TaskDetailsCard';
 import TaskRunsCard from '../../../components/TaskRunsCard';
+import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
@@ -611,6 +612,7 @@ export default class ViewTask extends Component {
   render() {
     const {
       classes,
+      description,
       data: { loading, error, task, dependentTasks },
       match,
     } = this.props;
@@ -628,6 +630,7 @@ export default class ViewTask extends Component {
 
     return (
       <Dashboard
+        helpView={<HelpView description={description} />}
         search={
           <Search
             value={taskSearch}

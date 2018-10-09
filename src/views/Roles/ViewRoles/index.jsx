@@ -9,6 +9,7 @@ import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import RolesTable from '../../../components/RolesTable';
+import HelpView from '../../../components/HelpView';
 import rolesQuery from './roles.graphql';
 
 @hot(module)
@@ -34,6 +35,7 @@ export default class ViewRoles extends PureComponent {
   render() {
     const {
       classes,
+      description,
       data: { loading, error, roles },
     } = this.props;
     const { roleSearch } = this.state;
@@ -41,6 +43,7 @@ export default class ViewRoles extends PureComponent {
     return (
       <Dashboard
         title="Roles"
+        helpView={<HelpView description={description} />}
         search={
           <Search
             disabled={loading}

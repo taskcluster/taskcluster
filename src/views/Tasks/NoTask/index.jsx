@@ -9,6 +9,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../components/Dashboard';
+import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import db from '../../../utils/db';
 
@@ -43,11 +44,12 @@ export default class NoTask extends Component {
   };
 
   render() {
-    const { classes } = this.props;
+    const { description, classes } = this.props;
     const { taskSearch, recentTasks } = this.state;
 
     return (
       <Dashboard
+        helpView={<HelpView description={description} />}
         search={
           <Search
             value={taskSearch}

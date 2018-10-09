@@ -9,6 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Dashboard from '../../../components/Dashboard';
+import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import db from '../../../utils/db';
 
@@ -46,11 +47,12 @@ export default class NoTaskGroup extends Component {
   };
 
   render() {
-    const { classes } = this.props;
+    const { classes, description } = this.props;
     const { taskGroupSearch, recentTaskGroups } = this.state;
 
     return (
       <Dashboard
+        helpView={<HelpView description={description} />}
         search={
           <Search
             value={taskGroupSearch}

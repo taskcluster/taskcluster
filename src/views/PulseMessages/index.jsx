@@ -16,7 +16,9 @@ import PlayIcon from 'mdi-react/PlayIcon';
 import StopIcon from 'mdi-react/StopIcon';
 import PlusIcon from 'mdi-react/PlusIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
+import urls from '../../utils/urls';
 import Dashboard from '../../components/Dashboard';
+import HelpView from '../../components/HelpView';
 import DataTable from '../../components/DataTable';
 
 const getBindingsFromProps = props => {
@@ -127,9 +129,29 @@ export default class PulseMessages extends Component {
       listening,
       messages,
     } = this.state;
+    const description = `Bind to Pulse exchanges in your browser, observe messages arriving and inspect
+      messages. Useful when debugging and working with undocumented Pulse exchanges.`;
 
     return (
-      <Dashboard title="Pulse Messages">
+      <Dashboard
+        title="Pulse Messages"
+        helpView={
+          <HelpView description={description}>
+            <Typography paragraph>
+              This tool lets you listen to Pulse messages from any exchange and
+              routing key. When messages are received you can inspect the
+              messages. This is useful for debugging and development when
+              consuming from undocumented exchanges. Notice that all exchanges
+              from {process.env.APPLICATION_NAME} are formally documented on{' '}
+              <a
+                href={urls.docs('/')}
+                target="_blank"
+                rel="noopener noreferrer">
+                {urls.docs('/')}
+              </a>.
+            </Typography>
+          </HelpView>
+        }>
         <Fragment>
           <div className={classes.inputWrapper}>
             <List className={classes.inputList}>

@@ -12,6 +12,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
+import HelpView from '../../components/HelpView';
 import Dashboard from '../../components/Dashboard/index';
 import Button from '../../components/Button';
 import splitLines from '../../utils/splitLines';
@@ -50,9 +51,13 @@ export default class ScopesetExpander extends Component {
   render() {
     const { classes } = this.props;
     const { scopes, scopeText } = this.state;
+    const description = `This tool allows you to find the expanded copy of a given scopeset, with 
+    scopes implied by any roles included.`;
 
     return (
-      <Dashboard title="Expand Scopesets">
+      <Dashboard
+        title="Expand Scopesets"
+        helpView={<HelpView description={description} />}>
         <Fragment>
           <CodeEditor
             className={classes.editor}

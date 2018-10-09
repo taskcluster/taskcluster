@@ -5,6 +5,7 @@ import dotProp from 'dot-prop-immutable';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../../components/Dashboard';
+import HelpView from '../../../../components/HelpView';
 import IndexedEntry from '../../../../components/IndexedEntry';
 import { ARTIFACTS_PAGE_SIZE } from '../../../../utils/constants';
 import artifactsQuery from './artifacts.graphql';
@@ -102,11 +103,14 @@ export default class IndexedTask extends Component {
         error: indexedTaskError,
         loading: indexedTaskLoading,
       },
+      description,
     } = this.props;
     const loading = latestArtifactsLoading || indexedTaskLoading;
 
     return (
-      <Dashboard title="Index Browser">
+      <Dashboard
+        title="Index Browser"
+        helpView={<HelpView description={description} />}>
         {loading && <Spinner loading />}
         {!loading &&
           indexedTaskError &&

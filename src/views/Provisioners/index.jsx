@@ -42,7 +42,14 @@ export default class Provisioners extends Component {
           {...props}
           component={ViewWorkerTypes}
         />
-        <RouteWithProps path={path} {...props} component={ViewProvisioners} />
+        <RouteWithProps
+          path={path}
+          {...props}
+          component={ViewProvisioners}
+          description="List worker-types for provisioners and see relevant information.
+      List workers for a worker-type and see relevant information. Drill down into a
+      specific worker and perform actions against it or see recent tasks it has claimed."
+        />
       </Switch>
     );
   }

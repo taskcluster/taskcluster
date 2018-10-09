@@ -26,7 +26,12 @@ export default class CachePurges extends Component {
           {...props}
           component={CreatePurgeCacheRequest}
         />
-        <RouteWithProps path={path} {...props} component={ViewCachePurges} />
+        <RouteWithProps
+          path={path}
+          {...props}
+          component={ViewCachePurges}
+          description="View currently active cache purges and schedule a new one if needed."
+        />
       </Switch>
     );
   }

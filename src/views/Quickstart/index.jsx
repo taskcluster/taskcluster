@@ -24,6 +24,8 @@ import { safeDump } from 'js-yaml';
 import debounce from 'lodash.debounce';
 import Dashboard from '../../components/Dashboard';
 import Button from '../../components/Button';
+import HelpView from '../../components/HelpView';
+import urls from '../../utils/urls';
 import githubQuery from './github.graphql';
 
 const initialYaml = {
@@ -120,6 +122,7 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
   },
   iconContainer: {
     marginLeft: theme.spacing.unit,
+    marginTop: theme.spacing.double,
   },
 }))
 export default class QuickStart extends Component {
@@ -257,7 +260,64 @@ export default class QuickStart extends Component {
     } = this.state;
 
     return (
-      <Dashboard title="GitHub Quickstart">
+      <Dashboard
+        title="GitHub Quickstart"
+        helpView={
+          <HelpView
+            description="Create a configuration file and
+                plug the CI into your repository.">
+            <Fragment>
+              <Typography paragraph>
+                This tool lets you easily generate a simple generic{' '}
+                <code>.taskcluster.yml</code> file, which should live in the
+                root of your repository. It defines tasks that you want{' '}
+                {process.env.APPLICATION_NAME} to run for you. The tasks will
+                run when certain GitHub events happen. You will choose the
+                events you are interested in while creating the file.
+              </Typography>
+              <Typography paragraph>
+                For independent developers and organization owners: How to set
+                up your repository with {process.env.APPLICATION_NAME}
+              </Typography>
+              <Typography paragraph>
+                <ul>
+                  <li>
+                    Fill out the form below. All changes in the form will
+                    instantly show up in the code field.
+                  </li>
+                  <li>
+                    When you are done editing, copy the contents of the code
+                    field and paste it into a file named{' '}
+                    <code>.taskcluster.yml</code> in the root of your
+                    repository.
+                  </li>
+                  <li>
+                    Make sure to install the{' '}
+                    <a
+                      href="https://github.com/apps/taskcluster"
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      Taskcluster-GitHub integration
+                    </a>.
+                  </li>
+                </ul>
+              </Typography>
+              <Typography paragraph>
+                Optionally, after you create your file, you can edit it here or
+                in you favorite editor to add more functionality. Please refer
+                to the{' '}
+                <a
+                  href={urls.docs(
+                    'reference/integrations/taskcluster-github/docs/taskcluster-yml-v0'
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  full documentation on our configuration files
+                </a>.
+              </Typography>
+            </Fragment>
+          </HelpView>
+        }>
         <Fragment>
           <div className={classes.orgRepo}>
             <TextField

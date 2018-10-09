@@ -11,6 +11,7 @@ import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
+import HelpView from '../../../components/HelpView';
 import AwsProvisionerWorkerTypeTable from '../../../components/AwsProvisionerWorkerTypeTable';
 import workerTypesQuery from './workerTypes.graphql';
 
@@ -48,6 +49,7 @@ export default class ViewRoles extends Component {
   render() {
     const {
       classes,
+      description,
       data: { loading, error, awsProvisionerWorkerTypeSummaries },
     } = this.props;
     const { workerTypeSearch } = this.state;
@@ -55,6 +57,7 @@ export default class ViewRoles extends Component {
     return (
       <Dashboard
         title="AWS Provisioner Worker Types"
+        helpView={<HelpView description={description} />}
         search={
           <Search
             disabled={loading}

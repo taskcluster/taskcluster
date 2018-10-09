@@ -57,12 +57,6 @@ export default [
   },
   {
     component: loadable(() =>
-      import(/* webpackChunkName: 'Hooks' */ '../views/AwsProvisioner')
-    ),
-    path: '/aws-provisioner',
-  },
-  {
-    component: loadable(() =>
       import(/* webpackChunkName: 'Secrets' */ '../views/Secrets')
     ),
     path: '/secrets',

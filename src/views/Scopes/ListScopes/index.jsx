@@ -11,6 +11,7 @@ import Tab from '@material-ui/core/Tab';
 import Dashboard from '../../../components/Dashboard';
 import RoleScopesTable from '../../../components/RoleScopesTable';
 import ClientScopesTable from '../../../components/ClientScopesTable';
+import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import { VIEW_CLIENT_SCOPES_INSPECT_SIZE } from '../../../utils/constants';
 import scopesQuery from '../scopes.graphql';
@@ -82,6 +83,7 @@ export default class ListScopes extends PureComponent {
   render() {
     const {
       classes,
+      description,
       data: { loading, error, clients, roles },
     } = this.props;
     const { searchTerm, currentTabIndex } = this.state;
@@ -89,6 +91,7 @@ export default class ListScopes extends PureComponent {
     return (
       <Dashboard
         title="Scopes"
+        helpView={<HelpView description={description} />}
         search={
           <Search
             value={searchTerm}
