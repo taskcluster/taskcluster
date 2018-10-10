@@ -11,7 +11,7 @@ const debug = Debug(debugPrefix);
 // repository/organization names (notably .)
 function sanitizeGitHubField(field) {
   return field.replace(/[^a-zA-Z0-9-_\.]/gi, '').replace(/\./g, '%');
-};
+}
 
 // Reduce a pull request WebHook's data to only fields needed to checkout a
 // revision
@@ -38,7 +38,7 @@ function getPullRequestDetails(eventData) {
     'event.title': eventData.pull_request.title,
     'event.type': 'pull_request.' + eventData.action,
   };
-};
+}
 
 // See https://developer.github.com/v3/activity/events/types/#pushevent
 function getPushDetails(eventData) {
@@ -73,7 +73,7 @@ function getPushDetails(eventData) {
   }
   return details;
   
-};
+}
 
 // See https://developer.github.com/v3/activity/events/types/#releaseevent
 function getReleaseDetails(eventData) {
@@ -101,7 +101,7 @@ function getReleaseDetails(eventData) {
  **/
 function generateXHubSignature(secret, payload) {
   return 'sha1=' + crypto.createHmac('sha1', secret).update(payload).digest('hex');
-};
+}
 
 /**
  * Compare hmac.digest('hex') signatures in constant time
@@ -114,7 +114,7 @@ function compareSignatures(sOne, sTwo) {
   let h1 = crypto.createHmac('sha1', secret).update(sOne);
   let h2 = crypto.createHmac('sha1', secret).update(sTwo);
   return h1.digest('hex') === h2.digest('hex');
-};
+}
 
 function resolve(res, status, message) {
   return res.status(status).send(message);
@@ -507,7 +507,7 @@ builder.declare({
     } catch (e) {
       // 403 from Github indicates this integration doesn't have permission to post this status,
       // so return that on to the user
-      if (e.code == 403) {
+      if (e.code === 403) {
         return res.reportError('ForbiddenByGithub',
           'Operation was forbidden by Github. The Github App may not be set up for this repo.',
           {});
@@ -556,7 +556,7 @@ builder.declare({
     } catch (e) {
       // 403 from Github indicates this integration doesn't have permission to post this comment,
       // so return that on to the user
-      if (e.code == 403) {
+      if (e.code === 403) {
         return res.reportError('ForbiddenByGithub',
           'Operation was forbidden by Github. The Github App may not be set up for this repo.',
           {});

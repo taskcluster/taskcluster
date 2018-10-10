@@ -46,7 +46,7 @@ suite('intree config', function() {
       },
     };
     return _.merge(defaultMessage, params);
-  };
+  }
 
   /**
    * Make sure that data merges properly when building configs
