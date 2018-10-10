@@ -15,7 +15,7 @@ tasks:
       # this image was built from taskcluster-pulse's test/Dockerfile; it's a mashup of the given node and rabbitmq images..
       image: "taskcluster/taskcluster-pulse-test:node-8.11.2-rabbitmq-3.6.15-management@sha256:727392ce1d90f848496792636593fca72e9304b0c6064b401aeefd4bf1a27c26"
       env:
-        NO_TEST_SKIP: true
+        NO_TEST_SKIP: "true"
       command:
         - "/bin/bash"
         - "--login"
