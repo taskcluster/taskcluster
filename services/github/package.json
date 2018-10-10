@@ -19,7 +19,7 @@
     "azure-entities": "^4.0.0",
     "bluebird": "^3.5.1",
     "debug": "^3.1.0",
-    "eslint-config-taskcluster": "^3.0.0",
+    "eslint-config-taskcluster": "^3.2.0",
     "js-yaml": "^3.10.0",
     "json-e": "^2.5.0",
     "json-parameterization": "^0.2.0",
