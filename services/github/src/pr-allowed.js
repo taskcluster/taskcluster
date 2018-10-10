@@ -41,10 +41,10 @@ async function getRepoPolicy({login, organization, repository, instGithub, debug
     throw e;
   }
 
-  if (!taskclusterYml.version || taskclusterYml.version == 0) {
+  if (!taskclusterYml.version || taskclusterYml.version === 0) {
     // consult its `allowPullRequests` field
     return taskclusterYml['allowPullRequests'] || DEFAULT_POLICY;
-  } else if (taskclusterYml.version == 1) {
+  } else if (taskclusterYml.version === 1) {
     if (taskclusterYml.policy) {
       return taskclusterYml.policy.pullRequests || DEFAULT_POLICY;
     }

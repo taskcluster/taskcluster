@@ -116,7 +116,7 @@ class Handlers {
   async createExceptionComment({instGithub, organization, repository, sha, error, pullNumber}) {
     let errorBody = error.body && error.body.error || error.message;
     // Let's prettify any objects
-    if (typeof errorBody == 'object') {
+    if (typeof errorBody === 'object') {
       errorBody = JSON.stringify(errorBody, null, 4);
     }
     let body = [

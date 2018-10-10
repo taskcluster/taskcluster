@@ -87,7 +87,7 @@ class VersionZero extends TcYaml {
       return task;
     });
     return config;
-  };
+  }
 
   substituteParameters(config, cfg, payload) {
     return jparam(config, _.merge(payload.details, {

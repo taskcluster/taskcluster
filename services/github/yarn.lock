@@ -797,9 +797,9 @@ escape-string-regexp@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.2.tgz#4dbc2fe674e71949caf3fb2695ce7f2dc1d9a8d1"
 
-eslint-config-taskcluster@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-taskcluster/-/eslint-config-taskcluster-3.0.0.tgz#ce50466c13eef198c605328887ef13b8a37d8c92"
+eslint-config-taskcluster@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/eslint-config-taskcluster/-/eslint-config-taskcluster-3.2.0.tgz#542db58e2cdb7b6f50c592d96028013b563619b6"
   dependencies:
     eslint "^4.10.0"
 
