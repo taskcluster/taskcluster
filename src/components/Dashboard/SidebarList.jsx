@@ -13,6 +13,8 @@ import MixcloudIcon from 'mdi-react/MixcloudIcon';
 import BackupRestoreIcon from 'mdi-react/BackupRestoreIcon';
 import AccountKeyIcon from 'mdi-react/AccountKeyIcon';
 import AccountStarIcon from 'mdi-react/AccountStarIcon';
+import JsonIcon from 'mdi-react/JsonIcon';
+import ScaleBalanceIcon from 'mdi-react/ScaleBalanceIcon';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import AccountSettingsIcon from 'mdi-react/AccountSettingsIcon';
 import GithubBoxIcon from 'mdi-react/GithubBoxIcon';
@@ -79,9 +81,16 @@ export default class SidebarList extends Component {
           Pulse Messages
         </SidebarListItem>
 
-        <SidebarListItem to="/expansions" icon={<ArrowExpandVerticalIcon />}>
-          Expand Scopesets
-        </SidebarListItem>
+        <SidebarListGroup to="/scopesets" title="Scopesets" icon={<JsonIcon />}>
+          <SidebarListItem to="/scopesets/compare" icon={<ScaleBalanceIcon />}>
+            Compare
+          </SidebarListItem>
+          <SidebarListItem
+            to="/scopesets/expand"
+            icon={<ArrowExpandVerticalIcon />}>
+            Expand
+          </SidebarListItem>
+        </SidebarListGroup>
 
         <SidebarListItem to="/quickstart" icon={<GithubBoxIcon />}>
           GitHub Quickstart

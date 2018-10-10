@@ -35,7 +35,13 @@ export default [
     component: loadable(() =>
       import(/* webpackChunkName: 'ScopesetExpander' */ '../views/ScopesetExpander')
     ),
-    path: '/expansions',
+    path: '/scopesets/expand',
+  },
+  {
+    component: loadable(() =>
+      import(/* webpackChunkName: 'ScopesetComparison' */ '../views/ScopesetComparison')
+    ),
+    path: '/scopesets/compare',
   },
   {
     component: loadable(() =>
