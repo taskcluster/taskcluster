@@ -3,6 +3,7 @@ const libUrls = require('taskcluster-lib-urls');
 const debug = require('debug')('taskcluster-lib-pulse.publisher');
 const EventEmitter = require('events');
 const url = require('url');
+const AWS = require('aws-sdk');
 
 class Exchanges {
   constructor(options) {
@@ -407,8 +408,8 @@ class PulsePublisher {
     const refUrl = libUrls.exchangeReference('https://taskcluster.net', serviceName, version);
     const {hostname, path} = url.parse(refUrl);
 
-    const s3 = new aws.S3(aws);
-    return s3.putObject({
+    const s3 = new AWS.S3(aws);
+    await s3.putObject({
       Bucket:           hostname,
       Key:              path.slice(1), // omit leading `/`
       Body:             JSON.stringify(reference, undefined, 2),
