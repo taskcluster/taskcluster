@@ -122,7 +122,7 @@ class VersionZero extends TcYaml {
         throw new Error('Cannot specify both `branches` and `excludeBranches` in the same task!');
       }
         
-      return _.some(events, ev => { // TODO
+      return _.some(events, ev => {
         if (!event.startsWith(_.trimEnd(ev, '*'))) {
           return false;
         }

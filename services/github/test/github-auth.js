@@ -47,19 +47,6 @@ class FakeGithub {
           body,
         };
         if (!this._comments[key]) {
-          this._comments[key] = [];
-        }
-        this._comments[key].push(info);
-      },
-      'issues.createComment': ({owner, repo, number, body}) => {
-        if (repo === 'no-permission') {
-          throwError(403);
-        }
-        const key = `${owner}/${repo}@${number}`;
-        const info = {
-          body,
-        };
-        if (!this._comments[key]) {
           this._comments[key]=[];
         }
         this._comments[key].push(info);

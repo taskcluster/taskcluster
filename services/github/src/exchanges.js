@@ -49,13 +49,6 @@ let commonMessageBuilder = function(msg) {
   return msg;
 };
 
-// Temporary function for debugging purposes. TO DO: remove
-let releaseMessageBuilder = function(msg) {
-  debug('Received webhook for release. Building message...');
-  msg.version = 1;
-  return msg;
-};
-
 /** Declaration of exchanges offered by the github */
 let exchanges = new Exchanges({
   serviceName: 'github',
@@ -118,7 +111,7 @@ exchanges.declare({
   ].join('\n'),
   routingKey:         commonRoutingKey(),
   schema:             'github-release-message.yml',
-  messageBuilder:     releaseMessageBuilder, // TO DO: replace with commonMessageBuilder
+  messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  msg => _.pick(msg, 'organization', 'repository'),
   CCBuilder:          () => [],
 });
