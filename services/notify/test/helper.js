@@ -4,6 +4,7 @@ const _ = require('lodash');
 const mocha = require('mocha');
 const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
+const {FakeClient} = require('taskcluster-lib-pulse');
 const config = require('typed-env-config');
 const {stickyLoader, Secrets, fakeauth} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
@@ -27,6 +28,7 @@ exports.load = stickyLoader(load);
 suiteSetup(async function() {
   exports.load.inject('profile', 'test');
   exports.load.inject('process', 'test');
+  exports.load.inject('pulseClient', new FakeClient());
 });
 
 // set up the testing secrets
@@ -288,7 +290,6 @@ exports.withPulse = (mock, skipping) => {
 
     await exports.load('cfg');
     exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
-    exports.load.cfg('pulse', {fake: true});
     exports.publisher = await exports.load('publisher');
 
     exports.checkNextMessage = (exchange, check) => {
@@ -315,11 +316,11 @@ exports.withPulse = (mock, skipping) => {
   const fakePublish = msg => { exports.messages.push(msg); };
   setup(function() {
     exports.messages = [];
-    exports.publisher.on('fakePublish', fakePublish);
+    exports.publisher.on('message', fakePublish);
   });
 
   teardown(function() {
-    exports.publisher.removeListener('fakePublish', fakePublish);
+    exports.publisher.removeListener('message', fakePublish);
   });
 };
 
@@ -331,7 +332,7 @@ exports.withHandler = (mock, skipping) => {
 
     const handler = await exports.load('handler');
     exports.handler = handler;
-    exports.listener = handler.listener;
+    exports.pq = handler.pq;
   });
 };
 

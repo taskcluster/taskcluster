@@ -3,37 +3,38 @@ const _ = require('lodash');
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
 const jsone = require('json-e');
+const {consume} = require('taskcluster-lib-pulse');
 
 /** Handler listening for tasks that carries notifications */
 class Handler {
-  constructor({notifier, monitor, routePrefix, ignoreTaskReasonResolved, listener, queue, testing, queueEvents}) {
-    this.queue = queue;
+  constructor({notifier, monitor, routePrefix, ignoreTaskReasonResolved, pulseClient, queue, 
+    queueEvents, queueName}) {
 
+    this.queue = queue;
     this.notifier = notifier;
     this.monitor = monitor;
     this.routePrefix = routePrefix;
     this.ignoreTaskReasonResolved = ignoreTaskReasonResolved;
 
-    this.listener = listener;
-    this.testing = testing;
-
-    // Bind to exchanges with pattern for custom routing keys
-    this.listener.bind(queueEvents.taskCompleted(`route.${routePrefix}.#.on-completed.#`));
-    this.listener.bind(queueEvents.taskCompleted(`route.${routePrefix}.#.on-any.#`));
-    this.listener.bind(queueEvents.taskFailed(`route.${routePrefix}.#.on-failed.#`));
-    this.listener.bind(queueEvents.taskFailed(`route.${routePrefix}.#.on-any.#`));
-    this.listener.bind(queueEvents.taskException(`route.${routePrefix}.#.on-exception.#`));
-    this.listener.bind(queueEvents.taskException(`route.${routePrefix}.#.on-any.#`));
-
-    // Handle messages
-    this.listener.on('message', this.monitor.timedHandler('notification', this.onMessage.bind(this)));
+    this.pulseClient = pulseClient;
+    this.queueName = queueName;
+    this.bindings = [
+      queueEvents.taskCompleted(`route.${routePrefix}.#.on-completed.#`),
+      queueEvents.taskCompleted(`route.${routePrefix}.#.on-any.#`),
+      queueEvents.taskFailed(`route.${routePrefix}.#.on-failed.#`),
+      queueEvents.taskFailed(`route.${routePrefix}.#.on-any.#`),
+      queueEvents.taskException(`route.${routePrefix}.#.on-exception.#`),
+      queueEvents.taskException(`route.${routePrefix}.#.on-any.#`),
+    ];
   }
 
   async listen() {
-    if (!this.testing) {
-      await this.listener.connect();
-    }
-    await this.listener.resume();
+    this.pq = await consume({
+      client: this.pulseClient,
+      bindings: this.bindings,
+      queueName: this.queueName,
+    },
+    (message) => this.monitor.timedHandler('notification', this.onMessage(message)));
   }
 
   renderMessage(template, context) {
