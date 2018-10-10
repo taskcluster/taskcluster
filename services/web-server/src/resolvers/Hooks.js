@@ -3,7 +3,9 @@ export default {
     __resolveType(obj) {
       if (obj.taskId) {
         return 'HookSuccessfulFire';
-      } else if (obj.error) {
+      }
+
+      if (obj.error) {
         return 'HookFailedFire';
       }
 

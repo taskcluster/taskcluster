@@ -17,7 +17,9 @@ export default ({ pulseEngine, rootUrl }) => ({ request, connection }) => {
       clients: currentClients,
       loaders: currentLoaders,
     };
-  } else if (connection) {
+  }
+
+  if (connection) {
     // if connection is set, this is for a subscription
     return {
       pulseEngine,

@@ -5,4 +5,3 @@ describe('simple', () => {
     assert.equal(true, !false);
   });
 });
-
