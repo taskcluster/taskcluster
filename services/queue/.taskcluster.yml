@@ -21,7 +21,7 @@ tasks:
       maxRunTime: 3600
       image: "node:8.10"
       env:
-        NO_TEST_SKIP: true
+        NO_TEST_SKIP: "true"
       features:
         taskclusterProxy: true
       command:
@@ -50,7 +50,7 @@ tasks:
       maxRunTime: 3600
       image: "node:8.10"
       env:
-        NO_TEST_SKIP: true
+        NO_TEST_SKIP: "true"
       features:
         taskclusterProxy: true
       command:
