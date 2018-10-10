@@ -407,7 +407,7 @@ class PulsePublisher {
     const refUrl = libUrls.exchangeReference('https://taskcluster.net', serviceName, version);
     const {hostname, path} = url.parse(refUrl);
 
-    const s3 = new aws.S3(options.aws);
+    const s3 = new aws.S3(aws);
     return s3.putObject({
       Bucket:           hostname,
       Key:              path.slice(1), // omit leading `/`
