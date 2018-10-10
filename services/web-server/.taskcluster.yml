@@ -15,7 +15,7 @@ tasks:
         - secrets:get:project/taskcluster/testing/taskcluster-web-server
     payload:
       env:
-        NO_TEST_SKIP: true
+        NO_TEST_SKIP: "true"
       features:
         taskclusterProxy: true
       maxRunTime: 3600
