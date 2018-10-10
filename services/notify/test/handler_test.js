@@ -77,7 +77,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
       status.state = 'exception';
       status.runs[0].state = 'exception';
       status.runs[0].reasonResolved = reasonResolved;
-      await helper.listener.fakeMessage({
+      await helper.pq.fakeMessage({
         payload: {status},
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
         routingKey: 'doesnt-matter',
@@ -92,11 +92,11 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
   });
 
   test('pulse', async () => {
-    const p = new Promise(resolve => helper.publisher.once('fakePublish', resolve));
+    const p = new Promise(resolve => helper.publisher.once('message', resolve));
 
     const route = 'test-notify.pulse.notify-test.on-any';
     helper.queue.addTask(baseStatus.taskId, makeTask([route]));
-    await helper.listener.fakeMessage({
+    await helper.pq.fakeMessage({
       payload: {
         status: baseStatus,
       },

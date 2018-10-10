@@ -110,6 +110,16 @@ amqplib@^0.5.1:
     buffer-more-ints "0.0.2"
     readable-stream "1.x >=1.1.9"
 
+amqplib@^0.5.2:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/amqplib/-/amqplib-0.5.2.tgz#d2d7313c7ffaa4d10bcf1e6252de4591b6cc7b63"
+  dependencies:
+    bitsyntax "~0.0.4"
+    bluebird "^3.4.6"
+    buffer-more-ints "0.0.2"
+    readable-stream "1.x >=1.1.9"
+    safe-buffer "^5.0.1"
+
 ansi-escapes@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/ansi-escapes/-/ansi-escapes-3.1.0.tgz#f73207bb81207d75fd6c83f125af26eea378ca30"
@@ -3338,6 +3348,19 @@ taskcluster-client@^11.0.1:
     superagent "~3.8.1"
     taskcluster-lib-urls "^10.0.0"
 
+taskcluster-client@^11.0.4:
+  version "11.0.4"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-11.0.4.tgz#ea8df77d78ac72de5fb087bb6b884a25f33c90ee"
+  dependencies:
+    amqplib "^0.5.1"
+    debug "^3.1.0"
+    hawk "^6.0.2"
+    lodash "^4.17.4"
+    promise "^8.0.1"
+    slugid "^1.1.0"
+    superagent "~3.8.1"
+    taskcluster-lib-urls "^10.0.0"
+
 taskcluster-client@^3.0.3:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-3.1.0.tgz#6f3bbf6ba4d6c149f11ab0cc23ef4f333c19a521"
@@ -3423,6 +3446,15 @@ taskcluster-lib-monitor@^10.0.0:
     raven "^2.2.1"
     statsum "^0.6.0"
     taskcluster-client "^10.0.0"
+
+taskcluster-lib-pulse@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-pulse/-/taskcluster-lib-pulse-2.0.4.tgz#a9e3ef6dc76612843de5d0b98e00ec045907aac0"
+  dependencies:
+    amqplib "^0.5.2"
+    debug "^3.1.0"
+    taskcluster-client "^11.0.4"
+    taskcluster-lib-urls "^10.0.0"
 
 taskcluster-lib-scopes@^10.0.0:
   version "10.0.0"

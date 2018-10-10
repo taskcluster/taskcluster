@@ -1,5 +1,6 @@
 const debug = require('debug')('notify');
 const aws = require('aws-sdk');
+const {Client, claimedCredentials} = require('taskcluster-lib-pulse');
 const App = require('taskcluster-lib-app');
 const loader = require('taskcluster-lib-loader');
 const config = require('typed-env-config');
@@ -75,23 +76,32 @@ const load = loader({
     setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
-  publisher: {
-    requires: ['cfg', 'schemaset', 'monitor'],
-    setup: async ({cfg, schemaset, monitor}) => exchanges.setup({
-      rootUrl:            cfg.taskcluster.rootUrl,
-      credentials:        cfg.pulse,
-      validator:          await schemaset.validator(cfg.taskcluster.rootUrl),
-      publish:            cfg.app.publishMetaData,
-      aws:                cfg.aws,
-      monitor:            monitor.prefix('publisher'),
-    }),
+  pulseClient: {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => {
+      const {namespace, expiresAfter, contact} = cfg.pulse;
+      const {rootUrl, credentials} = cfg.taskcluster;
+      return new Client({
+        namespace,
+        monitor,
+        credentials: claimedCredentials({
+          rootUrl,
+          credentials,
+          namespace,
+          expiresAfter,
+          contact}),
+      });
+    },
   },
 
-  listener: {
-    requires: ['cfg'],
-    setup: ({cfg}) => new taskcluster.PulseListener({
-      credentials: cfg.pulse,
-      queueName: cfg.app.listenerQueueName,
+  publisher: {
+    requires: ['cfg', 'pulseClient', 'schemaset'],
+    setup: async ({cfg, pulseClient, schemaset}) => await exchanges.publisher({
+      rootUrl:            cfg.taskcluster.rootUrl,
+      client:             pulseClient,
+      schemaset,
+      publish:            cfg.app.publishMetaData,
+      aws:                cfg.aws,
     }),
   },
 
@@ -165,17 +175,17 @@ const load = loader({
   },
 
   handler: {
-    requires: ['profile', 'cfg', 'monitor', 'notifier', 'listener', 'queue', 'queueEvents'],
-    setup: async ({profile, cfg, monitor, notifier, listener, queue, queueEvents}) => {
+    requires: ['profile', 'cfg', 'monitor', 'notifier', 'pulseClient', 'queue', 'queueEvents'],
+    setup: async ({cfg, monitor, notifier, pulseClient, queue, queueEvents}) => {
       let handler = new Handler({
         notifier,
         monitor:                  monitor.prefix('handler'),
         routePrefix:              cfg.app.routePrefix,
         ignoreTaskReasonResolved: cfg.app.ignoreTaskReasonResolved,
-        listener,
         queue,
         queueEvents,
-        testing:                  profile === 'test',
+        pulseClient,
+        queueName:                cfg.app.listenerQueueName,
       });
       await handler.listen();
       return handler;
