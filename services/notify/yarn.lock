@@ -3447,9 +3447,9 @@ taskcluster-lib-monitor@^10.0.0:
     statsum "^0.6.0"
     taskcluster-client "^10.0.0"
 
-taskcluster-lib-pulse@^2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-pulse/-/taskcluster-lib-pulse-2.0.4.tgz#a9e3ef6dc76612843de5d0b98e00ec045907aac0"
+taskcluster-lib-pulse@^2.0.5:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-pulse/-/taskcluster-lib-pulse-2.0.5.tgz#ae2e6ae7901d554e604d905dc32c2b9111e7de4b"
   dependencies:
     amqplib "^0.5.2"
     debug "^3.1.0"
