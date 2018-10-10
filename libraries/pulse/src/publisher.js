@@ -2,6 +2,7 @@ const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');
 const debug = require('debug')('taskcluster-lib-pulse.publisher');
 const EventEmitter = require('events');
+const url = require('url');
 
 class Exchanges {
   constructor(options) {
