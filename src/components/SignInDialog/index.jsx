@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { withApollo } from 'react-apollo';
 import { bool, func } from 'prop-types';
 import Avatar from '@material-ui/core/Avatar';
 import Dialog from '@material-ui/core/Dialog';
@@ -14,6 +15,7 @@ import { withAuth } from '../../utils/Auth';
 import CredentialsDialog from './CredentialsDialog';
 
 @withAuth
+@withApollo
 export default class SignInDialog extends Component {
   static propTypes = {
     open: bool.isRequired,
@@ -55,6 +57,9 @@ export default class SignInDialog extends Component {
         displayName: credentials.clientId,
       },
     });
+    // Since Apollo caches query results, it’s important to get rid of them
+    // when the login state changes.
+    this.props.client.resetStore();
     this.props.onClose();
   };
 

@@ -1,5 +1,6 @@
 import { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
+import { withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
 import Avatar from '@material-ui/core/Avatar';
 import Menu from '@material-ui/core/Menu';
@@ -35,6 +36,7 @@ import SignInDialog from '../SignInDialog';
   },
 }))
 @withAuth
+@withApollo
 export default class UserMenu extends Component {
   state = {
     anchorEl: null,
@@ -60,6 +62,9 @@ export default class UserMenu extends Component {
   handleClickSignOut = () => {
     this.handleMenuClose();
     this.props.onUnauthorize();
+    // Since Apollo caches query results, it’s important to get rid of them
+    // when the login state changes.
+    this.props.client.resetStore();
   };
 
   render() {
