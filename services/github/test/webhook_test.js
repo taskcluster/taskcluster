@@ -21,7 +21,7 @@ helper.secrets.mockSuite('webhook', ['taskcluster'], function(mock, skipping) {
       assert.equal(response.statusCode, statusCode);
       response.connection.destroy();
     });
-  };
+  }
 
   // Good data: should all return 200 responses
   statusTest('Pull Request Opened', 'webhook.pull_request.open.json', 204);

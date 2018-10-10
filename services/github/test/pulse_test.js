@@ -73,7 +73,7 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
       }
       assert.deepEqual(published, expected);
     });
-  };
+  }
 
   pulseTest({
     testName: 'Publish Pull Request',
