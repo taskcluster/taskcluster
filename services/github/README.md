@@ -29,8 +29,8 @@ To run all tests, you will need appropriate Taskcluster credentials. Using taskc
 
 
 To test the components separately, run:
-- server: `<set the environment variables> node lib/main.js server`
-- handlers: `<set the environment variables> node lib/main.js worker`
+- server: `<set the environment variables> node src/main.js server`
+- handlers: `<set the environment variables> node src/main.js worker`
 
 ## Deploying
 
