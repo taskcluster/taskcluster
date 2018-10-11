@@ -5,6 +5,24 @@ const FIRST = '$$FIRST$$';
 
 export default class ConnectionLoader {
   constructor(singleConnectionHandler) {
+    const fetch = async ({ connection, options, ...props }) => {
+      const result = connection
+        ? await singleConnectionHandler({ connection, options, ...props })
+        : await singleConnectionHandler({ options, ...props });
+
+      if (result.continuationToken && !result.items.length) {
+        return fetch({
+          ...props,
+          options: {
+            ...options,
+            continuationToken: result.continuationToken,
+          },
+        });
+      }
+
+      return result;
+    };
+
     return new DataLoader(connections =>
       Promise.all(
         connections.map(async ({ connection, ...props }) => {
@@ -22,13 +40,14 @@ export default class ConnectionLoader {
             ? { limit, continuationToken }
             : { limit };
           const result = connection
-            ? await singleConnectionHandler({ ...props, connection, options })
-            : await singleConnectionHandler({ ...props, options });
-
-          return this.createPageConnection(result, {
+            ? await fetch({ ...props, connection, options })
+            : await fetch({ ...props, options });
+          const pageConnection = this.createPageConnection(result, {
             ...connection,
             ...options,
           });
+
+          return pageConnection;
         })
       )
     );
@@ -36,8 +55,8 @@ export default class ConnectionLoader {
 
   createPageConnection({ continuationToken, items, ...props }, options) {
     const pageInfo = {
-      hasNextPage: !!continuationToken,
-      hasPreviousPage: !!options.cursor && options.cursor !== FIRST,
+      hasNextPage: Boolean(continuationToken),
+      hasPreviousPage: Boolean(options.cursor) && options.cursor !== FIRST,
       cursor: options.continuationToken || FIRST,
     };
 
