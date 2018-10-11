@@ -116,11 +116,9 @@ suite('Conditions', () => {
       }).throws(errors.InvalidSatisfiers);
     });
 
-    test('should throw when a condition has no satisfier', () => {
+    test('should evaluate false with a missing condition', () => {
       let conditions = new Conditions({string: 'test'});
-      assume(() => {
-        conditions.evaluate({other: 'test'});
-      }).throws(errors.InvalidSatisfiers);
+      assume(conditions.evaluate({other: 'test'})).is.not.ok();
     });
 
     test('should return true when all requirements are met', () => {

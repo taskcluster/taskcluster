@@ -6,80 +6,78 @@ const errors = require('../lib/errors');
 
 const {Ruleset} = require('../lib/rules');
 const {
-  ProvisionedWorkerConfiguration,
-  StaticWorkerConfiguration,
+  WorkerConfiguration,
   buildWorkerConfiguration,
 } = require('../lib/worker-config.js');
-
-const fakeProviders = new Map([['provider-1', {
-  id: 'provider-1',
-  providedSatisfiers: () => [],
-}]]);
 
 // Return a simple worker configuration which has a ruleset which
 // we can evaluate
 function mockRules() {
   return [{
-    id: 'rule-1',
-    description: 'sample-rule-1',
+    id: 'bidding-rule',
+    description: 'bidding-rule',
+    conditions: {
+      workerType: 'worker-type-1',
+      biddingStrategyId: 'bidding-strategy-1',
+    },
+    values: {
+      biddingStrategyData: {
+        info1: 'bidding-rule-applied',
+      },
+    },
+  }, {
+    id: 'docs-rule',
+    description: 'docs-rule',
     conditions: {
       workerType: 'worker-type-1',
     },
     values: {
-      info1: 'rule-1-applied',
+      documentationData: {
+        info1: 'docs-rule-applied',
+      },
+    },
+  }, {
+    id: 'rule-1',
+    description: 'sample-rule-1',
+    conditions: {
+      workerType: 'worker-type-1',
+      providerId: 'provider-1',
+    },
+    values: {
+      providerData: {
+        info1: 'rule-1-applied',
+      },
     },
   }, {
     id: 'rule-2',
     description: 'sample-rule-2',
     conditions: {
       workerType: 'worker-type-2',
+      providerId: 'provider-1',
     },
     values: {
-      info2: 'rule-2-applied',
+      providerData: {
+        info2: 'rule-2-applied',
+      },
     },
   }, {
     id: 'rule-3',
     description: 'sample-rule-2',
     conditions: null,
     values: {
-      info3: 'rule-3-applied',
+      providerData: {
+        info3: 'rule-3-applied',
+      },
     },
   }];
 }
 
-suite('StaticWorkerConfiguration', () => {
+suite('WorkerConfiguration', () => {
 
   let workerConfiguration;
 
   setup(() => {
-    workerConfiguration = new StaticWorkerConfiguration({
-      id: 'worker-config-1',
-      workerTypes: ['worker-type-1'],
-      configuration: {
-        test: true,
-      },
-    });
-  });
-
-  test('should be able to evaluate a worker configuration', () => {
-    assume(workerConfiguration.evaluate()).deeply.equals({
-      test: true,
-    });
-  });
-
-  test('should be able to list worker types', () => {
-    for (let workerType of workerConfiguration.workerTypes()) {
-      assume(workerType).is.a.string;
-    }
-  });
-});
-
-suite('ProvisionedWorkerConfiguration', () => {
-
-  let workerConfiguration;
-
-  setup(() => {
-    workerConfiguration = new ProvisionedWorkerConfiguration({
+    workerConfiguration = new WorkerConfiguration({
       id: 'worker-config-1',
       rules: new Ruleset({rules: mockRules()}),
       workerTypeConfigurations: [
@@ -97,41 +95,90 @@ suite('ProvisionedWorkerConfiguration', () => {
     });
   });
 
-  test('should be able to evaluate a worker configuration', () => {
+  test('should be able to evaluate a worker configuration for a bidding strategy', () => {
     let outcome = workerConfiguration.evaluate({
-      satisfiers: {
-        workerType: 'worker-type-1',
-        providerId: 'provider-1',
-      },
-      providers: new Map([['provider-1', {
-        id: 'provider-1',
-        providedSatisfiers: () => [],
-      }]]),
+      workerType: 'worker-type-1',
+      biddingStrategyId: 'bidding-strategy-1',
     });
 
     assume(outcome).deeply.equals({
-      info1: 'rule-1-applied',
-      info3: 'rule-3-applied',
+      biddingStrategyData: {
+        info1: 'bidding-rule-applied',
+      },
+      documentationData: {
+        info1: 'docs-rule-applied',
+      },
+      providerData: {
+        info3: 'rule-3-applied',
+      }, 
+      workerType: 'worker-type-1',
+      schemaData: {
+      },
     });
+  });
+
+  test('should be able to evaluate a worker configuration for a provider', () => {
+    let outcome = workerConfiguration.evaluate({
+      workerType: 'worker-type-1',
+      providerId: 'provider-1',
+    });
+
+    assume(outcome).deeply.equals({
+      biddingStrategyData: {
+      },
+      documentationData: {
+        info1: 'docs-rule-applied',
+      },
+      providerData: {
+        info1: 'rule-1-applied',
+        info3: 'rule-3-applied',
+      }, 
+      workerType: 'worker-type-1',
+      schemaData: {
+      },
+    });
+  });
+
+  test('should throw when when unexpected provider data results', () => {
+    assume(() => {
+      workerConfiguration.evaluate({
+        biddingStrategyId: 'bidding-strategy-1',
+      });
+    }).throws(errors.InvalidSatisfiers);
+  });
+
+  test('should throw when when unexpected bidding strategy data results', () => {
+    assume(() => {
+      workerConfiguration.evaluate({
+        providerId: 'provider-1',
+      });
+    }).throws(errors.InvalidSatisfiers);
   });
 
   test('should throw when all satisfiers are missing', () => {
     assume(() => {
+      workerConfiguration.evaluate();
+    }).throws(errors.InvalidSatisfiers);
+  });
+
+  test('should throw when worker type satisfier is missing', () => {
+    assume(() => {
       workerConfiguration.evaluate({
-        providers: fakeProviders,
+        providerId: 'provider-1',
       });
     }).throws(errors.InvalidSatisfiers);
   });
 
-  test('should throw when one satisfier is missing', () => {
+  test('should throw when missing fields for dynamic worker type', () => {
     assume(() => {
-      workerConfiguration.evaluate({
-        satisfiers: {
-          providerId: 'provider-1',
-        },
-        providers: fakeProviders,
+      new WorkerConfiguration({
+        id: 'failbad',
+        workerTypeConfigurations: [
+          new Map([['workerType', 'worker-type-1'], ['providerIds', 'provider-1']]),
+        ],
+        rules: mockRules(),
       });
-    }).throws(errors.InvalidSatisfiers);
+    }).throws(errors.InvalidWorkerConfiguration);
   });
 
   test('should be able to list worker types', () => {
@@ -148,16 +195,6 @@ suite('buildWorkerConfiguration', () => {
     }).throws(errors.InvalidWorkerConfiguration);
   });
 
-  test('should build static configuration as appropriate', () => {
-    let result = buildWorkerConfiguration({
-      id: 'worker-configuration-1',
-      workerTypes: ['worker-type-1'],
-      configuration: {test: true},
-    });
-    result.evaluate();
-    assume(result).instanceof(StaticWorkerConfiguration);
-  });
-
   suite('provisioned worker configurations', () => {
     test('should allow setting no defaults', () => {
       let result = buildWorkerConfiguration({
@@ -169,14 +206,24 @@ suite('buildWorkerConfiguration', () => {
         }],
         rules: mockRules(),
       });
-      assume(result.evaluate({providers: fakeProviders, satisfiers: {
+      assume(result.evaluate({
         workerType: 'worker-type-1',
         providerId: 'provider-1',
-      }})).deeply.equals({
-        info1: 'rule-1-applied',
-        info3: 'rule-3-applied',
+      })).deeply.equals({
+        biddingStrategyData: {
+        },
+        documentationData: {
+          info1: 'docs-rule-applied',
+        },
+        providerData: {
+          info1: 'rule-1-applied',
+          info3: 'rule-3-applied',
+        }, 
+        workerType: 'worker-type-1',
+        schemaData: {
+        },
       });
-      assume(result).instanceof(ProvisionedWorkerConfiguration);
+      assume(result).instanceof(WorkerConfiguration);
     });
     
     test('should allow setting default provisioner ids', () => {
@@ -189,14 +236,24 @@ suite('buildWorkerConfiguration', () => {
         }],
         rules: mockRules(),
       });
-      assume(result.evaluate({providers: fakeProviders, satisfiers: {
+      assume(result.evaluate({
         workerType: 'worker-type-1',
         providerId: 'provider-1',
-      }})).deeply.equals({
-        info1: 'rule-1-applied',
-        info3: 'rule-3-applied',
+      })).deeply.equals({
+        biddingStrategyData: {
+        },
+        documentationData: {
+          info1: 'docs-rule-applied',
+        },
+        providerData: {
+          info1: 'rule-1-applied',
+          info3: 'rule-3-applied',
+        }, 
+        workerType: 'worker-type-1',
+        schemaData: {
+        },
       });
-      assume(result).instanceof(ProvisionedWorkerConfiguration);
+      assume(result).instanceof(WorkerConfiguration);
     });
     
     test('should allow setting default bidding strategy id', () => {
@@ -209,14 +266,24 @@ suite('buildWorkerConfiguration', () => {
         }],
         rules: mockRules(),
       });
-      assume(result.evaluate({providers: fakeProviders, satisfiers: {
+      assume(result.evaluate({
         workerType: 'worker-type-1',
         providerId: 'provider-1',
-      }})).deeply.equals({
-        info1: 'rule-1-applied',
-        info3: 'rule-3-applied',
+      })).deeply.equals({
+        biddingStrategyData: {
+        },
+        documentationData: {
+          info1: 'docs-rule-applied',
+        },
+        providerData: {
+          info1: 'rule-1-applied',
+          info3: 'rule-3-applied',
+        }, 
+        workerType: 'worker-type-1',
+        schemaData: {
+        },
       });
-      assume(result).instanceof(ProvisionedWorkerConfiguration);
+      assume(result).instanceof(WorkerConfiguration);
     });    
 
     test('should string worker type list', () => {
@@ -227,14 +294,24 @@ suite('buildWorkerConfiguration', () => {
         workerTypes: ['worker-type-1'],
         rules: mockRules(),
       });
-      assume(result.evaluate({providers: fakeProviders, satisfiers: {
+      assume(result.evaluate({
         workerType: 'worker-type-1',
         providerId: 'provider-1',
-      }})).deeply.equals({
-        info1: 'rule-1-applied',
-        info3: 'rule-3-applied',
+      })).deeply.equals({
+        biddingStrategyData: {
+        },
+        documentationData: {
+          info1: 'docs-rule-applied',
+        },
+        providerData: {
+          info1: 'rule-1-applied',
+          info3: 'rule-3-applied',
+        }, 
+        workerType: 'worker-type-1',
+        schemaData: {
+        },
       });
-      assume(result).instanceof(ProvisionedWorkerConfiguration);
+      assume(result).instanceof(WorkerConfiguration);
     }); 
 
     test('should throw without setting provisioner ids', () => {
@@ -262,15 +339,5 @@ suite('buildWorkerConfiguration', () => {
         });
       }).throws(errors.InvalidWorkerConfiguration);
     });    
-
-    test('should throw with string worker types and no defaults', () => {
-      assume(() => {
-        let result = buildWorkerConfiguration({
-          id: 'worker-configuration-1',
-          workerTypes: ['worker-type-1'],
-          rules: mockRules(),
-        });
-      }).throws(errors.InvalidWorkerConfiguration);
-    });
   });
 });

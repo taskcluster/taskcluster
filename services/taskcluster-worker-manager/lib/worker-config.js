@@ -4,21 +4,108 @@ const errors = require('./errors');
 const {Ruleset} = require('./rules')
 
 /**
- * This class is the base WorkerConfiguration class.  It represents an
- * in-memory WorkerConfiguration and is not meant to be involved directly in
- * the serialization or deserialization of WorkerConfigurations.
- * WorkerConfigurations are meant to be immutable objects.  When making changes
- * to a worker configuration, the in-memory copies of the worker types should
- * be discarded and rebuilt.
+ * A WorkerConfiguration in the simplist terms maps an identifier
+ * to a list of worker type names and rules which can be used to generate
+ * data for providers, bidding strategies and metadata services.
+ *
+ * The term "worker type" is an unfortunate name which represents various
+ * things to various people.  In this service, it refers to a logical pool
+ * of machines which can each execute a task with equivalent results.
+ *
+ * The arguments passed into the constructor are:
+ *
+ *   - id: string identifier for a worker configuration
+ *   - workerTypeConfigurations: a configuration for each worker type
+ *   - rules: a Ruleset
+ *
+ * Worker Type Configurations:
+ *
+ * This is a list of objects in the shape of {workerType} or {workerType,
+ * biddingStrategyId, providerIds}.  The difference between these two shapes
+ * reflects whether or not this worker configuration is provisioned or not.
+ * There is no special handling for this case, rather that when either a bidding
+ * strategy or provider asks for worker types relevant to it, it would not be included.
+ *
+ * This means that workers which are provisioned or not can exist within the same
+ * "worker type" pool.
+ *
+ * In order to ensure that the difference between these two is clear, any
+ * worker type which has either a provisonerIds list or biddingStrategyId must
+ * have both.  The bidding strategy id is a string and provider ids is a list of 
+ * strings.  Each of these ids referes to the id of the respective type of object.
+ *
+ * Rules:
+ *
+ * The rules provided will be evaluated by bidding strategies, providers and
+ * metadata endpoints.  Each evaluator of these rules will pass in the relevant
+ * satifiers for itself.  All of the rules must evaluate to an object in the
+ * shape {workerType: String, provider: {}, biddingStrategy: {},
+ * documentation: {}, schemas: {}}.  Each of these sections is relevant to an
+ * area of the worker manager.  The bidding strategy data must be valid to the
+ * bidding strategy selected for that worker type, likewise for the provider
+ * data.  The API for documentation and schema will define what is required
+ * there.  All validation of these values must be handled by the consuming
+ * system.
+ *
+ * By having a single set of rules, we allow worker configuration maintainers
+ * the ability to be very expressive.  A bidding strategy can evaluate the rules
+ * without a providerId to get the global worker type maximum capacity, then
+ * again for each provider to get the maximum for the specific capacity.
  */
 class WorkerConfiguration {
-  constructor({id}) {
+  constructor({id, workerTypeConfigurations, rules}) {
     if (typeof id !== 'string') {
       this._throw(errors.InvalidWorkerConfiguration, 'id must be provided');
     }
     this.id = id;
+
+    // We want to track the worker types we've already seen to ensure we have
+    // exactly one worker type
+    let workerTypes = [];
+
+    // We want to validate the worker type configurations
+    for (let workerTypeConfiguration of workerTypeConfigurations) {
+      let workerType = workerTypeConfiguration.get('workerType');
+
+      if (workerTypes.includes(workerType)) {
+        this._throw(errors.InvalidWorkerConfiguration, `${id} contains duplicate worker type ${workerType}`);
+      }
+      workerTypes.push(workerType);
+
+      let providerIds = workerTypeConfiguration.get('providerIds');
+      let biddingStrategyId = workerTypeConfiguration.get('biddingStrategyId');
+
+      if (typeof workerType !== 'string') {
+        this._throw(errors.InvalidWorkerConfiguration, 'worker type name must be string');
+      }
+
+      if (biddingStrategyId && providerIds) {
+        if (typeof biddingStrategyId !== 'string') {
+          this._throw(errors.InvalidWorkerConfiguration, 'bidding strategy id must be string');
+        }
+
+        if (!Array.isArray(providerIds)) {
+          this._throw(errors.InvalidWorkerConfiguration, 'provider ids must be array');
+        }
+        for (let providerId of providerIds) {
+          if (typeof providerId !== 'string') {
+            this._throw(errors.InvalidWorkerConfiguration, 'provider id must be string');
+          }
+        }
+      } else if (!biddingStrategyId && !providerIds) {
+      } else {
+        this._throw(errors.InvalidWorkerConfiguration,
+          'must provide both bidding strategy id and provide ids or neither' );
+      }
+    }
+    this.workerTypeConfigurations = workerTypeConfigurations;
+
+    if (typeof rules !== 'object') {
+      this._throw(errors.InvalidWorkerConfiguration, 'rules must be provided');
+    }
+    this.rules = rules;
   }
- 
+
   /**
    * Standardize exceptions thrown
    */
@@ -30,144 +117,55 @@ class WorkerConfiguration {
   }
 
   /**
-   * Evaluate a worker configuration
+   * Evaluate a ruleset for this worker type.  When a satisfier required for a
+   * rule in the ruleset is not present, the rule is skipped.  This allows the
+   * bidding strategy to evaluate rules without worrying about provider
+   * provided satisfiers.
+   *
+   * At a minimum, all evaluations must provide at least a workerType satisfier
    */
   evaluate(satisfiers) {
-    this._throw(errors.MethodUnimplemented, 'WorkerConfiguration.evaluate()');
-  }
-
-  /**
-   * Must return an iterator of strings
-   */
-  workerTypes() {
-    this._throw(errors.MethodUnimplemented, 'WorkerConfiguration.workerTypes()');
-  }
-}
-
-/**
- * This class represents a static worker configuration in memory.  This class 
- * does not support any automatic provisioning, instead having a constant
- * configuration.  The configuration must be equal to the result of evaluating
- * a successful WorkerConfiguration.evaluate().
- */
-class StaticWorkerConfiguration extends WorkerConfiguration {
-  constructor({id, workerTypes, configuration}) {
-    super({id});
-
-    if (!Array.isArray(workerTypes)) {
-      this._throw(errors.InvalidWorkerConfiguration, 'workerTypes must be array');
-    }
-
-    for (let workerType of workerTypes) {
-      if (typeof workerType !== 'string') {
-        this._throw(errors.InvalidWorkerConfiguration, 'workerTypes entries must be strings');
-      }
-    }
-
-    this._workerTypes = workerTypes;
-    if (typeof configuration !== 'object') {
-        this._throw(errors.InvalidWorkerConfiguration, 'configuration must be object');
-    }
-    this.configuration = configuration;
-  }
-
-  /**
-   * Evaluate a worker configuration
-   */
-  evaluate(satisfiers) {
-    return this.configuration;
-  }
-
-  workerTypes() {
-    return this._workerTypes.values();
-  }
-}
-
-/**
- * This class represents a provisioned worker configuration in memory. *
- *
- * The constructor parameters are:
- *  - id: identifier for this worker configuration
- *  - workerTypes: list of objects {workerType, biddingStrategy, providers}
- *  - rules: A Ruleset to use with this worker type
- *  - biddingStrategies: reference to a Map which maps bidding strategy
- *    identifier to the bidding strategy implmenentation
- *  - providers: reference to a Map which maps provider identifier to the
- *    provider implementation
- */
-class ProvisionedWorkerConfiguration extends WorkerConfiguration {
-  constructor({id, workerTypeConfigurations, rules}) {
-    super({id});
-
-    for (let workerTypeConfiguration of workerTypeConfigurations) {
-      let workerType = workerTypeConfiguration.get('workerType');
-      let providerIds = workerTypeConfiguration.get('providerIds');
-      let biddingStrategyId = workerTypeConfiguration.get('biddingStrategyId');
-
-      if (typeof workerType !== 'string') {
-        this._throw(errors.InvalidWorkerConfiguration, 'worker type name must be string');
-      }
-      this.workerType = workerType;
-
-      if (typeof biddingStrategyId !== 'string') {
-        this._throw(errors.InvalidWorkerConfiguration, 'bidding strategy id must be string');
-      }
-      this.biddingStrategyId = biddingStrategyId;
-
-      if (!Array.isArray(providerIds)) {
-        this._throw(errors.InvalidWorkerConfiguration, 'provider ids must be array');
-      }
-      for (let providerId of providerIds) {
-        if (typeof providerId !== 'string') {
-          this._throw(errors.InvalidWorkerConfiguration, 'provider id must be string');
-        }
-      }
-      this.provider = providerIds;
-    }
-
-    this.workerTypeConfigurations = workerTypeConfigurations;
-
-    if (typeof rules !== 'object') {
-      this._throw(errors.InvalidWorkerConfiguration, 'rules must be provided');
-    }
-    this.rules = rules;
-  }
-
-  /**
-   * Evaluate a WorkerConfiguration's rules based on a set of satisfiers and a
-   * map of providers.  The satisfiers must contain a provisionerId which is an
-   * entry in the providers map
-   */
-  evaluate({providers, satisfiers}) {
     if (typeof satisfiers !== 'object') {
       this._throw(errors.InvalidSatisfiers, 'invalid satisfiers provided'); 
     }
-    let providerId = satisfiers.providerId;
-    let provider = providers.get(providerId);
 
-    if (!provider) {
-      this._throw(errors.InvalidProvider, `unknown provider: ${providerId}`);
+    if (typeof satisfiers.workerType !== 'string') {
+      this._throw(errors.InvalidSatisfiers, 'workerType is required satisfier'); 
     }
 
-    let requiredSatisfiers = this.rules.requiredSatisfiers().sort();
-    let providedSatisfiers = provider.providedSatisfiers();
-    if (!Array.isArray(providedSatisfiers)) {
-      this._throw(ErrorCode.InvalidProvider, `${providerId} gave invalid satisfiers`);
-    }
-    providedSatisfiers = providedSatisfiers.concat(Object.keys(satisfiers));
-    providedSatisfiers.sort();
+    let outcome = this.rules.evaluate(satisfiers);
 
-    for (let requiredSatisfier of requiredSatisfiers) {
-      if (!providedSatisfiers.includes(requiredSatisfier)) {
-        this._throw(errors.InvalidSatisfiers, `required satisfier ${requiredSatisfier} not provided`);
-      }
+    outcome.workerType = satisfiers.workerType;
+
+
+    // Let's make sure defaults are set
+    for (let x of ['provider', 'biddingStrategy', 'documentation', 'schema']) {
+      const k = x + 'Data';
+      outcome[k] = outcome[k] || {};
     }
 
-    return this.rules.evaluate(satisfiers);
+    // Then let's make sure that no more keys than we expect exist
+    if (Object.keys(outcome).length !== 5) {
+      this._throw(errors.InvalidWorkerConfiguration, `too many root rule values keys`);
+    }
+
+    return outcome;
   }
 
   workerTypes() {
-    return this.workerTypeConfigurations.keys();
+    return this.workerTypeConfigurations.map(x => x.get('workerType'));
+  }
+
+  workerTypesForProviderId(providerId) {
+    return this.workerTypeConfigurations
+      .filter(x => x.get('providerIds').includes(providerId))
+      .map(x => x.get('workerType'));
+  }
+
+  workerTypesForBiddingStategy(biddingStrategyId) {
+    return this.workerTypeConfigurations
+      .filter(x => x.get('biddingStrategyId') === biddingStrategyId)
+      .map(x => x.get('workerType'));
   }
 }
 
@@ -176,10 +174,20 @@ class ProvisionedWorkerConfiguration extends WorkerConfiguration {
  * This function understands how to convert the serialised format of a worker
  * configuration and create either a Provisioned or Static WorkerConfiguration
  * class.  Note that the serialised format and in-memory format are different.
- * The config can either be a string or a JSON.parse'd copy
+ * The config can either be a string or a JSON.parse'd copy of that string
  */
-
 function buildWorkerConfiguration(config) {
+  if (typeof config === 'string') {
+    config = JSON.parse(config);
+  }
+
+  let {
+    id,
+    workerTypes: workerTypeConfigurations,
+    rules,
+    providerIds: defaultProviderIds,
+    biddingStrategyId: defaultBiddingStrategyId,
+  } = config;
 
   // TODO: that in the future, the idea thing here would be to have a list of
   // errors, and make it so that each item here is try/catch'd and then the
@@ -187,11 +195,11 @@ function buildWorkerConfiguration(config) {
   // Error with a reasons property.  This will make the UI much nicer to work
   // with
 
-  function err(msg) {
-    throw new errors.InvalidWorkerConfiguration(msg);
+  const err = (msg) => {
+    throw new errors.InvalidWorkerConfiguration(`${id}: ${msg}`);
   }
 
-  function assertArrayOfStrings(array, msg) {
+  const assertArrayOfStrings = (array, msg) => {
     if (!Array.isArray(array)) {
       err(msg);
     }
@@ -202,92 +210,53 @@ function buildWorkerConfiguration(config) {
     }
   } 
 
-  if (typeof config === 'string') {
-    config = JSON.parse(config);
+  if (defaultBiddingStrategyId && typeof defaultBiddingStrategyId !== 'string') {
+    err('default bidding strategy id must be string');
   }
 
-  if (typeof config !== 'object') {
-    err();
+  if (defaultProviderIds) {
+    assertArrayOfStrings(defaultProviderIds);
   }
 
-  if (config.rules && config.configuration) {
-    throw new Error('Worker Configuration must be static or provisioned');
-  } else if (config.rules) {
-    let {
-      id,
-      workerTypes: workerTypeConfigurations,
-      rules,
-      providerIds: defaultProviderIds,
-      biddingStrategyId: defaultBiddingStrategyId,
-    } = config;
-
-    if (defaultBiddingStrategyId && typeof defaultBiddingStrategyId !== 'string') {
-      err('default bidding strategy id must be string');
-    }
-
-    if (defaultProviderIds) {
-      assertArrayOfStrings(defaultProviderIds);
-    }
-
-    if (!Array.isArray(workerTypeConfigurations)) {
-      err('worker types must be array');
-    }
-
-    return new ProvisionedWorkerConfiguration({
-      id,
-      workerTypeConfigurations: workerTypeConfigurations.map(workerType => {
-        const workerTypeConfiguration = new Map();
-
-        if (typeof workerType === 'string') {
-          workerTypeConfiguration.set('workerType', workerType);
-        } else {
-          if (typeof workerType.workerType !== 'string') {
-            err('worker type name be string');
-          }
-          workerTypeConfiguration.set('workerType', workerType.workerType);
-        }
-
-        let providerIds = workerType.providerIds;
-        if (!providerIds && !defaultProviderIds) {
-          err('no provider ids specified');
-        }
-        if (providerIds) {
-          assertArrayOfStrings(providerIds, 'provider ids must be array of strings');
-          workerTypeConfiguration.set('providerIds', providerIds);
-        } else {
-          workerTypeConfiguration.set('providerIds', defaultProviderIds);
-        }
-
-
-        let biddingStrategyId = workerType.biddingStrategyId;
-        if (!biddingStrategyId && !defaultBiddingStrategyId) {
-          err('no bidding strategy id specified');
-        }
-        if (biddingStrategyId) {
-          if (typeof biddingStrategyId !== 'string') {
-            err('bidding strategy id must be string');
-          }
-          workerTypeConfiguration.set('biddingStrategyId', biddingStrategyId);
-        } else {
-          workerTypeConfiguration.set('biddingStrategyId', defaultBiddingStrategyId);
-        }
-
-        return workerTypeConfiguration;
-      }),
-      rules: new Ruleset({rules}),
-    });
-  } else if (config.configuration) {
-    assertArrayOfStrings(config.workerTypes, 'worker types must be an array of strings');
-    return new StaticWorkerConfiguration(config);
-  } else {
-    err();
+  if (!Array.isArray(workerTypeConfigurations)) {
+    err('worker type configurations must be array');
   }
 
+  return new WorkerConfiguration({
+    id,
+    workerTypeConfigurations: workerTypeConfigurations.map(workerType => {
+      const workerTypeConfiguration = new Map();
+
+      if (typeof workerType === 'string') {
+        workerTypeConfiguration.set('workerType', workerType);
+      } else {
+        if (typeof workerType.workerType !== 'string') {
+          err('worker type name be string');
+        }
+        workerTypeConfiguration.set('workerType', workerType.workerType);
+      }
+
+      let providerIds = workerType.providerIds || defaultProviderIds;
+      let biddingStrategyId = workerType.biddingStrategyId || defaultBiddingStrategyId;
+
+      // We want to handle provisioned worker configuration specially
+      if (providerIds && biddingStrategyId) {
+        assertArrayOfStrings(providerIds, 'provider ids must be array of strings');
+        if (typeof biddingStrategyId !== 'string') {
+          err('bidding strategy id must be string');
+        }
+        workerTypeConfiguration.set('providerIds', providerIds);
+        workerTypeConfiguration.set('biddingStrategyId', biddingStrategyId);
+      } else if (providerIds || biddingStrategyId) {
+        err(`Specifying providerIds or biddingStrategyId implies a requirement on the other`);
+      }
+      return workerTypeConfiguration;
+    }),
+    rules: new Ruleset({rules}),
+  });
 }
 
 module.exports = {
   WorkerConfiguration,
-  ProvisionedWorkerConfiguration,
-  StaticWorkerConfiguration,
   buildWorkerConfiguration,
 };

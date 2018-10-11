@@ -70,7 +70,8 @@ class Conditions {
   }
 
   // Evaluate a specific condition of the conditions against the value
-  // provided
+  // provided.  It is important that a missing satisfier results in the condition
+  // being unmet instead of throwing an error
   _evaluateCondition(condition, satisfier) {
     if (typeof condition === 'string') {
       return this._compare(condition, satisfier);
@@ -101,9 +102,6 @@ class Conditions {
     }
 
     for (let condition of Object.keys(this.conditions)) {
-      if (!satisfiers[condition]) {
-        this._throw(errors.InvalidSatisfiers, `required satisfier for ${condition} not specified`);
-      }
       if (!this._evaluateCondition(this.conditions[condition], satisfiers[condition])) {
         return false;
       }
