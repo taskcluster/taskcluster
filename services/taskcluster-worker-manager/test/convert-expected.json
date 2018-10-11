@@ -1,0 +1,383 @@
+{
+  "id": "legacy_gecko-3-b-linux",
+  "providerIds": [
+    "aws-ec2-spot"
+  ],
+  "biddingStrategyId": "queue-pending-ratio",
+  "workerTypes": [
+    "gecko-3-b-linux"
+  ],
+  "rules": [
+    {
+      "id": "rule_queue-pending-ratio",
+      "description": "gecko-3-b-linux Bidding Strategy Rules",
+      "conditions": {
+        "workerType": "gecko-3-b-linux",
+        "biddingStrategyId": "queue-pending-ratio"
+      },
+      "values": {
+        "biddingStrategyData": {
+          "minCapacity": 0,
+          "maxCapacity": 300,
+          "scalingRatio": 0,
+          "minPrice": 8,
+          "maxPrice": 8
+        }
+      }
+    },
+    {
+      "id": "rule_gecko-3-b-linux_metadata",
+      "description": "gecko-3-b-linux metadata",
+      "conditions": {
+        "workerType": "gecko-3-b-linux"
+      },
+      "values": {
+        "documentation": {},
+        "schemas": {}
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_us-east-1",
+      "description": "gecko-3-b-linux aws-ec2-spot us-east-1 specialisations",
+      "conditions": {
+        "region": "us-east-1"
+      },
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "ImageId": "ami-17373968",
+            "SecurityGroupIds": [
+              "sg-7aca300a"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_us-west-1",
+      "description": "gecko-3-b-linux aws-ec2-spot us-west-1 specialisations",
+      "conditions": {
+        "region": "us-west-1"
+      },
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "ImageId": "ami-6a5ab709",
+            "SecurityGroupIds": [
+              "sg-5ce02b3a"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_us-west-2",
+      "description": "gecko-3-b-linux aws-ec2-spot us-west-2 specialisations",
+      "conditions": {
+        "region": "us-west-2"
+      },
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "ImageId": "ami-6d401815",
+            "SecurityGroupIds": [
+              "sg-a0d6beda"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_c5d.4xlarge",
+      "description": "gecko-3-b-linux aws-ec2-spot c5d.4xlarge specialisations",
+      "conditions": {
+        "instanceType": "c5d.4xlarge"
+      },
+      "values": {
+        "providerData": {
+          "userData": {
+            "capacityManagement": {
+              "diskspaceThreshold": 30000000000
+            }
+          },
+          "launchSpec": {}
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_m5d.4xlarge",
+      "description": "gecko-3-b-linux aws-ec2-spot m5d.4xlarge specialisations",
+      "conditions": {
+        "instanceType": "m5d.4xlarge"
+      },
+      "values": {
+        "providerData": {
+          "userData": {
+            "capacityManagement": {
+              "diskspaceThreshold": 30000000000
+            }
+          },
+          "launchSpec": {}
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_c5.4xlarge",
+      "description": "gecko-3-b-linux aws-ec2-spot c5.4xlarge specialisations",
+      "conditions": {
+        "instanceType": "c5.4xlarge"
+      },
+      "values": {
+        "providerData": {
+          "userData": {
+            "capacityManagement": {
+              "diskspaceThreshold": 30000000000
+            }
+          },
+          "launchSpec": {
+            "BlockDeviceMappings": [
+              {
+                "DeviceName": "/dev/xvdb",
+                "Ebs": {
+                  "DeleteOnTermination": true,
+                  "VolumeSize": 120,
+                  "VolumeType": "gp2"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_m5.4xlarge",
+      "description": "gecko-3-b-linux aws-ec2-spot m5.4xlarge specialisations",
+      "conditions": {
+        "instanceType": "m5.4xlarge"
+      },
+      "values": {
+        "providerData": {
+          "userData": {
+            "capacityManagement": {
+              "diskspaceThreshold": 30000000000
+            }
+          },
+          "launchSpec": {
+            "BlockDeviceMappings": [
+              {
+                "DeviceName": "/dev/xvdb",
+                "Ebs": {
+                  "DeleteOnTermination": true,
+                  "VolumeSize": 120,
+                  "VolumeType": "gp2"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_c4.4xlarge",
+      "description": "gecko-3-b-linux aws-ec2-spot c4.4xlarge specialisations",
+      "conditions": {
+        "instanceType": "c4.4xlarge"
+      },
+      "values": {
+        "providerData": {
+          "userData": {
+            "capacityManagement": {
+              "diskspaceThreshold": 30000000000
+            }
+          },
+          "launchSpec": {
+            "BlockDeviceMappings": [
+              {
+                "DeviceName": "/dev/xvdb",
+                "Ebs": {
+                  "DeleteOnTermination": true,
+                  "VolumeSize": 120,
+                  "VolumeType": "gp2"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_m4.4xlarge",
+      "description": "gecko-3-b-linux aws-ec2-spot m4.4xlarge specialisations",
+      "conditions": {
+        "instanceType": "m4.4xlarge"
+      },
+      "values": {
+        "providerData": {
+          "userData": {
+            "capacityManagement": {
+              "diskspaceThreshold": 30000000000
+            }
+          },
+          "launchSpec": {
+            "BlockDeviceMappings": [
+              {
+                "DeviceName": "/dev/xvdb",
+                "Ebs": {
+                  "DeleteOnTermination": true,
+                  "VolumeSize": 120,
+                  "VolumeType": "gp2"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_undefined",
+      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
+      "conditions": {},
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "SubnetId": "subnet-566e060c"
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_undefined",
+      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
+      "conditions": {},
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "SubnetId": "subnet-f2c93496"
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_undefined",
+      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
+      "conditions": {},
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "SubnetId": "subnet-c52454e9"
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_undefined",
+      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
+      "conditions": {},
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "SubnetId": "subnet-e7e6ccaf"
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_undefined",
+      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
+      "conditions": {},
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "SubnetId": "subnet-deb5a8e2"
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_undefined",
+      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
+      "conditions": {},
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "SubnetId": "subnet-7f720d73"
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_undefined",
+      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
+      "conditions": {},
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "SubnetId": "subnet-7641632e"
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_undefined",
+      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
+      "conditions": {},
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "SubnetId": "subnet-48a9b82c"
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_undefined",
+      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
+      "conditions": {},
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "SubnetId": "subnet-d948b6bf"
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_undefined",
+      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
+      "conditions": {},
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "SubnetId": "subnet-2eaaba67"
+          }
+        }
+      }
+    },
+    {
+      "id": "rule_aws-ec2-spot_undefined",
+      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
+      "conditions": {},
+      "values": {
+        "providerData": {
+          "userData": {},
+          "launchSpec": {
+            "SubnetId": "subnet-540a9f0f"
+          }
+        }
+      }
+    }
+  ]
+}
