@@ -23,7 +23,7 @@ export default {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.artifactCreated(routingKey);
 
-        return pulseEngine.asyncIterator('artifactsCreated', {
+        return pulseEngine.eventIterator('artifactsCreated', {
           [binding.routingKeyPattern]: [binding.exchange],
         });
       },

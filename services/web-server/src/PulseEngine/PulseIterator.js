@@ -1,30 +1,35 @@
 import { $$asyncIterator } from 'iterall';
 import { List } from 'immutable';
 
-export default class AsyncIterator {
-  constructor(pulseEngine, eventNames) {
+export default class PulseIterator {
+  /**
+   * Construct an AsyncIterator for the given subscriptions, of the form
+   * [{exchange, pattern}].  The resulting values are of the form {payload,
+   * exchange, routingKey, redelivered, CC}.
+   */
+  constructor(pulseEngine, subscriptions) {
     this.pulseEngine = pulseEngine;
     this.pullQueue = List(); // eslint-disable-line babel/new-cap
     this.pushQueue = List(); // eslint-disable-line babel/new-cap
     this.listening = true;
-    this.events = Array.isArray(eventNames) ? eventNames : [eventNames];
-    this.allSubscribed = this.subscribeAll();
+    this.subscriptionId = this.pulseEngine.subscribe(
+      subscriptions,
+      this.pushValue.bind(this)
+    );
   }
 
-  async next() {
-    await this.allSubscribed;
-
+  next() {
     return this.listening ? this.pullValue() : this.return();
   }
 
-  async return() {
-    this.emptyQueue(await this.allSubscribed);
+  return() {
+    this.emptyQueue();
 
-    return { value: undefined, done: true };
+    return Promise.resolve({ value: undefined, done: true });
   }
 
-  async throw(error) {
-    this.emptyQueue(await this.allSubscribed);
+  throw(error) {
+    this.emptyQueue();
 
     return Promise.reject(error);
   }
@@ -33,14 +38,12 @@ export default class AsyncIterator {
     return this;
   }
 
-  async pushValue(event) {
-    await this.allSubscribed;
-
+  pushValue(value) {
     if (this.pullQueue.size !== 0) {
-      this.pullQueue.first()({ value: event, done: false });
+      this.pullQueue.first()({ value, done: false });
       this.pullQueue = this.pullQueue.shift();
     } else {
-      this.pushQueue = this.pushQueue.push(event);
+      this.pushQueue = this.pushQueue.push(value);
     }
   }
 
@@ -55,13 +58,13 @@ export default class AsyncIterator {
     });
   }
 
-  emptyQueue(subscriptionIds) {
+  emptyQueue() {
     if (!this.listening) {
       return;
     }
 
     this.listening = false;
-    this.unsubscribeAll(subscriptionIds);
+    this.pulseEngine.unsubscribe(this.subscriptionId);
     this.pullQueue.forEach(resolve =>
       resolve({
         value: undefined,
@@ -70,19 +73,5 @@ export default class AsyncIterator {
     );
     this.pullQueue = this.pullQueue.clear();
     this.pushQueue = this.pushQueue.clear();
-  }
-
-  subscribeAll() {
-    return Promise.all(
-      this.events.map(eventName =>
-        this.pulseEngine.subscribe(eventName, this.pushValue.bind(this), {})
-      )
-    );
-  }
-
-  unsubscribeAll(subscriptionIds) {
-    subscriptionIds.forEach(subscriptionId =>
-      this.pulseEngine.unsubscribe(subscriptionId)
-    );
   }
 }

@@ -123,7 +123,7 @@ export default {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.taskDefined(routingKey);
 
-        return pulseEngine.asyncIterator('tasksDefined', [
+        return pulseEngine.eventIterator('tasksDefined', [
           {
             exchange: binding.exchange,
             pattern: binding.routingKeyPattern,
@@ -136,7 +136,7 @@ export default {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.taskPending(routingKey);
 
-        return pulseEngine.asyncIterator('tasksPending', [
+        return pulseEngine.eventIterator('tasksPending', [
           {
             exchange: binding.exchange,
             pattern: binding.routingKeyPattern,
@@ -149,7 +149,7 @@ export default {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.taskRunning(routingKey);
 
-        return pulseEngine.asyncIterator('tasksRunning', [
+        return pulseEngine.eventIterator('tasksRunning', [
           {
             exchange: binding.exchange,
             pattern: binding.routingKeyPattern,
@@ -162,7 +162,7 @@ export default {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.taskCompleted(routingKey);
 
-        return pulseEngine.asyncIterator('tasksCompleted', [
+        return pulseEngine.eventIterator('tasksCompleted', [
           {
             exchange: binding.exchange,
             pattern: binding.routingKeyPattern,
@@ -175,7 +175,7 @@ export default {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.taskFailed(routingKey);
 
-        return pulseEngine.asyncIterator('tasksFailed', [
+        return pulseEngine.eventIterator('tasksFailed', [
           {
             exchange: binding.exchange,
             pattern: binding.routingKeyPattern,
@@ -188,7 +188,7 @@ export default {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.taskException(routingKey);
 
-        return pulseEngine.asyncIterator('tasksException', [
+        return pulseEngine.eventIterator('tasksException', [
           {
             exchange: binding.exchange,
             pattern: binding.routingKeyPattern,
@@ -204,7 +204,7 @@ export default {
       ) {
         const routingKey = { taskGroupId };
 
-        return pulseEngine.asyncIterator(
+        return pulseEngine.eventIterator(
           'tasksSubscriptions',
           subscriptions.map(eventName => {
             const method = eventName.replace('tasks', 'task');

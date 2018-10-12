@@ -3,15 +3,16 @@ import assert from 'assert';
 import { Client, claimedCredentials } from 'taskcluster-lib-pulse';
 import { slugid } from 'taskcluster-client';
 import { serialize } from 'async-decorators';
-import AsyncIterator from './AsyncIterator';
+import PulseIterator from './PulseIterator';
+import MessageIterator from './MessageIterator';
+import EventIterator from './EventIterator';
 
 const debug = Debug('PulseEngine');
 
 class Subscription {
-  constructor({ subscriptionId, onMessage, eventName, subscriptions }) {
+  constructor({ subscriptionId, onMessage, subscriptions }) {
     this.subscriptionId = subscriptionId;
     this.onMessage = onMessage;
-    this.eventName = eventName;
     this.subscriptions = subscriptions;
 
     // state tracking for reconciliation
@@ -48,7 +49,7 @@ class Subscription {
       this.listening = false;
     } else if (!listening && !unsubscribed) {
       debug(`Binding subscription ${subscriptionId}`);
-      const { eventName, onMessage, subscriptions } = this;
+      const { onMessage, subscriptions } = this;
 
       await channel.assertQueue(queueName, {
         exclusive: false,
@@ -62,10 +63,24 @@ class Subscription {
         )
       );
 
-      const { consumerTag } = await channel.consume(queueName, message => {
-        const payload = JSON.parse(message.content.toString('utf8'));
+      const { consumerTag } = await channel.consume(queueName, amqpMsg => {
+        const message = {
+          payload: JSON.parse(amqpMsg.content.toString('utf8')),
+          exchange: amqpMsg.fields.exchange,
+          routingKey: amqpMsg.fields.routingKey,
+          redelivered: amqpMsg.fields.redelivered,
+          cc: [],
+        };
 
-        onMessage({ [eventName]: payload });
+        if (
+          amqpMsg.properties &&
+          amqpMsg.properties.headers &&
+          Array.isArray(amqpMsg.properties.headers.cc)
+        ) {
+          message.cc = amqpMsg.properties.headers.cc;
+        }
+
+        onMessage(message);
       });
 
       this.consumerTag = consumerTag;
@@ -155,7 +170,7 @@ export default class PulseEngine {
     this.reconcileSubscriptions();
   }
 
-  subscribe({ eventName, subscriptions }, onMessage) {
+  subscribe(subscriptions, onMessage) {
     const subscriptionId = slugid();
 
     this.subscriptions.set(
@@ -163,7 +178,6 @@ export default class PulseEngine {
       new Subscription({
         subscriptionId,
         onMessage,
-        eventName,
         subscriptions,
       })
     );
@@ -226,7 +240,21 @@ export default class PulseEngine {
       .forEach(sub => this.subscriptions.delete(sub.subscriptionId));
   }
 
-  asyncIterator(eventName, subscriptions) {
-    return new AsyncIterator(this, { eventName, subscriptions });
+  /**
+   * Return an async iterator that yields messages {[eventName]:
+   * {payload, exchange, routingKey, redelivered, cc}
+   */
+  messageIterator(eventName, subscriptions) {
+    return new MessageIterator(
+      new PulseIterator(this, subscriptions),
+      eventName
+    );
+  }
+
+  /**
+   * Return an async iterator that yields events {[eventName]: payload}
+   */
+  eventIterator(eventName, subscriptions) {
+    return new EventIterator(new PulseIterator(this, subscriptions), eventName);
   }
 }

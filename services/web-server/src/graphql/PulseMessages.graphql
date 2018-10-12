@@ -1,8 +1,30 @@
+# Subscription to pulse messages: listen for messages with routes matching
+# `pattern` (including `#` and `*` AMQP wildcards) on `exchange`.
 input PulseSubscription {
   exchange: String!
   pattern: String!
 }
 
+# An arbitrary pulse message, with some metadata but with an opaque payload
+type PulseMessage {
+  # The payload of the message (an arbitrary JSON blob)
+  payload: JSON!
+
+  # The exchange to which this message was published
+  exchange: String!
+
+  # The routing key with which this message was published
+  routingKey: String!
+
+  # True if this is not the first delivery of this message (if processing
+  # failed the first time)
+  redelivered: Boolean!
+
+  # Other routing keys this message was cc'd to
+  cc: [String]!
+}
+
 extend type Subscription {
-  pulseMessages(subscriptions: [PulseSubscription]!): JSON
+  # Subscribe to arbitrary pulse messages
+  pulseMessages(subscriptions: [PulseSubscription]!): PulseMessage
 }
