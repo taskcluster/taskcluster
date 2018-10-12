@@ -22,6 +22,7 @@ class UnknownError extends Error {
 const errors = [
   UnknownError,
   class MethodUnimplemented extends UnknownError {},
+  class InvalidIdentifier extends UnknownError {},
   class InvalidSatisfiers extends UnknownError {},
   class InvalidConditions extends UnknownError {},
   class InvalidValues extends UnknownError {},

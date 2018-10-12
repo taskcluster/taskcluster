@@ -79,7 +79,7 @@ suite('WorkerConfiguration', () => {
   setup(() => {
     workerConfiguration = new WorkerConfiguration({
       id: 'worker-config-1',
-      rules: new Ruleset({rules: mockRules()}),
+      rules: new Ruleset({id: 'worker-config-1', rules: mockRules()}),
       workerTypeConfigurations: [
         new Map([
           ['workerType', 'worker-type-1'],

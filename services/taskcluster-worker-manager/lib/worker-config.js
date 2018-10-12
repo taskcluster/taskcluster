@@ -1,5 +1,6 @@
 'use strict';
 
+const {WMObject} = require('./object');
 const errors = require('./errors');
 const {Ruleset} = require('./rules')
 
@@ -52,12 +53,9 @@ const {Ruleset} = require('./rules')
  * without a providerId to get the global worker type maximum capacity, then
  * again for each provider to get the maximum for the specific capacity.
  */
-class WorkerConfiguration {
+class WorkerConfiguration extends WMObject {
   constructor({id, workerTypeConfigurations, rules}) {
-    if (typeof id !== 'string') {
-      this._throw(errors.InvalidWorkerConfiguration, 'id must be provided');
-    }
-    this.id = id;
+    super({id});
 
     // We want to track the worker types we've already seen to ensure we have
     // exactly one worker type
@@ -104,16 +102,6 @@ class WorkerConfiguration {
       this._throw(errors.InvalidWorkerConfiguration, 'rules must be provided');
     }
     this.rules = rules;
-  }
-
-  /**
-   * Standardize exceptions thrown
-   */
-  _throw(code, msg) {
-    throw new code(msg, {
-      'class': this.constructor.name, 
-      id: this.id,
-    });
   }
 
   /**
@@ -252,7 +240,7 @@ function buildWorkerConfiguration(config) {
       }
       return workerTypeConfiguration;
     }),
-    rules: new Ruleset({rules}),
+    rules: new Ruleset({id: `worker-configuration-${id}`, rules}),
   });
 }
 

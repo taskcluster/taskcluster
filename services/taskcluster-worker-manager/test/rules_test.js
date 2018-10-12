@@ -63,7 +63,7 @@ suite('assign()', () => {
 });
 
 suite('Conditions', () => {
-  let nullCondition = new Conditions(null);
+  let nullCondition = new Conditions({id: 'cond1', conditions: null});
   suite('_compare()', () => {
     test('should return true', () => {
       assume(nullCondition._compare('string', 'string')).is.ok();
@@ -76,28 +76,40 @@ suite('Conditions', () => {
   suite('_evaluateCondition()', () => {
     test('should return true when a single string satisifies requirement', () => {
       let conditions = new Conditions({
-        string: 'test',
+        id: 'cond1',
+        conditions: {
+          string: 'test',
+        },
       });
       assume(conditions.evaluate({string: 'test'})).is.ok();
     });
     
     test('should return true when one of many string satisifies requirement', () => {
       let conditions = new Conditions({
-        string: ['abc', 'test', 'def'],
+        id: 'cond1',
+        conditions: {
+          string: ['abc', 'test', 'def'],
+        },
       });
       assume(conditions.evaluate({string: 'test'})).is.ok();
     });
 
     test('should return false when a single string does not satisfy requirement', () => {
       let conditions = new Conditions({
-        string: 'nottest',
+        id: 'cond1',
+        conditions: {
+          string: 'nottest',
+        },
       });
       assume(conditions.evaluate({string: 'test'})).is.not.ok();
     });
     
     test('should return false when none of many string satisifies requirement', () => {
       let conditions = new Conditions({
-        string: ['abc', 'def'],
+        id: 'cond1',
+        conditions: {
+          string: ['abc', 'def'],
+        },
       });
       assume(conditions.evaluate({string: 'test'})).is.not.ok();
     });
@@ -105,29 +117,49 @@ suite('Conditions', () => {
 
   suite('evaluate()', () => {
     test('should return true when condition is null', () => {
-      let conditions = new Conditions(null);
+      let conditions = new Conditions({id: 'cond1', conditions: null});
       assume(conditions.evaluate()).is.ok();
     });
 
     test('should throw when satisfiers is not object', () => {
-      let conditions = new Conditions({string: 'test'});
+      let conditions = new Conditions({
+        id: 'cond1', 
+        conditions: {
+          string: 'test',
+        },
+      });
       assume(() => {
         conditions.evaluate(() => {});
       }).throws(errors.InvalidSatisfiers);
     });
 
     test('should evaluate false with a missing condition', () => {
-      let conditions = new Conditions({string: 'test'});
+      let conditions = new Conditions({
+        id: 'cond1',
+        conditions: {
+          string: 'test',
+        },
+      });
       assume(conditions.evaluate({other: 'test'})).is.not.ok();
     });
 
     test('should return true when all requirements are met', () => {
-      let conditions = new Conditions({string: 'test'});
+      let conditions = new Conditions({
+        id: 'cond1',
+        conditions: {
+          string: 'test',
+        },
+      });
       assume(conditions.evaluate({string: 'test'})).is.ok();
     });
 
     test('should return false when not all requirements are met', () => {
-      let conditions = new Conditions({string: 'test'});
+      let conditions = new Conditions({
+        id: 'cond1',
+        conditions: {
+          string: 'test',
+        },
+      });
       assume(conditions.evaluate({string: 'not-test'})).is.not.ok();
     });
   });
@@ -136,7 +168,10 @@ suite('Conditions', () => {
     test('should not allow a non-string condition', () => {
       assume(() => {
         new Conditions({
-          property: () => {},
+          id: 'cond1',
+          conditions: {
+            property: () => {},
+          },
         });
       }).throws(errors.InvalidConditions);
     });
@@ -144,7 +179,10 @@ suite('Conditions', () => {
     test('should not allow a non-string condition in a list', () => {
       assume(() => {
         new Conditions({
-          property: [() => {}],
+          id: 'cond1',
+          conditions: {
+            property: () => {},
+          },
         });
       }).throws(errors.InvalidConditions);
     });
@@ -189,25 +227,25 @@ suite('Rule', () => {
     test('should throw with invalid id', () => {
       assume(() => {
         new Rule({id: 123, conditions: {}, values: {}, description: ''});
-      }).throws(/^id must be string/);
+      }).throws(errors.InvalidIdentifier);
     });
 
     test('should throw with invalid conditions', () => {
       assume(() => {
         new Rule({id: 'id', conditions: 123, values: {}, description: ''});
-      }).throws(/^conditions must be an object/);
+      }).throws(errors.InvalidConditions);
     });
 
     test('should throw with invalid values', () => {
       assume(() => {
         new Rule({id: 'id', conditions: {}, values: 123, description: ''});
-      }).throws(/^values must be an object/);
+      }).throws(errors.InvalidValues);
     });
 
     test('should throw with invalid description', () => {
       assume(() => {
         new Rule({id: 'id', conditions: {}, values: {}, description: 123});
-      }).throws(/^description must be a string/);
+      }).throws(errors.InvalidRules);
     });
   });
 });
@@ -218,6 +256,7 @@ suite('Ruleset', () => {
 
   setup(() => {
     rules = new Ruleset({
+      id: 'rs-1',
       rules: [{
         id: 'rule1',
         conditions: {
@@ -291,7 +330,13 @@ suite('Ruleset', () => {
 
 suite('Required Satisfiers', () => {
   test('should be able to list required satisfiers on Conditions', () => {
-    let cond = new Conditions({string1: 'abc', string2: 'def'});
+    let cond = new Conditions({
+      id: 'cond1',
+      conditions: {
+        string1: 'abc',
+        string2: 'def',
+      },
+    });
     assume(cond.requiredSatisfiers()).is.array(['string1', 'string2']);
   });
   
@@ -307,6 +352,7 @@ suite('Required Satisfiers', () => {
   
   test('should be able to list required satisfiers on Conditions', () => {
     let rules = new Ruleset({
+      id: 'ruleset-1',
       rules: [{
         id: 'rule1',
         conditions: {

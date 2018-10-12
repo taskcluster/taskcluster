@@ -1,6 +1,7 @@
 'use strict';
 
 const errors = require('./errors');
+const {WMObject} = require('./object');
 
 /**
  * Conditions encapsulate how a set of conditions are evaluated.  Conditions
@@ -11,18 +12,14 @@ const errors = require('./errors');
  * case of a list of acceptable values, if any acceptable value matches, the
  * condition is considered satisfied
  */
-class Conditions {
+class Conditions extends WMObject {
 
   /**
    * Construct a Conditions class given an object representation of a
    * conditions class and the rule to which the conditions belong
    */
-  constructor(conditions, rule) {
-    // We want a reference to our rule, but only for error reporting so it's
-    // not mandatory.
-    if (rule) {
-      this._rule = rule;
-    }
+  constructor({id, conditions}) {
+    super({id});
 
     if (conditions !== null && typeof conditions !== 'object') {
         this._throw(errors.InvalidConditions, 'conditions must be null or an object');
@@ -46,16 +43,6 @@ class Conditions {
     }
 
     this.conditions = conditions;
-  }
-
-  /**
-   * Throw errors from these conditions so they can be traced back
-   * to the rule they came from
-   */
-  _throw(code, msg) {
-    throw new code(msg, {
-      ruleId: this._rule ? this._rule.id : undefined,
-    });
   }
 
   /**
@@ -125,17 +112,14 @@ class Conditions {
 /**
  * Rule encapsulates how a rule is to be evaluated.
  */
-class Rule {
+class Rule extends WMObject {
   constructor({id, conditions, values, description}) {
-    if (typeof id !== 'string') {
-      this._throw(errors.InvalidRules, 'id must be string');
-    }
-    this.id = id;
+    super({id});
 
     if (typeof conditions !== 'object') {
       this._throw(errors.InvalidConditions, 'conditions must be an object');
     }
-    this.conditions = new Conditions(conditions, this);
+    this.conditions = new Conditions({id: `${id}_conditions`, conditions});
 
     if (typeof values !== 'object') {
       this._throw(errors.InvalidValues, 'values must be an object');
@@ -145,13 +129,6 @@ class Rule {
     if (typeof description !== 'string') {
       this._throw(errors.InvalidRules, 'description must be a string');
     }
-  }
-
-  _throw(code, msg) {
-    throw new code(msg, {
-      id: this.id || '<unknown-rule>',
-      description: this.description || undefined,
-    });
   }
 
   /**
@@ -214,13 +191,26 @@ function assign (target, values) {
  * Ruleset represents all rules as well as an interface to evaluate them
  * against a set of condition satisfiers.
  */
-class Ruleset {
-  constructor({rules}) {
+class Ruleset extends WMObject {
+  constructor({id, rules}) {
+    super({id});
     if (!Array.isArray(rules)) {
-      throw new Error('rules must be an array');
+      this._throw(errors.InvalidRules);
     }
 
-    this.rules = rules.map(rule => new Rule(rule));
+    // We're going to slightly change the rule id to append the ruleset id.
+    // This should hopefully result in error messages where the ID property can
+    // be used to trace back exactly where the error originates from without
+    // needing a stack and code.  This should result in something like
+    // gecko-3-b-linux_rule-1_conditions, which combined with an error code of
+    // "InvalidSatisfiers" should give a pretty good idea of what went wrong
+    // without needing to look at the source
+    this.rules = rules.map(({id: ruleId, conditions, values, description}) => new Rule({
+      id: `${id}_${ruleId}`,
+      conditions,
+      values,
+      description,
+    }));
   }
 
   /**
