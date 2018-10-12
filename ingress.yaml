@@ -3,10 +3,12 @@ kind: Ingress
 metadata:
   name: taskcluster-ingress
   annotations:
-    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   rules:
-  - http:
+    # slice the leading `https://` off the rootUrl to get the hostname
+  - host: {$eval: 'root_url[8:]'}
+    http:
       paths:
         $flatten:
         - path: '/'

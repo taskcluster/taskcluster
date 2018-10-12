@@ -1,6 +1,7 @@
 locals {
   ingress_context = {
     disabled_services = "${var.disabled_services}"
+    root_url          = "${var.root_url}"
   }
 }
 
