@@ -19,6 +19,7 @@ class UnknownError extends Error {
   }
 };
 
+
 const errors = [
   UnknownError,
   class MethodUnimplemented extends UnknownError {},
@@ -29,6 +30,9 @@ const errors = [
   class InvalidRules extends UnknownError {},
   class InvalidWorkerConfiguration extends UnknownError {},
   class InvalidProvider extends UnknownError {},
+  class InvalidDatastoreNamespace extends UnknownError {},
+  class InvalidDatastoreKey extends UnknownError {},
+  class InvalidDatastoreValue extends UnknownError {},
 ];
 
 let x = {} 
