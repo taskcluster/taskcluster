@@ -1,5 +1,5 @@
 resource "aws_iam_user" "service-user" {
-  name = "${var.name}"
+  name = "${var.prefix}-${var.name}"
   path = "/taskcluster-service/"
 }
 

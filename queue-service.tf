@@ -1,6 +1,7 @@
 module "queue_user" {
   source = "modules/taskcluster-service-iam-user"
   name   = "taskcluster-queue"
+  prefix = "${var.prefix}"
 
   policy = <<EOF
 {

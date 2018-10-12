@@ -28,8 +28,7 @@ First include this module in your terraform.
 ```hcl
 module "taskcluster" {
   source                    = "github.com/taskcluster/taskcluster-terraform"
-  bucket_prefix             = "${var.taskcluster_bucket_prefix}"
-  azure_resource_group_name = "${var.azure_resource_group_name}"
+  prefix                    = "tc"
   azure_region              = "${var.azure_region}"
   auth_pulse_username       = "${var.auth_pulse_username}"
   auth_pulse_password       = "${var.auth_pulse_password}"

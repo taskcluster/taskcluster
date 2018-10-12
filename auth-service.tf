@@ -1,6 +1,7 @@
 module "auth_user" {
   source = "modules/taskcluster-service-iam-user"
   name   = "taskcluster-auth"
+  prefix = "${var.prefix}"
 
   policy = <<EOF
 {

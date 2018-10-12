@@ -10,7 +10,7 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 resource "aws_s3_bucket" "private_artifacts" {
-  bucket = "${var.bucket_prefix}-private-artifacts"
+  bucket = "${var.prefix}-private-artifacts"
   acl    = "private"
 
   cors_rule {
@@ -22,7 +22,7 @@ resource "aws_s3_bucket" "private_artifacts" {
 }
 
 resource "aws_s3_bucket" "public_artifacts" {
-  bucket = "${var.bucket_prefix}-public-artifacts"
+  bucket = "${var.prefix}-public-artifacts"
   acl    = "public-read"
 
   versioning = {
@@ -73,7 +73,7 @@ POLICY
 }
 
 resource "aws_s3_bucket" "public_blobs" {
-  bucket = "${var.bucket_prefix}-public-blobs"
+  bucket = "${var.prefix}-public-blobs"
   acl    = "public-read"
 
   cors_rule {
@@ -85,7 +85,7 @@ resource "aws_s3_bucket" "public_blobs" {
 }
 
 resource "aws_s3_bucket" "private_blobs" {
-  bucket = "${var.bucket_prefix}-private-blobs"
+  bucket = "${var.prefix}-private-blobs"
   acl    = "private"
 
   cors_rule {
@@ -97,7 +97,7 @@ resource "aws_s3_bucket" "private_blobs" {
 }
 
 resource "aws_s3_bucket" "backups" {
-  bucket = "${var.bucket_prefix}-backups"
+  bucket = "${var.prefix}-backups"
   acl    = "private"
 
   versioning = {
@@ -127,7 +127,7 @@ resource "aws_s3_bucket" "backups" {
 }
 
 resource "azurerm_resource_group" "base" {
-  name     = "${var.azure_resource_group_name}"
+  name     = "${var.prefix}"
   location = "${var.azure_region}"
 }
 
