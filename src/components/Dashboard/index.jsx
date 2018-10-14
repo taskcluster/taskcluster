@@ -244,7 +244,7 @@ export default class Dashboard extends Component {
                 <IconButton
                   onClick={this.handleHelpViewToggle}
                   className={classes.appBarButton}>
-                  <HelpIcon />
+                  <HelpIcon className={classes.appIcon} />
                 </IconButton>
               </Tooltip>
             )}
