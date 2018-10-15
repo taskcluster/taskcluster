@@ -18,6 +18,7 @@ in the shell you are applying this from.
 
 - A kubernetes cluster
 - An (nginx ingress controller)[https://kubernetes.github.io/ingress-nginx/deploy/] in said cluster
+- A TLS secret for the rootUrl hostname in the same Kubernetes namespace as the controller
 - A rabbitmq cluster with the RabbitMQ management plugin enabled
 - An SES email address set up in AWS. This cannot be created automatically by Terraform.
 
@@ -29,6 +30,8 @@ First include this module in your terraform.
 module "taskcluster" {
   source                    = "github.com/taskcluster/taskcluster-terraform"
   prefix                    = "tc"
+  root_url                  = "tc.example.com"
+  root_url_tls_secret       = "tc-example-com-tls-secret"
   azure_region              = "${var.azure_region}"
   auth_pulse_username       = "${var.auth_pulse_username}"
   auth_pulse_password       = "${var.auth_pulse_password}"

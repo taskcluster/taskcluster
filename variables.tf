@@ -19,6 +19,11 @@ variable "root_url" {
   description = "Taskcluster rootUrl"
 }
 
+variable "root_url_tls_secret" {
+  type        = "string"
+  description = "Name of the secret, in the same namespace as the Ingress controller, containing the TLS certificate for Taskcluster rootUrl"
+}
+
 variable "rabbitmq_hostname" {
   type        = "string"
   description = "rabbitmq hostname"

@@ -5,6 +5,9 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
+  tls:
+    - hosts: [{$eval: 'root_url[8:]'}]
+      secretName: {$eval: 'root_url_tls_secret'}
   rules:
     # slice the leading `https://` off the rootUrl to get the hostname
   - host: {$eval: 'root_url[8:]'}
