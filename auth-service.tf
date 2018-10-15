@@ -57,6 +57,7 @@ resource "random_string" "auth_root_access_token" {
 
 module "auth_rabbitmq_user" {
   source         = "modules/rabbitmq-user"
+  prefix         = "${var.prefix}"
   project_name   = "taskcluster-auth"
   rabbitmq_vhost = "${var.rabbitmq_vhost}"
 }
@@ -178,7 +179,7 @@ module "auth_secrets" {
     STATIC_CLIENTS    = "${jsonencode(local.static_clients)}"
     PULSE_HOSTNAME    = "${var.rabbitmq_hostname}"
     PULSE_VHOST       = "${var.rabbitmq_vhost}"
-    PULSE_USERNAME    = "taskcluster-auth"
+    PULSE_USERNAME    = "${module.auth_rabbitmq_user.username}"
     PULSE_PASSWORD    = "${module.auth_rabbitmq_user.password}"
     AZURE_CRYPTO_KEY  = "${base64encode(random_string.auth_table_crypto_key.result)}"
     AZURE_SIGNING_KEY = "${random_string.auth_table_signing_key.result}"

@@ -8,7 +8,7 @@ resource "random_string" "rabbitmq_pass" {
 }
 
 resource "rabbitmq_user" "user" {
-  name     = "${var.project_name}"
+  name     = "${var.prefix}-${var.project_name}"
   password = "${random_string.rabbitmq_pass.result}"
 }
 

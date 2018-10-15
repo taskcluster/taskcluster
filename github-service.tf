@@ -1,5 +1,6 @@
 module "github_rabbitmq_user" {
   source         = "modules/rabbitmq-user"
+  prefix         = "${var.prefix}"
   project_name   = "taskcluster-github"
   rabbitmq_vhost = "${var.rabbitmq_vhost}"
 }
@@ -22,7 +23,7 @@ module "github_secrets" {
     MONITORING_ENABLE        = "false"
     PUBLISH_METADATA         = "false"
     AZURE_ACCOUNT_NAME       = "${azurerm_storage_account.base.name}"
-    PULSE_USERNAME           = "taskcluster-github"
+    PULSE_USERNAME           = "${module.events_rabbitmq_user.username}"
     PULSE_PASSWORD           = "${module.github_rabbitmq_user.password}"
     PULSE_HOSTNAME           = "${var.rabbitmq_hostname}"
     PULSE_VHOST              = "${var.rabbitmq_vhost}"

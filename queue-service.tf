@@ -54,6 +54,7 @@ EOF
 
 module "queue_rabbitmq_user" {
   source         = "modules/rabbitmq-user"
+  prefix         = "${var.prefix}"
   project_name   = "taskcluster-queue"
   rabbitmq_vhost = "${var.rabbitmq_vhost}"
 }
@@ -81,7 +82,7 @@ module "queue_secrets" {
     TASKCLUSTER_ACCESS_TOKEN         = "${random_string.queue_access_token.result}"
     AZURE_ACCOUNT_ID                 = "${azurerm_storage_account.base.name}"
     AZURE_ACCOUNT_KEY                = "${azurerm_storage_account.base.primary_access_key}"
-    PULSE_USERNAME                   = "taskcluster-queue"
+    PULSE_USERNAME                   = "${module.notify_rabbitmq_user.username}"
     PULSE_PASSWORD                   = "${module.queue_rabbitmq_user.password}"
     PULSE_HOSTNAME                   = "${var.rabbitmq_hostname}"
     PULSE_VHOST                      = "${var.rabbitmq_vhost}"
