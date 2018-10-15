@@ -140,7 +140,7 @@ class Notifier {
       return res;
     });
   }
-};
+}
 
 // Export notifier
 module.exports = Notifier;
