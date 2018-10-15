@@ -38,6 +38,9 @@ import { task } from '../../utils/prop-types';
     textOverflow: 'ellipsis',
     overflowX: 'hidden',
   },
+  sourceHeadlineText: {
+    flex: 1,
+  },
   listItemButton: {
     ...theme.mixins.listItemButton,
   },
@@ -108,6 +111,7 @@ export default class TaskDetailsCard extends Component {
                 target={isExternal ? '_blank' : null}
                 rel={isExternal ? 'noopener noreferrer' : null}>
                 <ListItemText
+                  className={classes.sourceHeadlineText}
                   classes={{ secondary: classes.sourceHeadline }}
                   primary="Source"
                   secondary={task.metadata.source}
