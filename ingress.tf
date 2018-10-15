@@ -1,7 +1,8 @@
 locals {
   ingress_context = {
-    disabled_services = "${var.disabled_services}"
-    root_url          = "${var.root_url}"
+    disabled_services   = "${var.disabled_services}"
+    root_url            = "${var.root_url}"
+    root_url_tls_secret = "${var.root_url_tls_secret}"
   }
 }
 
