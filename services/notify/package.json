@@ -25,7 +25,6 @@
     "marked": "^0.3.12",
     "node-sass": "^3.8.0",
     "pug": "^2.0.0-rc.4",
-    "pulse-publisher": "^10.0.1",
     "slugid": "^1.1.0",
     "taskcluster-client": "^11.0.1",
     "taskcluster-lib-api": "^12.3.0",
