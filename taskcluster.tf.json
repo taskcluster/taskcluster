@@ -1,12 +1,12 @@
 {
   "locals": {
-    "taskcluster_image_auth": "imbstack/taskcluster-auth:SVC-c94daae4fa09",
+    "taskcluster_image_auth": "djmitche/taskcluster-auth:SVC-eb9c0aa17ba1",
     "taskcluster_image_queue": "imbstack/taskcluster-queue:SVC-dd0b26d82269",
     "taskcluster_image_index": "imbstack/taskcluster-index:SVC-4e020d1256a2",
     "taskcluster_image_purge-cache": "imbstack/taskcluster-purge-cache:SVC-913f31adbcbc",
     "taskcluster_image_github": "imbstack/taskcluster-github:SVC-b96df545fc28",
     "taskcluster_image_login": "imbstack/taskcluster-login:SVC-f7428ca96524",
-    "taskcluster_image_pulse": "imbstack/taskcluster-pulse:SVC-6cdcbd8c6ea1",
+    "taskcluster_image_pulse": "djmitche/taskcluster-pulse:SVC-720d8fa37f23",
     "taskcluster_image_hooks": "imbstack/taskcluster-hooks:SVC-5ce5e0ff6eba",
     "taskcluster_image_secrets": "imbstack/taskcluster-secrets:SVC-239fb668687e",
     "taskcluster_image_notify": "imbstack/taskcluster-notify:SVC-2db734f8a351",
