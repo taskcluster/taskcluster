@@ -152,6 +152,7 @@ const load = Loader({
       exchanges.setup({
         rootUrl:          cfg.taskcluster.rootUrl,
         credentials:      cfg.pulse,
+        namespace:        'taskcluster-auth',
         validator:        await schemaset.validator(cfg.taskcluster.rootUrl),
         publish:          cfg.app.publishMetaData,
         aws:              cfg.aws,
