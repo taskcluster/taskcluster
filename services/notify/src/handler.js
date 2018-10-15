@@ -142,7 +142,7 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
       }
     }));
   }
-};
+}
 
 // Export Handler
 module.exports = Handler;

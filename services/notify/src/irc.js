@@ -61,7 +61,7 @@ class IRCBot {
       // We always get an error when connecting to irc.mozilla.org
       if (e.command !== 'rpl_welcome') {
         throw e;
-      };
+      }
     });
 
     let queueUrl = await this.sqs.createQueue({
@@ -133,6 +133,6 @@ class IRCBot {
     await this.client.disconnectAsync();
   }
 
-};
+}
 
 module.exports = IRCBot;
