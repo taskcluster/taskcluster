@@ -47,6 +47,7 @@ EOF
 
 module "notify_rabbitmq_user" {
   source         = "modules/rabbitmq-user"
+  prefix         = "${var.prefix}"
   project_name   = "taskcluster-notify"
   rabbitmq_vhost = "${var.rabbitmq_vhost}"
 }
@@ -72,7 +73,7 @@ module "notify_secrets" {
     NODE_ENV                 = "production"
     MONITORING_ENABLE        = "false"
     PUBLISH_METADATA         = "false"
-    PULSE_USERNAME           = "taskcluster-notify"
+    PULSE_USERNAME           = "${module.notify_rabbitmq_user.username}"
     PULSE_PASSWORD           = "${module.notify_rabbitmq_user.password}"
     PULSE_HOSTNAME           = "${var.rabbitmq_hostname}"
     PULSE_VHOST              = "${var.rabbitmq_vhost}"

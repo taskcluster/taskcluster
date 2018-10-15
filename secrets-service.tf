@@ -8,6 +8,7 @@ resource "random_string" "secrets_azure_crypto_key" {
 
 module "secrets_rabbitmq_user" {
   source         = "modules/rabbitmq-user"
+  prefix         = "${var.prefix}"
   project_name   = "taskcluster-secrets"
   rabbitmq_vhost = "${var.rabbitmq_vhost}"
 }
@@ -33,7 +34,7 @@ module "secrets_secrets" {
     AZURE_TABLE_NAME         = "Secrets"
     AZURE_CRYPTO_KEY         = "${base64encode(random_string.secrets_azure_crypto_key.result)}"
     AZURE_SIGNING_KEY        = "${random_string.secrets_azure_signing_key.result}"
-    PULSE_USERNAME           = "taskcluster-secrets"
+    PULSE_USERNAME           = "${module.notify_rabbitmq_user.username}"
     PULSE_PASSWORD           = "${module.secrets_rabbitmq_user.password}"
   }
 }
