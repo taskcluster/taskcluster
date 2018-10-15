@@ -173,13 +173,6 @@ repositories:
     tier: workers
   source: https://github.com/taskcluster/generic-worker#master
 
-# Taskcluster-worker is not generating its documentation in a compatible fashion - https://bugzilla.mozilla.org/show_bug.cgi?id=1452758
-#- name: taskcluster-worker
-#  kind: other
-#  docs:
-#    tier: workers
-#  source: https://github.com/taskcluster/taskcluster-worker#master
-
 # libraries
 - name: azure-blob-storage
   kind: other
