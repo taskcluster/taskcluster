@@ -113,7 +113,6 @@ defaults:
 
 production:
   app:
-    auditLog:                 taskcluster-audit-logs
     clientTableName:          Clients
     rolesContainerName:       auth-production-roles
     sentry:
