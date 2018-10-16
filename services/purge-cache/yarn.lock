@@ -170,7 +170,7 @@ asynckit@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
 
-aws-sdk@^2.142.0, aws-sdk@^2.144.0, aws-sdk@^2.147.0, aws-sdk@^2.148.0, aws-sdk@^2.151.0, aws-sdk@^2.30.0:
+aws-sdk@^2.142.0, aws-sdk@^2.144.0, aws-sdk@^2.147.0, aws-sdk@^2.151.0, aws-sdk@^2.30.0:
   version "2.157.0"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.157.0.tgz#b55b16f8413dfa9e7323b60b21fce9743206f8a1"
   dependencies:
@@ -704,9 +704,9 @@ escape-string-regexp@1.0.5, escape-string-regexp@^1.0.2, escape-string-regexp@^1
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
 
-eslint-config-taskcluster@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-taskcluster/-/eslint-config-taskcluster-3.1.0.tgz#a8ec7efd59a88f33abd9c8256adb69ee60775007"
+eslint-config-taskcluster@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/eslint-config-taskcluster/-/eslint-config-taskcluster-3.2.0.tgz#542db58e2cdb7b6f50c592d96028013b563619b6"
   dependencies:
     eslint "^4.10.0"
 
@@ -1794,20 +1794,6 @@ pruddy-error@1.0.x:
 pseudomap@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/pseudomap/-/pseudomap-1.0.2.tgz#f052a28da70e618917ef0a8ac34c1ae5a68286b3"
-
-pulse-publisher@^10.0.1:
-  version "10.0.1"
-  resolved "https://registry.yarnpkg.com/pulse-publisher/-/pulse-publisher-10.0.1.tgz#db150103f87a0b508374fa0949191a6fead56db0"
-  dependencies:
-    ajv "^5.3.0"
-    amqplib "^0.5.1"
-    aws-sdk "^2.148.0"
-    debug "^3.1.0"
-    lodash "^4.0.0"
-    promise "^8.0.1"
-    slugid "^1.1.0"
-    taskcluster-client "^10.0.0"
-    taskcluster-lib-urls "^10.0.0"
 
 punycode@1.3.2:
   version "1.3.2"

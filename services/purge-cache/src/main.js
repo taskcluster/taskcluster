@@ -11,7 +11,6 @@ const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
 const builder = require('./api');
-const exchanges = require('./exchanges');
 const data = require('./data');
 
 const load = loader({
@@ -72,22 +71,10 @@ const load = loader({
     },
   },
 
-  publisher: {
-    requires: ['cfg', 'schemaset', 'monitor'],
-    setup: async ({cfg, schemaset, monitor}) => exchanges.setup({
-      credentials: cfg.pulse,
-      validator: await schemaset.validator(cfg.taskcluster.rootUrl),
-      rootUrl: cfg.taskcluster.rootUrl,
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
-      monitor: monitor.prefix('publisher'),
-    }),
-  },
-
   api: {
-    requires: ['cfg', 'monitor', 'schemaset', 'publisher', 'CachePurge'],
-    setup: ({cfg, monitor, schemaset, publisher, CachePurge}) => builder.build({
-      context: {cfg, publisher, CachePurge, cachePurgeCache: {}},
+    requires: ['cfg', 'monitor', 'schemaset', 'CachePurge'],
+    setup: ({cfg, monitor, schemaset, CachePurge}) => builder.build({
+      context: {cfg, CachePurge, cachePurgeCache: {}},
       rootUrl: cfg.taskcluster.rootUrl,
       schemaset,
       publish: cfg.app.publishMetaData,
@@ -96,17 +83,9 @@ const load = loader({
     }),
   },
 
-  reference: {
-    requires: ['cfg'],
-    setup: ({cfg}) => exchanges.reference({
-      rootUrl: cfg.taskcluster.rootUrl,
-      credentials: cfg.pulse,
-    }),
-  },
-
   docs: {
-    requires: ['cfg', 'schemaset', 'reference'],
-    setup: ({cfg, schemaset, reference}) => docs.documenter({
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       tier: 'core',
       schemaset,
@@ -115,9 +94,6 @@ const load = loader({
         {
           name: 'api',
           reference: builder.reference(),
-        }, {
-          name: 'events',
-          reference: reference,
         },
       ],
     }),
