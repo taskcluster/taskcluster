@@ -3,14 +3,13 @@ const assume = require('assume');
 
 helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
-  helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
 
   test('ping', () => {
     return helper.apiClient.ping();
   });
 
-  test('Publish Purge-Cache Message', async () => {
+  test('Publish purge-cache requests', async () => {
     // We should have no purge-cache requests to start with
     let openRequests = await helper.apiClient.allPurgeRequests();
     assume(openRequests.requests).is.empty();
@@ -19,8 +18,6 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster'], function
     await helper.apiClient.purgeCache('dummy-provisioner', 'dummy-worker', {
       cacheName: 'my-test-cache',
     });
-
-    helper.checkNextMessage('purge-cache', m => assume(m.payload.cacheName).is.equal('my-test-cache'));
 
     // Check that the first request is valid
     openRequests = await helper.apiClient.allPurgeRequests();

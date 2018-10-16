@@ -7,12 +7,6 @@ identifier-pattern:     "^([a-zA-Z0-9-_]*)$"
 identifier-min-length:  1
 identifier-max-length:  22
 
-# Message version numbers
-message-version:
-  description:  "Message version"
-  type:         "integer"
-  enum:         [1]
-
 # Slugid pattern, for when-ever that is useful
 slugid-pattern: "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$"
 
