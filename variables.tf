@@ -24,6 +24,16 @@ variable "root_url_tls_secret" {
   description = "Name of the secret, in the same namespace as the Ingress controller, containing the TLS certificate for Taskcluster rootUrl"
 }
 
+variable "rabbitmq_admin_username" {
+  type        = "string"
+  description = "rabbitmq username -- must be an administrator account"
+}
+
+variable "rabbitmq_password" {
+  type        = "string"
+  description = "password for rabbitmq_admin_username"
+}
+
 variable "rabbitmq_hostname" {
   type        = "string"
   description = "rabbitmq hostname"
