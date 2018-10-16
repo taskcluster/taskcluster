@@ -69,13 +69,33 @@ async function convert(inputStream, outputStream) {
       workerType: data.workerType,
     },
     values: {
-      documentation: {},
-      schemas: {},
+      documentationData: {},
+      schemaData: {},
     }
   });
 
   function addRule(list, prop) {
     for (let item of list) {
+      // Instance type needs to be put into the LaunchSpecification,
+      // availability zone placement data as well.
+      if (!item[prop]) {
+        throw new Error(`prop ${prop} is missing from ${JSON.stringify(item)}`);
+      }
+      if (prop === 'instanceType') {
+        item.launchSpec.InstanceType = item[prop];
+      } else if (prop === 'availabilityZone') {
+        if (!item.launchSpec.Placement) {
+          item.launchSpec.Placement = {
+            AvailabilityZone: item[prop],
+          };
+        } else {
+          item.launchSpec.Placement.AvailabilityZone = item[prop];
+        }
+      } else if (prop === 'region') {
+        item.launchSpec.Region = item[prop];
+      } else {
+        throw new Error('invalid list item: ' + prop);
+      }
       if (isEmpty(item.userData) && isEmpty(item.launchSpec)) {
         continue
       }
@@ -97,7 +117,7 @@ async function convert(inputStream, outputStream) {
 
   addRule(data.regions, 'region');
   addRule(data.instanceTypes, 'instanceType');
-  addRule(data.availabilityZones, 'availabilityZones');
+  addRule(data.availabilityZones, 'availabilityZone');
 
   data = JSON.stringify(config, null, 2);
   outputStream.write(data);
@@ -107,7 +127,7 @@ async function main(argv) {
   let inputStream = process.stdin;
   let outputStream = process.stdout;
 
-  for (let i = 1; i < argv.length; i++) {
+  for (let i = 2; i < argv.length; i++) {
     switch(argv[i]) {
       case '--input':
         if (argv[++i] && fs.existsSync(argv[i])) {
@@ -118,6 +138,7 @@ async function main(argv) {
         if (argv[++i] && fs.existsSync(argv[i])) {
           outputStream = fs.createWriteStream(argv[i]);
         }
+        break;
       default:
         process.stderr.write('unsupported argument: ' + argv[i] + '\n');
         process.exit(1);

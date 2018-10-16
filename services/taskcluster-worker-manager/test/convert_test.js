@@ -17,6 +17,17 @@ suite('AWS Provisioner WorkerType conversion', () => {
     assume(actual).deeply.equals(expected);
 
     // It should be possible to create it!
-    buildWorkerConfiguration(actual);
+    let workerConfiguration = buildWorkerConfiguration(actual);
+
+    // It should evaluate as expected for an evaluation
+    let result = workerConfiguration.evaluate({
+      providerId: 'aws-ec2-spot',
+      workerType: 'gecko-3-b-linux',
+      region: 'us-east-1',
+      availabilityZone: 'us-east-1a',
+      instanceType: 'c5.4xlarge',
+    });
+
+    assume(result).deeply.equals(JSON.parse(fs.readFileSync(path.join(__dirname, 'convert-eval-expected.json'))));
   });
 });

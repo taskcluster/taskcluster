@@ -32,8 +32,8 @@
         "workerType": "gecko-3-b-linux"
       },
       "values": {
-        "documentation": {},
-        "schemas": {}
+        "documentationData": {},
+        "schemaData": {}
       }
     },
     {
@@ -49,7 +49,8 @@
             "ImageId": "ami-17373968",
             "SecurityGroupIds": [
               "sg-7aca300a"
-            ]
+            ],
+            "Region": "us-east-1"
           }
         }
       }
@@ -67,7 +68,8 @@
             "ImageId": "ami-6a5ab709",
             "SecurityGroupIds": [
               "sg-5ce02b3a"
-            ]
+            ],
+            "Region": "us-west-1"
           }
         }
       }
@@ -85,7 +87,8 @@
             "ImageId": "ami-6d401815",
             "SecurityGroupIds": [
               "sg-a0d6beda"
-            ]
+            ],
+            "Region": "us-west-2"
           }
         }
       }
@@ -103,7 +106,9 @@
               "diskspaceThreshold": 30000000000
             }
           },
-          "launchSpec": {}
+          "launchSpec": {
+            "InstanceType": "c5d.4xlarge"
+          }
         }
       }
     },
@@ -120,7 +125,9 @@
               "diskspaceThreshold": 30000000000
             }
           },
-          "launchSpec": {}
+          "launchSpec": {
+            "InstanceType": "m5d.4xlarge"
+          }
         }
       }
     },
@@ -147,7 +154,8 @@
                   "VolumeType": "gp2"
                 }
               }
-            ]
+            ],
+            "InstanceType": "c5.4xlarge"
           }
         }
       }
@@ -175,7 +183,8 @@
                   "VolumeType": "gp2"
                 }
               }
-            ]
+            ],
+            "InstanceType": "m5.4xlarge"
           }
         }
       }
@@ -203,7 +212,8 @@
                   "VolumeType": "gp2"
                 }
               }
-            ]
+            ],
+            "InstanceType": "c4.4xlarge"
           }
         }
       }
@@ -231,150 +241,206 @@
                   "VolumeType": "gp2"
                 }
               }
-            ]
+            ],
+            "InstanceType": "m4.4xlarge"
           }
         }
       }
     },
     {
-      "id": "rule_aws-ec2-spot_undefined",
-      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
-      "conditions": {},
+      "id": "rule_aws-ec2-spot_us-east-1a",
+      "description": "gecko-3-b-linux aws-ec2-spot us-east-1a specialisations",
+      "conditions": {
+        "availabilityZone": "us-east-1a"
+      },
       "values": {
         "providerData": {
           "userData": {},
           "launchSpec": {
-            "SubnetId": "subnet-566e060c"
+            "SubnetId": "subnet-566e060c",
+            "Placement": {
+              "AvailabilityZone": "us-east-1a"
+            }
           }
         }
       }
     },
     {
-      "id": "rule_aws-ec2-spot_undefined",
-      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
-      "conditions": {},
+      "id": "rule_aws-ec2-spot_us-east-1b",
+      "description": "gecko-3-b-linux aws-ec2-spot us-east-1b specialisations",
+      "conditions": {
+        "availabilityZone": "us-east-1b"
+      },
       "values": {
         "providerData": {
           "userData": {},
           "launchSpec": {
-            "SubnetId": "subnet-f2c93496"
+            "SubnetId": "subnet-f2c93496",
+            "Placement": {
+              "AvailabilityZone": "us-east-1b"
+            }
           }
         }
       }
     },
     {
-      "id": "rule_aws-ec2-spot_undefined",
-      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
-      "conditions": {},
+      "id": "rule_aws-ec2-spot_us-east-1c",
+      "description": "gecko-3-b-linux aws-ec2-spot us-east-1c specialisations",
+      "conditions": {
+        "availabilityZone": "us-east-1c"
+      },
       "values": {
         "providerData": {
           "userData": {},
           "launchSpec": {
-            "SubnetId": "subnet-c52454e9"
+            "SubnetId": "subnet-c52454e9",
+            "Placement": {
+              "AvailabilityZone": "us-east-1c"
+            }
           }
         }
       }
     },
     {
-      "id": "rule_aws-ec2-spot_undefined",
-      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
-      "conditions": {},
+      "id": "rule_aws-ec2-spot_us-east-1d",
+      "description": "gecko-3-b-linux aws-ec2-spot us-east-1d specialisations",
+      "conditions": {
+        "availabilityZone": "us-east-1d"
+      },
       "values": {
         "providerData": {
           "userData": {},
           "launchSpec": {
-            "SubnetId": "subnet-e7e6ccaf"
+            "SubnetId": "subnet-e7e6ccaf",
+            "Placement": {
+              "AvailabilityZone": "us-east-1d"
+            }
           }
         }
       }
     },
     {
-      "id": "rule_aws-ec2-spot_undefined",
-      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
-      "conditions": {},
+      "id": "rule_aws-ec2-spot_us-east-1e",
+      "description": "gecko-3-b-linux aws-ec2-spot us-east-1e specialisations",
+      "conditions": {
+        "availabilityZone": "us-east-1e"
+      },
       "values": {
         "providerData": {
           "userData": {},
           "launchSpec": {
-            "SubnetId": "subnet-deb5a8e2"
+            "SubnetId": "subnet-deb5a8e2",
+            "Placement": {
+              "AvailabilityZone": "us-east-1e"
+            }
           }
         }
       }
     },
     {
-      "id": "rule_aws-ec2-spot_undefined",
-      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
-      "conditions": {},
+      "id": "rule_aws-ec2-spot_us-east-1f",
+      "description": "gecko-3-b-linux aws-ec2-spot us-east-1f specialisations",
+      "conditions": {
+        "availabilityZone": "us-east-1f"
+      },
       "values": {
         "providerData": {
           "userData": {},
           "launchSpec": {
-            "SubnetId": "subnet-7f720d73"
+            "SubnetId": "subnet-7f720d73",
+            "Placement": {
+              "AvailabilityZone": "us-east-1f"
+            }
           }
         }
       }
     },
     {
-      "id": "rule_aws-ec2-spot_undefined",
-      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
-      "conditions": {},
+      "id": "rule_aws-ec2-spot_us-west-1b",
+      "description": "gecko-3-b-linux aws-ec2-spot us-west-1b specialisations",
+      "conditions": {
+        "availabilityZone": "us-west-1b"
+      },
       "values": {
         "providerData": {
           "userData": {},
           "launchSpec": {
-            "SubnetId": "subnet-7641632e"
+            "SubnetId": "subnet-7641632e",
+            "Placement": {
+              "AvailabilityZone": "us-west-1b"
+            }
           }
         }
       }
     },
     {
-      "id": "rule_aws-ec2-spot_undefined",
-      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
-      "conditions": {},
+      "id": "rule_aws-ec2-spot_us-west-1c",
+      "description": "gecko-3-b-linux aws-ec2-spot us-west-1c specialisations",
+      "conditions": {
+        "availabilityZone": "us-west-1c"
+      },
       "values": {
         "providerData": {
           "userData": {},
           "launchSpec": {
-            "SubnetId": "subnet-48a9b82c"
+            "SubnetId": "subnet-48a9b82c",
+            "Placement": {
+              "AvailabilityZone": "us-west-1c"
+            }
           }
         }
       }
     },
     {
-      "id": "rule_aws-ec2-spot_undefined",
-      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
-      "conditions": {},
+      "id": "rule_aws-ec2-spot_us-west-2a",
+      "description": "gecko-3-b-linux aws-ec2-spot us-west-2a specialisations",
+      "conditions": {
+        "availabilityZone": "us-west-2a"
+      },
       "values": {
         "providerData": {
           "userData": {},
           "launchSpec": {
-            "SubnetId": "subnet-d948b6bf"
+            "SubnetId": "subnet-d948b6bf",
+            "Placement": {
+              "AvailabilityZone": "us-west-2a"
+            }
           }
         }
       }
     },
     {
-      "id": "rule_aws-ec2-spot_undefined",
-      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
-      "conditions": {},
+      "id": "rule_aws-ec2-spot_us-west-2b",
+      "description": "gecko-3-b-linux aws-ec2-spot us-west-2b specialisations",
+      "conditions": {
+        "availabilityZone": "us-west-2b"
+      },
       "values": {
         "providerData": {
           "userData": {},
           "launchSpec": {
-            "SubnetId": "subnet-2eaaba67"
+            "SubnetId": "subnet-2eaaba67",
+            "Placement": {
+              "AvailabilityZone": "us-west-2b"
+            }
           }
         }
       }
     },
     {
-      "id": "rule_aws-ec2-spot_undefined",
-      "description": "gecko-3-b-linux aws-ec2-spot undefined specialisations",
-      "conditions": {},
+      "id": "rule_aws-ec2-spot_us-west-2c",
+      "description": "gecko-3-b-linux aws-ec2-spot us-west-2c specialisations",
+      "conditions": {
+        "availabilityZone": "us-west-2c"
+      },
       "values": {
         "providerData": {
           "userData": {},
           "launchSpec": {
-            "SubnetId": "subnet-540a9f0f"
+            "SubnetId": "subnet-540a9f0f",
+            "Placement": {
+              "AvailabilityZone": "us-west-2c"
+            }
           }
         }
       }
