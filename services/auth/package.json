@@ -28,7 +28,7 @@
     "lodash": "^4.17.4",
     "morgan-debug": "^2.0.0",
     "promise": "^8.0.1",
-    "pulse-publisher": "^10.0.1",
+    "pulse-publisher": "^10.0.2",
     "quick-lru": "^1.1.0",
     "sentry-api": "^0.1.1",
     "slugid": "^1.1.0",
