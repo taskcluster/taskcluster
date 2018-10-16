@@ -106,7 +106,7 @@ defaults:
     accessKeyId:              !env AWS_ACCESS_KEY_ID
     secretAccessKey:          !env AWS_SECRET_ACCESS_KEY
     # Default AWS region, this is where the S3 bucket lives
-    region:                   'us-west-2'
+    region:                   !env AWS_REGION
     # Lock API version to use the latest API from 2013, this is fuzzy locking,
     # but it does the trick...
     apiVersion:               '2014-01-01'
