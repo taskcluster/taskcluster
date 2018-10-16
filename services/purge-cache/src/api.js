@@ -15,7 +15,6 @@ const builder = new APIBuilder({
   title:        'Purge Cache API',
   context: [
     'cfg',              // A typed-env-config instance
-    'publisher',        // A pulse-publisher instance
     'CachePurge',      // A data.CachePurge instance
     'cachePurgeCache', // An Promise for cacheing cachepurge responses
   ],
@@ -59,9 +58,6 @@ builder.declare({
   debug(`Processing request for ${provisionerId}/${workerType}/${cacheName}.`);
 
   await req.authorize({provisionerId, workerType, cacheName});
-
-  // Publish message
-  await this.publisher.purgeCache({provisionerId, workerType, cacheName});
 
   try {
     await this.CachePurge.create({
