@@ -192,3 +192,58 @@ builder.declare({
   let id = req.params.id;
   res.reply(await this.datastore.list('worker-configurations'));
 });
+
+builder.declare({
+  method: 'post',
+  // TODO: Decide if this is the best endpoint for this method
+  route: '/worker-configuration',
+  name: 'testWorkerConfiguration',
+  input: 'anything.yml',
+  title: 'Test Worker Configuration Evaluation',
+  stability: 'experimental',
+  output: 'anything.yml',
+  input: 'anything.yml',
+  description: [
+    'Evaluate a worker configuration against a set of satisfiers',
+  ].join('\n'),
+}, async function(req, res) {
+  let {workerConfiguration, satisfiers} = req.body;
+
+  if (!workerConfiguration || !satisfiers) {
+    return res.reportError('InputError', 'missing worker configuration or satisfiers');
+  }
+
+  workerConfiguration = buildWorkerConfiguration(workerConfiguration);
+
+  res.reply(workerConfiguration.evaluate(satisfiers));
+});
+
+builder.declare({
+  method: 'post',
+  route: '/worker-configurations/:id/evaluate',
+  name: 'previewWorkerConfiguration',
+  title: 'Preview Evaluation of Worker Configuration',
+  stability: APIBuilder.stability.experimental,
+  output: 'anything.yml',
+  input: 'anything.yml',
+  description: [
+    'Preview the currently stored worker configurations evaluation result against',
+    'the provided satisfiers',
+  ].join('\n'),
+}, async function(req, res) {
+  let id = req.params.id;
+  let workerConfiguration;
+  try {
+    workerConfiguration = await this.datastore.get('worker-configurations', id);
+  } catch (err) {
+    if (err instanceof errors.InvalidDatastoreKey) {
+      return res.reportError('ResourceNotFound', `${id} is unknown`);
+    }
+    throw err;
+  }
+
+  workerConfiguration = buildWorkerConfiguration(workerConfiguration);
+
+  res.reply(workerConfiguration.evaluate(req.body));
+
+});
