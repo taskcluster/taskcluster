@@ -141,3 +141,25 @@ builder.declare({
 
   res.reply();
 });
+
+builder.declare({
+  method: 'get',
+  route: '/worker-configurations/:id',
+  name: 'getWorkerConfiguration',
+  title: 'Get Worker Configuration',
+  stability: APIBuilder.stability.experimental,
+  //output: TODO,
+  description: [
+    'Get a worker configuration'
+  ].join('\n'),
+}, async function(req, res) {
+  let id = req.params.id;
+  try {
+    res.reply(await this.datastore.get('worker-configurations', id));
+  } catch (err) {
+    if (err instanceof errors.InvalidDatastoreKey) {
+      return res.reportError('ResourceNotFound', `${id} is unknown`);
+    }
+    throw err;
+  }
+});
