@@ -65,6 +65,7 @@ module.exports = {
       'APPLICATION_NAME',
       'LOGIN_STRATEGIES',
       'TASKCLUSTER_ROOT_URL',
+      'GRAPHQL_SUBSCRIPTION_ENDPOINT',
     ]],
     (neutrino) => {
       if (process.env.NODE_ENV === 'development') {

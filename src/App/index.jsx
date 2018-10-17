@@ -3,7 +3,9 @@ import { Component } from 'react';
 import storage from 'localforage';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloClient } from 'apollo-client';
-import { from } from 'apollo-link';
+import { WebSocketLink } from 'apollo-link-ws';
+import { getMainDefinition } from 'apollo-utilities';
+import { from, split } from 'apollo-link';
 import { HttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
 import {
@@ -72,7 +74,21 @@ export default class App extends Component {
           },
         };
       }),
-      new HttpLink(),
+      split(
+        // split based on operation type
+        ({ query }) => {
+          const { kind, operation } = getMainDefinition(query);
+
+          return kind === 'OperationDefinition' && operation === 'subscription';
+        },
+        new WebSocketLink({
+          uri: process.env.GRAPHQL_SUBSCRIPTION_ENDPOINT,
+          options: {
+            reconnect: true,
+          },
+        }),
+        new HttpLink()
+      ),
     ]),
   });
 

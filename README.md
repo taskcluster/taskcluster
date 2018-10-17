@@ -22,11 +22,14 @@ http://localhost:3050.
 ## Environment
 
 To get started local development, create a file in the root of the repo named
-`.env` with the following content, or whatever content you wish:
+`.env` with the following content:
 
 ```bash
 APPLICATION_NAME="Taskcluster"
+GRAPHQL_SUBSCRIPTION_ENDPOINT="ws://localhost:5080/subscription"
 ```
+
+_Note: The `APPLICATION_NAME` can be whatever you wish it to be._
 
 You can optionally specify the port on which the development server serves with
 
@@ -44,6 +47,7 @@ file and they will be picked up automatically when starting this web app:
 
 ```bash
 APPLICATION_NAME="Taskcluster"
+GRAPHQL_SUBSCRIPTION_ENDPOINT="ws://localhost:5080/subscription"
 AUTH0_DOMAIN="auth.mozilla.auth0.com"
 AUTH0_CLIENT_ID="29t2n3LKKnyTbGtWmfTkQpau0mp7QmMH"
 AUTH0_REDIRECT_URI="http://localhost:5080/login"

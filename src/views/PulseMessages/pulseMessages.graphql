@@ -1,0 +1,9 @@
+subscription PulseMessages($subscriptions: [PulseSubscription]!) {
+  pulseMessages(subscriptions: $subscriptions) {
+    payload
+    exchange
+    routingKey
+    redelivered
+    cc
+  }
+}

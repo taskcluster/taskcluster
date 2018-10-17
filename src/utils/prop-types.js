@@ -348,3 +348,11 @@ export const cachePurge = shape({
   cacheName: string,
   before: date,
 });
+
+export const pulseMessage = shape({
+  payload: object,
+  exchange: string,
+  routingKey: string,
+  redelivered: bool,
+  cc: string,
+});
