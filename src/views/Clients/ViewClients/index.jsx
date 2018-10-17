@@ -13,11 +13,16 @@ import Button from '../../../components/Button';
 import ClientsTable from '../../../components/ClientsTable';
 import { VIEW_CLIENTS_PAGE_SIZE } from '../../../utils/constants';
 import clientsQuery from './clients.graphql';
+import { withAuth } from '../../../utils/Auth';
 
 @hot(module)
+@withAuth
 @graphql(clientsQuery, {
-  options: () => ({
+  options: props => ({
     variables: {
+      clientOptions: {
+        ...(props.user ? { prefix: props.user.credentials.clientId } : null),
+      },
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
       },
@@ -29,10 +34,33 @@ import clientsQuery from './clients.graphql';
     ...theme.mixins.fab,
   },
 }))
-export default class ViewWorker extends PureComponent {
+export default class ViewClients extends PureComponent {
   state = {
     clientSearch: '',
+    // eslint-disable-next-line react/no-unused-state
+    previousClientId: '',
   };
+
+  static getDerivedStateFromProps(props, state) {
+    // Any time the current user changes,
+    // Reset state to reflect new user / log out and default clientSearch query
+    if (
+      props.user &&
+      props.user.credentials.clientId !== state.previousClientId
+    ) {
+      return {
+        clientSearch: props.user.credentials.clientId,
+        previousClientId: props.user.credentials.clientId,
+      };
+    } else if (!props.user && state.previousClientId !== '') {
+      return {
+        clientSearch: '',
+        previousClientId: '',
+      };
+    }
+
+    return null;
+  }
 
   handlePageChange = ({ cursor, previousCursor }) => {
     const {
@@ -86,13 +114,9 @@ export default class ViewWorker extends PureComponent {
     const { clientSearch } = this.state;
 
     refetch({
-      ...(clientSearch
-        ? {
-            clientOptions: {
-              prefix: clientSearch,
-            },
-          }
-        : null),
+      clientOptions: {
+        ...(clientSearch ? { prefix: clientSearch.trim() } : null),
+      },
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
       },

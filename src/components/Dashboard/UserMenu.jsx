@@ -59,12 +59,12 @@ export default class UserMenu extends Component {
     this.setState({ signInDialogOpen: false });
   };
 
-  handleClickSignOut = () => {
+  handleClickSignOut = async () => {
     this.handleMenuClose();
-    this.props.onUnauthorize();
     // Since Apollo caches query results, it’s important to get rid of them
     // when the login state changes.
-    this.props.client.resetStore();
+    await this.props.client.resetStore();
+    this.props.onUnauthorize();
   };
 
   render() {
