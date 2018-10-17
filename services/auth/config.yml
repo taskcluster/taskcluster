@@ -1,6 +1,11 @@
 defaults:
   taskcluster:
     rootUrl:                  !env TASKCLUSTER_ROOT_URL
+    # note that this is a bit circular! the expectation is that this clientId
+    # will be set up in staticClients.
+    credentials:
+      clientId:       !env TASKCLUSTER_CLIENT_ID
+      accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
   app:
     # Azure table for the client table
     clientTableName:          !env CLIENT_TABLE_NAME
