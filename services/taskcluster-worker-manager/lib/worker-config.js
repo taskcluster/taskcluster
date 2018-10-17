@@ -125,16 +125,20 @@ class WorkerConfiguration extends WMObject {
 
     outcome.workerType = satisfiers.workerType;
 
-
+    let expectedKeys = ['provider', 'biddingStrategy', 'documentation', 'schema'].map(x => x + 'Data');
+    expectedKeys.push('workerType');
     // Let's make sure defaults are set
-    for (let x of ['provider', 'biddingStrategy', 'documentation', 'schema']) {
-      const k = x + 'Data';
+    for (let k of expectedKeys) {
       outcome[k] = outcome[k] || {};
     }
 
     // Then let's make sure that no more keys than we expect exist
-    if (Object.keys(outcome).length !== 5) {
-      this._throw(errors.InvalidWorkerConfiguration, `too many root rule values keys`);
+    let actualKeys = Object.keys(outcome);
+    if (actualKeys.length !== 5) {
+      this._throw(errors.InvalidWorkerConfiguration, `too many root rule values keys`, {
+        actualKeys,
+        expectedKeys,
+      });
     }
 
     return outcome;

@@ -1,6 +1,12 @@
 {
+  "biddingStrategyData": {
+    "minCapacity": 0,
+    "maxCapacity": 300,
+    "scalingRatio": 0,
+    "minPrice": 8,
+    "maxPrice": 8
+  },
   "documentationData": {},
-  "schemasData": {},
   "providerData": {
     "userData": {
       "capacityManagement": {
@@ -13,17 +19,7 @@
         "sg-7aca300a"
       ],
       "Region": "us-east-1",
-      "BlockDeviceMappings": [
-        {
-          "DeviceName": "/dev/xvdb",
-          "Ebs": {
-            "DeleteOnTermination": true,
-            "VolumeSize": 120,
-            "VolumeType": "gp2"
-          }
-        }
-      ],
-      "InstanceType": "c5.4xlarge",
+      "InstanceType": "c5d.4xlarge",
       "SubnetId": "subnet-566e060c",
       "Placement": {
         "AvailabilityZone": "us-east-1a"
@@ -31,6 +27,5 @@
     }
   },
   "workerType": "gecko-3-b-linux",
-  "biddingStrategyData": {},
   "schemaData": {}
 }

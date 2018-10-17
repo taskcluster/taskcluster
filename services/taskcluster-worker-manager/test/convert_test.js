@@ -21,11 +21,11 @@ suite('AWS Provisioner WorkerType conversion', () => {
 
     // It should evaluate as expected for an evaluation
     let result = workerConfiguration.evaluate({
-      providerId: 'aws-ec2-spot',
+      biddingStrategyId: 'queue-pending-ratio',
       workerType: 'gecko-3-b-linux',
       region: 'us-east-1',
+      instanceType: 'c5d.4xlarge',
       availabilityZone: 'us-east-1a',
-      instanceType: 'c5.4xlarge',
     });
 
     assume(result).deeply.equals(JSON.parse(fs.readFileSync(path.join(__dirname, 'convert-eval-expected.json'))));
