@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { arrayOf, func, shape, string } from 'prop-types';
 import { Link } from 'react-router-dom';
 import {
@@ -37,6 +37,13 @@ const sorted = pipe(
   },
 })
 export default class ClientScopesTable extends Component {
+  static defaultProps = {
+    searchTerm: null,
+    selectedScope: null,
+    searchMode: null,
+    searchProperty: 'expandedScopes',
+  };
+
   static propTypes = {
     /** Callback function fired when a page is changed. */
     onPageChange: func.isRequired,
@@ -56,13 +63,6 @@ export default class ClientScopesTable extends Component {
      * pertaining to that scope. Else, a list of scopes is shown.
      * */
     selectedScope: string,
-  };
-
-  static defaultProps = {
-    searchTerm: null,
-    selectedScope: null,
-    searchMode: null,
-    searchProperty: 'expandedScopes',
   };
 
   // If the prop `selectedScope` is set, clients will be a list of client IDs.
@@ -134,7 +134,8 @@ export default class ClientScopesTable extends Component {
                 selectedScope
                   ? `/auth/clients/${encodeURIComponent(node)}`
                   : `/auth/scopes/${encodeURIComponent(node)}`
-              }>
+              }
+            >
               <ListItemText disableTypography primary={<code>{node}</code>} />
               <LinkIcon size={16} />
             </TableCellListItem>

@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { func } from 'prop-types';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -102,9 +102,10 @@ export default class CredentialsDialog extends Component {
             <Button onClick={this.props.onClose}>Cancel</Button>
             <Button
               color="secondary"
-              variant="raised"
+              variant="contained"
               disabled={!isFormValid}
-              type="submit">
+              type="submit"
+            >
               Sign In
             </Button>
           </DialogActions>

@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
 import Hidden from '@material-ui/core/Hidden';
@@ -43,12 +43,12 @@ export default class Home extends Component {
     signInDialogOpen: false,
   };
 
-  handleOpenSignInDialog = () => {
-    this.setState({ signInDialogOpen: true });
-  };
-
   handleCloseSignInDialog = () => {
     this.setState({ signInDialogOpen: false });
+  };
+
+  handleOpenSignInDialog = () => {
+    this.setState({ signInDialogOpen: true });
   };
 
   render() {
@@ -58,25 +58,26 @@ export default class Home extends Component {
     return (
       <Landing className={classes.root}>
         <Hidden xsDown implementation="css">
-          <Typography variant="display4" className={classes.headline}>
+          <Typography variant="h1" className={classes.headline}>
             {process.env.APPLICATION_NAME}
           </Typography>
         </Hidden>
         <Hidden smUp implementation="css">
-          <Typography variant="display3" className={classes.headline}>
+          <Typography variant="h2" className={classes.headline}>
             {process.env.APPLICATION_NAME}
           </Typography>
         </Hidden>
-        <Typography variant="headline">
+        <Typography variant="h5">
           Gather insight and intelligence for the build systems and pipelines
           that create your software.
         </Typography>
         <Divider className={classes.divider} />
         <div className={classes.actions}>
           <Button
-            variant="raised"
+            variant="contained"
             color="default"
-            onClick={this.handleOpenSignInDialog}>
+            onClick={this.handleOpenSignInDialog}
+          >
             <AccountCircleIcon className={classes.icon} />
             Sign in
           </Button>

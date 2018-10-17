@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import MuiButton from '@material-ui/core/Button';
 import { node, bool } from 'prop-types';
 import { withAuth } from '../../utils/Auth';
@@ -8,15 +8,15 @@ import { withAuth } from '../../utils/Auth';
  * A Material UI button augmented with application specific props.
  */
 export default class Button extends Component {
+  static defaultProps = {
+    requiresAuth: false,
+  };
+
   static propTypes = {
     /** The content of the button. */
     children: node.isRequired,
     /** If true, the button will be disabled if the user is not authenticated */
     requiresAuth: bool,
-  };
-
-  static defaultProps = {
-    requiresAuth: false,
   };
 
   render() {

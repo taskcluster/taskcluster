@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { arrayOf, bool, node, object, oneOfType, string } from 'prop-types';
 import classNames from 'classnames';
 import { withRouter } from 'react-router-dom';
@@ -57,6 +57,14 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
  * Render a lazy-loading log viewer.
  */
 export default class Log extends Component {
+  static defaultProps = {
+    stream: false,
+    actions: null,
+    GoToLineButtonProps: null,
+    RawLogButtonProps: null,
+    FollowLogButtonProps: null,
+  };
+
   static propTypes = {
     /**
      * The remote URL for which to lazily render log text.
@@ -85,39 +93,33 @@ export default class Log extends Component {
     RawLogButtonProps: object,
   };
 
-  static defaultProps = {
-    stream: false,
-    actions: null,
-    GoToLineButtonProps: null,
-    FollowLogButton: null,
-    RawLogButtonProps: null,
-  };
-
   state = {
     lineNumber: null,
     follow: null,
   };
 
-  shouldStartFollowing() {
-    if (!this.props.stream) {
-      return false;
-    }
+  getHighlightFromHash() {
+    const hasHighlight = LINE_NUMBER_MATCH.exec(this.props.location.hash);
+    const start = hasHighlight && +hasHighlight[1];
+    const end = hasHighlight && +hasHighlight[2];
 
+    return end ? [start, end] : start;
+  }
+
+  getScrollToLine() {
     if (typeof this.state.follow === 'boolean') {
-      return this.state.follow;
+      return null;
     }
 
-    if (this.getScrollToLine()) {
-      return false;
+    if (this.state.lineNumber) {
+      return this.state.lineNumber;
     }
 
-    const pref = storage.getItem(FOLLOW_STORAGE_KEY);
+    const highlight = this.getHighlightFromHash();
 
-    if (typeof pref === 'boolean') {
-      return pref;
+    if (highlight) {
+      return Array.isArray(highlight) ? highlight[0] : highlight;
     }
-
-    return false;
   }
 
   handleFollowClick = () => {
@@ -156,28 +158,26 @@ export default class Log extends Component {
     }
   };
 
-  getHighlightFromHash() {
-    const hasHighlight = LINE_NUMBER_MATCH.exec(this.props.location.hash);
-    const start = hasHighlight && +hasHighlight[1];
-    const end = hasHighlight && +hasHighlight[2];
+  shouldStartFollowing() {
+    if (!this.props.stream) {
+      return false;
+    }
 
-    return end ? [start, end] : start;
-  }
-
-  getScrollToLine() {
     if (typeof this.state.follow === 'boolean') {
-      return null;
+      return this.state.follow;
     }
 
-    if (this.state.lineNumber) {
-      return this.state.lineNumber;
+    if (this.getScrollToLine()) {
+      return false;
     }
 
-    const highlight = this.getHighlightFromHash();
+    const pref = storage.getItem(FOLLOW_STORAGE_KEY);
 
-    if (highlight) {
-      return Array.isArray(highlight) ? highlight[0] : highlight;
+    if (typeof pref === 'boolean') {
+      return pref;
     }
+
+    return false;
   }
 
   render() {
@@ -203,7 +203,8 @@ export default class Log extends Component {
           variant="fab"
           mini
           color="secondary"
-          {...RawLogButtonProps}>
+          {...RawLogButtonProps}
+        >
           <OpenInNewIcon />
         </Button>
       </Tooltip>
@@ -263,7 +264,8 @@ export default class Log extends Component {
             />
             <Tooltip
               placement="bottom"
-              title={follow ? 'Unfollow log' : 'Follow log'}>
+              title={follow ? 'Unfollow log' : 'Follow log'}
+            >
               <Button
                 variant="fab"
                 mini
@@ -275,7 +277,8 @@ export default class Log extends Component {
                     [classes.followButtonFollowing]: follow,
                   },
                   FollowLogButtonProps && FollowLogButtonProps.className
-                )}>
+                )}
+              >
                 <ArrowDownBoldCircleOutlineIcon />
               </Button>
             </Tooltip>

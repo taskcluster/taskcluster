@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { Query } from 'react-apollo';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
@@ -57,7 +57,8 @@ export default class ScopesetExpander extends Component {
     return (
       <Dashboard
         title="Expand Scopesets"
-        helpView={<HelpView description={description} />}>
+        helpView={<HelpView description={description} />}
+      >
         <Fragment>
           <CodeEditor
             className={classes.editor}
@@ -88,7 +89,8 @@ export default class ScopesetExpander extends Component {
                         button
                         component={Link}
                         to={`/auth/scopes/${encodeURIComponent(scope)}`}
-                        className={classes.listItemButton}>
+                        className={classes.listItemButton}
+                      >
                         <ListItemText secondary={<code>{scope}</code>} />
                         <LinkIcon size={16} />
                       </ListItem>
@@ -102,7 +104,8 @@ export default class ScopesetExpander extends Component {
               <Button
                 color="secondary"
                 variant="fab"
-                onClick={this.handleExpandScopesClick}>
+                onClick={this.handleExpandScopesClick}
+              >
                 <ArrowExpandVerticalIcon />
               </Button>
             </div>

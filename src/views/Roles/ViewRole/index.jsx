@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -26,6 +26,23 @@ export default class ViewRole extends Component {
     error: null,
   };
 
+  handleDeleteRole = async roleId => {
+    this.setState({ error: null, loading: true });
+
+    try {
+      await this.props.client.mutate({
+        mutation: deleteRoleQuery,
+        variables: { roleId },
+      });
+
+      this.setState({ error: null, loading: false });
+
+      this.props.history.push(`/auth/roles`);
+    } catch (error) {
+      this.setState({ error, loading: false });
+    }
+  };
+
   handleSaveRole = async (role, roleId) => {
     const { isNewRole } = this.props;
 
@@ -45,23 +62,6 @@ export default class ViewRole extends Component {
       if (isNewRole) {
         this.props.history.push(`/auth/roles/${encodeURIComponent(roleId)}`);
       }
-    } catch (error) {
-      this.setState({ error, loading: false });
-    }
-  };
-
-  handleDeleteRole = async roleId => {
-    this.setState({ error: null, loading: true });
-
-    try {
-      await this.props.client.mutate({
-        mutation: deleteRoleQuery,
-        variables: { roleId },
-      });
-
-      this.setState({ error: null, loading: false });
-
-      this.props.history.push(`/auth/roles`);
     } catch (error) {
       this.setState({ error, loading: false });
     }

@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { func, shape } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
@@ -9,7 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
-import TableCellListItem from '../../components/TableCellListItem';
+import TableCellListItem from '../TableCellListItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_SECRETS_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
@@ -44,21 +44,6 @@ export default class SecretsTable extends Component {
     sortDirection: null,
   };
 
-  handleHeaderClick = sortBy => {
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
-
-    this.setState({ sortBy, sortDirection });
-  };
-
-  valueFromNode(node) {
-    const mapping = {
-      'Secret ID': node.name,
-    };
-
-    return mapping[this.state.sortBy];
-  }
-
   createSortedSecretsConnection = memoize(
     (secretsConnection, sortBy, sortDirection) => {
       if (!sortBy) {
@@ -90,6 +75,21 @@ export default class SecretsTable extends Component {
     }
   );
 
+  handleHeaderClick = sortBy => {
+    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+
+    this.setState({ sortBy, sortDirection });
+  };
+
+  valueFromNode(node) {
+    const mapping = {
+      'Secret ID': node.name,
+    };
+
+    return mapping[this.state.sortBy];
+  }
+
   render() {
     const { onPageChange, classes, secretsConnection } = this.props;
     const { sortBy, sortDirection } = this.state;
@@ -117,10 +117,11 @@ export default class SecretsTable extends Component {
                 dense
                 button
                 component={Link}
-                to={`/secrets/${encodeURIComponent(name)}`}>
+                to={`/secrets/${encodeURIComponent(name)}`}
+              >
                 <ListItemText
                   disableTypography
-                  primary={<Typography variant="body1">{name}</Typography>}
+                  primary={<Typography>{name}</Typography>}
                 />
                 <LinkIcon size={iconSize} />
               </TableCellListItem>

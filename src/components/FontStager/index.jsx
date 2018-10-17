@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import FoutStager from 'react-fout-stager';
 import './index.css';
 

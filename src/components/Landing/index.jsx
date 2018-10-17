@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { node, string } from 'prop-types';
 import classNames from 'classnames';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
@@ -27,6 +27,10 @@ import PageTitle from '../PageTitle';
  * Render the layout for plain/non-application-based views.
  */
 export default class Landing extends Component {
+  static defaultProps = {
+    title: '',
+  };
+
   static propTypes = {
     /**
      * The content to render within the main view body.
@@ -36,10 +40,6 @@ export default class Landing extends Component {
      * An optional title to display in the title bar.
      */
     title: string,
-  };
-
-  static defaultProps = {
-    title: '',
   };
 
   state = {

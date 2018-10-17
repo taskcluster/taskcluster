@@ -1,4 +1,4 @@
-import { Component, cloneElement } from 'react';
+import React, { Component, cloneElement } from 'react';
 import { node, string } from 'prop-types';
 import classNames from 'classnames';
 import { withRouter, NavLink } from 'react-router-dom';
@@ -34,17 +34,17 @@ import ListItemText from '@material-ui/core/ListItemText';
   },
 }))
 export default class SidebarListItem extends Component {
+  static defaultProps = {
+    to: null,
+    icon: null,
+    rightIcon: null,
+  };
+
   static propTypes = {
     children: node.isRequired,
     to: string,
     icon: node,
     rightIcon: node,
-  };
-
-  static defaultProps = {
-    to: null,
-    icon: null,
-    rightIcon: null,
   };
 
   // Some items have the same url prefix, however should not
@@ -93,7 +93,8 @@ export default class SidebarListItem extends Component {
         component={NavLink}
         isActive={this.isItemActive}
         activeClassName={classes.active}
-        {...props}>
+        {...props}
+      >
         {icon && (
           <ListItemIcon classes={{ root: classes.icon }}>{icon}</ListItemIcon>
         )}

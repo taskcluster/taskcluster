@@ -1,4 +1,4 @@
-import { Fragment, Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { string, arrayOf } from 'prop-types';
 import { pipe, map, isEmpty, sort as rSort } from 'ramda';
@@ -20,6 +20,10 @@ const sorted = pipe(
 );
 
 export default class AwsProvisionerWorkerTypeTable extends Component {
+  static defaultProps = {
+    searchTerm: null,
+  };
+
   static propTypes = {
     /** A GraphQL roles response. */
     workerTypes: arrayOf(awsProvisionerWorkerTypeSummary).isRequired,
@@ -27,20 +31,9 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
     searchTerm: string,
   };
 
-  static defaultProps = {
-    searchTerm: null,
-  };
-
   state = {
     sortBy: null,
     sortDirection: null,
-  };
-
-  handleHeaderClick = sortBy => {
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
-
-    this.setState({ sortBy, sortDirection });
   };
 
   createSortedWorkerTypes = memoize(
@@ -72,6 +65,13 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
     }
   );
 
+  handleHeaderClick = sortBy => {
+    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+
+    this.setState({ sortBy, sortDirection });
+  };
+
   render() {
     const { workerTypes, searchTerm } = this.props;
     const { sortBy, sortDirection } = this.state;
@@ -102,14 +102,11 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
                 <TableCellListItem
                   button
                   component={Link}
-                  to={`/aws-provisioner/${workerType.workerType}`}>
+                  to={`/aws-provisioner/${workerType.workerType}`}
+                >
                   <ListItemText
                     disableTypography
-                    primary={
-                      <Typography variant="body1">
-                        {workerType.workerType}
-                      </Typography>
-                    }
+                    primary={<Typography>{workerType.workerType}</Typography>}
                   />
                   <LinkIcon size={iconSize} />
                 </TableCellListItem>

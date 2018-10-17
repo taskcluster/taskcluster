@@ -1,4 +1,4 @@
-import { Fragment, Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { pipe, map, isEmpty, defaultTo, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
@@ -52,13 +52,6 @@ export default class AwsProvisionerHealthTable extends Component {
     sortBy: null,
     sortDirection: null,
     drawerOpen: false,
-  };
-
-  handleHeaderClick = sortBy => {
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
-
-    this.setState({ sortBy, sortDirection });
   };
 
   createSortedHealth = memoize(
@@ -126,6 +119,13 @@ export default class AwsProvisionerHealthTable extends Component {
     }
   );
 
+  handleDrawerClose = () => {
+    this.setState({
+      drawerOpen: false,
+      drawerItem: null,
+    });
+  };
+
   handleDrawerOpen = (healthItem, columnName) => {
     this.setState({
       drawerOpen: true,
@@ -136,11 +136,11 @@ export default class AwsProvisionerHealthTable extends Component {
     });
   };
 
-  handleDrawerClose = () => {
-    this.setState({
-      drawerOpen: false,
-      drawerItem: null,
-    });
+  handleHeaderClick = sortBy => {
+    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+
+    this.setState({ sortBy, sortDirection });
   };
 
   render() {
@@ -182,7 +182,8 @@ export default class AwsProvisionerHealthTable extends Component {
                 <TableCellListItem
                   button
                   dense
-                  onClick={() => this.handleDrawerOpen(item, 'Healthy')}>
+                  onClick={() => this.handleDrawerOpen(item, 'Healthy')}
+                >
                   <ListItemText primary={or0(item.healthy)} />
                   <InformationVariantIcon size={iconSize} />
                 </TableCellListItem>
@@ -191,7 +192,8 @@ export default class AwsProvisionerHealthTable extends Component {
                 <TableCellListItem
                   button
                   dense
-                  onClick={() => this.handleDrawerOpen(item, 'Unhealthy')}>
+                  onClick={() => this.handleDrawerOpen(item, 'Unhealthy')}
+                >
                   <ListItemText primary={or0(item.unhealthy)} />
                   <InformationVariantIcon size={iconSize} />
                 </TableCellListItem>
@@ -202,9 +204,10 @@ export default class AwsProvisionerHealthTable extends Component {
         <Drawer
           anchor="right"
           open={drawerOpen}
-          onClose={this.handleDrawerClose}>
+          onClose={this.handleDrawerClose}
+        >
           <div className={classes.drawerContainer}>
-            <Typography variant="headline" className={classes.headline}>
+            <Typography variant="h5" className={classes.headline}>
               {drawerItem && drawerItem.columnName}
             </Typography>
             {drawerItem &&

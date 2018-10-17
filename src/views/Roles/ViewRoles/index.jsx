@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { PureComponent, Fragment } from 'react';
+import React, { PureComponent, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -24,12 +24,12 @@ export default class ViewRoles extends PureComponent {
     roleSearch: '',
   };
 
-  handleRoleSearchChange = ({ target }) => {
-    this.setState({ roleSearch: target.value });
-  };
-
   handleCreate = () => {
     this.props.history.push('/auth/roles/create');
+  };
+
+  handleRoleSearchChange = ({ target }) => {
+    this.setState({ roleSearch: target.value });
   };
 
   render() {
@@ -51,7 +51,8 @@ export default class ViewRoles extends PureComponent {
             onChange={this.handleRoleSearchChange}
             placeholder="Role starts with"
           />
-        }>
+        }
+      >
         <Fragment>
           {!roles && loading && <Spinner loading />}
           {error && error.graphQLErrors && <ErrorPanel error={error} />}
@@ -60,7 +61,8 @@ export default class ViewRoles extends PureComponent {
             onClick={this.handleCreate}
             variant="fab"
             color="secondary"
-            className={classes.plusIcon}>
+            className={classes.plusIcon}
+          >
             <PlusIcon />
           </Button>
         </Fragment>

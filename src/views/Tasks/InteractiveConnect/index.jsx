@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
@@ -55,21 +55,6 @@ let previousCursor;
   },
 }))
 export default class InteractiveConnect extends Component {
-  state = {
-    displayUrl: null,
-    shellUrl: null,
-    artifactsLoading: true,
-    taskIdSearch: this.props.match.params.taskId,
-    // eslint-disable-next-line react/no-unused-state
-    previousTaskId: this.props.match.params.taskId,
-  };
-
-  constructor(props) {
-    super(props);
-
-    previousCursor = INITIAL_CURSOR;
-  }
-
   static getDerivedStateFromProps(
     props,
     { displayUrl, shellUrl, artifactsLoading, previousTaskId }
@@ -134,6 +119,21 @@ export default class InteractiveConnect extends Component {
 
     return null;
   }
+
+  constructor(props) {
+    super(props);
+
+    previousCursor = INITIAL_CURSOR;
+  }
+
+  state = {
+    displayUrl: null,
+    shellUrl: null,
+    artifactsLoading: true,
+    taskIdSearch: this.props.match.params.taskId,
+    // eslint-disable-next-line react/no-unused-state
+    previousTaskId: this.props.match.params.taskId,
+  };
 
   componentDidUpdate(prevProps) {
     const {
@@ -228,12 +228,26 @@ export default class InteractiveConnect extends Component {
     return INTERACTIVE_TASK_STATUS.READY;
   };
 
+  handleDisplayOpen = () => {
+    window.open(this.state.displayUrl, '_blank');
+  };
+
   handleShellOpen = () => {
     window.open(this.state.shellUrl, '_blank');
   };
 
-  handleDisplayOpen = () => {
-    window.open(this.state.displayUrl, '_blank');
+  handleTaskIdSearchChange = ({ target: { value } }) => {
+    this.setState({ taskIdSearch: value || '' });
+  };
+
+  handleTaskIdSearchSubmit = e => {
+    e.preventDefault();
+
+    const { taskIdSearch } = this.state;
+
+    if (taskIdSearch && this.props.match.params.taskId !== taskIdSearch) {
+      this.props.history.push(`/tasks/${this.state.taskIdSearch}/connect`);
+    }
   };
 
   renderTask = () => {
@@ -296,7 +310,8 @@ export default class InteractiveConnect extends Component {
               classes.viewTaskDetails
             )}
             component={Link}
-            to={`/tasks/${taskId}`}>
+            to={`/tasks/${taskId}`}
+          >
             <ListItemText primary="View task details" />
             <LinkIcon />
           </ListItem>
@@ -304,7 +319,7 @@ export default class InteractiveConnect extends Component {
         {isSessionReady && (
           <Fragment>
             <Divider className={classes.divider} />
-            <Typography variant="headline">Select a Session</Typography>
+            <Typography variant="h5">Select a Session</Typography>
             <Typography>
               You have approximately <strong>5 minutes</strong> to connect,
               after that the task will shutdown when all connections are closed.
@@ -313,7 +328,8 @@ export default class InteractiveConnect extends Component {
               <ListItem
                 button
                 onClick={this.handleShellOpen}
-                className={classes.listItemButton}>
+                className={classes.listItemButton}
+              >
                 <ConsoleIcon />
                 <ListItemText primary="Shell" />
                 <OpenInNewIcon />
@@ -321,7 +337,8 @@ export default class InteractiveConnect extends Component {
               <ListItem
                 onClick={this.handleDisplayOpen}
                 button
-                className={classes.listItemButton}>
+                className={classes.listItemButton}
+              >
                 <MonitorIcon />
                 <ListItemText primary="Display" />
                 <OpenInNewIcon />
@@ -331,20 +348,6 @@ export default class InteractiveConnect extends Component {
         )}
       </Fragment>
     );
-  };
-
-  handleTaskIdSearchChange = ({ target: { value } }) => {
-    this.setState({ taskIdSearch: value || '' });
-  };
-
-  handleTaskIdSearchSubmit = e => {
-    e.preventDefault();
-
-    const { taskIdSearch } = this.state;
-
-    if (taskIdSearch && this.props.match.params.taskId !== taskIdSearch) {
-      this.props.history.push(`/tasks/${this.state.taskIdSearch}/connect`);
-    }
   };
 
   render() {
@@ -362,7 +365,8 @@ export default class InteractiveConnect extends Component {
             onChange={this.handleTaskIdSearchChange}
             onSubmit={this.handleTaskIdSearchSubmit}
           />
-        }>
+        }
+      >
         <Fragment>
           {!error && artifactsLoading && <Spinner loading />}
           {error && <ErrorPanel error={error} />}

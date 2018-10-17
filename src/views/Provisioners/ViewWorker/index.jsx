@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { format, addYears, isAfter } from 'date-fns';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
@@ -48,10 +48,8 @@ export default class ViewWorker extends Component {
     });
   };
 
-  handleDialogOpen = () => {
-    this.setState({
-      dialogOpen: true,
-    });
+  handleActionError = e => {
+    this.setState({ dialogError: e, actionLoading: false });
   };
 
   handleDialogClose = () => {
@@ -61,34 +59,14 @@ export default class ViewWorker extends Component {
     });
   };
 
-  handleWorkerContextActionSubmit = async () => {
-    const { selectedAction } = this.state;
-    const {
-      user,
-      match: { params },
-    } = this.props;
-    const url = selectedAction.url
-      .replace('<provisionerId>', params.provisionerId)
-      .replace('<workerType>', params.workerType)
-      .replace('<workerGroup>', params.workerGroup)
-      .replace('<workerId>', params.workerId);
-
-    this.setState({ actionLoading: true, dialogError: null });
-
-    // TODO: Action not working.
-    await fetch(url, {
-      method: selectedAction.method,
-      headers: new Headers({
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
-      }),
+  handleDialogOpen = () => {
+    this.setState({
+      dialogOpen: true,
     });
-
-    this.setState({ actionLoading: false });
   };
 
-  handleActionError = e => {
-    this.setState({ dialogError: e, actionLoading: false });
+  handleQuarantineChange = ({ target }) => {
+    this.setState({ quarantineUntilInput: target.value });
   };
 
   handleQuarantineDialogSubmit = async () => {
@@ -120,8 +98,30 @@ export default class ViewWorker extends Component {
     this.setState({ actionLoading: false });
   };
 
-  handleQuarantineChange = ({ target }) => {
-    this.setState({ quarantineUntilInput: target.value });
+  handleWorkerContextActionSubmit = async () => {
+    const { selectedAction } = this.state;
+    const {
+      user,
+      match: { params },
+    } = this.props;
+    const url = selectedAction.url
+      .replace('<provisionerId>', params.provisionerId)
+      .replace('<workerType>', params.workerType)
+      .replace('<workerGroup>', params.workerGroup)
+      .replace('<workerId>', params.workerId);
+
+    this.setState({ actionLoading: true, dialogError: null });
+
+    // TODO: Action not working.
+    await fetch(url, {
+      method: selectedAction.method,
+      headers: new Headers({
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
+      }),
+    });
+
+    this.setState({ actionLoading: false });
   };
 
   render() {

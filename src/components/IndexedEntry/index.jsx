@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { arrayOf, func, shape } from 'prop-types';
 import classNames from 'classnames';
@@ -13,9 +13,9 @@ import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import LockIcon from 'mdi-react/LockIcon';
-import ConnectionDataTable from '../../components/ConnectionDataTable';
-import DateDistance from '../../components/DateDistance';
-import JsonInspector from '../../components/JsonInspector';
+import ConnectionDataTable from '../ConnectionDataTable';
+import DateDistance from '../DateDistance';
+import JsonInspector from '../JsonInspector';
 import { artifact, indexedTask, date, pageInfo } from '../../utils/prop-types';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
 import buildArtifactUrl from '../../utils/buildArtifactUrl';
@@ -41,6 +41,14 @@ export default class IndexedEntry extends Component {
     }).isRequired,
     onArtifactsPageChange: func.isRequired,
   };
+
+  // Handle programmatically in order to avoid
+  // '<a> cannot appear as a child of <tbody>'
+  handleArtifactClick = url =>
+    Object.assign(window.open(), {
+      opener: null,
+      location: url,
+    });
 
   handleHeaderClick = sortBy => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
@@ -76,14 +84,6 @@ export default class IndexedEntry extends Component {
     };
   };
 
-  // Handle programmatically in order to avoid
-  // '<a> cannot appear as a child of <tbody>'
-  handleArtifactClick = url =>
-    Object.assign(window.open(), {
-      opener: null,
-      location: url,
-    });
-
   renderArtifactsTable() {
     const {
       classes,
@@ -105,7 +105,8 @@ export default class IndexedEntry extends Component {
               [classes.pointer]: Boolean(artifact.url),
             })}
             onClick={() => this.handleArtifactClick(artifact.url)}
-            hover={Boolean(artifact.url)}>
+            hover={Boolean(artifact.url)}
+          >
             <TableCell>
               {artifact.isPublicLog && <LockOpenOutlineIcon />}
               {!artifact.isPublicLog && artifact.url && <LockIcon />}
@@ -144,7 +145,8 @@ export default class IndexedEntry extends Component {
           button
           className={classes.listItemButton}
           component={Link}
-          to={`/tasks/${indexedTask.taskId}`}>
+          to={`/tasks/${indexedTask.taskId}`}
+        >
           <ListItemText primary="View task" />
           <LinkIcon />
         </ListItem>

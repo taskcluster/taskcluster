@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { func, number, string } from 'prop-types';
@@ -106,40 +106,9 @@ export default class TaskRunsCard extends Component {
     showArtifacts: false,
   };
 
-  createSortedArtifactsConnection(artifacts) {
-    return {
-      ...artifacts,
-      edges: [...artifacts.edges].sort((a, b) => {
-        if (a.node.isPublicLog === b.node.isPublicLog) {
-          return 0;
-        }
-
-        return a.node.isPublicLog ? -1 : 1;
-      }),
-    };
-  }
-
   getCurrentRun() {
     return this.props.runs[this.props.selectedRunId];
   }
-
-  handleToggleArtifacts = () => {
-    this.setState({ showArtifacts: !this.state.showArtifacts });
-  };
-
-  handleNext = () => {
-    const { history } = this.props;
-    const { taskId, runId } = this.getCurrentRun();
-
-    history.push(`/tasks/${taskId}/runs/${runId + 1}`);
-  };
-
-  handlePrevious = () => {
-    const { history } = this.props;
-    const { taskId, runId } = this.getCurrentRun();
-
-    history.push(`/tasks/${taskId}/runs/${runId - 1}`);
-  };
 
   handleArtifactClick = ({ url, isPublicLog }) => {
     if (!url) {
@@ -167,6 +136,37 @@ export default class TaskRunsCard extends Component {
     };
   };
 
+  handleNext = () => {
+    const { history } = this.props;
+    const { taskId, runId } = this.getCurrentRun();
+
+    history.push(`/tasks/${taskId}/runs/${runId + 1}`);
+  };
+
+  handlePrevious = () => {
+    const { history } = this.props;
+    const { taskId, runId } = this.getCurrentRun();
+
+    history.push(`/tasks/${taskId}/runs/${runId - 1}`);
+  };
+
+  handleToggleArtifacts = () => {
+    this.setState({ showArtifacts: !this.state.showArtifacts });
+  };
+
+  createSortedArtifactsConnection(artifacts) {
+    return {
+      ...artifacts,
+      edges: [...artifacts.edges].sort((a, b) => {
+        if (a.node.isPublicLog === b.node.isPublicLog) {
+          return 0;
+        }
+
+        return a.node.isPublicLog ? -1 : 1;
+      }),
+    };
+  }
+
   renderArtifactsTable() {
     const { classes, onArtifactsPageChange } = this.props;
     const run = this.getCurrentRun();
@@ -185,7 +185,8 @@ export default class TaskRunsCard extends Component {
               [classes.pointer]: !!artifact.url,
             })}
             onClick={this.handleArtifactClick(artifact)}
-            hover={!!artifact.url}>
+            hover={!!artifact.url}
+          >
             <TableCell>
               {artifact.isPublicLog && <LockOpenOutlineIcon />}
               {!artifact.isPublicLog && artifact.url && <LockIcon />}
@@ -226,7 +227,7 @@ export default class TaskRunsCard extends Component {
       <Card raised>
         <div>
           <CardContent classes={{ root: classes.cardContent }}>
-            <Typography variant="headline" className={classes.headline}>
+            <Typography variant="h5" className={classes.headline}>
               Task Runs
             </Typography>
             <List>
@@ -297,7 +298,8 @@ export default class TaskRunsCard extends Component {
                 button
                 className={classes.listItemButton}
                 component={Link}
-                to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
+                to={`/provisioners/${provisionerId}/worker-types/${workerType}`}
+              >
                 <ListItemText primary="Worker Type" secondary={workerType} />
                 <LinkIcon />
               </ListItem>
@@ -317,7 +319,8 @@ export default class TaskRunsCard extends Component {
               <ListItem
                 button
                 className={classes.listItemButton}
-                onClick={this.handleToggleArtifacts}>
+                onClick={this.handleToggleArtifacts}
+              >
                 <ListItemText primary="Artifacts" />
                 {showArtifacts ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </ListItem>
@@ -326,7 +329,8 @@ export default class TaskRunsCard extends Component {
                   <ListItem
                     className={classes.artifactsListItemContainer}
                     component="div"
-                    disableGutters>
+                    disableGutters
+                  >
                     {this.renderArtifactsTable()}
                   </ListItem>
                 </List>
@@ -344,7 +348,8 @@ export default class TaskRunsCard extends Component {
                 <Button
                   size="small"
                   onClick={this.handleNext}
-                  disabled={selectedRunId === runs.length - 1}>
+                  disabled={selectedRunId === runs.length - 1}
+                >
                   Next
                   <ChevronRightIcon />
                 </Button>
@@ -353,7 +358,8 @@ export default class TaskRunsCard extends Component {
                 <Button
                   size="small"
                   onClick={this.handlePrevious}
-                  disabled={selectedRunId === 0}>
+                  disabled={selectedRunId === 0}
+                >
                   <ChevronLeftIcon />
                   Previous
                 </Button>

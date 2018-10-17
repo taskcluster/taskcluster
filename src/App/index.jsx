@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component } from 'react';
+import React, { Component } from 'react';
 import storage from 'localforage';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloClient } from 'apollo-client';
@@ -26,37 +26,17 @@ const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
 
 @hot(module)
 export default class App extends Component {
-  authorize = async (user, persist = true) => {
-    if (persist) {
-      localStorage.setItem(AUTH_STORE, JSON.stringify(user));
-    }
-
-    this.setState({
-      auth: {
-        ...this.state.auth,
-        user,
-      },
-    });
-  };
-
-  unauthorize = () => {
-    localStorage.removeItem(AUTH_STORE);
-    this.setState({
-      auth: {
-        ...this.state.auth,
-        user: null,
-      },
-    });
-  };
-
   fragmentMatcher = new IntrospectionFragmentMatcher({
     introspectionQueryResultData,
   });
+
   cache = new InMemoryCache({ fragmentMatcher: this.fragmentMatcher });
+
   persistence = new CachePersistor({
     cache: this.cache,
     storage,
   });
+
   apolloClient = new ApolloClient({
     cache: this.cache,
     link: from([
@@ -121,9 +101,30 @@ export default class App extends Component {
     this.state = state;
   }
 
-  componentDidCatch(error) {
-    this.setState({ error });
-  }
+  authorize = async (user, persist = true) => {
+    if (persist) {
+      localStorage.setItem(AUTH_STORE, JSON.stringify(user));
+    }
+
+    this.setState({
+      auth: {
+        // eslint-disable-next-line react/no-access-state-in-setstate
+        ...this.state.auth,
+        user,
+      },
+    });
+  };
+
+  unauthorize = () => {
+    localStorage.removeItem(AUTH_STORE);
+    this.setState({
+      auth: {
+        // eslint-disable-next-line react/no-access-state-in-setstate
+        ...this.state.auth,
+        user: null,
+      },
+    });
+  };
 
   toggleTheme = () => {
     this.setState({
@@ -133,6 +134,10 @@ export default class App extends Component {
           : theme.darkTheme,
     });
   };
+
+  componentDidCatch(error) {
+    this.setState({ error });
+  }
 
   render() {
     const { auth, error, theme } = this.state;

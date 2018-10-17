@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { withApollo } from 'react-apollo';
 import { bool, func } from 'prop-types';
 import Avatar from '@material-ui/core/Avatar';
@@ -44,6 +44,14 @@ export default class SignInDialog extends Component {
     );
   }
 
+  handleCredentialsDialogClose = () => {
+    this.setState({ credentialsDialogOpen: false });
+  };
+
+  handleCredentialsDialogOpen = () => {
+    this.setState({ credentialsDialogOpen: true });
+  };
+
   handleCredentialsSignIn = async credentials => {
     const inOneWeek = new Date();
 
@@ -63,14 +71,6 @@ export default class SignInDialog extends Component {
     this.props.onClose();
   };
 
-  handleCredentialsDialogOpen = () => {
-    this.setState({ credentialsDialogOpen: true });
-  };
-
-  handleCredentialsDialogClose = () => {
-    this.setState({ credentialsDialogOpen: false });
-  };
-
   render() {
     const { onClose, open } = this.props;
     const { credentialsDialogOpen } = this.state;
@@ -79,7 +79,8 @@ export default class SignInDialog extends Component {
       <Dialog
         open={open}
         onClose={onClose}
-        aria-labelledby="sign-in-dialog-title">
+        aria-labelledby="sign-in-dialog-title"
+      >
         <DialogTitle id="sign-in-dialog-title">Sign In</DialogTitle>
         <DialogContent>
           <List>
@@ -88,7 +89,8 @@ export default class SignInDialog extends Component {
                 button
                 component="a"
                 href="/login/github"
-                target="_blank">
+                target="_blank"
+              >
                 <ListItemAvatar>
                   <Avatar>
                     <GithubCircleIcon />

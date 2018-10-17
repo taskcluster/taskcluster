@@ -8,6 +8,10 @@ import { date } from '../../utils/prop-types';
  * additional offset date.
  */
 export default class DateDistance extends Component {
+  static defaultProps = {
+    offset: null,
+  };
+
   static propTypes = {
     /**
      * The origin date for which to render a relative string from now.
@@ -18,10 +22,6 @@ export default class DateDistance extends Component {
      * and `offset`.
      */
     offset: date,
-  };
-
-  static defaultProps = {
-    offset: null,
   };
 
   render() {

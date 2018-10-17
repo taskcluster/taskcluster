@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { oneOfType, object, node, string, func, bool } from 'prop-types';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { withStyles } from '@material-ui/core/styles';
@@ -28,6 +28,14 @@ import Button from '../Button';
  * A Material UI Dialog augmented with application specific props.
  */
 export default class DialogAction extends Component {
+  static defaultProps = {
+    title: '',
+    body: '',
+    error: null,
+    onError: null,
+    onComplete: null,
+  };
+
   static propTypes = {
     /** If true, the Dialog is open. */
     open: bool.isRequired,
@@ -52,13 +60,6 @@ export default class DialogAction extends Component {
     onClose: func.isRequired,
     /** Error to display. */
     error: oneOfType([string, object]),
-  };
-
-  static defaultProps = {
-    title: '',
-    body: '',
-    confirmText: '',
-    error: null,
   };
 
   state = {
@@ -124,7 +125,8 @@ export default class DialogAction extends Component {
               disabled={executing}
               onClick={this.handleSubmit}
               color="secondary"
-              autoFocus>
+              autoFocus
+            >
               {confirmText}
             </Button>
             {executing && (

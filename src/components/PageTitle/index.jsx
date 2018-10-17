@@ -1,4 +1,4 @@
-import { PureComponent } from 'react';
+import React, { PureComponent } from 'react';
 import { string } from 'prop-types';
 import Helmet, { title } from 'react-helmet';
 
@@ -7,15 +7,15 @@ import Helmet, { title } from 'react-helmet';
  * application name.
  */
 export default class PageTitle extends PureComponent {
+  static defaultProps = {
+    children: null,
+  };
+
   static propTypes = {
     /**
      * Show a custom string before the application name.
      */
     children: string,
-  };
-
-  static defaultPros = {
-    children: null,
   };
 
   render() {

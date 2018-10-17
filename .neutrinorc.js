@@ -1,37 +1,67 @@
-const { join } = require('path');
 const merge = require('deepmerge');
-
-require('babel-register')({
-  plugins: [
-    [require.resolve('babel-plugin-transform-es2015-modules-commonjs'), {
-      useBuiltIns: true
-    }],
-    require.resolve('babel-plugin-transform-object-rest-spread'),
-  ],
-  cache: false,
-});
-
-const theme = require('./src/theme').default;
 
 module.exports = {
   use: [
-    ['neutrino-preset-mozilla-frontend-infra/styleguide', {
-      components: 'src/components/**/index.jsx',
-      theme: theme.styleguide,
-      styles: {
-        StyleGuide: theme.styleguide.StyleGuide,
-      },
-      editorConfig: {
-        theme: 'material',
-      },
-      showUsage: true,
-      skipComponentsWithoutExample: false,
-      styleguideComponents: {
-        Wrapper: join(__dirname, 'src/styleguide/ThemeWrapper.jsx'),
-        StyleGuideRenderer: join(__dirname, 'src/styleguide/StyleGuideRenderer.jsx'),
+    ['@neutrinojs/airbnb', {
+      eslint: {
+        parserOptions: {
+          ecmaFeatures: {
+            legacyDecorators: true
+          }
+        },
+        emitWarning: process.env.NODE_ENV === 'development',
+        baseConfig: {
+          extends: ['plugin:react/recommended', 'eslint-config-prettier'],
+        },
+        envs: ['worker', 'serviceworker'],
+        plugins: ['prettier'],
+        rules: {
+          'react/jsx-wrap-multilines': 'off',
+          'react/prop-types': 'off',
+          'react/jsx-one-expression-per-line': 'off',
+          'react/forbid-prop-types': 'off',
+          'react/prefer-stateless-function': 'off',
+          'react/no-access-state-in-setstate': 'off',
+          'react/destructuring-assignment': 'off',
+          'babel/no-unused-expressions': 'off',
+          'import/no-extraneous-dependencies': 'off',
+          // Specify the maximum length of a line in your program
+          'max-len': [
+            'error',
+            80,
+            2,
+            {
+              ignoreUrls: true,
+              ignoreComments: false,
+              ignoreStrings: true,
+              ignoreTemplateLiterals: true,
+            },
+          ],
+          // Allow using class methods with static/non-instance functionality
+          // React lifecycle methods commonly do not use an instance context for
+          // anything
+          'class-methods-use-this': 'off',
+          // Allow console during development, otherwise throw an error
+          'no-console': process.env.NODE_ENV === 'development' ? 'off' : 'error',
+          'prettier/prettier': [
+            'error',
+            {
+              singleQuote: true,
+              trailingComma: 'es5',
+              bracketSpacing: true,
+              jsxBracketSameLine: false,
+            },
+          ],
+          'consistent-return': 'off',
+          'no-shadow': 'off',
+          'no-return-assign': 'off',
+          'babel/new-cap': 'off',
+          'no-mixed-operators': 'off',
+        },
       },
     }],
-    ['neutrino-preset-mozilla-frontend-infra/react', {
+    ['@neutrinojs/react', {
+      publicPath: '/',
       html: {
         title: process.env.APPLICATION_NAME
       },
@@ -52,26 +82,21 @@ module.exports = {
           },
         },
       },
-      eslint: {
-        rules: {
-          // This has been set in the latest Airbnb preset, but has not been
-          // released yet.
-          'react/no-did-mount-set-state': 'off',
-        }
-      }
+      env: [
+        'APPLICATION_NAME',
+        'LOGIN_STRATEGIES',
+        'PORT',
+        'TASKCLUSTER_ROOT_URL',
+        'GRAPHQL_SUBSCRIPTION_ENDPOINT',
+      ],
+      babel: {
+        plugins: [
+          [require.resolve('@babel/plugin-proposal-decorators'), { legacy: true }],
+          require.resolve('@babel/plugin-proposal-class-properties'),
+        ],
+      },
     }],
-    ['@neutrinojs/env', [
-      'NODE_ENV',
-      'APPLICATION_NAME',
-      'LOGIN_STRATEGIES',
-      'TASKCLUSTER_ROOT_URL',
-      'GRAPHQL_SUBSCRIPTION_ENDPOINT',
-    ]],
     (neutrino) => {
-      if (process.env.NODE_ENV === 'development') {
-        neutrino.config.devtool('cheap-module-source-map');
-      }
-
       neutrino.config.node.set('Buffer', true);
 
       // The shell view requires this
@@ -80,7 +105,6 @@ module.exports = {
           bindings: 'bindings'
         }));
 
-      neutrino.config.output.publicPath('/');
       neutrino.config.module
         .rule('graphql')
           .test(/\.graphql$/)

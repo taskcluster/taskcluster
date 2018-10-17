@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { array, arrayOf, func, number, shape, string, oneOf } from 'prop-types';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
@@ -31,6 +31,14 @@ import { pageInfo } from '../../utils/prop-types';
  * A paginated table that operates on a GraphQL PageConnection.
  */
 export default class ConnectionDataTable extends Component {
+  static defaultProps = {
+    columnsSize: null,
+    sortByHeader: null,
+    sortDirection: 'desc',
+    headers: null,
+    onHeaderClick: null,
+  };
+
   static propTypes = {
     /**
      * A GraphQL PageConnection instance.
@@ -81,32 +89,11 @@ export default class ConnectionDataTable extends Component {
     headers: arrayOf(string),
   };
 
-  static defaultProps = {
-    sortByHeader: null,
-    sortDirection: 'desc',
-    headers: null,
-  };
-
-  pages = new Map();
   state = {
     loading: false,
   };
 
-  handlePageChange = (e, nextPage) => {
-    const { connection, onPageChange } = this.props;
-    const { page, pageInfo } = this.pages.get(connection.pageInfo.cursor);
-    const cursor =
-      nextPage > page ? pageInfo.nextCursor : pageInfo.previousCursor;
-    const previousCursor =
-      nextPage > page
-        ? pageInfo.cursor
-        : this.pages.get(pageInfo.previousCursor).previousCursor;
-
-    this.setState({ loading: true }, async () => {
-      await onPageChange({ cursor, previousCursor });
-      this.setState({ loading: false });
-    });
-  };
+  pages = new Map();
 
   getPaginationMetadata() {
     const { connection, pageSize } = this.props;
@@ -141,6 +128,22 @@ export default class ConnectionDataTable extends Component {
     }
   };
 
+  handlePageChange = (e, nextPage) => {
+    const { connection, onPageChange } = this.props;
+    const { page, pageInfo } = this.pages.get(connection.pageInfo.cursor);
+    const cursor =
+      nextPage > page ? pageInfo.nextCursor : pageInfo.previousCursor;
+    const previousCursor =
+      nextPage > page
+        ? pageInfo.cursor
+        : this.pages.get(pageInfo.previousCursor).previousCursor;
+
+    this.setState({ loading: true }, async () => {
+      await onPageChange({ cursor, previousCursor });
+      this.setState({ loading: false });
+    });
+  };
+
   render() {
     const {
       classes,
@@ -169,7 +172,8 @@ export default class ConnectionDataTable extends Component {
                         id={header}
                         active={header === sortByHeader}
                         direction={sortDirection || 'desc'}
-                        onClick={this.handleHeaderClick}>
+                        onClick={this.handleHeaderClick}
+                      >
                         {header}
                       </TableSortLabel>
                     </TableCell>

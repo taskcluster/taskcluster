@@ -1,4 +1,4 @@
-import { PureComponent, Fragment } from 'react';
+import React, { PureComponent, Fragment } from 'react';
 import { hot } from 'react-hot-loader';
 import { graphql } from 'react-apollo';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
@@ -52,7 +52,8 @@ export default class ViewClients extends PureComponent {
         clientSearch: props.user.credentials.clientId,
         previousClientId: props.user.credentials.clientId,
       };
-    } else if (!props.user && state.previousClientId !== '') {
+    }
+    if (!props.user && state.previousClientId !== '') {
       return {
         clientSearch: '',
         previousClientId: '',
@@ -61,6 +62,36 @@ export default class ViewClients extends PureComponent {
 
     return null;
   }
+
+  handleClientSearchChange = ({ target }) => {
+    this.setState({ clientSearch: target.value });
+  };
+
+  handleClientSearchSubmit = e => {
+    e.preventDefault();
+
+    const {
+      data: { refetch },
+    } = this.props;
+    const { clientSearch } = this.state;
+
+    refetch({
+      ...(clientSearch
+        ? {
+            clientOptions: {
+              prefix: clientSearch,
+            },
+          }
+        : null),
+      clientsConnection: {
+        limit: VIEW_CLIENTS_PAGE_SIZE,
+      },
+    });
+  };
+
+  handleCreate = () => {
+    this.props.history.push('/auth/clients/create');
+  };
 
   handlePageChange = ({ cursor, previousCursor }) => {
     const {
@@ -147,7 +178,8 @@ export default class ViewClients extends PureComponent {
             onSubmit={this.handleClientSearchSubmit}
             placeholder="Client starts with"
           />
-        }>
+        }
+      >
         <Fragment>
           {!clients && loading && <Spinner loading />}
           {error && error.graphQLErrors && <ErrorPanel error={error} />}
@@ -161,7 +193,8 @@ export default class ViewClients extends PureComponent {
             onClick={this.handleCreate}
             variant="fab"
             color="secondary"
-            className={classes.plusIcon}>
+            className={classes.plusIcon}
+          >
             <PlusIcon />
           </Button>
         </Fragment>

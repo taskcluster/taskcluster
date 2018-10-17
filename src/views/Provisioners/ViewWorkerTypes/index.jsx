@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
@@ -40,10 +40,6 @@ import workerTypesQuery from './workerTypes.graphql';
   }),
 })
 export default class ViewWorkerTypes extends Component {
-  handleProvisionerChange = ({ target }) => {
-    this.props.history.push(`/provisioners/${target.value}/worker-types`);
-  };
-
   handlePageChange = ({ cursor, previousCursor }) => {
     const {
       match: {
@@ -86,6 +82,10 @@ export default class ViewWorkerTypes extends Component {
     });
   };
 
+  handleProvisionerChange = ({ target }) => {
+    this.props.history.push(`/provisioners/${target.value}/worker-types`);
+  };
+
   render() {
     const {
       classes,
@@ -116,14 +116,16 @@ export default class ViewWorkerTypes extends Component {
                     select
                     label="Provisioner ID"
                     value={provisionerId}
-                    onChange={this.handleProvisionerChange}>
+                    onChange={this.handleProvisionerChange}
+                  >
                     <MenuItem value="">
                       <em>None</em>
                     </MenuItem>
                     {provisioners.edges.map(({ node }) => (
                       <MenuItem
                         key={node.provisionerId}
-                        value={node.provisionerId}>
+                        value={node.provisionerId}
+                      >
                         {node.provisionerId}
                       </MenuItem>
                     ))}

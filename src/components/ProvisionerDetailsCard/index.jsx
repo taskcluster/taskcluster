@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { bool } from 'prop-types';
 import Markdown from '@mozilla-frontend-infra/components/Markdown';
@@ -66,15 +66,15 @@ import { ACTION_CONTEXT } from '../../utils/constants';
  * Render information in a card layout about a provisioner.
  */
 export default class ProvisionerDetailsCard extends Component {
+  static defaultProps = {
+    dense: false,
+  };
+
   static propTypes = {
     /** A GraphQL provisioner response. */
     provisioner: provisioner.isRequired,
     /** If true, the card component will be compact */
     dense: bool,
-  };
-
-  static defaultProps = {
-    dense: false,
   };
 
   state = {
@@ -85,14 +85,12 @@ export default class ProvisionerDetailsCard extends Component {
     selectedAction: null,
   };
 
-  handleToggleDescription = () => {
-    this.setState({ showDescription: !this.state.showDescription });
+  handleActionClick = selectedAction => {
+    this.setState({ dialogOpen: true, selectedAction });
   };
 
-  handleProvisionerChange = () => {
-    this.props.history.push(
-      `/provisioners/${this.props.provisioner.provisionerId}`
-    );
+  handleActionError = dialogError => {
+    this.setState({ dialogError, actionLoading: false });
   };
 
   // TODO: Action not working.
@@ -115,16 +113,18 @@ export default class ProvisionerDetailsCard extends Component {
     this.setState({ actionLoading: false, dialogError: null });
   };
 
-  handleActionClick = selectedAction => {
-    this.setState({ dialogOpen: true, selectedAction });
-  };
-
-  handleActionError = dialogError => {
-    this.setState({ dialogError, actionLoading: false });
-  };
-
   handleDialogClose = () => {
     this.setState({ dialogOpen: false });
+  };
+
+  handleProvisionerChange = () => {
+    this.props.history.push(
+      `/provisioners/${this.props.provisioner.provisionerId}`
+    );
+  };
+
+  handleToggleDescription = () => {
+    this.setState({ showDescription: !this.state.showDescription });
   };
 
   renderActions = () => {
@@ -134,25 +134,29 @@ export default class ProvisionerDetailsCard extends Component {
       ({ context }) => context === ACTION_CONTEXT.PROVISIONER
     );
 
-    return actions.length
-      ? actions.map(action => (
-          <Tooltip
-            enterDelay={300}
-            key={action.title}
-            id={`${action.title}-tooltip`}
-            title={action.description}>
-            <Button
-              requiresAuth
-              onClick={() => this.handleActionClick(action)}
-              className={classes.actionButton}
-              disabled={actionLoading}
-              size="small"
-              variant="raised">
-              {action.title}
-            </Button>
-          </Tooltip>
-        ))
-      : 'n/a';
+    if (actions.length) {
+      return actions.map(action => (
+        <Tooltip
+          enterDelay={300}
+          key={action.title}
+          id={`${action.title}-tooltip`}
+          title={action.description}
+        >
+          <Button
+            requiresAuth
+            onClick={() => this.handleActionClick(action)}
+            className={classes.actionButton}
+            disabled={actionLoading}
+            size="small"
+            variant="contained"
+          >
+            {action.title}
+          </Button>
+        </Tooltip>
+      ));
+    }
+
+    return 'n/a';
   };
 
   render() {
@@ -168,7 +172,7 @@ export default class ProvisionerDetailsCard extends Component {
       <Fragment>
         <Card raised>
           <CardContent classes={{ root: classes.cardContent }}>
-            <Typography variant="headline" className={classes.headline}>
+            <Typography variant="h5" className={classes.headline}>
               {provisioner.provisionerId}
             </Typography>
             <List dense={dense}>
@@ -199,7 +203,8 @@ export default class ProvisionerDetailsCard extends Component {
               <ListItem
                 className={classes.listItemButton}
                 button
-                onClick={this.handleProvisionerChange}>
+                onClick={this.handleProvisionerChange}
+              >
                 <ListItemText primary="Explore worker type" />
                 <LinkIcon />
               </ListItem>
@@ -208,7 +213,8 @@ export default class ProvisionerDetailsCard extends Component {
                   <ListItem
                     button
                     className={classes.listItemButton}
-                    onClick={this.handleToggleDescription}>
+                    onClick={this.handleToggleDescription}
+                  >
                     <ListItemText primary="Description" />
                     {showDescription ? <ChevronUpIcon /> : <ChevronDownIcon />}
                   </ListItem>

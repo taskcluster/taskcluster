@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
@@ -43,16 +43,17 @@ export default class UserMenu extends Component {
     signInDialogOpen: false,
   };
 
+  handleClickSignOut = () => {
+    this.handleMenuClose();
+    this.props.onUnauthorize();
+  };
+
   handleMenuClick = e => {
     this.setState({ anchorEl: e.currentTarget });
   };
 
   handleMenuClose = () => {
     this.setState({ anchorEl: null });
-  };
-
-  handleSignInDialogOpen = () => {
-    this.setState({ signInDialogOpen: true });
   };
 
   handleSignInDialogClose = () => {
@@ -67,6 +68,10 @@ export default class UserMenu extends Component {
     this.props.onUnauthorize();
   };
 
+  handleSignInDialogOpen = () => {
+    this.setState({ signInDialogOpen: true });
+  };
+
   render() {
     const { classes, user } = this.props;
     const { anchorEl, signInDialogOpen } = this.state;
@@ -79,7 +84,8 @@ export default class UserMenu extends Component {
             aria-haspopup="true"
             aria-controls="user-menu"
             aria-label="user menu"
-            onClick={this.handleSignInDialogOpen}>
+            onClick={this.handleSignInDialogOpen}
+          >
             <ListItemIcon className={classes.icon}>
               <AccountCircleIcon />
             </ListItemIcon>
@@ -109,7 +115,8 @@ export default class UserMenu extends Component {
             aria-haspopup="true"
             aria-controls="user-menu"
             aria-label="user menu"
-            onClick={this.handleMenuClick}>
+            onClick={this.handleMenuClick}
+          >
             {profile.photos && profile.photos.length ? (
               <Avatar alt={profile.displayName} src={profile.photos[0].value} />
             ) : (
@@ -124,14 +131,16 @@ export default class UserMenu extends Component {
           id="user-menu"
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
-          onClose={this.handleMenuClose}>
+          onClose={this.handleMenuClose}
+        >
           <MenuItem title="Your Profile" component={Link} to="/profile">
             <AccountIcon className={classes.leftIcon} />
             Account
           </MenuItem>
           <MenuItem
             title={`Sign Out of ${process.env.APPLICATION_NAME}`}
-            onClick={this.handleClickSignOut}>
+            onClick={this.handleClickSignOut}
+          >
             <HandPeaceIcon className={classes.leftIcon} />
             Sign Out
           </MenuItem>

@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { node, bool, string } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -24,6 +24,11 @@ import ListItem from '@material-ui/core/ListItem';
  * A styled ListItem to be used when placed immediately after a TableCell.
  */
 export default class TableCellListItem extends Component {
+  static defaultProps = {
+    dense: true,
+    className: null,
+  };
+
   static propTypes = {
     /** The table cell contents. */
     children: node.isRequired,
@@ -33,11 +38,6 @@ export default class TableCellListItem extends Component {
     className: string,
   };
 
-  static defaultProps = {
-    dense: true,
-    className: null,
-  };
-
   render() {
     const { classes, children, className, dense, ...props } = this.props;
 
@@ -45,11 +45,13 @@ export default class TableCellListItem extends Component {
       <List
         dense={dense}
         classes={{ root: classes.root }}
-        className={className}>
+        className={className}
+      >
         <ListItem
           classes={{ gutters: classes.listItem }}
           className={classes.listItemButton}
-          {...props}>
+          {...props}
+        >
           {children}
         </ListItem>
       </List>

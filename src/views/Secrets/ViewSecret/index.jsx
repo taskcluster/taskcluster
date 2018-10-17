@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -30,6 +30,23 @@ export default class ViewSecret extends Component {
     error: null,
   };
 
+  handleDeleteSecret = async name => {
+    this.setState({ error: null, loading: true });
+
+    try {
+      await this.props.client.mutate({
+        mutation: deleteSecretQuery,
+        variables: { name },
+      });
+
+      this.setState({ error: null, loading: false });
+
+      this.props.history.push(`/secrets`);
+    } catch (error) {
+      this.setState({ error, loading: false });
+    }
+  };
+
   handleSaveSecret = async (name, secret) => {
     const { isNewSecret } = this.props;
 
@@ -54,23 +71,6 @@ export default class ViewSecret extends Component {
     }
   };
 
-  handleDeleteSecret = async name => {
-    this.setState({ error: null, loading: true });
-
-    try {
-      await this.props.client.mutate({
-        mutation: deleteSecretQuery,
-        variables: { name },
-      });
-
-      this.setState({ error: null, loading: false });
-
-      this.props.history.push(`/secrets`);
-    } catch (error) {
-      this.setState({ error, loading: false });
-    }
-  };
-
   render() {
     const { loading, error } = this.state;
     const { description, isNewSecret, data } = this.props;
@@ -85,7 +85,8 @@ export default class ViewSecret extends Component {
               about everybody. Use them to experiment, but not for real secrets!
             </Typography>
           </HelpView>
-        }>
+        }
+      >
         {error && <ErrorPanel error={formatError(error)} />}
         {isNewSecret ? (
           <SecretForm

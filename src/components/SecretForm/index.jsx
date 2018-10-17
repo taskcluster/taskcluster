@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { bool, func } from 'prop-types';
 import { addYears } from 'date-fns';
 import { safeDump, safeLoad } from 'js-yaml';
@@ -12,10 +12,10 @@ import TextField from '@material-ui/core/TextField';
 import Tooltip from '@material-ui/core/Tooltip';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
-import Button from '../../components/Button';
-import SpeedDial from '../../components/SpeedDial';
-import DatePicker from '../../components/DatePicker';
-import SpeedDialAction from '../../components/SpeedDialAction';
+import Button from '../Button';
+import SpeedDial from '../SpeedDial';
+import DatePicker from '../DatePicker';
+import SpeedDialAction from '../SpeedDialAction';
 import { secret } from '../../utils/prop-types';
 
 const newSecret = safeDump({
@@ -44,28 +44,11 @@ const newSecret = safeDump({
 }))
 /** A form to view/edit/create a secret */
 export default class SecretForm extends Component {
-  static propTypes = {
-    /** A GraphQL secret response. Not needed when creating a new secret.  */
-    secret,
-    /** Set to `true` when creating a new secret. */
-    isNewSecret: bool,
-    /** Callback function fired when a secret is created/updated. */
-    onSaveSecret: func.isRequired,
-    /** Callback function fired when a secret is deleted. */
-    onDeleteSecret: func,
-    /** If true, form actions will be disabled. */
-    loading: bool,
-  };
-
   static defaultProps = {
+    loading: false,
     isNewSecret: false,
     secret: null,
-  };
-
-  state = {
-    secretName: '',
-    expires: addYears(new Date(), 1000),
-    editorValue: null,
+    onDeleteSecret: null,
   };
 
   static getDerivedStateFromProps({ isNewSecret, secret }, state) {
@@ -80,8 +63,34 @@ export default class SecretForm extends Component {
     };
   }
 
-  handleInputChange = ({ target: { name, value } }) => {
-    this.setState({ [name]: value });
+  static propTypes = {
+    /** A GraphQL secret response. Not needed when creating a new secret.  */
+    // eslint-disable-next-line react/no-unused-prop-types
+    secret,
+    /** Set to `true` when creating a new secret. */
+    isNewSecret: bool,
+    /** Callback function fired when a secret is created/updated. */
+    onSaveSecret: func.isRequired,
+    /** Callback function fired when a secret is deleted. */
+    onDeleteSecret: func,
+    /** If true, form actions will be disabled. */
+    loading: bool,
+  };
+
+  state = {
+    secretName: '',
+    expires: addYears(new Date(), 1000),
+    editorValue: null,
+  };
+
+  handleDeleteSecret = () => {
+    this.props.onDeleteSecret(this.state.secretName);
+  };
+
+  handleEditorChange = editorValue => {
+    this.setState({
+      editorValue,
+    });
   };
 
   handleExpirationChange = expires => {
@@ -90,10 +99,8 @@ export default class SecretForm extends Component {
     });
   };
 
-  handleEditorChange = editorValue => {
-    this.setState({
-      editorValue,
-    });
+  handleInputChange = ({ target: { name, value } }) => {
+    this.setState({ [name]: value });
   };
 
   handleSaveSecret = () => {
@@ -103,10 +110,6 @@ export default class SecretForm extends Component {
       expires,
       secret: safeLoad(editorValue),
     });
-  };
-
-  handleDeleteSecret = () => {
-    this.props.onDeleteSecret(this.state.secretName);
   };
 
   validSecret = () => {
@@ -154,7 +157,8 @@ export default class SecretForm extends Component {
             />
           </ListItem>
           <List
-            subheader={<ListSubheader>Secret Value (in YAML)</ListSubheader>}>
+            subheader={<ListSubheader>Secret Value (in YAML)</ListSubheader>}
+          >
             <ListItem className={classes.editorListItem}>
               <CodeEditor
                 onChange={this.handleEditorChange}
@@ -175,7 +179,8 @@ export default class SecretForm extends Component {
                 variant="fab"
                 className={classes.saveIcon}
                 disabled={loading || !this.validSecret()}
-                onClick={this.handleSaveSecret}>
+                onClick={this.handleSaveSecret}
+              >
                 <ContentSaveIcon />
               </Button>
             </div>

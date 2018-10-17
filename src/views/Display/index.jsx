@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
@@ -26,6 +26,14 @@ export default class Display extends Component {
     error: null,
   };
 
+  componentDidMount() {
+    this.loadDisplays();
+  }
+
+  handleDisplayClick = display => {
+    this.setState({ display });
+  };
+
   loadDisplays = async () => {
     const displaysUrl = new URLSearchParams(this.props.location.search).get(
       'displaysUrl'
@@ -44,14 +52,6 @@ export default class Display extends Component {
     } catch (error) {
       this.setState({ error });
     }
-  };
-
-  componentDidMount() {
-    this.loadDisplays();
-  }
-
-  handleDisplayClick = display => {
-    this.setState({ display });
   };
 
   render() {
@@ -79,7 +79,8 @@ export default class Display extends Component {
         className={classNames({
           [classes.vncDisplay]: Boolean(display),
         })}
-        title={display ? 'VNC Display' : 'Displays'}>
+        title={display ? 'VNC Display' : 'Displays'}
+      >
         {error && <ErrorPanel error={error} />}
         {display && (
           <VncDisplay url={`${props.socketUrl}?display=${display}`} shared />
@@ -97,7 +98,8 @@ export default class Display extends Component {
                   <TableCell>
                     <TableCellListItem
                       button
-                      onClick={() => this.handleDisplayClick(display)}>
+                      onClick={() => this.handleDisplayClick(display)}
+                    >
                       <span className={classes.displayText}>{display}</span>
                       <LinkIcon size={iconSize} />
                     </TableCellListItem>

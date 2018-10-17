@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -159,7 +159,8 @@ export default class ViewWorkerType extends Component {
                   requiresAuth
                   onClick={this.handleTerminateAllInstances}
                   variant="fab"
-                  className={classes.terminateButton}>
+                  className={classes.terminateButton}
+                >
                   <DeleteEmptyIcon />
                 </Button>
               </div>

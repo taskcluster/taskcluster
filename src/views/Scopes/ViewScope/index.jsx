@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
@@ -46,20 +46,6 @@ export default class ViewScope extends Component {
     currentTabIndex: 0,
   };
 
-  handleSearchChange = ({ target: { value } }) => {
-    this.setState({ searchTerm: value });
-  };
-
-  handleMatchChange = ({ target: { value } }) => {
-    value === 'Direct Ownership'
-      ? this.setState({ directEntitySearch: !this.state.directEntitySearch })
-      : this.setState({ searchMode: value });
-  };
-
-  handleTabChange = (event, value) => {
-    this.setState({ currentTabIndex: value });
-  };
-
   handleClientsPageChange = ({ cursor, previousCursor }) => {
     const {
       data: { fetchMore },
@@ -92,6 +78,20 @@ export default class ViewScope extends Component {
     });
   };
 
+  handleMatchChange = ({ target: { value } }) => {
+    value === 'Direct Ownership'
+      ? this.setState({ directEntitySearch: !this.state.directEntitySearch })
+      : this.setState({ searchMode: value });
+  };
+
+  handleSearchChange = ({ target: { value } }) => {
+    this.setState({ searchTerm: value });
+  };
+
+  handleTabChange = (event, value) => {
+    this.setState({ currentTabIndex: value });
+  };
+
   render() {
     const {
       classes,
@@ -118,7 +118,8 @@ export default class ViewScope extends Component {
             onChange={this.handleSearchChange}
             placeholder="Result contains"
           />
-        }>
+        }
+      >
         <Fragment>
           <div className={classes.toolbox}>
             <TextField
@@ -127,7 +128,8 @@ export default class ViewScope extends Component {
               select
               label="Scope Match"
               value={searchMode}
-              onChange={this.handleMatchChange}>
+              onChange={this.handleMatchChange}
+            >
               <MenuItem value={SCOPES_SEARCH_MODE.HAS_SCOPE}>
                 Has Scope
               </MenuItem>
@@ -146,7 +148,8 @@ export default class ViewScope extends Component {
             className={classes.tabs}
             fullWidth
             value={currentTabIndex}
-            onChange={this.handleTabChange}>
+            onChange={this.handleTabChange}
+          >
             <Tab label="Roles" />
             <Tab label="Clients" />
           </Tabs>

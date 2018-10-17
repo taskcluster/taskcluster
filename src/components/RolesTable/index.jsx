@@ -1,4 +1,4 @@
-import { Fragment, Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { string, arrayOf } from 'prop-types';
 import { pipe, map, ifElse, isEmpty, identity, sort as rSort } from 'ramda';
@@ -26,6 +26,10 @@ const sorted = pipe(
   },
 })
 export default class RolesTable extends Component {
+  static defaultProps = {
+    searchTerm: null,
+  };
+
   static propTypes = {
     /** A GraphQL roles response. */
     roles: arrayOf(role).isRequired,
@@ -33,20 +37,9 @@ export default class RolesTable extends Component {
     searchTerm: string,
   };
 
-  static defaultProps = {
-    searchTerm: null,
-  };
-
   state = {
     sortBy: null,
     sortDirection: null,
-  };
-
-  handleHeaderClick = sortBy => {
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
-
-    this.setState({ sortBy, sortDirection });
   };
 
   createSortedRoles = memoize(
@@ -78,6 +71,13 @@ export default class RolesTable extends Component {
     }
   );
 
+  handleHeaderClick = sortBy => {
+    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+
+    this.setState({ sortBy, sortDirection });
+  };
+
   render() {
     const { classes, roles, searchTerm } = this.props;
     const { sortBy, sortDirection } = this.state;
@@ -105,10 +105,11 @@ export default class RolesTable extends Component {
                   dense
                   button
                   component={Link}
-                  to={`/auth/roles/${encodeURIComponent(roleId)}`}>
+                  to={`/auth/roles/${encodeURIComponent(roleId)}`}
+                >
                   <ListItemText
                     disableTypography
-                    primary={<Typography variant="body1">{roleId}</Typography>}
+                    primary={<Typography>{roleId}</Typography>}
                   />
                   <LinkIcon size={iconSize} />
                 </TableCellListItem>

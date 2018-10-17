@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Redirect } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
 import storage from 'localforage';
@@ -63,13 +63,8 @@ const defaultTask = {
   },
 }))
 export default class CreateTask extends Component {
-  state = {
-    task: null,
-    error: null,
-    invalid: null,
-    createdTaskError: null,
+  static defaultProps = {
     interactive: false,
-    loading: false,
   };
 
   static propTypes = {
@@ -77,8 +72,13 @@ export default class CreateTask extends Component {
     interactive: bool,
   };
 
-  static defaultProps = {
+  state = {
+    task: null,
+    error: null,
+    invalid: null,
+    createdTaskError: null,
     interactive: false,
+    loading: false,
   };
 
   async componentDidMount() {
@@ -96,36 +96,6 @@ export default class CreateTask extends Component {
         task: null,
       });
     }
-  }
-
-  parameterizeTask(task) {
-    const offset = differenceInMilliseconds(new Date(), task.created);
-    // Increment all timestamps in the task by offset
-    const iter = obj => {
-      if (!obj) {
-        return obj;
-      }
-
-      switch (typeof obj) {
-        case 'object':
-          return Array.isArray(obj)
-            ? obj.map(iter)
-            : Object.entries(obj).reduce(
-                (o, [key, value]) => ({ ...o, [key]: iter(value) }),
-                {}
-              );
-
-        case 'string':
-          return ISO_8601_REGEX.test(obj)
-            ? toDate(addMilliseconds(obj, offset)).toISOString()
-            : obj;
-
-        default:
-          return obj;
-      }
-    };
-
-    return `${safeDump(iter(task), { noCompatMode: true, noRefs: true })}`;
   }
 
   async getTask() {
@@ -148,23 +118,6 @@ export default class CreateTask extends Component {
       return defaultTask;
     }
   }
-
-  handleTaskChange = value => {
-    try {
-      safeLoad(value);
-      this.setState({ invalid: false, task: value });
-    } catch (err) {
-      this.setState({ invalid: true, task: value });
-    }
-  };
-
-  handleInteractiveChange = ({ target: { checked } }) => {
-    this.setState({ interactive: checked });
-
-    this.props.history.replace(
-      checked ? '/tasks/create/interactive' : '/tasks/create'
-    );
-  };
 
   handleCreateTask = async () => {
     const { task } = this.state;
@@ -196,11 +149,13 @@ export default class CreateTask extends Component {
     }
   };
 
-  handleUpdateTimestamps = () =>
-    this.setState({
-      createdTaskError: null,
-      task: this.parameterizeTask(safeLoad(this.state.task)),
-    });
+  handleInteractiveChange = ({ target: { checked } }) => {
+    this.setState({ interactive: checked });
+
+    this.props.history.replace(
+      checked ? '/tasks/create/interactive' : '/tasks/create'
+    );
+  };
 
   handleResetEditor = () =>
     this.setState({
@@ -208,6 +163,51 @@ export default class CreateTask extends Component {
       task: this.parameterizeTask(defaultTask),
       invalid: false,
     });
+
+  handleTaskChange = value => {
+    try {
+      safeLoad(value);
+      this.setState({ invalid: false, task: value });
+    } catch (err) {
+      this.setState({ invalid: true, task: value });
+    }
+  };
+
+  handleUpdateTimestamps = () =>
+    this.setState({
+      createdTaskError: null,
+      task: this.parameterizeTask(safeLoad(this.state.task)),
+    });
+
+  parameterizeTask(task) {
+    const offset = differenceInMilliseconds(new Date(), task.created);
+    // Increment all timestamps in the task by offset
+    const iter = obj => {
+      if (!obj) {
+        return obj;
+      }
+
+      switch (typeof obj) {
+        case 'object':
+          return Array.isArray(obj)
+            ? obj.map(iter)
+            : Object.entries(obj).reduce(
+                (o, [key, value]) => ({ ...o, [key]: iter(value) }),
+                {}
+              );
+
+        case 'string':
+          return ISO_8601_REGEX.test(obj)
+            ? toDate(addMilliseconds(obj, offset)).toISOString()
+            : obj;
+
+        default:
+          return obj;
+      }
+    };
+
+    return `${safeDump(iter(task), { noCompatMode: true, noRefs: true })}`;
+  }
 
   render() {
     const { description, classes } = this.props;
@@ -241,16 +241,20 @@ export default class CreateTask extends Component {
               <a
                 href={urls.docs('/')}
                 target="_blank"
-                rel="noopener noreferrer">
+                rel="noopener noreferrer"
+              >
                 documentation
-              </a>. When you submit a task here, you will be taken to{' '}
+              </a>
+              . When you submit a task here, you will be taken to{' '}
               {interactive
                 ? 'connect to the interactive task'
-                : 'inspect the created task'}. Your task will be saved so you
-              can come back and experiment with variations.
+                : 'inspect the created task'}
+              . Your task will be saved so you can come back and experiment with
+              variations.
             </Typography>
           </HelpView>
-        }>
+        }
+      >
         <Fragment>
           {error ? (
             <ErrorPanel error={error} />

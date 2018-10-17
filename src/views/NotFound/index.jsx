@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../components/Dashboard';
@@ -32,11 +32,12 @@ export default class NotFound extends Component {
 
     return (
       <Dashboard className={classes.root}>
-        <Typography variant="display4" className={classes.typography}>
+        <Typography variant="h1" className={classes.typography}>
           404
         </Typography>
-        <Typography variant="display1" className={classes.typography}>
-          We couldn&apos;t find a page at that address.<br />
+        <Typography variant="h4" className={classes.typography}>
+          We couldn&apos;t find a page at that address.
+          <br />
           <br />
           <br />
         </Typography>

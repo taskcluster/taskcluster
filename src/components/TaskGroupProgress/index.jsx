@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { bool, func, shape, arrayOf, string } from 'prop-types';
 import dotProp from 'dot-prop-immutable';
 import memoize from 'fast-memoize';
@@ -169,6 +169,15 @@ const getStatusCount = memoize(
   },
 }))
 export default class TaskGroupProgress extends Component {
+  static defaultProps = {
+    taskGroup: null,
+    filter: null,
+    disabled: false,
+    onRefetch: null,
+    onFetchMore: null,
+    onCountUpdate: null,
+  };
+
   static propTypes = {
     /** The task group ID being inspected. */
     taskGroupId: string.isRequired,
@@ -192,21 +201,15 @@ export default class TaskGroupProgress extends Component {
     disabled: bool,
   };
 
-  static defaultProps = {
-    taskGroup: null,
-    filter: null,
-    disabled: false,
-  };
-
-  state = {
-    statusCount: initialStatusCount,
-  };
-
   constructor(props) {
     super(props);
 
     previousCursor = INITIAL_CURSOR;
   }
+
+  state = {
+    statusCount: initialStatusCount,
+  };
 
   /* eslint-disable react/no-did-update-set-state */
   componentDidUpdate(prevProps) {
@@ -366,7 +369,8 @@ export default class TaskGroupProgress extends Component {
               className={classNames(
                 classes[`${lowerCase(status)}Button`],
                 classes.statusButton
-              )}>
+              )}
+            >
               <div>
                 <Icon color="white" className={classes.statusIcon} size={32} />
               </div>
@@ -377,7 +381,8 @@ export default class TaskGroupProgress extends Component {
                     [classes.statusButtonTypography]: !disabled,
                     [classes.statusButtonTypographyDisabled]: disabled,
                   })}
-                  variant="display1">
+                  variant="h4"
+                >
                   {count}
                 </Typography>
                 <Typography
@@ -385,7 +390,8 @@ export default class TaskGroupProgress extends Component {
                     [classes.statusButtonTypography]: !disabled,
                     [classes.statusButtonTypographyDisabled]: disabled,
                   })}
-                  variant="caption">
+                  variant="caption"
+                >
                   {title(status)}
                 </Typography>
               </div>

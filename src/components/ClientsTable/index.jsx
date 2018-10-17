@@ -1,4 +1,4 @@
-import { Fragment, Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { shape, func, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
@@ -101,12 +101,11 @@ export default class ClientsTable extends Component {
                   dense
                   button
                   component={Link}
-                  to={`/auth/clients/${encodeURIComponent(client.clientId)}`}>
+                  to={`/auth/clients/${encodeURIComponent(client.clientId)}`}
+                >
                   <ListItemText
                     disableTypography
-                    primary={
-                      <Typography variant="body1">{client.clientId}</Typography>
-                    }
+                    primary={<Typography>{client.clientId}</Typography>}
                   />
                   <LinkIcon size={iconSize} />
                 </TableCellListItem>

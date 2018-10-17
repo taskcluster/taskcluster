@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql, compose, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import { defaultTo } from 'ramda';
@@ -138,7 +138,8 @@ export default class ListNamespaces extends Component {
     return (
       <Dashboard
         title="Index Browser"
-        helpView={<HelpView description={description} />}>
+        helpView={<HelpView description={description} />}
+      >
         <Fragment>
           {loading && <Spinner loading />}
           {namespacesError &&
@@ -157,7 +158,7 @@ export default class ListNamespaces extends Component {
           {!loading &&
             hasNamespaces && (
               <Fragment>
-                <Typography variant="subheading">Namespaces</Typography>
+                <Typography variant="subtitle1">Namespaces</Typography>
                 <IndexNamespacesTable
                   onPageChange={this.handleNamespacesPageChange}
                   connection={namespaces}
@@ -167,7 +168,7 @@ export default class ListNamespaces extends Component {
           {!loading &&
             hasIndexedTasks && (
               <Fragment>
-                <Typography variant="subheading">Indexed Tasks</Typography>
+                <Typography variant="subtitle1">Indexed Tasks</Typography>
                 <IndexTaskNamespaceTable
                   onTaskNamespaceClick={this.handleTaskNamespaceClick}
                   onPageChange={this.handleTaskNamespacePageChange}

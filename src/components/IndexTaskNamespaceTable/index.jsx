@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { func, shape, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
@@ -8,7 +8,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
-import TableCellListItem from '../../components/TableCellListItem';
+import TableCellListItem from '../TableCellListItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
@@ -43,23 +43,6 @@ export default class IndexTaskNamespaceTable extends Component {
     sortDirection: null,
   };
 
-  handleHeaderClick = sortBy => {
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
-
-    this.setState({ sortBy, sortDirection });
-  };
-
-  valueFromNode(node) {
-    const mapping = {
-      Name: this.taskFromNamespace(node.namespace),
-    };
-
-    return mapping[this.state.sortBy];
-  }
-
-  taskFromNamespace = namespace => namespace.split('.').slice(-1)[0];
-
   createSortedTaskNamespaceConnection = memoize(
     (connection, sortBy, sortDirection) => {
       if (!sortBy) {
@@ -90,6 +73,23 @@ export default class IndexTaskNamespaceTable extends Component {
       },
     }
   );
+
+  handleHeaderClick = sortBy => {
+    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+
+    this.setState({ sortBy, sortDirection });
+  };
+
+  taskFromNamespace = namespace => namespace.split('.').slice(-1)[0];
+
+  valueFromNode(node) {
+    const mapping = {
+      Name: this.taskFromNamespace(node.namespace),
+    };
+
+    return mapping[this.state.sortBy];
+  }
 
   render() {
     const { onPageChange, classes, connection } = this.props;
@@ -123,13 +123,12 @@ export default class IndexTaskNamespaceTable extends Component {
                     .split('.')
                     .slice(0, -1)
                     .join('.')
-                )}/${this.taskFromNamespace(namespace)}`}>
+                )}/${this.taskFromNamespace(namespace)}`}
+              >
                 <ListItemText
                   disableTypography
                   primary={
-                    <Typography variant="body1">
-                      {this.taskFromNamespace(namespace)}
-                    </Typography>
+                    <Typography>{this.taskFromNamespace(namespace)}</Typography>
                   }
                 />
                 <LinkIcon size={iconSize} />

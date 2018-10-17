@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -28,7 +28,8 @@ export default class ViewProvisioners extends Component {
     return (
       <Dashboard
         title="Provisioners"
-        helpView={<HelpView description={description} />}>
+        helpView={<HelpView description={description} />}
+      >
         {loading && <Spinner loading />}
         {error &&
           error.graphQLErrors && (
@@ -43,7 +44,8 @@ export default class ViewProvisioners extends Component {
                 item
                 xs={12}
                 sm={6}
-                md={4}>
+                md={4}
+              >
                 <ProvisionerDetailsCard dense provisioner={provisioner} />
               </Grid>
             ))}

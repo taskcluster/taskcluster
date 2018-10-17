@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { bool, func } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
@@ -39,32 +39,11 @@ import splitLines from '../../utils/splitLines';
 }))
 /** A form to view/edit/create a role */
 export default class RoleForm extends Component {
-  static propTypes = {
-    /** A GraphQL role response. Not needed when creating a new role  */
-    role,
-    /** Set to `true` when creating a new role. */
-    isNewRole: bool,
-    /** Callback function fired when a role is created/updated. */
-    onSaveRole: func.isRequired,
-    /** Callback function fired when a role is deleted. */
-    onDeleteRole: func,
-    /** If true, form actions will be disabled. */
-    loading: bool,
-  };
-
   static defaultProps = {
     isNewRole: false,
     role: null,
     onDeleteRole: null,
-  };
-
-  state = {
-    description: '',
-    scopeText: '',
-    roleId: '',
-    created: null,
-    lastModified: null,
-    expandedScopes: null,
+    loading: null,
   };
 
   static getDerivedStateFromProps({ isNewRole, role }, state) {
@@ -82,6 +61,32 @@ export default class RoleForm extends Component {
     };
   }
 
+  static propTypes = {
+    /** A GraphQL role response. Not needed when creating a new role  */
+    role,
+    /** Set to `true` when creating a new role. */
+    isNewRole: bool,
+    /** Callback function fired when a role is created/updated. */
+    onSaveRole: func.isRequired,
+    /** Callback function fired when a role is deleted. */
+    onDeleteRole: func,
+    /** If true, form actions will be disabled. */
+    loading: bool,
+  };
+
+  state = {
+    description: '',
+    scopeText: '',
+    roleId: '',
+    created: null,
+    lastModified: null,
+    expandedScopes: null,
+  };
+
+  handleDeleteRole = () => {
+    this.props.onDeleteRole(this.state.roleId);
+  };
+
   handleInputChange = ({ target: { name, value } }) => {
     this.setState({ [name]: value });
   };
@@ -95,10 +100,6 @@ export default class RoleForm extends Component {
     };
 
     this.props.onSaveRole(role, roleId);
-  };
-
-  handleDeleteRole = () => {
-    this.props.onDeleteRole(this.state.roleId);
   };
 
   render() {
@@ -191,7 +192,8 @@ export default class RoleForm extends Component {
                           button
                           component={Link}
                           to={`/auth/scopes/${encodeURIComponent(scope)}`}
-                          className={classes.listItemButton}>
+                          className={classes.listItemButton}
+                        >
                           <ListItemText secondary={<code>{scope}</code>} />
                           <LinkIcon />
                         </ListItem>
@@ -211,7 +213,8 @@ export default class RoleForm extends Component {
                 disabled={loading}
                 variant="fab"
                 onClick={this.handleSaveRole}
-                classes={{ root: classes.saveIcon }}>
+                classes={{ root: classes.saveIcon }}
+              >
                 <ContentSaveIcon />
               </Button>
             </div>

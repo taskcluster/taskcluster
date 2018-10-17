@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import parseTime from '../src/utils/parseTime';
 
-describe('parseTime', function() {
+describe('parseTime', () => {
   it('should parse year', () => {
     expect(parseTime('1 yr').years).to.equal(1);
     expect(parseTime('1 year').years).to.equal(1);

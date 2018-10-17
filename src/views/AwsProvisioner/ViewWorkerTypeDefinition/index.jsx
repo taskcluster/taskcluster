@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { bool } from 'prop-types';
 import cloneDeep from 'lodash.clonedeep';
@@ -58,21 +58,8 @@ const encodeUserData = obj => {
   },
 }))
 export default class ViewWorkerTypeDefinition extends Component {
-  static propTypes = {
-    /** Set to `true` when creating a new worker type. */
-    isNewWorkerType: bool,
-  };
-
   static defaultProps = {
     isNewWorkerType: false,
-  };
-
-  state = {
-    workerType: '',
-    editorValue: null,
-    invalidDefinition: false,
-    actionLoading: false,
-    error: null,
   };
 
   static getDerivedStateFromProps(props, state) {
@@ -100,44 +87,17 @@ export default class ViewWorkerTypeDefinition extends Component {
     return null;
   }
 
-  cleanDefinition(original) {
-    const definition =
-      typeof original === 'string' ? JSON.parse(original) : original;
+  static propTypes = {
+    /** Set to `true` when creating a new worker type. */
+    isNewWorkerType: bool,
+  };
 
-    /** * LEGACY NOTICE: This check and the actions it does are
-     leftovers.  We'll soon be able to delete the check,
-     the actions and the functions ** */
-    if (definition.launchSpecification) {
-      encodeUserData(definition.launchSpecification);
-      definition.regions.forEach(({ overwrites }) =>
-        encodeUserData(overwrites)
-      );
-      definition.instanceTypes.forEach(({ overwrites }) =>
-        encodeUserData(overwrites)
-      );
-      /* END LEGACY */
-    } else {
-      // Remember that the provisioner api sets this
-      delete definition.lastModified;
-    }
-
-    return definition;
-  }
-
-  handleEditorChange = editorValue => {
-    try {
-      JSON.parse(editorValue);
-
-      this.setState({
-        editorValue,
-        invalidDefinition: false,
-      });
-    } catch (err) {
-      this.setState({
-        editorValue,
-        invalidDefinition: true,
-      });
-    }
+  state = {
+    workerType: '',
+    editorValue: null,
+    invalidDefinition: false,
+    actionLoading: false,
+    error: null,
   };
 
   handleCreateWorkerType = async () => {
@@ -164,6 +124,43 @@ export default class ViewWorkerTypeDefinition extends Component {
     }
   };
 
+  handleDeleteWorkerType = async () => {
+    this.setState({ error: null, actionLoading: true });
+
+    try {
+      await this.props.client.mutate({
+        mutation: deleteAwsProvisionerWorkerTypeQuery,
+        variables: { workerType: this.props.match.params.workerType },
+      });
+
+      this.setState({ error: null, actionLoading: false });
+
+      this.props.history.push(`/aws-provisioner`);
+    } catch (error) {
+      this.setState({ error: formatError(error), actionLoading: false });
+    }
+  };
+
+  handleEditorChange = editorValue => {
+    try {
+      JSON.parse(editorValue);
+
+      this.setState({
+        editorValue,
+        invalidDefinition: false,
+      });
+    } catch (err) {
+      this.setState({
+        editorValue,
+        invalidDefinition: true,
+      });
+    }
+  };
+
+  handleInputChange = ({ target: { name, value } }) => {
+    this.setState({ [name]: value });
+  };
+
   handleUpdateWorkerType = async () => {
     const { editorValue } = this.state;
     const payload = this.cleanDefinition(editorValue);
@@ -182,26 +179,29 @@ export default class ViewWorkerTypeDefinition extends Component {
     }
   };
 
-  handleDeleteWorkerType = async () => {
-    this.setState({ error: null, actionLoading: true });
+  cleanDefinition(original) {
+    const definition =
+      typeof original === 'string' ? JSON.parse(original) : original;
 
-    try {
-      await this.props.client.mutate({
-        mutation: deleteAwsProvisionerWorkerTypeQuery,
-        variables: { workerType: this.props.match.params.workerType },
-      });
-
-      this.setState({ error: null, actionLoading: false });
-
-      this.props.history.push(`/aws-provisioner`);
-    } catch (error) {
-      this.setState({ error: formatError(error), actionLoading: false });
+    /** * LEGACY NOTICE: This check and the actions it does are
+     leftovers.  We'll soon be able to delete the check,
+     the actions and the functions ** */
+    if (definition.launchSpecification) {
+      encodeUserData(definition.launchSpecification);
+      definition.regions.forEach(({ overwrites }) =>
+        encodeUserData(overwrites)
+      );
+      definition.instanceTypes.forEach(({ overwrites }) =>
+        encodeUserData(overwrites)
+      );
+      /* END LEGACY */
+    } else {
+      // Remember that the provisioner api sets this
+      delete definition.lastModified;
     }
-  };
 
-  handleInputChange = ({ target: { name, value } }) => {
-    this.setState({ [name]: value });
-  };
+    return definition;
+  }
 
   render() {
     const {
@@ -219,7 +219,8 @@ export default class ViewWorkerTypeDefinition extends Component {
           isNewWorkerType
             ? 'AWS Provisioner Create Worker Type'
             : 'AWS Provisioner Worker Type Definition'
-        }>
+        }
+      >
         {data &&
           !data.awsProvisionerWorkerType &&
           data.loading && <Spinner loading />}
@@ -267,7 +268,8 @@ export default class ViewWorkerTypeDefinition extends Component {
                   actionLoading
                 }
                 classes={{ root: classes.successIcon }}
-                variant="fab">
+                variant="fab"
+              >
                 <PlusIcon />
               </Button>
             </div>

@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { func } from 'prop-types';
 import { DatePicker as MuiDatePicker } from 'material-ui-pickers';
 import DateFnsUtils from 'material-ui-pickers/utils/date-fns-utils';
@@ -12,11 +12,15 @@ import { date } from '../../utils/prop-types';
  * Display a date picker modal to select a date.
  */
 export default class DatePicker extends Component {
+  static defaultProps = {
+    value: null,
+  };
+
   static propTypes = {
     /** Picker value */
     value: date,
     /** Callback function fired when the calendar date is changed. */
-    onChange: func,
+    onChange: func.isRequired,
   };
 
   render() {

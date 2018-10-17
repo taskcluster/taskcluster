@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { bool, string } from 'prop-types';
 import Label from '@mozilla-frontend-infra/components/Label';
 import labels from '../../utils/labels';
@@ -7,6 +7,11 @@ import labels from '../../utils/labels';
  * A label color-coded based on known statuses from GraphQL responses.
  */
 export default class StatusLabel extends Component {
+  static defaultProps = {
+    mini: true,
+    className: null,
+  };
+
   static propTypes = {
     /**
      * A GraphQL status/state string.
@@ -20,11 +25,6 @@ export default class StatusLabel extends Component {
     className: string,
   };
 
-  static defaultProps = {
-    mini: true,
-    className: null,
-  };
-
   render() {
     const { state, mini, className } = this.props;
 
@@ -32,7 +32,8 @@ export default class StatusLabel extends Component {
       <Label
         mini={mini}
         status={labels[state] || 'default'}
-        className={className}>
+        className={className}
+      >
         {state || 'UNKNOWN'}
       </Label>
     );

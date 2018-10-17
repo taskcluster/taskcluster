@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
@@ -76,7 +76,8 @@ export default class ViewSecrets extends Component {
     return (
       <Dashboard
         title="Secrets"
-        helpView={<HelpView description={description} />}>
+        helpView={<HelpView description={description} />}
+      >
         <Fragment>
           {!secrets && loading && <Spinner loading />}
           {error && error.graphQLErrors && <ErrorPanel error={error} />}
@@ -89,12 +90,14 @@ export default class ViewSecrets extends Component {
           <Tooltip
             enterDelay={300}
             id="create-secret-tooltip"
-            title="Create Secret">
+            title="Create Secret"
+          >
             <Button
               onClick={this.handleCreate}
               variant="fab"
               color="secondary"
-              className={classes.plusIcon}>
+              className={classes.plusIcon}
+            >
               <PlusIcon />
             </Button>
           </Tooltip>

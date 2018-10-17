@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { func } from 'prop-types';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -19,14 +19,6 @@ export default class GoToLineButton extends Component {
     lineNumber: '',
   };
 
-  handleOpenClick = () => {
-    this.setState({ open: true });
-  };
-
-  handleClose = () => {
-    this.setState({ open: false });
-  };
-
   handleChange = e => {
     const number = e.target.value;
 
@@ -34,6 +26,14 @@ export default class GoToLineButton extends Component {
       isValid: number && !Number.isNaN(+number),
       lineNumber: number,
     });
+  };
+
+  handleClose = () => {
+    this.setState({ open: false });
+  };
+
+  handleOpenClick = () => {
+    this.setState({ open: true });
   };
 
   handleSubmit = e => {
@@ -57,14 +57,16 @@ export default class GoToLineButton extends Component {
             mini
             color="secondary"
             onClick={this.handleOpenClick}
-            {...props}>
+            {...props}
+          >
             <NumericIcon />
           </Button>
         </Tooltip>
         <Dialog
           open={open}
           onClose={this.handleClose}
-          aria-labelledby="go-to-line-title">
+          aria-labelledby="go-to-line-title"
+        >
           <DialogTitle id="go-to-line-title">Go to line number</DialogTitle>
           <DialogContent>
             <form onSubmit={this.handleSubmit}>
@@ -85,8 +87,9 @@ export default class GoToLineButton extends Component {
             <Button
               onClick={this.handleSubmit}
               disabled={!isValid}
-              variant="raised"
-              color="secondary">
+              variant="contained"
+              color="secondary"
+            >
               Go to line
             </Button>
           </DialogActions>

@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { withAuth } from '../../utils/Auth';
 import loadable from '../../utils/loadable';
 

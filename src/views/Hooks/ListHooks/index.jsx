@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import { prop, map } from 'ramda';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
@@ -30,16 +30,16 @@ export default class ListHooks extends Component {
     hookSearch: '',
   };
 
+  handleCreateHook = () => {
+    this.props.history.push('/hooks/create');
+  };
+
   handleHookSearchChange = e => {
     this.setState({ hookSearch: e.target.value || '' });
   };
 
   handleLeafClick = (leaf, parent) => {
     this.props.history.push(`/hooks/${parent.value}/${leaf}`);
-  };
-
-  handleCreateHook = () => {
-    this.props.history.push('/hooks/create');
   };
 
   render() {
@@ -66,7 +66,8 @@ export default class ListHooks extends Component {
             placeholder="Hook contains"
             onChange={this.handleHookSearchChange}
           />
-        }>
+        }
+      >
         {!hookGroups && loading && <Spinner loading />}
         {error && error.graphQLErrors && <ErrorPanel error={error} />}
         {hookGroups && (
@@ -82,7 +83,8 @@ export default class ListHooks extends Component {
             color="secondary"
             variant="fab"
             onClick={this.handleCreateHook}
-            className={classes.actionButton}>
+            className={classes.actionButton}
+          >
             <PlusIcon />
           </Button>
         </Tooltip>

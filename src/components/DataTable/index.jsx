@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import {
   arrayOf,
   func,
@@ -19,6 +19,15 @@ import TableRow from '@material-ui/core/TableRow';
  * A table to display a set of data elements.
  */
 export default class DataTable extends Component {
+  static defaultProps = {
+    columnsSize: null,
+    headers: null,
+    onHeaderClick: null,
+    sortByHeader: null,
+    sortDirection: 'desc',
+    noItemsMessage: 'No items for this page.',
+  };
+
   static propTypes = {
     /**
      * The number of columns the table contains.
@@ -29,7 +38,7 @@ export default class DataTable extends Component {
      * Will be passed a datum from the table data. The function
      * should return the JSX necessary to render the given row.
      */
-    renderRow: func,
+    renderRow: func.isRequired,
     /**
      * A function to execute when a column header is clicked.
      * Will receive a single argument which is the column name.
@@ -59,15 +68,11 @@ export default class DataTable extends Component {
     noItemsMessage: string,
   };
 
-  static defaultProps = {
-    sortByHeader: null,
-    sortDirection: 'desc',
-    noItemsMessage: 'No items for this page.',
-  };
-
   handleHeaderClick = ({ target }) => {
-    if (this.props.onHeaderClick) {
-      this.props.onHeaderClick(target.id);
+    const { onHeaderClick } = this.props;
+
+    if (onHeaderClick) {
+      onHeaderClick(target.id);
     }
   };
 
@@ -94,7 +99,8 @@ export default class DataTable extends Component {
                     id={header}
                     active={header === sortByHeader}
                     direction={sortDirection || 'desc'}
-                    onClick={this.handleHeaderClick}>
+                    onClick={this.handleHeaderClick}
+                  >
                     {header}
                   </TableSortLabel>
                 </TableCell>

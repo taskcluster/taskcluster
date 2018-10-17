@@ -1,4 +1,4 @@
-import { Fragment, PureComponent } from 'react';
+import React, { PureComponent, Fragment } from 'react';
 import { node, string, object, oneOfType } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
@@ -20,16 +20,16 @@ import Divider from '@material-ui/core/Divider';
  * for this kind of information.
  */
 export default class HelpView extends PureComponent {
+  static defaultProps = {
+    description: null,
+    children: null,
+  };
+
   static propTypes = {
     /** A description about the view. */
     description: oneOfType([string, object]),
     /** Important information about the view. */
     children: node,
-  };
-
-  static defaultProps = {
-    description: null,
-    children: null,
   };
 
   render() {
@@ -39,7 +39,7 @@ export default class HelpView extends PureComponent {
       <Fragment>
         {description && (
           <Fragment>
-            <Typography variant="subheading">Description</Typography>
+            <Typography variant="subtitle1">Description</Typography>
             {typeof description === 'string' ? (
               <Typography paragraph>{description}</Typography>
             ) : (
@@ -49,7 +49,8 @@ export default class HelpView extends PureComponent {
         )}
         {description && children && <Divider className={classes.divider} />}
         <div
-          className={classNames({ [classes.hasNoDescription]: !description })}>
+          className={classNames({ [classes.hasNoDescription]: !description })}
+        >
           {children}
         </div>
       </Fragment>

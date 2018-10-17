@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -30,10 +30,6 @@ export default class ViewRoles extends Component {
     workerTypeSearch: '',
   };
 
-  handleWorkerTypeSearchChange = ({ target }) => {
-    this.setState({ workerTypeSearch: target.value });
-  };
-
   handleCreate = () => {
     this.props.history.push('/aws-provisioner/create');
   };
@@ -44,6 +40,10 @@ export default class ViewRoles extends Component {
 
   handleRecentErrorsClick = () => {
     this.props.history.push('/aws-provisioner/recent-errors');
+  };
+
+  handleWorkerTypeSearchChange = ({ target }) => {
+    this.setState({ workerTypeSearch: target.value });
   };
 
   render() {
@@ -65,7 +65,8 @@ export default class ViewRoles extends Component {
             onChange={this.handleWorkerTypeSearchChange}
             placeholder="Worker type starts with"
           />
-        }>
+        }
+      >
         <Fragment>
           {!awsProvisionerWorkerTypeSummaries && loading && <Spinner loading />}
           {error && error.graphQLErrors && <ErrorPanel error={error} />}

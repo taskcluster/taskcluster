@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { bool, func, string } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
@@ -57,6 +57,11 @@ import { THEME } from '../../utils/constants';
  * An app-bar compatible controlled search field.
  */
 export default class Search extends Component {
+  static defaultProps = {
+    spellCheck: false,
+    onSubmit: null,
+  };
+
   static propTypes = {
     /** The search field value. */
     value: string.isRequired,
@@ -66,10 +71,6 @@ export default class Search extends Component {
     onSubmit: func,
     /** Set to `true` to enable spell-check on the search field. */
     spellCheck: bool,
-  };
-
-  static defaultProps = {
-    spellCheck: false,
   };
 
   render() {

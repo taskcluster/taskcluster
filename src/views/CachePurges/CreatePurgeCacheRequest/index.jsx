@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { withStyles } from '@material-ui/core/styles';
@@ -31,16 +31,6 @@ export default class CreatePurgeCacheRequest extends Component {
     actionLoading: false,
   };
 
-  handleInputChange = ({ target: { name, value } }) => {
-    this.setState({ [name]: value });
-  };
-
-  isFormFilled = () => {
-    const { provisionerId, workerType, cacheName } = this.state;
-
-    return provisionerId && workerType && cacheName;
-  };
-
   handleCreate = async () => {
     const { provisionerId, workerType, cacheName } = this.state;
 
@@ -62,6 +52,16 @@ export default class CreatePurgeCacheRequest extends Component {
     } catch (error) {
       this.setState({ error, actionLoading: false });
     }
+  };
+
+  handleInputChange = ({ target: { name, value } }) => {
+    this.setState({ [name]: value });
+  };
+
+  isFormFilled = () => {
+    const { provisionerId, workerType, cacheName } = this.state;
+
+    return provisionerId && workerType && cacheName;
   };
 
   render() {
@@ -110,14 +110,16 @@ export default class CreatePurgeCacheRequest extends Component {
           <Tooltip
             enterDelay={300}
             id="create-purge-cache-request-tooltip"
-            title="Create Request">
+            title="Create Request"
+          >
             <Button
               requiresAuth
               disabled={!this.isFormFilled() || actionLoading}
               onClick={this.handleCreate}
               variant="fab"
               classes={{ root: classes.plusIcon }}
-              className={classes.plusButton}>
+              className={classes.plusButton}
+            >
               <PlusIcon />
             </Button>
           </Tooltip>

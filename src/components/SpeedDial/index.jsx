@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import classNames from 'classnames';
 import { arrayOf, node, oneOfType } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
@@ -23,7 +23,7 @@ export default class SpeedDial extends Component {
      * A set of `SpeedDialAction`s which will be rendered upon interaction
      * with the base `SpeedDial` floating action button.
      */
-    children: oneOfType([arrayOf(node), node]),
+    children: oneOfType([arrayOf(node), node]).isRequired,
   };
 
   state = {
@@ -36,15 +36,15 @@ export default class SpeedDial extends Component {
     });
   };
 
-  handleOpen = () => {
-    this.setState({
-      open: true,
-    });
-  };
-
   handleClose = () => {
     this.setState({
       open: false,
+    });
+  };
+
+  handleOpen = () => {
+    this.setState({
+      open: true,
     });
   };
 
@@ -67,7 +67,8 @@ export default class SpeedDial extends Component {
         onMouseEnter={!IS_TOUCH && this.handleOpen}
         onMouseLeave={this.handleClose}
         open={open}
-        {...props}>
+        {...props}
+      >
         {children}
       </MuiSpeedDial>
     );

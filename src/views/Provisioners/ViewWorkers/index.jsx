@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
@@ -50,6 +50,62 @@ export default class ViewWorkers extends Component {
     selectedAction: null,
   };
 
+  handleActionClick = async selectedAction => {
+    this.setState({ dialogOpen: true, selectedAction });
+  };
+
+  handleActionError = dialogError => {
+    this.setState({ dialogError, actionLoading: false });
+  };
+
+  // TODO: Action not working
+  handleActionSubmit = async () => {
+    const { selectedAction } = this.state;
+    const {
+      match: { params },
+    } = this.props;
+    const url = selectedAction.url
+      .replace('<provisionerId>', params.provisionerId)
+      .replace('<workerType>', params.workerType);
+
+    this.setState({ actionLoading: true, dialogError: null });
+
+    await fetch(url, {
+      method: selectedAction.method,
+      Authorization: `Bearer ${btoa(
+        JSON.stringify(this.props.user.credentials)
+      )}`,
+    });
+
+    this.setState({ actionLoading: false });
+  };
+
+  handleDialogClose = () => {
+    this.setState({ dialogOpen: false, selectedAction: null });
+  };
+
+  handleFilterChange = ({ target }) => {
+    const {
+      data: { refetch },
+      match: {
+        params: { provisionerId, workerType },
+      },
+    } = this.props;
+    const quarantinedOpts =
+      target.value === 'Quarantined' ? { quarantined: true } : null;
+
+    this.setState({ filterBy: target.value });
+
+    refetch({
+      provisionerId,
+      workerType,
+      workersConnection: {
+        limit: VIEW_WORKERS_PAGE_SIZE,
+      },
+      ...quarantinedOpts,
+    });
+  };
+
   handlePageChange = ({ cursor, previousCursor }) => {
     const {
       match: {
@@ -87,62 +143,6 @@ export default class ViewWorkers extends Component {
     });
   };
 
-  handleDialogClose = () => {
-    this.setState({ dialogOpen: false, selectedAction: null });
-  };
-
-  handleFilterChange = ({ target }) => {
-    const {
-      data: { refetch },
-      match: {
-        params: { provisionerId, workerType },
-      },
-    } = this.props;
-    const quarantinedOpts =
-      target.value === 'Quarantined' ? { quarantined: true } : null;
-
-    this.setState({ filterBy: target.value });
-
-    refetch({
-      provisionerId,
-      workerType,
-      workersConnection: {
-        limit: VIEW_WORKERS_PAGE_SIZE,
-      },
-      ...quarantinedOpts,
-    });
-  };
-
-  // TODO: Action not working
-  handleActionSubmit = async () => {
-    const { selectedAction } = this.state;
-    const {
-      match: { params },
-    } = this.props;
-    const url = selectedAction.url
-      .replace('<provisionerId>', params.provisionerId)
-      .replace('<workerType>', params.workerType);
-
-    this.setState({ actionLoading: true, dialogError: null });
-
-    await fetch(url, {
-      method: selectedAction.method,
-      Authorization: `Bearer ${btoa(
-        JSON.stringify(this.props.user.credentials)
-      )}`,
-    });
-
-    this.setState({ actionLoading: false });
-  };
-
-  handleActionClick = async selectedAction => {
-    this.setState({ dialogOpen: true, selectedAction });
-  };
-
-  handleActionError = dialogError => {
-    this.setState({ dialogError, actionLoading: false });
-  };
-
   render() {
     const {
       filterBy,
@@ -173,7 +173,8 @@ export default class ViewWorkers extends Component {
                     select
                     label="Filter By"
                     value={filterBy || ''}
-                    onChange={this.handleFilterChange}>
+                    onChange={this.handleFilterChange}
+                  >
                     <MenuItem value="">
                       <em>None</em>
                     </MenuItem>

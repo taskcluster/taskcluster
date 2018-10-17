@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { arrayOf, string } from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
 import {
@@ -38,6 +38,13 @@ const sorted = pipe(
   },
 })
 export default class RoleScopesTable extends Component {
+  static defaultProps = {
+    searchTerm: null,
+    selectedScope: null,
+    searchMode: null,
+    searchProperty: 'expandedScopes',
+  };
+
   static propTypes = {
     /** A GraphQL roles response. */
     roles: arrayOf(role).isRequired,
@@ -52,13 +59,6 @@ export default class RoleScopesTable extends Component {
      * pertaining to that scope. Else, a list of scopes is shown.
      * */
     selectedScope: string,
-  };
-
-  static defaultProps = {
-    searchTerm: null,
-    selectedScope: null,
-    searchMode: null,
-    searchProperty: 'expandedScopes',
   };
 
   createSortedRolesScopes = memoize(
@@ -107,7 +107,8 @@ export default class RoleScopesTable extends Component {
               selectedScope
                 ? `/auth/roles/${encodeURIComponent(node)}`
                 : `/auth/scopes/${encodeURIComponent(node)}`
-            }>
+            }
+          >
             <ListItemText disableTypography primary={<code>{node}</code>} />
             <LinkIcon size={iconSize} />
           </TableCellListItem>

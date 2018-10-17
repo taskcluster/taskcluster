@@ -8,7 +8,7 @@
 const removeKeys = (obj, keys) => {
   let index;
 
-  obj &&
+  if (obj) {
     Object.keys(obj).forEach(prop => {
       // important check that this is objects own property
       // not from prototype prop inherited
@@ -39,6 +39,7 @@ const removeKeys = (obj, keys) => {
         }
       }
     });
+  }
 
   return obj;
 };

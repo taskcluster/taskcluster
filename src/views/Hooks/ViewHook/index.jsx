@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -69,25 +69,6 @@ export default class ViewHook extends Component {
     }
   };
 
-  handleUpdateHook = async ({ hookGroupId, hookId, payload }) => {
-    this.setState({ error: null, actionLoading: true });
-
-    try {
-      await this.props.client.mutate({
-        mutation: updateHookQuery,
-        variables: {
-          hookId,
-          hookGroupId,
-          payload,
-        },
-      });
-
-      this.setState({ error: null, actionLoading: false });
-    } catch (error) {
-      this.setState({ error, actionLoading: false });
-    }
-  };
-
   handleTriggerHook = async ({ hookGroupId, hookId, payload }) => {
     this.setState({ error: null, actionLoading: true });
 
@@ -101,6 +82,25 @@ export default class ViewHook extends Component {
         },
       });
       await this.props.data.refetch();
+
+      this.setState({ error: null, actionLoading: false });
+    } catch (error) {
+      this.setState({ error, actionLoading: false });
+    }
+  };
+
+  handleUpdateHook = async ({ hookGroupId, hookId, payload }) => {
+    this.setState({ error: null, actionLoading: true });
+
+    try {
+      await this.props.client.mutate({
+        mutation: updateHookQuery,
+        variables: {
+          hookId,
+          hookGroupId,
+          payload,
+        },
+      });
 
       this.setState({ error: null, actionLoading: false });
     } catch (error) {

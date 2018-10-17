@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { func, shape, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
@@ -9,7 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { camelCase } from 'change-case';
-import TableCellListItem from '../../components/TableCellListItem';
+import TableCellListItem from '../TableCellListItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
@@ -42,13 +42,6 @@ export default class IndexNamespacesTable extends Component {
   state = {
     sortBy: null,
     sortDirection: null,
-  };
-
-  handleHeaderClick = sortBy => {
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
-
-    this.setState({ sortBy, sortDirection });
   };
 
   createSortedNamespacesConnection = memoize(
@@ -84,6 +77,13 @@ export default class IndexNamespacesTable extends Component {
     }
   );
 
+  handleHeaderClick = sortBy => {
+    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+
+    this.setState({ sortBy, sortDirection });
+  };
+
   render() {
     const { onPageChange, classes, connection } = this.props;
     const { sortBy, sortDirection } = this.state;
@@ -111,7 +111,8 @@ export default class IndexNamespacesTable extends Component {
                 dense
                 button
                 component={Link}
-                to={`/tasks/index/${encodeURIComponent(namespace)}`}>
+                to={`/tasks/index/${encodeURIComponent(namespace)}`}
+              >
                 <ListItemText disableTypography primary={name} />
                 <LinkIcon size={iconSize} />
               </TableCellListItem>

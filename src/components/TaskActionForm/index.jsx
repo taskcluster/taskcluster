@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { string, object, func } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -23,6 +23,10 @@ import { safeDump } from 'js-yaml';
   },
 }))
 export default class TaskActionForm extends Component {
+  static defaultProps = {
+    error: null,
+  };
+
   static propTypes = {
     // TODO: Replace with taskAction
     action: object.isRequired,
@@ -31,10 +35,6 @@ export default class TaskActionForm extends Component {
     onFormChange: func.isRequired,
     /** An error object to display. */
     error: object,
-  };
-
-  static defaultProps = {
-    error: null,
   };
 
   render() {
@@ -53,14 +53,15 @@ export default class TaskActionForm extends Component {
               This action trigers hook{' '}
               <code>
                 {action.hookGroupId}/{action.hookId}
-              </code>.
+              </code>
+              .
             </Typography>
           )}
         </div>
         {action.schema && (
           <Grid container spacing={16}>
             <Grid item lg={6} md={6} sm={12}>
-              <Typography gutterBottom variant="subheading">
+              <Typography gutterBottom variant="subtitle1">
                 Action
               </Typography>
               <CodeEditor
@@ -72,7 +73,7 @@ export default class TaskActionForm extends Component {
               />
             </Grid>
             <Grid item lg={6} md={6} sm={12}>
-              <Typography gutterBottom variant="subheading">
+              <Typography gutterBottom variant="subtitle1">
                 Schema
               </Typography>
               <Code language="yaml" className={classes.code}>

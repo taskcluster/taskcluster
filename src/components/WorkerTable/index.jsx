@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
@@ -39,6 +39,10 @@ import sort from '../../utils/sort';
  * Display relevant information about a worker in a table.
  */
 export default class WorkerTable extends Component {
+  static defaultProps = {
+    worker: null,
+  };
+
   static propTypes = {
     /** A GraphQL worker response. */
     worker,
@@ -109,7 +113,8 @@ export default class WorkerTable extends Component {
               <TableCellListItem
                 button
                 component={Link}
-                to={`/tasks/${task.taskId}/runs/${task.runId}`}>
+                to={`/tasks/${task.taskId}/runs/${task.runId}`}
+              >
                 <div className={classes.taskName}>{task.name}</div>
                 <LinkIcon size={iconSize} />
               </TableCellListItem>
@@ -120,7 +125,7 @@ export default class WorkerTable extends Component {
                 <ListItemText
                   disableTypography
                   primary={
-                    <Typography variant="body1">
+                    <Typography>
                       <DateDistance from={task.started} />
                     </Typography>
                   }
@@ -134,7 +139,7 @@ export default class WorkerTable extends Component {
                   <ListItemText
                     disableTypography
                     primary={
-                      <Typography variant="body1">
+                      <Typography>
                         <DateDistance from={task.resolved} />
                       </Typography>
                     }
@@ -142,7 +147,7 @@ export default class WorkerTable extends Component {
                   <ContentCopyIcon size={iconSize} />
                 </TableCellListItem>
               ) : (
-                <Typography variant="body1">n/a</Typography>
+                <Typography>n/a</Typography>
               )}
             </TableCell>
           </TableRow>

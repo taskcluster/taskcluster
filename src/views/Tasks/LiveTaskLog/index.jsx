@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -51,7 +51,8 @@ export default class LiveTaskLog extends Component {
                 to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}
                 variant="fab"
                 className={classes.fab}
-                color="secondary">
+                color="secondary"
+              >
                 <ArrowRightIcon />
               </Button>
             </Tooltip>

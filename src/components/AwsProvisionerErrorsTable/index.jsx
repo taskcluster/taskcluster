@@ -1,4 +1,4 @@
-import { Fragment, Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
@@ -38,13 +38,6 @@ export default class AwsProvisionerErrorsTable extends Component {
     sortDirection: null,
   };
 
-  handleHeaderClick = sortBy => {
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
-
-    this.setState({ sortBy, sortDirection });
-  };
-
   createSortedErrors = memoize(
     (errors, sortBy, sortDirection) => {
       const sortByProperty = camelCase(sortBy);
@@ -70,6 +63,13 @@ export default class AwsProvisionerErrorsTable extends Component {
       },
     }
   );
+
+  handleHeaderClick = sortBy => {
+    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+
+    this.setState({ sortBy, sortDirection });
+  };
 
   render() {
     const { errors } = this.props;
@@ -97,7 +97,8 @@ export default class AwsProvisionerErrorsTable extends Component {
             <TableRow
               key={`${error.az}-${error.instanceType}-${error.type}-${
                 error.time
-              }`}>
+              }`}
+            >
               <TableCell>
                 <Typography>{error.az}</Typography>
               </TableCell>

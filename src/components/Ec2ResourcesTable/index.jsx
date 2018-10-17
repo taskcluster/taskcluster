@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { func, object, bool } from 'prop-types';
 import { upper } from 'change-case';
 import { pipe, map, sort as rSort } from 'ramda';
@@ -11,7 +11,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
-import { awsProvisionerWorkerType } from '../../utils/prop-types';
+// import { awsProvisionerWorkerType } from '../../utils/prop-types';
 import sort from '../../utils/sort';
 import DataTable from '../DataTable';
 import TableCellListItem from '../TableCellListItem';
@@ -25,9 +25,14 @@ const sorted = pipe(
 );
 
 export default class Ec2ResourcesTable extends Component {
+  static defaultProps = {
+    actionLoading: false,
+    awsState: null,
+  };
+
   static propTypes = {
     /** A GraphQL awsProvisionerWorkerType response. */
-    workerType: awsProvisionerWorkerType,
+    // workerType: awsProvisionerWorkerType,
     /** A Graphql awsProvisionerWorkerTypeState response */
     awsState: object,
     /** Callback function fired when an EC2 instance is terminated. */
@@ -39,13 +44,6 @@ export default class Ec2ResourcesTable extends Component {
   state = {
     sortBy: null,
     sortDirection: null,
-  };
-
-  handleHeaderClick = sortBy => {
-    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
-
-    this.setState({ sortBy, sortDirection });
   };
 
   createSortedInstances = memoize(
@@ -79,6 +77,13 @@ export default class Ec2ResourcesTable extends Component {
       },
     }
   );
+
+  handleHeaderClick = sortBy => {
+    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
+
+    this.setState({ sortBy, sortDirection });
+  };
 
   valueFromNode(item) {
     const mapping = {
@@ -135,7 +140,8 @@ export default class Ec2ResourcesTable extends Component {
                   instance.region
                 }#Images:visibility=owned-by-me;imageId=${
                   instance.id
-                };sort=name`}>
+                };sort=name`}
+              >
                 <ListItemText primary={instance.id} />
                 <OpenInNewIcon size={iconSize} />
               </TableCellListItem>
@@ -153,7 +159,8 @@ export default class Ec2ResourcesTable extends Component {
               <Tooltip placement="bottom" title="Terminate">
                 <IconButton
                   disabled={actionLoading}
-                  onClick={() => onTerminateInstance(instance)}>
+                  onClick={() => onTerminateInstance(instance)}
+                >
                   <DeleteIcon size={18} />
                 </IconButton>
               </Tooltip>

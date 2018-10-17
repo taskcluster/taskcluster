@@ -1,5 +1,5 @@
 import { hot } from 'react-hot-loader';
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { equals } from 'ramda';
 import { scopeUnion, scopeIntersection } from 'taskcluster-lib-scopes';
@@ -104,7 +104,7 @@ export default class ScopesetComparison extends Component {
         <Fragment>
           <Grid className={classes.editorGrid} container spacing={8}>
             <Grid item xs={12} md={6}>
-              <Typography gutterBottom variant="subheading">
+              <Typography gutterBottom variant="subtitle1">
                 Scope A
               </Typography>
               <CodeEditor
@@ -116,7 +116,7 @@ export default class ScopesetComparison extends Component {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography gutterBottom variant="subheading">
+              <Typography gutterBottom variant="subtitle1">
                 Scope B
               </Typography>
               <CodeEditor
@@ -138,8 +138,9 @@ export default class ScopesetComparison extends Component {
                         scopes[0].map(scope => (
                           <Typography
                             key={scope}
-                            variant="body2"
-                            className={classes.cellGrid}>
+                            variant="body1"
+                            className={classes.cellGrid}
+                          >
                             {scope}
                           </Typography>
                         ))}
@@ -149,8 +150,9 @@ export default class ScopesetComparison extends Component {
                         scopes[1].map(scope => (
                           <Typography
                             key={scope}
-                            variant="body2"
-                            className={classes.cellGrid}>
+                            variant="body1"
+                            className={classes.cellGrid}
+                          >
                             {scope}
                           </Typography>
                         ))}
@@ -165,7 +167,8 @@ export default class ScopesetComparison extends Component {
               color="secondary"
               variant="fab"
               onClick={this.handleCompareScopesClick}
-              className={classes.actionButton}>
+              className={classes.actionButton}
+            >
               <ScaleBalanceIcon />
             </Button>
           </Tooltip>

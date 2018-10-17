@@ -8,3 +8,4 @@ node_modules
 /styleguide
 .coverage
 .DS_Store
+.eslintcache

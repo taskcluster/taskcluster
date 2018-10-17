@@ -1,4 +1,4 @@
-import { PureComponent, Fragment } from 'react';
+import React, { PureComponent, Fragment } from 'react';
 import { hot } from 'react-hot-loader';
 import { graphql } from 'react-apollo';
 import { withRouter } from 'react-router-dom';
@@ -40,10 +40,6 @@ export default class ListScopes extends PureComponent {
 
   clientScopes = null;
 
-  handleTabChange = (event, value) => {
-    this.setState({ currentTabIndex: value });
-  };
-
   handleClientsPageChange = ({ cursor, previousCursor }) => {
     const {
       data: { fetchMore },
@@ -80,6 +76,10 @@ export default class ListScopes extends PureComponent {
     this.setState({ searchTerm: value });
   };
 
+  handleTabChange = (event, value) => {
+    this.setState({ currentTabIndex: value });
+  };
+
   render() {
     const {
       classes,
@@ -98,14 +98,16 @@ export default class ListScopes extends PureComponent {
             placeholder="Scope contains"
             onChange={this.handleSearchChange}
           />
-        }>
+        }
+      >
         <Fragment>
           {error && error.graphQLErrors && <ErrorPanel error={error} />}
           <Tabs
             className={classes.tabs}
             fullWidth
             value={currentTabIndex}
-            onChange={this.handleTabChange}>
+            onChange={this.handleTabChange}
+          >
             <Tab label="Roles" />
             <Tab label="Clients" />
           </Tabs>
