@@ -1,7 +1,6 @@
 
 const assume = require('assume');
-const errors = require('../lib/errors');
-const {WMObject} = require('../lib/object');
+const {WMObject, errors} = require('../lib/base');
 
 suite('WMObject', () => {
   test('should be creatable', () => {

@@ -1,7 +1,6 @@
 'use strict';
 
-const errors = require('./errors');
-const {WMObject} = require('./object');
+const {WMObject, errors} = require('./base');
 
 /**
  * Conditions encapsulate how a set of conditions are evaluated.  Conditions

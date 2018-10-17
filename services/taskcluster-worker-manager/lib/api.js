@@ -2,7 +2,7 @@ const APIBuilder = require('taskcluster-lib-api');
 const slugid = require('slugid');
 
 const {buildWorkerConfiguration} = require('./worker-config');
-const errors = require('./errors');
+const {errors} = require('./base');
 
 let builder = new APIBuilder({
   title: 'TaskCluster Worker Manager',

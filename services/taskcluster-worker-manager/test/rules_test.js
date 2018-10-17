@@ -2,7 +2,7 @@
 const sinon = require('sinon');
 const assume = require('assume');
 
-const errors = require('../lib/errors');
+const {errors} = require('../lib/base');
 const {Ruleset, Rule, Conditions, assign} = require('../lib/rules');
 
 suite('assign()', () => {

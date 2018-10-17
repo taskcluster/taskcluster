@@ -1,7 +1,6 @@
 'use strict';
 
-const {WMObject} = require('./object');
-const errors = require('./errors');
+const {WMObject, errors} = require('./base');
 const {Ruleset} = require('./rules')
 
 /**

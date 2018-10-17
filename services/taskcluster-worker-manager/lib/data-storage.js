@@ -1,6 +1,5 @@
 'use strict';
-const {WMObject} = require('../lib/object');
-const errors = require('./errors');
+const {WMObject, errors} = require('../lib/base');
 
 class BaseDatastore extends WMObject {
   constructor({id}) {

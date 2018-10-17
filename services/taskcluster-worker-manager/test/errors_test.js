@@ -1,5 +1,5 @@
 const assume = require('assume');
-const errors = require('../lib/errors');
+const {errors} = require('../lib/base');
 
 suite('errors', () => {
   test('should be able to create an error', () => {
