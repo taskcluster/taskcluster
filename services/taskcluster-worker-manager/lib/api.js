@@ -163,3 +163,18 @@ builder.declare({
     throw err;
   }
 });
+
+builder.declare({
+  method: 'delete',
+  route: '/worker-configurations/:id',
+  name: 'removeWorkerConfiguration',
+  title: 'Remove Worker Configuration',
+  stability: APIBuilder.stability.experimental,
+  description: [
+    'Get a worker configuration'
+  ].join('\n'),
+}, async function(req, res) {
+  let id = req.params.id;
+  await this.datastore.delete('worker-configurations', id);
+  res.status(204).end();
+});
