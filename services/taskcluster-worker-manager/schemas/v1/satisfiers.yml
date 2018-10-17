@@ -1,0 +1,6 @@
+$schema: http://json-schema.org/draft-06/schema#
+title: "Rule Condition Satisfiers"
+description: |
+  An object which satisfies conditions for rules in a rule set
+additionalProperties:
+  type: string

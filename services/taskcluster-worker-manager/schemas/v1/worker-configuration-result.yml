@@ -1,0 +1,21 @@
+$schema: http://json-schema.org/draft-06/schema#
+title: "Outcome of a worker configuration evaluation"
+type: object
+properties:
+  workerType:
+    type: string
+  providerData:
+    type: object
+  biddingStrategyData:
+    type: object
+  documentationData:
+    type: object
+  schemaData:
+    type: object
+requireProperties:
+  - workerType
+  - providerData
+  - biddingStrategyData
+  - documentationData
+  - schemaData
+

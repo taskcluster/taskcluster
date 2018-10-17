@@ -1,0 +1,11 @@
+$schema: http://json-schema.org/draft-06/schema#
+title: "Worker Configuration Testing"
+description: |
+  Request body for testing a worker configuration
+type: object
+properties: 
+  workerConfiguration: {$ref: 'worker-configuration.json#'}
+  satisfiers: {$ref: 'satisfiers.json#'}
+required:
+  - workerConfiguration
+  - satisfiers

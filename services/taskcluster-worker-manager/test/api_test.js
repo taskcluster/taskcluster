@@ -48,7 +48,7 @@ suite('API', () => {
       assume(oldWorkerConfig).deeply.equals(workerConfig);
 
       // Should update worker configuration
-      workerConfig.rules[0].ruleId = 'rule-1';
+      workerConfig.rules[0].id = 'rule-1';
       await client.updateWorkerConfiguration(name, workerConfig);
       let newWorkerConfig = await client.getWorkerConfiguration(name);
       assume(newWorkerConfig).deeply.equals(workerConfig);

@@ -1,0 +1,34 @@
+$schema: http://json-schema.org/draft-06/schema#
+title: "Worker Configuration"
+description: |
+  Worker Configuration
+type: object
+properties:
+  id:
+    type: string
+  workerTypes:
+    type: array
+    items:
+      type: 
+        - string
+        - object
+      properties:
+        workerType:
+          type: string
+        biddingStrategyId:
+          type: string
+        providerIds:
+          type: string
+      required:
+        - workerType
+  rules: {$ref: 'ruleset.json#'}
+  biddingStrategyId:
+    type: string
+  providersIds:
+    type: array
+    items:
+      type: string
+required:
+  - id
+  - rules
+  - workerTypes

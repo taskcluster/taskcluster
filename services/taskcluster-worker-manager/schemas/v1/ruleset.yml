@@ -1,0 +1,24 @@
+$schema: http://json-schema.org/draft-06/schema#
+title: "Ruleset"
+description: |
+  Ruleset
+type: array
+items: 
+  type: object
+  properties:
+    id:
+      type: string
+    conditions:
+      type: ['object', 'null']
+      additionalProperties:
+        type: string
+    values:
+      type: object
+    description:
+      type: string
+  additionalProperties: false
+  requiredProperties:
+    - id
+    - conditions
+    - values
+    - description

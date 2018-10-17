@@ -75,7 +75,7 @@ builder.declare({
   name: 'createWorkerConfiguration',
   title: 'Create Worker Configuration',
   stability: APIBuilder.stability.experimental,
-  input: 'anything.yml',
+  input: 'worker-configuration.yml',
   scopes: 'worker-manager:manage-worker-configuration:<id>',
   description: [
     'Create a worker configuration'
@@ -109,7 +109,7 @@ builder.declare({
   title: 'Update Worker Configuration',
   stability: APIBuilder.stability.experimental,
   scopes: 'worker-manager:manage-worker-configuration:<id>',
-  input: 'anything.yml',
+  input: 'worker-configuration.yml',
   description: [
     'Update a worker configuration'
   ].join('\n'),
@@ -198,11 +198,10 @@ builder.declare({
   // TODO: Decide if this is the best endpoint for this method
   route: '/worker-configuration',
   name: 'testWorkerConfiguration',
-  input: 'anything.yml',
+  input: 'test-worker-configuration.yml',
+  output: 'anything.yml',
   title: 'Test Worker Configuration Evaluation',
   stability: 'experimental',
-  output: 'anything.yml',
-  input: 'anything.yml',
   description: [
     'Evaluate a worker configuration against a set of satisfiers',
   ].join('\n'),
@@ -225,7 +224,7 @@ builder.declare({
   title: 'Preview Evaluation of Worker Configuration',
   stability: APIBuilder.stability.experimental,
   output: 'anything.yml',
-  input: 'anything.yml',
+  input: 'satisfiers.yml',
   description: [
     'Preview the currently stored worker configurations evaluation result against',
     'the provided satisfiers',
