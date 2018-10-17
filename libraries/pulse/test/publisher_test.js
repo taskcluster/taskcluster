@@ -19,7 +19,7 @@ suite('publisher_test.js', function() {
     description: 'testing stuff',
   };
 
-  const declaration = {
+  const declarationNoConstant = {
     exchange: 'egg-hatched',
     name: 'eggHatched',
     title: 'Egg Hatched',
@@ -29,6 +29,24 @@ suite('publisher_test.js', function() {
       name:           'eggId',
       summary:        'Identifier that we use for testing',
       multipleWords:  false,
+      required:       true,
+      maxSize:        22,
+    }],
+    messageBuilder: msg => msg,
+    routingKeyBuilder: msg => msg,
+    CCBuilder: msg => [],
+  };
+
+  const declarationConstant = {
+    exchange: 'egg-hatched',
+    name: 'eggHatched',
+    title: 'Egg Hatched',
+    description: 'an egg hatched',
+    schema: 'egg-hatched-message.yml',
+    routingKey: [{
+      name:           'eggId',
+      summary:        'Identifier that we use for testing',
+      constant:       'primary',
       required:       true,
       maxSize:        22,
     }],
@@ -49,7 +67,7 @@ suite('publisher_test.js', function() {
 
     test('declare routing key args required', function() {
       const exchanges = new Exchanges(exchangeOptions);
-      assume(() => exchanges.declare({...declaration, routingKey: [{}]}))
+      assume(() => exchanges.declare({...declarationNoConstant, routingKey: [{}]}))
         .to.throw(/is required/);
     });
 
@@ -76,33 +94,33 @@ suite('publisher_test.js', function() {
           maxSize:        128,
         },
       ];
-      assume(() => exchanges.declare({...declaration, routingKey}))
+      assume(() => exchanges.declare({...declarationNoConstant, routingKey}))
         .to.throw(/cannot be larger than/);
     });
 
     test('declaration with same name fails', function() {
       const exchanges = new Exchanges(exchangeOptions);
-      exchanges.declare({...declaration, name: 'x', exchange: 'xx'});
-      assume(() => exchanges.declare({...declaration, name: 'x', exchange: 'yy'}))
+      exchanges.declare({...declarationNoConstant, name: 'x', exchange: 'xx'});
+      assume(() => exchanges.declare({...declarationNoConstant, name: 'x', exchange: 'yy'}))
         .to.throw(/already declared/);
     });
 
     test('declaration with same exchange fails', function() {
       const exchanges = new Exchanges(exchangeOptions);
-      exchanges.declare({...declaration, name: 'x', exchange: 'xx'});
-      assume(() => exchanges.declare({...declaration, name: 'y', exchange: 'xx'}))
+      exchanges.declare({...declarationNoConstant, name: 'x', exchange: 'xx'});
+      assume(() => exchanges.declare({...declarationNoConstant, name: 'y', exchange: 'xx'}))
         .to.throw(/already declared/);
     });
 
     test('sucessful declaration', function() {
       const exchanges = new Exchanges(exchangeOptions);
-      exchanges.declare(declaration);
+      exchanges.declare(declarationNoConstant);
       // doesn't throw anything..
     });
 
-    test('reference is correct', function() {
+    test('reference is correct, no constant routing key', function() {
       const exchanges = new Exchanges(exchangeOptions);
-      exchanges.declare(declaration);
+      exchanges.declare(declarationNoConstant);
       assume(exchanges.reference()).to.deeply.equal({
         $schema: 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#',
         version: 0,
@@ -115,7 +133,35 @@ suite('publisher_test.js', function() {
           exchange: 'egg-hatched',
           name: 'eggHatched',
           routingKey: [{
-            constant: false,
+            constant: undefined,
+            multipleWords: false,
+            name: 'eggId',
+            required: true,
+            summary: 'Identifier that we use for testing',
+          }],
+          schema: 'v2/egg-hatched-message.json#',
+          title: 'Egg Hatched',
+          type: 'topic-exchange',
+        }],
+      });
+    });
+
+    test('reference is correct, constant in the routing key', function() {
+      const exchanges = new Exchanges(exchangeOptions);
+      exchanges.declare(declarationConstant);
+      assume(exchanges.reference()).to.deeply.equal({
+        $schema: 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#',
+        version: 0,
+        exchangePrefix: 'exchange/taskcluster-lib-pulse/v2/',
+        serviceName: 'lib-pulse',
+        title: 'tc-lib-pulse tests',
+        description: 'testing stuff',
+        entries: [{
+          description: 'an egg hatched',
+          exchange: 'egg-hatched',
+          name: 'eggHatched',
+          routingKey: [{
+            constant: 'primary',
             multipleWords: false,
             name: 'eggId',
             required: true,
@@ -153,7 +199,7 @@ suite('publisher_test.js', function() {
       client.namespace = exchangeOptions.projectName;
 
       exchanges = new Exchanges(exchangeOptions);
-      exchanges.declare({...declaration, exchange: unique});
+      exchanges.declare({...declarationNoConstant, exchange: unique});
 
       schemaset = new SchemaSet({
         serviceName: exchangeOptions.serviceName,
@@ -259,7 +305,7 @@ suite('publisher_test.js', function() {
       client.namespace = exchangeOptions.projectName;
 
       exchanges = new Exchanges(exchangeOptions);
-      exchanges.declare({...declaration});
+      exchanges.declare({...declarationNoConstant});
 
       schemaset = new SchemaSet({
         serviceName: exchangeOptions.serviceName,
