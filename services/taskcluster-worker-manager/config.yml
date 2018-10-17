@@ -20,3 +20,11 @@ defaults:
     secretAccessKey: !env AWS_SECRET_ACCESS_KEY
     region: 'us-west-2'
     apiVersion: '2014-01-01'
+test:
+  taskcluster:
+    rootUrl: 'http://localhost:5555'
+  server:
+    port: 5555
+    env: 'development'
+    forceSSL: false
+    trustProxy: false
