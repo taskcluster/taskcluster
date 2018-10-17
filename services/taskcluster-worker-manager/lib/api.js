@@ -178,3 +178,17 @@ builder.declare({
   await this.datastore.delete('worker-configurations', id);
   res.status(204).end();
 });
+
+builder.declare({
+  method: 'get',
+  route: '/worker-configurations',
+  name: 'listWorkerConfigurations',
+  title: 'Retrieve Worker Configuration',
+  stability: 'experimental',
+  description: [
+    'Retrieve a worker configuration as a set of rules'
+  ].join('\n'),
+}, async function(req, res) {
+  let id = req.params.id;
+  res.reply(await this.datastore.list('worker-configurations'));
+});
