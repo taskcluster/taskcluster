@@ -102,3 +102,42 @@ builder.declare({
   res.reply();
 });
 
+builder.declare({
+  method: 'post',
+  route: '/worker-configurations/:id',
+  name: 'updateWorkerConfiguration',
+  title: 'Update Worker Configuration',
+  stability: APIBuilder.stability.experimental,
+  scopes: 'worker-manager:manage-worker-configuration:<id>',
+  input: 'anything.yml',
+  description: [
+    'Update a worker configuration'
+  ].join('\n'),
+}, async function(req, res) {
+  let id = req.params.id;
+
+  let workerConfiguration = buildWorkerConfiguration(req.body);
+  if (workerConfiguration.id !== id) {
+    res.reportError('RequestConflict', 'worker configuration id rest parameter must match body');
+  }
+
+  try {
+    res.reply(await this.datastore.get('worker-configurations', id));
+  } catch (err) {
+    if (err instanceof errors.InvalidDatastoreKey) {
+      return res.reportError('ResourceNotFound', `${id} is unknown`);
+    }
+    throw err;
+  }
+
+  let workerTypeConflicts = await workerTypeAlreadyTracked(this.datastore, workerConfiguration);
+  if (workerTypeConflicts) {
+    return res.reportError('RequestConflict', 'worker type conflicts', {
+      conflicts: workerTypeConflicts
+    });
+  };
+
+  await this.datastore.set('worker-configurations', id, req.body);
+
+  res.reply();
+});
