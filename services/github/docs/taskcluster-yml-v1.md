@@ -158,6 +158,21 @@ tasks:
         ...
 ```
 
+### Action Filtering
+
+Some of the "actions" described by [GitHub's PullRequestEvent](https://developer.github.com/v3/activity/events/types/#pullrequestevent) may not be relevant for the purposes of pull request validation. To only trigger tasks in response to new commits, limit task generation to events with type "opened" or "synchronize":
+
+```yaml
+version: 1
+tasks:
+  - $if: 'tasks_for == "github-push"'
+    then:
+      $if: 'event.action in ["opened", "reopened", "synchronize"]'
+      then:
+        ...
+        ...
+```
+
 ### Provisioner ID and Worker Type
 
 You need to know which provisioner and which worker type you want to use to run your tasks. If you plan on using AWS provisioner, you can look up or create a worker type [here](https://tools.taskcluster.net/aws-provisioner/).
