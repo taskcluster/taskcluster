@@ -21,6 +21,12 @@ suite('Base Datastore', () => {
       .onFirstCall().returns(false)
       .onSecondCall().returns(true)
       .onThirdCall().returns(false);
+    mock.expects('_list')
+      .withArgs('ns')
+      .thrice()
+      .onFirstCall().returns([])
+      .onSecondCall().returns(['k'])
+      .onThirdCall().returns([]);
     mock.expects('_get')
       .twice()
       .withArgs('ns', 'k')
@@ -34,14 +40,17 @@ suite('Base Datastore', () => {
       .once()
       .returns();
     assume(await ds.has('ns', 'k')).is.not.ok();
+    assume(await ds.list('ns')).deeply.equals([]);
     await ds.set('ns', 'k', value);
     assume(await ds.has('ns', 'k')).is.ok();
+    assume(await ds.list('ns')).deeply.equals(['k']);
     assume(await ds.get('ns', 'k')).deeply.equals(value);
     // Ensure that the reference to value here is severed
     value.a.b.c = 'e';
     assume(await ds.get('ns', 'k')).deeply.equals(value);
     await ds.delete('ns', 'k');
     assume(await ds.has('ns', 'k')).is.not.ok();
+    assume(await ds.list('ns')).deeply.equals([]);
     mock.verify();
   });
 
@@ -62,6 +71,7 @@ suite('In Memory Datastore', () => {
     await ds.set('ns', 'k', 'v');
     assume(await ds.has('ns', 'k')).is.ok();
     assume(await ds.get('ns', 'k')).equals('v');
+    assume(await ds.list('ns')).deeply.equals(['k']);
     await ds.delete('ns', 'k');
     assume(await ds.has('ns', 'k')).is.not.ok();
   });

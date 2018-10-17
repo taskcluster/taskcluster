@@ -19,16 +19,19 @@ class UnknownError extends Error {
   }
 };
 
+// Sadly, errors which are base classes for other errors need
+// to be declared outside the loop. Luckily there's few
+class InvalidWorkerConfiguration extends UnknownError {};
 
 const errors = [
   UnknownError,
+  InvalidWorkerConfiguration,
   class MethodUnimplemented extends UnknownError {},
   class InvalidIdentifier extends UnknownError {},
-  class InvalidSatisfiers extends UnknownError {},
-  class InvalidConditions extends UnknownError {},
-  class InvalidValues extends UnknownError {},
-  class InvalidRules extends UnknownError {},
-  class InvalidWorkerConfiguration extends UnknownError {},
+  class InvalidSatisfiers extends InvalidWorkerConfiguration {},
+  class InvalidConditions extends InvalidWorkerConfiguration {},
+  class InvalidValues extends InvalidWorkerConfiguration {},
+  class InvalidRules extends InvalidWorkerConfiguration {},
   class InvalidProvider extends UnknownError {},
   class InvalidDatastoreNamespace extends UnknownError {},
   class InvalidDatastoreKey extends UnknownError {},

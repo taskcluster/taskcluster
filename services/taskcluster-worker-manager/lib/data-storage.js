@@ -22,7 +22,11 @@ class BaseDatastore extends WMObject {
     if (typeof key !== 'string') {
       this._throw(errors.InvalidDatastoreKey);
     }
-    return this._get(namespace, key);
+    let result = await this._get(namespace, key);
+    if (!result) {
+      this._throw(errors.InvalidDatastoreKey, `${namespace}::${key} is unknown`);
+    }
+    return result;
   }
 
   async has(namespace, key) {
@@ -55,6 +59,17 @@ class BaseDatastore extends WMObject {
     return this._delete(namespace, key);
   }
 
+  async listNamespaces() {
+    return this._listNamespaces(namespace);
+  }
+  
+  async list(namespace) {
+    if (typeof namespace !== 'string') {
+      this._throw(errors.InvalidDatastoreNamespace);
+    }
+    return this._list(namespace);
+  }
+
   async _get(namespace, key) {
     this._throw(errors.MethodUnimplemented, 'BaseDatastore.get()');
   }
@@ -70,8 +85,20 @@ class BaseDatastore extends WMObject {
   async _delete(namespace, key) {
     this._throw(errors.MethodUnimplemented, 'BaseDatastore.set()');
   }
+
+  async _listNamespaces() {
+    this._throw(errors.MethodUnimplemented, 'BaseDatastore.list()');
+  }
+  
+  async _list(namespace) {
+    this._throw(errors.MethodUnimplemented, 'BaseDatastore.list()');
+  }
 }
 
+/**
+ * In memory datastore.  Note that it's not thread-safe and really only
+ * designed for being a proof-of-concept and for unit tests
+ */
 class InMemoryDatastore extends BaseDatastore {
   constructor({id}) {
     super({id});
@@ -111,6 +138,14 @@ class InMemoryDatastore extends BaseDatastore {
     if (ns.size === 0) {
       this.namespaces.delete(namespace);
     }
+  }
+
+  async _listNamespaces() {
+    return Array.from(this.namespaces.keys());
+  }
+
+  async _list(namespace) {
+    return Array.from(this._getNamespace(namespace).keys());
   }
 }
 

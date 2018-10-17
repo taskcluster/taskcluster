@@ -28,7 +28,7 @@ let load = loader({
   datastore: {
     require: ['cfg'],
     setup: async ({cfg}) =>{
-      return new InMemoryDatastore();
+      return new InMemoryDatastore({id: 'worker-manager'});
     }
   },
 
@@ -44,7 +44,7 @@ let load = loader({
 
   api: {
     requires: ['cfg', 'schemaset', 'monitor', 'datastore'],
-    setup: async ({cfg, schemaset, monitor, workerConfigs}) => builder.build({
+    setup: async ({cfg, schemaset, monitor, datastore}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {
         datastore,
