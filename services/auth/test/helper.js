@@ -20,9 +20,9 @@ const uuid = require('uuid');
 const Builder = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
 const App = require('taskcluster-lib-app');
-const Exchanges = require('pulse-publisher');
 const libUrls = require('taskcluster-lib-urls');
 const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
+const {FakeClient} = require('taskcluster-lib-pulse');
 
 exports.suiteName = path.basename;
 
@@ -244,14 +244,6 @@ exports.withSentry = (mock, skipping) => {
       exports.load.inject('sentryClient', sentryFake);
     }
   });
-
-  suiteTeardown(async () => {
-    if (skipping()) {
-      return;
-    }
-    if (mock) {
-    }
-  });
 };
 
 /**
@@ -266,9 +258,10 @@ exports.withPulse = (mock, skipping) => {
       return;
     }
 
+    exports.load.inject('pulseClient', new FakeClient());
+
     await exports.load('cfg');
     exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
-    exports.load.cfg('pulse', {fake: true});
     exports.publisher = await exports.load('publisher');
 
     exports.checkNextMessage = (exchange, check) => {
@@ -292,14 +285,14 @@ exports.withPulse = (mock, skipping) => {
     };
   });
 
-  const fakePublish = msg => { exports.messages.push(msg); };
+  const recordMessage = msg => exports.messages.push(msg);
   setup(function() {
     exports.messages = [];
-    exports.publisher.on('fakePublish', fakePublish);
+    exports.publisher.on('message', recordMessage);
   });
 
   teardown(function() {
-    exports.publisher.removeListener('fakePublish', fakePublish);
+    exports.publisher.removeListener('message', recordMessage);
   });
 };
 
