@@ -197,7 +197,7 @@ setup are treated as a connection failure.
 code is provided merely as an example of Client usage.
 
 ```javascript
-client.on('connected', async (conn) => {
+client.onConnected(async (conn) => {
   let channel, consumer;
 
   try {
@@ -277,8 +277,9 @@ restarted after stopping -- instead, create a new instance.  The `stop`
 method's Promise will not resolve until all message-handling has completed and
 the channel is closed.
 
-When a message is received, the message handler (second positional argument) is
-called (asynchronously) with a message of the form:
+When a message is received, the message handler (which can be specified as
+option `handleMessage` or as the second positional argument) is called
+(asynchronously) with a message of the form:
 
 ```javascript
 {
@@ -293,6 +294,30 @@ called (asynchronously) with a message of the form:
 ```
 
 If the handler fails, the message will be re-queued and re-tried once.
+
+## Ephemeral Consumers
+
+The default mode of operation is to create a "permanent" queue that will
+persist across restarts and reconnections, thereby ensuring no messages are
+lost. If multiple processes use the same `queueName`, then a message will only
+be delivered to one process, provinding an easy way to distribute
+message-processing load.
+
+Some uses of Pulse call instead for a queue for each process, and arranging
+that the queue be automatically cleaned up when the process goes away. For
+example, some components of an application may notify other components that
+some data has changed.
+
+This is referred to as an "ephemeral consumer".  The automatic cleanup occurs
+on reconnection, meaning that it is possible and common for messages to be lost
+when an AMQP connection is recycled.  Callers must handle this situation.
+
+To use an ephemeral queue, pass `ephemeral: true`, do not pass a `queueName`
+(as one will be invented for you), and pass an `onConnected` function that will
+be called (asynchronously) every time a new connection is established. Such a
+call is a signal that messages may have been skipped. In the example given
+above, the `onConnected` callback would assume that a data-change notification
+had been missed and perform whatever reconciliation is required.
 
 ## Routing Key Reference
 
