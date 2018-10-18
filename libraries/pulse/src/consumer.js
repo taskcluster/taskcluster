@@ -241,7 +241,9 @@ class PulseConsumer extends events.EventEmitter {
 }
 
 class FakePulseConsumer {
-  constructor(handleMessage) {
+  constructor({client, bindings, queueName, prefetch, ...queueOptions}, handleMessage) {
+    assert(handleMessage, 'Must provide a message handler function');
+    assert(queueName, 'Must pass a queueName');
     this.handleMessage = handleMessage;
     this.debug = debug('FakePulseConsumer');
   }
@@ -263,7 +265,7 @@ class FakePulseConsumer {
 
 const consume = async (options, handleMessage) => {
   if (options.client.isFakeClient) {
-    const pq = new FakePulseConsumer(handleMessage);
+    const pq = new FakePulseConsumer(options, handleMessage);
     options.client.pulseConsumer = pq;
     return pq;
   }
