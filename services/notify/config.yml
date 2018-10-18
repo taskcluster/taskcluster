@@ -40,9 +40,11 @@ defaults:
     region:           !env AWS_REGION
 
   pulse:
-    namespace:               !env PULSE_NAMESPACE
-    expiresAfter:            !env PULSE_EXPIRES_AFTER
-    contact:                 !env PULSE_CONTACT
+    namespace: !env PULSE_NAMESPACE
+    hostname: !env PULSE_HOSTNAME
+    username: !env PULSE_USERNAME
+    password: !env PULSE_PASSWORD
+    vhost: !env PULSE_VHOST
 
   irc:
     server:           !env IRC_SERVER
@@ -60,6 +62,8 @@ production:
   irc:
     queueName:        irc-notifications
     port:             6697
+  pulse:
+    namespace: taskcluster-notify
 
 # Configuration of tests
 test:
