@@ -1,4 +1,12 @@
 const merge = require('deepmerge');
+const { join } = require('path');
+
+require('@babel/register')({
+  presets: [require.resolve('@babel/preset-env')],
+  cache: false,
+});
+
+const theme = require('./src/theme').default;
 
 module.exports = {
   use: [
@@ -82,14 +90,14 @@ module.exports = {
           },
         },
       },
-      env: [
-        'APPLICATION_NAME',
-        'LOGIN_STRATEGIES',
-        'PORT',
-        'TASKCLUSTER_ROOT_URL',
-        'GRAPHQL_SUBSCRIPTION_ENDPOINT',
-        'GA_TRACKING_ID',
-      ],
+      env: {
+        APPLICATION_NAME: 'Application Name',
+        LOGIN_STRATEGIES: '',
+        PORT: 9000,
+        TASKCLUSTER_ROOT_URL: 'http://localhost:3050',
+        GRAPHQL_SUBSCRIPTION_ENDPOINT: undefined,
+        GA_TRACKING_ID: undefined,
+      },
       babel: {
         plugins: [
           [require.resolve('@babel/plugin-proposal-decorators'), { legacy: true }],
@@ -97,6 +105,29 @@ module.exports = {
         ],
       },
     }],
+    (neutrino) => {
+      neutrino.register('styleguide', () => ({
+        webpackConfig: neutrino.config.toConfig(),
+        components: join(
+          neutrino.options.source,
+          'components/**',
+          `*.{${neutrino.options.extensions.join(',')}}`
+        ),
+        skipComponentsWithoutExample: true,
+        theme: theme.styleguide,
+        styles: {
+          StyleGuide: theme.styleguide.StyleGuide,
+        },
+        editorConfig: {
+          theme: 'material',
+        },
+        usageMode: 'expand',
+        styleguideComponents: {
+          Wrapper: join(__dirname, 'src/styleguide/ThemeWrapper.jsx'),
+          StyleGuideRenderer: join(__dirname, 'src/styleguide/StyleGuideRenderer.jsx'),
+        },
+      }));
+    },
     (neutrino) => {
       neutrino.config.node.set('Buffer', true);
 

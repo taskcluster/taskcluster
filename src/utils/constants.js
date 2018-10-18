@@ -32,6 +32,7 @@ export const HOOKS_LAST_FIRE_TYPE = {
   SUCCESSFUL_FIRE: 'HookSuccessfulFire',
   FAILED_FIRE: 'HookFailedFire',
 };
+
 export const THEME = {
   TEN_PERCENT_WHITE: fade('#fff', 0.1),
   TEN_PERCENT_BLACK: fade('#000', 0.1),
@@ -41,7 +42,9 @@ export const THEME = {
   PRIMARY_TEXT_DARK: 'rgba(255, 255, 255, 0.9)',
   PRIMARY_TEXT_LIGHT: 'rgba(0, 0, 0, 0.9)',
   SECONDARY: '#4177a5',
+  DRAWER_WIDTH: 240,
 };
+
 // eslint-disable-next-line max-len
 export const VALID_TASK = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
 export const TASKS_CREATE_STORAGE_KEY = 'tasks:create';

@@ -11,6 +11,8 @@
     "build": "yarn create:fragment-matcher && dotenv webpack -- --mode production",
     "start": "dotenv webpack-dev-server -- --mode development",
     "test": "karma start --single-run",
+    "styleguide": "styleguidist server",
+    "styleguide:build": "styleguidist build",
     "lint": "eslint --cache --format codeframe --ext mjs,js,jsx src test",
     "create:fragment-matcher": "node src/scripts/queryServer"
   },
@@ -79,6 +81,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.1.0",
     "@babel/plugin-proposal-decorators": "^7.1.2",
+    "@babel/register": "^7.0.0",
     "@neutrinojs/airbnb": "^9.0.0-beta.0",
     "@neutrinojs/karma": "^9.0.0-beta.0",
     "@neutrinojs/react": "^9.0.0-beta.0",
@@ -94,6 +97,7 @@
     "neutrino": "^9.0.0-beta.0",
     "node-fetch": "^2.2.0",
     "prettier": "^1.14.3",
+    "react-styleguidist": "^7.3.11",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.9"
