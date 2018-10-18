@@ -1,6 +1,6 @@
 const debug = require('debug')('notify');
 const aws = require('aws-sdk');
-const {Client, claimedCredentials} = require('taskcluster-lib-pulse');
+const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 const App = require('taskcluster-lib-app');
 const loader = require('taskcluster-lib-loader');
 const config = require('typed-env-config');
@@ -79,17 +79,10 @@ const load = loader({
   pulseClient: {
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => {
-      const {namespace, expiresAfter, contact} = cfg.pulse;
-      const {rootUrl, credentials} = cfg.taskcluster;
       return new Client({
-        namespace,
+        namespace: cfg.pulse.namespace,
         monitor,
-        credentials: claimedCredentials({
-          rootUrl,
-          credentials,
-          namespace,
-          expiresAfter,
-          contact}),
+        credentials: pulseCredentials(cfg.pulse),
       });
     },
   },
