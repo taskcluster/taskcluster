@@ -88,6 +88,7 @@ module.exports = {
         'PORT',
         'TASKCLUSTER_ROOT_URL',
         'GRAPHQL_SUBSCRIPTION_ENDPOINT',
+        'GA_TRACKING_ID',
       ],
       babel: {
         plugins: [

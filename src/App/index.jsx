@@ -13,6 +13,7 @@ import {
   IntrospectionFragmentMatcher,
 } from 'apollo-cache-inmemory';
 import { CachePersistor } from 'apollo-cache-persist';
+import ReactGA from 'react-ga';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import FontStager from '../components/FontStager';
@@ -96,6 +97,11 @@ export default class App extends Component {
       } else {
         localStorage.removeItem(AUTH_STORE);
       }
+    }
+
+    if (process.env.GA_TRACKING_ID) {
+      // Unique Google Analytics tracking number
+      ReactGA.initialize(`UA-${process.env.GA_TRACKING_ID}`);
     }
 
     this.state = state;

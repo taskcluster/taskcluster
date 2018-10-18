@@ -60,6 +60,7 @@
     "react-codemirror2": "^5.1.0",
     "react-dom": "^16.5.2",
     "react-fout-stager": "^3.0.0",
+    "react-ga": "^2.5.3",
     "react-helmet": "^5.2.0",
     "react-hot-loader": "^4.3.11",
     "react-json-inspector": "^7.1.1",

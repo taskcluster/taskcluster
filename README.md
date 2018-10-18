@@ -60,6 +60,19 @@ This Auth0 client is real, but can only be used locally on `localhost:5080`, so
 the development server must be run with `PORT=5080`, and accessed at
 http://localhost:5080 in the browser.
 
+### Tracking Events
+
+Google Analytics can be leveraged to track page views and click events.
+Set up Analytics by including a the tracking ID (a string like UA-XXXXXXXX) environment variable.
+
+```bash
+GA_TRACKING_ID=XXXXXXXX
+```
+
+Once the tracking code is identified, the client will send a page event on each page view.
+Moreover, the `Button` component is able to send an event when clicked by setting
+the Button's `track` property.
+
 ## Icons
 
 You can browse a list of available icons at:
