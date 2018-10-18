@@ -3,6 +3,7 @@ const amqplib = require('amqplib');
 const assume = require('assume');
 const debugModule = require('debug');
 const libMonitor = require('taskcluster-lib-monitor');
+const assert = require('assert');
 
 const PULSE_CONNECTION_STRING = process.env.PULSE_CONNECTION_STRING;
 
@@ -136,7 +137,6 @@ suite('consumer_test.js', function() {
         return;
       }
       assert(false, 'Did not get expected error');
-
     });
   });
 
@@ -144,12 +144,27 @@ suite('consumer_test.js', function() {
     test('consume messages', async function() {
       const got = [];
       const consumer = await consume({
-        client: new FakeClient,
+        client: new FakeClient(),
+        queueName: 'my-queue',
       }, messageInfo => got.push(messageInfo));
 
-      consumer.fakeMessage({payload: 'hi'});
+      await consumer.fakeMessage({payload: 'hi'});
 
       assume(got).to.deeply.equal([{payload: 'hi'}]);
+    });
+
+    test('no queueuName is an error', async function() {
+      try {
+        const consumer = await consume({
+          client: new FakeClient(),
+        }, messageInfo => {});
+      } catch (err) {
+        if (!err.toString().match(/Must pass a queueName/)) {
+          throw err;
+        }
+        return;
+      }
+      assert(false, 'Did not get expected error');
     });
   });
 });
