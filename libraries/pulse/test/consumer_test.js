@@ -119,6 +119,91 @@ suite('consumer_test.js', function() {
       assume(numbers).to.deeply.equal([0, 1, 2, 4, 5, 6, 7, 8, 9]);
     });
 
+    test('consume messages ephemerally', async function() {
+      const monitor = await libMonitor({projectName: 'tests', mock: true});
+      const client = new Client({
+        credentials: connectionStringCredentials(PULSE_CONNECTION_STRING),
+        retirementDelay: 50,
+        minReconnectionInterval: 20,
+        monitor,
+        namespace: 'guest',
+      });
+      const got = [];
+
+      await new Promise(async (resolve, reject) => {
+        try {
+          const pq = await consume({
+            ephemeral: true,
+            client,
+            bindings: [{
+              exchange: exchangeName,
+              routingKeyPattern: '#',
+              routingKeyReference,
+            }],
+            prefetch: 2,
+            onConnected: async () => {
+              debug('onConnected');
+              got.push({connected: true});
+              // if this is the second reconnection, then we're done -- no further
+              // messages are expected, as they were lost when we reconnected
+              if (got.filter(x => x.connected).length == 2) {
+                // stop the PulseConsumer in a tenth-second, to exercise that code
+                // (this isn't how pq.stop would normally be called!). The delay
+                // is to allow any further message deliveries (but we expect none)
+                setTimeout(() => pq.stop().then(resolve, reject), 100);
+              }
+            },
+            handleMessage: async message => {
+              debug(`handling message ${message.payload.i}`);
+              // message three gets retried once and then discarded.
+              if (message.payload.i == 3) {
+                // inject an error to test retrying
+                throw new Error('uhoh');
+              }
+
+              // recycle the client after we've had a few messages, just for exercise.
+              // Note that we continue to process this message here.  We will lose any
+              // remaining messages ("ephemeral", right?), so onConnected will resolve
+              // the promise once this occurs.
+              if (got.length == 4) {
+                client.recycle();
+              }
+              got.push(message);
+            },
+          });
+
+          // queue is bound by now, so it's safe to send messages
+          await publishMessages();
+        } catch (err) {
+          reject(err);
+        }
+      });
+
+      await client.stop();
+
+      got.forEach(msg => {
+        if (msg.connected) {
+          return;
+        }
+        assume(msg.payload.data).to.deeply.equal('Hello');
+        assume(msg.exchange).to.equal(exchangeName);
+        assume(msg.routingKey).to.equal(routingKey);
+        assume(msg.routing).to.deeply.equal({
+          verb: 'greetings',
+          object: 'earthling',
+          remainder: 'foo.bar.bing',
+        });
+        // note that we ignore redelivered: some of these may be redelivered
+        // when the connection is recycled..
+        assume(msg.routes).to.deeply.equal([]);
+      });
+
+      const numbers = got.map(msg => msg.connected ? 'connected' : 'msg');
+      // note that order is not guaranteed here, so just assert that we connected, got
+      // four messages, reconnected, and then saw nothing.
+      assume(numbers).to.deeply.equal(['connected', 'msg', 'msg', 'msg', 'msg', 'connected']);
+    });
+
     test('no queueuName is an error', async function() {
       const monitor = await libMonitor({projectName: 'tests', mock: true});
       const client = new Client({
