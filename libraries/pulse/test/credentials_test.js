@@ -1,4 +1,4 @@
-const {pulseCredentials, claimedCredentials} = require('../src');
+const {pulseCredentials} = require('../src');
 const assert = require('assert');
 const assume = require('assume');
 const libUrls = require('taskcluster-lib-urls');
@@ -40,30 +40,5 @@ suite('pulseCredentials', function() {
     assert.equal(
       credentials.connectionString,
       'amqps://ali-escaper:/@%5C%7C()%3C%3E&:bobby-tables:/@%5C%7C()%3C%3E&@pulse.abc.com:5671/%2F');
-  });
-});
-
-suite('claimedCredentials', function() {
-  test('missing arguments are an error', async function() {
-    assume(() => claimedCredentials({credentials: {}, namespace: 'ns'}))
-      .throws(/rootUrl/);
-    assume(() => claimedCredentials({rootUrl: 'rU', namespace: 'ns'}))
-      .throws(/credentials/);
-    assume(() => claimedCredentials({rootUrl: 'rU', credentials: {}}))
-      .throws(/namespace/);
-  });
-  
-  test('calls Pulse.claimNamespace to claim a namespace', async function() {
-    nock('http://fake')
-      .post('/api/pulse/v1/namespace/ns')
-      .reply(200, {namespace: 'ns', connectionString: 'cs'});
-
-    const credentials = await claimedCredentials({
-      rootUrl: 'http://fake',
-      namespace: 'ns',
-      credentials: {clientId: 'c', accessToken: 'a'},
-    })();
-  
-    assert.equal(credentials.connectionString, 'cs');
   });
 });

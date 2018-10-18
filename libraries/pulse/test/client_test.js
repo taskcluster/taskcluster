@@ -85,7 +85,7 @@ const connectionTests = connectionString => {
     assume(client.activeConnection).to.equal(undefined);
   });
 
-  test('recycle interval (no recycleAt)', async function() {
+  test('recycle interval', async function() {
     let recycles = 0;
     const client = new Client({
       credentials,
@@ -99,30 +99,6 @@ const connectionTests = connectionString => {
     // updating the timer (and counting calls)
     client._startConnection = () => {
       recycles++;
-      client._updateRecycleTimer();
-      return new Connection(50);
-    };
-
-    await new Promise(resolve => setTimeout(resolve, 100));
-    await client.stop();
-    assume(recycles).is.gt(5);
-  });
-
-  test('recycle interval (with recycleAt)', async function() {
-    let recycles = 0;
-    const client = new Client({
-      credentials,
-      recycleInterval: 10,
-      retirementDelay: 50,
-      monitor,
-      namespace: 'guest',
-    });
-
-    // simplify _startConnection to the important part for this test:
-    // updating the timer (and counting calls)
-    client._startConnection = () => {
-      recycles++;
-      client._updateRecycleTimer(new Date(new Date().getTime() + 10));
       return new Connection(50);
     };
 

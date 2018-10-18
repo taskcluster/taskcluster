@@ -49,7 +49,6 @@ class Client extends events.EventEmitter {
 
     assert(namespace, 'namespace is required');
     this.namespace = namespace;
-    this._recycleInterval = recycleInterval || 3600 * 1000;
     this._retirementDelay = retirementDelay || 30 * 1000;
     this._minReconnectionInterval = minReconnectionInterval || 15 * 1000;
     this.running = false;
@@ -61,14 +60,18 @@ class Client extends events.EventEmitter {
     this.debug('starting');
     this.running = true;
     this.recycle();
+
+    this._recycleInterval = setInterval(
+      () => this.recycle(),
+      recycleInterval || 3600 * 1000);
   }
 
   async stop() {
     assert(this.running, 'Not running');
     this.debug('stopping');
     this.running = false;
-    clearTimeout(this._recycleTimer);
-    this._recycleTimer = null;
+    clearInterval(this._recycleInterval);
+    this._recycleInterval = null;
 
     this.recycle();
 
@@ -123,8 +126,7 @@ class Client extends events.EventEmitter {
 
       try {
         this.lastConnectionTime = new Date().getTime();
-        const {connectionString, recycleAt} = await this.credentials();
-        this._updateRecycleTimer(recycleAt);
+        const {connectionString} = await this.credentials();
         newConn.connect(connectionString);
       } catch (err) {
         this.debug(`Error while fetching credentials: ${err}`);
@@ -214,18 +216,6 @@ class Client extends events.EventEmitter {
         }
       }
     });
-  }
-
-  /**
-   * Update the _recycleTimer, either to expire at recycleAt or, if that's omitted,
-   * after recycleInterval.
-   */
-  async _updateRecycleTimer(recycleAt) {
-    const recycleAfter = recycleAt ?  recycleAt - new Date() : this._recycleInterval;
-    if (this._recycleTimer) {
-      clearTimeout(this._recycleTimer);
-    }
-    this._recycleTimer = setTimeout(() => this.recycle(), recycleAfter);
   }
 }
 
