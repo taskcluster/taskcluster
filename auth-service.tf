@@ -180,7 +180,7 @@ module "auth_secrets" {
   secrets = {
     AWS_ACCESS_KEY_ID     = "${module.auth_user.access_key_id}"
     AWS_SECRET_ACCESS_KEY = "${module.auth_user.secret_access_key}"
-    AWS_REGION            = "us-east-1"                                          // TODO: From config
+    AWS_REGION            = "${var.aws_region}"
     AZURE_ACCOUNT_KEY     = "${azurerm_storage_account.base.primary_access_key}"
     AZURE_ACCOUNT         = "${azurerm_storage_account.base.name}"
 

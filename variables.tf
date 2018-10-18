@@ -8,6 +8,10 @@ variable "azure_region" {
   description = "Region of azure storage"
 }
 
+variable "aws_region" {
+  description = "The AWS region to deploy into (e.g. us-east-1)."
+}
+
 variable "kubernetes_namespace" {
   default     = "taskcluster"
   type        = "string"
