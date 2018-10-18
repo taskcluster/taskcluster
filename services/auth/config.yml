@@ -95,6 +95,9 @@ defaults:
 
 
   pulse:
+    # This service, tc-auth, cannot use tc-pulse, because tc-pulse depends on
+    # tc-auth.  So this must be a statically configured pulse user with access
+    # to namepsace 'taskcluster-auth'.
     username:                 !env PULSE_USERNAME
     password:                 !env PULSE_PASSWORD
     hostname:                 !env PULSE_HOSTNAME
