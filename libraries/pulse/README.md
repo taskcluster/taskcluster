@@ -231,6 +231,8 @@ functionality, but serves as a semaphore to activate a "fake" mode when passed
 to higher-level components such as `PulseConsumer`: `fakeConsumer =
 consume({client: new FakeClient(), ..})`.
 
+A fake client has `client.isFakeClient` set to true.
+
 # PulseConsumer
 
 A PulseConsumer declares a queue and listens for messages on that queue,
