@@ -2,15 +2,18 @@ const debug = require('debug');
 const events = require('events');
 const amqplib = require('amqplib');
 const assert = require('assert');
+const slugid = require('slugid');
 
 /**
  * A PulseConsumer declares a queue and listens for messages on that
  * queue, invoking a callback for each message.
+ *
+ * If ephemeral is true, then this consumer will use ephemeral queues
+ * that are deleted on disconnection.  This may lead to loss of messages,
+ * and the caller must handle this via the onConnected handler.
  */
-class PulseConsumer extends events.EventEmitter {
-  constructor({client, bindings, queueName, prefetch, ...queueOptions}, handleMessage) {
-    super();
-
+class PulseConsumer {
+  constructor({client, bindings, queueName, ephemeral, prefetch, onConnected, handleMessage, ...queueOptions}) {
     assert(handleMessage, 'Must provide a message handler function');
 
     this.client = client;
@@ -19,8 +22,16 @@ class PulseConsumer extends events.EventEmitter {
     this.prefetch = typeof prefetch !== 'undefined' ? prefetch : 5;
     this.queueOptions = queueOptions;
 
-    assert(queueName, 'Must pass a queueName');
-    this.queueName = queueName;
+    if (ephemeral) {
+      assert(!queueName, 'Must not pass a queueName for ephemeral consumers');
+      assert(onConnected, 'Must pass onConnected for ephemeral consumers');
+      this.queueName = slugid.nice();
+    } else {
+      assert(queueName, 'Must pass a queueName');
+      this.queueName = queueName;
+    }
+    this.ephemeral = ephemeral;
+    this.onConnected = onConnected || (() => {});
 
     this._handleConnection = this._handleConnection.bind(this);
 
@@ -95,9 +106,9 @@ class PulseConsumer extends events.EventEmitter {
   async _createAndBindQueue(channel) {
     const queueName = this.client.fullObjectName('queue', this.queueName);
     await channel.assertQueue(queueName, {
-      exclusive: false,
+      exclusive: this.ephemeral,
       durable: true,
-      autoDelete: false,
+      autoDelete: this.ephemeral,
       ...this.queueOptions,
     });
 
@@ -164,6 +175,10 @@ class PulseConsumer extends events.EventEmitter {
         }
       });
       this.consumerTag = consumer.consumerTag;
+
+      // now that we're listening for messages, inform the user that we were
+      // reconnected and might have lost messages
+      await this.onConnected();
 
       // when retirement of this connection begins, stop consuming on this
       // channel and close the channel as soon sa all messages are handled.
@@ -241,16 +256,32 @@ class PulseConsumer extends events.EventEmitter {
 }
 
 class FakePulseConsumer {
-  constructor({client, bindings, queueName, prefetch, ...queueOptions}, handleMessage) {
+  constructor({client, bindings, queueName, prefetch, ephemeral, onConnected, handleMessage, ...queueOptions}) {
     assert(handleMessage, 'Must provide a message handler function');
-    assert(queueName, 'Must pass a queueName');
+
+    if (ephemeral) {
+      assert(!queueName, 'Must not pass a queueName for ephemeral consumers');
+      assert(onConnected, 'Must pass onConnected for ephemeral consumers');
+    } else {
+      assert(queueName, 'Must pass a queueName');
+    }
+    this.ephemeral = ephemeral;
     this.handleMessage = handleMessage;
+    this.onConnected = onConnected;
     this.debug = debug('FakePulseConsumer');
   }
 
   async stop() {
     this.debug('stopping');
     // do nothing
+  }
+
+  /**
+   * Simulate a connection.  Use this only with ephemeral consumers
+   */
+  async connected() {
+    assert(this.ephemeral, 'not an ephemeral consumer');
+    await this.onConnected();
   }
 
   /**
@@ -263,14 +294,20 @@ class FakePulseConsumer {
   }
 }
 
-const consume = async (options, handleMessage) => {
+const consume = async (options, handleMessage, onConnected) => {
+  if (handleMessage) {
+    options.handleMessage = handleMessage;
+  }
+  if (onConnected) {
+    options.onConnected = onConnected;
+  }
   if (options.client.isFakeClient) {
-    const pq = new FakePulseConsumer(options, handleMessage);
+    const pq = new FakePulseConsumer(options);
     options.client.pulseConsumer = pq;
     return pq;
   }
 
-  const pq = new PulseConsumer(options, handleMessage);
+  const pq = new PulseConsumer(options);
   await pq._start();
   return pq;
 };
