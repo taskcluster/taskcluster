@@ -7,6 +7,7 @@ const docs = require('taskcluster-lib-docs');
 const config = require('typed-env-config');
 const monitor = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
+const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 
 let load = loader({
   cfg: {
@@ -42,15 +43,25 @@ let load = loader({
     setup: ({cfg, schemaset}) => schemaset.validator(cfg.taskcluster.rootUrl),
   },
 
+  pulseClient: {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => {
+      return new Client({
+        namespace: cfg.pulse.namespace,
+        monitor,
+        credentials: pulseCredentials(cfg.pulse.credentials),
+      });
+    },
+  },
+
   publisher: {
-    requires: ['cfg', 'schemaset', 'process', 'monitor', 'validator'],
-    setup: async ({cfg, schemaset, process, monitor, validator}) => exchanges.setup({
-      rootUrl: cfg.taskcluster.rootUrl,
-      credentials: cfg.pulse.credentials,
-      validator,
-      publish: cfg.app.publishMetaData,
-      aws: cfg.aws,
-      monitor: monitor.prefix('publisher'),
+    requires: ['cfg', 'pulseClient', 'schemaset'],
+    setup: async ({cfg, pulseClient, schemaset}) => await exchanges.publisher({
+      rootUrl:            cfg.taskcluster.rootUrl,
+      client:             pulseClient,
+      schemaset,
+      publish:            cfg.app.publishMetaData,
+      aws:                cfg.aws,
     }),
   },
 
@@ -73,42 +84,27 @@ let load = loader({
   },
 
   server: {
-    requires: ['cfg', 'publisher', 'schemaset', 'monitor', 'docs', 'validator'],
-    setup: async ({cfg, publisher, schemaset, monitor, docs, validator}) => {
-      const queue = new taskcluster.Queue({
-        rootUrl: cfg.taskcluster.rootUrl,
-      });
+    requires: ['cfg', 'publisher', 'schemaset', 'monitor', 'docs', 'validator', 'pulseClient'],
+    setup: async ({cfg, publisher, schemaset, monitor, docs, validator, pulseClient}) => {
       const queueEvents = new taskcluster.QueueEvents({
         rootUrl: cfg.taskcluster.rootUrl,
       });
-
-      // TODO add queue name for durable queues
-      let listener = new taskcluster.PulseListener({
-        credentials: cfg.pulse.credentials,
-        queueName: cfg.pulse.queueName,
-        prefetch: cfg.pulse.prefetch,
+      const queue = new taskcluster.Queue({
+        rootUrl: cfg.taskcluster.rootUrl,
       });
+      const prefix = cfg.treeherder.routePrefix;
 
-      let prefix = cfg.treeherder.routePrefix;
-      let routingPattern = `route.${prefix}.#`;
-      await Promise.all([
-        listener.bind(queueEvents.taskPending(routingPattern)),
-        listener.bind(queueEvents.taskRunning(routingPattern)),
-        listener.bind(queueEvents.taskCompleted(routingPattern)),
-        listener.bind(queueEvents.taskFailed(routingPattern)),
-        listener.bind(queueEvents.taskException(routingPattern)),
-      ]);
-
-      let handler = new Handler({
+      const handler = new Handler({
         cfg,
         queue,
-        listener,
+        queueEvents,
+        pulseClient,
         prefix,
         publisher,
         validator,
         monitor,
       });
-      handler.start();
+      await handler.start();
     },
   },
 }, ['profile', 'process']);

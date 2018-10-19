@@ -4,6 +4,7 @@ const Handler = require('../src/handler');
 const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
 const {fakeauth, stickyLoader} = require('taskcluster-lib-testing');
+const {FakeClient} = require('taskcluster-lib-pulse');
 
 exports.load = stickyLoader(load);
 
@@ -48,11 +49,13 @@ exports.withHandler = () => {
   setup(async function() {
     const cfg = await exports.load('cfg');
     const validator = await exports.load('validator');
+    const pulseClient = new FakeClient();
     exports.monitor = await exports.load('monitor');
     exports.handler = new Handler({
       cfg,
       prefix: 'foo',
       validator,
+      pulseClient,
       queue: new taskcluster.Queue({
         rootUrl: cfg.taskcluster.rootUrl,
         fake: {
@@ -69,6 +72,9 @@ exports.withHandler = () => {
             return {artifacts: artifacts};
           },
         },
+      }),
+      queueEvents: new taskcluster.QueueEvents({
+        rootUrl: cfg.taskcluster.rootUrl,
       }),
       monitor: exports.monitor,
     });

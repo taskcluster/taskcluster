@@ -2,16 +2,15 @@ defaults:
   app:
     # Publish references and schemas
     publishMetaData:  !env:bool PUBLISH_METADATA
-    # Exchange prefix for exchanges declared
-    exchangePrefix:   v1/
   pulse:
+    namespace: !env PULSE_NAMESPACE
     credentials:
       username: !env PULSE_USERNAME
       password: !env PULSE_PASSWORD
       hostname: !env PULSE_HOSTNAME
       vhost: !env PULSE_VHOST
-    prefetch:   40
-    queueName:  null
+    queueName: taskcluster-treeherder-dev
+    prefetch: 40
   treeherder:
     routePrefix: !env TREEHERDER_ROUTE_PREFIX
   taskcluster:
@@ -37,3 +36,4 @@ staging:
 production:
   pulse:
     queueName: taskcluster-treeherder
+
