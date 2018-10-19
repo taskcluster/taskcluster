@@ -2,7 +2,6 @@ defaults:
   app:
     sourceEmail:                  !env EMAIL_SOURCE_ADDRESS
     sqsQueueName:                 !env SQS_QUEUE
-    listenerQueueName:            !env LISTENER_QUEUE_NAME
     routePrefix:                  notify
     publishMetaData:              !env:bool PUBLISH_METADATA
     # Rate limits for email: maximum average rate of count/time
