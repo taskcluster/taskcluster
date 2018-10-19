@@ -27,7 +27,6 @@ To run the tests, use `yarn test`.  No credentials are necessary. Some tests wil
 
 To run all tests, you will need appropriate Taskcluster credentials. Using taskcluster-cli, run `eval $(taskcluster signin --scopes assume:project:taskcluster:tests:taskcluster-github)`, then run `yarn test` again.
 
-
 To test the components separately, run:
 - server: `<set the environment variables> node src/main.js server`
 - handlers: `<set the environment variables> node src/main.js worker`
