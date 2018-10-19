@@ -190,6 +190,8 @@ let handler = function(message) {
 listener.on('message', monitor.timedHandler('logging-listener', handler));
 ```
 
+Specifically, `timedHandler` takes a function and wraps it with timing logic, returning a function with the same signature.
+
 ### Express Timing Middleware
 
 Most Taskcluster services are Express services. We can easily time how long endpoints take to respond to requests by inserting `taskcluster-lib-monitor`
