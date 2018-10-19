@@ -178,7 +178,6 @@ const load = loader({
         queue,
         queueEvents,
         pulseClient,
-        queueName:                cfg.app.listenerQueueName,
       });
       await handler.listen();
       return handler;
