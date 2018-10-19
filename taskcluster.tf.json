@@ -6,7 +6,6 @@
     "taskcluster_image_purge-cache": "taskcluster/taskcluster-purge-cache:SVC-15e479b88092",
     "taskcluster_image_github": "taskcluster/taskcluster-github:SVC-d33d8059f564",
     "taskcluster_image_login": "taskcluster/taskcluster-login:SVC-734b442d7c67",
-    "taskcluster_image_pulse": "taskcluster/taskcluster-pulse:SVC-720d8fa37f23",
     "taskcluster_image_hooks": "taskcluster/taskcluster-hooks:SVC-07cc6cdaceef",
     "taskcluster_image_secrets": "taskcluster/taskcluster-secrets:SVC-10c6eddbd0e0",
     "taskcluster_image_notify": "taskcluster/taskcluster-notify:SVC-12592c3dd55c",

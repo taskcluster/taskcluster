@@ -33,8 +33,6 @@ module "taskcluster" {
   root_url                  = "tc.example.com"
   root_url_tls_secret       = "tc-example-com-tls-secret"
   azure_region              = "${var.azure_region}"
-  auth_pulse_username       = "${var.auth_pulse_username}"
-  auth_pulse_password       = "${var.auth_pulse_password}"
   rabbitmq_hostname         = "${var.rabbitmq_hostname}"
   rabbitmq_vhost            = "${var.rabbitmq_vhost}"
 }
