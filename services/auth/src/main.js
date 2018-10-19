@@ -21,6 +21,7 @@ const SentryManager = require('./sentrymanager');
 const Statsum = require('statsum');
 const _ = require('lodash');
 const morganDebug = require('morgan-debug');
+const libPulse = require('taskcluster-lib-pulse');
 
 // Create component loader
 const load = Loader({
@@ -132,10 +133,7 @@ const load = Loader({
           reference: builder.reference(),
         }, {
           name: 'events',
-          reference: exchanges.reference({
-            rootUrl:          cfg.taskcluster.rootUrl,
-            credentials:      cfg.pulse,
-          }),
+          reference: exchanges.reference(),
         },
       ],
     }),
@@ -146,35 +144,38 @@ const load = Loader({
     setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
-  publisher: {
-    requires: ['cfg', 'schemaset', 'monitor'],
-    setup: async ({cfg, schemaset, monitor}) =>
-      exchanges.setup({
-        rootUrl:          cfg.taskcluster.rootUrl,
-        credentials:      cfg.pulse,
-        namespace:        'taskcluster-auth',
-        validator:        await schemaset.validator(cfg.taskcluster.rootUrl),
-        publish:          cfg.app.publishMetaData,
-        aws:              cfg.aws,
-        referenceBucket:  cfg.app.buckets.references,
-        monitor:          monitor.prefix('publisher'),
-      }),
+  pulseClient: {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => {
+      return new libPulse.Client({
+        namespace: 'taskcluster-auth',
+        monitor,
+        credentials: libPulse.pulseCredentials(cfg.pulse),
+      });
+    },
   },
 
-  connection: {
-    requires: ['cfg'],
-    setup: async ({cfg}) => {
-      return new taskcluster.PulseConnection(cfg.pulse);
-    },
+  publisher: {
+    requires: ['cfg', 'schemaset', 'pulseClient'],
+    setup: async ({cfg, schemaset, pulseClient}) => await exchanges.publisher({
+      rootUrl:          cfg.taskcluster.rootUrl,
+      client:           pulseClient,
+      credentials:      cfg.pulse,
+      schemaset,
+      namespace:        'taskcluster-auth',
+      publish:          cfg.app.publishMetaData,
+      aws:              cfg.aws,
+      referenceBucket:  cfg.app.buckets.references,
+    }),
   },
 
   api: {
     requires: [
       'cfg', 'Client', 'Roles', 'schemaset', 'publisher', 'resolver',
-      'sentryManager', 'monitor', 'connection',
+      'sentryManager', 'monitor', 'pulseClient',
     ],
     setup: async ({
-      cfg, Client, Roles, schemaset, publisher, resolver, sentryManager, monitor, connection,
+      cfg, Client, Roles, schemaset, publisher, resolver, sentryManager, monitor, pulseClient,
     }) => {
       // Set up the Azure tables
       await Client.ensureTable();
@@ -186,11 +187,8 @@ const load = Loader({
       await resolver.setup({
         rootUrl: cfg.taskcluster.rootUrl,
         Client, Roles,
-        exchangeReference: exchanges.reference({
-          credentials:      cfg.pulse,
-          exchangePrefix:   cfg.app.exchangePrefix,
-        }),
-        connection: connection,
+        exchangeReference: exchanges.reference(),
+        pulseClient,
       });
 
       let signatureValidator = signaturevalidator.createSignatureValidator({
