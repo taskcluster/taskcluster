@@ -75,6 +75,8 @@ defaults:
     apiVersion: '2014-01-01'
 
 production:
+  pulse:
+    namespace: taskcluster-index
   app:
     routePrefix: 'index'
     indexedTaskTableName: 'IndexedTasks'
