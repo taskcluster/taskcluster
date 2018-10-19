@@ -65,8 +65,8 @@ production:
 
   server:
     env: 'production'
-    forceSSL: !env:BOOL FORCE_SSL
-    trustProxy: !env:BOOL TRUST_PROXY
+    forceSSL: !env:bool FORCE_SSL
+    trustProxy: !env:bool TRUST_PROXY
 
   taskcluster:
     schedulerId: taskcluster-github
