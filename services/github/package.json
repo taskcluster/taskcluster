@@ -16,7 +16,7 @@
   "dependencies": {
     "@octokit/rest": "^15.12.1",
     "ajv": "^6.5.0",
-    "azure-entities": "^4.0.0",
+    "azure-entities": "^5.1.0",
     "bluebird": "^3.5.1",
     "debug": "^3.1.0",
     "eslint-config-taskcluster": "^3.2.0",
