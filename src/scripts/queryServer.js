@@ -4,8 +4,14 @@
  */
 const fetch = require('node-fetch');
 const fs = require('fs');
+const assert = require('assert');
 
-fetch(`http://localhost:5080/graphql`, {
+assert(
+  process.env.GRAPHQL_ENDPOINT,
+  'GRAPHQL_ENDPOINT is requird to obtain information about unions and interfaces.'
+);
+
+fetch(process.env.GRAPHQL_ENDPOINT, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
