@@ -61,6 +61,7 @@
     "react": "^16.5.2",
     "react-apollo": "^2.2.4",
     "react-codemirror2": "^5.1.0",
+    "react-copy-to-clipboard": "^5.0.1",
     "react-dom": "^16.5.2",
     "react-fout-stager": "^3.0.0",
     "react-ga": "^2.5.3",

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
@@ -120,36 +121,40 @@ export default class WorkerTable extends Component {
               </TableCellListItem>
             </TableCell>
             <TableCell>{task.taskId}</TableCell>
-            <TableCell>
-              <TableCellListItem button>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography>
-                      <DateDistance from={task.started} />
-                    </Typography>
-                  }
-                />
-                <ContentCopyIcon size={iconSize} />
-              </TableCellListItem>
-            </TableCell>
-            <TableCell>
-              {task.resolved ? (
+            <CopyToClipboard text={task.started}>
+              <TableCell>
                 <TableCellListItem button>
                   <ListItemText
                     disableTypography
                     primary={
                       <Typography>
-                        <DateDistance from={task.resolved} />
+                        <DateDistance from={task.started} />
                       </Typography>
                     }
                   />
                   <ContentCopyIcon size={iconSize} />
                 </TableCellListItem>
-              ) : (
-                <Typography>n/a</Typography>
-              )}
-            </TableCell>
+              </TableCell>
+            </CopyToClipboard>
+            <CopyToClipboard text={task.resolved}>
+              <TableCell>
+                {task.resolved ? (
+                  <TableCellListItem button>
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography>
+                          <DateDistance from={task.resolved} />
+                        </Typography>
+                      }
+                    />
+                    <ContentCopyIcon size={iconSize} />
+                  </TableCellListItem>
+                ) : (
+                  <Typography>n/a</Typography>
+                )}
+              </TableCell>
+            </CopyToClipboard>
           </TableRow>
         )}
         headers={['State', 'Name', 'Task ID', 'Started', 'Resolved']}

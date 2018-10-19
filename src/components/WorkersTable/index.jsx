@@ -4,6 +4,7 @@ import { func, string } from 'prop-types';
 import { formatDistanceStrict } from 'date-fns';
 import { pipe, filter, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import TableCell from '@material-ui/core/TableCell';
@@ -176,49 +177,55 @@ export default class WorkersTable extends Component {
             <TableCell>
               {<StatusLabel state={latestTask.run.state} />}
             </TableCell>
-            <TableCell>
-              <TableCellListItem button>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography>
-                      <DateDistance from={latestTask.run.started} />
-                    </Typography>
-                  }
-                />
-                <ContentCopyIcon size={iconSize} />
-              </TableCellListItem>
-            </TableCell>
-            <TableCell>
-              {latestTask.run.resolved ? (
+            <CopyToClipboard text={latestTask.run.started}>
+              <TableCell>
                 <TableCellListItem button>
                   <ListItemText
                     disableTypography
                     primary={
                       <Typography>
-                        <DateDistance from={latestTask.run.resolved} />
+                        <DateDistance from={latestTask.run.started} />
                       </Typography>
                     }
                   />
                   <ContentCopyIcon size={iconSize} />
                 </TableCellListItem>
-              ) : (
-                <Typography>n/a</Typography>
-              )}
-            </TableCell>
-            <TableCell>
-              <TableCellListItem button>
-                <ListItemText
-                  disableTypography
-                  primary={
-                    <Typography>
-                      <DateDistance from={firstClaim} />
-                    </Typography>
-                  }
-                />
-                <ContentCopyIcon size={iconSize} />
-              </TableCellListItem>
-            </TableCell>
+              </TableCell>
+            </CopyToClipboard>
+            <CopyToClipboard text={latestTask.run.resolved}>
+              <TableCell>
+                {latestTask.run.resolved ? (
+                  <TableCellListItem button>
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography>
+                          <DateDistance from={latestTask.run.resolved} />
+                        </Typography>
+                      }
+                    />
+                    <ContentCopyIcon size={iconSize} />
+                  </TableCellListItem>
+                ) : (
+                  <Typography>n/a</Typography>
+                )}
+              </TableCell>
+            </CopyToClipboard>
+            <CopyToClipboard text={firstClaim}>
+              <TableCell>
+                <TableCellListItem button>
+                  <ListItemText
+                    disableTypography
+                    primary={
+                      <Typography>
+                        <DateDistance from={firstClaim} />
+                      </Typography>
+                    }
+                  />
+                  <ContentCopyIcon size={iconSize} />
+                </TableCellListItem>
+              </TableCell>
+            </CopyToClipboard>
             <TableCell>
               {quarantineUntil
                 ? formatDistanceStrict(new Date(), quarantineUntil, {

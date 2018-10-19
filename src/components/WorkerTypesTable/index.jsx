@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Markdown from '@mozilla-frontend-infra/components/Markdown';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
@@ -232,19 +233,21 @@ export default class WorkerTypesTable extends Component {
               <TableCell>
                 <StatusLabel state={workerType.stability} />
               </TableCell>
-              <TableCell>
-                <TableCellListItem button>
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Typography>
-                        <DateDistance from={workerType.lastDateActive} />
-                      </Typography>
-                    }
-                  />
-                  <ContentCopyIcon size={iconSize} />
-                </TableCellListItem>
-              </TableCell>
+              <CopyToClipboard text={workerType.lastDateActive}>
+                <TableCell>
+                  <TableCellListItem button>
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography>
+                          <DateDistance from={workerType.lastDateActive} />
+                        </Typography>
+                      }
+                    />
+                    <ContentCopyIcon size={iconSize} />
+                  </TableCellListItem>
+                </TableCell>
+              </CopyToClipboard>
               <TableCell>{workerType.pendingTasks}</TableCell>
               {'runningCapacity' in workerType && (
                 <TableCell>{workerType.runningCapacity}</TableCell>
