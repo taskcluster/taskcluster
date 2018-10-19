@@ -1,6 +1,5 @@
 const helper = require('./helper');
 const assert = require('assert');
-const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
 
 helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
@@ -42,14 +41,14 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
       let fakePublish = event => {
         published.push(event);
       };
-      publisher.on('fakePublish', fakePublish);
+      publisher.on('message', fakePublish);
 
       // Trigger a pull-request message
       try {
         let res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile);
         res.connection.destroy();
       } finally {
-        publisher.removeListener('fakePublish', fakePublish);
+        publisher.removeListener('message', fakePublish);
       }
 
       let expected = [{

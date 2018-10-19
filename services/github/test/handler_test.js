@@ -88,7 +88,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
           message.payload.details['event.pullNumber'] = 36;
         }
 
-        handlers.jobListener.fakeMessage(message);
+        handlers.jobPq.fakeMessage(message);
       });
     }
 
@@ -358,7 +358,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
           },
         };
 
-        handlers.statusListener.fakeMessage(message);
+        handlers.statusPq.fakeMessage(message);
       });
     }
 
