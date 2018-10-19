@@ -1,9 +1,7 @@
-var _           = require('lodash');
-var debug       = require('debug')('routes:api:v1');
-var assert      = require('assert');
-var APIBuilder  = require('taskcluster-lib-api');
-var helpers     = require('./helpers');
-var Entity      = require('azure-entities');
+const _           = require('lodash');
+const APIBuilder  = require('taskcluster-lib-api');
+const helpers     = require('./helpers');
+const Entity      = require('azure-entities');
 
 /**
  * API end-point for version v1/

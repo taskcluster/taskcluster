@@ -2,7 +2,6 @@ const assert = require('assert');
 const debug = require('debug')('index:test:api_test');
 const helper = require('./helper');
 const slugid = require('slugid');
-const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const request = require('superagent');
 const assume = require('assume');

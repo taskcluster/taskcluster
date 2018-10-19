@@ -5,7 +5,6 @@ const slugid = require('slugid');
 const _ = require('lodash');
 const testing = require('taskcluster-lib-testing');
 const taskcluster = require('taskcluster-client');
-const data = require('../src/data');
 
 helper.secrets.mockSuite('index_test.js', ['taskcluster'], function(mock, skipping) {
   helper.withEntities(mock, skipping);
@@ -58,7 +57,7 @@ helper.secrets.mockSuite('index_test.js', ['taskcluster'], function(mock, skippi
         status: {taskId},
       },
     };
-    helper.listener.fakeMessage(message);
+    helper.pq.fakeMessage(message);
 
     debug('### Find task in index');
     let result = await testing.poll(() => helper.index.findTask('my-ns.my-indexed-thing'));
@@ -122,7 +121,7 @@ helper.secrets.mockSuite('index_test.js', ['taskcluster'], function(mock, skippi
         status: {taskId},
       },
     };
-    helper.listener.fakeMessage(message);
+    helper.pq.fakeMessage(message);
 
     debug('### Find task in index');
     let result = await testing.poll(function() {
