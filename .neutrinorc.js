@@ -78,15 +78,15 @@ module.exports = {
         historyApiFallback: { disableDotRule: true },
         proxy: {
           '/login': {
-            target: 'http://localhost:3050',
+            target: process.env.TASKCLUSTER_ROOT_URL,
           },
           '/graphql': {
-            target: 'http://localhost:3050',
+            target: process.env.TASKCLUSTER_ROOT_URL,
           },
           '/subscription': {
             ws: true,
             changeOrigin: true,
-            target: 'http://localhost:3050',
+            target: process.env.TASKCLUSTER_ROOT_URL,
           },
         },
       },
