@@ -41,10 +41,11 @@ defaults:
     trustProxy: false
 
   pulse:
+    hostname: !env PULSE_HOSTNAME
     username: !env PULSE_USERNAME
     password: !env PULSE_PASSWORD
-    hostname: !env PULSE_HOSTNAME
     vhost: !env PULSE_VHOST
+    namespace: !env PULSE_NAMESPACE
 
   aws:
     accessKeyId: !env AWS_ACCESS_KEY
@@ -71,6 +72,9 @@ production:
 
   taskcluster:
     schedulerId: taskcluster-github
+
+  pulse:
+    namespace: taskcluster-github
 
 staging:
   app:

@@ -1,14 +1,10 @@
-const debug = require('debug')('taskcluster-github:loader');
 const builder = require('./api');
-const path = require('path');
 const exchanges = require('./exchanges');
 const Handlers = require('./handlers');
 const Intree = require('./intree');
 const data = require('./data');
-const _ = require('lodash');
 const Promise = require('bluebird');
 const Ajv = require('ajv');
-const taskcluster = require('taskcluster-client');
 const config = require('typed-env-config');
 const monitor = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -17,6 +13,7 @@ const docs = require('taskcluster-lib-docs');
 const App = require('taskcluster-lib-app');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const githubAuth = require('./github-auth');
+const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 
 const load = loader({
   cfg: {
@@ -46,11 +43,8 @@ const load = loader({
   },
 
   reference: {
-    requires: ['cfg'],
-    setup: ({cfg}) => exchanges.reference({
-      rootUrl:          cfg.taskcluster.rootUrl,
-      credentials:      cfg.pulse,
-    }),
+    requires: [],
+    setup: () => exchanges.reference(),
   },
 
   ajv: {
@@ -77,15 +71,25 @@ const load = loader({
     setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
+  pulseClient: {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => {
+      return new Client({
+        namespace: cfg.pulse.namespace,
+        monitor,
+        credentials: pulseCredentials(cfg.pulse),
+      });
+    },
+  },
+
   publisher: {
-    requires: ['cfg', 'monitor', 'schemaset'],
-    setup: async ({cfg, monitor, schemaset}) => exchanges.setup({
-      rootUrl:            cfg.taskcluster.rootUrl,
-      credentials:        cfg.pulse,
-      validator:          await schemaset.validator(cfg.taskcluster.rootUrl),
-      publish:            cfg.app.publishMetaData,
-      aws:                cfg.aws,
-      monitor:            monitor.prefix('publisher'),
+    requires: ['cfg', 'schemaset', 'pulseClient'],
+    setup: async ({cfg, pulseClient, schemaset}) => await exchanges.publisher({
+      rootUrl: cfg.taskcluster.rootUrl,
+      schemaset,
+      client: pulseClient,
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
     }),
   },
 
@@ -176,8 +180,8 @@ const load = loader({
   },
 
   handlers: {
-    requires: ['cfg', 'github', 'monitor', 'intree', 'schemaset', 'reference', 'Builds'],
-    setup: async ({cfg, github, monitor, intree, schemaset, reference, Builds}) => new Handlers({
+    requires: ['cfg', 'github', 'monitor', 'intree', 'schemaset', 'reference', 'Builds', 'pulseClient'],
+    setup: async ({cfg, github, monitor, intree, schemaset, reference, Builds, pulseClient}) => new Handlers({
       rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.pulse,
       monitor: monitor.prefix('handlers'),
@@ -186,6 +190,7 @@ const load = loader({
       jobQueueName: cfg.app.jobQueueName,
       statusQueueName: cfg.app.statusQueueName,
       context: {cfg, github, schemaset, Builds},
+      pulseClient,
     }),
   },
 

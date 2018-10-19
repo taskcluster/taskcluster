@@ -3,7 +3,6 @@ const assert = require('assert');
 const _ = require('lodash');
 const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
-const jsone = require('json-e');
 
 suite('intree config', function() {
   let intree;
