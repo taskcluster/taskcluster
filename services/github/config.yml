@@ -103,6 +103,8 @@ staging:
 test:
   app:
     botName: 'magicalTCspirit'
+    jobQueue: 'test-jobs'
+    statusQueue: 'test-statuses'
 
   webhook:
     secret: ['abc123', 'def456']
@@ -124,4 +126,8 @@ test:
     schedulerId: tc-gh-devel
 
   pulse:
-    fake: true
+    namespace: 'taskcluster-fake'
+    hostname: 'test-hostname'
+    username: 'username'
+    password: 'password'
+    vhost: 'test-vhost'
