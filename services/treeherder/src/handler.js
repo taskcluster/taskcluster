@@ -6,6 +6,7 @@ const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
 const parseRoute = require('./util/route_parser');
 const addArtifactUploadedLinks = require('./transform/artifact_links');
+const {consume} = require('taskcluster-lib-pulse');
 
 let debug = Debug('taskcluster-treeherder:handler');
 
@@ -101,29 +102,40 @@ module.exports = class Handler {
   constructor(options) {
     this.cfg = options.cfg;
     this.queue = options.queue;
-    this.listener = options.listener;
+    this.queueEvents = options.queueEvents;
+    this.pulseClient = options.pulseClient;
     this.prefix = options.prefix;
     this.publisher = options.publisher;
     this.validator = options.validator;
     this.monitor = options.monitor;
 
     // build a mapping from exchange name to status
-    const queueEvents = new taskcluster.QueueEvents({
-      rootUrl: this.cfg.taskcluster.rootUrl,
-    });
     this.eventMap = {
-      [queueEvents.taskPending().exchange]: 'pending',
-      [queueEvents.taskRunning().exchange]: 'running',
-      [queueEvents.taskCompleted().exchange]: 'completed',
-      [queueEvents.taskFailed().exchange]: 'failed',
-      [queueEvents.taskException().exchange]: 'exception',
+      [this.queueEvents.taskPending().exchange]: 'pending',
+      [this.queueEvents.taskRunning().exchange]: 'running',
+      [this.queueEvents.taskCompleted().exchange]: 'completed',
+      [this.queueEvents.taskFailed().exchange]: 'failed',
+      [this.queueEvents.taskException().exchange]: 'exception',
     };
   }
 
   // Starts up the message handler and listens for messages
   async start() {
     debug('Starting handler');
-    this.listener.on('message', async (message) => {
+
+    const routingPattern = `route.${this.prefix}.#`;
+    this.pq = await consume({
+      client: this.pulseClient,
+      bindings: [
+        this.queueEvents.taskPending(routingPattern),
+        this.queueEvents.taskRunning(routingPattern),
+        this.queueEvents.taskCompleted(routingPattern),
+        this.queueEvents.taskFailed(routingPattern),
+        this.queueEvents.taskException(routingPattern),
+      ],
+      queueName: this.cfg.pulse.queueName,
+      prefetch: this.cfg.pulse.prefetch,
+    }, async message => {
       try {
         await this.monitor.timer('handle-message.time', this.handleMessage(message));
         this.monitor.count('handle-message.success');
@@ -132,12 +144,6 @@ module.exports = class Handler {
         this.monitor.reportError(err);
       };
     });
-    this.listener.on('error', (error) => {
-      this.monitor.reportError(error);
-      process.exit();
-    });
-    await this.listener.resume();
-    debug('Handler Started');
   }
 
   // Listens for Task event messages and invokes the appropriate handler
