@@ -14,7 +14,7 @@
     "url": "https://github.com/taskcluster/taskcluster-index.git"
   },
   "dependencies": {
-    "azure-entities": "^4.0.0",
+    "azure-entities": "^5.1.0",
     "debug": "^3.1.0",
     "lodash": "^4.11.1",
     "taskcluster-client": "^11.0.0",
