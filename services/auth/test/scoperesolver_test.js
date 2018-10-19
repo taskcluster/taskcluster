@@ -1,5 +1,6 @@
 const helper = require('./helper');
 const ScopeResolver = require('../src/scoperesolver');
+const exchanges = require('../src/exchanges');
 const {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
 const Monitor = require('taskcluster-lib-monitor');
 const assert = require('assert');
@@ -12,6 +13,47 @@ suite(helper.suiteName(__filename), () => {
   setup(async () => {
     monitor = await Monitor({projectName: 'mock-auth', mock: true});
     scopeResolver = new ScopeResolver({monitor, disableCache: true});
+  });
+
+  helper.secrets.mockSuite('setup and listening', ['app', 'azure'], function(mock, skipping) {
+    helper.withEntities(mock, skipping);
+    helper.withRoles(mock, skipping);
+    helper.withPulse(mock, skipping);
+    let reloads = [];
+
+    setup('mock scoperesolver reloading', async function() {
+      reloads = [];
+
+      scopeResolver.reload = () => reloads.push('all');
+      scopeResolver.reloadClient = (clientId) => reloads.push(clientId);
+      scopeResolver.reloadRoles = () => reloads.push('roles');
+
+      const pulseClient = await helper.load('pulseClient');
+      await scopeResolver.setup({
+        rootUrl: helper.rootUrl,
+        Client: helper.Client,
+        Roles: helper.Roles,
+        pulseClient,
+        exchangeReference: exchanges.reference(),
+      });
+      assume(reloads).to.deeply.equal(['all']);
+      reloads = [];
+    });
+
+    test('client messages reload specific clients', async function() {
+      await scopeResolver._clientPq.fakeMessage({payload: {clientId: 'clid'}});
+      assume(reloads).to.deeply.equal(['clid']);
+    });
+
+    test('reconnection reloads everything', async function() {
+      await scopeResolver._clientPq.connected();
+      assume(reloads).to.deeply.equal(['all']);
+    });
+
+    test('role messages reload all roles', async function() {
+      await scopeResolver._rolePq.fakeMessage({payload: {}});
+      assume(reloads).to.deeply.equal(['roles']);
+    });
   });
 
   suite('buildResolver', function() {
