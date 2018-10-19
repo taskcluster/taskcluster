@@ -8,10 +8,11 @@ const parseRoute = require('../src/util/route_parser');
 const libUrls = require('taskcluster-lib-urls');
 const helper = require('./helper');
 
-let handler, task, status, expected, pushInfo, cfg;
+let task, status, expected, pushInfo, cfg;
 
 suite('build job message', () => {
   helper.withLoader();
+  helper.withHandler();
 
   suiteSetup(async () => {
     cfg = await helper.load('cfg');
@@ -19,7 +20,6 @@ suite('build job message', () => {
   });
 
   setup(() => {
-    handler = new Handler({cfg, prefix: 'treeherder'});
     task = JSON.parse(taskDefinition);
     status = JSON.parse(statusMessage);
     expected = JSON.parse(jobMessage);
@@ -27,7 +27,7 @@ suite('build job message', () => {
   });
 
   test('valid message', async () => {
-    let job = await handler.buildMessage(pushInfo, task, status.runId, status);
+    let job = await helper.handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
   });
 
@@ -38,14 +38,14 @@ suite('build job message', () => {
     expected.origin.revision_hash = expected.origin.revision;
     delete expected.origin.revision;
 
-    let job = await handler.buildMessage(pushInfo, task, status.runId, status);
+    let job = await helper.handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
   });
 
   test('default opt label', async () => {
     delete task.extra.treeherder.collection;
 
-    let job = await handler.buildMessage(pushInfo, task, status.runId, status);
+    let job = await helper.handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
   });
 
@@ -53,7 +53,7 @@ suite('build job message', () => {
     task.extra.treeherder.collection = {debug: true};
     expected.labels = ['debug'];
 
-    let job = await handler.buildMessage(pushInfo, task, status.runId, status);
+    let job = await helper.handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
   });
 
@@ -62,14 +62,14 @@ suite('build job message', () => {
     task.extra.treeherder.labels = ['asan'];
     expected.labels = ['asan'];
 
-    let job = await handler.buildMessage(pushInfo, task, status.runId, status);
+    let job = await helper.handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
   });
 
   test('default tier', async () => {
     delete task.extra.treeherder.tier;
 
-    let job = await handler.buildMessage(pushInfo, task, status.runId, status);
+    let job = await helper.handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
   });
 
@@ -77,14 +77,14 @@ suite('build job message', () => {
     task.extra.treeherder.tier = 2;
     expected.tier = 2;
 
-    let job = await handler.buildMessage(pushInfo, task, status.runId, status);
+    let job = await helper.handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
   });
 
   test('rerun task', async () => {
     delete task.extra.treeherder.collection;
 
-    let job = await handler.buildMessage(pushInfo, task, status.runId, status);
+    let job = await helper.handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
   });
 
@@ -99,7 +99,7 @@ suite('build job message', () => {
       architecture: '-',
     };
 
-    let job = await handler.buildMessage(pushInfo, task, status.runId, status);
+    let job = await helper.handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
   });
 
@@ -112,7 +112,7 @@ suite('build job message', () => {
       architecture: '-',
     };
 
-    let job = await handler.buildMessage(pushInfo, task, status.runId, status);
+    let job = await helper.handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
   });
 });
