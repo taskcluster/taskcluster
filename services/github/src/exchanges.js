@@ -1,7 +1,5 @@
-const Exchanges = require('pulse-publisher');
-const assert = require('assert');
+const {Exchanges} = require('taskcluster-lib-pulse');
 const _ = require('lodash');
-const debug = require('debug')('taskcluster-github:exchanges');
 
 /** Build common routing key construct for `exchanges.declare` */
 let commonRoutingKey = function(options) {
