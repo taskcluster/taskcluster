@@ -5,6 +5,7 @@ const yaml = require('js-yaml');
 const assert = require('assert');
 const _ = require('lodash');
 const prAllowed = require('./pr-allowed');
+const {consume} = require('taskcluster-lib-pulse');
 
 const INSPECTOR_URL = 'https://tools.taskcluster.net/task-group-inspector/#/';
 
@@ -15,7 +16,7 @@ const debug = Debug(debugPrefix);
  * Create handlers
  */
 class Handlers {
-  constructor({rootUrl, credentials, monitor, reference, jobQueueName, statusQueueName, intree, context}) {
+  constructor({rootUrl, credentials, monitor, reference, jobQueueName, statusQueueName, intree, context, pulseClient}) {
     debug('Constructing handlers...');
     assert(monitor, 'monitor is required for statistics');
     assert(reference, 'reference must be provided');
@@ -32,9 +33,13 @@ class Handlers {
     this.statusQueueName = statusQueueName;  // Optional
     this.jobQueueName = jobQueueName;  // Optional
     this.context = context;
+    this.pulseClient = pulseClient;
 
     this.handlerComplete = null;
     this.handlerRejected = null;
+
+    this.jobPq = null;
+    this.statusPq = null;
   }
 
   /**
@@ -45,21 +50,15 @@ class Handlers {
     options = options || {};
     assert(!this.connection, 'Cannot setup twice!');
     this.connection = new taskcluster.PulseConnection(this.credentials);
-    this.statusListener = new taskcluster.PulseListener({
-      queueName: this.statusQueueName,
-      connection: this.connection,
-    });
-    this.jobListener = new taskcluster.PulseListener({
-      queueName: this.jobQueueName,
-      connection: this.connection,
-    });
 
     // Listen for new jobs created via the api webhook endpoint
     let GithubEvents = taskcluster.createClient(this.reference);
     let githubEvents = new GithubEvents({rootUrl: this.rootUrl});
-    await this.jobListener.bind(githubEvents.pullRequest());
-    await this.jobListener.bind(githubEvents.push());
-    await this.jobListener.bind(githubEvents.release());
+    const jobBindings = [
+      githubEvents.pullRequest(),
+      githubEvents.push(),
+      githubEvents.release(),
+    ];
 
     // Listen for state changes to the taskcluster tasks and taskgroups
     // We only need to listen for failure and exception events on
@@ -67,9 +66,11 @@ class Handlers {
     // for success.
     let queueEvents = new taskcluster.QueueEvents({rootUrl: this.rootUrl});
     let schedulerId = this.context.cfg.taskcluster.schedulerId;
-    await this.statusListener.bind(queueEvents.taskFailed({schedulerId}));
-    await this.statusListener.bind(queueEvents.taskException({schedulerId}));
-    await this.statusListener.bind(queueEvents.taskGroupResolved({schedulerId}));
+    const statusBindings = [
+      queueEvents.taskFailed({schedulerId}),
+      queueEvents.taskException({schedulerId}),
+      queueEvents.taskGroupResolved({schedulerId}),
+    ];
 
     const callHandler = (name, handler) => message => {
       handler.call(this, message).catch(async err => {
@@ -85,13 +86,22 @@ class Handlers {
       });
     };
 
-    this.jobListener.on('message',
-      this.monitor.timedHandler('joblistener', callHandler('job', jobHandler)));
-    this.statusListener.on('message',
-      this.monitor.timedHandler('statuslistener', callHandler('status', statusHandler)));
-
-    // If this is awaited, it should return [undefined, undefined]
-    await Promise.all([this.jobListener.resume(), this.statusListener.resume()]);
+    this.jobPq = await consume(
+      {
+        client: this.pulseClient,
+        bindings: jobBindings,
+        queueName: this.jobQueueName,
+      },
+      this.monitor.timedHandler('joblistener', callHandler('job', jobHandler).bind(this))
+    );
+    this.statusPq = await consume(
+      {
+        client: this.pulseClient,
+        bindings: statusBindings,
+        queueName: this.statusQueueName,
+      },
+      this.monitor.timedHandler('statuslistener', callHandler('status', statusHandler).bind(this))
+    );
   }
 
   async terminate() {
