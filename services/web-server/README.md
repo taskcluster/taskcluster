@@ -46,11 +46,14 @@ $ eval $(./taskcluster signin --name taskcluster-web-server)
 
 ### Pulse
 
-To receive pulse messages, you will also need a Pulse namespace and the
-Taskcluster credentials you select must have the scope
-`pulse:namespace:<namespace>`. A member of the administrators for the
-Taskcluster instance you are using can help set that up.  Add the namespace in
-`user-config.yml` as `pulse.namespace`.
+Pulse messages are entirely optional, and most server components do not require
+them. If you do not configure pulse, the server will act as if no pulse
+messages are received, which is sufficient for most development work.
+
+To receive pulse messages, you will also need a Pulse user.  For Mozilla's
+Pulse, you can get such credentials at https://pulseguardian.mozilla.org.  Use
+hostname `pulse.mozilla.org` and vhost `/`. In this situation, set the
+namespace to match the username.
 
 ### Starting
 

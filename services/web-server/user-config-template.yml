@@ -1,6 +1,9 @@
 defaults:
   taskcluster:
       rootUrl: ...
-  # only set this if you want to receive pulse messages; see the README
-  #pulse:
-    #namespace:
+  pulse:
+    namespace:
+    username: ..
+    password: ..
+    hostname: ..
+    vhost: ..

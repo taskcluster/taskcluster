@@ -24,8 +24,10 @@ defaults:
   # Pulse credentials
   pulse:
     namespace: !env PULSE_NAMESPACE
-    contact: !env PULSE_CONTACT
-    expiresAfter: !env PULSE_EXPIRES_AFTER
+    username: !env PULSE_USERNAME
+    password: !env PULSE_PASSWORD
+    hostname: !env PULSE_HOSTNAME
+    vhost: !env PULSE_VHOST
 
   # config for the github login strategy
   githubLogin:
@@ -44,3 +46,7 @@ development:
   monitoring:
     project: taskcluster-web-server
     mock: true
+
+production:
+  pulse:
+    namespace: taskcluster-web-server

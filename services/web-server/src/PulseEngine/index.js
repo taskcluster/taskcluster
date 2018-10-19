@@ -1,6 +1,4 @@
 import Debug from 'debug';
-import assert from 'assert';
-import { Client, claimedCredentials } from 'taskcluster-lib-pulse';
 import { slugid } from 'taskcluster-client';
 import { serialize } from 'async-decorators';
 import PulseIterator from './PulseIterator';
@@ -106,50 +104,17 @@ export default class PulseEngine {
    * connection recycles, and rely on the caller to re-subscribe on service
    * restart. */
 
-  constructor({
-    monitor,
-    rootUrl,
-    credentials,
-    namespace,
-    contact,
-    expiresAfter,
-  }) {
+  constructor({ monitor, pulseClient }) {
     this.monitor = monitor;
     this.subscriptions = new Map();
 
-    if (process.env.NODE_ENV === 'production') {
-      assert(namespace, 'namespace is required');
-      assert(
-        credentials && credentials.clientId && credentials.accessToken,
-        'credentials are required'
-      );
-    } else if (
-      !namespace ||
-      !credentials ||
-      !credentials.clientId ||
-      !credentials.accessToken
-    ) {
-      debug(
-        'NOTE: pulse.namespace or taskcluster.credentials not set; no subscription messages will be recieved'
-      );
+    this.client = pulseClient;
 
-      // bail out of setup; this.connected will never be called, so no
-      // subscriptions will ever return messages, but subscription requests
-      // will succeed.
+    if (this.client.isFakeClient) {
+      // we are now set up to accept subscription requests, but won't do
+      // anything with them.
       return;
     }
-
-    this.client = new Client({
-      monitor,
-      namespace,
-      credentials: claimedCredentials({
-        rootUrl,
-        credentials,
-        namespace,
-        contact,
-        expiresAfter,
-      }),
-    });
 
     this.reset();
     this.client.onConnected(conn => this.connected(conn));

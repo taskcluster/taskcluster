@@ -5,6 +5,7 @@ import loader from 'taskcluster-lib-loader';
 import config from 'typed-env-config';
 import monitor from 'taskcluster-lib-monitor';
 import { createServer as httpServer } from 'http';
+import { FakeClient, Client, pulseCredentials } from 'taskcluster-lib-pulse';
 import createApp from './servers/createApp';
 import createContext from './createContext';
 import createSchema from './createSchema';
@@ -43,12 +44,34 @@ const load = loader(
         }),
     },
 
-    pulseEngine: {
+    pulseClient: {
       requires: ['cfg', 'monitor'],
-      setup: ({ cfg, monitor }) =>
+      setup: ({ cfg, monitor }) => {
+        if (!cfg.pulse.namespace) {
+          assert(
+            process.env.NODE_ENV !== 'production',
+            'cfg.pulse.namespace is required'
+          );
+          // eslint-disable-next-line no-console
+          console.log(
+            `\n\nNo Pulse namespace defined; no Pulse messages will be received.`
+          );
+          return new FakeClient();
+        }
+
+        return new Client({
+          monitor,
+          namespace: cfg.pulse.namespace,
+          credentials: pulseCredentials(cfg.pulse),
+        });
+      },
+    },
+
+    pulseEngine: {
+      requires: ['pulseClient', 'monitor'],
+      setup: ({ pulseClient, monitor }) =>
         new PulseEngine({
-          ...cfg.taskcluster,
-          ...cfg.pulse,
+          pulseClient,
           monitor,
         }),
     },
