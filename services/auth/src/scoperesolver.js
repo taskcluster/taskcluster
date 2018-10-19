@@ -7,6 +7,8 @@ const debug = require('debug')('auth:ScopeResolver');
 const {scopeCompare, mergeScopeSets, normalizeScopeSet} = require('taskcluster-lib-scopes');
 const trie = require('./trie');
 const ScopeSetBuilder = require('./scopesetbuilder');
+const {consume} = require('taskcluster-lib-pulse');
+const slugid = require('slugid');
 
 const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
 const PARAMETERIZED_SCOPE = /^(:?|a|as|ass|assu|assum|assum|assume|assume:.*)<\.\.>/;
@@ -73,7 +75,7 @@ class ScopeResolver extends events.EventEmitter {
    *   rootUrl:             // a Taskcluster rootUrl
    *   Client:              // data.Client object
    *   Roles:               // data.Roles object
-   *   connection:          // PulseConnection object
+   *   pulseClient:         // tc-lib-pulse Client
    *   exchangeReference:   // reference for exchanges declared
    *   cacheExpiry:         // Time before clearing cache
    * }
@@ -85,54 +87,60 @@ class ScopeResolver extends events.EventEmitter {
     assert(options.Client, 'Expected options.Client');
     assert(options.Roles, 'Expected options.Roles');
     assert(options.exchangeReference, 'Expected options.exchangeReference');
-    assert(options.connection instanceof taskcluster.PulseConnection,
-      'Expected options.connection to be a PulseConnection object');
+    assert(options.pulseClient, 'Expected options.pulseClient');
+    assert(options.rootUrl, 'Expected options.rootUrl');
     this._Client        = options.Client;
     this._Roles         = options.Roles;
-    this._options       = options;
 
-    // Create authEvents client
-    let AuthEvents = taskcluster.createClient(this._options.exchangeReference);
-    let authEvents = new AuthEvents({rootUrl: this._options.rootUrl});
+    await this.reloadOnNotifications(options);
 
-    // Create PulseListeners
-    this._clientListener = new taskcluster.PulseListener({
-      connection:   options.connection,
-      reconnect:    true,
-    });
-    this._roleListener = new taskcluster.PulseListener({
-      connection:   options.connection,
-      reconnect:    true,
-    });
-
-    // listen for client events
-    await this._clientListener.bind(authEvents.clientCreated());
-    await this._clientListener.bind(authEvents.clientUpdated());
-    await this._clientListener.bind(authEvents.clientDeleted());
-    // listen for role events
-    await this._roleListener.bind(authEvents.roleCreated());
-    await this._roleListener.bind(authEvents.roleUpdated());
-    await this._roleListener.bind(authEvents.roleDeleted());
-
-    // Reload when we get message
-    this._clientListener.on('message', m => {
-      return this.reloadClient(m.payload.clientId);
-    });
-    this._roleListener.on('message', m => {
-      return this.reloadRoles();
-    });
-
-    // Load initially
+    // Load initial data before startup completes..
     await this.reload();
 
     // Set this.reload() to run repeatedly
     this._reloadIntervalHandle = setInterval(() => {
       this.reload().catch(err => this.emit('error', err));
-    }, this._options.cacheExpiry);
+    }, options.cacheExpiry);
+  }
 
-    // Start listening
-    await this._clientListener.resume();
-    await this._roleListener.resume();
+  /**
+   * Reload clients, roles, or both on notifications of changes via pulse.
+   */
+  async reloadOnNotifications({exchangeReference, pulseClient, rootUrl}) {
+    const AuthEvents = taskcluster.createClient(exchangeReference);
+    const authEvents = new AuthEvents({rootUrl: rootUrl});
+
+    // This is a perfect use-case for ephemeral consumers: every process that
+    // runs a ScopeResolver should have its own queue, so that it gets it own
+    // copy of each message; and those queues should be cleaned up when
+    // processes go away.  The price we pay for this is that when we reconnect
+    // to pulse, we may have missed messages, so we must reload all clients and
+    // roles.
+
+    this._clientPq = await consume({
+      client: pulseClient,
+      ephemeral: true,
+      bindings: [
+        authEvents.clientCreated(),
+        authEvents.clientUpdated(),
+        authEvents.clientDeleted(),
+      ],
+      onConnected: () => this.reload(),
+      handleMessage: m => this.reloadClient(m.payload.clientId),
+    });
+    this._rolePq = await consume({
+      client: pulseClient,
+      ephemeral: true,
+      bindings: [
+        authEvents.roleCreated(),
+        authEvents.roleUpdated(),
+        authEvents.roleDeleted(),
+      ],
+      // no need for both _clientPq and _rolePq to call this.reload()
+      // for the same reconnection..
+      onConnected: () => {},
+      handleMessage: m => this.reloadRoles(),
+    });
   }
 
   /** Update lastDateUsed for a clientId */
