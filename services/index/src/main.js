@@ -1,17 +1,17 @@
 #!/usr/bin/env node
-var path        = require('path');
-var debug       = require('debug')('index:bin:server');
-var taskcluster = require('taskcluster-client');
-var data        = require('./data');
-var Handlers    = require('./handlers');
-var builder     = require('./api');
-var Config      = require('typed-env-config');
-var loader      = require('taskcluster-lib-loader');
-var monitor     = require('taskcluster-lib-monitor');
-const SchemaSet   = require('taskcluster-lib-validate');
-var App         = require('taskcluster-lib-app');
-var docs        = require('taskcluster-lib-docs');
-const {sasCredentials} = require('taskcluster-lib-azure'); 
+const debug = require('debug')('index:bin:server');
+const taskcluster = require('taskcluster-client');
+const data = require('./data');
+const Handlers = require('./handlers');
+const builder = require('./api');
+const Config = require('typed-env-config');
+const loader = require('taskcluster-lib-loader');
+const monitor = require('taskcluster-lib-monitor');
+const SchemaSet = require('taskcluster-lib-validate');
+const App = require('taskcluster-lib-app');
+const docs = require('taskcluster-lib-docs');
+const {sasCredentials} = require('taskcluster-lib-azure');
+const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 
 // Create component loader
 var load = loader({
@@ -132,9 +132,20 @@ var load = loader({
     }),
   },
 
+  pulseClient: {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => {
+      return new Client({
+        namespace: cfg.pulse.namespace,
+        monitor,
+        credentials: pulseCredentials(cfg.pulse),
+      });
+    },
+  },
+
   handlers: {
-    requires: ['IndexedTask', 'Namespace', 'queue', 'queueEvents', 'cfg', 'monitor'],
-    setup: async ({IndexedTask, Namespace, queue, queueEvents, cfg, monitor}) => {
+    requires: ['IndexedTask', 'Namespace', 'queue', 'queueEvents', 'cfg', 'monitor', 'pulseClient'],
+    setup: async ({IndexedTask, Namespace, queue, queueEvents, cfg, monitor, pulseClient}) => {
       var handlers = new Handlers({
         IndexedTask:        IndexedTask,
         Namespace:          Namespace,
@@ -144,6 +155,7 @@ var load = loader({
         queueName:          cfg.app.listenerQueueName,
         routePrefix:        cfg.app.routePrefix,
         monitor:            monitor.prefix('handlers'),
+        pulseClient:        pulseClient,
       });
 
       // Start listening for events and handle them

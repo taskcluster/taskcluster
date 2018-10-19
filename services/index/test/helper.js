@@ -1,13 +1,12 @@
 const assert = require('assert');
-const path = require('path');
 const _ = require('lodash');
-const mocha = require('mocha');
 const data = require('../src/data');
 const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
 const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
+const {FakeClient} = require('taskcluster-lib-pulse');
 
 const helper = module.exports;
 
@@ -16,6 +15,7 @@ exports.load = stickyLoader(load);
 suiteSetup(async function() {
   exports.load.inject('profile', 'test');
   exports.load.inject('process', 'test');
+  exports.load.inject('pulseClient', new FakeClient());
 });
 
 // set up the testing secrets
@@ -88,9 +88,8 @@ exports.withPulse = (mock, skipping) => {
       return;
     }
 
-    helper.load.cfg('pulse.fake', true);
     const handlers = await helper.load('handlers');
-    helper.listener = handlers.listener;
+    helper.pq = handlers.pq;
   });
 };
 
