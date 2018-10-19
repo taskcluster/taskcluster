@@ -71,7 +71,8 @@ module.exports = {
     ['@neutrinojs/react', {
       publicPath: '/',
       html: {
-        title: process.env.APPLICATION_NAME
+        title: process.env.APPLICATION_NAME,
+        favicon: './logo.png',
       },
       devServer: {
         port: process.env.PORT || 9000,

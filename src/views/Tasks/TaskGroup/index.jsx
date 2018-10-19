@@ -131,7 +131,7 @@ export default class TaskGroup extends Component {
   state = {
     taskGroupSearch: '',
     filter: null,
-    taskGroupProgressDisabled: false,
+    taskGroupProgressDisabled: true,
     // eslint-disable-next-line react/no-unused-state
     previousTaskGroupId: null,
     groupActions: [],
