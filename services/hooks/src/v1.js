@@ -204,10 +204,20 @@ builder.declare({
         '{{message}} in {{schedElement}}', {message: err.message, schedElement});
     }
   }
+  
+  // Handle an invalid schema
+  let valid = ajv.validateSchema(hookDef.triggerSchema);
+  if (!valid) {
+    
+    const errors = [];
 
-  //handle an invalid schema
-  if (!ajv.validateSchema(hookDef.triggerSchema)) {
-    return res.reportError('InputError', 'Invalid Schema', {});
+    for (let index = 0; index < ajv.errors.length; index++) {
+      errors.push(' * Property '+ ajv.errors[index].dataPath + ' ' + ajv.errors[index].message);
+    }
+
+    return res.reportError('InputError', '{{message}}', {
+      message: 'triggerSchema is not a valid JSON schema:\n' + errors.join('\n'),
+    });
   }
 
   // Try to create a Hook entity
@@ -279,10 +289,20 @@ builder.declare({
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
+  
+  //Handle an invalid schema 
+  let valid = ajv.validateSchema(hookDef.triggerSchema);
+  
+  if (!valid) {
+    const errors = [];
 
-  //handle an invalid schema
-  if (!ajv.validateSchema(hookDef.triggerSchema)) {
-    return res.reportError('InputError', 'Invalid Schema', {});
+    for (let index = 0; index < ajv.errors.length; index++) {
+      errors.push(' * Property '+ ajv.errors[index].dataPath + ' ' + ajv.errors[index].message);
+    }
+
+    return res.reportError('InputError', '{{message}}', {
+      message: 'triggerSchema is not a valid JSON schema:\n' + errors.join('\n'),
+    });
   }
 
   // Attempt to modify properties of the hook
