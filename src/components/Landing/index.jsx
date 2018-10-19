@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { withStyles } from '@material-ui/core/styles';
 import PageTitle from '../PageTitle';
+import reportError from '../../utils/reportError';
 
 @withStyles(theme => ({
   root: {
@@ -46,8 +47,10 @@ export default class Landing extends Component {
     error: null,
   };
 
-  componentDidCatch(error) {
+  componentDidCatch(error, errorInfo) {
     this.setState({ error });
+
+    reportError(error, errorInfo);
   }
 
   render() {

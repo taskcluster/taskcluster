@@ -14,12 +14,14 @@ import {
 } from 'apollo-cache-inmemory';
 import { CachePersistor } from 'apollo-cache-persist';
 import ReactGA from 'react-ga';
+import { init as initSentry } from '@sentry/browser';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import FontStager from '../components/FontStager';
 import Main from './Main';
 import { ToggleThemeContext } from '../utils/ToggleTheme';
 import { AuthContext } from '../utils/Auth';
+import reportError from '../utils/reportError';
 import theme from '../theme';
 import introspectionQueryResultData from '../fragments/fragmentTypes.json';
 
@@ -104,6 +106,11 @@ export default class App extends Component {
       ReactGA.initialize(`UA-${process.env.GA_TRACKING_ID}`);
     }
 
+    if (process.env.SENTRY_DSN) {
+      // Data Source Name (DSN), a configuration required by the Sentry SDK
+      initSentry({ dsn: process.env.SENTRY_DSN });
+    }
+
     this.state = state;
   }
 
@@ -141,8 +148,10 @@ export default class App extends Component {
     });
   };
 
-  componentDidCatch(error) {
+  componentDidCatch(error, errorInfo) {
     this.setState({ error });
+
+    reportError(error, errorInfo);
   }
 
   render() {

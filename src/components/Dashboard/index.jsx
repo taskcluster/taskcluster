@@ -22,6 +22,7 @@ import UserMenu from './UserMenu';
 import SidebarList from './SidebarList';
 import { THEME } from '../../utils/constants';
 import { withThemeToggler } from '../../utils/ToggleTheme';
+import reportError from '../../utils/reportError';
 
 @withStyles(
   theme => ({
@@ -168,8 +169,10 @@ export default class Dashboard extends Component {
     this.setState({ showHelpView: !this.state.showHelpView });
   };
 
-  componentDidCatch(error) {
+  componentDidCatch(error, errorInfo) {
     this.setState({ error });
+
+    reportError(error, errorInfo);
   }
 
   render() {

@@ -73,6 +73,10 @@ Once the tracking code is identified, the client will send a page event on each 
 Moreover, the `Button` component is able to send an event when clicked by setting
 the Button's `track` property.
 
+### Reporting Errors
+
+The `SENTRY_DSN` environment variable can be used to set up Sentry to monitor and fix crashes.
+
 ## Icons
 
 You can browse a list of available icons at:
