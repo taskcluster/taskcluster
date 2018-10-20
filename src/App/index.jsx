@@ -70,7 +70,9 @@ export default class App extends Component {
             reconnect: true,
           },
         }),
-        new HttpLink()
+        new HttpLink({
+          uri: process.env.GRAPHQL_ENDPOINT,
+        })
       ),
     ]),
   });

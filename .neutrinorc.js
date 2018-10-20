@@ -97,6 +97,7 @@ module.exports = {
         PORT: 9000,
         TASKCLUSTER_ROOT_URL: 'http://localhost:3050',
         GRAPHQL_SUBSCRIPTION_ENDPOINT: '',
+        GRAPHQL_ENDPOINT: '/graphql',
         GA_TRACKING_ID: '',
         SENTRY_DSN: '',
       },
