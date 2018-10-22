@@ -8,6 +8,7 @@
   "scripts": {
     "build": "webpack --mode production",
     "start": "webpack --watch --mode development",
+    "heroku-postbuild": "yarn build",
     "lint": "eslint --cache --format codeframe --ext mjs,js src test",
     "test": "mocha --require mocha.config.js --recursive"
   },
