@@ -10,27 +10,16 @@ module "queue_user" {
             "Effect": "Allow",
             "Action": [
                 "s3:GetObject",
-                "s3:PutObject",
-                "s3:DeleteObject",
-                "s3:ListMultipartUploadParts",
-                "s3:AbortMultipartUpload",
-                "s3:PutObjectTagging",
                 "s3:GetObjectTagging",
-                "s3:DeleteObjectTagging"
-            ],
-            "Resource": [
-              "${aws_s3_bucket.private_blobs.arn}",
-              "${aws_s3_bucket.public_blobs.arn}"
-            ]
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "s3:GetObject",
                 "s3:PutObject",
+                "s3:PutObjectTagging",
+                "s3:AbortMultipartUpload",
+                "s3:ListMultipartUploadParts",
                 "s3:DeleteObject"
             ],
             "Resource": [
+              "${aws_s3_bucket.public_blobs.arn}/*",
+              "${aws_s3_bucket.private_blobs.arn}/*",
               "${aws_s3_bucket.public_artifacts.arn}/*",
               "${aws_s3_bucket.private_artifacts.arn}/*"
             ]
@@ -39,10 +28,14 @@ module "queue_user" {
             "Effect": "Allow",
             "Action": [
                 "s3:GetBucketLocation",
+                "s3:GetBucketTagging",
                 "s3:ListBucket",
-                "s3:PutBucketCORS"
+                "s3:PutBucketCORS",
+                "s3:GetBucketCORS"
             ],
             "Resource": [
+              "${aws_s3_bucket.public_blobs.arn}",
+              "${aws_s3_bucket.private_blobs.arn}",
               "${aws_s3_bucket.public_artifacts.arn}",
               "${aws_s3_bucket.private_artifacts.arn}"
             ]
@@ -82,7 +75,7 @@ module "queue_secrets" {
     TASKCLUSTER_ACCESS_TOKEN         = "${random_string.queue_access_token.result}"
     AZURE_ACCOUNT_ID                 = "${azurerm_storage_account.base.name}"
     AZURE_ACCOUNT_KEY                = "${azurerm_storage_account.base.primary_access_key}"
-    PULSE_USERNAME                   = "${module.notify_rabbitmq_user.username}"
+    PULSE_USERNAME                   = "${module.queue_rabbitmq_user.username}"
     PULSE_PASSWORD                   = "${module.queue_rabbitmq_user.password}"
     PULSE_HOSTNAME                   = "${var.rabbitmq_hostname}"
     PULSE_VHOST                      = "${var.rabbitmq_vhost}"
