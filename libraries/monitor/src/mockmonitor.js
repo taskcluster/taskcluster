@@ -1,7 +1,6 @@
 let debug = require('debug')('taskcluster-lib-monitor');
 let _ = require('lodash');
 let assert = require('assert');
-let utils = require('./utils');
 let BaseMonitor = require('./base');
 
 class MockMonitor extends BaseMonitor {
