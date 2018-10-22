@@ -1,10 +1,10 @@
 // This test needs to take place in an external function that we
 // fork to avoid issues with uncaught exceptions and mocha and
 // our process.exit behavior.
-let monitoring = require('../');
-let authmock = require('./authmock');
-let libUrls = require('taskcluster-lib-urls');
-let nock = require('nock');
+const monitoring = require('../');
+const authmock = require('./authmock');
+const libUrls = require('taskcluster-lib-urls');
+const nock = require('nock');
 
 function nockit(delay) {
   nock('https://app.getsentry.com')

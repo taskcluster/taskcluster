@@ -1,15 +1,15 @@
-suite('Uncaught Errors', () => {
-  let assert = require('assert');
-  let monitoring = require('../');
-  let debug = require('debug')('test');
-  let nock = require('nock');
-  let authmock = require('./authmock');
-  let path = require('path');
-  let fork = require('child_process').fork;
-  let _ = require('lodash');
-  let Promise = require('bluebird');
-  let libUrls = require('taskcluster-lib-urls');
+const assert = require('assert');
+const monitoring = require('../');
+const debug = require('debug')('test');
+const nock = require('nock');
+const authmock = require('./authmock');
+const path = require('path');
+const fork = require('child_process').fork;
+const _ = require('lodash');
+const Promise = require('bluebird');
+const libUrls = require('taskcluster-lib-urls');
 
+suite('Uncaught Errors', () => {
   let monitor = null;
 
   suiteSetup(async () => {
@@ -28,7 +28,7 @@ suite('Uncaught Errors', () => {
 
   test('should report unhandled rejections', function(done) {
 
-    let sentryScope = nock('https://app.getsentry.com')
+    const sentryScope = nock('https://app.getsentry.com')
       .filteringRequestBody(/.*/, '*')
       .post('/api/12345/store/', '*')
       .reply(200, () => {
@@ -47,7 +47,7 @@ suite('Uncaught Errors', () => {
 
   test('should report uncaught exceptions', function(done) {
 
-    let proc = fork(
+    const proc = fork(
       path.resolve(__dirname, './should_exit_with_error.js'),
       ['--correct'],
       {
@@ -84,7 +84,7 @@ suite('Uncaught Errors', () => {
 
   test('should exit no matter what', function(done) {
 
-    let proc = fork(
+    const proc = fork(
       path.resolve(__dirname, './should_exit_with_error.js'),
       ['--incorrect'],
       {
@@ -96,13 +96,13 @@ suite('Uncaught Errors', () => {
     let output = '';
 
     proc.stdout.on('data', function(data) {
-      let s = data.toString();
+      const s = data.toString();
       debug(s);
       output += s;
     });
 
     proc.stderr.on('data', function(data) {
-      let s = data.toString();
+      const s = data.toString();
       debug(s);
       output += s;
     });
