@@ -58,15 +58,6 @@ repositories:
     stack: heroku-16
     buildpack: https://github.com/heroku/heroku-buildpack-nodejs
 
-- name: pulse
-  kind: service
-  source: https://github.com/taskcluster/taskcluster-pulse#master
-  docs: generated
-  service:
-    buildtype: heroku-buildpack
-    stack: heroku-16
-    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
-
 - name: hooks
   kind: service
   source: https://github.com/taskcluster/taskcluster-hooks#master
@@ -209,12 +200,6 @@ repositories:
   docs:
     tier: libraries
   source: https://github.com/taskcluster/json-e#master
-
-- name: pulse-publisher
-  kind: other
-  docs:
-    tier: libraries
-  source: https://github.com/taskcluster/pulse-publisher#master
 
 - name: taskcluster-cli
   kind: other
