@@ -2,7 +2,6 @@ let debug = require('debug')('taskcluster-lib-monitor');
 let _ = require('lodash');
 let assert = require('assert');
 let taskcluster = require('taskcluster-client');
-let utils = require('./utils');
 let Statsum = require('statsum');
 let MockMonitor = require('./mockmonitor');
 let Monitor = require('./monitor');
@@ -183,7 +182,7 @@ async function monitor(options) {
   }
 
   if (options.process) {
-    utils.resources(m, options.process, options.resourceInterval);
+    m.resources(options.process, options.resourceInterval);
   }
 
   return m;

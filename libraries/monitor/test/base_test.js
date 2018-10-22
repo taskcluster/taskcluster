@@ -1,15 +1,23 @@
-const utils = require('../src/utils.js');
+const BaseMonitor = require('../src/base');
 const assert = require('assert');
 
-suite('utils', function() {
+class TestMonitor extends BaseMonitor {
+  constructor() {
+    super();
+    this.measures = [];
+  }
+
+  measure(prefix, ms) {
+    this.measures.push({prefix, ms});
+  }
+}
+
+suite('BaseMonitor', function() {
   suite('timer', function() {
     let monitor;
 
     setup(function() {
-      monitor = {
-        measure: (prefix, ms) => monitor.measures.push({prefix, ms}),
-        measures: [],
-      };
+      monitor = new TestMonitor();
     });
 
     const takes100ms = () => new Promise(resolve => setTimeout(() => resolve(13), 100));
@@ -23,19 +31,19 @@ suite('utils', function() {
     };
 
     test('of a sync function', async function() {
-      assert.equal(utils.timer(monitor, 'pfx', () => 13), 13);
+      assert.equal(monitor.timer('pfx', () => 13), 13);
       await checkMonitor(1);
     });
 
     test('of a sync function that fails', async function() {
       assert.throws(() => {
-        utils.timer(monitor, 'pfx', () => { throw new Error('uhoh'); });
+        monitor.timer('pfx', () => { throw new Error('uhoh'); });
       }, /uhoh/);
       await checkMonitor(1);
     });
 
     test('of an async function', async function() {
-      assert.equal(await utils.timer(monitor, 'pfx', takes100ms), 13);
+      assert.equal(await monitor.timer('pfx', takes100ms), 13);
       await checkMonitor(1);
       assert(monitor.measures[0].ms >= 90);
     });
@@ -43,7 +51,7 @@ suite('utils', function() {
     test('of an async function that fails', async function() {
       let err;
       try {
-        await utils.timer(monitor, 'pfx', async () => { throw new Error('uhoh'); });
+        await monitor.timer('pfx', async () => { throw new Error('uhoh'); });
       } catch (e) {
         err = e;
       }
@@ -52,7 +60,7 @@ suite('utils', function() {
     });
 
     test('of a promise', async function() {
-      assert.equal(await utils.timer(monitor, 'pfx', takes100ms()), 13);
+      assert.equal(await monitor.timer('pfx', takes100ms()), 13);
       await checkMonitor(1);
       assert(monitor.measures[0].ms >= 90);
     });
@@ -60,7 +68,7 @@ suite('utils', function() {
     test('of a failed promise', async function() {
       let err;
       try {
-        await utils.timer(monitor, 'pfx', Promise.reject(new Error('uhoh')));
+        await monitor.timer('pfx', Promise.reject(new Error('uhoh')));
       } catch (e) {
         err = e;
       }
