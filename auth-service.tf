@@ -90,18 +90,6 @@ locals {
       ]
     },
     {
-      clientId    = "static/taskcluster/pulse"
-      accessToken = "${random_string.pulse_access_token.result}"
-      description = "..."
-
-      scopes = [
-        "auth:azure-table-access:${azurerm_storage_account.base.name}/PulseNamespaces",
-        "auth:azure-table-access:${azurerm_storage_account.base.name}/PulseRabbitQueues",
-        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/PulseNamespaces",
-        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/PulseRabbitQueues",
-      ]
-    },
-    {
       clientId    = "static/taskcluster/github"
       accessToken = "${random_string.github_access_token.result}"
       description = "..."
