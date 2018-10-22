@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { arrayOf, shape, string } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import deepSortObject from 'deep-sort-object';
 import Code from '@mozilla-frontend-infra/components/Code';
 import Label from '@mozilla-frontend-infra/components/Label';
 import { withStyles } from '@material-ui/core/styles';
@@ -97,6 +98,7 @@ export default class TaskDetailsCard extends Component {
     const { showPayload, showExtra } = this.state;
     const isExternal = task.metadata.source.startsWith('https://');
     const tags = Object.entries(task.tags);
+    const payload = deepSortObject(task.payload);
 
     return (
       <Card raised>
@@ -342,7 +344,7 @@ export default class TaskDetailsCard extends Component {
                       disableTypography
                       primary={
                         <Code language="json">
-                          {JSON.stringify(task.payload, null, 2)}
+                          {JSON.stringify(payload, null, 2)}
                         </Code>
                       }
                     />
