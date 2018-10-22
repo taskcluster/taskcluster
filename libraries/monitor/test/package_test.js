@@ -1,10 +1,10 @@
-suite('Package', () => {
-  let assert = require('assert');
-  let pack = require('../package.json');
-  let exec = require('child_process');
+const assert = require('assert');
+const pack = require('../package.json');
+const exec = require('child_process');
 
+suite('Package', () => {
   test('git tag must match package version', function() {
-    let tag = exec.execSync('git tag -l --contains HEAD').toString().trim();
+    const tag = exec.execSync('git tag -l --contains HEAD').toString().trim();
     if (tag === '') {
       console.log('    No git tag, no need to check tag!');
       this.skip();

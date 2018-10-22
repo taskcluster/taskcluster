@@ -1,8 +1,8 @@
-let debug = require('debug')('taskcluster-lib-monitor');
-let _ = require('lodash');
-let Promise = require('bluebird');
-let raven = require('raven');
-let BaseMonitor = require('./base');
+const debug = require('debug')('taskcluster-lib-monitor');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const raven = require('raven');
+const BaseMonitor = require('./base');
 
 class Monitor extends BaseMonitor {
 
@@ -30,7 +30,7 @@ class Monitor extends BaseMonitor {
 
     this._sentry = this._sentry.then(async (sentry) => {
       if (!sentry.expires || Date.parse(sentry.expires) <= Date.now()) {
-        let sentryInfo = await this._sentryDSN(this._opts.projectName);
+        const sentryInfo = await this._sentryDSN(this._opts.projectName);
         return {
           client: new raven.Client(sentryInfo.dsn.secret, _.defaults(
             {}, this._opts.sentryOptions, {
@@ -100,7 +100,7 @@ class Monitor extends BaseMonitor {
   }
 
   prefix(prefix) {
-    let newopts = _.cloneDeep(this._opts);
+    const newopts = _.cloneDeep(this._opts);
     newopts.prefix = (this._opts.prefix || '')  + '.' + prefix;
     return new Monitor(
       this._sentryDSN,
