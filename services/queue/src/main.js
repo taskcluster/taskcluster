@@ -590,6 +590,7 @@ let load = loader({
 
       monitor.count('expire-queues.done');
       monitor.stopResourceMonitoring();
+      queueService.terminate();
       await monitor.flush();
     },
   },
