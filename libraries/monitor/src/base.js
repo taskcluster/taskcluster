@@ -161,6 +161,25 @@ class BaseMonitor {
   }
 
   /**
+   * Monitor a one-shot process.  This function's promise never resolves!
+   */
+  async oneShot(name, fn) {
+    let exitStatus = 0;
+
+    try {
+      try {
+        await this.timer(`${name}.duration`, fn);
+        this.count(`${name}.done`);
+      } catch (err) {
+        this.reportError(err);
+        exitStatus = 1;
+      }
+    } finally {
+      process.exit(exitStatus);
+    }
+  }
+
+  /**
    * Given a process name, this will report basic
    * OS-level usage statistics like CPU and Memory
    * on a minute-by-minute basis.

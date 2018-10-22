@@ -236,6 +236,31 @@ const doodad = monitor.timeKeeper('metricName');
 doodad.measure();
 ```
 
+### Monitoring One-Shot Processes
+
+Many Taskcluster services use one-shot processes to expire old data.  The
+expectation is that these processes will be started at specific times, do their
+business, and exit.  The `oneShot` method is designed to wrap such processs
+with timing and error handling support.
+
+```javascript
+  'expire-info': {
+    requires: ['cfg', 'monitor'],
+    setup: async ({cfg, monitor}) => {
+      monitor.oneShot('expire-info', () => {
+        // do the expiration stuff
+      });
+    },  
+  },  
+```
+
+This function will:
+ * time the invocation, measured as `duration`
+ * count the invocation if successful, measured as `done`
+ * report any errors or promise rejections
+ * shut down and flush monitoring
+ * call `process.exit` on success or failure
+Note, then, that the function **does not return**.
 
 ###  Audit Logs
 For the time being, this is restricted to services that have use AWS credentials directly rather than via accessing via the
