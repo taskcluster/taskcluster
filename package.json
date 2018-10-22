@@ -22,7 +22,9 @@
     }
   },
   "lint-staged": {
-    "*.{js,jsx}": ["yarn lint"]
+    "*.{js,jsx}": [
+      "yarn lint"
+    ]
   },
   "dependencies": {
     "@material-ui/core": "^3.3.0",
@@ -111,7 +113,7 @@
     "node-fetch": "^2.2.0",
     "prettier": "^1.14.3",
     "react-styleguidist": "^7.3.11",
-    "webpack": "^4.20.2",
+    "webpack": "^4.22.0",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.9"
   },
