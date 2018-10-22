@@ -5,6 +5,7 @@ const db = new Dexie('collections');
 db.version(1).stores({
   taskIdsHistory: 'taskId',
   taskGroupIdsHistory: 'taskGroupId',
+  userPreferences: '',
 });
 
 /**
