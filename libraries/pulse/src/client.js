@@ -84,33 +84,43 @@ class Client extends events.EventEmitter {
   }
 
   /**
-   * Create a new connection, retiring any existing connection.
+   * Create a new connection, retiring any existing connection.  This is a "fire-
+   * and-forget" method, that will never throw an exception and need not be
+   * awaited.
    */
   recycle() {
-    this.debug('recycling');
+    try {
+      // Note that errors here are likely to leave the connection in a "hung" state;
+      // nothing here should depend on network access or anything else that can
+      // fail intermittently.
+      this.debug('recycling');
 
-    if (this.connections.length) {
-      const currentConn = this.connections[0];
-      currentConn.retire();
-    }
+      if (this.connections.length) {
+        const currentConn = this.connections[0];
+        currentConn.retire();
+      }
 
-    if (this.running) {
-      const newConn = this._startConnection();
+      if (this.running) {
+        const newConn = this._startConnection();
 
-      newConn.once('connected', () => {
-        this.emit('connected', newConn);
-      });
-      newConn.once('finished', () => {
-        this.connections = this.connections.filter(conn => conn !== newConn);
-      });
-      newConn.once('failed', () => {
-        this.recycle();
-      });
-      this.connections.unshift(newConn);
+        newConn.once('connected', () => {
+          this.emit('connected', newConn);
+        });
+        newConn.once('finished', () => {
+          this.connections = this.connections.filter(conn => conn !== newConn);
+        });
+        newConn.once('failed', () => {
+          this.recycle();
+        });
+        this.connections.unshift(newConn);
+      }
+    } catch (err) {
+      this.monitor.reportError(err);
     }
   }
 
   _startConnection() {
+    // This method is part of recycle() and bears the same cautions about failure
     const newConn = new Connection(this._retirementDelay);
 
     // don't actually start connecting until at least minReconnectionInterval has passed
