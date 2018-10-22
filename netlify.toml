@@ -1,0 +1,18 @@
+[build]
+  command = "yarn build"
+  publish = "build"
+
+[build.environment]
+  YARN_FLAGS = "--frozen-lockfile"
+  YARN_VERSION = "1.10.1"
+  NODE_VERSION = "10.0.0"
+  APPLICATION_NAME = "Taskcluster"
+  GRAPHQL_ENDPOINT = "https://taskcluster-web-server.herokuapp.com/graphql"
+  GRAPHQL_SUBSCRIPTION_ENDPOINT = "wss://taskcluster-web-server.herokuapp.com/subscription"
+  LOGIN_STRATEGIES = ""
+
+# Rule for Single Page Applications
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
