@@ -166,8 +166,8 @@ const load = loader({
   },
 
   syncInstallations: {
-    requires: ['github', 'OwnersDirectory'],
-    setup: async ({github, OwnersDirectory}) => {
+    requires: ['github', 'OwnersDirectory', 'monitor'],
+    setup: async ({github, OwnersDirectory, monitor}) => {
       let gh = await github.getIntegrationGithub();
       let installations = (await gh.apps.getInstallations({})).data;
       await Promise.map(installations, inst => {
@@ -176,6 +176,8 @@ const load = loader({
           owner: inst.account.login,
         }, true);
       });
+      monitor.stopResourceMonitoring();
+      await monitor.flush();
     },
   },
 
