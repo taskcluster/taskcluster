@@ -5,6 +5,10 @@
   "main": "build/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
+  "engines": {
+    "node": ">=10.0.0",
+    "yarn": ">=1.10.0"
+  },
   "scripts": {
     "build": "webpack --mode production",
     "start": "webpack --watch --mode development",
@@ -40,11 +44,11 @@
     "deepmerge": "^2.0.1",
     "ejs": "^2.6.1",
     "express": "^4.16.3",
-    "graphql": "^0.13.2",
+    "graphql": "^14.0.2",
     "graphql-depth-limit": "^1.1.0",
     "graphql-iso-date": "^3.5.0",
-    "graphql-playground-middleware-express": "^1.6.0",
-    "graphql-tools": "^3.0.5",
+    "graphql-playground-middleware-express": "^1.7.6",
+    "graphql-tools": "^4.0.2",
     "graphql-type-json": "^0.2.0",
     "graphql-validation-complexity": "^0.2.3",
     "immutable": "^3.8.2",
