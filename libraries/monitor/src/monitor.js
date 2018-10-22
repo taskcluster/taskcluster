@@ -2,7 +2,6 @@ let debug = require('debug')('taskcluster-lib-monitor');
 let _ = require('lodash');
 let Promise = require('bluebird');
 let raven = require('raven');
-let utils = require('./utils');
 let BaseMonitor = require('./base');
 
 class Monitor extends BaseMonitor {
@@ -55,7 +54,7 @@ class Monitor extends BaseMonitor {
       sentry.client.captureException(err, {
         tags: _.defaults({
           prefix: this._opts.projectName + (this._opts.prefix || '.root'),
-          process: this._process || 'unknown',
+          process: this._procName || 'unknown',
         }, tags),
         level,
       });

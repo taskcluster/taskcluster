@@ -3,7 +3,6 @@ let events = require('events');
 let _ = require('lodash');
 let Promise = require('bluebird');
 let AWS = require('aws-sdk');
-let utils = require('./utils');
 
 // This number comes from the Kinesis docs.
 const MAX_RECORD_SIZE = 1000 * 1000;
@@ -98,7 +97,8 @@ class KinesisLog extends events.EventEmitter {
     this._records = [];
 
     // Now submit the chunks
-    await utils.timer(this._statsum, 'auditlog.report', Promise.map(chunks, async chunk => {
+    let start = process.hrtime();
+    await Promise.map(chunks, async chunk => {
       let {records} = chunk;
       let res;
       try {
@@ -139,7 +139,9 @@ class KinesisLog extends events.EventEmitter {
       if (this._records.length) {
         this._scheduleFlush();
       }
-    }));
+    });
+    let d = process.hrtime(start);
+    this._statsum.measure('auditlog.report', d[0] * 1000 + d[1] / 1000000);
   }
 }
 
