@@ -2,9 +2,11 @@ let debug = require('debug')('taskcluster-lib-monitor');
 let _ = require('lodash');
 let assert = require('assert');
 let utils = require('./utils');
+let BaseMonitor = require('./base');
 
-class MockMonitor {
+class MockMonitor extends BaseMonitor {
   constructor(opts, counts = {}, measures = {}, errors = [], records = []) {
+    super();
     this._opts = opts;
     this.counts = counts;
     this.measures = measures;
@@ -23,10 +25,6 @@ class MockMonitor {
     this.records.push(record);
   }
 
-  async captureError(err, level='error', tags={}) {
-    return this.reportError(err, level, tags);
-  }
-
   count(key, val) {
     let k = this._key(key);
     debug('count %s by %s', k, val || 1);
@@ -38,20 +36,6 @@ class MockMonitor {
     assert(typeof val === 'number', 'Measurement value must be a number');
     debug('measure %s at %s', k, val);
     this.measures[k] = (this.measures[k] || []).concat(val);
-  }
-
-  timer(key, funcOrPromise) {
-    return utils.timer(this, key, funcOrPromise);
-  }
-
-  timedHandler(name, handler) {
-    return async (message) => { await handler(message); };
-  }
-
-  expressMiddleware(name) {
-    return (req, res, next) => {
-      next();
-    };
   }
 
   _key(key) {
@@ -77,30 +61,6 @@ class MockMonitor {
     );
   }
 
-  timedHandler(name, handler) {
-    return utils.timedHandler(this, name, handler);
-  }
-
-  timeKeeper(name) {
-    return new utils.TimeKeeper(this, name);
-  }
-
-  expressMiddleware(name) {
-    return utils.expressMiddleware(this, name);
-  }
-
-  resources(process, interval = 10) {
-    this._opts.process = process;
-    return utils.resources(this, process, interval);
-  }
-
-  stopResourceMonitoring() {
-    clearInterval(this._resourceInterval);
-  }
-
-  patchAWS(service) {
-    utils.patchAWS(this, service);
-  }
 }
 
 module.exports = MockMonitor;
