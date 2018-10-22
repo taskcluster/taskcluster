@@ -3,10 +3,12 @@ let _ = require('lodash');
 let Promise = require('bluebird');
 let raven = require('raven');
 let utils = require('./utils');
+let BaseMonitor = require('./base');
 
-class Monitor {
+class Monitor extends BaseMonitor {
 
   constructor(sentryDSN, sentry, statsumClient, auditlog, opts) {
+    super();
     this._opts = opts;
     this._sentryDSN = sentryDSN;
     // This must be a Promise that resolves to {client, expires}
@@ -53,7 +55,7 @@ class Monitor {
       sentry.client.captureException(err, {
         tags: _.defaults({
           prefix: this._opts.projectName + (this._opts.prefix || '.root'),
-          process: this._opts.process || 'unknown',
+          process: this._process || 'unknown',
         }, tags),
         level,
       });
@@ -77,12 +79,6 @@ class Monitor {
 
   log(record) {
     this._auditlog.log(record);
-  }
-
-  // captureError is an alias for reportError to match up
-  // with the raven api better.
-  async captureError(err, level='error', tags={}) {
-    return this.reportError(err, level, tags);
   }
 
   count(key, val) {
@@ -114,36 +110,6 @@ class Monitor {
       this._auditlog,
       newopts
     );
-  }
-
-  timer(key, funcOrPromise) {
-    return utils.timer(this, key, funcOrPromise);
-  }
-
-  timedHandler(name, handler) {
-    return utils.timedHandler(this, name, handler);
-  }
-
-  timeKeeper(name) {
-    return new utils.TimeKeeper(this, name);
-  }
-
-  expressMiddleware(name) {
-    return utils.expressMiddleware(this, name);
-  }
-
-  resources(process, interval = 10) {
-    this._opts.process = process;
-    return utils.resources(this, process, interval);
-  }
-
-  stopResourceMonitoring() {
-    clearInterval(this._resourceInterval);
-  }
-
-  /** Patch an AWS service (an instance of a service from aws-sdk) */
-  patchAWS(service) {
-    utils.patchAWS(this, service);
   }
 }
 
