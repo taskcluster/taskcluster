@@ -17,9 +17,9 @@
     "create:fragment-matcher": "dotenv node src/scripts/queryServer"
   },
   "dependencies": {
-    "@material-ui/core": "^3.0.3",
+    "@material-ui/core": "^3.3.0",
     "@material-ui/icons": "^3.0.1",
-    "@material-ui/lab": "3.0.0-alpha.19",
+    "@material-ui/lab": "3.0.0-alpha.21",
     "@mozilla-frontend-infra/components": "^1.3.1",
     "@sentry/browser": "^4.1.1",
     "apollo-cache-inmemory": "^1.2.10",
@@ -41,7 +41,7 @@
     "dot-prop-immutable": "^1.4.0",
     "error-stack-parser": "^2.0.2",
     "fast-memoize": "^2.5.1",
-    "graphql": "^0.13.2",
+    "graphql": "^14.0.2",
     "highlight.js": "^9.12.0",
     "hterm-umd": "^1.0.1",
     "is-absolute-url": "^2.1.0",
