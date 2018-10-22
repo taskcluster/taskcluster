@@ -1,13 +1,13 @@
-suite('Sentry', () => {
-  let assert = require('assert');
-  let Promise = require('bluebird');
-  let monitoring = require('../');
-  let debug = require('debug')('test');
-  let nock = require('nock');
-  let authmock = require('./authmock');
-  let capcon = require('capture-console');
-  let libUrls = require('taskcluster-lib-urls');
+const assert = require('assert');
+const Promise = require('bluebird');
+const monitoring = require('../');
+const debug = require('debug')('test');
+const nock = require('nock');
+const authmock = require('./authmock');
+const capcon = require('capture-console');
+const libUrls = require('taskcluster-lib-urls');
 
+suite('Sentry', () => {
   let monitor = null;
 
   suite('enabled', function() {
@@ -28,7 +28,7 @@ suite('Sentry', () => {
 
     test('should log to sentry', function(done) {
 
-      let sentryScope = nock('https://app.getsentry.com')
+      const sentryScope = nock('https://app.getsentry.com')
         .filteringRequestBody(/.*/, '*')
         .post('/api/12345/store/', '*')
         .twice()
@@ -52,7 +52,7 @@ suite('Sentry', () => {
       let stdout = '';
       capcon.startIntercept(process.stdout, data => { stdout += data; });
 
-      let sentryScope = nock('https://app.getsentry.com')
+      const sentryScope = nock('https://app.getsentry.com')
         .filteringRequestBody(/.*/, '*')
         .post('/api/12345/store/', '*')
         .reply(500, () => {

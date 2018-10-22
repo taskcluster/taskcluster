@@ -1,16 +1,16 @@
-suite('Audit Logs', () => {
-  let _ = require('lodash');
-  let assert = require('assert');
-  let monitoring = require('../');
-  let AWS = require('aws-sdk-mock');
-  let testing = require('taskcluster-lib-testing');
-  let libUrls = require('taskcluster-lib-urls');
-  let nock = require('nock');
-  let authmock = require('./authmock');
+const _ = require('lodash');
+const assert = require('assert');
+const monitoring = require('../');
+const AWS = require('aws-sdk-mock');
+const testing = require('taskcluster-lib-testing');
+const libUrls = require('taskcluster-lib-urls');
+const nock = require('nock');
+const authmock = require('./authmock');
 
-  let logName = 'mocked-stream';
-  let monitor = null;
+suite('Audit Logs', () => {
+  const logName = 'mocked-stream';
   let records = {};
+  let monitor = null;
 
   setup(async () => {
     authmock.setup();
@@ -25,7 +25,7 @@ suite('Audit Logs', () => {
       if (Buffer.byteLength(params.Records.join(','), 'utf-8') > 1000 * 1000) {
         return callback(new Error('Record size too large!'), null);
       }
-      let StreamName = params.StreamName;
+      const StreamName = params.StreamName;
       records[StreamName] = records[StreamName].concat(params.Records);
       callback(null, {FailedPutCount: 0});
     });
@@ -51,7 +51,7 @@ suite('Audit Logs', () => {
   });
 
   test('should write logs on explicit flush', async function() {
-    let subject = {test: 123};
+    const subject = {test: 123};
     monitor.log(subject);
     await monitor.flush();
     assert.equal(records[logName].length, 1);
@@ -64,7 +64,7 @@ suite('Audit Logs', () => {
   });
 
   test('should write logs with newlines in them', async function() {
-    let subject = {test: 'abc\n123'};
+    const subject = {test: 'abc\n123'};
     monitor.log(subject);
     await monitor.flush();
     assert.equal(records[logName].length, 1);
@@ -72,7 +72,7 @@ suite('Audit Logs', () => {
   });
 
   test('should write logs on 500 records', async function() {
-    let subjects = _.range(5302).map(i => ({foo: i}));
+    const subjects = _.range(5302).map(i => ({foo: i}));
     subjects.forEach(subject => monitor.log(subject));
     await monitor.flush();
     assert.equal(records[logName].length, 5302);
@@ -83,7 +83,7 @@ suite('Audit Logs', () => {
 
   test('should write logs on too many bytes', async function() {
     // This should get the records to be over 4MB in total
-    let subjects = _.range(250).map(i => ({foo: i, bar: _.repeat('#', 16000)}));
+    const subjects = _.range(250).map(i => ({foo: i, bar: _.repeat('#', 16000)}));
     subjects.forEach(subject => monitor.log(subject));
     await monitor.flush();
     assert.equal(records[logName].length, 250);
@@ -147,11 +147,11 @@ suite('Audit Logs', () => {
         tried = true;
         return callback({statusCode: 500, message: 'uh oh!', retryable: true}, null);
       }
-      let StreamName = params.StreamName;
+      const StreamName = params.StreamName;
       records[StreamName] = records[StreamName].concat(params.Records);
       callback(null, {FailedPutCount: 0});
     });
-    let subjects = _.range(999).map(i => ({foo: Array(5000).join('x')}));
+    const subjects = _.range(999).map(i => ({foo: Array(5000).join('x')}));
     subjects.forEach(subject => monitor.log(subject));
     await monitor.flush();
     await testing.poll(async () => {

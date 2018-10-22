@@ -1,11 +1,11 @@
-suite('Statsum', () => {
-  let assert = require('assert');
-  let monitoring = require('../');
-  let debug = require('debug')('test');
-  let nock = require('nock');
-  let authmock = require('./authmock');
-  let libUrls = require('taskcluster-lib-urls');
+const assert = require('assert');
+const monitoring = require('../');
+const debug = require('debug')('test');
+const nock = require('nock');
+const authmock = require('./authmock');
+const libUrls = require('taskcluster-lib-urls');
 
+suite('Statsum', () => {
   let monitor = null;
 
   suite('enabled', function() {
@@ -40,7 +40,7 @@ suite('Statsum', () => {
       monitor.count('testing', 10);
       await monitor.flush();
 
-      let pre = monitor.prefix('sub');
+      const pre = monitor.prefix('sub');
       pre.count('testing2', 100);
       await pre.flush();
 

@@ -1,11 +1,11 @@
-suite('MockMonitor', () => {
-  let assert = require('assert');
-  let Promise = require('bluebird');
-  let monitoring = require('../');
-  let debug = require('debug')('test');
-  let libUrls = require('taskcluster-lib-urls');
-  let testing = require('taskcluster-lib-testing');
+const assert = require('assert');
+const Promise = require('bluebird');
+const monitoring = require('../');
+const debug = require('debug')('test');
+const libUrls = require('taskcluster-lib-urls');
+const testing = require('taskcluster-lib-testing');
 
+suite('MockMonitor', () => {
   let monitor = null;
 
   setup(async () => {
@@ -23,14 +23,14 @@ suite('MockMonitor', () => {
   });
 
   test('should work with single prefix', function() {
-    let monitor2 = monitor.prefix('single');
+    const monitor2 = monitor.prefix('single');
     monitor2.count('test-key');
     assert.deepEqual(monitor.counts, {'mm.single.test-key': 1});
   });
 
   test('should work with double prefix', function() {
-    let monitor2 = monitor.prefix('single');
-    let monitor3 = monitor2.prefix('double');
+    const monitor2 = monitor.prefix('single');
+    const monitor3 = monitor2.prefix('double');
     monitor3.count('test-key');
     assert.deepEqual(monitor.counts, {'mm.single.double.test-key': 1});
   });
@@ -64,7 +64,7 @@ suite('MockMonitor', () => {
   });
 
   test('should monitor resource usage', async function() {
-    let stopMonitor = monitor.resources('testing', 1/500);
+    const stopMonitor = monitor.resources('testing', 1/500);
     return testing.poll(async () => {
       assert.notEqual(monitor.measures['mm.process.testing.cpu'], undefined);
       assert(monitor.measures['mm.process.testing.cpu'].length > 1);
@@ -74,7 +74,7 @@ suite('MockMonitor', () => {
   });
 
   test('monitor.timer(k, value)', async () => {
-    let v = monitor.timer('k', 45);
+    const v = monitor.timer('k', 45);
     assert(v == 45);
     // Sleep so that the promise handler can be handled before we check that
     // something was recorded...
@@ -83,14 +83,14 @@ suite('MockMonitor', () => {
   });
 
   test('monitor.timer(k, () => value)', async () => {
-    let v = monitor.timer('k', () => 45);
+    const v = monitor.timer('k', () => 45);
     assert(v == 45);
     await new Promise(accept => setTimeout(accept, 10));
     assert(monitor.measures['mm.k'].length === 1);
   });
 
   test('monitor.timer(k, async () => value)', async () => {
-    let v = await monitor.timer('k', async () => {
+    const v = await monitor.timer('k', async () => {
       await new Promise(accept => setTimeout(accept, 100));
       return 45;
     });
@@ -111,20 +111,20 @@ suite('MockMonitor', () => {
   });
 
   test('monitor.timeKeeper', async () => {
-    let doodad = monitor.timeKeeper('doodadgood');
+    const doodad = monitor.timeKeeper('doodadgood');
     doodad.measure();
     assert(monitor.measures['mm.doodadgood'].length === 1);
   });
 
   test('monitor.timeKeeper forced double submit', async () => {
-    let doodad = monitor.timeKeeper('doodadgood');
+    const doodad = monitor.timeKeeper('doodadgood');
     doodad.measure();
     doodad.measure(true);
     assert(monitor.measures['mm.doodadgood'].length === 2);
   });
 
   test('monitor.timeKeeper unforced double submit throws', async () => {
-    let doodad = monitor.timeKeeper('doodadgood');
+    const doodad = monitor.timeKeeper('doodadgood');
     doodad.measure();
     try {
       doodad.measure();
@@ -135,8 +135,8 @@ suite('MockMonitor', () => {
   });
 
   test('monitor.patchAWS(service)', async () => {
-    let aws = require('aws-sdk');
-    let ec2 = new aws.EC2({
+    const aws = require('aws-sdk');
+    const ec2 = new aws.EC2({
       region: 'us-west-2',
       credentials: new aws.Credentials('akid', 'fake', 'session'),
     });

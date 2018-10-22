@@ -1,8 +1,8 @@
-let debug = require('debug')('taskcluster-lib-monitor');
-let events = require('events');
-let _ = require('lodash');
-let Promise = require('bluebird');
-let AWS = require('aws-sdk');
+const debug = require('debug')('taskcluster-lib-monitor');
+const events = require('events');
+const _ = require('lodash');
+const Promise = require('bluebird');
+const AWS = require('aws-sdk');
 
 // This number comes from the Kinesis docs.
 const MAX_RECORD_SIZE = 1000 * 1000;
@@ -36,7 +36,7 @@ class KinesisLog extends events.EventEmitter {
   }
 
   async setup() {
-    let stat = await this._kinesis.describeStream({
+    const stat = await this._kinesis.describeStream({
       StreamName: this._logName,
     }).promise();
     if (stat.StreamDescription.StreamStatus !== 'ACTIVE') {
@@ -45,12 +45,12 @@ class KinesisLog extends events.EventEmitter {
   }
 
   log(record) {
-    let line = JSON.stringify(record) + '\n';
-    let size = Buffer.byteLength(line, 'utf-8');
+    const line = JSON.stringify(record) + '\n';
+    const size = Buffer.byteLength(line, 'utf-8');
 
     // Each line can have up to 1MB
     if (size > MAX_RECORD_SIZE) {
-      let msg = `Tried to log too-long line! (${size} bytes > 1MB)`;
+      const msg = `Tried to log too-long line! (${size} bytes > 1MB)`;
       console.error(msg);
       if (this._reportErrors) {
         this.emit('error', new Error(msg));
@@ -78,7 +78,7 @@ class KinesisLog extends events.EventEmitter {
       return;
     }
 
-    let chunks = [{chunkSize: 0, records: []}];
+    const chunks = [{chunkSize: 0, records: []}];
     let c = 0;
     let totalSize = 0;
 
@@ -97,12 +97,12 @@ class KinesisLog extends events.EventEmitter {
     this._records = [];
 
     // Now submit the chunks
-    let start = process.hrtime();
+    const start = process.hrtime();
     await Promise.map(chunks, async chunk => {
-      let {records} = chunk;
+      const {records} = chunk;
       let res;
       try {
-        let krecords = records.map(line => {
+        const krecords = records.map(line => {
           return {Data: line.line, PartitionKey: AUDITLOG_PARTITION_KEY};
         });
         res = await this._kinesis.putRecords({
@@ -124,7 +124,7 @@ class KinesisLog extends events.EventEmitter {
         records.forEach(record => {
           debug('Failed to write record ' + JSON.stringify(record) + '. Reason: ' + err.ErrorMessage);
           if (record.retries > MAX_RETRIES) {
-            let msg = `Record failed during submission more than ${MAX_RETRIES} times. Rejecting.`;
+            const msg = `Record failed during submission more than ${MAX_RETRIES} times. Rejecting.`;
             console.error(msg);
             if (this._reportErrors) {
               this.emit('error', new Error(msg));
@@ -140,7 +140,7 @@ class KinesisLog extends events.EventEmitter {
         this._scheduleFlush();
       }
     });
-    let d = process.hrtime(start);
+    const d = process.hrtime(start);
     this._statsum.measure('auditlog.report', d[0] * 1000 + d[1] / 1000000);
   }
 }
