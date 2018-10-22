@@ -13,8 +13,16 @@
     "test": "karma start --single-run",
     "styleguide": "styleguidist server",
     "styleguide:build": "styleguidist build",
-    "lint": "eslint --cache --format codeframe --ext mjs,js,jsx src test",
+    "lint": "eslint --cache --format codeframe --ext js,jsx src test",
     "create:fragment-matcher": "dotenv node src/scripts/queryServer"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx}": ["yarn lint"]
   },
   "dependencies": {
     "@material-ui/core": "^3.3.0",
@@ -94,8 +102,10 @@
     "eslint-config-prettier": "^3.1.0",
     "eslint-plugin-prettier": "^3.0.0",
     "graphql-tag": "^2.8.0",
+    "husky": "^1.1.2",
     "karma": "^3.0.0",
     "karma-cli": "^1.0.1",
+    "lint-staged": "^7.3.0",
     "mocha": "^5.2.0",
     "neutrino": "^9.0.0-beta.0",
     "node-fetch": "^2.2.0",
