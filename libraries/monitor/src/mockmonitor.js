@@ -1,7 +1,7 @@
-let debug = require('debug')('taskcluster-lib-monitor');
-let _ = require('lodash');
-let assert = require('assert');
-let BaseMonitor = require('./base');
+const debug = require('debug')('taskcluster-lib-monitor');
+const _ = require('lodash');
+const assert = require('assert');
+const BaseMonitor = require('./base');
 
 class MockMonitor extends BaseMonitor {
   constructor(opts, counts = {}, measures = {}, errors = [], records = []) {
@@ -25,13 +25,13 @@ class MockMonitor extends BaseMonitor {
   }
 
   count(key, val) {
-    let k = this._key(key);
+    const k = this._key(key);
     debug('count %s by %s', k, val || 1);
     this.counts[k] = (this.counts[k] || 0) + (val || 1);
   }
 
   measure(key, val) {
-    let k = this._key(key);
+    const k = this._key(key);
     assert(typeof val === 'number', 'Measurement value must be a number');
     debug('measure %s at %s', k, val);
     this.measures[k] = (this.measures[k] || []).concat(val);
@@ -50,7 +50,7 @@ class MockMonitor extends BaseMonitor {
   }
 
   prefix(prefix) {
-    let newopts = _.cloneDeep(this._opts);
+    const newopts = _.cloneDeep(this._opts);
     newopts.prefix = (this._opts.prefix || '')  + '.' + prefix;
     return new MockMonitor(
       newopts,

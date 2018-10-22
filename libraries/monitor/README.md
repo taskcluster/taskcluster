@@ -87,7 +87,7 @@ To construct an object capable of measuring and counting, but which adds a
 prefix to the measured and counted names, use
 
 ```js
-let thingMonitor = monitor.prefix('thing');
+const thingMonitor = monitor.prefix('thing');
 thing.measure('foo', 11);
 thing.count('bar');
 ```
@@ -124,7 +124,7 @@ monitor.reportError(new Error("..."), 'warning', {foo: 'bar'});
 
 ```js
 // Begin monitoring CPU & Memory
-let stopMonitor = monitor.resources('web');
+const stopMonitor = monitor.resources('web');
 ```
 you can later call `stopMonitor()` to gracefully shut down the monitoring.
 
@@ -139,17 +139,17 @@ it takes for the promise to resolve.
 The following examples are valid usages:
 ```js
 // Timing a synchronous operation
-let root = monitor.timer('compute-sqrt', () => {
+const root = monitor.timer('compute-sqrt', () => {
   return Math.sqrt(25);
 })
 assert(root === 5);
 
 // Timing a single asynchronous function (promise)
-let task = await monitor.timer('load-task', queue.task(taskId));
+const task = await monitor.timer('load-task', queue.task(taskId));
 assert(task.workerType == '...'); // task is the task definition response
 
 // Timing an asynchronous function
-let task = await monitor.timer('poll-for-task', async () => {
+const task = await monitor.timer('poll-for-task', async () => {
   while (true) {
     try {
       return await queue.task(taskId);
@@ -173,17 +173,17 @@ A common pattern in Taskcluster projects is to have handler functions in a worke
 can be timed (in milliseconds) by wrapping them with `taskcluster-lib-monitor`:
 
 ```js
-let monitor = await monitoring({
+const monitor = await monitoring({
   projectName: 'tc-stats-collector',
   credentials: {clientId: 'test-client', accessToken: 'test'},
 });
 
-let listener = new taskcluster.PulseListener({
+const listener = new taskcluster.PulseListener({
   credentials: {clientId: 'test-client', accessToken: 'test'},
   queueName: 'a-queue-name',
 });
 
-let handler = function(message) {
+const handler = function(message) {
   console.log(message);
 };
 
@@ -198,7 +198,7 @@ Most Taskcluster services are Express services. We can easily time how long endp
 as middleware:
 
 ```js
-let monitor = await monitoring({
+const monitor = await monitoring({
   projectName: 'tc-stats-collector',
   credentials: {clientId: 'test-client', accessToken: 'test'},
 });
@@ -216,8 +216,8 @@ Oftentimes a lot of a service's time will be spent interacting with AWS services
 as in the following example:
 
 ```js
-let aws = require('aws-sdk');
-let ec2 = new aws.EC2({region: 'us-west-2'});
+const aws = require('aws-sdk');
+const ec2 = new aws.EC2({region: 'us-west-2'});
 monitor.patchAWS(ec2);
 await ec2.describeAvailabilityZones().promise().catch(err => {
   debug('Ignored ec2 error, we measure duration, not success, err: ', err);
@@ -229,7 +229,7 @@ If none of the above options are convenient for you, you can also just start and
 only be started and measured once. Any attempts over that will cause it to throw an Error.
 
 ```js
-let doodad = monitor.timeKeeper('metricName');
+const doodad = monitor.timeKeeper('metricName');
 // Do some stuff here that takes some amount of time
 // ...
 // Keep doing stuff here however long you like
@@ -244,7 +244,7 @@ allow writing arbitrary JSON blobs to that endpoint. The blobs will end up in S3
 like audit logs that we want to keep for a long time. Records must be less than 1MB when stringified.
 
 ```js
-    let monitor = await monitoring({
+    const monitor = await monitoring({
       ...,
       aws: {credentials: {accessKeyId: 'foo', secretAccessKey: 'bar'}, region: 'us-east-1'},
       logName: 'audit-log-stream',

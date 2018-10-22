@@ -29,7 +29,7 @@ class TimeKeeper {
       throw new Error('Cannot submit measurement twice for ' + this._opts.prefix + ' ' + this.name);
     }
     this.submitted = true;
-    let d = process.hrtime(this.start);
+    const d = process.hrtime(this.start);
     this.monitor.measure(this.name, d[0] * 1000 + d[1] / 1000000);
   }
 };
@@ -49,9 +49,9 @@ class BaseMonitor {
   }
 
   timer(key, funcOrPromise) {
-    let start = process.hrtime();
-    let done = (x) => {
-      let d = process.hrtime(start);
+    const start = process.hrtime();
+    const done = (x) => {
+      const d = process.hrtime(start);
       this.measure(key, d[0] * 1000 + d[1] / 1000000);
     };
     if (funcOrPromise instanceof Function) {
@@ -74,7 +74,7 @@ class BaseMonitor {
    */
   timedHandler(name, handler) {
     return async (message) => {
-      let start = process.hrtime();
+      const start = process.hrtime();
       let success = 'success';
       try {
         await handler(message);
@@ -82,9 +82,9 @@ class BaseMonitor {
         success = 'error';
         throw e;
       } finally {
-        let d = process.hrtime(start);
+        const d = process.hrtime(start);
         for (let stat of [success, 'all']) {
-          let k = [name, stat].join('.');
+          const k = [name, stat].join('.');
           this.measure(k, d[0] * 1000 + d[1] / 1000000);
           this.count(k);
         }
@@ -99,8 +99,8 @@ class BaseMonitor {
   expressMiddleware(name) {
     return (req, res, next) => {
       let sent = false;
-      let start = process.hrtime();
-      let send = () => {
+      const start = process.hrtime();
+      const send = () => {
         try {
           // Avoid sending twice
           if (sent) {
@@ -108,7 +108,7 @@ class BaseMonitor {
           }
           sent = true;
 
-          let d = process.hrtime(start);
+          const d = process.hrtime(start);
 
           let success = 'success';
           if (res.statusCode >= 500) {
@@ -118,7 +118,7 @@ class BaseMonitor {
           }
 
           for (let stat of [success, 'all']) {
-            let k = [name, stat].join('.');
+            const k = [name, stat].join('.');
             this.measure(k, d[0] * 1000 + d[1] / 1000000);
             this.count(k);
           }
@@ -142,16 +142,16 @@ class BaseMonitor {
    * Patch an AWS service (an instance of a service from aws-sdk)
    */
   patchAWS(service) {
-    let monitor = this.prefix(service.serviceIdentifier);
-    let makeRequest = service.makeRequest;
+    const monitor = this.prefix(service.serviceIdentifier);
+    const makeRequest = service.makeRequest;
     service.makeRequest = function(operation, params, callback) {
-      let r = makeRequest.call(this, operation, params, callback);
+      const r = makeRequest.call(this, operation, params, callback);
       r.on('complete', () => {
-        let requestTime = (new Date()).getTime() - r.startTime.getTime();
+        const requestTime = (new Date()).getTime() - r.startTime.getTime();
         monitor.measure(`global.${operation}.duration`, requestTime);
         monitor.count(`global.${operation}.count`, 1);
         if (service.config && service.config.region) {
-          let region = service.config.region;
+          const region = service.config.region;
           monitor.measure(`${region}.${operation}.duration`, requestTime);
           monitor.count(`${region}.${operation}.count`, 1);
         }

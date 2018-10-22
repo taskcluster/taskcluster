@@ -1,14 +1,14 @@
-let debug = require('debug')('taskcluster-lib-monitor');
-let _ = require('lodash');
-let assert = require('assert');
-let taskcluster = require('taskcluster-client');
-let Statsum = require('statsum');
-let MockMonitor = require('./mockmonitor');
-let Monitor = require('./monitor');
-let auditlogs = require('./auditlogs');
-let rootdir = require('app-root-dir');
-let fs = require('fs');
-let path = require('path');
+const debug = require('debug')('taskcluster-lib-monitor');
+const _ = require('lodash');
+const assert = require('assert');
+const taskcluster = require('taskcluster-client');
+const Statsum = require('statsum');
+const MockMonitor = require('./mockmonitor');
+const Monitor = require('./monitor');
+const auditlogs = require('./auditlogs');
+const rootdir = require('app-root-dir');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * Create a new monitor, given options:
@@ -80,7 +80,7 @@ async function monitor(options) {
   }
   // Use taskcluster credentials for statsumToken and sentryDSN, if given
   if (options.credentials) {
-    let auth = new taskcluster.Auth(options);
+    const auth = new taskcluster.Auth(options);
     if (!statsumToken) {
       statsumToken = projectName => auth.statsumToken(projectName);
     }
@@ -106,9 +106,8 @@ async function monitor(options) {
   await auditlog.setup();
 
   // read gitVersionFile, if gitVersion is not set
-  let gitVersion;
   if (!options.gitVersion) {
-    let gitVersionFile = path.resolve(rootdir.get(), options.gitVersionFile);
+    const gitVersionFile = path.resolve(rootdir.get(), options.gitVersionFile);
     try {
       options.gitVersion = fs.readFileSync(gitVersionFile).toString().trim();
     } catch (err) {
@@ -117,7 +116,7 @@ async function monitor(options) {
   }
   delete options.gitVersionFile;
 
-  let m = new Monitor(sentryDSN, null, statsum, auditlog, options);
+  const m = new Monitor(sentryDSN, null, statsum, auditlog, options);
 
   if (statsum && options.reportStatsumErrors) {
     statsum.on('error', err => m.reportError(err, 'warning'));
@@ -159,7 +158,7 @@ async function monitor(options) {
       }
     });
     process.on('unhandledRejection', async (reason, p) => {
-      let err = 'Unhandled Rejection at: Promise ' + p + ' reason: ' + reason;
+      const err = 'Unhandled Rejection at: Promise ' + p + ' reason: ' + reason;
       console.log(err);
       if (!options.bailOnUnhandledRejection) {
         await m.reportError(err, 'error', {sort: 'unhandledRejection'});
