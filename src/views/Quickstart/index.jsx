@@ -54,6 +54,15 @@ const initialYaml = {
     },
   ],
 };
+const initialState = {
+  events: new Set([
+    'pull_request.opened',
+    'pull_request.reopened',
+    'pull_request.synchronize',
+  ]),
+  taskName: '',
+  taskDescription: '',
+};
 const baseCmd = [
   'git clone {{event.head.repo.url}} repo',
   'cd repo',
@@ -127,7 +136,7 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
 }))
 export default class QuickStart extends Component {
   state = {
-    ...this.initialState,
+    ...initialState,
     owner: '',
     repo: '',
     access: 'collaborators',
@@ -150,16 +159,6 @@ export default class QuickStart extends Component {
       installedState: data.githubRepository.installed ? 'success' : 'error',
     });
   }, 1000);
-
-  initialState = {
-    events: new Set([
-      'pull_request.opened',
-      'pull_request.reopened',
-      'pull_request.synchronize',
-    ]),
-    taskName: '',
-    taskDescription: '',
-  };
 
   handleEditorChange = editorValue => {
     this.setState({
@@ -205,7 +204,7 @@ export default class QuickStart extends Component {
   };
 
   handleReset = () => {
-    this.setState(this.initialState);
+    this.setState(initialState);
   };
 
   renderEditor() {
