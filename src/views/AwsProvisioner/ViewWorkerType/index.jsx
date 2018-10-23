@@ -13,6 +13,7 @@ import Button from '../../../components/Button';
 import AwsProvisionerErrorsTable from '../../../components/AwsProvisionerErrorsTable';
 import AwsProvisionerHealthTable from '../../../components/AwsProvisionerHealthTable';
 import AwsProvisionerWorkerTypeStatus from '../../../components/AwsProvisionerWorkerTypeStatus';
+import Snackbar from '../../../components/Snackbar';
 import Ec2ResourcesTable from '../../../components/Ec2ResourcesTable';
 import formatError from '../../../utils/formatError';
 import workerTypeQuery from './workerType.graphql';
@@ -43,6 +44,8 @@ export default class ViewWorkerType extends Component {
   state = {
     currentTab: 0,
     actionLoading: false,
+    showTerminateAllInstancesSnackbar: false,
+    showTerminateInstanceSnackbar: false,
   };
 
   handleTabChange = (e, currentTab) => {
@@ -65,7 +68,10 @@ export default class ViewWorkerType extends Component {
         variables: { workerType },
       });
 
-      this.setState({ actionLoading: false });
+      this.setState({
+        actionLoading: false,
+        showTerminateAllInstancesSnackbar: true,
+      });
     } catch (error) {
       this.setState({ actionLoading: false, error: formatError(error) });
     }
@@ -80,10 +86,20 @@ export default class ViewWorkerType extends Component {
         variables: { region, instanceId: id },
       });
 
-      this.setState({ actionLoading: false });
+      this.setState({
+        actionLoading: false,
+        showTerminateInstanceSnackbar: true,
+      });
     } catch (error) {
       this.setState({ actionLoading: false, error: formatError(error) });
     }
+  };
+
+  handleSnackbarClose = () => {
+    this.setState({
+      showTerminateAllInstancesSnackbar: false,
+      showTerminateInstanceSnackbar: false,
+    });
   };
 
   render() {
@@ -101,7 +117,13 @@ export default class ViewWorkerType extends Component {
         params: { workerType },
       },
     } = this.props;
-    const { currentTab, actionLoading } = this.state;
+    const {
+      currentTab,
+      actionLoading,
+      showTerminateAllInstancesSnackbar,
+      showTerminateInstanceSnackbar,
+    } = this.state;
+    const FIVE_SECONDS = 5000;
 
     return (
       <Dashboard title={`AWS Provisioner ${workerType}`}>
@@ -166,6 +188,18 @@ export default class ViewWorkerType extends Component {
               </div>
             </Tooltip>
           )}
+        <Snackbar
+          open={showTerminateAllInstancesSnackbar}
+          onClose={this.handleSnackbarClose}
+          autoHideDuration={FIVE_SECONDS}
+          message="A request has been sent to terminate all instances."
+        />
+        <Snackbar
+          open={showTerminateInstanceSnackbar}
+          onClose={this.handleSnackbarClose}
+          autoHideDuration={FIVE_SECONDS}
+          message="A request has been sent to terminate the instance."
+        />
       </Dashboard>
     );
   }

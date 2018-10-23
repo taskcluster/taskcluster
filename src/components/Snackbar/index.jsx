@@ -59,12 +59,11 @@ export default class Snackbar extends Component {
     /** Properties applied to the SnackbarContent element. */
     snackbarContentProps: object,
     /** Callback fired when the component requests to be closed. */
-    onClose: func,
+    onClose: func.isRequired,
   };
 
   static defaultProps = {
     variant: 'success',
-    onClose: null,
     snackbarContentProps: null,
   };
 
@@ -81,7 +80,7 @@ export default class Snackbar extends Component {
     const isWarning = variant === 'warning';
 
     return (
-      <MuiSnackbar {...props}>
+      <MuiSnackbar onClose={onClose} {...props}>
         <SnackbarContent
           className={classes[variant]}
           action={
