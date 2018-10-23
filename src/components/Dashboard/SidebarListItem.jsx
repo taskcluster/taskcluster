@@ -83,7 +83,14 @@ export default class SidebarListItem extends Component {
   };
 
   render() {
-    const { classes, icon, children, rightIcon, ...props } = this.props;
+    const {
+      classes,
+      icon,
+      children,
+      rightIcon,
+      staticContext,
+      ...props
+    } = this.props;
 
     return (
       <ListItem
