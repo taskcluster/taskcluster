@@ -11,7 +11,7 @@
     "build": "dotenv webpack -- --mode production",
     "start": "dotenv webpack-dev-server -- --mode development",
     "test": "karma start --single-run",
-    "styleguide": "styleguidist server",
+    "styleguide": "dotenv styleguidist server",
     "styleguide:build": "styleguidist build",
     "lint": "eslint --cache --format codeframe --ext js,jsx src test",
     "create:fragment-matcher": "dotenv node src/scripts/queryServer"
