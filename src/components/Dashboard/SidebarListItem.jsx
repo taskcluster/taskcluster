@@ -3,6 +3,7 @@ import { node, string } from 'prop-types';
 import classNames from 'classnames';
 import { withRouter, NavLink } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
+import { fade } from '@material-ui/core/styles/colorManipulator';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -18,7 +19,10 @@ import ListItemText from '@material-ui/core/ListItemText';
       color: theme.palette.common.white,
     },
     '& $icon': {
-      fill: theme.palette.common.white,
+      fill: fade(theme.palette.common.white, 0.9),
+      '& svg': {
+        fill: fade(theme.palette.common.white, 0.9),
+      },
     },
   },
   listItem: {
@@ -31,6 +35,9 @@ import ListItemText from '@material-ui/core/ListItemText';
   },
   icon: {
     fill: theme.palette.text.inactive,
+    '& svg': {
+      fill: theme.palette.text.inactive,
+    },
   },
 }))
 export default class SidebarListItem extends Component {
