@@ -58,6 +58,7 @@ export default class Snackbar extends Component {
     message: string.isRequired,
     /** Properties applied to the SnackbarContent element. */
     snackbarContentProps: object,
+    /** Callback fired when the component requests to be closed. */
     onClose: func,
   };
 
