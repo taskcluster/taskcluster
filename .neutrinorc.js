@@ -75,29 +75,29 @@ module.exports = {
         favicon: './logo.png',
       },
       devServer: {
-        port: process.env.PORT || 9000,
+        port: process.env.PORT,
         historyApiFallback: { disableDotRule: true },
         proxy: {
           '/login': {
-            target: process.env.TASKCLUSTER_ROOT_URL,
+            target: 'http://localhost:3050',
           },
           '/graphql': {
-            target: process.env.TASKCLUSTER_ROOT_URL,
+            target: 'http://localhost:3050',
           },
           '/subscription': {
             ws: true,
             changeOrigin: true,
-            target: process.env.TASKCLUSTER_ROOT_URL,
+            target: 'ws://localhost:3050',
           },
         },
       },
       env: {
         APPLICATION_NAME: 'Application Name',
         LOGIN_STRATEGIES: '',
-        PORT: 9000,
-        TASKCLUSTER_ROOT_URL: 'http://localhost:3050',
-        GRAPHQL_SUBSCRIPTION_ENDPOINT: '',
-        GRAPHQL_ENDPOINT: '/graphql',
+        PORT: 5080,
+        TASKCLUSTER_ROOT_URL: 'https://taskcluster.net',
+        GRAPHQL_SUBSCRIPTION_ENDPOINT: 'ws://localhost:5080/subscription',
+        GRAPHQL_ENDPOINT: 'http://localhost:5080/graphql',
         GA_TRACKING_ID: '',
         SENTRY_DSN: '',
       },

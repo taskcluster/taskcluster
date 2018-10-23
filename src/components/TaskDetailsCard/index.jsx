@@ -21,6 +21,7 @@ import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
 import { task } from '../../utils/prop-types';
+import urls from '../../utils/urls';
 
 @withStyles(theme => ({
   headline: {
@@ -130,9 +131,7 @@ export default class TaskDetailsCard extends Component {
                 button
                 className={classes.listItemButton}
                 component="a"
-                href={`queue.${
-                  process.env.TASKCLUSTER_ROOT_URL
-                }/queue/v1/task/${task.taskId}`}
+                href={urls.api('queue', 'v1', `task/${task.taskId}`)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
