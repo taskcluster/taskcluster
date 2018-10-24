@@ -25,6 +25,7 @@ let docs                = require('taskcluster-lib-docs');
 let App                 = require('taskcluster-lib-app');
 let remoteS3            = require('remotely-signed-s3');
 let {sasCredentials}    = require('taskcluster-lib-azure');
+let pulse               = require('taskcluster-lib-pulse');
 
 // Create component loader
 let load = loader({
@@ -65,15 +66,26 @@ let load = loader({
       aws:           cfg.aws,
     }),
   },
+
+  pulseClient: {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => {
+      return new pulse.Client({
+        namespace: cfg.pulse.namespace,
+        monitor,
+        credentials: pulse.pulseCredentials(cfg.pulse),
+      });
+    },
+  },
+
   publisher: {
-    requires: ['cfg', 'schemaset', 'monitor'],
-    setup: async ({cfg, schemaset, monitor}) => exchanges.setup({
+    requires: ['cfg', 'schemaset', 'pulseClient'],
+    setup: async ({cfg, schemaset, pulseClient}) => exchanges.publisher({
       rootUrl:            cfg.taskcluster.rootUrl,
-      credentials:        cfg.pulse,
+      client:             pulseClient,
+      schemaset,
       publish:            cfg.app.publishMetaData,
-      validator:          await schemaset.validator(cfg.taskcluster.rootUrl),
       aws:                cfg.aws,
-      monitor:            monitor.prefix('publisher'),
     }),
   },
 
