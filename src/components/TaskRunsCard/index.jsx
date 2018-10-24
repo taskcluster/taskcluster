@@ -311,9 +311,11 @@ export default class TaskRunsCard extends Component {
                 button
                 className={classes.listItemButton}
                 component={Link}
-                to={`/provisioners/${provisionerId}/worker-types/${workerType}`}
+                to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
+                  run.workerId
+                }`}
               >
-                <ListItemText primary="Worker Type" secondary={workerType} />
+                <ListItemText primary="Worker ID" secondary={run.workerId} />
                 <LinkIcon />
               </ListItem>
               <CopyToClipboard text={run.takenUntil}>
