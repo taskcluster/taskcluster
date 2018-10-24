@@ -1,6 +1,18 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
+import CopyToClipboard from 'react-copy-to-clipboard';
+import { withStyles } from '@material-ui/core/styles';
+import { fade } from '@material-ui/core/styles/colorManipulator';
+import Card from '@material-ui/core/Card';
+import CardHeader from '@material-ui/core/CardHeader';
+import CardContent from '@material-ui/core/CardContent';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Collapse from '@material-ui/core/Collapse';
+import IconButton from '@material-ui/core/IconButton';
+import ClearIcon from 'mdi-react/ClearIcon';
+import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../components/Dashboard';
@@ -12,6 +24,7 @@ import disableClientQuery from './disableClient.graphql';
 import enableClientQuery from './enableClient.graphql';
 import resetAccessTokenQuery from './resetAccessToken.graphql';
 import clientQuery from './client.graphql';
+import { THEME } from '../../../utils/constants';
 
 @hot(module)
 @withApollo
@@ -23,11 +36,43 @@ import clientQuery from './client.graphql';
     },
   }),
 })
+@withStyles(theme => ({
+  listItemButton: {
+    padding: 0,
+    '&:last-child': {
+      paddingBottom: 0,
+    },
+    '& svg': {
+      transition: theme.transitions.create('fill'),
+      fill: fade(THEME.PRIMARY_TEXT_LIGHT, 0.4),
+    },
+    '&:hover svg': {
+      fill: THEME.PRIMARY_TEXT_LIGHT,
+    },
+  },
+  panelHeader: {
+    paddingTop: theme.spacing.unit,
+    paddingBottom: theme.spacing.unit,
+  },
+  panelTextPrimary: {
+    color: THEME.PRIMARY_TEXT_LIGHT,
+  },
+  panelTextSecondary: {
+    color: THEME.PRIMARY_TEXT_LIGHT,
+  },
+  panelCard: {
+    background: theme.palette.warning.dark,
+  },
+  clearIcon: {
+    fill: THEME.PRIMARY_TEXT_LIGHT,
+  },
+}))
 export default class ViewClient extends Component {
   state = {
     loading: false,
     error: null,
     accessToken: null,
+    accessTokenPanelOpen: true,
   };
 
   handleAccessTokenWarningClose = () => {
@@ -110,6 +155,10 @@ export default class ViewClient extends Component {
     }
   };
 
+  handleAccessTokenPanelClose = () => {
+    this.setState({ accessToken: null, accessTokenPanelOpen: false });
+  };
+
   handleSaveClient = async (client, clientId) => {
     const { isNewClient } = this.props;
 
@@ -137,19 +186,45 @@ export default class ViewClient extends Component {
   };
 
   render() {
-    const { error, loading, accessToken } = this.state;
-    const { isNewClient, data } = this.props;
+    const { error, loading, accessToken, accessTokenPanelOpen } = this.state;
+    const { isNewClient, data, classes } = this.props;
 
     return (
       <Dashboard title={isNewClient ? 'Create Client' : 'Client'}>
         <Fragment>
           {error && <ErrorPanel error={error} />}
           {accessToken && (
-            <ErrorPanel
-              warning
-              onClose={this.handleAccessTokenWarningClose}
-              error={`The access token for this clientId is ${accessToken}`}
-            />
+            <Collapse in={accessTokenPanelOpen}>
+              <Card classes={{ root: classes.panelCard }}>
+                <CardHeader
+                  classes={{
+                    root: classes.panelHeader,
+                    title: classes.panelTextPrimary,
+                  }}
+                  action={
+                    <IconButton onClick={this.handleAccessTokenPanelClose}>
+                      <ClearIcon className={classes.clearIcon} />
+                    </IconButton>
+                  }
+                  title="You won't be able to see this again"
+                />
+                <CardContent className={classes.listItemButton}>
+                  <CopyToClipboard text={accessToken}>
+                    <ListItem button>
+                      <ListItemText
+                        classes={{
+                          primary: classes.panelTextPrimary,
+                          secondary: classes.panelTextSecondary,
+                        }}
+                        primary="Access Token"
+                        secondary={accessToken}
+                      />
+                      <ContentCopyIcon />
+                    </ListItem>
+                  </CopyToClipboard>
+                </CardContent>
+              </Card>
+            </Collapse>
           )}
           {isNewClient ? (
             <ClientForm
