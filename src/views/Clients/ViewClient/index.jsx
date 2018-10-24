@@ -193,39 +193,37 @@ export default class ViewClient extends Component {
       <Dashboard title={isNewClient ? 'Create Client' : 'Client'}>
         <Fragment>
           {error && <ErrorPanel error={error} />}
-          {accessToken && (
-            <Collapse in={accessTokenPanelOpen}>
-              <Card classes={{ root: classes.panelCard }}>
-                <CardHeader
-                  classes={{
-                    root: classes.panelHeader,
-                    title: classes.panelTextPrimary,
-                  }}
-                  action={
-                    <IconButton onClick={this.handleAccessTokenPanelClose}>
-                      <ClearIcon className={classes.clearIcon} />
-                    </IconButton>
-                  }
-                  title="You won't be able to see this again"
-                />
-                <CardContent className={classes.listItemButton}>
-                  <CopyToClipboard text={accessToken}>
-                    <ListItem button>
-                      <ListItemText
-                        classes={{
-                          primary: classes.panelTextPrimary,
-                          secondary: classes.panelTextSecondary,
-                        }}
-                        primary="Access Token"
-                        secondary={accessToken}
-                      />
-                      <ContentCopyIcon />
-                    </ListItem>
-                  </CopyToClipboard>
-                </CardContent>
-              </Card>
-            </Collapse>
-          )}
+          <Collapse in={accessToken && accessTokenPanelOpen}>
+            <Card classes={{ root: classes.panelCard }}>
+              <CardHeader
+                classes={{
+                  root: classes.panelHeader,
+                  title: classes.panelTextPrimary,
+                }}
+                action={
+                  <IconButton onClick={this.handleAccessTokenPanelClose}>
+                    <ClearIcon className={classes.clearIcon} />
+                  </IconButton>
+                }
+                title="You won't be able to see this again"
+              />
+              <CardContent className={classes.listItemButton}>
+                <CopyToClipboard text={accessToken}>
+                  <ListItem button>
+                    <ListItemText
+                      classes={{
+                        primary: classes.panelTextPrimary,
+                        secondary: classes.panelTextSecondary,
+                      }}
+                      primary="Access Token"
+                      secondary={accessToken}
+                    />
+                    <ContentCopyIcon />
+                  </ListItem>
+                </CopyToClipboard>
+              </CardContent>
+            </Card>
+          </Collapse>
           {isNewClient ? (
             <ClientForm
               loading={loading}
