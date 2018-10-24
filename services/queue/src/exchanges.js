@@ -1,5 +1,5 @@
-var Exchanges = require('pulse-publisher');
-var assert    = require('assert');
+var {Exchanges} = require('taskcluster-lib-pulse');
+var assert = require('assert');
 
 /** Declaration of exchanges offered by the queue */
 var exchanges = new Exchanges({

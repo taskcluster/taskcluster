@@ -127,6 +127,7 @@ defaults:
   azureTableAccount:          !env AZURE_TABLE_ACCOUNT_NAME
 
   pulse:
+    namespace:                !env PULSE_NAMESPACE
     username:                 !env PULSE_USERNAME
     password:                 !env PULSE_PASSWORD
     hostname:                 !env PULSE_HOSTNAME
@@ -162,6 +163,8 @@ production:
       - us-east-2
       - us-west-1
       - eu-central-1
+  pulse:
+    namespace: taskcluster-queue
   server:
     env:              production
     trustProxy:       true
