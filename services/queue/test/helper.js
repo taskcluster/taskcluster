@@ -16,6 +16,7 @@ const FakeBlobStore = require('./fake_blob_store');
 const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
 const zurvan = require('zurvan');
 const timers = require('timers');
+const {FakeClient} = require('taskcluster-lib-pulse');
 
 const helper = module.exports;
 
@@ -386,7 +387,7 @@ exports.withPulse = (mock, skipping) => {
     }
 
     await helper.load('cfg');
-    helper.load.cfg('pulse', {fake: true});
+    helper.load.inject('pulseClient', new FakeClient());
     helper.publisher = await helper.load('publisher');
 
     helper.checkNextMessage = (exchange, check) => {
@@ -413,11 +414,11 @@ exports.withPulse = (mock, skipping) => {
   const fakePublish = msg => { helper.messages.push(msg); };
   setup(function() {
     helper.messages = [];
-    helper.publisher.on('fakePublish', fakePublish);
+    helper.publisher.on('message', fakePublish);
   });
 
   teardown(function() {
-    helper.publisher.removeListener('fakePublish', fakePublish);
+    helper.publisher.removeListener('message', fakePublish);
   });
 };
 
