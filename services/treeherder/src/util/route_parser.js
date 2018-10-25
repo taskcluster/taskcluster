@@ -7,7 +7,7 @@
 // [4] Pull Request ID (github) or Push Log ID (hg.mozilla.org) of the push
 //     Note: pushes ot a branch on github would not have a PR ID
 module.exports = function parseRoute(route) {
-  let project, revision, revision_hash, pushId, version, owner, parsedProject;
+  let project, revision, pushId, version, owner, parsedProject;
   let parsedRoute = route.split('.');
   let destination = parsedRoute[0];
   // Assume it's a version 1 routing key
@@ -18,11 +18,8 @@ module.exports = function parseRoute(route) {
   }
 
   switch (version) {
-    case 'v1':
-      project = parsedRoute[1];
-      revision_hash = parsedRoute[2];
-      parsedProject = project;
-      break;
+    // v1 is no longer supported by treeherder (specifically revision_hash is no longer
+    // recognized)
     case 'v2':
       project = parsedRoute[2];
       revision = parsedRoute[3];
@@ -39,7 +36,6 @@ module.exports = function parseRoute(route) {
     default:
       throw new Error(
         'Unrecognized treeherder routing key format. Possible formats are:\n' +
-          'v1: <treeherder destination>.<project>.<revision>\n' +
           'v2: <treeherder destination>.<version>.<user/project>|<project>.<revision>.<pushLogId/pullRequestId>' +
           `but received: ${route}`
       );
@@ -47,14 +43,10 @@ module.exports = function parseRoute(route) {
 
   let x = {
     destination: destination,
-    pushId: pushId ? parseInt(pushId) : undefined,
+    pushId: pushId ? parseInt(pushId, 10) : undefined,
     project: parsedProject,
+    revision,
   };
-  if (revision) {
-    x.revision = revision;
-  } else {
-    x.revision_hash = revision_hash;
-  }
 
   // If both user and a project exist, treat as github, otherwise hg.mozilla.org
   if (owner && parsedProject) {
@@ -65,5 +57,4 @@ module.exports = function parseRoute(route) {
   }
 
   return x;
-}
-
+};
