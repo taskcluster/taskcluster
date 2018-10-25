@@ -33,18 +33,6 @@ export default [
   },
   {
     component: lazy(() =>
-      import(/* webpackChunkName: 'ScopesetExpander' */ '../views/ScopesetExpander')
-    ),
-    path: '/scopesets/expand',
-  },
-  {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'ScopesetComparison' */ '../views/ScopesetComparison')
-    ),
-    path: '/scopesets/compare',
-  },
-  {
-    component: lazy(() =>
       import(/* webpackChunkName: 'Scopes' */ '../views/Scopes')
     ),
     path: '/auth/scopes',

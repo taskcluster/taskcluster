@@ -62,10 +62,15 @@ export default class SidebarListItem extends Component {
     }
 
     const paths = {
+      tasks: '/tasks',
       index: '/tasks/index',
       groups: '/tasks/groups',
       create: '/tasks/create',
-      tasks: '/tasks',
+      auth: '/auth',
+      compareScopes: '/auth/scopes/compare',
+      expandScopes: '/auth/scopes/expansions',
+      roles: '/auth/roles',
+      clients: '/auth/clients',
     };
     const { pathname } = window.location;
     const isTaskView =
@@ -79,14 +84,43 @@ export default class SidebarListItem extends Component {
       route.url === paths.groups && pathname.startsWith(paths.groups);
     const isTaskCreateView =
       route.url === paths.create && pathname.startsWith(paths.create);
+    const isScopesView =
+      route.url === paths.auth &&
+      !pathname.startsWith(paths.compareScopes) &&
+      !pathname.startsWith(paths.expandScopes);
+    const isClientsView =
+      route.url === paths.clients && pathname.startsWith(paths.clients);
+    const isRolesView =
+      route.url === paths.roles && pathname.startsWith(paths.roles);
+    const isScopesCompareView =
+      route.url === paths.compareScopes &&
+      pathname.startsWith(paths.compareScopes);
+    const isScopesExpandView =
+      route.url === paths.expandScopes &&
+      pathname.startsWith(paths.expandScopes);
 
-    return Boolean(
-      !route.url.startsWith(paths.tasks) ||
-        isTaskIndexView ||
-        isTaskView ||
-        isTaskGroupView ||
-        isTaskCreateView
-    );
+    if (route.url.startsWith(paths.tasks)) {
+      return Boolean(
+        !route.url.startsWith(paths.tasks) ||
+          isTaskIndexView ||
+          isTaskView ||
+          isTaskGroupView ||
+          isTaskCreateView
+      );
+    }
+
+    if (route.url.startsWith(paths.auth)) {
+      return Boolean(
+        route.url === paths.auth ||
+          isScopesView ||
+          isScopesCompareView ||
+          isScopesExpandView ||
+          isClientsView ||
+          isRolesView
+      );
+    }
+
+    return true;
   };
 
   render() {

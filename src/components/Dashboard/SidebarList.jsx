@@ -13,7 +13,6 @@ import MixcloudIcon from 'mdi-react/MixcloudIcon';
 import BackupRestoreIcon from 'mdi-react/BackupRestoreIcon';
 import AccountKeyIcon from 'mdi-react/AccountKeyIcon';
 import AccountStarIcon from 'mdi-react/AccountStarIcon';
-import JsonIcon from 'mdi-react/JsonIcon';
 import ScaleBalanceIcon from 'mdi-react/ScaleBalanceIcon';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import AccountSettingsIcon from 'mdi-react/AccountSettingsIcon';
@@ -56,6 +55,18 @@ export default class SidebarList extends Component {
           <SidebarListItem to="/auth/scopes" icon={<AccountSettingsIcon />}>
             Scopes
           </SidebarListItem>
+          <SidebarListItem
+            to="/auth/scopes/compare"
+            icon={<ScaleBalanceIcon />}
+          >
+            Compare Scopes
+          </SidebarListItem>
+          <SidebarListItem
+            to="/auth/scopes/expansions"
+            icon={<ArrowExpandVerticalIcon />}
+          >
+            Expand Scopes
+          </SidebarListItem>
         </SidebarListGroup>
 
         <SidebarListItem to="/aws-provisioner" icon={<AmazonIcon />}>
@@ -81,18 +92,6 @@ export default class SidebarList extends Component {
         <SidebarListItem to="/pulse-messages" icon={<PulseIcon />}>
           Pulse Messages
         </SidebarListItem>
-
-        <SidebarListGroup to="/scopesets" title="Scopesets" icon={<JsonIcon />}>
-          <SidebarListItem to="/scopesets/compare" icon={<ScaleBalanceIcon />}>
-            Compare
-          </SidebarListItem>
-          <SidebarListItem
-            to="/scopesets/expand"
-            icon={<ArrowExpandVerticalIcon />}
-          >
-            Expand
-          </SidebarListItem>
-        </SidebarListGroup>
 
         <SidebarListItem to="/quickstart" icon={<GithubBoxIcon />}>
           GitHub Quickstart

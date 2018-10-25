@@ -8,9 +8,9 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import ScaleBalanceIcon from 'mdi-react/ScaleBalanceIcon';
-import Dashboard from '../../components/Dashboard/index';
-import Button from '../../components/Button';
-import splitLines from '../../utils/splitLines';
+import Dashboard from '../../../components/Dashboard/index';
+import Button from '../../../components/Button/index';
+import splitLines from '../../../utils/splitLines';
 
 @hot(module)
 @withStyles(theme => ({

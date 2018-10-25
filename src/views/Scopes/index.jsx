@@ -9,6 +9,12 @@ const ListScopes = lazy(() =>
 const ViewScope = lazy(() =>
   import(/* webpackChunkName: 'Scopes.ViewScope' */ './ViewScope')
 );
+const ScopesetExpander = lazy(() =>
+  import(/* webpackChunkName: 'ScopesetExpander' */ './ScopesetExpander')
+);
+const ScopesetComparison = lazy(() =>
+  import(/* webpackChunkName: 'ScopesetComparison' */ './ScopesetComparison')
+);
 
 @hot(module)
 export default class Scopes extends Component {
@@ -20,6 +26,16 @@ export default class Scopes extends Component {
 
     return (
       <Switch>
+        <RouteWithProps
+          path={`${path}/expansions`}
+          {...props}
+          component={ScopesetExpander}
+        />
+        <RouteWithProps
+          path={`${path}/compare`}
+          {...props}
+          component={ScopesetComparison}
+        />
         <RouteWithProps
           path={`${path}/:selectedScope`}
           {...props}

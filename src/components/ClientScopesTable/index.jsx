@@ -136,7 +136,7 @@ export default class ClientScopesTable extends Component {
                   : `/auth/scopes/${encodeURIComponent(node)}`
               }
             >
-              <ListItemText disableTypography primary={<code>{node}</code>} />
+              <ListItemText disableTypography primary={node} />
               <LinkIcon size={16} />
             </TableCellListItem>
           </TableCell>

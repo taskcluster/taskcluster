@@ -12,10 +12,10 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
-import HelpView from '../../components/HelpView';
-import Dashboard from '../../components/Dashboard/index';
-import Button from '../../components/Button';
-import splitLines from '../../utils/splitLines';
+import HelpView from '../../../components/HelpView/index';
+import Dashboard from '../../../components/Dashboard/index';
+import Button from '../../../components/Button/index';
+import splitLines from '../../../utils/splitLines';
 import scopesetQuery from './scopeset.graphql';
 
 @hot(module)

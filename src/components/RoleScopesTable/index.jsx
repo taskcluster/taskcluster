@@ -109,7 +109,7 @@ export default class RoleScopesTable extends Component {
                 : `/auth/scopes/${encodeURIComponent(node)}`
             }
           >
-            <ListItemText disableTypography primary={<code>{node}</code>} />
+            <ListItemText disableTypography primary={node} />
             <LinkIcon size={iconSize} />
           </TableCellListItem>
         </TableCell>
