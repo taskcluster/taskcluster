@@ -31,6 +31,8 @@ import scopesetQuery from './scopeset.graphql';
   },
   listItemButton: {
     ...theme.mixins.listItemButton,
+    paddingTop: theme.spacing.unit / 2,
+    paddingBottom: theme.spacing.unit / 2,
   },
 }))
 export default class ScopesetExpander extends Component {
@@ -91,7 +93,7 @@ export default class ScopesetExpander extends Component {
                         to={`/auth/scopes/${encodeURIComponent(scope)}`}
                         className={classes.listItemButton}
                       >
-                        <ListItemText secondary={<code>{scope}</code>} />
+                        <ListItemText secondary={scope} />
                         <LinkIcon size={16} />
                       </ListItem>
                     ))}
