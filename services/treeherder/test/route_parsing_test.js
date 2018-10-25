@@ -2,19 +2,6 @@ const assert = require('assert');
 const parseRoute = require('../src/util/route_parser');
 
 suite('route parsing', () => {
-  test('valid v1 format', async () => {
-    assert.deepEqual(
-      parseRoute('treeherder.try.XYZ'),
-      {
-        destination:   'treeherder',
-        origin:        'hg.mozilla.org',
-        project:       'try',
-        revision_hash: 'XYZ',
-        pushId:        undefined,
-      }
-    );
-  });
-
   test('valid v2 format', async () => {
     assert.deepEqual(
       parseRoute('treeherder.v2.try.XYZ.234'),

@@ -32,11 +32,9 @@ suite('build job message', () => {
   });
 
   test('no push id', async () => {
-    task.routes = ['treeherder.dummyproject.dummya98d9bed366c133ebdf1feb5cf365a3c3703a337'];
+    task.routes = ['treeherder.v2.dummyproject.dummya98d9bed366c133ebdf1feb5cf365a3c3703a337'];
     pushInfo = parseRoute(task.routes[0]);
     expected.origin.pushLogID = undefined;
-    expected.origin.revision_hash = expected.origin.revision;
-    delete expected.origin.revision;
 
     let job = await helper.handler.buildMessage(pushInfo, task, status.runId, status);
     assert.deepEqual(job, expected);
