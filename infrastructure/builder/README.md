@@ -7,13 +7,7 @@ See the `docs/` directory for more details on how it does that.
 
 # Usage
 
-To install:
-
-```
-yarn global add taskcluster-builder
-```
-
-or, to run from the git repository, just use `./taskcluster-builder` as the command below.
+To run from the git repository, just use `./taskcluster-builder`.
 
 # Details
 
