@@ -78,7 +78,7 @@ go tool cover -func=coverage.report
 # See https://bugzilla.mozilla.org/show_bug.cgi?id=1221239
 grep -q PANIC codegenerator/model-data.txt && exit 68
 
-go get github.com/golang/lint/golint
+go get golang.org/x/lint/golint
 "${GOPATH}/bin/golint" codegenerator/...; "${GOPATH}/bin/golint" integrationtest/...; "${GOPATH}/bin/golint" .
 
 go get github.com/gordonklaus/ineffassign
