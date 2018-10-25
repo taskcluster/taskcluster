@@ -82,7 +82,7 @@ suite('handle message', function() {
     };
 
     await helper.handler.handleMessage({
-      routes: ['foo.bar.123'],
+      routes: ['foo.v2.bar.123'],
       payload: {
         status: {
           taskId: 'abc',
@@ -108,7 +108,7 @@ suite('handle message', function() {
     };
 
     await helper.handler.handleMessage({
-      routes: ['foo.bar.123'],
+      routes: ['foo.v2.bar.123'],
       payload: {
         status: {
           taskId: 'abc',
