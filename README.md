@@ -26,7 +26,6 @@ To get started local development, create a file in the root of the repo named
 
 ```bash
 APPLICATION_NAME="Taskcluster"
-GRAPHQL_SUBSCRIPTION_ENDPOINT="ws://localhost:5080/subscription"
 ```
 
 _Note: The `APPLICATION_NAME` can be whatever you wish it to be._
@@ -35,6 +34,13 @@ You can optionally specify the port on which the development server serves with
 
 ```bash
 PORT=9000
+```
+
+If you are not running the web service on your local machine, you will also need to set
+
+```bash
+GRAPHQL_SUBSCRIPTION_ENDPOINT=wss://mydomain.com/subscription
+GRAPHQL_ENDPOINT=https://mydomain.com/graphql
 ```
 
 ### Auth0 Config
@@ -47,7 +53,6 @@ file and they will be picked up automatically when starting this web app:
 
 ```bash
 APPLICATION_NAME="Taskcluster"
-GRAPHQL_SUBSCRIPTION_ENDPOINT="ws://localhost:5080/subscription"
 AUTH0_DOMAIN="auth.mozilla.auth0.com"
 AUTH0_CLIENT_ID="29t2n3LKKnyTbGtWmfTkQpau0mp7QmMH"
 AUTH0_REDIRECT_URI="http://localhost:5080/login"
