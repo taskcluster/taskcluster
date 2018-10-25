@@ -1,13 +1,12 @@
 import { hot } from 'react-hot-loader';
-import React, { Component } from 'react';
+import React, { lazy, Component } from 'react';
 import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
-import loadable from '../../utils/loadable';
 
-const ViewSecrets = loadable(() =>
+const ViewSecrets = lazy(() =>
   import(/* webpackChunkName: 'Secrets.ViewSecrets' */ './ViewSecrets')
 );
-const ViewSecret = loadable(() =>
+const ViewSecret = lazy(() =>
   import(/* webpackChunkName: 'Secrets.ViewSecret' */ './ViewSecret')
 );
 

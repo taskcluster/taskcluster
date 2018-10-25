@@ -117,6 +117,10 @@ export default class App extends Component {
     this.state = state;
   }
 
+  static getDerivedStateFromError(error) {
+    this.setState({ error });
+  }
+
   async componentDidMount() {
     const themeType = await db.userPreferences.get('theme');
 
@@ -167,8 +171,6 @@ export default class App extends Component {
   };
 
   componentDidCatch(error, errorInfo) {
-    this.setState({ error });
-
     reportError(error, errorInfo);
   }
 

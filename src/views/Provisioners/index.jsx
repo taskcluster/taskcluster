@@ -1,19 +1,18 @@
 import { hot } from 'react-hot-loader';
-import React, { Component } from 'react';
+import React, { lazy, Component } from 'react';
 import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
-import loadable from '../../utils/loadable';
 
-const ViewProvisioners = loadable(() =>
+const ViewProvisioners = lazy(() =>
   import(/* webpackChunkName: 'Provisioners.ViewProvisioners' */ './ViewProvisioners')
 );
-const ViewWorkerTypes = loadable(() =>
+const ViewWorkerTypes = lazy(() =>
   import(/* webpackChunkName: 'Provisioners.ViewWorkerTypes' */ './ViewWorkerTypes')
 );
-const ViewWorker = loadable(() =>
+const ViewWorker = lazy(() =>
   import(/* webpackChunkName: 'Provisioners.ViewWorker' */ './ViewWorker')
 );
-const ViewWorkers = loadable(() =>
+const ViewWorkers = lazy(() =>
   import(/* webpackChunkName: 'Provisioners.ViewWorkers' */ './ViewWorkers')
 );
 

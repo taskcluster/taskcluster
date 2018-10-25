@@ -1,13 +1,12 @@
 import { hot } from 'react-hot-loader';
-import React, { Component } from 'react';
+import React, { Component, lazy } from 'react';
 import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../../components/RouteWithProps';
-import loadable from '../../../utils/loadable';
 
-const ListNamespaces = loadable(() =>
+const ListNamespaces = lazy(() =>
   import(/* webpackChunkName: 'TaskIndex.ListNamespaces' */ './ListNamespaces')
 );
-const IndexedTask = loadable(() =>
+const IndexedTask = lazy(() =>
   import(/* webpackChunkName: 'TaskIndex.IndexedTask' */ './IndexedTask')
 );
 

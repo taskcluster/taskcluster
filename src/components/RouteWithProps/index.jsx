@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
+import React, { Suspense, Component } from 'react';
 import { Route } from 'react-router-dom';
 import withPageTracker from '../../utils/withPageTracker';
+import Loading from '../../utils/Loading';
 
 /**
  * Conditionally render a component based on location, with non-react-router
@@ -27,7 +28,9 @@ export default class RouteWithProps extends Component {
         location={location}
         sensitive={sensitive}
         render={({ staticContext, ...renderProps }) => (
-          <Component {...renderProps} {...props} />
+          <Suspense fallback={<Loading />}>
+            <Component {...renderProps} {...props} />
+          </Suspense>
         )}
       />
     );

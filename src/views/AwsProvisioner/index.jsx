@@ -1,22 +1,21 @@
 import { hot } from 'react-hot-loader';
-import React, { Component } from 'react';
+import React, { lazy, Component } from 'react';
 import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
-import loadable from '../../utils/loadable';
 
-const ViewWorkerTypes = loadable(() =>
+const ViewWorkerTypes = lazy(() =>
   import(/* webpackChunkName: 'AwsProvisioner.ViewWorkerTypes' */ './ViewWorkerTypes')
 );
-const ViewWorkerType = loadable(() =>
+const ViewWorkerType = lazy(() =>
   import(/* webpackChunkName: 'AwsProvisioner.ViewWorkerType' */ './ViewWorkerType')
 );
-const ViewAwsHealth = loadable(() =>
+const ViewAwsHealth = lazy(() =>
   import(/* webpackChunkName: 'AwsProvisioner.ViewAwsHealth' */ './ViewAwsHealth')
 );
-const ViewRecentErrors = loadable(() =>
+const ViewRecentErrors = lazy(() =>
   import(/* webpackChunkName: 'AwsProvisioner.ViewRecentErrors' */ './ViewRecentErrors')
 );
-const ViewWorkerTypeDefinition = loadable(() =>
+const ViewWorkerTypeDefinition = lazy(() =>
   import(/* webpackChunkName: 'AwsProvisioner.ViewWorkerTypeDefinition' */ './ViewWorkerTypeDefinition')
 );
 

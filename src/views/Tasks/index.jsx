@@ -1,37 +1,36 @@
 import { hot } from 'react-hot-loader';
-import React, { Component } from 'react';
+import React, { lazy, Component } from 'react';
 import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
-import loadable from '../../utils/loadable';
 
-const NoTask = loadable(() =>
+const NoTask = lazy(() =>
   import(/* webpackChunkName: 'Tasks.NoTask' */ './NoTask')
 );
-const NoTaskGroup = loadable(() =>
+const NoTaskGroup = lazy(() =>
   import(/* webpackChunkName: 'Tasks.NoTaskGroup' */ './NoTaskGroup')
 );
-const ViewTask = loadable(() =>
+const ViewTask = lazy(() =>
   import(/* webpackChunkName: 'Tasks.ViewTask' */ './ViewTask')
 );
-const TaskLog = loadable(() =>
+const TaskLog = lazy(() =>
   import(/* webpackChunkName: 'Tasks.TaskLog' */ './TaskLog')
 );
-const LiveTaskLog = loadable(() =>
+const LiveTaskLog = lazy(() =>
   import(/* webpackChunkName: 'Tasks.LiveTaskLog' */ './LiveTaskLog')
 );
-const CreateTask = loadable(() =>
+const CreateTask = lazy(() =>
   import(/* webpackChunkName: 'Tasks.CreateTask' */ './CreateTask')
 );
-const TaskGroup = loadable(() =>
+const TaskGroup = lazy(() =>
   import(/* webpackChunkName: 'Tasks.TaskGroup' */ './TaskGroup')
 );
-const TaskIndex = loadable(() =>
+const TaskIndex = lazy(() =>
   import(/* webpackChunkName: 'Tasks.TaskIndex' */ './TaskIndex')
 );
-const TaskRedirect = loadable(() =>
+const TaskRedirect = lazy(() =>
   import(/* webpackChunkName: 'Tasks.TaskRedirect' */ './TaskRedirect')
 );
-const InteractiveConnect = loadable(() =>
+const InteractiveConnect = lazy(() =>
   import(/* webpackChunkName: 'Tasks.InteractiveConnect' */ './InteractiveConnect')
 );
 

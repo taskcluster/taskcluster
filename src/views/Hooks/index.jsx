@@ -1,13 +1,12 @@
 import { hot } from 'react-hot-loader';
-import React, { Component } from 'react';
+import React, { lazy, Component } from 'react';
 import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
-import loadable from '../../utils/loadable';
 
-const ListHooks = loadable(() =>
+const ListHooks = lazy(() =>
   import(/* webpackChunkName: 'Hooks.ListHooks' */ './ListHooks')
 );
-const ViewHook = loadable(() =>
+const ViewHook = lazy(() =>
   import(/* webpackChunkName: 'Hooks.ViewHook' */ './ViewHook')
 );
 

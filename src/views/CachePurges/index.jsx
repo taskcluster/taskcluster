@@ -1,13 +1,12 @@
 import { hot } from 'react-hot-loader';
-import React, { Component } from 'react';
+import React, { lazy, Component } from 'react';
 import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
-import loadable from '../../utils/loadable';
 
-const ViewCachePurges = loadable(() =>
+const ViewCachePurges = lazy(() =>
   import(/* webpackChunkName: 'CachePurges.ViewCachePurges' */ './ViewCachePurges')
 );
-const CreatePurgeCacheRequest = loadable(() =>
+const CreatePurgeCacheRequest = lazy(() =>
   import(/* webpackChunkName: 'CachePurges.CreatePurgeCacheRequest' */ './CreatePurgeCacheRequest')
 );
 

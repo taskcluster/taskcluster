@@ -22,7 +22,6 @@ import UserMenu from './UserMenu';
 import SidebarList from './SidebarList';
 import { THEME } from '../../utils/constants';
 import { withThemeToggler } from '../../utils/ToggleTheme';
-import reportError from '../../utils/reportError';
 
 @withStyles(
   theme => ({
@@ -155,6 +154,10 @@ export default class Dashboard extends Component {
     helpView: node,
   };
 
+  static getDerivedStateFromError(error) {
+    this.setState({ error });
+  }
+
   state = {
     mobileOpen: false,
     showHelpView: false,
@@ -168,12 +171,6 @@ export default class Dashboard extends Component {
   handleHelpViewToggle = () => {
     this.setState({ showHelpView: !this.state.showHelpView });
   };
-
-  componentDidCatch(error, errorInfo) {
-    this.setState({ error });
-
-    reportError(error, errorInfo);
-  }
 
   render() {
     const {

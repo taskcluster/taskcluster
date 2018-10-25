@@ -1,116 +1,116 @@
-import loadable from '../utils/loadable';
+import { lazy } from 'react';
 
 export default [
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'Documentation' */ '../views/Documentation')
     ),
     path: '/docs',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'Tasks' */ '../views/Tasks')
     ),
     path: '/tasks',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'Provisioners' */ '../views/Provisioners')
     ),
     path: '/provisioners',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'Clients' */ '../views/Clients')
     ),
     path: '/auth/clients',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'Roles' */ '../views/Roles')
     ),
     path: '/auth/roles',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'ScopesetExpander' */ '../views/ScopesetExpander')
     ),
     path: '/scopesets/expand',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'ScopesetComparison' */ '../views/ScopesetComparison')
     ),
     path: '/scopesets/compare',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'Scopes' */ '../views/Scopes')
     ),
     path: '/auth/scopes',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'Hooks' */ '../views/Hooks')
     ),
     path: '/hooks',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'AWS Provisioner' */ '../views/AwsProvisioner')
     ),
     path: '/aws-provisioner',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'Secrets' */ '../views/Secrets')
     ),
     path: '/secrets',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'CachePurges' */ '../views/CachePurges')
     ),
     path: '/purge-caches',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'PulseMessages' */ '../views/PulseMessages')
     ),
     path: '/pulse-messages',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'Quickstart' */ '../views/Quickstart')
     ),
     path: '/quickstart',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'Profile' */ '../views/Profile')
     ),
     path: '/profile',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'Shell' */ '../views/Shell')
     ),
     path: '/shell',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'Displays' */ '../views/Display')
     ),
     path: '/display',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'HomeOrDashboard' */ '../views/HomeOrDashboard')
     ),
     path: '/',
   },
   {
-    component: loadable(() =>
+    component: lazy(() =>
       import(/* webpackChunkName: 'NotFound' */ '../views/NotFound')
     ),
   },

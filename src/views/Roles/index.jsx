@@ -1,13 +1,12 @@
 import { hot } from 'react-hot-loader';
-import React, { Component } from 'react';
+import React, { lazy, Component } from 'react';
 import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
-import loadable from '../../utils/loadable';
 
-const ViewRoles = loadable(() =>
+const ViewRoles = lazy(() =>
   import(/* webpackChunkName: 'Roles.ViewRoles' */ './ViewRoles')
 );
-const ViewRole = loadable(() =>
+const ViewRole = lazy(() =>
   import(/* webpackChunkName: 'Roles.ViewRole' */ './ViewRole')
 );
 
