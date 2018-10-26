@@ -3,7 +3,6 @@ import React, { Component, Fragment } from 'react';
 import { graphql, compose, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import { defaultTo } from 'ramda';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../../components/Dashboard';
@@ -11,6 +10,7 @@ import HelpView from '../../../../components/HelpView';
 import IndexNamespacesTable from '../../../../components/IndexNamespacesTable';
 import IndexTaskNamespaceTable from '../../../../components/IndexTaskNamespaceTable';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../../../utils/constants';
+import ErrorPanel from '../../../../components/ErrorPanel';
 import namespacesQuery from './namespaces.graphql';
 import taskNamespaceQuery from '../taskNamespace.graphql';
 
@@ -142,14 +142,8 @@ export default class ListNamespaces extends Component {
       >
         <Fragment>
           {loading && <Spinner loading />}
-          {namespacesError &&
-            namespacesError.graphQLErrors && (
-              <ErrorPanel error={namespacesError} />
-            )}
-          {taskNamespaceError &&
-            taskNamespaceError.graphQLErrors && (
-              <ErrorPanel error={taskNamespaceError} />
-            )}
+          <ErrorPanel error={namespacesError} />
+          <ErrorPanel error={taskNamespaceError} />
           {!loading &&
             !hasNamespaces &&
             !hasIndexedTasks && (

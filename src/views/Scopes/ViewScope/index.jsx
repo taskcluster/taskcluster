@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
@@ -19,6 +18,7 @@ import {
   VIEW_CLIENT_SCOPES_INSPECT_SIZE,
   SCOPES_SEARCH_MODE,
 } from '../../../utils/constants';
+import ErrorPanel from '../../../components/ErrorPanel';
 import scopesQuery from '../scopes.graphql';
 
 @hot(module)
@@ -154,7 +154,7 @@ export default class ViewScope extends Component {
             <Tab label="Clients" />
           </Tabs>
           {!(clients && roles) && loading && <Spinner loading />}
-          {error && error.graphQLErrors && <ErrorPanel error={error} />}
+          <ErrorPanel error={error} />
           {roles &&
             currentTabIndex === 0 && (
               <RoleScopesTable

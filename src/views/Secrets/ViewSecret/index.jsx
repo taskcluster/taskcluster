@@ -1,12 +1,12 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../components/Dashboard';
 import SecretForm from '../../../components/SecretForm';
 import HelpView from '../../../components/HelpView';
+import ErrorPanel from '../../../components/ErrorPanel';
 import formatError from '../../../utils/formatError';
 import secretQuery from './secret.graphql';
 import createSecretQuery from './createSecret.graphql';
@@ -87,7 +87,7 @@ export default class ViewSecret extends Component {
           </HelpView>
         }
       >
-        {error && <ErrorPanel error={formatError(error)} />}
+        <ErrorPanel error={formatError(error)} />
         {isNewSecret ? (
           <SecretForm
             loading={loading}
@@ -97,11 +97,7 @@ export default class ViewSecret extends Component {
         ) : (
           <Fragment>
             {data.loading && <Spinner loading />}
-            {data &&
-              data.error &&
-              data.error.graphQLErrors && (
-                <ErrorPanel error={data.error.graphQLErrors[0].message} />
-              )}
+            {data && <ErrorPanel error={data.error} />}
             {data &&
               data.secret && (
                 <SecretForm

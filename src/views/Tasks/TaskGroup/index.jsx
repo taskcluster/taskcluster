@@ -7,7 +7,6 @@ import { isEmpty } from 'ramda';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { safeDump } from 'js-yaml';
 import { withStyles } from '@material-ui/core/styles';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import HammerIcon from 'mdi-react/HammerIcon';
 import SpeedDial from '../../../components/SpeedDial';
@@ -26,9 +25,10 @@ import {
   ACTIONS_JSON_KNOWN_KINDS,
   TASK_GROUP_PROGRESS_SIZE,
 } from '../../../utils/constants';
+import db from '../../../utils/db';
+import ErrorPanel from '../../../components/ErrorPanel';
 import taskGroupQuery from './taskGroup.graphql';
 import taskGroupCompactQuery from './taskGroupCompact.graphql';
-import db from '../../../utils/db';
 import submitTaskAction from '../submitTaskAction';
 
 const updateTaskGroupIdHistory = id => {
@@ -340,10 +340,7 @@ export default class TaskGroup extends Component {
           />
         }
       >
-        {error &&
-          error.graphQLErrors && (
-            <ErrorPanel error={error.graphQLErrors[0].message} />
-          )}
+        <ErrorPanel error={error} />
         {!error && (
           <TaskGroupProgress
             // eslint-disable-next-line react/jsx-handler-names

@@ -3,7 +3,6 @@ import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { omit, pathOr } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Markdown from '@mozilla-frontend-infra/components/Markdown';
 import { withStyles } from '@material-ui/core/styles';
@@ -42,10 +41,11 @@ import {
   TASK_ADDED_FIELDS,
 } from '../../../utils/constants';
 import db from '../../../utils/db';
-import removeKeys from '../../../utils/removeKeys';
-import { nice } from '../../../utils/slugid';
-import parameterizeTask from '../../../utils/parameterizeTask';
+import ErrorPanel from '../../../components/ErrorPanel';
 import formatError from '../../../utils/formatError';
+import removeKeys from '../../../utils/removeKeys';
+import parameterizeTask from '../../../utils/parameterizeTask';
+import { nice } from '../../../utils/slugid';
 import submitTaskAction from '../submitTaskAction';
 import taskQuery from './task.graphql';
 import scheduleTaskQuery from './scheduleTask.graphql';
@@ -644,13 +644,7 @@ export default class ViewTask extends Component {
         }
       >
         {loading && <Spinner loading />}
-        {error &&
-          error.graphQLErrors && (
-            <ErrorPanel
-              error={error.graphQLErrors[0].message}
-              warning={Boolean(task)}
-            />
-          )}
+        <ErrorPanel error={error} warning={Boolean(task)} />
         {task && (
           <Fragment>
             <Typography variant="h5" className={classes.title}>

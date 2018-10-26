@@ -11,7 +11,6 @@ import {
   addMilliseconds,
   addHours,
 } from 'date-fns';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import { withStyles } from '@material-ui/core/styles';
 import Switch from '@material-ui/core/Switch';
@@ -24,6 +23,7 @@ import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import HelpView from '../../../components/HelpView';
 import Dashboard from '../../../components/Dashboard';
+import ErrorPanel from '../../../components/ErrorPanel';
 import { nice } from '../../../utils/slugid';
 import {
   TASKS_CREATE_STORAGE_KEY,
@@ -260,7 +260,7 @@ export default class CreateTask extends Component {
             <ErrorPanel error={error} />
           ) : (
             <Fragment>
-              {createdTaskError && <ErrorPanel error={createdTaskError} />}
+              <ErrorPanel error={createdTaskError} />
               <FormControlLabel
                 control={
                   <Switch

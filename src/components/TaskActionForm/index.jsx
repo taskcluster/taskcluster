@@ -4,10 +4,10 @@ import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Markdown from '@mozilla-frontend-infra/components/Markdown';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import Code from '@mozilla-frontend-infra/components/Code';
 import { safeDump } from 'js-yaml';
+import ErrorPanel from '../ErrorPanel';
 
 @withStyles(theme => ({
   code: {
@@ -43,7 +43,7 @@ export default class TaskActionForm extends Component {
 
     return (
       <Fragment>
-        {error && <ErrorPanel error={error} />}
+        <ErrorPanel error={error} />
         <div className={classes.description}>
           <Typography gutterBottom>
             <Markdown>{action.description}</Markdown>

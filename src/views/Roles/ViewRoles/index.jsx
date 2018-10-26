@@ -1,7 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { PureComponent, Fragment } from 'react';
 import { graphql } from 'react-apollo';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
@@ -10,6 +9,7 @@ import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import RolesTable from '../../../components/RolesTable';
 import HelpView from '../../../components/HelpView';
+import ErrorPanel from '../../../components/ErrorPanel';
 import rolesQuery from './roles.graphql';
 
 @hot(module)
@@ -55,7 +55,7 @@ export default class ViewRoles extends PureComponent {
       >
         <Fragment>
           {!roles && loading && <Spinner loading />}
-          {error && error.graphQLErrors && <ErrorPanel error={error} />}
+          <ErrorPanel error={error} />
           {roles && <RolesTable roles={roles} />}
           <Button
             onClick={this.handleCreate}

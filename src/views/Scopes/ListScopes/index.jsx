@@ -3,7 +3,6 @@ import { hot } from 'react-hot-loader';
 import { graphql } from 'react-apollo';
 import { withRouter } from 'react-router-dom';
 import dotProp from 'dot-prop-immutable';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
@@ -14,6 +13,7 @@ import ClientScopesTable from '../../../components/ClientScopesTable';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import { VIEW_CLIENT_SCOPES_INSPECT_SIZE } from '../../../utils/constants';
+import ErrorPanel from '../../../components/ErrorPanel';
 import scopesQuery from '../scopes.graphql';
 
 @hot(module)
@@ -101,7 +101,7 @@ export default class ListScopes extends PureComponent {
         }
       >
         <Fragment>
-          {error && error.graphQLErrors && <ErrorPanel error={error} />}
+          <ErrorPanel error={error} />
           <Tabs
             className={classes.tabs}
             fullWidth

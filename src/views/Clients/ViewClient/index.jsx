@@ -13,10 +13,10 @@ import Collapse from '@material-ui/core/Collapse';
 import IconButton from '@material-ui/core/IconButton';
 import ClearIcon from 'mdi-react/ClearIcon';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import ClientForm from '../../../components/ClientForm';
+import ErrorPanel from '../../../components/ErrorPanel';
 import updateClientQuery from './updateClient.graphql';
 import createClientQuery from './createClient.graphql';
 import deleteClientQuery from './deleteClient.graphql';
@@ -192,7 +192,7 @@ export default class ViewClient extends Component {
     return (
       <Dashboard title={isNewClient ? 'Create Client' : 'Client'}>
         <Fragment>
-          {error && <ErrorPanel error={error} />}
+          <ErrorPanel error={error} />
           <Collapse in={accessToken && accessTokenPanelOpen}>
             <Card classes={{ root: classes.panelCard }}>
               <CardHeader
@@ -233,11 +233,7 @@ export default class ViewClient extends Component {
           ) : (
             <Fragment>
               {data.loading && <Spinner loading />}
-              {data &&
-                data.error &&
-                data.error.graphQLErrors && (
-                  <ErrorPanel error={data.error.graphQLErrors[0].message} />
-                )}
+              {data && <ErrorPanel error={data.error} />}
               {data &&
                 data.client && (
                   <ClientForm

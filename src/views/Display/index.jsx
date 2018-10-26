@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -10,6 +9,7 @@ import TableCellListItem from '../../components/TableCellListItem';
 import Dashboard from '../../components/Dashboard';
 import DataTable from '../../components/DataTable';
 import { VNC_DISPLAYS_POLLING_INTERVAL } from '../../utils/constants';
+import ErrorPanel from '../../components/ErrorPanel';
 
 @withStyles({
   vncDisplay: {
@@ -81,7 +81,7 @@ export default class Display extends Component {
         })}
         title={display ? 'VNC Display' : 'Displays'}
       >
-        {error && <ErrorPanel error={error} />}
+        <ErrorPanel error={error} />
         {display && (
           <VncDisplay url={`${props.socketUrl}?display=${display}`} shared />
         )}

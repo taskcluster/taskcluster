@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
 import classNames from 'classnames';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -24,6 +23,7 @@ import PlusIcon from 'mdi-react/PlusIcon';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import urls from '../../utils/urls';
+import ErrorPanel from '../../components/ErrorPanel';
 import Dashboard from '../../components/Dashboard';
 import HelpView from '../../components/HelpView';
 import Button from '../../components/Button';
@@ -269,7 +269,7 @@ export default class PulseMessages extends Component {
         }
       >
         <Fragment>
-          {error && <ErrorPanel error={error} />}
+          <ErrorPanel error={error} />
           <div className={classes.inputWrapper}>
             <List className={classes.inputList}>
               <ListItem>

@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -26,6 +25,7 @@ import Dashboard from '../../components/Dashboard';
 import Button from '../../components/Button';
 import HelpView from '../../components/HelpView';
 import urls from '../../utils/urls';
+import ErrorPanel from '../../components/ErrorPanel';
 import githubQuery from './github.graphql';
 
 const initialYaml = {

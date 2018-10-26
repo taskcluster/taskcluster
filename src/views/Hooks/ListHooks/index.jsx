@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import { prop, map } from 'ramda';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -12,6 +11,7 @@ import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import Button from '../../../components/Button';
+import ErrorPanel from '../../../components/ErrorPanel';
 import hooksQuery from './hooks.graphql';
 
 @hot(module)
@@ -69,7 +69,7 @@ export default class ListHooks extends Component {
         }
       >
         {!hookGroups && loading && <Spinner loading />}
-        {error && error.graphQLErrors && <ErrorPanel error={error} />}
+        <ErrorPanel error={error} />
         {hookGroups && (
           <MuiTreeView
             listItemProps={{ color: classes.listItemProps }}

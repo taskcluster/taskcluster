@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -15,6 +14,7 @@ import WorkersTable from '../../../components/WorkersTable';
 import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';
 import { withAuth } from '../../../utils/Auth';
+import ErrorPanel from '../../../components/ErrorPanel';
 import workersQuery from './workers.graphql';
 
 @hot(module)
@@ -161,8 +161,8 @@ export default class ViewWorkers extends Component {
       <Dashboard title="Workers">
         <Fragment>
           {(!workers || !workerType) && loading && <Spinner loading />}
-          {this.state.error && <ErrorPanel error={this.state.error} />}
-          {error && error.graphQLErrors && <ErrorPanel error={error} />}
+          <ErrorPanel error={this.state.error} />
+          <ErrorPanel error={error} />
           {workers &&
             workerType && (
               <Fragment>

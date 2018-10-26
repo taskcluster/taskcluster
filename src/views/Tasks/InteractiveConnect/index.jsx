@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import classNames from 'classnames';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
@@ -20,6 +19,7 @@ import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import Markdown from '../../../components/Markdown';
 import StatusLabel from '../../../components/StatusLabel';
+import ErrorPanel from '../../../components/ErrorPanel';
 import taskQuery from './task.graphql';
 import {
   INITIAL_CURSOR,
@@ -369,7 +369,7 @@ export default class InteractiveConnect extends Component {
       >
         <Fragment>
           {!error && artifactsLoading && <Spinner loading />}
-          {error && <ErrorPanel error={error} />}
+          <ErrorPanel error={error} />
           {!error && !artifactsLoading && task && this.renderTask()}
         </Fragment>
       </Dashboard>

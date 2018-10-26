@@ -1,10 +1,10 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import RoleForm from '../../../components/RoleForm';
+import ErrorPanel from '../../../components/ErrorPanel';
 import roleQuery from './role.graphql';
 import createRoleQuery from './createRole.graphql';
 import updateRoleQuery from './updateRole.graphql';
@@ -74,7 +74,7 @@ export default class ViewRole extends Component {
     return (
       <Dashboard title={isNewRole ? 'Create Role' : 'Role'}>
         <Fragment>
-          {error && <ErrorPanel error={error} />}
+          <ErrorPanel error={error} />
           {isNewRole ? (
             <RoleForm
               isNewRole
@@ -84,11 +84,7 @@ export default class ViewRole extends Component {
           ) : (
             <Fragment>
               {data.loading && <Spinner loading />}
-              {data &&
-                data.error &&
-                data.error.graphQLErrors && (
-                  <ErrorPanel error={data.error.graphQLErrors[0].message} />
-                )}
+              {data && <ErrorPanel error={data.error} />}
               {data &&
                 data.role && (
                   <RoleForm

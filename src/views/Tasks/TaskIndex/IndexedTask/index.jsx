@@ -2,12 +2,12 @@ import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql, compose } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../../components/Dashboard';
 import HelpView from '../../../../components/HelpView';
 import IndexedEntry from '../../../../components/IndexedEntry';
 import { ARTIFACTS_PAGE_SIZE } from '../../../../utils/constants';
+import ErrorPanel from '../../../../components/ErrorPanel';
 import artifactsQuery from './artifacts.graphql';
 import indexedTaskQuery from './indexedTask.graphql';
 
@@ -113,16 +113,8 @@ export default class IndexedTask extends Component {
         helpView={<HelpView description={description} />}
       >
         {loading && <Spinner loading />}
-        {!loading &&
-          indexedTaskError &&
-          indexedTaskError.graphQLErrors && (
-            <ErrorPanel error={indexedTaskError} />
-          )}
-        {!loading &&
-          latestArtifactsError &&
-          latestArtifactsError.graphQLErrors && (
-            <ErrorPanel error={latestArtifactsError} />
-          )}
+        {!loading && <ErrorPanel error={indexedTaskError} />}
+        {!loading && <ErrorPanel error={latestArtifactsError} />}
         {latestArtifacts &&
           indexedTask &&
           task && (

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { string, bool, func, oneOfType, object } from 'prop-types';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import Code from '@mozilla-frontend-infra/components/Code';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -32,6 +31,7 @@ import DateDistance from '../DateDistance';
 import { HOOKS_LAST_FIRE_TYPE } from '../../utils/constants';
 import { hook } from '../../utils/prop-types';
 import removeKeys from '../../utils/removeKeys';
+import ErrorPanel from '../ErrorPanel';
 
 const initialHook = {
   metadata: {
@@ -358,7 +358,7 @@ export default class HookForm extends Component {
 
     return (
       <Fragment>
-        {error && !dialogOpen && <ErrorPanel error={error} />}
+        {!dialogOpen && <ErrorPanel error={error} />}
         <List>
           {isNewHook && (
             <Fragment>
@@ -653,7 +653,7 @@ export default class HookForm extends Component {
             confirmText="Trigger Hook"
             body={
               <Fragment>
-                {error && dialogOpen && <ErrorPanel error={error} />}
+                {dialogOpen && <ErrorPanel error={error} />}
                 <Typography gutterBottom>
                   Trigger Hook{' '}
                   <code>

@@ -1,7 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
@@ -13,6 +12,7 @@ import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import HelpView from '../../../components/HelpView';
 import AwsProvisionerWorkerTypeTable from '../../../components/AwsProvisionerWorkerTypeTable';
+import ErrorPanel from '../../../components/ErrorPanel';
 import workerTypesQuery from './workerTypes.graphql';
 
 @hot(module)
@@ -69,7 +69,7 @@ export default class ViewRoles extends Component {
       >
         <Fragment>
           {!awsProvisionerWorkerTypeSummaries && loading && <Spinner loading />}
-          {error && error.graphQLErrors && <ErrorPanel error={error} />}
+          <ErrorPanel error={error} />
           {awsProvisionerWorkerTypeSummaries && (
             <AwsProvisionerWorkerTypeTable
               searchTerm={workerTypeSearch}

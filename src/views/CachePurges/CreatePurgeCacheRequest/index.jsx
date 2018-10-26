@@ -1,7 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -10,6 +9,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
+import ErrorPanel from '../../../components/ErrorPanel';
 import purgeCacheQuery from './purgeCache.graphql';
 
 @hot(module)
@@ -77,7 +77,7 @@ export default class CreatePurgeCacheRequest extends Component {
     return (
       <Dashboard title="Create Purge Cache Request">
         <Fragment>
-          {error && <ErrorPanel error={error} />}
+          <ErrorPanel error={error} />
           <List>
             <ListItem>
               <TextField

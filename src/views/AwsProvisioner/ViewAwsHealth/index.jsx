@@ -1,11 +1,11 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import awsHealthQuery from './awsHealth.graphql';
 import Dashboard from '../../../components/Dashboard';
 import AwsProvisionerHealthTable from '../../../components/AwsProvisionerHealthTable';
+import ErrorPanel from '../../../components/ErrorPanel';
 
 @hot(module)
 @graphql(awsHealthQuery)
@@ -18,10 +18,7 @@ export default class ViewAwsHealth extends Component {
     return (
       <Dashboard title="AWS Provisioner Health">
         {loading && <Spinner loading />}
-        {error &&
-          error.graphQLErrors && (
-            <ErrorPanel error={error.graphQLErrors[0].message} />
-          )}
+        <ErrorPanel error={error} />
         {awsProvisionerHealth && (
           <AwsProvisionerHealthTable healthData={awsProvisionerHealth} />
         )}

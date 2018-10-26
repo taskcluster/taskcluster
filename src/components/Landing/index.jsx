@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { node, string } from 'prop-types';
 import classNames from 'classnames';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { withStyles } from '@material-ui/core/styles';
 import PageTitle from '../PageTitle';
+import ErrorPanel from '../ErrorPanel';
 
 @withStyles(theme => ({
   root: {

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { oneOfType, object, node, string, func, bool } from 'prop-types';
-import ErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -10,6 +9,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import withMobileDialog from '@material-ui/core/withMobileDialog';
 import Button from '../Button';
+import ErrorPanel from '../ErrorPanel';
 
 @withMobileDialog()
 @withStyles({
