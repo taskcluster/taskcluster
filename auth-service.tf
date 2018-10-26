@@ -133,8 +133,8 @@ locals {
         "queue:claim-work:gce-provider/*",
         "assume:worker-id:*",
         "assume:worker-type:gce-provider/*",
-        "queue:worker-id:gce-worker-test/*",                          // TODO: Probably not right
-        "auth:create-client:worker/gce/taskcluster-staging-214020/*", // TODO: configure
+        "queue:worker-id:gce-worker-test/*",                  // TODO: Probably not right
+        "auth:create-client:worker/gce/${var.gcp_project}/*",
       ]
     },
     {

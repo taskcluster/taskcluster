@@ -108,3 +108,8 @@ variable "audit_log_stream" {
   type        = "string"
   description = "kinesis stream for audit logs."
 }
+
+variable "gcp_project" {
+  type        = "string"
+  description = "Project in Google Cloud (used for gce_provider)."
+}

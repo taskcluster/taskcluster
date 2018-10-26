@@ -4,7 +4,7 @@ resource "random_string" "gce_provider_access_token" {
 }
 
 resource "google_service_account" "gce_provider" {
-  account_id   = "taskcluster-gce-provider"                 // TODO: name includes cluster name to allow for 2 tc in one project
+  account_id   = "taskcluster-gce-provider"
   display_name = "Taskcluster GCE Provider Service Account"
 }
 
@@ -45,7 +45,29 @@ resource "google_project_iam_member" "gce_provider_assign" {
 }
 
 locals {
-  gce_worker_types = "[{\"configMap\":{\"authBaseUrl\":\"https://taskcluster.imbstack.com/api/auth/v1\",\"cachesDir\":\"/home/taskcluster/caches\",\"disableReboots\":true,\"livelogSecret\":\"foobar\",\"queueBaseUrl\":\"https://taskcluster.imbstack.com/api/queue/v1\",\"shutdownMachineOnIdle\":false,\"shutdownMachineOnInternalError\":false,\"signingKeyLocation\":\"/home/taskcluster/signing.key\",\"tasksDir\":\"/home/taskcluster\"},\"diskSizeGb\":32,\"image\":\"taskcluster-generic-worker-debian-9-1535097042\",\"instances\":2,\"name\":\"gce-worker-test\",\"version\":1,\"workerGroup\":\"gce-worker-test\",\"zones\":[\"us-east1-b\"]}]"
+  gce_worker_types = [
+    {
+      configMap = {
+        authBaseUrl                    = "${var.root_url}/api/auth/v1"
+        cachesDir                      = "/home/taskcluster/caches"
+        disableReboots                 = true
+        livelogSecret                  = "foobar"
+        queueBaseUrl                   = "${var.root_url}/api/queue/v1"
+        shutdownMachineOnIdle          = false
+        shutdownMachineOnInternalError = false
+        signingKeyLocation             = "/home/taskcluster/signing.key"
+        tasksDir                       = "/home/taskcluster"
+      }
+
+      diskSizeGb  = 32
+      image       = "taskcluster-generic-worker-debian-9-1540861926"
+      instances   = 2
+      name        = "gce-worker-test"
+      version     = 1
+      workerGroup = "gce-worker-test"
+      zones       = ["us-east1-b"]
+    },
+  ]
 }
 
 module "gce_provider_secrets" {
@@ -62,19 +84,16 @@ module "gce_provider_secrets" {
     PUBLISH_METADATA         = "false"
     FORCE_SSL                = "false"
     TRUST_PROXY              = "true"
-    WORKER_TYPES             = "{}"
     PROVISIONER_ID           = "gce-provider"
 
-    // TODO: configurable
-    GOOGLE_PROJECT = "taskcluster-staging-214020"
+    GOOGLE_PROJECT = "${var.gcp_project}"
 
     // TODO: Unnecessary once worker has rootUrl support
-    CREDENTIAL_URL = "https://taskcluster.imbstack.com/api/gce-provider/v1/credentials"
+    CREDENTIAL_URL = "${var.root_url}/api/gce-provider/v1/credentials"
 
-    // TODO: configurable
     AUDIENCE                       = "taskclusteraudience"
     GOOGLE_APPLICATION_CREDENTIALS = "/var/run/secret/cloud.google.com/service-account.json"
-    WORKER_TYPES                   = "${local.gce_worker_types}"
+    WORKER_TYPES                   = "${jsonencode(local.gce_worker_types)}"
   }
 
   secret_files = {
