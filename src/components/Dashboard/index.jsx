@@ -21,6 +21,7 @@ import UserMenu from './UserMenu';
 import SidebarList from './SidebarList';
 import { THEME } from '../../utils/constants';
 import { withThemeToggler } from '../../utils/ToggleTheme';
+import Logo from '../../../logo.png';
 import ErrorPanel from '../ErrorPanel';
 
 @withStyles(
@@ -80,12 +81,16 @@ import ErrorPanel from '../ErrorPanel';
     title: {
       textDecoration: 'none',
       color: theme.palette.text.primary,
+      width: '100%',
     },
     contentPadding: {
       paddingTop: theme.spacing.triple,
       paddingLeft: theme.spacing.triple,
       paddingRight: theme.spacing.triple,
       paddingBottom: theme.spacing.triple * 4,
+    },
+    logoStyle: {
+      marginTop: theme.spacing.unit,
     },
     content: {
       flexGrow: 1,
@@ -162,6 +167,7 @@ export default class Dashboard extends Component {
     mobileOpen: false,
     showHelpView: false,
     error: null,
+    showLogo: false,
   };
 
   handleDrawerToggle = () => {
@@ -170,6 +176,10 @@ export default class Dashboard extends Component {
 
   handleHelpViewToggle = () => {
     this.setState({ showHelpView: !this.state.showHelpView });
+  };
+
+  handleTitleToggle = () => {
+    this.setState({ showLogo: !this.state.showLogo });
   };
 
   render() {
@@ -185,7 +195,7 @@ export default class Dashboard extends Component {
       onToggleTheme,
       ...props
     } = this.props;
-    const { error, mobileOpen, showHelpView } = this.state;
+    const { error, mobileOpen, showHelpView, showLogo } = this.state;
     const drawer = (
       <div>
         <div className={classes.toolbar}>
@@ -198,13 +208,24 @@ export default class Dashboard extends Component {
             <MenuIcon />
           </IconButton>
           <Typography
+            onMouseEnter={this.handleTitleToggle}
+            onMouseLeave={this.handleTitleToggle}
             component={Link}
             to="/"
             variant="h6"
             noWrap
             className={classes.title}
           >
-            {process.env.APPLICATION_NAME}
+            {showLogo ? (
+              <img
+                className={classes.logoStyle}
+                height={40}
+                alt="logo"
+                src={Logo}
+              />
+            ) : (
+              process.env.APPLICATION_NAME
+            )}
           </Typography>
         </div>
         <Divider />
