@@ -7,8 +7,6 @@ const _ = require('lodash');
 const prAllowed = require('./pr-allowed');
 const {consume} = require('taskcluster-lib-pulse');
 
-const INSPECTOR_URL = 'https://tools.taskcluster.net/task-group-inspector/#/';
-
 const debugPrefix = 'taskcluster-github:handlers';
 const debug = Debug(debugPrefix);
 
@@ -219,13 +217,14 @@ async function statusHandler(message) {
   }
 
   debug(`Attempting to update status for ${build.organization}/${build.repository}@${build.sha} (${state})`);
+  const target_url = `${this.context.cfg.taskcluster.rootUrl}/task-group-inspector/#/${taskGroupId}`;
   try {
     await instGithub.repos.createStatus({
       owner: build.organization,
       repo: build.repository,
       sha: build.sha,
       state,
-      target_url: INSPECTOR_URL + taskGroupId,
+      target_url,
       description: 'TaskGroup: ' + state,
       context: `${this.context.cfg.app.statusContext} (${build.eventType.split('.')[0]})`,
     });
@@ -393,14 +392,15 @@ async function jobHandler(message) {
   } finally {
     debug(`Trying to create status for ${organization}/${repository}@${sha} (${groupState})`);
     let eventType = message.payload.details['event.type'];
-    let statusContext = `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`;
+    let statusContext = `${context.cfg.app.statusContext} (${eventType.split('.')[0]})`;
     let description = groupState === 'pending' ? `TaskGroup: Pending (for ${eventType})` : 'TaskGroup: Exception';
+    const target_url = `${context.cfg.taskcluster.rootUrl}/task-group-inspector/#/${taskGroupId}`;
     await instGithub.repos.createStatus({
       owner: organization,
       repo: repository,
       sha,
       state: groupState,
-      target_url: INSPECTOR_URL + taskGroupId,
+      target_url,
       description,
       context: statusContext,
     });

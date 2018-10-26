@@ -15,9 +15,9 @@ module.exports = async ({cfg}) => {
       {algorithm: 'RS256', expiresIn: '1m'},
     );
     try {
-      github.authenticate({type: 'integration', token: inteToken});
+      github.authenticate({type: 'app', token: inteToken});
     } catch (e) {
-      debug('Authentication as integration failed!');
+      debug('Authentication as app failed!');
       throw e;
     }
     return github;
@@ -41,7 +41,7 @@ module.exports = async ({cfg}) => {
         gh.authenticate({type: 'token', token: instaToken.token});
         debug(`Authenticated as installation: ${inst_id}`);
       } catch (e) {
-        debug('Authentication as integration failed!');
+        debug('Authentication as app failed!');
         throw e;
       }
       return gh;
