@@ -84,7 +84,7 @@ extend type Query {
   # Returns a list of artifacts and associated metadata for a particular task run.
   # As a task run may have many artifacts, this may return cursors to page through artifacts.
   # To continue listing artifacts, use the returned connection with the desired
-  # front or back cursor. This query can return a maximum of up to 100 artifacts in a single page.
+  # front or back cursor. This query can return a maximum of up to 1000 artifacts in a single page.
   # It **may return less**, even if more artifacts are available.
   # It may also return a page connection even though there are no more results.
   # Use the connection limit to specify smaller page sizes.
@@ -93,7 +93,7 @@ extend type Query {
   # Returns a list of the artifacts and associated metadata for latest run of a task.
   # As a task run may have many artifacts, this may return cursors to page through artifacts.
   # To continue listing artifacts, use the returned connection with the desired
-  # front or back cursor. This query can return a maximum of up to 100 artifacts in a single page.
+  # front or back cursor. This query can return a maximum of up to 1000 artifacts in a single page.
   # It **may return less**, even if more artifacts are available.
   # It may also return a page connection even though there are no more results.
   # Use the connection limit to specify smaller page sizes.

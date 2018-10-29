@@ -1,6 +1,6 @@
 import DataLoader from 'dataloader';
 
-const LIMIT = 100;
+const LIMIT = 1000;
 const FIRST = '$$FIRST$$';
 
 export default class ConnectionLoader {
