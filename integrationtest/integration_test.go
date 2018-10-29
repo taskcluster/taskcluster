@@ -93,8 +93,7 @@ func TestDefineTask(t *testing.T) {
 		ProvisionerID: "win-provisioner",
 		Retries:       5,
 		Routes: []string{
-			"tc-treeherder.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163",
-			"tc-treeherder-stage.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163",
+			"garbage.tc-client-go.test",
 		},
 		SchedulerID: "go-test-test-scheduler",
 		Scopes: []string{
@@ -157,8 +156,7 @@ func TestDefineTask(t *testing.T) {
 	  "retries":       5,
 
 	  "routes": [
-	    "tc-treeherder.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163",
-	    "tc-treeherder-stage.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163"
+	    "garbage.tc-client-go.test"
 	  ],
 
 	  "scopes": [
