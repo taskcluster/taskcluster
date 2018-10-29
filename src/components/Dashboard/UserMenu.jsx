@@ -127,6 +127,7 @@ export default class UserMenu extends Component {
             <ListItemText
               primary={profile.displayName}
               primaryTypographyProps={{ className: classes.username }}
+              title={profile.displayName}
             />
           </ListItem>
         </List>
