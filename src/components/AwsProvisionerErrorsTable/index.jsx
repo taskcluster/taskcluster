@@ -52,6 +52,13 @@ export default class AwsProvisionerErrorsTable extends Component {
         const secondElement =
           sortDirection === 'desc' ? a[sortByProperty] : b[sortByProperty];
 
+        if (sortByProperty === 'type') {
+          return sort(
+            this.getErrorType(firstElement),
+            this.getErrorType(secondElement)
+          );
+        }
+
         return sort(firstElement, secondElement);
       });
     },
@@ -63,6 +70,22 @@ export default class AwsProvisionerErrorsTable extends Component {
       },
     }
   );
+
+  getErrorType = type => {
+    switch (type) {
+      case 'INSTANCE_REQUEST': {
+        return 'Error requesting new instance';
+      }
+
+      case 'TERMINATION': {
+        return 'Error while running instance';
+      }
+
+      default: {
+        return type;
+      }
+    }
+  };
 
   handleHeaderClick = sortBy => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
@@ -93,9 +116,9 @@ export default class AwsProvisionerErrorsTable extends Component {
           sortDirection={sortDirection}
           onHeaderClick={this.handleHeaderClick}
           noItemsMessage="Errors not available"
-          renderRow={error => (
+          renderRow={(error, index) => (
             <TableRow
-              key={`${error.az}-${error.instanceType}-${error.type}-${
+              key={`${index}-${error.az}-${error.instanceType}-${error.type}-${
                 error.time
               }`}
             >
@@ -103,7 +126,7 @@ export default class AwsProvisionerErrorsTable extends Component {
                 <Typography>{error.az}</Typography>
               </TableCell>
               <TableCell>
-                <Typography>{error.type}</Typography>
+                <Typography>{this.getErrorType(error.type)}</Typography>
               </TableCell>
               <TableCell>
                 <Typography>{error.instanceType}</Typography>

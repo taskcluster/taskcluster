@@ -10,7 +10,6 @@ import DeleteEmptyIcon from 'mdi-react/DeleteEmptyIcon';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 import AwsProvisionerErrorsTable from '../../../components/AwsProvisionerErrorsTable';
-import AwsProvisionerHealthTable from '../../../components/AwsProvisionerHealthTable';
 import AwsProvisionerWorkerTypeStatus from '../../../components/AwsProvisionerWorkerTypeStatus';
 import Snackbar from '../../../components/Snackbar';
 import Ec2ResourcesTable from '../../../components/Ec2ResourcesTable';
@@ -108,7 +107,6 @@ export default class ViewWorkerType extends Component {
       data: {
         awsProvisionerWorkerTypeState,
         awsProvisionerWorkerTypeErrors,
-        awsProvisionerWorkerTypeHealth,
         awsProvisionerWorkerType,
         loading,
         error,
@@ -131,8 +129,7 @@ export default class ViewWorkerType extends Component {
         <ErrorPanel error={this.state.error} />
         <Tabs fullWidth value={currentTab} onChange={this.handleTabChange}>
           <Tab label="Status" />
-          <Tab label="Errors" />
-          <Tab label="Health" />
+          <Tab label="Recent Provisioning Errors" />
           <Tab label="EC2 Resources" />
         </Tabs>
         {loading && <Spinner className={classes.spinner} loading />}
@@ -154,13 +151,6 @@ export default class ViewWorkerType extends Component {
         {!error &&
           !loading &&
           currentTab === 2 && (
-            <AwsProvisionerHealthTable
-              healthData={awsProvisionerWorkerTypeHealth}
-            />
-          )}
-        {!error &&
-          !loading &&
-          currentTab === 3 && (
             <Ec2ResourcesTable
               onTerminateInstance={this.handleTerminateInstance}
               workerType={awsProvisionerWorkerType}
@@ -170,7 +160,7 @@ export default class ViewWorkerType extends Component {
           )}
         {!error &&
           !loading &&
-          currentTab === 3 && (
+          currentTab === 2 && (
             <Tooltip title="Terminate All">
               <div className={classes.fab}>
                 <Button

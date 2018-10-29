@@ -16,7 +16,7 @@ export default class ViewRecentErrors extends Component {
     } = this.props;
 
     return (
-      <Dashboard title="AWS Provisioner Recent Errors">
+      <Dashboard title="AWS Provisioner Recent Provisioning Errors">
         {loading && <Spinner loading />}
         <ErrorPanel error={error} />
         {awsProvisionerRecentErrors && (

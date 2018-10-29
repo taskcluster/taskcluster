@@ -10,39 +10,6 @@ query AwsProvisionerWorkerType($workerType: String!) {
     message
   }
 
-  awsProvisionerWorkerTypeHealth(workerType: $workerType) {
-    running {
-      region
-      az
-      instanceType
-      running
-    }
-    terminationHealth {
-      region
-      az
-      instanceType
-      cleanShutdown
-      spotKill
-      insufficientCapacity
-      volumeLimitExceeded
-      missingAmi
-      startupFailed
-      unknownCodes
-      noCode
-    }
-    requestHealth {
-      region
-      az
-      instanceType
-      successful
-      failed
-      configurationIssue
-      throttledCalls
-      insufficientCapacity
-      limitExceeded
-    }
-  }
-
   awsProvisionerWorkerTypeState(workerType: $workerType)
 
   awsProvisionerWorkerType(workerType: $workerType) {

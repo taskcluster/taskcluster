@@ -87,7 +87,7 @@ export default class ViewRoles extends Component {
             <SpeedDialAction
               tooltipOpen
               icon={<AlertCircleOutlineIcon />}
-              tooltipTitle="Recent Errors"
+              tooltipTitle="Recent Provisioning Errors"
               classes={{ button: classes.alertIcon }}
               onClick={this.handleRecentErrorsClick}
               ButtonProps={{ color: 'secondary' }}
