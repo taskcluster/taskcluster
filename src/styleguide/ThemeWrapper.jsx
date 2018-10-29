@@ -9,7 +9,7 @@ export default class ThemeWrapper extends Component {
   };
 
   static getDerivedStateFromError(error) {
-    this.setState({ error });
+    return { error };
   }
 
   render() {

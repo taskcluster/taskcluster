@@ -160,7 +160,7 @@ export default class Dashboard extends Component {
   };
 
   static getDerivedStateFromError(error) {
-    this.setState({ error });
+    return { error };
   }
 
   state = {

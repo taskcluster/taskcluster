@@ -118,7 +118,7 @@ export default class App extends Component {
   }
 
   static getDerivedStateFromError(error) {
-    this.setState({ error });
+    return { error };
   }
 
   async componentDidMount() {

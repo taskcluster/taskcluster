@@ -43,7 +43,7 @@ export default class Landing extends Component {
   };
 
   static getDerivedStateFromError(error) {
-    this.setState({ error });
+    return { error };
   }
 
   state = {
