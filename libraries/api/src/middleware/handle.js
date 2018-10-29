@@ -18,7 +18,11 @@ const callHandler = ({entry, context, monitor}) => {
         // This is only to catch the case where people do not use res.reply()
         if (monitor) {
           monitor.reportError(`${entry.name}: req.authorize was never called, ` +
-            'or some parameters were missing from the request');
+            'or some parameters were missing from the request', {
+              url: req.originalUrl,
+              method: req.method,
+              requestId: req.get('x-request-id'),
+            });
         }
       }
     }).catch((err) => {
