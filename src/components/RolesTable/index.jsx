@@ -46,7 +46,7 @@ export default class RolesTable extends Component {
     (roles, sortBy, sortDirection, searchTerm) => {
       const sortByProperty = camelCase(sortBy);
       const filteredRoles = searchTerm
-        ? roles.filter(({ roleId }) => searchTerm.includes(roleId))
+        ? roles.filter(({ roleId }) => roleId.includes(searchTerm))
         : roles;
 
       return ifElse(
