@@ -53,6 +53,8 @@ export default class Button extends Component {
       user,
       onClick,
       track,
+      onAuthorize,
+      onUnauthorize,
       ...props
     } = this.props;
     const isDisabled = (requiresAuth && !user) || disabled;
