@@ -16,6 +16,7 @@ const monitor = require('taskcluster-lib-monitor');
 const taskcluster = require('taskcluster-client');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const exchanges = require('./exchanges');
+const libPulse = require('taskcluster-lib-pulse');
 
 // Create component loader
 const load = loader({
@@ -65,11 +66,25 @@ const load = loader({
     },
   },
 
+  pulseClient: {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => {
+      return new libPulse.Client({
+        namespace: 'taskcluster-hooks',
+        monitor,
+        credentials: libPulse.pulseCredentials(cfg.pulse),
+      });
+    },
+  },
+
   publisher: {
-    requires: ['cfg', 'schemaset', 'monitor'],
-    setup: async ({cfg, schemaset, monitor}) => exchanges.setup({
+    requires: ['cfg', 'schemaset', 'monitor', 'pulseClient'],
+    setup: async ({cfg, schemaset, monitor, pulseClient}) => await exchanges.publisher({
       rootUrl:            cfg.taskcluster.rootUrl,
+      client:             pulseClient,
       credentials:        cfg.pulse,
+      schemaset,
+      namespace:          'taskcluster-hooks',
       publish:            cfg.app.publishMetaData,
       validator:          await schemaset.validator(cfg.taskcluster.rootUrl),
       aws:                cfg.aws.validator,
@@ -92,8 +107,8 @@ const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'schemaset', 'Hook', 'taskcreator', 'monitor', 'publisher'],
-    setup: ({cfg, schemaset, Hook, taskcreator, monitor, publisher}) => builder.build({
+    requires: ['cfg', 'schemaset', 'Hook', 'taskcreator', 'monitor', 'publisher', 'pulseClient'],
+    setup: ({cfg, schemaset, Hook, taskcreator, monitor, publisher, pulseClient}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
       context: {Hook, taskcreator, publisher},
       schemaset,
@@ -114,6 +129,9 @@ const load = loader({
         {
           name: 'api',
           reference: builder.reference(),
+        }, {
+          name: 'events',
+          reference: exchanges.reference(),
         },
       ],
     }),

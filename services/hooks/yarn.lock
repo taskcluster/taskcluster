@@ -65,7 +65,7 @@ ajv@^5.1.0, ajv@^5.2.3, ajv@^5.3.0:
     fast-json-stable-stringify "^2.0.0"
     json-schema-traverse "^0.3.0"
 
-amqplib@^0.5.1:
+amqplib@^0.5.1, amqplib@^0.5.2:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/amqplib/-/amqplib-0.5.2.tgz#d2d7313c7ffaa4d10bcf1e6252de4591b6cc7b63"
   integrity sha512-l9mCs6LbydtHqRniRwYkKdqxVa6XMz3Vw1fh+2gJaaVgTM6Jk3o8RccAKWKtlhT1US5sWrFh+KKxsVUALURSIA==
@@ -235,10 +235,10 @@ aws-sdk@^2.144.0, aws-sdk@^2.147.0, aws-sdk@^2.151.0, aws-sdk@^2.164.0:
     xml2js "0.4.17"
     xmlbuilder "4.2.1"
 
-aws-sdk@^2.148.0:
-  version "2.315.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.315.0.tgz#7f393162af038cbef722374444a9bc9ae1bdbbe9"
-  integrity sha512-GqKve4H6DCpPG7zm5L5S5Is50AnRHbBei1kKFhUKj4KfB7lV/0OIVfjob2Jh4a6I4I1tqnTcdTXGlhBccS1f3w==
+aws-sdk@^2.331.0:
+  version "2.339.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.339.0.tgz#869ce594b87854c723c6157c2a56f101334ce258"
+  integrity sha512-ScEfOR/JhtDuCVPkwB3mMLDgo8YrcSpFpHmoZLRNbefrQ9yTI+zTJqTrdeArNdwOLLoc/yCbqgHRQfXUCcfyfQ==
   dependencies:
     buffer "4.9.1"
     events "1.1.1"
@@ -2151,21 +2151,6 @@ pseudomap@^1.0.2:
   resolved "https://registry.yarnpkg.com/pseudomap/-/pseudomap-1.0.2.tgz#f052a28da70e618917ef0a8ac34c1ae5a68286b3"
   integrity sha1-8FKijacOYYkX7wqKw0wa5aaChrM=
 
-pulse-publisher@^10.0.1:
-  version "10.0.1"
-  resolved "https://registry.yarnpkg.com/pulse-publisher/-/pulse-publisher-10.0.1.tgz#db150103f87a0b508374fa0949191a6fead56db0"
-  integrity sha512-kN6Xh9KjKrQysUYygK61kzupeEOA6P6T1WZ/Mo9bvgBBx/7PZkvYE0IASHILcp6EqJcahVa4kjvdnMHC3iiI5A==
-  dependencies:
-    ajv "^5.3.0"
-    amqplib "^0.5.1"
-    aws-sdk "^2.148.0"
-    debug "^3.1.0"
-    lodash "^4.0.0"
-    promise "^8.0.1"
-    slugid "^1.1.0"
-    taskcluster-client "^10.0.0"
-    taskcluster-lib-urls "^10.0.0"
-
 punycode@1.3.2:
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.3.2.tgz#9653a036fb7c1ee42342f2325cceefea3926c48d"
@@ -2735,6 +2720,20 @@ taskcluster-client@^11.0.0:
     superagent "~3.8.1"
     taskcluster-lib-urls "^10.0.0"
 
+taskcluster-client@^11.0.4:
+  version "11.0.4"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-11.0.4.tgz#ea8df77d78ac72de5fb087bb6b884a25f33c90ee"
+  integrity sha512-OF98kBaUwsSoe/oX62MIXdFwO7D5NQMbm1W+7vHFfI+HQ5QzWQpfuv1HU/chteJkez6QvFvM0qhXon4a1wKUEA==
+  dependencies:
+    amqplib "^0.5.1"
+    debug "^3.1.0"
+    hawk "^6.0.2"
+    lodash "^4.17.4"
+    promise "^8.0.1"
+    slugid "^1.1.0"
+    superagent "~3.8.1"
+    taskcluster-lib-urls "^10.0.0"
+
 taskcluster-client@^3.0.3:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-3.1.1.tgz#8420c269146d4be0774a49e6685a972d3ae40c59"
@@ -2848,6 +2847,17 @@ taskcluster-lib-monitor@^10.0.0:
     raven "^2.2.1"
     statsum "^0.6.0"
     taskcluster-client "^10.0.0"
+
+taskcluster-lib-pulse@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-pulse/-/taskcluster-lib-pulse-2.1.0.tgz#ba1927cd59f7e83b28530f9d73e92050fae426e3"
+  integrity sha512-NSTC9BoOct+Zjt6O1niqXVOkHi1QulAYSVIJfcz7nI4acbSpMEWz1jwszcmf/dcheX/6oXiywFB8VXF4sCyJGg==
+  dependencies:
+    amqplib "^0.5.2"
+    aws-sdk "^2.331.0"
+    debug "^3.1.0"
+    taskcluster-client "^11.0.4"
+    taskcluster-lib-urls "^10.0.0"
 
 taskcluster-lib-scopes@^10.0.1:
   version "10.0.1"
