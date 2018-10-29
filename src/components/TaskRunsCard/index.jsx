@@ -5,6 +5,7 @@ import { func, number, string } from 'prop-types';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Label from '@mozilla-frontend-infra/components/Label';
 import { withStyles } from '@material-ui/core/styles';
+import { fade } from '@material-ui/core/styles/colorManipulator';
 import Typography from '@material-ui/core/Typography';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -28,52 +29,66 @@ import Button from '../Button';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
+import NoRunsIcon from './NoRunsIcon';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
 import { runs } from '../../utils/prop-types';
 
 const DOTS_VARIANT_LIMIT = 5;
 
 @withRouter
-@withStyles(theme => ({
-  headline: {
-    paddingLeft: theme.spacing.triple,
-    paddingRight: theme.spacing.triple,
-  },
-  cardContent: {
-    paddingLeft: 0,
-    paddingRight: 0,
-    paddingTop: theme.spacing.double,
-    paddingBottom: theme.spacing.double,
-    '&:last-child': {
-      paddingBottom: theme.spacing.triple,
+@withStyles(
+  theme => ({
+    headline: {
+      paddingLeft: theme.spacing.triple,
+      paddingRight: theme.spacing.triple,
     },
-  },
-  controls: {
-    display: 'flex',
-    alignItems: 'center',
-    paddingLeft: theme.spacing.unit,
-    paddingBottom: theme.spacing.unit,
-  },
-  listItemButton: {
-    ...theme.mixins.listItemButton,
-  },
-  pre: {
-    margin: 0,
-    fontSize: theme.typography.body2.fontSize,
-  },
-  pointer: {
-    cursor: 'pointer',
-  },
-  linkCell: {
-    textAlign: 'right',
-  },
-  logButton: {
-    marginRight: theme.spacing.unit,
-  },
-  artifactsListItemContainer: {
-    display: 'block',
-  },
-}))
+    cardContent: {
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingTop: theme.spacing.double,
+      paddingBottom: theme.spacing.double,
+      '&:last-child': {
+        paddingBottom: theme.spacing.triple,
+      },
+    },
+    controls: {
+      display: 'flex',
+      alignItems: 'center',
+      paddingLeft: theme.spacing.unit,
+      paddingBottom: theme.spacing.unit,
+    },
+    listItemButton: {
+      ...theme.mixins.listItemButton,
+    },
+    pre: {
+      margin: 0,
+      fontSize: theme.typography.body2.fontSize,
+    },
+    pointer: {
+      cursor: 'pointer',
+    },
+    linkCell: {
+      textAlign: 'right',
+    },
+    logButton: {
+      marginRight: theme.spacing.unit,
+    },
+    artifactsListItemContainer: {
+      display: 'block',
+    },
+    boxVariantIcon: {
+      width: '25%',
+      height: 'auto',
+    },
+    boxVariant: {
+      textAlign: 'center',
+    },
+    boxVariantText: {
+      color: fade(theme.palette.text.primary, 0.4),
+    },
+  }),
+  { withTheme: true }
+)
 /**
  * Render a paginated card layout for the runs of a GraphQL task response.
  */
@@ -220,6 +235,7 @@ export default class TaskRunsCard extends Component {
       selectedRunId,
       provisionerId,
       workerType,
+      theme,
     } = this.props;
     const { showArtifacts } = this.state;
     const run = this.getCurrentRun();
@@ -231,128 +247,143 @@ export default class TaskRunsCard extends Component {
             <Typography variant="h5" className={classes.headline}>
               Task Runs
             </Typography>
-            <List>
-              <ListItem>
-                <ListItemText
-                  primary="State"
-                  secondary={<StatusLabel state={run.state} />}
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Reason Created"
-                  secondary={<StatusLabel state={run.reasonCreated} />}
-                />
-              </ListItem>
-              <CopyToClipboard text={run.scheduled}>
-                <ListItem button className={classes.listItemButton}>
+            {run ? (
+              <List>
+                <ListItem>
                   <ListItemText
-                    primary="Scheduled"
-                    secondary={<DateDistance from={run.scheduled} />}
+                    primary="State"
+                    secondary={<StatusLabel state={run.state} />}
                   />
-                  <ContentCopyIcon />
                 </ListItem>
-              </CopyToClipboard>
-              <CopyToClipboard text={run.started}>
-                <ListItem button className={classes.listItemButton}>
+                <ListItem>
                   <ListItemText
-                    primary="Started"
-                    secondary={
-                      run.started ? (
-                        <DateDistance
-                          from={run.started}
-                          offset={run.scheduled}
-                        />
-                      ) : (
-                        <em>n/a</em>
-                      )
-                    }
+                    primary="Reason Created"
+                    secondary={<StatusLabel state={run.reasonCreated} />}
                   />
-                  <ContentCopyIcon />
                 </ListItem>
-              </CopyToClipboard>
-              <CopyToClipboard text={run.resolved}>
-                <ListItem button className={classes.listItemButton}>
-                  <ListItemText
-                    primary="Resolved"
-                    secondary={
-                      run.resolved ? (
-                        <DateDistance
-                          from={run.resolved}
-                          offset={run.started}
-                        />
-                      ) : (
-                        <em>n/a</em>
-                      )
-                    }
-                  />
-                  <ContentCopyIcon />
-                </ListItem>
-              </CopyToClipboard>
-              <ListItem>
-                <ListItemText
-                  primary="Reason Resolved"
-                  secondary={
-                    run.reasonResolved ? (
-                      <StatusLabel state={run.reasonResolved} />
-                    ) : (
-                      <em>n/a</em>
-                    )
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Worker Group"
-                  secondary={run.workerGroup || <em>n/a</em>}
-                />
-              </ListItem>
-              <ListItem
-                button
-                className={classes.listItemButton}
-                component={Link}
-                to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
-                  run.workerId
-                }`}
-              >
-                <ListItemText primary="Worker ID" secondary={run.workerId} />
-                <LinkIcon />
-              </ListItem>
-              <CopyToClipboard text={run.takenUntil}>
-                <ListItem button className={classes.listItemButton}>
-                  <ListItemText
-                    primary="Taken Until"
-                    secondary={
-                      run.takenUntil ? (
-                        <DateDistance from={run.takenUntil} />
-                      ) : (
-                        <em>n/a</em>
-                      )
-                    }
-                  />
-                  <ContentCopyIcon />
-                </ListItem>
-              </CopyToClipboard>
-              <ListItem
-                button
-                className={classes.listItemButton}
-                onClick={this.handleToggleArtifacts}
-              >
-                <ListItemText primary="Artifacts" />
-                {showArtifacts ? <ChevronUpIcon /> : <ChevronDownIcon />}
-              </ListItem>
-              <Collapse in={showArtifacts} timeout="auto">
-                <List component="div" disablePadding>
-                  <ListItem
-                    className={classes.artifactsListItemContainer}
-                    component="div"
-                    disableGutters
-                  >
-                    {this.renderArtifactsTable()}
+                <CopyToClipboard text={run.scheduled}>
+                  <ListItem button className={classes.listItemButton}>
+                    <ListItemText
+                      primary="Scheduled"
+                      secondary={<DateDistance from={run.scheduled} />}
+                    />
+                    <ContentCopyIcon />
                   </ListItem>
-                </List>
-              </Collapse>
-            </List>
+                </CopyToClipboard>
+                <CopyToClipboard text={run.started}>
+                  <ListItem button className={classes.listItemButton}>
+                    <ListItemText
+                      primary="Started"
+                      secondary={
+                        run.started ? (
+                          <DateDistance
+                            from={run.started}
+                            offset={run.scheduled}
+                          />
+                        ) : (
+                          <em>n/a</em>
+                        )
+                      }
+                    />
+                    <ContentCopyIcon />
+                  </ListItem>
+                </CopyToClipboard>
+                <CopyToClipboard text={run.resolved}>
+                  <ListItem button className={classes.listItemButton}>
+                    <ListItemText
+                      primary="Resolved"
+                      secondary={
+                        run.resolved ? (
+                          <DateDistance
+                            from={run.resolved}
+                            offset={run.started}
+                          />
+                        ) : (
+                          <em>n/a</em>
+                        )
+                      }
+                    />
+                    <ContentCopyIcon />
+                  </ListItem>
+                </CopyToClipboard>
+                <ListItem>
+                  <ListItemText
+                    primary="Reason Resolved"
+                    secondary={
+                      run.reasonResolved ? (
+                        <StatusLabel state={run.reasonResolved} />
+                      ) : (
+                        <em>n/a</em>
+                      )
+                    }
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Worker Group"
+                    secondary={run.workerGroup || <em>n/a</em>}
+                  />
+                </ListItem>
+                <ListItem
+                  button
+                  className={classes.listItemButton}
+                  component={Link}
+                  to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
+                    run.workerId
+                  }`}
+                >
+                  <ListItemText primary="Worker ID" secondary={run.workerId} />
+                  <LinkIcon />
+                </ListItem>
+                <CopyToClipboard text={run.takenUntil}>
+                  <ListItem button className={classes.listItemButton}>
+                    <ListItemText
+                      primary="Taken Until"
+                      secondary={
+                        run.takenUntil ? (
+                          <DateDistance from={run.takenUntil} />
+                        ) : (
+                          <em>n/a</em>
+                        )
+                      }
+                    />
+                    <ContentCopyIcon />
+                  </ListItem>
+                </CopyToClipboard>
+                <ListItem
+                  button
+                  className={classes.listItemButton}
+                  onClick={this.handleToggleArtifacts}
+                >
+                  <ListItemText primary="Artifacts" />
+                  {showArtifacts ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                </ListItem>
+                <Collapse in={showArtifacts} timeout="auto">
+                  <List component="div" disablePadding>
+                    <ListItem
+                      className={classes.artifactsListItemContainer}
+                      component="div"
+                      disableGutters
+                    >
+                      {this.renderArtifactsTable()}
+                    </ListItem>
+                  </List>
+                </Collapse>
+              </List>
+            ) : (
+              <div className={classes.boxVariant}>
+                <NoRunsIcon
+                  fill={theme.palette.text.primary}
+                  className={classes.boxVariantIcon}
+                />
+                <Typography className={classes.boxVariantText} variant="h6">
+                  No Runs
+                </Typography>
+                <Typography className={classes.boxVariantText}>
+                  A run will be created when the task gets schedueled.
+                </Typography>
+              </div>
+            )}
           </CardContent>
           {runs.length > 1 && (
             <MobileStepper
