@@ -1,4 +1,4 @@
-let Exchanges = require('pulse-publisher');
+let {Exchanges} = require('taskcluster-lib-pulse');
 
 /** Declaration of exchanges used by hooks  */
 let exchanges = new Exchanges({
