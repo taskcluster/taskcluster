@@ -60,6 +60,12 @@ class MockMonitor extends BaseMonitor {
     );
   }
 
+  /**
+   * Override oneShot to helpfully not call process.exit
+   */
+  async oneShot(name, fn) {
+    await fn();
+  }
 }
 
 module.exports = MockMonitor;

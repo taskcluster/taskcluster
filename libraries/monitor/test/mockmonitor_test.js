@@ -153,4 +153,9 @@ suite('MockMonitor', () => {
     data = monitor.counts['mm.ec2.us-west-2.describeAvailabilityZones.count'];
     assert(data === 1);
   });
+
+  test('monitor.oneShot', async () => {
+    monitor.oneShot(() => {});
+    // just expect this not to call process.exit!
+  });
 });
