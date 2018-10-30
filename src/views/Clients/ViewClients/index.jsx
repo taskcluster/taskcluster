@@ -36,6 +36,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 }))
 export default class ViewClients extends PureComponent {
   state = {
+    clientSearchText: '',
     clientSearch: '',
     // eslint-disable-next-line react/no-unused-state
     previousClientId: '',
@@ -49,12 +50,14 @@ export default class ViewClients extends PureComponent {
       props.user.credentials.clientId !== state.previousClientId
     ) {
       return {
+        clientSearchText: props.user.credentials.clientId,
         clientSearch: props.user.credentials.clientId,
         previousClientId: props.user.credentials.clientId,
       };
     }
     if (!props.user && state.previousClientId !== '') {
       return {
+        clientSearchText: '',
         clientSearch: '',
         previousClientId: '',
       };
@@ -64,7 +67,27 @@ export default class ViewClients extends PureComponent {
   }
 
   handleClientSearchChange = ({ target }) => {
-    this.setState({ clientSearch: target.value });
+    this.setState({ clientSearchText: target.value });
+  };
+
+  handleClientSearchSubmit = e => {
+    e.preventDefault();
+
+    const {
+      data: { refetch },
+    } = this.props;
+    const { clientSearchText } = this.state;
+
+    this.setState({ clientSearch: clientSearchText.trim() });
+
+    refetch({
+      clientOptions: {
+        ...(clientSearchText ? { prefix: clientSearchText.trim() } : null),
+      },
+      clientsConnection: {
+        limit: VIEW_CLIENTS_PAGE_SIZE,
+      },
+    });
   };
 
   handleCreate = () => {
@@ -106,28 +129,6 @@ export default class ViewClients extends PureComponent {
     });
   };
 
-  handleClientSearchChange = ({ target }) => {
-    this.setState({ clientSearch: target.value });
-  };
-
-  handleClientSearchSubmit = e => {
-    e.preventDefault();
-
-    const {
-      data: { refetch },
-    } = this.props;
-    const { clientSearch } = this.state;
-
-    refetch({
-      clientOptions: {
-        ...(clientSearch ? { prefix: clientSearch.trim() } : null),
-      },
-      clientsConnection: {
-        limit: VIEW_CLIENTS_PAGE_SIZE,
-      },
-    });
-  };
-
   handleCreate = () => {
     this.props.history.push('/auth/clients/create');
   };
@@ -138,7 +139,8 @@ export default class ViewClients extends PureComponent {
       description,
       data: { loading, error, clients },
     } = this.props;
-    const { clientSearch } = this.state;
+    const { clientSearchText } = this.state;
+
     return (
       <Dashboard
         title="Clients"
@@ -146,7 +148,7 @@ export default class ViewClients extends PureComponent {
         search={
           <Search
             disabled={loading}
-            value={clientSearch}
+            value={clientSearchText}
             onChange={this.handleClientSearchChange}
             onSubmit={this.handleClientSearchSubmit}
             placeholder="Client starts with"

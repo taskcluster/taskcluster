@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { shape, func, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
@@ -81,42 +81,40 @@ export default class ClientsTable extends Component {
     const iconSize = 16;
 
     return (
-      <Fragment>
-        <ConnectionDataTable
-          connection={this.createSortedClientsConnection(
-            clientsConnection,
-            sortBy,
-            sortDirection
-          )}
-          pageSize={VIEW_CLIENTS_PAGE_SIZE}
-          headers={['Client ID', 'Last Date Used']}
-          sortByHeader={sortBy}
-          sortDirection={sortDirection}
-          onHeaderClick={this.handleHeaderClick}
-          onPageChange={onPageChange}
-          renderRow={({ node: client }) => (
-            <TableRow key={client.clientId}>
-              <TableCell>
-                <TableCellListItem
-                  dense
-                  button
-                  component={Link}
-                  to={`/auth/clients/${encodeURIComponent(client.clientId)}`}
-                >
-                  <ListItemText
-                    disableTypography
-                    primary={<Typography>{client.clientId}</Typography>}
-                  />
-                  <LinkIcon size={iconSize} />
-                </TableCellListItem>
-              </TableCell>
-              <TableCell>
-                <DateDistance from={client.lastDateUsed} />
-              </TableCell>
-            </TableRow>
-          )}
-        />
-      </Fragment>
+      <ConnectionDataTable
+        connection={this.createSortedClientsConnection(
+          clientsConnection,
+          sortBy,
+          sortDirection
+        )}
+        pageSize={VIEW_CLIENTS_PAGE_SIZE}
+        headers={['Client ID', 'Last Date Used']}
+        sortByHeader={sortBy}
+        sortDirection={sortDirection}
+        onHeaderClick={this.handleHeaderClick}
+        onPageChange={onPageChange}
+        renderRow={({ node: client }) => (
+          <TableRow key={client.clientId}>
+            <TableCell>
+              <TableCellListItem
+                dense
+                button
+                component={Link}
+                to={`/auth/clients/${encodeURIComponent(client.clientId)}`}
+              >
+                <ListItemText
+                  disableTypography
+                  primary={<Typography>{client.clientId}</Typography>}
+                />
+                <LinkIcon size={iconSize} />
+              </TableCellListItem>
+            </TableCell>
+            <TableCell>
+              <DateDistance from={client.lastDateUsed} />
+            </TableCell>
+          </TableRow>
+        )}
+      />
     );
   }
 }
