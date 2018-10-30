@@ -56,7 +56,7 @@ suite('schemaset_test.js', () => {
       });
       assert(false, 'Bad schema should\'ve thrown an exception!');
     } catch (e) {
-      if (!e.toString().match(/schema is invalid:/)) {
+      if (!e.toString().match(/While loading default-array-obj-schema.json: schema is invalid:/)) {
         throw e;
       }
     }
