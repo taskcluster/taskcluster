@@ -40,15 +40,16 @@ class Monitor extends BaseMonitor {
         };
       }
       return sentry;
-    }).catch(err => {
-      console.log('Failed to get access to sentry, err: %s, jsoN: %j', err.stack, err);
+    }).catch(e => {
+      console.log('While trying to report %s\n...getting sentry DSN failed: %s',
+        err.stack || err, e.stack);
       return {client: null, expires: new Date(0)};
     });
 
     return this._sentry.then(sentry => {
       if (!sentry.client) {
-        console.log('Can\'t report to sentry, error not reported: ', err.stack);
-        return Promise.resolve();
+        // error was already reported
+        return Promise.resolve(false);
       }
 
       sentry.client.captureException(err, {
@@ -67,7 +68,8 @@ class Monitor extends BaseMonitor {
         };
         onError = (e) => {
           sentry.client.removeListener('logged', onLogged);
-          console.log('Failed to log error to Sentry: ' + e);
+          console.log('While trying to report %s\n...reporting to sentry failed: %s',
+            err.stack, e.stack);
           accept(false);
         };
         sentry.client.once('logged', onLogged);

@@ -59,13 +59,35 @@ suite('Sentry', () => {
           debug('called Sentry, returned 500');
         });
       try {
-        assert.equal(false, await monitor.reportError('stranger things'));
+        assert.equal(false, await monitor.reportError(new Error('stranger things')));
       } finally {
         capcon.stopIntercept(process.stdout);
       }
 
-      assert(/failed to send exception to sentry/.test(stdout));
-      assert(/Failed to log error to Sentry:/.test(stdout));
+      assert(/While trying to report.*stranger things/.test(stdout));
+      assert(/reporting to sentry failed:/.test(stdout));
+    });
+
+    test('should handle DSN-fetching error', async function() {
+      monitor = await monitoring({
+        rootUrl: libUrls.testRootUrl(),
+        projectName: 'tc-lib-monitor',
+        sentryDSN: async () => { throw new Error('strange things'); },
+        statsumToken: 'fake',
+        patchGlobal: false,
+      });
+
+      let stdout = '';
+      capcon.startIntercept(process.stdout, data => { stdout += data; });
+
+      try {
+        assert.equal(false, await monitor.reportError(new Error('strange things')));
+      } finally {
+        capcon.stopIntercept(process.stdout);
+      }
+
+      assert(/While trying to report.*strange things/.test(stdout));
+      assert(/getting sentry DSN failed:/.test(stdout));
     });
   });
 
