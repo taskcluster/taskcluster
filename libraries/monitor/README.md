@@ -246,8 +246,8 @@ with timing and error handling support.
 ```javascript
   'expire-info': {
     requires: ['cfg', 'monitor'],
-    setup: async ({cfg, monitor}) => {
-      monitor.oneShot('expire-info', () => {
+    setup: ({cfg, monitor}) => {
+      return monitor.oneShot('expire-info', () => {
         // do the expiration stuff
       });
     },  

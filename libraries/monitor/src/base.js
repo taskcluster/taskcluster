@@ -162,6 +162,7 @@ class BaseMonitor {
 
   /**
    * Monitor a one-shot process.  This function's promise never resolves!
+   * (except in testing, with MockMonitor)
    */
   async oneShot(name, fn) {
     let exitStatus = 0;
