@@ -6,8 +6,8 @@ test:
   test:
     testBucket: "test-bucket-for-any-garbage"
   azure:
-    accountName:  "taskclusterdev"
-    accountKey:   "..."
+    accountId:  "taskclusterdev"
+    accessKey:   "..."
   aws:
     accessKeyId:        "..."
     secretAccessKey:    "..."
