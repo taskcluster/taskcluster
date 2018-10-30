@@ -133,7 +133,7 @@ export default class TaskGroup extends Component {
     filter: null,
     taskGroupProgressDisabled: true,
     // eslint-disable-next-line react/no-unused-state
-    previousTaskGroupId: null,
+    previousTaskGroupId: this.props.match.params.taskGroupId,
     groupActions: [],
     actionLoading: false,
     actionInputs: {},
@@ -294,13 +294,14 @@ export default class TaskGroup extends Component {
     e.preventDefault();
 
     const { taskGroupSearch } = this.state;
+    const taskGroupId = taskGroupSearch.trim();
 
-    if (this.props.match.params.taskGroupId === taskGroupSearch) {
+    if (this.props.match.params.taskGroupId === taskGroupId) {
       return;
     }
 
     this.setState({ taskGroupProgressDisabled: true });
-    this.props.history.push(`/tasks/groups/${this.state.taskGroupSearch}`);
+    this.props.history.push(`/tasks/groups/${taskGroupId}`);
   };
 
   preRunningAction = () => {
