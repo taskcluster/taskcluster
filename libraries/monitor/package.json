@@ -39,5 +39,8 @@
   "main": "./src/index.js",
   "engines": {
     "node": ">=8"
+  },
+  "renovate": {
+    "extends": ["github>taskcluster/renovate-config"]
   }
 }
