@@ -22,7 +22,7 @@
     "taskcluster-lib-docs": "^10.0.1",
     "taskcluster-lib-loader": "^10.0.1",
     "taskcluster-lib-monitor": "^10.0.0",
-    "taskcluster-lib-pulse": "^2.1.0",
+    "taskcluster-lib-pulse": "^10.1.0",
     "taskcluster-lib-urls": "^10.0.0",
     "taskcluster-lib-validate": "^11.0.2",
     "typed-env-config": "^2.0.0"
