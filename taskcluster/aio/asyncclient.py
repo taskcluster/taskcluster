@@ -221,7 +221,7 @@ class AsyncBaseClient(BaseClient):
             try:
                 await response.release()
                 return await response.json()
-            except ValueError:
+            except (ValueError, aiohttp.client_exceptions.ContentTypeError):
                 return {"response": response}
 
         # This code-path should be unreachable
