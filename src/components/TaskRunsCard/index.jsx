@@ -385,35 +385,33 @@ export default class TaskRunsCard extends Component {
               </div>
             )}
           </CardContent>
-          {runs.length > 1 && (
-            <MobileStepper
-              variant={runs.length > DOTS_VARIANT_LIMIT ? 'progress' : 'dots'}
-              position="static"
-              steps={runs.length}
-              activeStep={selectedRunId}
-              className={classes.root}
-              nextButton={
-                <Button
-                  size="small"
-                  onClick={this.handleNext}
-                  disabled={selectedRunId === runs.length - 1}
-                >
-                  Next
-                  <ChevronRightIcon />
-                </Button>
-              }
-              backButton={
-                <Button
-                  size="small"
-                  onClick={this.handlePrevious}
-                  disabled={selectedRunId === 0}
-                >
-                  <ChevronLeftIcon />
-                  Previous
-                </Button>
-              }
-            />
-          )}
+          <MobileStepper
+            variant={runs.length > DOTS_VARIANT_LIMIT ? 'progress' : 'dots'}
+            position="static"
+            steps={runs.length}
+            activeStep={selectedRunId}
+            className={classes.root}
+            nextButton={
+              <Button
+                size="small"
+                onClick={this.handleNext}
+                disabled={selectedRunId === runs.length - 1}
+              >
+                Next
+                <ChevronRightIcon />
+              </Button>
+            }
+            backButton={
+              <Button
+                size="small"
+                onClick={this.handlePrevious}
+                disabled={selectedRunId === 0}
+              >
+                <ChevronLeftIcon />
+                Previous
+              </Button>
+            }
+          />
         </div>
       </Card>
     );
