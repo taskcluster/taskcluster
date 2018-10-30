@@ -76,6 +76,8 @@ module.exports = async function uploadToS3 (
       putUrl = artifact.putUrl;
     }
 
+    logDetails.putUrl = putUrl;
+
     var parsedUrl = url.parse(putUrl);
     var options = _.defaults({
       hostname: parsedUrl.hostname,
@@ -112,7 +114,7 @@ module.exports = async function uploadToS3 (
         });
 
         req.on('error', err => {
-          log(`Error uploading ${artifactName}`, logDetails);
+          log(`Error uploading ${artifactName}`, _.defaults({err}, logDetails));
           reject(err);
         });
 
