@@ -7,9 +7,7 @@ import {
   filter,
   pipe,
   map,
-  identity,
   contains,
-  any,
   prop,
   pluck,
   sort as rSort,
@@ -22,7 +20,6 @@ import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
 import TableCellListItem from '../TableCellListItem';
 import DataTable from '../DataTable';
-import scopeMatch from '../../utils/scopeMatch';
 import sort from '../../utils/sort';
 import { role, scopeExpansionLevel } from '../../utils/prop-types';
 
@@ -41,15 +38,12 @@ export default class RoleScopesTable extends Component {
   static defaultProps = {
     searchTerm: null,
     selectedScope: null,
-    searchMode: null,
     searchProperty: 'expandedScopes',
   };
 
   static propTypes = {
     /** A GraphQL roles response. */
     roles: arrayOf(role).isRequired,
-    /** The entity search mode for scopes. */
-    searchMode: string,
     /** The scope expansion level. */
     searchProperty: scopeExpansionLevel,
     /** A string to filter the list of results. */
@@ -62,22 +56,15 @@ export default class RoleScopesTable extends Component {
   };
 
   createSortedRolesScopes = memoize(
-    (roles, searchMode, selectedScope, searchProperty) => {
-      const match = scopeMatch(searchMode, selectedScope);
+    (roles, selectedScope, searchProperty) => {
       const extractExpandedScopes = pipe(
         pluck('expandedScopes'),
         flatten,
         uniq,
-        searchMode ? filter(match) : identity,
         rSort(sort)
       );
       const extractRoles = pipe(
-        filter(
-          pipe(
-            prop(searchProperty),
-            any(match)
-          )
-        ),
+        filter(prop(searchProperty)),
         pluck('roleId'),
         rSort(sort)
       );
@@ -85,10 +72,8 @@ export default class RoleScopesTable extends Component {
       return selectedScope ? extractRoles(roles) : extractExpandedScopes(roles);
     },
     {
-      serializer: ([roles, searchMode, selectedScope, searchProperty]) =>
-        `${sorted(roles).join(
-          '-'
-        )}-${searchMode}-${selectedScope}-${searchProperty}`,
+      serializer: ([roles, selectedScope, searchProperty]) =>
+        `${sorted(roles).join('-')}-${selectedScope}-${searchProperty}`,
     }
   );
 
@@ -121,14 +106,12 @@ export default class RoleScopesTable extends Component {
     const {
       roles,
       searchTerm,
-      searchMode,
       selectedScope,
       searchProperty,
       ...props
     } = this.props;
     const items = this.createSortedRolesScopes(
       roles,
-      searchMode,
       selectedScope,
       searchProperty
     );

@@ -108,7 +108,7 @@ export default class ListScopes extends PureComponent {
             <Tab label="Roles" />
             <Tab label="Clients" />
           </Tabs>
-          {!(clients && roles) && loading && <Spinner loading />}
+          {loading && <Spinner loading />}
           {roles &&
             currentTabIndex === 0 && (
               <RoleScopesTable roles={roles} searchTerm={searchTerm} />

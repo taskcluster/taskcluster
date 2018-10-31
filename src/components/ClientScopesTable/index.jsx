@@ -8,7 +8,6 @@ import {
   pipe,
   path,
   map,
-  any,
   identity,
   contains,
   sort as rSort,
@@ -22,7 +21,6 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import TableCellListItem from '../TableCellListItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import sort from '../../utils/sort';
-import scopeMatch from '../../utils/scopeMatch';
 import { VIEW_CLIENT_SCOPES_INSPECT_SIZE } from '../../utils/constants';
 import { pageInfo, client, scopeExpansionLevel } from '../../utils/prop-types';
 
@@ -40,7 +38,6 @@ export default class ClientScopesTable extends Component {
   static defaultProps = {
     searchTerm: null,
     selectedScope: null,
-    searchMode: null,
     searchProperty: 'expandedScopes',
   };
 
@@ -52,8 +49,6 @@ export default class ClientScopesTable extends Component {
       edges: arrayOf(client),
       pageInfo,
     }).isRequired,
-    /** The entity search mode for scopes. */
-    searchMode: string,
     /** The scope expansion level. */
     searchProperty: scopeExpansionLevel,
     /** A string to filter the list of results. */
@@ -70,22 +65,15 @@ export default class ClientScopesTable extends Component {
   clients = null;
 
   createSortedClientsConnection = memoize(
-    (clientsConnection, searchMode, selectedScope, searchProperty) => {
-      const match = scopeMatch(searchMode, selectedScope);
+    (clientsConnection, selectedScope, searchProperty) => {
       const extractExpandedScopes = pipe(
         map(path(['node', 'expandedScopes'])),
         flatten,
         uniq,
-        searchMode ? filter(match) : identity,
         rSort(sort)
       );
       const extractClients = pipe(
-        filter(
-          pipe(
-            path(['node', searchProperty]),
-            any(match)
-          )
-        ),
+        filter(path(['node', searchProperty])),
         map(pipe(path(['node', 'clientId']))),
         rSort(sort)
       );
@@ -99,17 +87,10 @@ export default class ClientScopesTable extends Component {
       return clientsConnection;
     },
     {
-      serializer: ([
-        clientsConnection,
-        searchMode,
-        selectedScope,
-        searchProperty,
-      ]) => {
+      serializer: ([clientsConnection, selectedScope, searchProperty]) => {
         const ids = sorted(clientsConnection.edges);
 
-        return `${ids.join(
-          '-'
-        )}-${searchMode}-${selectedScope}-${searchProperty}`;
+        return `${ids.join('-')}-${selectedScope}-${searchProperty}`;
       },
     }
   );
@@ -148,7 +129,6 @@ export default class ClientScopesTable extends Component {
   render() {
     const {
       clientsConnection,
-      searchMode,
       selectedScope,
       searchProperty,
       onPageChange,
@@ -156,7 +136,6 @@ export default class ClientScopesTable extends Component {
     } = this.props;
     const connection = this.createSortedClientsConnection(
       clientsConnection,
-      searchMode,
       selectedScope,
       searchProperty
     );

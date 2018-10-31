@@ -4,20 +4,13 @@ import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
-import Divider from '@material-ui/core/Divider';
-import MenuItem from '@material-ui/core/MenuItem';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import TextField from '@material-ui/core/TextField';
-import CheckIcon from 'mdi-react/CheckIcon';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import ClientScopesTable from '../../../components/ClientScopesTable';
 import RoleScopesTable from '../../../components/RoleScopesTable';
-import {
-  VIEW_CLIENT_SCOPES_INSPECT_SIZE,
-  SCOPES_SEARCH_MODE,
-} from '../../../utils/constants';
+import { VIEW_CLIENT_SCOPES_INSPECT_SIZE } from '../../../utils/constants';
 import ErrorPanel from '../../../components/ErrorPanel';
 import scopesQuery from '../scopes.graphql';
 
@@ -30,18 +23,10 @@ import scopesQuery from '../scopes.graphql';
   tabs: {
     marginBottom: theme.spacing.triple,
   },
-  toolbox: {
-    display: 'flex',
-    flexDirection: 'row-reverse',
-  },
-  dropdown: {
-    minWidth: 200,
-  },
 }))
 export default class ViewScope extends Component {
   state = {
     searchTerm: '',
-    searchMode: SCOPES_SEARCH_MODE.HAS_SCOPE,
     directEntitySearch: false,
     currentTabIndex: 0,
   };
@@ -78,12 +63,6 @@ export default class ViewScope extends Component {
     });
   };
 
-  handleMatchChange = ({ target: { value } }) => {
-    value === 'Direct Ownership'
-      ? this.setState({ directEntitySearch: !this.state.directEntitySearch })
-      : this.setState({ searchMode: value });
-  };
-
   handleSearchSubmit = searchTerm => {
     this.setState({ searchTerm });
   };
@@ -98,12 +77,7 @@ export default class ViewScope extends Component {
       match: { params },
       data: { loading, error, clients, roles },
     } = this.props;
-    const {
-      searchTerm,
-      searchMode,
-      directEntitySearch,
-      currentTabIndex,
-    } = this.state;
+    const { searchTerm, currentTabIndex } = this.state;
     const selectedScope = decodeURIComponent(params.selectedScope);
     const searchProperty = this.state.directEntitySearch
       ? 'scopes'
@@ -120,29 +94,6 @@ export default class ViewScope extends Component {
         }
       >
         <Fragment>
-          <div className={classes.toolbox}>
-            <TextField
-              disabled={loading}
-              className={classes.dropdown}
-              select
-              label="Scope Match"
-              value={searchMode}
-              onChange={this.handleMatchChange}
-            >
-              <MenuItem value={SCOPES_SEARCH_MODE.HAS_SCOPE}>
-                Has Scope
-              </MenuItem>
-              <MenuItem value={SCOPES_SEARCH_MODE.HAS_SUB_SCOPE}>
-                Has Sub-scope
-              </MenuItem>
-              <MenuItem value={SCOPES_SEARCH_MODE.EXACT}>Exact</MenuItem>
-              <Divider />
-              <MenuItem selected={directEntitySearch} value="Direct Ownership">
-                {directEntitySearch && <CheckIcon className={classes.icon} />}
-                Direct Ownership
-              </MenuItem>
-            </TextField>
-          </div>
           <Tabs
             className={classes.tabs}
             fullWidth
@@ -152,14 +103,13 @@ export default class ViewScope extends Component {
             <Tab label="Roles" />
             <Tab label="Clients" />
           </Tabs>
-          {!(clients && roles) && loading && <Spinner loading />}
+          {loading && <Spinner loading />}
           <ErrorPanel error={error} />
           {roles &&
             currentTabIndex === 0 && (
               <RoleScopesTable
                 roles={roles}
                 searchTerm={searchTerm}
-                searchMode={searchMode}
                 selectedScope={selectedScope}
                 searchProperty={searchProperty}
               />
@@ -170,7 +120,6 @@ export default class ViewScope extends Component {
                 clientsConnection={clients}
                 onPageChange={this.handleClientsPageChange}
                 searchTerm={searchTerm}
-                searchMode={searchMode}
                 selectedScope={selectedScope}
                 searchProperty={searchProperty}
               />
