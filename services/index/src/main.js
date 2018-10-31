@@ -167,19 +167,17 @@ var load = loader({
 
   expire: {
     requires: ['cfg', 'monitor', 'IndexedTask', 'Namespace'],
-    setup: async ({cfg, monitor, IndexedTask, Namespace}) => {
-      let now = taskcluster.fromNow(cfg.app.expirationDelay);
+    setup: ({cfg, monitor, IndexedTask, Namespace}) => {
+      return monitor.oneShot(async () => {
+        const now = taskcluster.fromNow(cfg.app.expirationDelay);
 
-      debug('Expiring namespaces');
-      let namespaces = await Namespace.expireEntries(now);
-      debug(`Expired ${namespaces} namespaces`);
-      debug('Expiring indexed tasks');
-      let tasks = await IndexedTask.expireTasks(now);
-      debug(`Expired ${tasks} tasks`);
-
-      monitor.count('expire.done');
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
+        debug('Expiring namespaces');
+        const namespaces = await Namespace.expireEntries(now);
+        debug(`Expired ${namespaces} namespaces`);
+        debug('Expiring indexed tasks');
+        const tasks = await IndexedTask.expireTasks(now);
+        debug(`Expired ${tasks} tasks`);
+      });
     },
   },
 }, ['process', 'profile']);
