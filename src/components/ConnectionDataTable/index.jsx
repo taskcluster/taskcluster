@@ -91,34 +91,33 @@ export default class ConnectionDataTable extends Component {
 
   state = {
     loading: false,
+    page: 0,
   };
 
   pages = new Map();
 
+  componentDidUpdate(prevProps) {
+    if (
+      !this.props.connection.pageInfo.previousCursor &&
+      prevProps.connection.pageInfo.previousCursor
+    ) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({ page: 0 });
+    }
+  }
+
   getPaginationMetadata() {
     const { connection, pageSize } = this.props;
+    const { page } = this.state;
 
-    if (!this.pages.has(connection.pageInfo.cursor)) {
-      this.pages.set(connection.pageInfo.cursor, {
-        page: this.pages.size,
-        pageInfo: connection.pageInfo,
-      });
-    }
+    this.pages.set(connection.pageInfo.cursor, {
+      pageInfo: connection.pageInfo,
+    });
 
-    const { page, pageInfo } = this.pages.get(connection.pageInfo.cursor);
-
-    if (page === this.pages.size - 1) {
-      return {
-        page,
-        count: pageInfo.hasNextPage
-          ? (this.pages.size + 1) * pageSize
-          : this.pages.size * pageSize,
-      };
-    }
+    const { pageInfo } = this.pages.get(connection.pageInfo.cursor);
 
     return {
-      page,
-      count: this.pages.size * pageSize,
+      count: page + (pageInfo.hasNextPage ? 2 : 1) * pageSize,
     };
   }
 
@@ -130,7 +129,14 @@ export default class ConnectionDataTable extends Component {
 
   handlePageChange = (e, nextPage) => {
     const { connection, onPageChange } = this.props;
-    const { page, pageInfo } = this.pages.get(connection.pageInfo.cursor);
+    const { page } = this.state;
+
+    if (!this.pages.has(connection.pageInfo.cursor)) {
+      return;
+    }
+
+    const newPage = nextPage > page ? page + 1 : page - 1;
+    const { pageInfo } = this.pages.get(connection.pageInfo.cursor);
     const cursor =
       nextPage > page ? pageInfo.nextCursor : pageInfo.previousCursor;
     const previousCursor =
@@ -138,7 +144,7 @@ export default class ConnectionDataTable extends Component {
         ? pageInfo.cursor
         : this.pages.get(pageInfo.previousCursor).previousCursor;
 
-    this.setState({ loading: true }, async () => {
+    this.setState({ loading: true, page: newPage }, async () => {
       await onPageChange({ cursor, previousCursor });
       this.setState({ loading: false });
     });
@@ -155,8 +161,8 @@ export default class ConnectionDataTable extends Component {
       sortByHeader,
       sortDirection,
     } = this.props;
-    const { loading } = this.state;
-    const { count, page } = this.getPaginationMetadata();
+    const { loading, page } = this.state;
+    const { count } = this.getPaginationMetadata();
     const colSpan = columnsSize || (headers && headers.length) || 1;
 
     return (
