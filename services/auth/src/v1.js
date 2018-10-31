@@ -228,7 +228,7 @@ builder.declare({
   // Forbid changes to static clients
   if (clientId.startsWith('static/')) {
     return res.reportError('InputError',
-      'clientId "{{clientId}}" starts with "static/" which is reserved for statically' +
+      'clientId "{{clientId}}" starts with "static/" which is reserved for statically ' +
       'configured clients. Contact your administrator to change static clients.',
       {clientId},
     );
@@ -318,7 +318,7 @@ builder.declare({
   // Forbid changes to static clients
   if (clientId.startsWith('static/')) {
     return res.reportError('InputError',
-      'clientId "{{clientId}}" starts with "static/" which is reserved for statically' +
+      'clientId "{{clientId}}" starts with "static/" which is reserved for statically ' +
       'configured clients. Contact your administrator to change static clients.',
       {clientId},
     );
@@ -380,7 +380,7 @@ builder.declare({
   // Forbid changes to static clients
   if (clientId.startsWith('static/')) {
     return res.reportError('InputError',
-      'clientId "{{clientId}}" starts with "static/" which is reserved for statically' +
+      'clientId "{{clientId}}" starts with "static/" which is reserved for statically ' +
       'configured clients. Contact your administrator to change static clients.',
       {clientId},
     );
@@ -442,7 +442,7 @@ builder.declare({
   // Forbid changes to static clients
   if (clientId.startsWith('static/')) {
     return res.reportError('InputError',
-      'clientId "{{clientId}}" starts with "static/" which is reserved for statically' +
+      'clientId "{{clientId}}" starts with "static/" which is reserved for statically ' +
       'configured clients. Contact your administrator to change static clients.',
       {clientId},
     );
@@ -493,7 +493,7 @@ builder.declare({
   // Forbid changes to static clients
   if (clientId.startsWith('static/')) {
     return res.reportError('InputError',
-      'clientId "{{clientId}}" starts with "static/" which is reserved for statically' +
+      'clientId "{{clientId}}" starts with "static/" which is reserved for statically ' +
       'configured clients. Contact your administrator to change static clients.',
       {clientId},
     );
@@ -540,7 +540,7 @@ builder.declare({
   // Forbid changes to static clients
   if (clientId.startsWith('static/')) {
     return res.reportError('InputError',
-      'clientId "{{clientId}}" starts with "static/" which is reserved for statically' +
+      'clientId "{{clientId}}" starts with "static/" which is reserved for statically ' +
       'configured clients. Contact your administrator to change static clients.',
       {clientId},
     );
