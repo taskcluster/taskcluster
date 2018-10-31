@@ -84,8 +84,8 @@ export default class ViewScope extends Component {
       : this.setState({ searchMode: value });
   };
 
-  handleSearchChange = ({ target: { value } }) => {
-    this.setState({ searchTerm: value });
+  handleSearchSubmit = searchTerm => {
+    this.setState({ searchTerm });
   };
 
   handleTabChange = (event, value) => {
@@ -114,8 +114,7 @@ export default class ViewScope extends Component {
         title={selectedScope}
         search={
           <Search
-            value={searchTerm}
-            onChange={this.handleSearchChange}
+            onSubmit={this.handleSearchSubmit}
             placeholder="Result contains"
           />
         }

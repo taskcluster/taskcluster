@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { bool, func, string } from 'prop-types';
+import { bool, func } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import FormControl from '@material-ui/core/FormControl';
@@ -59,32 +59,38 @@ import { THEME } from '../../utils/constants';
 export default class Search extends Component {
   static defaultProps = {
     spellCheck: false,
-    onSubmit: null,
   };
 
   static propTypes = {
-    /** The search field value. */
-    value: string.isRequired,
-    /** A function to execute when the search field value changes. */
-    onChange: func.isRequired,
-    /** A function to execute when the search form has been submitted. */
-    onSubmit: func,
+    /**
+     * A function to execute when the search form has been submitted.
+     * The function will provided with the search value trimmed from any
+     * leading/trailing whitespaces. */
+    onSubmit: func.isRequired,
     /** Set to `true` to enable spell-check on the search field. */
     spellCheck: bool,
   };
 
+  state = {
+    value: '',
+  };
+
+  handleInputChange = ({ target: { value } }) => {
+    this.setState({ value });
+  };
+
+  handleInputSubmit = e => {
+    e.preventDefault();
+
+    this.props.onSubmit(this.state.value.trim());
+  };
+
   render() {
-    const {
-      classes,
-      value,
-      onChange,
-      onSubmit,
-      spellCheck,
-      ...props
-    } = this.props;
+    const { classes, onSubmit, spellCheck, ...props } = this.props;
+    const { value } = this.state;
 
     return (
-      <form onSubmit={onSubmit} className={classes.root}>
+      <form onSubmit={this.handleInputSubmit} className={classes.root}>
         <FormControl>
           <div className={classes.search}>
             <MagnifyIcon />
@@ -96,7 +102,7 @@ export default class Search extends Component {
             className={classes.input}
             type="text"
             value={value}
-            onChange={onChange}
+            onChange={this.handleInputChange}
             {...props}
           />
         </FormControl>

@@ -34,8 +34,8 @@ export default class ListHooks extends Component {
     this.props.history.push('/hooks/create');
   };
 
-  handleHookSearchChange = e => {
-    this.setState({ hookSearch: e.target.value || '' });
+  handleHookSearchSubmit = hookSearch => {
+    this.setState({ hookSearch });
   };
 
   handleLeafClick = (leaf, parent) => {
@@ -62,9 +62,8 @@ export default class ListHooks extends Component {
         helpView={<HelpView description={description} />}
         search={
           <Search
-            value={hookSearch}
             placeholder="Hook contains"
-            onChange={this.handleHookSearchChange}
+            onSubmit={this.handleHookSearchSubmit}
           />
         }
       >

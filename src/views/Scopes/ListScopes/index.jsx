@@ -38,8 +38,6 @@ export default class ListScopes extends PureComponent {
     currentTabIndex: 0,
   };
 
-  clientScopes = null;
-
   handleClientsPageChange = ({ cursor, previousCursor }) => {
     const {
       data: { fetchMore },
@@ -72,8 +70,8 @@ export default class ListScopes extends PureComponent {
     });
   };
 
-  handleSearchChange = ({ target: { value } }) => {
-    this.setState({ searchTerm: value });
+  handleSearchSubmit = searchTerm => {
+    this.setState({ searchTerm });
   };
 
   handleTabChange = (event, value) => {
@@ -94,9 +92,8 @@ export default class ListScopes extends PureComponent {
         helpView={<HelpView description={description} />}
         search={
           <Search
-            value={searchTerm}
             placeholder="Scope contains"
-            onChange={this.handleSearchChange}
+            onSubmit={this.handleSearchSubmit}
           />
         }
       >

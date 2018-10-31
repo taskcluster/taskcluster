@@ -28,7 +28,6 @@ import workerTypesQuery from './workerTypes.graphql';
 export default class ViewRoles extends Component {
   state = {
     workerTypeSearch: '',
-    workerTypeSearchText: '',
   };
 
   handleCreate = () => {
@@ -43,14 +42,8 @@ export default class ViewRoles extends Component {
     this.props.history.push('/aws-provisioner/recent-errors');
   };
 
-  handleWorkerTypeSearchChange = ({ target }) => {
-    this.setState({ workerTypeSearchText: target.value });
-  };
-
-  handleWorkerTypeSearchSubmit = e => {
-    e.preventDefault();
-
-    this.setState({ workerTypeSearch: this.state.workerTypeSearchText });
+  handleWorkerTypeSearchSubmit = workerTypeSearch => {
+    this.setState({ workerTypeSearch });
   };
 
   render() {
@@ -59,7 +52,7 @@ export default class ViewRoles extends Component {
       description,
       data: { loading, error, awsProvisionerWorkerTypeSummaries },
     } = this.props;
-    const { workerTypeSearch, workerTypeSearchText } = this.state;
+    const { workerTypeSearch } = this.state;
 
     return (
       <Dashboard
@@ -68,8 +61,6 @@ export default class ViewRoles extends Component {
         search={
           <Search
             disabled={loading}
-            value={workerTypeSearchText}
-            onChange={this.handleWorkerTypeSearchChange}
             onSubmit={this.handleWorkerTypeSearchSubmit}
             placeholder="Worker type contains"
           />

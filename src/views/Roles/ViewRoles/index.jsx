@@ -22,21 +22,14 @@ import rolesQuery from './roles.graphql';
 export default class ViewRoles extends PureComponent {
   state = {
     roleSearch: '',
-    roleSearchText: '',
   };
 
   handleCreate = () => {
     this.props.history.push('/auth/roles/create');
   };
 
-  handleRoleSearchChange = ({ target }) => {
-    this.setState({ roleSearchText: target.value });
-  };
-
-  handleRoleSearchSubmit = e => {
-    e.preventDefault();
-
-    this.setState({ roleSearch: this.state.roleSearchText });
+  handleRoleSearchSubmit = roleSearch => {
+    this.setState({ roleSearch });
   };
 
   render() {
@@ -45,7 +38,7 @@ export default class ViewRoles extends PureComponent {
       description,
       data: { loading, error, roles },
     } = this.props;
-    const { roleSearch, roleSearchText } = this.state;
+    const { roleSearch } = this.state;
 
     return (
       <Dashboard
@@ -54,8 +47,6 @@ export default class ViewRoles extends PureComponent {
         search={
           <Search
             disabled={loading}
-            value={roleSearchText}
-            onChange={this.handleRoleSearchChange}
             onSubmit={this.handleRoleSearchSubmit}
             placeholder="Role contains"
           />

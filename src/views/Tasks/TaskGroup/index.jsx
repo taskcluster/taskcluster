@@ -119,7 +119,6 @@ export default class TaskGroup extends Component {
         groupActions,
         actionInputs,
         actionData,
-        taskGroupSearch: taskGroupId,
         previousTaskGroupId: taskGroupId,
         taskGroupProgressDisabled: true,
       };
@@ -129,7 +128,6 @@ export default class TaskGroup extends Component {
   }
 
   state = {
-    taskGroupSearch: '',
     filter: null,
     taskGroupProgressDisabled: true,
     // eslint-disable-next-line react/no-unused-state
@@ -286,16 +284,7 @@ export default class TaskGroup extends Component {
     this.setState({ taskGroupProgressDisabled: false, filter });
   };
 
-  handleTaskGroupSearchChange = ({ target: { value } }) => {
-    this.setState({ taskGroupSearch: value || '' });
-  };
-
-  handleTaskGroupSearchSubmit = e => {
-    e.preventDefault();
-
-    const { taskGroupSearch } = this.state;
-    const taskGroupId = taskGroupSearch.trim();
-
+  handleTaskGroupSearchSubmit = taskGroupId => {
     if (this.props.match.params.taskGroupId === taskGroupId) {
       return;
     }
@@ -311,7 +300,6 @@ export default class TaskGroup extends Component {
   render() {
     const {
       groupActions,
-      taskGroupSearch,
       filter,
       actionLoading,
       taskGroupProgressDisabled,
@@ -333,13 +321,7 @@ export default class TaskGroup extends Component {
     return (
       <Dashboard
         helpView={<HelpView description={description} />}
-        search={
-          <Search
-            value={taskGroupSearch}
-            onChange={this.handleTaskGroupSearchChange}
-            onSubmit={this.handleTaskGroupSearchSubmit}
-          />
-        }
+        search={<Search onSubmit={this.handleTaskGroupSearchSubmit} />}
       >
         <ErrorPanel error={error} />
         {!error && (

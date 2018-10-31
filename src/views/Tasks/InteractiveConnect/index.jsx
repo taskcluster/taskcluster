@@ -130,7 +130,6 @@ export default class InteractiveConnect extends Component {
     displayUrl: null,
     shellUrl: null,
     artifactsLoading: true,
-    taskIdSearch: this.props.match.params.taskId,
     // eslint-disable-next-line react/no-unused-state
     previousTaskId: this.props.match.params.taskId,
   };
@@ -236,17 +235,9 @@ export default class InteractiveConnect extends Component {
     window.open(this.state.shellUrl, '_blank');
   };
 
-  handleTaskIdSearchChange = ({ target: { value } }) => {
-    this.setState({ taskIdSearch: value || '' });
-  };
-
-  handleTaskIdSearchSubmit = e => {
-    e.preventDefault();
-
-    const { taskIdSearch } = this.state;
-
-    if (taskIdSearch && this.props.match.params.taskId !== taskIdSearch) {
-      this.props.history.push(`/tasks/${this.state.taskIdSearch}/connect`);
+  handleTaskIdSearchSubmit = taskId => {
+    if (taskId && this.props.match.params.taskId !== taskId) {
+      this.props.history.push(`/tasks/${taskId}/connect`);
     }
   };
 
@@ -354,18 +345,12 @@ export default class InteractiveConnect extends Component {
     const {
       data: { task, error },
     } = this.props;
-    const { artifactsLoading, taskIdSearch } = this.state;
+    const { artifactsLoading } = this.state;
 
     return (
       <Dashboard
         title="Interactive Connect"
-        search={
-          <Search
-            value={taskIdSearch}
-            onChange={this.handleTaskIdSearchChange}
-            onSubmit={this.handleTaskIdSearchSubmit}
-          />
-        }
+        search={<Search onSubmit={this.handleTaskIdSearchSubmit} />}
       >
         <Fragment>
           {!error && artifactsLoading && <Spinner loading />}

@@ -36,7 +36,6 @@ import ErrorPanel from '../../../components/ErrorPanel';
 }))
 export default class ViewClients extends PureComponent {
   state = {
-    clientSearchText: '',
     clientSearch: '',
     // eslint-disable-next-line react/no-unused-state
     previousClientId: '',
@@ -50,14 +49,12 @@ export default class ViewClients extends PureComponent {
       props.user.credentials.clientId !== state.previousClientId
     ) {
       return {
-        clientSearchText: props.user.credentials.clientId,
         clientSearch: props.user.credentials.clientId,
         previousClientId: props.user.credentials.clientId,
       };
     }
     if (!props.user && state.previousClientId !== '') {
       return {
-        clientSearchText: '',
         clientSearch: '',
         previousClientId: '',
       };
@@ -66,23 +63,16 @@ export default class ViewClients extends PureComponent {
     return null;
   }
 
-  handleClientSearchChange = ({ target }) => {
-    this.setState({ clientSearchText: target.value });
-  };
-
-  handleClientSearchSubmit = e => {
-    e.preventDefault();
-
+  handleClientSearchSubmit = clientSearch => {
     const {
       data: { refetch },
     } = this.props;
-    const { clientSearchText } = this.state;
 
-    this.setState({ clientSearch: clientSearchText.trim() });
+    this.setState({ clientSearch });
 
     refetch({
       clientOptions: {
-        ...(clientSearchText ? { prefix: clientSearchText.trim() } : null),
+        ...(clientSearch ? { prefix: clientSearch } : null),
       },
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
@@ -139,7 +129,6 @@ export default class ViewClients extends PureComponent {
       description,
       data: { loading, error, clients },
     } = this.props;
-    const { clientSearchText } = this.state;
 
     return (
       <Dashboard
@@ -148,8 +137,6 @@ export default class ViewClients extends PureComponent {
         search={
           <Search
             disabled={loading}
-            value={clientSearchText}
-            onChange={this.handleClientSearchChange}
             onSubmit={this.handleClientSearchSubmit}
             placeholder="Client starts with"
           />

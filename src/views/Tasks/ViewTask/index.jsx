@@ -154,7 +154,6 @@ export default class ViewTask extends Component {
         taskActions,
         actionInputs,
         actionData,
-        taskSearch: taskId,
         previousTaskId: taskId,
         caches,
         selectedCaches: new Set(caches),
@@ -165,7 +164,6 @@ export default class ViewTask extends Component {
   }
 
   state = {
-    taskSearch: '',
     // eslint-disable-next-line react/no-unused-state
     previousTaskId: null,
     taskActions: [],
@@ -486,17 +484,9 @@ export default class ViewTask extends Component {
     this.setState({ dialogError: e, actionLoading: false });
   };
 
-  handleTaskSearchChange = e => {
-    this.setState({ taskSearch: e.target.value || '' });
-  };
-
-  handleTaskSearchSubmit = e => {
-    e.preventDefault();
-
-    const { taskSearch } = this.state;
-
-    if (this.props.match.params.taskId !== taskSearch) {
-      this.props.history.push(`/tasks/${this.state.taskSearch}`);
+  handleTaskSearchSubmit = taskId => {
+    if (this.props.match.params.taskId !== taskId) {
+      this.props.history.push(`/tasks/${taskId}`);
     }
   };
 
@@ -624,7 +614,6 @@ export default class ViewTask extends Component {
       dialogActionProps,
       actionData,
       taskActions,
-      taskSearch,
       selectedAction,
       dialogOpen,
       actionInputs,
@@ -635,13 +624,7 @@ export default class ViewTask extends Component {
     return (
       <Dashboard
         helpView={<HelpView description={description} />}
-        search={
-          <Search
-            value={taskSearch}
-            onChange={this.handleTaskSearchChange}
-            onSubmit={this.handleTaskSearchSubmit}
-          />
-        }
+        search={<Search onSubmit={this.handleTaskSearchSubmit} />}
       >
         {loading && <Spinner loading />}
         <ErrorPanel error={error} warning={Boolean(task)} />

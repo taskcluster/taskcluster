@@ -22,7 +22,6 @@ import db from '../../../utils/db';
 export default class NoTask extends Component {
   state = {
     recentTasks: null,
-    taskSearch: '',
   };
 
   async componentDidMount() {
@@ -34,29 +33,18 @@ export default class NoTask extends Component {
     this.setState({ recentTasks });
   }
 
-  handleTaskSearchChange = e => {
-    this.setState({ taskSearch: e.target.value || '' });
-  };
-
-  handleTaskSearchSubmit = e => {
-    e.preventDefault();
-    this.props.history.push(`/tasks/${this.state.taskSearch}`);
+  handleTaskSearchSubmit = taskId => {
+    this.props.history.push(`/tasks/${taskId}`);
   };
 
   render() {
     const { description, classes } = this.props;
-    const { taskSearch, recentTasks } = this.state;
+    const { recentTasks } = this.state;
 
     return (
       <Dashboard
         helpView={<HelpView description={description} />}
-        search={
-          <Search
-            value={taskSearch}
-            onChange={this.handleTaskSearchChange}
-            onSubmit={this.handleTaskSearchSubmit}
-          />
-        }
+        search={<Search onSubmit={this.handleTaskSearchSubmit} />}
       >
         <Typography className={classes.infoText}>
           Enter a task ID in the search box
