@@ -109,7 +109,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
       assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(args.state, 'pending');
       assert.equal(args.description, 'TaskGroup: Pending (for push)');
-      assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'push');
+      assert.equal(/taskcluster ci \((.*)\)/.exec(args.context)[1], 'push');
       debug('Created task group: ' + args.target_url);
       assert(args.target_url.startsWith(URL_PREFIX));
       let taskGroupId = args.target_url.substr(URL_PREFIX.length);
@@ -141,7 +141,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
       assert.equal(args.repo, 'hooks-testing');
       assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(args.state, 'pending');
-      assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'pull_request');
+      assert.equal(/taskcluster ci \((.*)\)/.exec(args.context)[1], 'pull_request');
       debug('Created task group: ' + args.target_url);
       assert(args.target_url.startsWith(URL_PREFIX));
       let taskGroupId = args.target_url.substr(URL_PREFIX.length);
@@ -198,7 +198,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
       assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(args.state, 'pending');
       assert.equal(args.description, 'TaskGroup: Pending (for tag)');
-      assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'tag');
+      assert.equal(/taskcluster ci \((.*)\)/.exec(args.context)[1], 'tag');
       debug('Created task group: ' + args.target_url);
       assert(args.target_url.startsWith(URL_PREFIX));
       let taskGroupId = args.target_url.substr(URL_PREFIX.length);
