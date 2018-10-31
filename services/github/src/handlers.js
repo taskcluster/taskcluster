@@ -217,7 +217,7 @@ async function statusHandler(message) {
   }
 
   debug(`Attempting to update status for ${build.organization}/${build.repository}@${build.sha} (${state})`);
-  const target_url = `${this.context.cfg.taskcluster.rootUrl}/task-group-inspector/#/${taskGroupId}`;
+  const target_url = libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/task-group-inspector/#/${taskGroupId}`);
   try {
     await instGithub.repos.createStatus({
       owner: build.organization,
@@ -394,7 +394,7 @@ async function jobHandler(message) {
     let eventType = message.payload.details['event.type'];
     let statusContext = `${context.cfg.app.statusContext} (${eventType.split('.')[0]})`;
     let description = groupState === 'pending' ? `TaskGroup: Pending (for ${eventType})` : 'TaskGroup: Exception';
-    const target_url = `${context.cfg.taskcluster.rootUrl}/task-group-inspector/#/${taskGroupId}`;
+    const target_url = libUrls.ui(context.cfg.taskcluster.rootUrl, `/task-group-inspector/#/${taskGroupId}`);
     await instGithub.repos.createStatus({
       owner: organization,
       repo: repository,
