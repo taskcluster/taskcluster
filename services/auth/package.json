@@ -43,7 +43,7 @@
     "taskcluster-lib-monitor": "^11.0.1",
     "taskcluster-lib-pulse": "^2.1.0",
     "taskcluster-lib-scopes": "^10.0.0",
-    "taskcluster-lib-validate": "^11.0.2",
+    "taskcluster-lib-validate": "^11.0.3",
     "typed-env-config": "^1.1.0"
   },
   "devDependencies": {
