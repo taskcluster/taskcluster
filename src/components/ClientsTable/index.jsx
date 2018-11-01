@@ -4,14 +4,13 @@ import { shape, func, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
+import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
-import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import LinkIcon from 'mdi-react/LinkIcon';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
-import TableCellListItem from '../TableCellListItem';
 import { VIEW_CLIENTS_PAGE_SIZE } from '../../utils/constants';
 import { pageInfo, client } from '../../utils/prop-types';
 import sort from '../../utils/sort';
@@ -21,6 +20,18 @@ const sorted = pipe(
   map(({ node: { clientId } }) => clientId)
 );
 
+@withStyles(theme => ({
+  tableCell: {
+    textDecoration: 'none',
+  },
+  listItemCell: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    width: '100%',
+    padding: theme.spacing.unit,
+    ...theme.mixins.hover,
+  },
+}))
 export default class ClientsTable extends Component {
   static propTypes = {
     clientsConnection: shape({
@@ -76,7 +87,7 @@ export default class ClientsTable extends Component {
   };
 
   render() {
-    const { onPageChange, clientsConnection } = this.props;
+    const { classes, onPageChange, clientsConnection } = this.props;
     const { sortBy, sortDirection } = this.state;
     const iconSize = 16;
 
@@ -95,19 +106,16 @@ export default class ClientsTable extends Component {
         onPageChange={onPageChange}
         renderRow={({ node: client }) => (
           <TableRow key={client.clientId}>
-            <TableCell>
-              <TableCellListItem
-                dense
-                button
-                component={Link}
+            <TableCell padding="dense">
+              <Link
+                className={classes.tableCell}
                 to={`/auth/clients/${encodeURIComponent(client.clientId)}`}
               >
-                <ListItemText
-                  disableTypography
-                  primary={<Typography>{client.clientId}</Typography>}
-                />
-                <LinkIcon size={iconSize} />
-              </TableCellListItem>
+                <div className={classes.listItemCell}>
+                  <Typography>{client.clientId}</Typography>
+                  <LinkIcon size={iconSize} />
+                </div>
+              </Link>
             </TableCell>
             <TableCell>
               <DateDistance from={client.lastDateUsed} />

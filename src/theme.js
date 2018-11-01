@@ -1,5 +1,5 @@
 import { createMuiTheme } from '@material-ui/core/styles';
-import { lighten } from '@material-ui/core/styles/colorManipulator';
+import { fade, lighten } from '@material-ui/core/styles/colorManipulator';
 import transitions from '@material-ui/core/styles/transitions';
 import red from '@material-ui/core/colors/red';
 import amber from '@material-ui/core/colors/amber';
@@ -109,6 +109,22 @@ const createTheme = isDarkTheme => ({
       },
       '&:hover svg': {
         fill: isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
+      },
+    },
+    hover: {
+      '&:hover': {
+        textDecoration: 'none',
+        backgroundColor: fade(
+          isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
+          0.08
+        ),
+        // Reset on touch devices, it doesn't add specificity
+        '@media (hover: none)': {
+          backgroundColor: 'transparent',
+        },
+        '&$disabled': {
+          backgroundColor: 'transparent',
+        },
       },
     },
     fab: {

@@ -14,11 +14,10 @@ import {
 } from 'ramda';
 import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
-import ListItemText from '@material-ui/core/ListItemText';
+import Typography from '@material-ui/core/Typography';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
-import TableCellListItem from '../TableCellListItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import sort from '../../utils/sort';
 import { VIEW_CLIENT_SCOPES_INSPECT_SIZE } from '../../utils/constants';
@@ -29,11 +28,18 @@ const sorted = pipe(
   map(({ node: { clientId } }) => clientId)
 );
 
-@withStyles({
-  listItemCell: {
-    width: '100%',
+@withStyles(theme => ({
+  tableCell: {
+    textDecoration: 'none',
   },
-})
+  listItemCell: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    width: '100%',
+    padding: theme.spacing.unit,
+    ...theme.mixins.hover,
+  },
+}))
 export default class ClientScopesTable extends Component {
   static defaultProps = {
     searchTerm: null,
@@ -107,19 +113,19 @@ export default class ClientScopesTable extends Component {
       map(node => (
         <TableRow key={node}>
           <TableCell padding="dense">
-            <TableCellListItem
-              className={classes.listItemCell}
-              button
-              component={Link}
+            <Link
+              className={classes.tableCell}
               to={
                 selectedScope
                   ? `/auth/clients/${encodeURIComponent(node)}`
                   : `/auth/scopes/${encodeURIComponent(node)}`
               }
             >
-              <ListItemText disableTypography primary={node} />
-              <LinkIcon size={16} />
-            </TableCellListItem>
+              <div className={classes.listItemCell}>
+                <Typography>{node}</Typography>
+                <LinkIcon size={16} />
+              </div>
+            </Link>
           </TableCell>
         </TableRow>
       ))
@@ -128,6 +134,7 @@ export default class ClientScopesTable extends Component {
 
   render() {
     const {
+      classes,
       clientsConnection,
       selectedScope,
       searchProperty,

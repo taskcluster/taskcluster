@@ -99,28 +99,32 @@ export default class ListScopes extends PureComponent {
       >
         <Fragment>
           <ErrorPanel error={error} />
-          <Tabs
-            className={classes.tabs}
-            fullWidth
-            value={currentTabIndex}
-            onChange={this.handleTabChange}
-          >
-            <Tab label="Roles" />
-            <Tab label="Clients" />
-          </Tabs>
           {loading && <Spinner loading />}
-          {roles &&
-            currentTabIndex === 0 && (
-              <RoleScopesTable roles={roles} searchTerm={searchTerm} />
-            )}
-          {clients &&
-            currentTabIndex === 1 && (
-              <ClientScopesTable
-                searchTerm={searchTerm}
-                onPageChange={this.handleClientsPageChange}
-                clientsConnection={clients}
-              />
-            )}
+          {!loading && (
+            <Fragment>
+              <Tabs
+                className={classes.tabs}
+                fullWidth
+                value={currentTabIndex}
+                onChange={this.handleTabChange}
+              >
+                <Tab label="Roles" />
+                <Tab label="Clients" />
+              </Tabs>
+              {roles &&
+                currentTabIndex === 0 && (
+                  <RoleScopesTable roles={roles} searchTerm={searchTerm} />
+                )}
+              {clients &&
+                currentTabIndex === 1 && (
+                  <ClientScopesTable
+                    searchTerm={searchTerm}
+                    onPageChange={this.handleClientsPageChange}
+                    clientsConnection={clients}
+                  />
+                )}
+            </Fragment>
+          )}
         </Fragment>
       </Dashboard>
     );
