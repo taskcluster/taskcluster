@@ -37,7 +37,7 @@
     "superagent": "^3.8.1",
     "superagent-hawk": "^0.0.6",
     "taskcluster-lib-app": "^10.0.0",
-    "taskcluster-lib-monitor": "^10.0.0",
+    "taskcluster-lib-monitor": "^11.0.0",
     "taskcluster-lib-testing": "^12.0.0",
     "taskcluster-lib-urls": "^11.0.0",
     "taskcluster-lib-validate": "^11.0.0",
