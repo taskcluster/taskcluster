@@ -1991,6 +1991,10 @@ taskcluster-lib-urls@^10.0.0:
   version "10.0.0"
   resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-10.0.0.tgz#ee4c687b4539171d8aef39b38a63c8b9bc82f82e"
 
+taskcluster-lib-urls@^11.0.0:
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-11.0.0.tgz#7db21ef6a848da3682ebf4f54e9c8d2122287534"
+
 taskcluster-lib-validate@^11.0.0:
   version "11.0.0"
   resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-11.0.0.tgz#de34e8262d4414539647976f9c9d03c9763902ad"
