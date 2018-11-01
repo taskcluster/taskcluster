@@ -233,7 +233,10 @@ export default class WorkerTypesTable extends Component {
               <TableCell>
                 <StatusLabel state={workerType.stability} />
               </TableCell>
-              <CopyToClipboard text={workerType.lastDateActive}>
+              <CopyToClipboard
+                title={workerType.lastDateActive}
+                text={workerType.lastDateActive}
+              >
                 <TableCell>
                   <TableCellListItem button>
                     <ListItemText

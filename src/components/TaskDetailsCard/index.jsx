@@ -150,7 +150,7 @@ export default class TaskDetailsCard extends Component {
                   secondary={`${task.status.retriesLeft} of ${task.retries}`}
                 />
               </ListItem>
-              <CopyToClipboard text={task.created}>
+              <CopyToClipboard title={task.created} text={task.created}>
                 <ListItem button className={classes.listItemButton}>
                   <ListItemText
                     primary="Created"
@@ -159,7 +159,7 @@ export default class TaskDetailsCard extends Component {
                   <ContentCopyIcon />
                 </ListItem>
               </CopyToClipboard>
-              <CopyToClipboard text={task.deadline}>
+              <CopyToClipboard title={task.deadline} text={task.deadline}>
                 <ListItem button className={classes.listItemButton}>
                   <ListItemText
                     primary="Deadline"
@@ -173,7 +173,7 @@ export default class TaskDetailsCard extends Component {
                   <ContentCopyIcon />
                 </ListItem>
               </CopyToClipboard>
-              <CopyToClipboard text={task.expires}>
+              <CopyToClipboard title={task.expires} text={task.expires}>
                 <ListItem button className={classes.listItemButton}>
                   <ListItemText
                     primary="Expires"

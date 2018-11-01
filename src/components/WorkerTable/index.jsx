@@ -121,7 +121,7 @@ export default class WorkerTable extends Component {
               </TableCellListItem>
             </TableCell>
             <TableCell>{task.taskId}</TableCell>
-            <CopyToClipboard text={task.started}>
+            <CopyToClipboard title={task.started} text={task.started}>
               <TableCell>
                 <TableCellListItem button>
                   <ListItemText
@@ -136,7 +136,7 @@ export default class WorkerTable extends Component {
                 </TableCellListItem>
               </TableCell>
             </CopyToClipboard>
-            <CopyToClipboard text={task.resolved}>
+            <CopyToClipboard title={task.resolved} text={task.resolved}>
               <TableCell>
                 {task.resolved ? (
                   <TableCellListItem button>

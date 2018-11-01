@@ -261,7 +261,7 @@ export default class TaskRunsCard extends Component {
                     secondary={<StatusLabel state={run.reasonCreated} />}
                   />
                 </ListItem>
-                <CopyToClipboard text={run.scheduled}>
+                <CopyToClipboard title={run.scheduled} text={run.scheduled}>
                   <ListItem button className={classes.listItemButton}>
                     <ListItemText
                       primary="Scheduled"
@@ -270,7 +270,7 @@ export default class TaskRunsCard extends Component {
                     <ContentCopyIcon />
                   </ListItem>
                 </CopyToClipboard>
-                <CopyToClipboard text={run.started}>
+                <CopyToClipboard title={run.started} text={run.started}>
                   <ListItem button className={classes.listItemButton}>
                     <ListItemText
                       primary="Started"
@@ -288,7 +288,7 @@ export default class TaskRunsCard extends Component {
                     <ContentCopyIcon />
                   </ListItem>
                 </CopyToClipboard>
-                <CopyToClipboard text={run.resolved}>
+                <CopyToClipboard title={run.resolved} text={run.resolved}>
                   <ListItem button className={classes.listItemButton}>
                     <ListItemText
                       primary="Resolved"
@@ -335,7 +335,7 @@ export default class TaskRunsCard extends Component {
                   <ListItemText primary="Worker ID" secondary={run.workerId} />
                   <LinkIcon />
                 </ListItem>
-                <CopyToClipboard text={run.takenUntil}>
+                <CopyToClipboard title={run.takenUntil} text={run.takenUntil}>
                   <ListItem button className={classes.listItemButton}>
                     <ListItemText
                       primary="Taken Until"
