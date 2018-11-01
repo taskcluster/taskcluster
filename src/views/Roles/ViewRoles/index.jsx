@@ -3,6 +3,7 @@ import React, { PureComponent, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
+import Tooltip from '@material-ui/core/Tooltip';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
@@ -56,14 +57,16 @@ export default class ViewRoles extends PureComponent {
           {!roles && loading && <Spinner loading />}
           <ErrorPanel error={error} />
           {roles && <RolesTable searchTerm={roleSearch} roles={roles} />}
-          <Button
-            onClick={this.handleCreate}
-            variant="fab"
-            color="secondary"
-            className={classes.plusIcon}
-          >
-            <PlusIcon />
-          </Button>
+          <Tooltip title="Create Role">
+            <Button
+              onClick={this.handleCreate}
+              variant="fab"
+              color="secondary"
+              className={classes.plusIcon}
+            >
+              <PlusIcon />
+            </Button>
+          </Tooltip>
         </Fragment>
       </Dashboard>
     );
