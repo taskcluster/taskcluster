@@ -108,3 +108,7 @@ func copyTestdataFileTo(src, dest string) []string {
 		"copy \"" + sourceFile + "\" \"" + destFile + "\"",
 	}
 }
+
+func singleCommandNoArgs(command string) []string {
+	return []string{command}
+}

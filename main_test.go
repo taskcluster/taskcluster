@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff"
+	"github.com/taskcluster/slugid-go/slugid"
 )
 
 // Test failure should resolve as "failed"
@@ -199,4 +200,38 @@ func TestExecutionErrorsText(t *testing.T) {
 		t.Log(actualError)
 		t.FailNow()
 	}
+}
+
+// If a task tries to execute a command that doesn't exist, it should result in
+// a task failure, rather than a task exception, since the task is at fault,
+// not the worker.
+//
+// See https://bugzil.la/1479415
+func TestNonExistentCommandFailsTask(t *testing.T) {
+	defer setup(t)()
+	payload := GenericWorkerPayload{
+		Command:    singleCommandNoArgs(slugid.Nice()),
+		MaxRunTime: 10,
+	}
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
+}
+
+// If a task tries to execute a file that isn't executable for the current
+// user, it should result in a task failure, rather than a task exception,
+// since the task is at fault, not the worker.
+//
+// See https://bugzil.la/1479415
+func TestNonExecutableBinaryFailsTask(t *testing.T) {
+	defer setup(t)()
+	commands := copyTestdataFile("public-openpgp-key")
+	commands = append(commands, singleCommandNoArgs(filepath.Join(taskContext.TaskDir, "public-openpgp-key"))...)
+	payload := GenericWorkerPayload{
+		Command:    commands,
+		MaxRunTime: 10,
+	}
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "failed", "failed")
 }

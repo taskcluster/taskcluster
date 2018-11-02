@@ -143,3 +143,7 @@ func copyTestdataFileTo(src, dest string) [][]string {
 		},
 	}
 }
+
+func singleCommandNoArgs(command string) [][]string {
+	return [][]string{{command}}
+}
