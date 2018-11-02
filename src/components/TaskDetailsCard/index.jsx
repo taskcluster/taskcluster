@@ -66,6 +66,9 @@ import urls from '../../utils/urls';
     height: theme.spacing.unit * 3,
     margin: `${theme.spacing.unit}px ${theme.spacing.unit}px 0 0`,
   },
+  unorderedList: {
+    ...theme.mixins.unorderedList,
+  },
 }))
 /**
  * Render information in a card layout about a task.
@@ -433,9 +436,17 @@ export default class TaskDetailsCard extends Component {
                     }
                     secondary={
                       task.scopes.length ? (
-                        <pre className={classes.pre}>
-                          {task.scopes.join('\n')}
-                        </pre>
+                        <ul className={classes.unorderedList}>
+                          {task.scopes.map(scope => (
+                            <Typography
+                              component="span"
+                              color="textSecondary"
+                              key={scope}
+                            >
+                              <li>{scope}</li>
+                            </Typography>
+                          ))}
+                        </ul>
                       ) : (
                         <em>n/a</em>
                       )
@@ -450,9 +461,17 @@ export default class TaskDetailsCard extends Component {
                     }
                     secondary={
                       task.routes.length ? (
-                        <pre className={classes.pre}>
-                          {task.routes.join('\n')}
-                        </pre>
+                        <ul className={classes.unorderedList}>
+                          {task.routes.map(route => (
+                            <Typography
+                              component="span"
+                              color="textSecondary"
+                              key={route}
+                            >
+                              <li>{route}</li>
+                            </Typography>
+                          ))}
+                        </ul>
                       ) : (
                         <em>n/a</em>
                       )

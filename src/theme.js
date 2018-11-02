@@ -162,6 +162,10 @@ const createTheme = isDarkTheme => ({
         backgroundColor: 'transparent',
       },
     },
+    unorderedList: {
+      listStyleType: 'square',
+      paddingLeft: 32,
+    },
   },
   overrides: {
     MuiPaper: {
