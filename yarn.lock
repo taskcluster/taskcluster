@@ -6612,6 +6612,11 @@ mem@^4.0.0:
     mimic-fn "^1.0.0"
     p-is-promise "^1.1.0"
 
+memoize-one@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/memoize-one/-/memoize-one-3.1.1.tgz#ef609811e3bc28970eac2884eece64d167830d17"
+  integrity sha512-YqVh744GsMlZu6xkhGslPSqSurOv6P+kLN2J3ysBZfagLcL5FdRK/0UpgLoL8hwjjEvvAVkjJZyFP+1T6p1vgA==
+
 memory-fs@^0.4.0, memory-fs@~0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/memory-fs/-/memory-fs-0.4.1.tgz#3a9a20b8462523e447cfbc7e8bb80ed667bfc552"
@@ -8667,6 +8672,14 @@ react-vnc-display@^1.1.0:
     novnc-node "^0.5.3"
     object.omit "^2.0.1"
     prop-types "^15.5.10"
+
+react-window@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/react-window/-/react-window-1.2.2.tgz#dba6e1029e26df0fb1f2cf1aa3559c2d7eaf6d0a"
+  integrity sha512-0gwx14I8tgMwRk09c9ZGY7mAh6G4VvTdrrMJjsoH60ijb0jffYxlFLQHvSX5S9DD39ZyNnaiQ3t9vTFIQb68XA==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    memoize-one "^3.1.1"
 
 "react@^15.6.2 || ^16.0":
   version "16.5.2"

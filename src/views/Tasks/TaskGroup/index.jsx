@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
-import { lowerCase } from 'change-case';
 import { isEmpty } from 'ramda';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { safeDump } from 'js-yaml';
@@ -23,12 +22,11 @@ import {
   TASK_GROUP_POLLING_INTERVAL,
   VALID_TASK,
   ACTIONS_JSON_KNOWN_KINDS,
-  TASK_GROUP_PROGRESS_SIZE,
+  INITIAL_CURSOR,
 } from '../../../utils/constants';
 import db from '../../../utils/db';
 import ErrorPanel from '../../../components/ErrorPanel';
 import taskGroupQuery from './taskGroup.graphql';
-import taskGroupCompactQuery from './taskGroupCompact.graphql';
 import submitTaskAction from '../submitTaskAction';
 
 const updateTaskGroupIdHistory = id => {
@@ -38,6 +36,8 @@ const updateTaskGroupIdHistory = id => {
 
   db.taskGroupIdsHistory.put({ taskGroupId: id });
 };
+
+let previousCursor;
 
 @hot(module)
 @withApollo
@@ -55,7 +55,6 @@ const updateTaskGroupIdHistory = id => {
   },
 }))
 @graphql(taskGroupQuery, {
-  name: 'taskGroup',
   options: props => ({
     pollInterval: TASK_GROUP_POLLING_INTERVAL,
     variables: {
@@ -74,29 +73,27 @@ const updateTaskGroupIdHistory = id => {
     },
   }),
 })
-@graphql(taskGroupCompactQuery, {
-  name: 'taskGroupCompact',
-  options: props => ({
-    pollInterval: TASK_GROUP_POLLING_INTERVAL,
-    variables: {
-      taskGroupId: props.match.params.taskGroupId,
-      taskGroupCompactConnection: {
-        limit: TASK_GROUP_PROGRESS_SIZE,
-      },
-    },
-  }),
-})
 export default class TaskGroup extends Component {
   static getDerivedStateFromProps(props, state) {
     const taskGroupId = props.match.params.taskGroupId || '';
-    const { taskActions } = props.taskGroup;
+    const { taskActions, taskGroup } = props.data;
     const groupActions = [];
     const actionInputs = state.actionInputs || {};
     const actionData = state.actionData || {};
+    const taskGroupLoaded = taskGroup && !taskGroup.pageInfo.hasNextPage;
+    // Make sure data is not from another task group which
+    // can happen when a user searches for a different task group
+    const isFromSameTaskGroupId =
+      taskGroup && taskGroup.edges[0]
+        ? taskGroup.edges[0].node.taskGroupId === taskGroupId
+        : true;
 
-    if (taskGroupId !== state.previousTaskGroupId && taskActions) {
+    if (
+      isFromSameTaskGroupId &&
+      taskGroupId !== state.previousTaskGroupId &&
+      taskActions
+    ) {
       updateTaskGroupIdHistory(taskGroupId);
-
       taskActions.actions
         .filter(action => isEmpty(action.context))
         .forEach(action => {
@@ -120,18 +117,25 @@ export default class TaskGroup extends Component {
         actionInputs,
         actionData,
         previousTaskGroupId: taskGroupId,
-        taskGroupProgressDisabled: true,
+        taskGroupLoaded,
       };
     }
 
-    return null;
+    return {
+      taskGroupLoaded: isFromSameTaskGroupId ? taskGroupLoaded : false,
+    };
+  }
+
+  constructor(props) {
+    super(props);
+
+    previousCursor = INITIAL_CURSOR;
   }
 
   state = {
     filter: null,
-    taskGroupProgressDisabled: true,
     // eslint-disable-next-line react/no-unused-state
-    previousTaskGroupId: this.props.match.params.taskGroupId,
+    previousTaskGroupId: '',
     groupActions: [],
     actionLoading: false,
     actionInputs: {},
@@ -139,13 +143,26 @@ export default class TaskGroup extends Component {
     dialogOpen: false,
     selectedAction: null,
     dialogError: null,
+    taskGroupLoaded: false,
   };
 
   componentDidUpdate(prevProps) {
-    const { taskGroupId } = this.props.match.params;
+    const {
+      data: { taskGroup },
+      match: {
+        params: { taskGroupId },
+      },
+    } = this.props;
 
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
       updateTaskGroupIdHistory(taskGroupId);
+    }
+
+    if (
+      previousCursor === taskGroup.pageInfo.cursor &&
+      taskGroup.pageInfo.hasNextPage
+    ) {
+      this.fetchMoreTasks();
     }
   }
 
@@ -176,7 +193,7 @@ export default class TaskGroup extends Component {
   handleActionSubmit = ({ name }) => async () => {
     this.preRunningAction();
 
-    const { taskActions, task } = this.props.taskGroup;
+    const { taskActions, task } = this.props.data;
     const { actionInputs, actionData } = this.state;
     const form = actionInputs[name];
     const { action } = actionData[name];
@@ -195,10 +212,6 @@ export default class TaskGroup extends Component {
     this.props.history.push(`/tasks/${taskId}`);
   };
 
-  handleCountUpdate = () => {
-    this.setState({ taskGroupProgressDisabled: false });
-  };
-
   handleFormChange = (value, name) =>
     this.setState({
       actionInputs: {
@@ -208,80 +221,10 @@ export default class TaskGroup extends Component {
       },
     });
 
-  handlePageChange = ({ cursor, previousCursor }) => {
-    const {
-      match: {
-        params: { taskGroupId },
-      },
-      taskGroup: { fetchMore },
-    } = this.props;
-    const { filter } = this.state;
-
-    return fetchMore({
-      query: taskGroupQuery,
-      variables: {
-        taskGroupId,
-        filter: filter
-          ? {
-              status: {
-                state: {
-                  $eq: lowerCase(filter),
-                },
-              },
-            }
-          : null,
-        taskGroupConnection: {
-          limit: TASK_GROUP_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-      },
-      updateQuery(previousResult, { fetchMoreResult }) {
-        const { edges, pageInfo } = fetchMoreResult.taskGroup;
-
-        if (!edges.length) {
-          return previousResult;
-        }
-
-        return dotProp.set(previousResult, 'taskGroup', taskGroup =>
-          dotProp.set(
-            dotProp.set(taskGroup, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
-        );
-      },
-    });
-  };
-
-  handleStatusClick = async ({ target: { name } }) => {
-    const {
-      taskGroup: { refetch },
-      match: {
-        params: { taskGroupId },
-      },
-    } = this.props;
+  handleStatusClick = async ({ currentTarget: { name } }) => {
     const filter = this.state.filter === name ? null : name;
 
-    this.setState({ taskGroupProgressDisabled: true });
-
-    await refetch({
-      taskGroupId,
-      taskGroupConnection: {
-        limit: TASK_GROUP_PAGE_SIZE,
-      },
-      filter: filter
-        ? {
-            status: {
-              state: {
-                $eq: lowerCase(filter),
-              },
-            },
-          }
-        : null,
-    });
-
-    this.setState({ taskGroupProgressDisabled: false, filter });
+    this.setState({ filter });
   };
 
   handleTaskGroupSearchSubmit = taskGroupId => {
@@ -289,8 +232,67 @@ export default class TaskGroup extends Component {
       return;
     }
 
-    this.setState({ taskGroupProgressDisabled: true });
     this.props.history.push(`/tasks/groups/${taskGroupId}`);
+  };
+
+  fetchMoreTasks = () => {
+    const {
+      data,
+      match: {
+        params: { taskGroupId },
+      },
+    } = this.props;
+    const { fetchMore, taskGroup } = data;
+
+    fetchMore({
+      variables: {
+        taskGroupId,
+        taskGroupConnection: {
+          limit: TASK_GROUP_PAGE_SIZE,
+          cursor: taskGroup.pageInfo.nextCursor,
+          previousCursor: taskGroup.pageInfo.cursor,
+        },
+        taskActionsFilter: {
+          kind: {
+            $in: ACTIONS_JSON_KNOWN_KINDS,
+          },
+          context: {
+            $or: [{ $size: 0 }, { $size: 1 }],
+          },
+        },
+      },
+      updateQuery(previousResult, { fetchMoreResult, variables }) {
+        if (variables.taskGroupConnection.previousCursor === previousCursor) {
+          const { edges, pageInfo } = fetchMoreResult.taskGroup;
+
+          if (!pageInfo.hasNextPage) {
+            // Resetting to the initial cursor will allow us to
+            // capture updates since the query has a polling interval
+            previousCursor = INITIAL_CURSOR;
+          } else {
+            previousCursor = variables.taskGroupConnection.cursor;
+          }
+
+          if (!edges.length) {
+            return previousResult;
+          }
+
+          const result = dotProp.set(previousResult, 'taskGroup', taskGroup =>
+            dotProp.set(
+              dotProp.set(
+                taskGroup,
+                'edges',
+                previousResult.taskGroup.edges.concat(edges)
+              ),
+              'pageInfo',
+              pageInfo
+            )
+          );
+
+          return result;
+        }
+      },
+    });
   };
 
   preRunningAction = () => {
@@ -302,21 +304,19 @@ export default class TaskGroup extends Component {
       groupActions,
       filter,
       actionLoading,
-      taskGroupProgressDisabled,
       dialogOpen,
       selectedAction,
       actionInputs,
       dialogError,
+      taskGroupLoaded,
     } = this.state;
     const {
       description,
       match: {
         params: { taskGroupId },
       },
-      taskGroup,
-      taskGroupCompact,
+      data: { taskGroup, error, loading },
     } = this.props;
-    const error = taskGroup.error || taskGroupCompact.error;
 
     return (
       <Dashboard
@@ -326,27 +326,19 @@ export default class TaskGroup extends Component {
         <ErrorPanel error={error} />
         {!error && (
           <TaskGroupProgress
-            // eslint-disable-next-line react/jsx-handler-names
-            onFetchMore={taskGroupCompact.fetchMore}
-            // eslint-disable-next-line react/jsx-handler-names
-            onRefetch={taskGroupCompact.refetch}
-            taskGroup={taskGroupCompact.taskGroup}
+            taskGroup={taskGroup}
             taskGroupId={taskGroupId}
-            disabled={taskGroupProgressDisabled}
             filter={filter}
             onStatusClick={this.handleStatusClick}
-            onCountUpdate={this.handleCountUpdate}
           />
         )}
         <br />
-        {taskGroup.loading && <Spinner loading />}
-        {taskGroup.taskGroup && (
-          <TaskGroupTable
-            onPageChange={this.handlePageChange}
-            taskGroupConnection={taskGroup.taskGroup}
-          />
-        )}
-        {groupActions && groupActions.length ? (
+        {!error && !taskGroupLoaded && <Spinner loading />}
+        {!loading &&
+          taskGroupLoaded && (
+            <TaskGroupTable filter={filter} taskGroupConnection={taskGroup} />
+          )}
+        {!loading && groupActions && groupActions.length ? (
           <SpeedDial>
             {groupActions.map(action => (
               <SpeedDialAction

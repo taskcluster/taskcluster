@@ -18,7 +18,14 @@ export default class SpeedDialAction extends Component {
   };
 
   render() {
-    const { requiresAuth, ButtonProps, user, ...props } = this.props;
+    const {
+      requiresAuth,
+      ButtonProps,
+      user,
+      onAuthorize,
+      onUnauthorize,
+      ...props
+    } = this.props;
     const disabled = requiresAuth && !user;
     const buttonProps = {
       ...ButtonProps,

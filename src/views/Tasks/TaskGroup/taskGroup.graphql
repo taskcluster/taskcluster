@@ -12,7 +12,7 @@ query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter
         metadata {
           name
         }
-
+        taskGroupId
         status {
           taskId
           state
