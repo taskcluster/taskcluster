@@ -6,7 +6,7 @@ defaults:
     buildsTableName: 'TaskclusterGithubBuilds'
     ownersDirectoryTableName: 'TaskclusterIntegrationOwners'
     publishMetaData: !env:bool PUBLISH_METADATA
-    statusContext: 'taskcluster ci' # "ci" is for third party tools: https://docs.codecov.io/docs/detecting-ci-services
+    statusContext: 'Taskcluster'
     botName: !env BOT_USERNAME
 
   taskcluster:
