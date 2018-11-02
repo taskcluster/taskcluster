@@ -19,6 +19,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import PlusIcon from 'mdi-react/PlusIcon';
 import RotateLeftIcon from 'mdi-react/RotateLeftIcon';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
+import Tooltip from '@material-ui/core/Tooltip';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import HelpView from '../../../components/HelpView';
@@ -31,6 +32,7 @@ import {
 } from '../../../utils/constants';
 import urls from '../../../utils/urls';
 import createTaskQuery from '../createTask.graphql';
+import Button from '../../../components/Button';
 
 const defaultTask = {
   provisionerId: 'aws-provisioner-v1',
@@ -60,6 +62,10 @@ const defaultTask = {
 @withStyles(theme => ({
   createIcon: {
     ...theme.mixins.successIcon,
+    ...theme.mixins.fab,
+    position: 'fixed',
+    bottom: theme.spacing.double,
+    right: theme.spacing.unit * 11,
   },
 }))
 export default class CreateTask extends Component {
@@ -277,18 +283,20 @@ export default class CreateTask extends Component {
                 value={task || ''}
                 onChange={this.handleTaskChange}
               />
-              <SpeedDial>
-                <SpeedDialAction
+              <Tooltip title="Create Task">
+                <Button
                   requiresAuth
-                  tooltipOpen
-                  icon={<PlusIcon />}
+                  variant="fab"
+                  className={classes.createIcon}
                   onClick={this.handleCreateTask}
-                  tooltipTitle="Create Task"
-                  classes={{ button: classes.createIcon }}
                   ButtonProps={{
                     disabled: !task || invalid || loading,
                   }}
-                />
+                >
+                  <PlusIcon />
+                </Button>
+              </Tooltip>
+              <SpeedDial>
                 <SpeedDialAction
                   tooltipOpen
                   icon={<RotateLeftIcon />}
