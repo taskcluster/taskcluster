@@ -10,6 +10,7 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import Collapse from '@material-ui/core/Collapse';
+import Chip from '@material-ui/core/Chip';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -60,6 +61,10 @@ import urls from '../../utils/urls';
     '& button, & a': {
       ...theme.mixins.listItemButton,
     },
+  },
+  tag: {
+    height: theme.spacing.unit * 3,
+    margin: `${theme.spacing.unit}px ${theme.spacing.unit}px 0 0`,
   },
 }))
 /**
@@ -150,6 +155,27 @@ export default class TaskDetailsCard extends Component {
               </ListItem>
               <ListItem>
                 <ListItemText
+                  primary="Task Group ID"
+                  secondary={task.taskGroupId}
+                />
+                <ListItemSecondaryAction
+                  className={classes.listItemSecondaryAction}
+                >
+                  <CopyToClipboard text={task.taskGroupId}>
+                    <IconButton>
+                      <ContentCopyIcon />
+                    </IconButton>
+                  </CopyToClipboard>
+                  <IconButton
+                    component={Link}
+                    to={`/tasks/groups/${task.taskGroupId}`}
+                  >
+                    <LinkIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+              <ListItem>
+                <ListItemText
                   primary="State"
                   secondary={<StatusLabel state={task.status.state} />}
                 />
@@ -208,13 +234,7 @@ export default class TaskDetailsCard extends Component {
                   secondary={task.provisionerId}
                 />
               </ListItem>
-              <ListItem
-                button
-                component={Link}
-                to={`/provisioners/${task.provisionerId}/worker-types/${
-                  task.workerType
-                }`}
-              >
+              <ListItem>
                 <ListItemText
                   primary="Worker Type"
                   secondary={task.workerType}
@@ -246,27 +266,30 @@ export default class TaskDetailsCard extends Component {
                 />
               </ListItem>
 
-              {tags.length ? (
+              <Fragment>
                 <ListItem>
-                  <ListItemText primary="Tags" secondary={<em>n/a</em>} />
-                </ListItem>
-              ) : (
-                <Fragment>
-                  <ListItem>
-                    <ListItemText primary="Tags" />
-                  </ListItem>
-                  <List dense disablePadding>
-                    {tags.map(([key, value]) => (
-                      <ListItem key={key}>
-                        <ListItemText
-                          primary={key}
-                          secondary={<em>{value}</em>}
+                  {tags.length ? (
+                    <ListItemText
+                      primary="Tags"
+                      secondary={tags.map(([key, value]) => (
+                        <Chip
+                          key={key}
+                          className={classes.tag}
+                          label={
+                            <Fragment>
+                              {key}
+                              :&nbsp;&nbsp;
+                              <em>{value}</em>
+                            </Fragment>
+                          }
                         />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Fragment>
-              )}
+                      ))}
+                    />
+                  ) : (
+                    <ListItemText primary="Tags" secondary="n/a" />
+                  )}
+                </ListItem>
+              </Fragment>
               <ListItem>
                 <ListItemText
                   primary="Requires"
