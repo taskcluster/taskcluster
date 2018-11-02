@@ -13,6 +13,8 @@ import Collapse from '@material-ui/core/Collapse';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import IconButton from '@material-ui/core/IconButton';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
@@ -50,6 +52,14 @@ import urls from '../../utils/urls';
   pre: {
     margin: 0,
     fontSize: theme.typography.body2.fontSize,
+  },
+  listItemSecondaryAction: {
+    paddingRight: theme.spacing.unit,
+    display: 'flex',
+    alignItems: 'center',
+    '& button, & a': {
+      ...theme.mixins.listItemButton,
+    },
   },
 }))
 /**
@@ -200,7 +210,6 @@ export default class TaskDetailsCard extends Component {
               </ListItem>
               <ListItem
                 button
-                className={classes.listItemButton}
                 component={Link}
                 to={`/provisioners/${task.provisionerId}/worker-types/${
                   task.workerType
@@ -210,7 +219,23 @@ export default class TaskDetailsCard extends Component {
                   primary="Worker Type"
                   secondary={task.workerType}
                 />
-                <LinkIcon />
+                <ListItemSecondaryAction
+                  className={classes.listItemSecondaryAction}
+                >
+                  <CopyToClipboard text={task.workerType}>
+                    <IconButton>
+                      <ContentCopyIcon />
+                    </IconButton>
+                  </CopyToClipboard>
+                  <IconButton
+                    component={Link}
+                    to={`/provisioners/${task.provisionerId}/worker-types/${
+                      task.workerType
+                    }`}
+                  >
+                    <LinkIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
               </ListItem>
               <ListItem>
                 <ListItemText
@@ -220,35 +245,6 @@ export default class TaskDetailsCard extends Component {
                   }
                 />
               </ListItem>
-              {dependentTasks && dependentTasks.length ? (
-                <Fragment>
-                  <ListItem>
-                    <ListItemText primary="Dependencies" />
-                  </ListItem>
-                  <List dense disablePadding>
-                    {dependentTasks.map(task => (
-                      <ListItem
-                        button
-                        className={classes.listItemButton}
-                        component={Link}
-                        to={`/tasks/${task.taskId}`}
-                        key={task.taskId}
-                      >
-                        <StatusLabel state={task.status.state} />
-                        <ListItemText primary={task.metadata.name} />
-                        <LinkIcon />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Fragment>
-              ) : (
-                <ListItem>
-                  <ListItemText
-                    primary="Dependencies"
-                    secondary={<em>n/a</em>}
-                  />
-                </ListItem>
-              )}
 
               {tags.length ? (
                 <ListItem>
@@ -271,7 +267,6 @@ export default class TaskDetailsCard extends Component {
                   </List>
                 </Fragment>
               )}
-
               <ListItem>
                 <ListItemText
                   primary="Requires"
@@ -297,6 +292,51 @@ export default class TaskDetailsCard extends Component {
                   }
                 />
               </ListItem>
+              {dependentTasks && dependentTasks.length ? (
+                <Fragment>
+                  <ListItem>
+                    <ListItemText primary="Dependencies" />
+                  </ListItem>
+                  <List dense disablePadding>
+                    {dependentTasks.map(task => (
+                      <ListItem
+                        button
+                        classes={{
+                          container: classes.listItemWithSecondaryAction,
+                        }}
+                        component={Link}
+                        to={`/tasks/${task.taskId}`}
+                        key={task.taskId}
+                      >
+                        <StatusLabel state={task.status.state} />
+                        <ListItemText primary={task.metadata.name} />
+                        <ListItemSecondaryAction
+                          className={classes.listItemSecondaryAction}
+                        >
+                          <CopyToClipboard text={task.metadata.name}>
+                            <IconButton>
+                              <ContentCopyIcon />
+                            </IconButton>
+                          </CopyToClipboard>
+                          <IconButton
+                            component={Link}
+                            to={`/tasks/${task.taskId}`}
+                          >
+                            <LinkIcon />
+                          </IconButton>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Fragment>
+              ) : (
+                <ListItem>
+                  <ListItemText
+                    primary="Dependencies"
+                    secondary={<em>n/a</em>}
+                  />
+                </ListItem>
+              )}
               <ListItem>
                 <ListItemText
                   disableTypography

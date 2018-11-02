@@ -14,6 +14,8 @@ import MobileStepper from '@material-ui/core/MobileStepper';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import IconButton from '@material-ui/core/IconButton';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import ChevronLeftIcon from 'mdi-react/ChevronLeftIcon';
@@ -85,6 +87,14 @@ const DOTS_VARIANT_LIMIT = 5;
     },
     boxVariantText: {
       color: fade(theme.palette.text.primary, 0.4),
+    },
+    listItemSecondaryAction: {
+      paddingRight: theme.spacing.unit,
+      display: 'flex',
+      alignItems: 'center',
+      '& button, & a': {
+        ...theme.mixins.listItemButton,
+      },
     },
   }),
   { withTheme: true }
@@ -324,16 +334,25 @@ export default class TaskRunsCard extends Component {
                     secondary={run.workerGroup || <em>n/a</em>}
                   />
                 </ListItem>
-                <ListItem
-                  button
-                  className={classes.listItemButton}
-                  component={Link}
-                  to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
-                    run.workerId
-                  }`}
-                >
+                <ListItem>
                   <ListItemText primary="Worker ID" secondary={run.workerId} />
-                  <LinkIcon />
+                  <ListItemSecondaryAction
+                    className={classes.listItemSecondaryAction}
+                  >
+                    <CopyToClipboard text={run.workerId}>
+                      <IconButton>
+                        <ContentCopyIcon />
+                      </IconButton>
+                    </CopyToClipboard>
+                    <IconButton
+                      component={Link}
+                      to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
+                        run.workerId
+                      }`}
+                    >
+                      <LinkIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
                 </ListItem>
                 <CopyToClipboard title={run.takenUntil} text={run.takenUntil}>
                   <ListItem button className={classes.listItemButton}>
