@@ -218,7 +218,7 @@ export default class ProvisionerDetailsCard extends Component {
                     <ListItemText primary="Description" />
                     {showDescription ? <ChevronUpIcon /> : <ChevronDownIcon />}
                   </ListItem>
-                  <Collapse in={showDescription} timeout="auto" unmountOnExit>
+                  <Collapse in={showDescription} timeout="auto">
                     <List component="div" disablePadding>
                       <ListItem>
                         <ListItemText

@@ -49,7 +49,7 @@ export default class SidebarListGroup extends Component {
         >
           {title}
         </SidebarListItem>
-        <Collapse in={open} timeout="auto" unmountOnExit>
+        <Collapse in={open} timeout="auto">
           <List component="div" disablePadding className={classes.listGroup}>
             {children}
           </List>

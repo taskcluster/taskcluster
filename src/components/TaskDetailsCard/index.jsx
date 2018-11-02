@@ -99,6 +99,7 @@ export default class TaskDetailsCard extends Component {
   state = {
     showPayload: false,
     showExtra: false,
+    showMore: false,
   };
 
   handleToggleExtra = () => {
@@ -109,9 +110,13 @@ export default class TaskDetailsCard extends Component {
     this.setState({ showPayload: !this.state.showPayload });
   };
 
+  handleToggleMore = () => {
+    this.setState({ showMore: !this.state.showMore });
+  };
+
   render() {
     const { classes, task, dependentTasks } = this.props;
-    const { showPayload, showExtra } = this.state;
+    const { showPayload, showExtra, showMore } = this.state;
     const isExternal = task.metadata.source.startsWith('https://');
     const tags = Object.entries(task.tags);
     const payload = deepSortObject(task.payload);
@@ -180,12 +185,6 @@ export default class TaskDetailsCard extends Component {
                   secondary={<StatusLabel state={task.status.state} />}
                 />
               </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Retries Left"
-                  secondary={`${task.status.retriesLeft} of ${task.retries}`}
-                />
-              </ListItem>
               <CopyToClipboard title={task.created} text={task.created}>
                 <ListItem button className={classes.listItemButton}>
                   <ListItemText
@@ -195,45 +194,6 @@ export default class TaskDetailsCard extends Component {
                   <ContentCopyIcon />
                 </ListItem>
               </CopyToClipboard>
-              <CopyToClipboard title={task.deadline} text={task.deadline}>
-                <ListItem button className={classes.listItemButton}>
-                  <ListItemText
-                    primary="Deadline"
-                    secondary={
-                      <DateDistance
-                        from={task.deadline}
-                        offset={task.created}
-                      />
-                    }
-                  />
-                  <ContentCopyIcon />
-                </ListItem>
-              </CopyToClipboard>
-              <CopyToClipboard title={task.expires} text={task.expires}>
-                <ListItem button className={classes.listItemButton}>
-                  <ListItemText
-                    primary="Expires"
-                    secondary={<DateDistance from={task.expires} />}
-                  />
-                  <ContentCopyIcon />
-                </ListItem>
-              </CopyToClipboard>
-              <ListItem>
-                <ListItemText
-                  primary="Priority"
-                  secondary={
-                    <Label mini status="info">
-                      {task.priority}
-                    </Label>
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Provisioner"
-                  secondary={task.provisionerId}
-                />
-              </ListItem>
               <ListItem>
                 <ListItemText
                   primary="Worker Type"
@@ -256,14 +216,6 @@ export default class TaskDetailsCard extends Component {
                     <LinkIcon />
                   </IconButton>
                 </ListItemSecondaryAction>
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Scheduler ID"
-                  secondary={
-                    task.schedulerId === '-' ? <em>n/a</em> : task.schedulerId
-                  }
-                />
               </ListItem>
 
               <Fragment>
@@ -360,37 +312,6 @@ export default class TaskDetailsCard extends Component {
                   />
                 </ListItem>
               )}
-              <ListItem>
-                <ListItemText
-                  disableTypography
-                  primary={<Typography variant="subtitle1">Scopes</Typography>}
-                  secondary={
-                    task.scopes.length ? (
-                      <pre className={classes.pre}>
-                        {task.scopes.join('\n')}
-                      </pre>
-                    ) : (
-                      <em>n/a</em>
-                    )
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  disableTypography
-                  primary={<Typography variant="subtitle1">Routes</Typography>}
-                  secondary={
-                    task.routes.length ? (
-                      <pre className={classes.pre}>
-                        {task.routes.join('\n')}
-                      </pre>
-                    ) : (
-                      <em>n/a</em>
-                    )
-                  }
-                />
-              </ListItem>
-
               <ListItem
                 button
                 className={classes.listItemButton}
@@ -399,7 +320,7 @@ export default class TaskDetailsCard extends Component {
                 <ListItemText primary="Payload" />
                 {showPayload ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </ListItem>
-              <Collapse in={showPayload} timeout="auto" unmountOnExit>
+              <Collapse in={showPayload} timeout="auto">
                 <List component="div" disablePadding>
                   <ListItem>
                     <ListItemText
@@ -424,7 +345,7 @@ export default class TaskDetailsCard extends Component {
                     <ListItemText primary="Extra" />
                     {showExtra ? <ChevronUpIcon /> : <ChevronDownIcon />}
                   </ListItem>
-                  <Collapse in={showExtra} timeout="auto" unmountOnExit>
+                  <Collapse in={showExtra} timeout="auto">
                     <List component="div" disablePadding>
                       <ListItem>
                         <ListItemText
@@ -440,7 +361,106 @@ export default class TaskDetailsCard extends Component {
                   </Collapse>
                 </Fragment>
               )}
+              <ListItem
+                button
+                className={classes.listItemButton}
+                onClick={this.handleToggleMore}
+              >
+                <ListItemText primary={showMore ? 'Less...' : 'More...'} />
+                {showMore ? <ChevronUpIcon /> : <ChevronDownIcon />}
+              </ListItem>
             </List>
+            <Collapse in={showMore} timeout="auto">
+              <List>
+                <ListItem>
+                  <ListItemText
+                    primary="Provisioner"
+                    secondary={task.provisionerId}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Retries Left"
+                    secondary={`${task.status.retriesLeft} of ${task.retries}`}
+                  />
+                </ListItem>
+                <CopyToClipboard title={task.deadline} text={task.deadline}>
+                  <ListItem button className={classes.listItemButton}>
+                    <ListItemText
+                      primary="Deadline"
+                      secondary={
+                        <DateDistance
+                          from={task.deadline}
+                          offset={task.created}
+                        />
+                      }
+                    />
+                    <ContentCopyIcon />
+                  </ListItem>
+                </CopyToClipboard>
+                <CopyToClipboard title={task.expires} text={task.expires}>
+                  <ListItem button className={classes.listItemButton}>
+                    <ListItemText
+                      primary="Expires"
+                      secondary={<DateDistance from={task.expires} />}
+                    />
+                    <ContentCopyIcon />
+                  </ListItem>
+                </CopyToClipboard>
+                <ListItem>
+                  <ListItemText
+                    primary="Priority"
+                    secondary={
+                      <Label mini status="info">
+                        {task.priority}
+                      </Label>
+                    }
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Scheduler ID"
+                    secondary={
+                      task.schedulerId === '-' ? <em>n/a</em> : task.schedulerId
+                    }
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    disableTypography
+                    primary={
+                      <Typography variant="subtitle1">Scopes</Typography>
+                    }
+                    secondary={
+                      task.scopes.length ? (
+                        <pre className={classes.pre}>
+                          {task.scopes.join('\n')}
+                        </pre>
+                      ) : (
+                        <em>n/a</em>
+                      )
+                    }
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    disableTypography
+                    primary={
+                      <Typography variant="subtitle1">Routes</Typography>
+                    }
+                    secondary={
+                      task.routes.length ? (
+                        <pre className={classes.pre}>
+                          {task.routes.join('\n')}
+                        </pre>
+                      ) : (
+                        <em>n/a</em>
+                      )
+                    }
+                  />
+                </ListItem>
+              </List>
+            </Collapse>
           </CardContent>
         </div>
       </Card>
