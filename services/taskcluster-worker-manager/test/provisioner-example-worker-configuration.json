@@ -1,0 +1,65 @@
+
+{
+  "id": "worker-configuration-1",
+  "providerIds": [
+    "fake_us-east-1",
+    "fake_us-east-2"
+  ],
+  "biddingStrategyId": "fake",
+  "workerTypes": [
+    "worker-type-1"
+  ],
+  "rules": [
+    {
+      "id": "rule_bidding-strategy",
+      "description": "Fake Bidding Strategy Rules",
+      "conditions": {
+        "workerType": ["worker-type-1", "worker-type-2"],
+        "biddingStrategyId": "fake"
+      },
+      "values": {
+        "biddingStrategyData": {
+          "minCapacity": 0,
+          "maxCapacity": 300
+        }
+      }
+    },
+    {
+      "id": "rule_metadata",
+      "description": "worker-type metadata",
+      "conditions": {
+        "workerType": ["fake-worker-type-1", "fake-worker-type-2"]
+      },
+      "values": {
+        "documentationData": {},
+        "schemaData": {}
+      }
+    },
+    {
+      "id": "rule_us-east-1",
+      "description": "worker-type metadata",
+      "conditions": {
+        "workerType": ["fake-worker-type-1", "fake-worker-type-2"],
+        "region": "us-east-1"
+      },
+      "values": {
+        "providerData": {
+          "region": "us-east-1"
+        }
+      }
+    },
+    {
+      "id": "rule_us-east-2",
+      "description": "worker-type metadata",
+      "conditions": {
+        "workerType": ["fake-worker-type-1", "fake-worker-type-2"],
+        "region": "us-east-2"
+      },
+      "values": {
+        "providerData": {
+          "region": "us-east-2"
+        }
+      }
+    }
+  ]
+}
