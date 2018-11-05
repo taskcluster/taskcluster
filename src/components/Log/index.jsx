@@ -19,12 +19,12 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
 @withStyles(theme => ({
   '@global': {
     'div.react-lazylog': {
-      backgroundColor: `${theme.palette.primary.dark}`,
+      backgroundColor: theme.palette.background.default,
       fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
       fontSize: 13,
       paddingTop: 4,
       paddingBottom: theme.spacing.unit,
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: theme.palette.text.secondary,
       '-webkit-font-smoothing': 'auto',
     },
   },
@@ -40,7 +40,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
       color: `${theme.palette.text.primary} !important`,
     },
     '&$highlight > a': {
-      color: theme.palette.common.white,
+      color: theme.palette.text.primary,
     },
     '&:hover': {
       backgroundColor: `${theme.palette.action.hover} !important`,
