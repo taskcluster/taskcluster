@@ -61,7 +61,7 @@ class BaseDatastore extends WMObject {
   async listNamespaces() {
     return this._listNamespaces(namespace);
   }
-  
+
   async list(namespace) {
     if (typeof namespace !== 'string') {
       this._throw(errors.InvalidDatastoreNamespace);
@@ -105,11 +105,9 @@ class InMemoryDatastore extends BaseDatastore {
   }
 
   async connect() {
-    this._throw(errors.MethodUnimplemented, 'BaseDatastore.connect()');
   }
 
   async disconnect() {
-    this._throw(errors.MethodUnimplemented, 'BaseDatastore.disconnect()');
   }
 
   _getNamespace(namespace) {

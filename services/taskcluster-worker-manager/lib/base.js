@@ -1,9 +1,14 @@
 'use strict';
 
-const util = require('util');
+/**
+ * This module contains functions, data and classes which are relevant broadly
+ * across the Worker Manager codebase.
+ */
 
-// This file defines standard worker manager error codes as well
-// as a standardised method of throwing these errors
+const util = require('util');
+const fs = require('fs');
+const pathlib = require('path');
+const [readdir, stat] = [fs.readdir, fs.stat].map(util.promisify);
 
 // These are the strings for which we want to generate matching error types.
 // They will also be set as the code property on the instances of each error
@@ -32,13 +37,18 @@ const _errors = [
   class InvalidConditions extends InvalidWorkerConfiguration {},
   class InvalidValues extends InvalidWorkerConfiguration {},
   class InvalidRules extends InvalidWorkerConfiguration {},
-  class InvalidProvider extends UnknownError {},
   class InvalidDatastoreNamespace extends UnknownError {},
   class InvalidDatastoreKey extends UnknownError {},
   class InvalidDatastoreValue extends UnknownError {},
+  class InvalidWorkerType extends UnknownError {},
+  class InvalidBid extends UnknownError {},
+  class InvalidWorker extends UnknownError {},
+  class InvalidProvider extends UnknownError {},
+  class InvalidBiddingStrategy extends UnknownError {},
+  class InvalidPluginConfiguration extends UnknownError {},
 ];
 
-let x = {} 
+let x = {}
 for (let error of _errors) {
   if (x[error.name]) {
     throw new Error('Duplicated Error: ' + error.name);
@@ -94,7 +104,48 @@ class WMObject {
   }
 }
 
+/**
+ * This function loads a Plugin in a generalised manner.
+ * This design is intentionally kept as minimal as possible to enable
+ * a simple extensibility model without creating too complex a model.
+ * 
+ * All plugins must:
+ *   1. Be in a file named the all lower case version of their className.
+ *   Example: `EC2Provider` -> `ec2provider.js`
+ *   2. Must provide a property named exactly `className`.  May optionally
+ *   export other properties.  Example: for `className = 'Fake'`, use
+ *   `module.exports = {Fake}` in a file `fake.js`
+ *   3. Must derive from the `type` constructor
+ *   4. All classes which are loaded from this method must allow creation
+ *   based only upon a set of JSON-serializable arguments
+ *   5. must be located in `dir` sub-directory
+ *
+ * This function returns the class, not an instance
+ */
+function loadPlugin(type, dir, className) {
+  // These calls to require must be here and not globally, otherwise an import
+  // loop happens and the WMObject class is undefined when these modules are
+  // imported the first time.  Thankfully, require() does caching so this is as
+  // close to zero-cost as we could expect
+  let file = pathlib.join(__dirname, dir, className.toLowerCase());
+
+  // Bad names because I don't want to override globals and can't use keywords
+  let m = require(file);
+  let clazz = m[className];
+
+  if (!clazz) {
+    throw new errors.InvalidPluginConfiguration(`${className} not found in ${file} exports`);
+  }
+
+  if (/*!clazz.prototype === type ||*/ !clazz.prototype instanceof type) {
+    throw new errors.InvalidPluginConfiguration(`${file}:exports.${clazz.name} does not derive from ${type.name}`);
+  }
+
+  return clazz;
+}
+
 module.exports = {
   WMObject,
   errors,
+  loadPlugin,
 };

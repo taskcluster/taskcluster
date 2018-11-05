@@ -158,6 +158,24 @@ class WorkerConfiguration extends WMObject {
       .filter(x => x.get('biddingStrategyId') === biddingStrategyId)
       .map(x => x.get('workerType'));
   }
+
+  providerIdsForWorkerType(workerType) {
+    for (let workerTypeConfiguration of this.workerTypeConfigurations) {
+      if (workerTypeConfiguration.get('workerType') === workerType) {
+        return workerTypeConfiguration.get('providerIds');
+      }
+    }
+    return [];
+  }
+
+  biddingStrategyIdForWorkerType(workerType) {
+    for (let workerTypeConfiguration of this.workerTypeConfigurations) {
+      if (workerTypeConfiguration.get('workerType') === workerType) {
+        return workerTypeConfiguration.get('biddingStrategyId');
+      }
+    }
+    return;
+  }
 }
 
 
