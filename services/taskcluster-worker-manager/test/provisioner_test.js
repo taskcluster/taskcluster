@@ -9,7 +9,7 @@ const moment = require('moment');
 const {InMemoryDatastore} = require('../lib/data-storage');
 const {Provisioner} = require('../lib/provisioner');
 const {WorkerConfiguration} = require('../lib/worker-config');
-const {Bid} = require('../lib/Bid');
+const {Bid} = require('../lib/bid');
 const {Provider} = require('../lib/provider.js');
 const {BiddingStrategy} = require('../lib/bidding-strategy.js');
 
