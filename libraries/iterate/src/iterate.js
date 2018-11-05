@@ -81,16 +81,6 @@ class Iterate extends events.EventEmitter {
     assert(typeof opts.handler === 'function', 'handler must be a function');
     this.handler = opts.handler;
 
-    assert(typeof (opts.dmsConfig || {}) === 'object', 'dmsConfig must be object');
-    this.dmsConfig = opts.dmsConfig || null;
-    if (this.dmsConfig) {
-      assert(typeof this.dmsConfig === 'object', 'dms config must be object');
-      assert(typeof this.dmsConfig.snitchUrl === 'string',
-        'dms config must have snitchUrl as string');
-      assert(typeof this.dmsConfig.apiKey === 'string',
-        'dms config must have apiKey as string');
-    }
-
     assert(!opts.monitor || typeof opts.monitor === 'object',
       'monitor should be an object from taskcluster-lib-monitor if given');
     this.monitor = opts.monitor;
@@ -146,7 +136,10 @@ class Iterate extends events.EventEmitter {
             }, this.maxIterationTime);
           }),
           watchDogRejector.promise(),
-          this.handler(watchDog, this.sharedState),
+          this.handler(watchDog, this.sharedState).then(() => {
+            clearTimeout(maxIterationTimeTimer);
+            watchDog.stop();
+          }),
         ]);
       } finally {
         clearTimeout(maxIterationTimeTimer);
@@ -199,9 +192,6 @@ class Iterate extends events.EventEmitter {
       this.emit('completed');
     }
 
-    // Hit the dead man's snitch
-    await this.__hitDMS();
-
     if (this.failures.length >= this.maxFailures) {
       this.__emitFatalError();
     } else if (this.keepGoing) {
@@ -217,28 +207,6 @@ class Iterate extends events.EventEmitter {
     } else {
       this.stop();
       this.emit('stopped');
-    }
-  }
-
-  async __hitDMS() {
-    // Hit the dead man's snitch
-    // TODO: Do something so that we can call this function repeatedly but we
-    // only actually hit the API if the last call to the function was more than
-    // 5 minutes ago
-    if (this.dmsConfig) {
-      try {
-        debug('hitting deadman\'s snitch');
-        let result = await request.get(this.dmsConfig.snitchUrl, {
-          auth: {
-            username: this.dmsConfig.apiKey,
-            password: '',
-            sendImmediately: true,
-          },
-        });
-        debug('hit deadman\'s snitch');
-      } catch (err) {
-        debug(`error hitting deadman's snitch ${err.stack || err}`);
-      }
     }
   }
 
@@ -294,7 +262,6 @@ class Iterate extends events.EventEmitter {
     this.keepGoing = false;
     debug('stopped');
   }
-
 }
 
 module.exports = Iterate;
