@@ -65,9 +65,6 @@ the following properties:
 * `waitTimeAfterFail` (optional, default waitTime): If an iteration fails,
   wait a different amount of seconds before the next iteration (currently not
   implemented)
-* `dmsConfig` (optional): provide information of a deadman's snitch to
-  inform of the completion of an iteration.  This is an object of shape
-  `{apiKey: '...', snitchUrl: '...'}`
 * `monitor` (optional): instance of `taskcluster-lib-monitor` prefix with a
   name appropriate for this iterate instance.
 
