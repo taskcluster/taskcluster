@@ -231,7 +231,7 @@ export default class TaskGroupTable extends Component {
           </TableHead>
         </Table>
         {itemCount ? (
-          <List height={tableHeight} itemCount={items.length} itemSize={48}>
+          <List height={tableHeight} itemCount={itemCount} itemSize={48}>
             {ItemRenderer}
           </List>
         ) : (

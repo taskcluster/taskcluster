@@ -134,7 +134,6 @@ export default class ClientScopesTable extends Component {
 
   render() {
     const {
-      classes,
       clientsConnection,
       selectedScope,
       searchProperty,

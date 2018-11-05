@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Fragment, Component } from 'react';
 import { arrayOf, string } from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
 import {
@@ -13,12 +13,14 @@ import {
   sort as rSort,
 } from 'ramda';
 import memoize from 'fast-memoize';
+import { FixedSizeList } from 'react-window';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Divider from '@material-ui/core/Divider';
 import LinkIcon from 'mdi-react/LinkIcon';
-import DataTable from '../DataTable';
 import sort from '../../utils/sort';
 import { role, scopeExpansionLevel } from '../../utils/prop-types';
 
@@ -29,15 +31,15 @@ const sorted = pipe(
 
 @withRouter
 @withStyles(theme => ({
-  tableCell: {
-    textDecoration: 'none',
-  },
   listItemCell: {
     display: 'flex',
     justifyContent: 'space-between',
     width: '100%',
     padding: theme.spacing.unit,
     ...theme.mixins.hover,
+  },
+  noRolesText: {
+    marginTop: theme.spacing.double,
   },
 }))
 export default class RoleScopesTable extends Component {
@@ -83,33 +85,39 @@ export default class RoleScopesTable extends Component {
     }
   );
 
-  renderRow = node => {
-    const { classes, selectedScope } = this.props;
+  renderItem = items => ({ index, style }) => {
+    const { selectedScope } = this.props;
+    const item = items[index];
     const iconSize = 16;
 
     return (
-      <TableRow key={node}>
-        <TableCell padding="dense">
-          <Link
-            className={classes.tableCell}
-            to={
-              selectedScope
-                ? `/auth/roles/${encodeURIComponent(node)}`
-                : `/auth/scopes/${encodeURIComponent(node)}`
-            }
-          >
-            <div className={classes.listItemCell}>
-              <Typography>{node}</Typography>
-              <LinkIcon size={iconSize} />
-            </div>
-          </Link>
-        </TableCell>
-      </TableRow>
+      <Fragment>
+        <ListItem
+          style={style}
+          button
+          component={Link}
+          to={
+            selectedScope
+              ? `/auth/roles/${encodeURIComponent(item)}`
+              : `/auth/scopes/${encodeURIComponent(item)}`
+          }
+        >
+          <ListItemText primary={item} />
+          <LinkIcon size={iconSize} />
+        </ListItem>
+        <Divider
+          style={{
+            ...style,
+            height: 1,
+          }}
+        />
+      </Fragment>
     );
   };
 
   render() {
     const {
+      classes,
       roles,
       searchTerm,
       selectedScope,
@@ -121,14 +129,23 @@ export default class RoleScopesTable extends Component {
       selectedScope,
       searchProperty
     );
+    const filteredItems = searchTerm
+      ? filter(contains(searchTerm), items)
+      : items;
+    const windowHeight = window.innerHeight;
+    const tableHeight = windowHeight > 400 ? 0.6 * windowHeight : 400;
+    const itemCount = filteredItems.length;
 
-    return (
-      <DataTable
-        columnsSize={1}
-        items={searchTerm ? filter(contains(searchTerm), items) : items}
-        renderRow={this.renderRow}
-        {...props}
-      />
+    return itemCount ? (
+      <List dense {...props}>
+        <FixedSizeList height={tableHeight} itemCount={itemCount} itemSize={48}>
+          {this.renderItem(items)}
+        </FixedSizeList>
+      </List>
+    ) : (
+      <Typography className={classes.noRolesText}>
+        No roles available
+      </Typography>
     );
   }
 }
