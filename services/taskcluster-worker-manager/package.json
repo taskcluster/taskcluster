@@ -11,26 +11,32 @@
     "convert-worker-type": "./bin/convert.js"
   },
   "engines": {
-    "node": "10.11.0",
+    "node": "^8.12",
     "yarn": "^1.9.2"
   },
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
     "fixlint": "eslint --fix src/*.js test/*.js",
     "pretest": "yarn lint",
-    "test": "mocha"
+    "mocha": "mocha",
+    "test": "yarn lint && yarn mocha"
   },
   "devDependencies": {
     "assume": "^2.1.0",
     "eslint-config-taskcluster": "^3.1.0",
     "memory-streams": "^0.1.3",
     "mocha": "^5.2.0",
-    "sinon": "^6.3.5",
+    "sinon": "^7.1.1",
     "taskcluster-lib-testing": "^12.1.2"
   },
   "dependencies": {
+    "array.prototype.flat": "^1.2.1",
+    "array.prototype.flatmap": "^1.2.1",
+    "js-combinatorics": "^0.5.3",
+    "moment": "^2.22.2",
     "taskcluster-lib-api": "^12.3.1",
     "taskcluster-lib-app": "^10.0.0",
+    "taskcluster-lib-iterate": "^10.0.0",
     "taskcluster-lib-loader": "^10.0.1",
     "taskcluster-lib-log": "^10.0.0",
     "taskcluster-lib-monitor": "^10.0.0",
