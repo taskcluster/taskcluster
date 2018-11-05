@@ -1,5 +1,7 @@
 import React, { Component, Fragment } from 'react';
+import classNames from 'classnames';
 import { func } from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -9,6 +11,11 @@ import Tooltip from '@material-ui/core/Tooltip';
 import NumericIcon from 'mdi-react/NumericIcon';
 import Button from '../Button';
 
+@withStyles(theme => ({
+  fabIcon: {
+    ...theme.mixins.fabIcon,
+  },
+}))
 export default class GoToLineButton extends Component {
   static propTypes = {
     onLineNumberChange: func.isRequired,
@@ -46,13 +53,14 @@ export default class GoToLineButton extends Component {
   };
 
   render() {
-    const { onLineNumberChange, ...props } = this.props;
+    const { classes, onLineNumberChange, className, ...props } = this.props;
     const { open, isValid, lineNumber } = this.state;
 
     return (
       <Fragment>
         <Tooltip placement="bottom" title="Go to line">
           <Button
+            className={classNames(classes.fabIcon, className)}
             variant="fab"
             mini
             color="secondary"

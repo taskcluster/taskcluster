@@ -14,6 +14,7 @@ import Log from '../../../components/Log';
     position: 'absolute',
     right: theme.spacing.double,
     top: theme.spacing.double,
+    ...theme.mixins.fabIcon,
   },
   miniFab: {
     position: 'absolute',

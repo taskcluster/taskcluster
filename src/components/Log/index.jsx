@@ -52,6 +52,9 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
       backgroundColor: theme.palette.success.dark,
     },
   },
+  fabIcon: {
+    ...theme.mixins.fabIcon,
+  },
 }))
 /**
  * Render a lazy-loading log viewer.
@@ -188,7 +191,10 @@ export default class Log extends Component {
       actions,
       GoToLineButtonProps,
       FollowLogButtonProps,
-      RawLogButtonProps,
+      RawLogButtonProps: {
+        className: RawLogButtonClassName,
+        ...RawLogButtonPropsRest
+      },
       ...props
     } = this.props;
     const highlight = this.getHighlightFromHash();
@@ -203,7 +209,8 @@ export default class Log extends Component {
           variant="fab"
           mini
           color="secondary"
-          {...RawLogButtonProps}
+          className={classNames(classes.fabIcon, RawLogButtonClassName)}
+          {...RawLogButtonPropsRest}
         >
           <OpenInNewIcon />
         </Button>
@@ -227,7 +234,6 @@ export default class Log extends Component {
           />
           {rawLogButton}
           <GoToLineButton
-            className={classes.lineNumberButton}
             onLineNumberChange={this.handleLineNumberChange}
             {...GoToLineButtonProps}
           />
@@ -258,7 +264,6 @@ export default class Log extends Component {
             />
             {rawLogButton}
             <GoToLineButton
-              className={classes.lineNumberButton}
               onLineNumberChange={this.handleLineNumberChange}
               {...GoToLineButtonProps}
             />

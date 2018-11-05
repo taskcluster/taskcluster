@@ -135,6 +135,11 @@ const createTheme = isDarkTheme => ({
         fill: 'white',
       },
     },
+    fabIcon: {
+      '& .mdi-icon': {
+        fill: 'white',
+      },
+    },
     successIcon: {
       backgroundColor: success.main,
       '&:hover': {
