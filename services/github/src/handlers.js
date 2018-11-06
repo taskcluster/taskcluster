@@ -236,7 +236,7 @@ async function statusHandler(message) {
 
 /**
  * If a .taskcluster.yml exists, attempt to turn it into a taskcluster
- * graph config, and submit it to the scheduler.
+ * graph config, and post the initial status on github.
  **/
 async function jobHandler(message) {
   let debug = Debug(debugPrefix + ':' + message.payload.eventId);
@@ -270,7 +270,7 @@ async function jobHandler(message) {
 
   // Try to fetch a .taskcluster.yml file for every request
   try {
-    debug('Trying to fetch the YML...');
+    debug(`Trying to fetch the YML for ${organization}/${repository}@${sha}`);
     let tcyml = await instGithub.repos.getContent({
       owner: organization,
       repo: repository,
@@ -280,7 +280,7 @@ async function jobHandler(message) {
     repoconf = new Buffer(tcyml.data.content, 'base64').toString();
   } catch (e) {
     if (e.code === 404) {
-      debug(`${organization}/${repository} has no '.taskcluster.yml'. Skipping.`);
+      debug(`${organization}/${repository}@${sha} has no '.taskcluster.yml'. Skipping.`);
       return;
     }
     if (_.endsWith(e.message, '</body>\n</html>\n') && e.message.length > 10000) {
@@ -288,10 +288,11 @@ async function jobHandler(message) {
       // I consider this to be a hard-to-fix bug in octokat, so let's make
       // the logs usable for now and try to fix this later. It's a relatively
       // rare occurence.
-      debug('Detected an extremeley long error. Truncating!');
+      debug('Detected an extremely long error. Truncating!');
       e.message = _.join(_.take(e.message, 100).concat('...'), '');
       e.stack = e.stack.split('</body>\n</html>\n')[1] || e.stack;
     }
+    debug(`Error fetching yaml for ${organization}/${repository}@${sha}: ${e.message} \n ${e.stack}`);
     throw e;
   }
 
@@ -303,6 +304,7 @@ async function jobHandler(message) {
     if (e.name === 'YAMLException') {
       return await this.createExceptionComment({instGithub, organization, repository, sha, error: e, pullNumber});
     }
+    debug(`Error checking yaml for ${organization}/${repository}@${sha}: ${e}`);
     throw e;
   }
 
@@ -322,17 +324,18 @@ async function jobHandler(message) {
       },
     });
     if (graphConfig.tasks.length === 0) {
-      debug(`intree config for ${organization}/${repository} compiled with zero tasks. Skipping.`);
+      debug(`intree config for ${organization}/${repository}@${sha} compiled with zero tasks. Skipping.`);
       return;
     }
   } catch (e) {
-    debug('.taskcluster.yml was not formatted correctly. Leaving comment on Github.');
+    debug(`.taskcluster.yml for ${organization}/${repository}@${sha} was not formatted correctly. 
+      Leaving comment on Github.`);
     await this.createExceptionComment({instGithub, organization, repository, sha, error: e, pullNumber});
     return;
   }
 
   if (message.payload.details['event.type'].startsWith('pull_request.')) {
-    debug('Checking pull request permission...');
+    debug(`Checking pull request permission for for ${organization}/${repository}@${sha}...`);
 
     // Decide if a user has permissions to run tasks.
     let login = message.payload.details['event.head.user.login'];
@@ -377,16 +380,17 @@ async function jobHandler(message) {
         });
         return;
       }
+      debug(`Error checking PR permissions for ${organization}/${repository}@${sha}`);
       throw e;
     }
   }
 
   try {
     taskGroupId = graphConfig.tasks[0].task.taskGroupId;
-    debug(`Creating tasks. (taskGroupId: ${taskGroupId})`);
+    debug(`Creating tasks for ${organization}/${repository}@${sha} (taskGroupId: ${taskGroupId})`);
     await this.createTasks({scopes: graphConfig.scopes, tasks: graphConfig.tasks});
   } catch (e) {
-    debug('Creating tasks failed! Leaving comment on Github.');
+    debug(`Creating tasks for ${organization}/${repository}@${sha} failed! Leaving comment on Github.`);
     groupState = 'failure';
     await this.createExceptionComment({instGithub, organization, repository, sha, error: e});
   } finally {
@@ -432,6 +436,7 @@ async function jobHandler(message) {
       assert.equal(build.eventType, message.payload.details['event.type']);
       assert.equal(build.eventId, message.payload.eventId);
     });
+
+    debug(`Job handling for ${organization}/${repository}@${sha} completed.`);
   }
 }
-
