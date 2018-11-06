@@ -10,7 +10,6 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import Collapse from '@material-ui/core/Collapse';
-import Chip from '@material-ui/core/Chip';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -43,6 +42,7 @@ import urls from '../../utils/urls';
   sourceHeadline: {
     textOverflow: 'ellipsis',
     overflowX: 'hidden',
+    whiteSpace: 'nowrap',
   },
   sourceHeadlineText: {
     flex: 1,
@@ -61,10 +61,6 @@ import urls from '../../utils/urls';
     '& button, & a': {
       ...theme.mixins.listItemButton,
     },
-  },
-  tag: {
-    height: theme.spacing.unit * 3,
-    margin: `${theme.spacing.unit}px ${theme.spacing.unit}px 0 0`,
   },
   unorderedList: {
     ...theme.mixins.unorderedList,
@@ -121,7 +117,6 @@ export default class TaskDetailsCard extends Component {
     const { classes, task, dependentTasks } = this.props;
     const { showPayload, showExtra, showMore } = this.state;
     const isExternal = task.metadata.source.startsWith('https://');
-    const tags = Object.entries(task.tags);
     const payload = deepSortObject(task.payload);
 
     return (
@@ -199,6 +194,12 @@ export default class TaskDetailsCard extends Component {
               </CopyToClipboard>
               <ListItem>
                 <ListItemText
+                  primary="Provisioner"
+                  secondary={task.provisionerId}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
                   primary="Worker Type"
                   secondary={task.workerType}
                 />
@@ -220,60 +221,32 @@ export default class TaskDetailsCard extends Component {
                   </IconButton>
                 </ListItemSecondaryAction>
               </ListItem>
-
-              <Fragment>
-                <ListItem>
-                  {tags.length ? (
-                    <ListItemText
-                      primary="Tags"
-                      secondary={tags.map(([key, value]) => (
-                        <Chip
-                          key={key}
-                          className={classes.tag}
-                          label={
-                            <Fragment>
-                              {key}
-                              :&nbsp;&nbsp;
-                              <em>{value}</em>
-                            </Fragment>
-                          }
-                        />
-                      ))}
-                    />
-                  ) : (
-                    <ListItemText primary="Tags" secondary="n/a" />
-                  )}
-                </ListItem>
-              </Fragment>
-              <ListItem>
-                <ListItemText
-                  primary="Requires"
-                  secondary={
-                    <Fragment>
-                      This task will be scheduled when
-                      <strong>
-                        <em> dependencies </em>
-                      </strong>
-                      are
-                      {task.requires === 'ALL_COMPLETED' ? (
-                        <Fragment>
-                          &nbsp;
-                          <code>all-completed</code> successfully.
-                        </Fragment>
-                      ) : (
-                        <Fragment>
-                          &nbsp;
-                          <code>all-resolved</code> with any resolution.
-                        </Fragment>
-                      )}
-                    </Fragment>
-                  }
-                />
-              </ListItem>
               {dependentTasks && dependentTasks.length ? (
                 <Fragment>
                   <ListItem>
-                    <ListItemText primary="Dependencies" />
+                    <ListItemText
+                      primary="Dependencies"
+                      secondary={
+                        <Fragment>
+                          This task will be scheduled when
+                          <strong>
+                            <em> dependencies </em>
+                          </strong>
+                          are
+                          {task.requires === 'ALL_COMPLETED' ? (
+                            <Fragment>
+                              &nbsp;
+                              <code>all-completed</code> successfully.
+                            </Fragment>
+                          ) : (
+                            <Fragment>
+                              &nbsp;
+                              <code>all-resolved</code> with any resolution.
+                            </Fragment>
+                          )}
+                        </Fragment>
+                      }
+                    />
                   </ListItem>
                   <List dense disablePadding>
                     {dependentTasks.map(task => (
@@ -375,12 +348,6 @@ export default class TaskDetailsCard extends Component {
             </List>
             <Collapse in={showMore} timeout="auto">
               <List>
-                <ListItem>
-                  <ListItemText
-                    primary="Provisioner"
-                    secondary={task.provisionerId}
-                  />
-                </ListItem>
                 <ListItem>
                   <ListItemText
                     primary="Retries Left"

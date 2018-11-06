@@ -79,8 +79,8 @@ const getCachesFromTask = task =>
   divider: {
     margin: `${theme.spacing.triple}px 0`,
   },
-  owner: {
-    marginTop: theme.spacing.unit,
+  tag: {
+    margin: `${theme.spacing.unit}px ${theme.spacing.unit}px 0 0`,
   },
   dialogListItem: {
     paddingTop: 0,
@@ -620,6 +620,11 @@ export default class ViewTask extends Component {
       actionLoading,
       dialogError,
     } = this.state;
+    let tags;
+
+    if (task) {
+      tags = Object.entries(task.tags);
+    }
 
     return (
       <Dashboard
@@ -637,7 +642,7 @@ export default class ViewTask extends Component {
               <Markdown>{task.metadata.description}</Markdown>
             </Typography>
             <Chip
-              className={classes.owner}
+              className={classes.tag}
               label={
                 <Fragment>
                   owned by:&nbsp;&nbsp;
@@ -645,6 +650,19 @@ export default class ViewTask extends Component {
                 </Fragment>
               }
             />
+            {tags.map(([key, value]) => (
+              <Chip
+                className={classes.tag}
+                key={key}
+                label={
+                  <Fragment>
+                    {key}
+                    :&nbsp;&nbsp;
+                    <em>{value}</em>
+                  </Fragment>
+                }
+              />
+            ))}
             <Divider className={classes.divider} />
             <Grid container spacing={24}>
               <Grid item xs={12} md={6}>
