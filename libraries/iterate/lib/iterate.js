@@ -1,8 +1,6 @@
-let _ = require('lodash');
 let assert = require('assert');
 let WatchDog = require('./watchdog');
 let debug = require('debug')('iterate');
-let request = require('request-promise');
 let events = require('events');
 
 class CommandPromise {
@@ -49,12 +47,12 @@ class Iterate extends events.EventEmitter {
     events.EventEmitter.call(this);
 
     // Set default values
-    opts = _.defaults({}, opts, {
+    opts = Object.assign({}, {
       maxIterations: 0,
       maxFailures: 7,
       minIterationTime: 0,
       waitTimeAfterFail: 0,
-    });
+    }, opts);
 
     assert(typeof opts.maxIterations === 'number', 'maxIterations must be number');
     this.maxIterations = opts.maxIterations;
