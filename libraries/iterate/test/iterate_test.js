@@ -1,5 +1,5 @@
 let subject = require('../');
-let sinon = require('sinon');
+let sandbox = require('sinon').createSandbox();
 let assume = require('assume');
 let debug = require('debug')('iterate-test');
 let monitoring = require('taskcluster-lib-monitor');
@@ -50,15 +50,10 @@ class IterateEvents {
 }
 
 describe('Iterate', () => {
-  let sandbox;
   let clock;
   let monitor;
 
   beforeEach(async () => {
-    sandbox = sinon.sandbox.create({
-      //useFakeTimers: true,
-    });
-    //clock = sandbox.clock;
     monitor = await monitoring({projectName: 'iterate', credentials: {}, mock: true});
   });
 
