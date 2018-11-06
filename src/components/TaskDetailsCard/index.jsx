@@ -251,12 +251,9 @@ export default class TaskDetailsCard extends Component {
                   <List dense disablePadding>
                     {dependentTasks.map(task => (
                       <ListItem
-                        button
                         classes={{
                           container: classes.listItemWithSecondaryAction,
                         }}
-                        component={Link}
-                        to={`/tasks/${task.taskId}`}
                         key={task.taskId}
                       >
                         <StatusLabel state={task.status.state} />
