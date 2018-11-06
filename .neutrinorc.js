@@ -69,7 +69,6 @@ module.exports = {
       },
     }],
     ['@neutrinojs/react', {
-      publicPath: '/',
       html: {
         title: process.env.APPLICATION_NAME,
         favicon: './logo.png',
