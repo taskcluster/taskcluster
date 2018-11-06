@@ -1,4 +1,3 @@
-let assert = require('assert');
 let WatchDog = require('./watchdog');
 let debug = require('debug')('iterate');
 let events = require('events');
@@ -54,33 +53,49 @@ class Iterate extends events.EventEmitter {
       waitTimeAfterFail: 0,
     }, opts);
 
-    assert(typeof opts.maxIterations === 'number', 'maxIterations must be number');
+    if (typeof opts.maxIterations !== 'number') {
+      throw new Error('maxIterations must be number');
+    }
     this.maxIterations = opts.maxIterations;
 
-    assert(typeof opts.maxFailures === 'number', 'maxFailures must be number');
+    if (typeof opts.maxFailures !== 'number') {
+      throw new Error('maxFailures must be number');
+    }
     this.maxFailures = opts.maxFailures;
 
-    assert(typeof opts.maxIterationTime === 'number', 'maxIterationTime must be number');
+    if (typeof opts.maxIterationTime !== 'number') {
+      throw new Error('maxIterationTime must be number');
+    }
     this.maxIterationTime = opts.maxIterationTime * 1000;
 
-    assert(typeof opts.minIterationTime === 'number', 'minIterationTime must be number');
+    if (typeof opts.minIterationTime !== 'number') {
+      throw new Error('minIterationTime must be number');
+    }
     this.minIterationTime = opts.minIterationTime * 1000;
 
-    assert(typeof opts.watchDog === 'number', 'watchDog must be number');
+    if (typeof opts.watchDog !== 'number') {
+      throw new Error('watchDog must be number');
+    }
     this.watchDogTime = opts.watchDog * 1000;
 
-    assert(typeof opts.waitTime === 'number', 'waitTime must be number');
+    if (typeof opts.waitTime !== 'number') {
+      throw new Error('waitTime must be number');
+    }
     this.waitTime = opts.waitTime * 1000;
 
-    assert(typeof opts.waitTimeAfterFail === 'number', 'waitTimeAfterFail must be number');
+    if (typeof opts.waitTimeAfterFail !== 'number') {
+      throw new Error('waitTimeAfterFail must be number');
+    }
     this.waitTimeAfterFail = opts.waitTimeAfterFail || opts.waitTime;
 
-    // Not sure if the deep
-    assert(typeof opts.handler === 'function', 'handler must be a function');
+    if (typeof opts.handler !== 'function') {
+      throw new Error('handler must be a function');
+    }
     this.handler = opts.handler;
 
-    assert(!opts.monitor || typeof opts.monitor === 'object',
-      'monitor should be an object from taskcluster-lib-monitor if given');
+    if (opts.monitor && typeof opts.monitor !== 'object') {
+      throw new Error('monitor should be an object from taskcluster-lib-monitor if given');
+    }
     this.monitor = opts.monitor;
 
     // We add the times together since we're always going to have the watch dog
