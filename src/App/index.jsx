@@ -41,6 +41,17 @@ export default class App extends Component {
     storage,
   });
 
+  httpLink = new HttpLink({
+    uri: process.env.GRAPHQL_ENDPOINT,
+  });
+
+  wsLink = new WebSocketLink({
+    uri: process.env.GRAPHQL_SUBSCRIPTION_ENDPOINT,
+    options: {
+      reconnect: true,
+    },
+  });
+
   apolloClient = new ApolloClient({
     cache: this.cache,
     link: from([
@@ -65,15 +76,8 @@ export default class App extends Component {
 
           return kind === 'OperationDefinition' && operation === 'subscription';
         },
-        new WebSocketLink({
-          uri: process.env.GRAPHQL_SUBSCRIPTION_ENDPOINT,
-          options: {
-            reconnect: true,
-          },
-        }),
-        new HttpLink({
-          uri: process.env.GRAPHQL_ENDPOINT,
-        })
+        this.wsLink,
+        this.httpLink
       ),
     ]),
   });
