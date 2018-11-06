@@ -49,6 +49,7 @@ export default class App extends Component {
     uri: process.env.GRAPHQL_SUBSCRIPTION_ENDPOINT,
     options: {
       reconnect: true,
+      lazy: true,
     },
   });
 
