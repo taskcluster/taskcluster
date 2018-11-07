@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "eslint-config-taskcluster": "^3.0.0",
-    "mocha": "5.1.1",
+    "mocha": "5.2.0",
     "superagent": "^3.8.1",
     "superagent-hawk": "^0.0.6",
     "taskcluster-lib-app": "^10.0.0",
