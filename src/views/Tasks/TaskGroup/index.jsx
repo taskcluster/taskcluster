@@ -5,7 +5,6 @@ import dotProp from 'dot-prop-immutable';
 import { isEmpty } from 'ramda';
 import jsonSchemaDefaults from 'json-schema-defaults';
 import { safeDump } from 'js-yaml';
-import { withStyles } from '@material-ui/core/styles';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import HammerIcon from 'mdi-react/HammerIcon';
 import SpeedDial from '../../../components/SpeedDial';
@@ -41,19 +40,6 @@ let previousCursor;
 
 @hot(module)
 @withApollo
-@withStyles(theme => ({
-  code: {
-    maxHeight: '70vh',
-    margin: 0,
-  },
-  codeEditor: {
-    overflow: 'auto',
-    maxHeight: '70vh',
-  },
-  description: {
-    marginBottom: theme.spacing.triple,
-  },
-}))
 @graphql(taskGroupQuery, {
   options: props => ({
     pollInterval: TASK_GROUP_POLLING_INTERVAL,
@@ -347,7 +333,6 @@ export default class TaskGroup extends Component {
                 key={action.title}
                 ButtonProps={{
                   name: action.name,
-                  color: 'primary',
                   disabled: actionLoading,
                 }}
                 icon={<HammerIcon />}

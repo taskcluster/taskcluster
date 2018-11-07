@@ -3,9 +3,9 @@ import React, { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { format, addYears, isAfter } from 'date-fns';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
-import HammerIcon from 'mdi-react/HammerIcon';
 import TextField from '@material-ui/core/TextField';
 import HomeLockIcon from 'mdi-react/HomeLockIcon';
+import HammerIcon from 'mdi-react/HammerIcon';
 import HomeLockOpenIcon from 'mdi-react/HomeLockOpenIcon';
 import Dashboard from '../../../components/Dashboard';
 import WorkerDetailsCard from '../../../components/WorkerDetailsCard';
@@ -165,7 +165,6 @@ export default class ViewWorker extends Component {
                   }
                   onClick={this.handleDialogOpen}
                   ButtonProps={{
-                    color: 'secondary',
                     disabled: actionLoading,
                   }}
                 />
@@ -177,7 +176,6 @@ export default class ViewWorker extends Component {
                     icon={<HammerIcon />}
                     onClick={() => this.handleActionDialogOpen(action)}
                     ButtonProps={{
-                      color: 'secondary',
                       disabled: actionLoading,
                     }}
                     tooltipTitle={action.title}

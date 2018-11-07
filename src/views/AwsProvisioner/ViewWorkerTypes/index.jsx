@@ -81,23 +81,20 @@ export default class ViewRoles extends Component {
               icon={<PlusIcon />}
               tooltipTitle="Create Worker Type"
               onClick={this.handleCreate}
-              ButtonProps={{ color: 'secondary' }}
             />
             <SpeedDialAction
               tooltipOpen
               icon={<AlertCircleOutlineIcon />}
               tooltipTitle="Recent Provisioning Errors"
-              classes={{ button: classes.alertIcon }}
+              className={classes.alertIcon}
               onClick={this.handleRecentErrorsClick}
-              ButtonProps={{ color: 'secondary' }}
             />
             <SpeedDialAction
               tooltipOpen
               icon={<HeartPulseIcon />}
               tooltipTitle="Health"
-              classes={{ button: classes.heartIcon }}
+              className={classes.heartIcon}
               onClick={this.handleHealthClick}
-              ButtonProps={{ color: 'secondary' }}
             />
           </SpeedDial>
         </Fragment>

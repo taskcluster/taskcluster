@@ -302,9 +302,6 @@ export default class CreateTask extends Component {
                   icon={<RotateLeftIcon />}
                   onClick={this.handleResetEditor}
                   tooltipTitle="Reset Editor"
-                  ButtonProps={{
-                    color: 'secondary',
-                  }}
                 />
                 <SpeedDialAction
                   tooltipOpen
@@ -312,7 +309,6 @@ export default class CreateTask extends Component {
                   onClick={this.handleUpdateTimestamps}
                   tooltipTitle="Update Timestamps"
                   ButtonProps={{
-                    color: 'secondary',
                     disabled: !task || invalid,
                   }}
                 />

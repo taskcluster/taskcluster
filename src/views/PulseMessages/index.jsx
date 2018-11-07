@@ -375,7 +375,7 @@ export default class PulseMessages extends Component {
                 tooltipOpen
                 icon={<StopIcon />}
                 onClick={this.handleStopListening}
-                classes={{ button: classes.stopIcon }}
+                className={classes.stopIcon}
                 tooltipTitle="Stop Listening"
               />
             ) : (
@@ -383,7 +383,7 @@ export default class PulseMessages extends Component {
                 tooltipOpen
                 icon={<PlayIcon />}
                 onClick={this.handleStartListening}
-                classes={{ button: classes.playIcon }}
+                className={classes.playIcon}
                 tooltipTitle="Start Listening"
                 ButtonProps={{ disabled: !bindings.length }}
               />
@@ -393,7 +393,7 @@ export default class PulseMessages extends Component {
               icon={<DownloadIcon />}
               tooltipTitle="Download Messages"
               onClick={this.handleDownloadMessagesClick}
-              ButtonProps={{ color: 'secondary', disabled: !messages[0] }}
+              ButtonProps={{ disabled: !messages[0] }}
             />
           </SpeedDial>
           <Drawer

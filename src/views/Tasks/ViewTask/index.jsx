@@ -689,7 +689,6 @@ export default class ViewTask extends Component {
                   requiresAuth
                   tooltipOpen
                   ButtonProps={{
-                    color: 'secondary',
                     disabled: actionLoading,
                   }}
                   icon={<ClockOutlineIcon />}
@@ -702,7 +701,6 @@ export default class ViewTask extends Component {
                   requiresAuth
                   tooltipOpen
                   ButtonProps={{
-                    color: 'secondary',
                     disabled: actionLoading,
                   }}
                   icon={<FlashIcon />}
@@ -714,7 +712,6 @@ export default class ViewTask extends Component {
                 requiresAuth
                 tooltipOpen
                 ButtonProps={{
-                  color: 'secondary',
                   disabled: actionLoading,
                 }}
                 icon={<PencilIcon />}
@@ -726,7 +723,6 @@ export default class ViewTask extends Component {
                   requiresAuth
                   tooltipOpen
                   ButtonProps={{
-                    color: 'secondary',
                     disabled: actionLoading,
                   }}
                   icon={<ConsoleLineIcon />}
@@ -743,7 +739,6 @@ export default class ViewTask extends Component {
                     key={action.title}
                     ButtonProps={{
                       name: action.name,
-                      color: 'primary',
                       disabled: actionLoading,
                     }}
                     icon={this.renderActionIcon(action)}

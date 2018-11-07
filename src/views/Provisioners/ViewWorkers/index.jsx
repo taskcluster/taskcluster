@@ -196,7 +196,6 @@ export default class ViewWorkers extends Component {
                         tooltipOpen
                         key={action.title}
                         ButtonProps={{
-                          color: 'secondary',
                           disabled: actionLoading,
                         }}
                         icon={<HammerIcon />}

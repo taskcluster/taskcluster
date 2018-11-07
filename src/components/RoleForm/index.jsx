@@ -226,7 +226,7 @@ export default class RoleForm extends Component {
               tooltipOpen
               icon={<ContentSaveIcon />}
               onClick={this.handleSaveRole}
-              classes={{ button: classes.saveIcon }}
+              className={classes.saveIcon}
               tooltipTitle="Save"
               ButtonProps={{ disabled: loading }}
             />
@@ -236,7 +236,7 @@ export default class RoleForm extends Component {
               icon={<DeleteIcon />}
               onClick={this.handleDeleteRole}
               tooltipTitle="Delete"
-              classes={{ button: classes.deleteIcon }}
+              className={classes.deleteIcon}
               ButtonProps={{
                 disabled: loading,
               }}

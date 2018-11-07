@@ -192,7 +192,7 @@ export default class SecretForm extends Component {
               tooltipOpen
               icon={<ContentSaveIcon />}
               onClick={this.handleSaveSecret}
-              classes={{ button: classes.saveIcon }}
+              className={classes.saveIcon}
               tooltipTitle="Save Secret"
               ButtonProps={{
                 disabled: loading || !this.validSecret(),
@@ -203,7 +203,7 @@ export default class SecretForm extends Component {
               tooltipOpen
               icon={<DeleteIcon />}
               onClick={this.handleDeleteSecret}
-              classes={{ button: classes.deleteIcon }}
+              className={classes.deleteIcon}
               tooltipTitle="Delete Secret"
               ButtonProps={{
                 disabled: loading,

@@ -345,7 +345,7 @@ export default class ClientForm extends Component {
               tooltipOpen
               icon={<ContentSaveIcon className={classes.saveIcon} />}
               onClick={this.handleSaveClient}
-              classes={{ button: classes.saveIcon }}
+              className={classes.saveIcon}
               tooltipTitle="Save"
               ButtonProps={{ disabled: loading }}
             />
@@ -354,7 +354,7 @@ export default class ClientForm extends Component {
               tooltipOpen
               icon={<DeleteIcon />}
               onClick={this.handleDeleteClient}
-              classes={{ button: classes.deleteIcon }}
+              className={classes.deleteIcon}
               tooltipTitle="Delete"
               ButtonProps={{ disabled: loading }}
             />
@@ -379,7 +379,6 @@ export default class ClientForm extends Component {
               onClick={this.handleResetAccessToken}
               tooltipTitle="Reset Access Token"
               ButtonProps={{
-                color: 'secondary',
                 disabled: loading,
               }}
             />

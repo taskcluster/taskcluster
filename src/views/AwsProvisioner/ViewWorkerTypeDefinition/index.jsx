@@ -277,7 +277,7 @@ export default class ViewWorkerTypeDefinition extends Component {
             <SpeedDialAction
               requiresAuth
               icon={<ContentSaveIcon />}
-              classes={{ button: classes.successIcon }}
+              className={classes.successIcon}
               tooltipTitle="Update Worker Type"
               onClick={this.handleUpdateWorkerType}
               ButtonProps={{ disabled: invalidDefinition || actionLoading }}
@@ -286,7 +286,7 @@ export default class ViewWorkerTypeDefinition extends Component {
               requiresAuth
               icon={<DeleteIcon />}
               tooltipTitle="Delete Worker Type"
-              classes={{ button: classes.deleteIcon }}
+              className={classes.deleteIcon}
               onClick={this.handleDeleteWorkerType}
               ButtonProps={{ disabled: actionLoading }}
             />

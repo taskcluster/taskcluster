@@ -615,7 +615,6 @@ export default class HookForm extends Component {
               onClick={this.handleUpdateHook}
               tooltipTitle="Save Hook"
               ButtonProps={{
-                color: 'secondary',
                 disabled: !this.validHook() || actionLoading,
               }}
             />
@@ -624,7 +623,7 @@ export default class HookForm extends Component {
               tooltipOpen
               icon={<DeleteIcon />}
               onClick={this.handleDeleteHook}
-              classes={{ button: classes.deleteIcon }}
+              className={classes.deleteIcon}
               ButtonProps={{
                 disabled: actionLoading,
               }}
@@ -635,7 +634,7 @@ export default class HookForm extends Component {
               tooltipOpen
               icon={<FlashIcon />}
               onClick={this.handleTriggerHookClick}
-              classes={{ button: classes.successIcon }}
+              className={classes.successIcon}
               ButtonProps={{
                 disabled: !this.validHook() || actionLoading,
               }}

@@ -140,6 +140,15 @@ const createTheme = isDarkTheme => ({
         fill: 'white',
       },
     },
+    secondaryIcon: {
+      backgroundColor: THEME.SECONDARY,
+      '&:hover': {
+        backgroundColor: fade(THEME.SECONDARY, 0.9),
+      },
+      '& svg': {
+        backgroundColor: 'transparent',
+      },
+    },
     successIcon: {
       backgroundColor: success.main,
       '&:hover': {
