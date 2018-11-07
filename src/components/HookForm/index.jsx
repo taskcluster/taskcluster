@@ -324,17 +324,9 @@ export default class HookForm extends Component {
   };
 
   validHook = () => {
-    const {
-      name,
-      description,
-      owner,
-      taskValidJson,
-      triggerSchemaValidJson,
-    } = this.state;
+    const { name, owner, taskValidJson, triggerSchemaValidJson } = this.state;
 
-    return (
-      name && description && owner && taskValidJson && triggerSchemaValidJson
-    );
+    return name && owner && taskValidJson && triggerSchemaValidJson;
   };
 
   render() {
