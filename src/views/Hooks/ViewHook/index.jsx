@@ -18,7 +18,7 @@ import triggerHookQuery from './triggerHook.graphql';
   options: ({ match: { params } }) => ({
     variables: {
       hookGroupId: params.hookGroupId,
-      hookId: params.hookId,
+      hookId: decodeURIComponent(params.hookId),
     },
   }),
 })

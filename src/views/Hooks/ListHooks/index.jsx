@@ -39,7 +39,9 @@ export default class ListHooks extends Component {
   };
 
   handleLeafClick = (leaf, parent) => {
-    this.props.history.push(`/hooks/${parent.value}/${leaf}`);
+    this.props.history.push(
+      `/hooks/${parent.value}/${encodeURIComponent(leaf)}`
+    );
   };
 
   render() {
