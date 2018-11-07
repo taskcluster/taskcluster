@@ -22,4 +22,15 @@ describe('Queue', function() {
       .ping()
       .then(({ alive }) => expect(alive).to.be.ok);
   });
+
+  it('should handle a 404 correctly', () => {
+    return queue
+      .task('uTOskJejRr-DFMqUB_bpLw')
+      .then(() => { throw new Error('expected an error'); })
+      .catch(err => {
+        expect(err.response).to.be.ok;
+        expect(err.response.status).to.equal(404);
+      });
+  });
+
 });

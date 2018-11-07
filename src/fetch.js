@@ -66,7 +66,10 @@ export default (url, opts = {}) => {
         .then(handleResponse)
         .then(resolve)
         .catch(err => {
-          if (n > retries) {
+          if (err.response && err.response.status < 500) {
+            // only retry on errors or 500-series responses
+            reject(err);
+          } else if (n > retries) {
             reject(err);
           } else {
             const delay = Math.min(
