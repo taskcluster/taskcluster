@@ -136,7 +136,7 @@ export default class TaskRunsCard extends Component {
     return this.props.runs[this.props.selectedRunId];
   }
 
-  handleArtifactClick = ({ url, isPublicLog }) => {
+  handleArtifactClick = ({ url, isLog }) => {
     if (!url) {
       return null;
     }
@@ -145,7 +145,7 @@ export default class TaskRunsCard extends Component {
       const { history } = this.props;
       const { taskId, runId, state } = this.getCurrentRun();
 
-      if (isPublicLog) {
+      if (isLog) {
         const live = state === 'PENDING' || state === 'RUNNING';
         const encoded = encodeURIComponent(url);
         const path = live
@@ -180,15 +180,27 @@ export default class TaskRunsCard extends Component {
     this.setState({ showArtifacts: !this.state.showArtifacts });
   };
 
+  getLiveLogArtifactFromRun = run => {
+    const artifact = run.artifacts.edges.find(
+      ({ node: { name } }) => name === 'public/logs/live.log'
+    );
+
+    if (!artifact) {
+      return;
+    }
+
+    return artifact.node;
+  };
+
   createSortedArtifactsConnection(artifacts) {
     return {
       ...artifacts,
       edges: [...artifacts.edges].sort((a, b) => {
-        if (a.node.isPublicLog === b.node.isPublicLog) {
+        if (a.node.isPublic === b.node.isPublic) {
           return 0;
         }
 
-        return a.node.isPublicLog ? -1 : 1;
+        return a.node.isPublic ? -1 : 1;
       }),
     };
   }
@@ -214,12 +226,12 @@ export default class TaskRunsCard extends Component {
             hover={!!artifact.url}
           >
             <TableCell>
-              {artifact.isPublicLog && <LockOpenOutlineIcon />}
-              {!artifact.isPublicLog && artifact.url && <LockIcon />}
+              {artifact.isPublic && <LockOpenOutlineIcon />}
+              {!artifact.isPublic && artifact.url && <LockIcon />}
             </TableCell>
             <TableCell>
               <Fragment>
-                {artifact.isPublicLog && (
+                {artifact.isLog && (
                   <Label status="info" mini className={classes.logButton}>
                     LOG
                   </Label>
@@ -228,8 +240,8 @@ export default class TaskRunsCard extends Component {
               </Fragment>
             </TableCell>
             <TableCell className={classes.linkCell}>
-              {artifact.isPublicLog && <LinkIcon size={16} />}
-              {!artifact.isPublicLog &&
+              {artifact.isPublic && <LinkIcon size={16} />}
+              {!artifact.isPublic &&
                 artifact.url && <OpenInNewIcon size={16} />}
             </TableCell>
           </TableRow>
@@ -249,6 +261,7 @@ export default class TaskRunsCard extends Component {
     } = this.props;
     const { showArtifacts } = this.state;
     const run = this.getCurrentRun();
+    const liveLogArtifact = this.getLiveLogArtifactFromRun(run);
 
     return (
       <Card raised>
@@ -369,6 +382,19 @@ export default class TaskRunsCard extends Component {
                     <ContentCopyIcon />
                   </ListItem>
                 </CopyToClipboard>
+                {liveLogArtifact && (
+                  <ListItem
+                    button
+                    className={classes.listItemButton}
+                    onClick={this.handleArtifactClick(liveLogArtifact)}
+                  >
+                    <ListItemText
+                      primary="View Live Log"
+                      secondary={liveLogArtifact.name}
+                    />
+                    <LinkIcon />
+                  </ListItem>
+                )}
                 <ListItem
                   button
                   className={classes.listItemButton}

@@ -31,7 +31,7 @@ export const artifact = shape({
   name: string,
   contentType: string,
   url: string,
-  isPublicLog: bool,
+  isPublic: bool,
 });
 
 export const artifacts = shape({

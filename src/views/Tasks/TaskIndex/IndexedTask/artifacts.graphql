@@ -11,7 +11,7 @@ query IndexEntry($taskId: ID!, $entryConnection: PageConnection, $skip: Boolean!
       node {
         name
         url
-        isPublicLog
+        isPublic
         contentType
       }
     }

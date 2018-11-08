@@ -108,8 +108,8 @@ export default class IndexedEntry extends Component {
             hover={Boolean(artifact.url)}
           >
             <TableCell>
-              {artifact.isPublicLog && <LockOpenOutlineIcon />}
-              {!artifact.isPublicLog && artifact.url && <LockIcon />}
+              {artifact.isPublic && <LockOpenOutlineIcon />}
+              {!artifact.isPublic && artifact.url && <LockIcon />}
               {artifact.icon && <artifact.icon />}
             </TableCell>
             <TableCell>
