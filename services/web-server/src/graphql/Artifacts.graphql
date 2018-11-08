@@ -24,8 +24,11 @@ type Artifact {
   # or not available for private artifacts.
   url: String
 
-  # Is true when this artifact is a public log, otherwise false.
-  isPublicLog: Boolean!
+  # Is true when this artifact is public, otherwise false.
+  isPublic: Boolean!
+
+  # Is true when this artifact is a log, otherwise false.
+  isLog: Boolean!
 }
 
 enum ArtifactStorageType {

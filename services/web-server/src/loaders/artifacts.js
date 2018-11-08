@@ -10,7 +10,7 @@ export default ({ queue }, isAuthed, rootUrl) => {
   const urls = withRootUrl(rootUrl);
   const withUrl = ({ method, taskId, artifact, runId }) => {
     const hasRunId = !isNil(runId);
-    const isPublicLog = /^public\//.test(artifact.name);
+    const isPublic = /^public\//.test(artifact.name);
 
     // We don't want to build signed URLs for public artifacts,
     // even when credentials are present -- users often
@@ -22,7 +22,7 @@ export default ({ queue }, isAuthed, rootUrl) => {
     // name has slashes encoded. For artifacts we specifically allow slashes
     // in the name unencoded, as this make things like `wget ${URL}` create
     // files with nice names.
-    if (isPublicLog) {
+    if (isPublic) {
       return {
         ...artifact,
         url: hasRunId
