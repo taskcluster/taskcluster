@@ -55,6 +55,24 @@ const load = loader({
     },
   },
 
+  LastFire : {
+    requires: ['cfg', 'monitor'],
+    setup: ({cfg, monitor}) => {
+      return data.LastFire.setup({
+        tableName: cfg.app.lastFireTableName,
+        monitor: monitor.prefix('table.lastFireTable'),
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.lastFireTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
+        cryptoKey: cfg.azure.cryptoKey,
+        signingKey: cfg.azure.signingKey,
+      });
+    },
+  },
+
   schemaset: {
     requires: ['cfg'],
     setup: ({cfg}) => {
@@ -93,8 +111,12 @@ const load = loader({
   },
 
   taskcreator: {
-    requires: ['cfg'],
-    setup: ({cfg}) => new taskcreator.TaskCreator(cfg.taskcluster),
+    requires: ['cfg', 'LastFire', 'monitor'],
+    setup: ({cfg, LastFire, monitor}) => new taskcreator.TaskCreator({
+      ...cfg.taskcluster, 
+      LastFire, 
+      monitor:  monitor.prefix('taskcreator'),
+    }),
   },
 
   notify: {
@@ -154,12 +176,13 @@ const load = loader({
   },
 
   schedulerNoStart: {
-    requires: ['cfg', 'Hook', 'taskcreator', 'notify'],
-    setup: ({cfg, Hook, taskcreator, notify}) => {
+    requires: ['cfg', 'Hook', 'taskcreator', 'notify', 'monitor'],
+    setup: ({cfg, Hook, taskcreator, notify, monitor}) => {
       return new Scheduler({
         Hook,
         taskcreator,
         notify,
+        monitor: monitor.prefix('scheduler'),
         pollingDelay: cfg.app.scheduler.pollingDelay,
       });
     },
