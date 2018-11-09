@@ -21,6 +21,8 @@ class TaskCreator {
 
     this.rootUrl = options.rootUrl;
     this.credentials = options.credentials;
+    this.LastFire = options.LastFire;
+    this.monitor = options.monitor;
   }
 
   taskForHook(hook, context, options) {
@@ -45,6 +47,18 @@ class TaskCreator {
     }
     return task;
   }
+
+  async appendLastFire({hookGroupId, hookId}, {firedBy}, lastFire) {
+    await this.LastFire.create({
+      hookGroupId,
+      hookId,
+      taskId: lastFire.taskId,
+      taskCreateTime: lastFire.time,
+      firedBy,
+      result: lastFire.result,
+      error:  lastFire.err || '',
+    });
+  } 
 
   /**
   * Fire the given hook, using the given payload (interpolating it into the task
@@ -79,7 +93,34 @@ class TaskCreator {
       this.lastCreateTask = {taskId: options.taskId, task};
       return {status: {taskId: options.taskId}};
     }
-    return await queue.createTask(options.taskId, task);
+
+    let lastFire, taskCreateRes;
+    try {
+      taskCreateRes = await queue.createTask(options.taskId, task);
+      lastFire = {
+        result: 'success',
+        taskId: hook.nextTaskId,
+        time: new Date(),
+      };
+    } catch (err) {
+      lastFire = {
+        result: 'error',
+        error: err,
+        time: new Date(),
+      };
+    }
+
+    try {
+      await appendLastFire(hook, context, lastFire);
+    } catch (err) {
+      debug('Failed to append lastfire with err: %s', err);
+      this.monitor.reportError(err);
+    }
+
+    if (lastFire.error) {
+      return Promise.reject(lastFire.error);
+    }
+    return taskCreateRes;
   };
 }
 

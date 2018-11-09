@@ -12,6 +12,7 @@ const libUrls = require('taskcluster-lib-urls');
 suite('taskcreator_test.js', function() {
   helper.secrets.mockSuite('TaskCreator', ['taskcluster'], function(mock, skipping) {
     helper.withHook(mock, skipping);
+    helper.withLastFire(mock, skipping);
 
     this.slow(500);
 
@@ -207,6 +208,21 @@ suite('taskcreator_test.js', function() {
           (err) => { debug('Got expected error: %s', err); });
       });
     }
+
+    test('adds a new row to lastFire', async function() {
+      let hook = _.cloneDeep(defaultHook);
+      let taskCreateTime = new Date();
+      await creator.appendLastFire(hook, 
+        {firedBy: 'test'}, 
+        {result: 'success', taskId: hook.nextTaskId, time: taskCreateTime},
+      );
+
+      const res = await helper.LastFire.load({
+        hookGroupId: hook.hookGroupId,
+        firedBy: 'test',
+      });
+      assume(res.taskCreateTime.toString()).equals(taskCreateTime.toString());
+    });
   });
 
   suite('MockTaskCreator', function() {
