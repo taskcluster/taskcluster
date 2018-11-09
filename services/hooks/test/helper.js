@@ -62,6 +62,38 @@ helper.withHook = (mock, skipping) => {
 };
 
 /**
+ * Set helper.LastFire to a set-up LastFire entity (and inject it into the loader)
+ */
+helper.withLastFire = (mock, skipping) => {
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+
+    if (mock) {
+      const cfg = await helper.load('cfg');
+      helper.load.inject('LastFire', data.LastFire.setup({
+        tableName: cfg.app.lastFireTableName,
+        credentials: 'inMemory',
+        cryptoKey: cfg.azure.cryptoKey,
+        signingKey: cfg.azure.signingKey,
+      }));
+    }
+
+    helper.LastFire = await helper.load('LastFire');
+    await helper.LastFire.ensureTable();
+  });
+
+  const cleanup = async () => {
+    if (!skipping()) {
+      await helper.LastFire.scan({}, {handler: lastFire => lastFire.remove()});
+    }
+  };
+  setup(cleanup);
+  suiteTeardown(cleanup);
+};
+
+/**
  * Set up a MockTaskCreator; with this, use helper.creator.fireCalls
  * to see what calls to taskcreator.fire() have been made, and set
  * helper.creator.shouldFail to make the TaskCreator fail.

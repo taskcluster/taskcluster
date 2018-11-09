@@ -177,3 +177,29 @@ Hook.prototype.definition = function() {
 
 // export Hook
 exports.Hook = Hook;
+
+const LastFire = Entity.configure({
+  version:              1,
+  partitionKey:         Entity.keys.StringKey('hookGroupId'),
+  rowKey:               Entity.keys.ConstantKey('task-record'),
+  signEntities:         true,
+  properties:           {
+    hookGroupId:        Entity.types.String,
+    hookId:             Entity.types.String,
+    firedBy:            Entity.types.String,
+    taskId:             Entity.types.EncryptedText,
+    taskCreateTime:     Entity.types.Date,
+    result:             Entity.types.String,
+    error:              Entity.types.String,
+  },
+});
+
+LastFire.prototype.definition = function() {
+  return Promise.resolve({
+    hookGroupId:  this.hookGroupId,
+    hookId: this.hook,
+  });
+};
+
+// export LastFire
+exports.LastFire = LastFire;

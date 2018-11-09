@@ -2,8 +2,9 @@ defaults:
   # defaults outlining all configuration options and some sane defaults
   app:
     component:        hooks
-    hookTableName:    !env HOOK_TABLE_NAME
-    publishMetaData:  !env:bool PUBLISH_METADATA
+    hookTableName:     !env HOOK_TABLE_NAME
+    lastFireTableName: !env LASTFIRE_TABLE_NAME
+    publishMetaData:   !env:bool PUBLISH_METADATA
     scheduler:
       pollingDelay:   60000
   influx:
@@ -58,6 +59,7 @@ test:
   app:
     component:        hooks-tests
     hookTableName:    HooksTestTable2
+    lastFireTableName: LastFireTestTable
     publishMetaData:  false
     scheduler:
       pollingDelay:   5000
