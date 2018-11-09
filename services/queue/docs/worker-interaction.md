@@ -146,24 +146,24 @@ it _completed_ by accident. Note. artifacts can't be added after 20 minutes or
 so.
 
 ## Intermittent Tasks
-To deal with intermittent tasks the worker can report _exception_ with the
-reason `intermittent-task`. This is only supposed to be used by tasks that
-explicitly communicate that they failed in an intermittent manner.
-Generally, this should be **strongly discouraged**, but unfortunately necessary
-in a few cases.
 
-Reporting a task _exception_ with reason `intermittent-task` will retry the task
-if retries haven't been exhausted. It is strongly encouraged that workers retry
-the task/run it already holds, rather than resolving the task and have the queue
-retry the task.
+Reporting a task _exception_ with reason `intermittent-task` will retry the
+task, using the next sequential run number, if retries haven't been exhausted.
+This is intended for use by tasks that explicitly communicate that they have
+failed in an intermittent manner and will likely succeed on a retry. It should
+be opt-in on a task-by-task basis. The next run of the task returns to the
+queue may run on the same or a different worker.
 
-If using this feature, please ensure that task are explicitly asking to be
-retried, due to intermittence, and consider if perhaps the intermittence is due
-to a broken worker (dirty worker state or bad apple) and consider formatting
-the worker, reporting `worker-shutdown` instead.
+It is generally better to handle intermittency *within* a task. For example, if
+a particular test or test suite fails intermittently, configure the task such
+that it runs the same test repeatedly until success.
 
+Intermittency due to a broken worker (dirty worker state or bad instance)
+should be handled by reporting `worker-shutdown` and taking whatever steps are
+necessary to "clean up" the worker.
 
 ## Terminating the Worker Early
+
 If the worker finds itself having to terminate early, for example a spot node
 that detects pending termination. Or a physical machine ordered to be
 provisioned for another purpose, the worker should report an exception with the
