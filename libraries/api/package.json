@@ -26,7 +26,7 @@
     "lodash": "^4.15.0",
     "promise": "^8.0.1",
     "slugid": "^2.0.0",
-    "taskcluster-client": "^10.0.0",
+    "taskcluster-client": "^11.0.0",
     "taskcluster-lib-scopes": "^10.0.1",
     "type-is": "^1.6.15",
     "uuid": "^3.1.0"
