@@ -12,7 +12,6 @@
     "AZURE_ACCOUNT": "jungle",
     "DEBUG": "*",
     "HOOK_TABLE_NAME": "Hooks",
-    "LASTFIRE_TABLE_NAME": "Lastfire",
     "NODE_MODULES_CACHE": {
       "required": true
     },
