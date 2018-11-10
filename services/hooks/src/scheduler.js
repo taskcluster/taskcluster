@@ -39,6 +39,7 @@ class Scheduler extends events.EventEmitter {
     this.taskcreator  = options.taskcreator;
     this.notify          = options.notify;
     this.pollingDelay = options.pollingDelay;
+
     // Promise that the polling is done
     this.done         = null;
 
@@ -111,7 +112,6 @@ class Scheduler extends events.EventEmitter {
         taskId: hook.nextTaskId,
         time: new Date(),
       };
-
     } catch (err) {
       debug('Failed to handle hook: %s/%s, with err: %s', hook.hookGroupId, hook.hookId, err);
 
@@ -191,4 +191,3 @@ class Scheduler extends events.EventEmitter {
 
 // Export Scheduler
 module.exports = Scheduler;
-
