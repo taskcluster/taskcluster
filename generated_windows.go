@@ -76,6 +76,20 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
+	// Import Base64 encoded content.
+	//
+	// Since: generic-worker 10.11.3
+	Base64Content struct {
+
+		// Base64 content.
+		//
+		// Since: generic-worker 10.11.3
+		//
+		// Syntax:     ^[A-Za-z0-9/+]+[=]{0,2}$
+		// Max length: 8000
+		Base64 string `json:"base64"`
+	}
+
 	// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
 	// if all task commands have a zero exit code, or `failed/failed` if any command has a
 	// non-zero exit code. This payload property allows customsation of the task resolution
@@ -90,9 +104,6 @@ type (
 		// See [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.
 		//
 		// Since: generic-worker 10.10.0
-		//
-		// Array items:
-		// Mininum:    1
 		Retry []int64 `json:"retry,omitempty"`
 	}
 
@@ -142,6 +153,8 @@ type (
 		// One of:
 		//   * ArtifactContent
 		//   * URLContent
+		//   * RawContent
+		//   * Base64Content
 		Content json.RawMessage `json:"content"`
 
 		// The filesystem location to mount the file.
@@ -170,8 +183,6 @@ type (
 		// ```
 		//
 		// Since: generic-worker 0.0.1
-		//
-		// Array items:
 		Command []string `json:"command"`
 
 		// Env vars must be string to __string__ mappings (not number or boolean). For example:
@@ -185,8 +196,6 @@ type (
 		// ```
 		//
 		// Since: generic-worker 0.0.1
-		//
-		// Map entries:
 		Env map[string]string `json:"env,omitempty"`
 
 		// Feature flags enable additional functionality.
@@ -205,12 +214,6 @@ type (
 		// Directories and/or files to be mounted.
 		//
 		// Since: generic-worker 5.4.0
-		//
-		// Array items:
-		// One of:
-		//   * FileMount
-		//   * WritableDirectoryCache
-		//   * ReadOnlyDirectory
 		Mounts []json.RawMessage `json:"mounts,omitempty"`
 
 		// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
@@ -224,8 +227,6 @@ type (
 		// group listed.
 		//
 		// Since: generic-worker 6.0.0
-		//
-		// Array items:
 		OSGroups []string `json:"osGroups,omitempty"`
 
 		// Specifies an artifact name for publishing RDP connection information.
@@ -268,11 +269,26 @@ type (
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
+	// Import raw content.
+	//
+	// Since: generic-worker 10.11.3
+	RawContent struct {
+
+		// Raw content.
+		//
+		// Since: generic-worker 10.11.3
+		//
+		// Max length: 8000
+		Raw string `json:"raw"`
+	}
+
 	ReadOnlyDirectory struct {
 
 		// One of:
 		//   * ArtifactContent
 		//   * URLContent
+		//   * RawContent
+		//   * Base64Content
 		Content json.RawMessage `json:"content"`
 
 		// The filesystem location to mount the directory volume.
@@ -323,6 +339,8 @@ type (
 		// One of:
 		//   * ArtifactContent
 		//   * URLContent
+		//   * RawContent
+		//   * Base64Content
 		Content json.RawMessage `json:"content,omitempty"`
 
 		// The filesystem location to mount the directory volume.
@@ -409,6 +427,41 @@ func taskPayloadSchema() string {
             "url"
           ],
           "title": "URL Content",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Import raw content.\n\nSince: generic-worker 10.11.3",
+          "properties": {
+            "raw": {
+              "description": "Raw content.\n\nSince: generic-worker 10.11.3",
+              "maxLength": 8000,
+              "title": "Raw",
+              "type": "string"
+            }
+          },
+          "required": [
+            "raw"
+          ],
+          "title": "Raw Content",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Import Base64 encoded content.\n\nSince: generic-worker 10.11.3",
+          "properties": {
+            "base64": {
+              "description": "Base64 content.\n\nSince: generic-worker 10.11.3",
+              "maxLength": 8000,
+              "pattern": "^[A-Za-z0-9/+]+[=]{0,2}$",
+              "title": "Base64",
+              "type": "string"
+            }
+          },
+          "required": [
+            "base64"
+          ],
+          "title": "Base64 Content",
           "type": "object"
         }
       ]

@@ -431,3 +431,40 @@ definitions:
       additionalProperties: false
       required:
       - url
+    - title: Raw Content
+      description: |-
+        Import raw content.
+
+        Since: generic-worker 10.11.3
+      type: object
+      properties:
+        raw:
+          type: string
+          maxLength: 8000
+          title: Raw
+          description: |-
+            Raw content.
+
+            Since: generic-worker 10.11.3
+      additionalProperties: false
+      required:
+      - raw  
+    - title: Base64 Content
+      description: |-
+        Import Base64 encoded content.
+
+        Since: generic-worker 10.11.3
+      type: object
+      properties:
+        base64:
+          type: string
+          maxLength: 8000
+          title: Base64
+          description: |-
+            Base64 content.
+
+            Since: generic-worker 10.11.3
+          pattern: '^[A-Za-z0-9/+]+[=]{0,2}$'
+      additionalProperties: false
+      required:
+      - base64
