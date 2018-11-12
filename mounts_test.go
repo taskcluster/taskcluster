@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -471,6 +472,10 @@ func LogTest(m *MountsLoggingTestCase) {
 			if matched, err := regexp.MatchString(`\[mounts\] `+run[i], mountsLogLines[i]); err != nil || !matched {
 				m.Test.Fatalf("Was expecting log line to match pattern '%v', but it does not:\n%v", run[i], mountsLogLines[i])
 			}
+		}
+		err = os.RemoveAll(taskContext.TaskDir)
+		if err != nil {
+			m.Test.Fatalf("Could not delete task directory: %v", err)
 		}
 	}
 }
