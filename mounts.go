@@ -650,13 +650,13 @@ func extract(fsContent FSContent, format string, dir string, task *TaskRun) erro
 	task.Infof("[mounts] Extracting %v file %v to '%v'", format, cacheFile, dir)
 	switch format {
 	case "zip":
-		return archiver.Zip.Open(cacheFile, dir)
+		return archiver.DefaultZip.Unarchive(cacheFile, dir)
 	case "tar.gz":
-		return archiver.TarGz.Open(cacheFile, dir)
+		return archiver.DefaultTarGz.Unarchive(cacheFile, dir)
 	case "rar":
-		return archiver.Rar.Open(cacheFile, dir)
+		return archiver.DefaultRar.Unarchive(cacheFile, dir)
 	case "tar.bz2":
-		return archiver.TarBz2.Open(cacheFile, dir)
+		return archiver.DefaultTarBz2.Unarchive(cacheFile, dir)
 	}
 	log.Fatalf("Unsupported format %v", format)
 	return fmt.Errorf("Unsupported archive format %v", format)
