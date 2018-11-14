@@ -776,17 +776,17 @@
     classnames "^2.2.5"
     keycode "^2.1.9"
 
-"@mozilla-frontend-infra/components@^1.3.1":
-  version "1.3.3"
-  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-1.3.3.tgz#762acd31703fbf088d4194fd648003e20eeb55c1"
-  integrity sha512-q6v4DRpiiPUmT0yBvhlmAVfFCUQmHGkldrJQ+w3jkxn4y+KvcYtGE6xBBMMzm7UOqJFeIe3akoh9LWFGAcRmeg==
+"@mozilla-frontend-infra/components@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-2.0.0.tgz#a660c044d24f9ea046761e8b6f8e485baa491217"
+  integrity sha512-vm+GGivCtpklcZaDOdrb1QJxdwqpYzE16TNajgPqw4bmRL/ZAGt9/HbhCHuRm/FFkxoEcVVk6lSN7NMVJW2mTQ==
   dependencies:
     classnames "^2.2.6"
     codemirror "^5.39.0"
     error-stack-parser "^2.0.2"
     highlight.js "^9.12.0"
     is-absolute-url "^2.1.0"
-    markdown-it "^8.4.1"
+    markdown-it "^8.4.2"
     markdown-it-highlightjs "^3.0.0"
     markdown-it-link-attributes "^2.1.0"
     mdi-react "^4.0.0"
@@ -6583,7 +6583,7 @@ markdown-it-link-attributes@^2.1.0:
   resolved "https://registry.yarnpkg.com/markdown-it-link-attributes/-/markdown-it-link-attributes-2.1.0.tgz#32a74c94f7c5cdfd08868d2bee29c6fa70a08324"
   integrity sha1-MqdMlPfFzf0Iho0r7inG+nCggyQ=
 
-markdown-it@^8.4.1:
+markdown-it@^8.4.1, markdown-it@^8.4.2:
   version "8.4.2"
   resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-8.4.2.tgz#386f98998dc15a37722aa7722084f4020bdd9b54"
   integrity sha512-GcRz3AWTqSUphY3vsUqQSFMbgR38a4Lh3GWlHRh/7MRwz8mcu9n2IO7HOh+bXHrR9kOPDl5RNCaEsrneb+xhHQ==
