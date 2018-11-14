@@ -122,7 +122,7 @@ repositories:
     projectName: taskcluster-tools
   service:
     buildtype: tools-ui
-    node: 8
+    node: 10
   source: https://github.com/taskcluster/taskcluster-tools#master
 
 # references (and schemas)
