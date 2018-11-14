@@ -379,37 +379,37 @@ definitions:
       - url
     - title: Raw Content
       description: |-
-        Import raw content.
+        Byte-for-byte literal inline content of file/archive, up to 64KB in size.
 
-        Since: generic-worker 10.11.3
+        Since: generic-worker 11.1.0
       type: object
       properties:
         raw:
           type: string
-          maxLength: 8000
+          maxLength: 65536
           title: Raw
           description: |-
-            Raw content.
+            Byte-for-byte literal inline content of file/archive, up to 64KB in size.
 
-            Since: generic-worker 10.11.3
+            Since: generic-worker 11.1.0
       additionalProperties: false
       required:
       - raw
     - title: Base64 Content
       description: |-
-        Import Base64 encoded content.
+        Base64 encoded content of file/archive, up to 64KB (encoded) in size.
 
-        Since: generic-worker 10.11.3
+        Since: generic-worker 11.1.0
       type: object
       properties:
         base64:
           type: string
-          maxLength: 8000
+          maxLength: 65536
           title: Base64
           description: |-
-            Base64 content.
+            Base64 encoded content of file/archive, up to 64KB (encoded) in size.
 
-            Since: generic-worker 10.11.3
+            Since: generic-worker 11.1.0
           pattern: '^[A-Za-z0-9/+]+[=]{0,2}$'
       additionalProperties: false
       required:

@@ -76,17 +76,17 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
-	// Import Base64 encoded content.
+	// Base64 encoded content of file/archive, up to 64KB (encoded) in size.
 	//
-	// Since: generic-worker 10.11.3
+	// Since: generic-worker 11.1.0
 	Base64Content struct {
 
-		// Base64 content.
+		// Base64 encoded content of file/archive, up to 64KB (encoded) in size.
 		//
-		// Since: generic-worker 10.11.3
+		// Since: generic-worker 11.1.0
 		//
 		// Syntax:     ^[A-Za-z0-9/+]+[=]{0,2}$
-		// Max length: 8000
+		// Max length: 65536
 		Base64 string `json:"base64"`
 	}
 
@@ -104,6 +104,9 @@ type (
 		// See [itermittent tasks](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/worker-interaction#intermittent-tasks) for more detail.
 		//
 		// Since: generic-worker 10.10.0
+		//
+		// Array items:
+		// Mininum:    1
 		Retry []int64 `json:"retry,omitempty"`
 	}
 
@@ -183,6 +186,8 @@ type (
 		// ```
 		//
 		// Since: generic-worker 0.0.1
+		//
+		// Array items:
 		Command []string `json:"command"`
 
 		// Env vars must be string to __string__ mappings (not number or boolean). For example:
@@ -196,6 +201,8 @@ type (
 		// ```
 		//
 		// Since: generic-worker 0.0.1
+		//
+		// Map entries:
 		Env map[string]string `json:"env,omitempty"`
 
 		// Feature flags enable additional functionality.
@@ -214,6 +221,12 @@ type (
 		// Directories and/or files to be mounted.
 		//
 		// Since: generic-worker 5.4.0
+		//
+		// Array items:
+		// One of:
+		//   * FileMount
+		//   * WritableDirectoryCache
+		//   * ReadOnlyDirectory
 		Mounts []json.RawMessage `json:"mounts,omitempty"`
 
 		// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
@@ -227,6 +240,8 @@ type (
 		// group listed.
 		//
 		// Since: generic-worker 6.0.0
+		//
+		// Array items:
 		OSGroups []string `json:"osGroups,omitempty"`
 
 		// Specifies an artifact name for publishing RDP connection information.
@@ -269,16 +284,16 @@ type (
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
-	// Import raw content.
+	// Byte-for-byte literal inline content of file/archive, up to 64KB in size.
 	//
-	// Since: generic-worker 10.11.3
+	// Since: generic-worker 11.1.0
 	RawContent struct {
 
-		// Raw content.
+		// Byte-for-byte literal inline content of file/archive, up to 64KB in size.
 		//
-		// Since: generic-worker 10.11.3
+		// Since: generic-worker 11.1.0
 		//
-		// Max length: 8000
+		// Max length: 65536
 		Raw string `json:"raw"`
 	}
 
@@ -431,11 +446,11 @@ func taskPayloadSchema() string {
         },
         {
           "additionalProperties": false,
-          "description": "Import raw content.\n\nSince: generic-worker 10.11.3",
+          "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
           "properties": {
             "raw": {
-              "description": "Raw content.\n\nSince: generic-worker 10.11.3",
-              "maxLength": 8000,
+              "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+              "maxLength": 65536,
               "title": "Raw",
               "type": "string"
             }
@@ -448,11 +463,11 @@ func taskPayloadSchema() string {
         },
         {
           "additionalProperties": false,
-          "description": "Import Base64 encoded content.\n\nSince: generic-worker 10.11.3",
+          "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0 ",
           "properties": {
             "base64": {
-              "description": "Base64 content.\n\nSince: generic-worker 10.11.3",
-              "maxLength": 8000,
+              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0 ",
+              "maxLength": 65536,
               "pattern": "^[A-Za-z0-9/+]+[=]{0,2}$",
               "title": "Base64",
               "type": "string"

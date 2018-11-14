@@ -178,9 +178,9 @@ type MountEntry interface {
 }
 
 // FSContent represents file system content - it is based on the auto-generated
-// type Content which is json.RawMessage, which can be ArtifactContent, URLContent,
-// RawContent or Base64Content concrete types. This is the interface which represents these
-// underlying concrete types.
+// type Content which is json.RawMessage, which can be ArtifactContent,
+// URLContent, RawContent or Base64Content concrete types. This is the
+// interface which represents these underlying concrete types.
 type FSContent interface {
 	// Keep it simple and just return a []string, rather than scopes.Required
 	// since currently no easy way to "AND" scopes.Required types.
@@ -387,14 +387,14 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 	}
 }
 
-// Writable caches require scope generic-worker:cache:<cacheName>. Preloaded caches
-// from an artifact may also require scopes - handled separately.
+// Writable caches require scope generic-worker:cache:<cacheName>. Preloaded
+// caches from an artifact may also require scopes - handled separately.
 func (w *WritableDirectoryCache) RequiredScopes() []string {
 	return []string{"generic-worker:cache:" + w.CacheName}
 }
 
-// Returns either a *URLContent *ArtifactContent, *RawContent or *Base64Content that is listed in the given
-// *WritableDirectoryCache
+// Returns either a *URLContent *ArtifactContent, *RawContent or *Base64Content
+// that is listed in the given *WritableDirectoryCache
 func (w *WritableDirectoryCache) FSContent() (FSContent, error) {
 	// no content if an empty cache folder, e.g. object directory
 	if w.Content != nil {
@@ -409,8 +409,8 @@ func (r *ReadOnlyDirectory) RequiredScopes() []string {
 	return []string{}
 }
 
-// Returns either a *URLContent, *ArtifactContent, *RawContent or *Base64Content that is listed in the given
-// *ReadOnlyDirectory
+// Returns either a *URLContent, *ArtifactContent, *RawContent or
+// *Base64Content that is listed in the given *ReadOnlyDirectory
 func (r *ReadOnlyDirectory) FSContent() (FSContent, error) {
 	return FSContentFrom(r.Content)
 }
@@ -421,8 +421,8 @@ func (f *FileMount) RequiredScopes() []string {
 	return []string{}
 }
 
-// Returns either a *URLContent, *ArtifactContent, *RawContent or *Base64Content that is listed in the given
-// *FileMount
+// Returns either a *URLContent, *ArtifactContent, *RawContent or
+// *Base64Content that is listed in the given *FileMount
 func (f *FileMount) FSContent() (FSContent, error) {
 	return FSContentFrom(f.Content)
 }

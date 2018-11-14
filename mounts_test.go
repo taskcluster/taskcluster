@@ -54,7 +54,7 @@ func TestMounts(t *testing.T) {
 		&FileMount{
 			File: filepath.Join("preloaded", "raw.txt"),
 			Content: json.RawMessage(`{
-				"raw": "Hello Raw Content!"
+				"raw": "Hello Raw!"
 			}`),
 		},
 
@@ -62,7 +62,7 @@ func TestMounts(t *testing.T) {
 		&FileMount{
 			File: filepath.Join("preloaded", "base64"),
 			Content: json.RawMessage(`{
-				"base64": "ZWNobyAiSGVsbG8gQmFzZTY0ISI="
+				"base64": "ZWNobyAnSGVsbG8gQmFzZTY0IScK"
 			}`),
 		},
 
