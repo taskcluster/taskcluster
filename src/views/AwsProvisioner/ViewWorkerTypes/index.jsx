@@ -64,8 +64,7 @@ export default class ViewRoles extends Component {
             onSubmit={this.handleWorkerTypeSearchSubmit}
             placeholder="Worker type contains"
           />
-        }
-      >
+        }>
         <Fragment>
           {!awsProvisionerWorkerTypeSummaries && loading && <Spinner loading />}
           <ErrorPanel error={error} />

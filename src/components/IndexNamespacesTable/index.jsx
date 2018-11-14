@@ -111,8 +111,7 @@ export default class IndexNamespacesTable extends Component {
                 dense
                 button
                 component={Link}
-                to={`/tasks/index/${encodeURIComponent(namespace)}`}
-              >
+                to={`/tasks/index/${encodeURIComponent(namespace)}`}>
                 <ListItemText disableTypography primary={name} />
                 <LinkIcon size={iconSize} />
               </TableCellListItem>

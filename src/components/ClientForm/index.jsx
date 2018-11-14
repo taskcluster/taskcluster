@@ -311,8 +311,7 @@ export default class ClientForm extends Component {
                           button
                           component={Link}
                           to={`/auth/scopes/${encodeURIComponent(scope)}`}
-                          className={classes.listItemButton}
-                        >
+                          className={classes.listItemButton}>
                           <ListItemText secondary={<code>{scope}</code>} />
                           <LinkIcon />
                         </ListItem>
@@ -332,8 +331,7 @@ export default class ClientForm extends Component {
                 disabled={loading}
                 variant="fab"
                 onClick={this.handleSaveClient}
-                classes={{ root: classes.saveIcon }}
-              >
+                classes={{ root: classes.saveIcon }}>
                 <ContentSaveIcon />
               </Button>
             </div>

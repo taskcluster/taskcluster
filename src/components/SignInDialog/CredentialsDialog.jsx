@@ -104,8 +104,7 @@ export default class CredentialsDialog extends Component {
               color="secondary"
               variant="contained"
               disabled={!isFormValid}
-              type="submit"
-            >
+              type="submit">
               Sign In
             </Button>
           </DialogActions>

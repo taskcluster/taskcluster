@@ -110,8 +110,7 @@ export default class IndexedTask extends Component {
     return (
       <Dashboard
         title="Index Browser"
-        helpView={<HelpView description={description} />}
-      >
+        helpView={<HelpView description={description} />}>
         {loading && <Spinner loading />}
         {!loading && <ErrorPanel error={indexedTaskError} />}
         {!loading && <ErrorPanel error={latestArtifactsError} />}

@@ -109,8 +109,7 @@ export default class ClientsTable extends Component {
             <TableCell padding="dense">
               <Link
                 className={classes.tableCell}
-                to={`/auth/clients/${encodeURIComponent(client.clientId)}`}
-              >
+                to={`/auth/clients/${encodeURIComponent(client.clientId)}`}>
                 <div className={classes.listItemCell}>
                   <Typography>{client.clientId}</Typography>
                   <LinkIcon size={iconSize} />

@@ -117,8 +117,7 @@ export default class SecretsTable extends Component {
                 dense
                 button
                 component={Link}
-                to={`/secrets/${encodeURIComponent(name)}`}
-              >
+                to={`/secrets/${encodeURIComponent(name)}`}>
                 <ListItemText
                   disableTypography
                   primary={<Typography>{name}</Typography>}

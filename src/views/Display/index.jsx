@@ -79,8 +79,7 @@ export default class Display extends Component {
         className={classNames({
           [classes.vncDisplay]: Boolean(display),
         })}
-        title={display ? 'VNC Display' : 'Displays'}
-      >
+        title={display ? 'VNC Display' : 'Displays'}>
         <ErrorPanel error={error} />
         {display && (
           <VncDisplay url={`${props.socketUrl}?display=${display}`} shared />
@@ -98,8 +97,7 @@ export default class Display extends Component {
                   <TableCell>
                     <TableCellListItem
                       button
-                      onClick={() => this.handleDisplayClick(display)}
-                    >
+                      onClick={() => this.handleDisplayClick(display)}>
                       <span className={classes.displayText}>{display}</span>
                       <LinkIcon size={iconSize} />
                     </TableCellListItem>

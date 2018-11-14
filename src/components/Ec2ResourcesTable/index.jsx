@@ -140,8 +140,7 @@ export default class Ec2ResourcesTable extends Component {
                   instance.region
                 }#Images:visibility=owned-by-me;imageId=${
                   instance.id
-                };sort=name`}
-              >
+                };sort=name`}>
                 <ListItemText primary={instance.id} />
                 <OpenInNewIcon size={iconSize} />
               </TableCellListItem>
@@ -159,8 +158,7 @@ export default class Ec2ResourcesTable extends Component {
               <Tooltip placement="bottom" title="Terminate">
                 <IconButton
                   disabled={actionLoading}
-                  onClick={() => onTerminateInstance(instance)}
-                >
+                  onClick={() => onTerminateInstance(instance)}>
                   <DeleteIcon size={18} />
                 </IconButton>
               </Tooltip>

@@ -453,8 +453,7 @@ export default class HookForm extends Component {
                 />
                 <IconButton
                   onClick={this.handleRefreshHookStatus}
-                  className={classes.iconButton}
-                >
+                  className={classes.iconButton}>
                   <RefreshIcon />
                 </IconButton>
               </ListItem>
@@ -463,8 +462,7 @@ export default class HookForm extends Component {
                   button
                   component={Link}
                   className={classes.listItemButton}
-                  to={`/tasks/${hook.status.lastFire.taskId}`}
-                >
+                  to={`/tasks/${hook.status.lastFire.taskId}`}>
                   <ListItemText
                     primary="Last Fired Result"
                     secondary={hook.status.lastFire.taskId}
@@ -516,8 +514,7 @@ export default class HookForm extends Component {
               />
               <IconButton
                 className={classes.iconButton}
-                onClick={this.handleNewCronJob}
-              >
+                onClick={this.handleNewCronJob}>
                 <PlusIcon />
               </IconButton>
             </ListItem>
@@ -527,8 +524,7 @@ export default class HookForm extends Component {
                 <IconButton
                   className={classes.iconButton}
                   name={cronJob}
-                  onClick={this.handleDeleteCronJob}
-                >
+                  onClick={this.handleDeleteCronJob}>
                   <DeleteIcon />
                 </IconButton>
               </ListItem>
@@ -542,8 +538,7 @@ export default class HookForm extends Component {
                   <a
                     href="https://taskcluster.github.io/json-e/"
                     target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                    rel="noopener noreferrer">
                     JSON-e
                   </a>{' '}
                   to create the the task definition. See{' '}
@@ -554,8 +549,7 @@ export default class HookForm extends Component {
                       href={docs(
                         `https://${process.env.TASKCLUSTER_ROOT_URL}`,
                         'reference/core/taskcluster-hooks/docs/firing-hooks'
-                      )}
-                    >
+                      )}>
                       {'"'}
                       firing hooks
                       {'"'}
@@ -592,8 +586,7 @@ export default class HookForm extends Component {
                 classes={{ root: classes.successIcon }}
                 variant="fab"
                 disabled={!this.validHook() || actionLoading}
-                onClick={this.handleCreateHook}
-              >
+                onClick={this.handleCreateHook}>
                 <ContentSaveIcon />
               </Button>
             </div>

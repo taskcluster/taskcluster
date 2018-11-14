@@ -79,8 +79,7 @@ export default class SignInDialog extends Component {
       <Dialog
         open={open}
         onClose={onClose}
-        aria-labelledby="sign-in-dialog-title"
-      >
+        aria-labelledby="sign-in-dialog-title">
         <DialogTitle id="sign-in-dialog-title">Sign In</DialogTitle>
         <DialogContent>
           <List>
@@ -89,8 +88,7 @@ export default class SignInDialog extends Component {
                 button
                 component="a"
                 href="/login/github"
-                target="_blank"
-              >
+                target="_blank">
                 <ListItemAvatar>
                   <Avatar>
                     <GithubCircleIcon />

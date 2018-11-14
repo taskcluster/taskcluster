@@ -307,8 +307,7 @@ export default class TaskGroup extends Component {
     return (
       <Dashboard
         helpView={<HelpView description={description} />}
-        search={<Search onSubmit={this.handleTaskGroupSearchSubmit} />}
-      >
+        search={<Search onSubmit={this.handleTaskGroupSearchSubmit} />}>
         <ErrorPanel error={error} />
         {!error && (
           <TaskGroupProgress

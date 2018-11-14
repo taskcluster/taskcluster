@@ -91,15 +91,13 @@ export default class ViewScope extends Component {
             onSubmit={this.handleSearchSubmit}
             placeholder="Result contains"
           />
-        }
-      >
+        }>
         <Fragment>
           <Tabs
             className={classes.tabs}
             fullWidth
             value={currentTabIndex}
-            onChange={this.handleTabChange}
-          >
+            onChange={this.handleTabChange}>
             <Tab label="Roles" />
             <Tab label="Clients" />
           </Tabs>

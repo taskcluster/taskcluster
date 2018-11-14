@@ -76,8 +76,7 @@ export default class ViewSecrets extends Component {
     return (
       <Dashboard
         title="Secrets"
-        helpView={<HelpView description={description} />}
-      >
+        helpView={<HelpView description={description} />}>
         <Fragment>
           {!secrets && loading && <Spinner loading />}
           <ErrorPanel error={error} />
@@ -90,14 +89,12 @@ export default class ViewSecrets extends Component {
           <Tooltip
             enterDelay={300}
             id="create-secret-tooltip"
-            title="Create Secret"
-          >
+            title="Create Secret">
             <Button
               onClick={this.handleCreate}
               variant="fab"
               color="secondary"
-              className={classes.plusIcon}
-            >
+              className={classes.plusIcon}>
               <PlusIcon />
             </Button>
           </Tooltip>

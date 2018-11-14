@@ -95,6 +95,7 @@
     "@babel/plugin-proposal-class-properties": "^7.1.0",
     "@babel/plugin-proposal-decorators": "^7.1.2",
     "@babel/register": "^7.0.0",
+    "@mozilla-frontend-infra/react-lint": "^1.1.0",
     "@neutrinojs/airbnb": "^9.0.0-beta.1",
     "@neutrinojs/karma": "^9.0.0-beta.1",
     "@neutrinojs/react": "^9.0.0-beta.1",

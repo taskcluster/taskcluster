@@ -84,8 +84,7 @@ export default class UserMenu extends Component {
             aria-haspopup="true"
             aria-controls="user-menu"
             aria-label="user menu"
-            onClick={this.handleSignInDialogOpen}
-          >
+            onClick={this.handleSignInDialogOpen}>
             <ListItemIcon className={classes.icon}>
               <AccountCircleIcon />
             </ListItemIcon>
@@ -115,8 +114,7 @@ export default class UserMenu extends Component {
             aria-haspopup="true"
             aria-controls="user-menu"
             aria-label="user menu"
-            onClick={this.handleMenuClick}
-          >
+            onClick={this.handleMenuClick}>
             {profile.photos && profile.photos.length ? (
               <Avatar alt={profile.displayName} src={profile.photos[0].value} />
             ) : (
@@ -135,16 +133,14 @@ export default class UserMenu extends Component {
           id="user-menu"
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
-          onClose={this.handleMenuClose}
-        >
+          onClose={this.handleMenuClose}>
           <MenuItem title="Your Profile" component={Link} to="/profile">
             <AccountIcon className={classes.leftIcon} />
             Account
           </MenuItem>
           <MenuItem
             title={`Sign Out of ${process.env.APPLICATION_NAME}`}
-            onClick={this.handleClickSignOut}
-          >
+            onClick={this.handleClickSignOut}>
             <HandPeaceIcon className={classes.leftIcon} />
             Sign Out
           </MenuItem>

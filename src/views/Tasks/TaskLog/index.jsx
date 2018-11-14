@@ -46,8 +46,7 @@ export default class TaskLog extends Component {
                 to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}
                 variant="fab"
                 className={classes.fab}
-                color="secondary"
-              >
+                color="secondary">
                 <ArrowRightIcon />
               </Button>
             </Tooltip>

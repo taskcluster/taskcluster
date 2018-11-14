@@ -210,8 +210,7 @@ export default class Log extends Component {
           mini
           color="secondary"
           className={classNames(classes.fabIcon, RawLogButtonClassName)}
-          {...RawLogButtonPropsRest}
-        >
+          {...RawLogButtonPropsRest}>
           <OpenInNewIcon />
         </Button>
       </Tooltip>
@@ -269,8 +268,7 @@ export default class Log extends Component {
             />
             <Tooltip
               placement="bottom"
-              title={follow ? 'Unfollow log' : 'Follow log'}
-            >
+              title={follow ? 'Unfollow log' : 'Follow log'}>
               <Button
                 variant="fab"
                 mini
@@ -282,8 +280,7 @@ export default class Log extends Component {
                     [classes.followButtonFollowing]: follow,
                   },
                   FollowLogButtonProps && FollowLogButtonProps.className
-                )}
-              >
+                )}>
                 <ArrowDownBoldCircleOutlineIcon />
               </Button>
             </Tooltip>

@@ -588,8 +588,7 @@ export default class ViewTask extends Component {
             <ListItem
               className={this.props.classes.dialogListItem}
               onClick={this.handleSelectCacheClick(cache)}
-              key={cache}
-            >
+              key={cache}>
               <Checkbox
                 checked={selectedCaches.has(cache)}
                 tabIndex={-1}
@@ -629,8 +628,7 @@ export default class ViewTask extends Component {
     return (
       <Dashboard
         helpView={<HelpView description={description} />}
-        search={<Search onSubmit={this.handleTaskSearchSubmit} />}
-      >
+        search={<Search onSubmit={this.handleTaskSearchSubmit} />}>
         {loading && <Spinner loading />}
         <ErrorPanel error={error} warning={Boolean(task)} />
         {task && (

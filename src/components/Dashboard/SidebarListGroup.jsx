@@ -45,8 +45,7 @@ export default class SidebarListGroup extends Component {
           to={to}
           onClick={this.handleClick}
           icon={icon}
-          rightIcon={open ? <ChevronUpIcon /> : <ChevronDownIcon />}
-        >
+          rightIcon={open ? <ChevronUpIcon /> : <ChevronDownIcon />}>
           {title}
         </SidebarListItem>
         <Collapse in={open} timeout="auto">

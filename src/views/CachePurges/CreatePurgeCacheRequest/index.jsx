@@ -110,16 +110,14 @@ export default class CreatePurgeCacheRequest extends Component {
           <Tooltip
             enterDelay={300}
             id="create-purge-cache-request-tooltip"
-            title="Create Request"
-          >
+            title="Create Request">
             <Button
               requiresAuth
               disabled={!this.isFormFilled() || actionLoading}
               onClick={this.handleCreate}
               variant="fab"
               classes={{ root: classes.plusIcon }}
-              className={classes.plusButton}
-            >
+              className={classes.plusButton}>
               <PlusIcon />
             </Button>
           </Tooltip>

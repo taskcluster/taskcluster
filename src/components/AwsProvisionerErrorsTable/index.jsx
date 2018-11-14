@@ -120,8 +120,7 @@ export default class AwsProvisionerErrorsTable extends Component {
             <TableRow
               key={`${index}-${error.az}-${error.instanceType}-${error.type}-${
                 error.time
-              }`}
-            >
+              }`}>
               <TableCell>
                 <Typography>{error.az}</Typography>
               </TableCell>

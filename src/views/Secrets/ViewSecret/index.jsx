@@ -85,8 +85,7 @@ export default class ViewSecret extends Component {
               about everybody. Use them to experiment, but not for real secrets!
             </Typography>
           </HelpView>
-        }
-      >
+        }>
         <ErrorPanel error={formatError(error)} />
         {isNewSecret ? (
           <SecretForm

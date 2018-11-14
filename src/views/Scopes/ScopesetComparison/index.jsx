@@ -139,8 +139,7 @@ export default class ScopesetComparison extends Component {
                           <Typography
                             key={scope}
                             variant="body1"
-                            className={classes.cellGrid}
-                          >
+                            className={classes.cellGrid}>
                             {scope}
                           </Typography>
                         ))}
@@ -151,8 +150,7 @@ export default class ScopesetComparison extends Component {
                           <Typography
                             key={scope}
                             variant="body1"
-                            className={classes.cellGrid}
-                          >
+                            className={classes.cellGrid}>
                             {scope}
                           </Typography>
                         ))}
@@ -167,8 +165,7 @@ export default class ScopesetComparison extends Component {
               color="secondary"
               variant="fab"
               onClick={this.handleCompareScopesClick}
-              className={classes.actionButton}
-            >
+              className={classes.actionButton}>
               <ScaleBalanceIcon />
             </Button>
           </Tooltip>

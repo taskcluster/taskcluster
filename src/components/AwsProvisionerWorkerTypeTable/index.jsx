@@ -102,8 +102,7 @@ export default class AwsProvisionerWorkerTypeTable extends Component {
                 <TableCellListItem
                   button
                   component={Link}
-                  to={`/aws-provisioner/${workerType.workerType}`}
-                >
+                  to={`/aws-provisioner/${workerType.workerType}`}>
                   <ListItemText
                     disableTypography
                     primary={<Typography>{workerType.workerType}</Typography>}

@@ -63,8 +63,7 @@ export default class Button extends Component {
       <MuiButton
         onClick={this.handleButtonClick}
         disabled={isDisabled}
-        {...props}
-      >
+        {...props}>
         {children}
       </MuiButton>
     );

@@ -182,8 +182,7 @@ export default class AwsProvisionerHealthTable extends Component {
                 <TableCellListItem
                   button
                   dense
-                  onClick={() => this.handleDrawerOpen(item, 'Healthy')}
-                >
+                  onClick={() => this.handleDrawerOpen(item, 'Healthy')}>
                   <ListItemText primary={or0(item.healthy)} />
                   <InformationVariantIcon size={iconSize} />
                 </TableCellListItem>
@@ -192,8 +191,7 @@ export default class AwsProvisionerHealthTable extends Component {
                 <TableCellListItem
                   button
                   dense
-                  onClick={() => this.handleDrawerOpen(item, 'Unhealthy')}
-                >
+                  onClick={() => this.handleDrawerOpen(item, 'Unhealthy')}>
                   <ListItemText primary={or0(item.unhealthy)} />
                   <InformationVariantIcon size={iconSize} />
                 </TableCellListItem>
@@ -204,8 +202,7 @@ export default class AwsProvisionerHealthTable extends Component {
         <Drawer
           anchor="right"
           open={drawerOpen}
-          onClose={this.handleDrawerClose}
-        >
+          onClose={this.handleDrawerClose}>
           <div className={classes.drawerContainer}>
             <Typography variant="h5" className={classes.headline}>
               {drawerItem && drawerItem.columnName}

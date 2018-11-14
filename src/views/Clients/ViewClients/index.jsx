@@ -53,6 +53,7 @@ export default class ViewClients extends PureComponent {
         previousClientId: props.user.credentials.clientId,
       };
     }
+
     if (!props.user && state.previousClientId !== '') {
       return {
         clientSearch: '',
@@ -140,8 +141,7 @@ export default class ViewClients extends PureComponent {
             onSubmit={this.handleClientSearchSubmit}
             placeholder="Client starts with"
           />
-        }
-      >
+        }>
         <Fragment>
           {loading && <Spinner loading />}
           <ErrorPanel error={error} />
@@ -155,8 +155,7 @@ export default class ViewClients extends PureComponent {
             onClick={this.handleCreate}
             variant="fab"
             color="secondary"
-            className={classes.plusIcon}
-          >
+            className={classes.plusIcon}>
             <PlusIcon />
           </Button>
         </Fragment>

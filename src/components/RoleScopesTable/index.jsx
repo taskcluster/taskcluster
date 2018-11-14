@@ -100,8 +100,7 @@ export default class RoleScopesTable extends Component {
             selectedScope
               ? `/auth/roles/${encodeURIComponent(item)}`
               : `/auth/scopes/${encodeURIComponent(item)}`
-          }
-        >
+          }>
           <ListItemText primary={item} />
           <LinkIcon size={iconSize} />
         </ListItem>

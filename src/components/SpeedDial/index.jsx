@@ -67,8 +67,7 @@ export default class SpeedDial extends Component {
         onMouseEnter={!IS_TOUCH && this.handleOpen}
         onMouseLeave={this.handleClose}
         open={open}
-        {...props}
-      >
+        {...props}>
         {children}
       </MuiSpeedDial>
     );

@@ -185,7 +185,6 @@ export default class TaskGroupProgress extends Component {
 
   static getDerivedStateFromProps(props) {
     const { taskGroupId, taskGroup } = props;
-
     // Make sure data is not from another task group which
     // can happen when a user searches for a different task group
     const isFromSameTaskGroupId =
@@ -263,8 +262,7 @@ export default class TaskGroupProgress extends Component {
               className={classNames(
                 classes[`${lowerCase(status)}Button`],
                 classes.statusButton
-              )}
-            >
+              )}>
               <div>
                 <Icon color="white" className={classes.statusIcon} size={32} />
               </div>
@@ -272,8 +270,7 @@ export default class TaskGroupProgress extends Component {
                 <Typography
                   align="right"
                   className={classes.statusButtonTypography}
-                  variant="h4"
-                >
+                  variant="h4">
                   {showDots ? '...' : statusCount[lowerCase(status)]}
                 </Typography>
                 <Typography
@@ -281,8 +278,7 @@ export default class TaskGroupProgress extends Component {
                     classes.statusTitle,
                     classes.statusButtonTypography
                   )}
-                  variant="caption"
-                >
+                  variant="caption">
                   {title(status)}
                 </Typography>
               </div>

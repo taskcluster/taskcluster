@@ -135,8 +135,7 @@ export default class TaskDetailsCard extends Component {
                 to={isExternal ? null : task.metadata.source}
                 href={isExternal ? task.metadata.source : null}
                 target={isExternal ? '_blank' : null}
-                rel={isExternal ? 'noopener noreferrer' : null}
-              >
+                rel={isExternal ? 'noopener noreferrer' : null}>
                 <ListItemText
                   className={classes.sourceHeadlineText}
                   classes={{ secondary: classes.sourceHeadline }}
@@ -151,8 +150,7 @@ export default class TaskDetailsCard extends Component {
                 component="a"
                 href={urls.api('queue', 'v1', `task/${task.taskId}`)}
                 target="_blank"
-                rel="noopener noreferrer"
-              >
+                rel="noopener noreferrer">
                 <ListItemText primary="View task definition" />
                 <OpenInNewIcon />
               </ListItem>
@@ -162,8 +160,7 @@ export default class TaskDetailsCard extends Component {
                   secondary={task.taskGroupId}
                 />
                 <ListItemSecondaryAction
-                  className={classes.listItemSecondaryAction}
-                >
+                  className={classes.listItemSecondaryAction}>
                   <CopyToClipboard text={task.taskGroupId}>
                     <IconButton>
                       <ContentCopyIcon />
@@ -171,8 +168,7 @@ export default class TaskDetailsCard extends Component {
                   </CopyToClipboard>
                   <IconButton
                     component={Link}
-                    to={`/tasks/groups/${task.taskGroupId}`}
-                  >
+                    to={`/tasks/groups/${task.taskGroupId}`}>
                     <LinkIcon />
                   </IconButton>
                 </ListItemSecondaryAction>
@@ -204,8 +200,7 @@ export default class TaskDetailsCard extends Component {
                   secondary={task.workerType}
                 />
                 <ListItemSecondaryAction
-                  className={classes.listItemSecondaryAction}
-                >
+                  className={classes.listItemSecondaryAction}>
                   <CopyToClipboard text={task.workerType}>
                     <IconButton>
                       <ContentCopyIcon />
@@ -215,8 +210,7 @@ export default class TaskDetailsCard extends Component {
                     component={Link}
                     to={`/provisioners/${task.provisionerId}/worker-types/${
                       task.workerType
-                    }`}
-                  >
+                    }`}>
                     <LinkIcon />
                   </IconButton>
                 </ListItemSecondaryAction>
@@ -254,13 +248,11 @@ export default class TaskDetailsCard extends Component {
                         classes={{
                           container: classes.listItemWithSecondaryAction,
                         }}
-                        key={task.taskId}
-                      >
+                        key={task.taskId}>
                         <StatusLabel state={task.status.state} />
                         <ListItemText primary={task.metadata.name} />
                         <ListItemSecondaryAction
-                          className={classes.listItemSecondaryAction}
-                        >
+                          className={classes.listItemSecondaryAction}>
                           <CopyToClipboard text={task.metadata.name}>
                             <IconButton>
                               <ContentCopyIcon />
@@ -268,8 +260,7 @@ export default class TaskDetailsCard extends Component {
                           </CopyToClipboard>
                           <IconButton
                             component={Link}
-                            to={`/tasks/${task.taskId}`}
-                          >
+                            to={`/tasks/${task.taskId}`}>
                             <LinkIcon />
                           </IconButton>
                         </ListItemSecondaryAction>
@@ -288,8 +279,7 @@ export default class TaskDetailsCard extends Component {
               <ListItem
                 button
                 className={classes.listItemButton}
-                onClick={this.handleTogglePayload}
-              >
+                onClick={this.handleTogglePayload}>
                 <ListItemText primary="Payload" />
                 {showPayload ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </ListItem>
@@ -313,8 +303,7 @@ export default class TaskDetailsCard extends Component {
                   <ListItem
                     button
                     className={classes.listItemButton}
-                    onClick={this.handleToggleExtra}
-                  >
+                    onClick={this.handleToggleExtra}>
                     <ListItemText primary="Extra" />
                     {showExtra ? <ChevronUpIcon /> : <ChevronDownIcon />}
                   </ListItem>
@@ -337,8 +326,7 @@ export default class TaskDetailsCard extends Component {
               <ListItem
                 button
                 className={classes.listItemButton}
-                onClick={this.handleToggleMore}
-              >
+                onClick={this.handleToggleMore}>
                 <ListItemText primary={showMore ? 'Less...' : 'More...'} />
                 {showMore ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </ListItem>
@@ -405,8 +393,7 @@ export default class TaskDetailsCard extends Component {
                             <Typography
                               component="span"
                               color="textSecondary"
-                              key={scope}
-                            >
+                              key={scope}>
                               <li>{scope}</li>
                             </Typography>
                           ))}
@@ -430,8 +417,7 @@ export default class TaskDetailsCard extends Component {
                             <Typography
                               component="span"
                               color="textSecondary"
-                              key={route}
-                            >
+                              key={route}>
                               <li>{route}</li>
                             </Typography>
                           ))}

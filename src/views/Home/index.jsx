@@ -77,8 +77,7 @@ export default class Home extends Component {
             <Button
               variant="contained"
               color="secondary"
-              onClick={this.handleOpenSignInDialog}
-            >
+              onClick={this.handleOpenSignInDialog}>
               <AccountCircleIcon className={classes.icon} />
               Sign in
             </Button>

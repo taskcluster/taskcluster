@@ -223,8 +223,7 @@ export default class TaskRunsCard extends Component {
               [classes.pointer]: !!artifact.url,
             })}
             onClick={this.handleArtifactClick(artifact)}
-            hover={!!artifact.url}
-          >
+            hover={!!artifact.url}>
             <TableCell>
               {artifact.isPublic && <LockOpenOutlineIcon />}
               {!artifact.isPublic && artifact.url && <LockIcon />}
@@ -350,8 +349,7 @@ export default class TaskRunsCard extends Component {
                 <ListItem>
                   <ListItemText primary="Worker ID" secondary={run.workerId} />
                   <ListItemSecondaryAction
-                    className={classes.listItemSecondaryAction}
-                  >
+                    className={classes.listItemSecondaryAction}>
                     <CopyToClipboard text={run.workerId}>
                       <IconButton>
                         <ContentCopyIcon />
@@ -361,8 +359,7 @@ export default class TaskRunsCard extends Component {
                       component={Link}
                       to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
                         run.workerId
-                      }`}
-                    >
+                      }`}>
                       <LinkIcon />
                     </IconButton>
                   </ListItemSecondaryAction>
@@ -386,8 +383,7 @@ export default class TaskRunsCard extends Component {
                   <ListItem
                     button
                     className={classes.listItemButton}
-                    onClick={this.handleArtifactClick(liveLogArtifact)}
-                  >
+                    onClick={this.handleArtifactClick(liveLogArtifact)}>
                     <ListItemText
                       primary="View Live Log"
                       secondary={liveLogArtifact.name}
@@ -398,8 +394,7 @@ export default class TaskRunsCard extends Component {
                 <ListItem
                   button
                   className={classes.listItemButton}
-                  onClick={this.handleToggleArtifacts}
-                >
+                  onClick={this.handleToggleArtifacts}>
                   <ListItemText primary="Artifacts" />
                   {showArtifacts ? <ChevronUpIcon /> : <ChevronDownIcon />}
                 </ListItem>
@@ -408,8 +403,7 @@ export default class TaskRunsCard extends Component {
                     <ListItem
                       className={classes.artifactsListItemContainer}
                       component="div"
-                      disableGutters
-                    >
+                      disableGutters>
                       {this.renderArtifactsTable()}
                     </ListItem>
                   </List>
@@ -440,8 +434,7 @@ export default class TaskRunsCard extends Component {
               <Button
                 size="small"
                 onClick={this.handleNext}
-                disabled={selectedRunId === runs.length - 1}
-              >
+                disabled={selectedRunId === runs.length - 1}>
                 Next
                 <ChevronRightIcon />
               </Button>
@@ -450,8 +443,7 @@ export default class TaskRunsCard extends Component {
               <Button
                 size="small"
                 onClick={this.handlePrevious}
-                disabled={selectedRunId === 0}
-              >
+                disabled={selectedRunId === 0}>
                 <ChevronLeftIcon />
                 Previous
               </Button>

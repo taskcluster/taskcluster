@@ -29,7 +29,6 @@ const sorted = pipe(
     }) => `${name}-${state}`
   )
 );
-
 const valueFromNode = (node, sortBy) => {
   const mapping = {
     Status: node.status.state,
@@ -176,7 +175,6 @@ export default class TaskGroupTable extends Component {
     const tableHeight = windowHeight > 400 ? 0.6 * windowHeight : 400;
     const items = createSortedTasks(tasks, sortBy, sortDirection, filter);
     const itemCount = items.length;
-
     const ItemRenderer = ({ index, style }) => {
       const taskGroup = items[index].node;
 
@@ -185,8 +183,7 @@ export default class TaskGroupTable extends Component {
           <TableCell padding="dense" className={classes.tableFirstCell}>
             <Link
               className={classes.tableCell}
-              to={`/tasks/${taskGroup.status.taskId}`}
-            >
+              to={`/tasks/${taskGroup.status.taskId}`}>
               <div className={classes.listItemCell}>
                 <Typography className={classes.taskGroupName}>
                   {taskGroup.metadata.name}
@@ -212,8 +209,7 @@ export default class TaskGroupTable extends Component {
                   id="Name"
                   active={sortBy === 'Name'}
                   direction={sortDirection || 'desc'}
-                  onClick={this.handleHeaderClick}
-                >
+                  onClick={this.handleHeaderClick}>
                   Name
                 </TableSortLabel>
               </TableCell>
@@ -222,8 +218,7 @@ export default class TaskGroupTable extends Component {
                   id="Status"
                   active={sortBy === 'Status'}
                   direction={sortDirection || 'desc'}
-                  onClick={this.handleHeaderClick}
-                >
+                  onClick={this.handleHeaderClick}>
                   Status
                 </TableSortLabel>
               </TableCell>

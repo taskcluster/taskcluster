@@ -32,8 +32,7 @@ export default class StatusLabel extends Component {
       <Label
         mini={mini}
         status={labels[state] || 'default'}
-        className={className}
-      >
+        className={className}>
         {state || 'UNKNOWN'}
       </Label>
     );

@@ -219,8 +219,7 @@ export default class ViewWorkerTypeDefinition extends Component {
           isNewWorkerType
             ? 'AWS Provisioner Create Worker Type'
             : 'AWS Provisioner Worker Type Definition'
-        }
-      >
+        }>
         {data &&
           !data.awsProvisionerWorkerType &&
           data.loading && <Spinner loading />}
@@ -266,8 +265,7 @@ export default class ViewWorkerTypeDefinition extends Component {
                   actionLoading
                 }
                 classes={{ root: classes.successIcon }}
-                variant="fab"
-              >
+                variant="fab">
                 <PlusIcon />
               </Button>
             </div>

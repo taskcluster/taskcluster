@@ -59,8 +59,7 @@ export default class ScopesetExpander extends Component {
     return (
       <Dashboard
         title="Expand Scopesets"
-        helpView={<HelpView description={description} />}
-      >
+        helpView={<HelpView description={description} />}>
         <Fragment>
           <CodeEditor
             className={classes.editor}
@@ -88,8 +87,7 @@ export default class ScopesetExpander extends Component {
                         button
                         component={Link}
                         to={`/auth/scopes/${encodeURIComponent(scope)}`}
-                        className={classes.listItemButton}
-                      >
+                        className={classes.listItemButton}>
                         <ListItemText secondary={scope} />
                         <LinkIcon size={16} />
                       </ListItem>
@@ -103,8 +101,7 @@ export default class ScopesetExpander extends Component {
               <Button
                 color="secondary"
                 variant="fab"
-                onClick={this.handleExpandScopesClick}
-              >
+                onClick={this.handleExpandScopesClick}>
                 <ArrowExpandVerticalIcon />
               </Button>
             </div>

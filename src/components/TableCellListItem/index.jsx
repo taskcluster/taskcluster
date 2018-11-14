@@ -45,13 +45,11 @@ export default class TableCellListItem extends Component {
       <List
         dense={dense}
         classes={{ root: classes.root }}
-        className={className}
-      >
+        className={className}>
         <ListItem
           classes={{ gutters: classes.listItem }}
           className={classes.listItemButton}
-          {...props}
-        >
+          {...props}>
           {children}
         </ListItem>
       </List>

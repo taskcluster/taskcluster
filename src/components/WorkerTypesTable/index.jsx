@@ -212,8 +212,7 @@ export default class WorkerTypesTable extends Component {
                   className={classes.infoButton}
                   size="small"
                   name={workerType.workerType}
-                  onClick={this.handleDrawerOpen}
-                >
+                  onClick={this.handleDrawerOpen}>
                   <InformationVariantIcon size={iconSize} />
                 </Button>
                 <TableCellListItem
@@ -221,8 +220,7 @@ export default class WorkerTypesTable extends Component {
                   component={Link}
                   to={`/provisioners/${workerType.provisionerId}/worker-types/${
                     workerType.workerType
-                  }`}
-                >
+                  }`}>
                   <ListItemText
                     disableTypography
                     primary={<Typography>{workerType.workerType}</Typography>}
@@ -235,8 +233,7 @@ export default class WorkerTypesTable extends Component {
               </TableCell>
               <CopyToClipboard
                 title={workerType.lastDateActive}
-                text={workerType.lastDateActive}
-              >
+                text={workerType.lastDateActive}>
                 <TableCell>
                   <TableCellListItem button>
                     <ListItemText
@@ -264,8 +261,7 @@ export default class WorkerTypesTable extends Component {
         <Drawer
           anchor="right"
           open={drawerOpen}
-          onClose={this.handleDrawerClose}
-        >
+          onClose={this.handleDrawerClose}>
           <div className={classes.metadataContainer}>
             <Typography variant="h5" className={classes.headline}>
               {drawerWorkerType && drawerWorkerType.workerType}

@@ -46,6 +46,7 @@ export default class ErrorPanel extends Component {
       error && error.graphQLErrors && error.graphQLErrors[0]
         ? error.graphQLErrors[0].message
         : error;
+
     return (
       error && (
         <MuiErrorPanel

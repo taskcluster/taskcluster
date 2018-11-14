@@ -173,8 +173,7 @@ export default class ViewWorkers extends Component {
                     select
                     label="Filter By"
                     value={filterBy || ''}
-                    onChange={this.handleFilterChange}
-                  >
+                    onChange={this.handleFilterChange}>
                     <MenuItem value="">
                       <em>None</em>
                     </MenuItem>

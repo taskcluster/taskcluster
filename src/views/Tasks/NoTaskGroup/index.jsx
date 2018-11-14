@@ -47,8 +47,7 @@ export default class NoTaskGroup extends Component {
     return (
       <Dashboard
         helpView={<HelpView description={description} />}
-        search={<Search onSubmit={this.handleTaskGroupSearchSubmit} />}
-      >
+        search={<Search onSubmit={this.handleTaskGroupSearchSubmit} />}>
         <Typography className={classes.infoText}>
           Enter a task group ID in the search box
         </Typography>
@@ -60,16 +59,14 @@ export default class NoTaskGroup extends Component {
                 <ListSubheader component="div">
                   Recent Task Groups
                 </ListSubheader>
-              }
-            >
+              }>
               {recentTaskGroups.map(({ taskGroupId }) => (
                 <ListItem
                   button
                   className={classes.listItemButton}
                   component={Link}
                   to={`/tasks/groups/${taskGroupId}`}
-                  key={taskGroupId}
-                >
+                  key={taskGroupId}>
                   <ListItemText primary={taskGroupId} />
                   <LinkIcon />
                 </ListItem>

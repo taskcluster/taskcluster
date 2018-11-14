@@ -178,8 +178,7 @@ export default class ConnectionDataTable extends Component {
                         id={header}
                         active={header === sortByHeader}
                         direction={sortDirection || 'desc'}
-                        onClick={this.handleHeaderClick}
-                      >
+                        onClick={this.handleHeaderClick}>
                         {header}
                       </TableSortLabel>
                     </TableCell>

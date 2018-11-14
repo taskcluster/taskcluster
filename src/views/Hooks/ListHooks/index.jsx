@@ -67,8 +67,7 @@ export default class ListHooks extends Component {
             placeholder="Hook contains"
             onSubmit={this.handleHookSearchSubmit}
           />
-        }
-      >
+        }>
         {!hookGroups && loading && <Spinner loading />}
         <ErrorPanel error={error} />
         {hookGroups && (
@@ -84,8 +83,7 @@ export default class ListHooks extends Component {
             color="secondary"
             variant="fab"
             onClick={this.handleCreateHook}
-            className={classes.actionButton}
-          >
+            className={classes.actionButton}>
             <PlusIcon />
           </Button>
         </Tooltip>

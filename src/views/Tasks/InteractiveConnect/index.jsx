@@ -301,8 +301,7 @@ export default class InteractiveConnect extends Component {
               classes.viewTaskDetails
             )}
             component={Link}
-            to={`/tasks/${taskId}`}
-          >
+            to={`/tasks/${taskId}`}>
             <ListItemText primary="View task details" />
             <LinkIcon />
           </ListItem>
@@ -319,8 +318,7 @@ export default class InteractiveConnect extends Component {
               <ListItem
                 button
                 onClick={this.handleShellOpen}
-                className={classes.listItemButton}
-              >
+                className={classes.listItemButton}>
                 <ConsoleIcon />
                 <ListItemText primary="Shell" />
                 <OpenInNewIcon />
@@ -328,8 +326,7 @@ export default class InteractiveConnect extends Component {
               <ListItem
                 onClick={this.handleDisplayOpen}
                 button
-                className={classes.listItemButton}
-              >
+                className={classes.listItemButton}>
                 <MonitorIcon />
                 <ListItemText primary="Display" />
                 <OpenInNewIcon />
@@ -350,8 +347,7 @@ export default class InteractiveConnect extends Component {
     return (
       <Dashboard
         title="Interactive Connect"
-        search={<Search onSubmit={this.handleTaskIdSearchSubmit} />}
-      >
+        search={<Search onSubmit={this.handleTaskIdSearchSubmit} />}>
         <Fragment>
           {!error && artifactsLoading && <Spinner loading />}
           <ErrorPanel error={error} />

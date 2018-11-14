@@ -51,8 +51,7 @@ export default class ViewRoles extends PureComponent {
             onSubmit={this.handleRoleSearchSubmit}
             placeholder="Role contains"
           />
-        }
-      >
+        }>
         <Fragment>
           {!roles && loading && <Spinner loading />}
           <ErrorPanel error={error} />
@@ -62,8 +61,7 @@ export default class ViewRoles extends PureComponent {
               onClick={this.handleCreate}
               variant="fab"
               color="secondary"
-              className={classes.plusIcon}
-            >
+              className={classes.plusIcon}>
               <PlusIcon />
             </Button>
           </Tooltip>

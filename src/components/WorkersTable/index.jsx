@@ -141,8 +141,7 @@ export default class WorkersTable extends Component {
           <TableRow
             key={`${latestTask.run.workerId}-${latestTask.run.runId}-${
               latestTask.run.taskId
-            }`}
-          >
+            }`}>
             <TableCell>{latestTask.run.workerGroup}</TableCell>
             <TableCell>
               <TableCellListItem
@@ -150,8 +149,7 @@ export default class WorkersTable extends Component {
                 component={Link}
                 to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
                   latestTask.run.workerGroup
-                }/${latestTask.run.workerId}`}
-              >
+                }/${latestTask.run.workerId}`}>
                 <ListItemText
                   disableTypography
                   primary={<Typography>{latestTask.run.workerId}</Typography>}
@@ -165,8 +163,7 @@ export default class WorkersTable extends Component {
                 component={Link}
                 to={`/tasks/${latestTask.run.taskId}/runs/${
                   latestTask.run.runId
-                }`}
-              >
+                }`}>
                 <ListItemText
                   disableTypography
                   primary={<Typography>{latestTask.run.taskId}</Typography>}
@@ -179,8 +176,7 @@ export default class WorkersTable extends Component {
             </TableCell>
             <CopyToClipboard
               title={latestTask.run.started}
-              text={latestTask.run.started}
-            >
+              text={latestTask.run.started}>
               <TableCell>
                 <TableCellListItem button>
                   <ListItemText
@@ -197,8 +193,7 @@ export default class WorkersTable extends Component {
             </CopyToClipboard>
             <CopyToClipboard
               title={latestTask.run.resolved}
-              text={latestTask.run.resolved}
-            >
+              text={latestTask.run.resolved}>
               <TableCell>
                 {latestTask.run.resolved ? (
                   <TableCellListItem button>

@@ -797,6 +797,27 @@
     redbox-react "^1.6.0"
     typeface-roboto "^0.0.54"
 
+"@mozilla-frontend-infra/lint@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/lint/-/lint-1.1.0.tgz#039fceb8947d2bf0e64d149e0e7da3df636c0cd9"
+  integrity sha512-kfE2BrRygIPFRj7hUWf6JhpMEPjZJ2YuTy2QFHnNfZ5WngniA5bs5b8/HonVT8EVIlPkh5Q+ei2heo8acMaXPQ==
+  dependencies:
+    deepmerge "^2.2.1"
+    eslint-config-prettier "^3.3.0"
+    eslint-plugin-prettier "^3.0.0"
+    prettier "^1.15.2"
+
+"@mozilla-frontend-infra/react-lint@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/react-lint/-/react-lint-1.1.0.tgz#37ffb69e216c8a1fb3a8d59ef395a4aea94942e9"
+  integrity sha512-vd05XJW2qTtp7kdpMPcUfcTWuLSKxO8HK5N/ipaf9caovHjYYaAXSbP+zBopi0D2cTUpgH+unmx8uQs6tNER3A==
+  dependencies:
+    "@mozilla-frontend-infra/lint" "^1.1.0"
+    "@neutrinojs/airbnb" "^9.0.0-beta.1"
+    deepmerge "^2.2.1"
+    eslint-plugin-react "^7.11.1"
+    prettier "^1.15.2"
+
 "@neutrinojs/airbnb@^9.0.0-beta.1":
   version "9.0.0-beta.1"
   resolved "https://registry.yarnpkg.com/@neutrinojs/airbnb/-/airbnb-9.0.0-beta.1.tgz#a453105029fc07c253c1aff75a2919f0e5558692"
@@ -3168,7 +3189,7 @@ deepmerge@^1.5.2:
   resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-1.5.2.tgz#10499d868844cdad4fee0842df8c7f6f0c95a753"
   integrity sha512-95k0GDqvBjZavkuvzx/YqVLv/6YYa17fz6ILMSf7neqQITCPbnfEnQvEgMPNjH4kgobe7+WIL0yJEHku+H3qtQ==
 
-deepmerge@^2.0.1, deepmerge@^2.1.0, deepmerge@^2.1.1:
+deepmerge@^2.0.1, deepmerge@^2.1.0, deepmerge@^2.1.1, deepmerge@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-2.2.1.tgz#5d3ff22a01c00f645405a2fbc17d0778a1801170"
   integrity sha512-R9hc1Xa/NOBi9WRVUWg19rl1UB7Tt4kuPd+thNJgFZoxXsTz7ncaPaeIm+40oSGuP33DfMb4sZt1QIGiJzC4EA==
@@ -3753,6 +3774,13 @@ eslint-config-prettier@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-3.1.0.tgz#2c26d2cdcfa3a05f0642cd7e6e4ef3316cdabfa2"
   integrity sha512-QYGfmzuc4q4J6XIhlp8vRKdI/fI0tQfQPy1dME3UOLprE+v4ssH/3W9LM2Q7h5qBcy5m0ehCrBDU2YF8q6OY8w==
+  dependencies:
+    get-stdin "^6.0.0"
+
+eslint-config-prettier@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-3.3.0.tgz#41afc8d3b852e757f06274ed6c44ca16f939a57d"
+  integrity sha512-Bc3bh5bAcKNvs3HOpSi6EfGA2IIp7EzWcg2tS4vP7stnXu/J1opihHDM7jI9JCIckyIDTgZLSWn7J3HY0j2JfA==
   dependencies:
     get-stdin "^6.0.0"
 
@@ -8166,6 +8194,11 @@ prettier@^1.14.3:
   version "1.14.3"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.14.3.tgz#90238dd4c0684b7edce5f83b0fb7328e48bd0895"
   integrity sha512-qZDVnCrnpsRJJq5nSsiHCE3BYMED2OtsI+cmzIzF1QIfqm5ALf8tEJcO27zV1gKNKRPdhjO0dNWnrzssDQ1tFg==
+
+prettier@^1.15.2:
+  version "1.15.2"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.15.2.tgz#d31abe22afa4351efa14c7f8b94b58bb7452205e"
+  integrity sha512-YgPLFFA0CdKL4Eg2IHtUSjzj/BWgszDHiNQAe0VAIBse34148whfdzLagRL+QiKS+YfK5ftB6X4v/MBw8yCoug==
 
 pretty-error@^2.1.1:
   version "2.1.1"

@@ -107,8 +107,7 @@ export default class RolesTable extends Component {
               <TableCell padding="dense">
                 <Link
                   className={classes.tableCell}
-                  to={`/auth/roles/${encodeURIComponent(roleId)}`}
-                >
+                  to={`/auth/roles/${encodeURIComponent(roleId)}`}>
                   <div className={classes.listItemCell}>
                     <Typography>{roleId}</Typography>
                     <LinkIcon size={iconSize} />

@@ -116,16 +116,14 @@ export default class ViewWorkerTypes extends Component {
                     select
                     label="Provisioner ID"
                     value={provisionerId}
-                    onChange={this.handleProvisionerChange}
-                  >
+                    onChange={this.handleProvisionerChange}>
                     <MenuItem value="">
                       <em>None</em>
                     </MenuItem>
                     {provisioners.edges.map(({ node }) => (
                       <MenuItem
                         key={node.provisionerId}
-                        value={node.provisionerId}
-                      >
+                        value={node.provisionerId}>
                         {node.provisionerId}
                       </MenuItem>
                     ))}

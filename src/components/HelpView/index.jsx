@@ -49,8 +49,7 @@ export default class HelpView extends PureComponent {
         )}
         {description && children && <Divider className={classes.divider} />}
         <div
-          className={classNames({ [classes.hasNoDescription]: !description })}
-        >
+          className={classNames({ [classes.hasNoDescription]: !description })}>
           {children}
         </div>
       </Fragment>

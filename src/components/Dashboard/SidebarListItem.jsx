@@ -141,8 +141,7 @@ export default class SidebarListItem extends Component {
         component={NavLink}
         isActive={this.isItemActive}
         activeClassName={classes.active}
-        {...props}
-      >
+        {...props}>
         {icon && (
           <ListItemIcon classes={{ root: classes.icon }}>{icon}</ListItemIcon>
         )}

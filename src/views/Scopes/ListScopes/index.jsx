@@ -95,8 +95,7 @@ export default class ListScopes extends PureComponent {
             placeholder="Scope contains"
             onSubmit={this.handleSearchSubmit}
           />
-        }
-      >
+        }>
         <Fragment>
           <ErrorPanel error={error} />
           {loading && <Spinner loading />}
@@ -106,8 +105,7 @@ export default class ListScopes extends PureComponent {
                 className={classes.tabs}
                 fullWidth
                 value={currentTabIndex}
-                onChange={this.handleTabChange}
-              >
+                onChange={this.handleTabChange}>
                 <Tab label="Roles" />
                 <Tab label="Clients" />
               </Tabs>

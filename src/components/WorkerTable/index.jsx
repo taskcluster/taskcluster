@@ -114,8 +114,7 @@ export default class WorkerTable extends Component {
               <TableCellListItem
                 button
                 component={Link}
-                to={`/tasks/${task.taskId}/runs/${task.runId}`}
-              >
+                to={`/tasks/${task.taskId}/runs/${task.runId}`}>
                 <div className={classes.taskName}>{task.name}</div>
                 <LinkIcon size={iconSize} />
               </TableCellListItem>

@@ -247,8 +247,7 @@ export default class CreateTask extends Component {
               <a
                 href={urls.docs('/')}
                 target="_blank"
-                rel="noopener noreferrer"
-              >
+                rel="noopener noreferrer">
                 documentation
               </a>
               . When you submit a task here, you will be taken to{' '}
@@ -259,8 +258,7 @@ export default class CreateTask extends Component {
               variations.
             </Typography>
           </HelpView>
-        }
-      >
+        }>
         <Fragment>
           {error ? (
             <ErrorPanel error={error} />
@@ -291,8 +289,7 @@ export default class CreateTask extends Component {
                   onClick={this.handleCreateTask}
                   ButtonProps={{
                     disabled: !task || invalid || loading,
-                  }}
-                >
+                  }}>
                   <PlusIcon />
                 </Button>
               </Tooltip>

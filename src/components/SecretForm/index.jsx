@@ -157,8 +157,7 @@ export default class SecretForm extends Component {
             />
           </ListItem>
           <List
-            subheader={<ListSubheader>Secret Value (in YAML)</ListSubheader>}
-          >
+            subheader={<ListSubheader>Secret Value (in YAML)</ListSubheader>}>
             <ListItem className={classes.editorListItem}>
               <CodeEditor
                 onChange={this.handleEditorChange}
@@ -179,8 +178,7 @@ export default class SecretForm extends Component {
                 variant="fab"
                 className={classes.saveIcon}
                 disabled={loading || !this.validSecret()}
-                onClick={this.handleSaveSecret}
-              >
+                onClick={this.handleSaveSecret}>
                 <ContentSaveIcon />
               </Button>
             </div>

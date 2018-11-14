@@ -203,8 +203,7 @@ export default class Dashboard extends Component {
             color="inherit"
             aria-label="close drawer"
             onClick={this.handleDrawerToggle}
-            className={classes.navIconHide}
-          >
+            className={classes.navIconHide}>
             <MenuIcon />
           </IconButton>
           <Typography
@@ -214,8 +213,7 @@ export default class Dashboard extends Component {
             to="/"
             variant="h6"
             noWrap
-            className={classes.title}
-          >
+            className={classes.title}>
             {showLogo ? (
               <img
                 className={classes.logoStyle}
@@ -244,8 +242,7 @@ export default class Dashboard extends Component {
               color="inherit"
               aria-label="open drawer"
               onClick={this.handleDrawerToggle}
-              className={classes.navIconHide}
-            >
+              className={classes.navIconHide}>
               <MenuIcon className={classes.appIcon} />
             </IconButton>
             <Typography variant="h6" noWrap className={classes.appBarTitle}>
@@ -255,8 +252,7 @@ export default class Dashboard extends Component {
             <Tooltip placement="bottom" title="Toggle light/dark theme">
               <IconButton
                 className={classes.appBarButton}
-                onClick={onToggleTheme}
-              >
+                onClick={onToggleTheme}>
                 {theme.palette.type === 'dark' ? (
                   <LightBulbOn className={classes.appIcon} />
                 ) : (
@@ -268,8 +264,7 @@ export default class Dashboard extends Component {
               <Tooltip placement="bottom" title="Page Information">
                 <IconButton
                   onClick={this.handleHelpViewToggle}
-                  className={classes.appBarButton}
-                >
+                  className={classes.appBarButton}>
                   <HelpIcon className={classes.appIcon} />
                 </IconButton>
               </Tooltip>
@@ -287,8 +282,7 @@ export default class Dashboard extends Component {
             }}
             ModalProps={{
               keepMounted: true,
-            }}
-          >
+            }}>
             {drawer}
           </Drawer>
         </Hidden>
@@ -301,8 +295,7 @@ export default class Dashboard extends Component {
             }}
             classes={{
               paper: classes.drawerPaper,
-            }}
-          >
+            }}>
             {drawer}
           </Drawer>
         </Hidden>
@@ -316,13 +309,11 @@ export default class Dashboard extends Component {
           }}
           ModalProps={{
             keepMounted: true,
-          }}
-        >
+          }}>
           <Fragment>
             <IconButton
               onClick={this.handleHelpViewToggle}
-              className={classes.helpCloseIcon}
-            >
+              className={classes.helpCloseIcon}>
               <CloseIcon />
             </IconButton>
             {helpView}
@@ -336,8 +327,7 @@ export default class Dashboard extends Component {
             },
             className
           )}
-          {...props}
-        >
+          {...props}>
           {error ? <ErrorPanel error={error} /> : children}
         </main>
       </div>

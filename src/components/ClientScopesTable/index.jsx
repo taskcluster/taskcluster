@@ -119,8 +119,7 @@ export default class ClientScopesTable extends Component {
                 selectedScope
                   ? `/auth/clients/${encodeURIComponent(node)}`
                   : `/auth/scopes/${encodeURIComponent(node)}`
-              }
-            >
+              }>
               <div className={classes.listItemCell}>
                 <Typography>{node}</Typography>
                 <LinkIcon size={16} />

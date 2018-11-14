@@ -140,16 +140,14 @@ export default class ProvisionerDetailsCard extends Component {
           enterDelay={300}
           key={action.title}
           id={`${action.title}-tooltip`}
-          title={action.description}
-        >
+          title={action.description}>
           <Button
             requiresAuth
             onClick={() => this.handleActionClick(action)}
             className={classes.actionButton}
             disabled={actionLoading}
             size="small"
-            variant="contained"
-          >
+            variant="contained">
             {action.title}
           </Button>
         </Tooltip>
@@ -203,8 +201,7 @@ export default class ProvisionerDetailsCard extends Component {
               <ListItem
                 className={classes.listItemButton}
                 button
-                onClick={this.handleProvisionerChange}
-              >
+                onClick={this.handleProvisionerChange}>
                 <ListItemText primary="Explore worker type" />
                 <LinkIcon />
               </ListItem>
@@ -213,8 +210,7 @@ export default class ProvisionerDetailsCard extends Component {
                   <ListItem
                     button
                     className={classes.listItemButton}
-                    onClick={this.handleToggleDescription}
-                  >
+                    onClick={this.handleToggleDescription}>
                     <ListItemText primary="Description" />
                     {showDescription ? <ChevronUpIcon /> : <ChevronDownIcon />}
                   </ListItem>

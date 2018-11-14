@@ -123,8 +123,7 @@ export default class IndexTaskNamespaceTable extends Component {
                     .split('.')
                     .slice(0, -1)
                     .join('.')
-                )}/${this.taskFromNamespace(namespace)}`}
-              >
+                )}/${this.taskFromNamespace(namespace)}`}>
                 <ListItemText
                   disableTypography
                   primary={
