@@ -116,23 +116,38 @@ exports.dockerRun = async ({baseDir, logfile, command, env, binds, workingDir, i
   }
 
   const {Binds, Env, ...otherOpts} = dockerRunOpts;
-
-  const runPromise = docker.run(
-    image,
-    command,
-    output,
-    {
+  const containerOpts = {
+    Image: image,
+    AttachStdin: false,
+    AttachStdout: true,
+    AttachStderr: true,
+    OpenStdin: false,
+    StdinOnce: false,
+    Tty: false,
+    Env: [...Env, ...env || []],
+    WorkingDir: workingDir,
+    Cmd: command,
+    HostConfig: {
       Binds: [...Binds, ...binds || []],
-      Env: [...Env, ...env || []],
-      WorkingDir: workingDir,
-      ...otherOpts,
+      AutoRemove: true,
     },
-  );
+    ...otherOpts,
+  };
 
+  // this is roughly the equivalent of `docker run`, performed as individual
+  // docker API calls.
+  const container = await docker.createContainer(containerOpts);
+  const stream = await container.attach({stream: true, stdout: true, stderr: true});
+  stream.setEncoding('utf-8');
+  stream.pipe(output, {end: true});
+  await container.start({});
+
+  // wait for the output to close, then wait for the container to exit
   await utils.waitFor(output);
-  const container = await utils.waitFor(runPromise);
-  if (container.output.StatusCode !== 0) {
-    throw new Error(`Container exited with status ${container.output.StatusCode}.${errorAddendum}`);
+  const result = await utils.waitFor(container.wait());
+
+  if (result.StatusCode !== 0) {
+    throw new Error(`Container exited with status ${result.StatusCode}.${errorAddendum}`);
   }
 };
 
