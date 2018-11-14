@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { string } from 'prop-types';
 import classNames from 'classnames';
 import parser from 'markdown-it';

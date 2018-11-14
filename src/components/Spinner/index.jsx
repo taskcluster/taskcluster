@@ -1,4 +1,4 @@
-import { PureComponent } from 'react';
+import React, { PureComponent } from 'react';
 import { bool, oneOf, string } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
@@ -31,6 +31,7 @@ export default class Spinner extends PureComponent {
   static defaultProps = {
     loading: false,
     color: 'primary',
+    className: null,
   };
 
   render() {

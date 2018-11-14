@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import StyleGuide from 'react-styleguidist/lib/rsg-components/StyleGuide/StyleGuideRenderer';
 import FontStager from '../components/FontStager';
 

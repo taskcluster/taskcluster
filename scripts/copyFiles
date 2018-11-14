@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+cp {package.json,logo.png,LICENSE,README.md,AUTHORS} build

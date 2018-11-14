@@ -1,3 +1,4 @@
+import React from 'react';
 import { instanceOf } from 'prop-types';
 import { RedBoxError } from 'redbox-react';
 import ErrorStackParser from 'error-stack-parser';

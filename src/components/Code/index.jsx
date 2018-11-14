@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { string } from 'prop-types';
 import { getLanguage, highlight } from 'highlight.js';
 import classNames from 'classnames';
@@ -24,9 +24,13 @@ export default class Code extends Component {
     /**
      * A highlight.js language identifier.
      */
-    language: validLanguage,
+    language: validLanguage.isRequired,
     /** The CSS class name of the wrapper element */
     className: string,
+  };
+
+  static defaultProps = {
+    className: null,
   };
 
   state = {

@@ -1,5 +1,5 @@
-import { createMuiTheme } from '@material-ui/core/styles';
-import red from '@material-ui/core/colors/red';
+const { createMuiTheme } = require('@material-ui/core/styles');
+const red = require('@material-ui/core/colors/red').default;
 
 const Roboto300 = { fontFamily: 'Roboto300, sans-serif' };
 const Roboto400 = { fontFamily: 'Roboto400, sans-serif' };
@@ -18,6 +18,7 @@ const theme = createMuiTheme({
     },
   },
   typography: {
+    useNextVariants: true,
     ...Roboto400,
     display4: Roboto300,
     display3: Roboto400,
@@ -33,7 +34,7 @@ const theme = createMuiTheme({
   },
 });
 
-export default {
+module.exports = {
   ...theme,
   styleguide: {
     StyleGuide: {

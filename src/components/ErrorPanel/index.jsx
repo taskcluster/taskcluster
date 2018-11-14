@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { bool, func, instanceOf, oneOfType, string } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
@@ -92,6 +92,7 @@ export default class ErrorPanel extends Component {
     warning: false,
     className: null,
     disableStackTrace: true,
+    onClose: null,
   };
 
   render() {
