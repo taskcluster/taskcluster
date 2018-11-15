@@ -13,4 +13,4 @@ title:        Task Schema
 
 The following is the JSON schema for the contents of `task.extra.treeherder`:
 
-<div data-render-schema='https://schemas.taskcluster.net/taskcluster-treeherder/v1/task-treeherder-config.json'></div>
+<div data-render-schema='https://schemas.taskcluster.net/treeherder/v1/task-treeherder-config.json'></div>
