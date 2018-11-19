@@ -217,7 +217,7 @@ export default class Dashboard extends Component {
             {showLogo ? (
               <img
                 className={classes.logoStyle}
-                height={40}
+                height={30}
                 alt="logo"
                 src={Logo}
               />
