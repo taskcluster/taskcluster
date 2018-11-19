@@ -1,6 +1,10 @@
-$schema: 'http://json-schema.org/draft-06/schema#'
+$schema: "/schemas/common/metadata-metaschema.json#"
+$id: "/schemas/common/api-reference-v0.json#"
 title: API Reference File
 description: Reference of methods implemented by API
+metadata:
+  name: api
+  version: 0
 type: object
 definitions:
   scopeExpressionTemplateString:
@@ -79,7 +83,7 @@ definitions:
         additionalProperties: false
 properties:
   version:
-    description: API reference version
+    description: (deprecated)
     type: integer
     enum:
       - 0
@@ -237,7 +241,7 @@ properties:
         - description
 additionalProperties: false
 required:
-  - version
+  - apiVersion
   - $schema
   - title
   - description

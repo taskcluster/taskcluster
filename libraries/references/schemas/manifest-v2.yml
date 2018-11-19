@@ -1,10 +1,9 @@
 $schema: http://json-schema.org/draft-06/schema#
+$id: "/schemas/common/manifest-v2.json#"
 title: "Taskcluster Service Manifest"
 description: |-
   Manifest of taskcluster service definitions available in a taskcluster service deployment.
   These manifests are served from `$ROOT_URL/references/manifest.json`.
-
-  See https://github.com/taskcluster/taskcluster-references for further information.
 type: object
 properties:
   services:
