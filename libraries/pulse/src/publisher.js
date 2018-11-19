@@ -9,13 +9,13 @@ class Exchanges {
   constructor(options) {
     assert(options.serviceName, 'serviceName is required');
     assert(options.projectName, 'projectName is required');
-    assert(options.version, 'version is required');
+    assert(options.apiVersion, 'apiVersion is required (replaces version)');
     assert(options.title, 'title is required');
     assert(options.description, 'description is required');
 
     Object.assign(this, options);
     this.entries = [];
-    this.exchangePrefix = `exchange/${this.projectName}/${this.version}/`;
+    this.exchangePrefix = `exchange/${this.projectName}/${this.apiVersion}/`;
   }
 
   declare(entryOptions) {
@@ -29,9 +29,9 @@ class Exchanges {
 
   reference() {
     return {
-      version: 0,
       $schema: 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#',
       serviceName: this.serviceName,
+      apiVersion: this.apiVersion,
       title: this.title,
       description: this.description,
       exchangePrefix: this.exchangePrefix,
@@ -42,7 +42,7 @@ class Exchanges {
   async publisher({rootUrl, schemaset, client, sendDeadline, publish, aws}) {
     let publisher;
     if (process.env.NODE_ENV !== 'production') {
-      this.exchangePrefix = `exchange/${client.namespace}/${this.version}/`;
+      this.exchangePrefix = `exchange/${client.namespace}/${this.apiVersion}/`;
     }
 
     if (client.isFakeClient) {
@@ -79,7 +79,7 @@ class Entry {
     this.exchanges = exchanges;
 
     // perform this transformation once, to a URI relative to the service's schemas
-    this.schema = `${exchanges.version}/${this.schema.replace(/\.ya?ml$/, '.json#')}`;
+    this.schema = `${exchanges.apiVersion}/${this.schema.replace(/\.ya?ml$/, '.json#')}`;
 
     this._validateRoutingKey();
   }
@@ -404,8 +404,8 @@ class PulsePublisher {
    * Publish the reference to S3; this is only used in the taskcluster.net deployment
    */
   async publishReference(aws, reference) {
-    const {serviceName, version} = this.exchanges;
-    const refUrl = libUrls.exchangeReference('https://taskcluster.net', serviceName, version);
+    const {serviceName, apiVersion} = this.exchanges;
+    const refUrl = libUrls.exchangeReference('https://taskcluster.net', serviceName, apiVersion);
     const {hostname, path} = url.parse(refUrl);
 
     const s3 = new AWS.S3(aws);
