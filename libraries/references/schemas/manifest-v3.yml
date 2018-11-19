@@ -1,0 +1,20 @@
+$schema: "/schemas/common/metadata-metaschema.json#"
+$id: "/schemas/common/manifest-v3.json#"
+title: "Taskcluster Service Manifest"
+description: |-
+  Manifest of taskcluster service definitions available in a taskcluster service deployment.
+  These manifests are served from `$ROOT_URL/references/manifest.json`.
+metadata:
+  name: manifest
+  version: 3
+type: object
+properties:
+  references:
+    type: array
+    description: "Array of URLs of reference documents"
+    items:
+      type: string
+      formt: uri
+additionalProperties: false
+required:
+  - references

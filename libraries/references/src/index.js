@@ -1,2 +1,3 @@
-export default class References {
-}
+const {References} = require('./references');
+
+module.exports = References;

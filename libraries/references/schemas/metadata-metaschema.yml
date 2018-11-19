@@ -1,0 +1,35 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+$id: "/schemas/common/metadata-metaschema.json#"
+title: "JSON-Schema Meta-Schema, with the addition of a `metadata` property"
+allOf:
+  - {$ref: "http://json-schema.org/draft-06/schema#"}
+  - type: object
+    properties:
+      metadata:
+        title: "Metadata for this schema"
+        description: |
+          Metadata identifying the documents that the schema document describes,
+          giving both a name (a category of document) and a version (to allow
+          several versions of the same category).  Consumers of the documents can
+          consult the schema metadata to determine how to process the document.
+    
+          Any changes to a schema that require changes to consumers of the described
+          documents should be accompanied by a version increase.
+        type: object
+        properties:
+          name:
+            title: "Name of the document category"
+            description: |
+              This is used to identify the category of document for later consumption.
+              It is also used to determine schema id's.  Common values for Taskcluster
+              references are `manifest`, `exchanges`, and `api`.
+            type: string
+          version:
+            title: "Version of the document format"
+            type: integer
+          additionalProperties: false
+        required:
+          - version
+          - name
+    required:
+      - metadata
