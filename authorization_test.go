@@ -225,7 +225,7 @@ func TestAuthorizationDelegate(t *testing.T) {
 			req, err := http.NewRequest(
 				"GET",
 				fmt.Sprintf(
-					"http://localhost:60024/auth/v1/azure/%s/table/%s/read-write",
+					"http://localhost:60024/api/auth/v1/azure/%s/table/%s/read-write",
 					"fakeaccount",
 					"DuMmYtAbLe",
 				),

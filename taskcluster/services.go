@@ -20,18 +20,39 @@ func NewServices(rootURL string) Services {
 }
 
 var hostnamePattern = regexp.MustCompile(`^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$`)
+var apiPath = regexp.MustCompile("^/api/(?P<service>[^/]*)/(?P<apiVersion>[^/]*)/(?P<path>.*)$")
 
 // ConvertPath converts a url for the proxy server into a url for the proper taskcluster
 // service on the given rootURL
 //
 // Examples:
 //
-// "/queue/v1/stuff" -> "http://queue.taskcluster.net/v1/stuff"
+// "/queue/v1/stuff" -> "http://tc.example.com/api/queue/v1/stuff"
+// "/myserver.com/v1/stuff" -> "http://myserver.com/v1/stuff"
+// "/api/queue/v1/stuff" => "http://tc.example.com/api/queue/v1/stuff"
 //
 func (s *Services) ConvertPath(u *url.URL) (*url.URL, error) {
+	rawPath := u.EscapedPath()
+
+	query := u.RawQuery
+	if query != "" {
+		query = "?" + query
+	}
+
+	// check if this is an /api path, where the proxy URL is treated as a
+	// rootURL.  This is the easy case (and will be even easier once legacy
+	// rootURLs are not supported)
+	match := apiPath.FindStringSubmatch(rawPath)
+	if match != nil {
+		realEndpoint, err := url.Parse(tcUrls.API(s.RootURL, match[1], match[2], match[3]+query))
+		if err != nil {
+			return u, err
+		}
+		return realEndpoint, nil
+	}
+
 	// Find raw path, removing the initial slash if present
 	// afaik initial slash should always be there.
-	rawPath := u.EscapedPath()
 	if len(rawPath) > 0 && rawPath[0] == '/' {
 		rawPath = rawPath[1:]
 	}
@@ -52,11 +73,6 @@ func (s *Services) ConvertPath(u *url.URL) (*url.URL, error) {
 	// If service not a valid hostname return error
 	if !hostnamePattern.MatchString(service) {
 		return u, fmt.Errorf("%s is not a valid taskcluster service", service)
-	}
-
-	query := u.RawQuery
-	if query != "" {
-		query = "?" + query
 	}
 
 	var realEndpoint *url.URL

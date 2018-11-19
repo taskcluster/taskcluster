@@ -18,6 +18,16 @@ var urlConversions = []struct {
 		"https://queue.taskcluster.net/v1/y/z",
 	},
 	{
+		"https://taskcluster.net",
+		"https://xfoo.com/api/queue/v1/y/z",
+		"https://queue.taskcluster.net/v1/y/z",
+	},
+	{
+		"https://tc.example.com",
+		"https://xfoo.com/api/queue/v1/y/z",
+		"https://tc.example.com/api/queue/v1/y/z",
+	},
+	{
 		"https://tc.example.com",
 		"https://xfoo.com/queue/v1/y/z",
 		"https://tc.example.com/api/queue/v1/y/z",
