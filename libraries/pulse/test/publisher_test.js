@@ -14,7 +14,7 @@ suite('publisher_test.js', function() {
   const exchangeOptions = {
     serviceName: 'lib-pulse',
     projectName: 'taskcluster-lib-pulse',
-    version: 'v2',
+    apiVersion: 'v2',
     title: 'tc-lib-pulse tests',
     description: 'testing stuff',
   };
@@ -123,7 +123,7 @@ suite('publisher_test.js', function() {
       exchanges.declare(declarationNoConstant);
       assume(exchanges.reference()).to.deeply.equal({
         $schema: 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#',
-        version: 0,
+        apiVersion: 'v2',
         exchangePrefix: 'exchange/taskcluster-lib-pulse/v2/',
         serviceName: 'lib-pulse',
         title: 'tc-lib-pulse tests',
@@ -151,7 +151,7 @@ suite('publisher_test.js', function() {
       exchanges.declare(declarationConstant);
       assume(exchanges.reference()).to.deeply.equal({
         $schema: 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#',
-        version: 0,
+        apiVersion: 'v2',
         exchangePrefix: 'exchange/taskcluster-lib-pulse/v2/',
         serviceName: 'lib-pulse',
         title: 'tc-lib-pulse tests',
