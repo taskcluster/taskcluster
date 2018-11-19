@@ -1,0 +1,14 @@
+language: node_js
+sudo: false
+node_js:
+- '10'
+caches:
+  yarn: true
+deploy:
+  provider: npm
+  email: taskcluster-accounts@mozilla.com
+  api_key:
+    secure: OeZQsOZ9hTjkPDTrh3+rLCma+pW0YHEhR5JgE6nwec7sV3fPY4oZoAnfJAfaCMt3jfs1/LajgShgutnq4LVVZZ4PcVIKLz9d0h0myb59uEjtrrJJ4m4yr9zw4yeR1IZ0BKVGxf4tO/SxTkNMHX+2U3rbBenfIrX+CvHxF05siryhBY/9U/k3R7QRkZo3IGcL1Atbyhd61M8My4mpHhlBdtn6ysUcep6jEdi+lQlJ5Tm3xHlwYwrjVD58Ys06Tx6bFNPAy30S45Bnk12juCB9g/CbDDnt58/LV4dCRlEyMnLgJ9PB4aGaD4nKPi59ErKMvfHHYC57qUdzbO75wJq1yrt/1Ojej0Zv28ZCrh4Iv63YNzFqyJ1yDgPOVDNWFvlKsd9tVvcxvGlDeqKe1WCr73UF41YnLjC5yGG747VM5YZ8IGDGMjwv63oULUFxa1P50PQ8xtwIPmfITg1njwLRXCXIIgjKdzbaPIExShKmhIlDJPawFSpnxo6vM0SBHvIYNAQZh9m5pdnbyua+tZOh6/94EvD7vw5tBq4CQm2HogBPf6MTL3dq+QpBkg388F3iE2ajsiwyJtNzTlVVYLOMIZgbXiyr07f9XRVHQ0jFQrRUSD+Efn6PW6pMKEdYvugQLgyzX3CqgF/DR2muvxJotuAvqAOe23+20DHisWkNyX4=
+  on:
+    tags: true
+    repo: taskcluster/taskcluster-lib-references
