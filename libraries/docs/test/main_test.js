@@ -10,7 +10,7 @@ const path = require('path');
 const SchemaSet = require('taskcluster-lib-validate');
 const config = require('typed-env-config');
 const APIBuilder = require('taskcluster-lib-api');
-const Exchanges = require('pulse-publisher');
+const {Exchanges} = require('taskcluster-lib-pulse');
 const MockS3UploadStream = require('./mockS3UploadStream');
 const awsMock = require('mock-aws-s3');
 const rimraf = require('rimraf');
@@ -100,6 +100,9 @@ suite('documenter', () => {
     exchanges = new Exchanges({
       title: 'Testing Stuff Again',
       description: 'Another test!',
+      serviceName: 'test',
+      projectName: 'taskcluster-test',
+      version: 'v1',
     });
     references = [
       {name: 'api', reference: builder.reference()},
