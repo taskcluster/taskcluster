@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 from __future__ import absolute_import, division, print_function
 import re
 import json
@@ -316,3 +317,32 @@ def isExpired(certificate):
         certificate = json.loads(certificate)
     expiry = certificate.get('expiry', 0)
     return expiry < int(time.time() * 1000) + 20 * 60
+
+
+def optionsFromEnvironment(defaults=None):
+    """Fetch root URL and credentials from the standard TASKCLUSTER_…
+    environment variables and return them in a format suitable for passing to a
+    client constructor."""
+    options = defaults or {}
+    credentials = options.get('credentials', {})
+
+    rootUrl = os.environ.get('TASKCLUSTER_ROOT_URL')
+    if rootUrl:
+        options['rootUrl'] = rootUrl
+
+    clientId = os.environ.get('TASKCLUSTER_CLIENT_ID')
+    if clientId:
+        credentials['clientId'] = clientId
+
+    accessToken = os.environ.get('TASKCLUSTER_ACCESS_TOKEN')
+    if accessToken:
+        credentials['accessToken'] = accessToken
+
+    certificate = os.environ.get('TASKCLUSTER_CERTIFICATE')
+    if certificate:
+        credentials['certificate'] = certificate
+
+    if credentials:
+        options['credentials'] = credentials
+
+    return options
