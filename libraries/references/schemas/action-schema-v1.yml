@@ -1,4 +1,5 @@
 $schema: http://json-schema.org/draft-06/schema#
+$id: "/schemas/common/action-schema-v1.json#"
 title: Schema for Exposing Actions
 description: |
   This document specifies the schema for the `public/actions.json` used by
