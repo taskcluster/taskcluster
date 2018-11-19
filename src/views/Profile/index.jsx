@@ -18,13 +18,12 @@ import profileQuery from './profile.graphql';
 export default class Profile extends Component {
   render() {
     const {
-      classes,
       user,
       data: { currentScopes, loading, error },
     } = this.props;
 
     return (
-      <Dashboard title="Profile" className={classes.root}>
+      <Dashboard title="Profile">
         {!currentScopes && loading && <Spinner loading />}
         <ErrorPanel error={error} />
         {user &&
