@@ -67,116 +67,31 @@ This replaces any given options with new values.
 
 ## Listening for Events
 
-**NOTE** `PulseListener` is deprecated; instead, use `PulseConsumer` from
+**NOTE** `PulseListener` is no longer included in `taskcluster-client`;
+instead, use `PulseConsumer` from
 [taskcluster-lib-pulse](https://github.com/taskcluster/taskcluster-lib-pulse).
 
-Many TaskCluster components publishes messages about current events to pulse.
-The JSON reference object also contains meta-data about declared pulse
-exchanges and their routing key construction. This is designed to make it easy
-to construct routing key patterns and parse routing keys from incoming messages.
-
-The following example create a `listener` and instantiate an instance of
-the Client class `QueueEvents` which we use to find the exchange and create
-a routing pattern to listen for completion of a specific task. The
-`taskCompleted` method will construct a routing key pattern by using `*` or `#`
-for missing entries, pending on whether or not they are single word or
-multi-key entries.
+However, this library helpfully includes bindings for exchanges declared by
+various Taskcluster services.  To use these with `taskcluster-lib-pulse`,
+create an `..Events` instance, call the apprporiate methods on it to construct
+a binding, and pass that to `pulse.consume`:
 
 ```js
 var taskcluster = require('taskcluster-client');
-
-// Create a listener (this creates a queue on AMQP)
-var listener = new taskcluster.PulseListener({
-  credentials: {
-    username:           '...',      // Pulse username from pulse guardian
-    password:           '...',      // Pulse password from pulse guardian
-    hostname:           '...',      // hostname to connect to using username/password
-    vhost   :           '...'       // virtual host to use on the AMQP host   
-  }
-});
 
 // Instantiate the QueueEvents Client class
 var queueEvents = new taskcluster.QueueEvents({rootUrl: ..});
 
-// Bind to task-completed events from queue that matches routing key pattern:
-//   'primary.<myTaskId>.*.*.*.*.*.#'
-listener.bind(queueEvents.taskCompleted({taskId: '<myTaskId>'}));
-
-// Listen for messages
-listener.on('message', function(message) {
-  message.exchange        // Exchange from which message came
-  message.payload         // See documentation
-  message.routingKey      // Message routing key in string format
-  message.routing.taskId  // Element from parsed routing key
-  message.routing.runId   // ...
-  message.redelivered     // True, if message has been nack'ed and requeued
-  message.routes          // List of CC'ed routes, without the `route.` prefix
-  return new Promise(...);
-});
-
-// Listen and consume events:
-listener.resume().then(function() {
-  // Now listening
-});
+let pc = await pulse.consume({
+  bindings: [
+    // Bind to task-completed events from queue that matches routing key pattern:
+    //   'primary.<myTaskId>.*.*.*.*.*.#'
+    queueEvents.taskCompleted({taskId: myTaskId});
+  ], ..);
 ```
-
-To bind to a custom routing-key like the task-specific routes that messages
-from the queue is CC'ed to, just provide the desired routing key to the
-method for exchange. See example below.
-
-```js
-var RawRoutingPattern = 'route.task.specific.routing.key';
-listener.bind(queueEvents.taskCompleted(RawRoutingPattern);
-```
-
-To bind to a custom exchange *and* routingKey, pass an object to `listener.bind`:
-
-```js
-listener.bind({
-  exchange: 'myservice/myexchange/v1';
-  routingKeyPattern: 'some.routing.#';
-});
-```
-
-Note that the argument to the `message` event will not have the `routing`
-property described above, although the `routingKey` property will be present.
-
-## Advanced Listening
-
-For advanced queue usage the `connect` method can be used to
-create and bind the queue and return an associated
-[amqplib](http://www.squaremobius.net/amqp.node/channel_api.html) channel:
-
-```js
-var taskcluster = require('taskcluster-client');
-
-// Create a listener
-var listener = new taskcluster.PulseListener({
- credentials: {
-    username:           '...',      // Pulse username from pulse guardian
-    password:           '...',      // Pulse password from pulse guardian
-    hostname:           '...',      // hostname to connect to using username/password
-    vhost   :           '...'       // virtual host to use on the AMQP host   
-  }
-});
-
-// See: http://www.squaremobius.net/amqp.node/channel_api.html
-var channel = listener.connect().then(function(channel) {
-  return channel.consume(function(msg) {
-    channel.ack(msg);
-  });
-});
-```
-
-The listener creates a AMQP queue, on the server side and subscribes to messages
-on the queue. It's possible to use named queues, see details below. For details
-on routing key entries refer to the documentation.
-
-**Remark,** API end-points and AMQP exchanges are typically documented in
-separate reference files. For this reason they also have separate Client
-classes, even if they are from the same component.
 
 ## Documentation
+
 The set of API entries listed below is generated from the built-in references.
 Detailed documentation with description, payload and result format details is
 available in the [docs reference section](/docs/reference).
@@ -226,28 +141,6 @@ test('test the thing', async function() {
   }
 });
 ```
-
-## Fake Listening
-
-It's inconvenient and error-prone to use real Pulse credentials in tests.  The
-PulseListener class supports a "fake" mode where it does not use any
-credentials, and messages are delivered by means of a `fakeMessage` method.
-
-To set up the listener, intialize it with `credentials: {fake: true}`, or with
-a PulseConnection created with `new PulseConnection({fake: true})`. Once the
-listener has been `resume()`d, call `listener.fakeMessage`.  Example:
-
-```js
-await listener.fakeMessage({
-  payload: {aNumber: 13},
-  exchange: 'exchange/foo/bar',
-  routingKey: 'some.route',
-  routes: ['some.other.routes'],
-});
-```
-
-Note that the fake listener does no route filtering (RabbitMQ would do that in
-a real scenario).  Every fake message is delivered to the listeners' bindings.
 
 <!-- START OF GENERATED DOCS -->
 
