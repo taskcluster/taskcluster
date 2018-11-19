@@ -20,6 +20,7 @@ import (
 )
 
 var (
+	rootURL         = os.Getenv("TASKCLUSTER_ROOT_URL")
 	permCredentials = &tcclient.Credentials{
 		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
@@ -42,6 +43,9 @@ func newTestClient() *httpbackoff.Client {
 type IntegrationTest func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder
 
 func skipIfNoPermCreds(t *testing.T) {
+	if rootURL == "" {
+		t.Skip("TASKCLUSTER_ROOT_URL not set - skipping test")
+	}
 	if permCredentials.ClientID == "" {
 		t.Skip("TASKCLUSTER_CLIENT_ID not set - skipping test")
 	}
@@ -153,11 +157,12 @@ func TestBewit(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
-		routes := Routes{
-			Client: tcclient.Client{
+		routes := NewRoutes(
+			rootURL,
+			tcclient.Client{
 				Credentials: creds,
 			},
-		}
+		)
 		req, err := http.NewRequest(
 			"POST",
 			"http://localhost:60024/bewit",
@@ -203,8 +208,9 @@ func TestAuthorizationDelegate(t *testing.T) {
 	test := func(name string, scopes []string) IntegrationTest {
 		return func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 			// Test setup
-			routes := Routes{
-				Client: tcclient.Client{
+			routes := NewRoutes(
+				rootURL,
+				tcclient.Client{
 					Authenticate: true,
 					Credentials: &tcclient.Credentials{
 						ClientID:         creds.ClientID,
@@ -213,7 +219,7 @@ func TestAuthorizationDelegate(t *testing.T) {
 						AuthorizedScopes: scopes,
 					},
 				},
-			}
+			)
 
 			// Requires scope "auth:azure-table:read-write:fakeaccount/DuMmYtAbLe"
 			req, err := http.NewRequest(
@@ -248,12 +254,13 @@ func TestAPICallWithPayload(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
-		routes := Routes{
-			Client: tcclient.Client{
+		routes := NewRoutes(
+			rootURL,
+			tcclient.Client{
 				Authenticate: true,
 				Credentials:  creds,
 			},
-		}
+		)
 		taskID := slugid.Nice()
 		taskGroupID := slugid.Nice()
 		created := time.Now()
@@ -323,12 +330,13 @@ func TestNon200HasErrorBody(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
-		routes := Routes{
-			Client: tcclient.Client{
+		routes := NewRoutes(
+			rootURL,
+			tcclient.Client{
 				Authenticate: true,
 				Credentials:  creds,
 			},
-		}
+		)
 		taskID := slugid.Nice()
 
 		req, err := http.NewRequest(
@@ -358,12 +366,13 @@ func TestOversteppedScopes(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
-		routes := Routes{
-			Client: tcclient.Client{
+		routes := NewRoutes(
+			rootURL,
+			tcclient.Client{
 				Authenticate: true,
 				Credentials:  creds,
 			},
-		}
+		)
 
 		// This scope is not in the scopes of the temp credentials, which would
 		// happen if a task declares a scope that the provisioner does not
@@ -398,8 +407,9 @@ func TestOversteppedScopes(t *testing.T) {
 }
 
 func TestBadCredsReturns500(t *testing.T) {
-	routes := Routes{
-		Client: tcclient.Client{
+	routes := NewRoutes(
+		rootURL,
+		tcclient.Client{
 			Authenticate: true,
 			Credentials: &tcclient.Credentials{
 				ClientID:    "abc",
@@ -407,7 +417,7 @@ func TestBadCredsReturns500(t *testing.T) {
 				Certificate: "ghi", // baaaad certificate
 			},
 		},
-	}
+	)
 	req, err := http.NewRequest(
 		"GET",
 		"http://localhost:60024/secrets/v1/secret/garbage/pmoore/foo",
@@ -428,12 +438,13 @@ func TestInvalidEndpoint(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
-		routes := Routes{
-			Client: tcclient.Client{
+		routes := NewRoutes(
+			rootURL,
+			tcclient.Client{
 				Authenticate: true,
 				Credentials:  creds,
 			},
-		}
+		)
 
 		req, err := http.NewRequest(
 			"GET",
@@ -466,12 +477,13 @@ func TestRetrievePrivateArtifact(t *testing.T) {
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
-		routes := Routes{
-			Client: tcclient.Client{
+		routes := NewRoutes(
+			rootURL,
+			tcclient.Client{
 				Authenticate: true,
 				Credentials:  creds,
 			},
-		}
+		)
 
 		// See https://github.com/taskcluster/generic-worker/blob/c91adbc9fc65c28b3c9e76da1fb0f7f84a69eebf/testdata/tasks/KTBKfEgxR5GdfIIREQIvFQ.json
 		req, err := http.NewRequest(

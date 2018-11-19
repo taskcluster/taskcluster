@@ -19,7 +19,8 @@ import (
 type Routes struct {
 	RootURL string
 	tcclient.Client
-	lock sync.RWMutex
+	services tc.Services
+	lock     sync.RWMutex
 }
 
 // CredentialsUpdate is the internal representation of the json body which is
@@ -30,8 +31,16 @@ type CredentialsUpdate struct {
 	Certificate string `json:"certificate"`
 }
 
-var tcServices = tc.NewServices()
 var httpClient = &http.Client{}
+
+// NewRoutes creates a new Routes instance.
+func NewRoutes(rootURL string, client tcclient.Client) Routes {
+	return Routes{
+		RootURL:  rootURL,
+		Client:   client,
+		services: tc.NewServices(rootURL),
+	}
+}
 
 func (routes *Routes) setHeaders(res http.ResponseWriter) {
 	headersToSend := res.Header()
@@ -128,7 +137,7 @@ func (routes *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
 	routes.lock.RLock()
 	defer routes.lock.RUnlock()
 
-	targetPath, err := tcServices.ConvertPath(req.URL)
+	targetPath, err := routes.services.ConvertPath(req.URL)
 
 	// Unkown service which we are trying to hit...
 	if err != nil {

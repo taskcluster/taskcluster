@@ -183,12 +183,12 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 		log.Println("Proxy with scopes: ", authorizedScopes)
 	}
 
-	routes = Routes{
-		RootURL: rootURL.(string),
-		Client: tcclient.Client{
+	routes = NewRoutes(
+		rootURL.(string),
+		tcclient.Client{
 			Authenticate: true,
 			Credentials:  creds,
 		},
-	}
+	)
 	return
 }
