@@ -17,6 +17,7 @@ import (
 
 // Routes represents the context of the running service
 type Routes struct {
+	RootURL string
 	tcclient.Client
 	lock sync.RWMutex
 }

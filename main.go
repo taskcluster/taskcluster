@@ -34,6 +34,7 @@ task id.
                                     If not provided, will bind listener to all available network
                                     interfaces [default: ].
     -t --task-id <taskId>           Restrict given scopes to those defined in taskId.
+    --root-url <rootUrl>            The rootUrl for the TC deployment to access
     --client-id <clientId>          Use a specific auth.taskcluster hawk client id [default: ].
     --access-token <accessToken>    Use a specific auth.taskcluster hawk access token [default: ].
     --certificate <certificate>     Use a specific auth.taskcluster hawk certificate [default: ].
@@ -97,6 +98,15 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 	address = ipAddress + ":" + portStr
 	log.Printf("Listening on: %v", address)
 
+	rootURL := arguments["--root-url"]
+	if rootURL == nil || rootURL == "" {
+		rootURL = os.Getenv("TASKCLUSTER_ROOT_URL")
+	}
+	if rootURL == "" {
+		log.Fatal("Root URL must be passed via environment variable TASKCLUSTER_ROOT_URL or command line option --root-url")
+	}
+	log.Printf("Root URL: '%v'", rootURL)
+
 	clientID := arguments["--client-id"]
 	if clientID == nil || clientID == "" {
 		clientID = os.Getenv("TASKCLUSTER_CLIENT_ID")
@@ -154,6 +164,12 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 		authorizedScopes = nil
 	}
 
+	// This will include rootURL in creds, once the client supports it; until then it had better be https://taskcluster.net
+	if rootURL != "https://taskcluster.net" {
+		err = fmt.Errorf("Only the legacy rootUrl is currently supported, not %s", rootURL)
+		return
+	}
+
 	creds := &tcclient.Credentials{
 		ClientID:         clientID.(string),
 		AccessToken:      accessToken.(string),
@@ -168,6 +184,7 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 	}
 
 	routes = Routes{
+		RootURL: rootURL.(string),
 		Client: tcclient.Client{
 			Authenticate: true,
 			Credentials:  creds,
