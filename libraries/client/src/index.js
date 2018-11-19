@@ -7,6 +7,5 @@ var _ = require('lodash');
 // Export methods and classes from lib/
 _.defaults(exports,
   require('./client'),
-  require('./pulselistener'),
   require('./utils')
 );
