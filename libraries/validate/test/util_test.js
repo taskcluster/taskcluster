@@ -28,9 +28,9 @@ suite('test_util.js', function() {
         /rooted URIs *. are not allowed/);
     });
 
-    test('on a schema with a "taskcluster:.." ref (not allowed)', function() {
+    test('on a schema with a /-relative ref (not allowed)', function() {
       assert.throws(
-        () => checkRefs(schemaWith({$ref: 'taskcluster:/schemas/foo.json'}), 'thisservice'),
+        () => checkRefs(schemaWith({$ref: '/schemas/foo.json'}), 'thisservice'),
         Error,
         /absolute URIs *. are not allowed/);
     });

@@ -20,7 +20,7 @@ suite('schemaset_test.js', () => {
     assert(_.includes(_.keys(schemas), 'v1/default-schema.json'));
     assert.equal(
       schemas['v1/default-schema.json'].$id,
-      'taskcluster:/schemas/whatever/v1/default-schema.json#'
+      '/schemas/whatever/v1/default-schema.json#'
     );
   });
 
