@@ -1883,10 +1883,10 @@ taskcluster-lib-api@^12.0.0:
     type-is "^1.6.15"
     uuid "^3.1.0"
 
-taskcluster-lib-pulse@^10.1.0:
-  version "10.1.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-pulse/-/taskcluster-lib-pulse-10.1.0.tgz#04db72f5b7c4de6e2ade1b099378e60823b71e87"
-  integrity sha512-fbP6G241XPQrk+0O+ozw1ieMaqQIFSFhKpQZajW64nCb+eaoqOjhTyQ3GfXvtrKbJ7dPG/WbNCcxTpKgc0SHOA==
+taskcluster-lib-pulse@^11.0.0:
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-pulse/-/taskcluster-lib-pulse-11.0.0.tgz#fe74a012ec5f5933b641865705ee6060b1c35990"
+  integrity sha512-dG9lhud0FVEMrWHCIw21nPBszeLT+cjZ57mIyBnDoi2KtE22+2QT+2Caeh12L42ZMD+VSkDJJMyCpN2jAV9VbQ==
   dependencies:
     amqplib "^0.5.2"
     aws-sdk "^2.331.0"
@@ -1909,10 +1909,10 @@ taskcluster-lib-urls@^10.0.0:
   resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-10.1.1.tgz#67d5b9449b947e5234eafdd15c46267dde29bf74"
   integrity sha512-tdrK++rCX73FMXk/cXwS6RLTjA3pX8hJlxg1ECLs3L3llCOPMNhQ4wi6lb6yMgHc/s5on/Edj6AlAH7gkxzgPg==
 
-taskcluster-lib-validate@^11.0.0:
-  version "11.0.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-11.0.0.tgz#de34e8262d4414539647976f9c9d03c9763902ad"
-  integrity sha512-3w23d98ik36BSNgkb9yHqn57pjhT4L53EIOajkszd2cP71NOzPLzewCtxddtjcxUk7R9Z65fzVxrLs5MLmTWSQ==
+taskcluster-lib-validate@^12.0.0:
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-12.0.0.tgz#ab7b649159a7616ac09d080a42e8756be69c18a6"
+  integrity sha512-nhZzLN3oegEJ3e8iNMsvPjqeJuiq4G2iTley0F4DX/ePcQ2kF857oTNAwAyhgN67+jZ+qDQliYqNmtIAFcZ7tg==
   dependencies:
     ajv "^6.5.0"
     app-root-dir "^1.0.2"
