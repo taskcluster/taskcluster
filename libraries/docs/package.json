@@ -40,8 +40,8 @@
     "rimraf": "^2.6.2",
     "rmp": "^0.0.0",
     "taskcluster-lib-api": "^12.0.0",
-    "taskcluster-lib-pulse": "^10.1.0",
-    "taskcluster-lib-validate": "^11.0.0",
+    "taskcluster-lib-pulse": "^11.0.0",
+    "taskcluster-lib-validate": "^12.0.0",
     "typed-env-config": "^1.1.0"
   },
   "main": "./src/index.js"
