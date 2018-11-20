@@ -32,7 +32,7 @@ const schemaset = new SchemaSet({
 
 // The loaded schemas are easily accessible
 console.log(schemaset.abstractSchemas())
-// ↳ [{'id': 'taskcluster:/schemas/someservice/first-schema.json#', ...}, ...]
+// ↳ [{'id': '/schemas/someservice/first-schema.json#', ...}, ...]
 ```
 
 ### Schema References
@@ -47,7 +47,7 @@ Thus `{$ref: 'widget-description.json#'}` is allowed, but `{$ref: '/schemas/anot
 The rationale is that a service must be self-consistent, and any change to a schema requires a corresponding change to the code that handles the data.
 A schema from another service could change at any time, invalidating the code in this service.
 
-When initially loading the schema files, the `$id` is of the form `taskcluster:/schemas/<serviceName>/<filename>.json#`.
+When initially loading the schema files, the `$id` is of the form `/schemas/<serviceName>/<filename>.json#`.
 The schemas have not yet been deployed at a specific root URL, and thus no fixed base location is known.
 Such schemas are referred to as "abstract schemas", and are used during the Taskcluster build process to generate documentation and client libraries.
 
