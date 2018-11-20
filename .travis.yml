@@ -29,11 +29,11 @@ install:
 
 script:
   # need to test without gotestcover since error code is not reliable for gotestcover
-  - 'test $GIMME_OS.$GIMME_ARCH != linux.amd64 || CGO_ENABLED=1 GORACE=history_size=7 go test -v -ldflags "-X github.com/taskcluster/taskcluster-proxy.revision=$(git rev-parse HEAD)" ./...'
+  - 'if [ $GIMME_OS.$GIMME_ARCH = linux.amd64 ]; then CGO_ENABLED=1 GORACE=history_size=7 go test -v -ldflags "-X github.com/taskcluster/taskcluster-proxy.revision=$(git rev-parse HEAD)" ./...; fi'
 
 after_script:
   # using gotestcover means tests get run again, but need to do this since exit code of gotestcover is unreliable
-  - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || CGO_ENABLED=1 GORACE=history_size=7 ./gotestcover.sh coverage.report"
+  - "if [ $GIMME_OS.$GIMME_ARCH = linux.amd64 ]; then CGO_ENABLED=1 GORACE=history_size=7 ./gotestcover.sh coverage.report; fi"
 
 notifications:
   irc:
