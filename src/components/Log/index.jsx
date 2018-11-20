@@ -229,6 +229,7 @@ export default class Log extends Component {
             lineClassName={classes.line}
             highlightLineClassName={classes.highlight}
             loadingComponent={Loading}
+            extraLines={1}
             {...props}
           />
           {rawLogButton}
@@ -259,6 +260,7 @@ export default class Log extends Component {
               lineClassName={classes.line}
               highlightLineClassName={classes.highlight}
               loadingComponent={Loading}
+              extraLines={1}
               {...props}
             />
             {rawLogButton}
