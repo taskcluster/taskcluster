@@ -1728,9 +1728,10 @@ taskcluster-lib-urls@^10.0.0:
   version "10.0.0"
   resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-10.0.0.tgz#ee4c687b4539171d8aef39b38a63c8b9bc82f82e"
 
-taskcluster-lib-validate@^11.0.1:
-  version "11.0.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-11.0.1.tgz#b15241cbe83a15997adf93b1face695781067ae6"
+taskcluster-lib-validate@^12.0.0:
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-12.0.0.tgz#ab7b649159a7616ac09d080a42e8756be69c18a6"
+  integrity sha512-nhZzLN3oegEJ3e8iNMsvPjqeJuiq4G2iTley0F4DX/ePcQ2kF857oTNAwAyhgN67+jZ+qDQliYqNmtIAFcZ7tg==
   dependencies:
     ajv "^6.5.0"
     app-root-dir "^1.0.2"
