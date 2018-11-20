@@ -62,6 +62,8 @@ export const taskState = oneOf([
   'EXCEPTION',
 ]);
 
+export const taskGroupState = oneOf(['FAILED', 'COMPLETED', 'RUNNING']);
+
 export const status = shape({
   state: taskState,
   retriesLeft: number,

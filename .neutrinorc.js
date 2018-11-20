@@ -23,8 +23,7 @@ module.exports = {
     }],
     ['@neutrinojs/react', {
       html: {
-        title: process.env.APPLICATION_NAME,
-        favicon: './logo.png',
+        title: process.env.APPLICATION_NAME
       },
       devServer: {
         port: process.env.PORT,

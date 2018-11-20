@@ -17,11 +17,12 @@ import HelpIcon from 'mdi-react/HelpIcon';
 import LightBulbOn from 'mdi-react/LightbulbOnIcon';
 import LightBulbOnOutline from 'mdi-react/LightbulbOnOutlineIcon';
 import PageTitle from '../PageTitle';
+import Helmet from '../Helmet';
 import UserMenu from './UserMenu';
 import SidebarList from './SidebarList';
 import { THEME } from '../../utils/constants';
 import { withThemeToggler } from '../../utils/ToggleTheme';
-import Logo from '../../../logo.png';
+import Logo from '../../images/logo.png';
 import ErrorPanel from '../ErrorPanel';
 
 @withStyles(
@@ -235,6 +236,7 @@ export default class Dashboard extends Component {
 
     return (
       <div className={classes.root}>
+        <Helmet />
         <PageTitle>{title}</PageTitle>
         <AppBar className={classes.appBar}>
           <Toolbar>

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { func, shape, arrayOf, string } from 'prop-types';
 import memoize from 'fast-memoize';
-import { pipe, filter, map, sort as rSort } from 'ramda';
+import { sum, pipe, filter, map, sort as rSort } from 'ramda';
 import { lowerCase, title } from 'change-case';
 import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
@@ -22,6 +22,7 @@ import PlaylistRemoveIcon from 'mdi-react/PlaylistRemoveIcon';
 import { task, pageInfo, taskState } from '../../utils/prop-types';
 import { TASK_STATE, THEME } from '../../utils/constants';
 import sort from '../../utils/sort';
+import Helmet from '../Helmet';
 
 const sorted = pipe(
   filter(taskGroup => taskGroup.node.metadata.name),
@@ -243,13 +244,42 @@ export default class TaskGroupProgress extends Component {
     }
   };
 
+  getTaskGroupState = () => {
+    const {
+      completed,
+      exception,
+      failed,
+      pending,
+      running,
+      unscheduled,
+    } = this.state.statusCount;
+    const allTasks = sum([completed, exception, pending, running, unscheduled]);
+    const unfinishedTasks = sum([pending, running, unscheduled]);
+
+    if (allTasks === 0) {
+      return;
+    }
+
+    if (failed > 0) {
+      return TASK_STATE.FAILED;
+    }
+
+    if (unfinishedTasks > 0) {
+      return TASK_STATE.RUNNING;
+    }
+
+    return TASK_STATE.COMPLETED;
+  };
+
   render() {
     const { classes, onStatusClick } = this.props;
     const { statusCount } = this.state;
     const showDots = Object.values(statusCount).reduce((a, b) => a + b) === 0;
+    const taskGroupState = this.getTaskGroupState();
 
     return (
       <Grid container spacing={16}>
+        <Helmet state={taskGroupState} />
         {Object.keys(TASK_STATE).map(status => {
           const Icon = this.getStatusIcon(status);
 
