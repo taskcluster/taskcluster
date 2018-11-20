@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const assert = require('assert');
 const debug = require('debug')('taskcluster-lib-monitor');
 
 /**
@@ -169,6 +170,9 @@ class BaseMonitor {
 
     try {
       try {
+        assert.equal(typeof name, 'string');
+        assert.equal(typeof fn, 'function');
+
         await this.timer(`${name}.duration`, fn);
         this.count(`${name}.done`);
       } catch (err) {

@@ -155,7 +155,7 @@ suite('MockMonitor', () => {
   });
 
   test('monitor.oneShot', async () => {
-    monitor.oneShot(() => {});
+    await monitor.oneShot('test', () => {});
     // just expect this not to call process.exit!
   });
 });

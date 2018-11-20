@@ -64,6 +64,9 @@ class MockMonitor extends BaseMonitor {
    * Override oneShot to helpfully not call process.exit
    */
   async oneShot(name, fn) {
+    assert.equal(typeof name, 'string');
+    assert.equal(typeof fn, 'function');
+
     await fn();
   }
 }
