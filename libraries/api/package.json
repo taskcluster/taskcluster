@@ -39,7 +39,7 @@
     "taskcluster-lib-app": "^10.0.0",
     "taskcluster-lib-monitor": "^11.0.0",
     "taskcluster-lib-testing": "^12.0.0",
-    "taskcluster-lib-urls": "^11.0.0",
+    "taskcluster-lib-urls": "^12.0.0",
     "taskcluster-lib-validate": "^12.0.0",
     "typed-env-config": "^2.0.0"
   },
