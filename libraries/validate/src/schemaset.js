@@ -12,7 +12,7 @@ const publish = require('./publish');
 const {renderConstants, checkRefs} = require('./util');
 const rootdir = require('app-root-dir');
 
-const ABSTRACT_SCHEMA_ROOT_URL = 'taskcluster:';
+const ABSTRACT_SCHEMA_ROOT_URL = '';
 
 class SchemaSet {
   constructor(options) {
