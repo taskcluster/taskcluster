@@ -51,7 +51,7 @@ let commonMessageBuilder = function(msg) {
 let exchanges = new Exchanges({
   serviceName: 'github',
   projectName: 'taskcluster-github',
-  version: 'v1',
+  apiVersion: 'v1',
   title: 'Taskcluster-Github Exchanges',
   description: [
     'The github service publishes a pulse',
