@@ -117,5 +117,11 @@ suite('BaseMonitor', function() {
       assert.equal(monitor.counts.length, 0);
       assert(monitor.errors[0].toString().match(/uhoh/), monitor.errors[0]);
     });
+
+    test('missing name', async function() {
+      await monitor.oneShot(async () => { throw new Error('uhoh'); });
+      assert.equal(exitStatus, 1);
+      assert(monitor.errors[0].toString().match(/Assertion/), monitor.errors[0]);
+    });
   });
 });
