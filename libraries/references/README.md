@@ -132,7 +132,7 @@ To write data back out, use
 
 ```js
 // write URI-structured data
-references.writeUriStructured(directory);
+references.writeUriStructured({directory});
 
 // create a serializable data structure
 data = references.makeSerializable();
