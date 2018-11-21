@@ -63,7 +63,7 @@
     "taskcluster-client": "^11.0.4",
     "taskcluster-lib-loader": "^10.0.1",
     "taskcluster-lib-monitor": "^10.0.0",
-    "taskcluster-lib-pulse": "^2.0.2",
+    "taskcluster-lib-pulse": "^11.1.0",
     "taskcluster-lib-urls": "^10.1.1",
     "typed-env-config": "^2.0.0"
   }
