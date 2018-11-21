@@ -29,7 +29,8 @@ class Exchanges {
 
   reference() {
     return {
-      $schema: 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#',
+      // this refers to a schema defined in taskcluster-lib-references
+      $schema: '/schemas/common/exchanges-reference-v0.json#',
       serviceName: this.serviceName,
       apiVersion: this.apiVersion,
       title: this.title,
