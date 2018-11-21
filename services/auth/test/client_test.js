@@ -119,7 +119,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
         scopes: ['scope1:**'],
       });
     } catch (err) {
-      assert.equal(err.code, 'InputValidationError');
+      assert.equal(err.code, 'InputError');
       return;
     }
     assert(false, 'Expected an error');
@@ -260,7 +260,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
         scopes: ['scope1:**'],
       });
     } catch (err) {
-      assert.equal(err.code, 'InputValidationError');
+      assert.equal(err.code, 'InputError');
       return;
     }
     assert(false, 'Expected an error');
