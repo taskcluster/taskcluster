@@ -5,7 +5,7 @@ let exchanges = new Exchanges({
   title:       'Exchanges to manage hooks',
   projectName: 'taskcluster-hooks',
   serviceName: 'hooks',
-  version: 'v1',
+  apiVersion: 'v1',
   description: [
     'The hooks service, typically available at `hooks.taskcluster.net`',
     'is responsible for creating tasks at specific times or in .',

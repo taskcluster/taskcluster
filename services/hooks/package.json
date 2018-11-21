@@ -25,7 +25,6 @@
     "json-e": "^2.3.5",
     "lodash": "^4.17.4",
     "promise": "^8.0.1",
-    "taskcluster-lib-pulse": "^2.1.0",
     "taskcluster-client": "^11.0.0",
     "taskcluster-lib-api": "^12.5.1",
     "taskcluster-lib-app": "10.0.0",
@@ -33,6 +32,7 @@
     "taskcluster-lib-docs": "^10.0.0",
     "taskcluster-lib-loader": "10.0.0",
     "taskcluster-lib-monitor": "^10.0.0",
+    "taskcluster-lib-pulse": "^11.1.0",
     "taskcluster-lib-urls": "^10.0.0",
     "taskcluster-lib-validate": "^11.0.2",
     "typed-env-config": "^2.0.0"
