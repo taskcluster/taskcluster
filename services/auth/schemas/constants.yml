@@ -22,4 +22,4 @@ scope:
       A single scope. A scope must be composed of
       printable ASCII characters and spaces.  Scopes ending in more than
       one `*` character are forbidden.
-    pattern: "^[\x20-\x7e]*(?<!\\*\\*)$"
+    pattern: "^[\x20-\x7e]*$"

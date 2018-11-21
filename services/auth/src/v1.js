@@ -234,6 +234,10 @@ builder.declare({
     );
   }
 
+  if (scopes.some(s => s.endsWith('**'))) {
+    return res.reportError('InputError', 'scopes must not end with `**`', {});
+  }
+
   // Check scopes
   await req.authorize({clientId, scopes});
 
@@ -384,6 +388,10 @@ builder.declare({
       'configured clients. Contact your administrator to change static clients.',
       {clientId},
     );
+  }
+
+  if (input.scopes && input.scopes.some(s => s.endsWith('**'))) {
+    return res.reportError('InputError', 'scopes must not end with `**`', {});
   }
 
   // Load client
@@ -641,6 +649,10 @@ builder.declare({
       {});
   }
 
+  if (input.scopes.some(s => s.endsWith('**'))) {
+    return res.reportError('InputError', 'scopes must not end with `**`', {});
+  }
+
   // Check scopes
   await req.authorize({roleId, scopes: input.scopes});
 
@@ -731,6 +743,10 @@ builder.declare({
     return res.reportError('InputError',
       'Roles are temporarily locked during upgrade',
       {});
+  }
+
+  if (input.scopes.some(s => s.endsWith('**'))) {
+    return res.reportError('InputError', 'scopes must not end with `**`', {});
   }
 
   // Load and modify role
