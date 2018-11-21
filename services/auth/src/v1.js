@@ -18,9 +18,9 @@ const roleToJson = (role, context) => _.defaults(
 
 /** API end-point for version v1/ */
 const builder = new APIBuilder({
-  title:      'Authentication API',
-  serviceName:       'auth',
-  version:           'v1',
+  title: 'Authentication API',
+  serviceName: 'auth',
+  apiVersion: 'v1',
   description: [
     'Authentication related API end-points for Taskcluster and related',
     'services. These API end-points are of interest if you wish to:',
