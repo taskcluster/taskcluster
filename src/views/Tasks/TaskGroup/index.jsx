@@ -43,6 +43,7 @@ let previousCursor;
 @graphql(taskGroupQuery, {
   options: props => ({
     pollInterval: TASK_GROUP_POLLING_INTERVAL,
+    errorPolicy: 'all',
     variables: {
       taskGroupId: props.match.params.taskGroupId,
       taskGroupConnection: {
@@ -145,6 +146,7 @@ export default class TaskGroup extends Component {
     }
 
     if (
+      taskGroup &&
       previousCursor === taskGroup.pageInfo.cursor &&
       taskGroup.pageInfo.hasNextPage
     ) {
@@ -308,8 +310,8 @@ export default class TaskGroup extends Component {
       <Dashboard
         helpView={<HelpView description={description} />}
         search={<Search onSubmit={this.handleTaskGroupSearchSubmit} />}>
-        <ErrorPanel error={error} />
-        {!error && (
+        <ErrorPanel error={error} warning={Boolean(taskGroup)} />
+        {taskGroup && (
           <TaskGroupProgress
             taskGroup={taskGroup}
             taskGroupId={taskGroupId}
