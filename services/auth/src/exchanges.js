@@ -6,7 +6,7 @@ const exchanges = new Exchanges({
   title: 'Auth Pulse Exchanges',
   projectName: 'taskcluster-auth',
   serviceName: 'auth',
-  version: 'v1',
+  apiVersion: 'v1',
   description: [
     'The auth service, typically available at `auth.taskcluster.net`',
     'is responsible for storing credentials, managing assignment of scopes,',
