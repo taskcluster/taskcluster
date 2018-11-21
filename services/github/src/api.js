@@ -167,7 +167,7 @@ let builder = new APIBuilder({
     'with code ForbiddenByGithub.',
   ].join('\n'),
   serviceName: 'github',
-  version: 'v1',
+  apiVersion: 'v1',
   context: ['Builds', 'OwnersDirectory', 'monitor', 'publisher', 'cfg', 'ajv', 'github'],
   errorCodes: {
     ForbiddenByGithub: 403,
