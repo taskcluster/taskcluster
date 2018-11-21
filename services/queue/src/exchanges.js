@@ -6,7 +6,7 @@ var exchanges = new Exchanges({
   title:       'Queue AMQP Exchanges',
   projectName: 'taskcluster-queue',
   serviceName: 'queue',
-  version:     'v1',
+  apiVersion:  'v1',
   description: [
     'The queue, typically available at `queue.taskcluster.net`, is responsible',
     'for accepting tasks and track their state as they are executed by',
