@@ -1,6 +1,6 @@
 import DataLoader from 'dataloader';
 import sift from 'sift';
-import request from 'superagent';
+import fetch from '../utils/fetch';
 import ConnectionLoader from '../ConnectionLoader';
 import Task from '../entities/Task';
 
@@ -40,10 +40,7 @@ export default ({ queue, index }) => {
         );
 
         try {
-          const { body: raw } = await request
-            .get(url)
-            // retry on 5xx
-            .retry(2, (err, res) => res && res.status >= 500);
+          const raw = await fetch(url);
 
           return {
             ...raw,
