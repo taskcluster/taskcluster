@@ -4,7 +4,7 @@ let exchanges = new Exchanges({
   title: 'Taskcluster-treeherder Pulse Exchange',
   serviceName: 'treeherder',
   projectName: 'taskcluster-treeherder',
-  version: 'v1',
+  apiVersion: 'v1',
   description: [
     'The taskcluster-treeherder service is responsible for processing',
     'task events published by TaskCluster Queue and producing job messages',
