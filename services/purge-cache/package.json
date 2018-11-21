@@ -24,7 +24,7 @@
     "taskcluster-lib-docs": "^10.0.0",
     "taskcluster-lib-loader": "^10.0.1",
     "taskcluster-lib-monitor": "^10.0.0",
-    "taskcluster-lib-validate": "^11.0.2",
+    "taskcluster-lib-validate": "^12.0.0",
     "typed-env-config": "^2.0.0"
   },
   "engine-strict": true,
