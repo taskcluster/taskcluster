@@ -78,7 +78,7 @@ let load = loader({
         listeners,
       },
       monitor:  monitor.prefix('api'),
-      schemaset
+      schemaset,
     }),
   },
 
