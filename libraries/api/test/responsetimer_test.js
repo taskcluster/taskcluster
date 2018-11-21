@@ -12,7 +12,7 @@ suite('api/responsetimer', function() {
     title:        'Test Api',
     description:  'Another test api',
     serviceName:  'test',
-    version:      'v1',
+    apiVersion:   'v1',
   });
 
   builder.declare({

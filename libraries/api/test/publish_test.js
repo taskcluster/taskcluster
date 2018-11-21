@@ -20,7 +20,7 @@ suite('api/publish', function() {
       title:        'Test Api',
       description:  'Another test api',
       serviceName:  'test',
-      version:      'v1',
+      apiVersion:   'v1',
     });
 
     // Declare a simple method
