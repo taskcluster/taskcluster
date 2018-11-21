@@ -15,7 +15,7 @@ suite('API (context)', function() {
       description:  'Another test api',
       context:      ['myProp'],
       serviceName:  'test',
-      version:      'v1',
+      apiVersion:   'v1',
     });
 
     builder.declare({
@@ -69,7 +69,7 @@ suite('API (context)', function() {
       description:  'Another test api',
       context:      ['prop1', 'prop2'],
       serviceName:  'test',
-      version:      'v1',
+      apiVersion:   'v1',
     });
 
     const value = slugid.v4();
@@ -101,7 +101,7 @@ suite('API (context)', function() {
       description:  'Another test api',
       context:      ['prop1', 'prop2'],
       serviceName:  'test',
-      version:      'v1',
+      apiVersion:   'v1',
     });
 
     const value = slugid.v4();
@@ -126,7 +126,7 @@ suite('API (context)', function() {
       description:  'Another test api',
       context:      [],
       serviceName:  'test',
-      version:      'v1',
+      apiVersion:   'v1',
     });
 
     const value = slugid.v4();

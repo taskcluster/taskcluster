@@ -14,7 +14,7 @@ suite('api/validate', function() {
     title:        'Test Api',
     description:  'Another test api',
     serviceName:  'test',
-    version:      'v1',
+    apiVersion:   'v1',
   });
 
   // Declare a method we can test input with
@@ -203,7 +203,7 @@ suite('api/validate', function() {
       title:        'Test Api',
       description:  'Another test api',
       serviceName:  'test',
-      version:      'v1',
+      apiVersion:   'v1',
     });
 
     builder.declare({

@@ -12,7 +12,7 @@ suite('api/errors', function() {
     description:  'Yet another test api',
     errorCodes:   {TooManyFoos: 472},
     serviceName:  'test',
-    version:      'v1',
+    apiVersion:   'v1',
   });
 
   // Create a mock authentication server
