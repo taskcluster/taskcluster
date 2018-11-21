@@ -18,7 +18,7 @@ let builder = new APIBuilder({
     'service credential or a one-time signing key.',
   ].join('\n'),
   serviceName: 'secrets',
-  version: 'v1',
+  apiVersion: 'v1',
   context: ['cfg', 'Secret'],
 });
 
