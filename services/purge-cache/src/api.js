@@ -31,7 +31,7 @@ const builder = new APIBuilder({
     'message. This is mainly intended to be used by tools.',
   ].join('\n'),
   serviceName: 'purge-cache',
-  version: 'v1',
+  apiVersion: 'v1',
 });
 
 // Export API
