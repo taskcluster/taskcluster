@@ -31,7 +31,7 @@ const builder = new APIBuilder({
     'for more information.',
   ].join('\n'),
   serviceName: 'hooks',
-  version: 'v1',
+  apiVersion: 'v1',
   params: {
     hookGroupId: /^[a-zA-Z0-9-_]{1,64}$/,
     hookId: /^[a-zA-Z0-9-_\/]{1,64}$/,
