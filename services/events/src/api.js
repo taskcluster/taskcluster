@@ -13,7 +13,7 @@ let builder = new APIBuilder({
   ].join('\n'),
   projectName: 'taskcluster-events',
   serviceName: 'events',
-  version: 'v1',
+  apiVersion: 'v1',
   context: ['listeners'],
   errorCodes: {
     NoReconnects: 204,  // Not supporting automatic reconnects from EventSource
