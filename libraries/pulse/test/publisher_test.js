@@ -122,7 +122,7 @@ suite('publisher_test.js', function() {
       const exchanges = new Exchanges(exchangeOptions);
       exchanges.declare(declarationNoConstant);
       assume(exchanges.reference()).to.deeply.equal({
-        $schema: 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#',
+        $schema: '/schemas/common/exchanges-reference-v0.json#',
         apiVersion: 'v2',
         exchangePrefix: 'exchange/taskcluster-lib-pulse/v2/',
         serviceName: 'lib-pulse',
@@ -150,7 +150,7 @@ suite('publisher_test.js', function() {
       const exchanges = new Exchanges(exchangeOptions);
       exchanges.declare(declarationConstant);
       assume(exchanges.reference()).to.deeply.equal({
-        $schema: 'http://schemas.taskcluster.net/base/v1/exchanges-reference.json#',
+        $schema: '/schemas/common/exchanges-reference-v0.json#',
         apiVersion: 'v2',
         exchangePrefix: 'exchange/taskcluster-lib-pulse/v2/',
         serviceName: 'lib-pulse',
