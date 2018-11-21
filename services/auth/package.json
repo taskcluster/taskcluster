@@ -34,7 +34,7 @@
     "statsum": "^0.5.1",
     "superagent": "^3.8.1",
     "taskcluster-client": "^11.0.1",
-    "taskcluster-lib-api": "^12.5.1",
+    "taskcluster-lib-api": "^12.6.0",
     "taskcluster-lib-app": "^10.0.0",
     "taskcluster-lib-azure": "^10.0.0",
     "taskcluster-lib-docs": "^10.0.0",

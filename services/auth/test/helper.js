@@ -301,7 +301,7 @@ const testServiceBuilder = new Builder({
   title: 'Test API Server',
   description: 'API server for testing',
   serviceName: 'authtest',
-  version: 'v1',
+  apiVersion: 'v1',
 });
 
 testServiceBuilder.declare({
