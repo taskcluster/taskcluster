@@ -11,7 +11,7 @@ const exchanges = new Exchanges({
   ].join('\n'),
   serviceName: 'notify',
   projectName: 'taskcluster-notify',
-  version: 'v1',
+  apiVersion: 'v1',
 });
 
 // Export exchanges
