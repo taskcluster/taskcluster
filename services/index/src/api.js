@@ -111,7 +111,7 @@ let builder = new APIBuilder({
   ].join('\n'),
   projectName:        'taskcluster-index',
   serviceName:        'index',
-  version:            'v1',
+  apiVersion:         'v1',
   context:            ['queue', 'IndexedTask', 'Namespace'],
   params: {
     namespace:        helpers.namespaceFormat,
