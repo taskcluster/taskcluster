@@ -154,7 +154,7 @@ export default class TaskGroup extends Component {
     }
   }
 
-  handleActionClick = ({ target: { name } }) => {
+  handleActionClick = ({ currentTarget: { name } }) => {
     const { action } = this.state.actionData[name];
 
     this.setState({ dialogOpen: true, selectedAction: action });
