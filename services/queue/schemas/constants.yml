@@ -94,7 +94,7 @@ scope:
       A single scope. A scope must be composed of
       printable ASCII characters and spaces.  Scopes ending in more than
       one `*` character are forbidden.
-    pattern: "^[\x20-\x7e]*(?<!\\*\\*)$"
+    pattern: "^[\x20-\x7e]*$"
 
 # Pattern for source URLs; this rules out insecure URLs like data: or javascript:
 source-pattern: "^https?://"
