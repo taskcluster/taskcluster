@@ -2393,10 +2393,10 @@ taskcluster-lib-monitor@^10.0.0:
     statsum "^0.6.0"
     taskcluster-client "^10.0.0"
 
-taskcluster-lib-pulse@^10.1.0:
-  version "10.1.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-pulse/-/taskcluster-lib-pulse-10.1.0.tgz#04db72f5b7c4de6e2ade1b099378e60823b71e87"
-  integrity sha512-fbP6G241XPQrk+0O+ozw1ieMaqQIFSFhKpQZajW64nCb+eaoqOjhTyQ3GfXvtrKbJ7dPG/WbNCcxTpKgc0SHOA==
+taskcluster-lib-pulse@^11.1.0:
+  version "11.1.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-pulse/-/taskcluster-lib-pulse-11.1.0.tgz#bfcdbacbc70d0911b86f843e1a1b90649662cde0"
+  integrity sha512-L8dfCWWJtK3dAipQElOLsMCPiOFsnxzu0qwrQGJ3Qe4V//rxhRsdKsWYWPqejJ887qHTrQLVLMQi10MHY+WCvA==
   dependencies:
     amqplib "^0.5.2"
     aws-sdk "^2.331.0"
