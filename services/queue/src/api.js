@@ -81,7 +81,7 @@ var builder = new APIBuilder({
     ' * Tools, that wants to inspect the state of a task.',
   ].join('\n'),
   serviceName:        'queue',
-  version:            'v1',
+  apiVersion:         'v1',
   params: {
     taskId:           SLUGID_PATTERN,
     taskGroupId:      SLUGID_PATTERN,
