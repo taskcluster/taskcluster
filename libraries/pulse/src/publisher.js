@@ -101,7 +101,7 @@ class Entry {
         summary: key.summary,
         constant: key.constant,
         multipleWords: Boolean(key.multipleWords),
-        required: key.required,
+        required: Boolean(key.required),
       })),
     };
   }
