@@ -2,7 +2,7 @@ const APIBuilder = require('taskcluster-lib-api');
 
 const builder = new APIBuilder({
   serviceName: 'login',
-  version: 'v1',
+  apiVersion: 'v1',
   title:         'Login API',
   description:   [
     'The Login service serves as the interface between external authentication',
