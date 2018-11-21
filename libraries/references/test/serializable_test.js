@@ -29,10 +29,8 @@ suite('serializable_test.js', function() {
       filename: 'test-ref.json',
       content: {
         $schema: '/schemas/common/api-reference-v0.json#',
-        version: 0,
         title: 'test',
         description: 'test',
-        baseUrl: 'https://foo',
         serviceName: 'test',
         apiVersion: 'v1',
         entries: [],
@@ -124,10 +122,8 @@ suite('serializable_test.js', function() {
     const serializable = makeSerializable({references});
     assert_file(serializable, 'references/test/v1/api.json', {
       $schema: '/schemas/common/api-reference-v0.json#',
-      version: 0,
       title: 'test',
       description: 'test',
-      baseUrl: 'https://foo',
       serviceName: 'test',
       apiVersion: 'v1',
       entries: [],
