@@ -27,7 +27,7 @@
     "pug": "^2.0.0-rc.4",
     "slugid": "^1.1.0",
     "taskcluster-client": "^11.0.1",
-    "taskcluster-lib-api": "^12.3.0",
+    "taskcluster-lib-api": "^12.6.0",
     "taskcluster-lib-app": "^10.0.0",
     "taskcluster-lib-docs": "^10.0.0",
     "taskcluster-lib-loader": "^10.0.1",

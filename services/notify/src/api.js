@@ -9,7 +9,7 @@ const builder = new APIBuilder({
     'send emails and post pulse messages.',
   ].join('\n'),
   serviceName: 'notify',
-  version: 'v1',
+  apiVersion: 'v1',
   context: [
     'notifier',
   ],
