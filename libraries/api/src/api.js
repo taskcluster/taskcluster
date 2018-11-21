@@ -39,7 +39,7 @@ class API {
         rootUrl: options.rootUrl,
       }),
       serviceName: options.builder.serviceName,
-      version: options.builder.version,
+      apiVersion: options.builder.apiVersion,
     });
     this.builder = options.builder;
 
@@ -75,14 +75,14 @@ class API {
     // Upload object
     await s3.putObject({
       Bucket:           this.options.referenceBucket,
-      Key:              `${this.builder.serviceName}/${this.builder.version}/api.json`,
+      Key:              `${this.builder.serviceName}/${this.builder.apiVersion}/api.json`,
       Body:             JSON.stringify(this.builder.reference(), undefined, 2),
       ContentType:      'application/json',
     }).promise();
   }
 
   /**
-    * Create an express router, rooted *after* the version in the URL path
+    * Create an express router, rooted *after* the apiVersion in the URL path
     */
   router() {
     const {
@@ -137,7 +137,8 @@ class API {
 
   express(app) {
     // generate the appropriate path for this service, based on the rootUrl
-    const path = url.parse(libUrls.api(this.options.rootUrl, this.builder.serviceName, this.builder.version, '')).path;
+    const path = url.parse(
+      libUrls.api(this.options.rootUrl, this.builder.serviceName, this.builder.apiVersion, '')).path;
     app.use(path, this.router());
   }
 }

@@ -13,7 +13,7 @@ suite('api/route', function() {
     title:        'Test Api',
     description:  'Another test api',
     serviceName:  'test',
-    version:      'v1',
+    apiVersion:   'v1',
     params: {
       taskId:     /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/,
     },

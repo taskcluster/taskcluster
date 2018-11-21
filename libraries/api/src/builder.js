@@ -4,7 +4,6 @@ const Debug = require('debug');
 const assert = require('assert');
 const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
-const Ajv = require('ajv');
 const utils = require('./utils');
 const errors = require('./middleware/errors');
 const ScopeExpressionTemplate = require('./expressions');
@@ -39,11 +38,12 @@ const ping = {
 class APIBuilder {
   constructor(options) {
     assert(!options.schemaPrefix, 'schemaPrefix is no longer allowed!');
-    ['title', 'description', 'serviceName', 'version'].forEach(function(key) {
+    assert(!options.version, 'version is now apiVersion');
+    ['title', 'description', 'serviceName', 'apiVersion'].forEach(function(key) {
       assert(options[key], 'Option \'' + key + '\' must be provided');
     });
     assert(/^[a-z][a-z0-9_-]*$/.test(options.serviceName), `api serviceName "${options.serviceName}" is not valid`);
-    assert(/^v[0-9]+$/.test(options.version), `api version "${options.version}" is not valid`);
+    assert(/^v[0-9]+$/.test(options.apiVersion), `apiVersion "${options.apiVersion}" is not valid`);
     options = _.defaults({
       errorCodes: _.defaults({}, options.errorCodes || {}, errors.ERROR_CODES),
     }, options, {
@@ -56,7 +56,7 @@ class APIBuilder {
       assert(typeof value === 'number', 'Expected HTTP status code to be int');
     });
     this.serviceName = options.serviceName;
-    this.version = options.version;
+    this.apiVersion = options.apiVersion;
     this.title = options.title;
     this.description = options.description;
     this.params = options.params;
@@ -148,12 +148,12 @@ class APIBuilder {
     if (options.input) {
       this.hasSchemas = true;
       assert(!options.input.startsWith('http'), 'entry.input should be a filename, not a url');
-      options.input = `${this.version}/${options.input.replace(/\.(ya?ml|json)$/, '.json#')}`;
+      options.input = `${this.apiVersion}/${options.input.replace(/\.(ya?ml|json)$/, '.json#')}`;
     }
     if (options.output && options.output !== 'blob') {
       this.hasSchemas = true;
       assert(!options.output.startsWith('http'), 'entry.output should be a filename, not a url');
-      options.output = `${this.version}/${options.output.replace(/\.(ya?ml|json)$/, '.json#')}`;
+      options.output = `${this.apiVersion}/${options.output.replace(/\.(ya?ml|json)$/, '.json#')}`;
     }
     this.entries.push(options);
   }
@@ -180,14 +180,11 @@ class APIBuilder {
    */
   reference() {
     const reference = {
-      version:            0,
-      apiVersion:         this.version || 'v1',
-      $schema:            'http://schemas.taskcluster.net/base/v1/api-reference.json#',
+      $schema:            '/schemas/common/api-reference-v0.json#',
       title:              this.title,
       description:        this.description,
-      // We hardcode taskcluster.net here because no other system uses baseUrl
-      baseUrl:            `https://${this.serviceName}.taskcluster.net/${this.version}`,
       serviceName:        this.serviceName,
+      apiVersion:         this.apiVersion,
       entries: this.entries.filter(entry => !entry.noPublish).map(entry => {
         const [route, params] = utils.cleanRouteAndParams(entry.route);
 
@@ -210,19 +207,6 @@ class APIBuilder {
         return retval;
       }),
     };
-
-    const ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
-    const schemaPath = path.join(__dirname, 'schemas', 'api-reference.json');
-    const schema = fs.readFileSync(schemaPath, {encoding: 'utf-8'});
-    const validate = ajv.compile(JSON.parse(schema));
-
-    // Check against it
-    const valid = validate(reference);
-    if (!valid) {
-      debug('Reference:\n%s', JSON.stringify(reference, null, 2));
-      throw new Error(`API.references(): Failed to validate against schema:\n
-        ${ajv.errorsText(validate.errors, {separator: '\n  * '})}`);
-    }
 
     return reference;
   }
