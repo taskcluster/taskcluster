@@ -7,10 +7,6 @@ metadata:
   version: 0
 type: object
 properties:
-  version:
-    description: (deprecated)
-    enum:
-      - 0
   apiVersion:
     description: Version of the API
     type: string
