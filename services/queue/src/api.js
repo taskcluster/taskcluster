@@ -620,6 +620,10 @@ builder.declare({
     workerType: taskDef.workerType,
   });
 
+  if (taskDef.scopes.some(s => s.endsWith('**'))) {
+    return res.reportError('InputError', 'scopes must not end with `**`', {});
+  }
+
   // Ensure group membership is declared, and that schedulerId isn't conflicting
   if (!await ensureTaskGroup(this, taskId, taskDef, res)) {
     return;

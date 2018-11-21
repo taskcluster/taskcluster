@@ -99,7 +99,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       .then(
         () => { throw new Error('Expected an authentication error'); },
         (err) => {
-          if (err.code != 'InputValidationError') {
+          if (err.code != 'InputError') {
             throw err;
           }
         });
