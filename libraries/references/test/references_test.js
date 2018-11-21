@@ -79,10 +79,8 @@ suite('references_test.js', function() {
           filename,
           content: omit(merge({
             $schema: '/schemas/common/api-reference-v0.json#',
-            version: 0,
             apiVersion: 'v2',
             serviceName: 'test',
-            baseUrl: 'http://test.localhost',
             title: 'Test Service',
             description: 'Test Service',
             entries: [],
