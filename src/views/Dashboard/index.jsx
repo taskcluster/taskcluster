@@ -9,6 +9,7 @@ import LibraryIcon from 'mdi-react/LibraryIcon';
 import Dashboard from '../../components/Dashboard';
 import Button from '../../components/Button';
 import { withAuth } from '../../utils/Auth';
+import { DOCS_PATH_PREFIX } from '../../utils/constants';
 
 @hot(module)
 @withStyles(theme => ({
@@ -44,7 +45,7 @@ export default class DashboardView extends Component {
         <br />
         <br />
 
-        <Button component={Link} to="/docs">
+        <Button component={Link} to={DOCS_PATH_PREFIX}>
           <LibraryIcon className={classes.buttonIcon} />I want to see
           documentation.
         </Button>

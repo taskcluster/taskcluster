@@ -1,4 +1,9 @@
 import { fade } from '@material-ui/core/styles/colorManipulator';
+import GestureTapIcon from 'mdi-react/GestureTapIcon';
+import OneTwoThreeIcon from 'mdi-react/OneTwoThreeIcon';
+import BookOpenVariantIcon from 'mdi-react/BookOpenVariantIcon';
+import BookOpenOutlineIcon from 'mdi-react/BookOpenOutlineIcon';
+import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import FileDocumentIcon from 'mdi-react/FileDocumentIcon';
 import FilePdfIcon from 'mdi-react/FilePdfIcon';
 import ArchiveIcon from 'mdi-react/ArchiveIcon';
@@ -155,3 +160,36 @@ export const ACTION_CONTEXT = {
   WORKER_TYPE: 'WORKER_TYPE',
   WORKER: 'WORKER',
 };
+export const DOCS_PATH_PREFIX = '/docs';
+export const DOCS_MENU_ITEMS = [
+  {
+    label: 'Getting Started',
+    path: DOCS_PATH_PREFIX,
+    hasChildren: false,
+    icon: GestureTapIcon,
+  },
+  {
+    label: 'Tutorial',
+    path: `${DOCS_PATH_PREFIX}/tutorial`,
+    hasChildren: false,
+    icon: OneTwoThreeIcon,
+  },
+  {
+    label: 'Manual',
+    path: `${DOCS_PATH_PREFIX}/manual`,
+    hasChildren: true,
+    icon: BookOpenVariantIcon,
+  },
+  {
+    label: 'Reference',
+    path: `${DOCS_PATH_PREFIX}/reference`,
+    hasChildren: true,
+    icon: BookOpenOutlineIcon,
+  },
+  {
+    label: 'Resources',
+    path: `${DOCS_PATH_PREFIX}/resources`,
+    hasChildren: false,
+    icon: OpenInNewIcon,
+  },
+];

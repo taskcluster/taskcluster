@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { bool, node, string } from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -15,16 +15,19 @@ import MenuIcon from 'mdi-react/MenuIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
 import HelpIcon from 'mdi-react/HelpIcon';
 import LightBulbOn from 'mdi-react/LightbulbOnIcon';
+import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 import LightBulbOnOutline from 'mdi-react/LightbulbOnOutlineIcon';
 import PageTitle from '../PageTitle';
 import Helmet from '../Helmet';
 import UserMenu from './UserMenu';
 import SidebarList from './SidebarList';
-import { THEME } from '../../utils/constants';
+import { THEME, DOCS_PATH_PREFIX } from '../../utils/constants';
 import { withThemeToggler } from '../../utils/ToggleTheme';
 import Logo from '../../images/logo.png';
 import ErrorPanel from '../ErrorPanel';
+import DocsSidebarList from './DocsSidebarList';
 
+@withRouter
 @withStyles(
   theme => ({
     root: {
@@ -43,6 +46,14 @@ import ErrorPanel from '../ErrorPanel';
       [theme.breakpoints.up('md')]: {
         width: `calc(100% - ${theme.drawerWidth}px)`,
       },
+    },
+    docsAppBar: {
+      [theme.breakpoints.up('md')]: {
+        width: `calc(100% - ${theme.docsDrawerWidth}px)`,
+      },
+    },
+    docsContentWidth: {
+      width: `calc(100% - ${theme.docsDrawerWidth}px)`,
     },
     appBarTitle: {
       fontFamily: 'Roboto300',
@@ -70,6 +81,9 @@ import ErrorPanel from '../ErrorPanel';
       },
       borderRight: 0,
       backgroundColor: theme.palette.primary.main,
+    },
+    docsDrawerPaper: {
+      width: theme.docsDrawerWidth,
     },
     helpDrawerPaper: {
       width: '40vw',
@@ -108,6 +122,12 @@ import ErrorPanel from '../ErrorPanel';
         width: `calc(100% - ${theme.drawerWidth}px)`,
       },
     },
+    docsContent: {
+      [theme.breakpoints.up('md')]: {
+        marginLeft: theme.docsDrawerWidth,
+        width: `calc(100% - ${theme.docsDrawerWidth}px)`,
+      },
+    },
     appBarButton: {
       marginLeft: theme.spacing.unit,
     },
@@ -132,6 +152,7 @@ export default class Dashboard extends Component {
     disablePadding: false,
     search: null,
     helpView: null,
+    docs: false,
   };
 
   static propTypes = {
@@ -158,6 +179,10 @@ export default class Dashboard extends Component {
      * be shown every time.
      */
     helpView: node,
+    /**
+     * If true, the documentation table of content will be displayed.
+     */
+    docs: bool,
   };
 
   static getDerivedStateFromError(error) {
@@ -194,6 +219,9 @@ export default class Dashboard extends Component {
       search,
       helpView,
       onToggleTheme,
+      docs,
+      history,
+      staticContext: _,
       ...props
     } = this.props;
     const { error, mobileOpen, showHelpView, showLogo } = this.state;
@@ -230,15 +258,19 @@ export default class Dashboard extends Component {
         <Divider />
         <UserMenu />
         <Divider />
-        <SidebarList />
+        {docs ? <DocsSidebarList /> : <SidebarList />}
       </div>
     );
+    const isDocs = history.location.pathname.startsWith(DOCS_PATH_PREFIX);
 
     return (
       <div className={classes.root}>
         <Helmet />
         <PageTitle>{title}</PageTitle>
-        <AppBar className={classes.appBar}>
+        <AppBar
+          className={classNames(classes.appBar, {
+            [classes.docsAppBar]: isDocs,
+          })}>
           <Toolbar>
             <IconButton
               color="inherit"
@@ -262,6 +294,14 @@ export default class Dashboard extends Component {
                 )}
               </IconButton>
             </Tooltip>
+            <Tooltip placement="bottom" title="Documentation">
+              <IconButton
+                className={classes.appBarButton}
+                component={Link}
+                to={DOCS_PATH_PREFIX}>
+                <BookOpenPageVariantIcon className={classes.appIcon} />
+              </IconButton>
+            </Tooltip>
             {helpView && (
               <Tooltip placement="bottom" title="Page Information">
                 <IconButton
@@ -280,7 +320,9 @@ export default class Dashboard extends Component {
             open={mobileOpen}
             onClose={this.handleDrawerToggle}
             classes={{
-              paper: classes.drawerPaper,
+              paper: classNames(classes.drawerPaper, {
+                [classes.docsDrawerPaper]: isDocs,
+              }),
             }}
             ModalProps={{
               keepMounted: true,
@@ -296,7 +338,9 @@ export default class Dashboard extends Component {
               elevation: 2,
             }}
             classes={{
-              paper: classes.drawerPaper,
+              paper: classNames(classes.drawerPaper, {
+                [classes.docsDrawerPaper]: isDocs,
+              }),
             }}>
             {drawer}
           </Drawer>
@@ -326,6 +370,7 @@ export default class Dashboard extends Component {
             classes.content,
             {
               [classes.contentPadding]: !disablePadding,
+              [classes.docsContent]: isDocs,
             },
             className
           )}

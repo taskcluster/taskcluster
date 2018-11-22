@@ -107,6 +107,15 @@ module.exports = {
           .test(/JSONStream/)
           .use('shebang')
             .loader('shebang-loader');
+
+      neutrino.config.module
+        .rule('markdown')
+          .test(/\.mdx?$/)
+          .use('babel-loader')
+            .loader('babel-loader')
+            .end()
+          .use('mdx-loader')
+            .loader('mdx-loader');
     },
     '@neutrinojs/karma',
   ],

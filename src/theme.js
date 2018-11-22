@@ -86,6 +86,7 @@ const createTheme = isDarkTheme => ({
     quad: 32,
   },
   drawerWidth: THEME.DRAWER_WIDTH,
+  docsDrawerWidth: THEME.DRAWER_WIDTH + 125,
   mixins: {
     highlight: {
       fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
@@ -191,6 +192,9 @@ const createTheme = isDarkTheme => ({
       sizeSmall: {
         minWidth: 36,
       },
+      extendedFab: {
+        height: 36,
+      },
     },
     MuiCircularProgress: {
       colorPrimary: {
@@ -271,7 +275,7 @@ export default {
       sidebarBackground: theme.palette.primary.main,
       codeBackground: theme.palette.primary.main,
     },
-    sidebarWidth: theme.drawerWidth,
+    sidebarWidth: THEME.DRAWER_WIDTH,
     maxWidth: '100vw',
   },
 };

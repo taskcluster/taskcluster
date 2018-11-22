@@ -1,14 +1,10 @@
 import React, { Component } from 'react';
 import List from '@material-ui/core/List';
-import LibraryIcon from 'mdi-react/LibraryIcon';
 import HexagonMultipleIcon from 'mdi-react/HexagonMultipleIcon';
-import HumanIcon from 'mdi-react/HumanIcon';
 import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
-import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 import GroupIcon from 'mdi-react/GroupIcon';
 import AccountMultipleIcon from 'mdi-react/AccountMultipleIcon';
 import AmazonIcon from 'mdi-react/AmazonIcon';
-import HelpCircleOutlineIcon from 'mdi-react/HelpCircleOutlineIcon';
 import MixcloudIcon from 'mdi-react/MixcloudIcon';
 import BackupRestoreIcon from 'mdi-react/BackupRestoreIcon';
 import AccountKeyIcon from 'mdi-react/AccountKeyIcon';
@@ -93,28 +89,6 @@ export default class SidebarList extends Component {
         <SidebarListItem to="/quickstart" icon={<GithubBoxIcon />}>
           GitHub Quickstart
         </SidebarListItem>
-
-        <SidebarListGroup
-          to="/docs"
-          title="Documentation"
-          icon={<LibraryIcon />}>
-          <SidebarListItem to="/docs/tutorial" icon={<HumanIcon />}>
-            Tutorial
-          </SidebarListItem>
-          <SidebarListItem
-            to="/docs/references"
-            icon={<BookOpenPageVariantIcon />}>
-            References
-          </SidebarListItem>
-          <SidebarListItem
-            to="/docs/resources"
-            icon={<HelpCircleOutlineIcon />}>
-            Resources
-          </SidebarListItem>
-          <SidebarListItem to="/docs/people" icon={<AccountMultipleIcon />}>
-            People
-          </SidebarListItem>
-        </SidebarListGroup>
       </List>
     );
   }

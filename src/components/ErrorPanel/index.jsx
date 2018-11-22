@@ -1,7 +1,16 @@
 import React, { Component } from 'react';
+import { withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames';
 import { oneOfType, string, object } from 'prop-types';
 import MuiErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
 
+@withStyles(theme => ({
+  warning: {
+    '& a': {
+      color: theme.palette.secondary.dark,
+    },
+  },
+}))
 export default class ErrorPanel extends Component {
   static propTypes = {
     /** Error to display. */
@@ -40,7 +49,7 @@ export default class ErrorPanel extends Component {
   };
 
   render() {
-    const { error: _, ...props } = this.props;
+    const { classes, error: _, ...props } = this.props;
     const { error } = this.state;
     const errorMessage =
       error && error.graphQLErrors && error.graphQLErrors[0]
@@ -50,6 +59,7 @@ export default class ErrorPanel extends Component {
     return (
       error && (
         <MuiErrorPanel
+          className={classNames({ [classes.warning]: Boolean(props.warning) })}
           error={errorMessage}
           onClose={this.handleErrorClose}
           {...props}

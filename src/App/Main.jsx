@@ -39,6 +39,7 @@ import ErrorPanel from '../components/ErrorPanel';
     },
     'pre, :not(pre) > code': {
       ...theme.mixins.highlight,
+      fontSize: theme.typography.body2.fontSize,
     },
     '.json-inspector__leaf': {
       '&.json-inspector__leaf_root': {
