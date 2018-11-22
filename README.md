@@ -14,6 +14,7 @@
 
 * Download the latest release for your platform from https://github.com/taskcluster/generic-worker/releases
 * Download the latest release of livelog for your platform from https://github.com/taskcluster/livelog/releases
+* Download the latest release of livelog for your platform from https://github.com/taskcluster/taskcluster-proxy/releases
 * For darwin/linux, make the binaries executable: `chmod a+x {generic-worker,livelog}*`
 
 # Build from source
@@ -23,6 +24,7 @@ If you prefer not to use a prepackaged binary, or want to have the latest unrele
 * Head over to https://golang.org/dl/ and follow the instructions for your platform. __Note, go 1.8 or higher is required__. Be sure to set your GOPATH to something appropriate.
 * Run `go get github.com/taskcluster/generic-worker`
 * Run `go get github.com/taskcluster/livelog`
+* Run `go get github.com/taskcluster/taskcluster-proxy`
 
 All being well, the binaries will be built under `${GOPATH}/bin`.
 
