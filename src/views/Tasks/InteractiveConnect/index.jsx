@@ -260,7 +260,7 @@ export default class InteractiveConnect extends Component {
           <ErrorPanel
             className={classes.warningPanel}
             warning
-            error="This is not a development environment! Interactive
+            error="This is not a development environment. Interactive
               tasks can help debug issues, but note that these workers may be spot
               nodes that can be terminated at any time."
           />
