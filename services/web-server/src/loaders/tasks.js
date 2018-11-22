@@ -47,7 +47,7 @@ export default ({ queue, index }) => {
             actions: filter ? sift(filter, raw.actions) : raw.actions,
           };
         } catch (e) {
-          if (e.status === 404) {
+          if (e.response.status === 404 || e.response.status === 424) {
             return null;
           }
 
