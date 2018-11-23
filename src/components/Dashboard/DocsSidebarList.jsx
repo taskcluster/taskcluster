@@ -72,6 +72,9 @@ const getDocsSectionFromPathname = pathname => {
   listItem: {
     listStyle: 'none',
   },
+  divider: {
+    margin: `${theme.spacing.double}px 0`,
+  },
 }))
 export default class DocsSidebarList extends Component {
   state = {
@@ -112,7 +115,7 @@ export default class DocsSidebarList extends Component {
     if (node.children && node.children.length) {
       return (
         <Fragment key={node.path}>
-          {isRoot && node.prev && <hr />}
+          {isRoot && node.prev && <Divider className={classes.divider} />}
           <Typography
             className={classNames(classes.link, classes.hover, {
               [classes.header]: isRoot,
