@@ -54,7 +54,7 @@ const getDocsSectionFromPathname = pathname => {
   },
   header: {
     textTransform: 'uppercase',
-    marginTop: theme.spacing.triple,
+    fontWeight: 'bold',
   },
   section: {
     marginBottom: theme.spacing.unit,
@@ -67,7 +67,7 @@ const getDocsSectionFromPathname = pathname => {
     margin: `${theme.spacing.unit}px 0 ${theme.spacing.double}px 0`,
     padding: `0 ${theme.spacing.double}px`,
     overflowY: 'auto',
-    maxHeight: '45vh',
+    maxHeight: '48vh',
   },
   listItem: {
     listStyle: 'none',
@@ -112,6 +112,7 @@ export default class DocsSidebarList extends Component {
     if (node.children && node.children.length) {
       return (
         <Fragment key={node.path}>
+          {isRoot && node.prev && <hr />}
           <Typography
             className={classNames(classes.link, classes.hover, {
               [classes.header]: isRoot,
