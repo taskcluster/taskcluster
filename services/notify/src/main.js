@@ -171,6 +171,7 @@ const load = loader({
     requires: ['profile', 'cfg', 'monitor', 'notifier', 'pulseClient', 'queue', 'queueEvents'],
     setup: async ({cfg, monitor, notifier, pulseClient, queue, queueEvents}) => {
       let handler = new Handler({
+        rootUrl: cfg.taskcluster.rootUrl,
         notifier,
         monitor:                  monitor.prefix('handler'),
         routePrefix:              cfg.app.routePrefix,

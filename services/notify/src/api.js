@@ -4,9 +4,8 @@ const debug = require('debug')('notify');
 const builder = new APIBuilder({
   title: 'Notification Service',
   description: [
-    'The notification service, typically available at `notify.taskcluster.net`',
-    'listens for tasks with associated notifications and handles requests to',
-    'send emails and post pulse messages.',
+    'The notification service listens for tasks with associated notifications',
+    'and handles requests to send emails and post pulse messages.',
   ].join('\n'),
   serviceName: 'notify',
   apiVersion: 'v1',

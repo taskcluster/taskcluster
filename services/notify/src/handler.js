@@ -4,12 +4,23 @@ const assert = require('assert');
 const taskcluster = require('taskcluster-client');
 const jsone = require('json-e');
 const {consume} = require('taskcluster-lib-pulse');
+const libUrls = require('taskcluster-lib-urls');
 
 /** Handler listening for tasks that carries notifications */
 class Handler {
-  constructor({notifier, monitor, routePrefix, ignoreTaskReasonResolved, pulseClient, queue, 
-    queueEvents}) {
+  constructor(options) {
+    const {
+      rootUrl,
+      notifier,
+      monitor,
+      routePrefix,
+      ignoreTaskReasonResolved,
+      pulseClient,
+      queue,
+      queueEvents,
+    } = options;
 
+    this.rootUrl = rootUrl;
     this.queue = queue;
     this.notifier = notifier;
     this.monitor = monitor;
@@ -63,8 +74,8 @@ class Handler {
     // Load task definition
     let taskId = status.taskId;
     let task = await this.queue.task(taskId);
-    let href = `https://tools.taskcluster.net/task-inspector/#${taskId}`;
-    let groupHref = `https://tools.taskcluster.net/task-group-inspector/#/${task.taskGroupId}`;
+    let href = libUrls.ui(this.rootUrl, `tasks/${taskId}`);
+    let groupHref = libUrls.ui(this.rootUrl, `groups/${taskId}/tasks`);
     let runCount = status.runs.length;
 
     debug(`Received message for ${taskId} with notify routes. Finding notifications.`);
