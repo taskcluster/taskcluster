@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Complete Artifact Request",
+  "description": "Complete an aritifact",
+  "type": "object",
+  "properties": {
+    "etags": {
+      "description": "A list of the etags given by the API of the blob storage provider.  This is an opaque\nstring value provided by the API.\n",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "etags"
+  ],
+  "$id": "/schemas/queue/v1/put-artifact-request.json#"
+}

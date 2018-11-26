@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "project": "docker-exec-websocket-server",
+  "tier": "libraries",
+  "menuIndex": 10
+}

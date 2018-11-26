@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Poll Task Urls Response",
+  "description": "Response to request for poll task urls.\n",
+  "type": "object",
+  "properties": {
+    "queues": {
+      "type": "array",
+      "title": "Queues To Poll From",
+      "description": "List of signed URLs for queues to poll tasks from, they must be called\nin the order they are given. As the first entry in this array **may**\nhave higher priority.\n",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "title": "Signed URLs for a queue",
+        "description": "Object holding two signed URLs for an azure queue, one for fetching\nmessages, and another for deleting messages. Remember to `claimTask`\nbefore deleting the message, and delete message even if the `claimTask`\noperation fails with a 400 status code. Don't delete it on other status\ncodes!\n",
+        "properties": {
+          "signedPollUrl": {
+            "type": "string",
+            "format": "uri",
+            "title": "Signed Get Message URL",
+            "description": "Signed URL to get message from the Azure Queue Storage queue,\nthat holds messages for the given `provisionerId` and `workerType`.\nNote that this URL returns XML, see documentation for the Azure\nQueue Storage\n[REST API](http://msdn.microsoft.com/en-us/library/azure/dd179474.aspx)\nfor details.\nWhen you have a message you can use `claimTask` to claim the task.\nYou will need to parse the XML response and base64 decode and\nJSON parse the `MessageText`.\nAfter you have called `claimTask` you **must** us the\n`signedDeleteUrl` to delete the message.\n**Remark**, you are allowed to append `&numofmessages=N`,\nwhere N < 32, to the URLs if you wish to obtain more than one\nmessage at the time.\n"
+          },
+          "signedDeleteUrl": {
+            "type": "string",
+            "pattern": "^https://",
+            "title": "Signed Delete Message URL",
+            "description": "Signed URL to delete messages that have been received using the\n`signedPollUrl`. You **must** do this to avoid receiving the same\nmessage again.\nTo use this URL you must substitute `{{messageId}}` and\n`{{popReceipt}}` with `MessageId` and `PopReceipt` from the XML\nresponse the `signedPollUrl` gave you. It is important that you\n`encodeURIComponent` both `MessageId` and `PopReceipt` prior to\nsubstitution, otherwise you will experience intermittent failures!\nNote this URL only works with `DELETE` request.\n"
+          }
+        },
+        "required": [
+          "signedPollUrl",
+          "signedDeleteUrl"
+        ]
+      }
+    },
+    "expires": {
+      "title": "Signed URL Expiration",
+      "description": "Date and time after which the signed URLs provided in this response\nexpires and not longer works for authentication.\n",
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "queues",
+    "expires"
+  ],
+  "$id": "/schemas/queue/v1/poll-task-urls-response.json#"
+}

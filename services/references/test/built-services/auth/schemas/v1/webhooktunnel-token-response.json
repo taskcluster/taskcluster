@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Webhooktunnel Token Response",
+  "description": "Token for connecting a worker to webhooktunnel proxy\n",
+  "type": "object",
+  "properties": {
+    "tunnelId": {
+      "type": "string",
+      "title": "Proxy Connection ID",
+      "description": "id for proxy connection\n"
+    },
+    "token": {
+      "type": "string",
+      "title": "Auth Token",
+      "description": "jwt token to be used as `Bearer <token>` when connecting to proxy. \n"
+    },
+    "proxyUrl": {
+      "type": "string",
+      "title": "Proxy URL",
+      "description": "websocket url at which proxy is hosted\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "token",
+    "tunnelId",
+    "proxyUrl"
+  ],
+  "$id": "/schemas/auth/v1/webhooktunnel-token-response.json#"
+}

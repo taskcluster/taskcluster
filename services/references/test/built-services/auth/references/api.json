@@ -1,0 +1,495 @@
+{
+  "$schema": "/schemas/common/api-reference-v0.json#",
+  "title": "Authentication API",
+  "description": "Authentication related API end-points for Taskcluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authorize a request signed with Taskcluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n\nNote that in this service \"authentication\" refers to validating the\ncorrectness of the supplied credentials (that the caller posesses the\nappropriate access token). This service does not provide any kind of user\nauthentication (identifying a particular person).\n\n### Clients\nThe authentication service manages _clients_, at a high-level each client\nconsists of a `clientId`, an `accessToken`, scopes, and some metadata.\nThe `clientId` and `accessToken` can be used for authentication when\ncalling Taskcluster APIs.\n\nThe client's scopes control the client's access to Taskcluster resources.\nThe scopes are *expanded* by substituting roles, as defined below.\n\n### Roles\nA _role_ consists of a `roleId`, a set of scopes and a description.\nEach role constitutes a simple _expansion rule_ that says if you have\nthe scope: `assume:<roleId>` you get the set of scopes the role has.\nThink of the `assume:<roleId>` as a scope that allows a client to assume\na role.\n\nAs in scopes the `*` kleene star also have special meaning if it is\nlocated at the end of a `roleId`. If you have a role with the following\n`roleId`: `my-prefix*`, then any client which has a scope staring with\n`assume:my-prefix` will be allowed to assume the role.\n\n### Guarded Services\nThe authentication service also has API end-points for delegating access\nto some guarded service such as AWS S3, or Azure Table Storage.\nGenerally, we add API end-points to this server when we wish to use\nTaskcluster credentials to grant access to a third-party service used\nby many Taskcluster components.",
+  "serviceName": "auth",
+  "apiVersion": "v1",
+  "entries": [
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/ping",
+      "query": [],
+      "args": [],
+      "name": "ping",
+      "stability": "stable",
+      "title": "Ping Server",
+      "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/clients/",
+      "query": [
+        "prefix",
+        "continuationToken",
+        "limit"
+      ],
+      "args": [],
+      "name": "listClients",
+      "stability": "stable",
+      "title": "List Clients",
+      "output": "v1/list-clients-response.json#",
+      "description": "Get a list of all clients.  With `prefix`, only clients for which\nit is a prefix of the clientId are returned.\n\nBy default this end-point will try to return up to 1000 clients in one\nrequest. But it **may return less, even none**.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listClients` with the last `continuationToken` until you\nget a result without a `continuationToken`."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/clients/<clientId>",
+      "query": [],
+      "args": [
+        "clientId"
+      ],
+      "name": "client",
+      "stability": "stable",
+      "title": "Get Client",
+      "output": "v1/get-client-response.json#",
+      "description": "Get information about a single client."
+    },
+    {
+      "type": "function",
+      "method": "put",
+      "route": "/clients/<clientId>",
+      "query": [],
+      "args": [
+        "clientId"
+      ],
+      "name": "createClient",
+      "stability": "stable",
+      "title": "Create Client",
+      "input": "v1/create-client-request.json#",
+      "output": "v1/create-client-response.json#",
+      "description": "Create a new client and get the `accessToken` for this client.\nYou should store the `accessToken` from this API call as there is no\nother way to retrieve it.\n\nIf you loose the `accessToken` you can call `resetAccessToken` to reset\nit, and a new `accessToken` will be returned, but you cannot retrieve the\ncurrent `accessToken`.\n\nIf a client with the same `clientId` already exists this operation will\nfail. Use `updateClient` if you wish to update an existing client.\n\nThe caller's scopes must satisfy `scopes`.",
+      "scopes": {
+        "AllOf": [
+          "auth:create-client:<clientId>",
+          {
+            "for": "scope",
+            "in": "scopes",
+            "each": "<scope>"
+          }
+        ]
+      }
+    },
+    {
+      "type": "function",
+      "method": "post",
+      "route": "/clients/<clientId>/reset",
+      "query": [],
+      "args": [
+        "clientId"
+      ],
+      "name": "resetAccessToken",
+      "stability": "stable",
+      "title": "Reset `accessToken`",
+      "output": "v1/create-client-response.json#",
+      "description": "Reset a clients `accessToken`, this will revoke the existing\n`accessToken`, generate a new `accessToken` and return it from this\ncall.\n\nThere is no way to retrieve an existing `accessToken`, so if you loose it\nyou must reset the accessToken to acquire it again.",
+      "scopes": "auth:reset-access-token:<clientId>"
+    },
+    {
+      "type": "function",
+      "method": "post",
+      "route": "/clients/<clientId>",
+      "query": [],
+      "args": [
+        "clientId"
+      ],
+      "name": "updateClient",
+      "stability": "stable",
+      "title": "Update Client",
+      "input": "v1/create-client-request.json#",
+      "output": "v1/get-client-response.json#",
+      "description": "Update an exisiting client. The `clientId` and `accessToken` cannot be\nupdated, but `scopes` can be modified.  The caller's scopes must\nsatisfy all scopes being added to the client in the update operation.\nIf no scopes are given in the request, the client's scopes remain\nunchanged",
+      "scopes": {
+        "AllOf": [
+          "auth:update-client:<clientId>",
+          {
+            "for": "scope",
+            "in": "scopesAdded",
+            "each": "<scope>"
+          }
+        ]
+      }
+    },
+    {
+      "type": "function",
+      "method": "post",
+      "route": "/clients/<clientId>/enable",
+      "query": [],
+      "args": [
+        "clientId"
+      ],
+      "name": "enableClient",
+      "stability": "stable",
+      "title": "Enable Client",
+      "output": "v1/get-client-response.json#",
+      "description": "Enable a client that was disabled with `disableClient`.  If the client\nis already enabled, this does nothing.\n\nThis is typically used by identity providers to re-enable clients that\nhad been disabled when the corresponding identity's scopes changed.",
+      "scopes": "auth:enable-client:<clientId>"
+    },
+    {
+      "type": "function",
+      "method": "post",
+      "route": "/clients/<clientId>/disable",
+      "query": [],
+      "args": [
+        "clientId"
+      ],
+      "name": "disableClient",
+      "stability": "stable",
+      "title": "Disable Client",
+      "output": "v1/get-client-response.json#",
+      "description": "Disable a client.  If the client is already disabled, this does nothing.\n\nThis is typically used by identity providers to disable clients when the\ncorresponding identity's scopes no longer satisfy the client's scopes.",
+      "scopes": "auth:disable-client:<clientId>"
+    },
+    {
+      "type": "function",
+      "method": "delete",
+      "route": "/clients/<clientId>",
+      "query": [],
+      "args": [
+        "clientId"
+      ],
+      "name": "deleteClient",
+      "stability": "stable",
+      "title": "Delete Client",
+      "description": "Delete a client, please note that any roles related to this client must\nbe deleted independently.",
+      "scopes": "auth:delete-client:<clientId>"
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/roles/",
+      "query": [],
+      "args": [],
+      "name": "listRoles",
+      "stability": "stable",
+      "title": "List Roles",
+      "output": "v1/list-roles-response.json#",
+      "description": "Get a list of all roles, each role object also includes the list of\nscopes it expands to."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/roles/<roleId>",
+      "query": [],
+      "args": [
+        "roleId"
+      ],
+      "name": "role",
+      "stability": "stable",
+      "title": "Get Role",
+      "output": "v1/get-role-response.json#",
+      "description": "Get information about a single role, including the set of scopes that the\nrole expands to."
+    },
+    {
+      "type": "function",
+      "method": "put",
+      "route": "/roles/<roleId>",
+      "query": [],
+      "args": [
+        "roleId"
+      ],
+      "name": "createRole",
+      "stability": "stable",
+      "title": "Create Role",
+      "input": "v1/create-role-request.json#",
+      "output": "v1/get-role-response.json#",
+      "description": "Create a new role.\n\nThe caller's scopes must satisfy the new role's scopes.\n\nIf there already exists a role with the same `roleId` this operation\nwill fail. Use `updateRole` to modify an existing role.\n\nCreation of a role that will generate an infinite expansion will result\nin an error response.",
+      "scopes": {
+        "AllOf": [
+          "auth:create-role:<roleId>",
+          {
+            "for": "scope",
+            "in": "scopes",
+            "each": "<scope>"
+          }
+        ]
+      }
+    },
+    {
+      "type": "function",
+      "method": "post",
+      "route": "/roles/<roleId>",
+      "query": [],
+      "args": [
+        "roleId"
+      ],
+      "name": "updateRole",
+      "stability": "stable",
+      "title": "Update Role",
+      "input": "v1/create-role-request.json#",
+      "output": "v1/get-role-response.json#",
+      "description": "Update an existing role.\n\nThe caller's scopes must satisfy all of the new scopes being added, but\nneed not satisfy all of the client's existing scopes.\n\nAn update of a role that will generate an infinite expansion will result\nin an error response.",
+      "scopes": {
+        "AllOf": [
+          "auth:update-role:<roleId>",
+          {
+            "for": "scope",
+            "in": "scopesAdded",
+            "each": "<scope>"
+          }
+        ]
+      }
+    },
+    {
+      "type": "function",
+      "method": "delete",
+      "route": "/roles/<roleId>",
+      "query": [],
+      "args": [
+        "roleId"
+      ],
+      "name": "deleteRole",
+      "stability": "stable",
+      "title": "Delete Role",
+      "description": "Delete a role. This operation will succeed regardless of whether or not\nthe role exists.",
+      "scopes": "auth:delete-role:<roleId>"
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/scopes/expand",
+      "query": [],
+      "args": [],
+      "name": "expandScopesGet",
+      "stability": "deprecated",
+      "title": "Expand Scopes",
+      "input": "v1/scopeset.json#",
+      "output": "v1/scopeset.json#",
+      "description": "Return an expanded copy of the given scopeset, with scopes implied by any\nroles included.\n\nThis call uses the GET method with an HTTP body.  It remains only for\nbackward compatibility."
+    },
+    {
+      "type": "function",
+      "method": "post",
+      "route": "/scopes/expand",
+      "query": [],
+      "args": [],
+      "name": "expandScopes",
+      "stability": "stable",
+      "title": "Expand Scopes",
+      "input": "v1/scopeset.json#",
+      "output": "v1/scopeset.json#",
+      "description": "Return an expanded copy of the given scopeset, with scopes implied by any\nroles included."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/scopes/current",
+      "query": [],
+      "args": [],
+      "name": "currentScopes",
+      "stability": "stable",
+      "title": "Get Current Scopes",
+      "output": "v1/scopeset.json#",
+      "description": "Return the expanded scopes available in the request, taking into account all sources\nof scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,\nand roles)."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/aws/s3/<level>/<bucket>/<prefix>",
+      "query": [
+        "format"
+      ],
+      "args": [
+        "level",
+        "bucket",
+        "prefix"
+      ],
+      "name": "awsS3Credentials",
+      "stability": "stable",
+      "title": "Get Temporary Read/Write Credentials S3",
+      "output": "v1/aws-s3-credentials-response.json#",
+      "description": "Get temporary AWS credentials for `read-write` or `read-only` access to\na given `bucket` and `prefix` within that bucket.\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned. Please note that the `level`\nparameter is required in the scope guarding access.  The bucket name must\nnot contain `.`, as recommended by Amazon.\n\nThis method can only allow access to a whitelisted set of buckets.  To add\na bucket to that whitelist, contact the Taskcluster team, who will add it to\nthe appropriate IAM policy.  If the bucket is in a different AWS account, you\nwill also need to add a bucket policy allowing access from the Taskcluster\naccount.  That policy should look like this:\n\n```js\n{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"allow-taskcluster-auth-to-delegate-access\",\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"AWS\": \"arn:aws:iam::692406183521:root\"\n      },\n      \"Action\": [\n        \"s3:ListBucket\",\n        \"s3:GetObject\",\n        \"s3:PutObject\",\n        \"s3:DeleteObject\",\n        \"s3:GetBucketLocation\"\n      ],\n      \"Resource\": [\n        \"arn:aws:s3:::<bucket>\",\n        \"arn:aws:s3:::<bucket>/*\"\n      ]\n    }\n  ]\n}\n```\n\nThe credentials are set to expire after an hour, but this behavior is\nsubject to change. Hence, you should always read the `expires` property\nfrom the response, if you intend to maintain active credentials in your\napplication.\n\nPlease note that your `prefix` may not start with slash `/`. Such a prefix\nis allowed on S3, but we forbid it here to discourage bad behavior.\n\nAlso note that if your `prefix` doesn't end in a slash `/`, the STS\ncredentials may allow access to unexpected keys, as S3 does not treat\nslashes specially.  For example, a prefix of `my-folder` will allow\naccess to `my-folder/file.txt` as expected, but also to `my-folder.txt`,\nwhich may not be intended.\n\nFinally, note that the `PutObjectAcl` call is not allowed.  Passing a canned\nACL other than `private` to `PutObject` is treated as a `PutObjectAcl` call, and\nwill result in an access-denied error from AWS.  This limitation is due to a\nsecurity flaw in Amazon S3 which might otherwise allow indefinite access to\nuploaded objects.\n\n**EC2 metadata compatibility**, if the querystring parameter\n`?format=iam-role-compat` is given, the response will be compatible\nwith the JSON exposed by the EC2 metadata service. This aims to ease\ncompatibility for libraries and tools built to auto-refresh credentials.\nFor details on the format returned by EC2 metadata service see:\n[EC2 User Guide](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).",
+      "scopes": {
+        "if": "levelIsReadOnly",
+        "then": {
+          "AnyOf": [
+            "auth:aws-s3:read-only:<bucket>/<prefix>",
+            "auth:aws-s3:read-write:<bucket>/<prefix>"
+          ]
+        },
+        "else": "auth:aws-s3:read-write:<bucket>/<prefix>"
+      }
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/azure/accounts",
+      "query": [],
+      "args": [],
+      "name": "azureAccounts",
+      "stability": "stable",
+      "title": "List Accounts Managed by Auth",
+      "output": "v1/azure-account-list-response.json#",
+      "description": "Retrieve a list of all Azure accounts managed by Taskcluster Auth.",
+      "scopes": "auth:azure-table:list-accounts"
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/azure/<account>/tables",
+      "query": [
+        "continuationToken"
+      ],
+      "args": [
+        "account"
+      ],
+      "name": "azureTables",
+      "stability": "stable",
+      "title": "List Tables in an Account Managed by Auth",
+      "output": "v1/azure-table-list-response.json#",
+      "description": "Retrieve a list of all tables in an account.",
+      "scopes": "auth:azure-table:list-tables:<account>"
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/azure/<account>/table/<table>/<level>",
+      "query": [],
+      "args": [
+        "account",
+        "table",
+        "level"
+      ],
+      "name": "azureTableSAS",
+      "stability": "stable",
+      "title": "Get Shared-Access-Signature for Azure Table",
+      "output": "v1/azure-table-access-response.json#",
+      "description": "Get a shared access signature (SAS) string for use with a specific Azure\nTable Storage table.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ntable if it doesn't already exist.",
+      "scopes": {
+        "if": "levelIsReadOnly",
+        "then": {
+          "AnyOf": [
+            "auth:azure-table:read-only:<account>/<table>",
+            "auth:azure-table:read-write:<account>/<table>"
+          ]
+        },
+        "else": "auth:azure-table:read-write:<account>/<table>"
+      }
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/azure/<account>/containers",
+      "query": [
+        "continuationToken"
+      ],
+      "args": [
+        "account"
+      ],
+      "name": "azureContainers",
+      "stability": "stable",
+      "title": "List containers in an Account Managed by Auth",
+      "output": "v1/azure-container-list-response.json#",
+      "description": "Retrieve a list of all containers in an account.",
+      "scopes": "auth:azure-container:list-containers:<account>"
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/azure/<account>/containers/<container>/<level>",
+      "query": [],
+      "args": [
+        "account",
+        "container",
+        "level"
+      ],
+      "name": "azureContainerSAS",
+      "stability": "stable",
+      "title": "Get Shared-Access-Signature for Azure Container",
+      "output": "v1/azure-container-response.json#",
+      "description": "Get a shared access signature (SAS) string for use with a specific Azure\nBlob Storage container.\n\nThe `level` parameter can be `read-write` or `read-only` and determines\nwhich type of credentials are returned.  If level is read-write, it will create the\ncontainer if it doesn't already exist.",
+      "scopes": {
+        "if": "levelIsReadOnly",
+        "then": {
+          "AnyOf": [
+            "auth:azure-container:read-only:<account>/<container>",
+            "auth:azure-container:read-write:<account>/<container>"
+          ]
+        },
+        "else": "auth:azure-container:read-write:<account>/<container>"
+      }
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/sentry/<project>/dsn",
+      "query": [],
+      "args": [
+        "project"
+      ],
+      "name": "sentryDSN",
+      "stability": "stable",
+      "title": "Get DSN for Sentry Project",
+      "output": "v1/sentry-dsn-response.json#",
+      "description": "Get temporary DSN (access credentials) for a sentry project.\nThe credentials returned can be used with any Sentry client for up to\n24 hours, after which the credentials will be automatically disabled.\n\nIf the project doesn't exist it will be created, and assigned to the\ninitial team configured for this component. Contact a Sentry admin\nto have the project transferred to a team you have access to if needed",
+      "scopes": "auth:sentry:<project>"
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/statsum/<project>/token",
+      "query": [],
+      "args": [
+        "project"
+      ],
+      "name": "statsumToken",
+      "stability": "stable",
+      "title": "Get Token for Statsum Project",
+      "output": "v1/statsum-token-response.json#",
+      "description": "Get temporary `token` and `baseUrl` for sending metrics to statsum.\n\nThe token is valid for 24 hours, clients should refresh after expiration.",
+      "scopes": "auth:statsum:<project>"
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/webhooktunnel",
+      "query": [],
+      "args": [],
+      "name": "webhooktunnelToken",
+      "stability": "stable",
+      "title": "Get Token for Webhooktunnel Proxy",
+      "output": "v1/webhooktunnel-token-response.json#",
+      "description": "Get temporary `token` and `id` for connecting to webhooktunnel\nThe token is valid for 96 hours, clients should refresh after expiration.",
+      "scopes": "auth:webhooktunnel"
+    },
+    {
+      "type": "function",
+      "method": "post",
+      "route": "/authenticate-hawk",
+      "query": [],
+      "args": [],
+      "name": "authenticateHawk",
+      "stability": "stable",
+      "title": "Authenticate Hawk Request",
+      "input": "v1/authenticate-hawk-request.json#",
+      "output": "v1/authenticate-hawk-response.json#",
+      "description": "Validate the request signature given on input and return list of scopes\nthat the authenticating client has.\n\nThis method is used by other services that wish rely on Taskcluster\ncredentials for authentication. This way we can use Hawk without having\nthe secret credentials leave this service."
+    },
+    {
+      "type": "function",
+      "method": "post",
+      "route": "/test-authenticate",
+      "query": [],
+      "args": [],
+      "name": "testAuthenticate",
+      "stability": "stable",
+      "title": "Test Authentication",
+      "input": "v1/test-authenticate-request.json#",
+      "output": "v1/test-authenticate-response.json#",
+      "description": "Utility method to test client implementations of Taskcluster\nauthentication.\n\nRather than using real credentials, this endpoint accepts requests with\nclientId `tester` and accessToken `no-secret`. That client's scopes are\nbased on `clientScopes` in the request body.\n\nThe request is validated, with any certificate, authorizedScopes, etc.\napplied, and the resulting scopes are checked against `requiredScopes`\nfrom the request body. On success, the response contains the clientId\nand scopes as seen by the API method."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/test-authenticate-get/",
+      "query": [],
+      "args": [],
+      "name": "testAuthenticateGet",
+      "stability": "stable",
+      "title": "Test Authentication (GET)",
+      "output": "v1/test-authenticate-response.json#",
+      "description": "Utility method similar to `testAuthenticate`, but with the GET method,\nso it can be used with signed URLs (bewits).\n\nRather than using real credentials, this endpoint accepts requests with\nclientId `tester` and accessToken `no-secret`. That client's scopes are\n`['test:*', 'auth:create-client:test:*']`.  The call fails if the \n`test:authenticate-get` scope is not available.\n\nThe request is validated, with any certificate, authorizedScopes, etc.\napplied, and the resulting scopes are checked, just like any API call.\nOn success, the response contains the clientId and scopes as seen by\nthe API method.\n\nThis method may later be extended to allow specification of client and\nrequired scopes via query arguments."
+    }
+  ]
+}

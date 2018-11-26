@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "project": "taskcluster-gce-provider-test",
+  "tier": "integrations",
+  "menuIndex": 10
+}

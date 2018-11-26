@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "project": "generic-worker",
+  "tier": "workers",
+  "menuIndex": 10
+}

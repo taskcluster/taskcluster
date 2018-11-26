@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "project": "taskcluster-lib-app",
+  "tier": "libraries",
+  "menuIndex": 10
+}

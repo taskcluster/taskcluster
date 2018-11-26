@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Claim Work Response",
+  "description": "Response to an attempt to claim tasks for a worker to process.\n",
+  "type": "object",
+  "properties": {
+    "tasks": {
+      "type": "array",
+      "description": "List of task claims, may be empty if no tasks was claimed, in which case\nthe worker should sleep a tiny bit before polling again.\n",
+      "items": {
+        "title": "Task Claim",
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "task-status.json#"
+          },
+          "runId": {
+            "description": "`run-id` assigned to this run of the task\n",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "workerGroup": {
+            "description": "Identifier for the worker-group within which this run started.\n",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 22,
+            "pattern": "^([a-zA-Z0-9-_]*)$"
+          },
+          "workerId": {
+            "description": "Identifier for the worker executing this run.\n",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 22,
+            "pattern": "^([a-zA-Z0-9-_]*)$"
+          },
+          "takenUntil": {
+            "description": "Time at which the run expires and is resolved as `exception`,\nwith reason `claim-expired` if the run haven't been reclaimed.\n",
+            "type": "string",
+            "format": "date-time"
+          },
+          "task": {
+            "$ref": "task.json#"
+          },
+          "credentials": {
+            "$ref": "task-credentials.json#"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "runId",
+          "workerGroup",
+          "workerId",
+          "takenUntil",
+          "task",
+          "credentials"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "tasks"
+  ],
+  "$id": "/schemas/queue/v1/claim-work-response.json#"
+}

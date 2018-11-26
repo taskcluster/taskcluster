@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Worker-type Response",
+  "description": "Response to a worker-type request from a provisioner.\n",
+  "type": "object",
+  "properties": {
+    "provisionerId": {
+      "title": "Provisioner ID",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 22,
+      "pattern": "^([a-zA-Z0-9-_]*)$"
+    },
+    "workerType": {
+      "type": "string",
+      "title": "Worker-type Name",
+      "description": "WorkerType name.\n",
+      "minLength": 1,
+      "maxLength": 22,
+      "pattern": "^([a-zA-Z0-9-_]*)$"
+    },
+    "stability": {
+      "title": "Stability",
+      "description": "This is the stability of the worker-type. Accepted values:\n  * `experimental`\n  * `stable`\n  * `deprecated`\n",
+      "type": "string",
+      "enum": [
+        "experimental",
+        "stable",
+        "deprecated"
+      ]
+    },
+    "description": {
+      "title": "Description",
+      "description": "Description of the worker-type.\n",
+      "type": "string"
+    },
+    "expires": {
+      "title": "Worker-type Expiration",
+      "description": "Date and time after which the worker-type will be automatically\ndeleted by the queue.\n",
+      "type": "string",
+      "format": "date-time"
+    },
+    "lastDateActive": {
+      "title": "Worker-type Last Date Active",
+      "description": "Date of the last time this worker-type was seen active. `lastDateActive` is updated every 6 hours\nbut may be off by up-to 6 hours. Nonetheless, `lastDateActive` is a good indicator\nof when the worker-type was last seen active.\n",
+      "type": "string",
+      "format": "date-time"
+    },
+    "actions": {
+      "title": "Worker-type Actions",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "Worker-type Action",
+        "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context. All actions, regardless of the action contexts,\nare registered against the provisioner when calling\n`queue.declareProvisioner`.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "description": "Short names for things like logging/error messages.\n",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "description": "Appropriate title for any sort of Modal prompt.\n"
+          },
+          "context": {
+            "title": "Context",
+            "description": "Only actions with the context `worker-type` are included.\n",
+            "type": "string",
+            "enum": [
+              "worker-type"
+            ]
+          },
+          "url": {
+            "title": "URL",
+            "description": "When an action is triggered, a request is made using the `url` and `method`.\nDepending on the `context`, the following parameters will be substituted in the url:\n\n| `context`   | Path parameters                                          |\n|-------------|----------------------------------------------------------|\n| provisioner | <provisionerId>                                          |\n| worker-type | <provisionerId>, <workerType>                            |\n| worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |\n\n_Note: The request needs to be signed with the user's Taskcluster credentials._\n",
+            "type": "string"
+          },
+          "method": {
+            "title": "Method",
+            "description": "Method to indicate the desired action to be performed for a given resource.\n",
+            "type": "string",
+            "enum": [
+              "POST",
+              "PUT",
+              "DELETE",
+              "PATCH"
+            ]
+          },
+          "description": {
+            "title": "Description",
+            "description": "Description of the provisioner.\n",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "title",
+          "context",
+          "url",
+          "method",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "workerType",
+    "provisionerId",
+    "description",
+    "stability",
+    "expires",
+    "lastDateActive",
+    "actions"
+  ],
+  "$id": "/schemas/queue/v1/workertype-response.json#"
+}

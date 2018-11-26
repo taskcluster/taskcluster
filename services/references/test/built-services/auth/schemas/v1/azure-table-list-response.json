@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Azure List Table Response",
+  "description": "A list of Azure tables in an account\n",
+  "type": "object",
+  "properties": {
+    "tables": {
+      "title": "Azure Tables",
+      "description": "A list of tables that are in an account. These are\nthe tables that can have SAS credentials fetched for them.\n",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "continuationToken": {
+      "type": "string",
+      "title": "Continuation Token",
+      "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of tables.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `azureAccountTables` with `continuationToken`\nuntil you get a result without a `continuationToken`.\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "tables"
+  ],
+  "$id": "/schemas/auth/v1/azure-table-list-response.json#"
+}

@@ -1,11 +1,8 @@
-const {load} = require('./load');
-const {update} = require('./update');
-const {store} = require('./store');
+const References = require('taskcluster-lib-references');
 
-const build = async (input, output, rootUrl) => {
-  const {references, schemas} = await load({input});
-  await update({references, schemas, rootUrl});
-  await store({references, schemas, output, rootUrl});
+const build = (input, output, rootUrl) => {
+  const refs = References.fromBuiltServices({directory: input});
+  refs.asAbsolute(rootUrl).writeUriStructured({directory: output});
 };
 
 if (!module.parent) {
@@ -23,3 +20,5 @@ if (!module.parent) {
 
   build(input, output, process.env.TASKCLUSTER_ROOT_URL);
 }
+
+exports.build = build;

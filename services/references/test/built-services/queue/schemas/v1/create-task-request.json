@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Task Definition Request",
+  "description": "Definition of a task that can be scheduled\n",
+  "type": "object",
+  "properties": {
+    "provisionerId": {
+      "$ref": "task.json#/properties/provisionerId"
+    },
+    "workerType": {
+      "$ref": "task.json#/properties/workerType"
+    },
+    "schedulerId": {
+      "$ref": "task.json#/properties/schedulerId",
+      "default": "-"
+    },
+    "taskGroupId": {
+      "$ref": "task.json#/properties/taskGroupId"
+    },
+    "dependencies": {
+      "$ref": "task.json#/properties/dependencies",
+      "default": []
+    },
+    "requires": {
+      "$ref": "task.json#/properties/requires",
+      "default": "all-completed"
+    },
+    "routes": {
+      "$ref": "task.json#/properties/routes",
+      "default": []
+    },
+    "priority": {
+      "$ref": "task.json#/properties/priority",
+      "default": "lowest"
+    },
+    "retries": {
+      "$ref": "task.json#/properties/retries",
+      "default": 5
+    },
+    "expires": {
+      "$ref": "task.json#/properties/expires"
+    },
+    "created": {
+      "title": "Created",
+      "description": "Creation time of task",
+      "type": "string",
+      "format": "date-time"
+    },
+    "deadline": {
+      "title": "Deadline",
+      "description": "Deadline of the task, `pending` and `running` runs are\nresolved as **exception** if not resolved by other means\nbefore the deadline. Note, deadline cannot be more than\n5 days into the future\n",
+      "type": "string",
+      "format": "date-time"
+    },
+    "scopes": {
+      "$ref": "task.json#/properties/scopes",
+      "default": []
+    },
+    "payload": {
+      "$ref": "task.json#/properties/payload",
+      "default": []
+    },
+    "metadata": {
+      "$ref": "task-metadata.json#"
+    },
+    "tags": {
+      "$ref": "task.json#/properties/tags",
+      "default": {}
+    },
+    "extra": {
+      "$ref": "task.json#/properties/extra",
+      "default": {}
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "provisionerId",
+    "workerType",
+    "created",
+    "deadline",
+    "payload",
+    "metadata"
+  ],
+  "$id": "/schemas/queue/v1/create-task-request.json#"
+}

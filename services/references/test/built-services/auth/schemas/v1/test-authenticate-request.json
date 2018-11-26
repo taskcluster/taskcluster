@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Test Authenticate Request",
+  "description": "Details on how the test request should be authenticated.\n",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "clientScopes": {
+      "description": "List of scopes that should be client used should be given.\n",
+      "type": "array",
+      "default": [],
+      "items": {
+        "description": "Scope",
+        "type": "string",
+        "pattern": "^[ -~]*$"
+      },
+      "uniqueItems": true
+    },
+    "requiredScopes": {
+      "description": "List of scopes the request should require.\n",
+      "type": "array",
+      "default": [],
+      "items": {
+        "description": "Scope",
+        "type": "string",
+        "pattern": "^[ -~]*$"
+      },
+      "uniqueItems": true
+    }
+  },
+  "$id": "/schemas/auth/v1/test-authenticate-request.json#"
+}

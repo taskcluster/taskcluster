@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Worker-type Request",
+  "description": "Request to update a worker-type.\n",
+  "type": "object",
+  "properties": {
+    "stability": {
+      "title": "Stability",
+      "description": "This is the stability of the provisioner. Accepted values:\n  * `experimental`\n  * `stable`\n  * `deprecated`\n",
+      "type": "string",
+      "enum": [
+        "experimental",
+        "stable",
+        "deprecated"
+      ]
+    },
+    "description": {
+      "title": "Description",
+      "description": "Description of the provisioner.\n",
+      "type": "string"
+    },
+    "expires": {
+      "title": "Worker-type Expiration",
+      "description": "Date and time after which the worker-type will be automatically\ndeleted by the queue.\n",
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false,
+  "$id": "/schemas/queue/v1/update-workertype-request.json#"
+}

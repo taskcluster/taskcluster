@@ -7,7 +7,7 @@
   },
   "engine-strict": true,
   "engines": {
-    "node": "^8.0.0",
+    "node": "^8.9.0",
     "yarn": "^1.0.0"
   },
   "scripts": {
@@ -20,16 +20,11 @@
   "author": "Dustin J. Mitchell <dustin@mozilla.com>",
   "license": "MPL-2.0",
   "dependencies": {
-    "lodash": "^4.17.10",
-    "mkdirp": "^0.5.1",
-    "rimraf": "^2.6.2",
-    "taskcluster-lib-urls": "^10.0.0",
-    "taskcluster-lib-validate": "^11.0.2",
-    "walk": "^2.3.13"
+    "taskcluster-lib-references": "^1.1.0"
   },
   "devDependencies": {
     "eslint-config-taskcluster": "^3.1.0",
     "mocha": "^5.2.0",
-    "mock-fs": "^4.5.0"
+    "tmp": "^0.0.33"
   }
 }

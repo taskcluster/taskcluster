@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "List Task-Group Response",
+  "description": "Response from a `listTaskGroup` request.\n",
+  "type": "object",
+  "properties": {
+    "taskGroupId": {
+      "title": "Task-Group Identifier",
+      "description": "Identifier for the task-group being listed.\n",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$"
+    },
+    "tasks": {
+      "type": "array",
+      "title": "Tasks from the Task-Group",
+      "description": "List of tasks in this task-group.\n",
+      "items": {
+        "$ref": "task-definition-and-status.json#"
+      }
+    },
+    "continuationToken": {
+      "type": "string",
+      "title": "Continuation Token",
+      "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of tasks in the task-group.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called `listTaskGroup` with `continuationToken`\nuntil you get a result without a `continuationToken`.\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "taskGroupId",
+    "tasks"
+  ],
+  "$id": "/schemas/queue/v1/list-task-group-response.json#"
+}

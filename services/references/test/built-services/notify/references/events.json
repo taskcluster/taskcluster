@@ -1,0 +1,33 @@
+{
+  "$schema": "/schemas/common/exchanges-reference-v0.json#",
+  "serviceName": "notify",
+  "apiVersion": "v1",
+  "title": "Notify AMQP Exchanges",
+  "description": "This pretty much only contains the simple free-form\nmessage that can be published from this service from a request\nby anybody with the proper scopes.",
+  "exchangePrefix": "exchange/taskcluster-notify/v1/",
+  "entries": [
+    {
+      "type": "topic-exchange",
+      "exchange": "notification",
+      "name": "notify",
+      "title": "Notification Messages",
+      "description": "An arbitrary message that a taskcluster user\ncan trigger if they like.\n\nThe standard one that is published by us watching\nfor the completion of tasks is just the task status\ndata that we pull from the queue `status()` endpoint\nwhen we notice a task is complete.",
+      "schema": "v1/notification-message.json#",
+      "routingKey": [
+        {
+          "name": "routingKeyKind",
+          "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.",
+          "constant": "primary",
+          "multipleWords": false,
+          "required": true
+        },
+        {
+          "name": "reserved",
+          "summary": "Space reserved for future routing-key entries, you should always match this entry with `#`. As automatically done by our tooling, if not specified.",
+          "multipleWords": true,
+          "required": false
+        }
+      ]
+    }
+  ]
+}

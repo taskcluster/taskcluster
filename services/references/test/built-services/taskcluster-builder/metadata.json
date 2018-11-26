@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "project": "taskcluster-builder",
+  "tier": "operations",
+  "menuIndex": 10
+}

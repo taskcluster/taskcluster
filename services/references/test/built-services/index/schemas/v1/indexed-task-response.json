@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Indexed Task Response",
+  "description": "Representation of an indexed task.\n",
+  "type": "object",
+  "properties": {
+    "namespace": {
+      "title": "Namespace",
+      "description": "Namespace of the indexed task, used to find the indexed task in the index.\n",
+      "type": "string",
+      "maxLength": 255
+    },
+    "taskId": {
+      "title": "Task Identifier",
+      "description": "Unique task identifier, this is UUID encoded as\n[URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and\nstripped of `=` padding.\n",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$"
+    },
+    "rank": {
+      "title": "Rank",
+      "description": "If multiple tasks are indexed with the same `namespace` the task with the\nhighest `rank` will be stored and returned in later requests. If two tasks\nhas the same `rank` the latest task will be stored.\n",
+      "type": "number"
+    },
+    "data": {
+      "title": "Task Specific Data",
+      "description": "Data that was reported with the task. This is an arbitrary JSON object.\n",
+      "type": "object"
+    },
+    "expires": {
+      "title": "Expiration",
+      "description": "Date at which this entry expires from the task index.\n",
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "namespace",
+    "taskId",
+    "rank",
+    "data",
+    "expires"
+  ],
+  "$id": "/schemas/index/v1/indexed-task-response.json#"
+}

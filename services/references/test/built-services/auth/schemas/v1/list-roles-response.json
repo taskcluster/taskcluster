@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "List Roles Response",
+  "description": "List of roles\n",
+  "type": "array",
+  "items": {
+    "$ref": "get-role-response.json#"
+  },
+  "$id": "/schemas/auth/v1/list-roles-response.json#"
+}

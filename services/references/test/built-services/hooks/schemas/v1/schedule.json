@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Schedule",
+  "description": "A list of cron-style definitions to represent a set of moments in (UTC) time.\nIf several patterns are specified, a given moment in time represented by\nmore than one pattern is considered only to be counted once, in other words\nit is allowed for the cron patterns to overlap; duplicates are redundant.\n",
+  "type": "array",
+  "items": {
+    "title": "Cron Pattern",
+    "type": "string",
+    "description": "Cron-like specification for when tasks should be created.  The pattern is\nparsed in a UTC context.\nSee [cron-parser on npm](https://www.npmjs.com/package/cron-parser).\n"
+  },
+  "uniqueItems": true,
+  "default": [],
+  "$id": "/schemas/hooks/v1/schedule.json#"
+}

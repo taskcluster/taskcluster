@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "project": "taskcluster-docs",
+  "tier": "integrations",
+  "menuIndex": 10
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Post Pulse Message Request",
+  "description": "Request to post a message on pulse.\n",
+  "type": "object",
+  "properties": {
+    "routingKey": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Routing-key to use when posting the message.\n"
+    },
+    "message": {
+      "type": "object",
+      "description": "IRC message to send as plain text.\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "routingKey",
+    "message"
+  ],
+  "$id": "/schemas/notify/v1/pulse-request.json#"
+}

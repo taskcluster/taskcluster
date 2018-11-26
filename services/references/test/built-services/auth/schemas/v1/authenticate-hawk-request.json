@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Hawk Signature Authentication Request",
+  "description": "Request to authenticate a hawk request.\n",
+  "type": "object",
+  "properties": {
+    "method": {
+      "type": "string",
+      "enum": [
+        "get",
+        "post",
+        "put",
+        "head",
+        "delete",
+        "options",
+        "trace",
+        "copy",
+        "lock",
+        "mkcol",
+        "move",
+        "purge",
+        "propfind",
+        "proppatch",
+        "unlock",
+        "report",
+        "mkactivity",
+        "checkout",
+        "merge",
+        "m-search",
+        "notify",
+        "subscribe",
+        "unsubscribe",
+        "patch",
+        "search",
+        "connect"
+      ],
+      "description": "HTTP method of the request being authenticated.\n"
+    },
+    "resource": {
+      "type": "string",
+      "description": "Resource the request operates on including querystring. This is the\nstring that follows the HTTP method.\n**Note,** order of querystring elements is important.\n"
+    },
+    "host": {
+      "type": "string",
+      "format": "hostname",
+      "title": "Hostname or IPv4",
+      "description": "Host for which the request came in, this is typically the `Host` header\nexcluding the port if any.\n"
+    },
+    "port": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535,
+      "description": "Port on which the request came in, this is typically `80` or `443`.\nIf you are running behind a reverse proxy look for the `x-forwarded-port`\nheader.\n"
+    },
+    "authorization": {
+      "type": "string",
+      "description": "Authorization header, **must** only be specified if request being\nauthenticated has a `Authorization` header.\n"
+    },
+    "sourceIp": {
+      "type": "string",
+      "oneOf": [
+        {
+          "format": "ipv6"
+        },
+        {
+          "format": "ipv4"
+        }
+      ],
+      "title": "Source IP",
+      "description": "Source IP of the authentication request or request that requires\nauthentication. This is only used for audit logging.\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "method",
+    "resource",
+    "host",
+    "port"
+  ],
+  "$id": "/schemas/auth/v1/authenticate-hawk-request.json#"
+}

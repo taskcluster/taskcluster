@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "project": "taskcluster-lib-log",
+  "tier": "libraries",
+  "menuIndex": 10
+}

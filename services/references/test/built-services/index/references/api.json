@@ -1,0 +1,102 @@
+{
+  "$schema": "/schemas/common/api-reference-v0.json#",
+  "title": "Task Index API Documentation",
+  "description": "The task index, typically available at `index.taskcluster.net`, is\nresponsible for indexing tasks. The service ensures that tasks can be\nlocated by recency and/or arbitrary strings. Common use-cases include:\n\n * Locate tasks by git or mercurial `<revision>`, or\n * Locate latest task from given `<branch>`, such as a release.\n\n**Index hierarchy**, tasks are indexed in a dot (`.`) separated hierarchy\ncalled a namespace. For example a task could be indexed with the index path\n`some-app.<revision>.linux-64.release-build`. In this case the following\nnamespaces is created.\n\n 1. `some-app`,\n 1. `some-app.<revision>`, and,\n 2. `some-app.<revision>.linux-64`\n\nInside the namespace `some-app.<revision>` you can find the namespace\n`some-app.<revision>.linux-64` inside which you can find the indexed task\n`some-app.<revision>.linux-64.release-build`. This is an example of indexing\nbuilds for a given platform and revision.\n\n**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults\nto `0`). If another task is already indexed in the same namespace with\nlower or equal `rank`, the index for that task will be overwritten. For example\nconsider index path `mozilla-central.linux-64.release-build`. In\nthis case one might choose to use a UNIX timestamp or mercurial revision\nnumber as `rank`. This way the latest completed linux 64 bit release\nbuild is always available at `mozilla-central.linux-64.release-build`.\n\nNote that this does mean index paths are not immutable: the same path may\npoint to a different task now than it did a moment ago.\n\n**Indexed Data**, when a task is retrieved from the index the result includes\na `taskId` and an additional user-defined JSON blob that was indexed with\nthe task.\n\n**Entry Expiration**, all indexed entries must have an expiration date.\nTypically this defaults to one year, if not specified. If you are\nindexing tasks to make it easy to find artifacts, consider using the\nartifact's expiration date.\n\n**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be\nin the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and\nthat if you strictly want to put another character you can URL encode it.\n\n**Indexing Routes**, tasks can be indexed using the API below, but the\nmost common way to index tasks is adding a custom route to `task.routes` of the\nform `index.<namespace>`. In order to add this route to a task you'll\nneed the scope `queue:route:index.<namespace>`. When a task has\nthis route, it will be indexed when the task is **completed successfully**.\nThe task will be indexed with `rank`, `data` and `expires` as specified\nin `task.extra.index`. See the example below:\n\n```js\n{\n  payload:  { /* ... */ },\n  routes: [\n    // index.<namespace> prefixed routes, tasks CC'ed such a route will\n    // be indexed under the given <namespace>\n    \"index.mozilla-central.linux-64.release-build\",\n    \"index.<revision>.linux-64.release-build\"\n  ],\n  extra: {\n    // Optional details for indexing service\n    index: {\n      // Ordering, this taskId will overwrite any thing that has\n      // rank <= 4000 (defaults to zero)\n      rank:       4000,\n\n      // Specify when the entries expire (Defaults to 1 year)\n      expires:          new Date().toJSON(),\n\n      // A little informal data to store along with taskId\n      // (less 16 kb when encoded as JSON)\n      data: {\n        hgRevision:   \"...\",\n        commitMessae: \"...\",\n        whatever...\n      }\n    },\n    // Extra properties for other services...\n  }\n  // Other task properties...\n}\n```\n\n**Remark**, when indexing tasks using custom routes, it's also possible\nto listen for messages about these tasks. For\nexample one could bind to `route.index.some-app.*.release-build`,\nand pick up all messages about release builds. Hence, it is a\ngood idea to document task index hierarchies, as these make up extension\npoints in their own.",
+  "serviceName": "index",
+  "apiVersion": "v1",
+  "entries": [
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/ping",
+      "query": [],
+      "args": [],
+      "name": "ping",
+      "stability": "stable",
+      "title": "Ping Server",
+      "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/task/<indexPath>",
+      "query": [],
+      "args": [
+        "indexPath"
+      ],
+      "name": "findTask",
+      "stability": "stable",
+      "title": "Find Indexed Task",
+      "output": "v1/indexed-task-response.json#",
+      "description": "Find a task by index path, returning the highest-rank task with that path. If no\ntask exists for the given path, this API end-point will respond with a 404 status."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/namespaces/<namespace>",
+      "query": [
+        "continuationToken",
+        "limit"
+      ],
+      "args": [
+        "namespace"
+      ],
+      "name": "listNamespaces",
+      "stability": "stable",
+      "title": "List Namespaces",
+      "output": "v1/list-namespaces-response.json#",
+      "description": "List the namespaces immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 namespaces. If more namespaces are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/tasks/<namespace>",
+      "query": [
+        "continuationToken",
+        "limit"
+      ],
+      "args": [
+        "namespace"
+      ],
+      "name": "listTasks",
+      "stability": "stable",
+      "title": "List Tasks",
+      "output": "v1/list-tasks-response.json#",
+      "description": "List the tasks immediately under a given namespace.\n\nThis endpoint\nlists up to 1000 tasks. If more tasks are present, a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, the payload should be an empty JSON\nobject.\n\n**Remark**, this end-point is designed for humans browsing for tasks, not\nservices, as that makes little sense."
+    },
+    {
+      "type": "function",
+      "method": "put",
+      "route": "/task/<namespace>",
+      "query": [],
+      "args": [
+        "namespace"
+      ],
+      "name": "insertTask",
+      "stability": "stable",
+      "title": "Insert Task into Index",
+      "input": "v1/insert-task-request.json#",
+      "output": "v1/indexed-task-response.json#",
+      "description": "Insert a task into the index.  If the new rank is less than the existing rank\nat the given index path, the task is not indexed but the response is still 200 OK.\n\nPlease see the introduction above for information\nabout indexing successfully completed tasks automatically using custom routes.",
+      "scopes": "index:insert-task:<namespace>"
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/task/<indexPath>/artifacts/<name>",
+      "query": [],
+      "args": [
+        "indexPath",
+        "name"
+      ],
+      "name": "findArtifactFromTask",
+      "stability": "stable",
+      "title": "Get Artifact From Indexed Task",
+      "description": "Find a task by index path and redirect to the artifact on the most recent\nrun with the given `name`.\n\nNote that multiple calls to this endpoint may return artifacts from differen tasks\nif a new task is inserted into the index between calls. Avoid using this method as\na stable link to multiple, connected files if the index path does not contain a\nunique identifier.  For example, the following two links may return unrelated files:\n* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/installer.exe`\n* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`\n\nThis problem be remedied by including the revision in the index path or by bundling both\ninstaller and debug symbols into a single artifact.\n\nIf no task exists for the given index path, this API end-point responds with 404.",
+      "scopes": {
+        "if": "private",
+        "then": "queue:get-artifact:<name>"
+      }
+    }
+  ]
+}

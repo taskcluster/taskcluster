@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "project": "taskcluster-index",
+  "tier": "core",
+  "menuIndex": 10
+}
