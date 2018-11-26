@@ -4,9 +4,6 @@ const APIBuilder = require('taskcluster-lib-api');
 const taskcluster = require('taskcluster-client');
 const Entity = require('azure-entities');
 
-// Common schema prefix
-const SCHEMA_PREFIX_CONST = 'http://schemas.taskcluster.net/purge-cache/v1/';
-
 // Common patterns URL parameters
 const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,22}$/;
 
@@ -23,8 +20,7 @@ const builder = new APIBuilder({
     workerType:       GENERIC_ID_PATTERN,
   },
   description: [
-    'The purge-cache service, typically available at',
-    '`purge-cache.taskcluster.net`, is responsible for publishing a pulse',
+    'The purge-cache service is responsible for publishing a pulse',
     'message for workers, so they can purge cache upon request.',
     '',
     'This document describes the API end-point for publishing the pulse',
