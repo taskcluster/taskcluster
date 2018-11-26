@@ -14,8 +14,21 @@ const debug = Debug(debugPrefix);
  * Create handlers
  */
 class Handlers {
-  constructor({rootUrl, credentials, monitor, reference, jobQueueName, statusQueueName, intree, context, pulseClient}) {
+  constructor(options) {
     debug('Constructing handlers...');
+    const {
+      rootUrl,
+      credentials,
+      monitor,
+      reference,
+      jobQueueName,
+      resultStatusQueueName,
+      initialStatusQueueName,
+      intree,
+      context,
+      pulseClient,
+    } = options;
+
     assert(monitor, 'monitor is required for statistics');
     assert(reference, 'reference must be provided');
     assert(rootUrl, 'rootUrl must be provided');
@@ -26,8 +39,9 @@ class Handlers {
     this.reference = reference;
     this.intree = intree;
     this.connection = null;
-    this.statusQueueName = statusQueueName;
+    this.resultStatusQueueName = resultStatusQueueName;
     this.jobQueueName = jobQueueName;
+    this.initialStatusQueueName = initialStatusQueueName;
     this.context = context;
     this.pulseClient = pulseClient;
 
@@ -35,37 +49,43 @@ class Handlers {
     this.handlerRejected = null;
 
     this.jobPq = null;
-    this.statusPq = null;
+    this.resultStatusPq = null;
+    this.initialStatusPq = null;
   }
 
   /**
    * Set up the handlers.
    */
-  async setup(options) {
+  async setup(options = {}) {
     debug('Setting up handlers...');
-    options = options || {};
     assert(!this.connection, 'Cannot setup twice!');
     this.connection = new taskcluster.PulseConnection(this.credentials);
 
     // Listen for new jobs created via the api webhook endpoint
-    let GithubEvents = taskcluster.createClient(this.reference);
-    let githubEvents = new GithubEvents({rootUrl: this.rootUrl});
+    const GithubEvents = taskcluster.createClient(this.reference);
+    const githubEvents = new GithubEvents({rootUrl: this.rootUrl});
     const jobBindings = [
       githubEvents.pullRequest(),
       githubEvents.push(),
       githubEvents.release(),
     ];
 
+    const schedulerId = this.context.cfg.taskcluster.schedulerId;
+    const queueEvents = new taskcluster.QueueEvents({rootUrl: this.rootUrl});
+
     // Listen for state changes to the taskcluster tasks and taskgroups
     // We only need to listen for failure and exception events on
     // tasks. We wait for the entire group to be resolved before checking
     // for success.
-    let queueEvents = new taskcluster.QueueEvents({rootUrl: this.rootUrl});
-    let schedulerId = this.context.cfg.taskcluster.schedulerId;
     const statusBindings = [
       queueEvents.taskFailed({schedulerId}),
       queueEvents.taskException({schedulerId}),
       queueEvents.taskGroupResolved({schedulerId}),
+    ];
+
+    // Listen for taskDefined event to create initial status on github
+    const taskBindings = [
+      githubEvents.taskGroupDefined(),
     ];
 
     const callHandler = (name, handler) => message => {
@@ -90,14 +110,23 @@ class Handlers {
       },
       this.monitor.timedHandler('joblistener', callHandler('job', jobHandler).bind(this))
     );
-    this.statusPq = await consume(
+    this.resultStatusPq = await consume(
       {
         client: this.pulseClient,
         bindings: statusBindings,
-        queueName: this.statusQueueName,
+        queueName: this.resultStatusQueueName,
       },
       this.monitor.timedHandler('statuslistener', callHandler('status', statusHandler).bind(this))
     );
+    this.initialStatusPq = await consume(
+      {
+        client: this.pulseClient,
+        bindings: taskBindings,
+        queueName: this.initialStatusQueueName,
+      },
+      this.monitor.timedHandler('tasklistener', callHandler('task', taskGroupHandler).bind(this))
+    );
+
   }
 
   async terminate() {
@@ -389,25 +418,8 @@ async function jobHandler(message) {
     taskGroupId = graphConfig.tasks[0].task.taskGroupId;
     debug(`Creating tasks for ${organization}/${repository}@${sha} (taskGroupId: ${taskGroupId})`);
     await this.createTasks({scopes: graphConfig.scopes, tasks: graphConfig.tasks});
-  } catch (e) {
-    debug(`Creating tasks for ${organization}/${repository}@${sha} failed! Leaving comment on Github.`);
-    groupState = 'failure';
-    await this.createExceptionComment({instGithub, organization, repository, sha, error: e});
-  } finally {
-    debug(`Trying to create status for ${organization}/${repository}@${sha} (${groupState})`);
-    let eventType = message.payload.details['event.type'];
-    let statusContext = `${context.cfg.app.statusContext} (${eventType.split('.')[0]})`;
-    let description = groupState === 'pending' ? `TaskGroup: Pending (for ${eventType})` : 'TaskGroup: Exception';
-    const target_url = libUrls.ui(context.cfg.taskcluster.rootUrl, `/task-group-inspector/#/${taskGroupId}`);
-    await instGithub.repos.createStatus({
-      owner: organization,
-      repo: repository,
-      sha,
-      state: groupState,
-      target_url,
-      description,
-      context: statusContext,
-    });
+
+    debug(`Trying to create a record for ${organization}/${repository}@${sha} (${groupState}) in Builds table`);
 
     let now = new Date();
     await context.Builds.create({
@@ -437,6 +449,53 @@ async function jobHandler(message) {
       assert.equal(build.eventId, message.payload.eventId);
     });
 
+    debug(`Publishing status exchange for ${organization}/${repository}@${sha} (${groupState})`);
+    await context.publisher.taskGroupDefined({taskGroupId, organization, repository});
+
     debug(`Job handling for ${organization}/${repository}@${sha} completed.`);
+
+  } catch (e) {
+    debug(`Creating tasks for ${organization}/${repository}@${sha} failed! Leaving comment on Github.`);
+    await this.createExceptionComment({instGithub, organization, repository, sha, error: e});
   }
+}
+
+/**
+ * If a task was defined, post the initial status to github
+ *
+ * @param message - taskGroupDefined exchange message
+ *   this repo/schemas/task-group-defined-message.yml
+ * @returns {Promise<void>}
+ */
+async function taskGroupHandler(message) {
+  const {taskGroupId} = message.payload;
+
+  const debug = Debug(`${debugPrefix}:task-handler`);
+  debug(`Task was defined for task group ${taskGroupId}. Creating status...`);
+
+  const {
+    organization,
+    repository,
+    sha,
+    state,
+    eventType,
+    installationId,
+  } = await this.context.Builds.load({taskGroupId});
+
+  const statusContext = `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`;
+  const description = `TaskGroup: Pending (for ${eventType})`;
+  const target_url = libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/task-group-inspector/#/${taskGroupId}`);
+
+  // Authenticating as installation.
+  const instGithub = await this.context.github.getInstallationGithub(installationId);
+
+  await instGithub.repos.createStatus({
+    owner: organization,
+    repo: repository,
+    sha,
+    state,
+    target_url,
+    description,
+    context: statusContext,
+  });
 }
