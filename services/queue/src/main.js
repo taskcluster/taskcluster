@@ -577,161 +577,118 @@ let load = loader({
   // Create the artifact expiration process (periodic job)
   'expire-artifacts': {
     requires: ['cfg', 'Artifact', 'monitor'],
-    setup: async ({cfg, Artifact, monitor}) => {
-      // Find an artifact expiration delay
-      let now = taskcluster.fromNow(cfg.app.artifactExpirationDelay);
-      assert(!_.isNaN(now), 'Can\'t have NaN as now');
-
-      debug('Expiring artifacts at: %s, from before %s', new Date(), now);
-      let count = await Artifact.expire(now);
-      debug('Expired %s artifacts', count);
-
-      monitor.count('expire-artifacts.done');
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
+    setup: ({cfg, Artifact, monitor}) => {
+      return monitor.oneShot('expire-artifacts', async () => {
+        const now = taskcluster.fromNow(cfg.app.artifactExpirationDelay);
+        debug('Expiring artifacts at: %s, from before %s', new Date(), now);
+        const count = await Artifact.expire(now);
+        debug('Expired %s artifacts', count);
+      });
     },
   },
 
   // Create the queue expiration process (periodic job)
   'expire-queues': {
     requires: ['cfg', 'queueService', 'monitor'],
-    setup: async ({cfg, queueService, monitor}) => {
-      debug('Expiring queues at: %s', new Date());
-      let count = await queueService.deleteUnusedWorkerQueues();
-      debug('Expired %s queues', count);
-
-      monitor.count('expire-queues.done');
-      monitor.stopResourceMonitoring();
-      queueService.terminate();
-      await monitor.flush();
+    setup: ({cfg, queueService, monitor}) => {
+      return monitor.oneShot('expire-queues', async () => {
+        debug('Expiring queues at: %s', new Date());
+        const count = await queueService.deleteUnusedWorkerQueues();
+        debug('Expired %s queues', count);
+      });
     },
   },
 
   // Create the task expiration process (periodic job)
   'expire-tasks': {
     requires: ['cfg', 'Task', 'monitor'],
-    setup: async ({cfg, Task, monitor}) => {
-      var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-      assert(!_.isNaN(now), 'Can\'t have NaN as now');
-
-      // Expire tasks using delay
-      debug('Expiring tasks at: %s, from before %s', new Date(), now);
-      let count = await Task.expire(now);
-      debug('Expired %s tasks', count);
-
-      monitor.count('expire-tasks.done');
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
+    setup: ({cfg, Task, monitor}) => {
+      return monitor.oneShot('expire-tasks', async () => {
+        const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
+        debug('Expiring tasks at: %s, from before %s', new Date(), now);
+        const count = await Task.expire(now);
+        debug('Expired %s tasks', count);
+      });
     },
   },
 
   // Create the task-group expiration process (periodic job)
   'expire-task-groups': {
     requires: ['cfg', 'TaskGroup', 'monitor'],
-    setup: async ({cfg, TaskGroup, monitor}) => {
-      var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-      assert(!_.isNaN(now), 'Can\'t have NaN as now');
-
-      // Expire task-groups using delay
-      debug('Expiring task-groups at: %s, from before %s', new Date(), now);
-      let count = await TaskGroup.expire(now);
-      debug('Expired %s task-groups', count);
-
-      monitor.count('expire-task-groups.done');
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
+    setup: ({cfg, TaskGroup, monitor}) => {
+      return monitor.oneShot('expire-task-groups', async () => {
+        const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
+        debug('Expiring task-groups at: %s, from before %s', new Date(), now);
+        const count = await TaskGroup.expire(now);
+        debug('Expired %s task-groups', count);
+      });
     },
   },
 
   // Create the task-group membership expiration process (periodic job)
   'expire-task-group-members': {
     requires: ['cfg', 'TaskGroupMember', 'monitor'],
-    setup: async ({cfg, TaskGroupMember, monitor}) => {
-      var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-      assert(!_.isNaN(now), 'Can\'t have NaN as now');
-
-      // Expire task-group members using delay
-      debug('Expiring task-group members at: %s, from before %s',
-        new Date(), now);
-      let count = await TaskGroupMember.expire(now);
-      debug('Expired %s task-group members', count);
-
-      monitor.count('expire-task-group-members.done');
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
+    setup: ({cfg, TaskGroupMember, monitor}) => {
+      return monitor.oneShot('expire-task-group-members', async () => {
+        const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
+        debug('Expiring task-group members at: %s, from before %s',
+          new Date(), now);
+        const count = await TaskGroupMember.expire(now);
+        debug('Expired %s task-group members', count);
+      });
     },
   },
 
   // Create the task-group size expiration process (periodic job)
   'expire-task-group-sizes': {
     requires: ['cfg', 'TaskGroupActiveSet', 'monitor'],
-    setup: async ({cfg, TaskGroupActiveSet, monitor}) => {
-      var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-      assert(!_.isNaN(now), 'Can\'t have NaN as now');
-
-      // Expire task-group sizes using delay
-      debug('Expiring task-group sizes at: %s, from before %s',
-        new Date(), now);
-      let count = await TaskGroupActiveSet.expire(now);
-      debug('Expired %s task-group sizes', count);
-
-      monitor.count('expire-task-group-sizes.done');
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
+    setup: ({cfg, TaskGroupActiveSet, monitor}) => {
+      return monitor.oneShot('expire-task-group-sizes', async () => {
+        const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
+        debug('Expiring task-group sizes at: %s, from before %s',
+          new Date(), now);
+        const count = await TaskGroupActiveSet.expire(now);
+        debug('Expired %s task-group sizes', count);
+      });
     },
   },
 
   // Create the task-dependency expiration process (periodic job)
   'expire-task-dependency': {
     requires: ['cfg', 'TaskDependency', 'monitor'],
-    setup: async ({cfg, TaskDependency, monitor}) => {
-      var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-      assert(!_.isNaN(now), 'Can\'t have NaN as now');
-
-      // Expire task-dependency using delay
-      debug('Expiring task-dependency at: %s, from before %s', new Date(), now);
-      let count = await TaskDependency.expire(now);
-      debug('Expired %s task-dependency', count);
-
-      monitor.count('expire-task-dependency.done');
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
+    setup: ({cfg, TaskDependency, monitor}) => {
+      return monitor.oneShot('expire-task-dependency', async () => {
+        const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
+        debug('Expiring task-dependency at: %s, from before %s', new Date(), now);
+        const count = await TaskDependency.expire(now);
+        debug('Expired %s task-dependency', count);
+      });
     },
   },
 
   // Create the task-requirement expiration process (periodic job)
   'expire-task-requirement': {
     requires: ['cfg', 'TaskRequirement', 'monitor'],
-    setup: async ({cfg, TaskRequirement, monitor}) => {
-      var now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
-      assert(!_.isNaN(now), 'Can\'t have NaN as now');
-
-      // Expire task-requirement using delay
-      debug('Expiring task-requirement at: %s, from before %s', new Date(), now);
-      let count = await TaskRequirement.expire(now);
-      debug('Expired %s task-requirement', count);
-
-      monitor.count('expire-task-requirement.done');
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
+    setup: ({cfg, TaskRequirement, monitor}) => {
+      return monitor.oneShot('expire-task-dependency', async () => {
+        const now = taskcluster.fromNow(cfg.app.taskExpirationDelay);
+        debug('Expiring task-requirement at: %s, from before %s', new Date(), now);
+        const count = await TaskRequirement.expire(now);
+        debug('Expired %s task-requirement', count);
+      });
     },
   },
 
   // Create the worker-info expiration process (periodic job)
   'expire-worker-info': {
     requires: ['cfg', 'workerInfo', 'monitor'],
-    setup: async ({cfg, workerInfo, monitor}) => {
-      const now = taskcluster.fromNow(cfg.app.workerInfoExpirationDelay);
-      assert(!_.isNaN(now), 'Can\'t have NaN as now');
-
-      // Expire worker-info using delay
-      debug('Expiring worker-info at: %s, from before %s', new Date(), now);
-      const count = await workerInfo.expire(now);
-      debug('Expired %s worker-info', count);
-
-      monitor.count('expire-worker-info.done');
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
+    setup: ({cfg, workerInfo, monitor}) => {
+      return monitor.oneShot('expire-worker-info', async () => {
+        const now = taskcluster.fromNow(cfg.app.workerInfoExpirationDelay);
+        debug('Expiring worker-info at: %s, from before %s', new Date(), now);
+        const count = await workerInfo.expire(now);
+        debug('Expired %s worker-info', count);
+      });
     },
   },
 
