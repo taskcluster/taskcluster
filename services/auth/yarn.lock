@@ -3092,10 +3092,10 @@ taskcluster-lib-loader@^10.0.1:
     promise "^8.0.1"
     topo-sort "^1.0.0"
 
-taskcluster-lib-monitor@^11.0.1:
-  version "11.0.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-monitor/-/taskcluster-lib-monitor-11.0.1.tgz#f4e3e5a577f443ae5532a747bbe76facda8a0ae9"
-  integrity sha512-vQN2wwWRu9jO0D2yvK4QsXJ25hieJRVAWuyVr7Ylvh386wlvqINPMDyZxdcjJjbaL0vJI4zTn4bdPsSX1nO8cQ==
+taskcluster-lib-monitor@^11.1.1:
+  version "11.1.1"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-monitor/-/taskcluster-lib-monitor-11.1.1.tgz#604d0cafc8858570efbacf2cdec1e752a29a7095"
+  integrity sha512-KHIBz10c7G33ghjaUqowu7LV1U87pN7oyHgJD7TnGa5mWYqV+rWA9MyleIKais75OeFmH8+H6ZnkvKh3F0QgTg==
   dependencies:
     app-root-dir "^1.0.2"
     aws-sdk "^2.30.0"

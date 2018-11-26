@@ -232,28 +232,24 @@ const load = Loader({
   'expire-sentry': {
     requires: ['cfg', 'sentryManager', 'monitor'],
     setup: async ({cfg, sentryManager, monitor}) => {
-      let now = taskcluster.fromNow(cfg.app.sentryExpirationDelay);
-      if (isNaN(now)) {
-        console.log('FATAL: sentryExpirationDelay is not valid!');
-        process.exit(1);
-      }
-      await sentryManager.purgeExpiredKeys(now);
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
+      return monitor.oneShot('expire-sentry', async () => {
+        const now = taskcluster.fromNow(cfg.app.sentryExpirationDelay);
+        debug('Expiring sentry keys');
+        await sentryManager.purgeExpiredKeys(now);
+        debug('Expired sentry keys');
+      });
     },
   },
 
   'purge-expired-clients': {
     requires: ['cfg', 'Client', 'monitor'],
-    setup: async ({cfg, Client, monitor}) => {
-      now = taskcluster.fromNow(cfg.app.clientExpirationDelay);
-      if (isNaN(now)) {
-        console.log('FATAL: clientExpirationDelay is not valid!');
-        process.exit(1);
-      }
-      await Client.purgeExpired(now);
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
+    setup: ({cfg, Client, monitor}) => {
+      return monitor.oneShot('purge-expired-clients', async () => {
+        const now = taskcluster.fromNow(cfg.app.clientExpirationDelay);
+        debug('Purging expired clients');
+        await Client.purgeExpired(now);
+        debug('PUrged expired clients');
+      });
     },
   },
 }, ['profile', 'process']);
