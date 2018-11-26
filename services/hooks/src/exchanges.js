@@ -7,10 +7,9 @@ let exchanges = new Exchanges({
   serviceName: 'hooks',
   apiVersion: 'v1',
   description: [
-    'The hooks service, typically available at `hooks.taskcluster.net`',
-    'is responsible for creating tasks at specific times or in .',
-    'response to webhooks and API calls.Using this exchange allows us',
-    'to make hooks which repsond to particular pulse messages',
+    'The hooks service is responsible for creating tasks at specific times or',
+    'in .  response to webhooks and API calls.Using this exchange allows us to',
+    'make hooks which repsond to particular pulse messages',
     '',
     'These exchanges provide notifications when a hook is created, updated',
     'or deleted. This is so that the listener running in a different hooks ',
