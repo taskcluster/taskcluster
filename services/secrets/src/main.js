@@ -105,18 +105,15 @@ var load = loader({
 
   expire: {
     requires: ['cfg', 'Secret', 'monitor'],
-    setup: async ({cfg, Secret, monitor}) => {
-      // Find an secret expiration delay
-      var delay = cfg.app.secretExpirationDelay;
-      var now   = taskcluster.fromNow(delay);
-      assert(!_.isNaN(now), 'Can\'t have NaN as now');
+    setup: ({cfg, Secret, monitor}) => {
+      return monitor.oneShot('expire', async () => {
+        const delay = cfg.app.secretExpirationDelay;
+        const now = taskcluster.fromNow(delay);
 
-      debug('Expiring secrets');
-      let count = await Secret.expire(now);
-      debug('Expired ' + count + ' secrets');
-      monitor.count('expire-secrets.done');
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
+        debug('Expiring secrets');
+        const count = await Secret.expire(now);
+        debug('Expired ' + count + ' secrets');
+      });
     },
   },
 }, ['process', 'profile']);
