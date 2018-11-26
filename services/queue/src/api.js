@@ -70,9 +70,9 @@ var RUN_ID_PATTERN      = /^[1-9]*[0-9]+$/;
 var builder = new APIBuilder({
   title:        'Queue API Documentation',
   description: [
-    'The queue, typically available at `queue.taskcluster.net`, is responsible',
-    'for accepting tasks and track their state as they are executed by',
-    'workers. In order ensure they are eventually resolved.',
+    'The queue service is responsible for accepting tasks and track their state',
+    'as they are executed by workers. In order ensure they are eventually',
+    'resolved.',
     '',
     'This document describes the API end-points offered by the queue. These ',
     'end-points targets the following audience:',
