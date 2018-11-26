@@ -8,12 +8,6 @@ properties:
   hookId:                 {$const: hookId}
   metadata:               {$ref: "hook-metadata.json#"}
   schedule:
-    # It would be prettier with:
-    # {$ref: "http://schemas.taskcluster.net/hooks/v1/schedule.json#"}
-    # but it breaks "default" handling, schema library is a bit sketchy when it
-    # come to the "default" keyword.. I'm looking at an alernative that is
-    # both faster and implements "default" correctly.
-    # (there corner cases with anyof, and $ref that isn't handled well.)
     description: |
       Definition of the times at which a hook will result in creation of a task.
       If several patterns are specified, tasks will be created at any time
