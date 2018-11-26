@@ -1,0 +1,32 @@
+$schema:  http://json-schema.org/draft-06/schema#
+title:        "Task Group Defined - Create Status"
+description: |
+  Indicates that this service has created a new task group in response to a GitHub event.
+  This message is for internal use only and should not be relied on for other purposes.
+  Full specification on [GitHub docs](https://developer.github.com/v3/repos/statuses/#create-a-status)
+type:         object
+properties:
+  version: {$const: message-version}
+  organization:
+    description: |
+      The GitHub `organization` which had an event.
+    type:         string
+    minLength:    {$const: github-identifier-min-length}
+    maxLength:    {$const: github-identifier-max-length}
+    pattern:      {$const: github-identifier-pattern}
+  repository:
+    description: |
+      The GitHub `repository` which had an event.
+    type:         string
+    minLength:    {$const: github-identifier-min-length}
+    maxLength:    {$const: github-identifier-max-length}
+    pattern:      {$const: github-identifier-pattern}
+  taskGroupId:
+    type: string
+    description: The id of the taskGroup that had been created.
+additionalProperties: false
+required:
+  - taskGroupId
+  - organization
+  - repository
+  - version

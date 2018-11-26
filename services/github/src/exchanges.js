@@ -114,5 +114,20 @@ exchanges.declare({
   CCBuilder:          () => [],
 });
 
+/** task group exchange */
+exchanges.declare({
+  exchange:           'task-group-defined',
+  name:               'taskGroupDefined',
+  title:              'GitHub release Event',
+  description: [
+    'used for creating status indicators in GitHub UI using Statuses API',
+  ].join('\n'),
+  routingKey:         commonRoutingKey(),
+  schema:             'task-group-defined-message.yml',
+  messageBuilder:     commonMessageBuilder,
+  routingKeyBuilder:  msg => _.pick(msg, 'organization', 'repository'),
+  CCBuilder:          () => [],
+});
+
 // Export exchanges
 module.exports = exchanges;

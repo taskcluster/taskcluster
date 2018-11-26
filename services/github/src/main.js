@@ -182,18 +182,20 @@ const load = loader({
   },
 
   handlers: {
-    requires: ['cfg', 'github', 'monitor', 'intree', 'schemaset', 'reference', 'Builds', 'pulseClient'],
-    setup: async ({cfg, github, monitor, intree, schemaset, reference, Builds, pulseClient}) => new Handlers({
-      rootUrl: cfg.taskcluster.rootUrl,
-      credentials: cfg.pulse,
-      monitor: monitor.prefix('handlers'),
-      intree,
-      reference,
-      jobQueueName: cfg.app.jobQueue,
-      statusQueueName: cfg.app.statusQueue,
-      context: {cfg, github, schemaset, Builds},
-      pulseClient,
-    }),
+    requires: ['cfg', 'github', 'monitor', 'intree', 'schemaset', 'reference', 'Builds', 'pulseClient', 'publisher'],
+    setup: async ({cfg, github, monitor, intree, schemaset, reference, Builds, pulseClient, publisher}) =>
+      new Handlers({
+        rootUrl: cfg.taskcluster.rootUrl,
+        credentials: cfg.pulse,
+        monitor: monitor.prefix('handlers'),
+        intree,
+        reference,
+        jobQueueName: cfg.app.jobQueue,
+        resultStatusQueueName: cfg.app.resultStatusQueue,
+        initialStatusQueueName: cfg.app.initialStatusQueue,
+        context: {cfg, github, schemaset, Builds, publisher},
+        pulseClient,
+      }),
   },
 
   worker: {
