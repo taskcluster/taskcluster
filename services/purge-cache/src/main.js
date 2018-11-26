@@ -56,18 +56,13 @@ const load = loader({
 
   'expire-cache-purges': {
     requires: ['cfg', 'CachePurge', 'monitor'],
-    setup: async ({cfg, CachePurge, monitor}) => {
-      let now = taskcluster.fromNow(cfg.app.cachePurgeExpirationDelay);
-      assert(!_.isNaN(now), 'Can\'t have NaN as now');
-
-      // Expire task-groups using delay
-      debug('Expiring cache-purges at: %s, from before %s', new Date(), now);
-      let count = await CachePurge.expire(now);
-      debug('Expired %s cache-purges', count);
-
-      monitor.count('expire-cache-purges.done');
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
+    setup: ({cfg, CachePurge, monitor}) => {
+      return monitor.oneShot('expire-purge-caches', async () => {
+        const now = taskcluster.fromNow(cfg.app.cachePurgeExpirationDelay);
+        debug('Expiring cache-purges at: %s, from before %s', new Date(), now);
+        const count = await CachePurge.expire(now);
+        debug('Expired %s cache-purges', count);
+      });
     },
   },
 
