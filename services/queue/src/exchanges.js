@@ -8,9 +8,9 @@ var exchanges = new Exchanges({
   serviceName: 'queue',
   apiVersion:  'v1',
   description: [
-    'The queue, typically available at `queue.taskcluster.net`, is responsible',
-    'for accepting tasks and track their state as they are executed by',
-    'workers. In order ensure they are eventually resolved.',
+    'The queue service is responsible for accepting tasks and track their state',
+    'as they are executed by workers. In order ensure they are eventually',
+    'resolved.',
     '',
     'This document describes AMQP exchanges offered by the queue, which allows',
     'third-party listeners to monitor tasks as they progress to resolution.',
