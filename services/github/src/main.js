@@ -167,17 +167,17 @@ const load = loader({
 
   syncInstallations: {
     requires: ['github', 'OwnersDirectory', 'monitor'],
-    setup: async ({github, OwnersDirectory, monitor}) => {
-      let gh = await github.getIntegrationGithub();
-      let installations = (await gh.apps.getInstallations({})).data;
-      await Promise.map(installations, inst => {
-        return OwnersDirectory.create({
-          installationId: inst.id,
-          owner: inst.account.login,
-        }, true);
+    setup: ({github, OwnersDirectory, monitor}) => {
+      return monitor.oneShot('syncInstallations', async () => {
+        const gh = await github.getIntegrationGithub();
+        const installations = (await gh.apps.getInstallations({})).data;
+        await Promise.map(installations, inst => {
+          return OwnersDirectory.create({
+            installationId: inst.id,
+            owner: inst.account.login,
+          }, true);
+        });
       });
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
     },
   },
 
