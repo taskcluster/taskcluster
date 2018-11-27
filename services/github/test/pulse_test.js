@@ -16,8 +16,8 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
     helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
 
     github = await helper.load('github');
-    github.inst(5808).setUser({id: 14795478, email: 'someuser@github.com'});
-    github.inst(5808).setUser({id: 18102552, email: 'anotheruser@github.com'});
+    github.inst(5808).setUser({id: 14795478, email: 'someuser@github.com', username: 'TaskClusterRobot'});
+    github.inst(5808).setUser({id: 18102552, email: 'anotheruser@github.com', username: 'owlishDeveloper'});
 
     publisher = await helper.load('publisher');
   });
