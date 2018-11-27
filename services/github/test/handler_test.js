@@ -389,20 +389,22 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P5555';
 
-    async function assertStatusCreation(state) {
-      assert(github.inst(9988).repos.createStatus.calledOnce, 'createStatus was not called');
+    function assertStatusCreation(state) {
+      assert(github.inst(9988).repos.createStatus.called, 'createStatus was not called');
 
-      let args = github.inst(9988).repos.createStatus.firstCall.args[0];
-      assert.equal(args.owner, 'TaskClusterRobot');
-      assert.equal(args.repo, 'hooks-testing');
-      assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
-      assert.equal(args.state, state);
-      assert.equal(args.description, `TaskGroup: Pending (for ${args.eventType})`);
-      debug('Created task group: ' + args.target_url);
-      assert(args.target_url.startsWith(URL_PREFIX));
-      let taskGroupId = args.target_url.substr(URL_PREFIX.length);
-      assert.equal(taskGroupId, TASKGROUPID);
-      assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'push');
+      github.inst(9988).repos.createStatus.firstCall.args.forEach(args => {
+        if (args.state === state) {
+          assert.equal(args.owner, 'TaskClusterRobot');
+          assert.equal(args.repo, 'hooks-testing');
+          assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+          assert.equal(args.description, `TaskGroup: Pending (for ${args.eventType})`);
+          debug('Created task group: ' + args.target_url);
+          assert(args.target_url.startsWith(URL_PREFIX));
+          let taskGroupId = args.target_url.substr(URL_PREFIX.length);
+          assert.equal(taskGroupId, TASKGROUPID);
+          assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'push');
+        }
+      });
     }
 
     test('create pending status when task is defined', async function() {
@@ -420,7 +422,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-defined',
       });
-      assertStatusCreation('failure');
+      assert(github.inst(9988).repos.createStatus.notCalled, 'createStatus was called twice');
     });
   });
 });
