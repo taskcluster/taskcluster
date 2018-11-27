@@ -8,7 +8,7 @@ const assert = require('assert');
 const path = require('path');
 const Docker = require('dockerode');
 const Observable = require('zen-observable');
-const {PassThrough} = require('stream');
+const {PassThrough, Transform} = require('stream');
 const got = require('got');
 const {spawn} = require('child_process'); 
 const Stamp = require('./stamp');
@@ -108,7 +108,7 @@ _dockerSetup.memos = {};
 exports.dockerRun = async ({baseDir, logfile, command, env, binds, workingDir, image, utils}) => {
   const {docker, dockerRunOpts} = await _dockerSetup({baseDir});
 
-  const output = new PassThrough();
+  const output = new PassThrough().pipe(new DemuxDockerStream());
   let errorAddendum = '';
   if (logfile) {
     output.pipe(fs.createWriteStream(logfile));
@@ -150,6 +150,35 @@ exports.dockerRun = async ({baseDir, logfile, command, env, binds, workingDir, i
     throw new Error(`Container exited with status ${result.StatusCode}.${errorAddendum}`);
   }
 };
+
+// Decode the multiplexed stream from Docker.  See
+// https://docs.docker.com/engine/api/v1.37/#operation/ContainerAttach
+// for protocol details.
+class DemuxDockerStream extends Transform {
+  constructor() {
+    super();
+    this.buffer = Buffer.alloc(0);
+  }
+
+  _transform(chunk, encoding, callback) {
+    if (this.buffer.length) {
+      this.buffer = Buffer.concat(this.buffer, chunk);
+    } else {
+      this.buffer = chunk;
+    }
+
+    // The data stream is an 8-byte header: [type, 0, 0, 0, SIZE1, SIZE2,
+    // SIZE3, SIZE4] followed by the payload.  We don't care about the type, so
+    // just read the size and then dump the payload to the stream output.
+    while (this.buffer.length >= 8) {
+      const len = this.buffer.readUInt32BE(4);
+      const payload = this.buffer.slice(8, len + 8);
+      this.buffer = this.buffer.slice(len + 8);
+      this.push(payload);
+    }
+    callback();
+  }
+}
 
 /**
  * Pull an image from a docker registry (`docker pull`)
