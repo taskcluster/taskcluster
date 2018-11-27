@@ -18,9 +18,7 @@ const _kindTaskGenerators = {
 };
 
 class Build {
-  constructor(input, output, cmdOptions) {
-    this.input = input;
-    this.output = output;
+  constructor(cmdOptions) {
     this.cmdOptions = cmdOptions;
 
     this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
@@ -30,7 +28,8 @@ class Build {
   }
 
   async run() {
-    this.spec = new ClusterSpec(this.input);
+    const specDir = path.join(require('app-root-dir').get(), 'taskcluster-spec');
+    this.spec = new ClusterSpec(specDir);
     this.cfg = config({
       files: [
         'build-config.yml',
@@ -71,6 +70,11 @@ class Build {
       });
     });
 
+    const target = [];
+    if (this.cmdOptions.targetService) {
+      target.push(`target-service-${this.cmdOptions.targetService}`);
+    }
+
     const taskgraph = new TaskGraph(tasks, {
       locks: {
         // limit ourselves to one docker process per CPU
@@ -81,18 +85,27 @@ class Build {
       renderer: process.stdout.isTTY ?
         new ConsoleRenderer({elideCompleted: true}) :
         new LogRenderer(),
+      target: target.length > 0 ? target : undefined,
     });
     const context = await taskgraph.run();
 
-    // create a TerraformJson output based on the result of the build
-    const tfJson = new TerraformJson(this.spec, context);
-    // ..and write it out
-    tfJson.write(this.output);
+    if (target) {
+      // if targeting, just show the build results, since we don't have all the data to
+      // create a TerraformJson file.
+      target.forEach(tgt => {
+        console.log(`${tgt}: ${context[tgt]}`);
+      });
+    } else {
+      // create a TerraformJson output based on the result of the build
+      const tfJson = new TerraformJson(this.spec, context);
+      // ..and write it out
+      tfJson.write(process.stdout);
+    }
   }
 }
 
-const main = async (input, output, options) => {
-  const build = new Build(input, output, options);
+const main = async (options) => {
+  const build = new Build(options);
   await build.run();
 };
 

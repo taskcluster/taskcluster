@@ -44,3 +44,4 @@ Dependency names follow some patterns:
 * `service-${name}-stamp` -- the Stamp instance for the built service
 * `service-${name}-docker-image` -- the built Docker image for the named service (used to create the Terraform-JSON output)
 * `service-${name}-image-on-registry` -- true if the docker image for the named service is already present on the Docker registry
+* `target-service-${name}` -- target dependency for the end-to-end build of the service (with optional push)

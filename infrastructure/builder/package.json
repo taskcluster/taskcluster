@@ -22,8 +22,9 @@
     "yarn": "^1.0.0"
   },
   "dependencies": {
+    "app-root-dir": "^1.0.2",
     "commander": "^2.14.1",
-    "console-taskgraph": "^1.4.0",
+    "console-taskgraph": "^1.5.0",
     "dockerode": "^2.5.3",
     "dot": "^1.1.2",
     "got": "^8.3.0",

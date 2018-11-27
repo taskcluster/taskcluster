@@ -46,16 +46,18 @@ const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => 
       `service-${name}-image-on-registry`,
     ],
     provides: [
+      `target-service-${name}`,
     ],
     run: async (requirements, utils) => {
       const tag = requirements[`service-${name}-docker-image`];
+      const provides = {[`target-service-${name}`]: tag};
 
       if (!cmdOptions.push) {
-        return utils.skip({provides: []});
+        return utils.skip({provides});
       }
 
       if (requirements[`service-${name}-image-on-registry`]) {
-        return utils.skip({provides: []});
+        return utils.skip({provides});
       }
 
       await dockerPush({
@@ -64,6 +66,8 @@ const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => 
         utils,
         baseDir,
       });
+
+      return provides;
     },
   });
 };
