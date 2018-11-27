@@ -287,8 +287,8 @@ builder.declare({
   }
 
   // Not all webhook payloads include an e-mail for the user who triggered an event
-  let headUser = msg.details['event.head.user.id'].toString();
-  let userDetails = (await instGithub.users.getById({id: headUser})).data;
+  let headUser = msg.details['event.head.user.login'].toString();
+  let userDetails = (await instGithub.users.getByUsername({username: headUser})).data;
   msg.details['event.head.user.email'] = this.ajv.validate({type: 'string', format: 'email'}, userDetails.email)
     ? userDetails.email
     : msg.details['event.head.user.login'].replace(/\[bot\]$/, '') + '@users.noreply.github.com';

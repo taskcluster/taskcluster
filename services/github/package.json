@@ -14,7 +14,7 @@
     "url": "https://github.com/taskcluster/taskcluster-github.git"
   },
   "dependencies": {
-    "@octokit/rest": "^15.12.1",
+    "@octokit/rest": "^16.0.5",
     "ajv": "^6.5.0",
     "azure-entities": "^5.1.0",
     "bluebird": "^3.5.1",
