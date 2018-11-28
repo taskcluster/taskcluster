@@ -145,9 +145,9 @@ async function installationAuthenticate(owner, OwnersDirectory, github) {
  Returns either status object or undefined (if not found).
 ***/
 async function findTCStatus(github, owner, repo, branch, configuration) {
-  let taskclusterBot = (await github.users.getForUser({username: configuration.app.botName})).data;
+  let taskclusterBot = (await github.users.getByUsername({username: configuration.app.botName})).data;
   // Statuses is an array of status objects, where we find the relevant status
-  let statuses = (await github.repos.getStatuses({owner, repo, ref: branch})).data;
+  let statuses = (await github.repos.listStatusesForRef({owner, repo, ref: branch})).data;
   return statuses.find(statusObject => statusObject.creator.id === taskclusterBot.id);
 }
 
@@ -408,7 +408,7 @@ builder.declare({
 
   if (instGithub) {
     try {
-      let reposList = await instGithub.apps.getInstallationRepositories({});
+      let reposList = await instGithub.apps.listRepos({});
 
       while (true) {
         let installed = reposList.data.repositories.map(repo => repo.name).indexOf(repo);

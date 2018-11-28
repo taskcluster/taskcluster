@@ -187,7 +187,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       state: 'error',
     });
 
-    let status = github.inst(9090).getStatuses({
+    let status = github.inst(9090).listStatusesForRef({
       owner: 'abc123',
       repo: 'awesomeRepo',
       ref: 'master',
@@ -206,7 +206,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       context: 'customContext',
     });
 
-    let status = github.inst(9090).getStatuses({
+    let status = github.inst(9090).listStatusesForRef({
       owner: 'abc123',
       repo: 'awesomeRepo',
       ref: 'master',

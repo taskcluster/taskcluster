@@ -286,7 +286,7 @@ async function jobHandler(message) {
   let pullNumber = message.payload.details['event.pullNumber'];
   if (!sha) {
     debug('Trying to get commit info in job handler...');
-    let commitInfo = await instGithub.repos.getShaOfCommitRef({
+    let commitInfo = await instGithub.repos.getCommitRefSha({
       owner: organization,
       repo: repository,
       ref: `refs/tags/${message.payload.details['event.version']}`,
@@ -300,7 +300,7 @@ async function jobHandler(message) {
   // Try to fetch a .taskcluster.yml file for every request
   try {
     debug(`Trying to fetch the YML for ${organization}/${repository}@${sha}`);
-    let tcyml = await instGithub.repos.getContent({
+    let tcyml = await instGithub.repos.getContents({
       owner: organization,
       repo: repository,
       path: '.taskcluster.yml',
