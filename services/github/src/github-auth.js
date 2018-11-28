@@ -10,19 +10,17 @@ const retryPlugin = (octokit, options) => {
 
   octokit.hook.wrap('request', async (request, options) => {
     let response;
-    for (let attempt = 0; attempt < retries; attempt++) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
       try {
-        response = await request(options);
-        break;
+        return await request(options);
       } catch (err) {
-        if (err.name !== 'HttpError' || err.status !== 404) {
+        if (attempt === retries || err.name !== 'HttpError' || err.status !== 404) {
           throw err;
         }
         debug(`404 getting retried for eventual consistency. attempt: ${attempt}`);
         await sleep(baseBackoff * Math.pow(2, attempt));
       }
     }
-    return response;
   });
 };
 const Github = require('@octokit/rest').plugin([retryPlugin]);
