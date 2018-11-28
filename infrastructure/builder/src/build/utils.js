@@ -162,7 +162,7 @@ class DemuxDockerStream extends Transform {
 
   _transform(chunk, encoding, callback) {
     if (this.buffer.length) {
-      this.buffer = Buffer.concat(this.buffer, chunk);
+      this.buffer = Buffer.concat([this.buffer, chunk]);
     } else {
       this.buffer = chunk;
     }
@@ -172,6 +172,9 @@ class DemuxDockerStream extends Transform {
     // just read the size and then dump the payload to the stream output.
     while (this.buffer.length >= 8) {
       const len = this.buffer.readUInt32BE(4);
+      if (this.buffer.length < len + 8) {
+        break;
+      }
       const payload = this.buffer.slice(8, len + 8);
       this.buffer = this.buffer.slice(len + 8);
       this.push(payload);
