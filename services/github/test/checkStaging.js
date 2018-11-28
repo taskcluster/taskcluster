@@ -40,7 +40,7 @@ const checkStaging = async () => {
   while (!done) {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    let statuses = await github.repos.getStatuses({
+    let statuses = await github.repos.listStatusesForRef({
       owner: 'taskcluster',
       repo: 'taskcluster-github-testing',
       ref: sha,
