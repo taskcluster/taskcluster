@@ -27,7 +27,7 @@ async function getRepoPolicy({login, organization, repository, instGithub, debug
   // load .taskcluster.yml from that branch
   let taskclusterYml;
   try {
-    let content = await instGithub.repos.getContent({
+    let content = await instGithub.repos.getContents({
       owner: organization,
       repo: repository,
       path: '.taskcluster.yml',

@@ -75,7 +75,7 @@ class FakeGithub {
           throwError(404);
         }
       },
-      'repos.getContent': async ({owner, repo, path, ref}) => {
+      'repos.getContents': async ({owner, repo, path, ref}) => {
         assert.equal(path, '.taskcluster.yml');
         const key = `${owner}/${repo}@${ref}`;
         if (this._taskcluster_yml_files[key]) {
@@ -96,22 +96,13 @@ class FakeGithub {
           throwError(404);
         }
       },
-      'apps.getInstallationRepositories': async () => {
+      'apps.listRepos': async () => {
         return {data: this._repositories};
       },
-      'repos.getStatuses': async ({owner, repo, ref}) => {
+      'repos.listStatusesForRef': async ({owner, repo, ref}) => {
         const key = `${owner}/${repo}@${ref}`;
         if (this._statuses[key]) {
           return {data: this._statuses[key]};
-        } else {
-          throwError(404);
-        }
-      },
-      'users.getForUser': async ({username}) => {
-        let requested = _.find(this._github_users, {username});
-        if (requested) {
-          requested.id = parseInt(requested.id, 10);
-          return {data: requested};
         } else {
           throwError(404);
         }
@@ -167,10 +158,7 @@ class FakeGithub {
     assert(id, 'must provide id to setUser');
     assert(email, 'must provide email to setUser');
     assert(username, 'must provide username to setUser');
-    // Please note that here userId is a string. If you need to set up a github API function
-    // to get and use userId, you need to use parseInt(id, 10)
-    // (as an example, see users.getForUser above)
-    this._github_users.push({id: id.toString(), email, username});
+    this._github_users.push({id, email, username});
   }
 
   setRepositories(...repoNames) {
@@ -184,7 +172,7 @@ class FakeGithub {
     this._statuses[key] = info;
   }
 
-  getStatuses({owner, repo, ref}) {
+  listStatusesForRef({owner, repo, ref}) {
     const key = `${owner}/${repo}@${ref}`;
     return {data: this._statuses[key]};
   }
