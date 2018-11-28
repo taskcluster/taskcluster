@@ -14,6 +14,23 @@ The Heroku `Procfile` in the root of the repository determines how to run variou
 The docker image is configured to run these components with `docker run <image> <component>`.
 As with Heroku, the `web` proc is privileged, and is expected to run a web server on port 80, so `docker run <image> web` will run the web service.
 
+## Testing Service Images
+
+To open a shell in a service's docker image, use a command like the following:
+
+```shell
+docker run -ti --rm <image> bash
+```
+
+where `<image>` is the string output from the build process.
+You can also run a specific process from the Procfile with
+
+```shell
+docker run --rm -e PORT=80 -e .. <image> <process>
+```
+
+get the (longish) list of `-e` environment variables that must be supplied from the `taskcluster-terraform` repository.
+
 ## Documentation and Metadata
 
 Services annotated with `docs: generated` in the build spec are expected to produce a documentation directory as defined by [taskcluster-lib-docs](https://github.com/taskcluster/taskcluster-lib-docs) when the `write-docs` component is run:
