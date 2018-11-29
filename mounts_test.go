@@ -50,6 +50,22 @@ func TestMounts(t *testing.T) {
 			}`),
 		},
 
+		//file mount from raw
+		&FileMount{
+			File: filepath.Join("preloaded", "raw.txt"),
+			Content: json.RawMessage(`{
+				"raw": "Hello Raw!"
+			}`),
+		},
+
+		//file mount from base64
+		&FileMount{
+			File: filepath.Join("preloaded", "base64"),
+			Content: json.RawMessage(`{
+				"base64": "ZWNobyAnSGVsbG8gQmFzZTY0IScK"
+			}`),
+		},
+
 		// empty writable directory cache
 		&WritableDirectoryCache{
 			CacheName: "banana-cache",

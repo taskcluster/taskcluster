@@ -377,3 +377,40 @@ definitions:
       additionalProperties: false
       required:
       - url
+    - title: Raw Content
+      description: |-
+        Byte-for-byte literal inline content of file/archive, up to 64KB in size.
+
+        Since: generic-worker 11.1.0
+      type: object
+      properties:
+        raw:
+          type: string
+          maxLength: 65536
+          title: Raw
+          description: |-
+            Byte-for-byte literal inline content of file/archive, up to 64KB in size.
+
+            Since: generic-worker 11.1.0
+      additionalProperties: false
+      required:
+      - raw
+    - title: Base64 Content
+      description: |-
+        Base64 encoded content of file/archive, up to 64KB (encoded) in size.
+
+        Since: generic-worker 11.1.0
+      type: object
+      properties:
+        base64:
+          type: string
+          maxLength: 65536
+          title: Base64
+          description: |-
+            Base64 encoded content of file/archive, up to 64KB (encoded) in size.
+
+            Since: generic-worker 11.1.0
+          pattern: '^[A-Za-z0-9/+]+[=]{0,2}$'
+      additionalProperties: false
+      required:
+      - base64
