@@ -49,6 +49,7 @@ func main() {
 
 	http.HandleFunc("/bewit", routes.BewitHandler)
 	http.HandleFunc("/credentials", routes.CredentialsHandler)
+	http.HandleFunc("/api", routes.APIHandler)
 	http.HandleFunc("/", routes.RootHandler)
 
 	// Only listen on loopback interface to reduce attack surface. If we later

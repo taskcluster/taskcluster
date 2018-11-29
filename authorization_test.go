@@ -240,7 +240,7 @@ func TestAuthorizationDelegate(t *testing.T) {
 			res := httptest.NewRecorder()
 
 			// Function to test
-			routes.RootHandler(res, req)
+			routes.APIHandler(res, req)
 			return res
 		}
 	}
