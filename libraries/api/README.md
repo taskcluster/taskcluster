@@ -430,7 +430,7 @@ For publishing (only supported for the legacy URL scheme):
  * `aws` - AWS credentials for uploading to the reference bucket (required if `publish` is true);
    has the form `{accessKeyId: .., secretAccessKey: .., region: ..}`.
 
-The resulting object has a `references()` method that will return the API
+The resulting object has a `reference()` method that will return the API
 reference data structure, and an `express(app)` method that configures the API
 on the given express app.
 
