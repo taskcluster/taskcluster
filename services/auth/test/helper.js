@@ -113,12 +113,12 @@ exports.withEntities = (mock, skipping, options={}) => {
     }
 
     await Promise.all(tables.map(async tbl => {
-      await exports[tbl.name].scan({}, {handler: e => {
+      await exports[tbl.name].scan({}, {handler: async e => {
         // This is assumed to exist accross tests in many places
         if (tbl.name === 'Client' && e.clientId.startsWith('static/')) {
           return;
         }
-        e.remove();
+        await e.remove();
       }});
     }));
   };
