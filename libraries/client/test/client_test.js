@@ -235,12 +235,14 @@ suite('client requests/responses', function() {
         delete require.cache[clientPath];
         const cleanClient = require(clientPath);
         const Fake = cleanClient.createClient(referenceNameStyle);
-        const fake = new Fake({
-          credentials: {
-            clientId: 'nobody',
-            accessToken: 'nothing',
+        const fake = new Fake(Object.assign({},
+          taskcluster.fromEnvVars(), {
+            credentials: {
+              clientId: 'nobody',
+              accessToken: 'nothing',
+            },
           },
-        });
+        ));
         delete process.env.TASKCLUSTER_ROOT_URL;
         return fake;
       })(),
