@@ -17,8 +17,10 @@ For job messages to appear on Treeherder production, the destination of `tc-tree
 be used.  Also, `tc-treeherder-staging` could be used for reporting jobs to the Treeherder
 staging environment.
 
-Note: Github repos should use the `project` form of `<user>/<project>` to be recognized
-as a github source.
+Github repos should use the `project` form of `<owner>/<repository>` to be recognized
+as a github source. The `owner` field is unused. The `repository` field is the repository name
+as it is known to Treeherder, which does not necessarily match the name on GitHub.
+For example a `project` of `_/servo-auto` maps to https://treeherder.mozilla.org/#/jobs?repo=servo-auto.
 
 ## Treeherder job configuration
 
