@@ -143,8 +143,10 @@ data = references.makeSerializable();
 
 To build an [Ajv](https://github.com/epoberezkin/ajv) instance containing all schemas and metaschemas, call `references.makeAjv()`.
 This is only valid on an absolute References instance.
+To skip validation, use `makeAjv({skipValidation: true})`.
 
 To get a specific schema, call `references.getSchema($id)`, with an absolute or abstract `$id` as appropriate.
+To skip validation, use `getSchema($id, {skipValidation: true})`.
 
 # Validation
 
