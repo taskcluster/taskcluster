@@ -79,6 +79,28 @@ class References {
   }
 
   /**
+   * Create a new representation from the components of a service.  This is used
+   * within services' tests to validate that their references and schemas are
+   * valid.  It returns an abstract References instance.
+   */
+  static fromService({schemaset, exchanges, builder}) {
+    const references = [];
+    if (builder) {
+      references.push({filename: 'api-reference.json', content: builder.reference()});
+    }
+    if (exchanges) {
+      references.push({filename: 'exchanges-reference.json', content: exchanges.reference()});
+    }
+
+    const schemas = Array.from(getCommonSchemas());
+    Object.entries(schemaset.abstractSchemas()).forEach(([filename, content]) => {
+      schemas.push({filename, content});
+    });
+
+    return new References({references, schemas});
+  }
+
+  /**
    * Validate that all components of this instance are self-consistent.  Throws
    * an exception for any discovered issues.  This can optionally be done with
    * respect to a rootUrl, but this is only useful for performance reasons.
