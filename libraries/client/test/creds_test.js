@@ -343,37 +343,41 @@ suite('client credential handling', function() {
   });
 
   suite('Get with credentials from environment variables', async () => {
-    let ACCESS_TOKEN  = process.env.TASKCLUSTER_ACCESS_TOKEN;
+    let ROOT_URL      = process.env.TASKCLUSTER_ROOT_URL;
     let CLIENT_ID     = process.env.TASKCLUSTER_CLIENT_ID;
+    let ACCESS_TOKEN  = process.env.TASKCLUSTER_ACCESS_TOKEN;
 
     // Ensure the client is removed from the require cache so it can be
     // reloaded from scratch.
-    let cleanClient = null;
     setup(() => {
+      process.env.TASKCLUSTER_ROOT_URL     = 'https://taskcluster.net';
       process.env.TASKCLUSTER_CLIENT_ID    = 'tester';
       process.env.TASKCLUSTER_ACCESS_TOKEN = 'no-secret';
-
-      // This is an absolute path to the client.js file. If this file is moved
-      // then this obviously will break.  The intent is to re-require the file
-      // with the environment variables in place, since they are used at
-      // load time
-      let clientPath = path.resolve(__dirname, '..', 'src', 'client.js');
-      delete require.cache[clientPath];
-      cleanClient = require(clientPath);
     });
 
     // Be a good citizen and cleanup after this test so we don't leak state.
     teardown(() => {
-      if (cleanClient.agents.http.destroy) {
-        cleanClient.agents.http.destroy();
-        cleanClient.agents.https.destroy();
-      }
+      process.env.TASKCLUSTER_ROOT_URL     = ROOT_URL;
       process.env.TASKCLUSTER_CLIENT_ID    = CLIENT_ID;
       process.env.TASKCLUSTER_ACCESS_TOKEN = ACCESS_TOKEN;
     });
 
-    test('implicit credentials', async () => {
-      let client = new cleanClient.Auth({rootUrl: 'https://taskcluster.net'});
+    test('fromEnvVars with only rootUrl', async () => {
+      delete process.env.TASKCLUSTER_CLIENT_ID;
+      delete process.env.TASKCLUSTER_ACCESS_TOKEN;
+      assert.deepEqual(taskcluster.fromEnvVars(),
+        {rootUrl: 'https://taskcluster.net'});
+    });
+
+    test('fromEnvVars with only accessToken', async () => {
+      delete process.env.TASKCLUSTER_ROOT_URL;
+      delete process.env.TASKCLUSTER_CLIENT_ID;
+      assert.deepEqual(taskcluster.fromEnvVars(),
+        {credentials: {accessToken: 'no-secret'}});
+    });
+
+    test('fromEnvVar credentials', async () => {
+      let client = new taskcluster.Auth(taskcluster.fromEnvVars());
       assert.deepEqual(
         await client.testAuthenticate({
           clientScopes: [],

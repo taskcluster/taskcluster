@@ -41,9 +41,9 @@ exports.agents = DEFAULT_AGENTS;
 // Default options stored globally for convenience
 var _defaultOptions = {
   credentials: {
-    clientId:     process.env.TASKCLUSTER_CLIENT_ID,
-    accessToken:  process.env.TASKCLUSTER_ACCESS_TOKEN,
-    certificate:  process.env.TASKCLUSTER_CERTIFICATE,
+    clientId: undefined,
+    accessToken: undefined,
+    certificate: undefined,
   },
   // Request time out (defaults to 30 seconds)
   timeout:        30 * 1000,
@@ -60,7 +60,7 @@ var _defaultOptions = {
   maxDelay:       30 * 1000,
 
   // The prefix of any api calls. e.g. https://taskcluster.net/api/
-  rootUrl: process.env.TASKCLUSTER_ROOT_URL,
+  rootUrl: undefined,
 
   // Fake methods, if given this will produce a fake client object.
   // Methods called won't make expected HTTP requests, but instead:
@@ -177,7 +177,7 @@ exports.createClient = function(reference, name) {
       serviceVersion: 'v1',
     }, _defaultOptions);
 
-    assert(this._options.rootUrl, 'Must provide a rootUrl or set the env var TASKCLUSTER_ROOT_URL');
+    assert(this._options.rootUrl, 'Must provide a rootUrl');
 
     this._options.rootUrl = this._options.rootUrl.replace(/\/$/, '');
 
@@ -670,6 +670,21 @@ _.forIn(apis, function(api, name) {
  */
 exports.config = function(options) {
   _defaultOptions = _.defaults({}, options, _defaultOptions);
+};
+
+exports.fromEnvVars = function() {
+  var results = {};
+  for (let {env, path} of [
+    {env: 'TASKCLUSTER_ROOT_URL', path: 'rootUrl'},
+    {env: 'TASKCLUSTER_CLIENT_ID', path: 'credentials.clientId'},
+    {env: 'TASKCLUSTER_ACCESS_TOKEN', path: 'credentials.accessToken'},
+    {env: 'TASKCLUSTER_CERTIFICATE', path: 'credentials.certificate'},
+  ]) {
+    if (process.env[env]) {
+      _.set(results, path, process.env[env]);
+    }
+  }
+  return results;
 };
 
 /**

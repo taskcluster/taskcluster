@@ -559,62 +559,54 @@ There is a number of configuration options for Client which affects invocation
 of API end-points. These are useful if using a non-default server, for example
 when setting up a staging area or testing locally.
 
-### Configuring API Root URL
+### Configuring API Root URL and Credentials
+
 If you use the builtin API Client classes documented above you must configure
 the `rootUrl` when creating an instance of the client. As illustrated below:
 
 ```js
 var auth = new taskcluster.Auth({
-  credentials:  {...},
   rootUrl:      "http://whatever.com"
 });
 ```
 
-This can also be set by setting a
-`TASKCLUSTER_ROOT_URL` env var before importing taskcluster-client. You can also
-use global config options as below:
+You may also provide credentials. For example:
+```js
+var auth = new taskcluster.Auth({
+  credentials: {
+    clientId:     '...',
+    accessToken:  '...'
+  }
+});
+```
+If the `clientId` and `accessToken` are not given, no credentials will be used.
+
+You can set either or both of these values as global config options as below:
 
 ```js
 // Configure default options
 taskcluster.config({
   rootUrl: "https://somesite.com",
+  credentials: {
+    clientId:     '...',
+    accessToken:  '...'
+  }
 });
 
 // No rootUrl needed here
 var auth = new taskcluster.Auth();
 ```
 
-### Configuring Credentials
-When creating an instance of a Client class the credentials can be provided
-in options. For example:
+You can read credentials and rootUrl from the standard `TASKCLUSTER_…`
+environment variables with `taskcluster.fromEnvVars()`:
+
 ```js
 var auth = new taskcluster.Auth({
-  credentials: {
-    clientId:     '...',
-    accessToken:  '...'
-  }
+  ...taskcluster.fromEnvVars(),
 });
+// or (to get behavior like that in versions 11.0.0 and earlier):
+taskcluster.config(taskcluster.fromEnvVars());
 ```
-
-You can also configure default options globally using
-`taskcluster.config(options)`, as follows:
-
-```js
-// Configure default options
-taskcluster.config({
-  credentials: {
-    clientId:     '...',
-    accessToken:  '...'
-  }
-});
-
-// No credentials needed here
-var auth = new taskcluster.Auth();
-```
-
-If the `clientId` and `accessToken` are left empty we also check the
-`TASKCLUSTER_CLIENT_ID` and `TASKCLUSTER_ACCESS_TOKEN` environment variables
-to use as defaults (similar to how AWS, Azure, etc. handle authentication).
 
 ### Restricting Authorized Scopes
 If you wish to perform requests on behalf of a third-party that has small set of
