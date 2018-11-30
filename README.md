@@ -101,7 +101,10 @@ Here's a slide deck for an [introduction to async python](https://gitpitch.com/e
 
     ```python
     import taskcluster
-    index = taskcluster.Index({'credentials': {'clientId': 'id', 'accessToken': 'accessToken'}})
+    index = taskcluster.Index({
+      'rootUrl': 'https://tc.example.com',
+      'credentials': {'clientId': 'id', 'accessToken': 'accessToken'},
+    })
     index.ping()
     ```
 
@@ -119,23 +122,34 @@ Here's a slide deck for an [introduction to async python](https://gitpitch.com/e
 
     ```python
     from taskcluster import client
-    qEvt = client.QueueEvents()
+    qEvt = client.QueueEvents({rootUrl: 'https://tc.example.com'})
     # The following calls are equivalent
     qEvt.taskCompleted({'taskId': 'atask'})
     qEvt.taskCompleted(taskId='atask')
     ```
 
 ## Root URL
-This client requires the `TASKCLUSTER_ROOT_URL` environment variable to be set,
-in order to know which taskcluster deployment to talk to. For interfacing with
-the production taskcluster deployment, set to `https://taskcluster.net`.
+
+This client requires a `rootUrl` argument to identify the Taskcluster
+deployment to talk to.  As of this writing, the production cluster has rootUrl
+`https://taskcluster.net`.
+
+## Environment Variables
+
+As of version 6.0.0, the client does not read the standard `TASKCLUSTER_…`
+environment variables automatically.  To fetch their values explicitly, use
+`taskcluster.optionsFromEnvironment()`:
+
+```python
+auth = taskcluster.Auth(taskcluster.optionsFromEnvironment())
+```
 
 ## Pagination
 There are two ways to accomplish pagination easily with the python client.  The first is
 to implement pagination in your code:
 ```python
 import taskcluster
-queue = taskcluster.Queue()
+queue = taskcluster.Queue({'rootUrl': 'https://tc.example.com'})
 i = 0
 tasks = 0
 outcome = queue.listTaskGroup('JzTGxwxhQ76_Tt1dxkaG5g')
@@ -158,7 +172,7 @@ built and then counted:
 
 ```python
 import taskcluster
-queue = taskcluster.Queue()
+queue = taskcluster.Queue({'rootUrl': 'https://tc.example.com'})
 
 responses = []
 

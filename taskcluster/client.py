@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-import os
 import json
 import logging
 import copy
@@ -29,11 +28,11 @@ log = logging.getLogger(__name__)
 # Default configuration
 _defaultConfig = config = {
     'credentials': {
-        'clientId': os.environ.get('TASKCLUSTER_CLIENT_ID'),
-        'accessToken': os.environ.get('TASKCLUSTER_ACCESS_TOKEN'),
-        'certificate': os.environ.get('TASKCLUSTER_CERTIFICATE'),
+        'clientId': None,
+        'accessToken': None,
+        'certificate': None,
     },
-    'rootUrl': os.environ.get('TASKCLUSTER_ROOT_URL'),
+    'rootUrl': None,
     'maxRetries': 5,
     'signedUrlExpiration': 15 * 60,
 }
