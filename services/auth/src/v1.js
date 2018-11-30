@@ -643,12 +643,6 @@ builder.declare({
   const roleId    = req.params.roleId;
   const input     = req.body;
 
-  if (process.env.LOCK_ROLES === 'true') {
-    return res.reportError('InputError',
-      'Roles are temporarily locked during upgrade',
-      {});
-  }
-
   if (input.scopes.some(s => s.endsWith('**'))) {
     return res.reportError('InputError', 'scopes must not end with `**`', {});
   }
@@ -739,12 +733,6 @@ builder.declare({
   const roleId    = req.params.roleId;
   const input     = req.body;
 
-  if (process.env.LOCK_ROLES === 'true') {
-    return res.reportError('InputError',
-      'Roles are temporarily locked during upgrade',
-      {});
-  }
-
   if (input.scopes.some(s => s.endsWith('**'))) {
     return res.reportError('InputError', 'scopes must not end with `**`', {});
   }
@@ -815,12 +803,6 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let roleId  = req.params.roleId;
-
-  if (process.env.LOCK_ROLES === 'true') {
-    return res.reportError('InputError',
-      'Roles are temporarily locked during upgrade',
-      {});
-  }
 
   // Check scopes
   await req.authorize({roleId});
