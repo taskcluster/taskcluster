@@ -4,9 +4,8 @@ const {writeUriStructured, readUriStructured} = require('./uri-structured');
 const {getCommonSchemas} = require('./common-schemas');
 const Ajv = require('ajv');
 const merge = require('lodash/merge');
-const {URL} = require('url');
 const regexEscape = require('regex-escape');
-const libUrls = require('taskcluster-lib-urls');
+const {validate} = require('./validate');
 
 /**
  * Representation of a set of references. This is considered immutable after
@@ -120,127 +119,7 @@ class References {
       return;
     }
 
-    const problems = [];
-
-    // first check for some basic structural issues that will cause Ajv to
-    // be sad..
-
-    let schemaPattern; // capture group 1 == prefix up to and including service name)
-    if (this.rootUrl === 'https://taskcluster.net') {
-      schemaPattern = new RegExp('(^https:\/\/schemas\.taskcluster\.net\/[^\/]*\/).*\.json#');
-    } else {
-      schemaPattern = new RegExp(`(^${regexEscape(this.rootUrl)}\/schemas\/[^\/]*\/).*\.json#`);
-    }
-
-    for (let {filename, content} of this.schemas) {
-      if (!content.$id) {
-        problems.push(`schema ${filename} has no $id`);
-      } else if (!schemaPattern.test(content.$id)) {
-        problems.push(`schema ${filename} has an invalid $id '${content.$id}' ` +
-          '(expected \'/schemas/<something>/something>.json#\'');
-      }
-
-      if (!content.$schema) {
-        problems.push(`schema ${filename} has no $schema`);
-      } else if (!content.$schema.startsWith('http://json-schema.org') && !this._getSchema(content.$schema)) {
-        problems.push(`schema ${filename} has invalid $schema (must be defined here or be on at json-schema.org)`);
-      }
-    }
-
-    const metadataMetaschema = libUrls.schema(this.rootUrl, 'common', 'metadata-metaschema.json#');
-    for (let {filename, content} of this.references) {
-      if (!content.$schema) {
-        problems.push(`reference ${filename} has no $schema`);
-      } else if (!this._getSchema(content.$schema)) {
-        problems.push(`reference ${filename} has invalid $schema (must be defined here)`);
-      } else {
-        const schema = this._getSchema(content.$schema);
-        if (schema.$schema !== metadataMetaschema) {
-          problems.push(`reference ${filename} has schema '${content.$schema}' which does not have ` +
-            'the metadata metaschema');
-        }
-      }
-    }
-
-    // if that was OK, check references in all schemas
-
-    if (!problems.length) {
-      for (let {filename, content} of this.schemas) {
-        const idUrl = new URL(content.$id, this.rootUrl);
-
-        const match = schemaPattern.exec(content.$id);
-        const refRoot = new URL(match[1], this.rootUrl);
-
-        const refOk = ref => {
-          if (ref.startsWith('#')) {
-            return true;  // URL doesn't like fragment-only relative URLs, but they are OK..
-          }
-
-          const refUrl = new URL(ref, idUrl).toString();
-          return refUrl.startsWith(refRoot) || refUrl.startsWith('http://json-schema.org/');
-        };
-
-        const checkRefs = (value, path) => {
-          if (Array.isArray(value)) {
-            value.forEach((v, i) => checkRefs(v, `${path}[${i}]`));
-          } else if (typeof value === 'object') {
-            if (value.$ref && Object.keys(value).length === 1) {
-              if (!refOk(value.$ref)) {
-                problems.push(`schema ${filename} $ref at ${path} is not allowed`);
-              }
-            } else {
-              for (const [k, v] of Object.entries(value)) {
-                checkRefs(v, `${path}.${k}`);
-              }
-            }
-          }
-        };
-        if (!content.$id.endsWith('metadata-metaschema.json#')) {
-          checkRefs(content, 'schema');
-        }
-      }
-    }
-
-    // if that was OK, validate everything against its declared schema. This is the part
-    // that requires a real rootUrl, since $schema cannot be a relative URL
-
-    if (!problems.length) {
-      const ajv = this._makeAjv({schemas: this.schemas});
-
-      for (let {filename, content} of this.schemas) {
-        try {
-          ajv.validateSchema(content);
-        } catch (err) {
-          problems.push(err.toString());
-          continue;
-        }
-        if (ajv.errors) {
-          ajv
-            .errorsText(ajv.errors, {separator: '%%/%%', dataVar: 'schema'})
-            .split('%%/%%')
-            .forEach(err => problems.push(`${filename}: ${err}`));
-        }
-      }
-
-      for (let {filename, content} of this.references) {
-        try {
-          ajv.validate(content.$schema, content);
-        } catch (err) {
-          problems.push(err.toString());
-          continue;
-        }
-        if (ajv.errors) {
-          ajv
-            .errorsText(ajv.errors, {separator: '%%/%%', dataVar: 'reference'})
-            .split('%%/%%')
-            .forEach(err => problems.push(`${filename}: ${err}`));
-        }
-      }
-    }
-
-    if (problems.length) {
-      throw new ValidationProblems(problems);
-    }
+    validate(this);
 
     this._validated = true;
   }
@@ -268,15 +147,15 @@ class References {
    * using the given rootUrl (required because abstract schemas are not
    * valid).
    */
-  makeAjv() {
+  makeAjv(options={}) {
     if (!this.rootUrl) {
       throw new Error('makeAjv is only valid on absolute References');
     }
-    this.validate();
-    return this._makeAjv();
-  }
 
-  _makeAjv({schemas}) {
+    if (!options.skipValidation) {
+      this.validate();
+    }
+
     // validation requires an Ajv instance, so set that up without validating
     if (!this._ajv) {
       const ajv = new Ajv({
@@ -289,8 +168,8 @@ class References {
       ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
 
       // identify metaschemas, so we can all addMetaSchema for them
-      const metaSchemas = new Set(schemas.map(({content}) => content.$schema));
-      for (let {content} of schemas) {
+      const metaSchemas = new Set(this.schemas.map(({content}) => content.$schema));
+      for (let {content} of this.schemas) {
         // try to be resilient to bad schemas, as validation should be able to give
         // better error messages about schema problems.
         if (!content.$id) {
@@ -312,12 +191,11 @@ class References {
   /**
    * Get a particular schmea by its $id.
    */
-  getSchema($id) {
-    this.validate();
-    return this._getSchema($id);
-  }
+  getSchema($id, options={}) {
+    if (!options.skipValidation) {
+      this.validate();
+    }
 
-  _getSchema($id) {
     if (!this._schemasById) {
       this._schemasById = this.schemas.reduce(
         (schemas, {content}) => schemas.set(content.$id, content), new Map());
@@ -390,17 +268,6 @@ class References {
           filename,
         })),
     };
-  }
-}
-
-/**
- * An error indicating validation failed.  This has a ;-separated
- * message, or the problems themselves are in the array err.problems.
- */
-class ValidationProblems extends Error {
-  constructor(problems) {
-    super(problems.join('; '));
-    this.problems = problems;
   }
 }
 
