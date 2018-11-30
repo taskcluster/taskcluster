@@ -17,8 +17,13 @@ const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
 const zurvan = require('zurvan');
 const timers = require('timers');
 const {FakeClient} = require('taskcluster-lib-pulse');
+const slugid = require('slugid');
 
 const helper = module.exports;
+
+// a suffix used to generate unique table names so that parallel test runs do not
+// interfere with one another.  We remove these at the end of the test run.
+const TABLE_SUFFIX = slugid.nice().replace(/[_-]/g, '');
 
 exports.load = stickyLoader(load);
 
@@ -282,11 +287,21 @@ exports.withEntities = (mock, skipping) => {
           context: tbl.context ? await tbl.context() : undefined,
         }));
       }));
+    } else {
+      // suffix each ..TableName config with a short suffix so that parallel
+      // test runs have a good chance of not stepping on each others' feet
+      const cfg = await helper.load('cfg');
+      Object.keys(cfg.app).forEach(prop => {
+        if (prop.endsWith('TableName')) {
+          helper.load.cfg(`app.${prop}`, cfg.app[prop] + TABLE_SUFFIX);
+        }
+      });
     }
 
     await Promise.all(tables.map(async tbl => {
-      exports[tbl.name] = await exports.load(tbl.name);
-      await exports[tbl.name].ensureTable();
+      const table = await exports.load(tbl.name);
+      exports[tbl.name] = table;
+      await table.ensureTable();
     }));
   });
 
