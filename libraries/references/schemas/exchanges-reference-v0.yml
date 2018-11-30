@@ -99,7 +99,7 @@ properties:
           description: >-
             JSON schema for messages on this exchange. The value must be a
             relative URI, based on the service's schema location; that is, based
-            at `<rootUrl>/schemas/<serviceName`.
+            at `<rootUrl>/schemas/<serviceName>`.
       additionalProperties: false
       required:
         - type
@@ -113,6 +113,7 @@ additionalProperties: false
 required:
   - apiVersion
   - $schema
+  - serviceName
   - title
   - description
   - exchangePrefix
