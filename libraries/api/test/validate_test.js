@@ -90,6 +90,28 @@ suite('api/validate', function() {
   }, function(req, res) {
     res.reply({value: 'Hello World'});
   });
+  
+  // Declare a method we can use to test res.reply with empty body
+  builder.declare({
+    method:   'get',
+    route:    '/test-res-reply',
+    name:     'testResReplyGet',
+    title:    'Test End-Point',
+    description:  'Place we can call to test something',
+  }, function(req, res) {
+    res.reply();
+  });
+
+  builder.declare({
+    method:   'post',
+    route:    '/test-res-reply-post',
+    name:     'testResReplyPost',
+    output:   'test-schema.yml',
+    title:    'Test End-Point',
+    description:  'Place we can call to test something',
+  }, function(req, res) {
+    res.reply();
+  });
 
   // Create a mock authentication server
   setup(() => helper.setupServer({builder}));
@@ -195,6 +217,28 @@ suite('api/validate', function() {
       .then(res => assert(false, 'should have failed!'))
       .catch(function(err) {
         assert(err.status === 400, 'Request wasn\'t rejected');
+      });
+  });
+
+  // Test res.reply with empty body for get request
+  test('res reply with empty body get request without output schema', function() {
+    const url = u('/test-res-reply');
+    return request
+      .get(url)
+      .then(function(res) {
+        assert(res.status === 204, 'Got 204 status code with empty body');
+      });
+  });
+
+  // Test res.reply with empty body for post request
+  test('res reply with empty body post request with output schema', function() {
+    const url = u('/test-res-reply-post');
+    return request
+      .post(url)
+      .then(function(res) {
+        assert(false, 'Request validation failed');
+      }).catch(function(err) {
+        assert(err.status === 500, 'Request failed as empty json is returned as response');
       });
   });
 
