@@ -332,6 +332,9 @@ To return a successful result with a JSON body, return `res.reply(result)`.
 The result will be validated against the output schema, and if validation
 fails, the error will be logged and the user will get a 500 error response.
 
+To return a successful result with an empty body, return `res.reply()`. 
+This will send an empty 204 response.
+
 Return errors with `res.reportError(code, messagePattern, details)`.  The
 `code` argument must be one of those specified in the API declaration, or one
 of the built-in codes (most of which you probably shouldn't use, as they are

@@ -81,6 +81,10 @@ const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entr
           return res.reportInternalError(err);
         }
       }
+      // Allow res.reply to support 204 with empty body
+      if (!json) {
+        return res.status(204).send();
+      }
       // If JSON was valid or validation was skipped then reply with 200 OK
       res.status(200).json(json);
     };
