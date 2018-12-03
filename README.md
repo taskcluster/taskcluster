@@ -128,6 +128,22 @@ Here's a slide deck for an [introduction to async python](https://gitpitch.com/e
     qEvt.taskCompleted(taskId='atask')
     ```
 
+## Generating URLs
+
+It is often necessary to generate the URL for an API method without actually calling the method.
+To do so, use `buildUrl` or, for an API method that requires authentication, `buildSignedUrl`.
+
+```python
+import taskcluster
+
+index = taskcluster.Index(taskcluster.optionsFromEnvironment())
+print(index.buildUrl('findTask', 'builds.v1.latest'))
+secrets = taskcluster.Secrets(taskcluster.optionsFromEnvironment())
+print(secret.buildSignedUrl('get', 'my-secret'))
+```
+
+Note that signed URLs are time-limited; the expiration can be set with the `signedUrlExpiration` option to the client constructor, or with the `expiration` keyword arguement to `buildSignedUrl`, both given in seconds.
+
 ## Root URL
 
 This client requires a `rootUrl` argument to identify the Taskcluster
