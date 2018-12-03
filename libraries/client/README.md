@@ -94,7 +94,7 @@ let pc = await pulse.consume({
 
 The set of API entries listed below is generated from the built-in references.
 Detailed documentation with description, payload and result format details is
-available in the [docs reference section](/docs/reference).
+available in the [docs reference section](https://docs.taskcluster.net/docs/reference).
 
 On the documentation site, entries have a
 _signature_.  You'll find that it matches the signatures below. Notice that all
