@@ -30,7 +30,7 @@
     "taskcluster-lib-config": "^0.9.1",
     "taskcluster-lib-docs": "^10.0.0",
     "taskcluster-lib-loader": "^10.0.0",
-    "taskcluster-lib-monitor": "^10.0.0",
+    "taskcluster-lib-monitor": "^11.1.1",
     "taskcluster-lib-scopes": "^10.0.0",
     "taskcluster-lib-validate": "^12.0.0"
   },

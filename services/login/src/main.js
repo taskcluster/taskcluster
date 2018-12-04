@@ -94,16 +94,8 @@ let load = loader({
 
   scanner: {
     requires: ['cfg', 'handlers', 'monitor'],
-    setup: async ({cfg, handlers, monitor}) => {
-      await scanner(cfg, handlers);
-
-      monitor.count('scanner.run');
-      monitor.stopResourceMonitoring();
-      await monitor.flush();
-
-      // the LDAP connection is still open, so we must exit
-      // explicitly or node will wait forever for it to die.
-      process.exit(0);
+    setup: ({cfg, handlers, monitor}) => {
+      return monitor.oneShot('scanner', () => scanner(cfg, handlers));
     },
   },
 
