@@ -2,10 +2,11 @@ TOX_ENV ?= py37
 VENV := .tox/$(TOX_ENV)
 PYTHON := $(VENV)/bin/python
 APIS_JSON=$(PWD)/apis.json
+TOX := tox
 
 .PHONY: test
 test: generate-classes devel
-	tox
+	$(TOX)
 
 .PHONY: generate-classes
 generate-classes: devel
@@ -49,5 +50,5 @@ docs: devel
 
 .PHONY: devel
 devel:
-	tox --develop --notest -e $(TOX_ENV)
+	$(TOX) --develop --notest -e $(TOX_ENV)
 	$(PYTHON) devDep.py

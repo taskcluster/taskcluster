@@ -78,7 +78,7 @@ set -x
 make clean
 
 # Update the readme file
-make update
+make update TOX=$(which tox)
 
 # Test that the unit tests and linter work
 tox
