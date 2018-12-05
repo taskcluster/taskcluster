@@ -80,7 +80,7 @@ builder.declare({
   }
 
   // Return 204
-  res.status(204).send();
+  res.reply();
 });
 
 builder.declare({
