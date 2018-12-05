@@ -45,6 +45,7 @@ class AwsProvisioner(AsyncBaseClient):
 
     classOptions = {
     }
+    serviceName = 'aws-provisioner'
     apiVersion = 'v1'
 
     async def listWorkerTypeSummaries(self, *args, **kwargs):

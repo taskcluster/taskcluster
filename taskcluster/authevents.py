@@ -13,9 +13,9 @@ _defaultConfig = config
 
 class AuthEvents(BaseClient):
     """
-    The auth service, typically available at `auth.taskcluster.net`
-    is responsible for storing credentials, managing assignment of scopes,
-    and validation of request signatures from other services.
+    The auth service is responsible for storing credentials, managing
+    assignment of scopes, and validation of request signatures from other
+    services.
 
     These exchanges provides notifications when credentials or roles are
     updated. This is mostly so that multiple instances of the auth service

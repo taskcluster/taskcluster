@@ -1030,9 +1030,9 @@ await asyncAuth.testAuthenticateGet() # -> result
 import taskcluster
 authEvents = taskcluster.AuthEvents(options)
 ```
-The auth service, typically available at `auth.taskcluster.net`
-is responsible for storing credentials, managing assignment of scopes,
-and validation of request signatures from other services.
+The auth service is responsible for storing credentials, managing
+assignment of scopes, and validation of request signatures from other
+services.
 
 These exchanges provides notifications when credentials or roles are
 updated. This is mostly so that multiple instances of the auth service
@@ -1868,9 +1868,8 @@ loop = asyncio.get_event_loop()
 session = taskcluster.aio.createSession(loop=loop)
 asyncGithub = taskcluster.aio.Github(options, session=session)
 ```
-The github service, typically available at
-`github.taskcluster.net`, is responsible for publishing pulse
-messages in response to GitHub events.
+The github service is responsible for creating tasks in reposnse
+to GitHub events, and posting results to the GitHub UI.
 
 This document describes the API end-point for consuming GitHub
 web hooks, as well as some useful consumer APIs.
@@ -2060,6 +2059,12 @@ github service
 
 #### GitHub release Event
  * `githubEvents.release(routingKeyPattern) -> routingKey`
+   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.
+   * `organization` is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+   * `repository` is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
+
+#### GitHub release Event
+ * `githubEvents.taskGroupDefined(routingKeyPattern) -> routingKey`
    * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.
    * `organization` is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
    * `repository` is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
@@ -2887,8 +2892,7 @@ loop = asyncio.get_event_loop()
 session = taskcluster.aio.createSession(loop=loop)
 asyncPurgeCache = taskcluster.aio.PurgeCache(options, session=session)
 ```
-The purge-cache service, typically available at
-`purge-cache.taskcluster.net`, is responsible for publishing a pulse
+The purge-cache service is responsible for publishing a pulse
 message for workers, so they can purge cache upon request.
 
 This document describes the API end-point for publishing the pulse
