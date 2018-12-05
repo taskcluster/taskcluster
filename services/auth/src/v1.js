@@ -564,7 +564,7 @@ builder.declare({
     this.resolver.reloadClient(clientId),
   ]);
 
-  return res.status(204).send();
+  return res.reply();
 });
 
 /** List roles */
@@ -819,7 +819,7 @@ builder.declare({
     this.resolver.reloadRoles(),
   ]);
 
-  return res.status(204).send();
+  return res.reply();
 });
 
 /** Expand a scopeset */
