@@ -1,5 +1,5 @@
 let assume = require('assume');
-let subject = require('../lib/loader');
+let subject = require('../src/loader');
 let debug = require('debug')('test:loader');
 let assert = require('assert');
 

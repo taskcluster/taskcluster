@@ -1,6 +1,5 @@
 let util = require('util');
 let assume = require('assume');
-let Promise = require('promise');
 let _ = require('lodash');
 let TopoSort = require('topo-sort');
 let debug = require('debug')('taskcluster-lib-loader');
@@ -226,11 +225,11 @@ function loader(componentDirectory, virtualComponents = []) {
         });
       }
       return loaded[target];
-    };
+    }
 
     return load(target);
   };
-};
+}
 
 // Export loader
 module.exports = loader;
