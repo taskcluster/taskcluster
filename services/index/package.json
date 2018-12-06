@@ -38,6 +38,7 @@
     "mocha": "^4.0.1",
     "slugid": "^1.1.0",
     "superagent": "^3.8.1",
+    "taskcluster-lib-references": "^1.3.0",
     "taskcluster-lib-testing": "^11.2.0"
   }
 }
