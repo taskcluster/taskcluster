@@ -20,7 +20,7 @@
     "aws-sdk": "^2.151.0",
     "body-parser": "1.18.3",
     "debug": "^4.0.0",
-    "express": "4.16.2",
+    "express": "4.16.4",
     "hawk": "6.0.2",
     "lodash": "^4.15.0",
     "promise": "^8.0.1",
