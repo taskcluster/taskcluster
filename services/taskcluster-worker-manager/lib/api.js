@@ -54,7 +54,7 @@ async function workerTypeAlreadyTracked(datastore, workerConfiguration) {
 
   for (let workerConfigurationToCheck of await datastore.list('worker-configurations')) {
     workerConfigurationToCheck = buildWorkerConfiguration(await datastore.get('worker-configurations', workerConfigurationToCheck));
-    
+
     let conflicts = workerConfigurationToCheck.workerTypes().filter(x => workerTypesToCheck.includes(x));
 
     if (conflicts.length > 0) {
@@ -66,23 +66,22 @@ async function workerTypeAlreadyTracked(datastore, workerConfiguration) {
     return allConflicts;
   }
 
-  return false;
+  return allConflicts;
 }
 
 builder.declare({
   method: 'put',
-  route: '/worker-configurations/:id',
+  route: '/worker-configurations/:workerConfigurationId',
   name: 'createWorkerConfiguration',
   title: 'Create Worker Configuration',
   stability: APIBuilder.stability.experimental,
   input: 'worker-configuration.yml',
-  scopes: 'worker-manager:manage-worker-configuration:<id>',
+  scopes: 'worker-manager:manage-worker-configuration:<workerConfigurationId>',
   description: [
     'Create a worker configuration'
   ].join('\n'),
 }, async function(req, res) {
-  let id = req.params.id;
-  // TODO: use res.reportError
+  let id = req.params.workerConfigurationId;
   // Validate that the worker type configuration is createable
   let workerConfiguration = buildWorkerConfiguration(req.body);
   if (workerConfiguration.id !== id) {
@@ -90,7 +89,7 @@ builder.declare({
   }
 
   let workerTypeConflicts = await workerTypeAlreadyTracked(this.datastore, workerConfiguration);
-  if (workerTypeConflicts) {
+  if (workerTypeConflicts.length > 0) {
     return res.reportError('RequestConflict', 'worker type conflicts', {
       conflicts: workerTypeConflicts
     });
@@ -104,17 +103,17 @@ builder.declare({
 
 builder.declare({
   method: 'post',
-  route: '/worker-configurations/:id',
+  route: '/worker-configurations/:workerConfigurationId',
   name: 'updateWorkerConfiguration',
   title: 'Update Worker Configuration',
   stability: APIBuilder.stability.experimental,
-  scopes: 'worker-manager:manage-worker-configuration:<id>',
+  scopes: 'worker-manager:manage-worker-configuration:<workerConfigurationId>',
   input: 'worker-configuration.yml',
   description: [
     'Update a worker configuration'
   ].join('\n'),
 }, async function(req, res) {
-  let id = req.params.id;
+  let id = req.params.workerConfigurationId;
 
   let workerConfiguration = buildWorkerConfiguration(req.body);
   if (workerConfiguration.id !== id) {
@@ -131,7 +130,7 @@ builder.declare({
   }
 
   let workerTypeConflicts = await workerTypeAlreadyTracked(this.datastore, workerConfiguration);
-  if (workerTypeConflicts) {
+  if (workerTypeConflicts.length > 0) {
     return res.reportError('RequestConflict', 'worker type conflicts', {
       conflicts: workerTypeConflicts
     });
@@ -144,16 +143,16 @@ builder.declare({
 
 builder.declare({
   method: 'get',
-  route: '/worker-configurations/:id',
+  route: '/worker-configurations/:workerConfigurationId',
   name: 'getWorkerConfiguration',
   title: 'Get Worker Configuration',
   stability: APIBuilder.stability.experimental,
-  //output: TODO,
+  output: 'worker-configuration.yml',
   description: [
     'Get a worker configuration'
   ].join('\n'),
 }, async function(req, res) {
-  let id = req.params.id;
+  let id = req.params.workerConfigurationId;
   try {
     res.reply(await this.datastore.get('worker-configurations', id));
   } catch (err) {
@@ -166,7 +165,7 @@ builder.declare({
 
 builder.declare({
   method: 'delete',
-  route: '/worker-configurations/:id',
+  route: '/worker-configurations/:workerConfigurationId',
   name: 'removeWorkerConfiguration',
   title: 'Remove Worker Configuration',
   stability: APIBuilder.stability.experimental,
@@ -174,7 +173,7 @@ builder.declare({
     'Get a worker configuration'
   ].join('\n'),
 }, async function(req, res) {
-  let id = req.params.id;
+  let id = req.params.workerConfigurationId;
   await this.datastore.delete('worker-configurations', id);
   res.status(204).end();
 });
@@ -189,7 +188,7 @@ builder.declare({
     'Retrieve a worker configuration as a set of rules'
   ].join('\n'),
 }, async function(req, res) {
-  let id = req.params.id;
+  let id = req.params.workerConfigurationId;
   res.reply(await this.datastore.list('worker-configurations'));
 });
 
@@ -208,10 +207,6 @@ builder.declare({
 }, async function(req, res) {
   let {workerConfiguration, satisfiers} = req.body;
 
-  if (!workerConfiguration || !satisfiers) {
-    return res.reportError('InputError', 'missing worker configuration or satisfiers');
-  }
-
   workerConfiguration = buildWorkerConfiguration(workerConfiguration);
 
   res.reply(workerConfiguration.evaluate(satisfiers));
@@ -219,8 +214,8 @@ builder.declare({
 
 builder.declare({
   method: 'post',
-  route: '/worker-configurations/:id/evaluate',
-  name: 'previewWorkerConfiguration',
+  route: '/worker-configurations/:workerConfigurationId/evaluate',
+  name: 'evaluateWorkerConfiguration',
   title: 'Preview Evaluation of Worker Configuration',
   stability: APIBuilder.stability.experimental,
   output: 'anything.yml',
@@ -230,7 +225,7 @@ builder.declare({
     'the provided satisfiers',
   ].join('\n'),
 }, async function(req, res) {
-  let id = req.params.id;
+  let id = req.params.workerConfigurationId;
   let workerConfiguration;
   try {
     workerConfiguration = await this.datastore.get('worker-configurations', id);

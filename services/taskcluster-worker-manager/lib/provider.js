@@ -111,7 +111,7 @@ class Provider extends WMObject {
    * It is the provider's responsibility to ensure that the bid is valid for the
    * provider.  Things like checking structural validity must be handled
    * within the provider, since the rest of the worker manager will treat
-   * these values as opaque.  The provider must also ensure that the
+   * these values as opaque.
    *
    * If this provider must track maximum instance counts, it must track this
    * internally as this is considered to be a provider concern
@@ -150,7 +150,7 @@ class Provider extends WMObject {
   }
 
   /**
-   * Terminate all workers of a worker configuration.  This method must not
+   * Terminate all workers managed by this provider.  This method must not
    * return until the request to terminate all workers is completed.  It does
    * not need to wait until all workers actually terminate.
    */

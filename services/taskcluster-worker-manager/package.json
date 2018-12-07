@@ -36,7 +36,7 @@
     "moment": "^2.22.2",
     "taskcluster-lib-api": "^12.5.2",
     "taskcluster-lib-app": "^10.0.0",
-    "taskcluster-lib-iterate": "^10.0.0",
+    "taskcluster-lib-iterate": "^11.0.0",
     "taskcluster-lib-loader": "^10.0.1",
     "taskcluster-lib-log": "^10.0.0",
     "taskcluster-lib-monitor": "^11.1.1",

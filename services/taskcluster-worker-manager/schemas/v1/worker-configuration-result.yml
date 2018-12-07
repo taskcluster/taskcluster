@@ -12,10 +12,10 @@ properties:
     type: object
   schemaData:
     type: object
-requireProperties:
+requiredProperties:
   - workerType
   - providerData
   - biddingStrategyData
   - documentationData
   - schemaData
-
+additionalProperties: false

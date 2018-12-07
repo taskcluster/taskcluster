@@ -28,7 +28,7 @@ properties:
     type: array
     items:
       type: string
-required:
+requiredProperties:
   - id
   - rules
   - workerTypes

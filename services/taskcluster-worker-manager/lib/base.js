@@ -137,7 +137,7 @@ function loadPlugin(type, dir, className) {
     throw new errors.InvalidPluginConfiguration(`${className} not found in ${file} exports`);
   }
 
-  if (/*!clazz.prototype === type ||*/ !clazz.prototype instanceof type) {
+  if (!clazz.prototype instanceof type) {
     throw new errors.InvalidPluginConfiguration(`${file}:exports.${clazz.name} does not derive from ${type.name}`);
   }
 
