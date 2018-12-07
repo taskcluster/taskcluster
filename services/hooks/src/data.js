@@ -177,3 +177,22 @@ Hook.prototype.definition = function() {
 
 // export Hook
 exports.Hook = Hook;
+
+const LastFire = Entity.configure({
+  version:              1,
+  partitionKey:         Entity.keys.StringKey('hookGroupId', 'hookId'),
+  rowKey:               Entity.keys.StringKey('taskId'),
+  signEntities:         true,
+  properties:           {
+    hookGroupId:        Entity.types.String,
+    hookId:             Entity.types.String,
+    firedBy:            Entity.types.String,
+    taskId:             Entity.types.String,
+    taskCreateTime:     Entity.types.Date,
+    result:             Entity.types.String,
+    error:              Entity.types.String,
+  },
+});
+
+// export LastFire
+exports.LastFire = LastFire;

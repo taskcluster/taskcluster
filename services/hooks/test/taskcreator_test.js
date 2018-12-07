@@ -12,6 +12,7 @@ const libUrls = require('taskcluster-lib-urls');
 suite('taskcreator_test.js', function() {
   helper.secrets.mockSuite('TaskCreator', ['taskcluster'], function(mock, skipping) {
     helper.withHook(mock, skipping);
+    helper.withLastFire(mock, skipping);
 
     this.slow(500);
 
@@ -207,6 +208,75 @@ suite('taskcreator_test.js', function() {
           (err) => { debug('Got expected error: %s', err); });
       });
     }
+
+    test('adds a new row to lastFire', async function() {
+      let hook = _.cloneDeep(defaultHook);
+      let taskCreateTime = new Date();
+      await creator.appendLastFire({
+        hookId: hook.hookId,
+        hookGroupId: hook.hookGroupId,
+        firedBy: 'test', 
+        result: 'success', 
+        taskId: hook.nextTaskId,
+        taskCreateTime,
+        result: 'success',
+        error: '',
+      }
+      );
+
+      const res = await helper.LastFire.load({
+        hookGroupId: hook.hookGroupId,
+        hookId: hook.hookId,
+        taskId:  hook.nextTaskId,
+      });
+      assume(res.taskId).equals(hook.nextTaskId);
+    });
+
+    test('Fetch two appended lastFire rows independently', async function() {
+      let hook = _.cloneDeep(defaultHook);
+      let hook2 = _.cloneDeep({...defaultHook, 
+        hookId: 'tc-test-hook2', 
+        nextTaskId: taskcluster.slugid(),
+      });
+      let taskCreateTime = new Date();
+      await Promise.all([
+        creator.appendLastFire({
+          hookId: hook.hookId,
+          hookGroupId: hook.hookGroupId,
+          firedBy: 'test', 
+          result: 'success', 
+          taskId: hook.nextTaskId,
+          taskCreateTime,
+          result: 'success',
+          error: '',
+        }
+        ),
+        creator.appendLastFire({
+          hookId: hook2.hookId,
+          hookGroupId: hook2.hookGroupId,
+          firedBy: 'test', 
+          result: 'success', 
+          taskId: hook2.nextTaskId,
+          taskCreateTime,
+          result: 'success',
+          error: '',
+        }
+        )]).catch(() => {});
+
+      const res = await helper.LastFire.load({
+        hookGroupId: hook.hookGroupId,
+        hookId: hook.hookId,
+        taskId:  hook.nextTaskId,
+      });
+
+      const res2 = await helper.LastFire.load({
+        hookGroupId: hook2.hookGroupId,
+        hookId: hook2.hookId,
+        taskId:  hook2.nextTaskId,
+      });
+
+      assume(res.taskId).not.equals(res2.taskId);
+    });
   });
 
   suite('MockTaskCreator', function() {
