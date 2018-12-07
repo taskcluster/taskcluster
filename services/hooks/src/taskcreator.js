@@ -105,6 +105,7 @@ class TaskCreator {
     } catch (err) {
       lastFire = {
         result: 'error',
+        taskId: options.taskId,
         error: err,
         time: new Date(),
       };
