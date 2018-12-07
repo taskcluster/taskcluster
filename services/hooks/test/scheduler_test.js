@@ -157,7 +157,7 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
       assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);
       assume(updatedHook.lastFire.result).is.equal('success');
       assume(updatedHook.lastFire.taskId).is.equal(oldTaskId);
-      assume(new Date(updatedHook.lastFire.time) - new Date()).is.approximately(0, 2000); // 2s slop
+      assume(new Date(updatedHook.lastFire.time) - new Date()).is.approximately(0, 10000); // 10s slop
       assume(updatedHook.nextScheduledDate).is.not.equal(oldScheduledDate);
     });
 
