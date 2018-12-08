@@ -80,13 +80,20 @@ suite('app', function() {
     });
 
     test('/not-found', async function() {
-      request.get('http://localhost:1459/api/test/v1/notfound')
-        .catch(function(err) {
-          assert.equal(err.status, 404, 'Status code is 404');
-          assert.equal(err.response.body.error, 'Not found', 'Response message is correct');
-          assert.equal(err.response.headers['content-type'], 'application/json; charset=utf-8', 
-            'Correct content-type is set to headers');
-        });
+      try {
+        await request.get('http://localhost:1459/api/test/v1/notfound');
+      } catch (err) {
+        assert.equal(err.status, 404, 'Status code is 404');
+        assert.equal(err.response.body.error, 'Not found', 'Response message is correct');
+        assert.equal(err.response.headers['content-type'], 'application/json; charset=utf-8', 
+          'Correct content-type is set to headers');
+        assert.equal(
+          err.response.headers['content-security-policy'],
+          'report-uri /__cspreport__;default-src \'none\';frame-ancestors \'none\';', 
+          'Correct CSP is set in headers');
+        return;
+      }
+      throw new Error('expected exception not seen');
     });
 
     suiteTeardown(function() {
