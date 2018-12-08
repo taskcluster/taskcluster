@@ -79,6 +79,16 @@ suite('app', function() {
       assert.equal(res.headers['content-type'], 'text/plain; charset=utf-8');
     });
 
+    test('/not-found', async function() {
+      request.get('http://localhost:1459/api/test/v1/notfound')
+        .catch(function(err) {
+          assert.equal(err.status, 404, 'Status code is 404');
+          assert.equal(err.response.body.error, 'Not found', 'Response message is correct');
+          assert.equal(err.response.headers['content-type'], 'application/json; charset=utf-8', 
+            'Correct content-type is set to headers');
+        });
+    });
+
     suiteTeardown(function() {
       return server.terminate();
     });
