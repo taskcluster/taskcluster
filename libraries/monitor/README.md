@@ -32,7 +32,7 @@ This library must be provided with Taskcluster credentials that have the followi
 * `auth:statsum:<name of project>`
 
 First, create a monitor by calling this module asynchronously.  This is typically
-done in a [taskcluster-lib-loader](https://github.com/taskcluster/taskcluster-lib/loader)
+done in a [taskcluster-lib-loader](https://github.com/taskcluster/taskcluster-lib-loader)
 component, but otherwise would look like:
 
 ```js
