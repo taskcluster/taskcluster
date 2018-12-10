@@ -52,9 +52,9 @@ suite('handlers/mozilla-auth0', function() {
     });
 
     testClientId('firefoxaccounts clientId', {
-      clientId: 'mozilla-auth0/firefoxaccounts|abcdef|djmitche/',
-      userId: 'firefoxaccounts|abcdef',
-      identity: 'mozilla-auth0/firefoxaccounts|abcdef|djmitche',
+      clientId: 'mozilla-auth0/oauth2|firefoxaccounts|abcdef|djmitche/',
+      userId: 'oauth2|firefoxaccounts|abcdef',
+      identity: 'mozilla-auth0/oauth2|firefoxaccounts|abcdef|djmitche',
     });
 
     testClientId('encoded clientId', {
@@ -99,10 +99,10 @@ suite('handlers/mozilla-auth0', function() {
     testProfile('firefoxaccounts profile', {
       profile: {
         nickname: 'fxsync',
-        user_id: 'firefoxaccounts|01290ca01be',
+        user_id: 'oauth2|firefoxaccounts|01290ca01be',
         identities: [{provider: 'oauth2', connection: 'firefoxaccounts'}],
       },
-      identity: 'mozilla-auth0/firefoxaccounts|01290ca01be|fxsync',
+      identity: 'mozilla-auth0/oauth2|firefoxaccounts|01290ca01be|fxsync',
     });
 
     test('userIdFromClientId with non-matching clientId', function() {
