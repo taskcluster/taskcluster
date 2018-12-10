@@ -161,7 +161,7 @@ class Handler {
     let encodedUserId = identity.split('/')[1];
 
     // Reverse the username appending, stripping the username.
-    if (encodedUserId.startsWith('github|') || encodedUserId.startsWith('firefoxaccounts|')) {
+    if (encodedUserId.startsWith('github|') || encodedUserId.startsWith('oauth2|firefoxaccounts|')) {
       encodedUserId = encodedUserId.replace(/\|[^|]*$/, '');
     }
 
@@ -188,7 +188,7 @@ class Handler {
         assert(profile.user_id.startsWith('github|'));
         identity = `${this.identityProviderId}/${encode(profile.user_id)}|${profile.nickname}`;
       } else if (provider === 'oauth2' && connection === 'firefoxaccounts') {
-        assert(profile.user_id.startsWith('firefoxaccounts|'));
+        assert(profile.user_id.startsWith('oauth2|firefoxaccounts|'));
         identity = `${this.identityProviderId}/${encode(profile.user_id)}|${profile.nickname}`;
       }
     });
