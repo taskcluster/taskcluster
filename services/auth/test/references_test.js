@@ -1,0 +1,12 @@
+const builder = require('../src/v1');
+const exchanges = require('../src/exchanges');
+const helper = require('./helper');
+const References = require('taskcluster-lib-references');
+
+suite('references_test.js', function() {
+  test('references validate', async function() {
+    const schemaset = await helper.load('schemaset');
+    const references = References.fromService({schemaset, builder, exchanges});
+    references.validate();
+  });
+});
