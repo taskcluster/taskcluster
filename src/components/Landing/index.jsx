@@ -14,7 +14,7 @@ import ErrorPanel from '../ErrorPanel';
     overflow: 'hidden',
     position: 'relative',
     display: 'flex',
-    width: '100vw',
+    width: '100%',
   },
   content: {
     flexGrow: 1,

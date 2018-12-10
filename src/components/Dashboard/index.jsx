@@ -37,7 +37,7 @@ import DocsSidebarList from './DocsSidebarList';
       overflow: 'hidden',
       position: 'relative',
       display: 'flex',
-      width: '100vw',
+      width: '100%',
     },
     appBar: {
       position: 'fixed',
