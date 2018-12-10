@@ -14,11 +14,10 @@ const defaults = {
 };
 const handleResponse = response =>
   Promise.resolve(response)
-    .then(
-      () =>
-        JSON_CONTENT.test(response.headers.get('Content-Type'))
-          ? response.json()
-          : null
+    .then(() =>
+      JSON_CONTENT.test(response.headers.get('Content-Type'))
+        ? response.json()
+        : null
     )
     .then(json => {
       if (response.ok) {
@@ -47,7 +46,6 @@ export default (url, opts = {}) => {
       ...opts.headers,
     },
   };
-
   const { delayFactor, randomizationFactor, maxDelay, retries } = options;
 
   return new Promise((resolve, reject) => {

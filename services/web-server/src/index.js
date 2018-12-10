@@ -56,6 +56,7 @@ const load = loader(
           console.log(
             `\n\nNo Pulse namespace defined; no Pulse messages will be received.`
           );
+
           return new FakeClient();
         }
 

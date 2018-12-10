@@ -14,6 +14,7 @@ export default class MessageIterator {
   async next() {
     const { value, done } = await this.messageIterator.next();
     const event = { [this.eventName]: value };
+
     return { value: event, done };
   }
 

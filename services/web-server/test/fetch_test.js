@@ -14,8 +14,10 @@ describe('fetch', () => {
 
   it('should retry a 500', () => {
     let attemptCount = 0;
+
     server = createServer((req, res) => {
       attemptCount += 1;
+
       if (attemptCount < 2) {
         res.writeHead(500);
         res.end();
