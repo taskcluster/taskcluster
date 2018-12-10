@@ -160,10 +160,8 @@ class Handler {
 
     let encodedUserId = identity.split('/')[1];
 
-    // Reverse the github username appending, stripping the username.  Note
-    // that github says, "Username may only contain alphanumeric characters or
-    // single hyphens, and cannot begin or end with a hyphen"
-    if (encodedUserId.startsWith('github|')) {
+    // Reverse the username appending, stripping the username.
+    if (encodedUserId.startsWith('github|') || encodedUserId.startsWith('firefoxaccounts|')) {
       encodedUserId = encodedUserId.replace(/\|[^|]*$/, '');
     }
 
@@ -184,10 +182,13 @@ class Handler {
       ) {
         assert(!profile.user_id.startsWith('github|'));
         identity = `${this.identityProviderId}/${encode(profile.user_id)}`;
+      // we annotate some userids with `|nickname` since otherwise the userid
+      // is just numeric and difficult for humans to interpret
       } else if (provider === 'github' && connection === 'github') {
-        // we annotate github userids with `|nickname` since otherwise the userid is just numeric
-        // and difficult for humans to interpret
         assert(profile.user_id.startsWith('github|'));
+        identity = `${this.identityProviderId}/${encode(profile.user_id)}|${profile.nickname}`;
+      } else if (provider === 'oauth2' && connection === 'firefoxaccounts') {
+        assert(profile.user_id.startsWith('firefoxaccounts|'));
         identity = `${this.identityProviderId}/${encode(profile.user_id)}|${profile.nickname}`;
       }
     });
