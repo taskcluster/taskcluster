@@ -120,7 +120,7 @@ class Handler {
 
       return user;
     } catch (err) {
-      debug(`error retrieving profile: ${err}`);
+      debug(`error retrieving profile from request: ${err}\n${err.stack}`);
       return;
     }
   }
@@ -132,7 +132,7 @@ class Handler {
 
       return user;
     } catch (err) {
-      debug(`error retrieving profile: ${err}`);
+      debug(`error retrieving profile from userId: ${err}\n${err.stack}`);
       return;
     }
   }
