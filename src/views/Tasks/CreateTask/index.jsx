@@ -284,12 +284,10 @@ export default class CreateTask extends Component {
               <Tooltip title="Create Task">
                 <Button
                   requiresAuth
+                  disabled={!task || invalid || loading}
                   variant="fab"
                   className={classes.createIcon}
-                  onClick={this.handleCreateTask}
-                  ButtonProps={{
-                    disabled: !task || invalid || loading,
-                  }}>
+                  onClick={this.handleCreateTask}>
                   <PlusIcon />
                 </Button>
               </Tooltip>
