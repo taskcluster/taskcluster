@@ -20,6 +20,7 @@ import Search from '../../../components/Search';
 import Markdown from '../../../components/Markdown';
 import StatusLabel from '../../../components/StatusLabel';
 import ErrorPanel from '../../../components/ErrorPanel';
+import { withAuth } from '../../../utils/Auth';
 import taskQuery from './task.graphql';
 import {
   INITIAL_CURSOR,
@@ -31,8 +32,10 @@ import {
 let previousCursor;
 
 @hot(module)
+@withAuth
 @graphql(taskQuery, {
   options: props => ({
+    errorPolicy: 'all',
     pollInterval: INTERACTIVE_CONNECT_TASK_POLL_INTERVAL,
     variables: {
       taskId: props.match.params.taskId,
@@ -248,6 +251,7 @@ export default class InteractiveConnect extends Component {
       match: {
         params: { taskId },
       },
+      user,
     } = this.props;
     const interactiveStatus = this.getInteractiveStatus();
     const isSessionReady = interactiveStatus === INTERACTIVE_TASK_STATUS.READY;
@@ -316,6 +320,7 @@ export default class InteractiveConnect extends Component {
             </Typography>
             <List>
               <ListItem
+                disabled={!user}
                 button
                 onClick={this.handleShellOpen}
                 className={classes.listItemButton}>
@@ -324,6 +329,7 @@ export default class InteractiveConnect extends Component {
                 <OpenInNewIcon />
               </ListItem>
               <ListItem
+                disabled={!user}
                 onClick={this.handleDisplayOpen}
                 button
                 className={classes.listItemButton}>
@@ -351,7 +357,7 @@ export default class InteractiveConnect extends Component {
         <Fragment>
           {!error && artifactsLoading && <Spinner loading />}
           <ErrorPanel error={error} />
-          {!error && !artifactsLoading && task && this.renderTask()}
+          {!artifactsLoading && task && this.renderTask()}
         </Fragment>
       </Dashboard>
     );
