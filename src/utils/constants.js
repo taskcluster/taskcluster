@@ -98,6 +98,7 @@ export const INTERACTIVE_TASK_STATUS = {
 };
 export const TASK_GROUP_POLLING_INTERVAL = 150000; // 2.5 minutes
 export const INTERACTIVE_CONNECT_TASK_POLL_INTERVAL = 10000; // 10 seconds
+export const TASK_POLL_INTERVAL = 30000; // 30 seconds
 export const VNC_DISPLAYS_POLLING_INTERVAL = 10000; // 10 seconds
 export const INITIAL_CURSOR = '$$FIRST$$';
 export const MIMETYPE_ICONS = [

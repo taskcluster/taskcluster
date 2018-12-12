@@ -39,6 +39,7 @@ import {
   ARTIFACTS_PAGE_SIZE,
   VALID_TASK,
   TASK_ADDED_FIELDS,
+  TASK_POLL_INTERVAL,
 } from '../../../utils/constants';
 import db from '../../../utils/db';
 import ErrorPanel from '../../../components/ErrorPanel';
@@ -49,6 +50,7 @@ import { nice } from '../../../utils/slugid';
 import submitTaskAction from '../submitTaskAction';
 import taskQuery from './task.graphql';
 import scheduleTaskQuery from './scheduleTask.graphql';
+import rerunTaskQuery from './rerunTask.graphql';
 import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
 import pageArtifactsQuery from './pageArtifacts.graphql';
 import createTaskQuery from '../createTask.graphql';
@@ -90,6 +92,7 @@ const getCachesFromTask = task =>
 @graphql(taskQuery, {
   skip: props => !props.match.params.taskId,
   options: props => ({
+    pollInterval: TASK_POLL_INTERVAL,
     errorPolicy: 'all',
     variables: {
       taskId: props.match.params.taskId,
@@ -292,6 +295,11 @@ export default class ViewTask extends Component {
     );
   };
 
+  handleRerunComplete = () => {
+    this.handleActionDialogClose();
+    this.props.data.refetch();
+  };
+
   handleCreateInteractiveComplete = taskId => {
     this.handleActionDialogClose();
     this.props.history.push(`/tasks/${taskId}/connect`);
@@ -354,28 +362,29 @@ export default class ViewTask extends Component {
     });
   };
 
-  handleCreateLoaner = async () => {
-    const taskId = nice();
-    const task = parameterizeTask(
-      removeKeys(cloneDeep(this.props.data.task), ['__typename'])
-    );
+  handleCreateLoaner = () =>
+    new Promise(async (resolve, reject) => {
+      const taskId = nice();
+      const task = parameterizeTask(
+        removeKeys(cloneDeep(this.props.data.task), ['__typename'])
+      );
 
-    this.preRunningAction();
+      this.preRunningAction();
 
-    try {
-      await this.props.client.mutate({
-        mutation: createTaskQuery,
-        variables: {
-          taskId,
-          task,
-        },
-      });
-
-      return taskId;
-    } catch (error) {
-      this.postRunningFailedAction(formatError(error));
-    }
-  };
+      try {
+        await this.props.client.mutate({
+          mutation: createTaskQuery,
+          variables: {
+            taskId,
+            task,
+          },
+        });
+        resolve(taskId);
+      } catch (error) {
+        this.postRunningFailedAction(formatError(error));
+        reject(error);
+      }
+    });
 
   handleEdit = task =>
     this.props.history.push({
@@ -432,6 +441,29 @@ export default class ViewTask extends Component {
         title: `${title}?`,
         onSubmit: this.purgeWorkerCache,
         onComplete: this.handleActionDialogClose,
+        confirmText: title,
+      },
+    });
+  };
+
+  handleRerunTaskClick = () => {
+    const title = 'Rerun';
+
+    this.setState({
+      dialogOpen: true,
+      dialogActionProps: {
+        fullScreen: false,
+        body: (
+          <Typography>
+            This will cause a new run of the task to be created with the same{' '}
+            <code>taskId</code>. It will only succeed if the task hasn&#39;t
+            passed it&#39;s deadline. Notice that this may interfere with
+            listeners who only expects this tasks to be resolved once.
+          </Typography>
+        ),
+        title: `${title}?`,
+        onSubmit: this.rerunTask,
+        onComplete: this.handleRerunComplete,
         confirmText: title,
       },
     });
@@ -498,48 +530,74 @@ export default class ViewTask extends Component {
     this.setState({ dialogError: null, actionLoading: true });
   };
 
-  purgeWorkerCache = async () => {
-    const { provisionerId, workerType } = this.props.data.task;
-    const { selectedCaches } = this.state;
+  purgeWorkerCache = () =>
+    new Promise(async (resolve, reject) => {
+      const { provisionerId, workerType } = this.props.data.task;
+      const { selectedCaches } = this.state;
 
-    this.preRunningAction();
+      this.preRunningAction();
 
-    try {
-      await Promise.all(
-        [...selectedCaches].map(cacheName =>
-          this.props.client.mutate({
-            mutation: purgeWorkerCacheQuery,
-            variables: {
-              provisionerId,
-              workerType,
-              payload: {
-                cacheName,
+      try {
+        await Promise.all(
+          [...selectedCaches].map(cacheName =>
+            this.props.client.mutate({
+              mutation: purgeWorkerCacheQuery,
+              variables: {
+                provisionerId,
+                workerType,
+                payload: {
+                  cacheName,
+                },
               },
-            },
-          })
-        )
-      );
-    } catch (error) {
-      this.postRunningFailedAction(error);
-    }
-  };
+            })
+          )
+        );
+        resolve();
+      } catch (error) {
+        this.postRunningFailedAction(error);
+        reject(error);
+      }
+    });
 
-  scheduleTask = async () => {
-    const { taskId } = this.props.match.params;
+  rerunTask = () =>
+    new Promise(async (resolve, reject) => {
+      const { taskId } = this.props.match.params;
 
-    this.preRunningAction();
+      this.preRunningAction();
 
-    try {
-      await this.props.client.mutate({
-        mutation: scheduleTaskQuery,
-        variables: {
-          taskId,
-        },
-      });
-    } catch (error) {
-      this.postRunningFailedAction(error);
-    }
-  };
+      try {
+        await this.props.client.mutate({
+          mutation: rerunTaskQuery,
+          variables: {
+            taskId,
+          },
+        });
+        resolve();
+      } catch (error) {
+        this.postRunningFailedAction(error);
+        reject(error);
+      }
+    });
+
+  scheduleTask = () =>
+    new Promise(async (resolve, reject) => {
+      const { taskId } = this.props.match.params;
+
+      this.preRunningAction();
+
+      try {
+        await this.props.client.mutate({
+          mutation: scheduleTaskQuery,
+          variables: {
+            taskId,
+          },
+        });
+        resolve();
+      } catch (error) {
+        this.postRunningFailedAction(error);
+        reject(error);
+      }
+    });
 
   renderActionIcon = action => {
     switch (action.name) {
@@ -682,6 +740,18 @@ export default class ViewTask extends Component {
               </Grid>
             </Grid>
             <SpeedDial>
+              {!('rerun' in actionData) && (
+                <SpeedDialAction
+                  requiresAuth
+                  tooltipOpen
+                  ButtonProps={{
+                    disabled: actionLoading,
+                  }}
+                  icon={<RestartIcon />}
+                  tooltipTitle="Rerun"
+                  onClick={this.handleRerunTaskClick}
+                />
+              )}
               {!('schedule' in actionData) && (
                 <SpeedDialAction
                   requiresAuth
