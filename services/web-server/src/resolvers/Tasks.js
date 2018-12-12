@@ -116,6 +116,11 @@ export default {
 
       return new TaskStatus(taskId, status);
     },
+    async rerunTask(parent, { taskId }, { clients }) {
+      const { status } = await clients.queue.rerunTask(taskId);
+
+      return new TaskStatus(taskId, status);
+    },
   },
   Subscription: {
     tasksDefined: {

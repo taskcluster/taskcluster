@@ -404,6 +404,20 @@ extend type Mutation {
   # `UNSCHEDULED`, `PENDING`, or `RUNNING`, this operation will return the current
   # task status.
   cancelTask(taskId: ID!): TaskStatus
+
+  # This method _reruns_ a previously resolved task, even if it was
+  # _completed_. This is useful if your task completes unsuccessfully, and
+  # you just want to run it from scratch again. This will also reset the
+  # number of `retries` allowed.
+  #
+  # Remember that `retries` in the task status counts the number of runs that
+  # the queue have started because the worker stopped responding, for example
+  # because a spot node died.
+  #
+  # **Remark** this operation is idempotent, if you try to rerun a task that
+  # is not either `failed` or `completed`, this operation will just return
+  # the current task status.'  rerunTask(taskId: ID!): TaskStat
+  rerunTask(taskId: ID!): TaskStatus
 }
 
 extend type Subscription {
