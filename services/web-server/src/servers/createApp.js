@@ -24,6 +24,7 @@ export default async ({ cfg, schema, context }) => {
     graphql({
       schema,
       context,
+      tracing: true,
     })
   );
   app.get(
