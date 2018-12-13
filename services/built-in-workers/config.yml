@@ -1,0 +1,20 @@
+defaults:
+  app:
+    publishMetaData: !env:bool PUBLISH_METADATA
+
+  # TaskCluster credentials
+  taskcluster:
+    rootUrl: !env TASKCLUSTER_ROOT_URL
+    credentials:
+      clientId: !env TASKCLUSTER_CLIENT_ID
+      accessToken: !env TASKCLUSTER_ACCESS_TOKEN
+
+  monitoring:
+    enable: !env:bool MONITORING_ENABLE
+
+test:
+  app:
+    publishMetaData: false
+
+  monitoring:
+    enable: false
