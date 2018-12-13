@@ -1,7 +1,7 @@
-var assert      = require('assert');
-var taskcluster = require('taskcluster-client');
-var debug       = require('debug')('events:listeners');
-var _           = require('lodash');
+const assert      = require('assert');
+const taskcluster = require('taskcluster-client');
+const debug       = require('debug')('events:listeners');
+const _           = require('lodash');
 
 /**
  * Create Listener and Handle Events
@@ -57,7 +57,9 @@ class Listeners {
 
   /** Close and remove listener from this.listeners */
   closeListener(listener) {
-    let removeIndex = this.listeners.findIndex(({_queueName}) => listener._queueName === _queueName);
+    // Every listener has a unique queue name
+    // Find the listener by comparing the queueName
+    const removeIndex = this.listeners.findIndex(({_queueName}) => listener._queueName === _queueName);
     if (removeIndex > -1) {
       listener.close();
       this.listeners.splice(removeIndex, 1);

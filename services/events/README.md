@@ -48,7 +48,8 @@ This is done by setting the `id` of each event to `-` and returning `204 : No in
 
 Install npm dependencies using `yarn` and run `yarn test` to run the tests. 
 To build it locally you need to use `NODE_ENV='test' TASKCLUSTER_ROOT_URL='localhost:12345' node src/main.js server` 
-This will use the pulse credentials in `user-config.yml`. Set `DEBUG: events:*` for additional debugging information.
+This will use the pulse credentials in the test profile of `user-config.yml` (see user-config-example.yml). Set `pulse.vhost: /` in user-config.yml when using with`pulse.hostname: pulse.mozilla.org`.
+Set `DEBUG=events:*` for additional debugging information.
 
 
 

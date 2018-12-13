@@ -8,11 +8,11 @@ helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
   helper.withServer(mock, skipping);
 
   test('Exchange is correct', async () => {
-    let bindings = {bindings : [ 
+    const bindings = {bindings : [ 
       {exchange :  'exchange/taskcluster-foo/v1/bar', routingKeyPattern : '#'},
     ]};
 
-    let {evtSource, resolve, pass, fail} = helper.connect(bindings);
+    const {evtSource, resolve, pass, fail} = helper.connect(bindings);
     
     evtSource.addEventListener('ready', msg => {
       const message = {

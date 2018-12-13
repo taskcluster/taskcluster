@@ -39,3 +39,5 @@ test:
 
   server:
     port:           12345
+    forceSSL:       false
+    trustProxy:     false

@@ -1,10 +1,10 @@
-let debug = require('debug')('events:api');
-let APIBuilder = require('taskcluster-lib-api');
-let taskcluster = require('taskcluster-client');
-let uuid = require('uuid');
-let _ = require('lodash');
+const debug = require('debug')('events:api');
+const APIBuilder = require('taskcluster-lib-api');
+const taskcluster = require('taskcluster-client');
+const uuid = require('uuid');
+const _ = require('lodash');
 
-let builder = new APIBuilder({
+const builder = new APIBuilder({
   title: 'AMQP Messages API Documentation',
   description: [
     'This service is responsible for making pulse messages accessible',
@@ -60,7 +60,6 @@ builder.declare({
   name: 'connect',
   description: 'Connect to receive messages',
   stability: APIBuilder.stability.experimental,
-  // Add input validation yml
   title: 'Events-Api',
 }, async function(req, res) {
 
@@ -93,7 +92,7 @@ builder.declare({
     });
     headWritten = true;
 
-    let jsonBindings = await parseAndValidateBindings(req.query.bindings);
+    const jsonBindings = await parseAndValidateBindings(req.query.bindings);
     debug('Bindings parsed');
     var listener = await this.listeners.createListener(jsonBindings);
 
@@ -107,6 +106,7 @@ builder.declare({
       sendEvent('message', message);
     });
 
+    // Send a ping message every 20 seconds.
     pingEvent = setInterval(() => sendEvent('ping', {
       time: new Date(),
     }), 20 * 1000);
@@ -118,26 +118,25 @@ builder.declare({
         debug('PulseListener Error : '. err);
         reject(err);
       })),
-    ]);
+    ]).catch(error => {
+    });
 
   } catch (err) {
     debug('Error : %j', err.code, err.message);
     var errorMessage = 'Unknown Internal Error';
+
+    // send the actual error message only in 404 to avoid leaking internal working information
     if (err.code === 404) {
       errorMessage = err.message;
     }
 
-    // Catch errors 
-    // bad exchange will be taken care of by i/p validation
     // Send 5xx error code otherwise. Make sure that the head is not written.
-    // You can set the response code only once.
-    // If head is written, send an error event.
+    // The response code can be set only once.
     if (!headWritten) {
-      res.reportError(500, 'Something went wrong. Make another request to retry.');
+      return res.reportError(500, 'Something went wrong. Make another request to retry.');
     }
 
-    // TODO : Find a suitable error message depending on err.
-    // Most likely these will be PulseListener errors.
+    // If head is written, send an error event.
     sendEvent('error', errorMessage);
   } finally {
 

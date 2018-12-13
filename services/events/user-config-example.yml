@@ -1,0 +1,6 @@
+test:
+   pulse:
+    username:       '...'
+    password:       '...'
+    hostname:       '...'
+    vhost:          '...'

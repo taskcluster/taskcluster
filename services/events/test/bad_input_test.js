@@ -12,7 +12,7 @@ helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
       {exchange :  'exchange/taskcluster-foo/v1/bar', routingKeyPattern : '#'},
     ], foo: 'bar'};
 
-    let {evtSource, resolve, pass, fail} = helper.connect(bindings);
+    const {evtSource, resolve, pass, fail} = helper.connect(bindings);
 
     evtSource.addEventListener('error', (e) => {
       assert(_.includes(e.data, 'The json query should have only one key'));
@@ -25,7 +25,7 @@ helper.secrets.mockSuite(__filename, [], function(mock, skipping) {
   test('Bindings is not an array', async () => {
     let bindings = {bindings : {exchange :  'exchange/taskcluster-foo/v1/bar', routingKeyPattern : '#'}};
 
-    let {evtSource, resolve, pass, fail} = helper.connect(bindings);
+    const {evtSource, resolve, pass, fail} = helper.connect(bindings);
 
     evtSource.addEventListener('error', (e) => {
       assert(_.includes(e.data, 'Bindings must be an array of {exchange, routingKeyPattern}'));

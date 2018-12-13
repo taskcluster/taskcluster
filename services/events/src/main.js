@@ -11,7 +11,7 @@ const Listeners = require('./listeners');
 const docs = require('taskcluster-lib-docs');
 
 // Create component loader
-let load = loader({
+const load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({profile}) => config({profile}),
