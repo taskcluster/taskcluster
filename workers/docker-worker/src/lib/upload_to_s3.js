@@ -119,8 +119,15 @@ module.exports = async function uploadToS3 (
         });
 
         req.setTimeout(5 * 60 * 1000, reject);
+
+        const readStream = fs.createReadStream(tmp.path);
+        readStream.on('error', err => {
+          log(`Error reading temp file while uploading ${artifactName}`, _.defaults({err}, logDetails));
+          reject(err);
+        });
+
         log(`Uploading ${artifactName}`, logDetails);
-        fs.createReadStream(tmp.path).pipe(req);
+        readStream.pipe(req);
       }).catch(retry);
     // The formula to calculate the next attempt timeout is:
     // Math.min(random * minTimeout * Math.pow(factor, attempt), maxTimeout)
