@@ -42,10 +42,12 @@ export default ({ queue, index }) => {
         try {
           const raw = await fetch(url);
 
-          return {
-            ...raw,
-            actions: filter ? sift(filter, raw.actions) : raw.actions,
-          };
+          return raw.actions
+            ? {
+                ...raw,
+                actions: filter ? sift(filter, raw.actions) : raw.actions,
+              }
+            : null;
         } catch (e) {
           if (e.response.status === 404 || e.response.status === 424) {
             return null;
