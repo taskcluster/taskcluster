@@ -95,7 +95,7 @@ suite('documenter', () => {
       title: 'Testing Stuff',
       description: 'This is for testing stuff!',
       serviceName: 'whatever',
-      version: 'v1',
+      apiVersion: 'v1',
     });
     exchanges = new Exchanges({
       title: 'Testing Stuff Again',
