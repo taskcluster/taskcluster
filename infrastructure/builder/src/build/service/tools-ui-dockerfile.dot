@@ -10,12 +10,11 @@ FROM {{=it.nodeImage}}
 # this is copied from
 #  https://github.com/nginxinc/docker-nginx/blob/590f9ba27d6d11da346440682891bee6694245f5/mainline/stretch/Dockerfile
 # with
-# * stretch -> jessie (the basis for the node image)
 # * gnupg1 -> gnupg2
 # * non-amd64 arch support removed
 
-ENV NGINX_VERSION 1.13.12-1~jessie
-ENV NJS_VERSION   1.13.12.0.2.0-1~jessie
+ENV NGINX_VERSION 1.13.12-1~stretch
+ENV NJS_VERSION   1.13.12.0.2.0-1~stretch
 
 RUN set -x \
        && apt-get update \
@@ -45,7 +44,7 @@ RUN set -x \
        && case "$dpkgArch" in \
                amd64|i386) \
 # arches officialy built by upstream
-                       echo "deb https://nginx.org/packages/mainline/debian/ jessie nginx" >> /etc/apt/sources.list.d/nginx.list \
+                       echo "deb https://nginx.org/packages/mainline/debian/ stretch nginx" >> /etc/apt/sources.list.d/nginx.list \
                        && apt-get update \
                        ;; \
                *) \
