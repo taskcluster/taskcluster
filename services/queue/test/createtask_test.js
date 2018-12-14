@@ -316,12 +316,35 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     });
   });
 
-  // Test for compatibility only
-  test('Can create "normal" without queue:task-priority:high', async () => {
+  test('Can create "normal" priority task with ..:lowest:.. scope', async () => {
+    helper.scopes(
+      'queue:create-task:lowest:no-provisioner/test-worker',
+      'queue:scheduler-id:test-run',
+    );
+    await helper.queue.createTask(slugid.v4(), makePriorityTask('normal'));
+  });
+
+  test('Can create "normal" priority task with legacy scope', async () => {
     helper.scopes(
       'queue:create-task:no-provisioner/test-worker',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('normal'));
   });
 
+  test('Can create "lowest" priority task with ..:lowest:.. scope', async () => {
+    helper.scopes(
+      'queue:create-task:lowest:no-provisioner/test-worker',
+      'queue:scheduler-id:test-run',
+    );
+    await helper.queue.createTask(slugid.v4(), makePriorityTask('lowest'));
+  });
+
+  test('Can create "lowest" priority task with legacy scope', async () => {
+    // This is perhaps not intended, but since lowest is treated the same
+    // as normal, the legacy scope works for lowest, too.
+    helper.scopes(
+      'queue:create-task:no-provisioner/test-worker',
+    );
+    await helper.queue.createTask(slugid.v4(), makePriorityTask('lowest'));
+  });
 });
