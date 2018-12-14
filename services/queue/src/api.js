@@ -364,6 +364,27 @@ builder.declare({
   return res.reply(result);
 });
 
+/**
+ * Generate the list of acceptable priorities for a task with this priority
+ */
+const authorizeTaskCreation = async function(req, taskId, taskDef) {
+  const priority = taskDef.priority === 'normal' ? 'lowest' : taskDef.priority;
+  const priorities = PRIORITY_LEVELS.slice(0, PRIORITY_LEVELS.indexOf(priority) + 1);
+  assert(priorities.length > 0, 'must have a non-empty list of priorities');
+
+  await req.authorize({
+    legacyScopes: priority === 'lowest',
+    taskId,
+    priorities,
+    routes: taskDef.routes,
+    scopes: taskDef.scopes,
+    schedulerId: taskDef.schedulerId,
+    taskGroupId: taskDef.taskGroupId || taskId,
+    provisionerId: taskDef.provisionerId,
+    workerType: taskDef.workerType,
+  });
+};
+
 /** Construct default values and validate dates */
 var patchAndValidateTaskDef = function(taskId, taskDef) {
   // Set taskGroupId to taskId if not provided
@@ -599,26 +620,13 @@ builder.declare({
   var taskId  = req.params.taskId;
   var taskDef = req.body;
 
+  await authorizeTaskCreation(req, taskId, taskDef);
+
   // Patch default values and validate timestamps
   var detail = patchAndValidateTaskDef(taskId, taskDef);
   if (detail) {
     return res.reportError(detail.code, detail.message, detail.details);
   }
-
-  let priorities = PRIORITY_LEVELS.slice(0, PRIORITY_LEVELS.indexOf(taskDef.priority) + 1);
-  assert(priorities.length > 0, 'must have a non-empty list of priorities');
-
-  await req.authorize({
-    legacyScopes: taskDef.priority === 'lowest',
-    taskId,
-    priorities,
-    routes: taskDef.routes,
-    scopes: taskDef.scopes,
-    schedulerId: taskDef.schedulerId,
-    taskGroupId: taskDef.taskGroupId,
-    provisionerId: taskDef.provisionerId,
-    workerType: taskDef.workerType,
-  });
 
   if (taskDef.scopes.some(s => s.endsWith('**'))) {
     return res.reportError('InputError', 'scopes must not end with `**`', {});
@@ -790,26 +798,13 @@ builder.declare({
   var taskId  = req.params.taskId;
   var taskDef = req.body;
 
+  await authorizeTaskCreation(req, taskId, taskDef);
+
   // Patch default values and validate timestamps
   var detail = patchAndValidateTaskDef(taskId, taskDef);
   if (detail) {
     return res.reportError(detail.code, detail.message, detail.details);
   }
-
-  let priorities = PRIORITY_LEVELS.slice(0, PRIORITY_LEVELS.indexOf(taskDef.priority) + 1);
-  assert(priorities.length > 0, 'must have a non-empty list of priorities');
-
-  await req.authorize({
-    legacyScopes: taskDef.priority === 'lowest',
-    taskId,
-    priorities,
-    routes: taskDef.routes,
-    scopes: taskDef.scopes,
-    schedulerId: taskDef.schedulerId,
-    taskGroupId: taskDef.taskGroupId,
-    provisionerId: taskDef.provisionerId,
-    workerType: taskDef.workerType,
-  });
 
   // Ensure we have a self-dependency, this is how defineTask works now
   if (!_.includes(taskDef.dependencies, taskId)) {
