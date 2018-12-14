@@ -9,13 +9,16 @@
     "type": "git",
     "url": "https://github.com/taskcluster/eslint-config-taskcluster.git"
   },
+  "scripts": {
+    "test": "node ./test.js"
+  },
   "keywords": [
     "eslint",
     "eslintconfig",
     "taskcluster"
   ],
   "devDependencies": {},
-  "dependencies": {
-    "eslint": "^5.9.0"
+  "peerDependencies": {
+    "eslint": "^5.10.0"
   }
 }
