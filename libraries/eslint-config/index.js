@@ -48,4 +48,3 @@ module.exports = {
     "no-extra-semi": 2
   }
 }
-
