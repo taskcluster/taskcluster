@@ -1,5 +1,7 @@
+import Debug from 'debug';
 import fetch from 'node-fetch';
 
+const debug = Debug('fetch');
 // eslint-disable-next-line max-len
 const JSON_CONTENT = /^(application\/(json|x-javascript)|text\/(x-)?javascript|x-json)(;.*)?$/;
 const defaults = {
@@ -11,6 +13,7 @@ const defaults = {
   headers: {
     'Content-Type': 'application/json',
   },
+  method: 'GET',
 };
 const handleResponse = response =>
   Promise.resolve(response)
@@ -50,6 +53,7 @@ export default (url, opts = {}) => {
 
   return new Promise((resolve, reject) => {
     (function attempt(n) {
+      debug(`${options.method} ${url}`);
       fetch(url, options)
         .then(handleResponse)
         .then(resolve)

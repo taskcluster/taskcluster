@@ -40,7 +40,11 @@ export default ({ queue, index }) => {
         );
 
         try {
-          const raw = await fetch(url);
+          const raw = await fetch(url, {
+            headers: {
+              'x-taskcluster-skip-cache': true,
+            },
+          });
 
           return raw.actions
             ? {
