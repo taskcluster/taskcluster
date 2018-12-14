@@ -4,9 +4,11 @@ import { createComplexityLimitRule } from 'graphql-validation-complexity';
 import loader from 'taskcluster-lib-loader';
 import config from 'typed-env-config';
 import monitor from 'taskcluster-lib-monitor';
-import { createServer as httpServer } from 'http';
+import { createServer } from 'http';
 import { FakeClient, Client, pulseCredentials } from 'taskcluster-lib-pulse';
+import { ApolloServer } from 'apollo-server-express';
 import createApp from './servers/createApp';
+import formatError from './servers/formatError';
 import createContext from './createContext';
 import createSchema from './createSchema';
 import createSubscriptionServer from './servers/createSubscriptionServer';
@@ -100,23 +102,31 @@ const load = loader(
     },
 
     app: {
-      requires: ['cfg', 'context', 'schema'],
-      setup: ({ cfg, context, schema }) => createApp({ cfg, schema, context }),
+      requires: ['cfg'],
+      setup: ({ cfg }) => createApp({ cfg }),
     },
 
     server: {
       requires: ['app', 'schema', 'context'],
       setup: ({ app, schema, context }) => {
-        const server = httpServer(app);
+        const server = new ApolloServer({
+          schema,
+          context,
+          formatError,
+          tracing: true,
+        });
+        const httpServer = createServer(app);
+
+        server.applyMiddleware({ app });
 
         createSubscriptionServer({
-          server, // this attaches itself directly to the server
+          server: httpServer, // this attaches itself directly to the server
           schema,
           context,
           path: '/subscription',
         });
 
-        return server;
+        return httpServer;
       },
     },
 

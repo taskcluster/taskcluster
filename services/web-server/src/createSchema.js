@@ -1,3 +1,3 @@
-import { makeExecutableSchema } from 'graphql-tools';
+import { makeExecutableSchema } from 'apollo-server-express';
 
 export default options => makeExecutableSchema(options);

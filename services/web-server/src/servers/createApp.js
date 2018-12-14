@@ -5,9 +5,8 @@ import express from 'express';
 import playground from 'graphql-playground-middleware-express';
 import passport from 'passport';
 import credentials from './credentials';
-import graphql from './graphql';
 
-export default async ({ cfg, schema, context }) => {
+export default async ({ cfg }) => {
   const app = express();
 
   app.set('view engine', 'ejs');
@@ -20,11 +19,6 @@ export default async ({ cfg, schema, context }) => {
     '/graphql',
     bodyParser.graphql({
       limit: '1mb',
-    }),
-    graphql({
-      schema,
-      context,
-      tracing: true,
     })
   );
   app.get(

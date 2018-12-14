@@ -27,14 +27,14 @@
     "mocha": "^5.2.0",
     "neutrino": "9.0.0-rc.0",
     "prettier": "^1.14.3",
-    "raw-loader": "^0.5.1",
+    "raw-loader": "^1.0.0",
     "webpack": "^4.25.1",
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
     "@mozilla-frontend-infra/node-lint": "^1.1.1",
     "amqp-match": "^0.0.0",
-    "apollo-server-express": "2.0.0-beta.3",
+    "apollo-server-express": "^2.3.1",
     "async-decorators": "^0.1.5",
     "body-parser-graphql": "^1.0.0",
     "compression": "^1.7.2",
