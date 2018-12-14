@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import ReactGA from 'react-ga';
 import MuiButton from '@material-ui/core/Button';
-import { node, bool } from 'prop-types';
+import Fab from '@material-ui/core/Fab';
+import { node, bool, oneOf } from 'prop-types';
 import { withAuth } from '../../utils/Auth';
 import { gaEvent } from '../../utils/prop-types';
 
@@ -18,6 +19,7 @@ export default class Button extends Component {
   static defaultProps = {
     requiresAuth: false,
     track: null,
+    variant: null,
   };
 
   static propTypes = {
@@ -29,6 +31,8 @@ export default class Button extends Component {
      * If defined, the button will send an analytic event to Google
      * */
     track: gaEvent,
+    /** The variant to use. */
+    variant: oneOf(['text', 'outlined', 'contained', 'fab', 'extendedFab']),
   };
 
   handleButtonClick = () => {
@@ -51,6 +55,7 @@ export default class Button extends Component {
       requiresAuth,
       disabled,
       user,
+      variant,
       onClick,
       track,
       onAuthorize,
@@ -58,14 +63,17 @@ export default class Button extends Component {
       ...props
     } = this.props;
     const isDisabled = (requiresAuth && !user) || disabled;
+    const MuiComponent =
+      variant === 'fab' || variant === 'extendedFab' ? Fab : MuiButton;
 
     return (
-      <MuiButton
+      <MuiComponent
         onClick={this.handleButtonClick}
         disabled={isDisabled}
+        variant={variant}
         {...props}>
         {children}
-      </MuiButton>
+      </MuiComponent>
     );
   }
 }
