@@ -1,6 +1,6 @@
 {
   "name": "eslint-config-taskcluster",
-  "version": "3.3.0",
+  "version": "4.0.0",
   "author": "Brian Stack <bstack@mozilla.com>",
   "description": "Shared eslint config for Taskcluster projects",
   "license": "MPL-2.0",
