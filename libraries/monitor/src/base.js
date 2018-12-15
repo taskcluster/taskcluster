@@ -33,7 +33,7 @@ class TimeKeeper {
     const d = process.hrtime(this.start);
     this.monitor.measure(this.name, d[0] * 1000 + d[1] / 1000000);
   }
-};
+}
 
 class BaseMonitor {
   constructor() {
