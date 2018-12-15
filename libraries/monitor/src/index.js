@@ -185,7 +185,7 @@ async function monitor(options) {
   }
 
   return m;
-};
+}
 
 // ensure that only one SIGTERM handler is registered at any time
 let _sigtermHandler = null;
