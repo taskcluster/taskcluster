@@ -115,7 +115,7 @@ suite('Uncaught Errors', () => {
             'Error: This should bubble up to the top',
           ].join('\n')
         ));
-        assert(_.endsWith(output, 'Failed to report error to Sentry after timeout!\n'));
+        assert(output.indexOf('failed to send exception to sentry: socket hang up') !== -1);
         done();
       } catch (e) {
         done(e);
