@@ -75,7 +75,7 @@ suite('MockMonitor', () => {
 
   test('monitor.timer(k, value)', async () => {
     const v = monitor.timer('k', 45);
-    assert(v == 45);
+    assert(v === 45);
     // Sleep so that the promise handler can be handled before we check that
     // something was recorded...
     await new Promise(accept => setTimeout(accept, 10));
@@ -84,7 +84,7 @@ suite('MockMonitor', () => {
 
   test('monitor.timer(k, () => value)', async () => {
     const v = monitor.timer('k', () => 45);
-    assert(v == 45);
+    assert(v === 45);
     await new Promise(accept => setTimeout(accept, 10));
     assert(monitor.measures['mm.k'].length === 1);
   });
@@ -94,7 +94,7 @@ suite('MockMonitor', () => {
       await new Promise(accept => setTimeout(accept, 100));
       return 45;
     });
-    assert(v == 45);
+    assert(v === 45);
     await new Promise(accept => setTimeout(accept, 10));
     assert(monitor.measures['mm.k'].length === 1);
   });
