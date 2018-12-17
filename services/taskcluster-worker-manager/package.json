@@ -18,7 +18,7 @@
     "lint": "eslint src/*.js test/*.js",
     "fixlint": "eslint --fix src/*.js test/*.js",
     "pretest": "yarn lint",
-    "mocha": "mocha",
+    "mocha": "mocha test/*_test.js test/bidding-strategies/*_test.js",
     "test": "yarn lint && yarn mocha"
   },
   "devDependencies": {

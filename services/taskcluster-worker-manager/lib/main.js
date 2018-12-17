@@ -6,6 +6,9 @@ const SchemaSet = require('taskcluster-lib-validate');
 const builder = require('./api');
 
 const {InMemoryDatastore} = require('./data-storage');
+const {Provisioner} = require('./provisioner');
+const {Provider} = require('./provider');
+const {BiddingStrategy} = require('./bidding-strategy');
 
 let load = loader({
   cfg: {
@@ -65,6 +68,51 @@ let load = loader({
       trustProxy: cfg.server.trustProxy,
       apis: [api],
     }),
+  },
+
+  providers: {
+    requires: ['cfg'],
+    setup: async ({cfg}) => {
+      let providers = [];
+      for (let x of cfg.providers) {
+        let providerClass = Provider.load(x.className);
+        let provider = new providerClass(...x.args);
+        providers.push(provider);
+      }
+      return providers;
+    }
+  },
+
+  biddingStrategies: {
+    requires: ['cfg'],
+    setup: async ({cfg}) => {
+      let biddingStrategies = [];
+      for (let x of cfg.biddingStrategies) {
+        let biddingStrategyClass = BiddingStrategy.load(x.className);
+        let biddingStrategy = new biddingStrategyClass(...x.args);
+        biddingStrategies.push(biddingStrategy);
+      }
+      return biddingStrategies;
+    }
+  },
+
+  provisioner: {
+    requires: ['providers', 'biddingStrategies', 'datastore'],
+    setup: async ({providers, biddingStrategies, datastore}) => {
+      return new Provisioner({
+        iterationGap: 60,
+        providers,
+        biddingStrategies,
+        datastore,
+      });
+    }
+  },
+
+  provisionerservice: {
+    requires: ['provisioner'],
+    setup: async ({provisioner}) => {
+      await provisioner.initiate();
+    }
   },
 
 }, ['process', 'profile']);

@@ -1,6 +1,6 @@
 'use strict';
 
-const {WMObject, errors} = require('./base');
+const {WMObject, errors, loadPlugin} = require('./base');
 
 /**
  * A Bidding Strategy implementation is a class which understands the details
@@ -59,8 +59,13 @@ class BiddingStrategy extends WMObject {
    * destroyed.  Determining per-provider maximum capacity is not in scope for
    * this method.  Each provider, if it wishes to implement this feature should
    * handle it internally and only provide bids up to its internal max.
+   *
+   * The runningCapacity and pendingCapacity parameters will be passed in as
+   * numbers which represent the number of in-action workers as well as the
+   * number of workers which are pending starting.  These are used in the bidding
+   * strategy to make decisions based on the current worker state
    */
-  async determineDemand({workerType, biddingStrategyData}) {
+  async determineDemand({workerType, biddingStrategyData}, runningCapacity, pendingCapacity) {
     this._throw(errors.MethondUnimplemented, 'BiddingStrategy.determineDemand()');
   }
 

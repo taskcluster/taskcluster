@@ -24,6 +24,10 @@ class FakeProvider extends Provider {
 
   async rejectBids() {}
 
+  async listWorkers() {
+    return [];
+  }
+
   createBid({price, capacity, utilityFactor}) {
     return new Bid({
       providerId: this.id,
@@ -137,9 +141,6 @@ suite('Provisioner', () => {
   });
 
   test('should do nothing when provider is not configured', async () =>{
-    biddingStrategy.determineDemand
-      .returns(1);
-
     provisioner.providers.delete(provider.id);
 
     await provisioner.provision();
@@ -149,12 +150,7 @@ suite('Provisioner', () => {
     sandbox.assert.notCalled(provider.proposeBids);
     sandbox.assert.notCalled(biddingStrategy.selectBids);
 
-    sandbox.assert.calledOnce(biddingStrategy.determineDemand);
-    sandbox.assert.calledWith(biddingStrategy.determineDemand.firstCall, {
-      workerType: 'worker-type-1',
-      biddingStrategyData: {minCapacity:0, maxCapacity:300},
-    });
-
+    sandbox.assert.notCalled(biddingStrategy.determineDemand);
   });
 
   test('should do nothing when bidding strategy is not configured', async () =>{

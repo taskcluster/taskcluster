@@ -20,6 +20,15 @@ defaults:
     secretAccessKey: !env AWS_SECRET_ACCESS_KEY
     region: 'us-west-2'
     apiVersion: '2014-01-01'
+  biddingStrategies:
+    - className: QueuePending
+      args:
+        - rootUrl: !env TASKCLUSTER_ROOT_URL
+          credentials:
+            clientId: !env TASKCLUSTER_CLIENT_ID
+            accessToken: !env TASKCLUSTER_ACCESS_TOKEN
+            certificate: !env TASKCLUSTER_CERTIFICATE
+  providers: []
 test:
   taskcluster:
     rootUrl: 'http://localhost:5555'

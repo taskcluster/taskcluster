@@ -30,7 +30,7 @@ class Worker extends WMObject {
     }
     this.workerType = workerType;
 
-    if (typeof state !== 'symbol') {
+    if (typeof state !== 'string') {
       this._throw(errors.InvalidWorker, 'state must be symbol');
     }
     this.state = state;

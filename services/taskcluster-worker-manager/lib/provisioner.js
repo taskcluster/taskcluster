@@ -5,6 +5,7 @@ require('./shims');
 const Iterate = require('taskcluster-lib-iterate');
 const {WMObject, errors} = require('./base');
 const {Bid} = require('./bid');
+const {Provider} = require('./provider');
 
 const {buildWorkerConfiguration} = require('./worker-config');
 
@@ -125,13 +126,46 @@ class Provisioner extends WMObject {
       return [];
     }
 
+    // Get the list of providers which are relevant to this worker
+    // configuration.  In the case that there aren't configured providers for
+    // this worker type, simply return an empty list because there's no valid
+    // bids we could create.
+    let providers = workerConfiguration.providerIdsForWorkerType(workerType)
+      .map(x => this.providers.get(x))
+      .filter(x => x); // If only Array.prototype.mapFilter existed :/
+    if (providers.length < 1) {
+      return [];
+    }
+
+    // Determine the number of pending and running capacity units
+    let runningCapacity = 0;
+    let pendingCapacity = 0;
+    for (let provider of providers) {
+      let workers = await provider.listWorkers({
+        states: [Provider.requested, Provider.booting, Provider.running],
+        workerTypes: [workerType],
+      });
+
+      for (let worker of workers) {
+        if (worker.state === Provider.running) {
+          runningCapacity += worker.capacity;
+        } else {
+          pendingCapacity += worker.capacity;
+        }
+      }
+    }
+
     // We only want to pass bidding strategy data to bidding strategies.  This
     // is to ensure that bidding strategy data is the only input to bidding
     // strategy decisions.  We will ensure that the basic structure of a worker
     // configuration evaluation is taken into account, by deleting data from
     // the return value which must not be considered by a bidding strategy
     let {biddingStrategyData} = workerConfiguration.evaluate({workerType, biddingStrategyId});
-    let demand = await biddingStrategy.determineDemand({workerType, biddingStrategyData});
+    let demand = await biddingStrategy.determineDemand(
+      {workerType, biddingStrategyData},
+      runningCapacity,
+      pendingCapacity,
+    );
 
     // The taskcluster worker contract is that the workers must shut themselves
     // down.  Any code in the worker manager which 'removes' capacity must be
@@ -142,17 +176,6 @@ class Provisioner extends WMObject {
     // worker contract should not be underestimated.  Any change to this must
     // have an RFC.
     if (demand < 1) {
-      return [];
-    }
-
-    // Get the list of providers which are relevant to this worker
-    // configuration.  In the case that there aren't configured providers for
-    // this worker type, simply return an empty list because there's no valid
-    // bids we could create.
-    let providers = workerConfiguration.providerIdsForWorkerType(workerType)
-      .map(x => this.providers.get(x))
-      .filter(x => x); // If only Array.prototype.mapFilter existed :/
-    if (providers.length < 1) {
       return [];
     }
 
