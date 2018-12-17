@@ -1,22 +1,28 @@
 suite('retry-test', function() {
-  var taskcluster     = require('../');
-  var assert          = require('assert');
-  var path            = require('path');
-  var debug           = require('debug')('test:retry_test');
-  var Promise         = require('promise');
-  var _               = require('lodash');
-  var _validator      = require('taskcluster-lib-validate');
-  var _monitor        = require('taskcluster-lib-monitor');
-  var APIBuilder      = require('taskcluster-lib-api');
-  var testing         = require('taskcluster-lib-testing');
-  var App             = require('taskcluster-lib-app');
+  const taskcluster     = require('../');
+  const assert          = require('assert');
+  const path            = require('path');
+  const debug           = require('debug')('test:retry_test');
+  const Promise         = require('promise');
+  const _               = require('lodash');
+  const SchemaSet       = require('taskcluster-lib-validate');
+  const _monitor        = require('taskcluster-lib-monitor');
+  const APIBuilder      = require('taskcluster-lib-api');
+  const testing         = require('taskcluster-lib-testing');
+  const App             = require('taskcluster-lib-app');
+  const http            = require('http');
+  const httpProxy       = require('http-proxy');
+
+  const PROXY_PORT = 60551;
+  const rootUrl = `http://localhost:${PROXY_PORT}`;
+  let proxier;
 
   // Construct API
   var builder = new APIBuilder({
     title:        'Retry API',
     description:  'API that sometimes works by retrying things',
-    name:         'retrytest',
-    version:      'v1',
+    serviceName:         'retrytest',
+    apiVersion:      'v1',
   });
 
   var getInternalErrorCount = 0;
@@ -96,10 +102,8 @@ suite('retry-test', function() {
   var _apiServer = null;
 
   var monitor = null;
-  var reference = null;
   var Server = null;
   var server = null;
-  const rootUrl = 'http://localhost:60526';
 
   setup(async function() {
     assert(_apiServer === null,       '_apiServer must be null');
@@ -114,20 +118,17 @@ suite('retry-test', function() {
     });
 
     // Create server for api
-    const validator = await _validator({
-      rootUrl,
-      serviceName: 'tc-client-tests',
-      folder:         path.join(__dirname, 'schemas'),
+    const schemaset = new SchemaSet({
+      serviceName: 'retrytest',
     });
 
     // Create router
     const api = await builder.build({
       rootUrl,
-      validator,
+      schemaset,
     });
 
-    reference = api.reference();
-    Server = taskcluster.createClient(reference);
+    Server = taskcluster.createClient(builder.reference());
     server = new Server({
       credentials: {
         clientId:     'test-client',
@@ -145,12 +146,34 @@ suite('retry-test', function() {
       trustProxy:   false,
       apis: [api],
     });
+
+    // Finally, we set up a proxy that runs on rootUrl
+    // and sends requests to either of the services based on path.
+
+    const proxy = httpProxy.createProxyServer({proxyTimeout: 0});
+    proxy.on('error', (err, req, res) => {
+      req.connection.end(); // Nasty hack to make httpProxy pass along the connection close
+    });
+    proxier = http.createServer(function(req, res) {
+      if (req.url.startsWith('/api/auth/')) {
+        proxy.web(req, res, {target: 'http://localhost:60552'});
+      } else if (req.url.startsWith('/api/retrytest/')) {
+        proxy.web(req, res, {target: 'http://localhost:60526'});
+      } else {
+        throw new Error(`Unknown service request: ${req.url}`);
+      }
+    });
+    proxier.listen(PROXY_PORT);
   });
 
   // Close server
   teardown(function() {
     testing.fakeauth.stop();
     assert(_apiServer,      '_apiServer doesn\'t exist');
+    if (proxier) {
+      proxier.close();
+      proxier = null;
+    }
     if (taskcluster.agents.http.destroy) {
       taskcluster.agents.http.destroy();
       taskcluster.agents.https.destroy();
