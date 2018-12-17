@@ -60,9 +60,9 @@ locals {
       }
 
       diskSizeGb  = 32
-      image       = "taskcluster-generic-worker-debian-9-1540861926"
+      image       = "${var.gce_provider_image_name}"
       instances   = 2
-      name        = "gce-worker-test"
+      name        = "gce-worker-test"                // worker-type name
       version     = 1
       workerGroup = "gce-worker-test"
       zones       = ["us-east1-b"]
@@ -86,7 +86,7 @@ module "gce_provider_secrets" {
     TRUST_PROXY              = "true"
     PROVISIONER_ID           = "gce-provider"
 
-    GOOGLE_PROJECT = "${var.gcp_project}"
+    GOOGLE_PROJECT = "${var.gce_provider_gcp_project}"
 
     // TODO: Unnecessary once worker has rootUrl support
     CREDENTIAL_URL = "${var.root_url}/api/gce-provider/v1/credentials"
