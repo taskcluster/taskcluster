@@ -1,0 +1,55 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+$id: "/schemas/common/metaschema.json#"
+title: "Taskcluster JSON-Schema Meta-Schema, with some stricter validation"
+description: |
+  This is a refinement of JSON-schema, with the following changes:
+
+    * if `properties` is present, `type` and `additionalProperties` must be present, too
+    * if `entries` is present, `type` and `uniqueItems` must be present, too
+
+  Note that any schema that validates against this metaschema will also
+  validate against the upstream draft-06 metaschema, and is usable by any
+  JSON-schema tool.
+definitions:
+  # requirements on the top level and subschemas
+  schema:
+    allOf:
+      - {$ref: "#/definitions/recurse"}
+      - {$ref: "#/definitions/requiredProperties"}
+  schemaArray:
+    type: array
+    items: {$ref: "#/definitions/schema"}
+  recurse:
+    properties:
+      additionalItems: {$ref: "#/definitions/schema"}
+      items:
+        anyOf:
+          - {$ref: "#/definitions/schema"}
+          - {$ref: "#/definitions/schemaArray"}
+      contains: {$ref: "#/definitions/schema"}
+      additionalProperties: {$ref: "#/definitions/schema"}
+      definitions:
+        additionalProperties: {$ref: "#/definitions/schema"}
+      properties:
+        additionalProperties: {$ref: "#/definitions/schema"}
+      patternProperties:
+        additionalProperties: {$ref: "#/definitions/schema"}
+      dependencies:
+        additionalProperties:
+          anyOf:
+            - {$ref: "#/definitions/schema"}
+            - {$ref: "http://json-schema.org/draft-06/schema#/definitions/stringArray"}
+      propertyNames: {$ref: "#/definitions/schema"}
+      allOf: {$ref: "#/definitions/schemaArray"}
+      anyOf: {$ref: "#/definitions/schemaArray"}
+      oneOf: {$ref: "#/definitions/schemaArray"}
+      not: {$ref: "#/definitions/schema"}
+
+  requiredProperties:
+    dependencies:
+      properties: ['type', 'additionalProperties', 'required']
+      entries: ['type', 'uniqueItems']
+
+allOf:
+  - {$ref: "http://json-schema.org/draft-06/schema#"}
+  - {$ref: "#/definitions/schema"}

@@ -182,3 +182,5 @@ class ValidationProblems extends Error {
     this.problems = problems;
   }
 }
+
+exports.ValidationProblems = ValidationProblems;
