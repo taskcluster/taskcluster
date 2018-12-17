@@ -132,8 +132,8 @@ locals {
         "queue:claim-work:gce-provider/*",
         "assume:worker-id:*",
         "assume:worker-type:gce-provider/*",
-        "queue:worker-id:gce-worker-test/*",                  // TODO: Probably not right
-        "auth:create-client:worker/gce/${var.gcp_project}/*",
+        "queue:worker-id:gce-worker-test/*",                               // TODO: Probably not right
+        "auth:create-client:worker/gce/${var.gce_provider_gcp_project}/*",
       ]
     },
     {
