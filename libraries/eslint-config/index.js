@@ -12,7 +12,7 @@ module.exports = {
   "rules": {
     "max-len": [2, 120, 2],
     "quotes": [2, "single"],
-    "complexity": [2, 50],
+    "complexity": [2, 100],
     "curly": 2,
     "no-lonely-if": 2,
     "no-multiple-empty-lines": [2, { "max": 1} ],
@@ -44,7 +44,5 @@ module.exports = {
     "new-cap": 0,
     "comma-spacing": [2, {"before": false, "after": true}],
     "comma-dangle": [2, "always-multiline"],
-    "eqeqeq": [2, "always", {"null": "ignore"}],
-    "no-extra-semi": 2
   }
 }
