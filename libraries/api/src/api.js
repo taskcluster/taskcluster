@@ -14,6 +14,7 @@ const {queryValidator} = require('./middleware/queries');
 const {parameterValidator} = require('./middleware/parameters');
 const {remoteAuthentication} = require('./middleware/auth');
 const {parseBody} = require('./middleware/parse');
+const {expressError} = require('./middleware/express-error');
 
 const debug = Debug('api');
 
@@ -118,13 +119,14 @@ class API {
       }
 
       middleware.push(
-        buildReportErrorMethod({errorCodes, monitor, entry}),
+        buildReportErrorMethod(),
         parseBody({inputLimit}),
         remoteAuthentication({signatureValidator, entry}),
         parameterValidator({context, entry}),
         queryValidator({context, entry}),
         validateSchemas({validator, absoluteSchemas, rootUrl, serviceName, entry}),
-        callHandler({entry, context, monitor})
+        callHandler({entry, context, monitor}),
+        expressError({errorCodes, entry, monitor})
       );
 
       // Create entry on router
