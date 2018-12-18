@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const utils = require('../utils');
 const ScopeExpressionTemplate = require('../expressions');
 const Debug = require('debug');
+const ErrorReply = require('../error-reply');
 
 /* In production, log authorizations so they are included in papertrail regardless of
  * DEBUG settings; otherwise, log with debug
@@ -315,11 +316,11 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
       }
     } catch (err) {
       if (err.code === 'AuthorizationError') {
-        return res.reportError('InsufficientScopes', err.messageTemplate, err.details);
+        return next(new ErrorReply({code: 'InsufficientScopes', message: err.messageTemplate, details: err.details}));
       } else if (err.code === 'AuthenticationError') {
-        return res.reportError('AuthenticationFailed', err.message, err.details);
+        return next(new ErrorReply({code: 'AuthenticationFailed', message: err.message, details: err.details}));
       }
-      return res.reportInternalError(err);
+      return next(err);
     };
   };
 };
