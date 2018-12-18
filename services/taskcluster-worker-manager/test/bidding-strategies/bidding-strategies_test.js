@@ -70,18 +70,17 @@ function createMockBid(overrides) {
  * the only parameter.
  *
  * In pseudo code, these setup and teardown methods will be run like:
- * biddingStrategy = new clazz();
- * await runBefore(biddingStrategy);
+ * await runBefore(subject);
  * ... (tests)
- * await runAfter(biddingStrategy);
+ * await runAfter(subject);
  *
  * The assumption is that these tests can safely call the api methods as many
  * times as needed and nothing will happen externally.  In otherwords, the
  * bidding strategy must be fully mocked.
  *
- * The `workerConfiguration` parameter must be a worker configuration which
- * evaluates with a valid biddingStrategyData output for this bidding strategy.
- * It must use a workerType value of `workerType`
+ * The `biddingStrategyData` parameter must be a worker configuration
+ * evaluation output which is valid for this bidding strategy.  It must use a
+ * workerType value of `workerType`
  *
  */
 function testBiddingStrategy(subject, biddingStrategyData, runBefore, runAfter) {

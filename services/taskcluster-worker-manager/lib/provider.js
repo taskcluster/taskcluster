@@ -49,7 +49,7 @@ class Provider extends WMObject {
    * return value must be a list of Worker objects.  The workerTypes value must
    * be a list of strings.  If the workerTypes value is not specified, all
    * workerTypes should be included.  The states value must be a list of states
-   * symbols.  These are in Provider.states.  These values are not extensible.
+   * strings.  These are in Provider.states.  These values are not extensible.
    * All providers must group their internal states to one of the states in
    * Provider.states.  If any state is not in Provider.states, an error must be
    * thrown.
@@ -60,7 +60,7 @@ class Provider extends WMObject {
 
   /**
    * Given a worker id, check if it is managed by this provider and if so,
-   * determine its state.  Must return the correct Provider.state symbol if
+   * determine its state.  Must return the correct Provider.state string if
    * managed or undefined if not
    */
   async queryWorkerState({workerId}) {
