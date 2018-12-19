@@ -160,6 +160,7 @@ var auth = new taskcluster.Auth(options);
  * `auth.disableClient(clientId) : result`
  * `auth.deleteClient(clientId) : void`
  * `auth.listRoles() : result`
+ * `auth.listRoleIds([options]) : result`
  * `auth.role(roleId) : result`
  * `auth.createRole(roleId, payload) : result`
  * `auth.updateRole(roleId, payload) : result`
