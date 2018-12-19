@@ -31,7 +31,8 @@ module "notify_user" {
         {
             "Effect": "Allow",
             "Action": [
-                "ses:SendEmail"
+                "ses:SendEmail",
+                "ses:SendRawEmail"
             ],
             "Resource": "*",
             "Condition": {
