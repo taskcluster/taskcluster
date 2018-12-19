@@ -160,7 +160,7 @@ helper.withPulse = (mock, skipping) => {
     helper.publisher.on('message', recordMessage);
   });
 
-  suiteTeardown(async function() {
+  teardown(async function() {
     helper.publisher.removeListener('message', recordMessage);
   });
 };
