@@ -6,6 +6,7 @@ const slugid = require('slugid');
 const _ = require('lodash');
 const signaturevalidator = require('./signaturevalidator');
 const ScopeResolver = require('./scoperesolver');
+const Hashids = require('hashids');
 
 /**
  * Helper to return a role as defined in the blob to one suitable for return.
@@ -584,6 +585,72 @@ builder.declare({
   // Load all roles
   let roles = await this.Roles.get();
   res.reply(roles.map(r => roleToJson(r, this)));
+});
+
+/** List role Ids **/
+builder.declare({
+  method:     'get',
+  route:      '/roleids/',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name:       'listRoleIds',
+  input:      undefined,
+  output:     'list-role-ids-response.yml',
+  stability:  'stable',
+  title:      'List Role IDs',
+  description: [
+    'If no limit is given, the roleIds of all roles are returned. Since this',
+    'list may become long, callers can use the `limit` and `continuationToken`',
+    'query arguments to page through the responses.',
+  ].join('\n'),
+}, async function(req, res) {
+  let hashids = new Hashids();
+  let continuationToken;
+  let limit = parseInt(req.query.limit, 10) || undefined;
+  let response = {};
+
+  // Assign the continuationToken
+  if (req.query.continuationToken) {
+    continuationToken = hashids.decode(req.query.continuationToken);
+    // If continuationToken is invalid
+    if (continuationToken.length === 0) {
+      return res.reportError('InputError', 'Invalid continuationToken', {});
+    }
+    // Assign the decoded token value
+    continuationToken = continuationToken[0];
+  } else {
+    continuationToken = undefined;
+  }
+
+  // Load all roles
+  let roles = await this.Roles.get();
+  let length = roles.length;
+
+  // Slice the list of roles based on continuationToken and limit
+  if (continuationToken && limit) {
+    roles = roles.slice(continuationToken, limit + continuationToken);
+    continuationToken = limit + continuationToken;
+
+    if (continuationToken < length) {
+      response.continuationToken = hashids.encode(continuationToken, 10);
+    }
+  } else if (limit) {
+    roles = roles.slice(0, limit);   // If no continuationToken is provided
+    continuationToken = limit;
+
+    if (continuationToken < length) {
+      response.continuationToken = hashids.encode(continuationToken, 10);
+    }
+  }
+
+  // Generate a list of roleIds corresponding to the selected roles
+  let roleIds = roles.map(r => r.roleId);
+
+  response.roleIds = roleIds;
+
+  res.reply(response);
 });
 
 /** Get role */
