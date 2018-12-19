@@ -9,7 +9,7 @@ fail too many times and does not fail silently.
 Here is a simple example of this library:
 
 ```javascript
-var Iterate = require(`./`);
+var Iterate = require(`taskcluster-lib-iterate`);
 
 i = new Iterate({
   maxFailures: 5,
