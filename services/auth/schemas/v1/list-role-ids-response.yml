@@ -1,0 +1,23 @@
+$schema:  http://json-schema.org/draft-06/schema#
+title:                      "Get Role Ids Response"
+description: |
+  If no limit is given, the roleIds of all roles are returned. Since this
+  list may become long, callers can use the `limit` and `continuationToken`
+  query arguments to page through the responses.
+type: object
+properties:
+  roleIds:
+    description: |
+      A list of requested roleIds
+    type:                 array
+    items:              {type: string}
+  continuationToken:
+    title:                "Continuation Token"
+    type:                 string
+    description: |
+      A continuation token is returned if there are more results than listed
+      here. You can optionally provide the token in the request payload to
+      load the additional results.
+additionalProperties: false
+required:
+  - roleIds
