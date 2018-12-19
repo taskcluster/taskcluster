@@ -117,6 +117,10 @@ module.exports = {
           .use('mdx-loader')
             .loader('mdx-loader');
     },
-    '@neutrinojs/karma',
+    ['@neutrinojs/karma', {
+      plugins: [
+        'karma-firefox-launcher',
+      ],
+    }],
   ],
 };
