@@ -147,7 +147,7 @@ test('test the thing', async function() {
 ### Methods in `taskcluster.Auth`
 ```js
 // Create Auth client instance:
-//  - https://auth.taskcluster.net/v1/
+//  - undefined
 var auth = new taskcluster.Auth(options);
 ```
  * `auth.ping() : void`
@@ -208,6 +208,7 @@ var awsProvisioner = new taskcluster.AwsProvisioner(options);
 //  - https://ec2-manager.taskcluster.net/v1
 var eC2Manager = new taskcluster.EC2Manager(options);
 ```
+ * `eC2Manager.ping() : void`
  * `eC2Manager.listWorkerTypes() : result`
  * `eC2Manager.runInstance(workerType, payload) : void`
  * `eC2Manager.terminateWorkerType(workerType) : void`
@@ -229,13 +230,11 @@ var eC2Manager = new taskcluster.EC2Manager(options);
  * `eC2Manager.allState() : void`
  * `eC2Manager.sqsStats() : void`
  * `eC2Manager.purgeQueues() : void`
- * `eC2Manager.apiReference() : void`
- * `eC2Manager.ping() : void`
 
 ### Methods in `taskcluster.Github`
 ```js
 // Create Github client instance:
-//  - https://github.taskcluster.net/v1/
+//  - undefined
 var github = new taskcluster.Github(options);
 ```
  * `github.ping() : void`
@@ -250,7 +249,7 @@ var github = new taskcluster.Github(options);
 ### Methods in `taskcluster.Hooks`
 ```js
 // Create Hooks client instance:
-//  - https://hooks.taskcluster.net/v1/
+//  - undefined
 var hooks = new taskcluster.Hooks(options);
 ```
  * `hooks.ping() : void`
@@ -269,7 +268,7 @@ var hooks = new taskcluster.Hooks(options);
 ### Methods in `taskcluster.Index`
 ```js
 // Create Index client instance:
-//  - https://index.taskcluster.net/v1/
+//  - undefined
 var index = new taskcluster.Index(options);
 ```
  * `index.ping() : void`
@@ -282,7 +281,7 @@ var index = new taskcluster.Index(options);
 ### Methods in `taskcluster.Login`
 ```js
 // Create Login client instance:
-//  - https://login.taskcluster.net/v1
+//  - undefined
 var login = new taskcluster.Login(options);
 ```
  * `login.ping() : void`
@@ -291,7 +290,7 @@ var login = new taskcluster.Login(options);
 ### Methods in `taskcluster.Notify`
 ```js
 // Create Notify client instance:
-//  - https://notify.taskcluster.net/v1/
+//  - undefined
 var notify = new taskcluster.Notify(options);
 ```
  * `notify.ping() : void`
@@ -313,7 +312,7 @@ var pulse = new taskcluster.Pulse(options);
 ### Methods in `taskcluster.PurgeCache`
 ```js
 // Create PurgeCache client instance:
-//  - https://purge-cache.taskcluster.net/v1/
+//  - undefined
 var purgeCache = new taskcluster.PurgeCache(options);
 ```
  * `purgeCache.ping() : void`
@@ -324,7 +323,7 @@ var purgeCache = new taskcluster.PurgeCache(options);
 ### Methods in `taskcluster.Queue`
 ```js
 // Create Queue client instance:
-//  - https://queue.taskcluster.net/v1/
+//  - undefined
 var queue = new taskcluster.Queue(options);
 ```
  * `queue.ping() : void`
@@ -364,7 +363,7 @@ var queue = new taskcluster.Queue(options);
 ### Methods in `taskcluster.Secrets`
 ```js
 // Create Secrets client instance:
-//  - https://secrets.taskcluster.net/v1/
+//  - undefined
 var secrets = new taskcluster.Secrets(options);
 ```
  * `secrets.ping() : void`
@@ -405,6 +404,7 @@ var githubEvents = new taskcluster.GithubEvents(options);
  * `githubEvents.pullRequest(routingKeyPattern) : binding-info`
  * `githubEvents.push(routingKeyPattern) : binding-info`
  * `githubEvents.release(routingKeyPattern) : binding-info`
+ * `githubEvents.taskGroupDefined(routingKeyPattern) : binding-info`
 
 ### Exchanges in `taskcluster.PurgeCacheEvents`
 ```js
