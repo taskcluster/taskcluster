@@ -295,8 +295,8 @@ func (s *Session) recvLoop() {
 		}
 
 		if len(msg) < 5 {
-			s.logger.Print(errMalformedHeader)
-			_ = s.abort(errMalformedHeader)
+			s.logger.Print(ErrMalformedHeader)
+			_ = s.abort(ErrMalformedHeader)
 		}
 
 		h := header(msg[:5])
