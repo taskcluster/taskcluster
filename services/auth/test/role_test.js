@@ -135,7 +135,61 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('listRoles', async () => {
     let roles = await helper.apiClient.listRoles();
-    assert(roles.some(role => role.roleId === 'thing-id:' + clientId));
+    assert(roles.some(role => role.roleId === `thing-id:${clientId}`));
+  });
+
+  test('listRoleIds', async () => {
+    // Clear existing roles
+    await helper.Roles.modify((roles) => roles.splice(0));
+
+    // Create 4 dummy roles
+    await helper.apiClient.createRole(`thing-id:${clientId}`, {
+      description: 'test role',
+      scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
+    });
+    for (let i=0;i<3;i++) {
+      let tempRoleId = `${clientId}${i}`;
+      await helper.apiClient.createRole(tempRoleId, {
+        description: 'test role',
+        scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
+      });
+    }
+
+    let result = await helper.apiClient.listRoleIds();
+
+    assert(result.roleIds.some(roleId => roleId === `thing-id:${clientId}`));
+    assert(result.roleIds.length === 4);
+  });
+
+  test('listRoleIds (limit, [continuationToken])', async () => {
+    let roleIds = [];
+    let allRoleIds = {};
+    let count=0;
+    let query = {limit: 1};
+
+    allRoleIds = await helper.apiClient.listRoleIds();
+
+    while (true) {
+      let result = await helper.apiClient.listRoleIds(query);
+      assume(result.roleIds.length).to.be.lessThan(2);
+      query.continuationToken = result.continuationToken;
+      roleIds = roleIds.concat(result.roleIds);
+      count++;
+      if (!query.continuationToken) {
+        break;
+      }
+    }
+
+    assume(roleIds.sort()).to.deeply.equal(allRoleIds.roleIds.sort());
+    assume(count).to.be.greaterThan(1);
+
+    // Testing for erroneous continuationToken
+    query.limit = 1;
+    query.continuationToken = 'FOOBAR';
+
+    await helper.apiClient.listRoleIds(query)
+      .then(() => assert(false, 'Expected error'),
+        err => assert(err.statusCode === 400, 'Expected 400'));
   });
 
   test('updateRole with a **-scope', async () => {
@@ -147,22 +201,36 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   });
 
   test('updateRole (add scope)', async () => {
-    let r1 = await helper.apiClient.role('thing-id:' + clientId);
+    // Clearing existing roles
+    await helper.Roles.modify((roles) => roles.splice(0));
+
+    // Generating dummy roles for the test
+    await helper.apiClient.createRole(`thing-id:${clientId}`, {
+      description: 'test role',
+      scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
+    });
+    await helper.apiClient.createRole(`thing-id:${clientId.slice(0, 11)}*`, {
+      description: 'test role',
+      scopes: ['dummy-scope-2'],
+    });
+
+    let r1 = await helper.apiClient.role(`thing-id:${clientId}`);
 
     await testing.sleep(100);
 
-    let r2 = await helper.apiClient.updateRole('thing-id:' + clientId, {
+    let r2 = await helper.apiClient.updateRole(`thing-id:${clientId}`, {
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-3'],
     });
+
     assume(new Date(r2.lastModified).getTime()).greaterThan(
       new Date(r1.lastModified).getTime()
     );
     helper.checkNextMessage('role-updated', m => assert.equal(m.payload.roleId, `thing-id:${clientId}`));
 
-    let role = await helper.apiClient.role('thing-id:' + clientId);
+    let role = await helper.apiClient.role(`thing-id:${clientId}`);
     assume(role.expandedScopes.sort()).deep.equals([
-      'assume:thing-id:' + clientId,
+      `assume:thing-id:${clientId}`,
       'dummy-scope-1',
       'auth:create-role:*',
       'dummy-scope-2', // from role thing-id:<clientId[:11]>*
