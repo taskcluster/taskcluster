@@ -182,6 +182,22 @@ module.exports = {
         },
         {
           "args": [
+          ],
+          "description": "If no limit is given, the roleIds of all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
+          "method": "get",
+          "name": "listRoleIds",
+          "output": "v1/list-role-ids-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/roleids/",
+          "stability": "stable",
+          "title": "List Role IDs",
+          "type": "function"
+        },
+        {
+          "args": [
             "roleId"
           ],
           "description": "Get information about a single role, including the set of scopes that the\nrole expands to.",
@@ -1980,7 +1996,7 @@ module.exports = {
     "reference": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The notification service, typically available at `notify.taskcluster.net`\nlistens for tasks with associated notifications and handles requests to\nsend emails and post pulse messages.",
+      "description": "The notification service listens for tasks with associated notifications\nand handles requests to send emails and post pulse messages.",
       "entries": [
         {
           "args": [
