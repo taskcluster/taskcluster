@@ -132,11 +132,11 @@ class MockSES {
     this.emails = [];
   }
 
-  sendEmail(c) {
+  sendRawEmail(c, callback) {
     this.emails.push({
-      delivery: {recipients: c.Destination.ToAddresses},
+      delivery: {recipients: c.Destinations},
     });
-    return {promise: async () => ({})};
+    callback(null, {});
   }
 
   reset() {
