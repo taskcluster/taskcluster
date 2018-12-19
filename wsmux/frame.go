@@ -27,7 +27,7 @@ var (
 	errMalformedHeader = errors.New("malformed header")
 )
 
-// SPEC |STREAM ID (32 bits)|MSG (8 bits)|DATA|
+// SPEC |MSG (8 bits)|STREAM ID (32 bits)|DATA|
 
 // header length = 4 + 1 = 5 bytes
 
