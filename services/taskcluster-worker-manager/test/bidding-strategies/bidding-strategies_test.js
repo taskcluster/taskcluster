@@ -19,13 +19,13 @@ const workerType = 'workerType';
 function createBids(...capacities) {
   let bids = [];
 
-  for (let x = 0 ; x < capacities.length ; x++) {
+  for (let capacity of capacities) {
     bids.push(new Bid({
       workerConfigurationId: 'worker-configuration-1',
       providerId: 'test-provider',
       workerType,
       expires: new Date(Date.now() + 3600*1000),
-      capacity: capacities[x],
+      capacity,
       utilityFactor: 1,
       price: 1,
       firm: false,
@@ -43,7 +43,7 @@ function createBids(...capacities) {
  * properties which are passed in on the overrides object
  */
 function createMockBid(overrides) {
-  let bid = new Bid({
+  return new Bid(Object.assign({}, {
     workerConfigurationId: 'worker-configuration-1',
     providerId: 'test-provider',
     workerType,
@@ -55,11 +55,7 @@ function createMockBid(overrides) {
     reliability: 7000,
     estimatedDelay: 1000,
     providerData: {}
-  });
-
-  Object.assign(bid, overrides);
-
-  return bid;
+  }, overrides));
 }
 
 /**

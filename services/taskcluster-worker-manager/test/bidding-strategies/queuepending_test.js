@@ -14,16 +14,13 @@ suite('QueuePending Bidding Strategy', () => {
 
   setup(() => {
     sandbox = sinon.createSandbox();
-    sandbox.stub(subject, '_getPending');
-    subject._getPending.returns(0);
+    sandbox.stub(subject, '_getPendingTasks');
+    subject._getPendingTasks.returns(0);
   })
 
   teardown(() => {
     sandbox.restore();
   })
-
-  // Since this is a throw-away object this is a simple stub.  It might
-  // be worthwhile in the future using Sinon here
 
   testBiddingStrategy(subject, {
     scalingRatio: 1,
@@ -34,7 +31,7 @@ suite('QueuePending Bidding Strategy', () => {
   });
 
   test('calculates simple demand correct', async () => {
-    subject._getPending.returns(100);
+    subject._getPendingTasks.returns(100);
 
     let demand = await subject.determineDemand({workerType: 'workerType', biddingStrategyData: {
       scalingRatio: 1,
@@ -48,7 +45,7 @@ suite('QueuePending Bidding Strategy', () => {
   });
 
   test('does not allow more than max capacity', async () => {
-    subject._getPending.returns(100000);
+    subject._getPendingTasks.returns(100000);
 
     let demand = await subject.determineDemand({workerType: 'workerType', biddingStrategyData: {
       scalingRatio: 1,
@@ -62,7 +59,7 @@ suite('QueuePending Bidding Strategy', () => {
   });
 
   test('does not allow less than min capacity', async () => {
-    subject._getPending.returns(0);
+    subject._getPendingTasks.returns(0);
 
     let demand = await subject.determineDemand({workerType: 'workerType', biddingStrategyData: {
       scalingRatio: 1,
@@ -76,7 +73,7 @@ suite('QueuePending Bidding Strategy', () => {
   });
 
   test('calculates scaling ratio correctly', async () => {
-    subject._getPending.returns(500);
+    subject._getPendingTasks.returns(500);
 
     let demand = await subject.determineDemand({workerType: 'workerType', biddingStrategyData: {
       scalingRatio: 0.5,

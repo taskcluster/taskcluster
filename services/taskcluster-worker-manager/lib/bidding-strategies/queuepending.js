@@ -27,7 +27,7 @@ class QueuePending extends BiddingStrategy {
    * Internal utility method wrapping the actual queue call for easy
    * mocking in unit tests
    */
-  async _getPending(workerType) {
+  async _getPendingTasks(workerType) {
     let {pendingTasks} = await this._queue.pendingTasks('worker-manager', workerType);
     return pendingTasks;
   }
@@ -45,11 +45,7 @@ class QueuePending extends BiddingStrategy {
       maxPrice,
     } = biddingStrategyData;
     
-    // TODO: we need to pass in pending and running capacity into all bidding
-    // strategies so that they may calculate demenand based on overall capacity
-    // available and planned without having to talk to providers
-
-    let pending = await this._getPending(workerType);
+    let pendingTasks = await this._getPendingTasks(workerType);
 
     // NOTE: The following code of this function was copied verbatim from the
     // aws-provisoner-v1 codebase, changed only to address different variable
@@ -62,7 +58,7 @@ class QueuePending extends BiddingStrategy {
 
     // desiredPending < pending - pendingCapacity    =>   Create spot requests
     // otherwise Cancel spot requests
-    let capacityChange = pending - pendingCapacity - desiredPending;
+    let capacityChange = pendingTasks - pendingCapacity - desiredPending;
 
     // capacityChange > 0  => Create spot requests for capacityChange
     // capacityChange < 0  => cancel spot requests for capacityChange
@@ -102,24 +98,14 @@ class QueuePending extends BiddingStrategy {
     return value;
   }
 
-  /**
-   * Compare two bids for sorting.  This comparison function is unique to this
-   * bidding strategy.  This comparison function, when used with
-   * Array.prototype.sort() will result in the "best" bid resulting at the
-   * first index and the worst at the last index.
-   */
-  _compareBid(a, b) {
-    // return < 0, a goes first (i.e. a is better bid)
-    // return > 0, b goes first (i.e. b is better bid)
-    return this._bidValue(a) - this._bidValue(b);
-  }
-
   async selectBids({workerType, biddingStrategyData, bids, demand}) {
     let outcome = {accept: [], reject: []};
     
     // Avoid modifying bids list passed in
     let _bids = bids.slice();
-    _bids.sort(this._compareBid.bind(this));
+    _bids.sort((a, b) => {
+      return this._bidValue(a) - this._bidValue(b); 
+    });
 
     // Select the best bids until we've selected enough to fulfill the demand,
     // then reject remaining bids
