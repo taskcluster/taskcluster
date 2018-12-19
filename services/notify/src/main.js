@@ -123,12 +123,7 @@ const load = loader({
 
   ses: {
     requires: ['cfg'],
-    setup: ({cfg}) => new aws.SES({
-      params: {
-        Source: cfg.app.sourceEmail,
-      },
-      ...cfg.aws,
-    }),
+    setup: ({cfg}) => new aws.SES(cfg.aws),
   },
 
   sqs: {
@@ -148,6 +143,7 @@ const load = loader({
         rateLimit,
         ses,
         sqs,
+        sourceEmail: cfg.app.sourceEmail,
       });
       await n.setup();
       return n;

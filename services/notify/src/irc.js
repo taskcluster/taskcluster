@@ -1,6 +1,6 @@
 const debug = require('debug')('notify');
 const Promise = require('bluebird');
-const irc = Promise.promisifyAll(require('irc'));
+const irc = Promise.promisifyAll(require('irc-upd'));
 const assert = require('assert');
 const aws = require('aws-sdk');
 const _ = require('lodash');

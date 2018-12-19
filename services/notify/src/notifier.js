@@ -4,7 +4,8 @@ const path = require('path');
 const assert = require('assert');
 const crypto = require('crypto');
 const marked = require('marked');
-const EmailTemplate = require('email-templates').EmailTemplate;
+const Email = require('email-templates');
+const nodemailer = require('nodemailer');
 const RateLimit = require('./ratelimit');
 
 /**
@@ -18,11 +19,27 @@ class Notifier {
       emailBlacklist: [],
     });
     this.hashCache = [];
-    this.ses = options.ses;
     this.publisher = options.publisher;
     this.sqs = options.sqs;
     this.rateLimit = options.rateLimit;
     this.queueName = this.options.queueName;
+    this.sender = options.sourceEmail;
+
+    const transport = nodemailer.createTransport({
+      SES: options.ses,
+    });
+    this.emailer = new Email({
+      transport,
+      send: true,
+      preview: false,
+      views: {root: path.join(__dirname, 'templates')},
+      juice: true,
+      juiceResources: {
+        webResources: {
+          relativeTo: path.join(__dirname, 'templates'),
+        },
+      },
+    });
   }
 
   async setup() {
@@ -77,36 +94,17 @@ class Notifier {
       smartypants:  false,
     });
 
-    let tmpl = new EmailTemplate(path.join(__dirname, 'templates', template || 'simple'));
-    let mail = await tmpl.render({address, subject, content, formatted, link, rateLimit});
-    let html = mail.html;
-    content = mail.text;
-    subject = mail.subject;
-    return this.ses.sendEmail({
-      Destination: {
-        ToAddresses: [address],
+    const res = await this.emailer.send({
+      message: {
+        from: this.sender,
+        to: address,
       },
-      Message: {
-        Subject: {
-          Data:       subject,
-          Charset:    'UTF-8',
-        },
-        Body: {
-          Html: {
-            Data:     html,
-            Charset:  'UTF-8',
-          },
-          Text: {
-            Data:     content,
-            Charset:  'UTF-8',
-          },
-        },
-      },
-    }).promise().then(res => {
-      this.rateLimit.markEvent(address);
-      this.markSent(address, subject, content, link, replyTo);
-      return res;
+      template: template || 'simple',
+      locals: {address, subject, content, formatted, link, rateLimit},
     });
+    this.rateLimit.markEvent(address);
+    this.markSent(address, subject, content, link, replyTo);
+    return res;
   }
 
   async pulse({routingKey, message}) {
