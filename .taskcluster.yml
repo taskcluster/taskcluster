@@ -1,0 +1,122 @@
+version: 1
+policy:
+  pullRequests: public
+tasks:
+  $let:
+    packages:
+    - taskcluster-lib-api
+    - taskcluster-lib-app
+    - taskcluster-lib-azure
+    - taskcluster-client
+    - taskcluster-lib-docs
+    - eslint-config-taskcluster
+    - taskcluster-lib-iterate
+    - taskcluster-lib-loader
+    - taskcluster-lib-monitor
+    - taskcluster-lib-pulse
+    - taskcluster-lib-references
+    - taskcluster-lib-scopes
+    - taskcluster-lib-testing
+    - typed-env-config
+    - taskcluster-lib-validate
+    - taskcluster-auth
+    - taskcluster-events
+    - taskcluster-github
+    - taskcluster-hooks
+    - taskcluster-index
+    - taskcluster-login
+    - taskcluster-notify
+    - taskcluster-purge-cache
+    - taskcluster-queue
+    - taskcluster-secrets
+    - taskcluster-treeherder
+  in:
+    $flattenDeep:
+      $match:
+        'tasks_for == "github-push"':
+          - taskId: {$eval: as_slugid("metatest")}
+            provisionerId: aws-provisioner-v1
+            workerType: github-worker
+            created: {$fromNow: ''}
+            deadline: {$fromNow: '30 minutes'}
+            payload:
+              maxRunTime: 600
+              image: "node:8"
+              command:
+                - "/bin/bash"
+                - "-lc"
+                - >-
+                  git clone --depth=1 --no-single-branch ${event.repository.url} taskcluster &&
+                  cd taskcluster &&
+                  git checkout ${event.after} &&
+                  yarn --frozen-lockfile &&
+                  yarn test:meta
+            metadata:
+              name: "meta tests"
+              description: "Tests that assert the repo is configured correctly"
+              owner:
+                $if: 'event.pusher.email'
+                then: ${event.pusher.email}
+                else:
+                  $if: '"[bot]" in event.pusher.name'
+                  then: ${event.pusher.name[:-5]}@users.noreply.github.com
+                  else: ${event.pusher.name}@users.noreply.github.com
+              source: ${event.repository.url}
+          - taskId: {$eval: as_slugid("lint")}
+            provisionerId: aws-provisioner-v1
+            workerType: github-worker
+            created: {$fromNow: ''}
+            deadline: {$fromNow: '30 minutes'}
+            payload:
+              maxRunTime: 600
+              image: "node:8"
+              command:
+                - "/bin/bash"
+                - "-lc"
+                - >-
+                  git clone --depth=1 --no-single-branch ${event.repository.url} taskcluster &&
+                  cd taskcluster &&
+                  git checkout ${event.after} &&
+                  yarn --frozen-lockfile &&
+                  yarn lint
+            metadata:
+              name: "lint"
+              description: "Lint for every package"
+              owner:
+                $if: 'event.pusher.email'
+                then: ${event.pusher.email}
+                else:
+                  $if: '"[bot]" in event.pusher.name'
+                  then: ${event.pusher.name[:-5]}@users.noreply.github.com
+                  else: ${event.pusher.name}@users.noreply.github.com
+              source: ${event.repository.url}
+          - $map: {$eval: packages}
+            each(package):
+              taskId: {$eval: as_slugid(package)}
+              provisionerId: aws-provisioner-v1
+              workerType: github-worker
+              created: {$fromNow: ''}
+              deadline: {$fromNow: '60 minutes'}
+              payload:
+                maxRunTime: 3600
+                image: "node:8"
+                command:
+                  - "/bin/bash"
+                  - "-lc"
+                  - >-
+                    git clone --depth=1 --no-single-branch ${event.repository.url} taskcluster &&
+                    cd taskcluster &&
+                    git checkout ${event.after} &&
+                    yarn --frozen-lockfile &&
+                    yarn workspace ${package} test
+              metadata:
+                name: "${package} tests"
+                description: "Unit tests for ${package}"
+                owner:
+                  $if: 'event.pusher.email'
+                  then: ${event.pusher.email}
+                  else:
+                    $if: '"[bot]" in event.pusher.name'
+                    then: ${event.pusher.name[:-5]}@users.noreply.github.com
+                    else: ${event.pusher.name}@users.noreply.github.com
+                source: ${event.repository.url}
