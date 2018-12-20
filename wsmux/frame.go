@@ -52,8 +52,8 @@ func newHeader(msg byte, id uint32) header {
 //
 // * msgDAT: the payload is the binary data
 // * msgSYN: no payload
-// * msgACK: payload is a little-endian u32 containing the sender's
-//   remaining receive capacity
+// * msgACK: payload is a little-endian u32 indicating the number of bytes handled
+//   on the remote end and thus no longer "in flight".
 // * msgFIN: no payload
 // * msgCLS: no payload
 type frame struct {

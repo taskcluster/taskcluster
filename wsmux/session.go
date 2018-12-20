@@ -73,7 +73,7 @@ type Session struct {
 	keepAliveTimer *time.Timer
 }
 
-// newSession creates a new session based on the givne configuration, applying
+// newSession creates a new session based on the given configuration, applying
 // defaults as necessary.
 func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 	s := &Session{
@@ -382,6 +382,7 @@ func (s *Session) handleSyn(id uint32) {
 	s.logger.Printf("received SYN frame: id=%d", id)
 	str := newStream(id, s)
 	s.streams[id] = str
+	// "accept" the stream locally, putting it into a state where it can read and write
 	str.AcceptStream(uint32(s.streamBufferSize))
 
 	if err := s.send(newAckFrame(id, uint32(s.streamBufferSize))); err != nil {
