@@ -15,8 +15,8 @@ var libUrls      = require('taskcluster-lib-urls');
 var builder = new APIBuilder({
   title:        'Test Server',
   description:  'for testing',
-  name:         'test',
-  version:      'v1',
+  serviceName:         'test',
+  apiVersion:      'v1',
 });
 
 builder.declare({

@@ -31,11 +31,12 @@
     "taskcluster-lib-validate": "^12.0.0"
   },
   "devDependencies": {
-    "eslint-config-taskcluster": "^3.0.0",
+    "eslint": "^5.10.0",
+    "eslint-config-taskcluster": "^4.0.0",
     "mocha": "4.0.1",
     "source-map-support": "^0.4.0",
-    "taskcluster-lib-api": "^10.0.0",
-    "taskcluster-lib-app": "^10.0.0"
+    "taskcluster-lib-api": "^12.8.0",
+    "taskcluster-lib-app": "^10.2.0"
   },
   "engines": {
     "node": ">=8"
