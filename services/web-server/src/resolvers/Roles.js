@@ -3,6 +3,9 @@ export default {
     roles(parent, { filter }, { loaders }) {
       return loaders.roles.load({ filter });
     },
+    listRoleIds(parent, { connection, filter }, { loaders }) {
+      return loaders.roleIds.load({ filter, connection });
+    },
     role(parent, { roleId }, { loaders }) {
       return loaders.role.load(roleId);
     },

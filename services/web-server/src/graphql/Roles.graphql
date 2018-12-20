@@ -7,13 +7,33 @@ type Role {
   expandedScopes: [String]!
 }
 
+type RoleCompact {
+  roleId: ID
+}
+
+type RolesConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [RolesEdge]
+}
+
+type RolesEdge implements Edge {
+  cursor: String
+  node: RoleCompact
+}
+
 input RoleInput {
   scopes: [String]!
   description: String!
 }
 
 extend type Query {
+  # Get a list of all roles, each role object also includes the list of
+  # scopes it expands to.
   roles(filter: JSON): [Role]
+  # List Role IDs
+  listRoleIds(connection: PageConnection, filter: JSON): RolesConnection
+  # Get information about a single role, including the set of scopes that the
+  # role expands to.
   role(roleId: ID!): Role
 }
 

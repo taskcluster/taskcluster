@@ -17,6 +17,7 @@
     "test": "mocha --require mocha.config.js --recursive"
   },
   "devDependencies": {
+    "@babel/core": "^7.2.2",
     "@babel/plugin-proposal-class-properties": "^7.1.0",
     "@babel/plugin-proposal-decorators": "^7.1.2",
     "@neutrinojs/mocha": "9.0.0-rc.0",
@@ -60,7 +61,7 @@
     "sift": "^6.0.0",
     "source-map-support": "^0.5.4",
     "subscriptions-transport-ws": "^0.9.7",
-    "taskcluster-client": "^11.0.4",
+    "taskcluster-client": "^12.2.0",
     "taskcluster-lib-loader": "^10.0.1",
     "taskcluster-lib-monitor": "^10.0.0",
     "taskcluster-lib-pulse": "^11.1.0",

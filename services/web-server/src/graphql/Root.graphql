@@ -29,7 +29,8 @@ union Node =
   IndexedTask |
   CachePurge |
   SecretListItem |
-  Client
+  Client |
+  RoleCompact
 
 interface Edge {
   cursor: String
