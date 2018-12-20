@@ -483,14 +483,20 @@ aws-sdk-promise@0.0.2:
   dependencies:
     promise "^6.1.0"
 
-aws-sdk@2.1.22:
-  version "2.1.22"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1.22.tgz#e09bdcc43a697188ff51f501118a073f8ef5b19a"
-  integrity sha1-4JvcxDppcYj/UfUBEYoHP471sZo=
+aws-sdk@2.381.0:
+  version "2.381.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.381.0.tgz#3d3922d6cb0c94e2ff1069aa4fc830b5ce9201fc"
+  integrity sha512-5xuc0wjju3Usgbl+x9bbHU0PU3/wO9JVYPamz2M63YqhmlVVd7mhKLzKQ3zVTTU21bRIKXU5RdbjMjIhMgWPeQ==
   dependencies:
-    sax "0.5.3"
-    xml2js "0.2.8"
-    xmlbuilder "0.4.2"
+    buffer "4.9.1"
+    events "1.1.1"
+    ieee754 "1.1.8"
+    jmespath "0.15.0"
+    querystring "0.2.0"
+    sax "1.2.1"
+    url "0.10.3"
+    uuid "3.1.0"
+    xml2js "0.4.19"
 
 aws-sdk@^2.142.0, aws-sdk@^2.147.0, aws-sdk@^2.150.0, aws-sdk@^2.151.0, aws-sdk@^2.164.0, aws-sdk@^2.30.0, aws-sdk@^2.331.0, aws-sdk@^2.369.0, aws-sdk@^2.379.0:
   version "2.380.0"
@@ -4282,11 +4288,6 @@ safefs@^3.1.2:
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
-sax@0.5.3:
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/sax/-/sax-0.5.3.tgz#3773714a0d9157caaa7302971efa5c6dcda552d6"
-  integrity sha1-N3NxSg2RV8qqcwKXHvpcbc2lUtY=
-
 sax@0.5.x:
   version "0.5.8"
   resolved "https://registry.yarnpkg.com/sax/-/sax-0.5.8.tgz#d472db228eb331c2506b0e8c15524adb939d12c1"
@@ -5426,11 +5427,6 @@ xml2js@0.4.19, xml2js@^0.4.19:
   dependencies:
     sax ">=0.6.0"
     xmlbuilder "~9.0.1"
-
-xmlbuilder@0.4.2:
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/xmlbuilder/-/xmlbuilder-0.4.2.tgz#1776d65f3fdbad470a08d8604cdeb1c4e540ff83"
-  integrity sha1-F3bWXz/brUcKCNhgTN6xxOVA/4M=
 
 xmlbuilder@0.4.3:
   version "0.4.3"

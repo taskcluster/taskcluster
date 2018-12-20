@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "assume": "^1.5.2",
-    "aws-sdk": "2.1.22",
+    "aws-sdk": "2.381.0",
     "aws-sdk-promise": "0.0.2",
     "azure-entities": "^5.1.0",
     "azure-storage": "2.9.0-preview",
