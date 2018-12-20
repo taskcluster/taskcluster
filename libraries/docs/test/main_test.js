@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {documenter, downloader} = require('../');
+const {documenter} = require('../');
 const debug = require('debug')('test');
 const fs = require('fs');
 const _ = require('lodash');
@@ -235,50 +235,5 @@ suite('documenter', () => {
   });
   test('test publish tarball (mock)', function() {
     return publishTest.call(this, true);
-  });
-});
-
-suite('downloader', function() {
-  let cfg = config({});
-  let credentials = cfg.taskcluster.credentials;
-
-  const downloadTest = async function(mock) {
-    let _s3 = null;
-
-    if (mock) {
-      // See https://bugzilla.mozilla.org/show_bug.cgi?id=1443019
-      credentials = {clientId: 'fake', accessToken: 'fake'};
-
-      awsMock.config.basePath = path.join(__dirname, '..', 'test', 'bucket');
-      _s3 = awsMock.S3(credentials);
-
-    } else if (!credentials.clientId) {
-      this.skip();
-    }
-
-    let stream = await downloader({
-      project: 'docs-testing',
-      bucket: cfg.bucket,
-      credentials,
-      _s3,
-    });
-
-    let files = await getObjectsInStream(stream);
-
-    let shoulds = [
-      'metadata.json',
-    ];
-
-    for (let should of shoulds) {
-      assert.ok(files[should]);
-    }
-  };
-
-  test('download tarball contains project (real)', function() {
-    return downloadTest.call(this, false);
-  });
-
-  test('download tarball contains project (mock)', function() {
-    return downloadTest.call(this, true);
   });
 });
