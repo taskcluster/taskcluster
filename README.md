@@ -75,8 +75,10 @@ It takes Taskcluster credentials and uses them to generate JWTs using the Auth s
 
 # Development
 
+This service is tested only with go1.10.
+
 To hack on this service, install it into your GOPATH with `go get -u github.com/taskcluster/webhooktunnel`.
-Run the tests with `go test ./...`.
+Run the tests with the usual `go test` invocation (for example, `go test github.com/taskcluster/webhooktunnel`).
 
 ## Changing Dependencies
 
