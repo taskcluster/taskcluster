@@ -29,6 +29,9 @@ func TestGet(t *testing.T) {
 	session := Client(conn, Config{Log: genLogger("get-test")})
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	req, err := http.NewRequest(http.MethodGet, "", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	stream, _, err := session.Open()
 	if err != nil {
 		t.Fatal(err)
@@ -66,6 +69,9 @@ func TestPost(t *testing.T) {
 	buffer := new(bytes.Buffer)
 	_, _ = buffer.Write(msg)
 	req, err := http.NewRequest(http.MethodPost, "", wrapStream{buffer})
+	if err != nil {
+		t.Fatal(err)
+	}
 	stream, _, err := session.Open()
 	if err != nil {
 		t.Fatal(err)
@@ -108,27 +114,30 @@ func TestMultiplePost(t *testing.T) {
 		defer wg.Done()
 
 		req, err := http.NewRequest(http.MethodPost, "", wrapStream{buffer})
+		if err != nil {
+			panic(err)
+		}
 		stream, _, err := session.Open()
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 		err = req.Write(stream)
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 
 		reader := bufio.NewReader(stream)
 		resp, err := http.ReadResponse(reader, nil)
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 		b, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 		if !bytes.Equal(b, msg) {
 			t.Log(bytes.NewBuffer(b).String())
-			t.Fatal("message inconsistent")
+			panic("message inconsistent")
 		}
 	}
 
@@ -170,5 +179,4 @@ func TestWebSocket(t *testing.T) {
 		t.Log(bytes.NewBuffer(b).String())
 		t.Fatal("message inconsistent")
 	}
-
 }

@@ -275,7 +275,7 @@ func (s *Session) pongHandler(data string) error {
 // connection closes.  If there is an error sending the ping, then the
 // connection is aborted.
 func (s *Session) sendKeepAlives() {
-	ticker := time.Tick(s.keepAliveInterval)
+	ticker := time.NewTicker(s.keepAliveInterval)
 	for {
 		s.sendLock.Lock()
 		err := s.conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(20*time.Second))
@@ -287,7 +287,7 @@ func (s *Session) sendKeepAlives() {
 		}
 		s.sendLock.Unlock()
 		select {
-		case <-ticker:
+		case <-ticker.C:
 		case <-s.closed:
 			return
 		}

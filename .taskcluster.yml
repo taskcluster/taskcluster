@@ -57,9 +57,9 @@ tasks:
         owner: ${event.pull_request.user.login}@users.noreply.github.com
         source: ${event.repository.url}
 
-  - $if: 'tasks_for == "github-push"'
+  - $if: '(tasks_for == "github-pull-request"  && event["action"] in ["opened", "reopened", "synchronize"])'
     then:
-      taskId: {$eval: as_slugid("dep")}
+      taskId: {$eval: as_slugid("lint")}
       created: {$fromNow: ''}
       deadline: {$fromNow: '2 hours'}
       provisionerId: aws-provisioner-v1
@@ -71,6 +71,35 @@ tasks:
           - /bin/bash
           - '-c'
           - >-
+            curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.12.3 &&
+            mkdir -p /go/src/github.com/taskcluster &&
+            cd /go/src/github.com/taskcluster &&
+            git clone ${event.pull_request.head.repo.git_url} webhooktunnel &&
+            cd webhooktunnel &&
+            git config advice.detachedHead false &&
+            git checkout ${event.pull_request.head.sha} &&
+            golangci-lint run
+      metadata:
+        name: webhooktunnel-lint
+        description: check lint for webhooktunnel
+        owner: ${event.pull_request.user.login}@users.noreply.github.com
+        source: ${event.repository.url}
+
+  - $if: 'tasks_for == "github-push"'
+    then:
+      taskId: {$eval: as_slugid("all")}
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '2 hours'}
+      provisionerId: aws-provisioner-v1
+      workerType: github-worker
+      payload:
+        maxRunTime: 3600
+        image: golang
+        command:
+          - /bin/bash
+          - '-c'
+          - >-
+            curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.12.3 &&
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh &&
             mkdir -p /go/src/github.com/taskcluster &&
             cd /go/src/github.com/taskcluster &&
@@ -79,6 +108,7 @@ tasks:
             git config advice.detachedHead false &&
             git checkout ${event.after} &&
             dep check &&
+            golangci-lint run &&
             go test -v -race ./...
       metadata:
         name: webhooktunnel-everything

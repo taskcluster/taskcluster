@@ -101,7 +101,13 @@ func genWsHandler(t *testing.T) func(http.ResponseWriter, *http.Request) {
 					t.Fatal(err)
 				}
 				err = conn.WriteMessage(websocket.BinaryMessage, []byte(wsSuccess))
+				if err != nil {
+					t.Fatal(err)
+				}
 				_, b, err := conn.ReadMessage()
+				if err != nil {
+					t.Fatal(err)
+				}
 				if !bytes.Equal(b, []byte(wsSuccess)) {
 					t.Fatal("handler: ws over wsmux stream sent inconsistent message")
 				}
@@ -132,23 +138,23 @@ func manyEchoConn(t *testing.T, conn *websocket.Conn) {
 
 		str, err := session.Accept()
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 
 		b := new(bytes.Buffer)
 		_, err = io.Copy(b, str)
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 
 		_, err = io.Copy(str, b)
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 
 		err = str.Close()
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 	}
 

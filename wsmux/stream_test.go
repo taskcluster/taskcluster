@@ -2,6 +2,7 @@ package wsmux
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -37,30 +38,30 @@ func TestManyStreamEchoLarge(t *testing.T) {
 		defer wg.Done()
 		str, id, err := session.Open()
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 
 		_, err = str.Write(buf)
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 
 		err = str.Close()
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 
 		final := new(bytes.Buffer)
 		_, err = io.Copy(final, str)
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 
 		logger.Printf("id: stream %d finished read. msgLen: %d, recvLen: %d", id, len(buf), final.Len())
 
 		if !bytes.Equal(buf, final.Bytes()) {
 			t.Log(len(buf), final.Len())
-			t.Fatalf("bad message on stream %d", id)
+			panic(fmt.Sprintf("bad message on stream %d", id))
 		}
 	}
 
@@ -79,6 +80,9 @@ func TestReadDeadlineExpires(t *testing.T) {
 	defer server.Close()
 	// Open a stream and check if read expires within given time
 	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
 	str, _, err := client.Open()
@@ -92,7 +96,7 @@ func TestReadDeadlineExpires(t *testing.T) {
 		b := make([]byte, 1)
 		_, err := str.Read(b)
 		if err == nil {
-			t.Fatal("test should timeout")
+			panic("test should timeout")
 		}
 		errChan <- err
 	}()
@@ -113,6 +117,9 @@ func TestReadDeadlineReset(t *testing.T) {
 	defer server.Close()
 	// Open a stream and check if read expires within given time
 	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
 	str, _, err := client.Open()
@@ -129,7 +136,7 @@ func TestReadDeadlineReset(t *testing.T) {
 		b := make([]byte, 1)
 		_, err := str.Read(b)
 		if err == nil {
-			t.Fatal(err)
+			panic(err)
 		}
 		errChan <- err
 	}()
@@ -156,6 +163,9 @@ func TestWriteDeadline(t *testing.T) {
 	defer server.Close()
 	// Open a stream and check if write expires within given time
 	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
 	str, _, err := client.Open()
@@ -170,7 +180,7 @@ func TestWriteDeadline(t *testing.T) {
 	go func() {
 		_, err := str.Write(message)
 		if err == nil {
-			t.Fatal("should timeout")
+			panic("should timeout")
 		}
 		errChan <- err
 	}()
@@ -190,6 +200,9 @@ func TestWriteDeadlineReset(t *testing.T) {
 	defer server.Close()
 	// Open a stream and check if write expires within given time
 	conn, _, err := websocket.DefaultDialer.Dial(util.MakeWsURL(url), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
 	str, _, err := client.Open()
@@ -204,7 +217,7 @@ func TestWriteDeadlineReset(t *testing.T) {
 	go func() {
 		_, err := str.Write(message)
 		if err == nil {
-			t.Fatal("should timeout")
+			panic("should timeout")
 		}
 		errChan <- err
 	}()
@@ -233,6 +246,9 @@ func TestConcurrentReadAndWrite(t *testing.T) {
 		}
 		session := Server(conn, Config{Log: genLogger("concurrent-server-test")})
 		str, err := session.Accept()
+		if err != nil {
+			t.Fatal(err)
+		}
 		_, _ = io.Copy(str, str)
 		_ = str.Close()
 	}
@@ -247,6 +263,9 @@ func TestConcurrentReadAndWrite(t *testing.T) {
 
 	session := Client(conn, Config{Log: genLogger("concurrent-client-test")})
 	str, _, err := session.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	buf := make([]byte, 0)
 	for i := 0; i < 1500; i++ {
@@ -261,11 +280,11 @@ func TestConcurrentReadAndWrite(t *testing.T) {
 		defer wg.Done()
 		_, err := str.Write(buf)
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 		err = str.Close()
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 	}()
 
@@ -273,7 +292,7 @@ func TestConcurrentReadAndWrite(t *testing.T) {
 		defer wg.Done()
 		_, err := io.Copy(final, str)
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 	}()
 

@@ -40,9 +40,8 @@ func genLogger(fname string) *log.Logger {
 }
 
 var (
-	workeridjwt       = tokenGenerator("workerid", []byte("test-secret"))
-	workeridBackupjwt = tokenGenerator("workerid", []byte("another-secret"))
-	wsworkerjwt       = tokenGenerator("wsworker", []byte("test-secret"))
+	workeridjwt = tokenGenerator("workerid", []byte("test-secret"))
+	wsworkerjwt = tokenGenerator("wsworker", []byte("test-secret"))
 )
 
 func tokenGenerator(id string, secret []byte) string {
@@ -192,6 +191,9 @@ func TestProxyRequest(t *testing.T) {
 
 	// GET request to invalid id
 	resp, err = viewer.Get(servURL + "/notWorkerID/")
+	if err != nil {
+		t.Fatal(err)
+	}
 	if resp.StatusCode != 404 {
 		t.Fatalf("request should fail with 404")
 	}
@@ -231,7 +233,7 @@ func TestProxyURIRewrite(t *testing.T) {
 		if r.URL.RequestURI() != reqURI {
 			t.Fatal("bad uri propogated")
 		}
-		w.Write([]byte("Hello World\n"))
+		_, _ = w.Write([]byte("Hello World\n"))
 	})
 
 	// serve client endpoint
@@ -332,6 +334,9 @@ func TestProxyWebsocket(t *testing.T) {
 	}
 
 	_, buf, err := conn.ReadMessage()
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !bytes.Equal(buf, message) {
 		t.Fatalf("websocket test failed. Bad message")
 	}
@@ -394,6 +399,9 @@ func TestWebsocketProxyControl(t *testing.T) {
 		})
 
 		err = conn.WriteControl(websocket.PingMessage, []byte("ping"), time.Now().Add(1*time.Second))
+		if err != nil {
+			t.Fatal(err)
+		}
 		// Read message to make sure ping was received
 		for {
 			_, _, err = conn.NextReader()
@@ -645,14 +653,14 @@ func TestProxyAuth(t *testing.T) {
 	header.Set("Authorization", "Bearer "+wsworkerjwt)
 	header.Set("x-webhooktunnel-id", "workerid")
 
-	conn, res, err := websocket.DefaultDialer.Dial(wsURL, header)
+	conn, res, _ := websocket.DefaultDialer.Dial(wsURL, header)
 	if res == nil || res.StatusCode != 401 {
 		_ = conn.Close()
 		t.Fatalf("connection should fail")
 	}
 
 	header.Set("x-webhooktunnel-id", "wsworker")
-	conn, res, err = websocket.DefaultDialer.Dial(wsURL, header)
+	conn, _, err = websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -684,7 +692,7 @@ func TestConcurrentConnections(t *testing.T) {
 	clHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(1 * time.Second)
 		wg.Done()
-		w.Write([]byte("Hello"))
+		_, _ = w.Write([]byte("Hello"))
 	})
 	clServer := &http.Server{Handler: clHandler}
 	go func() {
@@ -692,16 +700,19 @@ func TestConcurrentConnections(t *testing.T) {
 	}()
 
 	done := make(chan struct{}, 1)
+	errCh := make(chan error, 1)
 	wg.Add(200)
 	for i := 0; i < 200; i++ {
 		go func() {
 			req, err := http.NewRequest(http.MethodGet, server.URL+"/test-worker/", nil)
 			if err != nil {
-				t.Fatal(err)
+				errCh <- err
+				return
 			}
 			_, err = http.DefaultClient.Do(req)
 			if err != nil {
-				t.Fatal(err)
+				errCh <- err
+				return
 			}
 		}()
 	}
@@ -713,6 +724,8 @@ func TestConcurrentConnections(t *testing.T) {
 	select {
 	case <-time.After(20 * time.Second):
 		t.Fatal("test timed out")
+	case err := <-errCh:
+		t.Fatal(err)
 	case <-done:
 	}
 }
@@ -814,16 +827,18 @@ func TestResponseStream(t *testing.T) {
 	clientFn := func(writer http.ResponseWriter, r *http.Request) {
 		_, err := writer.Write([]byte("Hello"))
 		if err != nil {
-			logger.Print(err)
-			t.Fatal(err)
+			panic(err)
 		}
 		flusher, ok := writer.(http.Flusher)
 		if !ok {
-			t.Fatal(err)
+			panic(err)
 		}
 		flusher.Flush()
 		<-done
 		_, err = writer.Write([]byte("world"))
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	srv := &http.Server{Handler: http.HandlerFunc(clientFn)}
@@ -861,6 +876,9 @@ func TestResponseStream(t *testing.T) {
 	}
 	close(done)
 	buf, err = ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if string(buf) != "world" {
 		t.Fatal("bad message")
 	}
@@ -895,8 +913,14 @@ func TestWebSocketStreamClient(t *testing.T) {
 			t.Fatal(err)
 		}
 		err = conn.WriteMessage(websocket.BinaryMessage, []byte("Hello"))
+		if err != nil {
+			t.Fatal(err)
+		}
 		<-done
 		err = conn.WriteMessage(websocket.BinaryMessage, []byte("World"))
+		if err != nil {
+			t.Fatal(err)
+		}
 		_ = conn.Close()
 	}
 
@@ -932,7 +956,7 @@ func TestWebSocketStreamClient(t *testing.T) {
 
 // only run these tests if dns can resolver *.tcproxy.dev to 127.0.0.1
 func getPort(servURL string) string {
-	re := regexp.MustCompile(":(\\d+)$")
+	re := regexp.MustCompile(`:(\d+)$`)
 	return re.FindStringSubmatch(servURL)[1]
 }
 

@@ -80,6 +80,12 @@ This service is tested only with go1.10.
 To hack on this service, install it into your GOPATH with `go get -u github.com/taskcluster/webhooktunnel`.
 Run the tests with the usual `go test` invocation (for example, `go test github.com/taskcluster/webhooktunnel`).
 
+## Linting
+
+We use [golangci](https://github.com/golangci/golangci-lint) to run lint checks.
+You can install this into your own GOPATH to run the same checks locally with `golangci-lint run`.
+If you see different results from those in CI runs on your pull request, check that you are running the same version as required in `.takcluster.yml`
+
 ## Changing Dependencies
 
 To add, remove, or update dependencies, use [dep](https://golang.github.io/dep/docs/installation.html).

@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -57,12 +56,6 @@ type proxy struct {
 	domainHosted    bool
 	tls             bool
 }
-
-// regex for parsing requests
-var (
-	serveRe          = regexp.MustCompile("^/([a-z0-9_-]+)/(.*)$")
-	domainRegisterRe = regexp.MustCompile("^/([a-z0-9_-]+)/?$")
-)
 
 // New creates a new proxy instance and wraps it as an http.Handler.
 func New(conf Config) (http.Handler, error) {

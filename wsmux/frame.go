@@ -15,9 +15,6 @@ const (
 	msgACK byte = 2
 	// Used to close a stream
 	msgFIN byte = 3
-	// If this byte arrives in the header of any stream, it indicates that the remote has closed and will
-	// not accept further connections
-	msgCLS byte = 4
 )
 
 // header contains a frame header.  It contains an 8-bit message type (`msg`,
@@ -55,7 +52,6 @@ func newHeader(msg byte, id uint32) header {
 // * msgACK: payload is a little-endian u32 indicating the number of bytes handled
 //   on the remote end and thus no longer "in flight".
 // * msgFIN: no payload
-// * msgCLS: no payload
 type frame struct {
 	id      uint32
 	msg     byte
@@ -87,8 +83,6 @@ func (f frame) String() string {
 		str += strconv.Itoa(int(binary.LittleEndian.Uint32(f.payload)))
 	case msgFIN:
 		str += "FIN"
-	case msgCLS:
-		str += "CLS"
 	}
 	return str
 }
@@ -118,9 +112,4 @@ func newAckFrame(id uint32, cap uint32) frame {
 // newSynFrame creates a new msgFIN frame.
 func newFinFrame(id uint32) frame {
 	return frame{id: id, msg: msgFIN, payload: nil}
-}
-
-// newSynFrame creates a new msgCLS frame.
-func newClsFrame(id uint32) frame {
-	return frame{id: id, msg: msgCLS}
 }

@@ -67,7 +67,7 @@ func (b *buffer) Write(buf []byte) (int, error) {
 
 	m := copy(b.buf[b.end:], buf)
 	if m < len(buf) {
-		m = copy(b.buf, buf[m:])
+		_ = copy(b.buf, buf[m:])
 	}
 	b.end += len(buf)
 	b.end %= b.cap

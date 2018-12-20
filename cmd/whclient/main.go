@@ -54,7 +54,7 @@ func main() {
 		outFile = arguments["--out-file"].(string)
 	}
 
-	if arguments["--json"].(bool) == true {
+	if arguments["--json"].(bool) {
 		log.SetFormatter(&log.JSONFormatter{})
 	}
 
@@ -77,9 +77,9 @@ func main() {
 	}
 
 	go func() {
+		waitTime := 5 * time.Millisecond // default wait time when connection fails
 		for {
 			// This simulates http.Server's Serve method
-			waitTime := 5 * time.Millisecond // default wait time when connection fails
 			stream, err := client.Accept()
 			if err != nil {
 				ne, ok := err.(net.Error)

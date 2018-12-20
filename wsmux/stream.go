@@ -157,7 +157,7 @@ func (s *stream) SetReadDeadline(t time.Time) error {
 	// clear streamDeadline exceeded
 	s.readDeadlineExceeded = false
 	if !t.IsZero() {
-		delay := t.Sub(time.Now())
+		delay := time.Until(t)
 		s.readTimer = time.AfterFunc(delay, s.onExpired(&s.readDeadlineExceeded))
 	}
 
@@ -179,7 +179,7 @@ func (s *stream) SetWriteDeadline(t time.Time) error {
 	// clear streamDeadline exceeded
 	s.writeDeadlineExceeded = false
 	if !t.IsZero() {
-		delay := t.Sub(time.Now())
+		delay := time.Until(t)
 		s.writeTimer = time.AfterFunc(delay, s.onExpired(&s.writeDeadlineExceeded))
 	}
 
