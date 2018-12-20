@@ -16,7 +16,7 @@ var poll = function(doPoll, iterations, delay) {
   iterations = iterations === undefined ? 20 : iterations;
   return doPoll().catch(function(err) {
     // Re-throw
-    if (iterations != undefined && iterations <= 0) {
+    if (iterations !== undefined && iterations <= 0) {
       throw err;
     }
     debug(`ignoring error while polling: ${err}`);
