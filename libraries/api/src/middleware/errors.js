@@ -1,4 +1,4 @@
-const ErrorReply = require('../error-reply')
+const ErrorReply = require('../error-reply');
 
 const ERROR_CODES = {
   MalformedPayload:         400,  // Only for JSON.parse() errors
