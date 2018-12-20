@@ -711,7 +711,7 @@ func TestConcurrentConnections(t *testing.T) {
 	}()
 
 	select {
-	case <-time.After(2 * time.Second):
+	case <-time.After(20 * time.Second):
 		t.Fatal("test timed out")
 	case <-done:
 	}
