@@ -1,0 +1,80 @@
+version: 1
+policy:
+  pullRequests: public
+tasks:
+  $let:
+    owner: taskcluster-internal@mozilla.com
+    packages:
+    - taskcluster-lib-api
+    - taskcluster-lib-app
+    - taskcluster-lib-azure
+    - taskcluster-client
+    - taskcluster-lib-docs
+    - eslint-config-taskcluster
+    - taskcluster-lib-iterate
+    - taskcluster-lib-loader
+    - taskcluster-lib-monitor
+    - taskcluster-lib-pulse
+    - taskcluster-lib-references
+    - taskcluster-lib-scopes
+    - taskcluster-lib-testing
+    - typed-env-config
+    - taskcluster-lib-validate
+    - taskcluster-auth
+    - taskcluster-events
+    - taskcluster-github
+    - taskcluster-hooks
+    - taskcluster-index
+    - taskcluster-login
+    - taskcluster-notify
+    - taskcluster-purge-cache
+    - taskcluster-queue
+    - taskcluster-secrets
+    - taskcluster-treeherder
+    others:
+    - lint
+    - test:meta
+  in:
+    $let:
+      js:
+        $map:
+          $flatten:
+            - $map: {$eval: others}
+              each(other):
+                name: ${other}
+                command: yarn ${other}
+            - $map: {$eval: packages}
+              each(package):
+                name: ${package}
+                command: yarn workspace ${package} test
+        each(job):
+          taskId: {$eval: as_slugid(job.name)}
+          provisionerId: aws-provisioner-v1
+          workerType: github-worker
+          created: {$fromNow: ''}
+          deadline: {$fromNow: '60 minutes'}
+          payload:
+            maxRunTime: 3600
+            image: "node:8"
+            command:
+              - "/bin/bash"
+              - "-lc"
+              - >-
+                git clone --depth=1 --no-single-branch ${event.repository.url} taskcluster &&
+                cd taskcluster &&
+                git checkout ${event.after} &&
+                yarn --frozen-lockfile &&
+                ${job.command}
+          metadata:
+            name: ${job.name}
+            description: ${job.name}
+            owner: ${owner}
+            source: ${event.repository.url}
+    in:
+      $flattenDeep:
+        $match:
+          'tasks_for == "github-push"': {$eval: js}
+          'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]':
+            # We can skip this if pushed to our own repo since push will get it
+            $if: 'event.head.repo.id != event.base.repo.id'
+            then: {$eval: js}
