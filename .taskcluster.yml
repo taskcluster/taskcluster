@@ -17,7 +17,7 @@ tasks:
           mkdir -p /go/src/github.com/taskcluster &&
           cd /go/src/github.com/taskcluster &&
           git clone ${event.pull_request.head.repo.git_url} webhooktunnel &&
-          cd webhooktunnel repo &&
+          cd webhooktunnel &&
           git config advice.detachedHead false &&
           git checkout ${event.pull_request.head.sha} &&
           go test -v -race ./...
@@ -43,7 +43,7 @@ tasks:
           mkdir -p /go/src/github.com/taskcluster &&
           cd /go/src/github.com/taskcluster &&
           git clone ${event.pull_request.head.repo.git_url} webhooktunnel &&
-          cd webhooktunnel repo &&
+          cd webhooktunnel &&
           git config advice.detachedHead false &&
           git checkout ${event.pull_request.head.sha} &&
           dep check
