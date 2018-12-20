@@ -33,4 +33,7 @@ var (
 
 	//ErrKeepAliveExpired is returned when the keep alive timer expired
 	ErrKeepAliveExpired = errors.New("keep alive timer expired")
+
+	// ErrMalformedHeader indicate a websocket frame header was invalid.
+	ErrMalformedHeader = errors.New("malformed header")
 )

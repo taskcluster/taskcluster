@@ -3,7 +3,6 @@ package wsmux
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"strconv"
 )
 
@@ -19,28 +18,24 @@ const (
 	// If this byte arrives in the header of any stream, it indicates that the remote has closed and will
 	// not accept further connections
 	msgCLS byte = 4
-
-	maxBufferCapacity int = 0xffff
 )
 
-var (
-	errMalformedHeader = errors.New("malformed header")
-)
-
-// SPEC |STREAM ID (32 bits)|MSG (8 bits)|DATA|
-
-// header length = 4 + 1 = 5 bytes
-
+// header contains a frame header.  It contains an 8-bit message type (`msg`,
+// one of the `msgXXX` constants) followed by a little-endian u32 stream ID.
+// The data in a frame immediately follows the frame header.
 type header []byte
 
+// id returns the stream ID in a header.
 func (h header) id() uint32 {
 	return binary.LittleEndian.Uint32(h[1:])
 }
 
+// msg returns the message type in a header.
 func (h header) msg() byte {
 	return h[0]
 }
 
+// newHeader creates a new header.
 func newHeader(msg byte, id uint32) header {
 	h := make([]byte, 5)
 	h[0] = msg
@@ -48,18 +43,37 @@ func newHeader(msg byte, id uint32) header {
 	return h
 }
 
+// frame defines a frame in the client-service communication protocol.  Frames
+// are transmitted over a websocket, which delimits the frame boundaries (so,
+// no need for a length field) and handles retransmissions and the like.
+//
+// A frame consists of a header and a payload, with format depending on the message
+// type:
+//
+// * msgDAT: the payload is the binary data
+// * msgSYN: no payload
+// * msgACK: payload is a little-endian u32 indicating the number of bytes handled
+//   on the remote end and thus no longer "in flight".
+// * msgFIN: no payload
+// * msgCLS: no payload
 type frame struct {
 	id      uint32
 	msg     byte
 	payload []byte
 }
 
+// Write returns the bytes representing this frame.  It does not actually write
+// anything!
 func (f frame) Write() []byte {
 	h := []byte(newHeader(f.msg, f.id))
 	h = append(h, f.payload...)
 	return h
 }
 
+// String returns a human-readable version of the frame.
+//
+// Note that if a msgDAT frame contains binary data, that will not be encoded
+// and may cause issues if displayed directly.
 func (f frame) String() string {
 	str := strconv.Itoa(int(f.id))
 	str += " "
@@ -79,6 +93,7 @@ func (f frame) String() string {
 	return str
 }
 
+// newDataFrame creates a new msgDAT frame containing the given payload.
 func newDataFrame(id uint32, buf []byte) frame {
 	b := make([]byte, len(buf))
 	_ = copy(b, buf)
@@ -86,11 +101,13 @@ func newDataFrame(id uint32, buf []byte) frame {
 	return frame
 }
 
+// newSynFrame creates a new msgSYN frame.
 func newSynFrame(id uint32) frame {
 	frame := frame{id: id, msg: msgSYN, payload: nil}
 	return frame
 }
 
+// newSynFrame creates a new msgACK frame containing the given capacity.
 func newAckFrame(id uint32, cap uint32) frame {
 	frame := frame{id: id, msg: msgACK}
 	frame.payload = make([]byte, 4)
@@ -98,10 +115,12 @@ func newAckFrame(id uint32, cap uint32) frame {
 	return frame
 }
 
+// newSynFrame creates a new msgFIN frame.
 func newFinFrame(id uint32) frame {
 	return frame{id: id, msg: msgFIN, payload: nil}
 }
 
+// newSynFrame creates a new msgCLS frame.
 func newClsFrame(id uint32) frame {
 	return frame{id: id, msg: msgCLS}
 }
