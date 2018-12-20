@@ -13,10 +13,8 @@
   ],
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
-    "test": "mocha test/*_test.js",
-    "pretest": "yarn lint"
+    "test": "mocha test/*_test.js"
   },
-  "repository": "https://github.com/taskcluster/taskcluster-lib-references",
   "author": "Dustin J. Mitchell <dustin@mozilla.com>",
   "license": "MPL-2.0",
   "dependencies": {
@@ -27,10 +25,5 @@
     "regex-escape": "^3.4.8",
     "rimraf": "^2.6.2",
     "taskcluster-lib-urls": "^11.0.0"
-  },
-  "devDependencies": {
-    "eslint-config-taskcluster": "^3.1.0",
-    "mocha": "^5.2.0",
-    "mock-fs": "^4.5.0"
   }
 }

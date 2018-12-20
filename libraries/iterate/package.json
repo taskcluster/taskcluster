@@ -5,7 +5,6 @@
   "main": "lib/iterate.js",
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
-    "pretest": "yarn lint",
     "test": "mocha"
   },
   "files": [
@@ -15,10 +14,6 @@
     "test/watchdog_testjs",
     "test/mocha.opts"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/taskcluster/taskcluster-lib-iterate.git"
-  },
   "keywords": [
     "taskcluster"
   ],
@@ -26,14 +21,6 @@
   "license": "MPL-2.0",
   "dependencies": {
     "debug": "^4.1.0"
-  },
-  "devDependencies": {
-    "assume": "^2.1.0",
-    "eslint-config-taskcluster": "^3.2.0",
-    "mocha": "^5.2.0",
-    "sinon": "^7.1.1",
-    "source-map-support": "^0.5.9",
-    "taskcluster-lib-monitor": "^11.1.1"
   },
   "engines": {
     "node": ">=8"

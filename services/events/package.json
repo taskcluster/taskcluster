@@ -4,32 +4,22 @@
   "private": true,
   "scripts": {
     "test": "mocha test/*_test.js",
-    "lint": "eslint src/*.js test/*.js",
-    "pretest": "yarn lint"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/taskcluster/taskcluster-events.git"
+    "lint": "eslint src/*.js test/*.js"
   },
   "dependencies": {
     "debug": "^3.1.0",
     "eventsource": "^1.0.5",
     "lodash": "^4.17.10",
-    "taskcluster-client": "^10.0.0",
-    "taskcluster-lib-api": "^12.6.0",
-    "taskcluster-lib-app": "^10.0.0",
-    "taskcluster-lib-docs": "^10.0.1",
-    "taskcluster-lib-loader": "^10.0.0",
-    "taskcluster-lib-monitor": "^10.0.0",
-    "taskcluster-lib-validate": "12.0.0",
-    "typed-env-config": "^2.0.0",
+    "taskcluster-client": "file:../../libraries/client",
+    "taskcluster-lib-api": "file:../../libraries/api",
+    "taskcluster-lib-app": "file:../../libraries/app",
+    "taskcluster-lib-docs": "file:../../libraries/docs",
+    "taskcluster-lib-loader": "file:../../libraries/loader",
+    "taskcluster-lib-monitor": "file:../../libraries/monitor",
+    "taskcluster-lib-validate": "file:../../libraries/validate",
+    "typed-env-config": "file:../../libraries/typed-env-config",
     "urlencode": "^1.1.0",
     "uuid": "^3.1.0"
-  },
-  "devDependencies": {
-    "eslint-config-taskcluster": "^3.0.0",
-    "mocha": "^4.0.1",
-    "taskcluster-lib-testing": "^11.0.0"
   },
   "engine-strict": true,
   "engines": {

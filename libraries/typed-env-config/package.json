@@ -7,24 +7,14 @@
   "main": "./src/config",
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
-    "pretest": "yarn lint",
     "test": "mocha test/*_test.js"
   },
   "files": [
     "src"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/taskcluster/typed-env-config.git"
-  },
   "dependencies": {
     "debug": "^4.1.0",
     "js-yaml": "^3.12.0",
     "lodash": "^4.17.11"
-  },
-  "devDependencies": {
-    "assume": "^2.1.0",
-    "eslint-config-taskcluster": "^3.2.0",
-    "mocha": "^5.2.0"
   }
 }
