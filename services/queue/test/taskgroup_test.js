@@ -91,7 +91,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     // note that depending on timing we are likely to get two such
     // messages; that's OK
 
-    dependencyResolver.terminate();
+    await dependencyResolver.terminate();
   });
 
   test('schedulerId is fixed per taskGroupId', async () => {
