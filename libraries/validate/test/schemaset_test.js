@@ -30,7 +30,7 @@ suite('schemaset_test.js', () => {
     assert(_.includes(_.keys(schemas), 'v1/default-schema.json'));
     assert.equal(
       schemas['v1/default-schema.json'].$id,
-      'https://tc-tests.localhost/schemas/whatever/v1/default-schema.json#'
+      'https://tc-tests.example.com/schemas/whatever/v1/default-schema.json#'
     );
   });
 
