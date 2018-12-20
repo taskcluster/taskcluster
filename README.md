@@ -72,3 +72,13 @@ That is entirely up to the client.
 
 The `whclient` command implements a client that will connect to a webhooktunnel service and proxy all connections to a specific local port.
 It takes Taskcluster credentials and uses them to generate JWTs using the Auth service.
+
+# Development
+
+To hack on this service, install it into your GOPATH with `go get -u github.com/taskcluster/webhooktunnel`.
+Run the tests with `go test ./...`.
+
+## Changing Dependencies
+
+To add, remove, or update dependencies, use [dep](https://golang.github.io/dep/docs/installation.html).
+Do not manually edit anything under the `vendor/` directory!
