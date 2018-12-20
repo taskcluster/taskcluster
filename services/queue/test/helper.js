@@ -311,7 +311,11 @@ exports.withEntities = (mock, skipping) => {
     }
 
     await Promise.all(tables.map(async tbl => {
-      await exports[tbl.name].scan({}, {handler: e => e.remove()});
+      await exports[tbl.name].scan({}, {handler: e => e.remove().catch(e => {
+        if (e.code !== 'ResourceNotFound') {
+          throw e;
+        }
+      })});
     }));
   };
   setup(cleanup);
