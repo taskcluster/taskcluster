@@ -42,7 +42,15 @@
     "zurvan": "^0.5.2"
   },
   "scripts": {
-    "lint": "eslint --cache --ext js libraries services",
-    "test": "yarn workspaces run test"
+    "lint": "eslint --cache --ext js libraries services test",
+    "test": "yarn workspaces run test",
+    "test:meta": "mocha test/*_test.js"
+  },
+  "renovate": {
+    "extends": [
+      "config:base",
+      ":preserveSemverRanges",
+      ":rebaseStalePrs"
+    ]
   }
 }
