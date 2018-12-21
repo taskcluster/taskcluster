@@ -65,8 +65,7 @@ const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entr
     // code 200... errors should be sent with res.json(code, json)
     res.reply = (json) => {
       if (!req.hasAuthed) {
-        const err = new Error('Deferred auth was never checked!');
-        return res.reportInternalError(err);
+        throw new Error('Deferred auth was never checked!');
       }
       // If we're supposed to validate outgoing messages and output schema is
       // defined, then we have to validate against it...
@@ -78,7 +77,9 @@ const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entr
           err.schema = libUrls.schema(rootUrl, serviceName, output);
           err.url = req.url;
           err.payload = json;
-          return res.reportInternalError(err);
+          // throw this so that it becomes an Internal Server Error, since this is
+          // a programming error in the service, and not a user error.
+          throw err;
         }
       }
       // Allow res.reply to support 204 with empty body
