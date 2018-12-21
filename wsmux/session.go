@@ -295,7 +295,6 @@ func (s *Session) send(f frame) error {
 	s.sendLock.Lock()
 	defer s.sendLock.Unlock()
 	err := s.conn.WriteMessage(websocket.BinaryMessage, f.Serialize())
-	s.logger.Printf("wrote %s", f)
 	return err
 }
 
@@ -377,7 +376,6 @@ func (s *Session) handleSyn(id uint32) {
 	str.AcceptStream(uint32(s.streamBufferSize))
 
 	if err := s.send(newAckFrame(id, uint32(s.streamBufferSize))); err != nil {
-		s.logger.Print(err)
 		s.logger.Printf("recvLoop: error writing ack frame: %v", err)
 		s.mu.Unlock()
 		_ = s.abort(err)

@@ -123,11 +123,9 @@ func (s *stream) HandleFrame(fr frame) {
 		}
 
 	case msgDAT:
-		s.session.logger.Printf("stream %d received DAT frame: %v", s.id, fr)
 		s.PushAndBroadcast(fr.payload)
 
 	case msgFIN:
-		s.session.logger.Printf("remote stream %d streamClosed connection", s.id)
 		s.setRemoteClosed()
 	}
 }
@@ -249,6 +247,7 @@ func (s *stream) IsRemovable() bool {
 // streamRemoteClosed.
 func (s *stream) setRemoteClosed() {
 	s.m.Lock()
+	s.session.logger.Printf("remote stream %d closed connection", s.id)
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
 	if s.state == streamClosed {
@@ -307,8 +306,6 @@ func (s *stream) Read(buf []byte) (int, error) {
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
 
-	s.session.logger.Printf("stream %d: read requested", s.id)
-
 	for s.b.Len() == 0 && s.endErr == nil && !s.readDeadlineExceeded && s.state != streamRemoteClosed && s.state != streamDead {
 		s.session.logger.Printf("stream %d: read waiting", s.id)
 		// wait
@@ -337,8 +334,6 @@ func (s *stream) Read(buf []byte) (int, error) {
 	if err := s.session.send(newAckFrame(s.id, uint32(n))); err != nil {
 		return n, err
 	}
-
-	s.session.logger.Printf("stream %d: read completed", s.id)
 
 	return n, nil
 }
