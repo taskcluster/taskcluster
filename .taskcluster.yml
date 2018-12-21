@@ -1,6 +1,4 @@
 version: 1
-policy:
-  pullRequests: public
 tasks:
   $let:
     owner: taskcluster-internal@mozilla.com
