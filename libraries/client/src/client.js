@@ -558,7 +558,7 @@ exports.createClient = function(reference, name) {
       return text; // Preserve original
     });
 
-      // Find query string options (if present)
+    // Find query string options (if present)
     var query = args[N] || '';
     if (query) {
       _.keys(query).forEach(function(key) {
@@ -639,7 +639,7 @@ exports.createClient = function(reference, name) {
       ext:            this._extData,
     });
 
-      // Add bewit to requestUrl
+    // Add bewit to requestUrl
     var urlParts = url.parse(requestUrl);
     if (urlParts.search) {
       urlParts.search += '&bewit=' + bewit;

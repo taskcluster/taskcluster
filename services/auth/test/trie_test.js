@@ -171,7 +171,7 @@ suite(helper.suiteName(__filename), () => {
       ? mapP(p.slice(0, -1)) + '*'
       : mapP(p);
 
-      //console.log(JSON.stringify(rules, null, 2));
+    //console.log(JSON.stringify(rules, null, 2));
     // map rules, notice that we have to handle the space case where <..> is
     // interpreted as a parameter, otherwise we just pass through mapPWithKleene
     rules = rules.map(({pattern, scopes}) => {

@@ -82,12 +82,12 @@ const expressError = ({errorCodes, entry, monitor}) => {
       }
       return value;
     }) + [
-        '\n\n---\n',
-        '* method:     ' + method,
-        '* errorCode:  ' + code,
-        '* statusCode: ' + status,
-        '* time:       ' + requestInfo.time,
-      ].join('\n');
+      '\n\n---\n',
+      '* method:     ' + method,
+      '* errorCode:  ' + code,
+      '* statusCode: ' + status,
+      '* time:       ' + requestInfo.time,
+    ].join('\n');
 
     return res.status(errorCodes[code]).json({code, message, requestInfo});
   };

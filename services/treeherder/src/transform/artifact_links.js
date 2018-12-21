@@ -47,4 +47,4 @@ module.exports = async function(queue, monitor, taskId, runId, job) {
   job.jobInfo.links = job.jobInfo.links.concat(links);
 
   return job;
-}
+};
