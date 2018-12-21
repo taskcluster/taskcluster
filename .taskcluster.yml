@@ -2,54 +2,86 @@ version: 1
 policy:
   pullRequests: public
 tasks:
-  - taskId: {$eval: as_slugid("test")}
-    created: {$fromNow: ''}
-    deadline: {$fromNow: '2 hours'}
-    provisionerId: aws-provisioner-v1
-    workerType: github-worker
-    payload:
-      maxRunTime: 3600
-      image: golang
-      command:
-        - /bin/bash
-        - '-c'
-        - >-
-          mkdir -p /go/src/github.com/taskcluster &&
-          cd /go/src/github.com/taskcluster &&
-          git clone ${event.pull_request.head.repo.git_url} webhooktunnel &&
-          cd webhooktunnel &&
-          git config advice.detachedHead false &&
-          git checkout ${event.pull_request.head.sha} &&
-          go test -v -race ./...
-    metadata:
-      name: webhooktunnel-tests
-      description: runs tests for webhooktunnel components
-      owner: ${event.pull_request.user.login}@users.noreply.github.com
-      source: ${event.repository.url}
+  - $if: '(tasks_for == "github-pull-request"  && event["action"] in ["opened", "reopened", "synchronize"])'
+    then:
+      taskId: {$eval: as_slugid("test")}
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '2 hours'}
+      provisionerId: aws-provisioner-v1
+      workerType: github-worker
+      payload:
+        maxRunTime: 3600
+        image: golang
+        command:
+          - /bin/bash
+          - '-c'
+          - >-
+            mkdir -p /go/src/github.com/taskcluster &&
+            cd /go/src/github.com/taskcluster &&
+            git clone ${event.pull_request.head.repo.git_url} webhooktunnel &&
+            cd webhooktunnel &&
+            git config advice.detachedHead false &&
+            git checkout ${event.pull_request.head.sha} &&
+            go test -v -race ./...
+      metadata:
+        name: webhooktunnel-tests
+        description: runs tests for webhooktunnel components
+        owner: ${event.pull_request.user.login}@users.noreply.github.com
+        source: ${event.repository.url}
 
-  - taskId: {$eval: as_slugid("dep")}
-    created: {$fromNow: ''}
-    deadline: {$fromNow: '2 hours'}
-    provisionerId: aws-provisioner-v1
-    workerType: github-worker
-    payload:
-      maxRunTime: 3600
-      image: golang
-      command:
-        - /bin/bash
-        - '-c'
-        - >-
-          curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh &&
-          mkdir -p /go/src/github.com/taskcluster &&
-          cd /go/src/github.com/taskcluster &&
-          git clone ${event.pull_request.head.repo.git_url} webhooktunnel &&
-          cd webhooktunnel &&
-          git config advice.detachedHead false &&
-          git checkout ${event.pull_request.head.sha} &&
-          dep check
-    metadata:
-      name: webhooktunnel-dep
-      description: check dep for webhooktunnel
-      owner: ${event.pull_request.user.login}@users.noreply.github.com
-      source: ${event.repository.url}
+  - $if: '(tasks_for == "github-pull-request"  && event["action"] in ["opened", "reopened", "synchronize"])'
+    then:
+      taskId: {$eval: as_slugid("dep")}
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '2 hours'}
+      provisionerId: aws-provisioner-v1
+      workerType: github-worker
+      payload:
+        maxRunTime: 3600
+        image: golang
+        command:
+          - /bin/bash
+          - '-c'
+          - >-
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh &&
+            mkdir -p /go/src/github.com/taskcluster &&
+            cd /go/src/github.com/taskcluster &&
+            git clone ${event.pull_request.head.repo.git_url} webhooktunnel &&
+            cd webhooktunnel &&
+            git config advice.detachedHead false &&
+            git checkout ${event.pull_request.head.sha} &&
+            dep check
+      metadata:
+        name: webhooktunnel-dep
+        description: check dep for webhooktunnel
+        owner: ${event.pull_request.user.login}@users.noreply.github.com
+        source: ${event.repository.url}
 
+  - $if: 'tasks_for == "github-push"'
+    then:
+      taskId: {$eval: as_slugid("dep")}
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '2 hours'}
+      provisionerId: aws-provisioner-v1
+      workerType: github-worker
+      payload:
+        maxRunTime: 3600
+        image: golang
+        command:
+          - /bin/bash
+          - '-c'
+          - >-
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh &&
+            mkdir -p /go/src/github.com/taskcluster &&
+            cd /go/src/github.com/taskcluster &&
+            git clone ${event.repository.url} webhooktunnel &&
+            cd webhooktunnel &&
+            git config advice.detachedHead false &&
+            git checkout ${event.after} &&
+            dep check &&
+            go test -v -race ./...
+      metadata:
+        name: webhooktunnel-everything
+        description: all checks for webhooktunnel
+        owner: ${event.pusher.name}@users.noreply.github.com
+        source: ${event.repository.url}
