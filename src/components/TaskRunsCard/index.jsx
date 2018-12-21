@@ -226,7 +226,7 @@ export default class TaskRunsCard extends Component {
             hover={!!artifact.url}>
             <TableCell>
               {artifact.isPublic && <LockOpenOutlineIcon />}
-              {!artifact.isPublic && artifact.url && <LockIcon />}
+              {!artifact.isPublic && <LockIcon />}
             </TableCell>
             <TableCell>
               <Fragment>
