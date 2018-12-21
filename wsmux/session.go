@@ -100,7 +100,7 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 		s.keepAliveInterval = conf.KeepAliveInterval
 	}
 	if conf.StreamAcceptDeadline != 0 {
-		s.streamAcceptDeadline = 0
+		s.streamAcceptDeadline = conf.StreamAcceptDeadline
 	}
 	if conf.Log != nil {
 		s.logger = conf.Log
