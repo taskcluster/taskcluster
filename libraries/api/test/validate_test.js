@@ -5,6 +5,7 @@ const helper          = require('./helper');
 const libUrls         = require('taskcluster-lib-urls');
 const path            = require('path');
 const SchemaSet       = require('taskcluster-lib-validate');
+const monitoring      = require('taskcluster-lib-monitor');
 
 suite('api/validate', function() {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
@@ -114,7 +115,15 @@ suite('api/validate', function() {
   });
 
   // Create a mock authentication server
-  setup(() => helper.setupServer({builder}));
+  let monitor;
+  setup(async () => {
+    monitor = await monitoring({
+      projectName: 'tc-lib-api-test',
+      credentials: {clientId: 'fake', accessToken: 'fake'},
+      mock: true,
+    });
+    helper.setupServer({builder, monitor});
+  });
   teardown(helper.teardownServer);
 
   // Test valid input
@@ -159,7 +168,13 @@ suite('api/validate', function() {
       .get(url)
       .then(res => assert(false, 'should have failed!'))
       .catch(function(err) {
-        assert(err.status === 500, 'Request wasn\'t 500');
+        assert.equal(err.status, 500);
+        // the HTTP error should not contain details
+        assert(!err.toString().match(/data.value should be/));
+        assert.equal(monitor.errors.length, 1);
+        assert(
+          monitor.errors[0].toString().match(/data.value should be <= 10/),
+          monitor.errors[0].toString());
       });
   });
 
@@ -238,7 +253,13 @@ suite('api/validate', function() {
       .then(function(res) {
         assert(false, 'Request validation failed');
       }).catch(function(err) {
-        assert(err.status === 500, 'Request failed as empty json is returned as response');
+        assert.equal(err.status, 500);
+        // the HTTP error should not contain details
+        assert(!err.toString().match(/data should be object/));
+        assert.equal(monitor.errors.length, 1);
+        assert(
+          monitor.errors[0].toString().match(/data should be object/),
+          monitor.errors[0].toString());
       });
   });
 
