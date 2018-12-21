@@ -212,6 +212,7 @@ const createTheme = isDarkTheme => ({
           isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK
         }`,
         whiteSpace: 'nowrap',
+        padding: '4px 24px 4px 16px',
       },
     },
     MuiPickersYear: {
