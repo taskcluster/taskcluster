@@ -250,8 +250,8 @@ func (s *Session) IsClosed() bool {
 // SetCloseCallback sets the function which is called when the session is closed
 func (s *Session) SetCloseCallback(h func()) {
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	s.closeCallback = h
+	s.mu.Unlock()
 }
 
 // pongHandler handles pong messages (in reply to our pings) by resetting the
