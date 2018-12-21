@@ -4750,7 +4750,7 @@ tar@^4:
     promise "^8.0.1"
     slugid "^1.1.0"
     superagent "~3.8.1"
-    taskcluster-lib-urls "^10.0.0"
+    taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@file:libraries/api":
   version "12.8.0"
@@ -4844,7 +4844,7 @@ taskcluster-lib-config@^0.9.1:
     aws-sdk "^2.331.0"
     debug "^3.1.0"
     taskcluster-client "file:libraries/client"
-    taskcluster-lib-urls "^10.0.0"
+    taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-scopes@file:libraries/scopes":
   version "10.0.1"
@@ -4861,23 +4861,8 @@ taskcluster-lib-config@^0.9.1:
     promise "^8.0.1"
     superagent "3.8.2"
     taskcluster-client "file:libraries/client"
-    taskcluster-lib-urls "^10.0.0"
+    taskcluster-lib-urls "^12.0.0"
     taskcluster-lib-validate "file:libraries/validate"
-
-taskcluster-lib-urls@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-1.1.0.tgz#de6d78a0b61179e7f395ef2d3d7e5a994c1a6446"
-  integrity sha512-cemMJP4fIbOI4yS0RlHLyYly1KIBBcoC0UJomqEv4HWule1fdnRqh4QdFxnQF7gtm7/0ZKlWZ1KXp7wOu2t+xA==
-
-taskcluster-lib-urls@^10.0.0:
-  version "10.1.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-10.1.1.tgz#67d5b9449b947e5234eafdd15c46267dde29bf74"
-  integrity sha512-tdrK++rCX73FMXk/cXwS6RLTjA3pX8hJlxg1ECLs3L3llCOPMNhQ4wi6lb6yMgHc/s5on/Edj6AlAH7gkxzgPg==
-
-taskcluster-lib-urls@^11.0.0:
-  version "11.0.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-11.0.1.tgz#ebdbffec41278c7bfa0075f42314e75f917632df"
-  integrity sha512-sapLD2um0MUuwtZh3zs6S7kfnb6AhxuYFvEUT+2VLYQ245hYZP2NcuI4MBtCIscR+CMesxPgxz7kEbotgnucZA==
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -4896,7 +4881,7 @@ taskcluster-lib-urls@^12.0.0:
     mkdirp "^0.5.1"
     promise "^8.0.1"
     rimraf "^2.6.2"
-    taskcluster-lib-urls "^1.1.0"
+    taskcluster-lib-urls "^12.0.0"
     walk "^2.3.9"
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:

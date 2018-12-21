@@ -22,7 +22,7 @@
     "promise": "^8.0.1",
     "superagent": "3.8.2",
     "taskcluster-client": "file:../../libraries/client",
-    "taskcluster-lib-urls": "^10.0.0",
+    "taskcluster-lib-urls": "^12.0.0",
     "taskcluster-lib-validate": "file:../../libraries/validate"
   },
   "engines": {

@@ -28,7 +28,7 @@
     "taskcluster-lib-loader": "file:../../libraries/loader",
     "taskcluster-lib-monitor": "file:../../libraries/monitor",
     "taskcluster-lib-pulse": "file:../../libraries/pulse",
-    "taskcluster-lib-urls": "^10.0.0",
+    "taskcluster-lib-urls": "^12.0.0",
     "taskcluster-lib-validate": "file:../../libraries/validate",
     "typed-env-config": "file:../../libraries/typed-env-config"
   },

@@ -24,6 +24,6 @@
     "mkdirp": "^0.5.1",
     "regex-escape": "^3.4.8",
     "rimraf": "^2.6.2",
-    "taskcluster-lib-urls": "^11.0.0"
+    "taskcluster-lib-urls": "^12.0.0"
   }
 }
