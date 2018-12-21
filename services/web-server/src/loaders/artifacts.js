@@ -39,6 +39,13 @@ export default ({ queue }, isAuthed, rootUrl) => {
       };
     }
 
+    if (!isPublic && !isAuthed) {
+      return {
+        ...artifact,
+        url: null,
+      }
+    }
+
     return {
       ...artifact,
       url: hasRunId
