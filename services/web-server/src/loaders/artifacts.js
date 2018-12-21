@@ -43,7 +43,7 @@ export default ({ queue }, isAuthed, rootUrl) => {
       return {
         ...artifact,
         url: null,
-      }
+      };
     }
 
     return {
