@@ -58,9 +58,8 @@ type frame struct {
 	payload []byte
 }
 
-// Write returns the bytes representing this frame.  It does not actually write
-// anything!
-func (f frame) Write() []byte {
+// Serialize returns the bytes representing this frame.
+func (f frame) Serialize() []byte {
 	h := []byte(newHeader(f.msg, f.id))
 	h = append(h, f.payload...)
 	return h

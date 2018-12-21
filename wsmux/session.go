@@ -294,7 +294,7 @@ func (s *Session) send(f frame) error {
 	}
 	s.sendLock.Lock()
 	defer s.sendLock.Unlock()
-	err := s.conn.WriteMessage(websocket.BinaryMessage, f.Write())
+	err := s.conn.WriteMessage(websocket.BinaryMessage, f.Serialize())
 	s.logger.Printf("wrote %s", f)
 	return err
 }
