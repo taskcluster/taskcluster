@@ -6,16 +6,11 @@
   "license": "MPL-2.0",
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
-    "pretest": "yarn lint",
     "test": "mocha test/*_test.js"
   },
   "files": [
     "src"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/taskcluster/taskcluster-lib-monitor.git"
-  },
   "dependencies": {
     "app-root-dir": "^1.0.2",
     "aws-sdk": "^2.30.0",
@@ -24,25 +19,10 @@
     "lodash": "^4.5.1",
     "raven": "^2.2.1",
     "statsum": "^0.6.0",
-    "taskcluster-client": "^10.0.0"
-  },
-  "devDependencies": {
-    "aws-sdk-mock": "^1.7.0",
-    "capture-console": "^1.0.1",
-    "eslint-config-taskcluster": "^3.0.0",
-    "mocha": "4.0.1",
-    "mock-aws-s3": "^2.6.0",
-    "nock": "^9.0.28",
-    "taskcluster-lib-testing": "^10.0.0",
-    "taskcluster-lib-urls": "^10.0.0"
+    "taskcluster-client": "file:../../libraries/client"
   },
   "main": "./src/index.js",
   "engines": {
     "node": ">=8"
-  },
-  "renovate": {
-    "extends": [
-      "github>taskcluster/renovate-config"
-    ]
   }
 }

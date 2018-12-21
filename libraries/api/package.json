@@ -6,16 +6,11 @@
   "license": "MPL-2.0",
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
-    "pretest": "yarn lint",
     "test": "mocha test/*_test.js"
   },
   "files": [
     "src"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/taskcluster/taskcluster-lib-api.git"
-  },
   "dependencies": {
     "aws-sdk": "^2.151.0",
     "body-parser": "1.18.3",
@@ -25,32 +20,13 @@
     "lodash": "^4.15.0",
     "promise": "^8.0.1",
     "slugid": "^2.0.0",
-    "taskcluster-client": "^12.0.0",
-    "taskcluster-lib-scopes": "^10.0.1",
+    "taskcluster-client": "file:../../libraries/client",
+    "taskcluster-lib-scopes": "file:../../libraries/scopes",
     "type-is": "^1.6.15",
     "uuid": "^3.1.0"
   },
-  "devDependencies": {
-    "eslint-config-taskcluster": "^3.0.0",
-    "mocha": "5.2.0",
-    "superagent": "^4.0.0",
-    "superagent-hawk": "^0.0.6",
-    "taskcluster-lib-app": "^10.0.0",
-    "taskcluster-lib-monitor": "^11.0.0",
-    "taskcluster-lib-testing": "^12.0.0",
-    "taskcluster-lib-urls": "^12.0.0",
-    "taskcluster-lib-validate": "^12.0.0",
-    "typed-env-config": "^3.0.0"
-  },
   "engines": {
     "node": ">=8"
-  },
-  "renovate": {
-    "extends": [
-      "config:base",
-      ":preserveSemverRanges",
-      ":rebaseStalePrs"
-    ]
   },
   "main": "./src/builder.js"
 }

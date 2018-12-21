@@ -6,24 +6,13 @@
   "license": "MPL-2.0",
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
-    "pretest": "yarn lint",
     "test": "mocha test/*_test.js"
   },
   "files": [
     "src"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/taskcluster/taskcluster-lib-azure.git"
-  },
   "main": "./src/index.js",
-  "devDependencies": {
-    "eslint-config-taskcluster": "^3.1.0",
-    "mocha": "^5.1.1",
-    "nock": "^9.2.5",
-    "taskcluster-lib-urls": "^10.0.0"
-  },
   "dependencies": {
-    "taskcluster-client": "^10.0.0"
+    "taskcluster-client": "file:../../libraries/client"
   }
 }

@@ -7,13 +7,8 @@
     "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
     "test": "mocha test/*_test.js",
     "lint": "eslint src/*.js test/*.js",
-    "pretest": "yarn lint",
     "checkStagingSetup": "heroku run -a taskcluster-auth-staging node bin/make-check-client.js",
     "checkStaging": "mocha test/check-staging.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/taskcluster/taskcluster-auth.git"
   },
   "dependencies": {
     "assume": "^1.5.2",
@@ -34,27 +29,18 @@
     "slugid": "^1.1.0",
     "statsum": "^0.5.1",
     "superagent": "^3.8.1",
-    "taskcluster-client": "^11.0.1",
-    "taskcluster-lib-api": "^12.7.0",
-    "taskcluster-lib-app": "^10.0.0",
-    "taskcluster-lib-azure": "^10.0.0",
-    "taskcluster-lib-docs": "^10.0.0",
-    "taskcluster-lib-iterate": "^10.0.0",
-    "taskcluster-lib-loader": "^10.0.1",
-    "taskcluster-lib-monitor": "^11.1.1",
-    "taskcluster-lib-pulse": "^11.1.0",
-    "taskcluster-lib-scopes": "^10.0.0",
-    "taskcluster-lib-validate": "^12.0.0",
-    "typed-env-config": "^1.1.0"
-  },
-  "devDependencies": {
-    "eslint-config-taskcluster": "^3.1.0",
-    "http-proxy": "^1.17.0",
-    "mocha": "^4.0.1",
-    "mock-aws-s3": "^3.0.0",
-    "taskcluster-lib-references": "^1.3.0",
-    "taskcluster-lib-testing": "^12.1.2",
-    "temporary": "^0.0.8"
+    "taskcluster-client": "file:../../libraries/client",
+    "taskcluster-lib-api": "file:../../libraries/api",
+    "taskcluster-lib-app": "file:../../libraries/app",
+    "taskcluster-lib-azure": "file:../../libraries/azure",
+    "taskcluster-lib-docs": "file:../../libraries/docs",
+    "taskcluster-lib-iterate": "file:../../libraries/iterate",
+    "taskcluster-lib-loader": "file:../../libraries/loader",
+    "taskcluster-lib-monitor": "file:../../libraries/monitor",
+    "taskcluster-lib-pulse": "file:../../libraries/pulse",
+    "taskcluster-lib-scopes": "file:../../libraries/scopes",
+    "taskcluster-lib-validate": "file:../../libraries/validate",
+    "typed-env-config": "file:../../libraries/typed-env-config"
   },
   "engine-strict": true,
   "engines": {
