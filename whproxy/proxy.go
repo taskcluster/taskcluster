@@ -189,23 +189,25 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 		return
 	}
 
-	// we should lock while upgrading
-	// otherwise there could be a possible race condition
 	p.m.Lock()
+
+	// remove any existing session forcibly
+	for {
+		existingSession := p.pool[id]
+		if existingSession == nil {
+			break
+		}
+
+		// If there's an existing session, unlock, close the existing session
+		// (which will remove it), and try again.  Note that Session.Close is
+		// properly reentrant, so two goroutines calling this at the same time
+		// will not cause an issue.
+		p.m.Unlock()
+		_ = existingSession.Close()
+		p.m.Lock()
+	}
+
 	defer p.m.Unlock()
-
-	// remove old session and allow new connection
-	session := p.pool[id]
-
-	// remove the close callback so that functions are not accidentally called
-	if session != nil {
-		p.logf(id, r.RemoteAddr, "removed previous session")
-		session.SetCloseCallback(nil)
-	}
-	// unlock and close old session while upgrading
-	if session != nil {
-		_ = session.Close()
-	}
 
 	delete(p.pool, id)
 

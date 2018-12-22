@@ -247,13 +247,6 @@ func (s *Session) IsClosed() bool {
 	return false
 }
 
-// SetCloseCallback sets the function which is called when the session is closed
-func (s *Session) SetCloseCallback(h func()) {
-	s.mu.Lock()
-	s.closeCallback = h
-	s.mu.Unlock()
-}
-
 // pongHandler indicates that a pong message has been seen
 func (s *Session) pongHandler(data string) error {
 	s.mu.Lock()
