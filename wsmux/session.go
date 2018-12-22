@@ -14,7 +14,6 @@ const (
 	defaultKeepAliveInterval    = 20 * time.Second // keep alive interval
 	defaultStreamAcceptDeadline = 30 * time.Second // If stream is not accepted within this deadline then timeout
 	deadCheckDuration           = 2 * time.Second  // check for dead streams every 2 seconds
-	defaultKeepAliveWait        = 60 * time.Second // ensure KeepAliveWait > keepAliveInterval
 )
 
 // Session allows creating and accepting wsmux streams over a websocket connection.
@@ -69,8 +68,8 @@ type Session struct {
 	// Keep alives are sent at this period
 	keepAliveInterval time.Duration
 
-	// pongs from keepAlive pings must be received before this expires
-	keepAliveTimer *time.Timer
+	// Set by the pong handler
+	pongSeen bool
 }
 
 // newSession creates a new session based on the given configuration, applying
@@ -112,10 +111,6 @@ func newSession(conn *websocket.Conn, server bool, conf Config) *Session {
 
 	s.conn.SetCloseHandler(s.closeHandler)
 	s.conn.SetPongHandler(s.pongHandler)
-
-	s.keepAliveTimer = time.AfterFunc(s.keepAliveInterval, func() {
-		_ = s.abort(ErrKeepAliveExpired)
-	})
 
 	go s.recvLoop()
 	go s.removeDeadStreams()
@@ -254,32 +249,45 @@ func (s *Session) SetCloseCallback(h func()) {
 	s.mu.Unlock()
 }
 
-// pongHandler handles pong messages (in reply to our pings) by resetting the
-// keepAliveTimer; if this timer is not reset often enough, the connection is
-// aborted.
+// pongHandler indicates that a pong message has been seen
 func (s *Session) pongHandler(data string) error {
-	s.keepAliveTimer.Reset(defaultKeepAliveWait)
+	s.mu.Lock()
+	s.pongSeen = true
+	s.mu.Unlock()
 	return nil
 }
 
 // sendKeepAlives sends a ping message every keepAliveInterval, until the
-// connection closes.  If there is an error sending the ping, then the
-// connection is aborted.
+// connection closes.  If there is an error sending the ping, or no pong is
+// received during the interval, the connection is aborted.
 func (s *Session) sendKeepAlives() {
 	ticker := time.NewTicker(s.keepAliveInterval)
 	for {
-		s.sendLock.Lock()
-		err := s.conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(20*time.Second))
-		if err != nil {
-			s.logger.Printf("KEEPALIVE ERROR")
-			_ = s.abort(err)
-			s.sendLock.Unlock()
-			return
-		}
-		s.sendLock.Unlock()
 		select {
 		case <-ticker.C:
 		case <-s.closed:
+			return
+		}
+
+		// if we have not seen a pong by this time, the connection is
+		// considered failed
+		s.mu.Lock()
+		pongSeen := s.pongSeen
+		s.pongSeen = false
+		s.mu.Unlock()
+		if !pongSeen {
+			_ = s.abort(ErrKeepAliveExpired)
+		}
+
+		s.sendLock.Lock()
+		err := s.conn.WriteControl(
+			websocket.PingMessage, nil,
+			// use a deadline of half the keepAliveInterval, to ensure the message
+			// is sent in a reasonable amount of time
+			time.Now().Add(s.keepAliveInterval/2))
+		s.sendLock.Unlock()
+		if err != nil {
+			_ = s.abort(err)
 			return
 		}
 	}
