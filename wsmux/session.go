@@ -281,7 +281,7 @@ func (s *Session) sendKeepAlives() {
 		s.pongSeen = false
 		s.mu.Unlock()
 		if !pongSeen {
-			_ = s.abort(ErrKeepAliveExpired)
+			s.abort(ErrKeepAliveExpired)
 		}
 
 		s.sendLock.Lock()
@@ -292,7 +292,7 @@ func (s *Session) sendKeepAlives() {
 			time.Now().Add(s.keepAliveInterval/2))
 		s.sendLock.Unlock()
 		if err != nil {
-			_ = s.abort(err)
+			s.abort(err)
 			return
 		}
 	}
@@ -335,7 +335,7 @@ func (s *Session) recvLoop() {
 		t, msg, err := s.conn.ReadMessage()
 		if err != nil {
 			s.logger.Printf("error while reading from WS: %v", err)
-			_ = s.abort(err)
+			s.abort(err)
 			break
 		}
 		if t != websocket.BinaryMessage {
@@ -386,7 +386,7 @@ func (s *Session) handleSyn(id uint32) {
 	if err := s.send(newAckFrame(id, uint32(s.streamBufferSize))); err != nil {
 		s.logger.Printf("recvLoop: error writing ack frame: %v", err)
 		s.mu.Unlock()
-		_ = s.abort(err)
+		s.abort(err)
 		return
 	}
 
@@ -404,16 +404,16 @@ func (s *Session) asyncPushStream(str *stream) {
 }
 
 // abort session when error occurs
-func (s *Session) abort(e error) error {
+func (s *Session) abort(e error) {
 	if s.IsClosed() {
-		return e
+		return
 	}
 
 	s.mu.Lock()
 	s.logger.Printf("session aborting: %v", e)
 	s.acceptErr = e
 	s.mu.Unlock()
-	return s.Close()
+	s.Close()
 }
 
 // loops over streams and removes any streams that are dead
