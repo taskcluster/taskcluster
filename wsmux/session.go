@@ -294,7 +294,7 @@ func (s *Session) send(f frame) error {
 	}
 	s.sendLock.Lock()
 	defer s.sendLock.Unlock()
-	err := s.conn.WriteMessage(websocket.BinaryMessage, f.Serialize())
+	err := s.conn.WriteMessage(websocket.BinaryMessage, f.serialize())
 	return err
 }
 
@@ -330,26 +330,21 @@ func (s *Session) recvLoop() {
 			continue
 		}
 
-		if len(msg) < 5 {
-			s.logger.Print(ErrMalformedHeader)
-			_ = s.abort(ErrMalformedHeader)
+		fr, err := deserializeFrame(msg)
+		if err != nil {
+			s.logger.Print(err)
+			continue
 		}
 
-		h := header(msg[:5])
-		msg = msg[5:]
-
-		id, msgType := h.id(), h.msg()
-		fr := frame{id: id, msg: msgType, payload: msg}
-
 		if fr.msg == msgSYN {
-			go s.handleSyn(id)
+			go s.handleSyn(fr.id)
 		} else {
 			s.mu.Lock()
-			str := s.streams[id]
+			str := s.streams[fr.id]
 			s.mu.Unlock()
 
 			if str != nil {
-				str.HandleFrame(fr)
+				str.HandleFrame(*fr)
 			}
 		}
 	}

@@ -15,12 +15,17 @@ const (
 	msgACK byte = 2
 	// Used to close a stream
 	msgFIN byte = 3
+
+	// last message type
+	msgMax byte = msgFIN
 )
 
 // header contains a frame header.  It contains an 8-bit message type (`msg`,
 // one of the `msgXXX` constants) followed by a little-endian u32 stream ID.
 // The data in a frame immediately follows the frame header.
 type header []byte
+
+const HEADER_SIZE = 5
 
 // id returns the stream ID in a header.
 func (h header) id() uint32 {
@@ -34,7 +39,7 @@ func (h header) msg() byte {
 
 // newHeader creates a new header.
 func newHeader(msg byte, id uint32) header {
-	h := make([]byte, 5)
+	h := make([]byte, HEADER_SIZE)
 	h[0] = msg
 	binary.LittleEndian.PutUint32(h[1:], id)
 	return h
@@ -58,11 +63,31 @@ type frame struct {
 	payload []byte
 }
 
-// Serialize returns the bytes representing this frame.
-func (f frame) Serialize() []byte {
+// serialize returns the bytes representing this frame.
+func (f frame) serialize() []byte {
 	h := []byte(newHeader(f.msg, f.id))
 	h = append(h, f.payload...)
 	return h
+}
+
+// deserializeFrame creates a frame from a byte array. The byte array is
+// assumed to contain exactly one frame.
+func deserializeFrame(data []byte) (*frame, error) {
+	if len(data) < HEADER_SIZE {
+		return nil, ErrMalformedHeader
+	}
+
+	hdr := header(data[:HEADER_SIZE])
+	msg := hdr.msg()
+	if msg > msgMax {
+		return nil, ErrMalformedHeader
+	}
+
+	return &frame{
+		id:      hdr.id(),
+		msg:     msg,
+		payload: data[HEADER_SIZE:],
+	}, nil
 }
 
 // String returns a human-readable version of the frame.
