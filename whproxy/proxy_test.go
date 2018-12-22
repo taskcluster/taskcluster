@@ -2,6 +2,7 @@ package whproxy
 
 import (
 	"bytes"
+	"fmt"
 	// "crypto/tls"
 	"io"
 	"io/ioutil"
@@ -157,6 +158,7 @@ func TestProxyRequest(t *testing.T) {
 	servURL := server.URL
 
 	// GET request
+	fmt.Printf("%#v", servURL)
 	resp, err := viewer.Get(servURL + "/workerid/")
 	if err != nil {
 		t.Fatal(err)

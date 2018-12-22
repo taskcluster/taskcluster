@@ -64,19 +64,34 @@ func New(conf Config) (http.Handler, error) {
 
 // ServeHTTP implements http.Handler so that the proxy may be used as a handler in a Mux or http.Server
 func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	// check for path style
-	// eg. domain = "tcproxy.net", req url = "https://tcproxy.net/.../"
-	// host may be of the form "host:port"
 	p.logf("", r.RemoteAddr, "Host=%s Path=%s", r.Host, r.URL.Path)
+
+	// Client registration requests are a GET of path / with some headers set
 	if path, id := r.URL.Path, r.Header.Get("x-webhooktunnel-id"); id != "" && path == "/" {
 		tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
 		p.register(w, r, id, tokenString)
 		return
 	}
 
-	// try to match tasks.build/<id>/<whatever>
-	if strings.HasPrefix(r.Host, p.domain) {
+	if p.domainHosted {
+		// host may be of the form "host:port"
+		host := strings.Split(r.Host, ":")[0]
+
+		// try to match viewer requests to https://<id>.<domain>/<path>
+		if strings.HasSuffix(host, "."+p.domain) {
+			index := strings.Index(r.Host, ".")
+			id := r.Host[:index]
+			path := r.URL.RequestURI()
+			if id == "" {
+				http.NotFound(w, r)
+				return
+			}
+			p.serveRequest(w, r, id, path)
+			return
+		}
+	} else {
+		// try to match viewer requests to https://<domain>/<id>/<path> (ignoring
+		// the host field)
 		s := strings.TrimPrefix(r.URL.RequestURI(), "/")
 		index := strings.Index(s, "/")
 		id, path := "", "/"
@@ -86,24 +101,6 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			id = s[:index]
 			path = s[index:]
 		}
-		if id == "" {
-			http.NotFound(w, r)
-			return
-		}
-		p.serveRequest(w, r, id, path)
-		return
-	}
-	// if address has port, strip port
-	host := r.Host
-	index := strings.Index(host, ":")
-	if index > 0 {
-		host = host[:index]
-	}
-	// try to match <id>.tasks.build/<whatever>
-	if strings.HasSuffix(host, "."+p.domain) {
-		index := strings.Index(r.Host, ".")
-		id := r.Host[:index]
-		path := r.URL.RequestURI()
 		if id == "" {
 			http.NotFound(w, r)
 			return
