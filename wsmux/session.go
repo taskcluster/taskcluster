@@ -150,18 +150,23 @@ func (s *Session) Open() (net.Conn, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	id := s.nextID
-	// increment here so that we can wait safely
-	s.nextID += 2
-	if _, ok := s.streams[id]; ok {
-		return nil, ErrDuplicateStream
+	// search for an unused stream id; this makes the conservative assumption
+	// that there are far fewer than 2**31 streams open simultaneously, but
+	// allows for example a single long-lived stream with a large number of
+	// transient streams that cause the id space to wrap
+	for {
+		if _, ok := s.streams[s.nextID]; !ok {
+			break
+		}
+		s.nextID += 2
 	}
+	id := s.nextID
+	s.nextID += 2
 
 	str := newStream(id, s)
 	s.streams[id] = str
 
 	if err := s.send(newSynFrame(id)); err != nil {
-		s.nextID -= 2
 		return nil, err
 	}
 
