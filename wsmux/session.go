@@ -129,6 +129,16 @@ func (s *Session) Accept() (net.Conn, error) {
 		if str == nil {
 			return nil, ErrSessionClosed
 		}
+
+		// "accept" the stream locally, putting it into a state where it can read and write
+		str.acceptStream(uint32(s.streamBufferSize))
+
+		// and inform the other side that this stream has been accepted
+		if err := s.send(newAckFrame(str.id, uint32(s.streamBufferSize))); err != nil {
+			s.abort(err)
+			return nil, err
+		}
+		s.logger.Printf("accepted connection: id=%d", str.id)
 		return str, nil
 	}
 }
@@ -365,34 +375,20 @@ func (s *Session) handleSyn(id uint32) {
 	// check if stream exists
 	_, ok := s.streams[id]
 	if ok {
-		s.logger.Printf("duplicate SYN frame fot stream: %d", id)
+		s.logger.Printf("duplicate SYN frame for stream: %d", id)
 		s.mu.Unlock()
 		return
 	}
 
-	s.logger.Printf("received SYN frame: id=%d", id)
 	str := newStream(id, s)
 	s.streams[id] = str
-	// "accept" the stream locally, putting it into a state where it can read and write
-	str.acceptStream(uint32(s.streamBufferSize))
-
-	if err := s.send(newAckFrame(id, uint32(s.streamBufferSize))); err != nil {
-		s.logger.Printf("recvLoop: error writing ack frame: %v", err)
-		s.mu.Unlock()
-		s.abort(err)
-		return
-	}
 
 	defer s.mu.Unlock()
-	s.logger.Printf("accepted connection: id=%d", id)
-	s.asyncPushStream(str)
-}
-
-// push stream to streamCh so that it can be accepted
-func (s *Session) asyncPushStream(str *stream) {
 	select {
 	case s.streamCh <- str:
 	default:
+		str.Close()
+		s.abort(ErrTooManySyns)
 	}
 }
 
