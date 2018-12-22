@@ -196,8 +196,8 @@ func TestProxyRequest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 404 {
-		t.Fatalf("request should fail with 404")
+	if resp.StatusCode != 504 {
+		t.Fatalf("request should fail with 504")
 	}
 }
 

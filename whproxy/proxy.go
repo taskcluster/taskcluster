@@ -2,6 +2,7 @@ package whproxy
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -251,11 +252,10 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 
 	session, ok := p.getWorkerSession(id)
 
-	// 404 if tunnel is not registered on this proxy
+	// return 504 (bad gateway) if tunnel is not registered on this proxy
 	if !ok {
-		// DHT code will be added here
 		p.logerrorf(id, r.RemoteAddr, "could not find requested tunnel")
-		http.Error(w, http.StatusText(404), 404)
+		http.Error(w, fmt.Sprintf("No client is connected with that id"), 504)
 		return
 	}
 
