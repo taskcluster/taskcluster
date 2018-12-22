@@ -108,22 +108,22 @@ func newStream(id uint32, session *Session) *stream {
 	return str
 }
 
-// HandleFrame processes frames received by the stream (so, any frame except msgSYN)
-func (s *stream) HandleFrame(fr frame) {
+// handleFrame processes frames received by the stream (so, any frame except msgSYN)
+func (s *stream) handleFrame(fr frame) {
 	switch fr.msg {
 	case msgACK:
 		cap := binary.LittleEndian.Uint32(fr.payload)
 		select {
 		case <-s.accepted:
 			// stream is already accepted, so broadcast the increased capacity
-			s.UnblockAndBroadcast(cap)
+			s.unblockAndBroadcast(cap)
 		default:
 			// stream is not yet accepted, so mark it accepted
-			s.AcceptStream(cap)
+			s.acceptStream(cap)
 		}
 
 	case msgDAT:
-		s.PushAndBroadcast(fr.payload)
+		s.pushAndBroadcast(fr.payload)
 
 	case msgFIN:
 		s.setRemoteClosed()
@@ -199,9 +199,9 @@ func (s *stream) SetDeadline(t time.Time) error {
 	return nil
 }
 
-// UnblockAndBroadcast unblocks bytes and broadcasts so that writes can
+// unblockAndBroadcast unblocks bytes and broadcasts so that writes can
 // continue.  The unblocked capacity is increased by cap
-func (s *stream) UnblockAndBroadcast(cap uint32) {
+func (s *stream) unblockAndBroadcast(cap uint32) {
 	s.m.Lock()
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
@@ -209,9 +209,9 @@ func (s *stream) UnblockAndBroadcast(cap uint32) {
 	s.unblocked += cap
 }
 
-// PushAndBroadcast adds data to the read buffer and broadcasts so that
+// pushAndBroadcast adds data to the read buffer and broadcasts so that
 // reads can continue
-func (s *stream) PushAndBroadcast(buf []byte) {
+func (s *stream) pushAndBroadcast(buf []byte) {
 	s.m.Lock()
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
@@ -220,11 +220,11 @@ func (s *stream) PushAndBroadcast(buf []byte) {
 	s.endErr = err
 }
 
-// AcceptStream accepts the current stream, moving it to the streamAccepted
+// acceptStream accepts the current stream, moving it to the streamAccepted
 // state.  For remotely-initiated streams, this is called directly from
 // Session.Open; for locally-initiated streams, it is called when the msgACK
 // frame for the new stream is received.
-func (s *stream) AcceptStream(read uint32) {
+func (s *stream) acceptStream(read uint32) {
 	s.m.Lock()
 	defer s.m.Unlock()
 	defer s.c.Broadcast()
@@ -236,7 +236,7 @@ func (s *stream) AcceptStream(read uint32) {
 
 // A stream is considered removable if it is in the streamDead state and its
 // read buffer has been entirely consumed.
-func (s *stream) IsRemovable() bool {
+func (s *stream) isRemovable() bool {
 	s.m.Lock()
 	defer s.m.Unlock()
 	return s.state == streamDead && s.b.Len() == 0
@@ -383,7 +383,7 @@ func (s *stream) Write(buf []byte) (int, error) {
 
 // Kill forces the stream into the streamDead state.  Note that this does not send a
 // msgFIN frame, but does terminate any pending Read or Write operations.
-func (s *stream) Kill() {
+func (s *stream) kill() {
 	s.m.Lock()
 	defer s.m.Unlock()
 	defer s.c.Broadcast()

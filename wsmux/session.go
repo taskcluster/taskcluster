@@ -220,7 +220,7 @@ func (s *Session) Close() error {
 	}()
 
 	for _, v := range s.streams {
-		v.Kill()
+		v.kill()
 	}
 	s.streams = nil
 	s.acceptErr = ErrSessionClosed
@@ -344,7 +344,7 @@ func (s *Session) recvLoop() {
 			s.mu.Unlock()
 
 			if str != nil {
-				str.HandleFrame(*fr)
+				str.handleFrame(*fr)
 			}
 		}
 	}
@@ -368,7 +368,7 @@ func (s *Session) handleSyn(id uint32) {
 	str := newStream(id, s)
 	s.streams[id] = str
 	// "accept" the stream locally, putting it into a state where it can read and write
-	str.AcceptStream(uint32(s.streamBufferSize))
+	str.acceptStream(uint32(s.streamBufferSize))
 
 	if err := s.send(newAckFrame(id, uint32(s.streamBufferSize))); err != nil {
 		s.logger.Printf("recvLoop: error writing ack frame: %v", err)
@@ -417,7 +417,7 @@ func (s *Session) removeDeadStreams() {
 		s.mu.Lock()
 		for _, str := range s.streams {
 
-			if str.IsRemovable() {
+			if str.isRemovable() {
 				s.logger.Printf("stream is removable")
 				delete(s.streams, str.id)
 			}
