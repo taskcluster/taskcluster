@@ -24,7 +24,7 @@ func TestManyStreamEchoLarge(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := Client(conn, Config{Log: genLogger("many-echo-test")})
+	session := Client(conn, Config{Log: genLogger()})
 
 	buf := make([]byte, 0)
 	for i := 0; i < 1500; i++ {
@@ -32,7 +32,7 @@ func TestManyStreamEchoLarge(t *testing.T) {
 	}
 
 	var wg sync.WaitGroup
-	logger := genLogger("many-echo-log-test")
+	logger := genLogger()
 
 	sender := func(i int) {
 		defer wg.Done()
@@ -245,7 +245,7 @@ func TestConcurrentReadAndWrite(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		session := Server(conn, Config{Log: genLogger("concurrent-server-test")})
+		session := Server(conn, Config{Log: genLogger()})
 		str, err := session.Accept()
 		if err != nil {
 			t.Fatal(err)
@@ -262,7 +262,7 @@ func TestConcurrentReadAndWrite(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	session := Client(conn, Config{Log: genLogger("concurrent-client-test")})
+	session := Client(conn, Config{Log: genLogger()})
 	str, err := session.Open()
 	if err != nil {
 		t.Fatal(err)

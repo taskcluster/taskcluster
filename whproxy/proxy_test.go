@@ -27,13 +27,9 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 64 * 1024,
 }
 
-func genLogger(fname string) *log.Logger {
-	file, err := os.Create(fname)
-	if err != nil {
-		panic(err)
-	}
+func genLogger() *log.Logger {
 	logger := &log.Logger{
-		Out:       file,
+		Out:       os.Stdout,
 		Formatter: new(log.TextFormatter),
 		Level:     log.DebugLevel,
 	}
@@ -65,7 +61,7 @@ func TestProxyRegister(t *testing.T) {
 	//  start proxy server
 	proxyConfig := Config{
 		Upgrader:   upgrader,
-		Logger:     genLogger("register-test"),
+		Logger:     genLogger(),
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 	}
@@ -107,7 +103,7 @@ func TestProxyRegister(t *testing.T) {
 func TestProxyRequest(t *testing.T) {
 	proxyConfig := Config{
 		Upgrader:   upgrader,
-		Logger:     genLogger("request-test"),
+		Logger:     genLogger(),
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 	}
@@ -204,7 +200,7 @@ func TestProxyRequest(t *testing.T) {
 func TestProxyURIRewrite(t *testing.T) {
 	proxyConfig := Config{
 		Upgrader:   upgrader,
-		Logger:     genLogger("request-test"),
+		Logger:     genLogger(),
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 	}
@@ -346,10 +342,10 @@ func TestProxyWebsocket(t *testing.T) {
 
 // ensure control messages are proxied
 func TestWebsocketProxyControl(t *testing.T) {
-	logger := genLogger("ws-control-test")
+	logger := genLogger()
 	proxyConfig := Config{
 		Upgrader:   upgrader,
-		Logger:     genLogger("request-test"),
+		Logger:     genLogger(),
 		JWTSecretA: []byte("test-secret"),
 		JWTSecretB: []byte("another-secret"),
 	}
@@ -489,8 +485,8 @@ func TestWebsocketProxyControl(t *testing.T) {
 
 // Ensure websocket close is proxied
 func TestWebSocketClosure(t *testing.T) {
-	logger := genLogger("ws-closure-test")
-	proxyLogger := genLogger("ws-closure-proxy-test")
+	logger := genLogger()
+	proxyLogger := genLogger()
 	proxyConfig := Config{
 		Upgrader:   upgrader,
 		JWTSecretA: []byte("test-secret"),
@@ -684,7 +680,7 @@ func TestConcurrentConnections(t *testing.T) {
 	defer server.Close()
 	wsURL := util.MakeWsURL(server.URL)
 
-	clientLogger := genLogger("concurrent-client-test")
+	clientLogger := genLogger()
 	client, err := whclient.New(testConfigurer("test-worker", wsURL, whclient.RetryConfig{}, clientLogger))
 	if err != nil {
 		t.Fatal(err)
@@ -798,9 +794,9 @@ func testConfigurer(id, addr string, retryConfig whclient.RetryConfig, logger *l
 
 // Ensure that readind over a slow stream works
 func TestResponseStream(t *testing.T) {
-	logger := genLogger("response-stream-test")
-	proxyLogger := genLogger("response-stream-proxy-test")
-	clientLogger := genLogger("response-stream-client-test")
+	logger := genLogger()
+	proxyLogger := genLogger()
+	clientLogger := genLogger()
 
 	proxyConfig := Config{
 		Upgrader:   upgrader,
@@ -903,7 +899,7 @@ func TestWebSocketStreamClient(t *testing.T) {
 	defer server.Close()
 	wsURL := util.MakeWsURL(server.URL)
 
-	client, err := whclient.New(testConfigurer("test-worker", wsURL, whclient.RetryConfig{}, genLogger("client-ws-test")))
+	client, err := whclient.New(testConfigurer("test-worker", wsURL, whclient.RetryConfig{}, genLogger()))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -971,7 +967,7 @@ func TestDomainResolve(t *testing.T) {
 		JWTSecretA:   []byte("test-secret"),
 		JWTSecretB:   []byte("another-secret"),
 		Domain:       "tcproxy.dev",
-		Logger:       genLogger("domain-resolve-proxy-test"),
+		Logger:       genLogger(),
 		DomainHosted: true,
 	}
 	proxy, err := New(proxyConfig)
@@ -985,7 +981,7 @@ func TestDomainResolve(t *testing.T) {
 
 	// make connection
 	client, err := whclient.New(testConfigurer("workerid", "ws://tcproxy.dev:"+getPort(server.URL), whclient.RetryConfig{},
-		genLogger("domain-resolve-client-test")))
+		genLogger()))
 
 	if err != nil {
 		t.Fatal(err)
@@ -1062,7 +1058,7 @@ func TestProxySendsURL(t *testing.T) {
 		JWTSecretA:   []byte("test-secret"),
 		JWTSecretB:   []byte("another-secret"),
 		Domain:       "tcproxy.dev",
-		Logger:       genLogger("proxy-url-test"),
+		Logger:       genLogger(),
 		DomainHosted: true,
 	}
 	proxy, err := New(proxyConfig)
@@ -1076,7 +1072,7 @@ func TestProxySendsURL(t *testing.T) {
 
 	// make connection
 	client, err := whclient.New(testConfigurer("workerid", "ws://tcproxy.dev:"+getPort(server.URL), whclient.RetryConfig{},
-		genLogger("proxy-url-test")))
+		genLogger()))
 
 	if err != nil {
 		t.Fatal(err)
@@ -1095,7 +1091,7 @@ func TestProxyDomainRegister(t *testing.T) {
 		JWTSecretA:   []byte("test-secret"),
 		JWTSecretB:   []byte("another-secret"),
 		Domain:       "tcproxy.dev",
-		Logger:       genLogger("domain-register-proxy-test"),
+		Logger:       genLogger(),
 		DomainHosted: true,
 	}
 	proxy, err := New(proxyConfig)
@@ -1130,7 +1126,7 @@ func TestProxyWebSocketPath(t *testing.T) {
 		JWTSecretA:   []byte("test-secret"),
 		JWTSecretB:   []byte("another-secret"),
 		Domain:       "tcproxy.dev",
-		Logger:       genLogger("domain-register-proxy-test"),
+		Logger:       genLogger(),
 		DomainHosted: true,
 	}
 	proxy, err := New(proxyConfig)

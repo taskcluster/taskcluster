@@ -14,13 +14,9 @@ import (
 )
 
 // logger
-func genLogger(fname string) *log.Logger {
-	file, err := os.Create(fname)
-	if err != nil {
-		panic(err)
-	}
+func genLogger() *log.Logger {
 	logger := &log.Logger{
-		Out:       file,
+		Out:       os.Stdout,
 		Formatter: new(log.TextFormatter),
 		Level:     log.DebugLevel,
 	}
@@ -51,7 +47,7 @@ func genWebSocketHandler(t *testing.T, handleConn func(*testing.T, *websocket.Co
 // functions for session test
 
 func echoConn(t *testing.T, conn *websocket.Conn) {
-	session := Server(conn, Config{Log: genLogger("echo-server-test")})
+	session := Server(conn, Config{Log: genLogger()})
 	stream, err := session.Accept()
 	if err != nil {
 		t.Fatal(err)
@@ -79,7 +75,7 @@ const (
 )
 
 func wsConn(t *testing.T, conn *websocket.Conn) {
-	session := Server(conn, Config{Log: genLogger("http-test")})
+	session := Server(conn, Config{Log: genLogger()})
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", genWsHandler(t))
 	go func() {
@@ -130,7 +126,7 @@ const (
 )
 
 func manyEchoConn(t *testing.T, conn *websocket.Conn) {
-	session := Server(conn, Config{Log: genLogger("many-echo-server-test")})
+	session := Server(conn, Config{Log: genLogger()})
 
 	var wg sync.WaitGroup
 	acceptor := func(i int) {

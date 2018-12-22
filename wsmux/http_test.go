@@ -26,7 +26,7 @@ func TestGet(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := Client(conn, Config{Log: genLogger("get-test")})
+	session := Client(conn, Config{Log: genLogger()})
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	req, err := http.NewRequest(http.MethodGet, "", nil)
 	if err != nil {
@@ -63,7 +63,7 @@ func TestPost(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := Client(conn, Config{Log: genLogger("post-test")})
+	session := Client(conn, Config{Log: genLogger()})
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	msg := []byte("message to be sent in a post request")
 	buffer := new(bytes.Buffer)
@@ -104,7 +104,7 @@ func TestMultiplePost(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := Client(conn, Config{Log: genLogger("post-test")})
+	session := Client(conn, Config{Log: genLogger()})
 
 	var wg sync.WaitGroup
 	sendAndWait := func() {
@@ -158,7 +158,7 @@ func TestWebSocket(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := Client(conn, Config{Log: genLogger("ws-test")})
+	session := Client(conn, Config{Log: genLogger()})
 	//runtime.Breakpoint()
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	wsURL := &url.URL{Host: "tcproxy.net", Scheme: "ws"}

@@ -42,13 +42,9 @@ func testConfigurer(id, addr string, retryConfig RetryConfig, logger *log.Logger
 
 }
 
-func genLogger(fname string) *log.Logger {
-	file, err := os.Create(fname)
-	if err != nil {
-		panic(err)
-	}
+func genLogger() *log.Logger {
 	logger := &log.Logger{
-		Out:       file,
+		Out:       os.Stdout,
 		Formatter: new(log.TextFormatter),
 		Level:     log.DebugLevel,
 	}
@@ -76,7 +72,7 @@ func TestExponentialBackoffSuccess(t *testing.T) {
 	defer server.Close()
 
 	proxyAddr := util.MakeWsURL(server.URL)
-	_, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger("exp-backoff-success-test")))
+	_, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger()))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,7 +97,7 @@ func TestExponentialBackoffFailure(t *testing.T) {
 
 	proxyAddr := util.MakeWsURL(server.URL)
 	start := time.Now()
-	_, err := New(testConfigurer("workerID", proxyAddr, retry, genLogger("exp-backoff-failure-test")))
+	_, err := New(testConfigurer("workerID", proxyAddr, retry, genLogger()))
 	end := time.Now()
 
 	if err.(clientError) != ErrRetryTimedOut {
@@ -137,7 +133,7 @@ func TestRetryStops4xx(t *testing.T) {
 	defer server.Close()
 
 	proxyAddr := util.MakeWsURL(server.URL)
-	_, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger("retry-4xx-test")))
+	_, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger()))
 
 	// attempt to connect with retry
 	if err.(clientError) != ErrRetryFailed {
@@ -197,7 +193,7 @@ func TestAuthorizer(t *testing.T) {
 	defer server.Close()
 
 	proxyAddr := util.MakeWsURL(server.URL)
-	_, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger("authorize-test")))
+	_, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger()))
 
 	if err != nil {
 		t.Fatal(err)
@@ -224,7 +220,7 @@ func TestClientReconnect(t *testing.T) {
 	}))
 
 	proxyAddr := util.MakeWsURL(server.URL)
-	client, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger("client-reconnect-test")))
+	client, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger()))
 	if err != nil {
 		t.Fatal(err)
 	}

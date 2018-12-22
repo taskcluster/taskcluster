@@ -19,7 +19,7 @@ func TestEcho(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := Client(conn, Config{Log: genLogger("echo-test")})
+	session := Client(conn, Config{Log: genLogger()})
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	stream, err := session.Open()
 	if err != nil {
@@ -56,7 +56,7 @@ func TestEchoLarge(t *testing.T) {
 		buf = append(buf, byte(i%127))
 	}
 
-	session := Client(conn, Config{Log: genLogger("echo-large-test")})
+	session := Client(conn, Config{Log: genLogger()})
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	stream, err := session.Open()
 	if err != nil {
