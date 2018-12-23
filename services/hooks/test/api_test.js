@@ -2,10 +2,13 @@ const _ = require('lodash');
 const assert = require('assert');
 const assume = require('assume');
 const debug = require('debug')('test:api:createhook');
+const taskcluster = require('taskcluster-client');
+const taskcreator = require('../src/taskcreator');
 const helper = require('./helper');
 
 helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping) {
   helper.withHook(mock, skipping);
+  helper.withLastFire(mock, skipping);
   helper.withTaskCreator(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
@@ -68,6 +71,16 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   const setHookLastFire = async (hookGroupId, hookId, lastFire) => {
     const hook = await helper.Hook.load({hookGroupId, hookId}, true);
     await hook.modify((hook) => { hook.lastFire = lastFire; });
+  };
+
+  const lastFire = {
+    hookGroupId:        'test-listlastfires',
+    hookId:             'bar',
+    firedBy:            'test',
+    taskId:             taskcluster.slugid(),
+    taskCreateTime:     new Date(),
+    result:             'success',
+    error:              '',
   };
 
   // work around https://github.com/mochajs/mocha/issues/2819.
@@ -599,6 +612,36 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
         context: {firedBy: 'triggerHookWithToken', payload},
         options: {},
       }]);
+    });
+  });
+
+  suite('listLastFires', function() {
+    subSkip();
+    let creator = null;
+    suiteSetup(async function() {
+      helper.load.remove('taskcreator');
+      creator = await helper.load('taskcreator');
+      if (mock) {
+        creator.fakeCreate = true;
+      }
+    });
+
+    test('lists lastfires for a given hookGroupId and hookId', async () => {
+      const taskIds = [];
+      taskIds.push(lastFire.taskId);
+      await creator.appendLastFire(lastFire);
+      for (let i=1;i<=2;i++) {
+        taskIds.push(taskcluster.slugid());
+        await creator.appendLastFire({...lastFire,
+          taskId: taskIds[i],
+          taskCreateTime: new Date(),
+        });
+      }
+      const {lastFires} = await helper.hooks.listLastFires(lastFire.hookGroupId, lastFire.hookId);
+      const dataTaskIds = lastFires.map(lastFire => lastFire.taskId);
+      taskIds.sort();
+      dataTaskIds.sort();
+      assume(taskIds).eql(dataTaskIds);
     });
   });
 });

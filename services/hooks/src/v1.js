@@ -36,7 +36,7 @@ const builder = new APIBuilder({
     hookGroupId: /^[a-zA-Z0-9-_]{1,64}$/,
     hookId: /^[a-zA-Z0-9-_\/]{1,64}$/,
   },
-  context: ['Hook', 'taskcreator', 'publisher'],
+  context: ['Hook', 'LastFire', 'taskcreator', 'publisher'],
 });
 
 module.exports = builder;
@@ -556,3 +556,34 @@ const triggerHookCommon = async function({req, res, hook, payload, firedBy}) {
   }
 };
 
+/** 
+ * Get lastfires for a given hookGroup and hookId
+*/
+builder.declare({
+  method:       'get',
+  route:        '/hooks/:hookGroupId/:hookId/listLastFires',
+  name:         'listLastFires',
+  idempotent:   true,
+  output:       'list-lastFires-response.yml',
+  title:        'list lastFires for a given hookId',
+  stability:    'experimental',
+  description: [
+    'This endpoint will return a list of all lastfire definitions for the given `hookGroupId`',
+    'and hookId.',
+  ].join('\n'),
+}, async function(req, res) {
+  let lastFires = [], item;
+  await this.LastFire.query({
+    hookGroupId: req.params.hookGroupId,
+    hookId:      req.params.hookId,
+  }, {handler: async (lastFire) => {
+    item = await lastFire.definition();
+    item.taskCreateTime = item.taskCreateTime.toJSON();
+    lastFires.push(item);
+  }});
+
+  if (lastFires.length === 0) { 
+    return res.reportError('ResourceNotFound', 'No such hook', {});
+  }
+  return res.reply({lastFires: lastFires});
+});

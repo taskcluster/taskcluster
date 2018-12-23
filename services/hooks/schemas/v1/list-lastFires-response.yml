@@ -1,0 +1,47 @@
+$schema:        http://json-schema.org/draft-06/schema#
+title:          "LastFires list"
+description:    |
+  List of lastFires
+type:           object
+properties:
+  lastFires:
+    title: "LastFires"
+    type: array
+    items:
+      type: object
+      properties:
+        hookGroupId:        {$const: hookGroupId}     
+        hookId:             {$const: hookId} 
+        firedBy:
+          type: string
+        taskId:
+          title:          "Task Identifier"
+          description: |
+                Unique task identifier, this is UUID encoded as
+                [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+                stripped of `=` padding.
+          type:           string
+          pattern:        {$const: slugid-pattern}
+        taskCreateTime:
+          description:    "Time when the task was created"
+          type:   string
+          format: date-time
+        result:
+          description: "Information about success or failure of firing of the hook"
+          type: string
+          enum:
+            - success
+            - error
+        error:
+          description: |
+            The error that occurred when firing the task. This is typically,
+            but not always, an API error message.
+          type: string
+      additionalProperties: false
+      required:
+        - hookGroupId
+        - hookId
+        - taskId
+        - taskCreateTime
+        - result
+        - error

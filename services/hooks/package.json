@@ -26,7 +26,7 @@
     "lodash": "^4.17.4",
     "promise": "^8.0.1",
     "taskcluster-client": "^11.0.0",
-    "taskcluster-lib-api": "^12.8.0",
+    "taskcluster-lib-api": "12.7.0",
     "taskcluster-lib-app": "10.0.0",
     "taskcluster-lib-azure": "^10.0.0",
     "taskcluster-lib-docs": "^10.0.0",

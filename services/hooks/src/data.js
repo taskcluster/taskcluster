@@ -194,5 +194,17 @@ const LastFire = Entity.configure({
   },
 });
 
+LastFire.prototype.definition = function() {
+  return Promise.resolve({
+    hookGroupId:        this.hookGroupId,
+    hookId:             this.hookId,
+    firedBy:            this.firedBy,
+    taskId:             this.taskId,
+    taskCreateTime:     this.taskCreateTime,
+    result:             this.result,
+    error:              this.error,
+  });
+};
+
 // export LastFire
 exports.LastFire = LastFire;
