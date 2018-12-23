@@ -557,19 +557,19 @@ const triggerHookCommon = async function({req, res, hook, payload, firedBy}) {
 };
 
 /** 
- * Get lastfires for a given hookGroup and hookId
+ * Get information about recent fires of a hook
 */
 builder.declare({
   method:       'get',
-  route:        '/hooks/:hookGroupId/:hookId/listLastFires',
+  route:        '/hooks/:hookGroupId/:hookId/last-fires',
   name:         'listLastFires',
   idempotent:   true,
   output:       'list-lastFires-response.yml',
-  title:        'list lastFires for a given hookId',
+  title:        'Get information about recent hook fires',
   stability:    'experimental',
   description: [
-    'This endpoint will return a list of all lastfire definitions for the given `hookGroupId`',
-    'and hookId.',
+    'This endpoint will return information about the the last few times this hook has been',
+    'fired, including whether the hook was fired successfully or not',
   ].join('\n'),
 }, async function(req, res) {
   let lastFires = [], item;
