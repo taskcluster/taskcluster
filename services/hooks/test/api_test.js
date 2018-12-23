@@ -619,6 +619,10 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     subSkip();
     let creator = null;
     suiteSetup(async function() {
+      if (skipping()) {
+        this.skip();
+      }
+
       helper.load.remove('taskcreator');
       creator = await helper.load('taskcreator');
       if (mock) {
