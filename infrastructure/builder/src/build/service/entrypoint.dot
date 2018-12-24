@@ -8,7 +8,7 @@ done
 
 case "${1}" in
   {{~it.procs :proc}}
-  {{=proc.name}}) exec bash -c {{=proc.command}};;
+  {{=proc.name}}) cd {{=proc.cwd}}; exec bash -c {{=proc.command}};;
   {{~}}
   *) exec "${@}";;
 esac

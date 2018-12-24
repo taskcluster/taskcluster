@@ -6,40 +6,58 @@ const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const libDocs = require('taskcluster-lib-docs');
 const Stamp = require('./stamp');
-const {gitClone} = require('./utils');
+const {gitClone, gitId, ensureTask} = require('./utils');
 
 const generateRepoTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
   const repository = _.find(spec.build.repositories, {name});
+  const isMonorepo = repository.source === 'monorepo';
 
-  tasks.push({
-    title: `Repo ${name} - Clone`,
-    provides: [
+  ensureTask(tasks, {
+    title: isMonorepo ? 'Monorepo Setup' : `Repo ${name} - Clone`,
+    provides: isMonorepo ? [
+      'monorepo-dir', // full path of the repository
+      'monorepo-exact-source', // exact source URL for the repository
+      'monorepo-stamp',
+    ] : [
       `repo-${name}-dir`, // full path of the repository
       `repo-${name}-exact-source`, // exact source URL for the repository
       `repo-${name}-stamp`,
     ],
     locks: ['git'],
     run: async (requirements, utils) => {
-      const repoDir = path.join(baseDir, `repo-${name}`);
-      const {exactRev, changed} = await gitClone({
-        dir: repoDir,
-        url: repository.source,
-        utils,
-      });
-
-      const [repoUrl] = repository.source.split('#');
-      const stamp = new Stamp({step: 'repo-clone', version: 1},
-        `${repoUrl}#${exactRev}`);
-      const provides = {
-        [`repo-${name}-dir`]: repoDir,
-        [`repo-${name}-exact-source`]: `${repoUrl}#${exactRev}`,
-        [`repo-${name}-stamp`]: stamp,
-      };
-
-      if (changed) {
-        return provides;
+      if (isMonorepo) {
+        const repoDir = require('app-root-dir').get();
+        const {exactRev} = await gitId({dir: repoDir, utils});
+        const stamp = new Stamp({step: 'monorepo-id', version: 1}, exactRev);
+        return {
+          ['monorepo-dir']: repoDir,
+          ['monorepo-exact-source']: `https://github.com/taskcluster/taskcluster#${exactRev}`,
+          ['monorepo-stamp']: stamp,
+        };
       } else {
-        return utils.skip({provides});
+        // using an external git repository, so clone that
+        const repoDir = path.join(baseDir, `repo-${name}`);
+        const {exactRev, changed} = await gitClone({
+          dir: repoDir,
+          url: repository.source,
+          utils,
+        });
+
+        const [repoUrl] = repository.source.split('#');
+        const stamp = new Stamp({step: 'repo-clone', version: 1},
+          `${repoUrl}#${exactRev}`);
+
+        const provides = {
+          [`repo-${name}-dir`]: repoDir,
+          [`repo-${name}-exact-source`]: `${repoUrl}#${exactRev}`,
+          [`repo-${name}-stamp`]: stamp,
+        };
+
+        if (changed) {
+          return provides;
+        } else {
+          return utils.skip({provides});
+        }
       }
     },
   });

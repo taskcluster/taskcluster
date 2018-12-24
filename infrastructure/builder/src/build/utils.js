@@ -56,6 +56,27 @@ exports.gitClone = async ({dir, url, sha, utils}) => {
 };
 
 /**
+ * Get exactRev from an existing repo (usually this one..)
+ *
+ * - dir -- directory to check
+ * - utils -- taskgraph utils (waitFor, etc.)
+ *
+ * Returns:
+ * {
+ *   exactRev: ..,     // the exact revision checked out (possibly with -dirty suffix)
+ * }
+ */
+exports.gitId = async ({dir, utils}) => {
+  const opts = {cwd: dir};
+
+  assert(fs.existsSync(dir), `${dir} does not exist`);
+  const describe = await exec('git', ['describe', '--always', '--dirty', '--exclude', '.*'], opts);
+  return {
+    exactRev: describe.stdout.split(/\s+/)[0],
+  };
+};
+
+/**
  * Set up to call docker in the given baseDir (internal use only)
  */
 const _dockerSetup = ({baseDir}) => {

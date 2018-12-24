@@ -32,7 +32,7 @@ class Build {
     this.spec = new ClusterSpec(specDir);
     this.cfg = config({
       files: [
-        'infrastructure/builder/build-config.yml',
+        'build-config.yml',
         'user-build-config.yml',
       ],
       env:      process.env,
