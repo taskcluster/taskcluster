@@ -28,11 +28,11 @@ class Build {
   }
 
   async run() {
-    const specDir = path.join(require('app-root-dir').get(), 'taskcluster-spec');
+    const specDir = path.join(require('app-root-dir').get(), 'infrastructure', 'builder', 'taskcluster-spec');
     this.spec = new ClusterSpec(specDir);
     this.cfg = config({
       files: [
-        'build-config.yml',
+        'infrastructure/builder/build-config.yml',
         'user-build-config.yml',
       ],
       env:      process.env,

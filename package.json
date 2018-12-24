@@ -4,7 +4,8 @@
   "private": true,
   "workspaces": [
     "libraries/*",
-    "services/*"
+    "services/*",
+    "infrastructure/*"
   ],
   "devDependencies": {
     "assume": "^2.1.0",
