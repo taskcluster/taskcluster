@@ -6,7 +6,7 @@ repositories:
 # microservices
 - name: auth
   kind: service
-  source: https://github.com/taskcluster/taskcluster-auth#master
+  source: monorepo
   docs: generated
   service:
     buildtype: heroku-buildpack
@@ -15,7 +15,7 @@ repositories:
 
 - name: queue
   kind: service
-  source: https://github.com/taskcluster/taskcluster-queue#master
+  source: monorepo
   docs: generated
   service:
     buildtype: heroku-buildpack
@@ -24,7 +24,7 @@ repositories:
 
 - name: index
   kind: service
-  source: https://github.com/taskcluster/taskcluster-index#master
+  source: monorepo
   docs: generated
   service:
     buildtype: heroku-buildpack
@@ -33,7 +33,7 @@ repositories:
 
 - name: purge-cache
   kind: service
-  source: https://github.com/taskcluster/taskcluster-purge-cache#master
+  source: monorepo
   docs: generated
   service:
     buildtype: heroku-buildpack
@@ -42,7 +42,7 @@ repositories:
 
 - name: github
   kind: service
-  source: https://github.com/taskcluster/taskcluster-github#master
+  source: monorepo
   docs: generated
   service:
     buildtype: heroku-buildpack
@@ -51,7 +51,7 @@ repositories:
 
 - name: login
   kind: service
-  source: https://github.com/taskcluster/taskcluster-login#master
+  source: monorepo
   docs: generated
   service:
     buildtype: heroku-buildpack
@@ -60,7 +60,7 @@ repositories:
 
 - name: hooks
   kind: service
-  source: https://github.com/taskcluster/taskcluster-hooks#master
+  source: monorepo
   docs: generated
   service:
     buildtype: heroku-buildpack
@@ -69,7 +69,7 @@ repositories:
 
 - name: secrets
   kind: service
-  source: https://github.com/taskcluster/taskcluster-secrets#master
+  source: monorepo
   docs: generated
   service:
     buildtype: heroku-buildpack
@@ -78,7 +78,7 @@ repositories:
 
 - name: notify
   kind: service
-  source: https://github.com/taskcluster/taskcluster-notify#master
+  source: monorepo
   docs: generated
   service:
     buildtype: heroku-buildpack

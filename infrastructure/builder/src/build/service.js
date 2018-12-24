@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const util = require('util');
 const fs = require('fs');
+const assert = require('assert');
 const path = require('path');
 const split = require('split');
 const rimraf = util.promisify(require('rimraf'));
@@ -13,6 +14,7 @@ const {referencesTasks} = require('./service/references');
 
 const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
   const repository = _.find(spec.build.repositories, {name});
+  const isMonorepo = repository.source === 'monorepo';
   const workDir = path.join(baseDir, `service-${name}`);
   if (!fs.existsSync(workDir)) {
     fs.mkdirSync(workDir);
@@ -24,14 +26,17 @@ const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => 
       break;
 
     case 'tools-ui':
+      assert(!isMonorepo, 'monorepo not supported for this buildtype');
       toolsUiTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
       break;
 
     case 'docs':
+      assert(!isMonorepo, 'monorepo not supported for this buildtype');
       docsTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
       break;
 
     case 'references':
+      assert(!isMonorepo, 'monorepo not supported for this buildtype');
       referencesTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
       break;
 
