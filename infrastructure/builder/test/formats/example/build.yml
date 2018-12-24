@@ -1,0 +1,10 @@
+---
+repositories:
+- name: ping
+  kind: service
+  source: https://github.com/djmitche/taskcluster-ping#master
+  docs: generated
+  service:
+    buildtype: heroku-buildpack
+    stack: heroku-16
+    buildpack: https://github.com/heroku/heroku-buildpack-nodejs

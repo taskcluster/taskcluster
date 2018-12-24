@@ -1,0 +1,7 @@
+FROM {{=it.stackImage}}
+
+COPY app /app
+ENV HOME=/app
+WORKDIR /app
+
+ENTRYPOINT ["/app/entrypoint"]
