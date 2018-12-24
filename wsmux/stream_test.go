@@ -36,7 +36,8 @@ func TestManyStreamEchoLarge(t *testing.T) {
 
 	sender := func(i int) {
 		defer wg.Done()
-		str, id, err := session.Open()
+		str, err := session.Open()
+		id := str.(*stream).id
 		if err != nil {
 			panic(err)
 		}
@@ -57,7 +58,7 @@ func TestManyStreamEchoLarge(t *testing.T) {
 			panic(err)
 		}
 
-		logger.Printf("id: stream %d finished read. msgLen: %d, recvLen: %d", id, len(buf), final.Len())
+		logger.Printf("stream %d finished read. msgLen: %d, recvLen: %d", id, len(buf), final.Len())
 
 		if !bytes.Equal(buf, final.Bytes()) {
 			t.Log(len(buf), final.Len())
@@ -85,7 +86,7 @@ func TestReadDeadlineExpires(t *testing.T) {
 	}
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
-	str, _, err := client.Open()
+	str, err := client.Open()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -122,7 +123,7 @@ func TestReadDeadlineReset(t *testing.T) {
 	}
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
-	str, _, err := client.Open()
+	str, err := client.Open()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,7 +169,7 @@ func TestWriteDeadline(t *testing.T) {
 	}
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
-	str, _, err := client.Open()
+	str, err := client.Open()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -205,7 +206,7 @@ func TestWriteDeadlineReset(t *testing.T) {
 	}
 	client := Client(conn, Config{})
 	errChan := make(chan error, 1)
-	str, _, err := client.Open()
+	str, err := client.Open()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -262,7 +263,7 @@ func TestConcurrentReadAndWrite(t *testing.T) {
 	}
 
 	session := Client(conn, Config{Log: genLogger("concurrent-client-test")})
-	str, _, err := session.Open()
+	str, err := session.Open()
 	if err != nil {
 		t.Fatal(err)
 	}

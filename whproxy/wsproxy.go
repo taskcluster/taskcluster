@@ -16,8 +16,8 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 	// at this point, we are sure that r is a http websocket upgrade request
 	// connClosure returns the wsmux stream to Dial
 	p.logf(tunnelID, r.RemoteAddr, "creating WS bridge: path=%s", r.URL.RequestURI())
-	stream, id, err := session.Open()
-	p.logf(tunnelID, r.RemoteAddr, "opened new stream for ws: path=%s, streamID=%d", r.URL.RequestURI(), id)
+	stream, err := session.Open()
+	p.logf(tunnelID, r.RemoteAddr, "opened new stream for ws: path=%s", r.URL.RequestURI())
 
 	if err != nil {
 		p.logerrorf(tunnelID, r.RemoteAddr, "could not create stream: path=%s", r.URL.RequestURI())
@@ -51,7 +51,7 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 	if !p.domainHosted {
 		uri = "ws://" + r.Host + util.ReplaceID(r.URL.RequestURI())
 	}
-	p.logf(tunnelID, r.RemoteAddr, "dialing ws on stream: %d, url: %s", id, uri)
+	p.logf(tunnelID, r.RemoteAddr, "dialing ws on stream, url: %s", uri)
 	tunnelConn, _, err := dialer.Dial(uri, reqHeader)
 	if err != nil {
 		p.logerrorf(tunnelID, r.RemoteAddr, "could not dial tunnel: path=%s, error: %v", r.URL.RequestURI(), err)
@@ -71,18 +71,21 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 		_ = tunnelConn.Close()
 		return err
 	}
-	p.logf(tunnelID, r.RemoteAddr, "initiating connection bridge: %d", id)
+	p.logf(tunnelID, r.RemoteAddr, "initiating connection bridge")
 
-	defer func() {
-		session.RemoveStream(id)
-		p.logf(tunnelID, r.RemoteAddr, "WS: closed underlying wsmux stream: path= %s, streamID=%d", r.URL.RequestURI(), id)
-	}()
 	// bridge both websocket connections
 	bridgeErr := p.bridgeConn(tunnelConn, viewerConn)
 	if bridgeErr != nil {
 		p.logerrorf(tunnelID, r.RemoteAddr, "bridge closed with err: %v", bridgeErr)
 	}
-	return bridgeErr
+
+	// close the stream even if there was a bridge error
+	err = stream.Close()
+
+	if bridgeErr != nil {
+		return bridgeErr
+	}
+	return err
 }
 
 func (p *proxy) bridgeConn(conn1 *websocket.Conn, conn2 *websocket.Conn) error {

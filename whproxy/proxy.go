@@ -280,13 +280,12 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	}
 	r.URL = reqURI
 	p.logf(id, r.RemoteAddr, "attempting to open new stream")
-	reqStream, streamID, err := session.Open()
+	reqStream, err := session.Open()
 	if err != nil {
 		p.logerrorf(id, r.RemoteAddr, "could not open stream: path=%s", path)
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
-	p.logf(id, r.RemoteAddr, "opened new stream: ID=%d", streamID)
 
 	// rewrite path for tunnel and write request
 	err = r.Write(reqStream)

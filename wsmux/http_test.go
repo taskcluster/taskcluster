@@ -32,7 +32,7 @@ func TestGet(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	stream, _, err := session.Open()
+	stream, err := session.Open()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +72,7 @@ func TestPost(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	stream, _, err := session.Open()
+	stream, err := session.Open()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,7 +117,7 @@ func TestMultiplePost(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		stream, _, err := session.Open()
+		stream, err := session.Open()
 		if err != nil {
 			panic(err)
 		}
@@ -162,7 +162,7 @@ func TestWebSocket(t *testing.T) {
 	//runtime.Breakpoint()
 	// session.readDeadline = time.Now().Add(10 * time.Second)
 	wsURL := &url.URL{Host: "tcproxy.net", Scheme: "ws"}
-	stream, _, err := session.Open()
+	stream, err := session.Open()
 	if err != nil {
 		t.Fatal(err)
 	}

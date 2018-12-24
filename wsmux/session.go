@@ -145,10 +145,10 @@ func (s *Session) Accept() (net.Conn, error) {
 // Opening a connection creates a fresh new stream ID and sends a msgSYN
 // frame containing that ID to the remote side.  The stream is considered
 // accepted when a msgACK frame arrives with the same stream ID.
-func (s *Session) Open() (net.Conn, uint32, error) {
+func (s *Session) Open() (net.Conn, error) {
 	select {
 	case <-s.closed:
-		return nil, 0, ErrSessionClosed
+		return nil, ErrSessionClosed
 	default:
 	}
 
@@ -159,7 +159,7 @@ func (s *Session) Open() (net.Conn, uint32, error) {
 	// increment here so that we can wait safely
 	s.nextID += 2
 	if _, ok := s.streams[id]; ok {
-		return nil, 0, ErrDuplicateStream
+		return nil, ErrDuplicateStream
 	}
 
 	str := newStream(id, s)
@@ -167,7 +167,7 @@ func (s *Session) Open() (net.Conn, uint32, error) {
 
 	if err := s.send(newSynFrame(id)); err != nil {
 		s.nextID -= 2
-		return nil, 0, err
+		return nil, err
 	}
 
 	// unlock mutex and wait
@@ -177,18 +177,18 @@ func (s *Session) Open() (net.Conn, uint32, error) {
 	select {
 	case <-str.accepted:
 		s.mu.Lock()
-		return str, id, nil
+		return str, nil
 	case <-s.closed:
 		s.mu.Lock()
 		// state of s.nextID doesn't matter here
 		delete(s.streams, id)
-		return nil, 0, ErrSessionClosed
+		return nil, ErrSessionClosed
 	case <-time.After(s.streamAcceptDeadline):
 		s.mu.Lock()
 		// nextID can be cyclically reused, and previous instance
 		// may be in use by a different stream
 		delete(s.streams, id)
-		return nil, 0, ErrAcceptTimeout
+		return nil, ErrAcceptTimeout
 	}
 }
 
@@ -235,15 +235,6 @@ func (s *Session) Close() error {
 // implementing net.Listener, but its return value here is not very useful.
 func (s *Session) Addr() net.Addr {
 	return s.conn.LocalAddr()
-}
-
-// RemoveStream removes the stream with given id
-func (s *Session) RemoveStream(id uint32) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if _, ok := s.streams[id]; ok {
-		delete(s.streams, id)
-	}
 }
 
 // IsClosed returns true if the session is closed.

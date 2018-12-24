@@ -49,7 +49,7 @@ func echoClientFunc(b *testing.B, client *Session, wg *sync.WaitGroup) {
 		defer wg.Done()
 	}
 	hash := sha256.New()
-	str, _, err := client.Open()
+	str, err := client.Open()
 	if err != nil {
 		panic(err)
 	}
