@@ -159,7 +159,6 @@ exports.dockerRun = async ({baseDir, logfile, command, env, binds, workingDir, i
   // docker API calls.
   const container = await docker.createContainer(containerOpts);
   const stream = await container.attach({stream: true, stdout: true, stderr: true});
-  stream.setEncoding('utf-8');
   stream.pipe(output, {end: true});
   await container.start({});
 
