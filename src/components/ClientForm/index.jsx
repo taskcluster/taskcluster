@@ -25,7 +25,9 @@ import DatePicker from '../DatePicker';
 import Button from '../Button';
 import { client } from '../../utils/prop-types';
 import splitLines from '../../utils/splitLines';
+import withAlertOnClose from '../../utils/withAlertOnClose';
 
+@withAlertOnClose
 @withStyles(theme => ({
   fab: {
     ...theme.mixins.fab,

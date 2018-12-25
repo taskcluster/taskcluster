@@ -4,6 +4,7 @@ import { string } from 'prop-types';
 import { hterm, lib } from 'hterm-umd';
 import { DockerExecClient } from 'docker-exec-websocket-server';
 import { dial } from 'ws-shell';
+import withAlertOnClose from '../../utils/withAlertOnClose';
 
 const DECODER = new TextDecoder('utf-8');
 const defaultCommand = [
@@ -27,6 +28,7 @@ const defaultCommand = [
 
 hterm.defaultStorage = new lib.Storage.Local();
 
+@withAlertOnClose
 @withStyles({
   shell: {
     position: 'absolute',

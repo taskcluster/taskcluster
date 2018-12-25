@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { bool, string } from 'prop-types';
 import { VncDisplay as Vnc } from 'react-vnc-display';
+import withAlertOnClose from '../../utils/withAlertOnClose';
 
+@withAlertOnClose
 export default class VncDisplay extends Component {
   static defaultProps = {
     shared: false,
