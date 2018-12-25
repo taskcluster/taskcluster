@@ -1,9 +1,10 @@
-const request         = require('superagent');
-const assert          = require('assert');
-const APIBuilder      = require('../');
-const helper          = require('./helper');
-const _               = require('lodash');
-const libUrls         = require('taskcluster-lib-urls');
+const request = require('superagent');
+const assert = require('assert');
+const APIBuilder = require('../');
+const helper = require('./helper');
+const _ = require('lodash');
+const libUrls = require('taskcluster-lib-urls');
+const expressError = require('../src/middleware/express-error.js');
 
 suite('api/errors', function() {
   // Create test api
@@ -20,6 +21,10 @@ suite('api/errors', function() {
     await helper.setupServer({builder});
   });
   teardown(helper.teardownServer);
+
+  // we want to test the production behavior..
+  suiteSetup(function() { expressError.isProduction = true; });
+  suiteTeardown(function() { expressError.isProduction = false; });
 
   builder.declare({
     method:   'get',

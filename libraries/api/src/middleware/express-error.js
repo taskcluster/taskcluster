@@ -2,6 +2,8 @@ const uuid = require('uuid');
 const debug = require('debug')('api:errors');
 const ErrorReply = require('../error-reply');
 
+exports.isProduction = process.env.NODE_ENV === 'production';
+
 /**
  * Create parameter validation middle-ware instance, given a mapping from
  * parameter to regular expression or function that returns a message as string
@@ -36,11 +38,16 @@ const expressError = ({errorCodes, entry, monitor}) => {
       }
 
       // then formulate a generic error to send to the HTTP client
-      err = new ErrorReply({
-        code: 'InternalServerError',
-        message: 'Internal Server Error, incidentId: ' + incidentId,
-        details: {incidentId},
-      });
+      const details = {incidentId};
+      if (!exports.isProduction) {
+        details.stack = err.stack.toString();
+      }
+      const message = 'Internal Server Error, incidentId {{incidentId}}.' +
+        (exports.isProduction ?
+          '' :
+          ' Error stack (not shown in production):\n```\n{{stack}}\n```');
+
+      err = new ErrorReply({code: 'InternalServerError', message, details});
     }
 
     let code = err.code;
