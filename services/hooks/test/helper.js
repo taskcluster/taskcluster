@@ -8,8 +8,13 @@ const config = require('typed-env-config');
 const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
 const {FakeClient} = require('taskcluster-lib-pulse');
+const slugid = require('slugid');
 
 const helper = module.exports = {};
+
+// a suffix used to generate unique table names so that parallel test runs do not
+// interfere with one another.
+const TABLE_SUFFIX = slugid.nice().replace(/[_-]/g, '');
 
 helper.rootUrl = 'http://localhost:60401';
 
@@ -46,6 +51,10 @@ helper.withHook = (mock, skipping) => {
         cryptoKey: cfg.azure.cryptoKey,
         signingKey: cfg.azure.signingKey,
       }));
+    } else {
+      // choose a unique name for the table, to avoid conflicting with other tests
+      const cfg = await helper.load('cfg');
+      helper.load.cfg('app.hookTableName', cfg.app.hookTableName + TABLE_SUFFIX);
     }
 
     helper.Hook = await helper.load('Hook');
@@ -76,6 +85,10 @@ helper.withLastFire = (mock, skipping) => {
         credentials: 'inMemory',
         signingKey: cfg.azure.signingKey,
       }));
+    } else {
+      // choose a unique name for the table, to avoid conflicting with other tests
+      const cfg = await helper.load('cfg');
+      helper.load.cfg('app.lastFireTableName', cfg.app.lastFireTableName + TABLE_SUFFIX);
     }
 
     helper.LastFire = await helper.load('LastFire');
