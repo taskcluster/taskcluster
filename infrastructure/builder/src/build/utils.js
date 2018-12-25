@@ -150,7 +150,9 @@ exports.dockerRun = async ({baseDir, logfile, command, env, binds, workingDir, i
     Cmd: command,
     HostConfig: {
       Binds: [...Binds, ...binds || []],
-      AutoRemove: true,
+      // AutoRemove would help clean up stray containers, but means we cannot reliably
+      // get the exit status of the container
+      AutoRemove: false,
     },
     ...otherOpts,
   };
@@ -165,6 +167,7 @@ exports.dockerRun = async ({baseDir, logfile, command, env, binds, workingDir, i
   // wait for the output to close, then wait for the container to exit
   await utils.waitFor(output);
   const result = await utils.waitFor(container.wait());
+  await utils.waitFor(container.remove());
 
   if (result.StatusCode !== 0) {
     throw new Error(`Container exited with status ${result.StatusCode}.${errorAddendum}`);
