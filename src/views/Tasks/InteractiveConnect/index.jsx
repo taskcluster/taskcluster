@@ -52,6 +52,7 @@ let previousCursor;
   warningPanel: {
     marginTop: theme.spacing.double,
     marginBottom: theme.spacing.double,
+    ...theme.mixins.warningPanel,
   },
   viewTaskDetails: {
     marginTop: theme.spacing.double,
@@ -274,6 +275,7 @@ export default class InteractiveConnect extends Component {
             warning
             error="You can not attach to an interactive task after it has stopped
           running."
+            className={classes.warningPanel}
           />
         )}
         <List>

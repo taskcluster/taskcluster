@@ -100,6 +100,11 @@ const createTheme = isDarkTheme => ({
       paddingLeft: 4,
       paddingRight: 4,
     },
+    warningPanel: {
+      '& code': {
+        color: lighten('#fff', 0.2),
+      },
+    },
     listItemButton: {
       '& svg': {
         transition: transitions.create('fill'),
