@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import HeartPulseIcon from 'mdi-react/HeartPulseIcon';
 import AlertCircleOutlineIcon from 'mdi-react/AlertCircleOutlineIcon';
+import Tooltip from '@material-ui/core/Tooltip';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
 import SpeedDial from '../../../components/SpeedDial';
@@ -14,6 +15,7 @@ import HelpView from '../../../components/HelpView';
 import AwsProvisionerWorkerTypeTable from '../../../components/AwsProvisionerWorkerTypeTable';
 import ErrorPanel from '../../../components/ErrorPanel';
 import workerTypesQuery from './workerTypes.graphql';
+import Button from '../../../components/Button';
 
 @hot(module)
 @graphql(workerTypesQuery)
@@ -23,6 +25,11 @@ import workerTypesQuery from './workerTypes.graphql';
   },
   heartIcon: {
     ...theme.mixins.errorIcon,
+  },
+  createIcon: {
+    ...theme.mixins.successIcon,
+    ...theme.mixins.fab,
+    right: theme.spacing.unit * 11,
   },
 }))
 export default class ViewRoles extends Component {
@@ -74,13 +81,16 @@ export default class ViewRoles extends Component {
               workerTypes={awsProvisionerWorkerTypeSummaries}
             />
           )}
+          <Tooltip title="Create Worker Type">
+            <Button
+              requiresAuth
+              variant="fab"
+              className={classes.createIcon}
+              onClick={this.handleCreate}>
+              <PlusIcon />
+            </Button>
+          </Tooltip>
           <SpeedDial>
-            <SpeedDialAction
-              tooltipOpen
-              icon={<PlusIcon />}
-              tooltipTitle="Create Worker Type"
-              onClick={this.handleCreate}
-            />
             <SpeedDialAction
               tooltipOpen
               icon={<AlertCircleOutlineIcon />}
