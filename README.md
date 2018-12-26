@@ -67,6 +67,7 @@ a permanent client in order to create temporary credentials. Make sure to unset
 Running tests is a feature of the build.sh script, and requires the `-t` flag:
 
 ```
+$ export TASKCLUSTER_ROOT_URL='......'
 $ export TASKCLUSTER_CLIENT_ID='......'
 $ export TASKCLUSTER_ACCESS_TOKEN='......'
 $ unset TASKCLUSTER_CERTIFICATE  # permacreds are required for testing
@@ -183,10 +184,10 @@ and then start a container, mapping the container port 80 to your localhost
 port 8080:
 
 ```
+TASKCLUSTER_ROOT_URL='......'
 TASKCLUSTER_CLIENT_ID=.....
 TASKCLUSTER_ACCESS_TOKEN=.....
-TASKCLUSTER_CERTIFICATE=.....
-docker run -p 127.0.0.1:8080:80 taskcluster/taskcluster-proxy:latest --client-id "${TASKCLUSTER_CLIENT_ID}" --access-token "${TASKCLUSTER_ACCESS_TOKEN}" --certificate "${TASKCLUSTER_CERTIFICATE}"
+docker run -p 127.0.0.1:8080:80 taskcluster/taskcluster-proxy:latest --client-id "${TASKCLUSTER_CLIENT_ID}" --access-token "${TASKCLUSTER_ACCESS_TOKEN}" --certificate "${TASKCLUSTER_CERTIFICATE}" --root-url "${TASKCLUSTER_ROOT_URL}"
 ```
 
 In a seperate terminal on your machine, try fetching a private artifact:
