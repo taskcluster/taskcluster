@@ -168,6 +168,7 @@ Hook.prototype.definition = function() {
   return Promise.resolve({
     hookId:       this.hookId,
     hookGroupId:  this.hookGroupId,
+    bindings:     this.bindings,
     metadata:     _.cloneDeep(this.metadata),
     task:         _.cloneDeep(this.task),
     schedule:     _.cloneDeep(this.schedule),
@@ -175,8 +176,22 @@ Hook.prototype.definition = function() {
   });
 };
 
-// export Hook
+const Queues = Entity.configure({
+  version:              1,
+  partitionKey:         Entity.keys.StringKey('hookGroupId'),
+  rowKey:               Entity.keys.StringKey('hookId'),
+  signEntities:         true,
+  properties:           {
+    hookGroupId:        Entity.types.String,
+    hookId:             Entity.types.String,
+    queueName:          Entity.types.String,
+    bindings:           Entity.types.JSON,
+  },
+});
+
+// export Hook and Queues
 exports.Hook = Hook;
+exports.Queues = Queues;
 
 const LastFire = Entity.configure({
   version:              1,

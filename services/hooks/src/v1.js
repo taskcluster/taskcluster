@@ -85,7 +85,7 @@ builder.declare({
       hooks.push(await hook.definition());
     },
   });
-  if (hooks.length == 0) {
+  if (hooks.length === 0) {
     return res.reportError('ResourceNotFound', 'No such group', {});
   }
   return res.reply({hooks: hooks});
@@ -315,9 +315,10 @@ builder.declare({
         '{{message}} in {{schedElement}}', {message: err.message, schedElement});
     }
   }
-
+  hookDef.bindings = _.defaultTo(hookDef.bindings, hook.bindings);
   await hook.modify((hook) => {
     hook.metadata          = hookDef.metadata;
+    hook.bindings          = hookDef.bindings;
     hook.task              = hookDef.task;
     hook.triggerSchema     = hookDef.triggerSchema;
     hook.schedule          = schedule;

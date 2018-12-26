@@ -4,7 +4,8 @@ defaults:
     component:        hooks
     hookTableName:     !env HOOK_TABLE_NAME
     lastFireTableName: !env LASTFIRE_TABLE_NAME
-    publishMetaData:   !env:bool PUBLISH_METADATA
+    queuesTableName:  !env QUEUE_TABLE_NAME
+    publishMetaData:  !env:bool PUBLISH_METADATA
     scheduler:
       pollingDelay:   60000
   influx:
@@ -60,6 +61,7 @@ test:
     component:        hooks-tests
     hookTableName:    HooksTestTable2
     lastFireTableName: LastFireTestTable
+    queuesTableName:  QueueTestTable
     publishMetaData:  false
     scheduler:
       pollingDelay:   5000
@@ -75,3 +77,5 @@ test:
     env:              development
     forceSSL:         false
     trustProxy:       false
+  pulse:
+    namespace:        'taskcluster-fake'

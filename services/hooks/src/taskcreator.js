@@ -130,7 +130,7 @@ class TaskCreator {
       return Promise.reject(lastFire.error);
     }
     return taskCreateRes;
-  };
+  }
 }
 
 exports.TaskCreator = TaskCreator;

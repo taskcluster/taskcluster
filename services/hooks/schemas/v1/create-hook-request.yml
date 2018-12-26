@@ -7,6 +7,7 @@ properties:
   hookGroupId:            {$const: hookGroupId}
   hookId:                 {$const: hookId}
   metadata:               {$ref: "hook-metadata.json#"}
+  bindings:               {$ref:  "bindings.json#"}
   schedule:
     description: |
       Definition of the times at which a hook will result in creation of a task.

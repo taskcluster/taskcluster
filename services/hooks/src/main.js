@@ -17,6 +17,7 @@ const taskcluster = require('taskcluster-client');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const exchanges = require('./exchanges');
 const libPulse = require('taskcluster-lib-pulse');
+const HookListeners = require('./listeners');
 
 // Create component loader
 const load = loader({
@@ -137,6 +138,37 @@ const load = loader({
       aws: cfg.aws.validator,
       monitor,
     }),
+  },
+
+  Queues: {
+    requires: ['cfg', 'process', 'monitor'],
+    setup: ({cfg, process, monitor}) => {
+      return data.Queues.setup({
+        tableName: cfg.app.queuesTableName,
+        monitor: monitor.prefix('table.queues'),
+        credentials: sasCredentials({
+          accountId: cfg.azure.accountId,
+          tableName: cfg.app.queuesTableName,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
+        signingKey: cfg.azure.signingKey,
+      });
+    },
+  },
+
+  listeners: {
+    requires: ['Hook', 'taskcreator', 'Queues', 'pulseClient'],
+    setup: async ({Hook, taskcreator, Queues, pulseClient}) => {
+      let Listener = new HookListeners({
+        Hook,
+        Queues,
+        taskcreator,
+        client: pulseClient,
+      });
+      await Listener.setup();
+      return Listener;
+    },
   },
 
   docs: {

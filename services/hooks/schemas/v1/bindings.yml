@@ -1,0 +1,18 @@
+$schema: http://json-schema.org/draft-06/schema#
+title:   "List of Bindings"
+type: "array"
+properties:
+  items:
+    title:              "Binding"
+    description: |
+      Exchange and RoutingKeyPattern for each binding
+    type:               object
+    properties:
+      exchange:
+        type:           string
+      routingKeyPattern:
+        type:           string
+    additionalProperties:     false
+    required:
+      - exchange
+      - routingKeyPattern

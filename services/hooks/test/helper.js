@@ -9,6 +9,7 @@ const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
 const {FakeClient} = require('taskcluster-lib-pulse');
 const slugid = require('slugid');
+const HookListeners = require('../src/listeners');
 
 const helper = module.exports = {};
 
@@ -21,6 +22,7 @@ helper.rootUrl = 'http://localhost:60401';
 helper.load = stickyLoader(load);
 helper.load.inject('profile', 'test');
 helper.load.inject('process', 'test');
+helper.load.inject('pulseClient', new FakeClient());
 
 helper.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-hooks',
@@ -63,7 +65,7 @@ helper.withHook = (mock, skipping) => {
 
   const cleanup = async () => {
     if (!skipping()) {
-      await helper.Hook.scan({}, {handler: hook => hook.remove()});
+      await helper.Hook.scan({}, {handler: async (hook) => { await hook.remove();}});
     }
   };
   setup(cleanup);
@@ -136,16 +138,14 @@ helper.withTaskCreator = function(mock, skipping) {
  * queue.
  */
 helper.withPulse = (mock, skipping) => {
+  let Listener;
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
 
-    helper.load.inject('pulseClient', new FakeClient());
-
     await helper.load('cfg');
     helper.publisher = await helper.load('publisher');
-
     helper.checkNextMessage = (exchange, check) => {
       for (let i = 0; i < helper.messages.length; i++) {
         const message = helper.messages[i];
@@ -168,14 +168,68 @@ helper.withPulse = (mock, skipping) => {
   });
 
   const recordMessage = msg => helper.messages.push(msg);
-  setup(function() {
+  setup(async function() {
     helper.messages = [];
     helper.publisher.on('message', recordMessage);
+    if (helper.Listener) {
+      await helper.Listener.terminate();
+      helper.Listener = null;
+    }
+    let Hook = helper.Hook;
+    let Queues = helper.Queues;
+    let taskcreator = helper.creator;
+    
+    helper.Listener = new HookListeners({
+      Hook,
+      Queues,
+      taskcreator,
+      client: new FakeClient(),
+    });
+
+    await helper.Listener.setup();
   });
 
   teardown(async function() {
     helper.publisher.removeListener('message', recordMessage);
   });
+
+  suiteTeardown(async function() {
+    if (helper.Listener) {
+      await helper.Listener.terminate();
+      helper.Listener = null;
+    }
+  });
+};
+
+/**
+ * Set helper.Queues to a set-up Queues entity (and inject it into the loader)
+ */
+helper.withQueues = (mock, skipping) => {
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+
+    if (mock) {
+      const cfg = await helper.load('cfg');
+      helper.load.inject('Queues', data.Queues.setup({
+        tableName: cfg.app.queuesTableName,
+        credentials: 'inMemory',
+        signingKey: cfg.azure.signingKey,
+      }));
+    }
+
+    helper.Queues = await helper.load('Queues');
+    await helper.Queues.ensureTable();
+  });
+
+  const cleanup = async () => {
+    if (!skipping()) {
+      await helper.Queues.scan({}, {handler: async (queue) => await queue.remove()});
+    }
+  };
+  setup(cleanup);
+  suiteTeardown(cleanup);
 };
 
 /**
