@@ -6,19 +6,24 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/taskcluster/httpbackoff"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
+	tcUrls "github.com/taskcluster/taskcluster-lib-urls"
 	tc "github.com/taskcluster/taskcluster-proxy/taskcluster"
 )
 
 // Routes represents the context of the running service
 type Routes struct {
+	RootURL string
 	tcclient.Client
-	lock sync.RWMutex
+	services tc.Services
+	lock     sync.RWMutex
 }
 
 // CredentialsUpdate is the internal representation of the json body which is
@@ -29,8 +34,16 @@ type CredentialsUpdate struct {
 	Certificate string `json:"certificate"`
 }
 
-var tcServices = tc.NewServices()
 var httpClient = &http.Client{}
+
+// NewRoutes creates a new Routes instance.
+func NewRoutes(rootURL string, client tcclient.Client) Routes {
+	return Routes{
+		RootURL:  rootURL,
+		Client:   client,
+		services: tc.NewServices(rootURL),
+	}
+}
 
 func (routes *Routes) setHeaders(res http.ResponseWriter) {
 	headersToSend := res.Header()
@@ -127,7 +140,8 @@ func (routes *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
 	routes.lock.RLock()
 	defer routes.lock.RUnlock()
 
-	targetPath, err := tcServices.ConvertPath(req.URL)
+	fmt.Printf("root handler %s\n", req.URL)
+	targetPath, err := routes.services.ConvertPath(req.URL)
 
 	// Unkown service which we are trying to hit...
 	if err != nil {
@@ -136,6 +150,48 @@ func (routes *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(res, "Unkown taskcluster service: %s", err)
 		return
 	}
+	routes.commonHandler(res, req, targetPath)
+}
+
+var apiPath = regexp.MustCompile("^/api/(?P<service>[^/]*)/(?P<apiVersion>[^/]*)/(?P<path>.*)$")
+
+// APIHandler is the HTTP Handler for /api endpoint
+func (routes *Routes) APIHandler(res http.ResponseWriter, req *http.Request) {
+	routes.setHeaders(res)
+	routes.lock.RLock()
+	defer routes.lock.RUnlock()
+
+	rawPath := req.URL.EscapedPath()
+	fmt.Printf("api handler %s\n", rawPath)
+
+	query := req.URL.RawQuery
+	if query != "" {
+		query = "?" + query
+	}
+
+	var targetPath *url.URL
+	var err error
+	match := apiPath.FindStringSubmatch(rawPath)
+	if match != nil {
+		// reconstruct the target path from the matched parameters (service,
+		// apiVersion, path, query) based on the configured RootURL.
+		targetPath, err = url.Parse(tcUrls.API(routes.RootURL, match[1], match[2], match[3]+query))
+	} else {
+		err = fmt.Errorf("Invalid /api path")
+	}
+
+	if err != nil {
+		res.WriteHeader(404)
+		log.Printf("%s parsing %s", err, req.URL.String())
+		fmt.Fprintf(res, "%s", err)
+		return
+	}
+
+	routes.commonHandler(res, req, targetPath)
+}
+
+// Common code for RootHandler and APIHandler
+func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, targetPath *url.URL) {
 	res.Header().Set("X-Taskcluster-Endpoint", targetPath.String())
 	log.Printf("Proxying %s | %s | %s", req.URL, req.Method, targetPath)
 
@@ -152,6 +208,7 @@ func (routes *Routes) RootHandler(res http.ResponseWriter, req *http.Request) {
 	// this reason, and to avoid confusion around this, let's keep the nil
 	// check in here.
 	body := []byte{}
+	var err error
 	if req.Body != nil {
 		body, err = ioutil.ReadAll(req.Body)
 		// If we fail to create a request notify the client.
