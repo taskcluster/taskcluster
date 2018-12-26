@@ -173,6 +173,8 @@ func (routes *Routes) APIHandler(res http.ResponseWriter, req *http.Request) {
 	var err error
 	match := apiPath.FindStringSubmatch(rawPath)
 	if match != nil {
+		// reconstruct the target path from the matched parameters (service,
+		// apiVersion, path, query) based on the configured RootURL.
 		targetPath, err = url.Parse(tcUrls.API(routes.RootURL, match[1], match[2], match[3]+query))
 	} else {
 		err = fmt.Errorf("Invalid /api path")
