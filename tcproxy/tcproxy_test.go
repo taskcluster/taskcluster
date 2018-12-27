@@ -24,7 +24,7 @@ func TestTaskclusterProxy(t *testing.T) {
 		Certificate:      os.Getenv("TASKCLUSTER_CERTIFICATE"),
 		AuthorizedScopes: []string{"queue:get-artifact:SampleArtifacts/_/X.txt"},
 	}
-	ll, err := New(executable, 34569, creds, "")
+	ll, err := New(executable, 34569, creds)
 	// Do defer before checking err since err could be a different error and
 	// process may have already started up.
 	defer func() {

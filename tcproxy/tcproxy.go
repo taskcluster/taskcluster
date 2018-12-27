@@ -25,7 +25,7 @@ type TaskclusterProxy struct {
 
 // New starts a tcproxy OS process using the executable specified, and returns
 // a *TaskclusterProxy.
-func New(taskclusterProxyExecutable string, httpPort uint16, creds *tcclient.Credentials, taskID string) (*TaskclusterProxy, error) {
+func New(taskclusterProxyExecutable string, httpPort uint16, creds *tcclient.Credentials) (*TaskclusterProxy, error) {
 	args := []string{
 		"--port", strconv.Itoa(int(httpPort)),
 		"--client-id", creds.ClientID,
@@ -34,9 +34,6 @@ func New(taskclusterProxyExecutable string, httpPort uint16, creds *tcclient.Cre
 	}
 	if creds.Certificate != "" {
 		args = append(args, "--certificate", creds.Certificate)
-	}
-	if taskID != "" {
-		args = append(args, "--task-id", taskID)
 	}
 	for _, scope := range creds.AuthorizedScopes {
 		args = append(args, scope)

@@ -53,15 +53,19 @@ func (l *TaskclusterProxyTask) RequiredScopes() scopes.Required {
 }
 
 func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
+	// include all scopes from task.scopes, as well as the scope to create artifacts on
+	// this task (which cannot be represented in task.scopes)
+	scopes := append(l.task.Definition.Scopes,
+		fmt.Sprintf("queue:create-artifact:%s/%d", l.task.TaskID, l.task.RunID))
 	taskclusterProxy, err := tcproxy.New(
 		config.TaskclusterProxyExecutable,
 		config.TaskclusterProxyPort,
 		&tcclient.Credentials{
-			AccessToken: l.task.TaskClaimResponse.Credentials.AccessToken,
-			Certificate: l.task.TaskClaimResponse.Credentials.Certificate,
-			ClientID:    l.task.TaskClaimResponse.Credentials.ClientID,
+			AccessToken:      l.task.TaskClaimResponse.Credentials.AccessToken,
+			Certificate:      l.task.TaskClaimResponse.Credentials.Certificate,
+			ClientID:         l.task.TaskClaimResponse.Credentials.ClientID,
+			AuthorizedScopes: scopes,
 		},
-		l.task.TaskID,
 	)
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("Could not start taskcluster proxy: %s", err))
