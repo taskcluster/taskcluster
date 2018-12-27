@@ -56,7 +56,7 @@ class TaskCreator {
       taskId,
       firedBy,
       result,
-      error: error.toString(),
+      error,
     });
   } 
 
@@ -103,10 +103,20 @@ class TaskCreator {
         time: new Date(),
       };
     } catch (err) {
+      let errModified;
+      if (typeof err === 'object') {
+        errModified = JSON.stringify(err);
+      } else {
+        errModified = err.toString();
+      }
+      if (errModified.length > 256 * 1024/2) {
+        errModified = errModified.substring(0, 256 * 1024/2);
+      }
+
       lastFire = {
         result: 'error',
         taskId: options.taskId,
-        error: err,
+        error: errModified,
         time: new Date(),
       };
     }
