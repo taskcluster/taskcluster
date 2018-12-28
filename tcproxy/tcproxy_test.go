@@ -10,7 +10,13 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-func TestTaskclusterProxy(t *testing.T) {
+func TestTcProxy(t *testing.T) {
+	if os.Getenv("TASKCLUSTER_CLIENT_ID") == "" ||
+		os.Getenv("TASKCLUSTER_ACCESS_TOKEN") == "" ||
+		os.Getenv("TASKCLUSTER_ROOT_URL") == "" {
+		t.Skip("Skipping test since TASKCLUSTER_{CLIENT_ID,ACCESS_TOKEN,ROOT_URL} env vars not set")
+	}
+
 	var executable string
 	switch runtime.GOOS {
 	case "windows":
@@ -24,7 +30,7 @@ func TestTaskclusterProxy(t *testing.T) {
 		Certificate:      os.Getenv("TASKCLUSTER_CERTIFICATE"),
 		AuthorizedScopes: []string{"queue:get-artifact:SampleArtifacts/_/X.txt"},
 	}
-	ll, err := New(executable, 34569, creds)
+	ll, err := New(executable, 34569, os.Getenv("TASKCLUSTER_ROOT_URL"), creds)
 	// Do defer before checking err since err could be a different error and
 	// process may have already started up.
 	defer func() {

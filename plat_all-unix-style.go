@@ -104,6 +104,15 @@ func install(arguments map[string]interface{}) (err error) {
 	return nil
 }
 
+// Set an environment variable in each command.  This can be called from a feature's
+// NewTaskFeature method to set variables for the task.
+func (task *TaskRun) setVariable(variable string, value string) error {
+	for i := range task.Commands {
+		task.Commands[i].Cmd.Env = append(task.Commands[i].Cmd.Env, fmt.Sprintf("%s=%s", variable, value))
+	}
+	return nil
+}
+
 func (task *TaskRun) EnvVars() []string {
 	workerEnv := os.Environ()
 	taskEnv := map[string]string{}
@@ -121,6 +130,8 @@ func (task *TaskRun) EnvVars() []string {
 		taskEnv[k] = v
 	}
 	taskEnv["TASK_ID"] = task.TaskID
+	taskEnv["TASKCLUSTER_ROOT_URL"] = config.RootURL
+
 	for i, j := range taskEnv {
 		taskEnvArray = append(taskEnvArray, i+"="+j)
 	}

@@ -53,6 +53,13 @@ func (l *TaskclusterProxyTask) RequiredScopes() scopes.Required {
 }
 
 func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
+	// Set TASKCLUSTER_PROXY_URL in the task environment
+	err := l.task.setVariable("TASKCLUSTER_PROXY_URL",
+		fmt.Sprintf("http://localhost:%d", config.TaskclusterProxyPort))
+	if err != nil {
+		return MalformedPayloadError(err)
+	}
+
 	// include all scopes from task.scopes, as well as the scope to create artifacts on
 	// this task (which cannot be represented in task.scopes)
 	scopes := append(l.task.Definition.Scopes,
@@ -60,6 +67,7 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 	taskclusterProxy, err := tcproxy.New(
 		config.TaskclusterProxyExecutable,
 		config.TaskclusterProxyPort,
+		config.RootURL,
 		&tcclient.Credentials{
 			AccessToken:      l.task.TaskClaimResponse.Credentials.AccessToken,
 			Certificate:      l.task.TaskClaimResponse.Credentials.Certificate,

@@ -397,6 +397,20 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	return nil
 }
 
+// Set an environment variable in each command.  This can be called from a feature's
+// NewTaskFeature method to set variables for the task.
+func (task *TaskRun) setVariable(variable string, value string) error {
+	for i := range task.Commands {
+		newEnv := []string{fmt.Sprintf("%s=%s", variable, value)}
+		combined, err := win32.MergeEnvLists(&task.Commands[i].Cmd.Env, &newEnv)
+		if err != nil {
+			return err
+		}
+		task.Commands[i].Cmd.Env = *combined
+	}
+	return nil
+}
+
 // Only return critical errors
 func purgeOldTasks() error {
 	if config.CleanUpTaskDirs {

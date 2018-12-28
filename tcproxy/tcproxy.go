@@ -25,9 +25,10 @@ type TaskclusterProxy struct {
 
 // New starts a tcproxy OS process using the executable specified, and returns
 // a *TaskclusterProxy.
-func New(taskclusterProxyExecutable string, httpPort uint16, creds *tcclient.Credentials) (*TaskclusterProxy, error) {
+func New(taskclusterProxyExecutable string, httpPort uint16, rootURL string, creds *tcclient.Credentials) (*TaskclusterProxy, error) {
 	args := []string{
 		"--port", strconv.Itoa(int(httpPort)),
+		"--root-url", rootURL,
 		"--client-id", creds.ClientID,
 		"--access-token", creds.AccessToken,
 		"--ip-address", "127.0.0.1",
