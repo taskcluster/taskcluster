@@ -53,7 +53,7 @@ func queryMetaData(url string) (string, error) {
 	return string(content), err
 }
 
-// taken from https://github.com/taskcluster/aws-provisioner/blob/5a01a94141c38447968ec75232fd86a86cca366a/src/worker-type.js#L601-L615
+// taken from https://github.com/taskcluster/aws-provisioner/blob/5a2bc7c57b20df00f9c4357e0daeb7967e6f5ee8/lib/worker-type.js#L607-L624
 type UserData struct {
 	Data                interface{} `json:"data"`
 	Capacity            int         `json:"capacity"`
@@ -67,6 +67,7 @@ type UserData struct {
 	LaunchSpecGenerated time.Time   `json:"launchSpecGenerated"`
 	LastModified        time.Time   `json:"lastModified"`
 	ProvisionerBaseURL  string      `json:"provisionerBaseUrl"`
+	TaskclusterRootURL  string      `json:"taskclusterRootUrl"`
 	SecurityToken       string      `json:"securityToken"`
 }
 
@@ -214,6 +215,7 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	c.Certificate = secToken.Credentials.Certificate
 	c.WorkerGroup = userData.Region
 	c.WorkerType = userData.WorkerType
+	c.RootURL = userData.TaskclusterRootURL
 
 	awsMetadata := map[string]interface{}{}
 	for _, url := range []string{

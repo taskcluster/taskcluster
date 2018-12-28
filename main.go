@@ -170,6 +170,8 @@ and reports back results to the queue.
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
+		  rootURL                           The root URL of the Taskcluster deploment to which
+		                                    clientId and accessToken grant access.
           signingKeyLocation                The PGP signing key for signing artifacts with.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
@@ -487,6 +489,7 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 		PurgeCacheBaseURL:              tcpurgecache.DefaultBaseURL,
 		QueueBaseURL:                   tcqueue.DefaultBaseURL,
 		RequiredDiskSpaceMegabytes:     10240,
+		RootURL:                        "",
 		RunAfterUserCreation:           "",
 		RunTasksAsCurrentUser:          runtime.GOOS != "windows",
 		SentryProject:                  "",

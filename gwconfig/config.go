@@ -43,6 +43,7 @@ type (
 		QueueBaseURL                   string                 `json:"queueBaseURL"`
 		Region                         string                 `json:"region"`
 		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
+		RootURL                        string                 `json:"rootURL"`
 		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
 		RunTasksAsCurrentUser          bool                   `json:"runTasksAsCurrentUser"`
 		SentryProject                  string                 `json:"sentryProject"`
@@ -103,6 +104,7 @@ func (c *Config) Validate() error {
 		{value: c.SigningKeyLocation, name: "signingKeyLocation", disallowed: ""},
 		{value: c.Subdomain, name: "subdomain", disallowed: ""},
 		{value: c.TasksDir, name: "tasksDir", disallowed: ""},
+		{value: c.RootURL, name: "rootURL", disallowed: ""},
 		{value: c.WorkerGroup, name: "workerGroup", disallowed: ""},
 		{value: c.WorkerID, name: "workerId", disallowed: ""},
 		{value: c.WorkerType, name: "workerType", disallowed: ""},

@@ -129,6 +129,7 @@ func setup(t *testing.T) (teardown func()) {
 		PurgeCacheBaseURL:  tcpurgecache.DefaultBaseURL,
 		QueueBaseURL:       tcqueue.DefaultBaseURL,
 		Region:             "test-worker-group",
+		RootURL:            os.Getenv("TASKCLUSTER_ROOT_URL"),
 		// should be enough for tests, and travis-ci.org CI environments don't
 		// have a lot of free disk
 		RequiredDiskSpaceMegabytes:     16,
@@ -172,8 +173,10 @@ func setup(t *testing.T) (teardown func()) {
 
 func NewQueue(t *testing.T) *tcqueue.Queue {
 	// check we have all the env vars we need to run this test
-	if os.Getenv("TASKCLUSTER_CLIENT_ID") == "" || os.Getenv("TASKCLUSTER_ACCESS_TOKEN") == "" {
-		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
+	if os.Getenv("TASKCLUSTER_CLIENT_ID") == "" ||
+		os.Getenv("TASKCLUSTER_ACCESS_TOKEN") == "" ||
+		os.Getenv("TASKCLUSTER_ROOT_URL") == "" {
+		t.Skip("Skipping test since TASKCLUSTER_{CLIENT_ID,ACCESS_TOKEN,ROOT_URL} env vars not set")
 	}
 	return tcqueue.NewFromEnv()
 }
