@@ -95,53 +95,35 @@ References:
 #### Feature: `taskclusterProxy`
 
 The taskcluster proxy provides an easy and safe way to make authenticated
-taskcluster requests within the scope(s) of a particular task.
+taskcluster requests within the scope(s) of a particular task.  The proxy
+accepts un-authenticated requests and attaches credentials to them
+corresponding to `task.scopes` as well as scopes to upload artifacts.
 
-For example lets say we have a task like this:
-
-```js
-{
-  "scopes": ["a", "b"],
-  "payload": {
-    "features": {
-      "taskclusterProxy": true
-    }
-  }
-}
-```
-
-A special docker container is linked to your task contained named "taskcluster"
-with this container linked you can make requests to various taskcluster services
-with _only_ the scopes listed in the task (in this case ["a", "b"])
-
-| Host | Service |
-|---------------------------------|-------------------------------|
-| queue.taskcluster.net           | taskcluster/queue/            |
-| index.taskcluster.net           | taskcluster/index/            |
-| aws-provisioner.taskcluster.net | taskcluster/aws-provisioner/  |
-| secrets.taskcluster.net         | taskcluster/secrets/          |
-| auth.taskcluster.net            | taskcluster/auth/             |
-| hooks.taskcluster.net           | taskcluster/hooks/            |
-| purge-cache.taskcluster.net     | taskcluster/purge-cache/      |
-
-and maybe more - see [the source](https://github.com/taskcluster/taskcluster-proxy/blob/master/taskcluster/services.go).
-
-For example (using curl) inside a task container.
-
-```sh
-curl taskcluster/queue/v1/<taskId>
-```
-
-You can also use the `baseUrl` parameter in the taskcluster-client
+The proxy's rootUrl is available to tasks in the environment variable
+`TASKCLUSTER_PROXY_URL`.  It can be used with a client like this:
 
 ```js
 var taskcluster = require('taskcluster-client');
 var queue = new taskcluster.Queue({
- baseUrl: 'taskcluster/queue'
- });
-
-queue.getTask('<taskId>');
+  rootUrl: process.env.TASKCLUSTER_PROXY_URL,
+});
+queue.createTask(..);
 ```
+
+This request would require that `task.scopes` contain the appropriate
+`queue:create-task:..` scope for the `createTask` API call.
+
+*NOTE*: as a special case, the scopes required to call
+`queue.createArtifact(<taskId>, <runId>, ..)` are automatically included,
+regardless of `task.scopes`.
+
+The proxy is easy to use within a shell command, too:
+
+```sh
+curl $TASKCLUSTER_PROXY_URL/api/secrets/v1/secret/my-top-secret-secret
+```
+
+This invocation would require `secrets:get:my-top-secret-secret` in `task.scopes`.
 
 References:
 
