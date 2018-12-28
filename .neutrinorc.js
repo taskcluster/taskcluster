@@ -39,5 +39,10 @@ module.exports = {
         neutrino.config.module.rules.delete('lint');
       }
     },
+    ['@neutrinojs/jest', {
+      setupTestFrameworkScriptFile: '<rootDir>test/setupTests.js',
+      setupFiles: ['jest-prop-type-error'],
+      snapshotSerializers: ["enzyme-to-json/serializer"],
+    }],
   ],
 };

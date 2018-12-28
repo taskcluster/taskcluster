@@ -1,0 +1,134 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Label /> should render correctly 1`] = `
+<WithStyles(Label)
+  className={null}
+  mini={false}
+  status="default"
+>
+  <Label
+    className={null}
+    classes={
+      Object {
+        "default": "Label-default-7",
+        "dense": "Label-dense-1",
+        "disabled": "Label-disabled-3",
+        "error": "Label-error-4",
+        "info": "Label-info-8",
+        "mini": "Label-mini-2",
+        "success": "Label-success-5",
+        "warning": "Label-warning-6",
+      }
+    }
+    mini={false}
+    status="default"
+  >
+    <WithStyles(Button)
+      className=""
+      classes={
+        Object {
+          "disabled": "Label-default-7 Label-disabled-3",
+          "sizeSmall": "Label-dense-1",
+        }
+      }
+      disabled={true}
+      size="small"
+    >
+      <Button
+        className=""
+        classes={
+          Object {
+            "colorInherit": "MuiButton-colorInherit-30",
+            "contained": "MuiButton-contained-20",
+            "containedPrimary": "MuiButton-containedPrimary-21",
+            "containedSecondary": "MuiButton-containedSecondary-22",
+            "disabled": "MuiButton-disabled-29 Label-default-7 Label-disabled-3",
+            "extendedFab": "MuiButton-extendedFab-27",
+            "fab": "MuiButton-fab-26",
+            "flat": "MuiButton-flat-14",
+            "flatPrimary": "MuiButton-flatPrimary-15",
+            "flatSecondary": "MuiButton-flatSecondary-16",
+            "focusVisible": "MuiButton-focusVisible-28",
+            "fullWidth": "MuiButton-fullWidth-34",
+            "label": "MuiButton-label-10",
+            "mini": "MuiButton-mini-31",
+            "outlined": "MuiButton-outlined-17",
+            "outlinedPrimary": "MuiButton-outlinedPrimary-18",
+            "outlinedSecondary": "MuiButton-outlinedSecondary-19",
+            "raised": "MuiButton-raised-23",
+            "raisedPrimary": "MuiButton-raisedPrimary-24",
+            "raisedSecondary": "MuiButton-raisedSecondary-25",
+            "root": "MuiButton-root-9",
+            "sizeLarge": "MuiButton-sizeLarge-33",
+            "sizeSmall": "MuiButton-sizeSmall-32 Label-dense-1",
+            "text": "MuiButton-text-11",
+            "textPrimary": "MuiButton-textPrimary-12",
+            "textSecondary": "MuiButton-textSecondary-13",
+          }
+        }
+        color="default"
+        component="button"
+        disableFocusRipple={false}
+        disabled={true}
+        fullWidth={false}
+        mini={false}
+        size="small"
+        type="button"
+        variant="text"
+      >
+        <WithStyles(ButtonBase)
+          className="MuiButton-root-9 MuiButton-text-11 MuiButton-flat-14 MuiButton-sizeSmall-32 Label-dense-1 MuiButton-disabled-29 Label-default-7 Label-disabled-3"
+          component="button"
+          disabled={true}
+          focusRipple={true}
+          focusVisibleClassName="MuiButton-focusVisible-28"
+          type="button"
+        >
+          <ButtonBase
+            centerRipple={false}
+            className="MuiButton-root-9 MuiButton-text-11 MuiButton-flat-14 MuiButton-sizeSmall-32 Label-dense-1 MuiButton-disabled-29 Label-default-7 Label-disabled-3"
+            classes={
+              Object {
+                "disabled": "MuiButtonBase-disabled-36",
+                "focusVisible": "MuiButtonBase-focusVisible-37",
+                "root": "MuiButtonBase-root-35",
+              }
+            }
+            component="button"
+            disableRipple={false}
+            disableTouchRipple={false}
+            disabled={true}
+            focusRipple={true}
+            focusVisibleClassName="MuiButton-focusVisible-28"
+            tabIndex="0"
+            type="button"
+          >
+            <button
+              className="MuiButtonBase-root-35 MuiButtonBase-disabled-36 MuiButton-root-9 MuiButton-text-11 MuiButton-flat-14 MuiButton-sizeSmall-32 Label-dense-1 MuiButton-disabled-29 Label-default-7 Label-disabled-3"
+              disabled={true}
+              onBlur={[Function]}
+              onFocus={[Function]}
+              onKeyDown={[Function]}
+              onKeyUp={[Function]}
+              onMouseDown={[Function]}
+              onMouseLeave={[Function]}
+              onMouseUp={[Function]}
+              onTouchEnd={[Function]}
+              onTouchMove={[Function]}
+              onTouchStart={[Function]}
+              tabIndex="-1"
+              type="button"
+            >
+              <span
+                className="MuiButton-label-10"
+              >
+                Foo
+              </span>
+            </button>
+          </ButtonBase>
+        </WithStyles(ButtonBase)>
+      </Button>
+    </WithStyles(Button)>
+  </Label>
+</WithStyles(Label)>
+`;
