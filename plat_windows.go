@@ -311,6 +311,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 			contents += "set " + envVar + "=" + envValue + "\r\n"
 		}
 		contents += "set TASK_ID=" + task.TaskID + "\r\n"
+		contents += "set TASKCLUSTER_ROOT_URL=" + config.RootURL + "\r\n"
 		contents += "cd \"" + taskContext.TaskDir + "\"" + "\r\n"
 
 		// Otherwise get the env from the previous command
