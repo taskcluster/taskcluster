@@ -1,4 +1,4 @@
-package whclient
+package client
 
 import (
 	"net"
@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/webhooktunnel/util"
-	"github.com/taskcluster/webhooktunnel/wsmux"
+	"github.com/taskcluster/websocktunnel/util"
+	"github.com/taskcluster/websocktunnel/wsmux"
 )
 
 type clientState int
@@ -148,7 +148,7 @@ func (c *Client) connectWithRetry() (*websocket.Conn, string, error) {
 	// initial connection
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+c.token)
-	header.Set("x-webhooktunnel-id", c.id)
+	header.Set("x-websocktunnel-id", c.id)
 	// initial attempt
 	c.logger.Printf("trying to connect to %s", c.proxyAddr)
 	conn, res, err := websocket.DefaultDialer.Dial(c.proxyAddr, header)
@@ -165,7 +165,7 @@ func (c *Client) connectWithRetry() (*websocket.Conn, string, error) {
 	}
 	c.logger.Printf("connected to %s ", c.proxyAddr)
 
-	url := res.Header.Get("x-webhooktunnel-client-url")
+	url := res.Header.Get("x-websocktunnel-client-url")
 	return conn, url, err
 }
 
@@ -176,7 +176,7 @@ func (c *Client) retryConn() (*websocket.Conn, string, error) {
 
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+c.token)
-	header.Set("x-webhooktunnel-id", c.id)
+	header.Set("x-websocktunnel-id", c.id)
 
 	currentDelay := c.retry.InitialDelay
 	maxTimer := time.After(c.retry.MaxElapsedTime)
@@ -190,7 +190,7 @@ func (c *Client) retryConn() (*websocket.Conn, string, error) {
 			c.logger.Printf("trying to connect to %s", c.proxyAddr)
 			conn, res, err := websocket.DefaultDialer.Dial(c.proxyAddr, header)
 			if err == nil {
-				url := res.Header.Get("x-webhooktunnel-client-url")
+				url := res.Header.Get("x-websocktunnel-client-url")
 				return conn, url, nil
 			}
 			if !shouldRetry(res) {

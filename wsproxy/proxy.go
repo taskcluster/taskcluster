@@ -1,4 +1,4 @@
-package whproxy
+package wsproxy
 
 import (
 	"bufio"
@@ -12,8 +12,8 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/webhooktunnel/util"
-	"github.com/taskcluster/webhooktunnel/wsmux"
+	"github.com/taskcluster/websocktunnel/util"
+	"github.com/taskcluster/websocktunnel/wsmux"
 
 	"github.com/sirupsen/logrus"
 	nullLog "github.com/sirupsen/logrus/hooks/test"
@@ -44,7 +44,7 @@ type Config struct {
 }
 
 // proxy is used to send http and ws requests to a registered client.
-// New proxy can be created by using whproxy.New()
+// New proxy can be created by using wsproxy.New()
 type proxy struct {
 	m               sync.RWMutex
 	pool            map[string]*wsmux.Session
@@ -68,7 +68,7 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p.logf("", r.RemoteAddr, "Host=%s Path=%s", r.Host, r.URL.Path)
 
 	// Client registration requests are a GET of path / with some headers set
-	if path, id := r.URL.Path, r.Header.Get("x-webhooktunnel-id"); id != "" && path == "/" {
+	if path, id := r.URL.Path, r.Header.Get("x-websocktunnel-id"); id != "" && path == "/" {
 		tokenString := util.ExtractJWT(r.Header.Get("Authorization"))
 		p.register(w, r, id, tokenString)
 		return
@@ -126,7 +126,7 @@ func newProxy(conf Config) (*proxy, error) {
 	}
 
 	if len(p.jwtSecretA) == 0 || len(p.jwtSecretB) == 0 {
-		panic("whproxy: missing secrets")
+		panic("wsproxy: missing secrets")
 	}
 
 	if p.logger == nil {
@@ -222,7 +222,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	if p.domainHosted {
 		url = urlScheme + id + "." + p.domain
 	}
-	header.Set("x-webhooktunnel-client-url", url)
+	header.Set("x-websocktunnel-client-url", url)
 	p.logf(id, r.RemoteAddr, "sending url= %s", url)
 	conn, err := p.upgrader.Upgrade(w, r, header)
 	if err != nil {
@@ -262,7 +262,7 @@ func (p *proxy) serveRequest(w http.ResponseWriter, r *http.Request, id string, 
 	}
 
 	// set original path as header
-	r.Header.Set("x-webhooktunnel-original-path", r.URL.Path)
+	r.Header.Set("x-websocktunnel-original-path", r.URL.Path)
 
 	// check for a websocket request
 	if websocket.IsWebSocketUpgrade(r) {

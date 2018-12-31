@@ -1,4 +1,4 @@
-package whproxy
+package wsproxy
 
 import (
 	"bytes"
@@ -17,9 +17,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
-	"github.com/taskcluster/webhooktunnel/util"
-	"github.com/taskcluster/webhooktunnel/whclient"
-	"github.com/taskcluster/webhooktunnel/wsmux"
+	"github.com/taskcluster/websocktunnel/util"
+	"github.com/taskcluster/websocktunnel/client"
+	"github.com/taskcluster/websocktunnel/wsmux"
 )
 
 var upgrader = websocket.Upgrader{
@@ -82,7 +82,7 @@ func TestProxyRegister(t *testing.T) {
 	// set auth header dial connection to proxy
 	header := make(http.Header)
 	header.Set("Authorization ", "Bearer "+workeridjwt)
-	header.Set("x-webhooktunnel-id", workerid)
+	header.Set("x-websocktunnel-id", workerid)
 	conn1, _, err := websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
 		t.Fatal(err)
@@ -122,7 +122,7 @@ func TestProxyRequest(t *testing.T) {
 
 	header := make(http.Header)
 	header.Set("Authorization ", "Bearer "+workeridjwt)
-	header.Set("x-webhooktunnel-id", "workerid")
+	header.Set("x-websocktunnel-id", "workerid")
 	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
 		t.Fatal(err)
@@ -219,7 +219,7 @@ func TestProxyURIRewrite(t *testing.T) {
 
 	header := make(http.Header)
 	header.Set("Authorization ", "Bearer "+workeridjwt)
-	header.Set("x-webhooktunnel-id", "workerid")
+	header.Set("x-websocktunnel-id", "workerid")
 	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
 		t.Fatal(err)
@@ -297,7 +297,7 @@ func TestProxyWebsocket(t *testing.T) {
 	// register worker and serve http
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+wsworkerjwt)
-	header.Set("x-webhooktunnel-id", "wsworker")
+	header.Set("x-websocktunnel-id", "wsworker")
 	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
 		t.Fatal(err)
@@ -412,7 +412,7 @@ func TestWebsocketProxyControl(t *testing.T) {
 	// register worker and serve http
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+wsworkerjwt)
-	header.Set("x-webhooktunnel-id", "wsworker")
+	header.Set("x-websocktunnel-id", "wsworker")
 	clientWs, _, err := websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
 		t.Fatal(err)
@@ -537,7 +537,7 @@ func TestWebSocketClosure(t *testing.T) {
 	// register worker and serve http
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+wsworkerjwt)
-	header.Set("x-webhooktunnel-id", "wsworker")
+	header.Set("x-websocktunnel-id", "wsworker")
 	clientWs, res, err := websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
 		t.Fatal(err)
@@ -612,7 +612,7 @@ func TestProxySessionRemoved(t *testing.T) {
 	wsURL := util.MakeWsURL(server.URL)
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+wsworkerjwt)
-	header.Set("x-webhooktunnel-id", "wsworker")
+	header.Set("x-websocktunnel-id", "wsworker")
 	conn, _, err := websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
 		t.Fatal(err)
@@ -649,7 +649,7 @@ func TestProxyAuth(t *testing.T) {
 	wsURL := util.MakeWsURL(server.URL)
 	header := make(http.Header)
 	header.Set("Authorization", "Bearer "+wsworkerjwt)
-	header.Set("x-webhooktunnel-id", "workerid")
+	header.Set("x-websocktunnel-id", "workerid")
 
 	conn, res, _ := websocket.DefaultDialer.Dial(wsURL, header)
 	if res == nil || res.StatusCode != 401 {
@@ -657,7 +657,7 @@ func TestProxyAuth(t *testing.T) {
 		t.Fatalf("connection should fail")
 	}
 
-	header.Set("x-webhooktunnel-id", "wsworker")
+	header.Set("x-websocktunnel-id", "wsworker")
 	conn, _, err = websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
 		t.Fatal(err)
@@ -681,7 +681,7 @@ func TestConcurrentConnections(t *testing.T) {
 	wsURL := util.MakeWsURL(server.URL)
 
 	clientLogger := genLogger()
-	client, err := whclient.New(testConfigurer("test-worker", wsURL, whclient.RetryConfig{}, clientLogger))
+	client, err := client.New(testConfigurer("test-worker", wsURL, client.RetryConfig{}, clientLogger))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -749,7 +749,7 @@ func TestProxySecrets(t *testing.T) {
 	header := make(http.Header)
 	jwt := tokenGenerator("test-worker", []byte("test-secret"))
 	header.Set("Authorization", "Bearer "+jwt)
-	header.Set("x-webhooktunnel-id", "test-worker")
+	header.Set("x-websocktunnel-id", "test-worker")
 
 	_, _, err = websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
@@ -758,7 +758,7 @@ func TestProxySecrets(t *testing.T) {
 
 	jwt = tokenGenerator("test-worker-2", []byte("another-secret"))
 	header.Set("Authorization", "Bearer "+jwt)
-	header.Set("x-webhooktunnel-id", "test-worker-2")
+	header.Set("x-websocktunnel-id", "test-worker-2")
 
 	_, _, err = websocket.DefaultDialer.Dial(wsURL, header)
 	if err != nil {
@@ -767,7 +767,7 @@ func TestProxySecrets(t *testing.T) {
 }
 
 // function for generating configurer objects
-func testConfigurer(id, addr string, retryConfig whclient.RetryConfig, logger *log.Logger) whclient.Configurer {
+func testConfigurer(id, addr string, retryConfig client.RetryConfig, logger *log.Logger) client.Configurer {
 	now := time.Now()
 	expires := now.Add(30 * 24 * time.Hour)
 
@@ -780,8 +780,8 @@ func testConfigurer(id, addr string, retryConfig whclient.RetryConfig, logger *l
 
 	tokString, _ := token.SignedString([]byte("test-secret"))
 
-	return func() (whclient.Config, error) {
-		conf := whclient.Config{
+	return func() (client.Config, error) {
+		conf := client.Config{
 			ID:        id,
 			ProxyAddr: addr,
 			Token:     tokString,
@@ -816,7 +816,7 @@ func TestResponseStream(t *testing.T) {
 	wsURL := util.MakeWsURL(server.URL)
 
 	// create client
-	client, err := whclient.New(testConfigurer("test-worker", wsURL, whclient.RetryConfig{}, clientLogger))
+	client, err := client.New(testConfigurer("test-worker", wsURL, client.RetryConfig{}, clientLogger))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -899,7 +899,7 @@ func TestWebSocketStreamClient(t *testing.T) {
 	defer server.Close()
 	wsURL := util.MakeWsURL(server.URL)
 
-	client, err := whclient.New(testConfigurer("test-worker", wsURL, whclient.RetryConfig{}, genLogger()))
+	client, err := client.New(testConfigurer("test-worker", wsURL, client.RetryConfig{}, genLogger()))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -980,7 +980,7 @@ func TestDomainResolve(t *testing.T) {
 	defer server.Close()
 
 	// make connection
-	client, err := whclient.New(testConfigurer("workerid", "ws://tcproxy.dev:"+getPort(server.URL), whclient.RetryConfig{},
+	client, err := client.New(testConfigurer("workerid", "ws://tcproxy.dev:"+getPort(server.URL), client.RetryConfig{},
 		genLogger()))
 
 	if err != nil {
@@ -1071,7 +1071,7 @@ func TestProxySendsURL(t *testing.T) {
 	defer server.Close()
 
 	// make connection
-	client, err := whclient.New(testConfigurer("workerid", "ws://tcproxy.dev:"+getPort(server.URL), whclient.RetryConfig{},
+	client, err := client.New(testConfigurer("workerid", "ws://tcproxy.dev:"+getPort(server.URL), client.RetryConfig{},
 		genLogger()))
 
 	if err != nil {
@@ -1103,14 +1103,14 @@ func TestProxyDomainRegister(t *testing.T) {
 	defer server.Close()
 
 	// make connection
-	configurer := func() (whclient.Config, error) {
-		return whclient.Config{
+	configurer := func() (client.Config, error) {
+		return client.Config{
 			ID:        "workerid",
 			Token:     workeridjwt,
 			ProxyAddr: "ws://register.tcproxy.dev:" + getPort(server.URL),
 		}, nil
 	}
-	client, err := whclient.New(configurer)
+	client, err := client.New(configurer)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1137,15 +1137,15 @@ func TestProxyWebSocketPath(t *testing.T) {
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
-	configurer := func() (whclient.Config, error) {
-		return whclient.Config{
+	configurer := func() (client.Config, error) {
+		return client.Config{
 			ID:        "workerid",
 			Token:     workeridjwt,
 			ProxyAddr: "ws://register.tcproxy.dev:" + getPort(server.URL),
 		}, nil
 	}
 
-	client, err := whclient.New(configurer)
+	client, err := client.New(configurer)
 	if err != nil {
 		t.Fatal(err)
 	}

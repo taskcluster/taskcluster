@@ -1,4 +1,4 @@
-package whproxy
+package wsproxy
 
 import (
 	"io"
@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/webhooktunnel/util"
-	"github.com/taskcluster/webhooktunnel/wsmux"
+	"github.com/taskcluster/websocktunnel/util"
+	"github.com/taskcluster/websocktunnel/wsmux"
 )
 
 func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *wsmux.Session, tunnelID string) error {

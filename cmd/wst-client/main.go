@@ -15,18 +15,18 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/tcauth"
-	"github.com/taskcluster/webhooktunnel/whclient"
+	"github.com/taskcluster/websocktunnel/client"
 )
 
-const usage = `Webhooktunnel Client
-Webhooktunnel Client is a command line utility which establishes a connection
-to the webhooktunnel proxy and allows serving http without exposing ports to 
+const usage = `Websocketunnel Client
+Websocketunnel Client is a command line utility which establishes a connection
+to the websocktunnel proxy and allows serving http without exposing ports to 
 the internet.
 
 [Firewall/NAT [User] <--]---> [Proxy] <--- [Web]
 
-Usage: whclient <clientID> <accessToken> <targetPort> [--cert=<cert>] [--out-file=<outFile>] [--json]
-whclient -h | --help
+Usage: wst-client <clientID> <accessToken> <targetPort> [--cert=<cert>] [--out-file=<outFile>] [--json]
+client -h | --help
 
 Options:
 -h --help 		Show help
@@ -71,7 +71,7 @@ func main() {
 	// accept new streams from this channel
 	strChan := make(chan net.Conn, 1)
 
-	client, err := whclient.New(makeConfigurer(clientID, accessToken, cert))
+	client, err := client.New(makeConfigurer(clientID, accessToken, cert))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -199,8 +199,8 @@ func (f *forwarder) kill() {
 	}
 }
 
-func makeConfigurer(clientID, accessToken, certificate string) func() (whclient.Config, error) {
-	configurer := func() (whclient.Config, error) {
+func makeConfigurer(clientID, accessToken, certificate string) func() (client.Config, error) {
+	configurer := func() (client.Config, error) {
 		creds := &tcclient.Credentials{
 			ClientID:    clientID,
 			AccessToken: accessToken,
@@ -209,9 +209,9 @@ func makeConfigurer(clientID, accessToken, certificate string) func() (whclient.
 		myAuth := tcauth.New(creds)
 		whtResponse, err := myAuth.WebhooktunnelToken()
 		if err != nil {
-			return whclient.Config{}, err
+			return client.Config{}, err
 		}
-		return whclient.Config{
+		return client.Config{
 			ID:        whtResponse.TunnelID,
 			Token:     whtResponse.Token,
 			ProxyAddr: whtResponse.ProxyURL,

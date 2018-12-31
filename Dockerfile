@@ -2,9 +2,9 @@ FROM golang
 
 RUN mkdir -p /go/src/github.com/
 WORKDIR /go/src/github.com/taskcluster/
-# clone and run webhooktunnel
-RUN git clone http://github.com/taskcluster/webhooktunnel
-WORKDIR /go/src/github.com/taskcluster/webhooktunnel
+# clone and run websocktunnel
+RUN git clone http://github.com/taskcluster/websocktunnel
+WORKDIR /go/src/github.com/taskcluster/websocktunnel
 
 # set envs 
 ENV HOSTNAME=tcproxy.dev

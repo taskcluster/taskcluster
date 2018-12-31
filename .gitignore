@@ -1,6 +1,6 @@
 #wsmux
 wsmux/test_log
-webhooktunnel
+websocktunnel
 main
 certs/
-cmd/whclient/whclient
+cmd/client/client

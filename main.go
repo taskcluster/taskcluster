@@ -19,7 +19,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	mozlog "github.com/mozilla-services/go-mozlogrus"
-	"github.com/taskcluster/webhooktunnel/whproxy"
+	"github.com/taskcluster/websocktunnel/wsproxy"
 )
 
 // starts proxy on a random port on the system
@@ -87,7 +87,7 @@ func main() {
 	}
 
 	// will panic if secrets are not loaded
-	proxy, _ := whproxy.New(whproxy.Config{
+	proxy, _ := wsproxy.New(wsproxy.Config{
 		Logger:       logger,
 		Upgrader:     upgrader,
 		JWTSecretA:   []byte(signingSecretA),

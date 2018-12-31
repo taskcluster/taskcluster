@@ -1,11 +1,11 @@
-# whclient
+# client
 --
-    import "github.com/taskcluster/webhooktunnel/whclient"
+    import "github.com/taskcluster/websocktunnel/client"
 
-Package whclient wraps a wsmux client session in a net.Listener interface. It
+Package client wraps a wsmux client session in a net.Listener interface. It
 attempts to reconnect to the proxy in case of a connection failure. It can be
 configured by setting the appropriate parameters in the Config object passed to
-whclient.New().
+client.New().
 
 ## Usage
 

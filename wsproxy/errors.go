@@ -1,4 +1,4 @@
-package whproxy
+package wsproxy
 
 import (
 	"errors"

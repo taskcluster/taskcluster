@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/webhooktunnel/util"
+	"github.com/taskcluster/websocktunnel/util"
 )
 
 // Config contains configuration for a new session, as created with `Server` or `Client`.

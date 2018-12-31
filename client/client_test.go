@@ -1,4 +1,4 @@
-package whclient
+package client
 
 import (
 	"errors"
@@ -13,7 +13,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/webhooktunnel/util"
+	"github.com/taskcluster/websocktunnel/util"
 )
 
 func testConfigurer(id, addr string, retryConfig RetryConfig, logger *log.Logger) Configurer {

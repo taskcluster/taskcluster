@@ -1,4 +1,4 @@
-package whclient
+package client
 
 // clientError implements net.Error
 type clientError struct {

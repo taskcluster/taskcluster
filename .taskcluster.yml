@@ -18,14 +18,14 @@ tasks:
           - >-
             mkdir -p /go/src/github.com/taskcluster &&
             cd /go/src/github.com/taskcluster &&
-            git clone ${event.pull_request.head.repo.git_url} webhooktunnel &&
-            cd webhooktunnel &&
+            git clone ${event.pull_request.head.repo.git_url} websocktunnel &&
+            cd websocktunnel &&
             git config advice.detachedHead false &&
             git checkout ${event.pull_request.head.sha} &&
             go test -v -race ./...
       metadata:
-        name: webhooktunnel-tests
-        description: runs tests for webhooktunnel components
+        name: websocktunnel-tests
+        description: runs tests for websocktunnel components
         owner: ${event.pull_request.user.login}@users.noreply.github.com
         source: ${event.repository.url}
 
@@ -46,14 +46,14 @@ tasks:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh &&
             mkdir -p /go/src/github.com/taskcluster &&
             cd /go/src/github.com/taskcluster &&
-            git clone ${event.pull_request.head.repo.git_url} webhooktunnel &&
-            cd webhooktunnel &&
+            git clone ${event.pull_request.head.repo.git_url} websocktunnel &&
+            cd websocktunnel &&
             git config advice.detachedHead false &&
             git checkout ${event.pull_request.head.sha} &&
             dep check
       metadata:
-        name: webhooktunnel-dep
-        description: check dep for webhooktunnel
+        name: websocktunnel-dep
+        description: check dep for websocktunnel
         owner: ${event.pull_request.user.login}@users.noreply.github.com
         source: ${event.repository.url}
 
@@ -74,14 +74,14 @@ tasks:
             curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.12.3 &&
             mkdir -p /go/src/github.com/taskcluster &&
             cd /go/src/github.com/taskcluster &&
-            git clone ${event.pull_request.head.repo.git_url} webhooktunnel &&
-            cd webhooktunnel &&
+            git clone ${event.pull_request.head.repo.git_url} websocktunnel &&
+            cd websocktunnel &&
             git config advice.detachedHead false &&
             git checkout ${event.pull_request.head.sha} &&
             golangci-lint run
       metadata:
-        name: webhooktunnel-lint
-        description: check lint for webhooktunnel
+        name: websocktunnel-lint
+        description: check lint for websocktunnel
         owner: ${event.pull_request.user.login}@users.noreply.github.com
         source: ${event.repository.url}
 
@@ -103,15 +103,15 @@ tasks:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh &&
             mkdir -p /go/src/github.com/taskcluster &&
             cd /go/src/github.com/taskcluster &&
-            git clone ${event.repository.url} webhooktunnel &&
-            cd webhooktunnel &&
+            git clone ${event.repository.url} websocktunnel &&
+            cd websocktunnel &&
             git config advice.detachedHead false &&
             git checkout ${event.after} &&
             dep check &&
             golangci-lint run &&
             go test -v -race ./...
       metadata:
-        name: webhooktunnel-everything
-        description: all checks for webhooktunnel
+        name: websocktunnel-everything
+        description: all checks for websocktunnel
         owner: ${event.pusher.name}@users.noreply.github.com
         source: ${event.repository.url}

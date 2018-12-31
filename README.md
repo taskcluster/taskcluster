@@ -1,11 +1,11 @@
-# webhooktunnel
-[![Task Status](https://github.taskcluster.net/v1/repository/taskcluster/webhooktunnel/master/badge.svg)](https://github.taskcluster.net/v1/repository/taskcluster/webhooktunnel/master/latest)
+# websocktunnel
+[![Task Status](https://github.taskcluster.net/v1/repository/taskcluster/websocktunnel/master/badge.svg)](https://github.taskcluster.net/v1/repository/taskcluster/webhooktunnel/master/latest)
 
-Webhooktunnel is a service that allows its clients to publicly expose specific HTTP services without publicly exposing the entire host.
-"Clients" connect to the webhooktunnel service with a specific ID, authenticating with a signed JWT, and upgrade the connection to a websocket.
+Websocketunnel is a service that allows its clients to publicly expose specific HTTP services without publicly exposing the entire host.
+"Clients" connect to the websocktunnel service with a specific ID, authenticating with a signed JWT, and upgrade the connection to a websocket.
 "Viewers" then connect to the service using a path containing that ID.
 The viewer's connection is then proxied to the client via its websocket.
-The critical characteristic is that all connections are made *to* the webhooktunnel service, so the clients need not be publicly addressible.
+The critical characteristic is that all connections are made *to* the websocktunnel service, so the clients need not be publicly addressible.
 
 # Configuration
 
@@ -37,10 +37,10 @@ In single-hosted mode, the id is included in the URL path, as shown below.
 To establish a new client connection, make a GET request to the service's hostname with path `/` and the usual websocket upgrade headers, as well as:
 
  * `Authorization` containing `Bearer <jwt>`; see below
- * `x-webhooktunnel-id` containing the client ID
+ * `x-websocktunnel-id` containing the client ID
 
 The connection will be upgraded to a websocket connection.
-The response will contain the header `x-webhooktunnel-client-url` giving the URL viewers can use to reach this client.
+The response will contain the header `x-websocktunnel-client-url` giving the URL viewers can use to reach this client.
 Clients can pass this URL, or URLs derived from it, to viewers.
 Although clients should not make assumptions about the form of this URL, at present it will either look like `https://<id>.<hostname>` (for domain-hosted mode) or `https://<hostname>/<id>` (for single-hosted mode).
 
@@ -53,8 +53,9 @@ Its `tid` claim must match the client ID exactly.
 
 ### Multiplexed Websockets
 
-The protocol used within the websocket connection between a client and the webhooktunnel service is beyond the scope of this document.
-It is implemented by the `github.com/taskcluster/webhooktunnel/wsmux` package, and the expectation is that clients will use this package directly.
+The protocol used within the websocket connection between a client and the websocktunnel service is beyond the scope of this document.
+It is implemented by the `github.com/taskcluster/websocktunnel/wsmux` package.
+The `github.com/taskcluster/websocktunnel/client` package uses this to implement the client side of the connection.
 
 ## Viewer Connections
 
@@ -70,15 +71,15 @@ That is entirely up to the client.
 
 # CLI
 
-The `whclient` command implements a client that will connect to a webhooktunnel service and proxy all connections to a specific local port.
+The `wst-client` command implements a client that will connect to a websocktunnel service and proxy all connections to a specific local port.
 It takes Taskcluster credentials and uses them to generate JWTs using the Auth service.
 
 # Development
 
 This service is tested only with go1.10.
 
-To hack on this service, install it into your GOPATH with `go get -u github.com/taskcluster/webhooktunnel`.
-Run the tests with the usual `go test` invocation (for example, `go test github.com/taskcluster/webhooktunnel`).
+To hack on this service, install it into your GOPATH with `go get -u github.com/taskcluster/websocktunnel`.
+Run the tests with the usual `go test` invocation (for example, `go test github.com/taskcluster/websocktunnel`).
 
 ## Linting
 

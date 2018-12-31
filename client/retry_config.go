@@ -1,4 +1,4 @@
-package whclient
+package client
 
 import (
 	"math/rand"
