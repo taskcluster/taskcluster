@@ -1,0 +1,30 @@
+* @taskcluster/core
+
+services/auth @djmitche
+services/events @djmitche
+services/github @owlishDeveloper
+services/hooks @djmitche
+services/index @djmitche
+services/login @djmitche
+services/notify @imbstack
+services/purge-cache @imbstack
+services/queue @jhford
+services/secrets @djmitche
+services/treeherder @imbstack
+
+libraries/eslint-config @owlishDeveloper
+libraries/client @jhford
+libraries/api @imbstack
+libraries/app @imbstack
+libraries/azure @djmitche
+libraries/docs @imbstack
+libraries/iterate @jhford
+libraries/loader @imbstack
+libraries/monitor @imbstack
+libraries/pulse @djmitche
+libraries/references @djmitche
+libraries/scopes @djmitche
+libraries/testing @djmitche
+libraries/validate @imbstack
+libraries/typed-env-config @imbstack
+
