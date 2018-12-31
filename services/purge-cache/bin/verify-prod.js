@@ -1,4 +1,4 @@
-'use strict';
+
 let config = require('typed-env-config');
 let taskcluster = require('taskcluster-client');
 
@@ -9,7 +9,7 @@ let purgeCache = new taskcluster.PurgeCache({
 });
 
 purgeCache.purgeCache(
- 'verifyprovisioner',
- 'verifyworker',
- {cacheName: 'verifycache'}
-).catch(function(err) {console.log(err)});
+  'verifyprovisioner',
+  'verifyworker',
+  {cacheName: 'verifycache'}
+).catch(function(err) {console.log(err);});
