@@ -39,6 +39,8 @@ export default class ViewClients extends PureComponent {
     clientSearch: '',
     // eslint-disable-next-line react/no-unused-state
     previousClientId: '',
+    // This needs to be initially null in order for the defaultValue to work
+    value: null,
   };
 
   static getDerivedStateFromProps(props, state) {
@@ -120,12 +122,20 @@ export default class ViewClients extends PureComponent {
     });
   };
 
+  handleClientSearchChange = ({ target: { value } }) => {
+    this.setState({ value });
+  };
+
   render() {
     const {
       classes,
       description,
       data: { loading, error, clients },
     } = this.props;
+    const { value } = this.state;
+    const searchDefaultValue = this.props.user
+      ? this.props.user.credentials.clientId
+      : null;
 
     return (
       <Dashboard
@@ -135,6 +145,9 @@ export default class ViewClients extends PureComponent {
           <Search
             disabled={loading}
             onSubmit={this.handleClientSearchSubmit}
+            onChange={this.handleClientSearchChange}
+            defaultValue={searchDefaultValue}
+            value={value}
             placeholder="Client starts with"
           />
         }>

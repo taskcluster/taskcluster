@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { bool, func } from 'prop-types';
+import { func, string, bool } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import FormControl from '@material-ui/core/FormControl';
@@ -59,6 +59,9 @@ import { THEME } from '../../utils/constants';
 export default class Search extends Component {
   static defaultProps = {
     spellCheck: false,
+    value: null,
+    onChange: null,
+    defaultValue: null,
   };
 
   static propTypes = {
@@ -69,14 +72,44 @@ export default class Search extends Component {
     onSubmit: func.isRequired,
     /** Set to `true` to enable spell-check on the search field. */
     spellCheck: bool,
+    /**
+     * The input value, required for a controlled component.
+     */
+    value: string,
+    /**
+     * Callback fired when the value is changed.
+     *
+     * You can pull out the new value by accessing `event.target.value`.
+     */
+    onChange: func,
+    /**
+     * The default value of the `Input` element.
+     *
+     * To use it on a controlled input requires the `value` prop
+     * to initially be set to null.
+     * */
+    defaultValue: string,
   };
+
+  constructor(props) {
+    super(props);
+
+    this.isControlled =
+      'value' in props && props.value !== undefined && props.value !== null;
+  }
 
   state = {
     value: '',
   };
 
-  handleInputChange = ({ target: { value } }) => {
-    this.setState({ value });
+  handleInputChange = e => {
+    const { onChange } = this.props;
+
+    if (this.isControlled) {
+      return onChange(e);
+    }
+
+    this.setState({ value: e.target.value });
   };
 
   handleInputSubmit = e => {
@@ -86,7 +119,7 @@ export default class Search extends Component {
   };
 
   render() {
-    const { classes, onSubmit, spellCheck, ...props } = this.props;
+    const { classes, onSubmit, onChange, spellCheck, ...props } = this.props;
     const { value } = this.state;
 
     return (
