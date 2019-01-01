@@ -120,10 +120,6 @@ export default class ViewClients extends PureComponent {
     });
   };
 
-  handleCreate = () => {
-    this.props.history.push('/auth/clients/create');
-  };
-
   render() {
     const {
       classes,
