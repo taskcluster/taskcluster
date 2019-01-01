@@ -59,7 +59,7 @@ export default class ViewRoles extends PureComponent {
           <Tooltip title="Create Role">
             <Button
               onClick={this.handleCreate}
-              variant="fab"
+              variant="round"
               color="secondary"
               className={classes.plusIcon}>
               <PlusIcon />

@@ -100,7 +100,7 @@ export default class ScopesetExpander extends Component {
             <div className={classes.actionButton}>
               <Button
                 color="secondary"
-                variant="fab"
+                variant="round"
                 onClick={this.handleExpandScopesClick}>
                 <ArrowExpandVerticalIcon />
               </Button>

@@ -177,7 +177,7 @@ export default class SecretForm extends Component {
               <Button
                 requiresAuth
                 color="secondary"
-                variant="fab"
+                variant="round"
                 className={classes.saveIcon}
                 disabled={loading || !this.validSecret()}
                 onClick={this.handleSaveSecret}>

@@ -331,7 +331,7 @@ export default class ClientForm extends Component {
               <Button
                 requiresAuth
                 disabled={loading}
-                variant="fab"
+                variant="round"
                 onClick={this.handleSaveClient}
                 classes={{ root: classes.saveIcon }}>
                 <ContentSaveIcon />

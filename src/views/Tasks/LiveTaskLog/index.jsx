@@ -50,7 +50,7 @@ export default class LiveTaskLog extends Component {
               <Button
                 component={Link}
                 to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}
-                variant="fab"
+                variant="round"
                 className={classes.fab}
                 color="secondary">
                 <ArrowRightIcon />

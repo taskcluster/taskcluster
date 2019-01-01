@@ -92,7 +92,7 @@ export default class ViewSecrets extends Component {
             title="Create Secret">
             <Button
               onClick={this.handleCreate}
-              variant="fab"
+              variant="round"
               color="secondary"
               className={classes.plusIcon}>
               <PlusIcon />

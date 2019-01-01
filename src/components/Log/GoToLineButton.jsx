@@ -61,7 +61,7 @@ export default class GoToLineButton extends Component {
         <Tooltip placement="bottom" title="Go to line">
           <Button
             className={classNames(classes.fabIcon, className)}
-            variant="fab"
+            variant="round"
             mini
             color="secondary"
             onClick={this.handleOpenClick}

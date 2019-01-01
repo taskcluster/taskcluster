@@ -115,7 +115,7 @@ export default class PageMeta extends Component {
               <Button
                 onClick={this.handlePreviousPage}
                 color="secondary"
-                variant="extendedFab"
+                variant="extended"
                 aria-label="Previous Page"
                 className={classes.navigationButton}>
                 <ChevronLeftIcon />
@@ -126,7 +126,7 @@ export default class PageMeta extends Component {
               <Button
                 onClick={this.handleNextPage}
                 color="secondary"
-                variant="extendedFab"
+                variant="extended"
                 aria-label="Next Page"
                 className={classes.navigationButton}>
                 {pageInfo.next.title}

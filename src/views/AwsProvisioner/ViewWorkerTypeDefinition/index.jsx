@@ -265,7 +265,7 @@ export default class ViewWorkerTypeDefinition extends Component {
                   actionLoading
                 }
                 classes={{ root: classes.successIcon }}
-                variant="fab">
+                variant="round">
                 <PlusIcon />
               </Button>
             </div>

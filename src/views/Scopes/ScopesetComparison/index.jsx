@@ -163,7 +163,7 @@ export default class ScopesetComparison extends Component {
           <Tooltip title="Compare Scopes">
             <Button
               color="secondary"
-              variant="fab"
+              variant="round"
               onClick={this.handleCompareScopesClick}
               className={classes.actionButton}>
               <ScaleBalanceIcon />

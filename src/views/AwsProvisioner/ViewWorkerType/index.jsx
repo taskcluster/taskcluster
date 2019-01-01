@@ -170,7 +170,7 @@ export default class ViewWorkerType extends Component {
                   }
                   requiresAuth
                   onClick={this.handleTerminateAllInstances}
-                  variant="fab"
+                  variant="round"
                   className={classes.terminateButton}>
                   <DeleteEmptyIcon />
                 </Button>

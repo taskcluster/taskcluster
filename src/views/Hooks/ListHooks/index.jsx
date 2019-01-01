@@ -81,7 +81,7 @@ export default class ListHooks extends Component {
         <Tooltip title="Create Hook">
           <Button
             color="secondary"
-            variant="fab"
+            variant="round"
             onClick={this.handleCreateHook}
             className={classes.actionButton}>
             <PlusIcon />

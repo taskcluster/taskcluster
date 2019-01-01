@@ -586,7 +586,7 @@ export default class HookForm extends Component {
               <Button
                 requiresAuth
                 classes={{ root: classes.successIcon }}
-                variant="fab"
+                variant="round"
                 disabled={!this.validHook() || actionLoading}
                 onClick={this.handleCreateHook}>
                 <ContentSaveIcon />

@@ -287,7 +287,7 @@ export default class CreateTask extends Component {
                 <Button
                   requiresAuth
                   disabled={!task || invalid || loading}
-                  variant="fab"
+                  variant="round"
                   className={classes.createIcon}
                   onClick={this.handleCreateTask}>
                   <PlusIcon />

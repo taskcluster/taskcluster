@@ -197,7 +197,9 @@ const createTheme = isDarkTheme => ({
       sizeSmall: {
         minWidth: 36,
       },
-      extendedFab: {
+    },
+    MuiFab: {
+      extended: {
         height: 36,
       },
     },

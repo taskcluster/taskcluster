@@ -493,7 +493,7 @@ export default class QuickStart extends Component {
           </List>
           <Tooltip title="Reset Form & File">
             <Button
-              variant="fab"
+              variant="round"
               onClick={this.handleReset}
               color="secondary"
               className={classes.resetButton}>

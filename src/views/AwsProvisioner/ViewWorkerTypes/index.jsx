@@ -84,7 +84,7 @@ export default class ViewRoles extends Component {
           <Tooltip title="Create Worker Type">
             <Button
               requiresAuth
-              variant="fab"
+              variant="round"
               className={classes.createIcon}
               onClick={this.handleCreate}>
               <PlusIcon />

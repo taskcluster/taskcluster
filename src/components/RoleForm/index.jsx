@@ -212,7 +212,7 @@ export default class RoleForm extends Component {
               <Button
                 requiresAuth
                 disabled={loading}
-                variant="fab"
+                variant="round"
                 onClick={this.handleSaveRole}
                 classes={{ root: classes.saveIcon }}>
                 <ContentSaveIcon />

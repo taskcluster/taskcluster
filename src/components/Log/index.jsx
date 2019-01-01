@@ -206,7 +206,7 @@ export default class Log extends Component {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          variant="fab"
+          variant="round"
           mini
           color="secondary"
           className={classNames(classes.fabIcon, RawLogButtonClassName)}
@@ -272,7 +272,7 @@ export default class Log extends Component {
               placement="bottom"
               title={follow ? 'Unfollow log' : 'Follow log'}>
               <Button
-                variant="fab"
+                variant="round"
                 mini
                 color={follow ? 'inherit' : 'secondary'}
                 onClick={this.handleFollowClick}

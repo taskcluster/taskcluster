@@ -115,7 +115,7 @@ export default class CreatePurgeCacheRequest extends Component {
               requiresAuth
               disabled={!this.isFormFilled() || actionLoading}
               onClick={this.handleCreate}
-              variant="fab"
+              variant="round"
               classes={{ root: classes.plusIcon }}
               className={classes.plusButton}>
               <PlusIcon />

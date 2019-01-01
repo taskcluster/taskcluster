@@ -32,7 +32,7 @@ export default class Button extends Component {
      * */
     track: gaEvent,
     /** The variant to use. */
-    variant: oneOf(['text', 'outlined', 'contained', 'fab', 'extendedFab']),
+    variant: oneOf(['text', 'outlined', 'contained', 'round', 'extended']),
   };
 
   handleButtonClick = () => {
@@ -64,7 +64,7 @@ export default class Button extends Component {
     } = this.props;
     const isDisabled = (requiresAuth && !user) || disabled;
     const MuiComponent =
-      variant === 'fab' || variant === 'extendedFab' ? Fab : MuiButton;
+      variant === 'round' || variant === 'extended' ? Fab : MuiButton;
 
     return (
       <MuiComponent

@@ -44,7 +44,7 @@ export default class TaskLog extends Component {
               <Button
                 component={Link}
                 to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}
-                variant="fab"
+                variant="round"
                 className={classes.fab}
                 color="secondary">
                 <ArrowRightIcon />
