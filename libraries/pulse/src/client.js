@@ -233,11 +233,28 @@ exports.Client = Client;
 
 /**
  * A fake client is basically just a semaphore for users like PulseConsumer to
- * invoke their own fakery.
+ * invoke their own fakery, but has a few fake methods of its own that do nothing.
  */
 class FakeClient {
   constructor() {
     this.isFakeClient = true;
+    this.debug = debug('taskcluster-lib-pulse.conn-fake');
+  }
+
+  async stop() { }
+  async recycle() {}
+  get activeConnection() {}
+
+  async onConnected() {
+    this.debug('FakeClient.onConnected will never call its callback');
+  }
+
+  async withConnection() {
+    this.debug('FakeClient.withConnection returns immediately without calling its callback');
+  }
+
+  async withChannel() {
+    this.debug('FakeClient.withChannel returns immediately without calling its callback');
   }
 }
 
