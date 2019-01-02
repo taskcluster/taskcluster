@@ -1,7 +1,7 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { string, arrayOf } from 'prop-types';
-import { pipe, map, ifElse, isEmpty, identity, sort as rSort } from 'ramda';
+import { string, shape, func, arrayOf } from 'prop-types';
+import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case/change-case';
 import { withStyles } from '@material-ui/core/styles';
@@ -9,13 +9,14 @@ import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography';
 import LinkIcon from 'mdi-react/LinkIcon';
-import { role } from '../../utils/prop-types';
 import sort from '../../utils/sort';
-import DataTable from '../DataTable';
+import ConnectionDataTable from '../ConnectionDataTable';
+import { VIEW_ROLES_PAGE_SIZE } from '../../utils/constants';
+import { pageInfo, role } from '../../utils/prop-types';
 
 const sorted = pipe(
-  rSort((a, b) => sort(a.roleId, b.roleId)),
-  map(({ roleId }) => roleId)
+  rSort((a, b) => sort(a.node.roleId, b.node.roleId)),
+  map(({ node: { roleId } }) => roleId)
 );
 
 @withStyles(theme => ({
@@ -36,8 +37,11 @@ export default class RolesTable extends Component {
   };
 
   static propTypes = {
-    /** A GraphQL roles response. */
-    roles: arrayOf(role).isRequired,
+    rolesConnection: shape({
+      edges: arrayOf(role),
+      pageInfo,
+    }).isRequired,
+    onPageChange: func.isRequired,
     /** A search term to refine the list of roles */
     searchTerm: string,
   };
@@ -47,31 +51,35 @@ export default class RolesTable extends Component {
     sortDirection: null,
   };
 
-  createSortedRoles = memoize(
-    (roles, sortBy, sortDirection, searchTerm) => {
+  createSortedRolesConnection = memoize(
+    (rolesConnection, sortBy, sortDirection) => {
       const sortByProperty = camelCase(sortBy);
-      const filteredRoles = searchTerm
-        ? roles.filter(({ roleId }) => roleId.includes(searchTerm))
-        : roles;
 
-      return ifElse(
-        isEmpty,
-        identity,
-        rSort((a, b) => {
+      if (!sortBy) {
+        return rolesConnection;
+      }
+
+      return {
+        ...rolesConnection,
+        edges: [...rolesConnection.edges].sort((a, b) => {
           const firstElement =
-            sortDirection === 'desc' ? b[sortByProperty] : a[sortByProperty];
+            sortDirection === 'desc'
+              ? b.node[sortByProperty]
+              : a.node[sortByProperty];
           const secondElement =
-            sortDirection === 'desc' ? a[sortByProperty] : b[sortByProperty];
+            sortDirection === 'desc'
+              ? a.node[sortByProperty]
+              : b.node[sortByProperty];
 
           return sort(firstElement, secondElement);
-        })
-      )(filteredRoles);
+        }),
+      };
     },
     {
-      serializer: ([roles, sortBy, sortDirection, searchTerm]) => {
-        const ids = sorted(roles);
+      serializer: ([rolesConnection, sortBy, sortDirection]) => {
+        const ids = sorted(rolesConnection.edges);
 
-        return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
+        return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
     }
   );
@@ -84,40 +92,39 @@ export default class RolesTable extends Component {
   };
 
   render() {
-    const { classes, roles, searchTerm } = this.props;
+    const { classes, onPageChange, rolesConnection } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const sortedRoles = this.createSortedRoles(
-      roles,
-      sortBy,
-      sortDirection,
-      searchTerm
-    );
     const iconSize = 16;
+    const sortedRolesConnection = this.createSortedRolesConnection(
+      rolesConnection,
+      sortBy,
+      sortDirection
+    );
 
     return (
-      <Fragment>
-        <DataTable
-          items={sortedRoles}
-          headers={['Role ID']}
-          sortByHeader={sortBy}
-          sortDirection={sortDirection}
-          onHeaderClick={this.handleHeaderClick}
-          renderRow={({ roleId }) => (
-            <TableRow key={roleId}>
-              <TableCell padding="dense">
-                <Link
-                  className={classes.tableCell}
-                  to={`/auth/roles/${encodeURIComponent(roleId)}`}>
-                  <div className={classes.listItemCell}>
-                    <Typography>{roleId}</Typography>
-                    <LinkIcon size={iconSize} />
-                  </div>
-                </Link>
-              </TableCell>
-            </TableRow>
-          )}
-        />
-      </Fragment>
+      <ConnectionDataTable
+        connection={sortedRolesConnection}
+        pageSize={VIEW_ROLES_PAGE_SIZE}
+        onHeaderClick={this.handleHeaderClick}
+        onPageChange={onPageChange}
+        headers={['Role ID']}
+        sortByHeader={sortBy}
+        sortDirection={sortDirection}
+        renderRow={({ node: role }) => (
+          <TableRow key={role.roleId}>
+            <TableCell padding="dense">
+              <Link
+                className={classes.tableCell}
+                to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
+                <div className={classes.listItemCell}>
+                  <Typography>{role.roleId}</Typography>
+                  <LinkIcon size={iconSize} />
+                </div>
+              </Link>
+            </TableCell>
+          </TableRow>
+        )}
+      />
     );
   }
 }
