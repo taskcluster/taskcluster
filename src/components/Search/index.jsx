@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { func, string, bool } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
@@ -56,10 +56,10 @@ import { THEME } from '../../utils/constants';
 /**
  * An app-bar compatible controlled search field.
  */
-export default class Search extends Component {
+export default class Search extends PureComponent {
   static defaultProps = {
     spellCheck: false,
-    value: null,
+    value: undefined,
     onChange: null,
     defaultValue: null,
   };

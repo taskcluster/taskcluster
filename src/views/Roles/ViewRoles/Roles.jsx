@@ -25,7 +25,7 @@ export default class Roles extends PureComponent {
     searchTerm: string,
   };
 
-  defaultProps = {
+  static defaultProps = {
     searchTerm: null,
   };
 
