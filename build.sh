@@ -105,8 +105,6 @@ fi
 find "${GOPATH}/bin" -name 'generic-worker*'
 
 CGO_ENABLED=0 go get github.com/taskcluster/livelog
-# capital X here ... we only want to delete things that are ignored!
-git clean -fdX
 
 if $TEST; then
   go get github.com/taskcluster/taskcluster-proxy
