@@ -958,17 +958,14 @@ func getPort(servURL string) string {
 	return re.FindStringSubmatch(servURL)[1]
 }
 
-func TestDomainResolve(t *testing.T) {
-	if os.Getenv("TEST_DNS_SET") != "yes" {
-		t.Skip("dns not set")
-	}
+// Test a GET request via the tunnel, using a client
+func TestGetRequestWithClient(t *testing.T) {
 	proxyConfig := Config{
-		Upgrader:     upgrader,
-		JWTSecretA:   []byte("test-secret"),
-		JWTSecretB:   []byte("another-secret"),
-		Domain:       "tcproxy.dev",
-		Logger:       genLogger(),
-		DomainHosted: true,
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+		Domain:     "localhost",
+		Logger:     genLogger(),
 	}
 	proxy, err := New(proxyConfig)
 	if err != nil {
@@ -980,14 +977,14 @@ func TestDomainResolve(t *testing.T) {
 	defer server.Close()
 
 	// make connection
-	client, err := client.New(testConfigurer("workerid", "ws://tcproxy.dev:"+getPort(server.URL), client.RetryConfig{},
+	client, err := client.New(testConfigurer("myclient", "ws://localhost:"+getPort(server.URL), client.RetryConfig{},
 		genLogger()))
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// test if can resolve worker using domain
+	// make a GET request via the tunnel
 	var wg sync.WaitGroup
 	clientHandler := func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/some/path" {
@@ -1015,7 +1012,7 @@ func TestDomainResolve(t *testing.T) {
 		_ = srv.Serve(client)
 	}()
 
-	req, err := http.NewRequest(http.MethodGet, "http://workerid.tcproxy.dev:"+getPort(server.URL)+"/some/path", nil)
+	req, err := http.NewRequest(http.MethodGet, "http://localhost:"+getPort(server.URL)+"/myclient/some/path", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1049,17 +1046,15 @@ func TestDomainResolve(t *testing.T) {
 	}
 }
 
-func TestProxySendsURL(t *testing.T) {
-	if os.Getenv("TEST_DNS_SET") != "yes" {
-		t.Skip("dns not set")
-	}
+// Test that client.New creates a client that has client.URL set to the client
+// URL (which includes the client ID)
+func TestClientURL(t *testing.T) {
 	proxyConfig := Config{
-		Upgrader:     upgrader,
-		JWTSecretA:   []byte("test-secret"),
-		JWTSecretB:   []byte("another-secret"),
-		Domain:       "tcproxy.dev",
-		Logger:       genLogger(),
-		DomainHosted: true,
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+		Domain:     "localhost",
+		Logger:     genLogger(),
 	}
 	proxy, err := New(proxyConfig)
 	if err != nil {
@@ -1071,63 +1066,26 @@ func TestProxySendsURL(t *testing.T) {
 	defer server.Close()
 
 	// make connection
-	client, err := client.New(testConfigurer("workerid", "ws://tcproxy.dev:"+getPort(server.URL), client.RetryConfig{},
+	client, err := client.New(testConfigurer("myclient", "ws://localhost:"+getPort(server.URL), client.RetryConfig{},
 		genLogger()))
 
 	if err != nil {
 		t.Fatal(err)
 	}
-	if client.URL() != "http://workerid.tcproxy.dev" {
-		t.Fatal("bad url")
-	}
-}
-
-func TestProxyDomainRegister(t *testing.T) {
-	if os.Getenv("TEST_DNS_SET") != "yes" {
-		t.Skip("dns not set")
-	}
-	proxyConfig := Config{
-		Upgrader:     upgrader,
-		JWTSecretA:   []byte("test-secret"),
-		JWTSecretB:   []byte("another-secret"),
-		Domain:       "tcproxy.dev",
-		Logger:       genLogger(),
-		DomainHosted: true,
-	}
-	proxy, err := New(proxyConfig)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// attempt hosting on port 80
-	server := httptest.NewServer(proxy)
-	defer server.Close()
-
-	// make connection
-	configurer := func() (client.Config, error) {
-		return client.Config{
-			ID:         "workerid",
-			Token:      workeridjwt,
-			TunnelAddr: "ws://register.tcproxy.dev:" + getPort(server.URL),
-		}, nil
-	}
-	client, err := client.New(configurer)
-	if err != nil {
-		t.Fatal(err)
+	if client.URL() != "http://localhost/myclient" {
+		t.Fatalf("bad url; got %s", client.URL())
 	}
 	_ = client.Close()
 }
 
+// Test a WebSocket connection via the tunnel
 func TestProxyWebSocketPath(t *testing.T) {
-	if os.Getenv("TEST_DNS_SET") != "yes" {
-		t.Skip("dns not set")
-	}
 	proxyConfig := Config{
-		Upgrader:     upgrader,
-		JWTSecretA:   []byte("test-secret"),
-		JWTSecretB:   []byte("another-secret"),
-		Domain:       "tcproxy.dev",
-		Logger:       genLogger(),
-		DomainHosted: true,
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+		Domain:     "localhost",
+		Logger:     genLogger(),
 	}
 	proxy, err := New(proxyConfig)
 	if err != nil {
@@ -1137,31 +1095,25 @@ func TestProxyWebSocketPath(t *testing.T) {
 	server := httptest.NewServer(proxy)
 	defer server.Close()
 
-	configurer := func() (client.Config, error) {
-		return client.Config{
-			ID:         "workerid",
-			Token:      workeridjwt,
-			TunnelAddr: "ws://register.tcproxy.dev:" + getPort(server.URL),
-		}, nil
-	}
-
-	client, err := client.New(configurer)
+	clientLogger := genLogger()
+	wsURL := util.MakeWsURL(server.URL)
+	client, err := client.New(testConfigurer("myclient", wsURL, client.RetryConfig{}, clientLogger))
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	reqURI := "/hookid/path?foo=bar&abc=def"
-	uri := "ws://workerid.tcproxy.dev:" + getPort(server.URL) + reqURI
+	uri := "ws://localhost:" + getPort(server.URL) + "/myclient" + reqURI
 	clientHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !websocket.IsWebSocketUpgrade(r) {
-			t.Fatal("request should be a websocket upgrade")
+			panic("request should be a websocket upgrade")
 		}
-		if r.URL.RequestURI() != reqURI {
-			t.Fatalf("invalid request uri propogated: %s", r.URL.RequestURI())
+		if r.URL.RequestURI() != "/myclient"+reqURI {
+			panic(fmt.Sprintf("invalid request uri propogated: %s", r.URL.RequestURI()))
 		}
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			t.Fatal(err)
+			panic(err)
 		}
 		_ = conn.Close()
 	})

@@ -25,12 +25,7 @@ In non-production mode, the service logs its activities to stdout in a human-rea
 
 # API
 
-The server operates in two modes: "domain-hosted" and "single-hosted".
-In domain-hosted mode, the id is included as a prefix to the hostname, e.g., for id `abcd` and `HOSTNAME=whp.example.com`, the hostname would be `abcd.whp.example.com`.
-This requires a "star" TLS certificate.
-If `TLS_KEY` or `TLS_CERTIFICATE` are not available, this mode is disabled.
-
-In single-hosted mode, the id is included in the URL path, as shown below.
+The websocktunnel service supports incoming connections from clients and from viewers, as described here.
 
 ## Client Connections
 
@@ -42,7 +37,7 @@ To establish a new client connection, make a GET request to the service's hostna
 The connection will be upgraded to a websocket connection.
 The response will contain the header `x-websocktunnel-client-url` giving the URL viewers can use to reach this client.
 Clients can pass this URL, or URLs derived from it, to viewers.
-Although clients should not make assumptions about the form of this URL, at present it will either look like `https://<id>.<hostname>` (for domain-hosted mode) or `https://<hostname>/<id>` (for single-hosted mode).
+Clients should not make assumptions about the form of this URL.
 
 ### Authorization
 
@@ -73,6 +68,13 @@ That is entirely up to the client.
 
 The `wst-client` command implements a client that will connect to a websocktunnel service and proxy all connections to a specific local port.
 It takes Taskcluster credentials and uses them to generate JWTs using the Auth service.
+
+# Hosting
+
+In many deployment scenarios, there will be thousands of idle client connections waiting for incoming viewer requests.
+This number of connections can easily overwhelm a server, even if the total traffic bandwidth does not.
+To cope with this situation, create multiple Websocktunnel instances, each with a different hostname, and configure clients to connect to a specific instance.
+How clients are assigned to instances is up to you, but keep in mind that clients may reconnect on connection failure, but if they do not reconnect to the same Websocktunnel instance, then the URL for that client will change.
 
 # Development
 

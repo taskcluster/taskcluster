@@ -56,7 +56,6 @@ func main() {
 
 	// Load TLS certificates
 	useTLS := true
-	domainHosted := true
 	tlsKeyEnc := os.Getenv("TLS_KEY")
 	tlsCertEnc := os.Getenv("TLS_CERTIFICATE")
 
@@ -66,8 +65,6 @@ func main() {
 	if err != nil {
 		logger.Error(err.Error())
 		useTLS = false
-		// assume tls * cert
-		domainHosted = false
 	}
 
 	//load port
@@ -88,13 +85,12 @@ func main() {
 
 	// will panic if secrets are not loaded
 	proxy, _ := wsproxy.New(wsproxy.Config{
-		Logger:       logger,
-		Upgrader:     upgrader,
-		JWTSecretA:   []byte(signingSecretA),
-		JWTSecretB:   []byte(signingSecretB),
-		Domain:       hostname,
-		TLS:          useTLS,
-		DomainHosted: domainHosted,
+		Logger:     logger,
+		Upgrader:   upgrader,
+		JWTSecretA: []byte(signingSecretA),
+		JWTSecretB: []byte(signingSecretB),
+		Domain:     hostname,
+		TLS:        useTLS,
 	})
 
 	// TODO: Read TLS config

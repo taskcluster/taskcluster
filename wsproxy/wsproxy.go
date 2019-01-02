@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/websocktunnel/util"
 	"github.com/taskcluster/websocktunnel/wsmux"
 )
 
@@ -48,9 +47,6 @@ func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *
 	}
 
 	uri := "ws://" + r.Host + r.URL.RequestURI()
-	if !p.domainHosted {
-		uri = "ws://" + r.Host + util.ReplaceID(r.URL.RequestURI())
-	}
 	p.logf(tunnelID, r.RemoteAddr, "dialing ws on stream, url: %s", uri)
 	tunnelConn, _, err := dialer.Dial(uri, reqHeader)
 	if err != nil {

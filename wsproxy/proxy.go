@@ -39,8 +39,6 @@ type Config struct {
 	Domain string
 	// set to true if serving with TLS
 	TLS bool
-
-	DomainHosted bool
 }
 
 // proxy is used to send http and ws requests to a registered client.
@@ -54,7 +52,6 @@ type proxy struct {
 	jwtSecretA      []byte
 	jwtSecretB      []byte
 	domain          string
-	domainHosted    bool
 	tls             bool
 }
 
@@ -74,55 +71,33 @@ func (p *proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if p.domainHosted {
-		// host may be of the form "host:port"
-		host := strings.Split(r.Host, ":")[0]
-
-		// try to match viewer requests to https://<id>.<domain>/<path>
-		if strings.HasSuffix(host, "."+p.domain) {
-			index := strings.Index(r.Host, ".")
-			id := r.Host[:index]
-			path := r.URL.RequestURI()
-			if id == "" {
-				http.NotFound(w, r)
-				return
-			}
-			p.serveRequest(w, r, id, path)
-			return
-		}
+	// try to match viewer requests to https://<domain>/<id>/<path> (ignoring
+	// the host field)
+	s := strings.TrimPrefix(r.URL.RequestURI(), "/")
+	index := strings.Index(s, "/")
+	id, path := "", "/"
+	if index < 0 {
+		id = s
 	} else {
-		// try to match viewer requests to https://<domain>/<id>/<path> (ignoring
-		// the host field)
-		s := strings.TrimPrefix(r.URL.RequestURI(), "/")
-		index := strings.Index(s, "/")
-		id, path := "", "/"
-		if index < 0 {
-			id = s
-		} else {
-			id = s[:index]
-			path = s[index:]
-		}
-		if id == "" {
-			http.NotFound(w, r)
-			return
-		}
-		p.serveRequest(w, r, id, path)
+		id = s[:index]
+		path = s[index:]
+	}
+	if id == "" {
+		http.NotFound(w, r)
 		return
 	}
-
-	http.NotFound(w, r)
+	p.serveRequest(w, r, id, path)
 }
 
 func newProxy(conf Config) (*proxy, error) {
 	p := &proxy{
-		pool:         make(map[string]*wsmux.Session),
-		upgrader:     conf.Upgrader,
-		logger:       conf.Logger,
-		jwtSecretA:   conf.JWTSecretA,
-		jwtSecretB:   conf.JWTSecretB,
-		domain:       conf.Domain,
-		domainHosted: conf.DomainHosted,
-		tls:          conf.TLS,
+		pool:       make(map[string]*wsmux.Session),
+		upgrader:   conf.Upgrader,
+		logger:     conf.Logger,
+		jwtSecretA: conf.JWTSecretA,
+		jwtSecretB: conf.JWTSecretB,
+		domain:     conf.Domain,
+		tls:        conf.TLS,
 	}
 
 	if len(p.jwtSecretA) == 0 || len(p.jwtSecretB) == 0 {
@@ -219,9 +194,6 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	}
 
 	url := urlScheme + p.domain + "/" + id
-	if p.domainHosted {
-		url = urlScheme + id + "." + p.domain
-	}
 	header.Set("x-websocktunnel-client-url", url)
 	p.logf(id, r.RemoteAddr, "sending url= %s", url)
 	conn, err := p.upgrader.Upgrade(w, r, header)
