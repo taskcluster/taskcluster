@@ -3627,6 +3627,11 @@ taskcluster-lib-urls@^11.0.0:
   resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-11.0.1.tgz#ebdbffec41278c7bfa0075f42314e75f917632df"
   integrity sha512-sapLD2um0MUuwtZh3zs6S7kfnb6AhxuYFvEUT+2VLYQ245hYZP2NcuI4MBtCIscR+CMesxPgxz7kEbotgnucZA==
 
+taskcluster-lib-urls@^12.0.0:
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-12.0.0.tgz#f56190eec9e9597d37a42ad0e7f461e8e0e6732b"
+  integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
+
 taskcluster-lib-validate@^11.0.1:
   version "11.0.3"
   resolved "https://registry.yarnpkg.com/taskcluster-lib-validate/-/taskcluster-lib-validate-11.0.3.tgz#705ae9a779d7fe389f544039f65c1eaced026bfe"
