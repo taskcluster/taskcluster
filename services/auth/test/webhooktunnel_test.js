@@ -8,8 +8,8 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   helper.withRoles(mock, skipping);
   helper.withServers(mock, skipping);
 
-  test('webhooktunnelToken', async () => {
-    let {tunnelId, token, proxyUrl} = await helper.apiClient.webhooktunnelToken();
+  test('websocktunnelToken', async () => {
+    let {tunnelId, token, proxyUrl} = await helper.apiClient.websocktunnelToken();
     let decoded = jwt.verify(token, 'test-secret');
 
     assert(decoded !== null);

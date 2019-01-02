@@ -208,7 +208,7 @@ const load = Loader({
           signatureValidator,
           sentryManager,
           statsum:            cfg.app.statsum,
-          webhooktunnel:      cfg.app.webhooktunnel,
+          websocktunnel:      cfg.app.websocktunnel,
           monitor,
         },
         schemaset,

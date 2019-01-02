@@ -110,8 +110,8 @@ const builder = new APIBuilder({
     // A tc-lib-monitor for use beyond the lib-api level
     'monitor',
 
-    // The webhooktunnel config (with properties `secret` and `proxyUrl`)
-    'webhooktunnel',
+    // The websocktunnel config (with properties `secret` and `proxyUrl`)
+    'websocktunnel',
   ],
 });
 
@@ -951,7 +951,7 @@ require('./aws');
 require('./azure');
 require('./sentry');
 require('./statsum');
-require('./webhooktunnel');
+require('./websocktunnel');
 
 /** Get all client information */
 builder.declare({

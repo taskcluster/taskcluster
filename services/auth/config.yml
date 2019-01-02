@@ -49,9 +49,9 @@ defaults:
       secret:                   !env STATSUM_API_SECRET
       baseUrl:                  !env STATSUM_BASE_URL
 
-    webhooktunnel:
-      secret:                   !env WEBHOOKTUNNEL_SECRET
-      proxyUrl:                 !env WEBHOOKTUNNEL_PROXY_URL
+    websocktunnel:
+      secret:                   !env WEBSOCKTUNNEL_SECRET
+      proxyUrl:                 !env WEBSOCKTUNNEL_PROXY_URL
 
     # Overrides of s3 buckets for redeployability
     # Leave unset if running inside Heroku
@@ -147,7 +147,7 @@ test:
     statsum:
       secret:                   'secret'
       baseUrl:                  'http://localhost.com'
-    webhooktunnel:
+    websocktunnel:
       secret:                   'test-secret'
       proxyUrl:                 'ws://tcproxy.dev'
   azure:

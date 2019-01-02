@@ -5,21 +5,21 @@ const taskcluster = require('taskcluster-client');
 
 builder.declare({
   method:     'get',
-  route:      '/webhooktunnel',
-  name:       'webhooktunnelToken',
+  route:      '/websocktunnel',
+  name:       'websocktunnelToken',
   input:      undefined,
-  output:     'webhooktunnel-token-response.yml',
+  output:     'websocktunnel-token-response.yml',
   stability:  'stable',
-  scopes:     'auth:webhooktunnel',
-  title:      'Get Token for Webhooktunnel Proxy',
+  scopes:     'auth:websocktunnel',
+  title:      'Get Token for Websocktunnel Proxy',
   description: [
-    'Get temporary `token` and `id` for connecting to webhooktunnel',
+    'Get temporary `token` and `id` for connecting to websocktunnel',
     'The token is valid for 96 hours, clients should refresh after expiration.',
   ].join('\n'),
 }, async function(req, res) {
   let tunnelId = (slugid.nice()+slugid.nice()).toLowerCase();
-  let secret = this.webhooktunnel.secret;
-  let proxyUrl = this.webhooktunnel.proxyUrl;
+  let secret = this.websocktunnel.secret;
+  let proxyUrl = this.websocktunnel.proxyUrl;
   let clientId = await req.clientId();
   let now = Math.floor(Date.now()/1000);
 
@@ -30,7 +30,7 @@ builder.declare({
     exp: now+96*60*60,
     nbf: now - 900, // maybe 15 min of drift
     iss: 'taskcluster-auth',
-    aud: 'webhooktunnel',
+    aud: 'websocktunnel',
   };
   let token = jwt.sign(payload, secret);
 
