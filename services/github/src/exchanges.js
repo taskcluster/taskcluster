@@ -1,8 +1,9 @@
 const {Exchanges} = require('taskcluster-lib-pulse');
 const _ = require('lodash');
+const assert = require('assert');
 
 /** Build common routing key construct for `exchanges.declare` */
-let commonRoutingKey = function(options) {
+const commonRoutingKey = function(options) {
   options = options || {};
   let routingKey = [
     {
@@ -42,9 +43,15 @@ let commonRoutingKey = function(options) {
   return routingKey;
 };
 
-let commonMessageBuilder = function(msg) {
+const commonMessageBuilder = function(msg) {
   msg.version = 1;
   return msg;
+};
+
+/** Build list of routing keys to CC */
+const commonCCBuilder = (message, routes) => {
+  assert(Array.isArray(routes), 'Routes must be an array');
+  return routes.map(route => 'route.' + route);
 };
 
 /** Declaration of exchanges offered by the github */
@@ -116,17 +123,22 @@ exchanges.declare({
 
 /** task group exchange */
 exchanges.declare({
-  exchange:           'task-group-defined',
-  name:               'taskGroupDefined',
-  title:              'GitHub release Event',
+  exchange:           'task-group-creation-requested',
+  name:               'taskGroupCreationRequested',
+  title:              'tc-gh requested the Queue service to create all the tasks in a group',
   description: [
-    'used for creating status indicators in GitHub UI using Statuses API',
+    'supposed to signal that taskCreate API has been called for every task in the task group',
+    'for this particular repo and this particular organization',
+    'currently used for creating initial status indicators in GitHub UI using Statuses API.',
+    'This particular exchange can also be bound to RabbitMQ queues by custom routes - for that,',
+    'Pass in the array of routes as a second argument to the publish method. Currently, we do',
+    'use the statuses routes to bind the handler that creates the initial status.',
   ].join('\n'),
   routingKey:         commonRoutingKey(),
-  schema:             'task-group-defined-message.yml',
+  schema:             'task-group-creation-requested.yml',
   messageBuilder:     commonMessageBuilder,
   routingKeyBuilder:  msg => _.pick(msg, 'organization', 'repository'),
-  CCBuilder:          () => [],
+  CCBuilder:          commonCCBuilder,
 });
 
 // Export exchanges

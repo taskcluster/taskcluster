@@ -33,7 +33,17 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
     });
   }
 
-  function simulateExchangeMessage({taskGroupId, exchange}) {
+  async function addCheckRun({taskGroupId, taskId}) {
+    debug(`adding CheckRun row for task ${taskId} of group ${taskGroupId}`);
+    await helper.CheckRuns.create({
+      taskGroupId,
+      taskId,
+      checkSuiteId: '11111',
+      checkRunId: '22222',
+    });
+  }
+
+  function simulateExchangeMessage({taskGroupId, exchange, queue, taskId, state, reasonResolved}) {
     // set up to resolve when the handler has finished (even if it finishes with error)
     return new Promise((resolve, reject) => {
       handlers.handlerComplete = resolve;
@@ -44,11 +54,20 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         routingKey: 'ignored',
         routes: [],
         payload: {
-          status: {taskGroupId},
+          status: {
+            taskGroupId,
+            taskId,
+            state,
+            runs: [{
+              reasonResolved,
+            }],
+          },
+          taskGroupId,
+          runId: 0,
         },
       };
 
-      handlers.resultStatusPq.fakeMessage(message);
+      handlers[queue].fakeMessage(message);
     });
   }
 
@@ -99,7 +118,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
           'event.head.ref': 'refs/heads/tc-gh-tests',
           'event.base.sha': base || '2bad4edf90e7d4fb4643456a4df333da348bbed4',
           'event.head.user.id': 190790,
-        }; 
+        };
         if (eventType === 'tag') {
           details['event.head.tag'] = 'v1.0.2';
           delete details['event.head.repo.branch'];
@@ -197,11 +216,11 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         content: require('./valid-yaml.json'),
       });
       await simulateJobMessage({
-        user: 'TaskClusterRobotCollaborator', 
-        base: '0000000000000000000000000000000000000000', 
+        user: 'TaskClusterRobotCollaborator',
+        base: '0000000000000000000000000000000000000000',
         eventType: 'tag'}
       );
-      
+
       assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
@@ -315,7 +334,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
     });
   });
 
-  suite('statusHandler', function() {
+  suite('Statuses API: result status handler', function() {
     suiteSetup(function() {
       if (skipping()) {
         this.skip();
@@ -350,6 +369,8 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        queue: 'deprecatedResultStatusPq',
+        taskId: null,
       });
       await assertStatusUpdate('success');
       await assertBuildState('success');
@@ -360,6 +381,8 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-failed',
+        queue: 'deprecatedResultStatusPq',
+        taskId: null,
       });
       await assertStatusUpdate('failure');
       await assertBuildState('failure');
@@ -370,13 +393,140 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-exception',
+        queue: 'deprecatedResultStatusPq',
+        taskId: null,
       });
       await assertStatusUpdate('failure');
       await assertBuildState('failure');
     });
   });
 
-  suite('taskHandler', function() {
+  suite('Checks API: result status handler', function() {
+    suiteSetup(function() {
+      if (skipping()) {
+        this.skip();
+      }
+    });
+
+    teardown(async function() {
+      await helper.Builds.remove({taskGroupId: TASKGROUPID}, true);
+      await helper.CheckRuns.remove({taskGroupId: TASKGROUPID, taskId: TASKID});
+    });
+
+    const TASKGROUPID = 'AXB-sjV-SoCyibyq3P32ow';
+    const TASKID = 'banana';
+    const CONCLUSIONS = { // maps status communicated by the queue service to github checkrun conclusions
+      /*eslint-disable quote-props*/
+      'completed': 'success',
+      'failed': 'failure',
+      'exception': 'failure',
+      'deadline-exceeded': 'timed_out',
+      'canceled': 'cancelled',
+      'superseded': 'neutral', // means: is not relevant anymore
+      'claim-expired': 'failure',
+      'worker-shutdown': 'neutral', // means: will be retried
+      'malformed-payload': 'action_required', // like, "correct your task definition"
+      'resource-unavailable': 'failure',
+      'internal-error': 'failure',
+      'intermittent-task': 'neutral', // means: will be retried
+    };
+
+    async function assertStatusUpdate(state) {
+      assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
+      let args = github.inst(9988).checks.update.firstCall.args[0];
+      assert.equal(args.owner, 'TaskClusterRobot');
+      assert.equal(args.repo, 'hooks-testing');
+      assert.equal(args.check_run_id, '22222');
+      assert.equal(args.conclusion, CONCLUSIONS[state]);
+    }
+
+    function assertStatusCreate(state) {
+      assert(github.inst(9988).checks.create.called, 'checks. create was not called');
+
+      github.inst(9988).checks.create.firstCall.args.forEach(args => {
+        if (args.state === state) {
+          assert.equal(args.owner, 'TaskClusterRobot');
+          assert.equal(args.repo, 'hooks-testing');
+          assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
+          debug('Created task group: ' + args.target_url);
+          assert(args.target_url.startsWith(URL_PREFIX));
+          let taskGroupId = args.target_url.substr(URL_PREFIX.length);
+          assert.equal(taskGroupId, TASKGROUPID);
+          assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'push');
+        }
+      });
+    }
+
+    test('task success gets a success comment', async function() {
+      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addCheckRun({taskGroupId: TASKGROUPID, taskId: TASKID});
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        queue: 'resultStatusPq',
+        taskId: TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+      });
+      await assertStatusUpdate('completed');
+    });
+
+    test('task failure gets a failure comment', async function() {
+      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addCheckRun({taskGroupId: TASKGROUPID, taskId: TASKID});
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-failed',
+        queue: 'resultStatusPq',
+        taskId: TASKID,
+        reasonResolved: 'failed',
+        state: 'failed',
+      });
+      await assertStatusUpdate('failed');
+    });
+
+    test('task exception gets a failure comment', async function() {
+      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await addCheckRun({taskGroupId: TASKGROUPID, taskId: TASKID});
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-exception',
+        queue: 'resultStatusPq',
+        taskId: TASKID,
+        reasonResolved: 'resource-unavailable',
+        state: 'exception',
+      });
+      await assertStatusUpdate('failed');
+    });
+
+    test('successful task started by decision task gets a success comment', async function() {
+      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        queue: 'resultStatusPq',
+        taskId: TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+      });
+      await assertStatusCreate('completed');
+    });
+
+    test('Undefined state/reasonResolved in the task exchange message -> neutral status', async function() {
+      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        queue: 'resultStatusPq',
+        taskId: TASKID,
+        reasonResolved: 'banana',
+        state: 'completed',
+      });
+      await assertStatusCreate('neutral');
+    });
+  });
+
+  suite('Statuses API: initial status handler', function() {
     suiteSetup(function() {
       if (skipping()) {
         this.skip();
@@ -397,7 +547,48 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
           assert.equal(args.owner, 'TaskClusterRobot');
           assert.equal(args.repo, 'hooks-testing');
           assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
-          assert.equal(args.description, `TaskGroup: Pending (for ${args.eventType})`);
+          debug('Created task group: ' + args.target_url);
+          assert(args.target_url.startsWith(URL_PREFIX));
+          let taskGroupId = args.target_url.substr(URL_PREFIX.length);
+          assert.equal(taskGroupId, TASKGROUPID);
+          assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'push');
+        }
+      });
+    }
+
+    test('create pending status when task is defined', async function() {
+      await addBuild({state: 'pending', taskGroupId: TASKGROUPID});
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-github/v1/task-group-creation-requested',
+        queue: 'deprecatedInitialStatusPq',
+      });
+      assertStatusCreation('pending');
+    });
+  });
+
+  suite('Checks API: initial status handler', function() {
+    suiteSetup(function() {
+      if (skipping()) {
+        this.skip();
+      }
+    });
+
+    teardown(async function() {
+      await helper.Builds.remove({taskGroupId: TASKGROUPID}, true);
+    });
+
+    const TASKGROUPID = 'AXB-sjV-SoCyibyq3P5555';
+    const TASKID = 'banana';
+
+    function assertStatusCreate(state) {
+      assert(github.inst(9988).checks.create.called, 'createStatus was not called');
+
+      github.inst(9988).checks.create.firstCall.args.forEach(args => {
+        if (args.state === state) {
+          assert.equal(args.owner, 'TaskClusterRobot');
+          assert.equal(args.repo, 'hooks-testing');
+          assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
           debug('Created task group: ' + args.target_url);
           assert(args.target_url.startsWith(URL_PREFIX));
           let taskGroupId = args.target_url.substr(URL_PREFIX.length);
@@ -412,17 +603,10 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-defined',
+        queue: 'initialTaskStatusPq',
+        taskId: TASKID,
       });
-      assertStatusCreation('pending');
-    });
-
-    test('create failure status', async function() {
-      await addBuild({state: 'failure', taskGroupId: TASKGROUPID});
-      await simulateExchangeMessage({
-        taskGroupId: TASKGROUPID,
-        exchange: 'exchange/taskcluster-queue/v1/task-defined',
-      });
-      assert(github.inst(9988).repos.createStatus.notCalled, 'createStatus was called twice');
+      assertStatusCreate('pending');
     });
   });
 });

@@ -120,8 +120,24 @@ tasks:
       ...
 ```
 
-
 NOTE: A well-designed template should produce `tasks: []` for any unrecognized `tasks_for` values; this allows later expansion of this service to handle more events.
+
+### Custom routes for notifications and other things
+
+You can add customize notifications or other functionality through custom routes in your task.
+Routes have to be an array of unique strings. You can have up to 63 custom routes (overall, there can be 64. 1 is reserved).
+
+```yaml
+version: 1
+tasks:
+  $match:
+    'tasks_for == "github-push"':
+      taskId: {$eval: as_slugid("pr_task")}
+      routes:
+        - 'notify.email.<you@you.com>.on-any'
+```
+
+More on routes you can read [here](https://docs.taskcluster.net/docs/reference/core/taskcluster-notify) and [here](https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/docs/task-schema)
 
 ### Branch Filtering
 

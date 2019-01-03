@@ -107,6 +107,26 @@ class FakeGithub {
           throwError(404);
         }
       },
+      'checks.create': async ({owner, repo, name, head_sha, output, details_url, actions, status, conclusion}) => {
+        if (repo === 'no-permission') {
+          throwError(403);
+        }
+
+        const check_run_id = Math.floor(Math.random()*(9999-1000)) + 1000;
+
+        return {
+          data: {
+            id: check_run_id,
+            check_suite: {id: 5555},
+          },
+        };
+      },
+      'checks.update': async ({repo}) => {
+        if (repo === 'no-permission') {
+          throwError(403);
+        }
+        return {};
+      },
     };
 
     const debug = Debug('FakeGithub');

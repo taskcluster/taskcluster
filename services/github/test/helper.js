@@ -46,13 +46,13 @@ exports.jsonHttpRequest = function(jsonFile, options) {
   options = _.defaultsDeep(options, defaultOptions);
   let jsonData = JSON.parse(fs.readFileSync(jsonFile));
   options.headers = jsonData.headers;
-  
+
   return new Promise (function(accept, reject) {
     try {
       let req = http.request(options, accept);
       req.write(JSON.stringify(jsonData.body));
       req.end();
-    } catch (e) { 
+    } catch (e) {
       reject(e);
     }
   });
@@ -97,8 +97,10 @@ exports.withEntities = (mock, skipping) => {
     const tableVersion = slugid.nice().replace(/[_-]/g, '');
     exports.buildsTableName = `TaskclusterGithubBuildsV${tableVersion}`;
     exports.ownersTableName = `TaskclusterIntegrationOwnersV${tableVersion}`;
+    exports.checkRunsTableName = `TaskclusterCheckRunsV${tableVersion}`;
     exports.load.cfg('app.buildsTableName', exports.buildsTableName);
     exports.load.cfg('app.ownersDirectoryTableName', exports.ownersTableName);
+    exports.load.cfg('app.checkRunsTableName', exports.checkRunsTableName);
 
     if (mock) {
       const cfg = await exports.load('cfg');
@@ -110,6 +112,10 @@ exports.withEntities = (mock, skipping) => {
         tableName: 'OwnersDirectory',
         credentials: 'inMemory',
       }));
+      exports.load.inject('CheckRuns', data.CheckRuns.setup({
+        tableName: 'CheckRuns',
+        credentials: 'inMemory',
+      }));
     }
 
     exports.Builds = await exports.load('Builds');
@@ -117,12 +123,16 @@ exports.withEntities = (mock, skipping) => {
 
     exports.OwnersDirectory = await exports.load('OwnersDirectory');
     await exports.OwnersDirectory.ensureTable();
+
+    exports.CheckRuns = await exports.load('CheckRuns');
+    await exports.CheckRuns.ensureTable();
   });
 
   const cleanup = async () => {
     if (!skipping()) {
       await exports.Builds.scan({}, {handler: secret => secret.remove()});
       await exports.OwnersDirectory.scan({}, {handler: secret => secret.remove()});
+      await exports.CheckRuns.scan({}, {handler: secret => secret.remove()});
     }
   };
   suiteSetup(cleanup);

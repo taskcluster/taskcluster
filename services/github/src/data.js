@@ -102,3 +102,15 @@ module.exports.OwnersDirectory = Entity.configure({
     owner: Entity.types.String,
   },
 });
+
+module.exports.CheckRuns = Entity.configure({
+  version: 1,
+  partitionKey: Entity.keys.StringKey('taskGroupId'),
+  rowKey: Entity.keys.StringKey('taskId'),
+  properties: {
+    taskGroupId: Entity.types.String,
+    taskId: Entity.types.String,
+    checkSuiteId: Entity.types.String,
+    checkRunId: Entity.types.String,
+  },
+});

@@ -1,4 +1,5 @@
 version: 1
+reporting: 'checks-v1'
 tasks:
   $match:
     'tasks_for == "github-push" && event.ref == "refs/heads/master"':

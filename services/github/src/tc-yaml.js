@@ -101,6 +101,9 @@ class VersionZero extends TcYaml {
   }
   compileTasks(config, cfg, payload, now) {
     config.tasks = config.tasks.map((task) => {
+      task.routes = task.routes || [];
+      task.routes.push(cfg.app.statusTaskRoute);
+
       return {
         taskId: slugid.nice(),
         task,
@@ -111,26 +114,26 @@ class VersionZero extends TcYaml {
       if (!task.task.extra || !task.task.extra.github) {
         return false;
       }
-        
+
       let event = payload.details['event.type'];
       let events = task.task.extra.github.events;
       let branch = payload.details['event.base.repo.branch'];
       let includeBranches = task.task.extra.github.branches;
       let excludeBranches = task.task.extra.github.excludeBranches;
-        
+
       if (includeBranches && excludeBranches) {
         throw new Error('Cannot specify both `branches` and `excludeBranches` in the same task!');
       }
-        
+
       return _.some(events, ev => {
         if (!event.startsWith(_.trimEnd(ev, '*'))) {
           return false;
         }
-        
+
         if (event !== 'push') {
           return true;
         }
-        
+
         if (includeBranches) {
           return _.includes(includeBranches, branch);
         } else if (excludeBranches) {
@@ -140,7 +143,7 @@ class VersionZero extends TcYaml {
         }
       });
     });
-        
+
     // Add common taskGroupId and schedulerId. taskGroupId is always the taskId of the first
     // task in taskcluster.
     if (config.tasks.length > 0) {
@@ -252,18 +255,23 @@ class VersionOne extends TcYaml {
       }
 
       config.tasks = config.tasks.map(task => {
-        task = _.defaults(task, {
+        task.routes = task.routes || [];
+        task.routes.push(config.reporting ? cfg.app.checkTaskRoute : cfg.app.statusTaskRoute);
+
+        task = Object.assign({
           taskId: defaultTaskId,
           taskGroupId: defaultTaskGroupId,
           created: now,
-        });
+        }, task);
         defaultTaskId = slugid.nice(); // invent a new taskId for the next task
 
+        const {taskId, ...taskWithoutTaskId} = task;
         return {
-          taskId: task.taskId,
-          task: _.omit(
-            _.extend(task, {schedulerId: cfg.taskcluster.schedulerId}),
-            'taskId'),
+          taskId,
+          task: {
+            ...taskWithoutTaskId,
+            schedulerId: cfg.taskcluster.schedulerId,
+          },
         };
       });
     }

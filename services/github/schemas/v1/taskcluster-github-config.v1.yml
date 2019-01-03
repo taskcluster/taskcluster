@@ -19,6 +19,11 @@ properties:
       enum:
         - public
         - collaborators
+  reporting:
+    description: Policy for reporting status of PR or a commit. If absent, Github Statuses API is used
+    type: string
+    enum:
+      - checks-v1
   tasks:
     title: Task definition template"
     description: |
