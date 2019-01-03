@@ -13,7 +13,8 @@ const (
 	defaultRandomizationFactor = 0.5
 )
 
-// RetryConfig contains exponential backoff parameters for retrying connections
+// RetryConfig contains exponential backoff parameters for retrying
+// connections.  In most cases, the default values are good enough.
 type RetryConfig struct {
 	// InitialDelay is the delay after which the first reconnect
 	// attempt takes place.
@@ -30,7 +31,7 @@ type RetryConfig struct {
 	MaxElapsedTime time.Duration
 
 	// Multplier is the rate at which the delay will increase
-	//Default = 1.5
+	// Default = 1.5
 	Multiplier float64
 
 	// RandomizationFactor is the extent to which the delay values will be randomized
@@ -57,9 +58,9 @@ func (r RetryConfig) nextDelay(currentDelay time.Duration) time.Duration {
 	return Delay
 }
 
-// initializeRetryValues sets the RetryConfig parameteres to their
-// default value
-func (r RetryConfig) defaultValues() RetryConfig {
+// initializeRetryValues returns a copy of this RetryConfig with nonzero
+// default values replacing nil values.
+func (r RetryConfig) withDefaultValues() RetryConfig {
 	conf := RetryConfig{
 		InitialDelay:        r.InitialDelay,
 		MaxDelay:            r.MaxDelay,

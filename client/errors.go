@@ -31,14 +31,12 @@ var (
 	ErrRetryFailed = clientError{errString: "retry failed"}
 
 	// ErrClientReconnecting is returned when the connection is reconnecting.
-	// This is a temporary error.
+	// This is a temporary error, and callers should retry the operation after
+	// a delay.
 	ErrClientReconnecting = clientError{errString: "client reconnecting", reconnect: true}
 
 	// ErrClientClosed is returned from an Accept call when the client is closed.
 	ErrClientClosed = clientError{errString: "client closed"}
-
-	// ErrBadConfig is returned from New when an Authorizer is not provided.
-	ErrBadConfig = clientError{errString: "config could not be generated"}
 
 	// ErrAuthFailed is returned when authentication with the proxy fails
 	ErrAuthFailed = clientError{errString: "auth failed", auth: true}

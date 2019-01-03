@@ -3,7 +3,10 @@
 // multiplexed as separate streams over a WS connection. It uses JWT
 // for auth.
 //
-// browser ----> [ proxy ] <--- websocket --- client
+//     browser ----> [ proxy ] <--- websocket --- client
 //
 // proxy serves endpoints exposed by client to browsers.
+//
+// This is a low-level part of websocktunnel; users should instead use the
+// github.com/taskcluster/client class.
 package wsproxy

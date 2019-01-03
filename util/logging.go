@@ -1,6 +1,6 @@
 package util
 
-// Logger is used by Session to write logs
+// Logger is used by Session and Client to write logs
 type Logger interface {
 	Printf(format string, a ...interface{})
 	Print(a ...interface{})

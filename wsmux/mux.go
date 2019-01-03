@@ -1,6 +1,9 @@
 // wsmux multiplexes multiple bidirectional streams over a single websocket.
 //
 // It presents an Session API similar to the TCP socket API.
+//
+// This is a low-level part of websocktunnel; users should instead use the
+// github.com/taskcluster/client class.
 package wsmux
 
 import (
