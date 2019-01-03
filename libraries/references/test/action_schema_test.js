@@ -101,7 +101,7 @@ suite('action_schema_test.js', function() {
         hookPayload: {},
         extra: {
           mystuff: true,
-        }
+        },
       }],
     });
   });

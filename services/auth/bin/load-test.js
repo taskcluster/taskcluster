@@ -13,7 +13,7 @@ const assert = require('assert');
 
 /** Launch server */
 const launch = async function(profile) {
-  debug("Launching with profile: %s", profile);
+  debug('Launching with profile: %s', profile);
 
   // Load configuration
   let cfg = base.config({profile: 'load-test'});
@@ -27,8 +27,8 @@ const launch = async function(profile) {
   let success = 0;
   let failed  = 0;
   let summary = () => {
-    console.log("SUMMARY: %s req/s success: %s, failed: %s",
-                fmt(success / CYCLE_SECONDS), success, failed)
+    console.log('SUMMARY: %s req/s success: %s, failed: %s',
+      fmt(success / CYCLE_SECONDS), success, failed);
     success = 0;
     failed  = 0;
   };
@@ -42,7 +42,7 @@ const launch = async function(profile) {
   let makeSignature = function() {
     let tempCreds = taskcluster.createTemporaryCredentials({
       start: new Date(),
-      expiry: taskcluster.fromNow("1 hour"),
+      expiry: taskcluster.fromNow('1 hour'),
       scopes: [
         'auth:credentials',
         'assume:worker-type:aws-provisioner/dockerhost-g2',
@@ -75,12 +75,12 @@ const launch = async function(profile) {
         'client-id:_9TuTPNUSQKMW8wcMIsrxA',
         'client-id:_XwhECl7T_WBWcOdRQFVkA',
         'client-id:_rUyXCLtT0SSDw37PXFIFw',
-        'client-id:a8298TjkQf2*'
+        'client-id:a8298TjkQf2*',
       ],
       credentials: {
         clientId: 'root',
         accessToken: cfg.app.rootAccessToken,
-      }
+      },
     });
     let reqUrl = 'http://localhost:1207/v1/client/authed-client/credentials';
     let header = hawk.client.header(reqUrl, 'GET', {
@@ -90,15 +90,15 @@ const launch = async function(profile) {
         algorithm:  'sha256',
       },
       ext: new Buffer(JSON.stringify({
-        certificate: JSON.parse(tempCreds.certificate)
-      })).toString('base64')
+        certificate: JSON.parse(tempCreds.certificate),
+      })).toString('base64'),
     }).field;
     return {
       method:         'get',
       resource:       '/v1/client/authed-client/credentials',
       host:           'localhost',
       port:           1207,
-      authorization:  header
+      authorization:  header,
     };
   };
 
@@ -106,7 +106,7 @@ const launch = async function(profile) {
   let exiting = false;
   let startLoop = () => {
     loops += 1;
-    (async() => {
+    (async () => {
       let agent = new https.Agent({keepAlive: true});
       if (cfg.server.publicUrl.substr(0, 5) != 'https') {
         agent = new http.Agent({keepAlive: true});
@@ -116,20 +116,20 @@ const launch = async function(profile) {
       }));
       let auth = new Auth({
         retries:      0,
-        agent:        agent
+        agent:        agent,
       });
       let reqForVerification = makeSignature();
       setInterval(function() {
         reqForVerification = makeSignature();
       }, 3 * 60 * 1000);
-      while(true) {
+      while (true) {
         await auth.authenticateHawk(reqForVerification).then(result => {
-          assert(result.status === 'auth-success', "Validation error");
+          assert(result.status === 'auth-success', 'Validation error');
           success += 1;
         }).catch(err => {
           failed += 1;
           if (exiting) {
-            console.log("Error: %s: %s", err.statusCode, err.message);
+            console.log('Error: %s: %s', err.statusCode, err.message);
           }
         });
 
@@ -139,11 +139,10 @@ const launch = async function(profile) {
         await base.testing.sleep(10);
       }
     })().catch(function(err) {
-      console.log("LOOP CRASHED!!!");
+      console.log('LOOP CRASHED!!!');
       console.log(err.stack);
     });
   };
-
 
   /*
   //  2 req in parallel
@@ -151,45 +150,43 @@ const launch = async function(profile) {
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
 
-
   //  4 req in parallel
   while(loops < 4) startLoop();
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
   // */
   //  8 req in parallel
-  while(loops < 8) startLoop();
+  while (loops < 8) {startLoop();}
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
 
-
   // 16 req in parallel
-  while(loops < 16) startLoop();
+  while (loops < 16) {startLoop();}
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
 
   // 32 req in parallel
-  while(loops < 32) startLoop();
+  while (loops < 32) {startLoop();}
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
 
   // 48 req in parallel
-  while(loops < 48) startLoop();
+  while (loops < 48) {startLoop();}
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
   //
 
   // 64 req in parallel
-  while(loops < 64) startLoop();
+  while (loops < 64) {startLoop();}
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
 
   // 128 req in parallel
-  while(loops < 128) startLoop();
+  while (loops < 128) {startLoop();}
   await base.testing.sleep(CYCLE_SECONDS * 1000);
   summary();
   //*/
-  console.log("Exiting");
+  console.log('Exiting');
   exiting = true;
 };
 
@@ -198,14 +195,14 @@ if (!module.parent) {
   // Find configuration profile
   let profile = process.argv[2];
   if (!profile) {
-    console.log("Usage: load-test.js [profile]")
-    console.error("ERROR: No configuration profile is provided");
+    console.log('Usage: load-test.js [profile]');
+    console.error('ERROR: No configuration profile is provided');
   }
   // Launch with given profile
   launch(profile).then(function() {
-    debug("Launched load-test successfully");
+    debug('Launched load-test successfully');
   }).catch(function(err) {
-    debug("Failed to start load-test, err: %s, as JSON: %j", err, err, err.stack);
+    debug('Failed to start load-test, err: %s, as JSON: %j', err, err, err.stack);
     // If we didn't launch the load-test we should crash
     process.exit(1);
   });
@@ -213,8 +210,4 @@ if (!module.parent) {
 
 // Export launch in-case anybody cares
 module.exports = launch;
-
-
-
-
 

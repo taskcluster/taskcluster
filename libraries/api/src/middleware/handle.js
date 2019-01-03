@@ -20,10 +20,10 @@ const callHandler = ({entry, context, monitor}) => {
         if (monitor) {
           monitor.reportError(`${entry.name}: req.authorize was never called, ` +
             'or some parameters were missing from the request', {
-              url: req.originalUrl,
-              method: req.method,
-              requestId: req.get('x-request-id'),
-            });
+            url: req.originalUrl,
+            method: req.method,
+            requestId: req.get('x-request-id'),
+          });
         }
       }
     }).catch((err) => {
