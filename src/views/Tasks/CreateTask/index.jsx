@@ -19,7 +19,6 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import PlusIcon from 'mdi-react/PlusIcon';
 import RotateLeftIcon from 'mdi-react/RotateLeftIcon';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
-import Tooltip from '@material-ui/core/Tooltip';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import HelpView from '../../../components/HelpView';
@@ -64,6 +63,8 @@ const defaultTask = {
 @withStyles(theme => ({
   createIcon: {
     ...theme.mixins.successIcon,
+  },
+  createIconSpan: {
     ...theme.mixins.fab,
     position: 'fixed',
     bottom: theme.spacing.double,
@@ -283,16 +284,16 @@ export default class CreateTask extends Component {
                 value={task || ''}
                 onChange={this.handleTaskChange}
               />
-              <Tooltip title="Create Task">
-                <Button
-                  requiresAuth
-                  disabled={!task || invalid || loading}
-                  variant="round"
-                  className={classes.createIcon}
-                  onClick={this.handleCreateTask}>
-                  <PlusIcon />
-                </Button>
-              </Tooltip>
+              <Button
+                spanProps={{ className: classes.createIconSpan }}
+                tooltipProps={{ title: 'Create Task' }}
+                requiresAuth
+                disabled={!task || invalid || loading}
+                variant="round"
+                className={classes.createIcon}
+                onClick={this.handleCreateTask}>
+                <PlusIcon />
+              </Button>
               <SpeedDial>
                 <SpeedDialAction
                   tooltipOpen

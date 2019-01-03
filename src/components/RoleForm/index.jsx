@@ -6,7 +6,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
-import Tooltip from '@material-ui/core/Tooltip';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -207,18 +206,16 @@ export default class RoleForm extends Component {
           ) : null}
         </List>
         {isNewRole ? (
-          <Tooltip title="Save">
-            <div className={classes.fab}>
-              <Button
-                requiresAuth
-                disabled={loading}
-                variant="round"
-                onClick={this.handleSaveRole}
-                classes={{ root: classes.saveIcon }}>
-                <ContentSaveIcon />
-              </Button>
-            </div>
-          </Tooltip>
+          <Button
+            spanProps={{ className: classes.fab }}
+            tooltipProps={{ title: 'Save' }}
+            requiresAuth
+            disabled={loading}
+            variant="round"
+            onClick={this.handleSaveRole}
+            classes={{ root: classes.saveIcon }}>
+            <ContentSaveIcon />
+          </Button>
         ) : (
           <SpeedDial>
             <SpeedDialAction

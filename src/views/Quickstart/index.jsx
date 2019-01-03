@@ -8,7 +8,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import MenuItem from '@material-ui/core/MenuItem';
-import Tooltip from '@material-ui/core/Tooltip';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -123,7 +122,7 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
   errorIcon: {
     fill: theme.palette.error.main,
   },
-  resetButton: {
+  resetButtonSpan: {
     ...theme.mixins.fab,
   },
   errorPanels: {
@@ -491,15 +490,14 @@ export default class QuickStart extends Component {
             <ListSubheader>Task Definiton</ListSubheader>
             <ListItem>{this.renderEditor()}</ListItem>
           </List>
-          <Tooltip title="Reset Form & File">
-            <Button
-              variant="round"
-              onClick={this.handleReset}
-              color="secondary"
-              className={classes.resetButton}>
-              <RestartIcon />
-            </Button>
-          </Tooltip>
+          <Button
+            spanProps={{ className: classes.resetButtonSpan }}
+            tooltipProps={{ title: 'Reset Form & File' }}
+            variant="round"
+            onClick={this.handleReset}
+            color="secondary">
+            <RestartIcon />
+          </Button>
         </Fragment>
       </Dashboard>
     );

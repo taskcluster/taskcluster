@@ -10,7 +10,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -136,21 +135,22 @@ export default class ProvisionerDetailsCard extends Component {
 
     if (actions.length) {
       return actions.map(action => (
-        <Tooltip
-          enterDelay={300}
+        <Button
           key={action.title}
-          id={`${action.title}-tooltip`}
-          title={action.description}>
-          <Button
-            requiresAuth
-            onClick={() => this.handleActionClick(action)}
-            className={classes.actionButton}
-            disabled={actionLoading}
-            size="small"
-            variant="contained">
-            {action.title}
-          </Button>
-        </Tooltip>
+          spanProps={{ className: classes.actionButton }}
+          tooltipProps={{
+            enterDelay: 50,
+            key: action.title,
+            id: `${action.title}-tooltip`,
+            title: action.description,
+          }}
+          requiresAuth
+          onClick={() => this.handleActionClick(action)}
+          disabled={actionLoading}
+          size="small"
+          variant="contained">
+          {action.title}
+        </Button>
       ));
     }
 

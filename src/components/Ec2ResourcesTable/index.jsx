@@ -156,11 +156,13 @@ export default class Ec2ResourcesTable extends Component {
             </TableCell>
             <TableCell>
               <Tooltip placement="bottom" title="Terminate">
-                <IconButton
-                  disabled={actionLoading}
-                  onClick={() => onTerminateInstance(instance)}>
-                  <DeleteIcon size={18} />
-                </IconButton>
+                <span>
+                  <IconButton
+                    disabled={actionLoading}
+                    onClick={() => onTerminateInstance(instance)}>
+                    <DeleteIcon size={18} />
+                  </IconButton>
+                </span>
               </Tooltip>
             </TableCell>
           </TableRow>

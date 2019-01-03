@@ -9,7 +9,6 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import TextField from '@material-ui/core/TextField';
-import Tooltip from '@material-ui/core/Tooltip';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import Button from '../Button';
@@ -172,19 +171,17 @@ export default class SecretForm extends Component {
           </List>
         </List>
         {isNewSecret ? (
-          <Tooltip title="Save Secret">
-            <div className={classes.fab}>
-              <Button
-                requiresAuth
-                color="secondary"
-                variant="round"
-                className={classes.saveIcon}
-                disabled={loading || !this.validSecret()}
-                onClick={this.handleSaveSecret}>
-                <ContentSaveIcon />
-              </Button>
-            </div>
-          </Tooltip>
+          <Button
+            spanProps={{ className: classes.fab }}
+            tooltipProps={{ title: 'Save Secret' }}
+            requiresAuth
+            color="secondary"
+            variant="round"
+            className={classes.saveIcon}
+            disabled={loading || !this.validSecret()}
+            onClick={this.handleSaveSecret}>
+            <ContentSaveIcon />
+          </Button>
         ) : (
           <SpeedDial>
             <SpeedDialAction

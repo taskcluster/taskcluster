@@ -8,7 +8,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
-import Tooltip from '@material-ui/core/Tooltip';
 import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -326,18 +325,16 @@ export default class ClientForm extends Component {
           ) : null}
         </List>
         {isNewClient ? (
-          <Tooltip title="Save">
-            <div className={classes.fab}>
-              <Button
-                requiresAuth
-                disabled={loading}
-                variant="round"
-                onClick={this.handleSaveClient}
-                classes={{ root: classes.saveIcon }}>
-                <ContentSaveIcon />
-              </Button>
-            </div>
-          </Tooltip>
+          <Button
+            spanProps={{ className: classes.fab }}
+            tooltipProps={{ title: 'Save' }}
+            requiresAuth
+            disabled={loading}
+            variant="round"
+            onClick={this.handleSaveClient}
+            classes={{ root: classes.saveIcon }}>
+            <ContentSaveIcon />
+          </Button>
         ) : (
           <SpeedDial>
             <SpeedDialAction

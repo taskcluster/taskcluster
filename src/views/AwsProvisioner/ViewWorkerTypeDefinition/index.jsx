@@ -9,7 +9,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import TextField from '@material-ui/core/TextField';
-import Tooltip from '@material-ui/core/Tooltip';
 import PlusIcon from 'mdi-react/PlusIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
@@ -254,22 +253,20 @@ export default class ViewWorkerTypeDefinition extends Component {
           )}
         </List>
         {isNewWorkerType ? (
-          <Tooltip title="Create Worker Type">
-            <div className={classes.fab}>
-              <Button
-                requiresAuth
-                onClick={this.handleCreateWorkerType}
-                disabled={
-                  invalidDefinition ||
-                  !isWorkerTypeNameValid(workerType) ||
-                  actionLoading
-                }
-                classes={{ root: classes.successIcon }}
-                variant="round">
-                <PlusIcon />
-              </Button>
-            </div>
-          </Tooltip>
+          <Button
+            spanProps={{ className: classes.fab }}
+            tooltipProps={{ title: 'Create Worker Type' }}
+            requiresAuth
+            onClick={this.handleCreateWorkerType}
+            disabled={
+              invalidDefinition ||
+              !isWorkerTypeNameValid(workerType) ||
+              actionLoading
+            }
+            classes={{ root: classes.successIcon }}
+            variant="round">
+            <PlusIcon />
+          </Button>
         ) : (
           <SpeedDial>
             <SpeedDialAction

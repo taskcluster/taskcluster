@@ -12,7 +12,6 @@ import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Tooltip from '@material-ui/core/Tooltip';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
@@ -581,18 +580,16 @@ export default class HookForm extends Component {
           </List>
         </List>
         {isNewHook ? (
-          <Tooltip title="Save Hook">
-            <div className={classes.actionButton}>
-              <Button
-                requiresAuth
-                classes={{ root: classes.successIcon }}
-                variant="round"
-                disabled={!this.validHook() || actionLoading}
-                onClick={this.handleCreateHook}>
-                <ContentSaveIcon />
-              </Button>
-            </div>
-          </Tooltip>
+          <Button
+            spanProps={{ className: classes.actionButton }}
+            tooltipProps={{ title: 'Save Hook' }}
+            requiresAuth
+            classes={{ root: classes.successIcon }}
+            variant="round"
+            disabled={!this.validHook() || actionLoading}
+            onClick={this.handleCreateHook}>
+            <ContentSaveIcon />
+          </Button>
         ) : (
           <SpeedDial>
             <SpeedDialAction

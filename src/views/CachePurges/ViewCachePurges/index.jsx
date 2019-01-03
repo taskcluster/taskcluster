@@ -4,7 +4,6 @@ import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
-import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Dashboard from '../../../components/Dashboard';
@@ -26,7 +25,7 @@ import cachePurgesQuery from './cachePurges.graphql';
   }),
 })
 @withStyles(theme => ({
-  plusIcon: {
+  plusIconSpan: {
     ...theme.mixins.fab,
   },
 }))
@@ -97,18 +96,18 @@ export default class ViewCachePurges extends Component {
               onPageChange={this.handlePageChange}
             />
           )}
-          <Tooltip
-            enterDelay={300}
-            id="create-purge-cache-tooltip"
-            title="Create Purge Cache Request">
-            <Button
-              onClick={this.handleCreate}
-              variant="round"
-              color="secondary"
-              className={classes.plusIcon}>
-              <PlusIcon />
-            </Button>
-          </Tooltip>
+          <Button
+            spanProps={{ className: classes.plusIconSpan }}
+            tooltipProps={{
+              title: 'Create Purge Cache Request',
+              id: 'create-purge-cache-tooltip',
+              delay: 300,
+            }}
+            onClick={this.handleCreate}
+            variant="round"
+            color="secondary">
+            <PlusIcon />
+          </Button>
         </Fragment>
       </Dashboard>
     );

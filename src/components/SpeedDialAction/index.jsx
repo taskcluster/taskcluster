@@ -36,18 +36,27 @@ export default class SpeedDialAction extends Component {
       user,
       onAuthorize,
       onUnauthorize,
+      tooltipTitle,
       ...props
     } = this.props;
-    const disabled = requiresAuth && !user;
+    const lackingAuth = requiresAuth && !user;
     const buttonProps = {
       ...ButtonProps,
-      ...(disabled ? { disabled: true } : {}),
+      ...(lackingAuth ? { disabled: true } : {}),
     };
+    const title = props.tooltipOpen
+      ? {
+          tooltipTitle: lackingAuth
+            ? `${tooltipTitle} (Auth Required)`
+            : tooltipTitle,
+        }
+      : null;
 
     return (
       <MuiSpeedDialAction
         className={classNames(classes.secondaryIcon, className)}
         ButtonProps={buttonProps}
+        {...title}
         {...props}
       />
     );

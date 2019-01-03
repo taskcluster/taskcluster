@@ -5,7 +5,6 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import Tooltip from '@material-ui/core/Tooltip';
 import DeleteEmptyIcon from 'mdi-react/DeleteEmptyIcon';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
@@ -161,21 +160,19 @@ export default class ViewWorkerType extends Component {
         {!error &&
           !loading &&
           currentTab === 2 && (
-            <Tooltip title="Terminate All">
-              <div className={classes.fab}>
-                <Button
-                  disabled={
-                    actionLoading ||
-                    awsProvisionerWorkerTypeState.instances.length === 0
-                  }
-                  requiresAuth
-                  onClick={this.handleTerminateAllInstances}
-                  variant="round"
-                  className={classes.terminateButton}>
-                  <DeleteEmptyIcon />
-                </Button>
-              </div>
-            </Tooltip>
+            <Button
+              spanProps={{ className: classes.fab }}
+              tooltipProps={{ title: 'Terminate All' }}
+              disabled={
+                actionLoading ||
+                awsProvisionerWorkerTypeState.instances.length === 0
+              }
+              requiresAuth
+              onClick={this.handleTerminateAllInstances}
+              variant="round"
+              className={classes.terminateButton}>
+              <DeleteEmptyIcon />
+            </Button>
           )}
         <Snackbar
           open={showTerminateAllInstancesSnackbar}

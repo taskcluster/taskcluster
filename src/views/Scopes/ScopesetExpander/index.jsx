@@ -5,7 +5,6 @@ import { Query } from 'react-apollo';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
-import Tooltip from '@material-ui/core/Tooltip';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -96,16 +95,14 @@ export default class ScopesetExpander extends Component {
               )}
             </Query>
           )}
-          <Tooltip title="Expand Scopes">
-            <div className={classes.actionButton}>
-              <Button
-                color="secondary"
-                variant="round"
-                onClick={this.handleExpandScopesClick}>
-                <ArrowExpandVerticalIcon />
-              </Button>
-            </div>
-          </Tooltip>
+          <Button
+            tooltipProps={{ title: 'Expand Scopes' }}
+            spanProps={{ className: classes.actionButton }}
+            color="secondary"
+            variant="round"
+            onClick={this.handleExpandScopesClick}>
+            <ArrowExpandVerticalIcon />
+          </Button>
         </Fragment>
       </Dashboard>
     );

@@ -12,18 +12,18 @@ import Log from '../../../components/Log';
 @withStyles(theme => ({
   fab: {
     position: 'absolute',
-    right: theme.spacing.double,
-    top: theme.spacing.double,
+    right: theme.spacing.triple,
+    top: theme.spacing.triple,
     ...theme.mixins.fabIcon,
   },
   miniFab: {
     position: 'absolute',
-    right: theme.spacing.unit * 10,
+    right: theme.spacing.unit * 11,
     top: theme.spacing.triple,
   },
   rawLogButton: {
     position: 'absolute',
-    right: theme.spacing.unit * 16,
+    right: theme.spacing.unit * 19,
     top: theme.spacing.triple,
   },
 }))

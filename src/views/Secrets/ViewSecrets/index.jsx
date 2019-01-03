@@ -4,7 +4,6 @@ import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
-import Tooltip from '@material-ui/core/Tooltip';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Dashboard from '../../../components/Dashboard';
 import SecretsTable from '../../../components/SecretsTable';
@@ -25,7 +24,7 @@ import secretsQuery from './secrets.graphql';
   }),
 })
 @withStyles(theme => ({
-  plusIcon: {
+  plusIconSpan: {
     ...theme.mixins.fab,
   },
 }))
@@ -86,18 +85,18 @@ export default class ViewSecrets extends Component {
               secretsConnection={secrets}
             />
           )}
-          <Tooltip
-            enterDelay={300}
-            id="create-secret-tooltip"
-            title="Create Secret">
-            <Button
-              onClick={this.handleCreate}
-              variant="round"
-              color="secondary"
-              className={classes.plusIcon}>
-              <PlusIcon />
-            </Button>
-          </Tooltip>
+          <Button
+            spanProps={{ className: classes.plusIconSpan }}
+            tooltipProps={{
+              title: 'Create Secret',
+              id: 'create-secret-tooltip',
+              enterDelay: 300,
+            }}
+            onClick={this.handleCreate}
+            variant="round"
+            color="secondary">
+            <PlusIcon />
+          </Button>
         </Fragment>
       </Dashboard>
     );

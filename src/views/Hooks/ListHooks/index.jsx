@@ -4,7 +4,6 @@ import { graphql } from 'react-apollo';
 import { prop, map } from 'ramda';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
-import Tooltip from '@material-ui/core/Tooltip';
 import MuiTreeView from 'material-ui-treeview';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Dashboard from '../../../components/Dashboard';
@@ -78,15 +77,14 @@ export default class ListHooks extends Component {
             onLeafClick={this.handleLeafClick}
           />
         )}
-        <Tooltip title="Create Hook">
-          <Button
-            color="secondary"
-            variant="round"
-            onClick={this.handleCreateHook}
-            className={classes.actionButton}>
-            <PlusIcon />
-          </Button>
-        </Tooltip>
+        <Button
+          spanProps={{ className: classes.actionButton }}
+          tooltipProps={{ title: 'Create Hook' }}
+          color="secondary"
+          variant="round"
+          onClick={this.handleCreateHook}>
+          <PlusIcon />
+        </Button>
       </Dashboard>
     );
   }

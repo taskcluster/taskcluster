@@ -4,7 +4,6 @@ import { withStyles } from '@material-ui/core/styles';
 import { equals } from 'ramda';
 import { scopeUnion, scopeIntersection } from 'taskcluster-lib-scopes';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
-import Tooltip from '@material-ui/core/Tooltip';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import ScaleBalanceIcon from 'mdi-react/ScaleBalanceIcon';
@@ -159,16 +158,14 @@ export default class ScopesetComparison extends Component {
                 ))}
               </Fragment>
             )}
-
-          <Tooltip title="Compare Scopes">
-            <Button
-              color="secondary"
-              variant="round"
-              onClick={this.handleCompareScopesClick}
-              className={classes.actionButton}>
-              <ScaleBalanceIcon />
-            </Button>
-          </Tooltip>
+          <Button
+            spanProps={{ className: classes.actionButton }}
+            tooltipProps={{ title: 'Compare Scopes' }}
+            color="secondary"
+            variant="round"
+            onClick={this.handleCompareScopesClick}>
+            <ScaleBalanceIcon />
+          </Button>
         </Fragment>
       </Dashboard>
     );

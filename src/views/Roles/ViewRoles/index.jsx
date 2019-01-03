@@ -1,7 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { PureComponent } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import Tooltip from '@material-ui/core/Tooltip';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Roles from './Roles';
 import Dashboard from '../../../components/Dashboard';
@@ -11,7 +10,7 @@ import HelpView from '../../../components/HelpView';
 
 @hot(module)
 @withStyles(theme => ({
-  plusIcon: {
+  plusIconSpan: {
     ...theme.mixins.fab,
   },
 }))
@@ -43,15 +42,14 @@ export default class ViewRoles extends PureComponent {
           />
         }>
         <Roles searchTerm={roleSearch} />
-        <Tooltip title="Create Role">
-          <Button
-            onClick={this.handleCreate}
-            variant="round"
-            color="secondary"
-            className={classes.plusIcon}>
-            <PlusIcon />
-          </Button>
-        </Tooltip>
+        <Button
+          spanProps={{ className: classes.plusIconSpan }}
+          tooltipProps={{ title: 'Create Role' }}
+          onClick={this.handleCreate}
+          variant="round"
+          color="secondary">
+          <PlusIcon />
+        </Button>
       </Dashboard>
     );
   }
