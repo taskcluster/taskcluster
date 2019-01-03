@@ -27,7 +27,7 @@ type Config struct {
 	ID string
 
 	// The address of the websocktunnel server (https:// or wss://)
-	ProxyAddr string
+	TunnelAddr string
 
 	// The JWT to authenticate to the websocktunnel server.  This should be
 	// a "fresh" token for each call to the Configurer.
@@ -46,11 +46,11 @@ type Config struct {
 type Configurer func() (Config, error)
 
 // Client is used to connect to a websocktunnel instance and serve content over
-// the proxy.  Client implements net.Listener.
+// the tunnel.  Client implements net.Listener.
 type Client struct {
 	m          sync.Mutex
 	id         string
-	proxyAddr  string
+	tunnelAddr string
 	token      string
 	url        atomic.Value
 	retry      RetryConfig
@@ -88,7 +88,7 @@ func (c *Client) URL() string {
 	return c.url.Load().(string)
 }
 
-// Accept is used to accept multiplexed streams from the proxy as a net.Conn
+// Accept is used to accept multiplexed streams from the tunnel as a net.Conn
 // implementer.
 //
 // This is a net.Listener interface method.
@@ -123,7 +123,7 @@ func (c *Client) Addr() net.Addr {
 	return c.session.Addr()
 }
 
-// Close connection to the proxy.
+// Close connection to the tunnel.
 //
 // This is a net.Listener method.
 func (c *Client) Close() error {
@@ -144,7 +144,7 @@ func (c *Client) Close() error {
 
 func (c *Client) setConfig(config Config) {
 	c.id = config.ID
-	c.proxyAddr = util.MakeWsURL(config.ProxyAddr)
+	c.tunnelAddr = util.MakeWsURL(config.TunnelAddr)
 	c.token = config.Token
 
 	c.retry = config.Retry.withDefaultValues()
@@ -154,7 +154,7 @@ func (c *Client) setConfig(config Config) {
 	}
 }
 
-// connectWithRetry returns a websocket connection to the proxy
+// connectWithRetry returns a websocket connection to the tunnel
 func (c *Client) connectWithRetry() (*websocket.Conn, string, error) {
 	// if token is expired or not usable, get a new token from the authorizer
 	if !util.IsTokenUsable(c.token) {
@@ -170,8 +170,8 @@ func (c *Client) connectWithRetry() (*websocket.Conn, string, error) {
 	header.Set("x-websocktunnel-id", c.id)
 
 	// initial attempt
-	c.logger.Printf("trying to connect to %s", c.proxyAddr)
-	conn, res, err := websocket.DefaultDialer.Dial(c.proxyAddr, header)
+	c.logger.Printf("trying to connect to %s", c.tunnelAddr)
+	conn, res, err := websocket.DefaultDialer.Dial(c.tunnelAddr, header)
 	if err != nil {
 		if shouldRetry(res) {
 			// retry connection and return result
@@ -183,7 +183,7 @@ func (c *Client) connectWithRetry() (*websocket.Conn, string, error) {
 		}
 		return nil, "", ErrRetryFailed
 	}
-	c.logger.Printf("connected to %s ", c.proxyAddr)
+	c.logger.Printf("connected to %s ", c.tunnelAddr)
 
 	url := res.Header.Get("x-websocktunnel-client-url")
 	return conn, url, err
@@ -205,17 +205,17 @@ func (c *Client) retryConn() (*websocket.Conn, string, error) {
 		case <-maxTimer:
 			return nil, "", ErrRetryTimedOut
 		case <-backoff:
-			c.logger.Printf("trying to connect to %s", c.proxyAddr)
-			conn, res, err := websocket.DefaultDialer.Dial(c.proxyAddr, header)
+			c.logger.Printf("trying to connect to %s", c.tunnelAddr)
+			conn, res, err := websocket.DefaultDialer.Dial(c.tunnelAddr, header)
 			if err == nil {
 				url := res.Header.Get("x-websocktunnel-client-url")
 				return conn, url, nil
 			}
 			if !shouldRetry(res) {
-				c.logger.Printf("connection to %s failed. could not connect", c.proxyAddr)
+				c.logger.Printf("connection to %s failed. could not connect", c.tunnelAddr)
 				return nil, "", ErrRetryFailed
 			}
-			c.logger.Printf("connection to %s failed. will retry", c.proxyAddr)
+			c.logger.Printf("connection to %s failed. will retry", c.tunnelAddr)
 
 			currentDelay = c.retry.nextDelay(currentDelay)
 			backoff = time.After(currentDelay)
@@ -230,7 +230,7 @@ func (c *Client) reconnect() {
 	conn, url, err := c.connectWithRetry()
 	if err != nil {
 		// set error and return
-		c.logger.Printf("unable to reconnect to %s", c.proxyAddr)
+		c.logger.Printf("unable to reconnect to %s", c.tunnelAddr)
 		c.acceptErr = ErrRetryFailed
 		return
 	}

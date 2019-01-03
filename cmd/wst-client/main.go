@@ -20,10 +20,10 @@ import (
 
 const usage = `Websocketunnel Client
 Websocketunnel Client is a command line utility which establishes a connection
-to the websocktunnel proxy and allows serving http without exposing ports to 
+to the websocktunnel service and allows serving http without exposing ports to 
 the internet.
 
-[Firewall/NAT [User] <--]---> [Proxy] <--- [Web]
+[Firewall/NAT [User] <--]---> [websocktunnel] <--- [Web]
 
 Usage: wst-client <clientID> <accessToken> <targetPort> [--cert=<cert>] [--out-file=<outFile>] [--json]
 client -h | --help
@@ -105,7 +105,7 @@ func main() {
 	}()
 
 	whurl := client.URL()
-	log.WithFields(log.Fields{"url": whurl}).Info("connected to proxy")
+	log.WithFields(log.Fields{"url": whurl}).Info("connected to websocktunnel")
 	// dump if outFile provided
 	if outFile != "" {
 		file, err := os.Create(outFile)
@@ -174,14 +174,14 @@ func (f *forwarder) forward() {
 	var wg sync.WaitGroup
 
 	wg.Add(2)
-	// outgoing stream (local -> proxy)
+	// outgoing stream (local -> tunnel)
 	go func() {
 		defer wg.Done()
 		_, _ = io.Copy(f.stream, f.conn)
 		_ = f.stream.Close()
 	}()
 
-	// incoming stream (proxy -> local)
+	// incoming stream (tunnel -> local)
 	go func() {
 		defer wg.Done()
 		_, _ = io.Copy(f.conn, f.stream)
@@ -212,9 +212,9 @@ func makeConfigurer(clientID, accessToken, certificate string) func() (client.Co
 			return client.Config{}, err
 		}
 		return client.Config{
-			ID:        whtResponse.TunnelID,
-			Token:     whtResponse.Token,
-			ProxyAddr: whtResponse.ProxyURL,
+			ID:         whtResponse.TunnelID,
+			Token:      whtResponse.Token,
+			TunnelAddr: whtResponse.ProxyURL,
 		}, nil
 	}
 	return configurer

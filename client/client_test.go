@@ -31,11 +31,11 @@ func testConfigurer(id, addr string, retryConfig RetryConfig, logger *log.Logger
 
 	return func() (Config, error) {
 		conf := Config{
-			ID:        id,
-			ProxyAddr: addr,
-			Token:     tokString,
-			Logger:    logger,
-			Retry:     retryConfig,
+			ID:         id,
+			TunnelAddr: addr,
+			Token:      tokString,
+			Logger:     logger,
+			Retry:      retryConfig,
 		}
 		return conf, nil
 	}
@@ -71,8 +71,8 @@ func TestExponentialBackoffSuccess(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	proxyAddr := util.MakeWsURL(server.URL)
-	_, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger()))
+	tunnelAddr := util.MakeWsURL(server.URL)
+	_, err := New(testConfigurer("workerID", tunnelAddr, RetryConfig{}, genLogger()))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,9 +95,9 @@ func TestExponentialBackoffFailure(t *testing.T) {
 		MaxElapsedTime: 2 * time.Second,
 	}
 
-	proxyAddr := util.MakeWsURL(server.URL)
+	tunnelAddr := util.MakeWsURL(server.URL)
 	start := time.Now()
-	_, err := New(testConfigurer("workerID", proxyAddr, retry, genLogger()))
+	_, err := New(testConfigurer("workerID", tunnelAddr, retry, genLogger()))
 	end := time.Now()
 
 	if err.(clientError) != ErrRetryTimedOut {
@@ -132,8 +132,8 @@ func TestRetryStops4xx(t *testing.T) {
 	}))
 	defer server.Close()
 
-	proxyAddr := util.MakeWsURL(server.URL)
-	_, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger()))
+	tunnelAddr := util.MakeWsURL(server.URL)
+	_, err := New(testConfigurer("workerID", tunnelAddr, RetryConfig{}, genLogger()))
 
 	// attempt to connect with retry
 	if err.(clientError) != ErrRetryFailed {
@@ -192,8 +192,8 @@ func TestAuthorizer(t *testing.T) {
 	}))
 	defer server.Close()
 
-	proxyAddr := util.MakeWsURL(server.URL)
-	_, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger()))
+	tunnelAddr := util.MakeWsURL(server.URL)
+	_, err := New(testConfigurer("workerID", tunnelAddr, RetryConfig{}, genLogger()))
 
 	if err != nil {
 		t.Fatal(err)
@@ -219,8 +219,8 @@ func TestClientReconnect(t *testing.T) {
 		_ = conn.Close()
 	}))
 
-	proxyAddr := util.MakeWsURL(server.URL)
-	client, err := New(testConfigurer("workerID", proxyAddr, RetryConfig{}, genLogger()))
+	tunnelAddr := util.MakeWsURL(server.URL)
+	client, err := New(testConfigurer("workerID", tunnelAddr, RetryConfig{}, genLogger()))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -22,7 +22,7 @@ import (
 	"github.com/taskcluster/websocktunnel/wsproxy"
 )
 
-// starts proxy on a random port on the system
+// starts websocktunnel on a random port on the system
 func main() {
 	// Load required env variables
 	// Load Hostname
@@ -36,13 +36,13 @@ func main() {
 	if env := os.Getenv("ENV"); env == "production" {
 		// add mozlog formatter
 		logger.Formatter = &mozlog.MozLogFormatter{
-			LoggerName: "webhookproxy",
+			LoggerName: "websocktunnel",
 		}
 
 		// add syslog hook if addr is provided
 		syslogAddr := os.Getenv("SYSLOG_ADDR")
 		if syslogAddr != "" {
-			hook, err := lSyslog.NewSyslogHook("udp", syslogAddr, syslog.LOG_DEBUG, "proxy")
+			hook, err := lSyslog.NewSyslogHook("udp", syslogAddr, syslog.LOG_DEBUG, "websocktunnel")
 			if err != nil {
 				panic(err)
 			}

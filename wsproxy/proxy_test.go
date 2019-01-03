@@ -17,8 +17,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
-	"github.com/taskcluster/websocktunnel/util"
 	"github.com/taskcluster/websocktunnel/client"
+	"github.com/taskcluster/websocktunnel/util"
 	"github.com/taskcluster/websocktunnel/wsmux"
 )
 
@@ -782,11 +782,11 @@ func testConfigurer(id, addr string, retryConfig client.RetryConfig, logger *log
 
 	return func() (client.Config, error) {
 		conf := client.Config{
-			ID:        id,
-			ProxyAddr: addr,
-			Token:     tokString,
-			Logger:    logger,
-			Retry:     retryConfig,
+			ID:         id,
+			TunnelAddr: addr,
+			Token:      tokString,
+			Logger:     logger,
+			Retry:      retryConfig,
 		}
 		return conf, nil
 	}
@@ -1105,9 +1105,9 @@ func TestProxyDomainRegister(t *testing.T) {
 	// make connection
 	configurer := func() (client.Config, error) {
 		return client.Config{
-			ID:        "workerid",
-			Token:     workeridjwt,
-			ProxyAddr: "ws://register.tcproxy.dev:" + getPort(server.URL),
+			ID:         "workerid",
+			Token:      workeridjwt,
+			TunnelAddr: "ws://register.tcproxy.dev:" + getPort(server.URL),
 		}, nil
 	}
 	client, err := client.New(configurer)
@@ -1139,9 +1139,9 @@ func TestProxyWebSocketPath(t *testing.T) {
 
 	configurer := func() (client.Config, error) {
 		return client.Config{
-			ID:        "workerid",
-			Token:     workeridjwt,
-			ProxyAddr: "ws://register.tcproxy.dev:" + getPort(server.URL),
+			ID:         "workerid",
+			Token:      workeridjwt,
+			TunnelAddr: "ws://register.tcproxy.dev:" + getPort(server.URL),
 		}, nil
 	}
 
