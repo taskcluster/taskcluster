@@ -68,3 +68,16 @@ module "hooks_scheduler" {
   secret_keys    = "${module.hooks_secrets.env_var_keys}"
   docker_image   = "${local.taskcluster_image_hooks}"
 }
+
+module "hooks_listeners" {
+  source         = "modules/deployment"
+  project_name   = "taskcluster-hooks"
+  service_name   = "hooks"
+  proc_name      = "listeners"
+  background_job = true
+  secret_name    = "${module.hooks_secrets.secret_name}"
+  secrets_hash   = "${module.hooks_secrets.secrets_hash}"
+  root_url       = "${var.root_url}"
+  secret_keys    = "${module.hooks_secrets.env_var_keys}"
+  docker_image   = "${local.taskcluster_image_hooks}"
+}
