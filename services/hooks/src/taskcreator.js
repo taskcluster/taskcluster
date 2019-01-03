@@ -94,7 +94,7 @@ class TaskCreator {
       return {status: {taskId: options.taskId}};
     }
 
-    let lastFire, taskCreateRes;
+    let lastFire, taskCreateRes, fireError;
     try {
       taskCreateRes = await queue.createTask(options.taskId, task);
       lastFire = {
@@ -104,6 +104,8 @@ class TaskCreator {
       };
     } catch (err) {
       let errModified;
+      fireError = err;
+
       if (typeof err === 'object') {
         errModified = JSON.stringify(err);
       } else {
@@ -136,8 +138,9 @@ class TaskCreator {
       this.monitor.reportError(err);
     }
 
-    if (lastFire.error) {
-      return Promise.reject(lastFire.error);
+    // throw the original Error instance if there was an error
+    if (fireError) {
+      return Promise.reject(fireError);
     }
     return taskCreateRes;
   }
