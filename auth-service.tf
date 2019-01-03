@@ -109,8 +109,9 @@ locals {
       description = "..."
 
       scopes = [
-        "auth:azure-table-access:${azurerm_storage_account.base.name}/Hooks",
         "auth:azure-table:read-write:${azurerm_storage_account.base.name}/Hooks",
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/Queue",
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/LastFire",
         "assume:hook-id:*",
         "notify:email:*",
         "queue:create-task:*",
