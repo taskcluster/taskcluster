@@ -2,34 +2,36 @@ version: 1
 policy:
   pullRequests: public
 tasks:
-  - taskId: {$eval: as_slugid("tests")}
-    created: {$fromNow: ''}
-    deadline: {$fromNow: '2 hours'}
-    provisionerId: aws-provisioner-v1
-    workerType: github-worker
-    payload:
-      maxRunTime: 600
-      # this image is built from taskcluster-web-tests in this repository
-      image: "taskcluster/taskcluster-web-tests@sha256:64bf5f8dfa9b0a23f8457ff2548b82040d35f64c7c6b3b1d98975d17e3ae54ef"
-      env:
-        NO_TEST_SKIP: "true"
-      command:
-        - /bin/bash
-        - '--login'
-        - '-cx'
-        - >-
-          git clone ${event.pull_request.head.repo.git_url} repo &&
-          cd repo &&
-          git config advice.detachedHead false &&
-          git checkout ${event.pull_request.head.sha} &&
-          yarn &&
-          yarn lint &&
-          { Xvfb :99 -screen 0 640x480x8 -nolisten tcp & } &&
-          sleep 2 &&
-          DISPLAY=:99 yarn test
-    metadata:
-      name: "tests/lint"
-      description: "Taskcluster Web Tests / Lint"
-      owner: ${event.pull_request.user.login}@users.noreply.github.com
-      source: ${event.repository.url}
+  - $if: '(tasks_for == "github-pull-request"  && event["action"] in ["opened", "reopened", "synchronize"])'
+    then:
+      taskId: {$eval: as_slugid("tests")}
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '2 hours'}
+      provisionerId: aws-provisioner-v1
+      workerType: github-worker
+      payload:
+        maxRunTime: 600
+        # this image is built from taskcluster-web-tests in this repository
+        image: "taskcluster/taskcluster-web-tests@sha256:64bf5f8dfa9b0a23f8457ff2548b82040d35f64c7c6b3b1d98975d17e3ae54ef"
+        env:
+          NO_TEST_SKIP: "true"
+        command:
+          - /bin/bash
+          - '--login'
+          - '-cx'
+          - >-
+            git clone ${event.pull_request.head.repo.git_url} repo &&
+            cd repo &&
+            git config advice.detachedHead false &&
+            git checkout ${event.pull_request.head.sha} &&
+            yarn &&
+            yarn lint &&
+            { Xvfb :99 -screen 0 640x480x8 -nolisten tcp & } &&
+            sleep 2 &&
+            DISPLAY=:99 yarn test
+      metadata:
+        name: "tests/lint"
+        description: "Taskcluster Web Tests / Lint"
+        owner: ${event.pull_request.user.login}@users.noreply.github.com
+        source: ${event.repository.url}
 
