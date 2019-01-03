@@ -18,7 +18,7 @@
   },
   "engine-strict": true,
   "engines": {
-    "node": "^9.8.0",
+    "node": "^8.10.0",
     "yarn": "^1.0.0"
   },
   "dependencies": {
