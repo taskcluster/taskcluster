@@ -49,6 +49,12 @@ definitions:
     description: |
       JSON schema for user input to the action.  If this property is omitted,
       then the input is `null`.
+  extra:
+    type: object
+    description: |
+      Extra data that the decision task wishes to include for use by other
+      services interpreting `actions.json`.  Consumers of this file are free to
+      ignore any and all data in this field.
 
 type: object
 properties:
@@ -74,6 +80,7 @@ properties:
           description: {$ref: '#/definitions/description'}
           context: {$ref: '#/definitions/context'}
           schema: {$ref: '#/definitions/schema'}
+          extra: {$ref: '#/definitions/extra'}
           task:
             type: object
             title: Task Template
@@ -102,6 +109,7 @@ properties:
           description: {$ref: '#/definitions/description'}
           context: {$ref: '#/definitions/context'}
           schema: {$ref: '#/definitions/schema'}
+          extra: {$ref: '#/definitions/extra'}
           hookGroupId:
             type: string
             title: Hook Group ID
