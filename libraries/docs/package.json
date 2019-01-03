@@ -6,7 +6,6 @@
   "license": "MPL-2.0",
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
-    "pretest": "yarn lint",
     "test": "mocha test/*_test.js"
   },
   "bin": {
@@ -16,10 +15,6 @@
   "files": [
     "src"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/taskcluster/taskcluster-lib-docs.git"
-  },
   "dependencies": {
     "app-root-dir": "^1.0.2",
     "aws-sdk": "^2.147.0",
@@ -31,18 +26,7 @@
     "recursive-readdir-sync": "^1.0.6",
     "s3-upload-stream": "^1.0.7",
     "tar-stream": "^1.5.4",
-    "taskcluster-client": "^12.2.0"
-  },
-  "devDependencies": {
-    "eslint-config-taskcluster": "^3.0.0",
-    "mocha": "^4.0.1",
-    "mock-aws-s3": "^2.6.0",
-    "rimraf": "^2.6.2",
-    "rmp": "^0.0.0",
-    "taskcluster-lib-api": "^12.0.0",
-    "taskcluster-lib-pulse": "^11.0.0",
-    "taskcluster-lib-validate": "^12.0.0",
-    "typed-env-config": "^1.1.0"
+    "taskcluster-client": "file:../../libraries/client"
   },
   "main": "./src/index.js"
 }

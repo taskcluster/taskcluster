@@ -5,12 +5,7 @@
   "scripts": {
     "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
     "test": "mocha test/*_test.js",
-    "lint": "eslint src/*.js test/*.js",
-    "pretest": "yarn lint"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/taskcluster/taskcluster-queue.git"
+    "lint": "eslint src/*.js test/*.js"
   },
   "dependencies": {
     "assume": "^1.5.2",
@@ -25,31 +20,18 @@
     "request-ip": "^2.0.2",
     "slugid": "^2.0.0",
     "superagent": "^3.8.2",
-    "taskcluster-client": "^11.0.0",
-    "taskcluster-lib-api": "12.6.0",
-    "taskcluster-lib-app": "^10.0.0",
-    "taskcluster-lib-azure": "^10.0.0",
-    "taskcluster-lib-docs": "^10.0.0",
-    "taskcluster-lib-loader": "^10.0.0",
-    "taskcluster-lib-monitor": "^11.1.1",
-    "taskcluster-lib-pulse": "^11.1.0",
-    "taskcluster-lib-validate": "^12.0.0",
+    "taskcluster-client": "file:../../libraries/client",
+    "taskcluster-lib-api": "file:../../libraries/api",
+    "taskcluster-lib-app": "file:../../libraries/app",
+    "taskcluster-lib-azure": "file:../../libraries/azure",
+    "taskcluster-lib-docs": "file:../../libraries/docs",
+    "taskcluster-lib-loader": "file:../../libraries/loader",
+    "taskcluster-lib-monitor": "file:../../libraries/monitor",
+    "taskcluster-lib-pulse": "file:../../libraries/pulse",
+    "taskcluster-lib-validate": "file:../../libraries/validate",
     "thirty-two": "^1.0.2",
-    "typed-env-config": "^2.0.0",
+    "typed-env-config": "file:../../libraries/typed-env-config",
     "uuid": "^3.1.0"
-  },
-  "devDependencies": {
-    "eslint-config-taskcluster": "^3.1.0",
-    "mocha": "^4.0.1",
-    "mock-aws-s3": "^3.0.0",
-    "nock": "^9.3.3",
-    "taskcluster-lib-references": "^1.3.0",
-    "taskcluster-lib-testing": "^12.1.2",
-    "temporary": "^0.0.8",
-    "url-join": "^2.0.2",
-    "xml2js": "^0.4.19",
-    "xmlbuilder": "^9.0.4",
-    "zurvan": "^0.5.1"
   },
   "engine-strict": true,
   "engines": {

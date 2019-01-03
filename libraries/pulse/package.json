@@ -3,14 +3,12 @@
   "version": "11.1.1",
   "description": "Library for interacting with Pulse and Taskcluster-Pulse",
   "main": "src/index.js",
-  "repository": "git@github.com:taskcluster/taskcluster-lib-pulse.git",
   "author": "Dustin J. Mitchell <dustin@mozilla.com>",
   "license": "MPL-2.0",
   "private": false,
   "scripts": {
     "test": "mocha test/*_test.js",
-    "lint": "eslint src/*.js test/*.js",
-    "pretest": "yarn lint"
+    "lint": "eslint src/*.js test/*.js"
   },
   "files": [
     "src"
@@ -19,21 +17,11 @@
     "node": ">=8"
   },
   "engineStrict": true,
-  "devDependencies": {
-    "assume": "^2.1.0",
-    "eslint-config-taskcluster": "^3.1.0",
-    "mocha": "^5.2.0",
-    "nock": "^9.6.1",
-    "slugid": "^2.0.0",
-    "taskcluster-lib-monitor": "^10.0.0",
-    "taskcluster-lib-testing": "^12.1.0",
-    "taskcluster-lib-validate": "^12.0.0"
-  },
   "dependencies": {
     "amqplib": "^0.5.2",
     "aws-sdk": "^2.331.0",
     "debug": "^3.1.0",
-    "taskcluster-client": "^11.0.4",
-    "taskcluster-lib-urls": "^10.0.0"
+    "taskcluster-client": "file:../../libraries/client",
+    "taskcluster-lib-urls": "^12.0.0"
   }
 }

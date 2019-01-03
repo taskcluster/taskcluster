@@ -5,10 +5,6 @@
   "description": "Shared eslint config for Taskcluster projects",
   "license": "MPL-2.0",
   "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/taskcluster/eslint-config-taskcluster.git"
-  },
   "scripts": {
     "test": "node ./test.js"
   },
@@ -17,7 +13,6 @@
     "eslintconfig",
     "taskcluster"
   ],
-  "devDependencies": {},
   "peerDependencies": {
     "eslint": "^5.10.0"
   }

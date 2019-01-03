@@ -1,14 +1,14 @@
-web:                    node src/main server
-write-docs:             node src/main writeDocs
-claimResolver:          node src/main claim-resolver
-deadlineResolver:       node src/main deadline-resolver
-dependencyResolver:     node src/main dependency-resolver
-expireArtifacts:        node src/main expire-artifacts
-expireTask:             node src/main expire-tasks
-expireTaskGroups:       node src/main expire-task-groups
-expireTaskGroupMembers: node src/main expire-task-group-members
-expireTaskGroupSizes:   node src/main expire-task-group-sizes
-expireTaskDependency:   node src/main expire-task-dependency
-expireTaskRequirement:  node src/main expire-task-requirement
-expireQueues:           node src/main expire-queues
-expireWorkerInfo:       node src/main expire-worker-info
+web: cd services/queue && node src/main server
+write-docs: cd services/queue && node src/main writeDocs
+claimResolver: cd services/queue && node src/main claim-resolver
+deadlineResolver: cd services/queue && node src/main deadline-resolver
+dependencyResolver: cd services/queue && node src/main dependency-resolver
+expireArtifacts: cd services/queue && node src/main expire-artifacts
+expireTask: cd services/queue && node src/main expire-tasks
+expireTaskGroups: cd services/queue && node src/main expire-task-groups
+expireTaskGroupMembers: cd services/queue && node src/main expire-task-group-members
+expireTaskGroupSizes: cd services/queue && node src/main expire-task-group-sizes
+expireTaskDependency: cd services/queue && node src/main expire-task-dependency
+expireTaskRequirement: cd services/queue && node src/main expire-task-requirement
+expireQueues: cd services/queue && node src/main expire-queues
+expireWorkerInfo: cd services/queue && node src/main expire-worker-info

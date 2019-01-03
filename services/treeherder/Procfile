@@ -1,1 +1,1 @@
-handlers: node src/main.js server
+handlers: cd services/treeherder && node src/main.js server

@@ -7,14 +7,9 @@
   "bin": {
     "taskcluster-builder": "./src/main.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/imbstack/taskcluster-builder.git"
-  },
   "scripts": {
     "lint": "eslint src/*.js src/*/*.js test/*.js test/*/*_test.js",
-    "test": "mocha test/*_test.js test/*/*_test.js",
-    "pretest": "yarn lint"
+    "test": "mocha test/*_test.js test/*/*_test.js"
   },
   "engine-strict": true,
   "engines": {
@@ -40,14 +35,8 @@
     "split": "^1.0.1",
     "tar-fs": "^1.16.0",
     "tar-stream": "^1.5.5",
-    "taskcluster-lib-docs": "^4.2.2",
-    "typed-env-config": "^2.0.0",
+    "taskcluster-lib-docs": "file:../../libraries/docs",
+    "typed-env-config": "file:../../libraries/typed-env-config",
     "zen-observable": "^0.7.1"
-  },
-  "devDependencies": {
-    "assume": "^1.5.2",
-    "eslint-config-taskcluster": "^3.1.0",
-    "mocha": "^5.0.4",
-    "temporary": "^0.0.8"
   }
 }

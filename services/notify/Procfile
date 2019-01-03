@@ -1,4 +1,4 @@
-web: node src/main server
-irc: node src/main irc
-handler: node src/main handler
-write-docs: node src/main writeDocs
+web: cd services/notify && node src/main server
+irc: cd services/notify && node src/main irc
+handler: cd services/notify && node src/main handler
+write-docs: cd services/notify && node src/main writeDocs
