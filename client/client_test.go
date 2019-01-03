@@ -100,7 +100,7 @@ func TestExponentialBackoffFailure(t *testing.T) {
 	_, err := New(testConfigurer("workerID", tunnelAddr, retry, genLogger()))
 	end := time.Now()
 
-	if err.(clientError) != ErrRetryTimedOut {
+	if err.(Error) != ErrRetryTimedOut {
 		t.Fatalf("should fail with %v. Instead failed with %v", ErrRetryTimedOut, err)
 	}
 
@@ -136,7 +136,7 @@ func TestRetryStops4xx(t *testing.T) {
 	_, err := New(testConfigurer("workerID", tunnelAddr, RetryConfig{}, genLogger()))
 
 	// attempt to connect with retry
-	if err.(clientError) != ErrRetryFailed {
+	if err.(Error) != ErrRetryFailed {
 		t.Fatalf("should fail with error: %v\nInstead failed with error: %v", ErrRetryFailed, err)
 	}
 	if tryCount != 2 {
@@ -236,7 +236,7 @@ func TestClientReconnect(t *testing.T) {
 
 	select {
 	case <-done:
-		if err.(clientError) != ErrRetryFailed {
+		if err.(Error) != ErrRetryFailed {
 			t.Fatalf("error should be: %v\nInstead found: %v", ErrRetryFailed, err)
 		}
 	case <-time.After(3 * time.Second):
