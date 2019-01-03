@@ -169,38 +169,29 @@ func (c *Client) connectWithRetry() (*websocket.Conn, string, error) {
 	header.Set("Authorization", "Bearer "+c.token)
 	header.Set("x-websocktunnel-id", c.id)
 
-	// initial attempt
-	c.logger.Printf("trying to connect to %s", c.tunnelAddr)
-	conn, res, err := websocket.DefaultDialer.Dial(c.tunnelAddr, header)
-	if err != nil {
-		if shouldRetry(res) {
-			// retry connection and return result
-			return c.retryConn()
-		}
-		c.logger.Printf("connection failed with error:%v, response:%v", err, res)
-		if isAuthError(res) {
-			return nil, "", ErrAuthFailed
-		}
-		return nil, "", ErrRetryFailed
-	}
-	c.logger.Printf("connected to %s ", c.tunnelAddr)
-
-	url := res.Header.Get("x-websocktunnel-client-url")
-	return conn, url, err
-}
-
-// retryConn is a utility function used by connectWithRetry to use exponential
-// backoff to attempt reconnection
-func (c *Client) retryConn() (*websocket.Conn, string, error) {
-	header := make(http.Header)
-	header.Set("Authorization", "Bearer "+c.token)
-	header.Set("x-websocktunnel-id", c.id)
-
 	currentDelay := c.retry.InitialDelay
 	maxTimer := time.After(c.retry.MaxElapsedTime)
 	backoff := time.After(currentDelay)
 
 	for {
+		c.logger.Printf("trying to connect to %s", c.tunnelAddr)
+		conn, res, err := websocket.DefaultDialer.Dial(c.tunnelAddr, header)
+		if err == nil {
+			c.logger.Printf("connected to %s ", c.tunnelAddr)
+			url := res.Header.Get("x-websocktunnel-client-url")
+			return conn, url, err
+		}
+
+		if !shouldRetry(res) {
+			c.logger.Printf("connection failed with error:%v, response:%v", err, res)
+			if isAuthError(res) {
+				return nil, "", ErrAuthFailed
+			}
+			return nil, "", ErrRetryFailed
+		}
+		c.logger.Printf("connection to %s failed -- retrying.", c.tunnelAddr)
+
+		// wait for the next time to try connecting
 		select {
 		case <-maxTimer:
 			return nil, "", ErrRetryTimedOut
@@ -215,7 +206,6 @@ func (c *Client) retryConn() (*websocket.Conn, string, error) {
 				c.logger.Printf("connection to %s failed. could not connect", c.tunnelAddr)
 				return nil, "", ErrRetryFailed
 			}
-			c.logger.Printf("connection to %s failed. will retry", c.tunnelAddr)
 
 			currentDelay = c.retry.nextDelay(currentDelay)
 			backoff = time.After(currentDelay)
