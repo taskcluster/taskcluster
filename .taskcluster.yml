@@ -1,0 +1,111 @@
+version: 1
+tasks:
+  $let:
+    debug:
+      $if: 'tasks_for == "github-push"'
+      then:
+        $if: 'event.head_commit.message[:7] == "DEBUG: "'
+        then: ${event.head_commit.message[7:]}
+        else: ''
+      else: ''
+    owner: taskcluster-internal@mozilla.com
+
+    # This only supports pushes and pull requests for now.
+    # If we start responding to another action type, make this
+    # a $match.
+    repo:
+      $if: 'tasks_for == "github-push"'
+      then:
+        git_url: ${event.repository.url}
+        url: ${event.repository.url}
+        ref: ${event.after}
+      else:
+        git_url: ${event.pull_request.head.repo.git_url}
+        url: ${event.pull_request.head.repo.url}
+        ref: ${event.pull_request.head.sha}
+
+    packages:
+    - taskcluster-lib-api
+    - taskcluster-lib-app
+    - taskcluster-lib-azure
+    - taskcluster-client
+    - taskcluster-lib-docs
+    - eslint-config-taskcluster
+    - taskcluster-lib-iterate
+    - taskcluster-lib-loader
+    - taskcluster-lib-monitor
+    - taskcluster-lib-pulse
+    - taskcluster-lib-references
+    - taskcluster-lib-scopes
+    - taskcluster-lib-testing
+    - typed-env-config
+    - taskcluster-lib-validate
+    - taskcluster-auth
+    - taskcluster-github
+    - taskcluster-hooks
+    - taskcluster-index
+    - taskcluster-login
+    - taskcluster-notify
+    - taskcluster-purge-cache
+    - taskcluster-queue
+    - taskcluster-secrets
+    - taskcluster-treeherder
+    - taskcluster-builder
+    others:
+    - lint
+    - test:meta
+  in:
+    $let:
+      js:
+        $map:
+          $flatten:
+            - $map: {$eval: others}
+              each(other):
+                name: ${other}
+                command: yarn ${other}
+            - $map: {$eval: packages}
+              each(package):
+                name: ${package}
+                command: yarn workspace ${package} test
+        each(job):
+          taskId: {$eval: as_slugid(job.name)}
+          provisionerId: aws-provisioner-v1
+          workerType: github-worker
+          created: {$fromNow: ''}
+          deadline: {$fromNow: '60 minutes'}
+          scopes:
+            - assume:project:taskcluster:tests:taskcluster
+          payload:
+            features:
+              taskclusterProxy: true
+            env:
+              DEBUG: ${debug}
+              NO_TEST_SKIP:
+                $if: 'job.name != "taskcluster-lib-testing"'
+                then: true
+              TEST_BUCKET: 'test-bucket-for-any-garbage' # TODO: Allow each project to specify its own env
+            maxRunTime: 3600
+            image: "node:8"
+            command:
+              - "/bin/bash"
+              - "-lc"
+              - >-
+                git clone --quiet --depth=1 --no-single-branch ${repo.git_url} taskcluster &&
+                cd taskcluster &&
+                git checkout ${repo.ref} &&
+                yarn --frozen-lockfile &&
+                ${job.command}
+          metadata:
+            name: ${job.name}
+            description: ${job.name}
+            owner: ${owner}
+            source: ${repo.url}
+    in:
+      $flattenDeep:
+      - $if: 'tasks_for == "github-push"'
+        then: {$eval: js}
+      - $if: 'tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"]'
+        then:
+          # We can skip this if pushed to our own repo since push event will get it
+          $if: 'event.pull_request.base.repo.id != event.pull_request.head.repo.id'
+          then: {$eval: js}

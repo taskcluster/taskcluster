@@ -1,0 +1,28 @@
+{
+  "name": "taskcluster",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "libraries/*",
+    "services/*",
+    "infrastructure/*"
+  ],
+  "devDependencies": {
+    "eslint": "5.10.0",
+    "eslint-config-taskcluster": "file:libraries/eslint-config",
+    "typed-env-config": "file:libraries/typed-env-config",
+    "taskcluster-lib-testing": "file:libraries/testing"
+  },
+  "scripts": {
+    "lint": "eslint --cache --ext js libraries services infrastructure",
+    "test": "yarn workspaces run test",
+    "test:meta": "mocha test/*_test.js"
+  },
+  "renovate": {
+    "extends": [
+      "config:base",
+      ":preserveSemverRanges",
+      ":rebaseStalePrs"
+    ]
+  }
+}
