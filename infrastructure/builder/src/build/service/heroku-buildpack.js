@@ -171,11 +171,7 @@ exports.herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, re
         if (!parts) {
           throw new Error(`unexpected line in Procfile: ${line}`);
         }
-        return {
-          name: parts[1],
-          command: quote([parts[2]]),
-          cwd: isMonorepo ? `/app/services/${name}` : '/app',
-        };
+        return {name: parts[1], command: quote([parts[2]])};
       }).filter(l => l !== null);
       const entrypoint = ENTRYPOINT_TEMPLATE({procs});
       fs.writeFileSync(path.join(appDir, 'entrypoint'), entrypoint, {mode: 0o777});
