@@ -1,4 +1,4 @@
-let aws         = require('aws-sdk-promise');
+let aws         = require('aws-sdk');
 let _           = require('lodash');
 let debug       = require('debug')('app:bucket');
 let assert      = require('assert');
@@ -66,6 +66,9 @@ Bucket.prototype.createPutUrl = function(prefix, options) {
   assert(options,               'options must be given');
   assert(options.contentType,   'contentType must be given');
   assert(options.expires,       'expires must be given');
+
+  // This is an explicitly created promise due to
+  // https://github.com/aws/aws-sdk-js/issues/1008
   return new Promise((accept, reject) => {
     this.s3.getSignedUrl('putObject', {
       Key:          prefix,
@@ -103,6 +106,9 @@ Bucket.prototype.createSignedGetUrl = function(prefix, options) {
   assert(prefix,                'prefix must be given');
   assert(options,               'options must be given');
   assert(options.expires,       'expires must be given');
+
+  // This is an explicitly created promise due to
+  // https://github.com/aws/aws-sdk-js/issues/1008
   return new Promise((accept, reject) => {
     this.s3.getSignedUrl('getObject', {
       Key:          prefix,
