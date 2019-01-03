@@ -46,7 +46,7 @@ class IRCBot {
     });
     this.client.on('error', err => {
       if (err.command !== 'err_nosuchnick') {
-        throw new Error(err);
+        throw err;
       }
       console.log('ignoring irc client error');
     });
