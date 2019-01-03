@@ -221,6 +221,7 @@ suite('documenter', () => {
         this.skip();
       }
       options.credentials = credentials;
+      options.rootUrl = 'https://taskcluster.net';
     }
 
     const doc = await documenter(options);

@@ -31,7 +31,7 @@
     "recursive-readdir-sync": "^1.0.6",
     "s3-upload-stream": "^1.0.7",
     "tar-stream": "^1.5.4",
-    "taskcluster-client": "^3.0.3"
+    "taskcluster-client": "^12.2.0"
   },
   "devDependencies": {
     "eslint-config-taskcluster": "^3.0.0",

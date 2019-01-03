@@ -143,9 +143,8 @@ The following are the options that can be passed to the publisher function in th
     // proxy that will add credentials.
     credentials: {},
 
-    // The base URL for the auth service.  This can be useful when running in a task with access
-    // to a taskclusterProxy
-    authBaseUrl: undefined,
+    // the rootUrl for these credentials (required for publishing)
+    rootUrl: '...',
 
     // The name of the project will automatically be set to your package name from package.json,
     // but can be overridden if needed.

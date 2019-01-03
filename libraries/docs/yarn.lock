@@ -214,7 +214,7 @@ babel-runtime@^6.0.0:
     core-js "^2.4.0"
     regenerator-runtime "^0.10.0"
 
-babel-runtime@^6.23.0, babel-runtime@^6.26.0:
+babel-runtime@^6.23.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-6.26.0.tgz#965c7058668e82b55d7bfe04ff2337bc8b5647fe"
   integrity sha1-llxwWGaOgrVde/4E/yM3vItWR/4=
@@ -857,11 +857,6 @@ form-data@^2.3.1:
     asynckit "^0.4.0"
     combined-stream "^1.0.6"
     mime-types "^2.1.12"
-
-formidable@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/formidable/-/formidable-1.1.1.tgz#96b8886f7c3c3508b932d6bd70c4d3a88f35f1a9"
-  integrity sha1-lriIb3w8NQi5Mta9cMTTqI818ak=
 
 formidable@^1.2.0:
   version "1.2.1"
@@ -1836,22 +1831,6 @@ strip-json-comments@~2.0.1:
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
   integrity sha1-PFMZQukIwml8DsNEhYwobHygpgo=
 
-superagent@~3.7.0:
-  version "3.7.0"
-  resolved "https://registry.yarnpkg.com/superagent/-/superagent-3.7.0.tgz#bd58bfde2cbc5305adb9ccbb6dacba18408629d6"
-  integrity sha512-/8trxO6NbLx4YXb7IeeFTSmsQ35pQBiTBsLNvobZx7qBzBeHYvKCyIIhW2gNcWbLzYxPAjdgFbiepd8ypwC0Gw==
-  dependencies:
-    component-emitter "^1.2.0"
-    cookiejar "^2.1.0"
-    debug "^3.1.0"
-    extend "^3.0.0"
-    form-data "^2.3.1"
-    formidable "^1.1.1"
-    methods "^1.1.1"
-    mime "^1.4.1"
-    qs "^6.5.1"
-    readable-stream "^2.0.5"
-
 superagent@~3.8.1:
   version "3.8.3"
   resolved "https://registry.yarnpkg.com/superagent/-/superagent-3.8.3.tgz#460ea0dbdb7d5b11bc4f78deba565f86a178e128"
@@ -1937,19 +1916,19 @@ taskcluster-client@^12.0.0:
     superagent "~3.8.1"
     taskcluster-lib-urls "^10.0.0"
 
-taskcluster-client@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-3.0.3.tgz#fbfb5fd87dcaf2fac280413dbb52ae51d2a812dc"
-  integrity sha512-WK0uRb4Xo5xXflQW6UgetChB5wQGNP1Jl9SOyxI5VAtbpHH58gU4ZEyBB+COKpjPQWi1ASE4+mp0c7zESfWT2Q==
+taskcluster-client@^12.2.0:
+  version "12.2.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-client/-/taskcluster-client-12.2.0.tgz#423aee3b17566d14f8ad23e4e47532265a74fb89"
+  integrity sha512-2Fu5ICS2663kC2t8ymJYzRDnipj3DsCK//b+H/83RjJvC6cWZ0akKzq0ySvPlNA6ic2UcL4I03bJTCJYBX1dqg==
   dependencies:
     amqplib "^0.5.1"
-    babel-runtime "^6.26.0"
     debug "^3.1.0"
     hawk "^6.0.2"
     lodash "^4.17.4"
     promise "^8.0.1"
     slugid "^1.1.0"
-    superagent "~3.7.0"
+    superagent "~3.8.1"
+    taskcluster-lib-urls "^10.0.0"
 
 taskcluster-lib-api@^12.0.0:
   version "12.7.0"

@@ -182,7 +182,7 @@ class Documenter {
     if (!creds) {
       let auth = new client.Auth({
         credentials: this.options.credentials,
-        baseUrl: this.options.authBaseUrl,
+        rootUrl: this.options.rootUrl,
       });
 
       creds = await auth.awsS3Credentials('read-write', this.options.bucket, this.options.project + '/');
