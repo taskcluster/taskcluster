@@ -3,7 +3,7 @@ const ScopeSetBuilder = require('./scopesetbuilder');
 
 // Construct character SUBSTITUTE used for representation of <..>
 const PARAM = '\u001a';
-const PARAM_TO_END = /\u001a.*$/;
+const PARAM_TO_END = /\u001a.*$/; // eslint-disable-line no-control-regex
 
 /**
  * Given a sorted list of scopes that contains PARAM, replace PARAM with param

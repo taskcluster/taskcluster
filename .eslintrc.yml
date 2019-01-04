@@ -1,3 +1,29 @@
 ---
 root: true
-extends: eslint-config-taskcluster
+extends: eslint:recommended
+env:
+  node: true
+  mocha: true
+  es6: true
+parserOptions:
+  ecmaVersion: 2018
+  sourceType: module
+
+rules:
+  # These we never want
+  no-console: off # We don't mind these being used for now until structured logging is available
+  no-constant-condition: off # This is legitimately sometimes useful
+  no-useless-escape: off # This isn't such a big deal and sometimes improves readability
+
+  # These are disabled for now and we will slowly turn them on
+  no-case-declarations: off
+  no-unused-vars: off
+  no-undef: off
+  no-unreachable: off
+  no-extra-semi: off
+  no-redeclare: off
+  no-dupe-keys: off
+  no-sparse-arrays: off
+  no-const-assign: off
+  getter-return: off
+  no-unsafe-negation: off
