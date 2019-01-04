@@ -13,6 +13,5 @@
   ],
   "main": "./src/index.js",
   "dependencies": {
-    "taskcluster-client": "file:../../libraries/client"
   }
 }

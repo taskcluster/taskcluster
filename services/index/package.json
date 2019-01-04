@@ -11,17 +11,7 @@
   "dependencies": {
     "azure-entities": "^5.1.0",
     "debug": "^3.1.0",
-    "lodash": "^4.11.1",
-    "taskcluster-client": "file:../../libraries/client",
-    "taskcluster-lib-api": "file:../../libraries/api",
-    "taskcluster-lib-app": "file:../../libraries/app",
-    "taskcluster-lib-azure": "file:../../libraries/azure",
-    "taskcluster-lib-docs": "file:../../libraries/docs",
-    "taskcluster-lib-loader": "file:../../libraries/loader",
-    "taskcluster-lib-monitor": "file:../../libraries/monitor",
-    "taskcluster-lib-pulse": "file:../../libraries/pulse",
-    "taskcluster-lib-validate": "file:../../libraries/validate",
-    "typed-env-config": "file:../../libraries/typed-env-config"
+    "lodash": "^4.11.1"
   },
   "engine-strict": true,
   "engines": {

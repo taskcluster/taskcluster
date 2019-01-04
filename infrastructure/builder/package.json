@@ -23,7 +23,6 @@
     "console-taskgraph": "^1.5.0",
     "dockerode": "^2.5.3",
     "dot": "^1.1.2",
-    "eslint-config-taskcluster": "^3.1.0",
     "got": "^8.3.0",
     "json-e": "^2.5.0",
     "json-stable-stringify": "^1.0.1",
@@ -38,9 +37,7 @@
     "split": "^1.0.1",
     "tar-fs": "^1.16.0",
     "tar-stream": "^1.5.5",
-    "taskcluster-lib-docs": "file:../../libraries/docs",
     "temporary": "^0.0.8",
-    "typed-env-config": "file:../../libraries/typed-env-config",
     "zen-observable": "^0.7.1"
   }
 }

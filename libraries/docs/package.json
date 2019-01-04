@@ -25,8 +25,7 @@
     "promise": "^8.0.1",
     "recursive-readdir-sync": "^1.0.6",
     "s3-upload-stream": "^1.0.7",
-    "tar-stream": "^1.5.4",
-    "taskcluster-client": "file:../../libraries/client"
+    "tar-stream": "^1.5.4"
   },
   "main": "./src/index.js"
 }

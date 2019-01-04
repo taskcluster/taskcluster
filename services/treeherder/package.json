@@ -10,17 +10,8 @@
   "dependencies": {
     "babel-plugin-array-includes": "^2.0.3",
     "debug": "^3.1.0",
-    "eslint-config-taskcluster": "^3.1.0",
     "lodash": "^4.17.10",
-    "slugid": "^2.0.0",
-    "taskcluster-client": "file:../../libraries/client",
-    "taskcluster-lib-docs": "file:../../libraries/docs",
-    "taskcluster-lib-loader": "file:../../libraries/loader",
-    "taskcluster-lib-monitor": "file:../../libraries/monitor",
-    "taskcluster-lib-pulse": "file:../../libraries/pulse",
-    "taskcluster-lib-urls": "^12.0.0",
-    "taskcluster-lib-validate": "file:../../libraries/validate",
-    "typed-env-config": "file:../../libraries/typed-env-config"
+    "slugid": "^2.0.0"
   },
   "engine-strict": true,
   "engines": {
