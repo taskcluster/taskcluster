@@ -102,7 +102,10 @@ class VersionZero extends TcYaml {
   compileTasks(config, cfg, payload, now) {
     config.tasks = config.tasks.map((task) => {
       task.routes = task.routes || [];
-      task.routes.push(cfg.app.statusTaskRoute);
+      task.routes = Array.from(new Set([
+        ...task.routes,
+        cfg.app.statusTaskRoute,
+      ]));
 
       return {
         taskId: slugid.nice(),
@@ -256,7 +259,10 @@ class VersionOne extends TcYaml {
 
       config.tasks = config.tasks.map(task => {
         task.routes = task.routes || [];
-        task.routes.push(config.reporting ? cfg.app.checkTaskRoute : cfg.app.statusTaskRoute);
+        task.routes = Array.from(new Set([
+          ...task.routes,
+          config.reporting ? cfg.app.checkTaskRoute : cfg.app.statusTaskRoute,
+        ]));
 
         task = Object.assign({
           taskId: defaultTaskId,
