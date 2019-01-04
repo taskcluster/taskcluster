@@ -22,4 +22,3 @@ rules:
   no-unreachable: off
   no-redeclare: off
   no-dupe-keys: off
-  no-const-assign: off

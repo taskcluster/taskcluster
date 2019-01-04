@@ -159,7 +159,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     }
 
     // Send input to signatureValidator (auth server or local validator)
-    const result = await Promise.resolve(signatureValidator({
+    let result = await Promise.resolve(signatureValidator({
       method:           req.method.toLowerCase(),
       resource:         req.originalUrl,
       host:             host.name,
