@@ -194,7 +194,7 @@ suite('tc-yaml_test.js', function() {
             created: now,
             taskGroupId: 'task-1',
             schedulerId: 'test-sched',
-            routes: ['checks-queue', 'statuses-queue'],
+            routes: ['statuses-queue', 'checks-queue'],
           },
         }]);
       });
@@ -213,7 +213,7 @@ suite('tc-yaml_test.js', function() {
             created: now,
             taskGroupId: 'task-1',
             schedulerId: 'test-sched',
-            routes: ['statuses-queue', 'my-first-route', 'my-second-route'],
+            routes: ['my-first-route', 'statuses-queue', 'my-second-route'],
           },
         }]);
       });
