@@ -174,7 +174,7 @@ builder.declare({
     '',
     'The caller\'s credentials must include the role that will be used to',
     'create the task.  That role must satisfy task.scopes as well as the',
-    'necessary scopes to add the task to the queue.',,
+    'necessary scopes to add the task to the queue.',
   ].join('\n'),
 }, async function(req, res) {
   const hookGroupId = req.params.hookGroupId;

@@ -22,7 +22,6 @@ rules:
   no-unreachable: off
   no-redeclare: off
   no-dupe-keys: off
-  no-sparse-arrays: off
   no-const-assign: off
   getter-return: off
   no-unsafe-negation: off
