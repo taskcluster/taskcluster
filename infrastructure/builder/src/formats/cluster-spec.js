@@ -15,6 +15,6 @@ class ClusterSpec {
     const buildFile = path.join(filename, 'build.yml');
     this.build = yaml.safeLoad(fs.readFileSync(buildFile));
   }
-};
+}
 
 exports.ClusterSpec = ClusterSpec;

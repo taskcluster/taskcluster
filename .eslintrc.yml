@@ -20,7 +20,6 @@ rules:
   no-unused-vars: off
   no-undef: off
   no-unreachable: off
-  no-extra-semi: off
   no-redeclare: off
   no-dupe-keys: off
   no-sparse-arrays: off

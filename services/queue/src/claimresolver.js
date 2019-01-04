@@ -264,7 +264,7 @@ class ClaimResolver {
 
     return remove();
   }
-};
+}
 
 // Export ClaimResolver
 module.exports = ClaimResolver;

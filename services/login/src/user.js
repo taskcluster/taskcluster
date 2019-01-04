@@ -92,6 +92,6 @@ class User {
     }
     return new User();
   }
-};
+}
 
 module.exports = User;

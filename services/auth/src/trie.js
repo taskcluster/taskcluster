@@ -97,7 +97,7 @@ class Node {
     }
     return modified;
   }
-};
+}
 
 // Export Node (for tests only)
 exports._Node = Node;

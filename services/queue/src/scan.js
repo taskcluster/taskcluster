@@ -125,7 +125,7 @@ let scanObjectVersions = async ({cfg, Artifact, Task, publicArtifactBucket}) => 
 
       params.KeyMarker = res.data.NextKeyMarker;
       params.VersionIdMarker = res.data.NextVersionIdMarker;
-    };
+    }
   }));
 };
 

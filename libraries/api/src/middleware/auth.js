@@ -321,7 +321,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
         return next(new ErrorReply({code: 'AuthenticationFailed', message: err.message, details: err.details}));
       }
       return next(err);
-    };
+    }
   };
 };
 

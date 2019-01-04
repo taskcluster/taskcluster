@@ -104,6 +104,6 @@ class Roles {
       // fall through - the blob exists, which is what we wanted
     }
   }
-};
+}
 
 exports.Roles = Roles;

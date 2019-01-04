@@ -369,7 +369,7 @@ class DependencyTracker {
 
     return status;
   }
-};
+}
 
 // Export DependencyTracker
 module.exports = DependencyTracker;

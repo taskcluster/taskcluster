@@ -227,7 +227,7 @@ class DeadlineResolver {
 
     return remove();
   }
-};
+}
 
 // Export DeadlineResolver
 module.exports = DeadlineResolver;

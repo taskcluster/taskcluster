@@ -23,7 +23,7 @@ const {scopeCompare, mergeScopeSets, normalizeScopeSet} = require('taskcluster-l
  */
 class BaseNode {
   next() { new new Error('Node.next() not implemented'); }
-};
+}
 
 /**
  * A LeafNode takes a normalized list of scopes and creates a merge-tree
@@ -45,7 +45,7 @@ class LeafNode extends BaseNode {
     this.index++;
     return this;
   }
-};
+}
 
 /**
  * A MergeNode takes two nodes and creates a single ScopeMergeTree node.
@@ -101,7 +101,7 @@ class MergeNode extends BaseNode {
     // We set a value, so return this until next time we're called
     return this;
   }
-};
+}
 
 /** Build a balanced ScopeMergeTree from list of normalized scope-sets */
 const buildMergeTree = (scopeSets, i = 0, j = scopeSets.length - 1) => {
@@ -183,7 +183,7 @@ class ScopeSetBuilder {
       return A;
     }
     return mergeScopeSets(A, B);
-  };
+  }
 }
 
 // Export ScopeSetBuilder

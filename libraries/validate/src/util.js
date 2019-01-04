@@ -31,7 +31,7 @@ function renderConstants(schema, constants) {
   };
   // Do a deep clone with substitute
   return _.cloneDeepWith(schema, substitute);
-};
+}
 
 exports.renderConstants = renderConstants;
 

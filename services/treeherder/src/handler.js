@@ -142,7 +142,7 @@ module.exports = class Handler {
       } catch (err) {
         this.monitor.count('handle-message.failure');
         this.monitor.reportError(err);
-      };
+      }
     });
   }
 

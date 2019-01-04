@@ -734,7 +734,7 @@ class QueueService {
     // Wait for result and return it
     return await entry.count;
   }
-};
+}
 
 /**
  * Fake, in-memory version of azure.Queue, but without support for signed URLs
