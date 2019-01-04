@@ -170,8 +170,9 @@ and reports back results to the queue.
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
-		  rootURL                           The root URL of the Taskcluster deploment to which
-		                                    clientId and accessToken grant access.
+          rootURL                           The root URL of the Taskcluster deploment to which
+                                            clientId and accessToken grant access. For example,
+                                            'https://taskcluster.net'.
           signingKeyLocation                The PGP signing key for signing artifacts with.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
