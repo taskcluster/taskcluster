@@ -60,12 +60,21 @@ export default {
         filter,
       });
     },
-    taskGroup(parent, args, { loaders }) {
+    async taskGroup(parent, args, { loaders }) {
       if (parent.taskGroup) {
         return parent.taskGroup;
       }
 
-      return loaders.task.load(parent.taskGroupId);
+      try {
+        return await loaders.task.load(parent.taskGroupId);
+      } catch (e) {
+        // Do not throw an error if a task has no decision task
+        if (e.statusCode === 404) {
+          return null;
+        }
+
+        return e;
+      }
     },
     latestArtifacts(parent, { taskId, connection, filter }, { loaders }) {
       if (parent.latestArtifacts) {
