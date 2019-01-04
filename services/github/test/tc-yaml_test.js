@@ -122,23 +122,101 @@ suite('tc-yaml_test.js', function() {
       }]);
     });
 
-    test('compileTasks sets checks route if we have reporting in the YML', function() {
-      const config = {
-        tasks: [{
+    suite('status/checks routes', function() {
+      test('compileTasks sets checks route if we have reporting in the YML', function() {
+        const config = {
+          tasks: [{
+            taskId: 'task-1',
+          }],
+          reporting: 'checks-v1',
+        };
+        tcyaml.compileTasks(config, cfg, {}, now);
+        assume(config.tasks).to.deeply.equal([{
           taskId: 'task-1',
-        }],
-        reporting: 'checks-v1',
-      };
-      tcyaml.compileTasks(config, cfg, {}, now);
-      assume(config.tasks).to.deeply.equal([{
-        taskId: 'task-1',
-        task: {
-          created: now,
-          taskGroupId: 'task-1',
-          schedulerId: 'test-sched',
-          routes: ['checks-queue'],
-        },
-      }]);
+          task: {
+            created: now,
+            taskGroupId: 'task-1',
+            schedulerId: 'test-sched',
+            routes: ['checks-queue'],
+          },
+        }]);
+      });
+
+      test('compileTasks sets statuses route by default', function() {
+        const config = {
+          tasks: [{
+            taskId: 'task-1',
+          }],
+        };
+        tcyaml.compileTasks(config, cfg, {}, now);
+        assume(config.tasks).to.deeply.equal([{
+          taskId: 'task-1',
+          task: {
+            created: now,
+            taskGroupId: 'task-1',
+            schedulerId: 'test-sched',
+            routes: ['statuses-queue'],
+          },
+        }]);
+      });
+
+      test('compileTasks sets statuses just once', function() {
+        const config = {
+          tasks: [{
+            taskId: 'task-1',
+            routes: ['statuses-queue'],
+          }],
+        };
+        tcyaml.compileTasks(config, cfg, {}, now);
+        assume(config.tasks).to.deeply.equal([{
+          taskId: 'task-1',
+          task: {
+            created: now,
+            taskGroupId: 'task-1',
+            schedulerId: 'test-sched',
+            routes: ['statuses-queue'],
+          },
+        }]);
+      });
+
+      test('compileTasks allows both statuses and checks to be defined', function() {
+        const config = {
+          tasks: [{
+            taskId: 'task-1',
+            routes: ['statuses-queue'],
+          }],
+          reporting: 'checks-v1',
+        };
+        tcyaml.compileTasks(config, cfg, {}, now);
+        assume(config.tasks).to.deeply.equal([{
+          taskId: 'task-1',
+          task: {
+            created: now,
+            taskGroupId: 'task-1',
+            schedulerId: 'test-sched',
+            routes: ['checks-queue', 'statuses-queue'],
+          },
+        }]);
+      });
+
+      test('compileTasks does not erase existing routes', function() {
+        const config = {
+          tasks: [{
+            taskId: 'task-1',
+            routes: ['my-first-route', 'statuses-queue', 'my-second-route'],
+          }],
+        };
+        tcyaml.compileTasks(config, cfg, {}, now);
+        assume(config.tasks).to.deeply.equal([{
+          taskId: 'task-1',
+          task: {
+            created: now,
+            taskGroupId: 'task-1',
+            schedulerId: 'test-sched',
+            routes: ['statuses-queue', 'my-first-route', 'my-second-route'],
+          },
+        }]);
+      });
     });
   });
 });
