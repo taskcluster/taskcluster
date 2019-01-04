@@ -1,45 +1,45 @@
 [
     {
         "url": "https://references.taskcluster.net/auth/v1/api.json",
-        "docroot": "https://docs.taskcluster.net/reference/platform/auth/api-docs"
+        "docroot": "https://docs.taskcluster.net/docs/reference/platform/taskcluster-auth/references/api"
     }, {
         "url": "https://references.taskcluster.net/auth/v1/exchanges.json",
-        "docroot": "https://docs.taskcluster.net/reference/platform/auth/exchanges"
+        "docroot": "https://docs.taskcluster.net/docs/reference/platform/taskcluster-auth/references/events"
     }, {
         "url": "https://references.taskcluster.net/github/v1/api.json",
-        "docroot": "https://docs.taskcluster.net/reference/core/github/api-docs"
+        "docroot": "https://docs.taskcluster.net/docs/reference/integrations/taskcluster-github/references/api"
     }, {
         "url": "https://references.taskcluster.net/github/v1/exchanges.json",
-        "docroot": "https://docs.taskcluster.net/reference/core/github/exchanges"
+        "docroot": "https://docs.taskcluster.net/docs/reference/integrations/taskcluster-github/references/events"
     }, {
         "url": "https://references.taskcluster.net/hooks/v1/api.json",
-        "docroot": "https://docs.taskcluster.net/reference/core/hooks/api-docs"
+        "docroot": "https://docs.taskcluster.net/docs/reference/core/taskcluster-hooks/references/api"
     }, {
         "url": "https://references.taskcluster.net/index/v1/api.json",
-        "docroot": "https://docs.taskcluster.net/reference/core/index/api-docs"
+        "docroot": "https://docs.taskcluster.net/docs/reference/core/taskcluster-index/references/api"
     }, {
         "url": "https://references.taskcluster.net/login/v1/api.json",
-        "docroot": "https://docs.taskcluster.net/reference/core/login/api-docs"
+        "docroot": "https://docs.taskcluster.net/docs/reference/integrations/taskcluster-login/references/api",
     }, {
         "url": "https://references.taskcluster.net/notify/v1/api.json",
-        "docroot": "https://docs.taskcluster.net/reference/core/notify/api-docs"
+        "docroot": "https://docs.taskcluster.net/docs/reference/core/taskcluster-notify/references/api"
     }, {
         "url": "https://references.taskcluster.net/purge-cache/v1/api.json",
-        "docroot": "https://docs.taskcluster.net/reference/core/purge-cache/api-docs"
+        "docroot": "https://docs.taskcluster.net/docs/reference/core/taskcluster-purge-cache/references/api"
     }, {
         "url": "https://references.taskcluster.net/purge-cache/v1/exchanges.json",
-        "docroot": "https://docs.taskcluster.net/reference/core/purge-cache/exchanges"
+        "docroot": "https://docs.taskcluster.net/docs/reference/core/taskcluster-purge-cache/references/events"
     }, {
         "url": "https://references.taskcluster.net/queue/v1/api.json",
-        "docroot": "https://docs.taskcluster.net/reference/platform/queue/api-docs"
+        "docroot": "https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/references/api"
     }, {
         "url": "https://references.taskcluster.net/queue/v1/exchanges.json",
-        "docroot": "https://docs.taskcluster.net/reference/platform/queue/exchanges"
+        "docroot": "https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/references/events"
     }, {
         "url": "https://references.taskcluster.net/secrets/v1/api.json",
-        "docroot": "https://docs.taskcluster.net/reference/core/secrets/api-docs"
+        "docroot": "https://docs.taskcluster.net/docs/reference/core/taskcluster-secrets/references/api"
     }, {
         "url": "https://references.taskcluster.net/treeherder/v1/exchanges.json",
-        "docroot": "https://docs.taskcluster.net/reference/core/treeherder/exchanges"
+        "docroot": "https://docs.taskcluster.net/docs/reference/integrations/taskcluster-treeherder/references/events"
     }
 ]

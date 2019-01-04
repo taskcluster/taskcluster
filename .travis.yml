@@ -3,6 +3,9 @@ language: go
 go:
   - 1.9
 
+env:
+  - TASKCLUSTER_ROOT_URL=https://taskcluster.net
+
 before_install:
   - go version
   - go env

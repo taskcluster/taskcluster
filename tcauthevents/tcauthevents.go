@@ -17,7 +17,7 @@
 // can purge their caches and synchronize state. But you are of course
 // welcome to use these for other purposes, monitoring changes for example.
 //
-// See: https://docs.taskcluster.net/reference/platform/auth/exchanges
+// See: https://docs.taskcluster.net/docs/reference/platform/taskcluster-auth/references/events
 //
 // How to use this package
 //
@@ -50,7 +50,7 @@ import (
 
 // Message that a new client has been created.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/exchanges#clientCreated
+// See https://docs.taskcluster.net/docs/reference/platform/taskcluster-auth/references/events#clientCreated
 type ClientCreated struct {
 	Reserved string `mwords:"#"`
 }
@@ -69,7 +69,7 @@ func (binding ClientCreated) NewPayloadObject() interface{} {
 
 // Message that a new client has been updated.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/exchanges#clientUpdated
+// See https://docs.taskcluster.net/docs/reference/platform/taskcluster-auth/references/events#clientUpdated
 type ClientUpdated struct {
 	Reserved string `mwords:"#"`
 }
@@ -88,7 +88,7 @@ func (binding ClientUpdated) NewPayloadObject() interface{} {
 
 // Message that a new client has been deleted.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/exchanges#clientDeleted
+// See https://docs.taskcluster.net/docs/reference/platform/taskcluster-auth/references/events#clientDeleted
 type ClientDeleted struct {
 	Reserved string `mwords:"#"`
 }
@@ -107,7 +107,7 @@ func (binding ClientDeleted) NewPayloadObject() interface{} {
 
 // Message that a new role has been created.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/exchanges#roleCreated
+// See https://docs.taskcluster.net/docs/reference/platform/taskcluster-auth/references/events#roleCreated
 type RoleCreated struct {
 	Reserved string `mwords:"#"`
 }
@@ -126,7 +126,7 @@ func (binding RoleCreated) NewPayloadObject() interface{} {
 
 // Message that a new role has been updated.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/exchanges#roleUpdated
+// See https://docs.taskcluster.net/docs/reference/platform/taskcluster-auth/references/events#roleUpdated
 type RoleUpdated struct {
 	Reserved string `mwords:"#"`
 }
@@ -145,7 +145,7 @@ func (binding RoleUpdated) NewPayloadObject() interface{} {
 
 // Message that a new role has been deleted.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/exchanges#roleDeleted
+// See https://docs.taskcluster.net/docs/reference/platform/taskcluster-auth/references/events#roleDeleted
 type RoleDeleted struct {
 	Reserved string `mwords:"#"`
 }
