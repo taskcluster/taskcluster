@@ -653,6 +653,68 @@ builder.declare({
   res.reply(response);
 });
 
+/** List roles **/
+builder.declare({
+  method:     'get',
+  route:      '/roles2/',
+  query: {
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name:       'listRoles2',
+  input:      undefined,
+  output:     'list-roles2-response.yml',
+  stability:  'stable',
+  title:      'List Roles',
+  description: [
+    'If no limit is given, all roles are returned. Since this',
+    'list may become long, callers can use the `limit` and `continuationToken`',
+    'query arguments to page through the responses.',
+  ].join('\n'),
+}, async function(req, res) {
+  let hashids = new Hashids();
+  let continuationToken;
+  let limit = parseInt(req.query.limit, 10) || undefined;
+  let response = {};
+
+  // Assign the continuationToken
+  if (req.query.continuationToken) {
+    continuationToken = hashids.decode(req.query.continuationToken);
+    // If continuationToken is invalid
+    if (continuationToken.length === 0) {
+      return res.reportError('InputError', 'Invalid continuationToken', {});
+    }
+    // Assign the decoded token value
+    continuationToken = continuationToken[0];
+  } else {
+    continuationToken = undefined;
+  }
+
+  // Load all roles
+  let roles = await this.Roles.get();
+  let length = roles.length;
+
+  // Slice the list of roles based on continuationToken and limit
+  if (continuationToken && limit) {
+    roles = roles.slice(continuationToken, limit + continuationToken);
+    continuationToken = limit + continuationToken;
+
+    if (continuationToken < length) {
+      response.continuationToken = hashids.encode(continuationToken, 10);
+    }
+  } else if (limit) {
+    roles = roles.slice(0, limit);   // If no continuationToken is provided
+    continuationToken = limit;
+
+    if (continuationToken < length) {
+      response.continuationToken = hashids.encode(continuationToken, 10);
+    }
+  }
+
+  response.roles = roles;
+  res.reply(response);
+});
+
 /** Get role */
 builder.declare({
   method:     'get',
