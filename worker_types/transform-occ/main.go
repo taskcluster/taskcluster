@@ -223,7 +223,7 @@ func FilenameFromURL(url string, extension string) (filename string) {
 		log.Fatal("Could not reach URL " + url)
 	}
 	if filename == "" {
-		log.Fatalf("HEEEEEELLLLLLPPPPP")
+		log.Fatalf("FAIL: Got empty filename for content from url %v with extension %v - cannot proceed!", url, extension)
 	}
 	return
 }
