@@ -23,4 +23,3 @@ rules:
   no-redeclare: off
   no-dupe-keys: off
   no-const-assign: off
-  getter-return: off

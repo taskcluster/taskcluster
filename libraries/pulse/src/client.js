@@ -183,6 +183,7 @@ class Client extends events.EventEmitter {
     if (this.running && this.connections.length && this.connections[0].state === 'connected') {
       return this.connections[0];
     }
+    return undefined;
   }
 
   /**
@@ -243,7 +244,9 @@ class FakeClient {
 
   async stop() { }
   async recycle() {}
-  get activeConnection() {}
+  get activeConnection() {
+    return undefined;
+  }
 
   async onConnected() {
     this.debug('FakeClient.onConnected will never call its callback');
