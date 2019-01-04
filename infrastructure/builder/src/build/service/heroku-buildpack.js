@@ -16,6 +16,7 @@ const ENTRYPOINT_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'e
 const HEROKU_DOCKERFILE_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'heroku-dockerfile.dot')));
 
 exports.herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir}) => {
+  const isMonorepo = repository.source === 'monorepo';
   const stackImage = `heroku/${repository.service.stack.replace('-', ':')}`;
   const buildImage = `heroku/${repository.service.stack.replace('-', ':')}-build`;
   const buildpackUrl = repository.service.buildpack;
@@ -24,6 +25,16 @@ exports.herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, re
 
   ensureDockerImage(tasks, baseDir, stackImage);
   ensureDockerImage(tasks, baseDir, buildImage);
+
+  const [repoDirName, repoExactSourceName, repoStampName] = isMonorepo ? [
+    'monorepo-dir',
+    'monorepo-exact-source',
+    'monorepo-stamp',
+  ] : [
+    `repo-${name}-dir`,
+    `repo-${name}-exact-source`,
+    `repo-${name}-stamp`,
+  ];
 
   ensureTask(tasks, {
     title: `Clone ${buildpackName}`,
@@ -61,9 +72,9 @@ exports.herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, re
   tasks.push({
     title: `Service ${name} - Compile`,
     requires: [
-      `repo-${name}-dir`,
-      `repo-${name}-exact-source`,
-      `repo-${name}-stamp`,
+      repoDirName,
+      repoExactSourceName,
+      repoStampName,
       `docker-image-${buildImage}`,
       `repo-${buildpackName}-dir`,
       `repo-${buildpackName}-stamp`,
@@ -74,14 +85,14 @@ exports.herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, re
     ],
     locks: ['docker'],
     run: async (requirements, utils) => {
-      const repoDir = requirements[`repo-${name}-dir`];
+      const repoDir = requirements[repoDirName];
       const appDir = path.join(workDir, 'app');
       const bpDir = requirements[`repo-${buildpackName}-dir`];
-      const revision = requirements[`repo-${name}-exact-source`].split('#')[1];
+      const revision = requirements[repoExactSourceName].split('#')[1];
 
       const stamp = new Stamp({step: 'service-compile', version: 1},
         requirements[`repo-${buildpackName}-stamp`],
-        requirements[`repo-${name}-stamp`]);
+        requirements[repoStampName]);
       const provides = {
         [`service-${name}-built-app-dir`]: appDir,
         [`service-${name}-stamp`]: stamp,
@@ -95,7 +106,8 @@ exports.herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, re
       }
 
       utils.step({title: 'Copy Source Repository'});
-      await copy(repoDir, appDir, {filter: ['**/*', '!.git'], dot: true});
+      const filter = ['**/*', '!**/node_modules/**', '!**/node_modules', '!**/.git/**', '!**/.git'];
+      await copy(repoDir, appDir, {filter, dot: true});
 
       utils.step({title: 'Buildpack Detect'});
 
@@ -144,7 +156,9 @@ exports.herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, re
 
       utils.step({title: 'Create Entrypoint Script'});
 
-      const procfilePath = path.join(appDir, 'Procfile');
+      const procfilePath = isMonorepo ?
+        path.join(appDir, 'services', name, 'Procfile') :
+        path.join(appDir, 'Procfile');
       if (!fs.existsSync(procfilePath)) {
         throw new Error(`Service ${name} has no Procfile`);
       }
@@ -190,7 +204,6 @@ exports.herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, re
     tasks.push({
       title: `Service ${name} - Generate Docs`,
       requires: [
-        `repo-${name}-exact-source`,
         `service-${name}-built-app-dir`,
         `service-${name}-stamp`,
         `docker-image-${stackImage}`,

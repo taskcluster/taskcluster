@@ -3736,7 +3736,7 @@ mkdirp@0.5.1, mkdirp@^0.5.0, mkdirp@^0.5.1:
   dependencies:
     minimist "0.0.8"
 
-mocha@^5.2.0:
+mocha@^5.0.4, mocha@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/mocha/-/mocha-5.2.0.tgz#6d8ae508f59167f940f2b5b3c4a612ae50c90ae6"
   integrity sha512-2IUgKDhc3J7Uug+FxMXuqIyYzH7gJjXECKe/w43IGgQHTSj3InJi+yAA7T24L9bQMRKiUEHxEX37G5JpVUGLcQ==
@@ -4826,7 +4826,14 @@ right-align@^0.1.1:
   dependencies:
     align-text "^0.1.1"
 
-rimraf@^2.2.8, rimraf@^2.6.1, rimraf@^2.6.2, rimraf@^2.6.3, rimraf@~2.6.2:
+rimraf@^2.2.8, rimraf@^2.6.1, rimraf@^2.6.2, rimraf@~2.6.2:
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.6.2.tgz#2ed8150d24a16ea8651e6d6ef0f47c4158ce7a36"
+  integrity sha512-lreewLK/BlghmxtfH36YYVg1i8IAce4TI7oao75I1g245+6BctqTVQiBP3YUJ9C6DQOXJmkYR9X9fCLtCOJc5w==
+  dependencies:
+    glob "^7.0.5"
+
+rimraf@^2.6.3:
   version "2.6.3"
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.6.3.tgz#b2d104fe0d8fb27cf9e0a1cda8262dd3833c6cab"
   integrity sha512-mwqeW5XsA2qAejG46gYdENaxXjx9onRNCfn7L0duuP4hCuTIi/QO7PDK07KJfp1d+izWPrzEJDcSqBa0OZQriA==
@@ -5452,8 +5459,8 @@ tar@^4:
     lodash "^4.15.0"
     promise "^8.0.1"
     slugid "^2.0.0"
-    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-api-12.8.1-fab834ab-9753-4408-a121-7bff86b3a3b8-1546556273878/libraries/client"
-    taskcluster-lib-scopes "file:../../.cache/yarn/v4/npm-taskcluster-lib-api-12.8.1-fab834ab-9753-4408-a121-7bff86b3a3b8-1546556273878/libraries/scopes"
+    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-api-12.8.1-913c1801-bd45-46c8-8eb1-253b41609d6e-1546557496219/libraries/client"
+    taskcluster-lib-scopes "file:../../.cache/yarn/v4/npm-taskcluster-lib-api-12.8.1-913c1801-bd45-46c8-8eb1-253b41609d6e-1546557496219/libraries/scopes"
     type-is "^1.6.15"
     uuid "^3.1.0"
 
@@ -5474,7 +5481,7 @@ tar@^4:
 "taskcluster-lib-azure@file:libraries/azure":
   version "10.0.0"
   dependencies:
-    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-azure-10.0.0-9dddb7b6-a830-4d9c-ae4d-585461fb5ac0-1546556273892/libraries/client"
+    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-azure-10.0.0-c5fa853b-bac6-49a2-9793-696091cd70d0-1546557496224/libraries/client"
 
 taskcluster-lib-config@^0.9.1:
   version "0.9.1"
@@ -5499,7 +5506,7 @@ taskcluster-lib-config@^0.9.1:
     recursive-readdir-sync "^1.0.6"
     s3-upload-stream "^1.0.7"
     tar-stream "^1.5.4"
-    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-docs-11.0.0-7fcaa2b6-a819-492a-a03a-fe4f429e5d9f-1546556273881/libraries/client"
+    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-docs-11.0.0-a5f7136a-4329-46d4-8598-513845e246a3-1546557496229/libraries/client"
 
 "taskcluster-lib-iterate@file:libraries/iterate":
   version "11.0.0"
@@ -5524,7 +5531,7 @@ taskcluster-lib-config@^0.9.1:
     lodash "^4.5.1"
     raven "^2.2.1"
     statsum "^0.6.0"
-    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-monitor-11.1.1-c4af97d0-4add-4bfb-b517-18a2c28b53f4-1546556273889/libraries/client"
+    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-monitor-11.1.1-249d1d86-d66f-4606-ba83-f6eb2817c4a4-1546557496235/libraries/client"
 
 "taskcluster-lib-pulse@file:libraries/pulse":
   version "11.1.1"
@@ -5532,7 +5539,7 @@ taskcluster-lib-config@^0.9.1:
     amqplib "^0.5.2"
     aws-sdk "^2.331.0"
     debug "^3.1.0"
-    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-pulse-11.1.1-5a744aa7-f097-4360-920e-b69ec290b368-1546556273893/libraries/client"
+    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-pulse-11.1.1-84060ee1-324d-444c-9757-bce8b1b62c41-1546557496242/libraries/client"
     taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-scopes@file:libraries/scopes":
@@ -5549,9 +5556,9 @@ taskcluster-lib-config@^0.9.1:
     nock "^9.4.3"
     promise "^8.0.1"
     superagent "3.8.2"
-    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-testing-12.1.2-728d432b-85ae-41ea-aaca-591e5b54768d-1546556273520/libraries/client"
+    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-testing-12.1.2-47a9aafb-5972-45d4-8f41-819022403952-1546557495714/libraries/client"
     taskcluster-lib-urls "^12.0.0"
-    taskcluster-lib-validate "file:../../.cache/yarn/v4/npm-taskcluster-lib-testing-12.1.2-728d432b-85ae-41ea-aaca-591e5b54768d-1546556273520/libraries/validate"
+    taskcluster-lib-validate "file:../../.cache/yarn/v4/npm-taskcluster-lib-testing-12.1.2-47a9aafb-5972-45d4-8f41-819022403952-1546557495714/libraries/validate"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"

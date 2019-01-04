@@ -63,7 +63,7 @@ exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, w
       utils.step({title: 'Copy Repository'});
 
       // copy from the repo (omitting .git as it's not needed)
-      await copy(repoDir, appDir, {filter: ['**/*', '!.git'], dot: true});
+      await copy(repoDir, appDir, {filter: ['**/*', '!**/.git/**', '!**/.git'], dot: true});
       assert(fs.existsSync(appDir));
 
       utils.step({title: 'Copy Docs'});

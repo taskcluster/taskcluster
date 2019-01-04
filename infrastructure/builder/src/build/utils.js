@@ -56,6 +56,27 @@ exports.gitClone = async ({dir, url, sha, utils}) => {
 };
 
 /**
+ * Get exactRev from an existing repo (usually this one..)
+ *
+ * - dir -- directory to check
+ * - utils -- taskgraph utils (waitFor, etc.)
+ *
+ * Returns:
+ * {
+ *   exactRev: ..,     // the exact revision checked out (possibly with -dirty suffix)
+ * }
+ */
+exports.gitId = async ({dir, utils}) => {
+  const opts = {cwd: dir};
+
+  assert(fs.existsSync(dir), `${dir} does not exist`);
+  const describe = await exec('git', ['describe', '--always', '--dirty', '--exclude', '.*'], opts);
+  return {
+    exactRev: describe.stdout.split(/\s+/)[0],
+  };
+};
+
+/**
  * Set up to call docker in the given baseDir (internal use only)
  */
 const _dockerSetup = ({baseDir}) => {
@@ -129,7 +150,9 @@ exports.dockerRun = async ({baseDir, logfile, command, env, binds, workingDir, i
     Cmd: command,
     HostConfig: {
       Binds: [...Binds, ...binds || []],
-      AutoRemove: true,
+      // AutoRemove would help clean up stray containers, but means we cannot reliably
+      // get the exit status of the container
+      AutoRemove: false,
     },
     ...otherOpts,
   };
@@ -138,13 +161,13 @@ exports.dockerRun = async ({baseDir, logfile, command, env, binds, workingDir, i
   // docker API calls.
   const container = await docker.createContainer(containerOpts);
   const stream = await container.attach({stream: true, stdout: true, stderr: true});
-  stream.setEncoding('utf-8');
   stream.pipe(output, {end: true});
   await container.start({});
 
   // wait for the output to close, then wait for the container to exit
   await utils.waitFor(output);
   const result = await utils.waitFor(container.wait());
+  await utils.waitFor(container.remove());
 
   if (result.StatusCode !== 0) {
     throw new Error(`Container exited with status ${result.StatusCode}.${errorAddendum}`);
