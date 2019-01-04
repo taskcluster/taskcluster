@@ -12,6 +12,7 @@ parserOptions:
 rules:
   # These also seem like good ideas.
   require-atomic-updates: error
+  array-callback-return: error
 
   # These we never want
   no-console: off # We don't mind these being used for now until structured logging is available

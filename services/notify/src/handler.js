@@ -87,7 +87,7 @@ class Handler {
       // convert from on- syntax to state. e.g. on-exception -> exception
       let decider = _.join(_.slice(route[route.length -1], 3), '');
       if (decider !== 'any' && status.state !== decider) {
-        return;
+        return null;
       }
 
       let ircMessage = `Task "${task.metadata.name}" complete with status '${status.state}'. Inspect: ${href}`;
@@ -150,6 +150,7 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
           });
 
         default:
+          return null;
       }
     }));
   }

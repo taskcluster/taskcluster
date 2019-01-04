@@ -42,7 +42,7 @@ suite('scope expression validity:', function() {
     {AnyOf: [{AllOf: ['scope:foo:thing']}]},
     {AllOf: [{AnyOf: ['scope:foo:thing', 'scope:bar:thing']}]},
     {AllOf: [{AnyOf: [{AllOf: ['foo']}, {AllOf: ['bar']}]}]},
-  ].map(c => {
+  ].forEach(c => {
     test(`${JSON.stringify(c)} is OK`, scenario(c));
   });
 });
@@ -79,7 +79,7 @@ suite('scope expression satisfaction:', function() {
     [[''], {AnyOf: ['abc', 'def']}],
     [['abc:def'], {AnyOf: ['abc', 'def']}],
     [['xyz', 'abc'], {AllOf: [{AnyOf: [{AllOf: ['foo']}, {AllOf: ['bar']}]}]}],
-  ].map(([s, e]) => {
+  ].forEach(([s, e]) => {
     test(`${JSON.stringify(e)} is _not_ satisfied by ${JSON.stringify(s)}`, scenario(s, e, 'should-fail'));
   });
 
@@ -95,7 +95,7 @@ suite('scope expression satisfaction:', function() {
     [['abc*'], {AnyOf: ['abc']}],
     [['abc*', 'def*'], {AnyOf: ['abc', 'def']}],
     [['foo'], {AllOf: [{AnyOf: [{AllOf: ['foo']}, {AllOf: ['bar']}]}]}],
-  ].map(([s, e]) => {
+  ].forEach(([s, e]) => {
     test(`${JSON.stringify(e)} is satisfied by ${JSON.stringify(s)}`, scenario(s, e));
   });
 
@@ -124,7 +124,7 @@ suite('scope expression failure explanation:', function() {
       {AllOf: [{AnyOf: [{AllOf: ['foo']}, {AllOf: ['bar']}]}]},
       {AnyOf: ['foo', 'bar']},
     ],
-  ].map(([s, e, expl]) => {
+  ].forEach(([s, e, expl]) => {
     test(`Given ${JSON.stringify(s)}, ${JSON.stringify(e)} is explained by ${JSON.stringify(expl)}}`,
       scenario(s, e, expl));
   });

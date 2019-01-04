@@ -47,7 +47,7 @@ var PulseTestReceiver = function(credentials, mocha) {
     // the PulseConnection closes eventually... But it's nice to keep things
     // clean, errors are more likely to surface at the right test this way.
     return Promise.all(that._listeners.map(function(listener) {
-      listener.close();
+      return listener.close();
     })).then(function() {
       that._listeners         = null;
       that._promisedMessages  = null;

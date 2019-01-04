@@ -86,6 +86,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
           message.payload.schedulerId === 'dummy-scheduler') {
           return true;
         }
+        return false;
       });
     }, Infinity);
     // note that depending on timing we are likely to get two such

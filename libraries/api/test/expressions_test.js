@@ -36,7 +36,7 @@ suite('expression expansion success', function() {
       {AllOf: [{for: 'foo', in: 'bar', each: 'aa:<foo>:<b>'}]},
       {bar: ['aaa', 'bbb'], b: 'q'},
       {AllOf: ['aa:aaa:q', 'aa:bbb:q']}],
-  ].map(([e, p, r]) => {
+  ].forEach(([e, p, r]) => {
     test(`${JSON.stringify(e)} with ${JSON.stringify(p)} renders correctly`, scenario(e, p, r));
   });
 
@@ -49,7 +49,7 @@ suite('expression expansion success', function() {
     [{if: 'foo', then: {AllOf: ['bar']}}, {foo: new Date()}],
     [{AllOf: [{for: 'foo', in: 'bar', each: 'aa:<foo>'}]}, {bar: 'a'}],
     [{AllOf: [{for: 'foo', in: 'bar', each: 'aa:<fox>'}]}, {bar: ['a']}],
-  ].map(([e, p]) => {
+  ].forEach(([e, p]) => {
     test(`${JSON.stringify(e)} with ${JSON.stringify(p)} should fail`, scenario(e, p, null, 'fail!'));
   });
 });
