@@ -215,8 +215,7 @@ suite('taskcreator_test.js', function() {
       await creator.appendLastFire({
         hookId: hook.hookId,
         hookGroupId: hook.hookGroupId,
-        firedBy: 'test', 
-        result: 'success', 
+        firedBy: 'test',
         taskId: hook.nextTaskId,
         taskCreateTime,
         result: 'success',
@@ -243,8 +242,7 @@ suite('taskcreator_test.js', function() {
         creator.appendLastFire({
           hookId: hook.hookId,
           hookGroupId: hook.hookGroupId,
-          firedBy: 'test', 
-          result: 'success', 
+          firedBy: 'test',
           taskId: hook.nextTaskId,
           taskCreateTime,
           result: 'success',
@@ -254,8 +252,7 @@ suite('taskcreator_test.js', function() {
         creator.appendLastFire({
           hookId: hook2.hookId,
           hookGroupId: hook2.hookGroupId,
-          firedBy: 'test', 
-          result: 'success', 
+          firedBy: 'test',
           taskId: hook2.nextTaskId,
           taskCreateTime,
           result: 'success',

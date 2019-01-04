@@ -83,7 +83,6 @@ const testcases = [
       'a:a':      ['qa', 'Q'],
       'a:aa':     ['qaa', 'Q'],
       'z':        [],
-      'eU':       [''],
       'eU*':      ['fU*'],
       'e*':       ['f*', 'h*', 'hello', 'hello2', 'H'],
       'e123':     ['f123g'],
