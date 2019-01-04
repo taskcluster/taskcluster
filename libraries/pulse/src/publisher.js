@@ -20,9 +20,9 @@ class Exchanges {
 
   declare(entryOptions) {
     const entry = new Entry({exchanges: this, ...entryOptions});
-    assert(!this.entries.some(e => e.name == entry.name),
+    assert(!this.entries.some(e => e.name === entry.name),
       `entry with name ${entry.name} already declared`);
-    assert(!this.entries.some(e => e.exchange == entry.exchange),
+    assert(!this.entries.some(e => e.exchange === entry.exchange),
       `entry with exchange ${entry.exchange} already declared`);
     this.entries.push(entry);
   }
@@ -153,7 +153,7 @@ class Entry {
         `routingKey declaration ${key.name} must have maxSize > 0`);
 
       // Check size left in routingKey space
-      if (sizeLeft != 255) {
+      if (sizeLeft !== 255) {
         sizeLeft -= 1; // Remove one for the joining dot
       }
       sizeLeft -= key.maxSize;

@@ -108,7 +108,7 @@ const launch = async function(profile) {
     loops += 1;
     (async () => {
       let agent = new https.Agent({keepAlive: true});
-      if (cfg.server.publicUrl.substr(0, 5) != 'https') {
+      if (cfg.server.publicUrl.substr(0, 5) !== 'https') {
         agent = new http.Agent({keepAlive: true});
       }
       let Auth = taskcluster.createClient(v1.reference({

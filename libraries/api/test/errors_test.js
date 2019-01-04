@@ -153,7 +153,7 @@ suite('api/errors', function() {
         const response = JSON.parse(res.response.text);
         assert(!/s3kr!t/.test(res.text)); // secret does not appear in response
         assert(response.code === 'InputValidationError');
-        assert(response.requestInfo.payload.secret == '<HIDDEN>'); // replaced payload appears in response
+        assert(response.requestInfo.payload.secret === '<HIDDEN>'); // replaced payload appears in response
         delete response.requestInfo['time'];
         assert(_.isEqual(response.requestInfo, {
           method: 'InputValidationError',

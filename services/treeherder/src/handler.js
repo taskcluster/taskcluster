@@ -62,7 +62,7 @@ function parseRouteInfo(prefix, taskId, routes, task) {
     return r.split('.')[0] === prefix;
   });
 
-  if (matchingRoutes.length != 1) {
+  if (matchingRoutes.length !== 1) {
     throw new Error(
       'Could not determine treeherder route.  Either there is no route, ' +
       `or more than one matching route exists.  Task ID: ${taskId} Routes: ${routes}`

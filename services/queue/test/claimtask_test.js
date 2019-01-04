@@ -122,7 +122,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     }).then(() => {
       throw new Error('This request should have failed');
     }, (err) => {
-      if (err.code != 'RequestConflict') {
+      if (err.code !== 'RequestConflict') {
         throw err;
       }
     });
@@ -145,7 +145,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     }).then(() => {
       throw new Error('Expected an authentication error');
     }, (err) => {
-      if (err.code != 'InsufficientScopes') {
+      if (err.code !== 'InsufficientScopes') {
         throw err;
       }
     });
@@ -162,7 +162,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     }).then(() => {
       throw new Error('Expected an authentication error');
     }, (err) => {
-      if (err.code != 'InsufficientScopes') {
+      if (err.code !== 'InsufficientScopes') {
         throw err;
       }
     });
@@ -179,7 +179,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     }).then(() => {
       throw new Error('Expected an authentication error');
     }, (err) => {
-      if (err.code != 'InsufficientScopes') {
+      if (err.code !== 'InsufficientScopes') {
         throw err;
       }
     });

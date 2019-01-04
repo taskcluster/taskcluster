@@ -125,7 +125,7 @@ BlobStore.prototype.putOrMatch = function(key, json) {
   var that = this;
   return that.putIfNotExists(key, json).catch(function(err) {
     // Handle error if we're getting a warning that the blob already exists
-    if (err.code != 'BlobAlreadyExists') {
+    if (err.code !== 'BlobAlreadyExists') {
       throw err;
     }
     return that.get(key).then(function(result) {

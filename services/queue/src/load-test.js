@@ -47,7 +47,7 @@ var launch = async function(cfg) {
     loops += 1;
     (async () => {
       var agent = new https.Agent({keepAlive: true});
-      if (cfg.server.publicUrl.substr(0, 5) != 'https') {
+      if (cfg.server.publicUrl.substr(0, 5) !== 'https') {
         agent = new http.Agent({keepAlive: true});
       }
       var tempCreds = taskcluster.createTemporaryCredentials({

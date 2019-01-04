@@ -440,7 +440,7 @@ suite(helper.suiteName(__filename), () => {
       const roles = [];
       const recur = (prefix, h) => {
         const roleIds = _.range(W).map(w => `${prefix}-${w}`);
-        if (h != H) {
+        if (h !== H) {
           roleIds.forEach(roleId => recur(roleId, h+1));
         }
         roles.push({

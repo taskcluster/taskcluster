@@ -37,9 +37,9 @@ let branchRoutePattern = new RegExp(
   '|tc-treeherder(-stage)?(\\.v2)?)\\.([^.]*)\\..*/'
 );
 let taskBranch = (task) => {
-  if (task.workerType == 'cratertest') {
+  if (task.workerType === 'cratertest') {
     return 'cratertest';
-  } else if (task.workerType == 'buildbot-bridge') {
+  } else if (task.workerType === 'buildbot-bridge') {
     return 'buildbot-bridge';
   }
 

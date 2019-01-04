@@ -293,7 +293,7 @@ suite('api/route', function() {
   test('reference', async function() {
     const ref = builder.reference();
     ref.entries.forEach(function(entry) {
-      if (entry.name == 'testSlashParam') {
+      if (entry.name === 'testSlashParam') {
         assert(entry.route === '/slash-param/<name>',
           'not parsing route correctly');
         assert(entry.args.length === 1, 'Wrong number of args');

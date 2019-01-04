@@ -92,7 +92,7 @@ builder.declare({
     account,
     table: tableName,
     level,
-    levelIsReadOnly: level == 'read-only',
+    levelIsReadOnly: level === 'read-only',
   });
 
   // Check that the account exists

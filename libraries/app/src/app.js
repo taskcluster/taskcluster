@@ -70,8 +70,8 @@ var app = async function(options) {
     robotsTxt: true,
   });
   assert(typeof options.port === 'number', 'Port must be a number');
-  assert(options.env == 'development' ||
-         options.env == 'production', 'env must be production or development');
+  assert(options.env === 'development' ||
+         options.env === 'production', 'env must be production or development');
   assert(options.forceSSL !== undefined, 'forceSSL must be defined');
   assert(options.trustProxy !== undefined, 'trustProxy must be defined');
   assert(options.apis, 'Must provide an array of apis');
@@ -128,7 +128,7 @@ var app = async function(options) {
   });
 
   // output user-agent and referrer in production, which can be useful when debugging API (ab)use
-  const format = app.get('env') == 'development' ?
+  const format = app.get('env') === 'development' ?
     'dev' : '[:date[clf]] :method :url -> :status; ip=:remote-addr referrer=":referrer" ua=":user-agent"';
   app.use(morganDebug('app:request', format));
 

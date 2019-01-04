@@ -54,7 +54,7 @@ builder.declare({
     });
   } catch (e) {
     // If the entity exists, update it
-    if (e.name == 'EntityAlreadyExistsError') {
+    if (e.name === 'EntityAlreadyExistsError') {
       let item = await this.Secret.load({name});
       await item.modify(function() {
         this.secret = secret;
@@ -82,7 +82,7 @@ builder.declare({
   try {
     await this.Secret.remove({name: name});
   } catch (e) {
-    if (e.name == 'ResourceNotFoundError') {
+    if (e.name === 'ResourceNotFoundError') {
       return res.reportError('ResourceNotFound', 'Secret not found', {});
     } else {
       throw e;
@@ -111,7 +111,7 @@ builder.declare({
   try {
     item = await this.Secret.load({name});
   } catch (e) {
-    if (e.name == 'ResourceNotFoundError') {
+    if (e.name === 'ResourceNotFoundError') {
       return res.reportError('ResourceNotFound', 'Secret not found', {});
     } else {
       throw e;

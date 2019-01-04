@@ -81,7 +81,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     await helper.queue.rerunTask(taskId).then(
       () => assert(0, 'expected an error'),
       err => {
-        if (err.code != 'ResourceNotFound') {
+        if (err.code !== 'ResourceNotFound') {
           throw err;
         }
       });

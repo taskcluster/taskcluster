@@ -278,7 +278,7 @@ exports.createClient = function(reference, name) {
       var args = Array.prototype.slice.call(arguments);
       // Validate number of arguments
       var N = args.length;
-      if (N != nb_args && (optKeys.length === 0 || N != nb_args + 1)) {
+      if (N !== nb_args && (optKeys.length === 0 || N !== nb_args + 1)) {
         throw new Error('Function ' + entry.name + ' takes ' + nb_args +
                         ' arguments, but was given ' + N +
                         ' arguments');
@@ -519,7 +519,7 @@ exports.createClient = function(reference, name) {
   Client.prototype.buildUrl = function() {
     // Convert arguments to actual array
     var args = Array.prototype.slice.call(arguments);
-    if (args.length == 0) {
+    if (args.length === 0) {
       throw new Error('buildUrl(method, arg1, arg2, ...) takes a least one ' +
                         'argument!');
     }
@@ -581,7 +581,7 @@ exports.createClient = function(reference, name) {
   Client.prototype.buildSignedUrl = function() {
     // Convert arguments to actual array
     var args = Array.prototype.slice.call(arguments);
-    if (args.length == 0) {
+    if (args.length === 0) {
       throw new Error('buildSignedUrl(method, arg1, arg2, ..., [options]) ' +
                         'takes a least one argument!');
     }

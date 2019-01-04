@@ -39,7 +39,7 @@ suite.skip('queue/tasks_store', function() {
     }).then(function() {
       return blobstore.get(key);
     }).then(function(result) {
-      assert(result.message == 'Go away', 'Message mismatch!');
+      assert(result.message === 'Go away', 'Message mismatch!');
     });
   });
 

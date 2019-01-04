@@ -409,7 +409,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     await helper.queue.reportCompleted(taskId, 0).then(function() {
       throw new Error('Expected authentication error');
     }, function(err) {
-      if (err.code != 'InsufficientScopes') {
+      if (err.code !== 'InsufficientScopes') {
         throw err;
       }
     });

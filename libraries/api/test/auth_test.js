@@ -201,7 +201,7 @@ suite('api/auth', function() {
             assert(res.ok, 'Request failed');
             assert(res.body.scopes.length === 1, 'wrong number of scopes');
             assert(res.body.scopes[0] === 'service:magic', 'failed scopes');
-            assert(res.body.clientId == 'test-client', 'bad clientId');
+            assert(res.body.clientId === 'test-client', 'bad clientId');
             assert(/\d{4}-\d{2}-\d{2}.*/.test(res.body.expires), 'bad expires');
             return res;
           }),
@@ -325,7 +325,7 @@ suite('api/auth', function() {
         id: 'admin',
         tester: (auth, url) => request.get(url).hawk(auth)
           .then(function(res) {
-            assert(res.body.clientId == 'admin');
+            assert(res.body.clientId === 'admin');
             return res;
           }),
       },

@@ -14,7 +14,7 @@ suite('satisfaction', function() {
         res = 'exception';
         exception = e;
       }
-      assert(res == matches,
+      assert(res === matches,
         'Incorrect result for scopeMatch(' +
         JSON.stringify(scopePatterns) +
         ', ' + JSON.stringify(scopesets) + ') -> ' + res + ' ' + exception);

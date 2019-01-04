@@ -82,7 +82,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     await helper.queue.createTask(taskId, taskDef).then(() => {
       throw new Error('Expected an authentication error');
     }, (err) => {
-      if (err.code != 'InsufficientScopes') {
+      if (err.code !== 'InsufficientScopes') {
         throw err;
       }
     });
@@ -99,7 +99,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       .then(
         () => { throw new Error('Expected an authentication error'); },
         (err) => {
-          if (err.code != 'InputError') {
+          if (err.code !== 'InputError') {
             throw err;
           }
         });

@@ -52,10 +52,12 @@ rules:
   indent:
     - error
     - 2
+  eqeqeq:
+    - error
+    - smart
 
   # These are disabled for now and we will slowly turn them on
   block-scoped-var: off
-  eqeqeq: off
   require-await: off
   no-var: off
   no-case-declarations: off

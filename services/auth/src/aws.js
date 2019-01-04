@@ -100,7 +100,7 @@ builder.declare({
   }
 
   // Check that the client is authorized to access given bucket and prefix
-  await req.authorize({level, bucket, prefix, levelIsReadOnly: level == 'read-only'});
+  await req.authorize({level, bucket, prefix, levelIsReadOnly: level === 'read-only'});
 
   // Prevent prefix to start with a slash, this is bad behavior. Technically
   // we could easily support it, S3 does, but people rarely wants double

@@ -27,7 +27,7 @@ async function documenter(options) {
     docsFolder: path.join(rootdir.get(), '/docs'),
     bucket: 'taskcluster-raw-docs',
     references: [],
-    publish: process.env.NODE_ENV == 'production',
+    publish: process.env.NODE_ENV === 'production',
   });
 
   const rv = new Documenter(options);

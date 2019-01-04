@@ -16,7 +16,7 @@ function renderConstants(schema, constants) {
 
     // Check if there is a key and only one key
     let key = val.$const;
-    if (key === undefined || typeof key != 'string' || _.keys(val).length != 1) {
+    if (key === undefined || typeof key != 'string' || _.keys(val).length !== 1) {
       return undefined;
     }
 
@@ -43,7 +43,7 @@ exports.renderConstants = renderConstants;
 const checkRefs = (schema, serviceName) => {
   const check = val => {
     if (_.isObject(val)) {
-      if (typeof val.$ref === 'string' && _.keys(val).length == 1) {
+      if (typeof val.$ref === 'string' && _.keys(val).length === 1) {
         const ref = url.parse(val.$ref);
         if (ref.hostname || ref.protocol) {
           throw new Error(`Disallowed $ref '${ref}': absolute URIs are not allowed`);

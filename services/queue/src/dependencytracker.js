@@ -302,7 +302,7 @@ class DependencyTracker {
       throw err;
     }
 
-    if (result.entries.length == 0) {
+    if (result.entries.length === 0) {
       await this.publisher.taskGroupResolved({
         taskGroupId,
         schedulerId,

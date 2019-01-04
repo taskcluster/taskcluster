@@ -151,7 +151,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ).then(function(result) {
       assert(false, 'Expected an authentication error!');
     }, function(err) {
-      assert(err.statusCode == 403, 'Expected authorization error!');
+      assert(err.statusCode === 403, 'Expected authorization error!');
     });
   });
 
@@ -167,7 +167,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ).then(function(result) {
       assert(false, 'Expected an authentication error!');
     }, function(err) {
-      assert(err.statusCode == 403, 'Expected authorization error!');
+      assert(err.statusCode === 403, 'Expected authorization error!');
     });
   });
 
@@ -290,7 +290,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
         'read-write'
       );
     } catch (error) {
-      assert(error.statusCode == 403, 'Expected authorization error!');
+      assert(error.statusCode === 403, 'Expected authorization error!');
       return;
     }
     assert(false, 'Expected an authentication error!');

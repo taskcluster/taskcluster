@@ -221,7 +221,7 @@ const createSignatureValidator = function(options) {
           if (typeof issuingClientId !== 'string') {
             throw new Error('ext.certificate.issuer must be a string');
           }
-          if (issuingClientId == credentialName) {
+          if (issuingClientId === credentialName) {
             throw new Error('ext.certificate.issuer must differ from the supplied clientId');
           }
         }

@@ -247,7 +247,7 @@ class PulseConsumer {
           routing[ref.name] = keys.pop();
         }
         // Check that we only have one multiWord routing key
-        assert(i == j, 'i != j really shouldn\'t be the case');
+        assert(i === j, 'i != j really shouldn\'t be the case');
         routing[routingKeyReference[i].name] = keys.join('.');
       }
 
