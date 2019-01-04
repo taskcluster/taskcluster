@@ -48,12 +48,12 @@ rules:
     - error
     - mode: strict
   no-trailing-spaces: error
+  eol-last: error
 
   # Let's turn these on eventually
   block-scoped-var: off
   eqeqeq: off
   require-await: off
-  eol-last: off
   indent: off
   no-var: off
 
