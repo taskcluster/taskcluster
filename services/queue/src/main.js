@@ -93,6 +93,7 @@ let load = loader({
     requires: ['cfg', 'schemaset'],
     setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
+      rootUrl: cfg.taskcluster.rootUrl,
       tier: 'platform',
       schemaset,
       publish: cfg.app.publishMetaData,
