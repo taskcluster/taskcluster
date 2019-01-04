@@ -217,6 +217,10 @@ helper.withQueues = (mock, skipping) => {
         credentials: 'inMemory',
         signingKey: cfg.azure.signingKey,
       }));
+    } else {
+      // choose a unique name for the table, to avoid conflicting with other tests
+      const cfg = await helper.load('cfg');
+      helper.load.cfg('app.queuesTableName', cfg.app.queuesTableName + TABLE_SUFFIX);
     }
 
     helper.Queues = await helper.load('Queues');
