@@ -68,4 +68,3 @@ suite('satisfaction', function() {
   test('empty disjunction in scopesets',
     mktest(['foo:bar'], [], false));
 });
-

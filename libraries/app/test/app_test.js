@@ -101,4 +101,3 @@ suite('app', function() {
     });
   });
 });
-

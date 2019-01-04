@@ -37,4 +37,3 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster'], function
     assume(await helper.CachePurge.load({...wt, cacheName: 'b'}, true)).to.not.equal(null);
   });
 });
-

@@ -1,4 +1,3 @@
-
 const IRCBot = require('./irc');
 
 (async () => {

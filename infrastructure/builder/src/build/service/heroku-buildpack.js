@@ -256,4 +256,3 @@ exports.herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, re
     });
   }
 };
-

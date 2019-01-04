@@ -341,4 +341,3 @@ suite('validate_test.js', function() {
     ]);
   });
 });
-

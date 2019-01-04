@@ -1711,9 +1711,6 @@ eslint-config-taskcluster@^3.0.0, eslint-config-taskcluster@^3.1.0, eslint-confi
   dependencies:
     eslint "^5.9.0"
 
-"eslint-config-taskcluster@file:libraries/eslint-config":
-  version "4.0.0"
-
 eslint-scope@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/eslint-scope/-/eslint-scope-4.0.0.tgz#50bf3071e9338bcdc43331794a0cb533f0136172"
@@ -5453,8 +5450,8 @@ tar@^4:
     lodash "^4.15.0"
     promise "^8.0.1"
     slugid "^2.0.0"
-    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-api-12.8.1-cfe9f18d-b0b2-4a43-bde9-6974bdbdd03b-1546566992072/libraries/client"
-    taskcluster-lib-scopes "file:../../.cache/yarn/v4/npm-taskcluster-lib-api-12.8.1-cfe9f18d-b0b2-4a43-bde9-6974bdbdd03b-1546566992072/libraries/scopes"
+    taskcluster-client "file:../../../.cache/yarn/v4/npm-taskcluster-lib-api-12.8.1-dd62626e-59d7-4b75-8310-9ece4e4a435c-1546620693612/libraries/client"
+    taskcluster-lib-scopes "file:../../../.cache/yarn/v4/npm-taskcluster-lib-api-12.8.1-dd62626e-59d7-4b75-8310-9ece4e4a435c-1546620693612/libraries/scopes"
     type-is "^1.6.15"
     uuid "^3.1.0"
 
@@ -5475,7 +5472,7 @@ tar@^4:
 "taskcluster-lib-azure@file:libraries/azure":
   version "10.0.0"
   dependencies:
-    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-azure-10.0.0-66c8cc97-5257-4cc6-9d07-3909c34d3e2b-1546566992082/libraries/client"
+    taskcluster-client "file:../../../.cache/yarn/v4/npm-taskcluster-lib-azure-10.0.0-19180806-bc51-4e37-aebf-fa0df7d83de0-1546620693615/libraries/client"
 
 taskcluster-lib-config@^0.9.1:
   version "0.9.1"
@@ -5500,7 +5497,7 @@ taskcluster-lib-config@^0.9.1:
     recursive-readdir-sync "^1.0.6"
     s3-upload-stream "^1.0.7"
     tar-stream "^1.5.4"
-    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-docs-11.0.0-9e3418bf-5d73-4f02-93da-c453b31ddcaa-1546566992084/libraries/client"
+    taskcluster-client "file:../../../.cache/yarn/v4/npm-taskcluster-lib-docs-11.0.0-14c02824-2bcc-4404-adce-f4a6a99e294b-1546620693617/libraries/client"
 
 "taskcluster-lib-iterate@file:libraries/iterate":
   version "11.0.0"
@@ -5525,7 +5522,7 @@ taskcluster-lib-config@^0.9.1:
     lodash "^4.5.1"
     raven "^2.2.1"
     statsum "^0.6.0"
-    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-monitor-11.1.1-ce7a45df-49c9-4898-a247-2e37298e7026-1546566992092/libraries/client"
+    taskcluster-client "file:../../../.cache/yarn/v4/npm-taskcluster-lib-monitor-11.1.1-c81ed976-5ad4-4cff-89ec-1917d3c5ca9d-1546620693621/libraries/client"
 
 "taskcluster-lib-pulse@file:libraries/pulse":
   version "11.1.1"
@@ -5533,7 +5530,7 @@ taskcluster-lib-config@^0.9.1:
     amqplib "^0.5.2"
     aws-sdk "^2.331.0"
     debug "^3.1.0"
-    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-pulse-11.1.1-5d13e116-81c9-42e0-90df-0776e5bc27c1-1546566992095/libraries/client"
+    taskcluster-client "file:../../../.cache/yarn/v4/npm-taskcluster-lib-pulse-11.1.1-c0f77891-cdca-4f9b-a9c3-1915cbab24e9-1546620693620/libraries/client"
     taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-scopes@file:libraries/scopes":
@@ -5550,9 +5547,9 @@ taskcluster-lib-config@^0.9.1:
     nock "^9.4.3"
     promise "^8.0.1"
     superagent "3.8.2"
-    taskcluster-client "file:../../.cache/yarn/v4/npm-taskcluster-lib-testing-12.1.2-f6dde235-d2a9-4ef0-9cb8-379223fb4948-1546566991504/libraries/client"
+    taskcluster-client "file:../../../.cache/yarn/v4/npm-taskcluster-lib-testing-12.1.2-3c311309-9b2d-4937-9bed-70198261b809-1546620693368/libraries/client"
     taskcluster-lib-urls "^12.0.0"
-    taskcluster-lib-validate "file:../../.cache/yarn/v4/npm-taskcluster-lib-testing-12.1.2-f6dde235-d2a9-4ef0-9cb8-379223fb4948-1546566991504/libraries/validate"
+    taskcluster-lib-validate "file:../../../.cache/yarn/v4/npm-taskcluster-lib-testing-12.1.2-3c311309-9b2d-4937-9bed-70198261b809-1546620693368/libraries/validate"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"

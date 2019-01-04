@@ -54,4 +54,3 @@ class EC2RegionResolver {
 
 // Export EC2RegionResolver
 module.exports = EC2RegionResolver;
-

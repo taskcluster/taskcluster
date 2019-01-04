@@ -191,4 +191,3 @@ class Scheduler extends events.EventEmitter {
 
 // Export Scheduler
 module.exports = Scheduler;
-

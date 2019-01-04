@@ -389,4 +389,3 @@ suite('client credential handling', function() {
     });
   });
 });
-

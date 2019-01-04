@@ -47,7 +47,7 @@ exports.jsonHttpRequest = function(jsonFile, options) {
   let jsonData = JSON.parse(fs.readFileSync(jsonFile));
   options.headers = jsonData.headers;
 
-  return new Promise (function(accept, reject) {
+  return new Promise(function(accept, reject) {
     try {
       let req = http.request(options, accept);
       req.write(JSON.stringify(jsonData.body));

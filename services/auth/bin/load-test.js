@@ -210,4 +210,3 @@ if (!module.parent) {
 
 // Export launch in-case anybody cares
 module.exports = launch;
-

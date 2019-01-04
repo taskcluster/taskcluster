@@ -1,4 +1,3 @@
-
 var childProcess  = require('child_process');
 var Promise       = require('promise');
 var debug         = require('debug')('taskcluster-lib-testing:pulse');

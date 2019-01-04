@@ -38,4 +38,3 @@ suite('TerraformJson', function() {
     });
   });
 });
-

@@ -10,17 +10,58 @@ parserOptions:
   sourceType: module
 
 rules:
-  # These also seem like good ideas.
+  # These seem like good ideas
   require-atomic-updates: error
   array-callback-return: error
+  curly: error
+  default-case: error
+  guard-for-in: error
+  no-alert: error
+  no-eval: error
+  no-implied-eval: error
+  no-floating-decimal: error
+  comma-spacing: error
+  func-call-spacing: error
+  func-name-matching: error
+  no-lonely-if: error
+  no-tabs: error
+  semi: error
+  no-multiple-empty-lines:
+    - error
+    - max: 1
+      maxBOF: 0
+      maxEOF: 0
+  max-len:
+    - error
+    - code: 120
+      ignoreTemplateLiterals: true
+      ignoreStrings: true
+      ignoreUrls: true
+  comma-dangle:
+    - error
+    - always-multiline
+  complexity:
+    - error
+    - max: 60 # We may want to eventually bring this number down
 
-  # These we never want
-  no-console: off # We don't mind these being used for now until structured logging is available
-  no-constant-condition: off # This is legitimately sometimes useful
-  no-useless-escape: off # This isn't such a big deal and sometimes improves readability
+  # Let's turn these on eventually
+  block-scoped-var: off
+  no-multi-spaces: off
+  eqeqeq: off
+  require-await: off
+  eol-last: off
+  indent: off
+  no-trailing-spaces: off
+  no-var: off
 
   # These are disabled for now and we will slowly turn them on
   no-case-declarations: off
   no-unused-vars: off
   no-undef: off
   no-unreachable: off
+
+  # These we never want but are enabled by recommended
+  no-console: off # We don't mind these being used for now until structured logging is available
+  no-constant-condition: off # This is legitimately sometimes useful
+  no-useless-escape: off # This isn't such a big deal and sometimes improves readability
+
