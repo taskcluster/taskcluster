@@ -19,18 +19,18 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   // Use the same task definition for everything
   const taskDef = {
-    provisionerId:    'no-provisioner',
-    workerType:       'test-worker',
-    schedulerId:      'dummy-scheduler',
-    created:          taskcluster.fromNowJSON(),
-    deadline:         taskcluster.fromNowJSON('1 days'),
-    expires:          taskcluster.fromNowJSON('2 days'),
-    payload:          {},
+    provisionerId: 'no-provisioner',
+    workerType: 'test-worker',
+    schedulerId: 'dummy-scheduler',
+    created: taskcluster.fromNowJSON(),
+    deadline: taskcluster.fromNowJSON('1 days'),
+    expires: taskcluster.fromNowJSON('2 days'),
+    payload: {},
     metadata: {
-      name:           'Unit testing task',
-      description:    'Task created during unit tests',
-      owner:          'jonsafj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue',
+      name: 'Unit testing task',
+      description: 'Task created during unit tests',
+      owner: 'jonsafj@mozilla.com',
+      source: 'https://github.com/taskcluster/taskcluster-queue',
     },
   };
 
@@ -57,8 +57,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running', message => message.payload.status.taskId === taskIdA);
     await helper.queue.reportCompleted(taskIdA, 0);
@@ -66,8 +66,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskB');
     await helper.queue.claimTask(taskIdB, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running', message => message.payload.status.taskId === taskIdB);
     await helper.queue.reportCompleted(taskIdB, 0);
@@ -185,7 +185,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   test('list task-group -- doesn\'t exist', async () => {
     let taskGroupId = slugid.v4();
     await helper.queue.listTaskGroup(taskGroupId).then(
-      ()  => assert(false, 'Expected and error'),
+      () => assert(false, 'Expected and error'),
       err => assert(err.code === 'ResourceNotFound', 'err != ResourceNotFound'),
     );
   });

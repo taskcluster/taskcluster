@@ -16,7 +16,7 @@ class RefBuilder {
     this.schemas.push({
       filename,
       content: omit(merge({
-        $schema:  'http://json-schema.org/draft-06/schema#',
+        $schema: 'http://json-schema.org/draft-06/schema#',
         $id: '/schemas/common/test.json#',
       }, content), omitPaths),
     });

@@ -196,11 +196,11 @@ class PulseConsumer {
   async _handleMessage(msg) {
     // Construct message
     let message = {
-      payload:      JSON.parse(msg.content.toString('utf8')),
-      exchange:     msg.fields.exchange,
-      routingKey:   msg.fields.routingKey,
-      redelivered:  msg.fields.redelivered,
-      routes:       [],
+      payload: JSON.parse(msg.content.toString('utf8')),
+      exchange: msg.fields.exchange,
+      routingKey: msg.fields.routingKey,
+      redelivered: msg.fields.redelivered,
+      routes: [],
     };
 
     // Find CC'ed routes

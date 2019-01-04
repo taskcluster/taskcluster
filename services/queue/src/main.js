@@ -1,31 +1,31 @@
 #!/usr/bin/env node
-let debug               = require('debug')('app:main');
-let _                   = require('lodash');
-let assert              = require('assert');
-let path                = require('path');
-let taskcluster         = require('taskcluster-client');
-let builder             = require('./api');
-let exchanges           = require('./exchanges');
-let BlobStore           = require('./blobstore');
-let data                = require('./data');
-let Bucket              = require('./bucket');
-let QueueService        = require('./queueservice');
-let EC2RegionResolver   = require('./ec2regionresolver');
-let DeadlineResolver    = require('./deadlineresolver');
-let ClaimResolver       = require('./claimresolver');
-let DependencyTracker   = require('./dependencytracker');
-let DependencyResolver  = require('./dependencyresolver');
-let WorkClaimer         = require('./workclaimer');
-let WorkerInfo          = require('./workerinfo');
-let loader              = require('taskcluster-lib-loader');
-let config              = require('typed-env-config');
-let monitor             = require('taskcluster-lib-monitor');
-let SchemaSet           = require('taskcluster-lib-validate');
-let docs                = require('taskcluster-lib-docs');
-let App                 = require('taskcluster-lib-app');
-let remoteS3            = require('remotely-signed-s3');
-let {sasCredentials}    = require('taskcluster-lib-azure');
-let pulse               = require('taskcluster-lib-pulse');
+let debug = require('debug')('app:main');
+let _ = require('lodash');
+let assert = require('assert');
+let path = require('path');
+let taskcluster = require('taskcluster-client');
+let builder = require('./api');
+let exchanges = require('./exchanges');
+let BlobStore = require('./blobstore');
+let data = require('./data');
+let Bucket = require('./bucket');
+let QueueService = require('./queueservice');
+let EC2RegionResolver = require('./ec2regionresolver');
+let DeadlineResolver = require('./deadlineresolver');
+let ClaimResolver = require('./claimresolver');
+let DependencyTracker = require('./dependencytracker');
+let DependencyResolver = require('./dependencyresolver');
+let WorkClaimer = require('./workclaimer');
+let WorkerInfo = require('./workerinfo');
+let loader = require('taskcluster-lib-loader');
+let config = require('typed-env-config');
+let monitor = require('taskcluster-lib-monitor');
+let SchemaSet = require('taskcluster-lib-validate');
+let docs = require('taskcluster-lib-docs');
+let App = require('taskcluster-lib-app');
+let remoteS3 = require('remotely-signed-s3');
+let {sasCredentials} = require('taskcluster-lib-azure');
+let pulse = require('taskcluster-lib-pulse');
 
 // Create component loader
 let load = loader({
@@ -61,9 +61,9 @@ let load = loader({
   schemaset: {
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
-      serviceName:   'queue',
-      publish:       cfg.app.publishMetaData,
-      aws:           cfg.aws,
+      serviceName: 'queue',
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
     }),
   },
 
@@ -81,11 +81,11 @@ let load = loader({
   publisher: {
     requires: ['cfg', 'schemaset', 'pulseClient'],
     setup: async ({cfg, schemaset, pulseClient}) => exchanges.publisher({
-      rootUrl:            cfg.taskcluster.rootUrl,
-      client:             pulseClient,
+      rootUrl: cfg.taskcluster.rootUrl,
+      client: pulseClient,
       schemaset,
-      publish:            cfg.app.publishMetaData,
-      aws:                cfg.aws,
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
     }),
   },
 
@@ -100,8 +100,8 @@ let load = loader({
       references: [
         {name: 'api', reference: builder.reference()},
         {name: 'events', reference: exchanges.reference({
-          rootUrl:          cfg.taskcluster.rootUrl,
-          credentials:      cfg.pulse,
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.pulse,
         })},
       ],
     }),
@@ -117,10 +117,10 @@ let load = loader({
     requires: ['cfg', 'monitor'],
     setup: async ({cfg, monitor}) => {
       let bucket = new Bucket({
-        bucket:           cfg.app.publicArtifactBucket,
-        credentials:      cfg.aws,
-        bucketCDN:        cfg.app.publicArtifactBucketCDN,
-        monitor:          monitor.prefix('public-bucket'),
+        bucket: cfg.app.publicArtifactBucket,
+        credentials: cfg.aws,
+        bucketCDN: cfg.app.publicArtifactBucketCDN,
+        monitor: monitor.prefix('public-bucket'),
       });
       await bucket.setupCORS();
       return bucket;
@@ -130,9 +130,9 @@ let load = loader({
     requires: ['cfg', 'monitor'],
     setup: async ({cfg, monitor}) => {
       let bucket = new Bucket({
-        bucket:           cfg.app.privateArtifactBucket,
-        credentials:      cfg.aws,
-        monitor:          monitor.prefix('private-bucket'),
+        bucket: cfg.app.privateArtifactBucket,
+        credentials: cfg.aws,
+        monitor: monitor.prefix('private-bucket'),
       });
       await bucket.setupCORS();
       return bucket;
@@ -144,8 +144,8 @@ let load = loader({
     requires: ['cfg'],
     setup: async ({cfg}) => {
       let store = new BlobStore({
-        container:        cfg.app.artifactContainer,
-        credentials:      cfg.azure,
+        container: cfg.app.artifactContainer,
+        credentials: cfg.azure,
       });
       await store.createContainer();
       await store.setupCORS();
@@ -174,12 +174,12 @@ let load = loader({
         }),
         context: {
           blobStore,
-          publicBucket:   publicArtifactBucket,
-          privateBucket:  privateArtifactBucket,
-          monitor:        monitor.prefix('data.Artifact'),
-          s3Controller:   s3Controller,
+          publicBucket: publicArtifactBucket,
+          privateBucket: privateArtifactBucket,
+          monitor: monitor.prefix('data.Artifact'),
+          s3Controller: s3Controller,
         },
-        monitor:          monitor.prefix('table.artifacts'),
+        monitor: monitor.prefix('table.artifacts'),
       });
       await Artifact.ensureTable();
       return Artifact;
@@ -200,7 +200,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor:          monitor.prefix('table.tasks'),
+        monitor: monitor.prefix('table.tasks'),
       });
       await Task.ensureTable();
       return Task;
@@ -221,7 +221,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor:          monitor.prefix('table.taskgroups'),
+        monitor: monitor.prefix('table.taskgroups'),
       });
       await TaskGroup.ensureTable();
       return TaskGroup;
@@ -242,7 +242,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor:          monitor.prefix('table.taskgroupmembers'),
+        monitor: monitor.prefix('table.taskgroupmembers'),
       });
       await TaskGroupMember.ensureTable();
       return TaskGroupMember;
@@ -265,7 +265,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor:          monitor.prefix('table.taskgroupactivesets'),
+        monitor: monitor.prefix('table.taskgroupactivesets'),
       });
       await TaskGroupActiveSet.ensureTable();
       return TaskGroupActiveSet;
@@ -286,7 +286,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor:          monitor.prefix('table.taskrequirements'),
+        monitor: monitor.prefix('table.taskrequirements'),
       });
       await TaskRequirement.ensureTable();
       return TaskRequirement;
@@ -307,7 +307,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor:          monitor.prefix('table.taskdependencies'),
+        monitor: monitor.prefix('table.taskdependencies'),
       });
       await TaskDependency.ensureTable();
       return TaskDependency;
@@ -328,7 +328,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor:          monitor.prefix('table.provisioner'),
+        monitor: monitor.prefix('table.provisioner'),
       });
       await Provisioner.ensureTable();
       return Provisioner;
@@ -349,7 +349,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor:          monitor.prefix('table.workerType'),
+        monitor: monitor.prefix('table.workerType'),
       });
       await WorkerType.ensureTable();
       return WorkerType;
@@ -370,7 +370,7 @@ let load = loader({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.taskcluster.credentials,
         }),
-        monitor:          monitor.prefix('table.worker'),
+        monitor: monitor.prefix('table.worker'),
       });
       await Worker.ensureTable();
       return Worker;
@@ -381,13 +381,13 @@ let load = loader({
   queueService: {
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => new QueueService({
-      prefix:           cfg.app.queuePrefix,
-      credentials:      cfg.azure,
-      claimQueue:       cfg.app.claimQueue,
-      resolvedQueue:    cfg.app.resolvedQueue,
-      deadlineQueue:    cfg.app.deadlineQueue,
-      deadlineDelay:    cfg.app.deadlineDelay,
-      monitor:          monitor.prefix('queue-service'),
+      prefix: cfg.app.queuePrefix,
+      credentials: cfg.azure,
+      claimQueue: cfg.app.claimQueue,
+      resolvedQueue: cfg.app.resolvedQueue,
+      deadlineQueue: cfg.app.deadlineQueue,
+      deadlineDelay: cfg.app.deadlineDelay,
+      monitor: monitor.prefix('queue-service'),
     }),
   },
 
@@ -398,9 +398,9 @@ let load = loader({
       publisher,
       Task,
       queueService,
-      monitor:        monitor.prefix('work-claimer'),
-      claimTimeout:   cfg.app.claimTimeout,
-      credentials:    cfg.taskcluster.credentials,
+      monitor: monitor.prefix('work-claimer'),
+      claimTimeout: cfg.app.claimTimeout,
+      credentials: cfg.taskcluster.credentials,
     }),
   },
 
@@ -463,42 +463,42 @@ let load = loader({
     ],
     setup: (ctx) => builder.build({
       context: {
-        Task:             ctx.Task,
-        Artifact:         ctx.Artifact,
-        TaskGroup:        ctx.TaskGroup,
-        TaskGroupMember:  ctx.TaskGroupMember,
+        Task: ctx.Task,
+        Artifact: ctx.Artifact,
+        TaskGroup: ctx.TaskGroup,
+        TaskGroupMember: ctx.TaskGroupMember,
         TaskGroupActiveSet: ctx.TaskGroupActiveSet,
         taskGroupExpiresExtension: ctx.cfg.app.taskGroupExpiresExtension,
-        TaskDependency:   ctx.TaskDependency,
-        Provisioner:      ctx.Provisioner,
-        WorkerType:       ctx.WorkerType,
-        Worker:           ctx.Worker,
+        TaskDependency: ctx.TaskDependency,
+        Provisioner: ctx.Provisioner,
+        WorkerType: ctx.WorkerType,
+        Worker: ctx.Worker,
         dependencyTracker: ctx.dependencyTracker,
-        publisher:        ctx.publisher,
-        claimTimeout:     ctx.cfg.app.claimTimeout,
-        queueService:     ctx.queueService,
-        blobStore:        ctx.blobStore,
-        publicBucket:     ctx.publicArtifactBucket,
-        privateBucket:    ctx.privateArtifactBucket,
-        regionResolver:   ctx.regionResolver,
-        credentials:      ctx.cfg.taskcluster.credentials,
-        useCloudMirror:   !!ctx.cfg.app.useCloudMirror,
-        cloudMirrorHost:  ctx.cfg.app.cloudMirrorHost,
-        artifactRegion:   ctx.cfg.aws.region,
-        monitor:          ctx.monitor.prefix('api-context'),
-        workClaimer:      ctx.workClaimer,
-        workerInfo:       ctx.workerInfo,
-        s3Controller:     ctx.s3Controller,
-        s3Runner:         ctx.s3Runner,
-        blobRegion:       ctx.cfg.app.blobArtifactRegion, 
+        publisher: ctx.publisher,
+        claimTimeout: ctx.cfg.app.claimTimeout,
+        queueService: ctx.queueService,
+        blobStore: ctx.blobStore,
+        publicBucket: ctx.publicArtifactBucket,
+        privateBucket: ctx.privateArtifactBucket,
+        regionResolver: ctx.regionResolver,
+        credentials: ctx.cfg.taskcluster.credentials,
+        useCloudMirror: !!ctx.cfg.app.useCloudMirror,
+        cloudMirrorHost: ctx.cfg.app.cloudMirrorHost,
+        artifactRegion: ctx.cfg.aws.region,
+        monitor: ctx.monitor.prefix('api-context'),
+        workClaimer: ctx.workClaimer,
+        workerInfo: ctx.workerInfo,
+        s3Controller: ctx.s3Controller,
+        s3Runner: ctx.s3Runner,
+        blobRegion: ctx.cfg.app.blobArtifactRegion, 
         publicBlobBucket: ctx.cfg.app.publicBlobArtifactBucket,
-        privateBlobBucket:ctx.cfg.app.privateBlobArtifactBucket,
+        privateBlobBucket: ctx.cfg.app.privateBlobArtifactBucket,
       },
-      rootUrl:          ctx.cfg.taskcluster.rootUrl,
-      schemaset:        ctx.schemaset,
-      publish:          ctx.cfg.app.publishMetaData,
-      aws:              ctx.cfg.aws,
-      monitor:          ctx.monitor.prefix('api'),
+      rootUrl: ctx.cfg.taskcluster.rootUrl,
+      schemaset: ctx.schemaset,
+      publish: ctx.cfg.app.publishMetaData,
+      aws: ctx.cfg.aws,
+      monitor: ctx.monitor.prefix('api'),
     }),
   },
 
@@ -531,9 +531,9 @@ let load = loader({
     }) => {
       let resolver = new ClaimResolver({
         Task, queueService, publisher, dependencyTracker,
-        pollingDelay:   cfg.app.claimResolver.pollingDelay,
-        parallelism:    cfg.app.claimResolver.parallelism,
-        monitor:        monitor.prefix('claim-resolver'),
+        pollingDelay: cfg.app.claimResolver.pollingDelay,
+        parallelism: cfg.app.claimResolver.parallelism,
+        monitor: monitor.prefix('claim-resolver'),
       });
       resolver.start();
       return resolver;
@@ -551,9 +551,9 @@ let load = loader({
     }) => {
       let resolver = new DeadlineResolver({
         Task, queueService, publisher, dependencyTracker,
-        pollingDelay:   cfg.app.deadlineResolver.pollingDelay,
-        parallelism:    cfg.app.deadlineResolver.parallelism,
-        monitor:        monitor.prefix('deadline-resolver'),
+        pollingDelay: cfg.app.deadlineResolver.pollingDelay,
+        parallelism: cfg.app.deadlineResolver.parallelism,
+        monitor: monitor.prefix('deadline-resolver'),
       });
       resolver.start();
       return resolver;
@@ -567,8 +567,8 @@ let load = loader({
       let resolver = new DependencyResolver({
         queueService, dependencyTracker,
         pollingDelay: cfg.app.dependencyResolver.pollingDelay,
-        parallelism:  cfg.app.dependencyResolver.parallelism,
-        monitor:      monitor.prefix('dependency-resolver'),
+        parallelism: cfg.app.dependencyResolver.parallelism,
+        monitor: monitor.prefix('dependency-resolver'),
       });
       resolver.start();
       return resolver;

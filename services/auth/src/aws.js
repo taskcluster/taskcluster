@@ -1,15 +1,15 @@
 const builder = require('./v1');
 
 builder.declare({
-  method:     'get',
-  route:      '/aws/s3/:level/:bucket/:prefix(*)',
-  name:       'awsS3Credentials',
-  input:      undefined,
-  output:     'aws-s3-credentials-response.yml',
+  method: 'get',
+  route: '/aws/s3/:level/:bucket/:prefix(*)',
+  name: 'awsS3Credentials',
+  input: undefined,
+  output: 'aws-s3-credentials-response.yml',
   query: {
-    format:   /iam-role-compat/,
+    format: /iam-role-compat/,
   },
-  stability:  'stable',
+  stability: 'stable',
   scopes: {
     if: 'levelIsReadOnly',
     then: {AnyOf: [
@@ -18,7 +18,7 @@ builder.declare({
     ]},
     else: 'auth:aws-s3:read-write:<bucket>/<prefix>',
   },
-  title:      'Get Temporary Read/Write Credentials S3',
+  title: 'Get Temporary Read/Write Credentials S3',
   description: [
     'Get temporary AWS credentials for `read-write` or `read-only` access to',
     'a given `bucket` and `prefix` within that bucket.',
@@ -88,9 +88,9 @@ builder.declare({
     'iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).',
   ].join('\n'),
 }, async function(req, res) {
-  let level   = req.params.level;
-  let bucket  = req.params.bucket;
-  let prefix  = req.params.prefix;
+  let level = req.params.level;
+  let bucket = req.params.bucket;
+  let prefix = req.params.prefix;
 
   // Validate that a proper value was given for level
   if (level !== 'read-write' && level !== 'read-only') {
@@ -124,22 +124,22 @@ builder.declare({
 
   // For details on the policy see: http://amzn.to/1ETStaL
   let iamReq = await this.sts.getFederationToken({
-    Name:               'TemporaryS3ReadWriteCredentials',
-    Policy:             JSON.stringify({
-      Version:          '2012-10-17',
-      Statement:[
+    Name: 'TemporaryS3ReadWriteCredentials',
+    Policy: JSON.stringify({
+      Version: '2012-10-17',
+      Statement: [
         {
-          Sid:            'ReadWriteObjectsUnderPrefix',
-          Effect:         'Allow',
-          Action:         objectActions,
+          Sid: 'ReadWriteObjectsUnderPrefix',
+          Effect: 'Allow',
+          Action: objectActions,
           Resource: [
             'arn:aws:s3:::{{bucket}}/{{prefix}}*'
               .replace('{{bucket}}', bucket)
               .replace('{{prefix}}', prefix),
           ],
         }, {
-          Sid:            'ListObjectsUnderPrefix',
-          Effect:         'Allow',
+          Sid: 'ListObjectsUnderPrefix',
+          Effect: 'Allow',
           Action: [
             's3:ListBucket',
           ],
@@ -155,8 +155,8 @@ builder.declare({
             },
           },
         }, {
-          Sid:            'GetBucketLocation',
-          Effect:         'Allow',
+          Sid: 'GetBucketLocation',
+          Effect: 'Allow',
           Action: [
             's3:GetBucketLocation',
           ],
@@ -167,29 +167,29 @@ builder.declare({
         },
       ],
     }),
-    DurationSeconds:    60 * 60,   // Expire credentials in an hour
+    DurationSeconds: 60 * 60, // Expire credentials in an hour
   }).promise();
 
   // Make result compatibility with how EC2 metadata service let's instances
   // access IAM roles
   if (req.query.format === 'iam-role-compat') {
     return res.status(200).json({
-      Code:             'Success',
-      Type:             'AWS-HMAC',
-      LastUpdated:      new Date().toJSON(),
-      AccessKeyId:      iamReq.Credentials.AccessKeyId,
-      SecretAccessKey:  iamReq.Credentials.SecretAccessKey,
-      Token:            iamReq.Credentials.SessionToken,
-      Expiration:       new Date(iamReq.Credentials.Expiration).toJSON(),
+      Code: 'Success',
+      Type: 'AWS-HMAC',
+      LastUpdated: new Date().toJSON(),
+      AccessKeyId: iamReq.Credentials.AccessKeyId,
+      SecretAccessKey: iamReq.Credentials.SecretAccessKey,
+      Token: iamReq.Credentials.SessionToken,
+      Expiration: new Date(iamReq.Credentials.Expiration).toJSON(),
     });
   }
 
   return res.reply({
     credentials: {
-      accessKeyId:      iamReq.Credentials.AccessKeyId,
-      secretAccessKey:  iamReq.Credentials.SecretAccessKey,
-      sessionToken:     iamReq.Credentials.SessionToken,
+      accessKeyId: iamReq.Credentials.AccessKeyId,
+      secretAccessKey: iamReq.Credentials.SecretAccessKey,
+      sessionToken: iamReq.Credentials.SessionToken,
     },
-    expires:            new Date(iamReq.Credentials.Expiration).toJSON(),
+    expires: new Date(iamReq.Credentials.Expiration).toJSON(),
   });
 });

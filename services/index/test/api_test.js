@@ -14,23 +14,23 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   helper.withServer(mock, skipping);
 
   test('insert (and rank)', async function() {
-    const myns    = slugid.v4();
-    const taskId  = slugid.v4();
-    const taskId2  = slugid.v4();
+    const myns = slugid.v4();
+    const taskId = slugid.v4();
+    const taskId2 = slugid.v4();
     await helper.index.insertTask(myns + '.my-task', {
-      taskId:     taskId,
-      rank:       41,
-      data:       {hello: 'world'},
-      expires:    taskcluster.fromNow('25 minutes'),
+      taskId: taskId,
+      rank: 41,
+      data: {hello: 'world'},
+      expires: taskcluster.fromNow('25 minutes'),
     });
     let result = await helper.index.findTask(myns + '.my-task');
     assert(result.taskId === taskId, 'Wrong taskId');
 
     await helper.index.insertTask(myns + '.my-task', {
-      taskId:     taskId2,
-      rank:       42,
-      data:       {hello: 'world - again'},
-      expires:    taskcluster.fromNow('25 minutes'),
+      taskId: taskId2,
+      rank: 42,
+      data: {hello: 'world - again'},
+      expires: taskcluster.fromNow('25 minutes'),
     });
     result = await helper.index.findTask(myns + '.my-task');
     assert(result.taskId === taskId2, 'Wrong taskId');
@@ -165,17 +165,17 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     });
 
     test('findTask throws 404 for expired tasks', async function() {
-      const myns    = slugid.v4();
-      const taskId  = slugid.v4();
+      const myns = slugid.v4();
+      const taskId = slugid.v4();
       const expired = new Date();
       expired.setDate(expired.getDate() - 1);
       const new_expires = expired.toJSON();
 
       await helper.index.insertTask(myns + '.my-task', {
-        taskId:     taskId,
-        rank:       41,
-        data:       {hello: 'world'},
-        expires:    new_expires,
+        taskId: taskId,
+        rank: 41,
+        data: {hello: 'world'},
+        expires: new_expires,
       });
 
       try {
@@ -190,11 +190,11 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   test('access public artifact', async function() {
     const taskId = slugid.nice();
     debug('### Insert task into index');
-    await  helper.index.insertTask('my.name.space', {
-      taskId:     taskId,
-      rank:       41,
-      data:       {hello: 'world'},
-      expires:    taskcluster.fromNowJSON('24 hours'),
+    await helper.index.insertTask('my.name.space', {
+      taskId: taskId,
+      rank: 41,
+      data: {hello: 'world'},
+      expires: taskcluster.fromNowJSON('24 hours'),
     });
 
     debug('### Download public artifact using index');
@@ -214,11 +214,11 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   test('access private artifact (with * scope)', async function() {
     const taskId = slugid.nice();
     debug('### Insert task into index');
-    await  helper.index.insertTask('my.name.space', {
-      taskId:     taskId,
-      rank:       41,
-      data:       {hello: 'world'},
-      expires:    taskcluster.fromNowJSON('24 hours'),
+    await helper.index.insertTask('my.name.space', {
+      taskId: taskId,
+      rank: 41,
+      data: {hello: 'world'},
+      expires: taskcluster.fromNowJSON('24 hours'),
     });
 
     debug('### Download private artifact using index');
@@ -240,10 +240,10 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     const taskId = slugid.nice();
     debug('### Insert task into index');
     await helper.index.insertTask('my.name.space', {
-      taskId:     taskId,
-      rank:       41,
-      data:       {hello: 'world'},
-      expires:    taskcluster.fromNowJSON('24 hours'),
+      taskId: taskId,
+      rank: 41,
+      data: {hello: 'world'},
+      expires: taskcluster.fromNowJSON('24 hours'),
     });
 
     debug('### Download private artifact using index without queue:get-artifact:..');

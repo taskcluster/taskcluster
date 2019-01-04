@@ -21,24 +21,24 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
 
   let makeTask = function(routes) {
     return {
-      provisionerId:    'dummy-test-provisioner',
-      workerType:       'dummy-test-worker-type',
-      scopes:           [],
-      routes:           routes,
-      retries:          3,
-      created:          created.toJSON(),
-      deadline:         deadline.toJSON(),
+      provisionerId: 'dummy-test-provisioner',
+      workerType: 'dummy-test-worker-type',
+      scopes: [],
+      routes: routes,
+      retries: 3,
+      created: created.toJSON(),
+      deadline: deadline.toJSON(),
       payload: {
-        desiredResolution:  'success',
+        desiredResolution: 'success',
       },
       metadata: {
-        name:           'Print `"Hello World"` Once',
-        description:    'This task will prìnt `"Hello World"` **once**!',
-        owner:          'jojensen@mozilla.com', // Because this is stolen from tc-index tests!
-        source:         'https://github.com/taskcluster/taskcluster-notify',
+        name: 'Print `"Hello World"` Once',
+        description: 'This task will prìnt `"Hello World"` **once**!',
+        owner: 'jojensen@mozilla.com', // Because this is stolen from tc-index tests!
+        source: 'https://github.com/taskcluster/taskcluster-notify',
       },
       tags: {
-        objective:      'Test task notifications',
+        objective: 'Test task notifications',
       },
     };
   };

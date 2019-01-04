@@ -17,21 +17,21 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   helper.withServer(mock, skipping);
 
   // Generate random workerType id to use for this test
-  const workerType  = slugid.v4();
+  const workerType = slugid.v4();
 
   const makeTask = (priority, workerType) => {
     return {
-      provisionerId:    'no-provisioner',
-      workerType:       workerType,
-      priority:         priority,
-      created:          taskcluster.fromNowJSON(),
-      deadline:         taskcluster.fromNowJSON('30 min'),
-      payload:          {},
+      provisionerId: 'no-provisioner',
+      workerType: workerType,
+      priority: priority,
+      created: taskcluster.fromNowJSON(),
+      deadline: taskcluster.fromNowJSON('30 min'),
+      payload: {},
       metadata: {
-        name:           'Unit testing task',
-        description:    'Task created during unit tests',
-        owner:          'jonsafj@mozilla.com',
-        source:         'https://github.com/taskcluster/taskcluster-queue',
+        name: 'Unit testing task',
+        description: 'Task created during unit tests',
+        owner: 'jonsafj@mozilla.com',
+        source: 'https://github.com/taskcluster/taskcluster-queue',
       },
     };
   };
@@ -44,9 +44,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     let started = new Date();
     let result = await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup:  'my-worker-group',
-      workerId:     'my-worker',
-      tasks:        2,
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
+      tasks: 2,
     });
     assert(result.tasks.length === 0, 'Did not expect any claims');
     assert(new Date() - started >= 20 * 1000, 'Expected 20s sleep');
@@ -59,8 +59,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'queue:worker-id:my-worker-group/my-worker',
     );
     await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup:  'my-worker-group',
-      workerId:     'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     }).then(
       () => assert(false, 'Expected error'),
       err => assert(err.code, err.code),
@@ -72,8 +72,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'queue:worker-id:my-worker-group/other-worker',
     );
     await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup:  'my-worker-group',
-      workerId:     'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     }).then(
       () => assert(false, 'Expected error'),
       err => {
@@ -100,8 +100,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     );
     let before = new Date();
     let r1 = await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup:  'my-worker-group',
-      workerId:     'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     assert(r1.tasks.length === 1, 'Expected a single task');
     assert(r1.tasks[0].status.taskId === taskId, 'Expected specific taskId');
@@ -146,8 +146,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     );
     let before = new Date();
     let r1 = await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup:  'my-worker-group',
-      workerId:     'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     assert(r1.tasks.length === 1, 'Expected a single task');
     assert(r1.tasks[0].status.taskId === taskId, 'Expected specific taskId');
@@ -197,9 +197,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### ClaimWork');
     let r1 = await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup:  'my-worker-group',
-      workerId:     'my-worker',
-      tasks:        1,
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
+      tasks: 1,
     });
     assert(r1.tasks.length === 1, 'Expected a task');
     assert(r1.tasks[0].status.taskId === taskIdA, 'Expected high priorty task');
@@ -207,9 +207,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### ClaimWork');
     let r2 = await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup:  'my-worker-group',
-      workerId:     'my-worker',
-      tasks:        1,
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
+      tasks: 1,
     });
     assert(r2.tasks.length === 1, 'Expected a task');
     assert(r2.tasks[0].status.taskId === taskIdB, 'Expected high priorty task');
@@ -243,9 +243,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claim task');
     let before = new Date();
     let r1 = await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup:  'my-worker-group',
-      workerId:     'my-worker',
-      tasks:        2,
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
+      tasks: 2,
     });
     assert(r1.tasks.length === 1, 'Expected a single task');
     assert(r1.tasks[0].status.taskId === taskId, 'Expected specific taskId');

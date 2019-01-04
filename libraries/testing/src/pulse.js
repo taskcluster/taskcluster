@@ -1,7 +1,7 @@
-var childProcess  = require('child_process');
-var Promise       = require('promise');
-var debug         = require('debug')('taskcluster-lib-testing:pulse');
-var taskcluster   = require('taskcluster-client');
+var childProcess = require('child_process');
+var Promise = require('promise');
+var debug = require('debug')('taskcluster-lib-testing:pulse');
+var taskcluster = require('taskcluster-client');
 
 /**
  * A utility for test written in mocha, that makes very easy to listen for a
@@ -14,9 +14,9 @@ var taskcluster   = require('taskcluster-client');
  */
 var PulseTestReceiver = function(credentials, mocha) {
   var that = this;
-  this._connection        = new taskcluster.PulseConnection(credentials);
-  this._listeners         = null;
-  this._promisedMessages  = null;
+  this._connection = new taskcluster.PulseConnection(credentials);
+  this._listeners = null;
+  this._promisedMessages = null;
 
   // **Note**, the before(), beforeEach(9, afterEach() and after() functions
   // below are mocha hooks. Ie. they are called by mocha, that is also the
@@ -34,8 +34,8 @@ var PulseTestReceiver = function(credentials, mocha) {
   // Before each test we create list of listeners and mapping from "name" to
   // promised messages
   mocha.beforeEach(function() {
-    that._listeners         = [];
-    that._promisedMessages  = {};
+    that._listeners = [];
+    that._promisedMessages = {};
   });
 
   // After each test we clean-up all the listeners created
@@ -48,8 +48,8 @@ var PulseTestReceiver = function(credentials, mocha) {
     return Promise.all(that._listeners.map(function(listener) {
       return listener.close();
     })).then(function() {
-      that._listeners         = null;
-      that._promisedMessages  = null;
+      that._listeners = null;
+      that._promisedMessages = null;
     });
   });
 
@@ -74,7 +74,7 @@ PulseTestReceiver.prototype.listenFor = function(name, binding) {
   // connection is opened, it just creates an AMQP channel within the existing
   // TCP connection, this is much faster.
   var listener = new taskcluster.PulseListener({
-    connection:     this._connection,
+    connection: this._connection,
   });
 
   // Add listener to list so we can cleanup later

@@ -1,21 +1,21 @@
-const request         = require('superagent');
-const assert          = require('assert');
-const APIBuilder      = require('../');
-const slugid          = require('slugid');
-const helper          = require('./helper');
-const libUrls         = require('taskcluster-lib-urls');
+const request = require('superagent');
+const assert = require('assert');
+const APIBuilder = require('../');
+const slugid = require('slugid');
+const helper = require('./helper');
+const libUrls = require('taskcluster-lib-urls');
 
 suite('api/route', function() {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
 
   // Create test api
   const builder = new APIBuilder({
-    title:        'Test Api',
-    description:  'Another test api',
-    serviceName:  'test',
-    apiVersion:   'v1',
+    title: 'Test Api',
+    description: 'Another test api',
+    serviceName: 'test',
+    apiVersion: 'v1',
     params: {
-      taskId:     /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/,
+      taskId: /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/,
     },
     context: [
       'expectedValidatedParam',
@@ -24,32 +24,32 @@ suite('api/route', function() {
   });
 
   builder.declare({
-    method:   'get',
-    route:    '/single-param/:myparam',
-    name:     'testParam',
-    title:    'Test End-Point',
-    stability:    APIBuilder.stability.stable,
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/single-param/:myparam',
+    name: 'testParam',
+    title: 'Test End-Point',
+    stability: APIBuilder.stability.stable,
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.params.myparam);
   });
 
   builder.declare({
-    method:   'get',
-    route:    '/query-param/',
+    method: 'get',
+    route: '/query-param/',
     query: {
       nextPage: /^[0-9]+$/,
     },
-    name:     'testQueryParam',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    name: 'testQueryParam',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.query.nextPage || 'empty');
   });
 
   builder.declare({
-    method:   'get',
-    route:    '/query-param-fn/',
+    method: 'get',
+    route: '/query-param-fn/',
     query: {
       incantation: function(val) {
         if (val !== this.expectedValidatedQuery) {
@@ -57,38 +57,38 @@ suite('api/route', function() {
         }
       },
     },
-    name:     'testQueryParamFn',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    name: 'testQueryParamFn',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.query.incantation);
   });
 
   builder.declare({
-    method:   'get',
-    route:    '/slash-param/:name(*)',
-    name:     'testSlashParam',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/slash-param/:name(*)',
+    name: 'testSlashParam',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.params.name);
   });
 
   builder.declare({
-    method:   'get',
-    route:    '/validated-param/:taskId',
-    name:     'testParamValidation',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/validated-param/:taskId',
+    name: 'testParamValidation',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.params.taskId);
   });
 
   builder.declare({
-    method:   'get',
-    route:    '/function-validated-param/:fnValidated',
-    name:     'testFunctionParamValidation',
-    title:    'Test End-Point',
+    method: 'get',
+    route: '/function-validated-param/:fnValidated',
+    name: 'testFunctionParamValidation',
+    title: 'Test End-Point',
     params: {
       fnValidated: function(val) {
         if (val !== this.expectedValidatedParam) {
@@ -96,17 +96,17 @@ suite('api/route', function() {
         }
       },
     },
-    description:  'Place we can call to test something',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.params.fnValidated);
   });
 
   builder.declare({
-    method:   'get',
-    route:    '/validated-param-2/:param2',
-    name:     'testParam2Validation',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/validated-param-2/:param2',
+    name: 'testParam2Validation',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
     params: {
       param2: function(value) {
         if (value !== 'correct') {
@@ -304,20 +304,20 @@ suite('api/route', function() {
 
   test('no duplicate route and method', function() {
     builder.declare({
-      method:       'get',
-      route:        '/test',
-      name:         'test',
-      title:        'Test',
-      description:  'Test',
+      method: 'get',
+      route: '/test',
+      name: 'test',
+      title: 'Test',
+      description: 'Test',
     }, function(req, res) {});
 
     assert.throws(function() {
       builder.declare({
-        method:       'get',
-        route:        '/test',
-        name:         'testDuplicate',
-        title:        'Test',
-        description:  'Test',
+        method: 'get',
+        route: '/test',
+        name: 'testDuplicate',
+        title: 'Test',
+        description: 'Test',
       }, function(req, res) {});
     }, /Identical route and method/);
   });

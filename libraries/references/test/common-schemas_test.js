@@ -7,6 +7,6 @@ suite('common-schemas_test.js', function() {
     assert(schemas.some(
       ({content, filename}) => content.$id === '/schemas/common/api-reference-v0.json#'));
     assert(schemas.some(
-      ({content, filename}) => filename  === 'schemas/metadata-metaschema.yml'));
+      ({content, filename}) => filename === 'schemas/metadata-metaschema.yml'));
   });
 });

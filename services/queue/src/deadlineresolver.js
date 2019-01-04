@@ -1,10 +1,10 @@
-let debug         = require('debug')('app:deadline-resolver');
-let slugid        = require('slugid');
-let assert        = require('assert');
-let _             = require('lodash');
-let data          = require('./data');
-let QueueService  = require('./queueservice');
-let events        = require('events');
+let debug = require('debug')('app:deadline-resolver');
+let slugid = require('slugid');
+let assert = require('assert');
+let _ = require('lodash');
+let data = require('./data');
+let QueueService = require('./queueservice');
+let events = require('events');
 
 /** State that are considered resolved */
 const RESOLVED_STATES = [
@@ -57,18 +57,18 @@ class DeadlineResolver {
     assert(typeof options.parallelism === 'number',
       'Expected parallelism to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
-    this.Task               = options.Task;
-    this.queueService       = options.queueService;
-    this.dependencyTracker  = options.dependencyTracker;
-    this.publisher          = options.publisher;
-    this.pollingDelay       = options.pollingDelay;
-    this.parallelism        = options.parallelism;
-    this.monitor            = options.monitor;
+    this.Task = options.Task;
+    this.queueService = options.queueService;
+    this.dependencyTracker = options.dependencyTracker;
+    this.publisher = options.publisher;
+    this.pollingDelay = options.pollingDelay;
+    this.parallelism = options.parallelism;
+    this.monitor = options.monitor;
 
     // Promise that polling is done
-    this.done               = null;
+    this.done = null;
     // Boolean that polling should stop
-    this.stopping           = false;
+    this.stopping = false;
   }
 
   /** Start polling */
@@ -139,11 +139,11 @@ class DeadlineResolver {
     // require that deadline matches. This is essentially a conditional load
     // operation
     var {entries: [task]} = await this.Task.query({
-      taskId:     taskId,   // Matches an exact entity
-      deadline:   deadline, // Load conditionally
+      taskId: taskId, // Matches an exact entity
+      deadline: deadline, // Load conditionally
     }, {
-      matchRow:   'exact',  // Validate that we match row key exactly
-      limit:      1,        // Load at most one entity, no need to search
+      matchRow: 'exact', // Validate that we match row key exactly
+      limit: 1, // Load at most one entity, no need to search
     });
 
     // If the task doesn't exist we're done
@@ -174,11 +174,11 @@ class DeadlineResolver {
       if (task.runs.length === 0) {
         var now = new Date().toJSON();
         task.runs.push({
-          state:            'exception',
-          reasonCreated:    'exception',
-          reasonResolved:   'deadline-exceeded',
-          scheduled:        now,
-          resolved:         now,
+          state: 'exception',
+          reasonCreated: 'exception',
+          reasonResolved: 'deadline-exceeded',
+          scheduled: now,
+          resolved: now,
         });
       }
 
@@ -200,19 +200,19 @@ class DeadlineResolver {
         }
 
         // Resolve run as deadline-exceeded
-        run.state           = 'exception';
-        run.reasonResolved  = 'deadline-exceeded';
-        run.resolved        = new Date().toJSON();
+        run.state = 'exception';
+        run.reasonResolved = 'deadline-exceeded';
+        run.resolved = new Date().toJSON();
       });
 
       // Clear takenUntil, for ClaimResolver
-      task.takenUntil       = new Date(0);
+      task.takenUntil = new Date(0);
     });
 
     // Check if the last run was resolved here
     var run = _.last(task.runs);
-    if (run.reasonResolved  === 'deadline-exceeded' &&
-        run.state           === 'exception') {
+    if (run.reasonResolved === 'deadline-exceeded' &&
+        run.state === 'exception') {
       debug('Resolved taskId: %s, by deadline', taskId);
 
       // Update dependency tracker
@@ -220,8 +220,8 @@ class DeadlineResolver {
 
       // Publish messages about the last run
       await this.publisher.taskException({
-        status:   task.status(),
-        runId:    task.runs.length - 1,
+        status: task.status(),
+        runId: task.runs.length - 1,
       }, task.routes);
     }
 

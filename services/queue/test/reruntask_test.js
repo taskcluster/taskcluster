@@ -16,24 +16,24 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   // Use the same task definition for everything
   const taskDef = {
-    provisionerId:    'no-provisioner',
-    workerType:       'test-worker',
-    schedulerId:      'my-scheduler',
-    taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
-    routes:           [],
-    retries:          5,
-    created:          taskcluster.fromNowJSON(),
-    deadline:         taskcluster.fromNowJSON('3 days'),
-    scopes:           [],
-    payload:          {},
+    provisionerId: 'no-provisioner',
+    workerType: 'test-worker',
+    schedulerId: 'my-scheduler',
+    taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
+    routes: [],
+    retries: 5,
+    created: taskcluster.fromNowJSON(),
+    deadline: taskcluster.fromNowJSON('3 days'),
+    scopes: [],
+    payload: {},
     metadata: {
-      name:           'Unit testing task',
-      description:    'Task created during unit tests',
-      owner:          'jonasfj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue',
+      name: 'Unit testing task',
+      description: 'Task created during unit tests',
+      owner: 'jonasfj@mozilla.com',
+      source: 'https://github.com/taskcluster/taskcluster-queue',
     },
     tags: {
-      purpose:        'taskcluster-testing',
+      purpose: 'taskcluster-testing',
     },
   };
 
@@ -49,8 +49,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running');
 

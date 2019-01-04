@@ -48,7 +48,7 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
   test('calls its poll method in a loop when started', async () => {
     let callCount = 0;
     scheduler.poll = () => { callCount += 1; };
-    scheduler.pollingDelay = 1;  // 1 ms
+    scheduler.pollingDelay = 1; // 1 ms
 
     // run for a while..
     scheduler.start();
@@ -71,33 +71,33 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
     subSkip();
     setup(async () => {
       const hookParams = {
-        hookGroupId:        'tests',
-        metadata:           {},
-        task:               {},
-        bindings:           [],
-        schedule:           ['0 0 0 * * *'],
-        lastFire:           {result: 'no-fire'},
-        triggerToken:       taskcluster.slugid(),
-        triggerSchema:      {},
+        hookGroupId: 'tests',
+        metadata: {},
+        task: {},
+        bindings: [],
+        schedule: ['0 0 0 * * *'],
+        lastFire: {result: 'no-fire'},
+        triggerToken: taskcluster.slugid(),
+        triggerSchema: {},
       };
 
       await helper.Hook.create(_.defaults({
-        hookId:             'futureHook',
-        nextTaskId:         taskcluster.slugid(),
-        nextScheduledDate:  new Date(4000, 0, 0, 0, 0, 0, 0),
+        hookId: 'futureHook',
+        nextTaskId: taskcluster.slugid(),
+        nextScheduledDate: new Date(4000, 0, 0, 0, 0, 0, 0),
       }, hookParams));
 
       await helper.Hook.create(_.defaults({
-        hookId:             'pastHook',
-        nextTaskId:         taskcluster.slugid(),
-        nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
+        hookId: 'pastHook',
+        nextTaskId: taskcluster.slugid(),
+        nextScheduledDate: new Date(2000, 0, 0, 0, 0, 0, 0),
       }, hookParams));
 
       await helper.Hook.create(_.defaults({
-        hookId:             'pastHookNotScheduled',
-        nextTaskId:         taskcluster.slugid(),
-        schedule:           [],
-        nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
+        hookId: 'pastHookNotScheduled',
+        nextTaskId: taskcluster.slugid(),
+        schedule: [],
+        nextScheduledDate: new Date(2000, 0, 0, 0, 0, 0, 0),
       }, hookParams));
     });
 
@@ -116,20 +116,20 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
 
     setup(async () => {
       hook = await helper.Hook.create({
-        hookGroupId:        'tests',
-        hookId:             'test',
-        metadata:           {
+        hookGroupId: 'tests',
+        hookId: 'test',
+        metadata: {
           owner: 'example@example.com',
           emailOnError: true,
         },
-        task:               {},
-        bindings:           [],
-        schedule:           ['0 0 0 * * *'],
-        triggerToken:       taskcluster.slugid(),
-        lastFire:           {result: 'no-fire'},
-        nextTaskId:         taskcluster.slugid(),
-        nextScheduledDate:  new Date(3000, 0, 0, 0, 0, 0, 0),
-        triggerSchema:      {},
+        task: {},
+        bindings: [],
+        schedule: ['0 0 0 * * *'],
+        triggerToken: taskcluster.slugid(),
+        lastFire: {result: 'no-fire'},
+        nextTaskId: taskcluster.slugid(),
+        nextScheduledDate: new Date(3000, 0, 0, 0, 0, 0, 0),
+        triggerSchema: {},
       });
     });
 
@@ -141,7 +141,7 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
 
       let updatedHook = await helper.Hook.load({
         hookGroupId: 'tests',
-        hookId:      'test',
+        hookId: 'test',
       }, true);
 
       assume(helper.creator.fireCalls).deep.equals([{
@@ -178,7 +178,7 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
 
       let updatedHook = await helper.Hook.load({
         hookGroupId: 'tests',
-        hookId:      'test',
+        hookId: 'test',
       }, true);
 
       assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);

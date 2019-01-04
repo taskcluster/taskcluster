@@ -23,13 +23,13 @@ var parseTime = function(str) {
   var neg = match[2] === '-' ? - 1 : 1;
   // Return parsed values
   return {
-    years:    parseInt(match[4]   || 0, 10) * neg,
-    months:   parseInt(match[8]   || 0, 10) * neg,
-    weeks:    parseInt(match[11]  || 0, 10) * neg,
-    days:     parseInt(match[15]  || 0, 10) * neg,
-    hours:    parseInt(match[18]  || 0, 10) * neg,
-    minutes:  parseInt(match[22]  || 0, 10) * neg,
-    seconds:  parseInt(match[25]  || 0, 10) * neg,
+    years: parseInt(match[4] || 0, 10) * neg,
+    months: parseInt(match[8] || 0, 10) * neg,
+    weeks: parseInt(match[11] || 0, 10) * neg,
+    days: parseInt(match[15] || 0, 10) * neg,
+    hours: parseInt(match[18] || 0, 10) * neg,
+    minutes: parseInt(match[22] || 0, 10) * neg,
+    seconds: parseInt(match[25] || 0, 10) * neg,
   };
 };
 

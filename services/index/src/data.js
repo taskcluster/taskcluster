@@ -1,19 +1,19 @@
-var assert      = require('assert');
-var _           = require('lodash');
-var Entity      = require('azure-entities');
+var assert = require('assert');
+var _ = require('lodash');
+var Entity = require('azure-entities');
 
 /** Entities for indexed tasks */
 var IndexedTask = Entity.configure({
-  version:          1,
-  partitionKey:     Entity.keys.HashKey('namespace'),
-  rowKey:           Entity.keys.StringKey('name'),
+  version: 1,
+  partitionKey: Entity.keys.HashKey('namespace'),
+  rowKey: Entity.keys.StringKey('name'),
   properties: {
-    namespace:      Entity.types.String,
-    name:           Entity.types.String,
-    rank:           Entity.types.Number,
-    taskId:         Entity.types.SlugId,
-    data:           Entity.types.JSON,
-    expires:        Entity.types.Date,
+    namespace: Entity.types.String,
+    name: Entity.types.String,
+    rank: Entity.types.Number,
+    taskId: Entity.types.SlugId,
+    data: Entity.types.JSON,
+    expires: Entity.types.Date,
   },
 });
 
@@ -28,23 +28,23 @@ IndexedTask.prototype.json = function() {
     ns = this.namespace + this.name;
   }
   return {
-    namespace:    ns,
-    taskId:       this.taskId,
-    rank:         this.rank,
-    data:         _.cloneDeep(this.data),
-    expires:      this.expires.toJSON(),
+    namespace: ns,
+    taskId: this.taskId,
+    rank: this.rank,
+    data: _.cloneDeep(this.data),
+    expires: this.expires.toJSON(),
   };
 };
 
 /** Entities for namespaces */
 var Namespace = Entity.configure({
-  version:          1,
-  partitionKey:     Entity.keys.HashKey('parent'),
-  rowKey:           Entity.keys.StringKey('name'),
+  version: 1,
+  partitionKey: Entity.keys.HashKey('parent'),
+  rowKey: Entity.keys.StringKey('name'),
   properties: {
-    parent:         Entity.types.String,
-    name:           Entity.types.String,
-    expires:        Entity.types.Date,
+    parent: Entity.types.String,
+    name: Entity.types.String,
+    expires: Entity.types.Date,
   },
 });
 
@@ -59,9 +59,9 @@ Namespace.prototype.json = function() {
     ns = this.parent + this.name;
   }
   return {
-    namespace:  ns,
-    name:       this.name,
-    expires:    this.expires.toJSON(),
+    namespace: ns,
+    name: this.name,
+    expires: this.expires.toJSON(),
   };
 };
 
@@ -87,13 +87,13 @@ Namespace.ensureNamespace = function(namespace, expires) {
     namespace = namespace.split('.');
   }
   // Find parent and folder name
-  var name    = namespace.pop() || '';
-  var parent  = namespace.join('.');
+  var name = namespace.pop() || '';
+  var parent = namespace.join('.');
 
   // Load namespace, to check if it exists and if we should update expires
   return that.load({
-    parent:   parent,
-    name:     name,
+    parent: parent,
+    name: name,
   }).then(function(folder) {
     // Modify the namespace
     return folder.modify(function() {
@@ -120,9 +120,9 @@ Namespace.ensureNamespace = function(namespace, expires) {
     ).then(function() {
       // Create namespace
       return that.create({
-        parent:       parent,
-        name:         name,
-        expires:      expires,
+        parent: parent,
+        name: name,
+        expires: expires,
       }).then(null, function(err) {
         // Re-throw error if it's not because the entity was constructed while we
         // waited
@@ -131,8 +131,8 @@ Namespace.ensureNamespace = function(namespace, expires) {
         }
 
         return that.load({
-          parent:   parent,
-          name:     name,
+          parent: parent,
+          name: name,
         });
       });
     });
@@ -149,8 +149,8 @@ Namespace.expireEntries = async function(now) {
       expires: Entity.op.lessThan(now),
     },
     {
-      limit:         100,
-      continuation:   continuationToken,
+      limit: 100,
+      continuation: continuationToken,
     });
 
     await Promise.all(data.entries.map(async entry => {
@@ -180,8 +180,8 @@ IndexedTask.expireTasks = async function(now) {
       expires: Entity.op.lessThan(now),
     },
     {
-      limit:         100,
-      continuation:   continuationToken,
+      limit: 100,
+      continuation: continuationToken,
     });
 
     await Promise.all(data.entries.map(async entry => {

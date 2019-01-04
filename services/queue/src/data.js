@@ -1,29 +1,29 @@
-let Entity  = require('azure-entities');
-let debug   = require('debug')('app:data');
-let assert  = require('assert');
-let _       = require('lodash');
+let Entity = require('azure-entities');
+let debug = require('debug')('app:data');
+let assert = require('assert');
+let _ = require('lodash');
 
 /** Entity for tracking tasks and associated state */
 let Task = Entity.configure({
-  version:          1,
-  partitionKey:     Entity.keys.StringKey('taskId'),
-  rowKey:           Entity.keys.ConstantKey('task'),
+  version: 1,
+  partitionKey: Entity.keys.StringKey('taskId'),
+  rowKey: Entity.keys.ConstantKey('task'),
   properties: {
-    taskId:         Entity.types.SlugId,
-    provisionerId:  Entity.types.String,
-    workerType:     Entity.types.String,
-    schedulerId:    Entity.types.String,
-    taskGroupId:    Entity.types.SlugId,
+    taskId: Entity.types.SlugId,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
+    schedulerId: Entity.types.String,
+    taskGroupId: Entity.types.SlugId,
     /** List of custom routes as strings */
-    routes:         Entity.types.JSON,
-    retries:        Entity.types.Number,
-    retriesLeft:    Entity.types.Number,
-    created:        Entity.types.Date,
-    deadline:       Entity.types.Date,
-    expires:        Entity.types.Date,
+    routes: Entity.types.JSON,
+    retries: Entity.types.Number,
+    retriesLeft: Entity.types.Number,
+    created: Entity.types.Date,
+    deadline: Entity.types.Date,
+    expires: Entity.types.Date,
     /** List of scopes as strings */
-    scopes:         Entity.types.JSON,
-    payload:        Entity.types.JSON,
+    scopes: Entity.types.JSON,
+    payload: Entity.types.JSON,
     /**
      * Meta-data object with properties:
      * - name
@@ -32,10 +32,10 @@ let Task = Entity.configure({
      * - source
      * See JSON schema for documentation.
      */
-    metadata:       Entity.types.JSON,
+    metadata: Entity.types.JSON,
     /** Tags as mapping from tag-key to tag-value as string */
-    tags:           Entity.types.JSON,
-    extra:          Entity.types.JSON,
+    tags: Entity.types.JSON,
+    extra: Entity.types.JSON,
     /**
      * List of run objects with the following keys:
      * - state          (required)
@@ -50,29 +50,29 @@ let Task = Entity.configure({
      * See schema for task status structure for details.
      * Remark that `runId` always match the index in the array.
      */
-    runs:           Entity.types.JSON,
+    runs: Entity.types.JSON,
     /** Time at which claim to latest run expires, new Date(0) if none */
-    takenUntil:     Entity.types.Date,
+    takenUntil: Entity.types.Date,
   },
 }).configure({
-  version:          2,
+  version: 2,
   properties: {
-    taskId:         Entity.types.SlugId,
-    provisionerId:  Entity.types.String,
-    workerType:     Entity.types.String,
-    schedulerId:    Entity.types.String,
-    taskGroupId:    Entity.types.SlugId,
+    taskId: Entity.types.SlugId,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
+    schedulerId: Entity.types.String,
+    taskGroupId: Entity.types.SlugId,
     /** List of custom routes as strings */
-    routes:         Entity.types.JSON,
-    priority:       Entity.types.String,
-    retries:        Entity.types.Number,
-    retriesLeft:    Entity.types.Number,
-    created:        Entity.types.Date,
-    deadline:       Entity.types.Date,
-    expires:        Entity.types.Date,
+    routes: Entity.types.JSON,
+    priority: Entity.types.String,
+    retries: Entity.types.Number,
+    retriesLeft: Entity.types.Number,
+    created: Entity.types.Date,
+    deadline: Entity.types.Date,
+    expires: Entity.types.Date,
     /** List of scopes as strings */
-    scopes:         Entity.types.JSON,
-    payload:        Entity.types.JSON,
+    scopes: Entity.types.JSON,
+    payload: Entity.types.JSON,
     /**
      * Meta-data object with properties:
      * - name
@@ -81,10 +81,10 @@ let Task = Entity.configure({
      * - source
      * See JSON schema for documentation.
      */
-    metadata:       Entity.types.JSON,
+    metadata: Entity.types.JSON,
     /** Tags as mapping from tag-key to tag-value as string */
-    tags:           Entity.types.JSON,
-    extra:          Entity.types.JSON,
+    tags: Entity.types.JSON,
+    extra: Entity.types.JSON,
     /**
      * List of run objects with the following keys:
      * - state          (required)
@@ -99,35 +99,35 @@ let Task = Entity.configure({
      * See schema for task status structure for details.
      * Remark that `runId` always match the index in the array.
      */
-    runs:           Entity.types.JSON,
+    runs: Entity.types.JSON,
     /** Time at which claim to latest run expires, new Date(0) if none */
-    takenUntil:     Entity.types.Date,
+    takenUntil: Entity.types.Date,
   },
   migrate(item) {
     item.priority = 'normal';
     return item;
   },
 }).configure({
-  version:              3,
+  version: 3,
   properties: {
-    taskId:             Entity.types.SlugId,
-    provisionerId:      Entity.types.String,
-    workerType:         Entity.types.String,
-    schedulerId:        Entity.types.String,
-    taskGroupId:        Entity.types.SlugId,
-    dependencies:       Entity.types.JSON,
-    requires:           Entity.types.String,
+    taskId: Entity.types.SlugId,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
+    schedulerId: Entity.types.String,
+    taskGroupId: Entity.types.SlugId,
+    dependencies: Entity.types.JSON,
+    requires: Entity.types.String,
     /** List of custom routes as strings */
-    routes:             Entity.types.JSON,
-    priority:           Entity.types.String,
-    retries:            Entity.types.Number,
-    retriesLeft:        Entity.types.Number,
-    created:            Entity.types.Date,
-    deadline:           Entity.types.Date,
-    expires:            Entity.types.Date,
+    routes: Entity.types.JSON,
+    priority: Entity.types.String,
+    retries: Entity.types.Number,
+    retriesLeft: Entity.types.Number,
+    created: Entity.types.Date,
+    deadline: Entity.types.Date,
+    expires: Entity.types.Date,
     /** List of scopes as strings */
-    scopes:             Entity.types.JSON,
-    payload:            Entity.types.JSON,
+    scopes: Entity.types.JSON,
+    payload: Entity.types.JSON,
     /**
      * Meta-data object with properties:
      * - name
@@ -136,10 +136,10 @@ let Task = Entity.configure({
      * - source
      * See JSON schema for documentation.
      */
-    metadata:           Entity.types.JSON,
+    metadata: Entity.types.JSON,
     /** Tags as mapping from tag-key to tag-value as string */
-    tags:               Entity.types.JSON,
-    extra:              Entity.types.JSON,
+    tags: Entity.types.JSON,
+    extra: Entity.types.JSON,
     /**
      * List of run objects with the following keys:
      * - state          (required)
@@ -155,9 +155,9 @@ let Task = Entity.configure({
      * See schema for task status structure for details.
      * Remark that `runId` always match the index in the array.
      */
-    runs:               Entity.types.JSON,
+    runs: Entity.types.JSON,
     /** Time at which claim to latest run expires, new Date(0) if none */
-    takenUntil:         Entity.types.Date,
+    takenUntil: Entity.types.Date,
   },
   migrate(item) {
     item.dependencies = [];
@@ -165,26 +165,26 @@ let Task = Entity.configure({
     return item;
   },
 }).configure({
-  version:              4,
+  version: 4,
   properties: {
-    taskId:             Entity.types.SlugId,
-    provisionerId:      Entity.types.String,
-    workerType:         Entity.types.String,
-    schedulerId:        Entity.types.String,
-    taskGroupId:        Entity.types.SlugId,
-    dependencies:       Entity.types.JSON,
-    requires:           Entity.types.String,
+    taskId: Entity.types.SlugId,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
+    schedulerId: Entity.types.String,
+    taskGroupId: Entity.types.SlugId,
+    dependencies: Entity.types.JSON,
+    requires: Entity.types.String,
     /** List of custom routes as strings */
-    routes:             Entity.types.JSON,
-    priority:           Entity.types.String,
-    retries:            Entity.types.Number,
-    retriesLeft:        Entity.types.Number,
-    created:            Entity.types.Date,
-    deadline:           Entity.types.Date,
-    expires:            Entity.types.Date,
+    routes: Entity.types.JSON,
+    priority: Entity.types.String,
+    retries: Entity.types.Number,
+    retriesLeft: Entity.types.Number,
+    created: Entity.types.Date,
+    deadline: Entity.types.Date,
+    expires: Entity.types.Date,
     /** List of scopes as strings */
-    scopes:             Entity.types.JSON,
-    payload:            Entity.types.JSON,
+    scopes: Entity.types.JSON,
+    payload: Entity.types.JSON,
     /**
      * Meta-data object with properties:
      * - name
@@ -193,10 +193,10 @@ let Task = Entity.configure({
      * - source
      * See JSON schema for documentation.
      */
-    metadata:           Entity.types.JSON,
+    metadata: Entity.types.JSON,
     /** Tags as mapping from tag-key to tag-value as string */
-    tags:               Entity.types.JSON,
-    extra:              Entity.types.JSON,
+    tags: Entity.types.JSON,
+    extra: Entity.types.JSON,
     /**
      * List of run objects with the following keys:
      * - state          (required)
@@ -212,9 +212,9 @@ let Task = Entity.configure({
      * See schema for task status structure for details.
      * Remark that `runId` always match the index in the array.
      */
-    runs:               Entity.types.JSON,
+    runs: Entity.types.JSON,
     /** Time at which claim to latest run expires, new Date(0) if none */
-    takenUntil:         Entity.types.Date,
+    takenUntil: Entity.types.Date,
   },
   migrate(item) {
     if (item.priority === 'normal') {
@@ -227,39 +227,39 @@ let Task = Entity.configure({
 /** Return promise for the task definition */
 Task.prototype.definition = function() {
   return Promise.resolve({
-    provisionerId:  this.provisionerId,
-    workerType:     this.workerType,
-    schedulerId:    this.schedulerId,
-    taskGroupId:    this.taskGroupId,
-    dependencies:   _.cloneDeep(this.dependencies),
-    requires:       this.requires,
-    routes:         _.cloneDeep(this.routes),
-    priority:       this.priority,
-    retries:        this.retries,
-    created:        this.created.toJSON(),
-    deadline:       this.deadline.toJSON(),
-    expires:        this.expires.toJSON(),
-    scopes:         _.cloneDeep(this.scopes),
-    payload:        _.cloneDeep(this.payload),
-    metadata:       _.cloneDeep(this.metadata),
-    tags:           _.cloneDeep(this.tags),
-    extra:          _.cloneDeep(this.extra),
+    provisionerId: this.provisionerId,
+    workerType: this.workerType,
+    schedulerId: this.schedulerId,
+    taskGroupId: this.taskGroupId,
+    dependencies: _.cloneDeep(this.dependencies),
+    requires: this.requires,
+    routes: _.cloneDeep(this.routes),
+    priority: this.priority,
+    retries: this.retries,
+    created: this.created.toJSON(),
+    deadline: this.deadline.toJSON(),
+    expires: this.expires.toJSON(),
+    scopes: _.cloneDeep(this.scopes),
+    payload: _.cloneDeep(this.payload),
+    metadata: _.cloneDeep(this.metadata),
+    tags: _.cloneDeep(this.tags),
+    extra: _.cloneDeep(this.extra),
   });
 };
 
 /** Construct task status structure */
 Task.prototype.status = function() {
   return {
-    taskId:           this.taskId,
-    provisionerId:    this.provisionerId,
-    workerType:       this.workerType,
-    schedulerId:      this.schedulerId,
-    taskGroupId:      this.taskGroupId,
-    deadline:         this.deadline.toJSON(),
-    expires:          this.expires.toJSON(),
-    retriesLeft:      this.retriesLeft,
-    state:            this.state(),
-    runs:             this.runs.map((run, runId) => {
+    taskId: this.taskId,
+    provisionerId: this.provisionerId,
+    workerType: this.workerType,
+    schedulerId: this.schedulerId,
+    taskGroupId: this.taskGroupId,
+    deadline: this.deadline.toJSON(),
+    expires: this.expires.toJSON(),
+    retriesLeft: this.retriesLeft,
+    state: this.state(),
+    runs: this.runs.map((run, runId) => {
       return _.defaults({runId}, _.pick(run, [
         'state',
         'reasonCreated',
@@ -298,10 +298,10 @@ Task.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await Entity.scan.call(this, {
-    expires:          Entity.op.lessThan(now),
+    expires: Entity.op.lessThan(now),
   }, {
-    limit:            250, // max number of concurrent delete operations
-    handler:          (task) => { count++; return task.remove(true); },
+    limit: 250, // max number of concurrent delete operations
+    handler: (task) => { count++; return task.remove(true); },
   });
   return count;
 };
@@ -311,15 +311,15 @@ exports.Task = Task;
 
 /** Entity for tracking artifacts */
 let Artifact = Entity.configure({
-  version:          1,
-  partitionKey:     Entity.keys.CompositeKey('taskId', 'runId'),
-  rowKey:           Entity.keys.StringKey('name'),
+  version: 1,
+  partitionKey: Entity.keys.CompositeKey('taskId', 'runId'),
+  rowKey: Entity.keys.StringKey('name'),
   properties: {
-    taskId:         Entity.types.SlugId,
-    runId:          Entity.types.Number,
-    name:           Entity.types.String,
-    storageType:    Entity.types.String,
-    contentType:    Entity.types.String,
+    taskId: Entity.types.SlugId,
+    runId: Entity.types.Number,
+    name: Entity.types.String,
+    storageType: Entity.types.String,
+    contentType: Entity.types.String,
     /**
      * Location details storageType,
      *
@@ -338,23 +338,23 @@ let Artifact = Entity.configure({
      *   reason:        Formalized reason for error artifact, see JSON schema.
      *   message:       Human readable error message to return
      */
-    details:        Entity.types.JSON,
-    expires:        Entity.types.Date,
+    details: Entity.types.JSON,
+    expires: Entity.types.Date,
   },
   context: [
-    'blobStore',      // BlobStore instance wrapping Azure Blob Storage
-    'privateBucket',  // Private artifact bucket wrapping S3
-    'publicBucket',   // Public artifact bucket wrapping S3
-    'monitor',        // base.monitor instance
+    'blobStore', // BlobStore instance wrapping Azure Blob Storage
+    'privateBucket', // Private artifact bucket wrapping S3
+    'publicBucket', // Public artifact bucket wrapping S3
+    'monitor', // base.monitor instance
   ],
 }).configure({
   version: 2,
   properties: {
-    taskId:         Entity.types.SlugId,
-    runId:          Entity.types.Number,
-    name:           Entity.types.String,
-    storageType:    Entity.types.String,
-    contentType:    Entity.types.String,
+    taskId: Entity.types.SlugId,
+    runId: Entity.types.Number,
+    name: Entity.types.String,
+    storageType: Entity.types.String,
+    contentType: Entity.types.String,
     /**
      * Location details storageType,
      *
@@ -384,21 +384,21 @@ let Artifact = Entity.configure({
      *              to determine if the operation would result in an idempotency
      *              error
      */
-    details:        Entity.types.JSON,
-    expires:        Entity.types.Date,
+    details: Entity.types.JSON,
+    expires: Entity.types.Date,
     /** 
      * Present is a number field which represents an artifact being present and
      * the upload being completed.  The handling logic for the artifact's
      * storage type will fully define what that means for a given storage type.
      */
-    present:        Entity.types.Boolean,
+    present: Entity.types.Boolean,
   },
   context: [
-    'blobStore',      // BlobStore instance wrapping Azure Blob Storage
-    'privateBucket',  // Private artifact bucket wrapping S3
-    'publicBucket',   // Public artifact bucket wrapping S3
-    'monitor',        // base.monitor instance
-    's3Controller',   // For deleting objects
+    'blobStore', // BlobStore instance wrapping Azure Blob Storage
+    'privateBucket', // Private artifact bucket wrapping S3
+    'publicBucket', // Public artifact bucket wrapping S3
+    'monitor', // base.monitor instance
+    's3Controller', // For deleting objects
   ],
   migrate(item) {
     item.present = true;
@@ -409,10 +409,10 @@ let Artifact = Entity.configure({
 /** Return JSON representation of artifact meta-data */
 Artifact.prototype.json = function() {
   return {
-    storageType:      this.storageType,
-    name:             this.name,
-    expires:          this.expires.toJSON(),
-    contentType:      this.contentType,
+    storageType: this.storageType,
+    name: this.name,
+    expires: this.expires.toJSON(),
+    contentType: this.contentType,
   };
 };
 
@@ -449,9 +449,9 @@ Artifact.prototype.remove = function(ignoreError) {
     } else {
       let err = new Error('Expiring artifact with bucket which isn\'t ' +
                           'configured for use. Please investigate!');
-      err.bucket  = this.details.bucket;
-      err.taskId  = this.taskId;
-      err.runId   = this.runId;
+      err.bucket = this.details.bucket;
+      err.taskId = this.taskId;
+      err.runId = this.runId;
       this.monitor.reportError(err);
       return;
     }
@@ -466,8 +466,8 @@ Artifact.prototype.remove = function(ignoreError) {
       let err = new Error('Expiring artifact with container which isn\'t ' +
                           'configured for use. Please investigate!');
       err.container = this.details.container;
-      err.taskId    = this.taskId;
-      err.runId     = this.runId;
+      err.taskId = this.taskId;
+      err.runId = this.runId;
       this.monitor.reportError(err);
       return;
     }
@@ -501,7 +501,7 @@ Artifact.expire = async function(now) {
   await Entity.scan.call(this, {
     expires: Entity.op.lessThan(now),
   }, {
-    limit:   250, // max number of concurrent delete operations
+    limit: 250, // max number of concurrent delete operations
     handler: (item) => { count++; return item.remove(true); },
   });
   return count;
@@ -515,18 +515,18 @@ exports.Artifact = Artifact;
  * Ensuring that all tasks in a task-group has the same schedulerId.
  */
 let TaskGroup = Entity.configure({
-  version:          1,
-  partitionKey:     Entity.keys.StringKey('taskGroupId'),
-  rowKey:           Entity.keys.ConstantKey('task-group'),
+  version: 1,
+  partitionKey: Entity.keys.StringKey('taskGroupId'),
+  rowKey: Entity.keys.ConstantKey('task-group'),
   properties: {
-    taskGroupId:    Entity.types.SlugId,
-    schedulerId:    Entity.types.String,
+    taskGroupId: Entity.types.SlugId,
+    schedulerId: Entity.types.String,
     // Expiration date when this entry can be deleted
     // When adding a task we will update this to task.expires + 72 hours
     // if taskGroup.expires < task.expires. This way the taskGroup entity
     // won't be updated 100 times if we submit 100 tasks sequentially, with
     // slightly higher expiration.
-    expires:        Entity.types.Date,
+    expires: Entity.types.Date,
   },
 });
 
@@ -539,10 +539,10 @@ TaskGroup.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await Entity.scan.call(this, {
-    expires:          Entity.op.lessThan(now),
+    expires: Entity.op.lessThan(now),
   }, {
-    limit:            250, // max number of concurrent delete operations
-    handler:          (taskGroup) => {
+    limit: 250, // max number of concurrent delete operations
+    handler: (taskGroup) => {
       count++;
       return taskGroup.remove(true);
     },
@@ -560,13 +560,13 @@ exports.TaskGroup = TaskGroup;
  * the taskId and taskGroupId given here.
  */
 let TaskGroupMember = Entity.configure({
-  version:          1,
-  partitionKey:     Entity.keys.StringKey('taskGroupId'),
-  rowKey:           Entity.keys.StringKey('taskId'),
+  version: 1,
+  partitionKey: Entity.keys.StringKey('taskGroupId'),
+  rowKey: Entity.keys.StringKey('taskId'),
   properties: {
-    taskGroupId:    Entity.types.SlugId,
-    taskId:         Entity.types.SlugId,
-    expires:        Entity.types.Date,
+    taskGroupId: Entity.types.SlugId,
+    taskId: Entity.types.SlugId,
+    expires: Entity.types.Date,
   },
 });
 
@@ -579,10 +579,10 @@ TaskGroupMember.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await Entity.scan.call(this, {
-    expires:          Entity.op.lessThan(now),
+    expires: Entity.op.lessThan(now),
   }, {
-    limit:            250, // max number of concurrent delete operations
-    handler:          (member) => { count++; return member.remove(true); },
+    limit: 250, // max number of concurrent delete operations
+    handler: (member) => { count++; return member.remove(true); },
   });
   return count;
 };
@@ -604,13 +604,13 @@ exports.TaskGroupMember = TaskGroupMember;
  * remains for taskId, the task must be scheduled.
  */
 let TaskRequirement = Entity.configure({
-  version:            1,
-  partitionKey:       Entity.keys.StringKey('taskId'),
-  rowKey:             Entity.keys.StringKey('requiredTaskId'),
+  version: 1,
+  partitionKey: Entity.keys.StringKey('taskId'),
+  rowKey: Entity.keys.StringKey('requiredTaskId'),
   properties: {
-    taskId:           Entity.types.SlugId,
-    requiredTaskId:   Entity.types.SlugId,
-    expires:          Entity.types.Date,
+    taskId: Entity.types.SlugId,
+    requiredTaskId: Entity.types.SlugId,
+    expires: Entity.types.Date,
   },
 });
 
@@ -623,10 +623,10 @@ TaskRequirement.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await Entity.scan.call(this, {
-    expires:          Entity.op.lessThan(now),
+    expires: Entity.op.lessThan(now),
   }, {
-    limit:            250, // max number of concurrent delete operations
-    handler:          entry => { count++; return entry.remove(true); },
+    limit: 250, // max number of concurrent delete operations
+    handler: entry => { count++; return entry.remove(true); },
   });
   return count;
 };
@@ -647,15 +647,15 @@ exports.TaskRequirement = TaskRequirement;
  * when taskId is resolved.
  */
 let TaskDependency = Entity.configure({
-  version:            1,
-  partitionKey:       Entity.keys.StringKey('taskId'),
-  rowKey:             Entity.keys.StringKey('dependentTaskId'),
+  version: 1,
+  partitionKey: Entity.keys.StringKey('taskId'),
+  rowKey: Entity.keys.StringKey('dependentTaskId'),
   properties: {
-    taskId:           Entity.types.SlugId,
-    dependentTaskId:  Entity.types.SlugId,
+    taskId: Entity.types.SlugId,
+    dependentTaskId: Entity.types.SlugId,
     // require is 'completed' or 'resolved' from task.requires
-    require:          Entity.types.String,
-    expires:          Entity.types.Date,
+    require: Entity.types.String,
+    expires: Entity.types.Date,
   },
 });
 
@@ -668,10 +668,10 @@ TaskDependency.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await Entity.scan.call(this, {
-    expires:          Entity.op.lessThan(now),
+    expires: Entity.op.lessThan(now),
   }, {
-    limit:            250, // max number of concurrent delete operations
-    handler:          entry => { count++; return entry.remove(true); },
+    limit: 250, // max number of concurrent delete operations
+    handler: entry => { count++; return entry.remove(true); },
   });
   return count;
 };
@@ -685,22 +685,22 @@ exports.TaskDependency = TaskDependency;
  *
  */
 let Provisioner = Entity.configure({
-  version:            1,
-  partitionKey:       Entity.keys.StringKey('provisionerId'),
-  rowKey:             Entity.keys.ConstantKey('provisioner'),
+  version: 1,
+  partitionKey: Entity.keys.StringKey('provisionerId'),
+  rowKey: Entity.keys.ConstantKey('provisioner'),
   properties: {
-    provisionerId:    Entity.types.String,
+    provisionerId: Entity.types.String,
     // the time at which this provisioner should no longer be displayed
-    expires:          Entity.types.Date,
+    expires: Entity.types.Date,
   },
 }).configure({
-  version:            2,
+  version: 2,
   properties: {
-    provisionerId:    Entity.types.String,
+    provisionerId: Entity.types.String,
     // the time at which this provisioner should no longer be displayed
-    expires:          Entity.types.Date,
-    description:      Entity.types.String,
-    stability:        Entity.types.String,
+    expires: Entity.types.Date,
+    description: Entity.types.String,
+    stability: Entity.types.String,
   },
   migrate(item) {
     item.description = '';
@@ -711,12 +711,12 @@ let Provisioner = Entity.configure({
 }).configure({
   version: 3,
   properties: {
-    provisionerId:    Entity.types.String,
+    provisionerId: Entity.types.String,
     // the time at which this provisioner should no longer be displayed
-    expires:          Entity.types.Date,
-    lastDateActive:   Entity.types.Date,
-    description:      Entity.types.Text,
-    stability:        Entity.types.String,
+    expires: Entity.types.Date,
+    lastDateActive: Entity.types.Date,
+    description: Entity.types.Text,
+    stability: Entity.types.String,
   },
   migrate(item) {
     item.lastDateActive = new Date(2000, 0, 1);
@@ -726,13 +726,13 @@ let Provisioner = Entity.configure({
 }).configure({
   version: 4,
   properties: {
-    provisionerId:    Entity.types.String,
+    provisionerId: Entity.types.String,
     // the time at which this provisioner should no longer be displayed
-    expires:          Entity.types.Date,
-    lastDateActive:   Entity.types.Date,
-    description:      Entity.types.Text,
-    stability:        Entity.types.String,
-    actions:          Entity.types.JSON,
+    expires: Entity.types.Date,
+    lastDateActive: Entity.types.Date,
+    description: Entity.types.Text,
+    stability: Entity.types.String,
+    actions: Entity.types.JSON,
   },
   migrate(item) {
     item.actions = [];
@@ -751,10 +751,10 @@ Provisioner.expire = async function(now) {
   let count = 0;
 
   await Entity.scan.call(this, {
-    expires:          Entity.op.lessThan(now),
+    expires: Entity.op.lessThan(now),
   }, {
-    limit:            250, // max number of concurrent delete operations
-    handler:          entry => { count++; return entry.remove(true); },
+    limit: 250, // max number of concurrent delete operations
+    handler: entry => { count++; return entry.remove(true); },
   });
 
   return count;
@@ -763,12 +763,12 @@ Provisioner.expire = async function(now) {
 /** Return JSON representation of provisioner meta-data */
 Provisioner.prototype.json = function() {
   return {
-    provisionerId:    this.provisionerId,
-    expires:          this.expires.toJSON(),
-    lastDateActive:   this.lastDateActive.toJSON(),
-    description:      this.description,
-    stability:        this.stability,
-    actions:          this.actions,
+    provisionerId: this.provisionerId,
+    expires: this.expires.toJSON(),
+    lastDateActive: this.lastDateActive.toJSON(),
+    description: this.description,
+    stability: this.stability,
+    actions: this.actions,
   };
 };
 
@@ -779,24 +779,24 @@ exports.Provisioner = Provisioner;
  * Entity for tracking worker-types.
  */
 let WorkerType = Entity.configure({
-  version:            1,
-  partitionKey:       Entity.keys.StringKey('provisionerId'),
-  rowKey:             Entity.keys.StringKey('workerType'),
+  version: 1,
+  partitionKey: Entity.keys.StringKey('provisionerId'),
+  rowKey: Entity.keys.StringKey('workerType'),
   properties: {
-    provisionerId:    Entity.types.String,
-    workerType:       Entity.types.String,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
     // the time at which this worker-type should no longer be displayed
-    expires:          Entity.types.Date,
+    expires: Entity.types.Date,
   },
 }).configure({
-  version:            2,
+  version: 2,
   properties: {
-    provisionerId:    Entity.types.String,
-    workerType:       Entity.types.String,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
     // the time at which this worker-type should no longer be displayed
-    expires:          Entity.types.Date,
-    description:      Entity.types.Text,
-    stability:        Entity.types.String,
+    expires: Entity.types.Date,
+    description: Entity.types.Text,
+    stability: Entity.types.String,
   },
   migrate(item) {
     item.description = '';
@@ -805,15 +805,15 @@ let WorkerType = Entity.configure({
     return item;
   },
 }).configure({
-  version:            3,
+  version: 3,
   properties: {
-    provisionerId:    Entity.types.String,
-    workerType:       Entity.types.String,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
     // the time at which this worker-type should no longer be displayed
-    expires:          Entity.types.Date,
-    lastDateActive:   Entity.types.Date,
-    description:      Entity.types.Text,
-    stability:        Entity.types.String,
+    expires: Entity.types.Date,
+    lastDateActive: Entity.types.Date,
+    description: Entity.types.Text,
+    stability: Entity.types.String,
   },
   migrate(item) {
     item.lastDateActive = new Date(2000, 0, 1);
@@ -832,10 +832,10 @@ WorkerType.expire = async function(now) {
   let count = 0;
 
   await Entity.scan.call(this, {
-    expires:          Entity.op.lessThan(now),
+    expires: Entity.op.lessThan(now),
   }, {
-    limit:            250, // max number of concurrent delete operations
-    handler:          entry => { count++; return entry.remove(true); },
+    limit: 250, // max number of concurrent delete operations
+    handler: entry => { count++; return entry.remove(true); },
   });
 
   return count;
@@ -843,12 +843,12 @@ WorkerType.expire = async function(now) {
 
 WorkerType.prototype.json = function() {
   return {
-    workerType:       this.workerType,
-    provisionerId:    this.provisionerId,
-    expires:          this.expires.toJSON(),
-    lastDateActive:   this.lastDateActive.toJSON(),
-    description:      this.description,
-    stability:        this.stability,
+    workerType: this.workerType,
+    provisionerId: this.provisionerId,
+    expires: this.expires.toJSON(),
+    lastDateActive: this.lastDateActive.toJSON(),
+    description: this.description,
+    stability: this.stability,
   };
 };
 
@@ -859,28 +859,28 @@ exports.WorkerType = WorkerType;
  * Entity for tracking workers.
  */
 let Worker = Entity.configure({
-  version:            1,
-  partitionKey:       Entity.keys.CompositeKey('provisionerId', 'workerType'),
-  rowKey:             Entity.keys.CompositeKey('workerGroup', 'workerId'),
+  version: 1,
+  partitionKey: Entity.keys.CompositeKey('provisionerId', 'workerType'),
+  rowKey: Entity.keys.CompositeKey('workerGroup', 'workerId'),
   properties: {
-    provisionerId:    Entity.types.String,
-    workerType:       Entity.types.String,
-    workerGroup:      Entity.types.String,
-    workerId:         Entity.types.String,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
+    workerGroup: Entity.types.String,
+    workerId: Entity.types.String,
     // the time at which this worker should no longer be displayed
-    expires:          Entity.types.Date,
+    expires: Entity.types.Date,
   },
 }).configure({
-  version:            2,
+  version: 2,
   properties: {
-    provisionerId:    Entity.types.String,
-    workerType:       Entity.types.String,
-    workerGroup:      Entity.types.String,
-    workerId:         Entity.types.String,
-    recentTasks:      Entity.types.SlugIdArray,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
+    workerGroup: Entity.types.String,
+    workerId: Entity.types.String,
+    recentTasks: Entity.types.SlugIdArray,
     // the time at which this worker should no longer be displayed
-    expires:          Entity.types.Date,
-    firstClaim:       Entity.types.Date,
+    expires: Entity.types.Date,
+    firstClaim: Entity.types.Date,
   },
   migrate(item) {
     item.firstClaim = new Date(2000, 0, 1);
@@ -889,17 +889,17 @@ let Worker = Entity.configure({
     return item;
   },
 }).configure({
-  version:            3,
+  version: 3,
   properties: {
-    provisionerId:    Entity.types.String,
-    workerType:       Entity.types.String,
-    workerGroup:      Entity.types.String,
-    workerId:         Entity.types.String,
-    recentTasks:      Entity.types.SlugIdArray,
-    disabled:         Entity.types.Boolean,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
+    workerGroup: Entity.types.String,
+    workerId: Entity.types.String,
+    recentTasks: Entity.types.SlugIdArray,
+    disabled: Entity.types.Boolean,
     // the time at which this worker should no longer be displayed
-    expires:          Entity.types.Date,
-    firstClaim:       Entity.types.Date,
+    expires: Entity.types.Date,
+    firstClaim: Entity.types.Date,
   },
   migrate(item) {
     item.firstClaim = new Date(2000, 0, 1);
@@ -909,23 +909,23 @@ let Worker = Entity.configure({
     return item;
   },
 }).configure({
-  version:            4,
+  version: 4,
   properties: {
-    provisionerId:    Entity.types.String,
-    workerType:       Entity.types.String,
-    workerGroup:      Entity.types.String,
-    workerId:         Entity.types.String,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
+    workerGroup: Entity.types.String,
+    workerId: Entity.types.String,
     /**
      * List of objects with properties:
      * - taskId
      * - runId
      * See JSON schema for documentation.
      */
-    recentTasks:      Entity.types.JSON,
-    disabled:         Entity.types.Boolean,
+    recentTasks: Entity.types.JSON,
+    disabled: Entity.types.Boolean,
     // the time at which this worker should no longer be displayed
-    expires:          Entity.types.Date,
-    firstClaim:       Entity.types.Date,
+    expires: Entity.types.Date,
+    firstClaim: Entity.types.Date,
   },
   migrate(item) {
     item.recentTasks = [];
@@ -933,23 +933,23 @@ let Worker = Entity.configure({
     return item;
   },
 }).configure({
-  version:            5,
+  version: 5,
   properties: {
-    provisionerId:    Entity.types.String,
-    workerType:       Entity.types.String,
-    workerGroup:      Entity.types.String,
-    workerId:         Entity.types.String,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
+    workerGroup: Entity.types.String,
+    workerId: Entity.types.String,
     /**
      * List of objects with properties:
      * - taskId
      * - runId
      * See JSON schema for documentation.
      */
-    recentTasks:      Entity.types.JSON,
-    quarantineUntil:  Entity.types.Date,
+    recentTasks: Entity.types.JSON,
+    quarantineUntil: Entity.types.Date,
     // the time at which this worker should no longer be displayed
-    expires:          Entity.types.Date,
-    firstClaim:       Entity.types.Date,
+    expires: Entity.types.Date,
+    firstClaim: Entity.types.Date,
   },
   migrate(item) {
     item.quarantineUntil = new Date(0);
@@ -968,12 +968,12 @@ Worker.expire = async function(now) {
   let count = 0;
 
   await Entity.scan.call(this, {
-    expires:          Entity.op.lessThan(now),
+    expires: Entity.op.lessThan(now),
     // don't expire quarantined hosts (as they might come out of quarantine..)
-    quarantineUntil:  Entity.op.lessThan(now),
+    quarantineUntil: Entity.op.lessThan(now),
   }, {
-    limit:            250, // max number of concurrent delete operations
-    handler:          entry => { count++; return entry.remove(true); },
+    limit: 250, // max number of concurrent delete operations
+    handler: entry => { count++; return entry.remove(true); },
   });
 
   return count;
@@ -981,13 +981,13 @@ Worker.expire = async function(now) {
 
 Worker.prototype.json = function() {
   const worker = {
-    workerType:       this.workerType,
-    provisionerId:    this.provisionerId,
-    workerId:         this.workerId,
-    workerGroup:      this.workerGroup,
-    recentTasks:      this.recentTasks,
-    expires:          this.expires.toJSON(),
-    firstClaim:       this.firstClaim.toJSON(),
+    workerType: this.workerType,
+    provisionerId: this.provisionerId,
+    workerId: this.workerId,
+    workerGroup: this.workerGroup,
+    recentTasks: this.recentTasks,
+    expires: this.expires.toJSON(),
+    firstClaim: this.firstClaim.toJSON(),
   };
   if (this.quarantineUntil.getTime() > new Date().getTime()) {
     worker.quarantineUntil = this.quarantineUntil.toJSON();

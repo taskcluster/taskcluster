@@ -1,7 +1,7 @@
-let azure       = require('azure-storage');
-let _           = require('lodash');
-let debug       = require('debug')('app:blobstore');
-let assert      = require('assert');
+let azure = require('azure-storage');
+let _ = require('lodash');
+let debug = require('debug')('app:blobstore');
+let assert = require('assert');
 let querystring = require('querystring');
 
 /**
@@ -56,11 +56,11 @@ BlobStore.prototype.setupCORS = function() {
       Cors: {
         CorsRule: [
           {
-            AllowedOrigins:   ['*'],
-            AllowedMethods:   ['GET'],
-            AllowedHeaders:   [],
-            ExposedHeaders:   ['content-length', 'content-type'],
-            MaxAgeInSeconds:  60 * 5,
+            AllowedOrigins: ['*'],
+            AllowedMethods: ['GET'],
+            AllowedHeaders: [],
+            ExposedHeaders: ['content-length', 'content-type'],
+            MaxAgeInSeconds: 60 * 5,
           },
         ],
       },
@@ -81,7 +81,7 @@ BlobStore.prototype.put = function(key, json) {
     var payload = JSON.stringify(json);
     that.service.createBlockBlobFromText(that.container, key, payload, {
       contentSettings: {
-        contentType:      'application/json',
+        contentType: 'application/json',
       },
     }, function(err, result, response) {
       if (err) {
@@ -103,7 +103,7 @@ BlobStore.prototype.putIfNotExists = function(key, json) {
     var payload = JSON.stringify(json);
     that.service.createBlockBlobFromText(that.container, key, payload, {
       contentSettings: {
-        contentType:      'application/json',
+        contentType: 'application/json',
       },
       accessConditions: {EtagNonMatch: '*'},
     }, function(err, result, response) {
@@ -158,17 +158,17 @@ BlobStore.prototype.get = function(key, nullIfNotFound) {
 
 /** Generated Shared-Access-Signature for writing to a blob */
 BlobStore.prototype.generateWriteSAS = function(key, options) {
-  assert(options,                         'Options are required');
-  assert(options.expiry instanceof Date,  'options.expiry must be given');
+  assert(options, 'Options are required');
+  assert(options.expiry instanceof Date, 'options.expiry must be given');
   // Set start of the signature to 15 min in the past
-  var start   = new Date();
+  var start = new Date();
   start.setMinutes(start.getMinutes() - 15);
   // Generate SAS
   var sas = this.service.generateSharedAccessSignature(this.container, key, {
     AccessPolicy: {
-      Start:        start,
-      Expiry:       options.expiry,
-      Permissions:  azure.BlobUtilities.SharedAccessPermissions.WRITE,
+      Start: start,
+      Expiry: options.expiry,
+      Permissions: azure.BlobUtilities.SharedAccessPermissions.WRITE,
     },
   });
 
@@ -177,17 +177,17 @@ BlobStore.prototype.generateWriteSAS = function(key, options) {
 
 /** Create signed GET url */
 BlobStore.prototype.createSignedGetUrl = function(key, options) {
-  assert(options,                         'Options are required');
-  assert(options.expiry instanceof Date,  'options.expiry must be given');
+  assert(options, 'Options are required');
+  assert(options.expiry instanceof Date, 'options.expiry must be given');
   // Set start of the signature to 15 min in the past
-  var start   = new Date();
+  var start = new Date();
   start.setMinutes(start.getMinutes() - 15);
   // Generate SAS
   var sas = this.service.generateSharedAccessSignature(this.container, key, {
     AccessPolicy: {
-      Start:        start,
-      Expiry:       options.expiry,
-      Permissions:  azure.BlobUtilities.SharedAccessPermissions.READ,
+      Start: start,
+      Expiry: options.expiry,
+      Permissions: azure.BlobUtilities.SharedAccessPermissions.READ,
     },
   });
 

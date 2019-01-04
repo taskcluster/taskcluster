@@ -77,9 +77,9 @@ const expressError = ({errorCodes, entry, monitor}) => {
 
     const requestInfo = {
       method,
-      params:  req.params,
+      params: req.params,
       payload,
-      time:    (new Date()).toJSON(),
+      time: (new Date()).toJSON(),
     };
 
     message = message.replace(/{{([a-zA-Z0-9_-]+)}}/g, (text, key) => {

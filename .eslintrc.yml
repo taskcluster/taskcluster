@@ -43,10 +43,13 @@ rules:
   complexity:
     - error
     - max: 60 # We may want to eventually bring this number down
+  no-multi-spaces: error
+  key-spacing:
+    - error
+    - mode: strict
 
   # Let's turn these on eventually
   block-scoped-var: off
-  no-multi-spaces: off
   eqeqeq: off
   require-await: off
   eol-last: off

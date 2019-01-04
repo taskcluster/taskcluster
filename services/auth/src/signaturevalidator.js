@@ -101,14 +101,14 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
 
     // Generate certificate signature
     let sigContent = [];
-    sigContent.push('version:'    + '1');
+    sigContent.push('version:' + '1');
     if (cert.issuer) {
       sigContent.push('clientId:' + credentialName);
-      sigContent.push('issuer:'   + cert.issuer);
+      sigContent.push('issuer:' + cert.issuer);
     }
-    sigContent.push('seed:'       + cert.seed);
-    sigContent.push('start:'      + cert.start);
-    sigContent.push('expiry:'     + cert.expiry);
+    sigContent.push('seed:' + cert.seed);
+    sigContent.push('start:' + cert.start);
+    sigContent.push('expiry:' + cert.expiry);
     sigContent.push('scopes:');
     sigContent = sigContent.concat(cert.scopes);
     let signature = crypto.createHmac('sha256', accessToken)
@@ -129,9 +129,9 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
     let temporaryKey = crypto.createHmac('sha256', accessToken)
       .update(cert.seed)
       .digest('base64')
-      .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
-      .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
-      .replace(/=/g,  '');  // Drop '==' padding
+      .replace(/\+/g, '-') // Replace + with - (see RFC 4648, sec. 5)
+      .replace(/\//g, '_') // Replace / with _ (see RFC 4648, sec. 5)
+      .replace(/=/g, ''); // Drop '==' padding
 
     // Update expiration, scopes and accessToken
     res.accessToken = temporaryKey;
@@ -238,11 +238,11 @@ const createSignatureValidator = function(options) {
       }
 
       callback(null, {
-        key:       accessToken,
+        key: accessToken,
         algorithm: 'sha256',
-        clientId:  credentialName,
-        expires:   expires,
-        scopes:    scopes,
+        clientId: credentialName,
+        expires: expires,
+        scopes: scopes,
       });
     })().catch(callback);
   };
@@ -261,15 +261,15 @@ const createSignatureValidator = function(options) {
             message = err.message;
           }
           result = {
-            status:   'auth-failed',
-            message:  '' + message,
+            status: 'auth-failed',
+            message: '' + message,
           };
         } else {
           result = {
-            status:   'auth-success',
-            scheme:   'hawk',
-            expires:  credentials.expires,
-            scopes:   credentials.scopes,
+            status: 'auth-success',
+            scheme: 'hawk',
+            expires: credentials.expires,
+            scopes: credentials.scopes,
             clientId: credentials.clientId,
           };
           if (artifacts.hash) {
@@ -297,11 +297,11 @@ const createSignatureValidator = function(options) {
       };
       if (req.authorization) {
         hawk.server.authenticate({
-          method:           req.method.toUpperCase(),
-          url:              req.resource,
-          host:             req.host,
-          port:             req.port,
-          authorization:    req.authorization,
+          method: req.method.toUpperCase(),
+          url: req.resource,
+          host: req.host,
+          port: req.port,
+          authorization: req.authorization,
         }, function(clientId, callback) {
           let ext = undefined;
 
@@ -330,10 +330,10 @@ const createSignatureValidator = function(options) {
       } else {
         // If there is no authorization header we'll attempt a login with bewit
         hawk.uri.authenticate({
-          method:           req.method.toUpperCase(),
-          url:              req.resource,
-          host:             req.host,
-          port:             req.port,
+          method: req.method.toUpperCase(),
+          url: req.resource,
+          host: req.host,
+          port: req.port,
         }, function(clientId, callback) {
           let ext = undefined;
 

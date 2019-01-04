@@ -47,15 +47,15 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
       // Create all roles and clients
       for (let c of t.clients) {
         await helper.apiClient.createClient(c.clientId, {
-          description:  'client for test case: ' + title,
-          expires:      taskcluster.fromNowJSON('2 hours'),
-          scopes:       c.scopes,
+          description: 'client for test case: ' + title,
+          expires: taskcluster.fromNowJSON('2 hours'),
+          scopes: c.scopes,
         });
       }
       for (let r of t.roles) {
         await helper.apiClient.createRole(r.roleId, {
-          description:  'role for test case: ' + title,
-          scopes:       r.scopes,
+          description: 'role for test case: ' + title,
+          scopes: r.scopes,
         });
       }
 
@@ -103,7 +103,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ],
     clients: [
       {
-        clientId:   'test-client',
+        clientId: 'test-client',
         scopes: [
           'assume:thing-id:test',
         ],
@@ -128,7 +128,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ],
     clients: [
       {
-        clientId:   'test-client',
+        clientId: 'test-client',
         scopes: [
           'assume:thing-id:test',
         ],
@@ -160,7 +160,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ],
     clients: [
       {
-        clientId:   'test-client-1',
+        clientId: 'test-client-1',
         scopes: [
           'assume:thing-id:test-client-1',
         ],
@@ -176,7 +176,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
           'thing-id:test-client-*',
         ],
       }, {
-        clientId:   'test-client-2',
+        clientId: 'test-client-2',
         scopes: [
           'assume:thing-id:test-client-2',
         ],
@@ -190,7 +190,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
           'thing-id:test-client-*',
         ],
       }, {
-        clientId:   'other-client',
+        clientId: 'other-client',
         scopes: [
           'assume:thing-id:other-client',
         ],
@@ -219,7 +219,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ],
     clients: [
       {
-        clientId:   'test-client-abc',
+        clientId: 'test-client-abc',
         scopes: [
           'assume:test-role-abc',
         ],
@@ -230,7 +230,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
           'scope-2',
         ],
       }, {
-        clientId:   'test-client-abc-again',
+        clientId: 'test-client-abc-again',
         scopes: [
           'assume:test-role-abc-again',
         ],
@@ -255,7 +255,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ],
     clients: [
       {
-        clientId:   'test-client-1',
+        clientId: 'test-client-1',
         scopes: [
           'assume:test-client-1',
         ],
@@ -304,7 +304,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ],
     clients: [
       {
-        clientId:   'test-client-1',
+        clientId: 'test-client-1',
         scopes: [
           'assume:test-role-1',
         ],
@@ -342,7 +342,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ],
     clients: [
       {
-        clientId:   'single-admin',
+        clientId: 'single-admin',
         scopes: [
           'assume:project-admin:proj1',
         ],
@@ -353,7 +353,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
           'auth:create-role:project-*',
         ],
       }, {
-        clientId:   'double-admin',
+        clientId: 'double-admin',
         scopes: [
           'assume:project-admin:proj1',
           'assume:project-admin:proj2',
@@ -366,7 +366,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
           'auth:create-role:project-*',
         ],
       }, {
-        clientId:   'star-admin',
+        clientId: 'star-admin',
         scopes: [
           'assume:project-admin:proj*',
         ],
@@ -398,7 +398,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     })),
     clients: [
       {
-        clientId:   'big-test-client',
+        clientId: 'big-test-client',
         scopes: [
           'assume:big-test-client',
         ],
@@ -410,7 +410,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ],
   });
 
-  const M = 5;  // depth
+  const M = 5; // depth
   const K = 25; // multiplier
   test('test with depth = ' + M + ' x ' + K, {
     roles: _.flatten([
@@ -450,7 +450,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ],
     clients: [
       {
-        clientId:   'test-client-1',
+        clientId: 'test-client-1',
         scopes: [
           'a*',
         ],
@@ -473,7 +473,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ],
     clients: [
       {
-        clientId:   'test-client-1',
+        clientId: 'test-client-1',
         scopes: [
           'assume*',
         ],
@@ -496,7 +496,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ],
     clients: [
       {
-        clientId:   'test-client-1',
+        clientId: 'test-client-1',
         scopes: [
           'assume:*',
         ],
@@ -519,7 +519,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     ],
     clients: [
       {
-        clientId:   'test-client-1',
+        clientId: 'test-client-1',
         scopes: [
           'assume:project:my-prj',
         ],

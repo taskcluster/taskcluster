@@ -120,8 +120,8 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('ab gets ab*, a*', {
       roles: [
-        {roleId: 'ab*', scopes:['ABSTAR']},
-        {roleId: 'a*', scopes:['ASTAR']},
+        {roleId: 'ab*', scopes: ['ABSTAR']},
+        {roleId: 'a*', scopes: ['ASTAR']},
       ],
       scopes: ['assume:ab'],
       expected: ['assume:ab', 'ABSTAR', 'ASTAR'],
@@ -129,8 +129,8 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('a gets * and a', {
       roles: [
-        {roleId: '*', scopes:['STAR']},
-        {roleId: 'a*', scopes:['ASTAR']},
+        {roleId: '*', scopes: ['STAR']},
+        {roleId: 'a*', scopes: ['ASTAR']},
       ],
       scopes: ['assume:a'],
       expected: ['assume:a', 'STAR', 'ASTAR'],
@@ -138,10 +138,10 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('a*, b*, c*', {
       roles: [
-        {roleId: 'a*', scopes:['ASTAR']},
-        {roleId: 'ab*', scopes:['ABSTAR']},
-        {roleId: 'ac*', scopes:['ACSTAR']},
-        {roleId: 'd', scopes:['D']},
+        {roleId: 'a*', scopes: ['ASTAR']},
+        {roleId: 'ab*', scopes: ['ABSTAR']},
+        {roleId: 'ac*', scopes: ['ACSTAR']},
+        {roleId: 'd', scopes: ['D']},
       ],
       scopes: ['assume:ab'],
       expected: ['assume:ab', 'ASTAR', 'ABSTAR'],
@@ -149,8 +149,8 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('ab* matches a*', {
       roles: [
-        {roleId: 'a*', scopes:['ASTAR']},
-        {roleId: 'aabc', scopes:['AABC']},
+        {roleId: 'a*', scopes: ['ASTAR']},
+        {roleId: 'aabc', scopes: ['AABC']},
       ],
       scopes: ['assume:aa*'],
       expected: ['assume:aa*', 'ASTAR', 'AABC'],
@@ -158,9 +158,9 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('* get all', {
       roles: [
-        {roleId: 'a', scopes:['A']},
-        {roleId: 'b', scopes:['B']},
-        {roleId: 'c', scopes:['C']},
+        {roleId: 'a', scopes: ['A']},
+        {roleId: 'b', scopes: ['B']},
+        {roleId: 'c', scopes: ['C']},
       ],
       scopes: ['*'],
       expected: ['*'],
@@ -168,9 +168,9 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('a* get all', {
       roles: [
-        {roleId: 'a', scopes:['A']},
-        {roleId: 'b', scopes:['B']},
-        {roleId: 'c', scopes:['C']},
+        {roleId: 'a', scopes: ['A']},
+        {roleId: 'b', scopes: ['B']},
+        {roleId: 'c', scopes: ['C']},
       ],
       scopes: ['a*'],
       expected: ['a*', 'A', 'B', 'C'],
@@ -178,9 +178,9 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('assume* get all', {
       roles: [
-        {roleId: 'a', scopes:['A']},
-        {roleId: 'b', scopes:['B']},
-        {roleId: 'c', scopes:['C']},
+        {roleId: 'a', scopes: ['A']},
+        {roleId: 'b', scopes: ['B']},
+        {roleId: 'c', scopes: ['C']},
       ],
       scopes: ['assume*'],
       expected: ['assume*', 'A', 'B', 'C'],
@@ -188,9 +188,9 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('assume:* get all', {
       roles: [
-        {roleId: 'a', scopes:['A']},
-        {roleId: 'b', scopes:['B']},
-        {roleId: 'c', scopes:['C']},
+        {roleId: 'a', scopes: ['A']},
+        {roleId: 'b', scopes: ['B']},
+        {roleId: 'c', scopes: ['C']},
       ],
       scopes: ['assume:*'],
       expected: ['assume:*', 'A', 'B', 'C'],
@@ -198,9 +198,9 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('assum* get all', {
       roles: [
-        {roleId: 'a', scopes:['A']},
-        {roleId: 'b', scopes:['B']},
-        {roleId: 'c', scopes:['C']},
+        {roleId: 'a', scopes: ['A']},
+        {roleId: 'b', scopes: ['B']},
+        {roleId: 'c', scopes: ['C']},
       ],
       scopes: ['assum*'],
       expected: ['assum*', 'A', 'B', 'C'],
@@ -208,9 +208,9 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('assume:a works', {
       roles: [
-        {roleId: 'a', scopes:['A']},
-        {roleId: 'b', scopes:['B']},
-        {roleId: 'c', scopes:['C']},
+        {roleId: 'a', scopes: ['A']},
+        {roleId: 'b', scopes: ['B']},
+        {roleId: 'c', scopes: ['C']},
       ],
       scopes: ['assume:a'],
       expected: ['assume:a', 'A'],
@@ -218,9 +218,9 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('exact match ab', {
       roles: [
-        {roleId: 'a', scopes:['A']},
-        {roleId: 'ab', scopes:['AB']},
-        {roleId: 'abc', scopes:['ABC']},
+        {roleId: 'a', scopes: ['A']},
+        {roleId: 'ab', scopes: ['AB']},
+        {roleId: 'abc', scopes: ['ABC']},
       ],
       scopes: ['assume:ab'],
       expected: ['assume:ab', 'AB'],
@@ -228,9 +228,9 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('ab* matches ab, abc', {
       roles: [
-        {roleId: 'a', scopes:['A']},
-        {roleId: 'ab', scopes:['AB']},
-        {roleId: 'abc', scopes:['ABC']},
+        {roleId: 'a', scopes: ['A']},
+        {roleId: 'ab', scopes: ['AB']},
+        {roleId: 'abc', scopes: ['ABC']},
       ],
       scopes: ['assume:ab*'],
       expected: ['assume:ab*', 'AB', 'ABC'],
@@ -238,9 +238,9 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('ab* matches a*', {
       roles: [
-        {roleId: 'a*', scopes:['ASTAR']},
-        {roleId: 'ab', scopes:['AB']},
-        {roleId: 'abc', scopes:['ABC']},
+        {roleId: 'a*', scopes: ['ASTAR']},
+        {roleId: 'ab', scopes: ['AB']},
+        {roleId: 'abc', scopes: ['ABC']},
       ],
       scopes: ['assume:ab*'],
       expected: ['assume:ab*', 'ASTAR', 'AB', 'ABC'],
@@ -248,9 +248,9 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('ab match ab,a*', {
       roles: [
-        {roleId: 'a*', scopes:['ASTAR']},
-        {roleId: 'ab', scopes:['AB']},
-        {roleId: 'abc', scopes:['ABC']},
+        {roleId: 'a*', scopes: ['ASTAR']},
+        {roleId: 'ab', scopes: ['AB']},
+        {roleId: 'abc', scopes: ['ABC']},
       ],
       scopes: ['assume:ab'],
       expected: ['assume:ab', 'ASTAR', 'AB'],
@@ -258,14 +258,14 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('a*b* matches a*b, a*bc', {
       roles: [
-        {roleId: 'a', scopes:['A']},
-        {roleId: 'a*b', scopes:['ASTARB']},
-        {roleId: 'a*bc', scopes:['ASTARBC']},
-        {roleId: 'ab', scopes:['AB']},
-        {roleId: 'abc', scopes:['ABC']},
-        {roleId: 'b*', scopes:['BSTAR']},
-        {roleId: 'c*', scopes:['CSTAR']},
-        {roleId: 'ab*', scopes:['ABSTAR']},
+        {roleId: 'a', scopes: ['A']},
+        {roleId: 'a*b', scopes: ['ASTARB']},
+        {roleId: 'a*bc', scopes: ['ASTARBC']},
+        {roleId: 'ab', scopes: ['AB']},
+        {roleId: 'abc', scopes: ['ABC']},
+        {roleId: 'b*', scopes: ['BSTAR']},
+        {roleId: 'c*', scopes: ['CSTAR']},
+        {roleId: 'ab*', scopes: ['ABSTAR']},
       ],
       scopes: ['assume:a*b*'],
       expected: ['assume:a*b*', 'ASTARB', 'ASTARBC'],
@@ -273,14 +273,14 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('a*b matches a*, a*b', {
       roles: [
-        {roleId: 'a*', scopes:['ASTAR']},
-        {roleId: 'a*b', scopes:['ASTARB']},
-        {roleId: 'a*bc', scopes:['ASTARBC']},
-        {roleId: 'ab', scopes:['AB']},
-        {roleId: 'abc', scopes:['ABC']},
-        {roleId: 'b*', scopes:['BSTAR']},
-        {roleId: 'c*', scopes:['CSTAR']},
-        {roleId: 'ab*', scopes:['ABSTAR']},
+        {roleId: 'a*', scopes: ['ASTAR']},
+        {roleId: 'a*b', scopes: ['ASTARB']},
+        {roleId: 'a*bc', scopes: ['ASTARBC']},
+        {roleId: 'ab', scopes: ['AB']},
+        {roleId: 'abc', scopes: ['ABC']},
+        {roleId: 'b*', scopes: ['BSTAR']},
+        {roleId: 'c*', scopes: ['CSTAR']},
+        {roleId: 'ab*', scopes: ['ABSTAR']},
       ],
       scopes: ['assume:a*b'],
       expected: ['assume:a*b', 'ASTARB', 'ASTAR'],
@@ -288,14 +288,14 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('a*b* matches a*b, a*bc', {
       roles: [
-        {roleId: 'a*', scopes:['ASTAR']},
-        {roleId: 'a*b', scopes:['ASTARB']},
-        {roleId: 'a*bc', scopes:['ASTARBC']},
-        {roleId: 'ab', scopes:['AB']},
-        {roleId: 'abc', scopes:['ABC']},
-        {roleId: 'b*', scopes:['BSTAR']},
-        {roleId: 'c*', scopes:['CSTAR']},
-        {roleId: 'ab*', scopes:['ABSTAR']},
+        {roleId: 'a*', scopes: ['ASTAR']},
+        {roleId: 'a*b', scopes: ['ASTARB']},
+        {roleId: 'a*bc', scopes: ['ASTARBC']},
+        {roleId: 'ab', scopes: ['AB']},
+        {roleId: 'abc', scopes: ['ABC']},
+        {roleId: 'b*', scopes: ['BSTAR']},
+        {roleId: 'c*', scopes: ['CSTAR']},
+        {roleId: 'ab*', scopes: ['ABSTAR']},
       ],
       scopes: ['assume:a*b*'],
       expected: ['assume:a*b*', 'ASTARB', 'ASTARBC', 'ASTAR'],
@@ -303,7 +303,7 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('basic parameterized role', {
       roles: [
-        {roleId: 'a*', scopes:['A<..>']},
+        {roleId: 'a*', scopes: ['A<..>']},
       ],
       scopes: ['assume:abc'],
       expected: ['assume:abc', 'Abc'],
@@ -311,7 +311,7 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('basic parameterized role, matched with *', {
       roles: [
-        {roleId: 'a*', scopes:['A<..>']},
+        {roleId: 'a*', scopes: ['A<..>']},
       ],
       scopes: ['assume:abc*'],
       expected: ['assume:abc*', 'Abc*'],
@@ -319,7 +319,7 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('parameterized role with suffix', {
       roles: [
-        {roleId: 'a*', scopes:['A<..>X']},
+        {roleId: 'a*', scopes: ['A<..>X']},
       ],
       scopes: ['assume:abc'],
       expected: ['assume:abc', 'AbcX'],
@@ -327,7 +327,7 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('parameterized role with suffix, matched with *', {
       roles: [
-        {roleId: 'a*', scopes:['A<..>X']},
+        {roleId: 'a*', scopes: ['A<..>X']},
       ],
       scopes: ['assume:abc*'],
       expected: ['assume:abc*', 'Abc*'],
@@ -335,7 +335,7 @@ suite(helper.suiteName(__filename), () => {
 
     testResolver('parameterized role with suffix, matched with a shorter *', {
       roles: [
-        {roleId: 'abc*', scopes:['ABC<..>DEF']},
+        {roleId: 'abc*', scopes: ['ABC<..>DEF']},
       ],
       scopes: ['assume:a*'],
       expected: ['assume:a*', 'ABC*'],
@@ -727,35 +727,35 @@ suite(helper.suiteName(__filename), () => {
     // Test cases for normalizeScopes
     [
       {
-        scopes:   ['*'],
-        result:   ['*'],
+        scopes: ['*'],
+        result: ['*'],
       }, {
-        scopes:   ['*', 'test'],
-        result:   ['*'],
+        scopes: ['*', 'test'],
+        result: ['*'],
       }, {
-        scopes:   ['*', 'test', 'te*'],
-        result:   ['*'],
+        scopes: ['*', 'test', 'te*'],
+        result: ['*'],
       }, {
-        scopes:   ['*', 'te*'],
-        result:   ['*'],
+        scopes: ['*', 'te*'],
+        result: ['*'],
       }, {
-        scopes:   ['test*', 't*'],
-        result:   ['t*'],
+        scopes: ['test*', 't*'],
+        result: ['t*'],
       }, {
-        scopes:   ['test*', 'ab*'],
-        result:   ['test*', 'ab*'],
+        scopes: ['test*', 'ab*'],
+        result: ['test*', 'ab*'],
       }, {
-        scopes:   ['abc', 'ab*', 'a', 'ab'],
-        result:   ['ab*', 'a'],
+        scopes: ['abc', 'ab*', 'a', 'ab'],
+        result: ['ab*', 'a'],
       }, {
-        scopes:   ['a', 'b', 'c'],
-        result:   ['a', 'b', 'c'],
+        scopes: ['a', 'b', 'c'],
+        result: ['a', 'b', 'c'],
       }, {
-        scopes:   ['ab', 'a', 'abc*'],
-        result:   ['ab', 'a', 'abc*'],
+        scopes: ['ab', 'a', 'abc*'],
+        result: ['ab', 'a', 'abc*'],
       }, {
-        scopes:   ['a*', 'ab', 'a', 'abc*'],
-        result:   ['a*'],
+        scopes: ['a*', 'ab', 'a', 'abc*'],
+        result: ['a*'],
       },
     ].forEach(({scopes, result}) => {
       test(`normalizeScopes(${scopes.join(', ')})`, () => {

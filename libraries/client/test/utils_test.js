@@ -1,7 +1,7 @@
 suite('taskcluster utilities', function() {
-  var taskcluster       = require('../');
-  var parseTime         = require('../src/parsetime');
-  var assert            = require('assert');
+  var taskcluster = require('../');
+  var parseTime = require('../src/parsetime');
+  var assert = require('assert');
 
   test('parseTime 1 year', function() {
     assert.equal(parseTime('1y').years, 1);

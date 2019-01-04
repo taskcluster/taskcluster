@@ -1,10 +1,10 @@
 suite('client credential handling', function() {
-  var taskcluster     = require('../');
-  var assert          = require('assert');
-  var path            = require('path');
-  var debug           = require('debug')('test:client');
-  var request         = require('superagent');
-  var _               = require('lodash');
+  var taskcluster = require('../');
+  var assert = require('assert');
+  var path = require('path');
+  var debug = require('debug')('test:client');
+  var request = require('superagent');
+  var _ = require('lodash');
 
   // This suite exercises the credential-handling functionality of the client
   // against a the auth service's testAuthenticate endpoint.
@@ -83,8 +83,8 @@ suite('client credential handling', function() {
       scopes: ['scopes:specific'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
-        clientId:       'tester',
-        accessToken:    'no-secret',
+        clientId: 'tester',
+        accessToken: 'no-secret',
       },
     });
     assert.deepEqual(
@@ -102,8 +102,8 @@ suite('client credential handling', function() {
       scopes: ['scopes:something-else'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
-        clientId:       'tester',
-        accessToken:    'no-secret',
+        clientId: 'tester',
+        accessToken: 'no-secret',
       },
     });
     await expectError(client({credentials}).testAuthenticate({
@@ -117,8 +117,8 @@ suite('client credential handling', function() {
       scopes: ['scopes:specific'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
-        clientId:       'tester',
-        accessToken:    'wrong',
+        clientId: 'tester',
+        accessToken: 'wrong',
       },
     });
     await expectError(client({credentials}).testAuthenticate({
@@ -133,8 +133,8 @@ suite('client credential handling', function() {
       clientId: 'my-temp-cred',
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
-        clientId:       'tester',
-        accessToken:    'no-secret',
+        clientId: 'tester',
+        accessToken: 'no-secret',
       },
     });
     assert.equal(credentials.clientId, 'my-temp-cred',
@@ -154,8 +154,8 @@ suite('client credential handling', function() {
       scopes: ['scopes:subcategory:*'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
-        clientId:       'tester',
-        accessToken:    'no-secret',
+        clientId: 'tester',
+        accessToken: 'no-secret',
       },
     });
     assert.deepEqual(
@@ -176,8 +176,8 @@ suite('client credential handling', function() {
       scopes: ['scopes:subcategory:*'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
-        clientId:       'tester',
-        accessToken:    'no-secret',
+        clientId: 'tester',
+        accessToken: 'no-secret',
       },
     });
     await expectError(client({
@@ -194,8 +194,8 @@ suite('client credential handling', function() {
       scopes: ['scopes:subcategory:*'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
-        clientId:       'tester',
-        accessToken:    'wrong',
+        clientId: 'tester',
+        accessToken: 'wrong',
       },
     });
     await expectError(client({
@@ -213,8 +213,8 @@ suite('client credential handling', function() {
       clientId: 'my-temp-cred',
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
-        clientId:       'tester',
-        accessToken:    'no-secret',
+        clientId: 'tester',
+        accessToken: 'no-secret',
       },
     });
     assert.equal(credentials.clientId, 'my-temp-cred',
@@ -246,8 +246,8 @@ suite('client credential handling', function() {
   test('buildSignedUrl authorizedScopes', async () => {
     let cl = client({
       credentials: {
-        clientId:     'tester',
-        accessToken:  'no-secret',
+        clientId: 'tester',
+        accessToken: 'no-secret',
       },
       authorizedScopes: ['test:authenticate-get', 'test:foo'],
     });
@@ -259,10 +259,10 @@ suite('client credential handling', function() {
   test('buildSignedUrl authorizedScopes (unauthorized)', async () => {
     let cl = client({
       credentials: {
-        clientId:     'tester',
-        accessToken:  'no-secret',
+        clientId: 'tester',
+        accessToken: 'no-secret',
       },
-      authorizedScopes: ['test:get'],  // no test:authenticate-get
+      authorizedScopes: ['test:get'], // no test:authenticate-get
     });
     let url = cl.buildSignedUrl(cl.testAuthenticateGet);
     await request.get(url).then(() => assert(false), err => {
@@ -275,8 +275,8 @@ suite('client credential handling', function() {
       scopes: ['test:authenticate-get', 'test:bar'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
-        clientId:       'tester',
-        accessToken:    'no-secret',
+        clientId: 'tester',
+        accessToken: 'no-secret',
       },
     });
     let cl = client({
@@ -292,8 +292,8 @@ suite('client credential handling', function() {
       scopes: ['test:authenticate-get'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
-        clientId:       'tester',
-        accessToken:    'no-secret',
+        clientId: 'tester',
+        accessToken: 'no-secret',
       },
     });
     let cl = client({
@@ -310,8 +310,8 @@ suite('client credential handling', function() {
       scopes: ['test:query', 'test:authenticate-get'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
-        clientId:       'tester',
-        accessToken:    'no-secret',
+        clientId: 'tester',
+        accessToken: 'no-secret',
       },
     });
     let cl = client({
@@ -330,8 +330,8 @@ suite('client credential handling', function() {
       scopes: ['test:auth*'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
-        clientId:       'tester',
-        accessToken:    'no-secret',
+        clientId: 'tester',
+        accessToken: 'no-secret',
       },
     });
     let cl = client({
@@ -343,22 +343,22 @@ suite('client credential handling', function() {
   });
 
   suite('Get with credentials from environment variables', async () => {
-    let ROOT_URL      = process.env.TASKCLUSTER_ROOT_URL;
-    let CLIENT_ID     = process.env.TASKCLUSTER_CLIENT_ID;
-    let ACCESS_TOKEN  = process.env.TASKCLUSTER_ACCESS_TOKEN;
+    let ROOT_URL = process.env.TASKCLUSTER_ROOT_URL;
+    let CLIENT_ID = process.env.TASKCLUSTER_CLIENT_ID;
+    let ACCESS_TOKEN = process.env.TASKCLUSTER_ACCESS_TOKEN;
 
     // Ensure the client is removed from the require cache so it can be
     // reloaded from scratch.
     setup(() => {
-      process.env.TASKCLUSTER_ROOT_URL     = 'https://taskcluster.net';
-      process.env.TASKCLUSTER_CLIENT_ID    = 'tester';
+      process.env.TASKCLUSTER_ROOT_URL = 'https://taskcluster.net';
+      process.env.TASKCLUSTER_CLIENT_ID = 'tester';
       process.env.TASKCLUSTER_ACCESS_TOKEN = 'no-secret';
     });
 
     // Be a good citizen and cleanup after this test so we don't leak state.
     teardown(() => {
-      process.env.TASKCLUSTER_ROOT_URL     = ROOT_URL;
-      process.env.TASKCLUSTER_CLIENT_ID    = CLIENT_ID;
+      process.env.TASKCLUSTER_ROOT_URL = ROOT_URL;
+      process.env.TASKCLUSTER_CLIENT_ID = CLIENT_ID;
       process.env.TASKCLUSTER_ACCESS_TOKEN = ACCESS_TOKEN;
     });
 

@@ -195,7 +195,7 @@ module.exports = class Handler {
   async publishJobMessage(pushInfo, job, taskId) {
     try {
       debug(`Publishing message for ${pushInfo.project} with task ID ${taskId}`);
-      await this.publisher.jobs(job, {project:pushInfo.project, destination: pushInfo.destination});
+      await this.publisher.jobs(job, {project: pushInfo.project, destination: pushInfo.destination});
       debug(`Published message for ${pushInfo.project} with task ID ${taskId}`);
       this.monitor.count(`${pushInfo.project}.publish-message.success`);
     } catch (err) {

@@ -1,10 +1,10 @@
-let debug         = require('debug')('app:claim-resolver');
-let slugid        = require('slugid');
-let assert        = require('assert');
-let _             = require('lodash');
-let data          = require('./data');
-let QueueService  = require('./queueservice');
-let events        = require('events');
+let debug = require('debug')('app:claim-resolver');
+let slugid = require('slugid');
+let assert = require('assert');
+let _ = require('lodash');
+let data = require('./data');
+let QueueService = require('./queueservice');
+let events = require('events');
 
 /** State that are considered resolved */
 const RESOLVED_STATES = [
@@ -55,18 +55,18 @@ class ClaimResolver {
     assert(typeof options.parallelism === 'number',
       'Expected parallelism to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
-    this.Task               = options.Task;
-    this.queueService       = options.queueService;
-    this.dependencyTracker  = options.dependencyTracker;
-    this.publisher          = options.publisher;
-    this.pollingDelay       = options.pollingDelay;
-    this.parallelism        = options.parallelism;
-    this.monitor            = options.monitor;
+    this.Task = options.Task;
+    this.queueService = options.queueService;
+    this.dependencyTracker = options.dependencyTracker;
+    this.publisher = options.publisher;
+    this.pollingDelay = options.pollingDelay;
+    this.parallelism = options.parallelism;
+    this.monitor = options.monitor;
 
     // Promise that polling is done
-    this.done               = null;
+    this.done = null;
     // Boolean that polling should stop
-    this.stopping           = false;
+    this.stopping = false;
   }
 
   /** Start polling */
@@ -141,11 +141,11 @@ class ClaimResolver {
     // cleared whenever a run is resolved, so this conditional load should
     // significantly reduce the amount of task entities that we load.
     var {entries: [task]} = await this.Task.query({
-      taskId:     taskId,     // Matches an exact entity
+      taskId: taskId, // Matches an exact entity
       takenUntil: takenUntil, // Load conditionally
     }, {
-      matchRow:   'exact',    // Validate that we match row key exactly
-      limit:      1,          // Load at most one entity, no need to search
+      matchRow: 'exact', // Validate that we match row key exactly
+      limit: 1, // Load at most one entity, no need to search
     });
 
     // If the task doesn't exist, we're done
@@ -193,9 +193,9 @@ class ClaimResolver {
       }
 
       // Update run
-      run.state           = 'exception';
-      run.reasonResolved  = 'claim-expired';
-      run.resolved        = new Date().toJSON();
+      run.state = 'exception';
+      run.reasonResolved = 'claim-expired';
+      run.resolved = new Date().toJSON();
 
       // Do **NOT** clear takenUntil on task, as this will prevent the message
       // from running again. In case something below fails.
@@ -214,9 +214,9 @@ class ClaimResolver {
       if (task.retriesLeft > 0) {
         task.retriesLeft -= 1;
         task.runs.push({
-          state:            'pending',
-          reasonCreated:    'retry',
-          scheduled:        new Date().toJSON(),
+          state: 'pending',
+          reasonCreated: 'retry',
+          scheduled: new Date().toJSON(),
         });
       }
     });
@@ -227,9 +227,9 @@ class ClaimResolver {
     // If run isn't resolved to exception with 'claim-expired', we had
     // concurrency and we're done.
     if (!run ||
-        task.runs.length - 1  > runId + 1 ||
-        run.state             !== 'exception' ||
-        run.reasonResolved    !== 'claim-expired') {
+        task.runs.length - 1 > runId + 1 ||
+        run.state !== 'exception' ||
+        run.reasonResolved !== 'claim-expired') {
       return remove();
     }
 
@@ -239,14 +239,14 @@ class ClaimResolver {
     // better publish messages about it
     var newRun = task.runs[runId + 1];
     if (newRun &&
-        task.runs.length - 1  === runId + 1 &&
-        newRun.state          === 'pending' &&
-        newRun.reasonCreated  === 'retry') {
+        task.runs.length - 1 === runId + 1 &&
+        newRun.state === 'pending' &&
+        newRun.reasonCreated === 'retry') {
       await Promise.all([
         this.queueService.putPendingMessage(task, runId + 1),
         this.publisher.taskPending({
-          status:         status,
-          runId:          runId + 1,
+          status: status,
+          runId: runId + 1,
         }, task.routes),
       ]);
     } else {
@@ -255,10 +255,10 @@ class ClaimResolver {
 
       // Publish message about task exception
       await this.publisher.taskException({
-        status:       status,
-        runId:        runId,
-        workerGroup:  run.workerGroup,
-        workerId:     run.workerId,
+        status: status,
+        runId: runId,
+        workerGroup: run.workerGroup,
+        workerId: run.workerId,
       }, task.routes);
     }
 

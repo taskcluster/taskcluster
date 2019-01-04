@@ -3,13 +3,13 @@ var assert = require('assert');
 var debug = require('debug')('taskcluster-lib-testing:FakeAuth');
 var nock = require('nock');
 var hawk = require('hawk');
-var libUrls  = require('taskcluster-lib-urls');
-var taskcluster  = require('taskcluster-client');
+var libUrls = require('taskcluster-lib-urls');
+var taskcluster = require('taskcluster-client');
 
 exports.start = function(clients, {rootUrl}={}) {
   assert(rootUrl, 'rootUrl option is required');
   const authPath = url.parse(libUrls.api(rootUrl, 'auth', 'v1', '/authenticate-hawk')).pathname;
-  nock(rootUrl, {encodedQueryParams:true, allowUnmocked: true})
+  nock(rootUrl, {encodedQueryParams: true, allowUnmocked: true})
     .persist()
     .filteringRequestBody(/.*/, '*')
     .post(authPath, '*')

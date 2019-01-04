@@ -12,9 +12,9 @@ suite('validate_test.js', () => {
     serviceName: 'queue',
     cases: [
       {
-        schema:   'v1/create-task-request.json#',
-        path:     'task.json',
-        success:  true,
+        schema: 'v1/create-task-request.json#',
+        path: 'task.json',
+        success: true,
       },
     ],
   });

@@ -8,8 +8,8 @@ const _ = require('lodash');
 const Ajv = require('ajv');
 
 const builder = new APIBuilder({
-  title:         'Hooks API Documentation',
-  description:   [
+  title: 'Hooks API Documentation',
+  description: [
     'Hooks are a mechanism for creating tasks in response to events.',
     '',
     'Hooks are identified with a `hookGroupId` and a `hookId`.',
@@ -43,13 +43,13 @@ module.exports = builder;
 
 /** Get hook groups **/
 builder.declare({
-  method:       'get',
-  route:        '/hooks',
-  name:         'listHookGroups',
-  idempotent:   true,
-  output:       'list-hook-groups-response.yml',
-  title:        'List hook groups',
-  stability:    'stable',
+  method: 'get',
+  route: '/hooks',
+  name: 'listHookGroups',
+  idempotent: true,
+  output: 'list-hook-groups-response.yml',
+  title: 'List hook groups',
+  stability: 'stable',
   description: [
     'This endpoint will return a list of all hook groups with at least one hook.',
   ].join('\n'),
@@ -65,13 +65,13 @@ builder.declare({
 
 /** Get hooks in a given group **/
 builder.declare({
-  method:       'get',
-  route:        '/hooks/:hookGroupId',
-  name:         'listHooks',
-  idempotent:   true,
-  output:       'list-hooks-response.yml',
-  title:        'List hooks in a given group',
-  stability:    'stable',
+  method: 'get',
+  route: '/hooks/:hookGroupId',
+  name: 'listHooks',
+  idempotent: true,
+  output: 'list-hooks-response.yml',
+  title: 'List hooks in a given group',
+  stability: 'stable',
   description: [
     'This endpoint will return a list of all the hook definitions within a',
     'given hook group.',
@@ -93,13 +93,13 @@ builder.declare({
 
 /** Get hook definition **/
 builder.declare({
-  method:       'get',
-  route:        '/hooks/:hookGroupId/:hookId',
-  name:         'hook',
-  idempotent:   true,
-  output:       'hook-definition.yml',
-  title:        'Get hook definition',
-  stability:    'stable',
+  method: 'get',
+  route: '/hooks/:hookGroupId/:hookId',
+  name: 'hook',
+  idempotent: true,
+  output: 'hook-definition.yml',
+  title: 'Get hook definition',
+  stability: 'stable',
   description: [
     'This endpoint will return the hook definition for the given `hookGroupId`',
     'and hookId.',
@@ -122,12 +122,12 @@ builder.declare({
 
 /** Get hook's current status */
 builder.declare({
-  method:       'get',
-  route:        '/hooks/:hookGroupId/:hookId/status',
-  name:         'getHookStatus',
-  output:       'hook-status.yml',
-  title:        'Get hook status',
-  stability:    'stable',
+  method: 'get',
+  route: '/hooks/:hookGroupId/:hookId/status',
+  name: 'getHookStatus',
+  output: 'hook-status.yml',
+  title: 'Get hook status',
+  stability: 'stable',
   description: [
     'This endpoint will return the current status of the hook.  This represents a',
     'snapshot in time and may vary from one call to the next.',
@@ -158,17 +158,17 @@ builder.declare({
 
 /** Create a hook **/
 builder.declare({
-  method:       'put',
-  route:        '/hooks/:hookGroupId/:hookId',
-  name:         'createHook',
-  idempotent:   true,
-  scopes:       {AllOf:
+  method: 'put',
+  route: '/hooks/:hookGroupId/:hookId',
+  name: 'createHook',
+  idempotent: true,
+  scopes: {AllOf:
     ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
   },
-  input:        'create-hook-request.yml',
-  output:       'hook-definition.yml',
-  title:        'Create a hook',
-  stability:    'stable',
+  input: 'create-hook-request.yml',
+  output: 'hook-definition.yml',
+  title: 'Create a hook',
+  stability: 'stable',
   description: [
     'This endpoint will create a new hook.',
     '',
@@ -224,11 +224,11 @@ builder.declare({
   try {
     const hook = await this.Hook.create(
       _.defaults({}, hookDef, {
-        bindings:           [], // TODO
-        triggerToken:       taskcluster.slugid(),
-        lastFire:           {result: 'no-fire'},
-        nextTaskId:         taskcluster.slugid(),
-        nextScheduledDate:  nextDate(hookDef.schedule),
+        bindings: [], // TODO
+        triggerToken: taskcluster.slugid(),
+        lastFire: {result: 'no-fire'},
+        nextTaskId: taskcluster.slugid(),
+        nextScheduledDate: nextDate(hookDef.schedule),
 
       }));
   } catch (err) {
@@ -250,17 +250,17 @@ builder.declare({
 
 /** Update hook definition**/
 builder.declare({
-  method:       'post',
-  route:        '/hooks/:hookGroupId/:hookId',
-  name:         'updateHook',
-  idempotent:   true,
-  scopes:       {AllOf:
+  method: 'post',
+  route: '/hooks/:hookGroupId/:hookId',
+  name: 'updateHook',
+  idempotent: true,
+  scopes: {AllOf:
     ['hooks:modify-hook:<hookGroupId>/<hookId>', 'assume:hook-id:<hookGroupId>/<hookId>'],
   },
-  input:        'create-hook-request.yml',
-  output:       'hook-definition.yml',
-  title:        'Update a hook',
-  stability:    'stable',
+  input: 'create-hook-request.yml',
+  output: 'hook-definition.yml',
+  title: 'Update a hook',
+  stability: 'stable',
   description: [
     'This endpoint will update an existing hook.  All fields except',
     '`hookGroupId` and `hookId` can be modified.',
@@ -317,12 +317,12 @@ builder.declare({
   }
   hookDef.bindings = _.defaultTo(hookDef.bindings, hook.bindings);
   await hook.modify((hook) => {
-    hook.metadata          = hookDef.metadata;
-    hook.bindings          = hookDef.bindings;
-    hook.task              = hookDef.task;
-    hook.triggerSchema     = hookDef.triggerSchema;
-    hook.schedule          = schedule;
-    hook.nextTaskId        = taskcluster.slugid();
+    hook.metadata = hookDef.metadata;
+    hook.bindings = hookDef.bindings;
+    hook.task = hookDef.task;
+    hook.triggerSchema = hookDef.triggerSchema;
+    hook.schedule = schedule;
+    hook.nextTaskId = taskcluster.slugid();
     hook.nextScheduledDate = nextDate(schedule);
   });
 
@@ -334,13 +334,13 @@ builder.declare({
 
 /** Delete hook definition**/
 builder.declare({
-  method:       'delete',
-  route:        '/hooks/:hookGroupId/:hookId',
-  name:         'removeHook',
-  idempotent:   true,
-  scopes:       'hooks:modify-hook:<hookGroupId>/<hookId>',
-  title:        'Delete a hook',
-  stability:    'stable',
+  method: 'delete',
+  route: '/hooks/:hookGroupId/:hookId',
+  name: 'removeHook',
+  idempotent: true,
+  scopes: 'hooks:modify-hook:<hookGroupId>/<hookId>',
+  title: 'Delete a hook',
+  stability: 'stable',
   description: [
     'This endpoint will remove a hook definition.',
   ].join('\n'),
@@ -359,14 +359,14 @@ builder.declare({
 
 /** Trigger a hook **/
 builder.declare({
-  method:       'post',
-  route:        '/hooks/:hookGroupId/:hookId/trigger',
-  name:         'triggerHook',
-  scopes:       'hooks:trigger-hook:<hookGroupId>/<hookId>',
-  input:        'trigger-hook.yml',
-  output:       'task-status.yml',
-  title:        'Trigger a hook',
-  stability:    'stable',
+  method: 'post',
+  route: '/hooks/:hookGroupId/:hookId/trigger',
+  name: 'triggerHook',
+  scopes: 'hooks:trigger-hook:<hookGroupId>/<hookId>',
+  input: 'trigger-hook.yml',
+  output: 'task-status.yml',
+  title: 'Trigger a hook',
+  stability: 'stable',
   description: [
     'This endpoint will trigger the creation of a task from a hook definition.',
     '',
@@ -376,7 +376,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const hookGroupId = req.params.hookGroupId;
-  const hookId      = req.params.hookId;
+  const hookId = req.params.hookId;
 
   await req.authorize({hookGroupId, hookId});
 
@@ -391,14 +391,14 @@ builder.declare({
 
 /** Get secret token for a trigger **/
 builder.declare({
-  method:       'get',
-  route:        '/hooks/:hookGroupId/:hookId/token',
-  name:         'getTriggerToken',
-  scopes:       'hooks:get-trigger-token:<hookGroupId>/<hookId>',
-  input:        undefined,
-  output:       'trigger-token-response.yml',
-  title:        'Get a trigger token',
-  stability:    'stable',
+  method: 'get',
+  route: '/hooks/:hookGroupId/:hookId/token',
+  name: 'getTriggerToken',
+  scopes: 'hooks:get-trigger-token:<hookGroupId>/<hookId>',
+  input: undefined,
+  output: 'trigger-token-response.yml',
+  title: 'Get a trigger token',
+  stability: 'stable',
   description: [
     'Retrieve a unique secret token for triggering the specified hook. This',
     'token can be deactivated with `resetTriggerToken`.',
@@ -421,14 +421,14 @@ builder.declare({
 
 /** Reset a trigger token **/
 builder.declare({
-  method:       'post',
-  route:        '/hooks/:hookGroupId/:hookId/token',
-  name:         'resetTriggerToken',
-  scopes:       'hooks:reset-trigger-token:<hookGroupId>/<hookId>',
-  input:        undefined,
-  output:       'trigger-token-response.yml',
-  title:        'Reset a trigger token',
-  stability:    'stable',
+  method: 'post',
+  route: '/hooks/:hookGroupId/:hookId/token',
+  name: 'resetTriggerToken',
+  scopes: 'hooks:reset-trigger-token:<hookGroupId>/<hookId>',
+  input: undefined,
+  output: 'trigger-token-response.yml',
+  title: 'Reset a trigger token',
+  stability: 'stable',
   description: [
     'Reset the token for triggering a given hook. This invalidates token that',
     'may have been issued via getTriggerToken with a new token.',
@@ -456,13 +456,13 @@ builder.declare({
 
 /** Trigger hook from a webhook with a token **/
 builder.declare({
-  method:       'post',
-  route:        '/hooks/:hookGroupId/:hookId/trigger/:token',
-  name:         'triggerHookWithToken',
-  input:        'trigger-hook.yml',
-  output:       'task-status.yml',
-  title:        'Trigger a hook with a token',
-  stability:    'stable',
+  method: 'post',
+  route: '/hooks/:hookGroupId/:hookId/trigger/:token',
+  name: 'triggerHookWithToken',
+  input: 'trigger-hook.yml',
+  output: 'task-status.yml',
+  title: 'Trigger a hook with a token',
+  stability: 'stable',
   description: [
     'This endpoint triggers a defined hook with a valid token.',
     '',
@@ -561,13 +561,13 @@ const triggerHookCommon = async function({req, res, hook, payload, firedBy}) {
  * Get information about recent fires of a hook
 */
 builder.declare({
-  method:       'get',
-  route:        '/hooks/:hookGroupId/:hookId/last-fires',
-  name:         'listLastFires',
-  idempotent:   true,
-  output:       'list-lastFires-response.yml',
-  title:        'Get information about recent hook fires',
-  stability:    'experimental',
+  method: 'get',
+  route: '/hooks/:hookGroupId/:hookId/last-fires',
+  name: 'listLastFires',
+  idempotent: true,
+  output: 'list-lastFires-response.yml',
+  title: 'Get information about recent hook fires',
+  stability: 'experimental',
   description: [
     'This endpoint will return information about the the last few times this hook has been',
     'fired, including whether the hook was fired successfully or not',
@@ -576,7 +576,7 @@ builder.declare({
   let lastFires = [], item;
   await this.LastFire.query({
     hookGroupId: req.params.hookGroupId,
-    hookId:      req.params.hookId,
+    hookId: req.params.hookId,
   }, {handler: async (lastFire) => {
     item = await lastFire.definition();
     item.taskCreateTime = item.taskCreateTime.toJSON();

@@ -1,7 +1,7 @@
 suite('config', function() {
-  var config  = require('../');
-  var path    = require('path');
-  var assume  = require('assume');
+  var config = require('../');
+  var path = require('path');
+  var assume = require('assume');
 
   test('load yaml', () => {
     let cfg = config({
@@ -20,7 +20,7 @@ suite('config', function() {
       files: [
         path.join(__dirname, 'test-profile.yml'),
       ],
-      profile:  'danish',
+      profile: 'danish',
     });
 
     assume(cfg).deep.equals({
@@ -46,27 +46,27 @@ suite('config', function() {
         path.join(__dirname, 'test-env.yml'),
       ],
       env: {
-        ENV_VARIABLE:     'env-var-value',
-        ENV_NUMBER:       '32.4',
-        ENV_DEFINED:      'true',
-        ENV_TRUE:         'true',
-        ENV_FALSE:        'false',
-        ENV_JSON:         '{"test": 42}',
-        ENV_LIST:         'abc def "qouted string" \'\'',
+        ENV_VARIABLE: 'env-var-value',
+        ENV_NUMBER: '32.4',
+        ENV_DEFINED: 'true',
+        ENV_TRUE: 'true',
+        ENV_FALSE: 'false',
+        ENV_JSON: '{"test": 42}',
+        ENV_LIST: 'abc def "qouted string" \'\'',
       },
     });
 
     assume(cfg).deep.equals({
-      text:       'env-var-value',
-      text2:      'env-var-value',
-      number:     32.4,
-      unsetflag:  false,
-      setflag:    true,
-      soTrue:     true,
-      unTrue:     false,
-      notThere:   undefined,
-      json:       {test: 42},
-      list:       ['abc', 'def', 'qouted string', ''],
+      text: 'env-var-value',
+      text2: 'env-var-value',
+      number: 32.4,
+      unsetflag: false,
+      setflag: true,
+      soTrue: true,
+      unTrue: false,
+      notThere: undefined,
+      json: {test: 42},
+      list: ['abc', 'def', 'qouted string', ''],
     });
   });
 
@@ -100,27 +100,27 @@ suite('config', function() {
         path.join(__dirname, 'test-env.yml'),
       ],
       env: {
-        ENV_VARIABLE:     'env-var-value',
-        ENV_NUMBER:       '32.4',
-        ENV_DEFINED:      'true',
-        ENV_TRUE:         'true',
-        ENV_FALSE:        'false',
-        ENV_JSON:         '{"test": 42}',
-        ENV_LIST:         'abc def "qouted string" \'\'',
+        ENV_VARIABLE: 'env-var-value',
+        ENV_NUMBER: '32.4',
+        ENV_DEFINED: 'true',
+        ENV_TRUE: 'true',
+        ENV_FALSE: 'false',
+        ENV_JSON: '{"test": 42}',
+        ENV_LIST: 'abc def "qouted string" \'\'',
       },
     });
 
     assume(cfg).deep.equals({
-      text:       'env-var-value',
-      text2:      'env-var-value',
-      number:     32.4,
-      unsetflag:  false,
-      setflag:    true,
-      soTrue:     true,
-      unTrue:     false,
-      notThere:   undefined,
-      json:       {test: 42},
-      list:       ['abc', 'def', 'qouted string', ''],
+      text: 'env-var-value',
+      text2: 'env-var-value',
+      number: 32.4,
+      unsetflag: false,
+      setflag: true,
+      soTrue: true,
+      unTrue: false,
+      notThere: undefined,
+      json: {test: 42},
+      list: ['abc', 'def', 'qouted string', ''],
     });
   });
 
@@ -131,26 +131,26 @@ suite('config', function() {
         path.join(__dirname, 'test-env.yml'),
       ],
       env: {
-        ENV_NUMBER:       '32.4',
-        ENV_DEFINED:      'true',
-        ENV_TRUE:         'true',
-        ENV_FALSE:        'false',
-        ENV_JSON:         '{"test": 42}',
-        ENV_LIST:         'abc def "qouted string" \'\'',
+        ENV_NUMBER: '32.4',
+        ENV_DEFINED: 'true',
+        ENV_TRUE: 'true',
+        ENV_FALSE: 'false',
+        ENV_JSON: '{"test": 42}',
+        ENV_LIST: 'abc def "qouted string" \'\'',
       },
     });
 
     assume(cfg).deep.equals({
-      text:       ['Hello', 'World'],
-      text2:      undefined,
-      number:     32.4,
-      unsetflag:  false,
-      setflag:    true,
-      soTrue:     true,
-      unTrue:     false,
-      notThere:   undefined,
-      json:       {test: 42},
-      list:       ['abc', 'def', 'qouted string', ''],
+      text: ['Hello', 'World'],
+      text2: undefined,
+      number: 32.4,
+      unsetflag: false,
+      setflag: true,
+      soTrue: true,
+      unTrue: false,
+      notThere: undefined,
+      json: {test: 42},
+      list: ['abc', 'def', 'qouted string', ''],
     });
   });
 

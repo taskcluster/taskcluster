@@ -142,7 +142,7 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
             template = extra.template ? jsone(extra.template, {task, status}) : template;
           }
           return this.notifier.email({
-            address:  _.join(_.slice(route, 2, route.length - 1), '.'),
+            address: _.join(_.slice(route, 2, route.length - 1), '.'),
             content,
             subject,
             link,

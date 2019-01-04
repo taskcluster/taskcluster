@@ -1,12 +1,12 @@
-const _               = require('lodash');
-const request         = require('superagent-hawk')(require('superagent'));
-const assert          = require('assert');
-const Promise         = require('promise');
-const SchemaSet       = require('taskcluster-lib-validate');
-const makeApp         = require('taskcluster-lib-app');
-const APIBuilder      = require('../');
-const testing         = require('taskcluster-lib-testing');
-const path            = require('path');
+const _ = require('lodash');
+const request = require('superagent-hawk')(require('superagent'));
+const assert = require('assert');
+const Promise = require('promise');
+const SchemaSet = require('taskcluster-lib-validate');
+const makeApp = require('taskcluster-lib-app');
+const APIBuilder = require('../');
+const testing = require('taskcluster-lib-testing');
+const path = require('path');
 
 suite('api/auth', function() {
   // Reference for test api server
@@ -16,10 +16,10 @@ suite('api/auth', function() {
 
   // Create test api
   const builder = new APIBuilder({
-    title:        'Test Api',
-    description:  'Another test api',
-    serviceName:  'test',
-    apiVersion:   'v1',
+    title: 'Test Api',
+    description: 'Another test api',
+    serviceName: 'test',
+    apiVersion: 'v1',
   });
 
   // Create a mock authentication server
@@ -44,9 +44,9 @@ suite('api/auth', function() {
 
     // Create application
     _apiServer = await makeApp({
-      port:       23526,
-      env:        'development',
-      forceSSL:   false,
+      port: 23526,
+      env: 'development',
+      forceSSL: false,
       trustProxy: false,
       apis: [api],
     });
@@ -106,7 +106,7 @@ suite('api/auth', function() {
 
   testEndpoint({
     method: 'get',
-    route:  '/test-deprecated-satisfies',
+    route: '/test-deprecated-satisfies',
     name: 'testDeprecatedSatisfies',
     handler: (req, res) => {
       if (req.satisfies([])) {
@@ -125,7 +125,7 @@ suite('api/auth', function() {
 
   testEndpoint({
     method: 'get',
-    route:  '/test-static-scope',
+    route: '/test-static-scope',
     name: 'testStaticScope',
     scopes: {AllOf: ['service:magic']},
     handler: (req, res) => {
@@ -154,7 +154,7 @@ suite('api/auth', function() {
         id: 'admin',
         tester: (auth, url) => request.get(url).hawk(auth, {
           ext: new Buffer(JSON.stringify({
-            authorizedScopes:    ['service:magic'],
+            authorizedScopes: ['service:magic'],
           })).toString('base64'),
         }),
       },
@@ -163,7 +163,7 @@ suite('api/auth', function() {
         id: 'admin',
         tester: (auth, url) => request.get(url).hawk(auth, {
           ext: new Buffer(JSON.stringify({
-            authorizedScopes:    ['service:ma*'],
+            authorizedScopes: ['service:ma*'],
           })).toString('base64'),
         }),
       },
@@ -173,7 +173,7 @@ suite('api/auth', function() {
         desiredStatus: 403,
         tester: (auth, url) => request.get(url).hawk(auth, {
           ext: new Buffer(JSON.stringify({
-            authorizedScopes:    ['some-irrelevant-scope'],
+            authorizedScopes: ['some-irrelevant-scope'],
           })).toString('base64'),
         }),
       },
@@ -216,7 +216,7 @@ suite('api/auth', function() {
     scopes: {AllOf: ['service:<param>']},
     handler: async (req, res) => {
       await req.authorize({
-        param:      'myfolder/resource',
+        param: 'myfolder/resource',
       });
       res.status(200).json('OK');
     },
@@ -242,10 +242,10 @@ suite('api/auth', function() {
     scopes: {AllOf: ['service:<param>']},
     handler: async (req, res) => {
       await req.authorize({
-        param:      'myfolder/resource',
+        param: 'myfolder/resource',
       });
       await req.authorize({
-        param:      'myfolder/other-resource',
+        param: 'myfolder/other-resource',
       });
       res.status(200).json('OK');
     },
@@ -319,7 +319,7 @@ suite('api/auth', function() {
         clientId: await req.clientId(),
       });
     },
-    tests : [
+    tests: [
       {
         label: 'client has sufficient scopes',
         id: 'admin',
@@ -403,7 +403,7 @@ suite('api/auth', function() {
           })
           .hawk(auth, {
             ext: new Buffer(JSON.stringify({
-              authorizedScopes:    ['got-all/*', 'got-only/this'],
+              authorizedScopes: ['got-all/*', 'got-only/this'],
             })).toString('base64'),
           }),
       },
@@ -425,7 +425,7 @@ suite('api/auth', function() {
           })
           .hawk(auth, {
             ext: new Buffer(JSON.stringify({
-              authorizedScopes:    ['got-all/*', 'got-only/this'],
+              authorizedScopes: ['got-all/*', 'got-only/this'],
             })).toString('base64'),
           }),
       },
@@ -442,7 +442,7 @@ suite('api/auth', function() {
           })
           .hawk(auth, {
             ext: new Buffer(JSON.stringify({
-              authorizedScopes:    ['got-only/this'],
+              authorizedScopes: ['got-only/this'],
             })).toString('base64'),
           }),
       },
@@ -460,10 +460,10 @@ suite('api/auth', function() {
     ]},
     handler: async (req, res) => {
       await req.authorize({
-        provisionerId:    req.params.provisionerId,
-        workerType:       req.params.workerType,
-        scopes:           req.body.scopes,
-        routes:           req.body.routes,
+        provisionerId: req.params.provisionerId,
+        workerType: req.params.workerType,
+        scopes: req.body.scopes,
+        routes: req.body.routes,
       });
       return res.status(200).json('OK');
     },
@@ -507,7 +507,7 @@ suite('api/auth', function() {
           })
           .hawk(auth, {
             ext: new Buffer(JSON.stringify({
-              authorizedScopes:    ['nothing:useful'],
+              authorizedScopes: ['nothing:useful'],
             })).toString('base64'),
           }),
       },
@@ -530,7 +530,7 @@ suite('api/auth', function() {
           })
           .hawk(auth, {
             ext: new Buffer(JSON.stringify({
-              authorizedScopes:    ['nothing:useful'],
+              authorizedScopes: ['nothing:useful'],
             })).toString('base64'),
           }),
       },
@@ -592,7 +592,7 @@ suite('api/auth', function() {
           })
           .hawk(auth, {
             ext: new Buffer(JSON.stringify({
-              authorizedScopes:    ['got-only/this'],
+              authorizedScopes: ['got-only/this'],
             })).toString('base64'),
           }),
       },
@@ -622,7 +622,7 @@ suite('api/auth', function() {
           })
           .hawk(auth, {
             ext: new Buffer(JSON.stringify({
-              authorizedScopes:    ['got-only/this'],
+              authorizedScopes: ['got-only/this'],
             })).toString('base64'),
           }),
       },

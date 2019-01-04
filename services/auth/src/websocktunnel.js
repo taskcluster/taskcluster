@@ -4,14 +4,14 @@ const jwt = require('jsonwebtoken');
 const taskcluster = require('taskcluster-client');
 
 builder.declare({
-  method:     'get',
-  route:      '/websocktunnel',
-  name:       'websocktunnelToken',
-  input:      undefined,
-  output:     'websocktunnel-token-response.yml',
-  stability:  'stable',
-  scopes:     'auth:websocktunnel',
-  title:      'Get Token for Websocktunnel Proxy',
+  method: 'get',
+  route: '/websocktunnel',
+  name: 'websocktunnelToken',
+  input: undefined,
+  output: 'websocktunnel-token-response.yml',
+  stability: 'stable',
+  scopes: 'auth:websocktunnel',
+  title: 'Get Token for Websocktunnel Proxy',
   description: [
     'Get temporary `token` and `id` for connecting to websocktunnel',
     'The token is valid for 96 hours, clients should refresh after expiration.',

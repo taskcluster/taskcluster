@@ -7,7 +7,7 @@ const Entity = require('azure-entities');
  *
  */
 let builder = new APIBuilder({
-  title:        'TaskCluster Secrets API Documentation',
+  title: 'TaskCluster Secrets API Documentation',
   description: [
     'The secrets service provides a simple key/value store for small bits of secret',
     'data.  Access is limited by scopes, so values can be considered secret from',
@@ -31,13 +31,13 @@ let cleanPayload = payload => {
 };
 
 builder.declare({
-  method:      'put',
-  route:       '/secret/:name(*)',
-  name:        'set',
-  input:       'secret.yml',
-  scopes:      'secrets:set:<name>',
-  title:       'Set Secret',
-  stability:    'stable',
+  method: 'put',
+  route: '/secret/:name(*)',
+  name: 'set',
+  input: 'secret.yml',
+  scopes: 'secrets:set:<name>',
+  title: 'Set Secret',
+  stability: 'stable',
   cleanPayload,
   description: [
     'Set the secret associated with some key.  If the secret already exists, it is',
@@ -48,9 +48,9 @@ builder.declare({
   let {secret, expires} = req.body;
   try {
     await this.Secret.create({
-      name:       name,
-      secret:     secret,
-      expires:    new Date(expires),
+      name: name,
+      secret: secret,
+      expires: new Date(expires),
     });
   } catch (e) {
     // If the entity exists, update it
@@ -68,12 +68,12 @@ builder.declare({
 });
 
 builder.declare({
-  method:      'delete',
-  route:       '/secret/:name(*)',
-  name:        'remove',
-  scopes:      'secrets:set:<name>',
-  title:       'Delete Secret',
-  stability:    'stable',
+  method: 'delete',
+  route: '/secret/:name(*)',
+  name: 'remove',
+  scopes: 'secrets:set:<name>',
+  title: 'Delete Secret',
+  stability: 'stable',
   description: [
     'Delete the secret associated with some key.',
   ].join('\n'),
@@ -92,13 +92,13 @@ builder.declare({
 });
 
 builder.declare({
-  method:      'get',
-  route:       '/secret/:name(*)',
-  name:        'get',
-  output:      'secret.yml',
-  scopes:      'secrets:get:<name>',
-  title:       'Read Secret',
-  stability:    'stable',
+  method: 'get',
+  route: '/secret/:name(*)',
+  name: 'get',
+  output: 'secret.yml',
+  scopes: 'secrets:get:<name>',
+  title: 'Read Secret',
+  stability: 'stable',
   description: [
     'Read the secret associated with some key.  If the secret has recently',
     'expired, the response code 410 is returned.  If the caller lacks the',
@@ -125,12 +125,12 @@ builder.declare({
 });
 
 builder.declare({
-  method:      'get',
-  route:       '/secrets',
-  name:        'list',
-  output:      'secret-list.yml',
-  title:       'List Secrets',
-  stability:   'stable',
+  method: 'get',
+  route: '/secrets',
+  name: 'list',
+  output: 'secret-list.yml',
+  title: 'List Secrets',
+  stability: 'stable',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,

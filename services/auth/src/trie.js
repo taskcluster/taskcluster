@@ -18,12 +18,12 @@ const withParam = (scopes, param) => {
 /** Node in a trie */
 class Node {
   constructor(end = [], enter = [], paramed = [], kleeneOnly = []) {
-    this.end = end;               // scopes given if input ends at this node
-    this.enter = enter;           // scopes given if input traverses through this node
-    this.paramed = paramed;       // scopes given if input traverses through this node with parameter
+    this.end = end; // scopes given if input ends at this node
+    this.enter = enter; // scopes given if input traverses through this node
+    this.paramed = paramed; // scopes given if input traverses through this node with parameter
     this.kleeneOnly = kleeneOnly; // scopes given in addition to end, enter, paramed if input ends with kleene
-    this._kleeneCache = null;     // scopes given if input ends with kleene at this node (lazily computed)
-    this.children = new Map();    // map from next character to child node
+    this._kleeneCache = null; // scopes given if input ends with kleene at this node (lazily computed)
+    this.children = new Map(); // map from next character to child node
   }
 
   dump() {
@@ -249,8 +249,8 @@ const dependencyOrdering = (rules = []) => {
   rules.forEach((rule, index) => {
     // We use the index of a rule to indicate that it have been matched
     trie.merge(withoutKleene(rule.pattern), rule.pattern.endsWith('*')
-      ? new Node([], [`${index}`])  // if pattern ends with kleene rule matches if node is entered
-      : new Node([`${index}`], [])  // if pattern ends without kleene input must end in node
+      ? new Node([], [`${index}`]) // if pattern ends with kleene rule matches if node is entered
+      : new Node([`${index}`], []) // if pattern ends without kleene input must end in node
     );
   });
   // To find dependencies we assume the worst case that a rule is parameterized
@@ -272,7 +272,7 @@ const dependencyOrdering = (rules = []) => {
   // However, this becomes rather slow as the number of rules increase. In fact
   // it would already dominate trie build time.
 
-  const ordering = [];    // Final topological ordering
+  const ordering = []; // Final topological ordering
   const seen = new Set(); // rules we've seen (ie. this is the stack)
   const done = new Set(); // rules we've already output to the ordering
 

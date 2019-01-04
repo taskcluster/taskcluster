@@ -791,10 +791,10 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       deadline: taskcluster.fromNowJSON('30 min'),
       payload: {},
       metadata: {
-        name:           'Unit testing task',
-        description:    'Task created during unit tests',
-        owner:          'haali@mozilla.com',
-        source:         'https://github.com/taskcluster/taskcluster-queue',
+        name: 'Unit testing task',
+        description: 'Task created during unit tests',
+        owner: 'haali@mozilla.com',
+        source: 'https://github.com/taskcluster/taskcluster-queue',
       },
     });
 
@@ -832,10 +832,10 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
         deadline: taskcluster.fromNowJSON('30 min'),
         payload: {},
         metadata: {
-          name:           'Unit testing task',
-          description:    'Task created during unit tests',
-          owner:          'haali@mozilla.com',
-          source:         'https://github.com/taskcluster/taskcluster-queue',
+          name: 'Unit testing task',
+          description: 'Task created during unit tests',
+          owner: 'haali@mozilla.com',
+          source: 'https://github.com/taskcluster/taskcluster-queue',
         },
       });
     }

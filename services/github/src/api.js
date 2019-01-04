@@ -154,7 +154,7 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
 /** API end-point for version v1/
  */
 let builder = new APIBuilder({
-  title:        'Taskcluster GitHub API Documentation',
+  title: 'Taskcluster GitHub API Documentation',
   description: [
     'The github service is responsible for creating tasks in reposnse',
     'to GitHub events, and posting results to the GitHub UI.',
@@ -178,11 +178,11 @@ module.exports = builder;
 
 /** Define tasks */
 builder.declare({
-  method:     'post',
-  route:      '/github',
-  name:       'githubWebHookConsumer',
-  title:      'Consume GitHub WebHook',
-  stability:  'experimental',
+  method: 'post',
+  route: '/github',
+  name: 'githubWebHookConsumer',
+  title: 'Consume GitHub WebHook',
+  stability: 'experimental',
   description: [
     'Capture a GitHub event and publish it via pulse, if it\'s a push,',
     'release or pull request.',
@@ -302,12 +302,12 @@ builder.declare({
 });
 
 builder.declare({
-  method:     'get',
-  route:      '/builds',
-  name:       'builds',
-  title:      'List of Builds',
-  stability:  'experimental',
-  output:     'build-list.yml',
+  method: 'get',
+  route: '/builds',
+  name: 'builds',
+  title: 'List of Builds',
+  stability: 'experimental',
+  output: 'build-list.yml',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
@@ -359,7 +359,7 @@ builder.declare({
 
   // This has nothing to do with user input, so we should be safe
   let fileConfig = {
-    root : __dirname + '/../assets/',
+    root: __dirname + '/../assets/',
     headers: {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
     },

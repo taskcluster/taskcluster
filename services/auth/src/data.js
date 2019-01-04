@@ -5,25 +5,25 @@ const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 
 const Client = Entity.configure({
-  version:          1,
-  partitionKey:     Entity.keys.StringKey('clientId'),
-  rowKey:           Entity.keys.ConstantKey('client'),
-  signEntities:     true,
+  version: 1,
+  partitionKey: Entity.keys.StringKey('clientId'),
+  rowKey: Entity.keys.ConstantKey('client'),
+  signEntities: true,
   properties: {
-    clientId:       Entity.types.String,
-    description:    Entity.types.Text,
-    accessToken:    Entity.types.EncryptedText,
-    expires:        Entity.types.Date,
-    details:        Entity.types.JSON,
+    clientId: Entity.types.String,
+    description: Entity.types.Text,
+    accessToken: Entity.types.EncryptedText,
+    expires: Entity.types.Date,
+    details: Entity.types.JSON,
   },
 }).configure({
-  version:          2,
-  signEntities:     true,
+  version: 2,
+  signEntities: true,
   properties: {
-    clientId:       Entity.types.String,
-    description:    Entity.types.Text,
-    accessToken:    Entity.types.EncryptedText,
-    expires:        Entity.types.Date,
+    clientId: Entity.types.String,
+    description: Entity.types.Text,
+    accessToken: Entity.types.EncryptedText,
+    expires: Entity.types.Date,
     /**
      * Details object with properties:
      * - created          // Time when client was created
@@ -32,9 +32,9 @@ const Client = Entity.configure({
      * - lastRotated      // Last time accessToken was reset
      * (more properties may be added in the future)
      */
-    details:        Entity.types.JSON,
-    scopes:         Entity.types.JSON,  // new in v2
-    disabled:       Entity.types.Number, // new in v2
+    details: Entity.types.JSON,
+    scopes: Entity.types.JSON, // new in v2
+    disabled: Entity.types.Number, // new in v2
   },
   migrate(item) {
     item.scopes = [];
@@ -42,13 +42,13 @@ const Client = Entity.configure({
     return item;
   },
 }).configure({
-  version:          3,
-  signEntities:     true,
+  version: 3,
+  signEntities: true,
   properties: {
-    clientId:       Entity.types.String,
-    description:    Entity.types.Text,
-    accessToken:    Entity.types.EncryptedText,
-    expires:        Entity.types.Date,
+    clientId: Entity.types.String,
+    description: Entity.types.Text,
+    accessToken: Entity.types.EncryptedText,
+    expires: Entity.types.Date,
     /**
      * Details object with properties:
      * - created            // Time when client was created
@@ -59,13 +59,13 @@ const Client = Entity.configure({
      *                      // (new in v3)
      * (more properties may be added in the future)
      */
-    details:        Entity.types.Schema({
+    details: Entity.types.Schema({
       type: 'object',
       properties: {
-        created:            {type: 'string', format: 'date-time'},
-        lastModified:       {type: 'string', format: 'date-time'},
-        lastDateUsed:       {type: 'string', format: 'date-time'},
-        lastRotated:        {type: 'string', format: 'date-time'},
+        created: {type: 'string', format: 'date-time'},
+        lastModified: {type: 'string', format: 'date-time'},
+        lastDateUsed: {type: 'string', format: 'date-time'},
+        lastRotated: {type: 'string', format: 'date-time'},
         deleteOnExpiration: {type: 'boolean'},
       },
       required: [
@@ -73,8 +73,8 @@ const Client = Entity.configure({
         'deleteOnExpiration',
       ],
     }),
-    scopes:         Entity.types.JSON,
-    disabled:       Entity.types.Number,
+    scopes: Entity.types.JSON,
+    disabled: Entity.types.Number,
   },
   migrate(item) {
     item.details = _.defaults({}, item.details, {deleteOnExpiration: false});
@@ -90,17 +90,17 @@ Client.prototype.expandedScopes = function(resolver) {
 /** Get JSON representation of client */
 Client.prototype.json = function(resolver) {
   return {
-    clientId:           this.clientId,
-    description:        this.description,
-    expires:            this.expires.toJSON(),
-    created:            this.details.created,
-    lastModified:       this.details.lastModified,
-    lastDateUsed:       this.details.lastDateUsed,
-    lastRotated:        this.details.lastRotated,
+    clientId: this.clientId,
+    description: this.description,
+    expires: this.expires.toJSON(),
+    created: this.details.created,
+    lastModified: this.details.lastModified,
+    lastDateUsed: this.details.lastDateUsed,
+    lastRotated: this.details.lastRotated,
     deleteOnExpiration: this.details.deleteOnExpiration,
-    scopes:             this.scopes,
-    expandedScopes:     this.expandedScopes(resolver),
-    disabled:           !!this.disabled,
+    scopes: this.scopes,
+    expandedScopes: this.expandedScopes(resolver),
+    disabled: !!this.disabled,
   };
 };
 
@@ -165,17 +165,17 @@ Client.syncStaticClients = async function(clients = []) {
   // Create new clients
   await Promise.all(newClients.map(target => {
     return this.create({
-      clientId:     target.clientId,
-      description:  target.description + descriptionSuffix,
-      accessToken:  target.accessToken,
-      expires:      taskcluster.fromNow('1000 year'),
-      scopes:       target.scopes,
-      disabled:     0,
+      clientId: target.clientId,
+      description: target.description + descriptionSuffix,
+      accessToken: target.accessToken,
+      expires: taskcluster.fromNow('1000 year'),
+      scopes: target.scopes,
+      disabled: 0,
       details: {
-        created:      new Date().toJSON(),
+        created: new Date().toJSON(),
         lastModified: new Date().toJSON(),
         lastDateUsed: new Date().toJSON(),
-        lastRotated:  new Date().toJSON(),
+        lastRotated: new Date().toJSON(),
         deleteOnExpiration: false,
       },
     }, true);

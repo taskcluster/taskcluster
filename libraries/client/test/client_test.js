@@ -1,11 +1,11 @@
 suite('client requests/responses', function() {
-  var taskcluster     = require('../');
-  var assert          = require('assert');
-  var path            = require('path');
-  var debug           = require('debug')('test:client');
-  var _               = require('lodash');
-  var nock            = require('nock');
-  var _monitor        = require('taskcluster-lib-monitor');
+  var taskcluster = require('../');
+  var assert = require('assert');
+  var path = require('path');
+  var debug = require('debug')('test:client');
+  var _ = require('lodash');
+  var nock = require('nock');
+  var _monitor = require('taskcluster-lib-monitor');
 
   // This suite exercises the request and response functionality of
   // the client against a totally fake service defined by this reference
@@ -420,8 +420,8 @@ suite('client requests/responses', function() {
         });
         let client = new Fake({
           credentials: {
-            clientId:     'tester',
-            accessToken:  'secret',
+            clientId: 'tester',
+            accessToken: 'secret',
           },
           monitor,
           rootUrl,
@@ -441,8 +441,8 @@ suite('client requests/responses', function() {
         });
         let client = new Fake({
           credentials: {
-            clientId:     'tester',
-            accessToken:  'wrong',
+            clientId: 'tester',
+            accessToken: 'wrong',
           },
           monitor,
           rootUrl,

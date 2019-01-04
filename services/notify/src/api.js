@@ -17,12 +17,12 @@ const builder = new APIBuilder({
 module.exports = builder;
 
 builder.declare({
-  method:       'post',
-  route:        '/email',
-  name:         'email',
-  scopes:       'notify:email:<address>',
-  input:        'email-request.yml',
-  title:        'Send an Email',
+  method: 'post',
+  route: '/email',
+  name: 'email',
+  scopes: 'notify:email:<address>',
+  input: 'email-request.yml',
+  title: 'Send an Email',
   description: [
     'Send an email to `address`. The content is markdown and will be rendered',
     'to HTML, but both the HTML and raw markdown text will be sent in the',
@@ -37,12 +37,12 @@ builder.declare({
 });
 
 builder.declare({
-  method:       'post',
-  route:        '/pulse',
-  name:         'pulse',
-  scopes:       'notify:pulse:<routingKey>',
-  input:        'pulse-request.yml',
-  title:        'Publish a Pulse Message',
+  method: 'post',
+  route: '/pulse',
+  name: 'pulse',
+  scopes: 'notify:pulse:<routingKey>',
+  input: 'pulse-request.yml',
+  title: 'Publish a Pulse Message',
   description: [
     'Publish a message on pulse with the given `routingKey`.',
   ].join('\n'),
@@ -54,16 +54,16 @@ builder.declare({
 });
 
 builder.declare({
-  method:       'post',
-  route:        '/irc',
-  name:         'irc',
-  scopes:       {
-    if:   'channelRequest',
+  method: 'post',
+  route: '/irc',
+  name: 'irc',
+  scopes: {
+    if: 'channelRequest',
     then: 'notify:irc-channel:<channel>',
     else: 'notify:irc-user:<user>',
   },
-  input:        'irc-request.yml',
-  title:        'Post IRC Message',
+  input: 'irc-request.yml',
+  title: 'Post IRC Message',
   description: [
     'Post a message on IRC to a specific channel or user, or a specific user',
     'on a specific channel.',

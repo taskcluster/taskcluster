@@ -118,8 +118,8 @@ exports.withServer = (mock, skipping) => {
 
     exports.apiClient = new exports.PurgeCacheClient({
       credentials: {
-        clientId:       'test-client',
-        accessToken:    'doesnt-matter',
+        clientId: 'test-client',
+        accessToken: 'doesnt-matter',
       },
       rootUrl: exports.rootUrl,
     });

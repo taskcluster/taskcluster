@@ -1,5 +1,5 @@
 var parseTime = require('./parsetime');
-var slugid    = require('slugid');
+var slugid = require('slugid');
 
 /**
  * Create a Date object offset = '1d 2h 3min' into the future
@@ -23,11 +23,11 @@ var fromNow = function(offset, reference) {
     reference.getTime()
     //    + offset.years * 365 * 24 * 60 * 60 * 1000
     //   + offset.month  * 30 * 24 * 60 * 60 * 1000
-    + offset.weeks   * 7 * 24 * 60 * 60 * 1000
-    + offset.days        * 24 * 60 * 60 * 1000
-    + offset.hours            * 60 * 60 * 1000
-    + offset.minutes               * 60 * 1000
-    + offset.seconds                    * 1000
+    + offset.weeks * 7 * 24 * 60 * 60 * 1000
+    + offset.days * 24 * 60 * 60 * 1000
+    + offset.hours * 60 * 60 * 1000
+    + offset.minutes * 60 * 1000
+    + offset.seconds * 1000
   );
   return retval;
 };

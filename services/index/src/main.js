@@ -37,12 +37,12 @@ var load = loader({
   Namespace: {
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => data.Namespace.setup({
-      tableName:    cfg.app.namespaceTableName,
-      credentials:  sasCredentials({
-        accountId:  cfg.azure.accountId,
-        tableName:  cfg.app.namespaceTableName,
-        rootUrl:    cfg.taskcluster.rootUrl,
-        credentials:cfg.taskcluster.credentials,  
+      tableName: cfg.app.namespaceTableName,
+      credentials: sasCredentials({
+        accountId: cfg.azure.accountId,
+        tableName: cfg.app.namespaceTableName,
+        rootUrl: cfg.taskcluster.rootUrl,
+        credentials: cfg.taskcluster.credentials,  
       }),
     }),
   },
@@ -114,19 +114,19 @@ var load = loader({
         IndexedTask,  
         Namespace,
       },
-      rootUrl:          cfg.taskcluster.rootUrl,
-      publish:          cfg.app.publishMetaData,
-      aws:              cfg.aws,
+      rootUrl: cfg.taskcluster.rootUrl,
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
       schemaset,
-      monitor:          monitor.prefix('api'),
+      monitor: monitor.prefix('api'),
     }),
   },
 
   server: {
     requires: ['cfg', 'api', 'docs'],
     setup: async ({cfg, api, docs}) => App({
-      port:  cfg.server.port,
-      env:   cfg.server.env,
+      port: cfg.server.port,
+      env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,
       trustProxy: cfg.server.trustProxy,
       apis: [api],
@@ -148,15 +148,15 @@ var load = loader({
     requires: ['IndexedTask', 'Namespace', 'queue', 'queueEvents', 'cfg', 'monitor', 'pulseClient'],
     setup: async ({IndexedTask, Namespace, queue, queueEvents, cfg, monitor, pulseClient}) => {
       var handlers = new Handlers({
-        IndexedTask:        IndexedTask,
-        Namespace:          Namespace,
-        queue:              queue,
-        queueEvents:        queueEvents,
-        credentials:        cfg.pulse,
-        queueName:          cfg.app.listenerQueueName,
-        routePrefix:        cfg.app.routePrefix,
-        monitor:            monitor.prefix('handlers'),
-        pulseClient:        pulseClient,
+        IndexedTask: IndexedTask,
+        Namespace: Namespace,
+        queue: queue,
+        queueEvents: queueEvents,
+        credentials: cfg.pulse,
+        queueName: cfg.app.listenerQueueName,
+        routePrefix: cfg.app.routePrefix,
+        monitor: monitor.prefix('handlers'),
+        pulseClient: pulseClient,
       });
 
       // Start listening for events and handle them

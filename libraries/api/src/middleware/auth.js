@@ -131,8 +131,8 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     if (req.headers && req.headers.authorization &&
         req.query && req.query.bewit) {
       return Promise.resolve({
-        status:   'auth-failed',
-        message:  'Cannot use two authentication schemes at once ' +
+        status: 'auth-failed',
+        message: 'Cannot use two authentication schemes at once ' +
                   'this request has both bewit in querystring and ' +
                   'and \'authorization\' header',
       });
@@ -160,12 +160,12 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
 
     // Send input to signatureValidator (auth server or local validator)
     let result = await Promise.resolve(signatureValidator({
-      method:           req.method.toLowerCase(),
-      resource:         req.originalUrl,
-      host:             host.name,
-      port:             parseInt(port, 10),
-      authorization:    req.headers.authorization,
-      sourceIp:         req.ip,
+      method: req.method.toLowerCase(),
+      resource: req.originalUrl,
+      host: host.name,
+      port: parseInt(port, 10),
+      authorization: req.headers.authorization,
+      sourceIp: req.ip,
     }));
 
     // Validate request hash if one is provided
@@ -313,7 +313,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
       // If authentication is deferred or satisfied, then we proceed,
       // substituting the request parameters by default
       if (!entry.scopes) {
-        req.hasAuthed = true;  // No need to check auth if there are no scopes
+        req.hasAuthed = true; // No need to check auth if there are no scopes
         next();
       } else {
         // If url parameters is enough to parameterize we do it automatically

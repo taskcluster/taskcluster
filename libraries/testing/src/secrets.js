@@ -83,7 +83,7 @@ class Secrets {
     // construct a taskcluster-proxy URL to get the secret.  We can't use the taskcluster-client
     // as it cannot form URLs that match the proxy right now (https://bugzilla.mozilla.org/show_bug.cgi?id=1460015)
     for (let secretName of this.secretName) {
-      const url =  `http://taskcluster/secrets.taskcluster.net/v1/secret/${encodeURIComponent(secretName)}`;
+      const url = `http://taskcluster/secrets.taskcluster.net/v1/secret/${encodeURIComponent(secretName)}`;
       try {
         const vars = (await request.get(url)).body.secret;
         Object.assign(secrets, vars);

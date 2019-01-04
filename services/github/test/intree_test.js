@@ -25,7 +25,7 @@ suite('intree config', function() {
   function buildMessage(params) {
     let defaultMessage = {
       organization: 'testorg',
-      repository:   'testrepo',
+      repository: 'testrepo',
       details: {
         'event.pullNumber': 'eventData.number',
         'event.type': 'pull_request.opened',
@@ -92,7 +92,7 @@ suite('intree config', function() {
     'Single Task Config, v0',
     configPath + 'taskcluster.single.v0.yml',
     {
-      payload:    buildMessage(),
+      payload: buildMessage(),
     },
     {
       tasks: [], // The github event doesn't match, so no tasks are created
@@ -103,7 +103,7 @@ suite('intree config', function() {
     'Push Event, Single Task Config, v0',
     configPath + 'taskcluster.single.v0.yml',
     {
-      payload:    buildMessage({details: {'event.type': 'push'}}),
+      payload: buildMessage({details: {'event.type': 'push'}}),
     },
     {
       'tasks[0].task.extra.github.events': ['push'],
@@ -115,7 +115,7 @@ suite('intree config', function() {
     'Push Event (Push Task + Pull Task + Release Task), v0',
     configPath + 'taskcluster.push_pull_release.v0.yml',
     {
-      payload:    buildMessage({details: {'event.type': 'push'}}),
+      payload: buildMessage({details: {'event.type': 'push'}}),
     },
     {
       'metadata.owner': 'test@test.com',
@@ -128,7 +128,7 @@ suite('intree config', function() {
     'Pull Event (Push Task + Pull Task + Release Task), v0',
     configPath + 'taskcluster.push_pull_release.v0.yml',
     {
-      payload:    buildMessage(),
+      payload: buildMessage(),
     },
     {
       'metadata.owner': 'test@test.com',
@@ -141,7 +141,7 @@ suite('intree config', function() {
     'Push Event, Single Task Config, Branch Limited (on branch), v0',
     configPath + 'taskcluster.branchlimited.v0.yml',
     {
-      payload:    buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'master'}}),
+      payload: buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'master'}}),
     },
     {
       'tasks[0].task.extra.github.events': ['push'],
@@ -154,7 +154,7 @@ suite('intree config', function() {
     'Push Event, Single Task Config, Branch Limited (off branch), v0',
     configPath + 'taskcluster.branchlimited.v0.yml',
     {
-      payload:    buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'foobar'}}),
+      payload: buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'foobar'}}),
     },
     {
       tasks: [],
@@ -164,7 +164,7 @@ suite('intree config', function() {
     'Push Event, Single Task Config, Branch Excluded (on branch), v0',
     configPath + 'taskcluster.exclude.yml',
     {
-      payload:    buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'foobar'}}),
+      payload: buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'foobar'}}),
     },
     {
       tasks: [],
@@ -174,7 +174,7 @@ suite('intree config', function() {
     'Pull Request Event, Single Task Config, Branch Excluded (on branch), v0',
     configPath + 'taskcluster.pull_with_exclude.yml',
     {
-      payload:    buildMessage({details: {'event.type': 'pull_request.opened', 'event.base.repo.branch': 'master'}}),
+      payload: buildMessage({details: {'event.type': 'pull_request.opened', 'event.base.repo.branch': 'master'}}),
     },
     {
     },
@@ -184,7 +184,7 @@ suite('intree config', function() {
     'Push Event, Single Task Config, Branch Exclude and Include errors, v0',
     configPath + 'taskcluster.exclude-error.yml',
     {
-      payload:    buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'master'}}),
+      payload: buildMessage({details: {'event.type': 'push', 'event.base.repo.branch': 'master'}}),
     },
     {
     },
@@ -195,7 +195,7 @@ suite('intree config', function() {
     'Star Pull Config, v0',
     configPath + 'taskcluster.star.yml',
     {
-      payload:    buildMessage(),
+      payload: buildMessage(),
     },
     {
       'tasks[0].task.extra.github.events': ['pull_request.*'],
@@ -206,7 +206,7 @@ suite('intree config', function() {
     'Release Event, Single Task Config, v0',
     configPath + 'taskcluster.release_single.v0.yml',
     {
-      payload:    buildMessage({details: {'event.type': 'release'}}),
+      payload: buildMessage({details: {'event.type': 'release'}}),
     },
     {
       'tasks[0].task.extra.github.events': ['release'],
@@ -218,7 +218,7 @@ suite('intree config', function() {
     'Release Event (Push Task + Pull Task + Release Task), v0',
     configPath + 'taskcluster.push_pull_release.v0.yml',
     {
-      payload:    buildMessage({details: {'event.type': 'release'}}),
+      payload: buildMessage({details: {'event.type': 'release'}}),
     },
     {
       'tasks[0].task.extra.github.events': ['release'],
@@ -230,7 +230,7 @@ suite('intree config', function() {
     'No extra or extra.github generates an empty config, v0',
     configPath + 'taskcluster.non-github.v0.yml',
     {
-      payload:    buildMessage({details: {'event.type': 'release'}}),
+      payload: buildMessage({details: {'event.type': 'release'}}),
     },
     {},
     0);
@@ -249,7 +249,7 @@ suite('intree config', function() {
     'Tag Event, Single Task Config, v0',
     configPath + 'taskcluster.tag_single.v0.yml',
     {
-      payload:    buildMessage({details: {'event.type': 'tag', 'event.head.tag': 'v1.0.2'}}),
+      payload: buildMessage({details: {'event.type': 'tag', 'event.head.tag': 'v1.0.2'}}),
     },
     {
       'tasks[0].task.extra.github.events': ['tag'],
@@ -261,7 +261,7 @@ suite('intree config', function() {
     'Tag Event, Single Task Config, Branch Limited (off branch), v0',
     configPath + 'taskcluster.tag.branchlimited.v0.yml',
     {
-      payload:    buildMessage({details: {'event.type': 'tag', 'event.head.tag': 'v1.0.2'}}),
+      payload: buildMessage({details: {'event.type': 'tag', 'event.head.tag': 'v1.0.2'}}),
     },
     {
       'tasks[0].task.extra.github.events': ['tag'],
@@ -273,7 +273,7 @@ suite('intree config', function() {
     'Push Event, Single Task Config, v1',
     configPath + 'taskcluster.single.v1.yml',
     {
-      payload:    buildMessage({
+      payload: buildMessage({
         details: {'event.type': 'push'},
         body: require('./data/webhooks/webhook.push.json').body,
         tasks_for: 'github-push',
@@ -290,7 +290,7 @@ suite('intree config', function() {
     'Push Event, Single Task Config, v1',
     configPath + 'taskcluster.single.v1.yml',
     {
-      payload:    buildMessage({
+      payload: buildMessage({
         details: {'event.type': 'push'},
         body: require('./data/webhooks/webhook.push.json').body,
         tasks_for: 'github-push',
@@ -307,7 +307,7 @@ suite('intree config', function() {
     'Push Event (Push Task + Pull Task + Release Task), v1',
     configPath + 'taskcluster.push_pull_release.v1.yml',
     {
-      payload:    buildMessage({
+      payload: buildMessage({
         details: {'event.type': 'push'},
         body: require('./data/webhooks/webhook.push.json').body,
         tasks_for: 'github-push',
@@ -324,7 +324,7 @@ suite('intree config', function() {
     'Pull Event (Push Task + Pull Task + Release Task), v1',
     configPath + 'taskcluster.push_pull_release.v1.yml',
     {
-      payload:    buildMessage({
+      payload: buildMessage({
         body: require('./data/webhooks/webhook.pull_request.open.json').body,
         tasks_for: 'github-pull-request',
         branch: 'owlishDeveloper-patch-2',
@@ -340,7 +340,7 @@ suite('intree config', function() {
     'Push Event, Single Task Config, Branch Limited (on branch), v1',
     configPath + 'taskcluster.branchlimited.v1.yml',
     {
-      payload:    buildMessage({
+      payload: buildMessage({
         details: {'event.type': 'push', 'event.base.repo.branch': 'master'},
         body: require('./data/webhooks/webhook.push.json').body,
         tasks_for: 'github-push',
@@ -357,7 +357,7 @@ suite('intree config', function() {
     'Push Event, Single Task Config, Branch Limited (off branch), v1',
     configPath + 'taskcluster.branchlimited.v1.yml',
     {
-      payload:    buildMessage({
+      payload: buildMessage({
         details: {'event.type': 'push', 'event.base.repo.branch': 'foobar'},
         body: require('./data/webhooks/webhook.push.offbranch.json').body,
         tasks_for: 'github-push',
@@ -372,7 +372,7 @@ suite('intree config', function() {
     'Release Event, Single Task Config, v1',
     configPath + 'taskcluster.release_single.v1.yml',
     {
-      payload:    buildMessage({
+      payload: buildMessage({
         details: {'event.type': 'release'},
         body: require('./data/webhooks/webhook.release.json').body,
         tasks_for: 'github-release',
@@ -389,7 +389,7 @@ suite('intree config', function() {
     'Release Event (Push Task + Pull Task + Release Task), v1',
     configPath + 'taskcluster.push_pull_release.v1.yml',
     {
-      payload:    buildMessage({
+      payload: buildMessage({
         details: {'event.type': 'release'},
         body: require('./data/webhooks/webhook.release.json').body,
         tasks_for: 'github-release',
@@ -421,7 +421,7 @@ suite('intree config', function() {
     'Tag Event, Single Task Config, v1',
     configPath + 'taskcluster.tag_single.v1.yml',
     {
-      payload:    buildMessage({
+      payload: buildMessage({
         details: {'event.type': 'tag', 'event.head.tag': 'v1.0.2'},
         body: require('./data/webhooks/webhook.tag_push.json').body,
         tasks_for: 'github-push',

@@ -22,24 +22,24 @@ module.exports = exchanges;
 let buildRoutingKey = (options={}) => {
   return [
     {
-      name:             'destination',
-      summary:          'destination',
-      required:         true,
-      maxSize:          25,
+      name: 'destination',
+      summary: 'destination',
+      required: true,
+      maxSize: 25,
     },
     {
-      name:             'project',
-      summary:          'project',
-      required:         true,
-      maxSize:          25,
+      name: 'project',
+      summary: 'project',
+      required: true,
+      maxSize: 25,
     },
     {
-      name:             'reserved',
-      summary:          'Space reserved for future routing-key entries, you ' +
+      name: 'reserved',
+      summary: 'Space reserved for future routing-key entries, you ' +
                         'should always match this entry with `#`. As ' +
                         'automatically done by our tooling, if not specified.',
-      multipleWords:    true,
-      maxSize:          1,
+      multipleWords: true,
+      maxSize: 1,
     },
   ];
 };
@@ -56,16 +56,16 @@ let commonRoutingKeyBuilder = (message, routing) => {
 
 /** Jobs exchange */
 exchanges.declare({
-  exchange:           'jobs',
-  name:               'jobs',
-  title:              'Job Messages',
+  exchange: 'jobs',
+  name: 'jobs',
+  title: 'Job Messages',
   description: [
     'When a task run is scheduled or resolved, a message is posted to',
     'this exchange in a Treeherder consumable format.',
   ].join('\n'),
-  routingKey:         buildRoutingKey(),
-  schema:             'pulse-job.json#',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  commonRoutingKeyBuilder,
-  CCBuilder:          () => [],
+  routingKey: buildRoutingKey(),
+  schema: 'pulse-job.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: () => [],
 });

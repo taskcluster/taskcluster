@@ -317,10 +317,10 @@ class PulsePublisher {
             tries++ ? 'Republishing' : 'Publishing', exchange, routingKey);
           await new Promise((resolve, reject) => {
             channel.publish(exchange, routingKey, payload, {
-              persistent:         true,
-              contentType:        'application/json',
-              contentEncoding:    'utf-8',
-              CC:                 CCs,
+              persistent: true,
+              contentType: 'application/json',
+              contentEncoding: 'utf-8',
+              CC: CCs,
             }, (err) => {
               if (err) {
                 reject(err);
@@ -411,10 +411,10 @@ class PulsePublisher {
 
     const s3 = new AWS.S3(aws);
     await s3.putObject({
-      Bucket:           hostname,
-      Key:              path.slice(1), // omit leading `/`
-      Body:             JSON.stringify(reference, undefined, 2),
-      ContentType:      'application/json',
+      Bucket: hostname,
+      Key: path.slice(1), // omit leading `/`
+      Body: JSON.stringify(reference, undefined, 2),
+      ContentType: 'application/json',
     }).promise();
   }
 }

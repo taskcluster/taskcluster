@@ -1,25 +1,25 @@
-var debug         = require('debug')('app:load-test');
-var testing       = require('taskcluster-lib-testing');
-var path          = require('path');
-var _             = require('lodash');
-var taskcluster   = require('taskcluster-client');
-var slugid        = require('slugid');
-var https         = require('https');
-var http          = require('http');
-var api           = require('./api');
+var debug = require('debug')('app:load-test');
+var testing = require('taskcluster-lib-testing');
+var path = require('path');
+var _ = require('lodash');
+var taskcluster = require('taskcluster-client');
+var slugid = require('slugid');
+var https = require('https');
+var http = require('http');
+var api = require('./api');
 
 var makeTask = () => {
   return {
-    provisionerId:    'no-provisioner',
-    workerType:       'test-worker',
-    created:          taskcluster.fromNowJSON(),
-    deadline:         taskcluster.fromNowJSON('1 hour'),
-    payload:          {},
+    provisionerId: 'no-provisioner',
+    workerType: 'test-worker',
+    created: taskcluster.fromNowJSON(),
+    deadline: taskcluster.fromNowJSON('1 hour'),
+    payload: {},
     metadata: {
-      name:           'Load testing task',
-      description:    'Task created during load tests',
-      owner:          'jonsafj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue',
+      name: 'Load testing task',
+      description: 'Task created during load tests',
+      owner: 'jonsafj@mozilla.com',
+      source: 'https://github.com/taskcluster/taskcluster-queue',
     },
   };
 };
@@ -33,12 +33,12 @@ var launch = async function(cfg) {
   const CYCLE_SECONDS = 3 * 60; //10 * 60; // Normally 3
 
   var success = 0;
-  var failed  = 0;
+  var failed = 0;
   var summary = () => {
     console.log('%s req/s success: %s, failed: %s',
       fmt(success / CYCLE_SECONDS), success, failed);
     success = 0;
-    failed  = 0;
+    failed = 0;
   };
 
   var loops = 0;
@@ -51,25 +51,25 @@ var launch = async function(cfg) {
         agent = new http.Agent({keepAlive: true});
       }
       var tempCreds = taskcluster.createTemporaryCredentials({
-        start:        taskcluster.fromNow('- 15 min'),
-        expiry:       taskcluster.fromNow('4 hours'),
+        start: taskcluster.fromNow('- 15 min'),
+        expiry: taskcluster.fromNow('4 hours'),
         scopes: [
           'queue:create-task:no-provisioner/test-worker',
           'queue:claim-task:no-provisioner/test-worker',
           'queue:claim-work:no-provisioner/test-worker',
           'queue:worker-id:no-worker/dummy-worker',
         ],
-        credentials:  cfg.taskcluster.credentials,
+        credentials: cfg.taskcluster.credentials,
       });
       let reference = api.reference({
-        baseUrl:          cfg.server.publicUrl + '/v1',
+        baseUrl: cfg.server.publicUrl + '/v1',
       });
       let Queue = taskcluster.createClient(reference);
       var queue = new Queue({
-        credentials:      tempCreds,
-        retries:          0,
-        baseUrl:          cfg.server.publicUrl + '/v1',
-        agent:            agent,
+        credentials: tempCreds,
+        retries: 0,
+        baseUrl: cfg.server.publicUrl + '/v1',
+        agent: agent,
         authorizedScopes: [
           'queue:create-task:no-provisioner/test-worker',
           'queue:claim-task:no-provisioner/test-worker',
@@ -83,8 +83,8 @@ var launch = async function(cfg) {
           await queue.createTask(taskId, makeTask());
           
           let result = await queue.claimTask(taskId, 0, {
-            workerGroup:  'no-worker',
-            workerId:     'dummy-worker',
+            workerGroup: 'no-worker',
+            workerId: 'dummy-worker',
           });//*/
           /*let r = await queue.claimWork('no-provisioner', 'test-worker', {
             workerGroup:  'no-worker',
@@ -97,10 +97,10 @@ var launch = async function(cfg) {
             return;
           }*/
           let q2 = new Queue({
-            credentials:      result.credentials,
-            baseUrl:          cfg.server.publicUrl + '/v1',
-            retries:          0,
-            agent:            agent,
+            credentials: result.credentials,
+            baseUrl: cfg.server.publicUrl + '/v1',
+            retries: 0,
+            agent: agent,
           });
           await q2.reportCompleted(result.status.taskId, 0);
         })().then(() => {

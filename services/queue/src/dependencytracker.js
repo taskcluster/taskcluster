@@ -1,7 +1,7 @@
-let debug   = require('debug')('app:dependency-tracker');
-let assert  = require('assert');
-let _       = require('lodash');
-let Entity  = require('azure-entities');
+let debug = require('debug')('app:dependency-tracker');
+let assert = require('assert');
+let _ = require('lodash');
+let Entity = require('azure-entities');
 
 /**
  * DependencyTracker tracks dependencies between tasks and ensure that dependent
@@ -21,20 +21,20 @@ let Entity  = require('azure-entities');
 class DependencyTracker {
   constructor(options = {}) {
     // Validate options
-    assert(options,                    'options are required');
-    assert(options.Task,               'Expected options.Task');
-    assert(options.publisher,          'Expected options.publisher');
-    assert(options.queueService,       'Expected options.queueService');
-    assert(options.TaskDependency,     'Expected options.TaskDependency');
-    assert(options.TaskRequirement,    'Expected options.TaskRequirement');
+    assert(options, 'options are required');
+    assert(options.Task, 'Expected options.Task');
+    assert(options.publisher, 'Expected options.publisher');
+    assert(options.queueService, 'Expected options.queueService');
+    assert(options.TaskDependency, 'Expected options.TaskDependency');
+    assert(options.TaskRequirement, 'Expected options.TaskRequirement');
     assert(options.TaskGroupActiveSet, 'Expected options.TaskGroupActiveSet');
 
     // Store options on this object
-    this.Task               = options.Task;
-    this.publisher          = options.publisher;
-    this.queueService       = options.queueService;
-    this.TaskDependency     = options.TaskDependency;
-    this.TaskRequirement    = options.TaskRequirement;
+    this.Task = options.Task;
+    this.publisher = options.publisher;
+    this.queueService = options.queueService;
+    this.TaskDependency = options.TaskDependency;
+    this.TaskRequirement = options.TaskRequirement;
     this.TaskGroupActiveSet = options.TaskGroupActiveSet;
   }
 
@@ -50,9 +50,9 @@ class DependencyTracker {
     // by requiredTaskId. This relation is used to track if a taskId is blocked.
     await Promise.all(task.dependencies.map(requiredTaskId => {
       return this.TaskRequirement.create({
-        taskId:           task.taskId,
+        taskId: task.taskId,
         requiredTaskId,
-        expires:          task.expires,
+        expires: task.expires,
       }, true);
     }));
 
@@ -65,17 +65,17 @@ class DependencyTracker {
     }
     await Promise.all(task.dependencies.map(requiredTaskId => {
       return this.TaskDependency.create({
-        taskId:           requiredTaskId,
-        dependentTaskId:  task.taskId,
-        expires:          task.expires,
+        taskId: requiredTaskId,
+        dependentTaskId: task.taskId,
+        expires: task.expires,
         require,
       }, true);
     }));
 
     // Load all task dependencies to see if they have been resolved.
     // We will also check for missing and expiring dependencies.
-    let missing = [];         // Dependencies that doesn't exist
-    let expiring = [];        // Dependencies that expire before deadline
+    let missing = []; // Dependencies that doesn't exist
+    let expiring = []; // Dependencies that expire before deadline
     let anySatisfied = false; // Track if any dependencies were satisfied
     await Promise.all(task.dependencies.map(async (requiredTaskId) => {
       let requiredTask = await this.Task.load({taskId: requiredTaskId}, true);
@@ -96,7 +96,7 @@ class DependencyTracker {
           (state === 'exception' || state === 'failed')) {
         // If a dependency is satisfied we delete the TaskRequirement entry
         await this.TaskRequirement.remove({
-          taskId:         task.taskId,
+          taskId: task.taskId,
           requiredTaskId,
         }, true);
         // Track that we've deleted something, now we must check if any are left
@@ -167,8 +167,8 @@ class DependencyTracker {
         task.remove(true),
         Promise.all(task.dependencies.map(requiredTaskId => {
           return this.TaskDependency.remove({
-            taskId:           requiredTaskId,
-            dependentTaskId:  task.taskId,
+            taskId: requiredTaskId,
+            dependentTaskId: task.taskId,
           }, true);
         })),
       ]);
@@ -185,7 +185,7 @@ class DependencyTracker {
       ]);
 
       return {
-        message:  msg,
+        message: msg,
         details: {
           dependencies: task.dependencies,
           missingTaskDependencies: missing,
@@ -207,9 +207,9 @@ class DependencyTracker {
 
         // Add initial run (runId = 0)
         task.runs.push({
-          state:          'pending',
-          reasonCreated:  'scheduled',
-          scheduled:      new Date().toJSON(),
+          state: 'pending',
+          reasonCreated: 'scheduled',
+          scheduled: new Date().toJSON(),
         });
       });
     }
@@ -239,7 +239,7 @@ class DependencyTracker {
       handler: async (dep) => {
         // Remove the requirement that is blocking
         await this.TaskRequirement.remove({
-          taskId:         dep.dependentTaskId,
+          taskId: dep.dependentTaskId,
           requiredTaskId: taskId,
         }, true);
         // TODO: Use return code from the remove statement to avoid checking
@@ -346,9 +346,9 @@ class DependencyTracker {
 
       // Add initial run (runId = 0)
       task.runs.push({
-        state:          'pending',
-        reasonCreated:  'scheduled',
-        scheduled:      new Date().toJSON(),
+        state: 'pending',
+        reasonCreated: 'scheduled',
+        scheduled: new Date().toJSON(),
       });
     });
 
@@ -361,8 +361,8 @@ class DependencyTracker {
       await Promise.all([
         this.queueService.putPendingMessage(task, 0),
         this.publisher.taskPending({
-          status:         status,
-          runId:          0,
+          status: status,
+          runId: 0,
         }, task.routes),
       ]);
     }

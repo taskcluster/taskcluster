@@ -22,8 +22,8 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'aws'], function(
   });
 
   test('awsS3Credentials read-write folder1/folder2/', async () => {
-    let id    = slugid.v4();
-    let text  = slugid.v4();
+    let id = slugid.v4();
+    let text = slugid.v4();
     debug('### auth.awsS3Credentials');
     let result = await helper.apiClient.awsS3Credentials(
       'read-write',
@@ -37,29 +37,29 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'aws'], function(
     let s3 = new aws.S3(result.credentials);
     debug('### s3.putObject');
     await s3.putObject({
-      Bucket:   bucket,
-      Key:      'folder1/folder2/' + id,
-      Body:     text,
+      Bucket: bucket,
+      Key: 'folder1/folder2/' + id,
+      Body: text,
     }).promise();
 
     debug('### s3.getObject');
     let res = await s3.getObject({
-      Bucket:   bucket,
-      Key:      'folder1/folder2/' + id,
+      Bucket: bucket,
+      Key: 'folder1/folder2/' + id,
     }).promise();
     assert(res.Body.toString() === text,
       'Got the wrong body!');
 
     debug('### s3.deleteObject');
     await s3.deleteObject({
-      Bucket:   bucket,
-      Key:      'folder1/folder2/' + id,
+      Bucket: bucket,
+      Key: 'folder1/folder2/' + id,
     }).promise();
   });
 
   test('awsS3Credentials read-write root', async () => {
-    let id    = slugid.v4();
-    let text  = slugid.v4();
+    let id = slugid.v4();
+    let text = slugid.v4();
     debug('### auth.awsS3Credentials');
     let result = await helper.apiClient.awsS3Credentials(
       'read-write',
@@ -73,23 +73,23 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'aws'], function(
     let s3 = new aws.S3(result.credentials);
     debug('### s3.putObject');
     await s3.putObject({
-      Bucket:   bucket,
-      Key:      id,
-      Body:     text,
+      Bucket: bucket,
+      Key: id,
+      Body: text,
     }).promise();
 
     debug('### s3.getObject');
     let res = await s3.getObject({
-      Bucket:   bucket,
-      Key:      id,
+      Bucket: bucket,
+      Key: id,
     }).promise();
     assert(res.Body.toString() === text,
       'Got the wrong body!');
 
     debug('### s3.deleteObject');
     await s3.deleteObject({
-      Bucket:   bucket,
-      Key:      id,
+      Bucket: bucket,
+      Key: id,
     }).promise();
   });
 
@@ -109,9 +109,9 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'aws'], function(
     debug('### s3.putObject');
     try {
       await s3.putObject({
-        Bucket:   bucket,
-        Key:      'folder2/' + id,
-        Body:     'Hello-World',
+        Bucket: bucket,
+        Key: 'folder2/' + id,
+        Body: 'Hello-World',
       }).promise();
       assert(false, 'Expected an error');
     } catch (err) {
@@ -120,8 +120,8 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'aws'], function(
   });
 
   test('awsS3Credentials read-only folder1/ + (403 on write)', async () => {
-    let id    = slugid.v4();
-    let text  = slugid.v4();
+    let id = slugid.v4();
+    let text = slugid.v4();
     debug('### auth.awsS3Credentials');
     let result = await helper.apiClient.awsS3Credentials(
       'read-write',
@@ -131,9 +131,9 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'aws'], function(
     let s3 = new aws.S3(result.credentials);
     debug('### s3.putObject');
     await s3.putObject({
-      Bucket:   bucket,
-      Key:      'folder1/' + id,
-      Body:     text,
+      Bucket: bucket,
+      Key: 'folder1/' + id,
+      Body: text,
     }).promise();
 
     debug('### auth.awsS3Credentials read-only');
@@ -145,17 +145,17 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'aws'], function(
     s3 = new aws.S3(result.credentials);
     debug('### s3.getObject');
     let res = await s3.getObject({
-      Bucket:   bucket,
-      Key:      'folder1/' + id,
+      Bucket: bucket,
+      Key: 'folder1/' + id,
     }).promise();
     assert(res.Body.toString() === text,
       'Got the wrong body!');
 
     try {
       await s3.putObject({
-        Bucket:   bucket,
-        Key:      'folder1/' + slugid.v4(),
-        Body:     'Hello-World',
+        Bucket: bucket,
+        Key: 'folder1/' + slugid.v4(),
+        Body: 'Hello-World',
       }).promise();
       assert(false, 'Expected an error');
     } catch (err) {
@@ -164,8 +164,8 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'aws'], function(
   });
 
   test('awsS3Credentials format=iam-role-compat', async () => {
-    let id    = slugid.v4();
-    let text  = slugid.v4();
+    let id = slugid.v4();
+    let text = slugid.v4();
     debug('### auth.awsS3Credentials w. format=iam-role-compat');
     let result = await helper.apiClient.awsS3Credentials(
       'read-write',
@@ -175,15 +175,15 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'aws'], function(
       });
 
     let s3 = new aws.S3({
-      accessKeyId:     result.AccessKeyId,
+      accessKeyId: result.AccessKeyId,
       secretAccessKey: result.SecretAccessKey,
-      sessionToken:    result.Token,
+      sessionToken: result.Token,
     });
     debug('### s3.putObject');
     await s3.putObject({
-      Bucket:   bucket,
-      Key:      'folder1/' + id,
-      Body:     text,
+      Bucket: bucket,
+      Key: 'folder1/' + id,
+      Body: text,
     }).promise();
   });
 });

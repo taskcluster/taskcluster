@@ -1,10 +1,10 @@
-const debug       = require('debug')('test:create');
-const assert      = require('assert');
-const slugid      = require('slugid');
-const _           = require('lodash');
+const debug = require('debug')('test:create');
+const assert = require('assert');
+const slugid = require('slugid');
+const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
-const assume      = require('assume');
-const helper      = require('./helper');
+const assume = require('assume');
+const helper = require('./helper');
 
 helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
@@ -17,34 +17,34 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   // Use the same task definition for everything
   const taskDef = {
-    provisionerId:    'no-provisioner',
-    workerType:       'test-worker',
-    schedulerId:      'my-scheduler',
-    taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
+    provisionerId: 'no-provisioner',
+    workerType: 'test-worker',
+    schedulerId: 'my-scheduler',
+    taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
     // let's just test a large routing key too, 90 chars please :)
-    routes:           ['--- long routing key ---.--- long routing key ---.' +
+    routes: ['--- long routing key ---.--- long routing key ---.' +
                        '--- long routing key ---.--- long routing key ---.' +
                        '--- long routing key ---.--- long routing key ---.' +
                        '--- long routing key ---.--- long routing key ---.' +
                        '--- long routing key ---.--- long routing key ---'],
-    retries:          5,
-    created:          taskcluster.fromNowJSON(),
-    deadline:         taskcluster.fromNowJSON('3 days'),
-    expires:          taskcluster.fromNowJSON('10 days'),
-    scopes:           [],
-    payload:          {},
+    retries: 5,
+    created: taskcluster.fromNowJSON(),
+    deadline: taskcluster.fromNowJSON('3 days'),
+    expires: taskcluster.fromNowJSON('10 days'),
+    scopes: [],
+    payload: {},
     metadata: {
-      name:           'Unit testing task',
-      description:    'Task created during unit tests',
-      owner:          'jonsafj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue',
+      name: 'Unit testing task',
+      description: 'Task created during unit tests',
+      owner: 'jonsafj@mozilla.com',
+      source: 'https://github.com/taskcluster/taskcluster-queue',
     },
     tags: {
-      purpose:        'taskcluster-testing',
+      purpose: 'taskcluster-testing',
     },
     extra: {
       myUsefulDetails: {
-        property:     'that is useful by external service!!',
+        property: 'that is useful by external service!!',
       },
     },
   };
@@ -114,7 +114,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     // Verify that we can't modify the task
     await helper.queue.createTask(taskId, _.defaults({
-      workerType:   'another-worker',
+      workerType: 'another-worker',
     }, taskDef)).then(() => {
       throw new Error('This operation should have failed!');
     }, (err) => {
@@ -162,7 +162,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     // Verify that we can't modify the task
     await helper.queue.defineTask(taskId, _.defaults({
-      workerType:   'another-worker',
+      workerType: 'another-worker',
     }, taskDef)).then(() => {
       throw new Error('This operation should have failed!');
     }, (err) => {
@@ -177,16 +177,16 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     // but we won't store them, so we have to handle this case right
     const x = '234324Z';
     const taskDef2 = _.defaults({
-      created:      taskDef.created.substr(0, taskDef.created.length - 1)   + x,
-      deadline:     taskDef.deadline.substr(0, taskDef.deadline.length - 1) + x,
-      expires:      taskDef.expires.substr(0, taskDef.expires.length - 1)   + x,
+      created: taskDef.created.substr(0, taskDef.created.length - 1) + x,
+      deadline: taskDef.deadline.substr(0, taskDef.deadline.length - 1) + x,
+      expires: taskDef.expires.substr(0, taskDef.expires.length - 1) + x,
     }, taskDef);
     await helper.queue.defineTask(taskId, taskDef2);
     await helper.queue.defineTask(taskId, taskDef2);
 
     // Verify that we can't modify the task
     await helper.queue.defineTask(taskId, _.defaults({
-      workerType:   'another-worker',
+      workerType: 'another-worker',
     }, taskDef)).then(() => {
       throw new Error('This operation should have failed!');
     }, (err) => {
@@ -210,9 +210,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   test('createTask w. created > deadline', async () => {
     const taskId = slugid.v4();
     const taskDef2 = _.defaults({
-      created:      taskcluster.fromNowJSON('15 min'),
-      deadline:     taskcluster.fromNowJSON('10 min'),
-      expires:      taskcluster.fromNowJSON('3 days'),
+      created: taskcluster.fromNowJSON('15 min'),
+      deadline: taskcluster.fromNowJSON('10 min'),
+      expires: taskcluster.fromNowJSON('3 days'),
     }, taskDef);
 
     await helper.queue.createTask(taskId, taskDef2).then(() => {
@@ -226,9 +226,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   test('createTask w. deadline > expires', async () => {
     const taskId = slugid.v4();
     const taskDef2 = _.defaults({
-      created:      taskcluster.fromNowJSON(),
-      deadline:     taskcluster.fromNowJSON('4 days'),
-      expires:      taskcluster.fromNowJSON('3 days'),
+      created: taskcluster.fromNowJSON(),
+      deadline: taskcluster.fromNowJSON('4 days'),
+      expires: taskcluster.fromNowJSON('3 days'),
     }, taskDef);
 
     await helper.queue.createTask(taskId, taskDef2).then(() => {
@@ -241,16 +241,16 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('Minimum task definition with all possible defaults', async () => {
     const taskDef = {
-      provisionerId:    'no-provisioner',
-      workerType:       'test-worker',
-      created:          taskcluster.fromNowJSON(),
-      deadline:         taskcluster.fromNowJSON('3 days'),
-      payload:          {},
+      provisionerId: 'no-provisioner',
+      workerType: 'test-worker',
+      created: taskcluster.fromNowJSON(),
+      deadline: taskcluster.fromNowJSON('3 days'),
+      payload: {},
       metadata: {
-        name:           'Unit testing task',
-        description:    'Task created during unit tests',
-        owner:          'jonsafj@mozilla.com',
-        source:         'https://github.com/taskcluster/taskcluster-queue',
+        name: 'Unit testing task',
+        description: 'Task created during unit tests',
+        owner: 'jonsafj@mozilla.com',
+        source: 'https://github.com/taskcluster/taskcluster-queue',
       },
     };
     const taskId = slugid.v4();
@@ -272,18 +272,18 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   const makePriorityTask = (priority) => {
     return {
-      provisionerId:    'no-provisioner',
-      workerType:       'test-worker',
-      priority:         priority,
-      schedulerId:      'test-run',
-      created:          taskcluster.fromNowJSON(),
-      deadline:         taskcluster.fromNowJSON('30 min'),
-      payload:          {},
+      provisionerId: 'no-provisioner',
+      workerType: 'test-worker',
+      priority: priority,
+      schedulerId: 'test-run',
+      created: taskcluster.fromNowJSON(),
+      deadline: taskcluster.fromNowJSON('30 min'),
+      payload: {},
       metadata: {
-        name:           'Unit testing task',
-        description:    'Task created during unit tests',
-        owner:          'jonsafj@mozilla.com',
-        source:         'https://github.com/taskcluster/taskcluster-queue',
+        name: 'Unit testing task',
+        description: 'Task created during unit tests',
+        owner: 'jonsafj@mozilla.com',
+        source: 'https://github.com/taskcluster/taskcluster-queue',
       },
     };
   };

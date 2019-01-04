@@ -1,10 +1,10 @@
-var _             = require('lodash');
-var assert        = require('assert');
-var debug         = require('debug')('taskcluster-lib-testing:schemas');
-var fs            = require('fs');
-var SchemaSet     = require('taskcluster-lib-validate');
-var libUrls       = require('taskcluster-lib-urls');
-var path          = require('path');
+var _ = require('lodash');
+var assert = require('assert');
+var debug = require('debug')('taskcluster-lib-testing:schemas');
+var fs = require('fs');
+var SchemaSet = require('taskcluster-lib-validate');
+var libUrls = require('taskcluster-lib-urls');
+var path = require('path');
 
 /**
  * Test schemas with positive and negative test cases. This will call

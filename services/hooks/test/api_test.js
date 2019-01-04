@@ -36,31 +36,31 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
 
   const hookWithHookIds = {
     task: {
-      provisionerId:  'no-provisioner',
-      workerType:     'test-worker',
-      schedulerId:    'my-scheduler',
-      taskGroupId:    'dSlITZ4yQgmvxxAi4A8fHQ',
-      scopes:         [],
-      payload:        {},
-      metadata:       {
-        name:         'Unit testing task',
-        description:  'Task created during unit tests',
-        owner:        'amiyaguchi@mozilla.com',
-        source:       'http://github.com/',
+      provisionerId: 'no-provisioner',
+      workerType: 'test-worker',
+      schedulerId: 'my-scheduler',
+      taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
+      scopes: [],
+      payload: {},
+      metadata: {
+        name: 'Unit testing task',
+        description: 'Task created during unit tests',
+        owner: 'amiyaguchi@mozilla.com',
+        source: 'http://github.com/',
       },
-      expires:        {$fromNow: '10 days'},
-      deadline:       {$fromNow: '3 days'},
+      expires: {$fromNow: '10 days'},
+      deadline: {$fromNow: '3 days'},
       tags: {
-        purpose:      'taskcluster-testing',
+        purpose: 'taskcluster-testing',
       },
     },
-    hookId:           'bar',
-    hookGroupId:      'foo',
-    bindings:         [],
+    hookId: 'bar',
+    hookGroupId: 'foo',
+    bindings: [],
     metadata: {
-      name:           'Unit testing hook',
-      description:    'Hook created during unit tests',
-      owner:          'amiyaguchi@mozilla.com',
+      name: 'Unit testing hook',
+      description: 'Hook created during unit tests',
+      owner: 'amiyaguchi@mozilla.com',
     },
   };
 
@@ -84,13 +84,13 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   };
 
   const lastFire = {
-    hookGroupId:        'test-listlastfires',
-    hookId:             'bar',
-    firedBy:            'test',
-    taskId:             taskcluster.slugid(),
-    taskCreateTime:     new Date(),
-    result:             'success',
-    error:              '',
+    hookGroupId: 'test-listlastfires',
+    hookId: 'bar',
+    firedBy: 'test',
+    taskId: taskcluster.slugid(),
+    taskCreateTime: new Date(),
+    result: 'success',
+    error: '',
   };
 
   // work around https://github.com/mochajs/mocha/issues/2819.
@@ -204,8 +204,8 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       const inputWithTriggerSchema = _.defaults({
         triggerSchema: {
           type: 'object',
-          properties:{
-            location:{
+          properties: {
+            location: {
               type: 'string',
               default: 'Niskayuna, NY',
             },
@@ -558,7 +558,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       assume(r2).deep.equals(r2);
     });
 
-    test('fails for undefined hook',  async () => {
+    test('fails for undefined hook', async () => {
       await helper.hooks.resetTriggerToken('foo', 'bar').then(
         () => { throw new Error('The resource should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
@@ -675,9 +675,9 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       helper.Listener.reconcileConsumers = async () => reconcileConsumers = true;
       await helper.Listener.pulseHookChangedListener.fakeMessage({
         payload: {
-          hookId:'bar',
-          hookGroupId:'foo',
-        }, exchange:'exchange/taskcluster-hooks/v1/hook-created',
+          hookId: 'bar',
+          hookGroupId: 'foo',
+        }, exchange: 'exchange/taskcluster-hooks/v1/hook-created',
       });
       assert(reconcileConsumers);
     });
@@ -692,9 +692,9 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       };
       await helper.Listener.pulseHookChangedListener.fakeMessage({
         payload: {
-          hookId:'bar',
-          hookGroupId:'foo',
-        }, exchange:'exchange/taskcluster-hooks/v1/hook-created',
+          hookId: 'bar',
+          hookGroupId: 'foo',
+        }, exchange: 'exchange/taskcluster-hooks/v1/hook-created',
       });
       assert(createdListener);
       const queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
@@ -705,12 +705,12 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithBindings);
       await helper.Listener.pulseHookChangedListener.fakeMessage({
         payload: {
-          hookId:'bar',
-          hookGroupId:'foo',
-        }, exchange:'exchange/taskcluster-hooks/v1/hook-created',
+          hookId: 'bar',
+          hookGroupId: 'foo',
+        }, exchange: 'exchange/taskcluster-hooks/v1/hook-created',
       });
       let listener = _.last(helper.Listener.listeners);
-      await listener.fakeMessage({payload:{location: 'Orlando'}, exchange: r1.bindings[0].exchange});
+      await listener.fakeMessage({payload: {location: 'Orlando'}, exchange: r1.bindings[0].exchange});
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
@@ -723,16 +723,16 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       await helper.hooks.createHook('foo', 'bar', hookWithBindings);
       await helper.Listener.pulseHookChangedListener.fakeMessage({
         payload: {
-          hookId:'bar',
-          hookGroupId:'foo',
-        }, exchange:'exchange/taskcluster-hooks/v1/hook-created',
+          hookId: 'bar',
+          hookGroupId: 'foo',
+        }, exchange: 'exchange/taskcluster-hooks/v1/hook-created',
       });
       const r1 = await helper.hooks.updateHook('foo', 'bar', hookWithNewBindings);
       await helper.Listener.pulseHookChangedListener.fakeMessage({
         payload: {
-          hookId:'bar',
-          hookGroupId:'foo',
-        }, exchange:'exchange/taskcluster-hooks/v1/hook-updated',
+          hookId: 'bar',
+          hookGroupId: 'foo',
+        }, exchange: 'exchange/taskcluster-hooks/v1/hook-updated',
       });
       const queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
       assume(queue.bindings).deep.equals(r1.bindings);
@@ -742,18 +742,18 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithBindings);
       await helper.Listener.pulseHookChangedListener.fakeMessage({
         payload: {
-          hookId:'bar',
-          hookGroupId:'foo',
-        }, exchange:'exchange/taskcluster-hooks/v1/hook-created',
+          hookId: 'bar',
+          hookGroupId: 'foo',
+        }, exchange: 'exchange/taskcluster-hooks/v1/hook-created',
       });
       let queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
       assume(queue.bindings).deep.equals(r1.bindings);
       await helper.hooks.removeHook('foo', 'bar');
       await helper.Listener.pulseHookChangedListener.fakeMessage({
         payload: {
-          hookId:'bar',
-          hookGroupId:'foo',
-        }, exchange:'exchange/taskcluster-hooks/v1/hook-deleted',
+          hookId: 'bar',
+          hookGroupId: 'foo',
+        }, exchange: 'exchange/taskcluster-hooks/v1/hook-deleted',
       });
       queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
       assert.equal(queue, null);

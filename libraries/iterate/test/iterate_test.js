@@ -284,7 +284,7 @@ describe('Iterate', () => {
 
   it('should share state between iterations', done => {
     let iterations = 0;
-    let v = {a:1};
+    let v = {a: 1};
 
     let i = new subject({
       maxIterationTime: 3,

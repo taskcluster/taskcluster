@@ -2,25 +2,25 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-var request     = require('superagent');
-var debug       = require('debug')('taskcluster-client');
-var _           = require('lodash');
-var assert      = require('assert');
-var hawk        = require('hawk');
-var url         = require('url');
-var crypto      = require('crypto');
-var slugid      = require('slugid');
-var http        = require('http');
-var https       = require('https');
-var Promise     = require('promise');
+var request = require('superagent');
+var debug = require('debug')('taskcluster-client');
+var _ = require('lodash');
+var assert = require('assert');
+var hawk = require('hawk');
+var url = require('url');
+var crypto = require('crypto');
+var slugid = require('slugid');
+var http = require('http');
+var https = require('https');
+var Promise = require('promise');
 var querystring = require('querystring');
-var tcUrl       = require('taskcluster-lib-urls');
+var tcUrl = require('taskcluster-lib-urls');
 
 /** Default options for our http/https global agents */
 var AGENT_OPTIONS = {
-  maxSockets:       50,
-  maxFreeSockets:   0,
-  keepAlive:        false,
+  maxSockets: 50,
+  maxFreeSockets: 0,
+  keepAlive: false,
 };
 
 /**
@@ -29,8 +29,8 @@ var AGENT_OPTIONS = {
  * all our components if needed...
  */
 var DEFAULT_AGENTS = {
-  http:   new http.Agent(AGENT_OPTIONS),
-  https:  new https.Agent(AGENT_OPTIONS),
+  http: new http.Agent(AGENT_OPTIONS),
+  https: new https.Agent(AGENT_OPTIONS),
 };
 
 // Exports agents, consumers can provide their own default agents and tests
@@ -46,18 +46,18 @@ var _defaultOptions = {
     certificate: undefined,
   },
   // Request time out (defaults to 30 seconds)
-  timeout:        30 * 1000,
+  timeout: 30 * 1000,
   // Max number of request retries
-  retries:        5,
+  retries: 5,
   // Multiplier for computation of retry delay: 2 ^ retry * delayFactor,
   // 100 ms is solid for servers, and 500ms - 1s is suitable for background
   // processes
-  delayFactor:    100,
+  delayFactor: 100,
   // Randomization factor added as.
   // delay = delay * random([1 - randomizationFactor; 1 + randomizationFactor])
   randomizationFactor: 0.25,
   // Maximum retry delay (defaults to 30 seconds)
-  maxDelay:       30 * 1000,
+  maxDelay: 30 * 1000,
 
   // The prefix of any api calls. e.g. https://taskcluster.net/api/
   rootUrl: undefined,
@@ -105,11 +105,11 @@ var makeRequest = function(client, method, url, payload, query) {
     // Create hawk authentication header
     var header = hawk.client.header(url, method.toUpperCase(), {
       credentials: {
-        id:         client._options.credentials.clientId,
-        key:        client._options.credentials.accessToken,
-        algorithm:  'sha256',
+        id: client._options.credentials.clientId,
+        key: client._options.credentials.accessToken,
+        algorithm: 'sha256',
       },
-      ext:          client._extData,
+      ext: client._extData,
     });
     req.set('Authorization', header.field);
   }
@@ -172,7 +172,7 @@ exports.createClient = function(reference, name) {
       }
     }
     this._options = _.defaults({}, options || {}, {
-      exchangePrefix:   reference.exchangePrefix,
+      exchangePrefix: reference.exchangePrefix,
       serviceName,
       serviceVersion: 'v1',
     }, _defaultOptions);
@@ -355,7 +355,7 @@ exports.createClient = function(reference, name) {
             if (res) {
               // Decide if we should retry
               if (attempts <= that._options.retries &&
-                  res.status >= 500 &&  // Check if it's a 5xx error
+                  res.status >= 500 && // Check if it's a 5xx error
                   res.status < 600) {
                 debug('Error calling: %s now retrying, info: %j',
                   entry.name, res.body);
@@ -482,7 +482,7 @@ exports.createClient = function(reference, name) {
           var value = routingKeyPattern[key.name];
           // Routing key constant entries cannot be modified
           if (key.constant) {
-            value =  key.constant;
+            value = key.constant;
           }
           // If number convert to string
           if (typeof value === 'number') {
@@ -507,9 +507,9 @@ exports.createClient = function(reference, name) {
 
       // Return values necessary to bind with EventHandler
       return {
-        exchange:             this._options.exchangePrefix + entry.exchange,
-        routingKeyPattern:    routingKeyPattern,
-        routingKeyReference:  _.cloneDeep(entry.routingKey),
+        exchange: this._options.exchangePrefix + entry.exchange,
+        routingKeyPattern: routingKeyPattern,
+        routingKeyReference: _.cloneDeep(entry.routingKey),
       };
     };
   });
@@ -525,7 +525,7 @@ exports.createClient = function(reference, name) {
     }
     // Find the method
     var method = args.shift();
-    var entry  = method.entryReference;
+    var entry = method.entryReference;
     if (!entry || entry.type !== 'function') {
       throw new Error('method in buildUrl(method, arg1, arg2, ...) must be ' +
                         'an API method from the same object!');
@@ -588,7 +588,7 @@ exports.createClient = function(reference, name) {
 
     // Find method and reference entry
     var method = args[0];
-    var entry  = method.entryReference;
+    var entry = method.entryReference;
     if (entry.method !== 'get') {
       throw new Error('buildSignedUrl only works for GET requests');
     }
@@ -630,13 +630,13 @@ exports.createClient = function(reference, name) {
 
     // Create bewit (this is messed up, function differs in browser)
     var bewit = (hawk.client.getBewit || hawk.client.bewit)(requestUrl, {
-      credentials:    {
-        id:         this._options.credentials.clientId,
-        key:        this._options.credentials.accessToken,
-        algorithm:  'sha256',
+      credentials: {
+        id: this._options.credentials.clientId,
+        key: this._options.credentials.accessToken,
+        algorithm: 'sha256',
       },
-      ttlSec:         expiration,
-      ext:            this._extData,
+      ttlSec: expiration,
+      ext: this._extData,
     });
 
     // Add bewit to requestUrl
@@ -717,12 +717,12 @@ exports.createTemporaryCredentials = function(options) {
   options = _.defaults({}, options, {
     // Clock drift is handled in auth service (PR #117)
     // so no clock skew required.
-    start:      now,
-    scopes:     [],
+    start: now,
+    scopes: [],
   }, _defaultOptions);
 
   // Validate options
-  assert(options.credentials,             'options.credentials is required');
+  assert(options.credentials, 'options.credentials is required');
   assert(options.credentials.clientId,
     'options.credentials.clientId is required');
   assert(options.credentials.accessToken,
@@ -731,8 +731,8 @@ exports.createTemporaryCredentials = function(options) {
          options.credentials.certificate === null,
   'temporary credentials cannot be used to make new temporary ' +
          'credentials; ensure that options.credentials.certificate is null');
-  assert(options.start instanceof Date,   'options.start must be a Date');
-  assert(options.expiry instanceof Date,  'options.expiry must be a Date');
+  assert(options.start instanceof Date, 'options.start must be a Date');
+  assert(options.expiry instanceof Date, 'options.expiry must be a Date');
   assert(options.scopes instanceof Array, 'options.scopes must be an array');
   options.scopes.forEach(function(scope) {
     assert(typeof scope === 'string',
@@ -750,12 +750,12 @@ exports.createTemporaryCredentials = function(options) {
 
   // Construct certificate
   var cert = {
-    version:    1,
-    scopes:     _.cloneDeep(options.scopes),
-    start:      options.start.getTime(),
-    expiry:     options.expiry.getTime(),
-    seed:       slugid.v4() + slugid.v4(),
-    signature:  null,  // generated later
+    version: 1,
+    scopes: _.cloneDeep(options.scopes),
+    start: options.start.getTime(),
+    expiry: options.expiry.getTime(),
+    seed: slugid.v4() + slugid.v4(),
+    signature: null, // generated later
   };
   if (isNamed) {
     cert.issuer = options.credentials.clientId;
@@ -763,14 +763,14 @@ exports.createTemporaryCredentials = function(options) {
 
   // Construct signature
   var sig = crypto.createHmac('sha256', options.credentials.accessToken);
-  sig.update('version:'    + cert.version + '\n');
+  sig.update('version:' + cert.version + '\n');
   if (isNamed) {
     sig.update('clientId:' + options.clientId + '\n');
-    sig.update('issuer:'   + options.credentials.clientId + '\n');
+    sig.update('issuer:' + options.credentials.clientId + '\n');
   }
-  sig.update('seed:'       + cert.seed + '\n');
-  sig.update('start:'      + cert.start + '\n');
-  sig.update('expiry:'     + cert.expiry + '\n');
+  sig.update('seed:' + cert.seed + '\n');
+  sig.update('start:' + cert.start + '\n');
+  sig.update('expiry:' + cert.expiry + '\n');
   sig.update('scopes:\n');
   sig.update(cert.scopes.join('\n'));
   cert.signature = sig.digest('base64');
@@ -780,15 +780,15 @@ exports.createTemporaryCredentials = function(options) {
     .createHmac('sha256', options.credentials.accessToken)
     .update(cert.seed)
     .digest('base64')
-    .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
-    .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
-    .replace(/=/g,  '');  // Drop '==' padding
+    .replace(/\+/g, '-') // Replace + with - (see RFC 4648, sec. 5)
+    .replace(/\//g, '_') // Replace / with _ (see RFC 4648, sec. 5)
+    .replace(/=/g, ''); // Drop '==' padding
 
   // Return the generated temporary credentials
   return {
-    clientId:     isNamed ? options.clientId : options.credentials.clientId,
-    accessToken:  accessToken,
-    certificate:  JSON.stringify(cert),
+    clientId: isNamed ? options.clientId : options.credentials.clientId,
+    accessToken: accessToken,
+    certificate: JSON.stringify(cert),
   };
 };
 

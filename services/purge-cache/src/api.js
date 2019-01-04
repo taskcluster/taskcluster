@@ -9,15 +9,15 @@ const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,22}$/;
 
 /** API end-point for version v1/ */
 const builder = new APIBuilder({
-  title:        'Purge Cache API',
+  title: 'Purge Cache API',
   context: [
-    'cfg',              // A typed-env-config instance
-    'CachePurge',      // A data.CachePurge instance
+    'cfg', // A typed-env-config instance
+    'CachePurge', // A data.CachePurge instance
     'cachePurgeCache', // An Promise for cacheing cachepurge responses
   ],
   params: {
-    provisionerId:    GENERIC_ID_PATTERN,
-    workerType:       GENERIC_ID_PATTERN,
+    provisionerId: GENERIC_ID_PATTERN,
+    workerType: GENERIC_ID_PATTERN,
   },
   description: [
     'The purge-cache service is responsible for publishing a pulse',
@@ -35,13 +35,13 @@ module.exports = builder;
 
 /** Define tasks */
 builder.declare({
-  method:     'post',
-  route:      '/purge-cache/:provisionerId/:workerType',
-  name:       'purgeCache',
-  scopes:     'purge-cache:<provisionerId>/<workerType>:<cacheName>',
-  input:      'purge-cache-request.yml',
-  title:      'Purge Worker Cache',
-  stability:  APIBuilder.stability.stable,
+  method: 'post',
+  route: '/purge-cache/:provisionerId/:workerType',
+  name: 'purgeCache',
+  scopes: 'purge-cache:<provisionerId>/<workerType>:<cacheName>',
+  input: 'purge-cache-request.yml',
+  title: 'Purge Worker Cache',
+  stability: APIBuilder.stability.stable,
   description: [
     'Publish a purge-cache message to purge caches named `cacheName` with',
     '`provisionerId` and `workerType` in the routing-key. Workers should',
@@ -84,16 +84,16 @@ builder.declare({
 });
 
 builder.declare({
-  method:   'get',
-  route:    '/purge-cache/list',
+  method: 'get',
+  route: '/purge-cache/list',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
-  name:     'allPurgeRequests',
-  output:   'all-purge-cache-request-list.yml',
-  title:    'All Open Purge Requests',
-  stability:  APIBuilder.stability.stable,
+  name: 'allPurgeRequests',
+  output: 'all-purge-cache-request-list.yml',
+  title: 'All Open Purge Requests',
+  stability: APIBuilder.stability.stable,
   description: [
     'This is useful mostly for administors to view',
     'the set of open purge requests. It should not',
@@ -119,15 +119,15 @@ builder.declare({
 });
 
 builder.declare({
-  method:   'get',
-  route:    '/purge-cache/:provisionerId/:workerType',
+  method: 'get',
+  route: '/purge-cache/:provisionerId/:workerType',
   query: {
     since: dt => Date.parse(dt) ? null : 'Invalid Date',
   },
-  name:     'purgeRequests',
-  output:   'purge-cache-request-list.yml',
-  title:    'Open Purge Requests for a provisionerId/workerType pair',
-  stability:  APIBuilder.stability.stable,
+  name: 'purgeRequests',
+  output: 'purge-cache-request-list.yml',
+  title: 'Open Purge Requests for a provisionerId/workerType pair',
+  stability: APIBuilder.stability.stable,
   description: [
     'List of caches that need to be purged if they are from before',
     'a certain time. This is safe to be used in automation from',

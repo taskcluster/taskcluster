@@ -1,7 +1,7 @@
-const _           = require('lodash');
-const APIBuilder  = require('taskcluster-lib-api');
-const helpers     = require('./helpers');
-const Entity      = require('azure-entities');
+const _ = require('lodash');
+const APIBuilder = require('taskcluster-lib-api');
+const helpers = require('./helpers');
+const Entity = require('azure-entities');
 
 /**
  * API end-point for version v1/
@@ -14,7 +14,7 @@ const Entity      = require('azure-entities');
  * }
  */
 let builder = new APIBuilder({
-  title:        'Task Index API Documentation',
+  title: 'Task Index API Documentation',
   description: [
     'The task index is responsible for indexing tasks. The service ensures that',
     'tasks can be located by recency and/or arbitrary strings. Common',
@@ -109,13 +109,13 @@ let builder = new APIBuilder({
     'good idea to document task index hierarchies, as these make up extension',
     'points in their own.',
   ].join('\n'),
-  projectName:        'taskcluster-index',
-  serviceName:        'index',
-  apiVersion:         'v1',
-  context:            ['queue', 'IndexedTask', 'Namespace'],
+  projectName: 'taskcluster-index',
+  serviceName: 'index',
+  apiVersion: 'v1',
+  context: ['queue', 'IndexedTask', 'Namespace'],
   params: {
-    namespace:        helpers.namespaceFormat,
-    indexPath:        helpers.namespaceFormat,
+    namespace: helpers.namespaceFormat,
+    indexPath: helpers.namespaceFormat,
   },
 });
 
@@ -123,12 +123,12 @@ module.exports = builder;
 
 /** Get specific indexed task */
 builder.declare({
-  method:         'get',
-  route:          '/task/:indexPath',
-  name:           'findTask',
-  stability:      APIBuilder.stability.stable,
-  output:         'indexed-task-response.yml',
-  title:          'Find Indexed Task',
+  method: 'get',
+  route: '/task/:indexPath',
+  name: 'findTask',
+  stability: APIBuilder.stability.stable,
+  output: 'indexed-task-response.yml',
+  title: 'Find Indexed Task',
   description: [
     'Find a task by index path, returning the highest-rank task with that path. If no',
     'task exists for the given path, this API end-point will respond with a 404 status.',
@@ -141,14 +141,14 @@ builder.declare({
   indexPath = indexPath.split('.');
 
   // Find name and namespace
-  var name  = indexPath.pop() || '';
+  var name = indexPath.pop() || '';
   var namespace = indexPath.join('.');
 
   // Load indexed task
   return that.IndexedTask.query({
-    namespace:    namespace,
-    name:         name,
-    expires:      Entity.op.greaterThan(new Date()),
+    namespace: namespace,
+    name: name,
+    expires: Entity.op.greaterThan(new Date()),
   }).then(function(tasks) {
     if (_.isEmpty(tasks.entries)) {
       return res.reportError('ResourceNotFound', 'Indexed task has expired', {});
@@ -166,16 +166,16 @@ builder.declare({
 
 /** GET List namespaces inside another namespace */
 builder.declare({
-  method:         'get',
-  route:          '/namespaces/:namespace?',
+  method: 'get',
+  route: '/namespaces/:namespace?',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
-  name:           'listNamespaces',
-  stability:      APIBuilder.stability.stable,
-  output:         'list-namespaces-response.yml',
-  title:          'List Namespaces',
+  name: 'listNamespaces',
+  stability: APIBuilder.stability.stable,
+  output: 'list-namespaces-response.yml',
+  title: 'List Namespaces',
   description: [
     'List the namespaces immediately under a given namespace.',
     '',
@@ -186,10 +186,10 @@ builder.declare({
     'object.',
   ].join('\n'),
 }, async function(req, res) {
-  var that       = this;
+  var that = this;
   var namespace = req.params.namespace || '';
-  let continuation  = req.query.continuationToken || null;
-  let limit         = parseInt(req.query.limit || 1000, 10);
+  let continuation = req.query.continuationToken || null;
+  let limit = parseInt(req.query.limit || 1000, 10);
   let query = {
     parent: namespace,
     expires: Entity.op.greaterThan(new Date()),
@@ -209,14 +209,14 @@ builder.declare({
 
 /** POST List namespaces inside another namespace */
 builder.declare({
-  method:         'post',
-  route:          '/namespaces/:namespace?',
-  name:           'listNamespacesPost',
-  stability:      'deprecated',
-  noPublish:      true,
-  input:          'list-namespaces-request.yml',
-  output:         'list-namespaces-response.yml',
-  title:          'List Namespaces',
+  method: 'post',
+  route: '/namespaces/:namespace?',
+  name: 'listNamespacesPost',
+  stability: 'deprecated',
+  noPublish: true,
+  input: 'list-namespaces-request.yml',
+  output: 'list-namespaces-response.yml',
+  title: 'List Namespaces',
   description: [
     'List the namespaces immediately under a given namespace.',
     '',
@@ -227,7 +227,7 @@ builder.declare({
     'object.',
   ].join('\n'),
 }, async function(req, res) {
-  var that       = this;
+  var that = this;
   let namespace = req.params.namespace || '';
   let limit = req.body.limit;
   let continuation = req.body.continuationToken;
@@ -250,16 +250,16 @@ builder.declare({
 
 /** List tasks in namespace */
 builder.declare({
-  method:         'get',
-  route:          '/tasks/:namespace?',
+  method: 'get',
+  route: '/tasks/:namespace?',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
-  name:           'listTasks',
-  stability:      APIBuilder.stability.stable,
-  output:         'list-tasks-response.yml',
-  title:          'List Tasks',
+  name: 'listTasks',
+  stability: APIBuilder.stability.stable,
+  output: 'list-tasks-response.yml',
+  title: 'List Tasks',
   description: [
     'List the tasks immediately under a given namespace.',
     '',
@@ -273,7 +273,7 @@ builder.declare({
     'services, as that makes little sense.',
   ].join('\n'),
 }, async function(req, res) {
-  var that       = this;
+  var that = this;
   let namespace = req.params.namespace || '';
   let query = {
     namespace,
@@ -295,18 +295,18 @@ builder.declare({
 });
 
 builder.declare({
-  method:         'post',
-  route:          '/tasks/:namespace?',
-  name:           'listTasksPost',
-  stability:      'deprecated',
-  noPublish:      true,
-  output:         'list-tasks-response.yml',
-  title:          'List Tasks',
+  method: 'post',
+  route: '/tasks/:namespace?',
+  name: 'listTasksPost',
+  stability: 'deprecated',
+  noPublish: true,
+  output: 'list-tasks-response.yml',
+  title: 'List Tasks',
   description: [
     '(a version of listTasks with POST for backward compatibility; do not use)',
   ].join('\n'),
 }, async function(req, res) {
-  var that       = this;
+  var that = this;
   let namespace = req.params.namespace || '';
   let query = {
     namespace,
@@ -329,14 +329,14 @@ builder.declare({
 
 /** Insert new task into the index */
 builder.declare({
-  method:         'put',
-  route:          '/task/:namespace',
-  name:           'insertTask',
-  stability:      APIBuilder.stability.stable,
-  scopes:         'index:insert-task:<namespace>',
-  input:          'insert-task-request.yml',
-  output:         'indexed-task-response.yml',
-  title:          'Insert Task into Index',
+  method: 'put',
+  route: '/task/:namespace',
+  name: 'insertTask',
+  stability: APIBuilder.stability.stable,
+  scopes: 'index:insert-task:<namespace>',
+  input: 'insert-task-request.yml',
+  output: 'indexed-task-response.yml',
+  title: 'Insert Task into Index',
   description: [
     'Insert a task into the index.  If the new rank is less than the existing rank',
     'at the given index path, the task is not indexed but the response is still 200 OK.',
@@ -345,7 +345,7 @@ builder.declare({
     'about indexing successfully completed tasks automatically using custom routes.',
   ].join('\n'),
 }, async function(req, res) {
-  var that   = this;
+  var that = this;
   var input = req.body;
   var namespace = req.params.namespace || '';
 
@@ -367,12 +367,12 @@ builder.declare({
 
 /** Get artifact from indexed task */
 builder.declare({
-  method:         'get',
-  route:          '/task/:indexPath/artifacts/:name(*)',
-  name:           'findArtifactFromTask',
-  stability:      APIBuilder.stability.stable,
-  scopes:         {if: 'private', then: 'queue:get-artifact:<name>'},
-  title:          'Get Artifact From Indexed Task',
+  method: 'get',
+  route: '/task/:indexPath/artifacts/:name(*)',
+  name: 'findArtifactFromTask',
+  stability: APIBuilder.stability.stable,
+  scopes: {if: 'private', then: 'queue:get-artifact:<name>'},
+  title: 'Get Artifact From Indexed Task',
   description: [
     'Find a task by index path and redirect to the artifact on the most recent',
     'run with the given `name`.',
@@ -403,14 +403,14 @@ builder.declare({
   indexPath = indexPath.split('.');
 
   // Find name and namespace
-  var name  = indexPath.pop() || '';
+  var name = indexPath.pop() || '';
   var namespace = indexPath.join('.');
 
   // Load indexed task
   return that.IndexedTask.load({
-    namespace:    namespace,
-    name:         name,
-    expires:      Entity.op.greaterThan(new Date()),
+    namespace: namespace,
+    name: name,
+    expires: Entity.op.greaterThan(new Date()),
   }).then(function(task) {
     // Build signed url for artifact
     var url = null;
@@ -425,7 +425,7 @@ builder.declare({
         that.queue.getLatestArtifact,
         task.taskId,
         artifactName, {
-          expiration:     15 * 60,
+          expiration: 15 * 60,
         });
     }
     // Redirect to artifact

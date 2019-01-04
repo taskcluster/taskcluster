@@ -68,9 +68,9 @@ class User {
   /** Serialize user to JSON */
   serialize() {
     return {
-      version:  1,
+      version: 1,
       identity: this._identity,
-      roles:    this.roles,
+      roles: this.roles,
     };
   }
 

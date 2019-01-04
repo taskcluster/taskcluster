@@ -3,10 +3,10 @@ var assert = require('assert');
 
 /** Declaration of exchanges offered by the queue */
 var exchanges = new Exchanges({
-  title:       'Queue AMQP Exchanges',
+  title: 'Queue AMQP Exchanges',
   projectName: 'taskcluster-queue',
   serviceName: 'queue',
-  apiVersion:  'v1',
+  apiVersion: 'v1',
   description: [
     'The queue service is responsible for accepting tasks and track their state',
     'as they are executed by workers. In order ensure they are eventually',
@@ -66,62 +66,62 @@ var buildCommonRoutingKey = function(options) {
   options = options || {};
   return [
     {
-      name:             'routingKeyKind',
-      summary:          'Identifier for the routing-key kind. This is ' +
+      name: 'routingKeyKind',
+      summary: 'Identifier for the routing-key kind. This is ' +
                         'always `\'primary\'` for the formalized routing key.',
-      constant:         'primary',
-      required:         true,
+      constant: 'primary',
+      required: true,
     },
     {
-      name:             'taskId',
-      summary:          '`taskId` for the task this message concerns',
-      required:         true,
-      maxSize:          22,
+      name: 'taskId',
+      summary: '`taskId` for the task this message concerns',
+      required: true,
+      maxSize: 22,
     }, {
-      name:             'runId',
-      summary:          '`runId` of latest run for the task, ' +
+      name: 'runId',
+      summary: '`runId` of latest run for the task, ' +
                         '`_` if no run is exists for the task.',
-      required:         options.hasRun || false,
-      maxSize:          3,
+      required: options.hasRun || false,
+      maxSize: 3,
     }, {
-      name:             'workerGroup',
-      summary:          '`workerGroup` of latest run for the task, ' +
+      name: 'workerGroup',
+      summary: '`workerGroup` of latest run for the task, ' +
                         '`_` if no run is exists for the task.',
-      required:         options.hasWorker || false,
-      maxSize:          22,
+      required: options.hasWorker || false,
+      maxSize: 22,
     }, {
-      name:             'workerId',
-      summary:          '`workerId` of latest run for the task, ' +
+      name: 'workerId',
+      summary: '`workerId` of latest run for the task, ' +
                         '`_` if no run is exists for the task.',
-      required:         options.hasWorker || false,
-      maxSize:          22,
+      required: options.hasWorker || false,
+      maxSize: 22,
     }, {
-      name:             'provisionerId',
-      summary:          '`provisionerId` this task is targeted at.',
-      required:         true,
-      maxSize:          22,
+      name: 'provisionerId',
+      summary: '`provisionerId` this task is targeted at.',
+      required: true,
+      maxSize: 22,
     }, {
-      name:             'workerType',
-      summary:          '`workerType` this task must run on.',
-      required:         true,
-      maxSize:          22,
+      name: 'workerType',
+      summary: '`workerType` this task must run on.',
+      required: true,
+      maxSize: 22,
     }, {
-      name:             'schedulerId',
-      summary:          '`schedulerId` this task was created by.',
-      required:         true,
-      maxSize:          22,
+      name: 'schedulerId',
+      summary: '`schedulerId` this task was created by.',
+      required: true,
+      maxSize: 22,
     }, {
-      name:             'taskGroupId',
-      summary:          '`taskGroupId` this task was created in.',
-      required:         true,
-      maxSize:          22,
+      name: 'taskGroupId',
+      summary: '`taskGroupId` this task was created in.',
+      required: true,
+      maxSize: 22,
     }, {
-      name:             'reserved',
-      summary:          'Space reserved for future routing-key entries, you ' +
+      name: 'reserved',
+      summary: 'Space reserved for future routing-key entries, you ' +
                         'should always match this entry with `#`. As ' +
                         'automatically done by our tooling, if not specified.',
-      multipleWords:    true,
-      maxSize:          1,
+      multipleWords: true,
+      maxSize: 1,
     },
   ];
 };
@@ -131,28 +131,28 @@ var buildTaskGroupRoutingKey = function(options) {
   options = options || {};
   return [
     {
-      name:             'routingKeyKind',
-      summary:          'Identifier for the routing-key kind. This is ' +
+      name: 'routingKeyKind',
+      summary: 'Identifier for the routing-key kind. This is ' +
                         'always `\'primary\'` for the formalized routing key.',
-      constant:         'primary',
-      required:         true,
+      constant: 'primary',
+      required: true,
     }, {
-      name:             'taskGroupId',
-      summary:          '`taskGroupId` for the task-group this message concerns',
-      required:         true,
-      maxSize:          22,
+      name: 'taskGroupId',
+      summary: '`taskGroupId` for the task-group this message concerns',
+      required: true,
+      maxSize: 22,
     }, {
-      name:             'schedulerId',
-      summary:          '`schedulerId` for the task-group this message concerns',
-      required:         true,
-      maxSize:          22,
+      name: 'schedulerId',
+      summary: '`schedulerId` for the task-group this message concerns',
+      required: true,
+      maxSize: 22,
     }, {
-      name:             'reserved',
-      summary:          'Space reserved for future routing-key entries, you ' +
+      name: 'reserved',
+      summary: 'Space reserved for future routing-key entries, you ' +
                         'should always match this entry with `#`. As ' +
                         'automatically done by our tooling, if not specified.',
-      multipleWords:    true,
-      maxSize:          1,
+      multipleWords: true,
+      maxSize: 1,
     },
   ];
 };
@@ -166,22 +166,22 @@ var commonMessageBuilder = function(message) {
 /** Build a message from message */
 var commonRoutingKeyBuilder = function(message, routing) {
   return {
-    taskId:           message.status.taskId,
-    runId:            message.runId,
-    workerGroup:      message.workerGroup,
-    workerId:         message.workerId,
-    provisionerId:    message.status.provisionerId,
-    workerType:       message.status.workerType,
-    schedulerId:      message.status.schedulerId,
-    taskGroupId:      message.status.taskGroupId,
+    taskId: message.status.taskId,
+    runId: message.runId,
+    workerGroup: message.workerGroup,
+    workerId: message.workerId,
+    provisionerId: message.status.provisionerId,
+    workerType: message.status.workerType,
+    schedulerId: message.status.schedulerId,
+    taskGroupId: message.status.taskGroupId,
   };
 };
 
 /** Build a message from message for task-group messages */
 var taskGroupRoutingKeyBuilder = function(message, routing) {
   return {
-    schedulerId:      message.schedulerId,
-    taskGroupId:      message.taskGroupId,
+    schedulerId: message.schedulerId,
+    taskGroupId: message.taskGroupId,
   };
 };
 
@@ -193,9 +193,9 @@ var commonCCBuilder = function(message, routes) {
 
 /** Task defined exchange */
 exchanges.declare({
-  exchange:           'task-defined',
-  name:               'taskDefined',
-  title:              'Task Defined Messages',
+  exchange: 'task-defined',
+  name: 'taskDefined',
+  title: 'Task Defined Messages',
   description: [
     'When a task is created or just defined a message is posted to this',
     'exchange.',
@@ -206,18 +206,18 @@ exchanges.declare({
     'Please, note that messages are also published on this exchange if defined',
     'using `createTask`.',
   ].join('\n'),
-  routingKey:         buildCommonRoutingKey(),
-  schema:             'task-defined-message.json#',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  commonRoutingKeyBuilder,
-  CCBuilder:          commonCCBuilder,
+  routingKey: buildCommonRoutingKey(),
+  schema: 'task-defined-message.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
 });
 
 /** Task pending exchange */
 exchanges.declare({
-  exchange:           'task-pending',
-  name:               'taskPending',
-  title:              'Task Pending Messages',
+  exchange: 'task-pending',
+  name: 'taskPending',
+  title: 'Task Pending Messages',
   description: [
     'When a task becomes `pending` a message is posted to this exchange.',
     '',
@@ -227,34 +227,34 @@ exchanges.declare({
     'efficiently and they would be able to reduce their polling interval',
     'significantly without affecting general responsiveness.',
   ].join('\n'),
-  routingKey:         buildCommonRoutingKey({hasRun: true}),
-  schema:             'task-pending-message.json#',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  commonRoutingKeyBuilder,
-  CCBuilder:          commonCCBuilder,
+  routingKey: buildCommonRoutingKey({hasRun: true}),
+  schema: 'task-pending-message.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
 });
 
 /** Task running exchange */
 exchanges.declare({
-  exchange:           'task-running',
-  name:               'taskRunning',
-  title:              'Task Running Messages',
+  exchange: 'task-running',
+  name: 'taskRunning',
+  title: 'Task Running Messages',
   description: [
     'Whenever a task is claimed by a worker, a run is started on the worker,',
     'and a message is posted on this exchange.',
   ].join('\n'),
-  routingKey:         buildCommonRoutingKey({hasRun: true, hasWorker: true}),
-  schema:             'task-running-message.json#',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  commonRoutingKeyBuilder,
-  CCBuilder:          commonCCBuilder,
+  routingKey: buildCommonRoutingKey({hasRun: true, hasWorker: true}),
+  schema: 'task-running-message.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
 });
 
 /** Artifact created exchange */
 exchanges.declare({
-  exchange:           'artifact-created',
-  name:               'artifactCreated',
-  title:              'Artifact Creation Messages',
+  exchange: 'artifact-created',
+  name: 'artifactCreated',
+  title: 'Artifact Creation Messages',
   description: [
     'Whenever the `createArtifact` end-point is called, the queue will create',
     'a record of the artifact and post a message on this exchange. All of this',
@@ -275,18 +275,18 @@ exchanges.declare({
     'smarter to index artifacts after the task in question have completed',
     'successfully.',
   ].join('\n'),
-  routingKey:         buildCommonRoutingKey({hasRun: true, hasWorker: true}),
-  schema:             'artifact-created-message.json#',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  commonRoutingKeyBuilder,
-  CCBuilder:          commonCCBuilder,
+  routingKey: buildCommonRoutingKey({hasRun: true, hasWorker: true}),
+  schema: 'artifact-created-message.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
 });
 
 /** Task completed exchange */
 exchanges.declare({
-  exchange:           'task-completed',
-  name:               'taskCompleted',
-  title:              'Task Completed Messages',
+  exchange: 'task-completed',
+  name: 'taskCompleted',
+  title: 'Task Completed Messages',
   description: [
     'When a task is successfully completed by a worker a message is posted',
     'this exchange.',
@@ -294,35 +294,35 @@ exchanges.declare({
     'that completed the task. But information about additional runs is also',
     'available from the task status structure.',
   ].join('\n'),
-  routingKey:         buildCommonRoutingKey({hasRun: true, hasWorker: true}),
-  schema:             'task-completed-message.json#',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  commonRoutingKeyBuilder,
-  CCBuilder:          commonCCBuilder,
+  routingKey: buildCommonRoutingKey({hasRun: true, hasWorker: true}),
+  schema: 'task-completed-message.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
 });
 
 /** Task failed exchange */
 exchanges.declare({
-  exchange:           'task-failed',
-  name:               'taskFailed',
-  title:              'Task Failed Messages',
+  exchange: 'task-failed',
+  name: 'taskFailed',
+  title: 'Task Failed Messages',
   description: [
     'When a task ran, but failed to complete successfully a message is posted',
     'to this exchange. This is same as worker ran task-specific code, but the',
     'task specific code exited non-zero.',
   ].join('\n'),
-  routingKey:         buildCommonRoutingKey(),
-  schema:             'task-failed-message.json#',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  commonRoutingKeyBuilder,
-  CCBuilder:          commonCCBuilder,
+  routingKey: buildCommonRoutingKey(),
+  schema: 'task-failed-message.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
 });
 
 /** Task exception exchange */
 exchanges.declare({
-  exchange:           'task-exception',
-  name:               'taskException',
-  title:              'Task Exception Messages',
+  exchange: 'task-exception',
+  name: 'taskException',
+  title: 'Task Exception Messages',
   description: [
     'Whenever Taskcluster fails to run a message is posted to this exchange.',
     'This happens if the task isn\'t completed before its `deadlìne`,',
@@ -332,18 +332,18 @@ exchanges.declare({
     'The specific _reason_ is evident from that task status structure, refer',
     'to the `reasonResolved` property for the last run.',
   ].join('\n'),
-  routingKey:         buildCommonRoutingKey(),
-  schema:             'task-exception-message.json#',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  commonRoutingKeyBuilder,
-  CCBuilder:          commonCCBuilder,
+  routingKey: buildCommonRoutingKey(),
+  schema: 'task-exception-message.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
 });
 
 /** Task group resolved exchange */
 exchanges.declare({
-  exchange:           'task-group-resolved',
-  name:               'taskGroupResolved',
-  title:              'Task Group Resolved Messages',
+  exchange: 'task-group-resolved',
+  name: 'taskGroupResolved',
+  title: 'Task Group Resolved Messages',
   description: [
     'A message is published on task-group-resolved whenever all submitted',
     'tasks (whether scheduled or unscheduled) for a given task group have',
@@ -351,9 +351,9 @@ exchanges.declare({
     'not. A task group may be resolved multiple times, since new tasks may',
     'be submitted against an already resolved task group.',
   ].join('\n'),
-  routingKey:         buildTaskGroupRoutingKey(),
-  schema:             'task-group-resolved.json#',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  taskGroupRoutingKeyBuilder,
-  CCBuilder:          commonCCBuilder,
+  routingKey: buildTaskGroupRoutingKey(),
+  schema: 'task-group-resolved.json#',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: taskGroupRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
 });

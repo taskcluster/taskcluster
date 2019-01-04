@@ -15,19 +15,19 @@ const debug = Debug('api');
  * A ping method, added automatically to every service
  */
 const ping = {
-  method:   'get',
-  route:    '/ping',
-  name:     'ping',
-  stability:  'stable',
-  title:    'Ping Server',
+  method: 'get',
+  route: '/ping',
+  name: 'ping',
+  stability: 'stable',
+  title: 'Ping Server',
   description: [
     'Respond without doing anything.',
     'This endpoint is used to check that the service is up.',
   ].join('\n'),
   handler: function(req, res) {
     res.status(200).json({
-      alive:    true,
-      uptime:   process.uptime(),
+      alive: true,
+      uptime: process.uptime(),
     });
   },
 };
@@ -47,9 +47,9 @@ class APIBuilder {
     options = _.defaults({
       errorCodes: _.defaults({}, options.errorCodes || {}, errors.ERROR_CODES),
     }, options, {
-      params:         {},
-      context:        [],
-      errorCodes:     {},
+      params: {},
+      context: [],
+      errorCodes: {},
     });
     _.forEach(options.errorCodes, (value, key) => {
       assert(/[A-Z][A-Za-z0-9]*/.test(key), 'Invalid error code: ' + key);
@@ -180,26 +180,26 @@ class APIBuilder {
    */
   reference() {
     const reference = {
-      $schema:            '/schemas/common/api-reference-v0.json#',
-      title:              this.title,
-      description:        this.description,
-      serviceName:        this.serviceName,
-      apiVersion:         this.apiVersion,
+      $schema: '/schemas/common/api-reference-v0.json#',
+      title: this.title,
+      description: this.description,
+      serviceName: this.serviceName,
+      apiVersion: this.apiVersion,
       entries: this.entries.filter(entry => !entry.noPublish).map(entry => {
         const [route, params] = utils.cleanRouteAndParams(entry.route);
 
         const retval = {
-          type:           'function',
-          method:         entry.method,
-          route:          route,
-          query:          _.keys(entry.query || {}),
-          args:           params,
-          name:           entry.name,
-          stability:      entry.stability,
-          title:          entry.title,
-          input:          entry.input,
-          output:         entry.output,
-          description:    entry.description,
+          type: 'function',
+          method: entry.method,
+          route: route,
+          query: _.keys(entry.query || {}),
+          args: params,
+          name: entry.name,
+          stability: entry.stability,
+          title: entry.title,
+          input: entry.input,
+          output: entry.output,
+          description: entry.description,
         };
         if (entry.scopes) {
           retval.scopes = entry.scopes;
@@ -223,7 +223,7 @@ const stability = {
    * Note, documentation string for a deprecated API end-point should outline
    * the deprecation strategy.
    */
-  deprecated:       'deprecated',
+  deprecated: 'deprecated',
   /**
    * Unless otherwise stated API may change and resources may be deleted
    * without warning. Often we will, however, try to deprecate the API first
@@ -241,7 +241,7 @@ const stability = {
    * or when we know that there is a limited number of consumers so fixing
    * the world after breaking the API is easy.
    */
-  experimental:     'experimental',
+  experimental: 'experimental',
   /**
    * API is stable and we will not delete resources or break the API suddenly.
    * As a guideline we will always facilitate gradual migration if we change
@@ -251,7 +251,7 @@ const stability = {
    *  - API end-points used in critical production.
    *  - APIs so widely used that refactoring would be hard.
    */
-  stable:           'stable',
+  stable: 'stable',
 };
 
 // List of valid stability-levels

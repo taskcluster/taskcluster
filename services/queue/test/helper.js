@@ -352,14 +352,14 @@ exports.withServer = (mock, skipping) => {
       const options = {
         // Ensure that we use global agent, to avoid problems with keepAlive
         // preventing tests from exiting
-        agent:            require('http').globalAgent,
+        agent: require('http').globalAgent,
         rootUrl: helper.rootUrl,
       };
       // if called as scopes('none'), don't pass credentials at all
       if (scopes && scopes[0] !== 'none') {
         options['credentials'] = {
-          clientId:       'test-client',
-          accessToken:    'none',
+          clientId: 'test-client',
+          accessToken: 'none',
         };
         options['authorizedScopes'] = scopes.length > 0 ? scopes : undefined;
       }

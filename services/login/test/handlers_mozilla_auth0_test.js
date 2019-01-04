@@ -8,7 +8,7 @@ suite('handlers/mozilla-auth0', function() {
     cfg: {
       handlers: {
         'mozilla-auth0': {
-          domain:'login-test.taskcluster.net',
+          domain: 'login-test.taskcluster.net',
           apiAudience: 'login-test.taskcluster.net',
           clientId: 'abcd',
           clientSecret: 'defg',

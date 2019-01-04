@@ -31,12 +31,12 @@ suite('app', function() {
 
       // Create a simple app
       server = await App({
-        port:             1459,
-        env:              'development',
-        forceSSL:         false,
-        forceHSTS:        true,
-        trustProxy:       false,
-        apis:             [fakeApi],
+        port: 1459,
+        env: 'development',
+        forceSSL: false,
+        forceHSTS: true,
+        trustProxy: false,
+        apis: [fakeApi],
       });
     });
 

@@ -18,20 +18,20 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   // Use the same task definition for everything
   const makeTask = (expiration) => {
     const task = {
-      provisionerId:    'no-provisioner',
-      workerType:       'test-worker',
-      created:          taskcluster.fromNowJSON(),
-      deadline:         taskcluster.fromNowJSON('1 day'),
+      provisionerId: 'no-provisioner',
+      workerType: 'test-worker',
+      created: taskcluster.fromNowJSON(),
+      deadline: taskcluster.fromNowJSON('1 day'),
       // Notice that in config/test.js we've configured
       // expire-tasks to expire 4 days before expires
-      expires:          taskcluster.fromNowJSON(expiration),
-      retries:          1,
-      payload:          {},
+      expires: taskcluster.fromNowJSON(expiration),
+      retries: 1,
+      payload: {},
       metadata: {
-        name:           'Unit testing task',
-        description:    'Task created during unit tests',
-        owner:          'jonsafj@mozilla.com',
-        source:         'https://github.com/taskcluster/taskcluster-queue',
+        name: 'Unit testing task',
+        description: 'Task created during unit tests',
+        owner: 'jonsafj@mozilla.com',
+        source: 'https://github.com/taskcluster/taskcluster-queue',
       },
     };
     return {taskId: slugid.v4(), task};
@@ -47,8 +47,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim task');
     const r2 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Report task completed');
@@ -80,8 +80,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim task');
     const r2 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Report task completed');

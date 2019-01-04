@@ -65,22 +65,22 @@ const builder = new APIBuilder({
   ].join('\n'),
   params: {
     // Patterns for auth
-    clientId:   /^[A-Za-z0-9!@/:.+|_-]+$/, // should match schemas/constants.yml, prefix below
-    roleId:     /^[\x20-\x7e]+$/,
+    clientId: /^[A-Za-z0-9!@/:.+|_-]+$/, // should match schemas/constants.yml, prefix below
+    roleId: /^[\x20-\x7e]+$/,
 
     // Patterns for Azure
-    account:    /^[a-z0-9]{3,24}$/,
-    table:      /^[A-Za-z][A-Za-z0-9]{2,62}$/,
-    container:  /^(?!.*[-]{2})[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/,
-    level:      /^(read-write|read-only)$/,
+    account: /^[a-z0-9]{3,24}$/,
+    table: /^[A-Za-z][A-Za-z0-9]{2,62}$/,
+    container: /^(?!.*[-]{2})[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/,
+    level: /^(read-write|read-only)$/,
 
     // Patterns for AWS
-    bucket:     /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/,
+    bucket: /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/,
     // we could allow "." too, but S3 buckets with dot in the name
     // doesn't work well with HTTPS and virtual-style hosting.
     // Hence, we shouldn't encourage people to use them
     // Project for sentry (and other per project resources)
-    project:    /^[a-zA-Z0-9_-]{1,64}$/,
+    project: /^[a-zA-Z0-9_-]{1,64}$/,
   },
   context: [
     // Instances of data tables
@@ -120,17 +120,17 @@ module.exports = builder;
 
 /** List clients */
 builder.declare({
-  method:     'get',
-  route:      '/clients/',
+  method: 'get',
+  route: '/clients/',
   query: {
-    prefix:  /^[A-Za-z0-9!@/:.+|_-]+$/, // should match clientId above
+    prefix: /^[A-Za-z0-9!@/:.+|_-]+$/, // should match clientId above
     continuationToken: /./,
     limit: /^[0-9]+$/,
   },
-  name:       'listClients',
-  output:     'list-clients-response.yml',
-  stability:  'stable',
-  title:      'List Clients',
+  name: 'listClients',
+  output: 'list-clients-response.yml',
+  stability: 'stable',
+  title: 'List Clients',
   description: [
     'Get a list of all clients.  With `prefix`, only clients for which',
     'it is a prefix of the clientId are returned.',
@@ -144,8 +144,8 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let prefix = req.query.prefix;
-  let continuationToken  = req.query.continuationToken || undefined;
-  let limit         = parseInt(req.query.limit || 1000, 10);
+  let continuationToken = req.query.continuationToken || undefined;
+  let limit = parseInt(req.query.limit || 1000, 10);
   let Client = this.Client;
   let resolver = this.resolver;
 
@@ -170,12 +170,12 @@ builder.declare({
 
 /** Get client */
 builder.declare({
-  method:     'get',
-  route:      '/clients/:clientId',
-  name:       'client',
-  stability:  'stable',
-  output:     'get-client-response.yml',
-  title:      'Get Client',
+  method: 'get',
+  route: '/clients/:clientId',
+  name: 'client',
+  stability: 'stable',
+  output: 'get-client-response.yml',
+  title: 'Get Client',
   description: [
     'Get information about a single client.',
   ].join('\n'),
@@ -194,19 +194,19 @@ builder.declare({
 
 /** Create client */
 builder.declare({
-  method:     'put',
-  route:      '/clients/:clientId',
-  name:       'createClient',
-  input:      'create-client-request.yml',
-  output:     'create-client-response.yml',
+  method: 'put',
+  route: '/clients/:clientId',
+  name: 'createClient',
+  input: 'create-client-request.yml',
+  output: 'create-client-response.yml',
   scopes: {
     AllOf: [
       'auth:create-client:<clientId>',
       {for: 'scope', in: 'scopes', each: '<scope>'},
     ],
   },
-  stability:  'stable',
-  title:      'Create Client',
+  stability: 'stable',
+  title: 'Create Client',
   description: [
     'Create a new client and get the `accessToken` for this client.',
     'You should store the `accessToken` from this API call as there is no',
@@ -222,9 +222,9 @@ builder.declare({
     'The caller\'s scopes must satisfy `scopes`.',
   ].join('\n'),
 }, async function(req, res) {
-  let clientId  = req.params.clientId;
-  let input     = req.body;
-  let scopes    = input.scopes || [];
+  let clientId = req.params.clientId;
+  let input = req.body;
+  let scopes = input.scopes || [];
 
   // Forbid changes to static clients
   if (clientId.startsWith('static/')) {
@@ -244,17 +244,17 @@ builder.declare({
 
   let accessToken = slugid.v4() + slugid.v4();
   let client = await this.Client.create({
-    clientId:     clientId,
-    description:  input.description,
-    accessToken:  accessToken,
-    expires:      new Date(input.expires),
-    scopes:       scopes,
-    disabled:     0,
+    clientId: clientId,
+    description: input.description,
+    accessToken: accessToken,
+    expires: new Date(input.expires),
+    scopes: scopes,
+    disabled: 0,
     details: {
-      created:      new Date().toJSON(),
+      created: new Date().toJSON(),
       lastModified: new Date().toJSON(),
       lastDateUsed: new Date().toJSON(),
-      lastRotated:  new Date().toJSON(),
+      lastRotated: new Date().toJSON(),
       deleteOnExpiration: !!input.deleteOnExpiration,
     },
   }).catch(async (err) => {
@@ -301,13 +301,13 @@ builder.declare({
 
 /** Reset access token for client */
 builder.declare({
-  method:     'post',
-  route:      '/clients/:clientId/reset',
-  name:       'resetAccessToken',
-  output:     'create-client-response.yml',
-  scopes:     'auth:reset-access-token:<clientId>',
-  stability:  'stable',
-  title:      'Reset `accessToken`',
+  method: 'post',
+  route: '/clients/:clientId/reset',
+  name: 'resetAccessToken',
+  output: 'create-client-response.yml',
+  scopes: 'auth:reset-access-token:<clientId>',
+  stability: 'stable',
+  title: 'Reset `accessToken`',
   description: [
     'Reset a clients `accessToken`, this will revoke the existing',
     '`accessToken`, generate a new `accessToken` and return it from this',
@@ -317,8 +317,8 @@ builder.declare({
     'you must reset the accessToken to acquire it again.',
   ].join('\n'),
 }, async function(req, res) {
-  let clientId  = req.params.clientId;
-  let input     = req.body;
+  let clientId = req.params.clientId;
+  let input = req.body;
 
   // Forbid changes to static clients
   if (clientId.startsWith('static/')) {
@@ -358,19 +358,19 @@ builder.declare({
 
 /** Update client */
 builder.declare({
-  method:     'post',
-  route:      '/clients/:clientId',
-  name:       'updateClient',
-  input:      'create-client-request.yml',
-  output:     'get-client-response.yml',
+  method: 'post',
+  route: '/clients/:clientId',
+  name: 'updateClient',
+  input: 'create-client-request.yml',
+  output: 'get-client-response.yml',
   scopes: {
     AllOf: [
       'auth:update-client:<clientId>',
       {for: 'scope', in: 'scopesAdded', each: '<scope>'},
     ],
   },
-  stability:  'stable',
-  title:      'Update Client',
+  stability: 'stable',
+  title: 'Update Client',
   description: [
     'Update an exisiting client. The `clientId` and `accessToken` cannot be',
     'updated, but `scopes` can be modified.  The caller\'s scopes must',
@@ -379,8 +379,8 @@ builder.declare({
     'unchanged',
   ].join('\n'),
 }, async function(req, res) {
-  let clientId  = req.params.clientId;
-  let input     = req.body;
+  let clientId = req.params.clientId;
+  let input = req.body;
 
   // Forbid changes to static clients
   if (clientId.startsWith('static/')) {
@@ -430,14 +430,14 @@ builder.declare({
 
 /** Enable client */
 builder.declare({
-  method:     'post',
-  route:      '/clients/:clientId/enable',
-  name:       'enableClient',
-  input:      undefined,
-  output:     'get-client-response.yml',
-  scopes:     'auth:enable-client:<clientId>',
-  stability:  'stable',
-  title:      'Enable Client',
+  method: 'post',
+  route: '/clients/:clientId/enable',
+  name: 'enableClient',
+  input: undefined,
+  output: 'get-client-response.yml',
+  scopes: 'auth:enable-client:<clientId>',
+  stability: 'stable',
+  title: 'Enable Client',
   description: [
     'Enable a client that was disabled with `disableClient`.  If the client',
     'is already enabled, this does nothing.',
@@ -446,7 +446,7 @@ builder.declare({
     'had been disabled when the corresponding identity\'s scopes changed.',
   ].join('\n'),
 }, async function(req, res) {
-  let clientId  = req.params.clientId;
+  let clientId = req.params.clientId;
 
   // Forbid changes to static clients
   if (clientId.startsWith('static/')) {
@@ -482,14 +482,14 @@ builder.declare({
 
 /** Disable client */
 builder.declare({
-  method:     'post',
-  route:      '/clients/:clientId/disable',
-  name:       'disableClient',
-  input:      undefined,
-  output:     'get-client-response.yml',
-  scopes:     'auth:disable-client:<clientId>',
-  stability:  'stable',
-  title:      'Disable Client',
+  method: 'post',
+  route: '/clients/:clientId/disable',
+  name: 'disableClient',
+  input: undefined,
+  output: 'get-client-response.yml',
+  scopes: 'auth:disable-client:<clientId>',
+  stability: 'stable',
+  title: 'Disable Client',
   description: [
     'Disable a client.  If the client is already disabled, this does nothing.',
     '',
@@ -497,7 +497,7 @@ builder.declare({
     'corresponding identity\'s scopes no longer satisfy the client\'s scopes.',
   ].join('\n'),
 }, async function(req, res) {
-  let clientId  = req.params.clientId;
+  let clientId = req.params.clientId;
 
   // Forbid changes to static clients
   if (clientId.startsWith('static/')) {
@@ -533,18 +533,18 @@ builder.declare({
 
 /** Delete client */
 builder.declare({
-  method:     'delete',
-  route:      '/clients/:clientId',
-  name:       'deleteClient',
-  scopes:     'auth:delete-client:<clientId>',
-  stability:  'stable',
-  title:      'Delete Client',
+  method: 'delete',
+  route: '/clients/:clientId',
+  name: 'deleteClient',
+  scopes: 'auth:delete-client:<clientId>',
+  stability: 'stable',
+  title: 'Delete Client',
   description: [
     'Delete a client, please note that any roles related to this client must',
     'be deleted independently.',
   ].join('\n'),
 }, async function(req, res) {
-  let clientId  = req.params.clientId;
+  let clientId = req.params.clientId;
 
   // Forbid changes to static clients
   if (clientId.startsWith('static/')) {
@@ -570,13 +570,13 @@ builder.declare({
 
 /** List roles */
 builder.declare({
-  method:     'get',
-  route:      '/roles/',
-  name:       'listRoles',
-  input:      undefined,
-  output:     'list-roles-response.yml',
-  stability:  'stable',
-  title:      'List Roles',
+  method: 'get',
+  route: '/roles/',
+  name: 'listRoles',
+  input: undefined,
+  output: 'list-roles-response.yml',
+  stability: 'stable',
+  title: 'List Roles',
   description: [
     'Get a list of all roles, each role object also includes the list of',
     'scopes it expands to.',
@@ -589,17 +589,17 @@ builder.declare({
 
 /** List role Ids **/
 builder.declare({
-  method:     'get',
-  route:      '/roleids/',
+  method: 'get',
+  route: '/roleids/',
   query: {
     continuationToken: /./,
     limit: /^[0-9]+$/,
   },
-  name:       'listRoleIds',
-  input:      undefined,
-  output:     'list-role-ids-response.yml',
-  stability:  'stable',
-  title:      'List Role IDs',
+  name: 'listRoleIds',
+  input: undefined,
+  output: 'list-role-ids-response.yml',
+  stability: 'stable',
+  title: 'List Role IDs',
   description: [
     'If no limit is given, the roleIds of all roles are returned. Since this',
     'list may become long, callers can use the `limit` and `continuationToken`',
@@ -637,7 +637,7 @@ builder.declare({
       response.continuationToken = hashids.encode(continuationToken, 10);
     }
   } else if (limit) {
-    roles = roles.slice(0, limit);   // If no continuationToken is provided
+    roles = roles.slice(0, limit); // If no continuationToken is provided
     continuationToken = limit;
 
     if (continuationToken < length) {
@@ -655,13 +655,13 @@ builder.declare({
 
 /** Get role */
 builder.declare({
-  method:     'get',
-  route:      '/roles/:roleId',
-  name:       'role',
-  input:      undefined,
-  output:     'get-role-response.yml',
-  stability:  'stable',
-  title:      'Get Role',
+  method: 'get',
+  route: '/roles/:roleId',
+  name: 'role',
+  input: undefined,
+  output: 'get-role-response.yml',
+  stability: 'stable',
+  title: 'Get Role',
   description: [
     'Get information about a single role, including the set of scopes that the',
     'role expands to.',
@@ -682,19 +682,19 @@ builder.declare({
 
 /** Create role */
 builder.declare({
-  method:     'put',
-  route:      '/roles/:roleId',
-  name:       'createRole',
-  input:      'create-role-request.yml',
-  output:     'get-role-response.yml',
+  method: 'put',
+  route: '/roles/:roleId',
+  name: 'createRole',
+  input: 'create-role-request.yml',
+  output: 'get-role-response.yml',
   scopes: {
     AllOf: [
       'auth:create-role:<roleId>',
       {for: 'scope', in: 'scopes', each: '<scope>'},
     ],
   },
-  stability:  'stable',
-  title:      'Create Role',
+  stability: 'stable',
+  title: 'Create Role',
   description: [
     'Create a new role.',
     '',
@@ -707,8 +707,8 @@ builder.declare({
     'in an error response.',
   ].join('\n'),
 }, async function(req, res) {
-  const roleId    = req.params.roleId;
-  const input     = req.body;
+  const roleId = req.params.roleId;
+  const input = req.body;
 
   if (input.scopes.some(s => s.endsWith('**'))) {
     return res.reportError('InputError', 'scopes must not end with `**`', {});
@@ -774,19 +774,19 @@ builder.declare({
 
 /** Update role */
 builder.declare({
-  method:     'post',
-  route:      '/roles/:roleId',
-  name:       'updateRole',
-  input:      'create-role-request.yml',
-  output:     'get-role-response.yml',
+  method: 'post',
+  route: '/roles/:roleId',
+  name: 'updateRole',
+  input: 'create-role-request.yml',
+  output: 'get-role-response.yml',
   scopes: {
     AllOf: [
       'auth:update-role:<roleId>',
       {for: 'scope', in: 'scopesAdded', each: '<scope>'},
     ],
   },
-  stability:  'stable',
-  title:      'Update Role',
+  stability: 'stable',
+  title: 'Update Role',
   description: [
     'Update an existing role.',
     '',
@@ -797,8 +797,8 @@ builder.declare({
     'in an error response.',
   ].join('\n'),
 }, async function(req, res) {
-  const roleId    = req.params.roleId;
-  const input     = req.body;
+  const roleId = req.params.roleId;
+  const input = req.body;
 
   if (input.scopes.some(s => s.endsWith('**'))) {
     return res.reportError('InputError', 'scopes must not end with `**`', {});
@@ -858,18 +858,18 @@ builder.declare({
 
 /** Delete role */
 builder.declare({
-  method:     'delete',
-  route:      '/roles/:roleId',
-  name:       'deleteRole',
-  scopes:     'auth:delete-role:<roleId>',
-  stability:  'stable',
-  title:      'Delete Role',
+  method: 'delete',
+  route: '/roles/:roleId',
+  name: 'deleteRole',
+  scopes: 'auth:delete-role:<roleId>',
+  stability: 'stable',
+  title: 'Delete Role',
   description: [
     'Delete a role. This operation will succeed regardless of whether or not',
     'the role exists.',
   ].join('\n'),
 }, async function(req, res) {
-  let roleId  = req.params.roleId;
+  let roleId = req.params.roleId;
 
   // Check scopes
   await req.authorize({roleId});
@@ -891,13 +891,13 @@ builder.declare({
 
 /** Expand a scopeset */
 builder.declare({
-  method:     'get',
-  route:      '/scopes/expand',
-  name:       'expandScopesGet',
-  input:      'scopeset.yml',
-  output:     'scopeset.yml',
-  stability:  'deprecated',
-  title:      'Expand Scopes',
+  method: 'get',
+  route: '/scopes/expand',
+  name: 'expandScopesGet',
+  input: 'scopeset.yml',
+  output: 'scopeset.yml',
+  stability: 'deprecated',
+  title: 'Expand Scopes',
   description: [
     'Return an expanded copy of the given scopeset, with scopes implied by any',
     'roles included.',
@@ -911,13 +911,13 @@ builder.declare({
 });
 
 builder.declare({
-  method:     'post',
-  route:      '/scopes/expand',
-  name:       'expandScopes',
-  input:      'scopeset.yml',
-  output:     'scopeset.yml',
-  stability:  'stable',
-  title:      'Expand Scopes',
+  method: 'post',
+  route: '/scopes/expand',
+  name: 'expandScopes',
+  input: 'scopeset.yml',
+  output: 'scopeset.yml',
+  stability: 'stable',
+  title: 'Expand Scopes',
   description: [
     'Return an expanded copy of the given scopeset, with scopes implied by any',
     'roles included.',
@@ -929,12 +929,12 @@ builder.declare({
 
 /** Get the request scopes */
 builder.declare({
-  method:     'get',
-  route:      '/scopes/current',
-  name:       'currentScopes',
-  output:     'scopeset.yml',
-  stability:  'stable',
-  title:      'Get Current Scopes',
+  method: 'get',
+  route: '/scopes/current',
+  name: 'currentScopes',
+  output: 'scopeset.yml',
+  stability: 'stable',
+  title: 'Get Current Scopes',
   description: [
     'Return the expanded scopes available in the request, taking into account all sources',
     'of scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,',
@@ -955,13 +955,13 @@ require('./websocktunnel');
 
 /** Get all client information */
 builder.declare({
-  method:     'post',
-  route:      '/authenticate-hawk',
-  name:       'authenticateHawk',
-  input:      'authenticate-hawk-request.yml',
-  output:     'authenticate-hawk-response.yml',
-  stability:  'stable',
-  title:      'Authenticate Hawk Request',
+  method: 'post',
+  route: '/authenticate-hawk',
+  name: 'authenticateHawk',
+  input: 'authenticate-hawk-request.yml',
+  output: 'authenticate-hawk-response.yml',
+  stability: 'stable',
+  title: 'Authenticate Hawk Request',
   description: [
     'Validate the request signature given on input and return list of scopes',
     'that the authenticating client has.',
@@ -980,13 +980,13 @@ builder.declare({
 });
 
 builder.declare({
-  method:     'post',
-  route:      '/test-authenticate',
-  name:       'testAuthenticate',
-  input:      'test-authenticate-request.yml',
-  output:     'test-authenticate-response.yml',
-  stability:  'stable',
-  title:      'Test Authentication',
+  method: 'post',
+  route: '/test-authenticate',
+  name: 'testAuthenticate',
+  input: 'test-authenticate-request.yml',
+  output: 'test-authenticate-response.yml',
+  stability: 'stable',
+  title: 'Test Authentication',
   description: [
     'Utility method to test client implementations of Taskcluster',
     'authentication.',
@@ -1031,12 +1031,12 @@ builder.declare({
 });
 
 builder.declare({
-  method:     'get',
-  route:      '/test-authenticate-get/',
-  name:       'testAuthenticateGet',
-  output:     'test-authenticate-response.yml',
-  stability:  'stable',
-  title:      'Test Authentication (GET)',
+  method: 'get',
+  route: '/test-authenticate-get/',
+  name: 'testAuthenticateGet',
+  output: 'test-authenticate-response.yml',
+  stability: 'stable',
+  title: 'Test Authentication (GET)',
   description: [
     'Utility method similar to `testAuthenticate`, but with the GET method,',
     'so it can be used with signed URLs (bewits).',

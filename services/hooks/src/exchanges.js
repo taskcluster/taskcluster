@@ -2,7 +2,7 @@ let {Exchanges} = require('taskcluster-lib-pulse');
 
 /** Declaration of exchanges used by hooks  */
 let exchanges = new Exchanges({
-  title:       'Exchanges to manage hooks',
+  title: 'Exchanges to manage hooks',
   projectName: 'taskcluster-hooks',
   serviceName: 'hooks',
   apiVersion: 'v1',
@@ -26,12 +26,12 @@ module.exports = exchanges;
 var buildCommonRoutingKey = (options) => {
   return [
     {
-      name:             'reserved',
-      summary:          'Space reserved for future routing-key entries, you ' +
+      name: 'reserved',
+      summary: 'Space reserved for future routing-key entries, you ' +
                         'should always match this entry with `#`. As ' +
                         'automatically done by our tooling, if not specified.',
-      multipleWords:    true,
-      maxSize:          10,
+      multipleWords: true,
+      maxSize: 10,
     },
   ];
 };
@@ -58,14 +58,14 @@ var commonCCBuilder = function(message, routes) {
 // Hook created exchange
 exchanges.declare({
   exchange: 'hook-created',
-  name:     'hookCreated',
-  title:    'Hook Created Messages',
+  name: 'hookCreated',
+  title: 'Hook Created Messages',
   description: [
     'Whenever the api receives a request to create a',
     'pulse based hook, a message is posted to this exchange and',
     'the receiver creates a listener with the bindings, to create a task',
   ].join(''),
-  schema:   'pulse-hook-changed-message.json#',
+  schema: 'pulse-hook-changed-message.json#',
   messageBuilder: commonMessageBuilder,
   routingKey: buildCommonRoutingKey(),
   routingKeyBuilder: commonRoutingKeyBuilder,
@@ -75,14 +75,14 @@ exchanges.declare({
 // Hook updated exchange
 exchanges.declare({
   exchange: 'hook-updated',
-  name:     'hookUpdated',
-  title:    'Hook Updated Messages',
+  name: 'hookUpdated',
+  title: 'Hook Updated Messages',
   description: [
     'Whenever the api receives a request to update a',
     'pulse based hook, a message is posted to this exchange and',
     'the receiver updates the listener associated with that hook.',
   ].join(''),
-  schema:   'pulse-hook-changed-message.json#',
+  schema: 'pulse-hook-changed-message.json#',
   messageBuilder: commonMessageBuilder,
   routingKey: buildCommonRoutingKey(),
   routingKeyBuilder: commonRoutingKeyBuilder,
@@ -92,14 +92,14 @@ exchanges.declare({
 // Hook deleted exchange
 exchanges.declare({
   exchange: 'hook-deleted',
-  name:     'hookDeleted',
-  title:    'Hook Deleted Messages',
+  name: 'hookDeleted',
+  title: 'Hook Deleted Messages',
   description: [
     'Whenever the api receives a request to delete a',
     'pulse based hook, a message is posted to this exchange and',
     'the receiver deletes the listener associated with that hook.',
   ].join(''),
-  schema:   'pulse-hook-changed-message.json#',
+  schema: 'pulse-hook-changed-message.json#',
   messageBuilder: commonMessageBuilder,
   routingKey: buildCommonRoutingKey(),
   routingKeyBuilder: commonRoutingKeyBuilder,

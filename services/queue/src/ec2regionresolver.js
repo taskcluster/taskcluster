@@ -1,7 +1,7 @@
 let {Netmask} = require('netmask');
 let requestIp = require('request-ip');
-let request   = require('superagent');
-let assert    = require('assert');
+let request = require('superagent');
+let assert = require('assert');
 
 // Static URL from which ip-ranges from AWS services can be fetched
 const AWS_IP_RANGES_URL = 'https://ip-ranges.amazonaws.com/ip-ranges.json';
@@ -30,8 +30,8 @@ class EC2RegionResolver {
              this.regions.indexOf(prefix.region) !== -1;
     }).map(prefix => {
       return {
-        range:    new Netmask(prefix.ip_prefix),
-        region:   prefix.region,
+        range: new Netmask(prefix.ip_prefix),
+        region: prefix.region,
       };
     });
   }

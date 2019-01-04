@@ -9,11 +9,11 @@ const expressError = require('../src/middleware/express-error.js');
 suite('api/errors', function() {
   // Create test api
   const builder = new APIBuilder({
-    title:        'Test Api',
-    description:  'Yet another test api',
-    errorCodes:   {TooManyFoos: 472},
-    serviceName:  'test',
-    apiVersion:   'v1',
+    title: 'Test Api',
+    description: 'Yet another test api',
+    errorCodes: {TooManyFoos: 472},
+    serviceName: 'test',
+    apiVersion: 'v1',
   });
 
   // Create a mock authentication server
@@ -27,11 +27,11 @@ suite('api/errors', function() {
   suiteTeardown(function() { expressError.isProduction = false; });
 
   builder.declare({
-    method:   'get',
-    route:    '/inputerror',
-    name:     'InputError',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/inputerror',
+    name: 'InputError',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.reportError('InputError', 'Testing Error', {dee: 'tails'});
   });
@@ -56,11 +56,11 @@ suite('api/errors', function() {
   });
 
   builder.declare({
-    method:   'get',
-    route:    '/toomanyfoos',
-    name:     'toomanyfoos',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/toomanyfoos',
+    name: 'toomanyfoos',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     req.body.foos = [4, 5];
     res.reportError(
@@ -104,11 +104,11 @@ suite('api/errors', function() {
   });
 
   builder.declare({
-    method:   'get',
-    route:    '/ISE',
-    name:     'ISE',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/ISE',
+    name: 'ISE',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     throw new Error('uhoh');
   });
@@ -131,12 +131,12 @@ suite('api/errors', function() {
   });
 
   builder.declare({
-    method:   'post',
-    route:    '/inputvalidationerror',
-    name:     'InputValidationError',
-    title:    'Test End-Point',
-    input:    'test-schema.yml',
-    description:  'Place we can call to test something',
+    method: 'post',
+    route: '/inputvalidationerror',
+    name: 'InputValidationError',
+    title: 'Test End-Point',
+    input: 'test-schema.yml',
+    description: 'Place we can call to test something',
     cleanPayload: payload => {
       payload.secret = '<HIDDEN>';
       return payload;

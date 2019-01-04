@@ -3,14 +3,14 @@ const assert = require('assert');
 const Entity = require('azure-entities');
 
 let Secret = Entity.configure({
-  version:          1,
-  signEntities:     true,
-  partitionKey:     Entity.keys.ConstantKey('secrets'),
-  rowKey:           Entity.keys.StringKey('name'),
+  version: 1,
+  signEntities: true,
+  partitionKey: Entity.keys.ConstantKey('secrets'),
+  rowKey: Entity.keys.StringKey('name'),
   properties: {
-    name:           Entity.types.String,
-    secret:         Entity.types.EncryptedJSON,
-    expires:        Entity.types.Date,
+    name: Entity.types.String,
+    secret: Entity.types.EncryptedJSON,
+    expires: Entity.types.Date,
   },
 });
 
@@ -39,10 +39,10 @@ Secret.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   var count = 0;
   await Entity.scan.call(this, {
-    expires:          Entity.op.lessThan(now),
+    expires: Entity.op.lessThan(now),
   }, {
-    limit:            250, // max number of concurrent delete operations
-    handler:          (secret) => { count++; return secret.remove(true); },
+    limit: 250, // max number of concurrent delete operations
+    handler: (secret) => { count++; return secret.remove(true); },
   });
   return count;
 };

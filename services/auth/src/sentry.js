@@ -2,14 +2,14 @@ const builder = require('./v1');
 const _ = require('lodash');
 
 builder.declare({
-  method:     'get',
-  route:      '/sentry/:project/dsn',
-  name:       'sentryDSN',
-  input:      undefined,
-  output:     'sentry-dsn-response.yml',
-  stability:  'stable',
-  scopes:     'auth:sentry:<project>',
-  title:      'Get DSN for Sentry Project',
+  method: 'get',
+  route: '/sentry/:project/dsn',
+  name: 'sentryDSN',
+  input: undefined,
+  output: 'sentry-dsn-response.yml',
+  stability: 'stable',
+  scopes: 'auth:sentry:<project>',
+  title: 'Get DSN for Sentry Project',
   description: [
     'Get temporary DSN (access credentials) for a sentry project.',
     'The credentials returned can be used with any Sentry client for up to',

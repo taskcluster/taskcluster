@@ -1,22 +1,22 @@
-let _           = require('lodash');
-let debug       = require('debug')('app:queue');
-let assert      = require('assert');
-let base32      = require('thirty-two');
+let _ = require('lodash');
+let debug = require('debug')('app:queue');
+let assert = require('assert');
+let base32 = require('thirty-two');
 let querystring = require('querystring');
-let url         = require('url');
-let azure       = require('fast-azure-storage');
-let crypto      = require('crypto');
+let url = require('url');
+let azure = require('fast-azure-storage');
+let crypto = require('crypto');
 let taskcluster = require('taskcluster-client');
-let slugid      = require('slugid');
+let slugid = require('slugid');
 
 /** Timeout for azure queue requests */
 const AZURE_QUEUE_TIMEOUT = 7 * 1000;
 
 /** Azure queue agent used for all instances of the queue client */
 let globalAzureQueueAgent = new azure.Agent({
-  keepAlive:        true,
-  maxSockets:       100,
-  maxFreeSockets:   100,
+  keepAlive: true,
+  maxSockets: 100,
+  maxFreeSockets: 100,
 });
 
 /** Decode Url-safe base64, our identifiers satisfies these requirements */
@@ -41,13 +41,13 @@ let validateTask = task => {
 
 /** Priority to constant for use in queue name (should be a string) */
 const PRIORITY_TO_CONSTANT = {
-  highest:      '7',
-  'very-high':  '6',
-  high:         '5',
-  medium:       '4',
-  low:          '3',
-  'very-low':   '2',
-  lowest:       '1',
+  highest: '7',
+  'very-high': '6',
+  high: '5',
+  medium: '4',
+  low: '3',
+  'very-low': '2',
+  lowest: '1',
 };
 _.forIn(PRIORITY_TO_CONSTANT, v => assert(typeof v === 'string'));
 
@@ -93,27 +93,27 @@ class QueueService {
   constructor(options) {
     assert(options, 'options is required');
     assert(/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(options.prefix), 'Invalid prefix');
-    assert(options.prefix.length <= 6,  'Prefix is too long');
-    assert(options.resolvedQueue,       'A resolvedQueue name must be given');
-    assert(options.claimQueue,          'A claimQueue name must be given');
-    assert(options.deadlineQueue,       'A deadlineQueue name must be given');
-    assert(options.monitor,             'A monitor instance must be given');
+    assert(options.prefix.length <= 6, 'Prefix is too long');
+    assert(options.resolvedQueue, 'A resolvedQueue name must be given');
+    assert(options.claimQueue, 'A claimQueue name must be given');
+    assert(options.deadlineQueue, 'A deadlineQueue name must be given');
+    assert(options.monitor, 'A monitor instance must be given');
     options = _.defaults({}, options, {
-      pendingPollTimeout:    5 * 60 * 1000,
-      deadlineDelay:        10 * 60 * 1000,
+      pendingPollTimeout: 5 * 60 * 1000,
+      deadlineDelay: 10 * 60 * 1000,
     });
 
-    this.prefix             = options.prefix;
+    this.prefix = options.prefix;
     this.pendingPollTimeout = options.pendingPollTimeout;
-    this.monitor            = options.monitor;
+    this.monitor = options.monitor;
 
     if (options.credentials.fake) {
       this.client = new FakeQueueClient();
     } else {
       this.client = new azure.Queue({
-        accountId:    options.credentials.accountId,
-        accessKey:    options.credentials.accountKey,
-        timeout:      AZURE_QUEUE_TIMEOUT,
+        accountId: options.credentials.accountId,
+        accessKey: options.credentials.accountKey,
+        timeout: AZURE_QUEUE_TIMEOUT,
       });
     }
 
@@ -129,21 +129,21 @@ class QueueService {
     this.queueResetInterval = setInterval(() => {this.queues = {};}, 25 * 60 * 60 * 1000);
 
     // Store claimQueue name, and remember if we've created it
-    this.claimQueue         = options.claimQueue;
-    this.claimQueueReady    = null;
+    this.claimQueue = options.claimQueue;
+    this.claimQueueReady = null;
 
     // Store resolvedQueue name, and remember if we've created it
-    this.resolvedQueue      = options.resolvedQueue;
+    this.resolvedQueue = options.resolvedQueue;
     this.resolvedQueueReady = null;
 
     // Store deadlineQueue name, and remember if we've created it
-    this.deadlineQueue      = options.deadlineQueue;
-    this.deadlineDelay      = options.deadlineDelay;
+    this.deadlineQueue = options.deadlineQueue;
+    this.deadlineDelay = options.deadlineDelay;
     this.deadlineQueueReady = null;
 
     // Keep a cache of pending counts as mapping:
     //    <provisionerId>/<workerType> -> {lastUpdated, count: promise}
-    this.countPendingCache  = {};
+    this.countPendingCache = {};
   }
 
   terminate() {
@@ -153,26 +153,26 @@ class QueueService {
   _putMessage(queue, message, {visibility, ttl}) {
     var text = new Buffer(JSON.stringify(message)).toString('base64');
     return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
-      visibilityTimeout:    visibility,
-      messageTTL:           ttl,
+      visibilityTimeout: visibility,
+      messageTTL: ttl,
     }));
   }
 
   async _getMessages(queue, {visibility, count}) {
     var messages = await this.monitor.timer('getMessages', this.client.getMessages(queue, {
-      visibilityTimeout:    visibility,
-      numberOfMessages:     count,
+      visibilityTimeout: visibility,
+      numberOfMessages: count,
     }));
     return messages.map(msg => {
       return {
-        payload:  JSON.parse(new Buffer(msg.messageText, 'base64')),
-        remove:   this.client.deleteMessage.bind(
+        payload: JSON.parse(new Buffer(msg.messageText, 'base64')),
+        remove: this.client.deleteMessage.bind(
           this.client,
           queue,
           msg.messageId,
           msg.popReceipt,
         ),
-        release:  this.client.updateMessage.bind(
+        release: this.client.updateMessage.bind(
           this.client,
           queue,
           msg.messageText,
@@ -226,19 +226,19 @@ class QueueService {
 
   /** Enqueue message to become visible when claim has expired */
   async putClaimMessage(taskId, runId, takenUntil) {
-    assert(taskId,                      'taskId must be given');
-    assert(typeof runId === 'number',   'runId must be a number');
-    assert(takenUntil instanceof Date,  'takenUntil must be a date');
-    assert(isFinite(takenUntil),        'takenUntil must be a valid date');
+    assert(taskId, 'taskId must be given');
+    assert(typeof runId === 'number', 'runId must be a number');
+    assert(takenUntil instanceof Date, 'takenUntil must be a date');
+    assert(isFinite(takenUntil), 'takenUntil must be a valid date');
 
     await this.ensureClaimQueue();
     return this._putMessage(this.claimQueue, {
-      taskId:             taskId,
-      runId:              runId,
-      takenUntil:         takenUntil.toJSON(),
+      taskId: taskId,
+      runId: runId,
+      takenUntil: takenUntil.toJSON(),
     }, {
-      ttl:                7 * 24 * 60 * 60,
-      visibility:         secondsTo(takenUntil),
+      ttl: 7 * 24 * 60 * 60,
+      visibility: secondsTo(takenUntil),
     });
   }
 
@@ -255,18 +255,18 @@ class QueueService {
     return this._putMessage(this.resolvedQueue, {
       taskId, taskGroupId, schedulerId, resolution,
     }, {
-      ttl:                7 * 24 * 60 * 60,
-      visibility:         0,
+      ttl: 7 * 24 * 60 * 60,
+      visibility: 0,
     });
   }
 
   /** Enqueue message to become visible when deadline has expired */
   async putDeadlineMessage(taskId, taskGroupId, schedulerId, deadline) {
-    assert(taskId,                      'taskId must be given');
-    assert(taskGroupId,                 'taskGroupId must be given');
-    assert(schedulerId,                 'schedulerId must be given');
-    assert(deadline instanceof Date,    'deadline must be a date');
-    assert(isFinite(deadline),          'deadline must be a valid date');
+    assert(taskId, 'taskId must be given');
+    assert(taskGroupId, 'taskGroupId must be given');
+    assert(schedulerId, 'schedulerId must be given');
+    assert(deadline instanceof Date, 'deadline must be a date');
+    assert(isFinite(deadline), 'deadline must be a valid date');
 
     await this.ensureDeadlineQueue();
     var delay = Math.floor(this.deadlineDelay / 1000);
@@ -276,10 +276,10 @@ class QueueService {
       taskId,
       taskGroupId,
       schedulerId,
-      deadline:           deadline.toJSON(),
+      deadline: deadline.toJSON(),
     }, {
-      ttl:                7 * 24 * 60 * 60,
-      visibility:         secondsTo(deadline) + delay,
+      ttl: 7 * 24 * 60 * 60,
+      visibility: secondsTo(deadline) + delay,
     });
   }
 
@@ -307,17 +307,17 @@ class QueueService {
 
     // Get messages
     var messages = await this._getMessages(this.claimQueue, {
-      visibility:             10 * 60,
-      count:                  32,
+      visibility: 10 * 60,
+      count: 32,
     });
 
     // Convert to neatly consumable format
     return messages.map(m => {
       return {
-        taskId:       m.payload.taskId,
-        runId:        m.payload.runId,
-        takenUntil:   new Date(m.payload.takenUntil),
-        remove:       m.remove,
+        taskId: m.payload.taskId,
+        runId: m.payload.runId,
+        takenUntil: new Date(m.payload.takenUntil),
+        remove: m.remove,
       };
     });
   }
@@ -346,18 +346,18 @@ class QueueService {
 
     // Get messages
     var messages = await this._getMessages(this.resolvedQueue, {
-      visibility:             10 * 60,
-      count:                  32,
+      visibility: 10 * 60,
+      count: 32,
     });
 
     // Convert to neatly consumable format
     return messages.map(m => {
       return {
-        taskId:       m.payload.taskId,
-        taskGroupId:  m.payload.taskGroupId,
-        schedulerId:  m.payload.schedulerId,
-        resolution:   m.payload.resolution,
-        remove:       m.remove,
+        taskId: m.payload.taskId,
+        taskGroupId: m.payload.taskGroupId,
+        schedulerId: m.payload.schedulerId,
+        resolution: m.payload.resolution,
+        remove: m.remove,
       };
     });
   }
@@ -385,18 +385,18 @@ class QueueService {
 
     // Get messages
     var messages = await this._getMessages(this.deadlineQueue, {
-      visibility:             10 * 60,
-      count:                  32,
+      visibility: 10 * 60,
+      count: 32,
     });
 
     // Convert to neatly consumable format
     return messages.map(m => {
       return {
-        taskId:       m.payload.taskId,
-        taskGroupId:  m.payload.taskGroupId,
-        schedulerId:  m.payload.schedulerId,
-        deadline:     new Date(m.payload.deadline),
-        remove:       m.remove,
+        taskId: m.payload.taskId,
+        taskGroupId: m.payload.taskGroupId,
+        schedulerId: m.payload.schedulerId,
+        deadline: new Date(m.payload.deadline),
+        remove: m.remove,
       };
     });
   }
@@ -425,10 +425,10 @@ class QueueService {
 
     // Construct queue name prefix (add priority later)
     let namePrefix = [
-      this.prefix,            // prefix all queues
-      hashId(provisionerId),  // hash of provisionerId
-      hashId(workerType),     // hash of workerType
-      '',                     // priority, add PRIORITY_TO_CONSTANT
+      this.prefix, // prefix all queues
+      hashId(provisionerId), // hash of provisionerId
+      hashId(workerType), // hash of workerType
+      '', // priority, add PRIORITY_TO_CONSTANT
     ].join('-');
 
     // Mapping from priority to queue name
@@ -477,8 +477,8 @@ class QueueService {
       // Update meta-data
       return this.client.setMetadata(queue, {
         provisioner_id: provisionerId,
-        worker_type:    workerType,
-        last_used:      taskcluster.fromNowJSON(),
+        worker_type: workerType,
+        last_used: taskcluster.fromNowJSON(),
       });
     } catch (err) {
       // We handle queue not found exceptions, because getMetadata is a HEA
@@ -493,8 +493,8 @@ class QueueService {
       try {
         await this.client.createQueue(queue, {
           provisioner_id: provisionerId,
-          worker_type:    workerType,
-          last_used:      taskcluster.fromNowJSON(),
+          worker_type: workerType,
+          last_used: taskcluster.fromNowJSON(),
         });
       } catch (err) {
         // If queue already exists, we must have been racing we assume meta-data
@@ -604,12 +604,12 @@ class QueueService {
 
     // Put message queue
     return this._putMessage(queueNames[task.priority], {
-      taskId:     task.taskId,
-      runId:      runId,
-      hintId:     slugid.v4(),
+      taskId: task.taskId,
+      runId: runId,
+      hintId: slugid.v4(),
     }, {
-      ttl:          timeToDeadline,
-      visibility:   0,
+      ttl: timeToDeadline,
+      visibility: 0,
     });
   }
 
@@ -638,22 +638,22 @@ class QueueService {
       var sas = this.client.sas(queueName, {
         start, expiry,
         permissions: {
-          process:    true,
+          process: true,
         },
       });
       // Construct signed url
       return {
         signedPollUrl: url.format({
-          protocol:       'https',
-          host:           `${this.accountId}.queue.core.windows.net`,
-          pathname:       `/${queueName}/messages`,
-          search:         `?visibilitytimeout=${pendingPollTimeout}&${sas}`,
+          protocol: 'https',
+          host: `${this.accountId}.queue.core.windows.net`,
+          pathname: `/${queueName}/messages`,
+          search: `?visibilitytimeout=${pendingPollTimeout}&${sas}`,
         }),
         signedDeleteUrl: url.format({
-          protocol:       'https',
-          host:           `${this.accountId}.queue.core.windows.net`,
-          pathname:       `/${queueName}/messages/{{messageId}}`,
-          search:         `?popreceipt={{popReceipt}}&${sas}`,
+          protocol: 'https',
+          host: `${this.accountId}.queue.core.windows.net`,
+          pathname: `/${queueName}/messages/{{messageId}}`,
+          search: `?popreceipt={{popReceipt}}&${sas}`,
         }),
       };
     });
@@ -693,11 +693,11 @@ class QueueService {
         });
         return messages.map(m => {
           return {
-            taskId:   m.payload.taskId,
-            runId:    m.payload.runId,
-            hintId:   m.payload.hintId,
-            remove:   m.remove,
-            release:  m.release,
+            taskId: m.payload.taskId,
+            runId: m.payload.runId,
+            hintId: m.payload.hintId,
+            remove: m.remove,
+            release: m.release,
           };
         });
       };

@@ -59,9 +59,9 @@ const load = Loader({
         statsumToken: async (project) => {
           return {
             project,
-            token:    Statsum.createToken(project, cfg.app.statsum.secret, '25h'),
-            baseUrl:  cfg.app.statsum.baseUrl,
-            expires:  taskcluster.fromNowJSON('24 hours'),
+            token: Statsum.createToken(project, cfg.app.statsum.secret, '25h'),
+            baseUrl: cfg.app.statsum.baseUrl,
+            expires: taskcluster.fromNowJSON('24 hours'),
           };
 
         },
@@ -89,11 +89,11 @@ const load = Loader({
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) =>
       data.Client.setup({
-        tableName:    cfg.app.clientTableName,
-        credentials:  cfg.azure || {},
-        signingKey:   cfg.azure.signingKey,
-        cryptoKey:    cfg.azure.cryptoKey,
-        monitor:      monitor.prefix('table.clients'),
+        tableName: cfg.app.clientTableName,
+        credentials: cfg.azure || {},
+        signingKey: cfg.azure.signingKey,
+        cryptoKey: cfg.azure.cryptoKey,
+        monitor: monitor.prefix('table.clients'),
       }),
   },
 
@@ -101,7 +101,7 @@ const load = Loader({
     requires: ['cfg'],
     setup: async ({cfg}) => {
       let Roles = new containers.Roles({
-        credentials:  cfg.azure || {},
+        credentials: cfg.azure || {},
         containerName: cfg.app.rolesContainerName,
       });
       await Roles.setup();
@@ -113,9 +113,9 @@ const load = Loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'auth',
-      publish:  cfg.app.publishMetaData,
-      aws:      cfg.aws,
-      bucket:   cfg.app.buckets.schemas,
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
+      bucket: cfg.app.buckets.schemas,
     }),
   },
 
@@ -159,14 +159,14 @@ const load = Loader({
   publisher: {
     requires: ['cfg', 'schemaset', 'pulseClient'],
     setup: async ({cfg, schemaset, pulseClient}) => await exchanges.publisher({
-      rootUrl:          cfg.taskcluster.rootUrl,
-      client:           pulseClient,
-      credentials:      cfg.pulse,
+      rootUrl: cfg.taskcluster.rootUrl,
+      client: pulseClient,
+      credentials: cfg.pulse,
       schemaset,
-      namespace:        'taskcluster-auth',
-      publish:          cfg.app.publishMetaData,
-      aws:              cfg.aws,
-      referenceBucket:  cfg.app.buckets.references,
+      namespace: 'taskcluster-auth',
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
+      referenceBucket: cfg.app.buckets.references,
     }),
   },
 
@@ -204,20 +204,20 @@ const load = Loader({
           Client, Roles,
           publisher,
           resolver,
-          sts:                new AWS.STS(cfg.aws),
-          azureAccounts:      cfg.app.azureAccounts,
+          sts: new AWS.STS(cfg.aws),
+          azureAccounts: cfg.app.azureAccounts,
           signatureValidator,
           sentryManager,
-          statsum:            cfg.app.statsum,
-          websocktunnel:      cfg.app.websocktunnel,
+          statsum: cfg.app.statsum,
+          websocktunnel: cfg.app.websocktunnel,
           monitor,
         },
         schemaset,
         signatureValidator,
-        publish:            cfg.app.publishMetaData,
-        aws:                cfg.aws,
-        referenceBucket:    cfg.app.buckets.references,
-        monitor:            monitor.prefix('api'),
+        publish: cfg.app.publishMetaData,
+        aws: cfg.aws,
+        referenceBucket: cfg.app.buckets.references,
+        monitor: monitor.prefix('api'),
       });
     },
   },

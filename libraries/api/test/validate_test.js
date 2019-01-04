@@ -1,92 +1,92 @@
-const request         = require('superagent');
-const assert          = require('assert');
-const APIBuilder      = require('../');
-const helper          = require('./helper');
-const libUrls         = require('taskcluster-lib-urls');
-const path            = require('path');
-const SchemaSet       = require('taskcluster-lib-validate');
-const monitoring      = require('taskcluster-lib-monitor');
+const request = require('superagent');
+const assert = require('assert');
+const APIBuilder = require('../');
+const helper = require('./helper');
+const libUrls = require('taskcluster-lib-urls');
+const path = require('path');
+const SchemaSet = require('taskcluster-lib-validate');
+const monitoring = require('taskcluster-lib-monitor');
 
 suite('api/validate', function() {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
 
   // Create test api
   const builder = new APIBuilder({
-    title:        'Test Api',
-    description:  'Another test api',
-    serviceName:  'test',
-    apiVersion:   'v1',
+    title: 'Test Api',
+    description: 'Another test api',
+    serviceName: 'test',
+    apiVersion: 'v1',
   });
 
   // Declare a method we can test input with
   builder.declare({
-    method:   'post',
-    route:    '/test-input',
-    name:     'testInputValidate',
-    input:    'test-schema.yml',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'post',
+    route: '/test-input',
+    name: 'testInputValidate',
+    input: 'test-schema.yml',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send('Hello World');
   });
 
   // Declare a method we can use to test valid output
   builder.declare({
-    method:   'get',
-    route:    '/test-output',
-    name:     'testInputValidOutputValidate',
-    output:   'test-schema.yml',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/test-output',
+    name: 'testInputValidOutputValidate',
+    output: 'test-schema.yml',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply({value: 4});
   });
 
   // Declare a method we can use to test invalid output
   builder.declare({
-    method:   'get',
-    route:    '/test-invalid-output',
-    name:     'testInputInvalidOutputValidate',
-    output:   'test-schema.yml',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/test-invalid-output',
+    name: 'testInputInvalidOutputValidate',
+    output: 'test-schema.yml',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply({value: 12});
   });
 
   // Declare a method we can test input validation skipping on
   builder.declare({
-    method:   'post',
-    route:    '/test-skip-input-validation',
-    name:     'testInputSkipInputValidation',
-    input:    'test-schema.yml',
+    method: 'post',
+    route: '/test-skip-input-validation',
+    name: 'testInputSkipInputValidation',
+    input: 'test-schema.yml',
     skipInputValidation: true,
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send('Hello World');
   });
 
   // Declare a method we can test output validation skipping on
   builder.declare({
-    method:   'get',
-    route:    '/test-skip-output-validation',
-    name:     'testOutputSkipOutputValidation',
-    output:    'test-schema.yml',
+    method: 'get',
+    route: '/test-skip-output-validation',
+    name: 'testOutputSkipOutputValidation',
+    output: 'test-schema.yml',
     skipOutputValidation: true,
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply({value: 12});
   });
 
   // Declare a method we can test blob output on
   builder.declare({
-    method:   'get',
-    route:    '/test-blob-output',
-    name:     'testBlobOutput',
-    output:   'blob',
-    title:    'Test End-Point',
+    method: 'get',
+    route: '/test-blob-output',
+    name: 'testBlobOutput',
+    output: 'blob',
+    title: 'Test End-Point',
     description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply({value: 'Hello World'});
@@ -94,22 +94,22 @@ suite('api/validate', function() {
   
   // Declare a method we can use to test res.reply with empty body
   builder.declare({
-    method:   'get',
-    route:    '/test-res-reply',
-    name:     'testResReplyGet',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/test-res-reply',
+    name: 'testResReplyGet',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply();
   });
 
   builder.declare({
-    method:   'post',
-    route:    '/test-res-reply-post',
-    name:     'testResReplyPost',
-    output:   'test-schema.yml',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'post',
+    route: '/test-res-reply-post',
+    name: 'testResReplyPost',
+    output: 'test-schema.yml',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.reply();
   });
@@ -265,19 +265,19 @@ suite('api/validate', function() {
 
   test('nonexistent schemas are caught at setup time', async function() {
     const builder = new APIBuilder({
-      title:        'Test Api',
-      description:  'Another test api',
-      serviceName:  'test',
-      apiVersion:   'v1',
+      title: 'Test Api',
+      description: 'Another test api',
+      serviceName: 'test',
+      apiVersion: 'v1',
     });
 
     builder.declare({
-      method:   'post',
-      route:    '/test-input',
-      name:     'testInputValidate',
-      input:    'no-such-schema.yml',
-      title:    'Test End-Point',
-      description:  '..',
+      method: 'post',
+      route: '/test-input',
+      name: 'testInputValidate',
+      input: 'no-such-schema.yml',
+      title: 'Test End-Point',
+      description: '..',
     }, function(req, res) {});
 
     const schemaset = new SchemaSet({

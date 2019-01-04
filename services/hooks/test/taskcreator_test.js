@@ -38,16 +38,16 @@ suite('taskcreator_test.js', function() {
     });
 
     const defaultHook = {
-      hookGroupId:        'tc-hooks-tests',
-      hookId:             'tc-test-hook',
-      metadata:           {},
-      bindings:           [],
-      schedule:           {format: {type: 'none'}},
-      triggerToken:       taskcluster.slugid(),
-      lastFire:           {},
-      nextTaskId:         taskcluster.slugid(),
-      nextScheduledDate:  new Date(2000, 0, 0, 0, 0, 0, 0),
-      triggerSchema:      {
+      hookGroupId: 'tc-hooks-tests',
+      hookId: 'tc-test-hook',
+      metadata: {},
+      bindings: [],
+      schedule: {format: {type: 'none'}},
+      triggerToken: taskcluster.slugid(),
+      lastFire: {},
+      nextTaskId: taskcluster.slugid(),
+      nextScheduledDate: new Date(2000, 0, 0, 0, 0, 0, 0),
+      triggerSchema: {
         type: 'object',
         properties: {
           location: {
@@ -61,7 +61,7 @@ suite('taskcreator_test.js', function() {
         },
         additionalProperties: false,
       },
-      task:               {
+      task: {
         // use a JSON-e construct at the top level to double-check that this is a
         // JSON-e template and not treated as a task definition
         $if: 'true',
@@ -104,8 +104,8 @@ suite('taskcreator_test.js', function() {
 
     test('firing a real task succeeds', async function() {
       let hook = await createTestHook([], {
-        context:'${context}',
-        firedBy:'${firedBy}',
+        context: '${context}',
+        firedBy: '${firedBy}',
       });
       let taskId = taskcluster.slugid();
       let resp = await creator.fire(hook, {context: true, firedBy: 'schedule'}, {taskId});
@@ -139,7 +139,7 @@ suite('taskcreator_test.js', function() {
       assume(task.extra).deeply.equals({
         context: {
           valueFromContext: 55,
-          flattenedDeep:[1, 2, 3, 4, 5, 6],
+          flattenedDeep: [1, 2, 3, 4, 5, 6],
           firedBy: 'schedule',
           taskId,
         },
@@ -181,19 +181,19 @@ suite('taskcreator_test.js', function() {
       let taskId = taskcluster.slugid();
       let resp = await creator.fire(hook, {
         location: 'Belo Horizonte, MG',
-        firedBy:'schedule',
+        firedBy: 'schedule',
       }, {taskId});
 
       const task = await fetchFiredTask(taskId);
       assume(task.extra).deeply.equals({
         env: {DUSTIN_LOCATION: 'Belo Horizonte, MG'},
-        firedBy:'schedule',
+        firedBy: 'schedule',
       });
     });
 
     test('adds a taskId if one is not specified', async function() {
       let hook = await createTestHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1'],
-        {context:'${context}'});
+        {context: '${context}'});
       let resp = await creator.fire(hook, {context: true});
       const task = await fetchFiredTask(resp.status.taskId);
       assume(task.workerType).equals(hook.task.then.workerType);
@@ -226,7 +226,7 @@ suite('taskcreator_test.js', function() {
       const res = await helper.LastFire.load({
         hookGroupId: hook.hookGroupId,
         hookId: hook.hookId,
-        taskId:  hook.nextTaskId,
+        taskId: hook.nextTaskId,
       });
       assume(res.taskId).equals(hook.nextTaskId);
     });
@@ -263,13 +263,13 @@ suite('taskcreator_test.js', function() {
       const res = await helper.LastFire.load({
         hookGroupId: hook.hookGroupId,
         hookId: hook.hookId,
-        taskId:  hook.nextTaskId,
+        taskId: hook.nextTaskId,
       });
 
       const res2 = await helper.LastFire.load({
         hookGroupId: hook2.hookGroupId,
         hookId: hook2.hookId,
-        taskId:  hook2.nextTaskId,
+        taskId: hook2.nextTaskId,
       });
 
       assume(res.taskId).not.equals(res2.taskId);

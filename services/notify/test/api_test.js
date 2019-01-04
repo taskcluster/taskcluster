@@ -21,9 +21,9 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
 
   test('email', async function() {
     await helper.apiClient.email({
-      address:'success@simulator.amazonses.com',
-      subject:'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is Complete',
-      content:'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes.',
+      address: 'success@simulator.amazonses.com',
+      subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is Complete',
+      content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes.',
       link: {text: 'Inspect Task', href: 'https://tools.taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ'},
     });
     helper.checkEmails(email => {
@@ -33,9 +33,9 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
 
   test('email without link', async function() {
     await helper.apiClient.email({
-      address:'success@simulator.amazonses.com',
-      subject:'Task Z-tDsP4jQ3OUTjN0Q6LNKo is Complete',
-      content:'Task Z-tDsP4jQ3OUTjN0Q6LNKo is finished. It took 124 minutes.',
+      address: 'success@simulator.amazonses.com',
+      subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKo is Complete',
+      content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKo is finished. It took 124 minutes.',
     });
     helper.checkEmails(email => {
       assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
@@ -44,10 +44,10 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
 
   test('email with fullscreen template', async function() {
     await helper.apiClient.email({
-      address:'success@simulator.amazonses.com',
-      subject:'Task Z-tDsP4jQ3OUTjN0Q6LNKp is Complete',
-      content:'Task Z-tDsP4jQ3OUTjN0Q6LNKp is finished. It took 124 minutes.',
-      template:'fullscreen',
+      address: 'success@simulator.amazonses.com',
+      subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKp is Complete',
+      content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKp is finished. It took 124 minutes.',
+      template: 'fullscreen',
     });
     helper.checkEmails(email => {
       assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);

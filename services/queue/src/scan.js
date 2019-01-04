@@ -14,8 +14,8 @@
  * See src/main.js for the arguments supplied to the scan function.
  */
 
-let Entity              = require('azure-entities');
-let _                   = require('lodash');
+let Entity = require('azure-entities');
+let _ = require('lodash');
 
 const SLUGID_CHARACTERS = (
   'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +

@@ -1,10 +1,10 @@
-var request     = require('superagent');
-var url         = require('url');
-var debug       = require('debug')('test:azure-blob-uploader-sas');
-var assert      = require('assert');
-var qs          = require('querystring');
-var _           = require('lodash');
-var xmlbuilder  = require('xmlbuilder');
+var request = require('superagent');
+var url = require('url');
+var debug = require('debug')('test:azure-blob-uploader-sas');
+var assert = require('assert');
+var qs = require('querystring');
+var _ = require('lodash');
+var xmlbuilder = require('xmlbuilder');
 
 /**
  * Utility to upload block blobs using an azure Shared-Access-Signature
@@ -21,8 +21,8 @@ module.exports = BlobUploader;
 /** Construct URL for azure blob storage */
 BlobUploader.prototype.buildUrl = function(queryString) {
   // Extend the query parameters if given....
-  var parsed       = url.parse(this.url, true);
-  parsed.search    = '?' + qs.stringify(
+  var parsed = url.parse(this.url, true);
+  parsed.search = '?' + qs.stringify(
     _.defaults(queryString || {}, parsed.query));
 
   return url.format(parsed);
@@ -31,12 +31,12 @@ BlobUploader.prototype.buildUrl = function(queryString) {
 /** Upload a single block for commit later */
 BlobUploader.prototype.putBlock = function(blockId, block) {
   assert(blockId, 'blockId must be given');
-  assert(block,   'block must be given');
+  assert(block, 'block must be given');
 
   // Construct URL
   var url = this.buildUrl({
-    comp:     'block',
-    blockid:  new Buffer('' + blockId).toString('base64'),
+    comp: 'block',
+    blockid: new Buffer('' + blockId).toString('base64'),
   });
 
   // Send request
@@ -60,24 +60,24 @@ BlobUploader.prototype.putBlockList = function(blockIds, contentType) {
   assert(contentType, 'contentType must be given');
   // Construct URL
   var url = this.buildUrl({
-    comp:     'blocklist',
+    comp: 'blocklist',
   });
   // Construct XML
   var blockList = xmlbuilder.create('BlockList', {
-    version:    '1.0',
-    encoding:   'utf-8',
+    version: '1.0',
+    encoding: 'utf-8',
   });
   blockIds.forEach(function(blockId) {
     var id = new Buffer('' + blockId).toString('base64');
     blockList.element('Latest', id);
   });
   var xml = blockList.end({
-    pretty:     true,
+    pretty: true,
   });
   // Send request
   return request
     .put(url)
-    .set('x-ms-blob-content-type',  contentType)
+    .set('x-ms-blob-content-type', contentType)
     .send(xml)
     .then(function(res) {
       // Check for success

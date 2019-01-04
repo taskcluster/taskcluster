@@ -34,7 +34,7 @@ const parameterValidator = ({context, entry}) => {
         const msg = pattern.call(context, val);
         if (typeof msg === 'string') {
           errors.push(
-            'URL parameter \'' + param + '\' given  as \'' + val +  '\' is not ' +
+            'URL parameter \'' + param + '\' given  as \'' + val + '\' is not ' +
             'valid: ' + msg
           );
         }

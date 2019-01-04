@@ -17,24 +17,24 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   // Use the same task definition for everything
   const taskDef = {
-    provisionerId:    'no-provisioner',
-    workerType:       'test-worker',
-    schedulerId:      'my-scheduler',
-    taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
-    routes:           [],
-    retries:          1,
-    created:          taskcluster.fromNowJSON(),
-    deadline:         taskcluster.fromNowJSON('3 days'),
-    scopes:           [],
-    payload:          {},
+    provisionerId: 'no-provisioner',
+    workerType: 'test-worker',
+    schedulerId: 'my-scheduler',
+    taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
+    routes: [],
+    retries: 1,
+    created: taskcluster.fromNowJSON(),
+    deadline: taskcluster.fromNowJSON('3 days'),
+    scopes: [],
+    payload: {},
     metadata: {
-      name:           'Unit testing task',
-      description:    'Task created during unit tests',
-      owner:          'jonsafj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue',
+      name: 'Unit testing task',
+      description: 'Task created during unit tests',
+      owner: 'jonsafj@mozilla.com',
+      source: 'https://github.com/taskcluster/taskcluster-queue',
     },
     tags: {
-      purpose:        'taskcluster-testing',
+      purpose: 'taskcluster-testing',
     },
   };
 
@@ -47,8 +47,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNoNextMessage('task-completed');
 
@@ -83,8 +83,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNoNextMessage('task-completed');
 
@@ -118,8 +118,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Reporting task exception');
@@ -128,7 +128,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'assume:worker-id:my-worker-group/my-worker',
     );
     await helper.queue.reportException(taskId, 0, {
-      reason:     'malformed-payload',
+      reason: 'malformed-payload',
     });
     helper.checkNextMessage('task-exception', m => {
       assume(m.payload.status.runs[0].state).equals('exception');
@@ -137,7 +137,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
-      reason:     'malformed-payload',
+      reason: 'malformed-payload',
     });
     helper.checkNextMessage('task-exception');
 
@@ -149,7 +149,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Reporting task exception (using temp creds)');
     let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
     await queue.reportException(taskId, 0, {
-      reason:     'malformed-payload',
+      reason: 'malformed-payload',
     });
     helper.checkNextMessage('task-exception');
   });
@@ -163,8 +163,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Reporting task exception');
@@ -173,7 +173,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'assume:worker-id:my-worker-group/my-worker',
     );
     await helper.queue.reportException(taskId, 0, {
-      reason:     'resource-unavailable',
+      reason: 'resource-unavailable',
     });
     helper.checkNextMessage('task-exception', m => {
       assume(m.payload.status.runs[0].state).equals('exception');
@@ -182,7 +182,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
-      reason:     'resource-unavailable',
+      reason: 'resource-unavailable',
     });
     helper.checkNextMessage('task-exception');
 
@@ -194,7 +194,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Reporting task exception (using temp creds)');
     let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
     await queue.reportException(taskId, 0, {
-      reason:     'resource-unavailable',
+      reason: 'resource-unavailable',
     });
     helper.checkNextMessage('task-exception');
   });
@@ -208,8 +208,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Reporting task exception');
@@ -218,7 +218,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'assume:worker-id:my-worker-group/my-worker'
     );
     await helper.queue.reportException(taskId, 0, {
-      reason:     'internal-error',
+      reason: 'internal-error',
     });
     helper.checkNextMessage('task-exception', m => {
       assume(m.payload.status.runs[0].state).equals('exception');
@@ -227,7 +227,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
-      reason:     'internal-error',
+      reason: 'internal-error',
     });
     helper.checkNextMessage('task-exception');
 
@@ -239,7 +239,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Reporting task exception (using temp creds)');
     let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
     await queue.reportException(taskId, 0, {
-      reason:     'internal-error',
+      reason: 'internal-error',
     });
     helper.checkNextMessage('task-exception');
   });
@@ -253,8 +253,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Reporting task exception');
@@ -263,7 +263,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'assume:worker-id:my-worker-group/my-worker',
     );
     await helper.queue.reportException(taskId, 0, {
-      reason:     'superseded',
+      reason: 'superseded',
     });
     helper.checkNextMessage('task-exception', m => {
       assume(m.payload.status.runs[0].state).equals('exception');
@@ -272,7 +272,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
-      reason:     'superseded',
+      reason: 'superseded',
     });
     helper.checkNextMessage('task-exception');
 
@@ -284,7 +284,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Reporting task exception (using temp creds)');
     let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials: r1.credentials});
     await queue.reportException(taskId, 0, {
-      reason:     'superseded',
+      reason: 'superseded',
     });
     helper.checkNextMessage('task-exception');
   });
@@ -298,13 +298,13 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Reporting task exception (malformed-payload)');
     await helper.queue.reportException(taskId, 0, {
-      reason:     'malformed-payload',
+      reason: 'malformed-payload',
     });
 
     debug('### Check status of task');
@@ -314,7 +314,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Reporting task exception (internal-error)');
     await helper.queue.reportException(taskId, 0, {
-      reason:     'internal-error',
+      reason: 'internal-error',
     }).then(() => {
       assert(false, 'Expected error');
     }, err => {
@@ -340,8 +340,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running');
 
@@ -351,7 +351,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'assume:worker-id:my-worker-group/my-worker',
     );
     const r1 = await helper.queue.reportException(taskId, 0, {
-      reason:     'worker-shutdown',
+      reason: 'worker-shutdown',
     });
     assume(r1.status.runs.length).equals(2);
     assume(r1.status.runs[0].state).equals('exception');
@@ -367,21 +367,21 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     });
 
     await helper.queue.reportException(taskId, 0, {
-      reason:     'worker-shutdown',
+      reason: 'worker-shutdown',
     });
     helper.checkNoNextMessage('task-exception');
     helper.checkNextMessage('task-pending');
 
     helper.scopes();
     await helper.queue.claimTask(taskId, 1, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running');
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 1, {
-      reason:     'worker-shutdown',
+      reason: 'worker-shutdown',
     });
     helper.checkNextMessage('task-exception', m => {
       assume(m.payload.status.runs[1].state).equals('exception');
@@ -398,8 +398,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Reporting task completed');
@@ -426,8 +426,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running');
 
@@ -437,13 +437,13 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'assume:worker-id:my-worker-group/my-worker',
     );
     const r1 = await helper.queue.reportException(taskId, 0, {
-      reason:     'intermittent-task',
+      reason: 'intermittent-task',
     });
     assume(r1.status.runs.length).equals(2);
     assume(r1.status.runs[0].state).equals('exception');
     assume(r1.status.runs[1].state).equals('pending');
     await helper.queue.reportException(taskId, 0, {
-      reason:     'intermittent-task',
+      reason: 'intermittent-task',
     });
     helper.checkNextMessage('task-pending', m => {
       assume(m.payload.status).deep.equals(r1.status);
@@ -454,14 +454,14 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     helper.scopes();
     await helper.queue.claimTask(taskId, 1, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running');
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 1, {
-      reason:     'intermittent-task',
+      reason: 'intermittent-task',
     });
 
     helper.checkNextMessage('task-exception', m => {
