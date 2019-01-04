@@ -210,12 +210,13 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	if removeErr != nil {
 		return removeErr
 	}
+
 	c.AccessToken = secToken.Credentials.AccessToken
-	c.ClientID = secToken.Credentials.ClientID
 	c.Certificate = secToken.Credentials.Certificate
+	c.ClientID = secToken.Credentials.ClientID
+	c.RootURL = userData.TaskclusterRootURL
 	c.WorkerGroup = userData.Region
 	c.WorkerType = userData.WorkerType
-	c.RootURL = userData.TaskclusterRootURL
 
 	awsMetadata := map[string]interface{}{}
 	for _, url := range []string{
