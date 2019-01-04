@@ -123,6 +123,7 @@ const load = Loader({
     requires: ['cfg', 'schemaset'],
     setup: ({cfg, schemaset}) => Docs.documenter({
       aws: cfg.aws,
+      rootUrl: cfg.taskcluster.rootUrl,
       tier: 'platform',
       schemaset,
       bucket: cfg.app.buckets.docs,

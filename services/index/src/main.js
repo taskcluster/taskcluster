@@ -88,8 +88,9 @@ var load = loader({
     requires: ['cfg', 'schemaset'],
     setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
+      rootUrl: cfg.taskcluster.rootUrl,
       tier: 'core',
-      publish:          cfg.app.publishMetaData,
+      publish: cfg.app.publishMetaData,
       schemaset,
       references: [
         {

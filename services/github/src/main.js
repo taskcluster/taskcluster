@@ -56,6 +56,7 @@ const load = loader({
     requires: ['cfg', 'schemaset', 'reference'],
     setup: ({cfg, schemaset, reference}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
+      rootUrl: cfg.taskcluster.rootUrl,
       tier: 'integrations',
       schemaset: schemaset,
       publish: cfg.app.publishMetaData,
