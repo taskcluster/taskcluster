@@ -20,4 +20,3 @@ rules:
   no-unused-vars: off
   no-undef: off
   no-unreachable: off
-  no-redeclare: off

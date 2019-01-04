@@ -340,7 +340,7 @@ exports.createClient = function(reference, name) {
             debug('Success calling: %s, (%s retries)',
               entry.name, attempts - 1);
             if (monitor) {
-              var d = process.hrtime(start);
+              let d = process.hrtime(start);
               monitor.measure([entry.name, 'success'], d[0] * 1000 + d[1] / 1000000);
               monitor.count([entry.name, 'success']);
             }
@@ -376,7 +376,7 @@ exports.createClient = function(reference, name) {
               err.code = res.body.code || 'UnknownError';
               err.statusCode = res.status;
               if (monitor) {
-                var d = process.hrtime(start);
+                let d = process.hrtime(start);
 
                 var state = 'client-error';
                 if (res.statusCode >= 500) {
@@ -397,7 +397,7 @@ exports.createClient = function(reference, name) {
             debug('Request error calling %s NOT retrying!, err: %s, JSON: %s',
               entry.name, err, err);
             if (monitor) {
-              var d = process.hrtime(start);
+              let d = process.hrtime(start);
               monitor.measure([entry.name, 'connection-error'], d[0] * 1000 + d[1] / 1000000);
               monitor.count([entry.name, 'connection-error']);
             }

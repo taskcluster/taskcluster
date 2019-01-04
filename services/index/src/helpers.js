@@ -32,7 +32,7 @@ var insertTask = function(namespace, input, options) {
     'options.Namespace must be an instance of data.Namespace');
 
   // Get namespace and ensure that we have a least one dot
-  var namespace = namespace.split('.');
+  namespace = namespace.split('.');
 
   // Find name and namespace
   var name  = namespace.pop() || '';

@@ -406,8 +406,8 @@ builder.declare({
   }
 
   switch (artifact.storageType) {
-    case 'blob':
-      var expiry = new Date(new Date().getTime() + 15 * 60 * 1000);
+    case 'blob': {
+      let expiry = new Date(new Date().getTime() + 15 * 60 * 1000);
       let requests;
       // If we're supposed to do a multipart upload, we should generate an UploadId
       // if it doesn't already exist.  We should store that ID in the entity
@@ -439,10 +439,11 @@ builder.declare({
         requests: requests,
       });
       break;
-    case 's3':
+    }
+    case 's3': {
       // Reply with signed S3 URL
-      var expiry = new Date(new Date().getTime() + 45 * 60 * 1000);
-      var bucket = null;
+      let expiry = new Date(new Date().getTime() + 45 * 60 * 1000);
+      let bucket = null;
       if (artifact.details.bucket === this.publicBucket.bucket) {
         bucket = this.publicBucket;
       }
@@ -450,7 +451,7 @@ builder.declare({
         bucket = this.privateBucket;
       }
       // Create put URL
-      var putUrl = await bucket.createPutUrl(
+      let putUrl = await bucket.createPutUrl(
         artifact.details.prefix, {
           contentType:      artifact.contentType,
           expires:          45 * 60 + 10, // Add 10 sec for clock drift
@@ -462,12 +463,12 @@ builder.declare({
         expires:      expiry.toJSON(),
         putUrl:       putUrl,
       });
-
-    case 'azure':
+    }
+    case 'azure': {
       // Reply with SAS for azure
       var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
       // Generate SAS
-      var putUrl = this.blobStore.generateWriteSAS(
+      let putUrl = this.blobStore.generateWriteSAS(
         artifact.details.path, {expiry},
       );
       return res.reply({
@@ -476,7 +477,7 @@ builder.declare({
         expires:      expiry.toJSON(),
         putUrl,
       });
-
+    }
     case 'reference':
     case 'error':
       // For 'reference' and 'error' the response is simple
@@ -612,7 +613,7 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
       await this.monitor.reportError(err);
     }
     // Generate URL expiration time
-    var expiry = new Date();
+    let expiry = new Date();
     expiry.setMinutes(expiry.getMinutes() + 30);
     // Create and redirect to signed URL
     return res.redirect(303, this.blobStore.createSignedGetUrl(
