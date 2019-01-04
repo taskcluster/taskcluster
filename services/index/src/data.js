@@ -101,7 +101,7 @@ Namespace.ensureNamespace = function(namespace, expires) {
       if (this.expires < expires) {
         // Update expires
         this.expires = expires;
-        
+
         // Update all parents first though
         return Namespace.ensureNamespace.call(that, namespace, expires);
       }
@@ -154,7 +154,7 @@ Namespace.expireEntries = async function(now) {
     });
 
     await Promise.all(data.entries.map(async entry => {
-      // insertTask is careful to update expires of entries 
+      // insertTask is careful to update expires of entries
       // from the root out to the leaf. A parent's expires is
       // always later than the child's. Hence, we can delete an
       // entry without checking its children.

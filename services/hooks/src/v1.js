@@ -204,11 +204,11 @@ builder.declare({
         '{{message}} in {{schedElement}}', {message: err.message, schedElement});
     }
   }
-  
+
   // Handle an invalid schema
   let valid = ajv.validateSchema(hookDef.triggerSchema);
   if (!valid) {
-    
+
     const errors = [];
 
     for (let index = 0; index < ajv.errors.length; index++) {
@@ -289,10 +289,10 @@ builder.declare({
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
-  
-  //Handle an invalid schema 
+
+  //Handle an invalid schema
   let valid = ajv.validateSchema(hookDef.triggerSchema);
-  
+
   if (!valid) {
     const errors = [];
 
@@ -557,7 +557,7 @@ const triggerHookCommon = async function({req, res, hook, payload, firedBy}) {
   }
 };
 
-/** 
+/**
  * Get information about recent fires of a hook
 */
 builder.declare({
@@ -583,7 +583,7 @@ builder.declare({
     lastFires.push(item);
   }});
 
-  if (lastFires.length === 0) { 
+  if (lastFires.length === 0) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
   return res.reply({lastFires: lastFires});

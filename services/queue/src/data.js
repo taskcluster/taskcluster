@@ -386,7 +386,7 @@ let Artifact = Entity.configure({
      */
     details: Entity.types.JSON,
     expires: Entity.types.Date,
-    /** 
+    /**
      * Present is a number field which represents an artifact being present and
      * the upload being completed.  The handling logic for the artifact's
      * storage type will fully define what that means for a given storage type.

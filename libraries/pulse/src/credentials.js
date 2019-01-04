@@ -15,7 +15,7 @@ const pulseCredentials = ({username, password, hostname, vhost}) => {
   assert(password, 'options.password is required');
   assert(hostname, 'options.hostname is required');
   assert(vhost, 'options.vhost is required');
-  
+
   // Construct connection string
   return async () => {
     return {

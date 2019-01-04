@@ -113,8 +113,8 @@ const load = loader({
   taskcreator: {
     requires: ['cfg', 'LastFire', 'monitor'],
     setup: ({cfg, LastFire, monitor}) => new taskcreator.TaskCreator({
-      ...cfg.taskcluster, 
-      LastFire, 
+      ...cfg.taskcluster,
+      LastFire,
       monitor: monitor.prefix('taskcreator'),
     }),
   },

@@ -53,7 +53,7 @@ const expressError = ({errorCodes, entry, monitor}) => {
     let code = err.code;
     let details = err.details;
     let message = err.message;
-    
+
     let status = errorCodes[code];
     let payload = req.body;
     if (cleanPayload) {

@@ -76,7 +76,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   }, hookWithHookIds);
   const hookWithNewBindings = _.defaults({
     bindings: [{exchange: `exchanges/test-new/${unique}`, routingKeyPattern: 'amongst.new.rockets.and.wizards'}],
-  }, hookWithHookIds);  
+  }, hookWithHookIds);
 
   const setHookLastFire = async (hookGroupId, hookId, lastFire) => {
     const hook = await helper.Hook.load({hookGroupId, hookId}, true);

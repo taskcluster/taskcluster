@@ -70,7 +70,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
 
       const expired_paths = [
         'pqr', 'pqr.stu', 'pqr.stu2',
-        'ppt', 'ppt.stu',    
+        'ppt', 'ppt.stu',
       ];
 
       const taskId = slugid.v4();
@@ -110,7 +110,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       const opts = {limit: 1};
       let results = [];
       let iterations = 0;
-      
+
       while (1) {
         iterations++;
         const result = await helper.index.listNamespaces('', opts);

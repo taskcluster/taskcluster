@@ -91,7 +91,7 @@ exports.insertTask = insertTask;
 *    limit:            // limit for the number of results
 *    continuation:     // the continuationToken
 *    key :             // key in the results to be used to create output
-*    Table:            // Table on which query is to be executed  
+*    Table:            // Table on which query is to be executed
 * }
 */
 

@@ -191,7 +191,7 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
     test('on error, notify is used with correct options', async () => {
       helper.creator.shouldFail = true;
       await scheduler.handleHook(hook);
-      
+
       const notify = await helper.load('notify');
       assume(notify.fakeCalls.email.length).greaterThan(0);
       let lastEmail = notify.fakeCalls.email[0].payload;

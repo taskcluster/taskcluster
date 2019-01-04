@@ -58,7 +58,7 @@ class TaskCreator {
       result,
       error,
     });
-  } 
+  }
 
   /**
   * Fire the given hook, using the given payload (interpolating it into the task
@@ -126,7 +126,7 @@ class TaskCreator {
     try {
       await this.appendLastFire({
         hookGroupId: hook.hookGroupId,
-        taskCreateTime: lastFire.time, 
+        taskCreateTime: lastFire.time,
         hookId: hook.hookId,
         firedBy: context.firedBy,
         taskId: lastFire.taskId,

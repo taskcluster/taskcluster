@@ -81,7 +81,7 @@ var launch = async function(cfg) {
         await (async () => {
           let taskId = slugid.v4();
           await queue.createTask(taskId, makeTask());
-          
+
           let result = await queue.claimTask(taskId, 0, {
             workerGroup: 'no-worker',
             workerId: 'dummy-worker',

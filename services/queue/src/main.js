@@ -490,7 +490,7 @@ let load = loader({
         workerInfo: ctx.workerInfo,
         s3Controller: ctx.s3Controller,
         s3Runner: ctx.s3Runner,
-        blobRegion: ctx.cfg.app.blobArtifactRegion, 
+        blobRegion: ctx.cfg.app.blobArtifactRegion,
         publicBlobBucket: ctx.cfg.app.publicBlobArtifactBucket,
         privateBlobBucket: ctx.cfg.app.privateBlobArtifactBucket,
       },

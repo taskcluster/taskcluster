@@ -91,7 +91,7 @@ suite('api/validate', function() {
   }, function(req, res) {
     res.reply({value: 'Hello World'});
   });
-  
+
   // Declare a method we can use to test res.reply with empty body
   builder.declare({
     method: 'get',

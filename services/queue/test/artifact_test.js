@@ -195,7 +195,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     test('S3 single part complete flow', async () => {
       let taskId = slugid.v4();
-      
+
       debug('### Creating task');
       await helper.queue.createTask(taskId, taskDef);
 
@@ -231,11 +231,11 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       let uploadOutcome = await client.runUpload(response.requests, uploadInfo);
 
       response = await helper.queue.completeArtifact(taskId, 0, 'public/singlepart.dat', {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
 
       let secondResponse = await helper.queue.completeArtifact(taskId, 0, 'public/singlepart.dat', {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
       assume(response).deeply.equals(secondResponse);
 
@@ -246,7 +246,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       debug('Fetching artifact from: %s', artifactUrl);
       let artifact = await getWithoutRedirecting(artifactUrl);
 
-      let expectedUrl = 
+      let expectedUrl =
         `https://test-bucket-for-any-garbage.s3-us-west-2.amazonaws.com/${taskId}/0/public/singlepart.dat`;
       assume(artifact.headers).has.property('location', expectedUrl);
 
@@ -256,7 +256,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     test('S3 single part private artifact fetched with signed url', async () => {
       let taskId = slugid.v4();
-      
+
       debug('### Creating task');
       await helper.queue.createTask(taskId, taskDef);
 
@@ -294,11 +294,11 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       let uploadOutcome = await client.runUpload(response.requests, uploadInfo);
 
       response = await helper.queue.completeArtifact(taskId, 0, name, {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
 
       let secondResponse = await helper.queue.completeArtifact(taskId, 0, name, {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
       assume(response).deeply.equals(secondResponse);
 
@@ -333,7 +333,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     test('S3 multi part complete flow', async () => {
       let name = 'public/multipart.dat';
       let taskId = slugid.v4();
-      
+
       debug('### Creating task');
       await helper.queue.createTask(taskId, taskDef);
 
@@ -374,12 +374,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       let uploadOutcome = await client.runUpload(response.requests, uploadInfo);
 
       response = await helper.queue.completeArtifact(taskId, 0, name, {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
 
       // Ensure idempotency for completion of artifacts
       let secondResponse = await helper.queue.completeArtifact(taskId, 0, name, {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
       assume(response).deeply.equals(secondResponse);
 
@@ -396,11 +396,11 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
       await verifyDownload(artifact.headers.location, bigfilehash, bigfilesize);
     });
-    
+
     test('S3 multi part idempotency', async () => {
       let name = 'public/multipart.dat';
       let taskId = slugid.v4();
-      
+
       debug('### Creating task');
       await helper.queue.createTask(taskId, taskDef);
 
@@ -443,7 +443,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
           return {sha256: x.sha256, size: x.size};
         }),
       });
-      
+
       let firstUploadId = qs.parse(urllib.parse(firstResponse.requests[0].url).query).uploadId;
       let secondUploadId = qs.parse(urllib.parse(secondResponse.requests[0].url).query).uploadId;
       assume(firstUploadId).equals(secondUploadId);
@@ -477,7 +477,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       let uploadOutcome = await client.runUpload(secondResponse.requests, uploadInfo);
 
       let response = await helper.queue.completeArtifact(taskId, 0, name, {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
     });
   });

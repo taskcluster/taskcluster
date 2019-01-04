@@ -42,7 +42,7 @@ var load = loader({
         accountId: cfg.azure.accountId,
         tableName: cfg.app.namespaceTableName,
         rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.taskcluster.credentials,  
+        credentials: cfg.taskcluster.credentials,
       }),
     }),
   },
@@ -94,7 +94,7 @@ var load = loader({
       schemaset,
       references: [
         {
-          name: 'api', 
+          name: 'api',
           reference: builder.reference(),
         },
       ],
@@ -111,7 +111,7 @@ var load = loader({
     setup: async ({cfg, schemaset, IndexedTask, Namespace, monitor, queue}) => builder.build({
       context: {
         queue,
-        IndexedTask,  
+        IndexedTask,
         Namespace,
       },
       rootUrl: cfg.taskcluster.rootUrl,

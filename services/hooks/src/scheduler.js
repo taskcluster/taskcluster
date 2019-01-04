@@ -28,7 +28,7 @@ class Scheduler extends events.EventEmitter {
   constructor(options) {
     super();
     assert(options, 'options must be given');
-    assert(options.Hook.prototype instanceof data.Hook, 
+    assert(options.Hook.prototype instanceof data.Hook,
       'Expected data.Hook instance');
     assert(options.taskcreator instanceof taskcreator.TaskCreator,
       'An instance of taskcreator.TaskCreator is required');

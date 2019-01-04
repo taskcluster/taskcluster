@@ -33,7 +33,7 @@ var createServer = function() {
     res.setHeader('Content-Type', 'application/json');
     res.status(404).json({error: 'Not found'});
   });
-  
+
   return new Promise(function(accept, reject) {
     // Launch HTTP server
     var server = http.createServer(that);

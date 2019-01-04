@@ -209,7 +209,7 @@ const connectionTests = connectionString => {
 
     let gotException;
     try {
-      
+
       await client.withChannel(async chan => {
         await chan.assertQueue(queueName);
         // throw an error to exercise error-handling code
@@ -248,7 +248,7 @@ const connectionTests = connectionString => {
     let messageReceived = 0;
 
     try {
-      
+
       await new Promise((resolve, reject) => {
         client.on('connected', async (conn) => {
           let chan, consumer;

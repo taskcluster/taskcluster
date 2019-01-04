@@ -151,7 +151,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'assume:scheduler-id:my-scheduler/dSlITZ4yQgmvxxAi4A8fHQ',
     );
     const r1 = await helper.queue.scheduleTask(taskId);
-    helper.checkNextMessage('task-pending', m => 
+    helper.checkNextMessage('task-pending', m =>
       assume(r1.status).deep.equals(m.payload.status));
   });
 

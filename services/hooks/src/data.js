@@ -31,7 +31,7 @@ const Hook = Entity.configure({
     nextTaskId: Entity.types.EncryptedText,
     // next date at which this task is scheduled to run
     nextScheduledDate: Entity.types.Date,
-    
+
   },
 }).configure({
   version: 2,
@@ -56,7 +56,7 @@ const Hook = Entity.configure({
     nextTaskId: Entity.types.EncryptedText,
     // next date at which this task is scheduled to run
     nextScheduledDate: Entity.types.Date,
-   
+
   },
   migrate: function(item) {
     // remove the task timestamps, as they are overwritten when the hook fires

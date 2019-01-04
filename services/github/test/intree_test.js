@@ -302,7 +302,7 @@ suite('intree config', function() {
       'tasks[0].task.metadata.source': 'https://github.com/TaskClusterRobot/hooks-testing',
       scopes: ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
     });
-    
+
   buildConfigTest(
     'Push Event (Push Task + Pull Task + Release Task), v1',
     configPath + 'taskcluster.push_pull_release.v1.yml',
@@ -319,7 +319,7 @@ suite('intree config', function() {
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
       scopes: ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
     });
-    
+
   buildConfigTest(
     'Pull Event (Push Task + Pull Task + Release Task), v1',
     configPath + 'taskcluster.push_pull_release.v1.yml',
@@ -335,7 +335,7 @@ suite('intree config', function() {
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
       scopes: ['assume:repo:github.com/testorg/testrepo:pull-request'],
     });
-    
+
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (on branch), v1',
     configPath + 'taskcluster.branchlimited.v1.yml',
@@ -352,7 +352,7 @@ suite('intree config', function() {
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
       scopes: ['assume:repo:github.com/testorg/testrepo:branch:master'],
     });
-    
+
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (off branch), v1',
     configPath + 'taskcluster.branchlimited.v1.yml',
@@ -367,7 +367,7 @@ suite('intree config', function() {
     {
       tasks: [],
     });
-    
+
   buildConfigTest(
     'Release Event, Single Task Config, v1',
     configPath + 'taskcluster.release_single.v1.yml',
@@ -384,7 +384,7 @@ suite('intree config', function() {
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
       scopes: ['assume:repo:github.com/testorg/testrepo:release'],
     });
-    
+
   buildConfigTest(
     'Release Event (Push Task + Pull Task + Release Task), v1',
     configPath + 'taskcluster.push_pull_release.v1.yml',
@@ -401,7 +401,7 @@ suite('intree config', function() {
       'tasks[0].task.metadata.source': 'http://mrrrgn.com',
       scopes: ['assume:repo:github.com/testorg/testrepo:release'],
     });
-    
+
   buildConfigTest(
     'Unicode branch names are not allowed, v1',
     configPath + 'taskcluster.single.v1.yml',
@@ -416,7 +416,7 @@ suite('intree config', function() {
     {},
     0,
     true);
-    
+
   buildConfigTest(
     'Tag Event, Single Task Config, v1',
     configPath + 'taskcluster.tag_single.v1.yml',

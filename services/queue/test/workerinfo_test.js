@@ -29,7 +29,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     await helper.Provisioner.create(provisioner);
     return provisioner;
   };
-  
+
   const makeWorkerType = async (opts) => {
     const wType = Object.assign({
       provisionerId: 'prov1',

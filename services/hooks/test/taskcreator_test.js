@@ -145,7 +145,7 @@ suite('taskcreator_test.js', function() {
         },
       });
       assume(new Date(task.deadline) - new Date(task.created)).to.equal(60000);
-      assume(new Date(task.expires) - new Date(task.created)).to.equal(120000); 
+      assume(new Date(task.expires) - new Date(task.created)).to.equal(120000);
     });
 
     test('firing a real task that sets its own task times works', async function() {
@@ -233,8 +233,8 @@ suite('taskcreator_test.js', function() {
 
     test('Fetch two appended lastFire rows independently', async function() {
       let hook = _.cloneDeep(defaultHook);
-      let hook2 = _.cloneDeep({...defaultHook, 
-        hookId: 'tc-test-hook2', 
+      let hook2 = _.cloneDeep({...defaultHook,
+        hookId: 'tc-test-hook2',
         nextTaskId: taskcluster.slugid(),
       });
       let taskCreateTime = new Date();

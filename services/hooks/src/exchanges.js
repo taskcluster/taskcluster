@@ -13,7 +13,7 @@ let exchanges = new Exchanges({
     '',
     'These exchanges provide notifications when a hook is created, updated',
     'or deleted. This is so that the listener running in a different hooks ',
-    'process at the other end can direct another listener specified by', 
+    'process at the other end can direct another listener specified by',
     '`hookGroupId` and `hookId` to synchronize its bindings. But you are of',
     'course welcome to use these for other purposes, monitoring changes for example.',
   ].join(''),

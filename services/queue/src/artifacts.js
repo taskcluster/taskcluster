@@ -550,7 +550,7 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
       // CDN (cloudfront) for those requests which require it
       let skipCacheHeader = (req.headers['x-taskcluster-skip-cache'] || '').toLowerCase();
       let skipCDNHeader = (req.headers['x-taskcluster-skip-cdn'] || '').toLowerCase();
-      
+
       let skipCache = false;
       if (skipCacheHeader === 'true' || skipCacheHeader === '1') {
         skipCache = true;
@@ -696,28 +696,28 @@ builder.declare({
     name,
   });
 
-  // Ensure that the run is running 
-  if (run.state !== 'running') { 
-    var allow = false; 
-    if (run.state === 'exception') { 
-      // If task was resolved exception, we'll allow artifacts to be uploaded 
-      // up to 25 min past resolution. This allows us to report exception as 
-      // soon as we know and then upload logs if possible. 
-      // Useful because exception usually implies something badly wrong. 
-      allow = new Date(run.resolved).getTime() > Date.now() - 25 * 60 * 1000; 
-    } 
-    if (!allow) { 
-      return res.reportError('RequestConflict', 
-        'Artifacts cannot be completed for a task after it is ' + 
-        'resolved, unless it is resolved \'exception\', and even ' + 
-        'in this case only up to 25 min past resolution.' + 
-        'This to ensure that artifacts have been uploaded before ' + 
-        'a task is \'completed\' and output is consumed by a ' + 
-        'dependent task\n\nTask status: {{status}}', { 
-          status: task.status(), 
-        }); 
-    } 
-  } 
+  // Ensure that the run is running
+  if (run.state !== 'running') {
+    var allow = false;
+    if (run.state === 'exception') {
+      // If task was resolved exception, we'll allow artifacts to be uploaded
+      // up to 25 min past resolution. This allows us to report exception as
+      // soon as we know and then upload logs if possible.
+      // Useful because exception usually implies something badly wrong.
+      allow = new Date(run.resolved).getTime() > Date.now() - 25 * 60 * 1000;
+    }
+    if (!allow) {
+      return res.reportError('RequestConflict',
+        'Artifacts cannot be completed for a task after it is ' +
+        'resolved, unless it is resolved \'exception\', and even ' +
+        'in this case only up to 25 min past resolution.' +
+        'This to ensure that artifacts have been uploaded before ' +
+        'a task is \'completed\' and output is consumed by a ' +
+        'dependent task\n\nTask status: {{status}}', {
+          status: task.status(),
+        });
+    }
+  }
 
   if (artifact.storageType !== 'blob') {
     return res.reportError('InputError',

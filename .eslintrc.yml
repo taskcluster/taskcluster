@@ -47,6 +47,7 @@ rules:
   key-spacing:
     - error
     - mode: strict
+  no-trailing-spaces: error
 
   # Let's turn these on eventually
   block-scoped-var: off
@@ -54,7 +55,6 @@ rules:
   require-await: off
   eol-last: off
   indent: off
-  no-trailing-spaces: off
   no-var: off
 
   # These are disabled for now and we will slowly turn them on

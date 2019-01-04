@@ -448,7 +448,7 @@ exports.withPollingServices = (mock, skipping) => {
     if (skipping()) {
       return;
     }
-    
+
     helper.startPollingService = async service => {
       const svc = await helper.load(service);
       // remove it right away, as it is started on load

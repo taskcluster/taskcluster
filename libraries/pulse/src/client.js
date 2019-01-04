@@ -303,7 +303,7 @@ let nextConnectionId = 1;
 class Connection extends events.EventEmitter {
   constructor(retirementDelay) {
     super();
-  
+
     this.retirementDelay = retirementDelay;
     this.id = nextConnectionId++;
     this.amqp = null;

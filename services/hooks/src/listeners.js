@@ -4,7 +4,7 @@ const pulse = require('taskcluster-lib-pulse');
 const _ = require('lodash');
 
 /**
- * Create pulse client and consumers to trigger hooks with pulse messages 
+ * Create pulse client and consumers to trigger hooks with pulse messages
  *
  * options:
  * {
@@ -30,7 +30,7 @@ class HookListeners {
 
   /**
    * Setup a new pulse client using the credentials
-   * Additionally create pulse consumers for the exchanges - 
+   * Additionally create pulse consumers for the exchanges -
    * `hook-created, `hook-updated` and  `hook-deleted`
   */
   async setup() {
@@ -101,7 +101,7 @@ class HookListeners {
       }
     }
   }
-  
+
   /** Add / Remove bindings from he queue */
   async syncBindings(queueName, newBindings, oldBindings) {
     debug(`Updating the bindings of ${queueName}`);
@@ -132,7 +132,7 @@ class HookListeners {
           handler: (queue) => queues.push(queue),
         }
       );
-      
+
       await this.Hook.scan({}, {
         limit: 1000,
         handler: async (hook) => {
@@ -168,7 +168,7 @@ class HookListeners {
           }
         },
       });
-    
+
       // Delete the queues now left in the queues list.
       for (let queue of queues) {
         // Delete the amqp queue

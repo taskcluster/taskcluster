@@ -45,7 +45,7 @@ function getPushDetails(eventData) {
   let ref = eventData.ref;
   // parsing the ref refs/heads/<branch-name> is the most reliable way
   // to get a branch name
-  // However, tags are identified the ref refs/tags/<tag-name> 
+  // However, tags are identified the ref refs/tags/<tag-name>
   let refName = ref.split('/').slice(2).join('/');
   let isTagEvent = ref.split('/')[1] === 'tags';
   let details = {
@@ -72,7 +72,7 @@ function getPushDetails(eventData) {
 
   }
   return details;
-  
+
 }
 
 // See https://developer.github.com/v3/activity/events/types/#releaseevent
@@ -140,7 +140,7 @@ async function installationAuthenticate(owner, OwnersDirectory, github) {
 /***
  Helper function to find the most fresh status set by our bot.
  Gets the bot's ID, gets statuses for the repo/branch, finds there the status by the bot's ID
- 
+
  Receives authenticated github object; names of owner, repo and branch; and configuration object
  Returns either status object or undefined (if not found).
 ***/

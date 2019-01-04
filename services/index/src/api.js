@@ -290,7 +290,7 @@ builder.declare({
     key: 'tasks',
     Table: that.IndexedTask,
   });
-  
+
   res.reply(tasks);
 });
 
@@ -323,7 +323,7 @@ builder.declare({
     key: 'tasks',
     Table: that.IndexedTask,
   });
-  
+
   res.reply(tasks);
 });
 
