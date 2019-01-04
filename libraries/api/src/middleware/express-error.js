@@ -53,7 +53,7 @@ const expressError = ({errorCodes, entry, monitor}) => {
     let code = err.code;
     let details = err.details;
     let message = err.message;
-    
+
     let status = errorCodes[code];
     let payload = req.body;
     if (cleanPayload) {
@@ -77,9 +77,9 @@ const expressError = ({errorCodes, entry, monitor}) => {
 
     const requestInfo = {
       method,
-      params:  req.params,
+      params: req.params,
       payload,
-      time:    (new Date()).toJSON(),
+      time: (new Date()).toJSON(),
     };
 
     message = message.replace(/{{([a-zA-Z0-9_-]+)}}/g, (text, key) => {

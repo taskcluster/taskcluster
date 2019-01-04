@@ -9,15 +9,15 @@ const Entity = require('azure-entities');
  *
  */
 const CachePurge = Entity.configure({
-  version:          1,
-  partitionKey:     Entity.keys.CompositeKey('provisionerId', 'workerType'),
-  rowKey:           Entity.keys.StringKey('cacheName'),
+  version: 1,
+  partitionKey: Entity.keys.CompositeKey('provisionerId', 'workerType'),
+  rowKey: Entity.keys.StringKey('cacheName'),
   properties: {
-    provisionerId:  Entity.types.String,
-    workerType:     Entity.types.String,
-    cacheName:      Entity.types.String,
-    before:         Entity.types.Date,
-    expires:        Entity.types.Date,
+    provisionerId: Entity.types.String,
+    workerType: Entity.types.String,
+    cacheName: Entity.types.String,
+    before: Entity.types.Date,
+    expires: Entity.types.Date,
   },
 });
 
@@ -30,10 +30,10 @@ CachePurge.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
   let count = 0;
   await Entity.scan.call(this, {
-    expires:          Entity.op.lessThan(now),
+    expires: Entity.op.lessThan(now),
   }, {
-    limit:            250, // max number of concurrent delete operations
-    handler:          (cachePurge) => {
+    limit: 250, // max number of concurrent delete operations
+    handler: (cachePurge) => {
       count++;
       return cachePurge.remove(true);
     },

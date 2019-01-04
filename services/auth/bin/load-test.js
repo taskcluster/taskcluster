@@ -25,12 +25,12 @@ const launch = async function(profile) {
   const CYCLE_SECONDS = 3 * 60;
 
   let success = 0;
-  let failed  = 0;
+  let failed = 0;
   let summary = () => {
     console.log('SUMMARY: %s req/s success: %s, failed: %s',
       fmt(success / CYCLE_SECONDS), success, failed);
     success = 0;
-    failed  = 0;
+    failed = 0;
   };
 
   /*
@@ -85,20 +85,20 @@ const launch = async function(profile) {
     let reqUrl = 'http://localhost:1207/v1/client/authed-client/credentials';
     let header = hawk.client.header(reqUrl, 'GET', {
       credentials: {
-        id:         tempCreds.clientId,
-        key:        tempCreds.accessToken,
-        algorithm:  'sha256',
+        id: tempCreds.clientId,
+        key: tempCreds.accessToken,
+        algorithm: 'sha256',
       },
       ext: new Buffer(JSON.stringify({
         certificate: JSON.parse(tempCreds.certificate),
       })).toString('base64'),
     }).field;
     return {
-      method:         'get',
-      resource:       '/v1/client/authed-client/credentials',
-      host:           'localhost',
-      port:           1207,
-      authorization:  header,
+      method: 'get',
+      resource: '/v1/client/authed-client/credentials',
+      host: 'localhost',
+      port: 1207,
+      authorization: header,
     };
   };
 
@@ -108,15 +108,15 @@ const launch = async function(profile) {
     loops += 1;
     (async () => {
       let agent = new https.Agent({keepAlive: true});
-      if (cfg.server.publicUrl.substr(0, 5) != 'https') {
+      if (cfg.server.publicUrl.substr(0, 5) !== 'https') {
         agent = new http.Agent({keepAlive: true});
       }
       let Auth = taskcluster.createClient(v1.reference({
-        baseUrl:      cfg.server.publicUrl + '/v1',
+        baseUrl: cfg.server.publicUrl + '/v1',
       }));
       let auth = new Auth({
-        retries:      0,
-        agent:        agent,
+        retries: 0,
+        agent: agent,
       });
       let reqForVerification = makeSignature();
       setInterval(function() {
@@ -210,4 +210,3 @@ if (!module.parent) {
 
 // Export launch in-case anybody cares
 module.exports = launch;
-

@@ -446,7 +446,7 @@ async function jobHandler(message) {
   // Authenticating as installation.
   let instGithub = await context.github.getInstallationGithub(message.payload.installationId);
 
-  // We must attempt to convert the sanitized fields back to normal here. 
+  // We must attempt to convert the sanitized fields back to normal here.
   // Further discussion of how to deal with this cleanly is in
   // https://github.com/taskcluster/taskcluster-github/issues/52
   message.payload.organization = message.payload.organization.replace(/%/g, '.');

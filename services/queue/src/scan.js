@@ -14,8 +14,8 @@
  * See src/main.js for the arguments supplied to the scan function.
  */
 
-let Entity              = require('azure-entities');
-let _                   = require('lodash');
+let Entity = require('azure-entities');
+let _ = require('lodash');
 
 const SLUGID_CHARACTERS = (
   'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
@@ -37,9 +37,9 @@ let branchRoutePattern = new RegExp(
   '|tc-treeherder(-stage)?(\\.v2)?)\\.([^.]*)\\..*/'
 );
 let taskBranch = (task) => {
-  if (task.workerType == 'cratertest') {
+  if (task.workerType === 'cratertest') {
     return 'cratertest';
-  } else if (task.workerType == 'buildbot-bridge') {
+  } else if (task.workerType === 'buildbot-bridge') {
     return 'buildbot-bridge';
   }
 
@@ -125,7 +125,7 @@ let scanObjectVersions = async ({cfg, Artifact, Task, publicArtifactBucket}) => 
 
       params.KeyMarker = res.data.NextKeyMarker;
       params.VersionIdMarker = res.data.NextVersionIdMarker;
-    };
+    }
   }));
 };
 

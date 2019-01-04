@@ -31,12 +31,12 @@ class API {
     assert(!options.referencePrefix, 'referencePrefix is now deprecated!');
 
     options = _.defaults({}, options, {
-      inputLimit:           '10mb',
-      allowedCORSOrigin:    '*',
-      context:              {},
-      nonceManager:         nonceManager(),
-      referenceBucket:      'references.taskcluster.net',
-      signatureValidator:   createRemoteSignatureValidator({
+      inputLimit: '10mb',
+      allowedCORSOrigin: '*',
+      context: {},
+      nonceManager: nonceManager(),
+      referenceBucket: 'references.taskcluster.net',
+      signatureValidator: createRemoteSignatureValidator({
         rootUrl: options.rootUrl,
       }),
       serviceName: options.builder.serviceName,
@@ -75,10 +75,10 @@ class API {
 
     // Upload object
     await s3.putObject({
-      Bucket:           this.options.referenceBucket,
-      Key:              `${this.builder.serviceName}/${this.builder.apiVersion}/api.json`,
-      Body:             JSON.stringify(this.builder.reference(), undefined, 2),
-      ContentType:      'application/json',
+      Bucket: this.options.referenceBucket,
+      Key: `${this.builder.serviceName}/${this.builder.apiVersion}/api.json`,
+      Body: JSON.stringify(this.builder.reference(), undefined, 2),
+      ContentType: 'application/json',
     }).promise();
   }
 
@@ -175,7 +175,7 @@ const corsHeaders = allowedCORSOrigin => {
       'CONNECT',
     ].join(','));
     res.header('Access-Control-Request-Method', '*');
-    res.header('Access-Control-Allow-Headers',  [
+    res.header('Access-Control-Allow-Headers', [
       'X-Requested-With',
       'Content-Type',
       'Authorization',
@@ -204,7 +204,7 @@ const corsHeaders = allowedCORSOrigin => {
  */
 const nonceManager = (options) => {
   options = _.defaults({}, options || {}, {
-    size:               250,
+    size: 250,
   });
   let nextnonce = 0;
   const N = options.size;
@@ -219,8 +219,8 @@ const nonceManager = (options) => {
         return cb(new Error('Signature already used'));
       }
     }
-    noncedb[nextnonce].nonce  = nonce;
-    noncedb[nextnonce].ts     = ts;
+    noncedb[nextnonce].nonce = nonce;
+    noncedb[nextnonce].ts = ts;
     // Increment nextnonce
     nextnonce += 1;
     nextnonce %= N;

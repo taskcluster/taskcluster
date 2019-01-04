@@ -1,11 +1,11 @@
-const debug       = require('debug')('test:retry');
-const assert      = require('assert');
-const slugid      = require('slugid');
-const _           = require('lodash');
+const debug = require('debug')('test:retry');
+const assert = require('assert');
+const slugid = require('slugid');
+const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
-const assume      = require('assume');
-const helper      = require('./helper');
-const testing     = require('taskcluster-lib-testing');
+const assume = require('assume');
+const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
@@ -19,17 +19,17 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   // Use the same task definition for everything
   const taskDef = {
-    provisionerId:    'no-provisioner',
-    workerType:       'test-worker',
-    created:          taskcluster.fromNowJSON(),
-    deadline:         taskcluster.fromNowJSON('3 days'),
-    retries:          1,
-    payload:          {},
+    provisionerId: 'no-provisioner',
+    workerType: 'test-worker',
+    created: taskcluster.fromNowJSON(),
+    deadline: taskcluster.fromNowJSON('3 days'),
+    retries: 1,
+    payload: {},
     metadata: {
-      name:           'Unit testing task',
-      description:    'Task created during unit tests',
-      owner:          'jonsafj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue',
+      name: 'Unit testing task',
+      description: 'Task created during unit tests',
+      owner: 'jonsafj@mozilla.com',
+      source: 'https://github.com/taskcluster/taskcluster-queue',
     },
   };
 
@@ -43,8 +43,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim task (runId: 0)');
     const r2 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     debug(`claimed until ${r2.takenUntil}, ${new Date(r2.takenUntil) - new Date()}ms from now`);
     helper.checkNextMessage('task-running');
@@ -72,8 +72,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim task (runId: 1)');
     const r4 = await helper.queue.claimTask(taskId, 1, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     assume(r4.status.retriesLeft).equals(0);
     debug(`claimed until ${r4.takenUntil}, ${new Date(r2.takenUntil) - new Date()}ms from now`);

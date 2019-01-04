@@ -27,10 +27,10 @@ helper.secrets.mockSuite(__filename, ['aws'], function(mock, skipping) {
 
   // Test that put to signed url works
   test('createPutUrl', async function() {
-    const key     = slugid.v4();
+    const key = slugid.v4();
     url = await bucket.createPutUrl(key, {
-      contentType:      'application/json',
-      expires:          60 * 10,
+      contentType: 'application/json',
+      expires: 60 * 10,
     });
     await request.put(url).send({message: 'Hello'});
   });
@@ -39,8 +39,8 @@ helper.secrets.mockSuite(__filename, ['aws'], function(mock, skipping) {
   test('deleteObject', async function() {
     const key = slugid.v4();
     const url = await bucket.createPutUrl(key, {
-      contentType:      'application/json',
-      expires:          60 * 10,
+      contentType: 'application/json',
+      expires: 60 * 10,
     });
     await request.put(url).send({message: 'Hello'});
     await bucket.deleteObject(key);
@@ -75,10 +75,10 @@ helper.secrets.mockSuite(__filename, ['aws'], function(mock, skipping) {
 
     // Create bucket instance
     const bucket = new Bucket({
-      bucket:       cfg.app.publicArtifactBucket,
-      credentials:  cfg.aws,
-      bucketCDN:    'https://example.com',
-      monitor:      await helper.load('monitor'),
+      bucket: cfg.app.publicArtifactBucket,
+      credentials: cfg.aws,
+      bucketCDN: 'https://example.com',
+      monitor: await helper.load('monitor'),
     });
     const url = bucket.createGetUrl('test');
     assert(url === 'https://example.com/test');

@@ -15,19 +15,19 @@ const pulseCredentials = ({username, password, hostname, vhost}) => {
   assert(password, 'options.password is required');
   assert(hostname, 'options.hostname is required');
   assert(vhost, 'options.vhost is required');
-  
+
   // Construct connection string
   return async () => {
     return {
       connectionString: [
-        'amqps://',         // Ensure that we're using SSL
+        'amqps://', // Ensure that we're using SSL
         encodeURI(username),
         ':',
         encodeURI(password),
         '@',
         hostname,
         ':',
-        5671,                // Port for SSL
+        5671, // Port for SSL
         '/',
         encodeURIComponent(vhost),
       ].join(''),

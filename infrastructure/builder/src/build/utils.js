@@ -10,7 +10,7 @@ const Docker = require('dockerode');
 const Observable = require('zen-observable');
 const {PassThrough, Transform} = require('stream');
 const got = require('got');
-const {spawn} = require('child_process'); 
+const {spawn} = require('child_process');
 const Stamp = require('./stamp');
 
 /**
@@ -82,7 +82,7 @@ exports.gitId = async ({dir, utils}) => {
 const _dockerSetup = ({baseDir}) => {
   const inner = async ({baseDir}) => {
     docker = new Docker();
-    // when running a docker container, always remove the container when finished, 
+    // when running a docker container, always remove the container when finished,
     // mount the workdir at /workdir, and run as the current (non-container) user
     // so that file ownership remains as expected.  Set up /etc/passwd and /etc/group
     // to define names for those uid/gid, too.

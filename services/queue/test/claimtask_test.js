@@ -1,11 +1,11 @@
-const debug       = require('debug')('test:claim');
-const assert      = require('assert');
-const slugid      = require('slugid');
-const _           = require('lodash');
+const debug = require('debug')('test:claim');
+const assert = require('assert');
+const slugid = require('slugid');
+const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
-const assume      = require('assume');
-const helper      = require('./helper');
-const testing     = require('taskcluster-lib-testing');
+const assume = require('assume');
+const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
@@ -18,24 +18,24 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   // Use the same task definition for everything
   const taskDef = () => ({
-    provisionerId:    'no-provisioner',
-    workerType:       'test-worker',
-    schedulerId:      'my-scheduler',
-    taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
-    routes:           [],
-    retries:          5,
-    created:          taskcluster.fromNowJSON(),
-    deadline:         taskcluster.fromNowJSON('3 days'),
-    scopes:           [],
-    payload:          {},
+    provisionerId: 'no-provisioner',
+    workerType: 'test-worker',
+    schedulerId: 'my-scheduler',
+    taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
+    routes: [],
+    retries: 5,
+    created: taskcluster.fromNowJSON(),
+    deadline: taskcluster.fromNowJSON('3 days'),
+    scopes: [],
+    payload: {},
     metadata: {
-      name:           'Unit testing task',
-      description:    'Task created during unit tests',
-      owner:          'jonsafj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue',
+      name: 'Unit testing task',
+      description: 'Task created during unit tests',
+      owner: 'jonsafj@mozilla.com',
+      source: 'https://github.com/taskcluster/taskcluster-queue',
     },
     tags: {
-      purpose:        'taskcluster-testing',
+      purpose: 'taskcluster-testing',
     },
   });
 
@@ -57,8 +57,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     // First runId is always 0, so we should be able to claim it here
     const before = new Date();
     const r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running');
 
@@ -107,22 +107,22 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     await helper.queue.createTask(taskId, taskDef());
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker2',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker2',
     }).then(() => {
       throw new Error('This request should have failed');
     }, (err) => {
-      if (err.code != 'RequestConflict') {
+      if (err.code !== 'RequestConflict') {
         throw err;
       }
     });
@@ -140,12 +140,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     );
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     }).then(() => {
       throw new Error('Expected an authentication error');
     }, (err) => {
-      if (err.code != 'InsufficientScopes') {
+      if (err.code !== 'InsufficientScopes') {
         throw err;
       }
     });
@@ -157,12 +157,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     );
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     }).then(() => {
       throw new Error('Expected an authentication error');
-    }, (err)  => {
-      if (err.code != 'InsufficientScopes') {
+    }, (err) => {
+      if (err.code !== 'InsufficientScopes') {
         throw err;
       }
     });
@@ -174,12 +174,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     );
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     }).then(() => {
       throw new Error('Expected an authentication error');
     }, (err) => {
-      if (err.code != 'InsufficientScopes') {
+      if (err.code !== 'InsufficientScopes') {
         throw err;
       }
     });

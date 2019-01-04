@@ -26,7 +26,7 @@ class SchemaSet {
     this.cfg = _.defaults(options, {
       folder: defaultFolder,
       constants: path.join(options && options.folder || defaultFolder, 'constants.yml'),
-      publish: process.env.NODE_ENV == 'production',
+      publish: process.env.NODE_ENV === 'production',
       bucket: 'schemas.taskcluster.net',
       preview: process.env.PREVIEW_JSON_SCHEMA_FILES,
       writeFile: process.env.WRITE_JSON_SCHEMA_FILES,
@@ -38,7 +38,7 @@ class SchemaSet {
       try {
         this.cfg.constants = yaml.safeLoad(fs.readFileSync(fullpath, 'utf-8'));
       } catch (err) {
-        if (err.code == 'ENOENT') {
+        if (err.code === 'ENOENT') {
           debug('Constants file does not exist, setting constants to {}');
           this.cfg.constants = {};
         } else {

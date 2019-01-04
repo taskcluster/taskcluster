@@ -19,8 +19,8 @@ const parseKeys = (keys, prefix) => {
       continue;
     }
     results.push({
-      id:   k.id,
-      dsn:  k.dsn,
+      id: k.id,
+      dsn: k.dsn,
       expires,
     });
   }
@@ -90,8 +90,8 @@ class SentryManager {
           name: this._keyPrefix + ` managed (expires-at:${expires.toJSON()})`,
         });
       key = {
-        id:   k.id,
-        dsn:  k.dsn,
+        id: k.id,
+        dsn: k.dsn,
         expires,
       };
     }

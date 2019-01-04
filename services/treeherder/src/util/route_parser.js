@@ -18,27 +18,27 @@ module.exports = function parseRoute(route) {
   }
 
   switch (version) {
-    // v1 is no longer supported by treeherder (specifically revision_hash is no longer
-    // recognized)
-    case 'v2':
-      project = parsedRoute[2];
-      revision = parsedRoute[3];
-      if (project.split('/').length === 2) {
-        [owner, parsedProject] = project.split('/');
-      } else {
-        parsedProject = project;
-      }
+  // v1 is no longer supported by treeherder (specifically revision_hash is no longer
+  // recognized)
+  case 'v2':
+    project = parsedRoute[2];
+    revision = parsedRoute[3];
+    if (project.split('/').length === 2) {
+      [owner, parsedProject] = project.split('/');
+    } else {
+      parsedProject = project;
+    }
 
-      if (parsedRoute.length === 5) {
-        pushId = parsedRoute[4];
-      }
-      break;
-    default:
-      throw new Error(
-        'Unrecognized treeherder routing key format. Possible formats are:\n' +
+    if (parsedRoute.length === 5) {
+      pushId = parsedRoute[4];
+    }
+    break;
+  default:
+    throw new Error(
+      'Unrecognized treeherder routing key format. Possible formats are:\n' +
           'v2: <treeherder destination>.<version>.<user/project>|<project>.<revision>.<pushLogId/pullRequestId>' +
           `but received: ${route}`
-      );
+    );
   }
 
   let x = {

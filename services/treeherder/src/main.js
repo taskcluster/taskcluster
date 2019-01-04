@@ -57,11 +57,11 @@ let load = loader({
   publisher: {
     requires: ['cfg', 'pulseClient', 'schemaset'],
     setup: async ({cfg, pulseClient, schemaset}) => await exchanges.publisher({
-      rootUrl:            cfg.taskcluster.rootUrl,
-      client:             pulseClient,
+      rootUrl: cfg.taskcluster.rootUrl,
+      client: pulseClient,
       schemaset,
-      publish:            cfg.app.publishMetaData,
-      aws:                cfg.aws,
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
     }),
   },
 

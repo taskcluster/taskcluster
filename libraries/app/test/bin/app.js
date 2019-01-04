@@ -1,4 +1,4 @@
-var base  = require('../../');
+var base = require('../../');
 var debug = require('debug')('base:test:bin:app.js');
 
 /** Global State where we count requests */
@@ -8,9 +8,9 @@ var global_state = 0;
 var launch = function() {
   // Create a simple app we can use for testing
   var app = base.app({
-    port:         Number(process.argv[2]) || 62827,
-    env:        'development',
-    forceSSL:   false,
+    port: Number(process.argv[2]) || 62827,
+    env: 'development',
+    forceSSL: false,
     trustProxy: false,
   });
 

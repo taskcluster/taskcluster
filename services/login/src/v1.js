@@ -3,8 +3,8 @@ const APIBuilder = require('taskcluster-lib-api');
 const builder = new APIBuilder({
   serviceName: 'login',
   apiVersion: 'v1',
-  title:         'Login API',
-  description:   [
+  title: 'Login API',
+  description: [
     'The Login service serves as the interface between external authentication',
     'systems and Taskcluster credentials.',
   ].join('\n'),
@@ -16,13 +16,13 @@ const builder = new APIBuilder({
 module.exports = builder;
 
 builder.declare({
-  method:     'get',
-  route:      '/oidc-credentials/:provider',
-  name:       'oidcCredentials',
+  method: 'get',
+  route: '/oidc-credentials/:provider',
+  name: 'oidcCredentials',
   idempotent: false,
-  output:     'oidc-credentials-response.yml',
-  title:      'Get Taskcluster credentials given a suitable `access_token`',
-  stability:  APIBuilder.stability.experimental,
+  output: 'oidc-credentials-response.yml',
+  title: 'Get Taskcluster credentials given a suitable `access_token`',
+  stability: APIBuilder.stability.experimental,
   description: [
     'Given an OIDC `access_token` from a trusted OpenID provider, return a',
     'set of Taskcluster credentials for use on behalf of the identified',

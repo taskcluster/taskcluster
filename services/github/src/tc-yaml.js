@@ -209,7 +209,7 @@ class VersionOne extends TcYaml {
     let slugids = {};
     let as_slugid = (label) => {
       let rv;
-      if (rv = slugids[label]) {
+      if (rv = slugids[label]) { // eslint-disable-line no-cond-assign
         return rv;
       } else {
         return slugids[label] = slugid.nice();

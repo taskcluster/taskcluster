@@ -18,17 +18,17 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   helper.withServer(mock, skipping);
 
   const taskDef = () => ({
-    provisionerId:    'no-provisioner',
-    workerType:       'test-worker',
-    created:          taskcluster.fromNowJSON(),
-    deadline:         taskcluster.fromNowJSON('1 days'),
-    expires:          taskcluster.fromNowJSON('2 days'),
-    payload:          {},
+    provisionerId: 'no-provisioner',
+    workerType: 'test-worker',
+    created: taskcluster.fromNowJSON(),
+    deadline: taskcluster.fromNowJSON('1 days'),
+    expires: taskcluster.fromNowJSON('2 days'),
+    payload: {},
     metadata: {
-      name:           'Unit testing task',
-      description:    'Task created during unit tests',
-      owner:          'jonsafj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue',
+      name: 'Unit testing task',
+      description: 'Task created during unit tests',
+      owner: 'jonsafj@mozilla.com',
+      source: 'https://github.com/taskcluster/taskcluster-queue',
     },
   });
 
@@ -66,8 +66,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.reportCompleted(taskIdA, 0);
@@ -80,8 +80,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskB');
     await helper.queue.claimTask(taskIdB, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdB));
     await helper.queue.reportCompleted(taskIdB, 0);
@@ -154,8 +154,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.reportCompleted(taskIdA, 0);
@@ -225,13 +225,13 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim taskA and taskB');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.claimTask(taskIdB, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdB));
 
@@ -274,8 +274,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### claimTask');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
   }, mock));
 
@@ -300,8 +300,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### claimTask and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.reportCompleted(taskIdA, 0);
@@ -321,7 +321,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Create taskA');
     await helper.queue.createTask(taskIdA, taskA).then(
-      ()  => assert(false, 'Expected an error!'),
+      () => assert(false, 'Expected an error!'),
       err => {
         if (err.code !== 'InputError') {
           throw err;
@@ -331,7 +331,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### get task');
     await helper.queue.task(taskIdA).then(
-      ()  => assert(false, 'Expected an error!'),
+      () => assert(false, 'Expected an error!'),
       err => {
         if (err.code !== 'ResourceNotFound') {
           throw err;
@@ -360,8 +360,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     await helper.queue.reportFailed(taskIdA, 0);
 
@@ -411,7 +411,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let taskA = taskDef();
     let taskB = _.defaults({
       dependencies: [taskIdA],
-      requires:     'all-resolved',
+      requires: 'all-resolved',
     }, taskDef());
 
     // Start dependency-resolver
@@ -429,8 +429,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.reportFailed(taskIdA, 0);
@@ -456,7 +456,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     const taskB = _.defaults({
       dependencies: [taskIdB],
       // test config is set to expire 4 days early so we set expiration long
-      expires:      taskcluster.fromNowJSON('30 days'),
+      expires: taskcluster.fromNowJSON('30 days'),
     }, taskDef());
 
     debug('### Create tasks');

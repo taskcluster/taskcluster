@@ -35,7 +35,7 @@ class Build {
         'build-config.yml',
         'user-build-config.yml',
       ],
-      env:      process.env,
+      env: process.env,
     });
 
     if (this.cmdOptions.noCache) {

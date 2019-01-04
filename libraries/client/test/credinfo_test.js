@@ -1,7 +1,7 @@
 suite('taskcluster.credentialInfo', function() {
-  var taskcluster     = require('../');
-  var assert          = require('assert');
-  var nock            = require('nock');
+  var taskcluster = require('../');
+  var assert = require('assert');
+  var nock = require('nock');
 
   teardown(function() {
     assert(nock.isDone());

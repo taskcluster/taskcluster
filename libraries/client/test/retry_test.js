@@ -1,17 +1,17 @@
 suite('retry-test', function() {
-  const taskcluster     = require('../');
-  const assert          = require('assert');
-  const path            = require('path');
-  const debug           = require('debug')('test:retry_test');
-  const Promise         = require('promise');
-  const _               = require('lodash');
-  const SchemaSet       = require('taskcluster-lib-validate');
-  const _monitor        = require('taskcluster-lib-monitor');
-  const APIBuilder      = require('taskcluster-lib-api');
-  const testing         = require('taskcluster-lib-testing');
-  const App             = require('taskcluster-lib-app');
-  const http            = require('http');
-  const httpProxy       = require('http-proxy');
+  const taskcluster = require('../');
+  const assert = require('assert');
+  const path = require('path');
+  const debug = require('debug')('test:retry_test');
+  const Promise = require('promise');
+  const _ = require('lodash');
+  const SchemaSet = require('taskcluster-lib-validate');
+  const _monitor = require('taskcluster-lib-monitor');
+  const APIBuilder = require('taskcluster-lib-api');
+  const testing = require('taskcluster-lib-testing');
+  const App = require('taskcluster-lib-app');
+  const http = require('http');
+  const httpProxy = require('http-proxy');
 
   const PROXY_PORT = 60551;
   const rootUrl = `http://localhost:${PROXY_PORT}`;
@@ -19,20 +19,20 @@ suite('retry-test', function() {
 
   // Construct API
   var builder = new APIBuilder({
-    title:        'Retry API',
-    description:  'API that sometimes works by retrying things',
-    serviceName:         'retrytest',
-    apiVersion:      'v1',
+    title: 'Retry API',
+    description: 'API that sometimes works by retrying things',
+    serviceName: 'retrytest',
+    apiVersion: 'v1',
   });
 
   var getInternalErrorCount = 0;
   builder.declare({
-    method:       'get',
-    route:        '/internal-error',
-    name:         'getInternalError',
-    title:        'Test End-Point',
-    scopes:       'test:internal-error',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/internal-error',
+    name: 'getInternalError',
+    title: 'Test End-Point',
+    scopes: 'test:internal-error',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     getInternalErrorCount += 1;
     res
@@ -44,12 +44,12 @@ suite('retry-test', function() {
 
   var getOccasionalInternalErrorCount = 0;
   builder.declare({
-    method:       'delete', // Just to ensure that delete works :)
-    route:        '/internal-error-sometimes',
-    name:         'getOccasionalInternalError',
-    title:        'Test End-Point',
-    scopes:       'test:internal-error',
-    description:  'Place we can call to test something',
+    method: 'delete', // Just to ensure that delete works :)
+    route: '/internal-error-sometimes',
+    name: 'getOccasionalInternalError',
+    title: 'Test End-Point',
+    scopes: 'test:internal-error',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     getOccasionalInternalErrorCount += 1;
     if (getOccasionalInternalErrorCount > 3) {
@@ -69,12 +69,12 @@ suite('retry-test', function() {
 
   var getUserErrorCount = 0;
   builder.declare({
-    method:       'get',
-    route:        '/user-error',
-    name:         'getUserError',
-    title:        'Test End-Point',
-    scopes:       'test:internal-error',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/user-error',
+    name: 'getUserError',
+    title: 'Test End-Point',
+    scopes: 'test:internal-error',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     getUserErrorCount += 1;
     res
@@ -86,12 +86,12 @@ suite('retry-test', function() {
 
   var getConnectionErrorCount = 0;
   builder.declare({
-    method:       'get',
-    route:        '/connection-error',
-    name:         'getConnectionError',
-    title:        'Test End-Point',
-    scopes:       'test:internal-error',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/connection-error',
+    name: 'getConnectionError',
+    title: 'Test End-Point',
+    scopes: 'test:internal-error',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     getConnectionErrorCount += 1;
     // Close underlying connection
@@ -106,7 +106,7 @@ suite('retry-test', function() {
   var server = null;
 
   setup(async function() {
-    assert(_apiServer === null,       '_apiServer must be null');
+    assert(_apiServer === null, '_apiServer must be null');
     testing.fakeauth.start({
       'test-client': ['auth:credentials', 'test:internal-error'],
     }, {rootUrl});
@@ -131,8 +131,8 @@ suite('retry-test', function() {
     Server = taskcluster.createClient(builder.reference());
     server = new Server({
       credentials: {
-        clientId:     'test-client',
-        accessToken:  'test-token',
+        clientId: 'test-client',
+        accessToken: 'test-token',
       },
       rootUrl,
       monitor,
@@ -140,10 +140,10 @@ suite('retry-test', function() {
 
     // Create application
     _apiServer = await App({
-      port:         60526,
-      env:          'development',
-      forceSSL:     false,
-      trustProxy:   false,
+      port: 60526,
+      env: 'development',
+      forceSSL: false,
+      trustProxy: false,
       apis: [api],
     });
 
@@ -169,7 +169,7 @@ suite('retry-test', function() {
   // Close server
   teardown(function() {
     testing.fakeauth.stop();
-    assert(_apiServer,      '_apiServer doesn\'t exist');
+    assert(_apiServer, '_apiServer doesn\'t exist');
     if (proxier) {
       proxier.close();
       proxier = null;
@@ -213,11 +213,11 @@ suite('retry-test', function() {
     getOccasionalInternalErrorCount = 0;
     var server2 = new Server({
       credentials: {
-        clientId:     'test-client',
-        accessToken:  'test-token',
+        clientId: 'test-client',
+        accessToken: 'test-token',
       },
-      rootUrl:        'http://localhost:60526',
-      monitor:        m,
+      rootUrl: 'http://localhost:60526',
+      monitor: m,
     });
     return server2.getOccasionalInternalError().then(function() {
       assert(getOccasionalInternalErrorCount === 4, 'expected 4 attempts');
@@ -228,11 +228,11 @@ suite('retry-test', function() {
   test('Can set retries = 0', function() {
     var server2 = new Server({
       credentials: {
-        clientId:     'test-client',
-        accessToken:  'test-token',
+        clientId: 'test-client',
+        accessToken: 'test-token',
       },
-      rootUrl:        'http://localhost:60526',
-      retries:        0,
+      rootUrl: 'http://localhost:60526',
+      retries: 0,
     });
     getInternalErrorCount = 0;
     return server2.getInternalError().then(function() {
@@ -246,11 +246,11 @@ suite('retry-test', function() {
   test('Can set retries = 1', function() {
     var server2 = new Server({
       credentials: {
-        clientId:     'test-client',
-        accessToken:  'test-token',
+        clientId: 'test-client',
+        accessToken: 'test-token',
       },
-      rootUrl:        'http://localhost:60526',
-      retries:        1,
+      rootUrl: 'http://localhost:60526',
+      retries: 1,
     });
     getInternalErrorCount = 0;
     return server2.getInternalError().then(function() {

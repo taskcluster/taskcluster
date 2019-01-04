@@ -11,7 +11,7 @@ const {validate} = require('./validate');
  * Representation of a set of references. This is considered immutable after
  * construction.
  *
- * The public properties of this 
+ * The public properties of this
  *  * `rootUrl` - the rootUrl (for absolute) or undefined (for abstract)
  *  * `schemas` - an array of schemas of the form {filename, content}
  *  * `references` - an array of references of the form {filename, content}

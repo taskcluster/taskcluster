@@ -51,8 +51,8 @@ let config = (options = {}) => {
       'config.yml',
       'user-config.yml',
     ],
-    profile:  process.env.NODE_ENV || undefined,
-    env:      process.env,
+    profile: process.env.NODE_ENV || undefined,
+    env: process.env,
   });
   assert(options.files instanceof Array, 'Expected an array of files');
   assert(typeof options.env === 'object', 'Expected env to be an object');

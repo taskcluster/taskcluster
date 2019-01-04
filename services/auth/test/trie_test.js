@@ -52,35 +52,35 @@ suite(helper.suiteName(__filename), () => {
 
     [ // rules must be strictly dependent and ordered by dependency
       [
-        {pattern: 'c',    scopes: ['nothing']},
-        {pattern: 'b',    scopes: ['c']},
-        {pattern: 'a',    scopes: ['b']},
+        {pattern: 'c', scopes: ['nothing']},
+        {pattern: 'b', scopes: ['c']},
+        {pattern: 'a', scopes: ['b']},
       ], [
-        {pattern: 'c',    scopes: ['nothing']},
-        {pattern: 'b',    scopes: ['c']},
-        {pattern: 'a',    scopes: ['b']},
+        {pattern: 'c', scopes: ['nothing']},
+        {pattern: 'b', scopes: ['c']},
+        {pattern: 'a', scopes: ['b']},
       ], [
-        {pattern: 'ccc',  scopes: ['nothing']},
-        {pattern: 'b',    scopes: ['c*']},
-        {pattern: 'a',    scopes: ['b']},
+        {pattern: 'ccc', scopes: ['nothing']},
+        {pattern: 'b', scopes: ['c*']},
+        {pattern: 'a', scopes: ['b']},
       ], [
-        {pattern: 'c*',   scopes: ['nothing']},
-        {pattern: 'b',    scopes: ['cb']},
-        {pattern: 'a',    scopes: ['b']},
+        {pattern: 'c*', scopes: ['nothing']},
+        {pattern: 'b', scopes: ['cb']},
+        {pattern: 'a', scopes: ['b']},
       ], [
-        {pattern: 'c*',   scopes: ['nothing']},
-        {pattern: 'bbb',  scopes: ['cb']},
-        {pattern: 'a*',   scopes: ['b<..>']},
+        {pattern: 'c*', scopes: ['nothing']},
+        {pattern: 'bbb', scopes: ['cb']},
+        {pattern: 'a*', scopes: ['b<..>']},
       ], [
-        {pattern: 'c*',   scopes: ['nothing']},
-        {pattern: 'bbb',  scopes: ['cb']},
-        {pattern: 'a*',   scopes: ['b<..>c']},
+        {pattern: 'c*', scopes: ['nothing']},
+        {pattern: 'bbb', scopes: ['cb']},
+        {pattern: 'a*', scopes: ['b<..>c']},
       ], [
         {pattern: 'ettt', scopes: ['nothing']},
-        {pattern: 'd*',   scopes: ['e<..>z']},
-        {pattern: 'c*',   scopes: ['dd<..>']},
-        {pattern: 'bbb',  scopes: ['cb']},
-        {pattern: 'a*',   scopes: ['b<..>c']},
+        {pattern: 'd*', scopes: ['e<..>z']},
+        {pattern: 'c*', scopes: ['dd<..>']},
+        {pattern: 'bbb', scopes: ['cb']},
+        {pattern: 'a*', scopes: ['b<..>c']},
       ],
     ].forEach((rules, index) => test(`acyclic rules (${index+1})`, () => {
       _.range(50).forEach(() => { // run 50 times with different shuffling
@@ -122,10 +122,10 @@ suite(helper.suiteName(__filename), () => {
         // create degenerate patterns that explode the size of the trie.
         // (and I don't think we need this much power)
         {pattern: 'ettt', scopes: ['aaa']},
-        {pattern: 'd*',   scopes: ['e<..>z']},
-        {pattern: 'c*',   scopes: ['dd<..>']},
-        {pattern: 'bbb',  scopes: ['cb']},
-        {pattern: 'a*',   scopes: ['b<..>c']},
+        {pattern: 'd*', scopes: ['e<..>z']},
+        {pattern: 'c*', scopes: ['dd<..>']},
+        {pattern: 'bbb', scopes: ['cb']},
+        {pattern: 'a*', scopes: ['b<..>c']},
       ],
     ].forEach((rules, index) => test(`cyclic rules (${index+1})`, () => {
       assume(() => {
@@ -533,8 +533,8 @@ suite(helper.suiteName(__filename), () => {
       test(title, () => {
         const t = trie.build(rules);
         const suffixes = _.uniq(allPairs(_.uniq([
-          '', '*', '**',  // these suffixes are always interesting
-          '$', '@', '-',  // a few letters probably not used in any of the rules
+          '', '*', '**', // these suffixes are always interesting
+          '$', '@', '-', // a few letters probably not used in any of the rules
           '<', '>', '.',
           ...rules.map(r => r.pattern).join('').split(''),
         ])).map(p => p.join('')));

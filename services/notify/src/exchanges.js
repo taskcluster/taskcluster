@@ -3,7 +3,7 @@ const assert = require('assert');
 
 /** Declaration of exchanges offered by the queue */
 const exchanges = new Exchanges({
-  title:      'Notify AMQP Exchanges',
+  title: 'Notify AMQP Exchanges',
   description: [
     'This pretty much only contains the simple free-form',
     'message that can be published from this service from a request',
@@ -22,18 +22,18 @@ const buildCommonRoutingKey = function(options) {
   options = options || {};
   return [
     {
-      name:             'routingKeyKind',
-      summary:          'Identifier for the routing-key kind. This is ' +
+      name: 'routingKeyKind',
+      summary: 'Identifier for the routing-key kind. This is ' +
                         'always `\'primary\'` for the formalized routing key.',
-      constant:         'primary',
-      required:         true,
+      constant: 'primary',
+      required: true,
     }, {
-      name:             'reserved',
-      summary:          'Space reserved for future routing-key entries, you ' +
+      name: 'reserved',
+      summary: 'Space reserved for future routing-key entries, you ' +
                         'should always match this entry with `#`. As ' +
                         'automatically done by our tooling, if not specified.',
-      multipleWords:    true,
-      maxSize:          1,
+      multipleWords: true,
+      maxSize: 1,
     },
   ];
 };
@@ -57,9 +57,9 @@ const commonCCBuilder = function(message, routes) {
 
 /** Notification exchange */
 exchanges.declare({
-  exchange:           'notification',
-  name:               'notify',
-  title:              'Notification Messages',
+  exchange: 'notification',
+  name: 'notify',
+  title: 'Notification Messages',
   description: [
     'An arbitrary message that a taskcluster user',
     'can trigger if they like.',
@@ -69,9 +69,9 @@ exchanges.declare({
     'data that we pull from the queue `status()` endpoint',
     'when we notice a task is complete.',
   ].join('\n'),
-  routingKey:         buildCommonRoutingKey(),
-  schema:             'notification-message.yml',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  commonRoutingKeyBuilder,
-  CCBuilder:          commonCCBuilder,
+  routingKey: buildCommonRoutingKey(),
+  schema: 'notification-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: commonRoutingKeyBuilder,
+  CCBuilder: commonCCBuilder,
 });

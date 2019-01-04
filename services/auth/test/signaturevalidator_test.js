@@ -141,12 +141,12 @@ suite(helper.suiteName(__filename), function() {
 
       // Construct certificate
       let cert = {
-        version:    1,
-        scopes:     _.cloneDeep(options.scopes),
-        start:      options.start.getTime(),
-        expiry:     options.expiry.getTime(),
-        seed:       slugid.v4() + slugid.v4(),
-        signature:  null,  // generated later
+        version: 1,
+        scopes: _.cloneDeep(options.scopes),
+        start: options.start.getTime(),
+        expiry: options.expiry.getTime(),
+        seed: slugid.v4() + slugid.v4(),
+        signature: null, // generated later
       };
 
       if (options.issuer && !options.omitIssuerFromCert) {
@@ -160,16 +160,16 @@ suite(helper.suiteName(__filename), function() {
           .digest('base64');
       } else {
         let sig = crypto.createHmac('sha256', options.accessToken);
-        sig.update('version:'    + cert.version + '\n');
+        sig.update('version:' + cert.version + '\n');
         if (options.credentialName && !options.omitClientIdFromSig) {
           sig.update('clientId:' + options.credentialName + '\n');
         }
         if (options.issuer && !options.omitIssuerFromSig) {
-          sig.update('issuer:'   + options.issuer + '\n');
+          sig.update('issuer:' + options.issuer + '\n');
         }
-        sig.update('seed:'       + cert.seed + '\n');
-        sig.update('start:'      + cert.start + '\n');
-        sig.update('expiry:'     + cert.expiry + '\n');
+        sig.update('seed:' + cert.seed + '\n');
+        sig.update('start:' + cert.start + '\n');
+        sig.update('expiry:' + cert.expiry + '\n');
         sig.update('scopes:\n');
         sig.update(cert.scopes.join('\n'));
         cert.signature = sig.digest('base64');
@@ -180,9 +180,9 @@ suite(helper.suiteName(__filename), function() {
         .createHmac('sha256', options.accessToken)
         .update(cert.seed)
         .digest('base64')
-        .replace(/\+/g, '-')  // Replace + with - (see RFC 4648, sec. 5)
-        .replace(/\//g, '_')  // Replace / with _ (see RFC 4648, sec. 5)
-        .replace(/=/g,  '');  // Drop '==' padding
+        .replace(/\+/g, '-') // Replace + with - (see RFC 4648, sec. 5)
+        .replace(/\//g, '_') // Replace / with _ (see RFC 4648, sec. 5)
+        .replace(/=/g, ''); // Drop '==' padding
 
       return inputFn(id, accessToken, cert);
     };

@@ -47,8 +47,8 @@ const load = loader({
   reference: {
     requires: ['cfg'],
     setup: ({cfg}) => exchanges.reference({
-      rootUrl:          cfg.taskcluster.rootUrl,
-      credentials:      cfg.pulse,
+      rootUrl: cfg.taskcluster.rootUrl,
+      credentials: cfg.pulse,
     }),
   },
 
@@ -91,11 +91,11 @@ const load = loader({
   publisher: {
     requires: ['cfg', 'pulseClient', 'schemaset'],
     setup: async ({cfg, pulseClient, schemaset}) => await exchanges.publisher({
-      rootUrl:            cfg.taskcluster.rootUrl,
-      client:             pulseClient,
+      rootUrl: cfg.taskcluster.rootUrl,
+      client: pulseClient,
       schemaset,
-      publish:            cfg.app.publishMetaData,
-      aws:                cfg.aws,
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
     }),
   },
 
@@ -170,8 +170,8 @@ const load = loader({
       let handler = new Handler({
         rootUrl: cfg.taskcluster.rootUrl,
         notifier,
-        monitor:                  monitor.prefix('handler'),
-        routePrefix:              cfg.app.routePrefix,
+        monitor: monitor.prefix('handler'),
+        routePrefix: cfg.app.routePrefix,
         ignoreTaskReasonResolved: cfg.app.ignoreTaskReasonResolved,
         queue,
         queueEvents,
@@ -185,11 +185,11 @@ const load = loader({
   api: {
     requires: ['cfg', 'monitor', 'schemaset', 'notifier'],
     setup: ({cfg, monitor, schemaset, notifier}) => builder.build({
-      rootUrl:          cfg.taskcluster.rootUrl,
-      context:          {notifier},
-      publish:          cfg.app.publishMetaData,
-      aws:              cfg.aws,
-      monitor:          monitor.prefix('api'),
+      rootUrl: cfg.taskcluster.rootUrl,
+      context: {notifier},
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
+      monitor: monitor.prefix('api'),
       schemaset,
     }),
   },

@@ -178,7 +178,7 @@ helper.withPulse = (mock, skipping) => {
     let Hook = helper.Hook;
     let Queues = helper.Queues;
     let taskcreator = helper.creator;
-    
+
     helper.Listener = new HookListeners({
       Hook,
       Queues,

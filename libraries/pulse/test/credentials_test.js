@@ -15,7 +15,7 @@ suite('pulseCredentials', function() {
     assume(() => pulseCredentials({username: 'me', password: 'pw', hostname: 'v'}))
       .throws(/vhost/);
   });
-  
+
   test('builds a connection string with given host', async function() {
     const credentials = await pulseCredentials({
       username: 'me',
@@ -23,12 +23,12 @@ suite('pulseCredentials', function() {
       hostname: 'pulse.abc.com',
       vhost: '/',
     })();
-  
+
     assert.equal(
       credentials.connectionString,
       'amqps://me:letmein@pulse.abc.com:5671/%2F');
   });
-  
+
   test('builds a connection string with urlencoded values', async function() {
     const credentials = await pulseCredentials({
       username: 'ali-escaper:/@\\|()<>&',
@@ -36,7 +36,7 @@ suite('pulseCredentials', function() {
       hostname: 'pulse.abc.com',
       vhost: '/',
     })();
-  
+
     assert.equal(
       credentials.connectionString,
       'amqps://ali-escaper:/@%5C%7C()%3C%3E&:bobby-tables:/@%5C%7C()%3C%3E&@pulse.abc.com:5671/%2F');

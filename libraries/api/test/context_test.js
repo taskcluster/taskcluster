@@ -1,29 +1,29 @@
-const SchemaSet       = require('taskcluster-lib-validate');
-const App             = require('taskcluster-lib-app');
-const APIBuilder      = require('../');
-const assert          = require('assert');
-const request         = require('superagent');
-const slugid          = require('slugid');
-const path            = require('path');
+const SchemaSet = require('taskcluster-lib-validate');
+const App = require('taskcluster-lib-app');
+const APIBuilder = require('../');
+const assert = require('assert');
+const request = require('superagent');
+const slugid = require('slugid');
+const path = require('path');
 
 suite('API (context)', function() {
   const rootUrl = 'http://localhost:4321';
   test('Provides context', async () => {
     // Create test api
     const builder = new APIBuilder({
-      title:        'Test Api',
-      description:  'Another test api',
-      context:      ['myProp'],
-      serviceName:  'test',
-      apiVersion:   'v1',
+      title: 'Test Api',
+      description: 'Another test api',
+      context: ['myProp'],
+      serviceName: 'test',
+      apiVersion: 'v1',
     });
 
     builder.declare({
-      method:   'get',
-      route:    '/context/',
-      name:     'getContext',
-      title:    'Test End-Point',
-      description:  'Place we can call to test something',
+      method: 'get',
+      route: '/context/',
+      name: 'getContext',
+      title: 'Test End-Point',
+      description: 'Place we can call to test something',
     }, function(req, res) {
       res.status(200).json({myProp: this.myProp});
     });
@@ -42,9 +42,9 @@ suite('API (context)', function() {
     });
 
     const server = await App({
-      port:       60872,
-      env:        'development',
-      forceSSL:   false,
+      port: 60872,
+      env: 'development',
+      forceSSL: false,
       trustProxy: false,
       apis: [api],
     });
@@ -65,11 +65,11 @@ suite('API (context)', function() {
   test('Context properties can be required', async () => {
     // Create test api
     const builder = new APIBuilder({
-      title:        'Test Api',
-      description:  'Another test api',
-      context:      ['prop1', 'prop2'],
-      serviceName:  'test',
-      apiVersion:   'v1',
+      title: 'Test Api',
+      description: 'Another test api',
+      context: ['prop1', 'prop2'],
+      serviceName: 'test',
+      apiVersion: 'v1',
     });
 
     const value = slugid.v4();
@@ -97,11 +97,11 @@ suite('API (context)', function() {
   test('Context properties can provided', async () => {
     // Create test api
     const builder = new APIBuilder({
-      title:        'Test Api',
-      description:  'Another test api',
-      context:      ['prop1', 'prop2'],
-      serviceName:  'test',
-      apiVersion:   'v1',
+      title: 'Test Api',
+      description: 'Another test api',
+      context: ['prop1', 'prop2'],
+      serviceName: 'test',
+      apiVersion: 'v1',
     });
 
     const value = slugid.v4();
@@ -122,11 +122,11 @@ suite('API (context)', function() {
   test('Context entry should be known', async () => {
     //Create test api
     const builder = new APIBuilder({
-      title:        'Test Api',
-      description:  'Another test api',
-      context:      [],
-      serviceName:  'test',
-      apiVersion:   'v1',
+      title: 'Test Api',
+      description: 'Another test api',
+      context: [],
+      serviceName: 'test',
+      apiVersion: 'v1',
     });
 
     const value = slugid.v4();

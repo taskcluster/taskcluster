@@ -1,11 +1,11 @@
-let debug       = require('debug')('app:api');
-let slugid      = require('slugid');
-let assert      = require('assert');
-let _           = require('lodash');
-let APIBuilder  = require('taskcluster-lib-api');
-let Entity      = require('azure-entities');
+let debug = require('debug')('app:api');
+let slugid = require('slugid');
+let assert = require('assert');
+let _ = require('lodash');
+let APIBuilder = require('taskcluster-lib-api');
+let Entity = require('azure-entities');
 let taskcluster = require('taskcluster-client');
-let taskCreds   = require('./task-creds');
+let taskCreds = require('./task-creds');
 
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
@@ -62,13 +62,13 @@ const PRIORITY_LEVELS = [
  */
 
 // Common patterns URL parameters
-var SLUGID_PATTERN      = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
-var GENERIC_ID_PATTERN  = /^[a-zA-Z0-9-_]{1,22}$/;
-var RUN_ID_PATTERN      = /^[1-9]*[0-9]+$/;
+var SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
+var GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,22}$/;
+var RUN_ID_PATTERN = /^[1-9]*[0-9]+$/;
 
 /** API end-point for version v1/ */
 var builder = new APIBuilder({
-  title:        'Queue API Documentation',
+  title: 'Queue API Documentation',
   description: [
     'The queue service is responsible for accepting tasks and track their state',
     'as they are executed by workers. In order ensure they are eventually',
@@ -80,49 +80,49 @@ var builder = new APIBuilder({
     ' * Workers, who execute tasks, and',
     ' * Tools, that wants to inspect the state of a task.',
   ].join('\n'),
-  serviceName:        'queue',
-  apiVersion:         'v1',
+  serviceName: 'queue',
+  apiVersion: 'v1',
   params: {
-    taskId:           SLUGID_PATTERN,
-    taskGroupId:      SLUGID_PATTERN,
-    provisionerId:    GENERIC_ID_PATTERN,
-    workerType:       GENERIC_ID_PATTERN,
-    workerGroup:      GENERIC_ID_PATTERN,
-    workerId:         GENERIC_ID_PATTERN,
-    runId:            RUN_ID_PATTERN,
-    name:             /^[\x20-\x7e]+$/, // Artifact names must be printable ASCII
+    taskId: SLUGID_PATTERN,
+    taskGroupId: SLUGID_PATTERN,
+    provisionerId: GENERIC_ID_PATTERN,
+    workerType: GENERIC_ID_PATTERN,
+    workerGroup: GENERIC_ID_PATTERN,
+    workerId: GENERIC_ID_PATTERN,
+    runId: RUN_ID_PATTERN,
+    name: /^[\x20-\x7e]+$/, // Artifact names must be printable ASCII
   },
   context: [
-    'Task',               // data.Task instance
-    'Artifact',           // data.Artifact instance
-    'TaskGroup',          // data.TaskGroup instance
+    'Task', // data.Task instance
+    'Artifact', // data.Artifact instance
+    'TaskGroup', // data.TaskGroup instance
     'taskGroupExpiresExtension', // Time delay before expiring a task-group
-    'TaskGroupMember',    // data.TaskGroupMember instance
+    'TaskGroupMember', // data.TaskGroupMember instance
     'TaskGroupActiveSet', // data.TaskGroupMember instance (but in a different table)
-    'TaskDependency',     // data.TaskDependency instance
-    'Provisioner',        // data.Provisioner instance
-    'WorkerType',         // data.WorkerType instance
-    'Worker',             // data.Worker instance
-    'publicBucket',       // bucket instance for public artifacts
-    'privateBucket',      // bucket instance for private artifacts
-    'blobStore',          // BlobStore for azure artifacts
-    'publisher',          // publisher from base.Exchanges
-    'claimTimeout',       // Number of seconds before a claim expires
-    'queueService',       // Azure QueueService object from queueservice.js
-    'regionResolver',     // Instance of EC2RegionResolver,
-    'credentials',        // TC credentials for issuing temp creds on claim
-    'dependencyTracker',  // Instance of DependencyTracker
-    'monitor',            // base.monitor instance
-    'workClaimer',        // Instance of WorkClaimer
-    'workerInfo',         // Instance of WorkerInfo
-    's3Controller',       // Instance of remotely-signed-s3.Controller
-    's3Runner',           // Instance of remotely-signed-s3.Runner
-    'useCloudMirror',     // If true, use the cloud-mirror service
-    'cloudMirrorHost',    // Hostname of the cloud-mirror service
-    'artifactRegion',     // Region where artifacts are stored (no cloud-mirror)
-    'blobRegion',         // Region where blobs are stored (no cloud-mirror)
-    'publicBlobBucket',   // Bucket containing public blobs
-    'privateBlobBucket',  // Bucket containing private blobs
+    'TaskDependency', // data.TaskDependency instance
+    'Provisioner', // data.Provisioner instance
+    'WorkerType', // data.WorkerType instance
+    'Worker', // data.Worker instance
+    'publicBucket', // bucket instance for public artifacts
+    'privateBucket', // bucket instance for private artifacts
+    'blobStore', // BlobStore for azure artifacts
+    'publisher', // publisher from base.Exchanges
+    'claimTimeout', // Number of seconds before a claim expires
+    'queueService', // Azure QueueService object from queueservice.js
+    'regionResolver', // Instance of EC2RegionResolver,
+    'credentials', // TC credentials for issuing temp creds on claim
+    'dependencyTracker', // Instance of DependencyTracker
+    'monitor', // base.monitor instance
+    'workClaimer', // Instance of WorkClaimer
+    'workerInfo', // Instance of WorkerInfo
+    's3Controller', // Instance of remotely-signed-s3.Controller
+    's3Runner', // Instance of remotely-signed-s3.Runner
+    'useCloudMirror', // If true, use the cloud-mirror service
+    'cloudMirrorHost', // Hostname of the cloud-mirror service
+    'artifactRegion', // Region where artifacts are stored (no cloud-mirror)
+    'blobRegion', // Region where blobs are stored (no cloud-mirror)
+    'publicBlobBucket', // Bucket containing public blobs
+    'privateBlobBucket', // Bucket containing private blobs
   ],
 });
 
@@ -131,13 +131,13 @@ module.exports = builder;
 
 /** Get task */
 builder.declare({
-  method:     'get',
-  route:      '/task/:taskId',
-  name:       'task',
-  stability:  APIBuilder.stability.stable,
+  method: 'get',
+  route: '/task/:taskId',
+  name: 'task',
+  stability: APIBuilder.stability.stable,
   idempotent: true,
-  output:     'task.yml',
-  title:      'Get Task Definition',
+  output: 'task.yml',
+  title: 'Get Task Definition',
   description: [
     'This end-point will return the task-definition. Notice that the task',
     'definition may have been modified by queue, if an optional property is',
@@ -146,7 +146,7 @@ builder.declare({
 }, async function(req, res) {
   // Load Task entity
   let task = await this.Task.load({
-    taskId:     req.params.taskId,
+    taskId: req.params.taskId,
   }, true);
 
   // Handle cases where the task doesn't exist
@@ -167,20 +167,20 @@ builder.declare({
 
 /** Get task status */
 builder.declare({
-  method:     'get',
-  route:      '/task/:taskId/status',
-  name:       'status',
-  stability:  APIBuilder.stability.stable,
-  input:      undefined,  // No input is accepted
-  output:     'task-status-response.yml',
-  title:      'Get task status',
+  method: 'get',
+  route: '/task/:taskId/status',
+  name: 'status',
+  stability: APIBuilder.stability.stable,
+  input: undefined, // No input is accepted
+  output: 'task-status-response.yml',
+  title: 'Get task status',
   description: [
     'Get task status structure from `taskId`',
   ].join('\n'),
 }, async function(req, res) {
   // Load Task entity
   let task = await this.Task.load({
-    taskId:     req.params.taskId,
+    taskId: req.params.taskId,
   }, true);
 
   // Handle cases where the task doesn't exist
@@ -201,16 +201,16 @@ builder.declare({
 
 /** List taskIds by taskGroupId */
 builder.declare({
-  method:     'get',
-  route:      '/task-group/:taskGroupId/list',
+  method: 'get',
+  route: '/task-group/:taskGroupId/list',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
-  name:       'listTaskGroup',
-  stability:  APIBuilder.stability.stable,
-  output:     'list-task-group-response.yml',
-  title:      'List Task Group',
+  name: 'listTaskGroup',
+  stability: APIBuilder.stability.stable,
+  output: 'list-task-group-response.yml',
+  title: 'List Task Group',
   description: [
     'List tasks sharing the same `taskGroupId`.',
     '',
@@ -230,9 +230,9 @@ builder.declare({
     'use the query-string option `limit` to return fewer.',
   ].join('\n'),
 }, async function(req, res) {
-  let taskGroupId   = req.params.taskGroupId;
-  let continuation  = req.query.continuationToken || null;
-  let limit         = parseInt(req.query.limit || 1000, 10);
+  let taskGroupId = req.params.taskGroupId;
+  let continuation = req.query.continuationToken || null;
+  let limit = parseInt(req.query.limit || 1000, 10);
 
   // Find taskGroup and list of members
   let [
@@ -273,7 +273,7 @@ builder.declare({
     tasks: await Promise.all(tasks.map(async (task) => {
       return {
         status: task.status(),
-        task:   await task.definition(),
+        task: await task.definition(),
       };
     })),
   };
@@ -286,16 +286,16 @@ builder.declare({
 
 /** List tasks dependents */
 builder.declare({
-  method:     'get',
-  route:      '/task/:taskId/dependents',
+  method: 'get',
+  route: '/task/:taskId/dependents',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
-  name:       'listDependentTasks',
-  stability:  APIBuilder.stability.stable,
-  output:     'list-dependent-tasks-response.yml',
-  title:      'List Dependent Tasks',
+  name: 'listDependentTasks',
+  stability: APIBuilder.stability.stable,
+  output: 'list-dependent-tasks-response.yml',
+  title: 'List Dependent Tasks',
   description: [
     'List tasks that depend on the given `taskId`.',
     '',
@@ -315,9 +315,9 @@ builder.declare({
     'use the query-string option `limit` to return fewer.',
   ].join('\n'),
 }, async function(req, res) {
-  let taskId        = req.params.taskId;
-  let continuation  = req.query.continuationToken || null;
-  let limit         = parseInt(req.query.limit || 1000, 10);
+  let taskId = req.params.taskId;
+  let continuation = req.query.continuationToken || null;
+  let limit = parseInt(req.query.limit || 1000, 10);
 
   // Find task and list dependents
   let [
@@ -353,7 +353,7 @@ builder.declare({
     tasks: await Promise.all(tasks.map(async (task) => {
       return {
         status: task.status(),
-        task:   await task.definition(),
+        task: await task.definition(),
       };
     })),
   };
@@ -393,34 +393,34 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   }
 
   // Ensure: created < now < deadline (with drift up to 15 min)
-  var created   = new Date(taskDef.created);
-  var deadline  = new Date(taskDef.deadline);
+  var created = new Date(taskDef.created);
+  var deadline = new Date(taskDef.deadline);
   if (created.getTime() < new Date().getTime() - 15 * 60 * 1000) {
     return {
-      code:       'InputError',
-      message:    'Created timestamp cannot be in the past (max 15min drift)',
-      details:    {created: taskDef.created},
+      code: 'InputError',
+      message: 'Created timestamp cannot be in the past (max 15min drift)',
+      details: {created: taskDef.created},
     };
   }
   if (created.getTime() > new Date().getTime() + 15 * 60 * 1000) {
     return {
-      code:       'InputError',
-      message:    'Created timestamp cannot be in the future (max 15min drift)',
-      details:    {created: taskDef.created},
+      code: 'InputError',
+      message: 'Created timestamp cannot be in the future (max 15min drift)',
+      details: {created: taskDef.created},
     };
   }
   if (created.getTime() > deadline.getTime()) {
     return {
-      code:       'InputError',
-      message:    'Deadline cannot be past created',
-      details:    {created: taskDef.created, deadline: taskDef.deadline},
+      code: 'InputError',
+      message: 'Deadline cannot be past created',
+      details: {created: taskDef.created, deadline: taskDef.deadline},
     };
   }
   if (deadline.getTime() < new Date().getTime()) {
     return {
-      code:       'InputError',
-      message:    'Deadline cannot be in the past',
-      details:    {deadline: taskDef.deadline},
+      code: 'InputError',
+      message: 'Deadline cannot be in the past',
+      details: {deadline: taskDef.deadline},
     };
   }
 
@@ -428,9 +428,9 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   // Validate that deadline is less than 5 days from now, allow 15 min drift
   if (msToDeadline > 5 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
     return {
-      code:       'InputError',
-      message:    'Deadline cannot be more than 5 days into the future',
-      details:    {deadline: taskDef.deadline},
+      code: 'InputError',
+      message: 'Deadline cannot be more than 5 days into the future',
+      details: {deadline: taskDef.deadline},
     };
   }
 
@@ -444,17 +444,17 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
   // Validate that expires is past deadline
   if (deadline.getTime() > new Date(taskDef.expires).getTime()) {
     return {
-      code:       'InputError',
-      message:    'Expires cannot be before the deadline',
-      details:    {deadline: taskDef.deadline, expires: taskDef.expires},
+      code: 'InputError',
+      message: 'Expires cannot be before the deadline',
+      details: {deadline: taskDef.deadline, expires: taskDef.expires},
     };
   }
 
   // Ensure that date formats are encoded as we store them for idempotent
   // operations to work with date format that has more or fewer digits
-  taskDef.created   = new Date(taskDef.created).toJSON();
-  taskDef.deadline  = new Date(taskDef.deadline).toJSON();
-  taskDef.expires   = new Date(taskDef.expires).toJSON();
+  taskDef.created = new Date(taskDef.created).toJSON();
+  taskDef.deadline = new Date(taskDef.deadline).toJSON();
+  taskDef.expires = new Date(taskDef.expires).toJSON();
 
   // Migrate normal -> lowest, as it is the new default
   if (taskDef.priority === 'normal') {
@@ -475,8 +475,8 @@ let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
   if (!taskGroup) {
     taskGroup = await ctx.TaskGroup.create({
       taskGroupId,
-      schedulerId:  taskDef.schedulerId,
-      expires:      taskGroupExpiration,
+      schedulerId: taskDef.schedulerId,
+      expires: taskGroupExpiration,
     }).catch(err => {
       // We only handle cases where the entity already exists
       if (!err || err.code !== 'EntityAlreadyExists') {
@@ -547,10 +547,10 @@ let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
 
 /** Create tasks */
 builder.declare({
-  method:     'put',
-  route:      '/task/:taskId',
-  name:       'createTask',
-  stability:  APIBuilder.stability.stable,
+  method: 'put',
+  route: '/task/:taskId',
+  name: 'createTask',
+  stability: APIBuilder.stability.stable,
   idempotent: true,
   scopes: {AllOf: [
     {for: 'scope', in: 'scopes', each: '<scope>'},
@@ -581,9 +581,9 @@ builder.declare({
       },
     ]},
   ]},
-  input:      'create-task-request.yml',
-  output:     'task-status-response.yml',
-  title:      'Create New Task',
+  input: 'create-task-request.yml',
+  output: 'task-status-response.yml',
+  title: 'Create New Task',
   description: [
     'Create a new task, this is an **idempotent** operation, so repeat it if',
     'you get an internal server error or network connection is dropped.',
@@ -617,7 +617,7 @@ builder.declare({
     'a `queue:scheduler-id:..` scope as well as scopes for the proper priority.',
   ].join('\n'),
 }, async function(req, res) {
-  var taskId  = req.params.taskId;
+  var taskId = req.params.taskId;
   var taskDef = req.body;
 
   await authorizeTaskCreation(req, taskId, taskDef);
@@ -656,33 +656,33 @@ builder.declare({
     // Add run if there is no dependencies
     if (taskDef.dependencies.length === 0) {
       runs.push({
-        state:            'pending',
-        reasonCreated:    'scheduled',
-        scheduled:        new Date().toJSON(),
+        state: 'pending',
+        reasonCreated: 'scheduled',
+        scheduled: new Date().toJSON(),
       });
     }
     var task = await this.Task.create({
-      taskId:             taskId,
-      provisionerId:      taskDef.provisionerId,
-      workerType:         taskDef.workerType,
-      schedulerId:        taskDef.schedulerId,
-      taskGroupId:        taskDef.taskGroupId,
-      dependencies:       taskDef.dependencies,
-      requires:           taskDef.requires,
-      routes:             taskDef.routes,
-      priority:           taskDef.priority,
-      retries:            taskDef.retries,
-      retriesLeft:        taskDef.retries,
-      created:            created,
-      deadline:           deadline,
-      expires:            expires,
-      scopes:             taskDef.scopes,
-      payload:            taskDef.payload,
-      metadata:           taskDef.metadata,
-      tags:               taskDef.tags,
-      extra:              taskDef.extra,
-      runs:               runs,
-      takenUntil:         new Date(0),
+      taskId: taskId,
+      provisionerId: taskDef.provisionerId,
+      workerType: taskDef.workerType,
+      schedulerId: taskDef.schedulerId,
+      taskGroupId: taskDef.taskGroupId,
+      dependencies: taskDef.dependencies,
+      requires: taskDef.requires,
+      routes: taskDef.routes,
+      priority: taskDef.priority,
+      retries: taskDef.retries,
+      retriesLeft: taskDef.retries,
+      created: created,
+      deadline: deadline,
+      expires: expires,
+      scopes: taskDef.scopes,
+      payload: taskDef.payload,
+      metadata: taskDef.metadata,
+      tags: taskDef.tags,
+      extra: taskDef.extra,
+      runs: runs,
+      takenUntil: new Date(0),
     });
   } catch (err) {
     // We can handle cases where entity already exists, not that, we re-throw
@@ -691,8 +691,8 @@ builder.declare({
     }
 
     // load task, and task definition
-    task      = await this.Task.load({taskId: taskId});
-    let def   = await task.definition();
+    task = await this.Task.load({taskId: taskId});
+    let def = await task.definition();
 
     // Compare the two task definitions
     if (!_.isEqual(taskDef, def)) {
@@ -754,11 +754,11 @@ builder.declare({
 
 /** Define tasks */
 builder.declare({
-  method:     'post',
-  route:      '/task/:taskId/define',
-  name:       'defineTask',
-  stability:  APIBuilder.stability.deprecated,
-  scopes:     {AllOf: [
+  method: 'post',
+  route: '/task/:taskId/define',
+  name: 'defineTask',
+  stability: APIBuilder.stability.deprecated,
+  scopes: {AllOf: [
     {for: 'scope', in: 'scopes', each: '<scope>'},
     {for: 'route', in: 'routes', each: 'queue:route:<route>'},
     {AnyOf: [
@@ -787,15 +787,15 @@ builder.declare({
       },
     ]},
   ]},
-  input:      'create-task-request.yml',
-  output:     'task-status-response.yml',
-  title:      'Define Task',
+  input: 'create-task-request.yml',
+  output: 'task-status-response.yml',
+  title: 'Define Task',
   description: [
     '**Deprecated**, this is the same as `createTask` with a **self-dependency**.',
     'This is only present for legacy.',
   ].join('\n'),
 }, async function(req, res) {
-  var taskId  = req.params.taskId;
+  var taskId = req.params.taskId;
   var taskDef = req.body;
 
   await authorizeTaskCreation(req, taskId, taskDef);
@@ -834,27 +834,27 @@ builder.declare({
   // Try to create Task entity
   try {
     var task = await this.Task.create({
-      taskId:             taskId,
-      provisionerId:      taskDef.provisionerId,
-      workerType:         taskDef.workerType,
-      schedulerId:        taskDef.schedulerId,
-      taskGroupId:        taskDef.taskGroupId,
-      dependencies:       taskDef.dependencies,
-      requires:           taskDef.requires,
-      routes:             taskDef.routes,
-      priority:           taskDef.priority,
-      retries:            taskDef.retries,
-      retriesLeft:        taskDef.retries,
-      created:            created,
-      deadline:           deadline,
-      expires:            expires,
-      scopes:             taskDef.scopes,
-      payload:            taskDef.payload,
-      metadata:           taskDef.metadata,
-      tags:               taskDef.tags,
-      extra:              taskDef.extra,
-      runs:               [],
-      takenUntil:         new Date(0),
+      taskId: taskId,
+      provisionerId: taskDef.provisionerId,
+      workerType: taskDef.workerType,
+      schedulerId: taskDef.schedulerId,
+      taskGroupId: taskDef.taskGroupId,
+      dependencies: taskDef.dependencies,
+      requires: taskDef.requires,
+      routes: taskDef.routes,
+      priority: taskDef.priority,
+      retries: taskDef.retries,
+      retriesLeft: taskDef.retries,
+      created: created,
+      deadline: deadline,
+      expires: expires,
+      scopes: taskDef.scopes,
+      payload: taskDef.payload,
+      metadata: taskDef.metadata,
+      tags: taskDef.tags,
+      extra: taskDef.extra,
+      runs: [],
+      takenUntil: new Date(0),
     });
   } catch (err) {
     // We can handle cases where entity already exists, not that, we re-throw
@@ -863,8 +863,8 @@ builder.declare({
     }
 
     // load task, and task definition
-    task     = await this.Task.load({taskId: taskId});
-    let def  = await task.definition();
+    task = await this.Task.load({taskId: taskId});
+    let def = await task.definition();
 
     // Compare the two task definitions
     // (ignore runs as this method don't create them)
@@ -917,20 +917,20 @@ builder.declare({
 
 /** Schedule previously defined tasks */
 builder.declare({
-  method:     'post',
-  route:      '/task/:taskId/schedule',
-  name:       'scheduleTask',
-  stability:  APIBuilder.stability.stable,
-  scopes:     {AnyOf: [
+  method: 'post',
+  route: '/task/:taskId/schedule',
+  name: 'scheduleTask',
+  stability: APIBuilder.stability.stable,
+  scopes: {AnyOf: [
     'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
     {AllOf: [ // Legacy scopes
       'queue:schedule-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>',
     ]},
   ]},
-  input:      undefined, // No input accepted
-  output:     'task-status-response.yml',
-  title:      'Schedule Defined Task',
+  input: undefined, // No input accepted
+  output: 'task-status-response.yml',
+  title: 'Schedule Defined Task',
   description: [
     'scheduleTask will schedule a task to be executed, even if it has',
     'unresolved dependencies. A task would otherwise only be scheduled if',
@@ -987,20 +987,20 @@ builder.declare({
 
 /** Rerun a previously resolved task */
 builder.declare({
-  method:     'post',
-  route:      '/task/:taskId/rerun',
-  name:       'rerunTask',
-  stability:  APIBuilder.stability.deprecated,
-  scopes:     {AnyOf: [
+  method: 'post',
+  route: '/task/:taskId/rerun',
+  name: 'rerunTask',
+  stability: APIBuilder.stability.deprecated,
+  scopes: {AnyOf: [
     'queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',
     {AllOf: [ // Legacy scopes
       'queue:rerun-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>',
     ]},
   ]},
-  input:      undefined, // No input accepted
-  output:     'task-status-response.yml',
-  title:      'Rerun a Resolved Task',
+  input: undefined, // No input accepted
+  output: 'task-status-response.yml',
+  title: 'Rerun a Resolved Task',
   description: [
     'This method _reruns_ a previously resolved task, even if it was',
     '_completed_. This is useful if your task completes unsuccessfully, and',
@@ -1017,8 +1017,8 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   // Load Task entity
-  var taskId  = req.params.taskId;
-  var task    = await this.Task.load({taskId: taskId}, true);
+  var taskId = req.params.taskId;
+  var task = await this.Task.load({taskId: taskId}, true);
 
   // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
@@ -1064,17 +1064,17 @@ builder.declare({
 
     // Add a new run
     task.runs.push({
-      state:            'pending',
-      reasonCreated:    'rerun',
-      scheduled:        new Date().toJSON(),
+      state: 'pending',
+      reasonCreated: 'rerun',
+      scheduled: new Date().toJSON(),
     });
 
     // Calculate maximum number of retries allowed
-    var allowedRetries  = MAX_RUNS_ALLOWED - task.runs.length;
+    var allowedRetries = MAX_RUNS_ALLOWED - task.runs.length;
 
     // Reset retries left
-    task.retriesLeft    = Math.min(task.retries, allowedRetries);
-    task.takenUntil     = new Date(0);
+    task.retriesLeft = Math.min(task.retries, allowedRetries);
+    task.takenUntil = new Date(0);
   });
 
   var state = task.state();
@@ -1099,8 +1099,8 @@ builder.declare({
     await Promise.all([
       this.queueService.putPendingMessage(task, runId),
       this.publisher.taskPending({
-        status:         status,
-        runId:          runId,
+        status: status,
+        runId: runId,
       }, task.routes),
     ]);
   }
@@ -1110,20 +1110,20 @@ builder.declare({
 
 /** Cancel a task */
 builder.declare({
-  method:     'post',
-  route:      '/task/:taskId/cancel',
-  name:       'cancelTask',
-  stability:  APIBuilder.stability.stable,
-  scopes:     {AnyOf: [
+  method: 'post',
+  route: '/task/:taskId/cancel',
+  name: 'cancelTask',
+  stability: APIBuilder.stability.stable,
+  scopes: {AnyOf: [
     'queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>',
     {AllOf: [ // Legacy scopes
       'queue:cancel-task',
       'assume:scheduler-id:<schedulerId>/<taskGroupId>',
     ]},
   ]},
-  input:      undefined, // No input accepted
-  output:     'task-status-response.yml',
-  title:      'Cancel Task',
+  input: undefined, // No input accepted
+  output: 'task-status-response.yml',
+  title: 'Cancel Task',
   description: [
     'This method will cancel a task that is either `unscheduled`, `pending` or',
     '`running`. It will resolve the current run as `exception` with',
@@ -1140,8 +1140,8 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   // Load Task entity
-  var taskId  = req.params.taskId;
-  var task    = await this.Task.load({taskId}, true);
+  var taskId = req.params.taskId;
+  var task = await this.Task.load({taskId}, true);
 
   // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
@@ -1172,14 +1172,14 @@ builder.declare({
 
   // Modify the task
   await task.modify(async (task) => {
-    var run   = _.last(task.runs);
+    var run = _.last(task.runs);
     var state = (run || {state: 'unscheduled'}).state;
 
     // If we have a pending task or running task, we cancel the ongoing run
     if (state === 'pending' || state === 'running') {
-      run.state           = 'exception';
-      run.reasonResolved  = 'canceled';
-      run.resolved        = new Date().toJSON();
+      run.state = 'exception';
+      run.reasonResolved = 'canceled';
+      run.resolved = new Date().toJSON();
     }
 
     // If the task wasn't scheduled, we'll add a run and resolved it canceled.
@@ -1189,11 +1189,11 @@ builder.declare({
     if (state === 'unscheduled') {
       var now = new Date().toJSON();
       task.runs.push({
-        state:            'exception',
-        reasonCreated:    'exception',
-        reasonResolved:   'canceled',
-        scheduled:        now,
-        resolved:         now,
+        state: 'exception',
+        reasonCreated: 'exception',
+        reasonResolved: 'canceled',
+        scheduled: now,
+        resolved: now,
       });
     }
 
@@ -1235,12 +1235,12 @@ builder.declare({
 
 /** Poll for a task */
 builder.declare({
-  method:     'get',
-  route:      '/poll-task-url/:provisionerId/:workerType',
-  name:       'pollTaskUrls',
-  stability:  APIBuilder.stability.deprecated,
+  method: 'get',
+  route: '/poll-task-url/:provisionerId/:workerType',
+  name: 'pollTaskUrls',
+  stability: APIBuilder.stability.deprecated,
   // this is so deprecated we do not even want to show its docs
-  noPublish:      true,
+  noPublish: true,
   scopes: {AnyOf: [
     'queue:poll-task-urls:<provisionerId>/<workerType>',
     {AllOf: [// Legacy scopes
@@ -1248,8 +1248,8 @@ builder.declare({
       'assume:worker-type:<provisionerId>/<workerType>',
     ]},
   ]},
-  output:     'poll-task-urls-response.yml',
-  title:      'Get Urls to Poll Pending Tasks',
+  output: 'poll-task-urls-response.yml',
+  title: 'Get Urls to Poll Pending Tasks',
   description: [
     'Get a signed URLs to get and delete messages from azure queue.',
     'Once messages are polled from here, you can claim the referenced task',
@@ -1257,7 +1257,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   var provisionerId = req.params.provisionerId;
-  var workerType    = req.params.workerType;
+  var workerType = req.params.workerType;
 
   // Construct signedUrl for accessing the azure queue for this
   // provisionerId and workerType
@@ -1287,17 +1287,17 @@ let sleep20Seconds = () => {
 
 /** Claim any task */
 builder.declare({
-  method:     'post',
-  route:      '/claim-work/:provisionerId/:workerType',
-  name:       'claimWork',
-  stability:  APIBuilder.stability.stable,
+  method: 'post',
+  route: '/claim-work/:provisionerId/:workerType',
+  name: 'claimWork',
+  stability: APIBuilder.stability.stable,
   scopes: {AllOf: [
     'queue:claim-work:<provisionerId>/<workerType>',
     'queue:worker-id:<workerGroup>/<workerId>',
   ]},
-  input:      'claim-work-request.yml',
-  output:     'claim-work-response.yml',
-  title:      'Claim Work',
+  input: 'claim-work-request.yml',
+  output: 'claim-work-response.yml',
+  title: 'Claim Work',
   description: [
     'Claim pending task(s) for the given `provisionerId`/`workerType` queue.',
     '',
@@ -1310,10 +1310,10 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let provisionerId = req.params.provisionerId;
-  let workerType    = req.params.workerType;
-  let workerGroup   = req.body.workerGroup;
-  let workerId      = req.body.workerId;
-  let count         = req.body.tasks;
+  let workerType = req.params.workerType;
+  let workerGroup = req.body.workerGroup;
+  let workerId = req.body.workerId;
+  let count = req.body.tasks;
 
   await req.authorize({
     workerGroup,
@@ -1361,10 +1361,10 @@ builder.declare({
 
 /** Claim a task */
 builder.declare({
-  method:     'post',
-  route:      '/task/:taskId/runs/:runId/claim',
-  name:       'claimTask',
-  stability:  APIBuilder.stability.deprecated,
+  method: 'post',
+  route: '/task/:taskId/runs/:runId/claim',
+  name: 'claimTask',
+  stability: APIBuilder.stability.deprecated,
   scopes: {AnyOf: [
     {AllOf: [
       'queue:claim-task:<provisionerId>/<workerType>',
@@ -1376,18 +1376,18 @@ builder.declare({
       'assume:worker-id:<workerGroup>/<workerId>',
     ]},
   ]},
-  input:      'task-claim-request.yml',
-  output:     'task-claim-response.yml',
-  title:      'Claim Task',
+  input: 'task-claim-request.yml',
+  output: 'task-claim-response.yml',
+  title: 'Claim Task',
   description: [
     'claim a task - never documented',
   ].join('\n'),
 }, async function(req, res) {
-  var taskId      = req.params.taskId;
-  var runId       = parseInt(req.params.runId, 10);
+  var taskId = req.params.taskId;
+  var runId = parseInt(req.params.runId, 10);
 
   var workerGroup = req.body.workerGroup;
-  var workerId    = req.body.workerId;
+  var workerId = req.body.workerId;
 
   // Load Task entity
   let task = await this.Task.load({taskId}, true);
@@ -1470,10 +1470,10 @@ builder.declare({
 
 /** Reclaim a task */
 builder.declare({
-  method:     'post',
-  route:      '/task/:taskId/runs/:runId/reclaim',
-  name:       'reclaimTask',
-  stability:  APIBuilder.stability.stable,
+  method: 'post',
+  route: '/task/:taskId/runs/:runId/reclaim',
+  name: 'reclaimTask',
+  stability: APIBuilder.stability.stable,
   scopes: {AnyOf: [
     'queue:reclaim-task:<taskId>/<runId>',
     {AllOf: [ // Legacy
@@ -1481,8 +1481,8 @@ builder.declare({
       'assume:worker-id:<workerGroup>/<workerId>',
     ]},
   ]},
-  output:     'task-reclaim-response.yml',
-  title:      'Reclaim task',
+  output: 'task-reclaim-response.yml',
+  title: 'Reclaim task',
   description: [
     'Refresh the claim for a specific `runId` for given `taskId`. This updates',
     'the `takenUntil` property and returns a new set of temporary credentials',
@@ -1508,7 +1508,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   var taskId = req.params.taskId;
-  var runId  = parseInt(req.params.runId, 10);
+  var runId = parseInt(req.params.runId, 10);
 
   // Load Task entity
   let task = await this.Task.load({taskId}, true);
@@ -1581,7 +1581,7 @@ builder.declare({
     }
 
     // Update takenUntil
-    run.takenUntil  = takenUntil.toJSON();
+    run.takenUntil = takenUntil.toJSON();
     task.takenUntil = takenUntil;
   });
 
@@ -1611,12 +1611,12 @@ builder.declare({
 
   // Reply to caller
   return res.reply({
-    status:       task.status(),
-    runId:        runId,
-    workerGroup:  run.workerGroup,
-    workerId:     run.workerId,
-    takenUntil:   takenUntil.toJSON(),
-    credentials:  credentials,
+    status: task.status(),
+    runId: runId,
+    workerGroup: run.workerGroup,
+    workerId: run.workerId,
+    takenUntil: takenUntil.toJSON(),
+    credentials: credentials,
   });
 });
 
@@ -1654,8 +1654,8 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   await req.authorize({
     taskId,
     runId,
-    workerGroup:    run.workerGroup,
-    workerId:       run.workerId,
+    workerGroup: run.workerGroup,
+    workerId: run.workerId,
   });
 
   // Ensure that all blob artifacts which were created are present before
@@ -1687,20 +1687,20 @@ var resolveTask = async function(req, res, taskId, runId, target) {
     }
 
     // Update run
-    run.state           = target;               // completed or failed
-    run.reasonResolved  = target;               // completed or failed
-    run.resolved        = new Date().toJSON();
+    run.state = target; // completed or failed
+    run.reasonResolved = target; // completed or failed
+    run.resolved = new Date().toJSON();
 
     // Clear takenUntil on task
-    task.takenUntil     = new Date(0);
+    task.takenUntil = new Date(0);
   });
   // Find the run that we (may) have modified
   run = task.runs[runId];
 
   // If run isn't resolved to target, we had a conflict
-  if (task.runs.length - 1  !== runId ||
-      run.state             !== target ||
-      run.reasonResolved    !== target) {
+  if (task.runs.length - 1 !== runId ||
+      run.state !== target ||
+      run.reasonResolved !== target) {
     return res.reportError('RequestConflict',
       'Run {{runId}} on task `{{taskId}}` is resolved or not running.', {
         taskId,
@@ -1725,15 +1725,15 @@ var resolveTask = async function(req, res, taskId, runId, target) {
     await this.publisher.taskCompleted({
       status,
       runId,
-      workerGroup:  run.workerGroup,
-      workerId:     run.workerId,
+      workerGroup: run.workerGroup,
+      workerId: run.workerId,
     }, task.routes);
   } else {
     await this.publisher.taskFailed({
       status,
       runId,
-      workerGroup:  run.workerGroup,
-      workerId:     run.workerId,
+      workerGroup: run.workerGroup,
+      workerId: run.workerId,
     }, task.routes);
   }
 
@@ -1742,10 +1742,10 @@ var resolveTask = async function(req, res, taskId, runId, target) {
 
 /** Report task completed */
 builder.declare({
-  method:     'post',
-  route:      '/task/:taskId/runs/:runId/completed',
-  name:       'reportCompleted',
-  stability:  APIBuilder.stability.stable,
+  method: 'post',
+  route: '/task/:taskId/runs/:runId/completed',
+  name: 'reportCompleted',
+  stability: APIBuilder.stability.stable,
   scopes: {AnyOf: [
     'queue:resolve-task:<taskId>/<runId>',
     {AllOf: [ // Legacy
@@ -1753,15 +1753,15 @@ builder.declare({
       'assume:worker-id:<workerGroup>/<workerId>',
     ]},
   ]},
-  input:      undefined,  // No input at this point
-  output:     'task-status-response.yml',
-  title:      'Report Run Completed',
+  input: undefined, // No input at this point
+  output: 'task-status-response.yml',
+  title: 'Report Run Completed',
   description: [
     'Report a task completed, resolving the run as `completed`.',
   ].join('\n'),
 }, function(req, res) {
   var taskId = req.params.taskId;
-  var runId  = parseInt(req.params.runId, 10);
+  var runId = parseInt(req.params.runId, 10);
   // Backwards compatibility with very old workers, should be dropped in the
   // future
   var target = req.body.success === false ? 'failed' : 'completed';
@@ -1771,10 +1771,10 @@ builder.declare({
 
 /** Report task failed */
 builder.declare({
-  method:     'post',
-  route:      '/task/:taskId/runs/:runId/failed',
-  name:       'reportFailed',
-  stability:  APIBuilder.stability.stable,
+  method: 'post',
+  route: '/task/:taskId/runs/:runId/failed',
+  name: 'reportFailed',
+  stability: APIBuilder.stability.stable,
   scopes: {AnyOf: [
     'queue:resolve-task:<taskId>/<runId>',
     {AllOf: [ // Legacy
@@ -1782,9 +1782,9 @@ builder.declare({
       'assume:worker-id:<workerGroup>/<workerId>',
     ]},
   ]},
-  input:      undefined,  // No input at this point
-  output:     'task-status-response.yml',
-  title:      'Report Run Failed',
+  input: undefined, // No input at this point
+  output: 'task-status-response.yml',
+  title: 'Report Run Failed',
   description: [
     'Report a run failed, resolving the run as `failed`. Use this to resolve',
     'a run that failed because the task specific code behaved unexpectedly.',
@@ -1795,18 +1795,18 @@ builder.declare({
     'exception, which should be reported with `reportException`.',
   ].join('\n'),
 }, function(req, res) {
-  var taskId        = req.params.taskId;
-  var runId         = parseInt(req.params.runId, 10);
+  var taskId = req.params.taskId;
+  var runId = parseInt(req.params.runId, 10);
 
   return resolveTask.call(this, req, res, taskId, runId, 'failed');
 });
 
 /** Report task exception */
 builder.declare({
-  method:     'post',
-  route:      '/task/:taskId/runs/:runId/exception',
-  name:       'reportException',
-  stability:  APIBuilder.stability.stable,
+  method: 'post',
+  route: '/task/:taskId/runs/:runId/exception',
+  name: 'reportException',
+  stability: APIBuilder.stability.stable,
   scopes: {AnyOf: [
     'queue:resolve-task:<taskId>/<runId>',
     {AllOf: [ // Legacy
@@ -1814,9 +1814,9 @@ builder.declare({
       'assume:worker-id:<workerGroup>/<workerId>',
     ]},
   ]},
-  input:      'task-exception-request.yml',
-  output:     'task-status-response.yml',
-  title:      'Report Task Exception',
+  input: 'task-exception-request.yml',
+  output: 'task-status-response.yml',
+  title: 'Report Task Exception',
   description: [
     'Resolve a run as _exception_. Generally, you will want to report tasks as',
     'failed instead of exception. You should `reportException` if,',
@@ -1833,9 +1833,9 @@ builder.declare({
     'is temporarily unavailable worker should report task _failed_.',
   ].join('\n'),
 }, async function(req, res) {
-  var taskId        = req.params.taskId;
-  var runId         = parseInt(req.params.runId, 10);
-  var reason        = req.body.reason;
+  var taskId = req.params.taskId;
+  var runId = parseInt(req.params.runId, 10);
+  var reason = req.body.reason;
 
   // Load Task entity
   let task = await this.Task.load({taskId}, true);
@@ -1864,8 +1864,8 @@ builder.declare({
   await req.authorize({
     taskId,
     runId,
-    workerGroup:    run.workerGroup,
-    workerId:       run.workerId,
+    workerGroup: run.workerGroup,
+    workerId: run.workerId,
   });
 
   await task.modify((task) => {
@@ -1877,29 +1877,29 @@ builder.declare({
     }
 
     // Update run
-    run.state           = 'exception';
-    run.reasonResolved  = reason;
-    run.resolved        = new Date().toJSON();
+    run.state = 'exception';
+    run.reasonResolved = reason;
+    run.resolved = new Date().toJSON();
 
     // Clear takenUntil on task
-    task.takenUntil     = new Date(0);
+    task.takenUntil = new Date(0);
 
     // Add retry, if this is a worker-shutdown and we have retries left
     if (reason === 'worker-shutdown' && task.retriesLeft > 0) {
       task.retriesLeft -= 1;
       task.runs.push({
-        state:            'pending',
-        reasonCreated:    'retry',
-        scheduled:        new Date().toJSON(),
+        state: 'pending',
+        reasonCreated: 'retry',
+        scheduled: new Date().toJSON(),
       });
     }
     // Add task-retry, if this was an intermittent-task and we have retries
     if (reason === 'intermittent-task' && task.retriesLeft > 0) {
       task.retriesLeft -= 1;
       task.runs.push({
-        state:            'pending',
-        reasonCreated:    'task-retry',
-        scheduled:        new Date().toJSON(),
+        state: 'pending',
+        reasonCreated: 'task-retry',
+        scheduled: new Date().toJSON(),
       });
     }
   });
@@ -1909,9 +1909,9 @@ builder.declare({
 
   // If run isn't resolved to exception with reason, we had a conflict
   if (!run ||
-      task.runs.length - 1  > runId + 1 ||
-      run.state             !== 'exception' ||
-      run.reasonResolved    !== reason) {
+      task.runs.length - 1 > runId + 1 ||
+      run.state !== 'exception' ||
+      run.reasonResolved !== reason) {
     return res.reportError('RequestConflict',
       'Run {{runId}} on task `{{taskId}}` is resolved or not running.', {
         taskId,
@@ -1928,15 +1928,15 @@ builder.declare({
   // task-exception.
   var newRun = task.runs[runId + 1];
   if (newRun &&
-      task.runs.length - 1  === runId + 1 &&
-      newRun.state          === 'pending' &&
-      (newRun.reasonCreated  === 'retry' ||
-       newRun.reasonCreated  === 'task-retry')) {
+      task.runs.length - 1 === runId + 1 &&
+      newRun.state === 'pending' &&
+      (newRun.reasonCreated === 'retry' ||
+       newRun.reasonCreated === 'task-retry')) {
     await Promise.all([
       this.queueService.putPendingMessage(task, runId + 1),
       this.publisher.taskPending({
         status,
-        runId:          runId + 1,
+        runId: runId + 1,
       }, task.routes),
     ]);
   } else {
@@ -1952,8 +1952,8 @@ builder.declare({
     await this.publisher.taskException({
       status,
       runId,
-      workerGroup:  run.workerGroup,
-      workerId:     run.workerId,
+      workerGroup: run.workerGroup,
+      workerId: run.workerId,
     }, task.routes);
   }
 
@@ -1966,16 +1966,16 @@ require('./artifacts');
 
 /** Count pending tasks for workerType */
 builder.declare({
-  method:     'get',
-  route:      '/provisioners',
+  method: 'get',
+  route: '/provisioners',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
-  name:       'listProvisioners',
-  stability:  APIBuilder.stability.experimental,
-  output:     'list-provisioners-response.yml',
-  title:      'Get a list of all active provisioners',
+  name: 'listProvisioners',
+  stability: APIBuilder.stability.experimental,
+  output: 'list-provisioners-response.yml',
+  title: 'Get a list of all active provisioners',
   description: [
     'Get all active provisioners.',
     '',
@@ -2006,12 +2006,12 @@ builder.declare({
 
 /** Get a provisioner */
 builder.declare({
-  method:     'get',
-  route:      '/provisioners/:provisionerId',
-  name:       'getProvisioner',
-  stability:  APIBuilder.stability.experimental,
-  output:     'provisioner-response.yml',
-  title:      'Get an active provisioner',
+  method: 'get',
+  route: '/provisioners/:provisionerId',
+  name: 'getProvisioner',
+  stability: APIBuilder.stability.experimental,
+  output: 'provisioner-response.yml',
+  title: 'Get an active provisioner',
   description: [
     'Get an active provisioner.',
     '',
@@ -2040,18 +2040,18 @@ builder.declare({
 
 /** Update a provisioner */
 builder.declare({
-  method:     'put',
-  route:      '/provisioners/:provisionerId',
-  name:       'declareProvisioner',
-  stability:  APIBuilder.stability.experimental,
-  scopes:     {AllOf: [{
+  method: 'put',
+  route: '/provisioners/:provisionerId',
+  name: 'declareProvisioner',
+  stability: APIBuilder.stability.experimental,
+  scopes: {AllOf: [{
     for: 'property',
     in: 'properties',
     each: 'queue:declare-provisioner:<provisionerId>#<property>',
   }]},
-  output:     'provisioner-response.yml',
-  input:      'update-provisioner-request.yml',
-  title:      'Update a provisioner',
+  output: 'provisioner-response.yml',
+  input: 'update-provisioner-request.yml',
+  title: 'Update a provisioner',
   description: [
     'Declare a provisioner, supplying some details about it.',
     '',
@@ -2086,12 +2086,12 @@ builder.declare({
 
 /** Count pending tasks for workerType */
 builder.declare({
-  method:     'get',
-  route:      '/pending/:provisionerId/:workerType',
-  name:       'pendingTasks',
-  stability:  APIBuilder.stability.stable,
-  output:     'pending-tasks-response.yml',
-  title:      'Get Number of Pending Tasks',
+  method: 'get',
+  route: '/pending/:provisionerId/:workerType',
+  name: 'pendingTasks',
+  stability: APIBuilder.stability.stable,
+  output: 'pending-tasks-response.yml',
+  title: 'Get Number of Pending Tasks',
   description: [
     'Get an approximate number of pending tasks for the given `provisionerId`',
     'and `workerType`.',
@@ -2103,7 +2103,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   var provisionerId = req.params.provisionerId;
-  var workerType    = req.params.workerType;
+  var workerType = req.params.workerType;
 
   // Get number of pending message
   var count = await this.queueService.countPendingMessages(
@@ -2112,24 +2112,24 @@ builder.declare({
 
   // Reply to call with count `pendingTasks`
   return res.reply({
-    provisionerId:  provisionerId,
-    workerType:     workerType,
-    pendingTasks:   count,
+    provisionerId: provisionerId,
+    workerType: workerType,
+    pendingTasks: count,
   });
 });
 
 /** List worker-types for a given provisioner */
 builder.declare({
-  method:     'get',
-  route:      '/provisioners/:provisionerId/worker-types',
+  method: 'get',
+  route: '/provisioners/:provisionerId/worker-types',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
-  name:       'listWorkerTypes',
-  stability:  APIBuilder.stability.experimental,
-  output:     'list-workertypes-response.yml',
-  title:      'Get a list of all active worker-types',
+  name: 'listWorkerTypes',
+  stability: APIBuilder.stability.experimental,
+  output: 'list-workertypes-response.yml',
+  title: 'Get a list of all active worker-types',
   description: [
     'Get all active worker-types for the given provisioner.',
     '',
@@ -2158,12 +2158,12 @@ builder.declare({
 
 /** Get a worker-type from a provisioner */
 builder.declare({
-  method:     'get',
-  route:      '/provisioners/:provisionerId/worker-types/:workerType',
-  name:       'getWorkerType',
-  stability:  APIBuilder.stability.experimental,
-  output:     'workertype-response.yml',
-  title:      'Get a worker-type',
+  method: 'get',
+  route: '/provisioners/:provisionerId/worker-types/:workerType',
+  name: 'getWorkerType',
+  stability: APIBuilder.stability.experimental,
+  output: 'workertype-response.yml',
+  title: 'Get a worker-type',
   description: [
     'Get a worker-type from a provisioner.',
   ].join('\n'),
@@ -2194,20 +2194,20 @@ builder.declare({
 
 /** Update a worker-type */
 builder.declare({
-  method:     'put',
-  route:      '/provisioners/:provisionerId/worker-types/:workerType',
-  name:       'declareWorkerType',
-  stability:  APIBuilder.stability.experimental,
-  scopes:     {AllOf: [
+  method: 'put',
+  route: '/provisioners/:provisionerId/worker-types/:workerType',
+  name: 'declareWorkerType',
+  stability: APIBuilder.stability.experimental,
+  scopes: {AllOf: [
     {
       for: 'property',
       in: 'properties',
       each: 'queue:declare-worker-type:<provisionerId>/<workerType>#<property>',
     },
   ]},
-  output:     'workertype-response.yml',
-  input:      'update-workertype-request.yml',
-  title:      'Update a worker-type',
+  output: 'workertype-response.yml',
+  input: 'update-workertype-request.yml',
+  title: 'Update a worker-type',
   description: [
     'Declare a workerType, supplying some details about it.',
     '',
@@ -2243,17 +2243,17 @@ builder.declare({
 
 /** List all active workerGroup/workerId of a workerType */
 builder.declare({
-  method:     'get',
-  route:      '/provisioners/:provisionerId/worker-types/:workerType/workers',
+  method: 'get',
+  route: '/provisioners/:provisionerId/worker-types/:workerType/workers',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
     quarantined: /^(true|false)$/,
   },
-  name:       'listWorkers',
-  stability:  APIBuilder.stability.experimental,
-  output:     'list-workers-response.yml',
-  title:      'Get a list of all active workers of a workerType',
+  name: 'listWorkers',
+  stability: APIBuilder.stability.experimental,
+  output: 'list-workers-response.yml',
+  title: 'Get a list of all active workers of a workerType',
   description: [
     'Get a list of all active workers of a workerType.',
     '',
@@ -2314,12 +2314,12 @@ builder.declare({
 
 /** Get a worker from a worker-type */
 builder.declare({
-  method:     'get',
-  route:      '/provisioners/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId',
-  name:       'getWorker',
-  stability:  APIBuilder.stability.experimental,
-  output:     'worker-response.yml',
-  title:      'Get a worker-type',
+  method: 'get',
+  route: '/provisioners/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId',
+  name: 'getWorker',
+  stability: APIBuilder.stability.experimental,
+  output: 'worker-response.yml',
+  title: 'Get a worker-type',
   description: [
     'Get a worker from a worker-type.',
   ].join('\n'),
@@ -2358,8 +2358,8 @@ builder.declare({
 /** Quarantine a Worker */
 builder.declare({
   method: 'put',
-  route:  '/provisioners/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId',
-  name:   'quarantineWorker',
+  route: '/provisioners/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId',
+  name: 'quarantineWorker',
   stability: APIBuilder.stability.experimental,
   scopes: {AllOf: [
     'queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>',
@@ -2402,20 +2402,20 @@ builder.declare({
 
 /** Update a worker */
 builder.declare({
-  method:     'put',
-  route:      '/provisioners/:provisionerId/worker-types/:workerType/:workerGroup/:workerId',
-  name:       'declareWorker',
-  stability:  APIBuilder.stability.experimental,
-  scopes:     {AllOf: [
+  method: 'put',
+  route: '/provisioners/:provisionerId/worker-types/:workerType/:workerGroup/:workerId',
+  name: 'declareWorker',
+  stability: APIBuilder.stability.experimental,
+  scopes: {AllOf: [
     {
       for: 'property',
       in: 'properties',
       each: 'queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>',
     },
   ]},
-  output:     'worker-response.yml',
-  input:      'update-worker-request.yml',
-  title:      'Declare a worker',
+  output: 'worker-response.yml',
+  input: 'update-worker-request.yml',
+  title: 'Declare a worker',
   description: [
     'Declare a worker, supplying some details about it.',
     '',

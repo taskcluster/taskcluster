@@ -142,24 +142,24 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   // Use the same task definition for everything
   const taskDef = {
-    provisionerId:    'no-provisioner',
-    workerType:       'test-worker',
-    schedulerId:      'my-scheduler',
-    taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
-    routes:           [],
-    retries:          5,
-    created:          taskcluster.fromNowJSON(),
-    deadline:         taskcluster.fromNowJSON('3 days'),
-    scopes:           [],
-    payload:          {},
+    provisionerId: 'no-provisioner',
+    workerType: 'test-worker',
+    schedulerId: 'my-scheduler',
+    taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
+    routes: [],
+    retries: 5,
+    created: taskcluster.fromNowJSON(),
+    deadline: taskcluster.fromNowJSON('3 days'),
+    scopes: [],
+    payload: {},
     metadata: {
-      name:           'Unit testing task',
-      description:    'Task created during unit tests',
-      owner:          'jonsafj@mozilla.com',
-      source:         'https://github.com/taskcluster/taskcluster-queue',
+      name: 'Unit testing task',
+      description: 'Task created during unit tests',
+      owner: 'jonsafj@mozilla.com',
+      source: 'https://github.com/taskcluster/taskcluster-queue',
     },
     tags: {
-      purpose:        'taskcluster-testing',
+      purpose: 'taskcluster-testing',
     },
   };
   this.timeout(3 * 60 * 1000);
@@ -195,14 +195,14 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     test('S3 single part complete flow', async () => {
       let taskId = slugid.v4();
-      
+
       debug('### Creating task');
       await helper.queue.createTask(taskId, taskDef);
 
       debug('### Claiming task');
       await helper.queue.claimTask(taskId, 0, {
-        workerGroup:    'my-worker-group',
-        workerId:       'my-worker',
+        workerGroup: 'my-worker-group',
+        workerId: 'my-worker',
       });
 
       let uploadInfo = await client.prepareUpload({
@@ -231,11 +231,11 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       let uploadOutcome = await client.runUpload(response.requests, uploadInfo);
 
       response = await helper.queue.completeArtifact(taskId, 0, 'public/singlepart.dat', {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
 
       let secondResponse = await helper.queue.completeArtifact(taskId, 0, 'public/singlepart.dat', {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
       assume(response).deeply.equals(secondResponse);
 
@@ -246,7 +246,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       debug('Fetching artifact from: %s', artifactUrl);
       let artifact = await getWithoutRedirecting(artifactUrl);
 
-      let expectedUrl = 
+      let expectedUrl =
         `https://test-bucket-for-any-garbage.s3-us-west-2.amazonaws.com/${taskId}/0/public/singlepart.dat`;
       assume(artifact.headers).has.property('location', expectedUrl);
 
@@ -256,14 +256,14 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     test('S3 single part private artifact fetched with signed url', async () => {
       let taskId = slugid.v4();
-      
+
       debug('### Creating task');
       await helper.queue.createTask(taskId, taskDef);
 
       debug('### Claiming task');
       await helper.queue.claimTask(taskId, 0, {
-        workerGroup:    'my-worker-group',
-        workerId:       'my-worker',
+        workerGroup: 'my-worker-group',
+        workerId: 'my-worker',
       });
 
       let uploadInfo = await client.prepareUpload({
@@ -294,11 +294,11 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       let uploadOutcome = await client.runUpload(response.requests, uploadInfo);
 
       response = await helper.queue.completeArtifact(taskId, 0, name, {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
 
       let secondResponse = await helper.queue.completeArtifact(taskId, 0, name, {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
       assume(response).deeply.equals(secondResponse);
 
@@ -333,14 +333,14 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     test('S3 multi part complete flow', async () => {
       let name = 'public/multipart.dat';
       let taskId = slugid.v4();
-      
+
       debug('### Creating task');
       await helper.queue.createTask(taskId, taskDef);
 
       debug('### Claiming task');
       await helper.queue.claimTask(taskId, 0, {
-        workerGroup:    'my-worker-group',
-        workerId:       'my-worker',
+        workerGroup: 'my-worker-group',
+        workerId: 'my-worker',
       });
 
       let uploadInfo = await client.prepareUpload({
@@ -374,12 +374,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       let uploadOutcome = await client.runUpload(response.requests, uploadInfo);
 
       response = await helper.queue.completeArtifact(taskId, 0, name, {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
 
       // Ensure idempotency for completion of artifacts
       let secondResponse = await helper.queue.completeArtifact(taskId, 0, name, {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
       assume(response).deeply.equals(secondResponse);
 
@@ -396,18 +396,18 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
       await verifyDownload(artifact.headers.location, bigfilehash, bigfilesize);
     });
-    
+
     test('S3 multi part idempotency', async () => {
       let name = 'public/multipart.dat';
       let taskId = slugid.v4();
-      
+
       debug('### Creating task');
       await helper.queue.createTask(taskId, taskDef);
 
       debug('### Claiming task');
       await helper.queue.claimTask(taskId, 0, {
-        workerGroup:    'my-worker-group',
-        workerId:       'my-worker',
+        workerGroup: 'my-worker-group',
+        workerId: 'my-worker',
       });
 
       debug('### Preparing upload');
@@ -443,7 +443,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
           return {sha256: x.sha256, size: x.size};
         }),
       });
-      
+
       let firstUploadId = qs.parse(urllib.parse(firstResponse.requests[0].url).query).uploadId;
       let secondUploadId = qs.parse(urllib.parse(secondResponse.requests[0].url).query).uploadId;
       assume(firstUploadId).equals(secondUploadId);
@@ -477,7 +477,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       let uploadOutcome = await client.runUpload(secondResponse.requests, uploadInfo);
 
       let response = await helper.queue.completeArtifact(taskId, 0, name, {
-        etags: uploadOutcome.etags, 
+        etags: uploadOutcome.etags,
       });
     });
   });
@@ -490,8 +490,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Send post artifact request');
@@ -500,9 +500,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'assume:worker-id:my-worker-group/my-worker',
     );
     const r1 = await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
-      storageType:  's3',
-      expires:      taskcluster.fromNowJSON('1 day'),
-      contentType:  'application/json',
+      storageType: 's3',
+      expires: taskcluster.fromNowJSON('1 day'),
+      contentType: 'application/json',
     });
     assume(r1.putUrl).is.ok();
 
@@ -596,16 +596,16 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let {credentials} = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Send post artifact request');
     let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials});
     const r1 = await queue.createArtifact(taskId, 0, 'public/s3.json', {
-      storageType:  's3',
-      expires:      taskcluster.fromNowJSON('1 day'),
-      contentType:  'application/json',
+      storageType: 's3',
+      expires: taskcluster.fromNowJSON('1 day'),
+      contentType: 'application/json',
     });
     assume(r1.putUrl).is.ok();
 
@@ -696,8 +696,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Send post artifact request');
@@ -706,9 +706,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'assume:worker-id:my-worker-group/my-worker',
     );
     await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
-      storageType:  's3',
-      expires:      taskcluster.fromNowJSON('1 day'),
-      contentType:  'application/json',
+      storageType: 's3',
+      expires: taskcluster.fromNowJSON('1 day'),
+      contentType: 'application/json',
     }).then(() => {
       assume().fail('Expected authentication error');
     }, (err) => {
@@ -727,16 +727,16 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let {credentials} = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Send post artifact request');
     let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials});
     await queue.createArtifact(taskId, 0, 'public/s3.json', {
-      storageType:  's3',
-      expires:      taskcluster.fromNowJSON('1 day'),
-      contentType:  'application/json',
+      storageType: 's3',
+      expires: taskcluster.fromNowJSON('1 day'),
+      contentType: 'application/json',
     });
   });
 
@@ -748,16 +748,16 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let {credentials} = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Send post artifact request');
     let queue = new helper.Queue({rootUrl: helper.rootUrl, credentials});
     const r1 = await queue.createArtifact(taskId, 0, 'public/s3.json', {
-      storageType:  's3',
-      expires:      taskcluster.fromNowJSON('12 day'),
-      contentType:  'application/json',
+      storageType: 's3',
+      expires: taskcluster.fromNowJSON('12 day'),
+      contentType: 'application/json',
     });
     assume(r1.putUrl).is.ok();
 
@@ -809,8 +809,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Send post artifact request');
@@ -819,9 +819,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'assume:worker-id:my-worker-group/my-worker'
     );
     const r1 = await helper.queue.createArtifact(taskId, 0, 'public/azure.json', {
-      storageType:  'azure',
-      expires:      taskcluster.fromNowJSON('1 day'),
-      contentType:  'application/json',
+      storageType: 'azure',
+      expires: taskcluster.fromNowJSON('1 day'),
+      contentType: 'application/json',
     });
 
     debug('### Uploading blocks');
@@ -867,8 +867,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Send post artifact request');
@@ -877,10 +877,10 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'assume:worker-id:my-worker-group/my-worker',
     );
     await helper.queue.createArtifact(taskId, 0, 'public/error.json', {
-      storageType:  'error',
-      expires:      taskcluster.fromNowJSON('1 day'),
-      reason:       'file-missing-on-worker',
-      message:      'Some user-defined message',
+      storageType: 'error',
+      expires: taskcluster.fromNowJSON('1 day'),
+      reason: 'file-missing-on-worker',
+      message: 'Some user-defined message',
     });
 
     debug('### Wait for artifact created message');
@@ -919,8 +919,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Send post artifact request');
@@ -929,19 +929,19 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'assume:worker-id:my-worker-group/my-worker'
     );
     await helper.queue.createArtifact(taskId, 0, 'public/redirect.json', {
-      storageType:  'reference',
-      expires:      taskcluster.fromNowJSON('1 day'),
-      url:          'https://google.com',
-      contentType:  'text/html',
+      storageType: 'reference',
+      expires: taskcluster.fromNowJSON('1 day'),
+      url: 'https://google.com',
+      contentType: 'text/html',
     });
 
     debug('### Send post artifact request (again w. new URL)');
     const pingUrl = helper.queue.buildUrl(helper.queue.ping);
     await helper.queue.createArtifact(taskId, 0, 'public/redirect.json', {
-      storageType:  'reference',
-      expires:      taskcluster.fromNowJSON('1 day'),
-      url:          pingUrl,
-      contentType:  'text/html',
+      storageType: 'reference',
+      expires: taskcluster.fromNowJSON('1 day'),
+      url: pingUrl,
+      contentType: 'text/html',
     });
 
     debug('### Downloading artifact');
@@ -970,25 +970,25 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Send post artifact request');
     await helper.queue.createArtifact(taskId, 0, 'public/redirect.json', {
-      storageType:  'reference',
-      expires:      taskcluster.fromNowJSON('12 day'),
-      url:          'https://google.com',
-      contentType:  'text/html',
+      storageType: 'reference',
+      expires: taskcluster.fromNowJSON('12 day'),
+      url: 'https://google.com',
+      contentType: 'text/html',
     });
 
     debug('### Send post artifact request (again w. new URL)');
     const pingUrl = helper.queue.buildUrl(helper.queue.ping);
     await helper.queue.createArtifact(taskId, 0, 'public/redirect.json', {
-      storageType:  'reference',
-      expires:      taskcluster.fromNowJSON('12 day'),
-      url:          pingUrl,
-      contentType:  'text/html',
+      storageType: 'reference',
+      expires: taskcluster.fromNowJSON('12 day'),
+      url: pingUrl,
+      contentType: 'text/html',
     });
 
     debug('### Downloading artifact');
@@ -1023,20 +1023,20 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Report exception');
     await helper.queue.reportException(taskId, 0, {
-      reason:   'malformed-payload',
+      reason: 'malformed-payload',
     });
 
     debug('### Send post artifact request');
     const r1 = await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
-      storageType:  's3',
-      expires:      taskcluster.fromNowJSON('1 day'),
-      contentType:  'application/json',
+      storageType: 's3',
+      expires: taskcluster.fromNowJSON('1 day'),
+      contentType: 'application/json',
     });
     assume(r1.putUrl).is.ok();
   });
@@ -1049,8 +1049,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Report completed');
@@ -1058,9 +1058,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Send post artifact request');
     await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
-      storageType:  's3',
-      expires:      taskcluster.fromNowJSON('1 day'),
-      contentType:  'application/json',
+      storageType: 's3',
+      expires: taskcluster.fromNowJSON('1 day'),
+      contentType: 'application/json',
     }).catch(err => {
       assume(err.statusCode).equals(409);
     });
@@ -1074,8 +1074,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Report exception');
@@ -1083,9 +1083,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Send post artifact request');
     await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
-      storageType:  's3',
-      expires:      taskcluster.fromNowJSON('1 day'),
-      contentType:  'application/json',
+      storageType: 's3',
+      expires: taskcluster.fromNowJSON('1 day'),
+      contentType: 'application/json',
     }).catch(err => {
       assume(err.statusCode).equals(409);
     });
@@ -1099,8 +1099,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     const expirationIn1Day = taskcluster.fromNowJSON('1 day');
@@ -1108,16 +1108,16 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Send post artifact request');
     await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
-      storageType:  's3',
-      expires:      expirationIn1Day,
-      contentType:  'application/json',
+      storageType: 's3',
+      expires: expirationIn1Day,
+      contentType: 'application/json',
     });
 
     debug('### Send second post artifact request to update expiration');
     await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
-      storageType:  's3',
-      expires:      expirationIn2Days,
-      contentType:  'application/json',
+      storageType: 's3',
+      expires: expirationIn2Days,
+      contentType: 'application/json',
     }).catch(err => {
       debug('Got error: %s, as JSON %j', err, err);
       throw err;
@@ -1142,22 +1142,22 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Send post artifact request');
     await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
-      storageType:  's3',
-      expires:      taskcluster.fromNowJSON('1 day'),
-      contentType:  'application/json',
+      storageType: 's3',
+      expires: taskcluster.fromNowJSON('1 day'),
+      contentType: 'application/json',
     });
 
     debug('### Send second post artifact request to update content type');
     await helper.queue.createArtifact(taskId, 0, 'public/s3.json', {
-      storageType:  's3',
-      expires:      taskcluster.fromNowJSON('1 day'),
-      contentType:  'text/plain',
+      storageType: 's3',
+      expires: taskcluster.fromNowJSON('1 day'),
+      contentType: 'text/plain',
     }).then(() => {
       assume().fail('Expected request to be unsuccessful');
     }, err => {
@@ -1178,14 +1178,14 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('listArtifacts (missing task)', async () => {
     await helper.queue.listArtifacts(slugid.v4(), 0).then(
-      ()  => assert(false, 'Expected error'),
+      () => assert(false, 'Expected error'),
       err => assume(err.code).equals('ResourceNotFound'),
     );
   });
 
   test('listLatestArtifacts (missing task)', async () => {
     await helper.queue.listLatestArtifacts(slugid.v4(), 0).then(
-      ()  => assert(false, 'Expected error'),
+      () => assert(false, 'Expected error'),
       err => assume(err.code).equals('ResourceNotFound'),
     );
   });
@@ -1197,13 +1197,13 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### listArtifacts (runId: 0, is missing)');
     await helper.queue.listArtifacts(taskId, 0).then(
-      ()  => assert(false, 'Expected error'),
+      () => assert(false, 'Expected error'),
       err => assume(err.code).equals('ResourceNotFound'),
     );
 
     debug('### listLatestArtifacts (task has no runs)');
     await helper.queue.listLatestArtifacts(taskId).then(
-      ()  => assert(false, 'Expected error'),
+      () => assert(false, 'Expected error'),
       err => assume(err.code).equals('ResourceNotFound'),
     );
 
@@ -1218,7 +1218,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### listArtifacts (runId: 1, is missing)');
     await helper.queue.listArtifacts(taskId, 1).then(
-      ()  => assert(false, 'Expected error'),
+      () => assert(false, 'Expected error'),
       err => assume(err.code).equals('ResourceNotFound'),
     );
   });
@@ -1231,21 +1231,21 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
 
     debug('### Create two artifacts (don\'t upload anything to S3)');
     await Promise.all([
       helper.queue.createArtifact(taskId, 0, 'public/s3-A.json', {
-        storageType:  's3',
-        expires:      taskcluster.fromNowJSON('1 day'),
-        contentType:  'application/json',
+        storageType: 's3',
+        expires: taskcluster.fromNowJSON('1 day'),
+        contentType: 'application/json',
       }),
       helper.queue.createArtifact(taskId, 0, 'public/s3-B.json', {
-        storageType:  's3',
-        expires:      taskcluster.fromNowJSON('1 day'),
-        contentType:  'application/json',
+        storageType: 's3',
+        expires: taskcluster.fromNowJSON('1 day'),
+        contentType: 'application/json',
       }),
     ]);
 

@@ -175,8 +175,8 @@ suite('normalize', () => {
       'caa', 'cab*', 'cab', 'cc*',
     ];
     testSortScopes({
-      title:  'big list',
-      scopes:  _.shuffle(sortedRoleIds),
+      title: 'big list',
+      scopes: _.shuffle(sortedRoleIds),
       expected: sortedRoleIds,
     });
   });

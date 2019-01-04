@@ -1,19 +1,19 @@
 #!/usr/bin/env node
-var fs          = require('fs');
-var path        = require('path');
-var request     = require('superagent');
-var cliff       = require('cliff');
-var program     = require('commander');
-var _           = require('lodash');
-var Promise     = require('promise');
-var stringify   = require('json-stable-stringify');
+var fs = require('fs');
+var path = require('path');
+var request = require('superagent');
+var cliff = require('cliff');
+var program = require('commander');
+var _ = require('lodash');
+var Promise = require('promise');
+var stringify = require('json-stable-stringify');
 
 // Markers for start and end of documentation section
 var DOCS_START_MARKER = '<!-- START OF GENERATED DOCS -->';
-var DOCS_END_MARKER   = '<!-- END OF GENERATED DOCS -->';
+var DOCS_END_MARKER = '<!-- END OF GENERATED DOCS -->';
 
 // Load apis
-var apis        = require('../src/apis');
+var apis = require('../src/apis');
 
 /** Save APIs to apis.js */
 var saveApis = function() {
@@ -108,12 +108,12 @@ var updateDocs = function() {
   ]).join('\n');
 
   // Load README.md
-  var readmePath  = path.join(__dirname, '..', 'README.md');
-  var readme      = fs.readFileSync(readmePath, {encoding: 'utf-8'});
+  var readmePath = path.join(__dirname, '..', 'README.md');
+  var readme = fs.readFileSync(readmePath, {encoding: 'utf-8'});
 
   // Split out docs and get text before and after docs, and write to readmeMD
-  var before  = readme.split(DOCS_START_MARKER)[0];
-  var after   = readme.split(DOCS_END_MARKER)[1];
+  var before = readme.split(DOCS_START_MARKER)[0];
+  var after = readme.split(DOCS_END_MARKER)[1];
   fs.writeFileSync(readmePath, before + docs + after, {encoding: 'utf-8'});
 };
 
@@ -133,7 +133,7 @@ program
   .command('show <name>')
   .description('Show references for a specific API')
   .action(function(name, options) {
-    var api   = apis[name];
+    var api = apis[name];
     if (api === undefined) {
       console.log('No API named: ' + name);
       process.exit(1);

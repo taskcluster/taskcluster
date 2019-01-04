@@ -1,7 +1,7 @@
-var _       = require('lodash');
-var assert  = require('assert');
-var debug   = require('debug')('index:helpers');
-var data    = require('./data');
+var _ = require('lodash');
+var assert = require('assert');
+var debug = require('debug')('index:helpers');
+var data = require('./data');
 
 /**
  * Insert task into `namespace` where:
@@ -22,9 +22,9 @@ var data    = require('./data');
  */
 var insertTask = function(namespace, input, options) {
   // Validate input
-  assert(input.expires instanceof Date,   'expires must be a Date object');
-  assert(input.data instanceof Object,    'data must be an object');
-  assert(input.taskId,                    'taskId must be given');
+  assert(input.expires instanceof Date, 'expires must be a Date object');
+  assert(input.data instanceof Object, 'data must be an object');
+  assert(input.taskId, 'taskId must be given');
   assert(typeof input.rank === 'number', 'rank must be a number');
   assert(options.IndexedTask,
     'options.IndexedTask must be an instance of data.IndexedTask');
@@ -32,10 +32,10 @@ var insertTask = function(namespace, input, options) {
     'options.Namespace must be an instance of data.Namespace');
 
   // Get namespace and ensure that we have a least one dot
-  var namespace = namespace.split('.');
+  namespace = namespace.split('.');
 
   // Find name and namespace
-  var name  = namespace.pop() || '';
+  var name = namespace.pop() || '';
   namespace = namespace.join('.');
 
   // Find expiration time and parse as date object
@@ -43,16 +43,16 @@ var insertTask = function(namespace, input, options) {
 
   // Attempt to load indexed task
   return options.IndexedTask.load({
-    namespace:    namespace,
-    name:         name,
+    namespace: namespace,
+    name: name,
   }).then(function(task) {
     return task.modify(function() {
       // Update if we prefer input over what we have
       if (this.rank <= input.rank) {
-        this.rank       = input.rank;
-        this.data       = input.data;
-        this.taskId     = input.taskId;
-        this.expires    = expires;
+        this.rank = input.rank;
+        this.data = input.data;
+        this.taskId = input.taskId;
+        this.expires = expires;
         // Update expires on namespace hierarchy
         return options.Namespace.ensureNamespace(namespace, expires);
       }
@@ -69,12 +69,12 @@ var insertTask = function(namespace, input, options) {
       expires
     ).then(function() {
       return options.IndexedTask.create({
-        namespace:    namespace,
-        name:         name,
-        rank:         input.rank,
-        taskId:       input.taskId,
-        data:         input.data,
-        expires:      expires,
+        namespace: namespace,
+        name: name,
+        rank: input.rank,
+        taskId: input.taskId,
+        data: input.data,
+        expires: expires,
       });
     });
   });
@@ -91,7 +91,7 @@ exports.insertTask = insertTask;
 *    limit:            // limit for the number of results
 *    continuation:     // the continuationToken
 *    key :             // key in the results to be used to create output
-*    Table:            // Table on which query is to be executed  
+*    Table:            // Table on which query is to be executed
 * }
 */
 

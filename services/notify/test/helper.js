@@ -99,17 +99,17 @@ exports.withSQS = (mock, skipping) => {
         }).promise();
       }
       exports.checkSQSMessage = async (queueUrl, check) => {
-        const resp = await  sqs.receiveMessage({
-          QueueUrl:             queueUrl,
-          AttributeNames:       ['ApproximateReceiveCount'],
-          MaxNumberOfMessages:  10,
-          VisibilityTimeout:    30,
-          WaitTimeSeconds:      20,
+        const resp = await sqs.receiveMessage({
+          QueueUrl: queueUrl,
+          AttributeNames: ['ApproximateReceiveCount'],
+          MaxNumberOfMessages: 10,
+          VisibilityTimeout: 30,
+          WaitTimeSeconds: 20,
         }).promise();
         const messages = resp.Messages;
         await sqs.deleteMessage({
-          QueueUrl:       queueUrl,
-          ReceiptHandle:  messages[0].ReceiptHandle,
+          QueueUrl: queueUrl,
+          ReceiptHandle: messages[0].ReceiptHandle,
         }).promise();
         assert.equal(messages.length, 1);
         check(JSON.parse(messages[0].Body));
@@ -165,7 +165,7 @@ exports.withSES = (mock, skipping) => {
     } else {
       sqs = await exports.load('sqs');
       const emailSQSQueue = await sqs.createQueue({
-        QueueName:  'taskcluster-notify-test-emails',
+        QueueName: 'taskcluster-notify-test-emails',
       }).promise().then(req => req.QueueUrl);
       let emailAttr = await sqs.getQueueAttributes({
         QueueUrl: emailSQSQueue,
@@ -202,17 +202,17 @@ exports.withSES = (mock, skipping) => {
       }
 
       exports.checkEmails = async (check) => {
-        const resp = await  sqs.receiveMessage({
-          QueueUrl:             emailSQSQueue,
-          AttributeNames:       ['ApproximateReceiveCount'],
-          MaxNumberOfMessages:  10,
-          VisibilityTimeout:    30,
-          WaitTimeSeconds:      20,
+        const resp = await sqs.receiveMessage({
+          QueueUrl: emailSQSQueue,
+          AttributeNames: ['ApproximateReceiveCount'],
+          MaxNumberOfMessages: 10,
+          VisibilityTimeout: 30,
+          WaitTimeSeconds: 20,
         }).promise();
         const messages = resp.Messages;
         await sqs.deleteMessage({
-          QueueUrl:       emailSQSQueue,
-          ReceiptHandle:  messages[0].ReceiptHandle,
+          QueueUrl: emailSQSQueue,
+          ReceiptHandle: messages[0].ReceiptHandle,
         }).promise();
         assert.equal(messages.length, 1);
         check(JSON.parse(JSON.parse(messages[0].Body).Message));
@@ -238,7 +238,7 @@ const stubbedQueue = () => {
   const tasks = {};
   const queue = new taskcluster.Queue({
     rootUrl: exports.rootUrl,
-    credentials:      {
+    credentials: {
       clientId: 'index-server',
       accessToken: 'none',
     },
@@ -362,8 +362,8 @@ exports.withServer = (mock, skipping) => {
 
     exports.apiClient = new exports.NotifyClient({
       credentials: {
-        clientId:       'test-client',
-        accessToken:    'doesnt-matter',
+        clientId: 'test-client',
+        accessToken: 'doesnt-matter',
       },
       rootUrl: exports.rootUrl,
     });

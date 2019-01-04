@@ -14,7 +14,7 @@ class Handler {
       return;
     }
     accessToken = accessToken.split(' ')[1];
-    if (accessToken == 'invalid') {
+    if (accessToken === 'invalid') {
       debug('invalid token');
       return;
     }

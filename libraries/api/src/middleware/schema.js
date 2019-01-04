@@ -37,7 +37,7 @@ const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entr
     throw new Error(`No schema with id ${input} for input to API method ${entry.name}`);
   }
 
-  if (output && output != 'blob' && !_.find(absoluteSchemas, {$id: output})) {
+  if (output && output !== 'blob' && !_.find(absoluteSchemas, {$id: output})) {
     throw new Error(`No schema with id ${output} for output from API method ${entry.name}`);
   }
 

@@ -7,8 +7,8 @@ const bodyParser = require('body-parser');
 
 const parseBody = ({inputLimit}) => {
   const wrapped = bodyParser.text({
-    limit:          inputLimit,
-    type:           'application/json',
+    limit: inputLimit,
+    type: 'application/json',
   });
   return (req, res, next) => {
     wrapped(req, res, () => {

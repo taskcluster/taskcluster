@@ -28,4 +28,3 @@ if (!module.parent) {
     process.exit(1);
   });
 }
-

@@ -13,7 +13,7 @@ describe('component loader', () => {
 
     assume(await load('test')).equals(a);
   });
-  
+
   it('should load a single component with setup function', async () => {
     let a = {a: 1};
 
@@ -27,7 +27,7 @@ describe('component loader', () => {
 
     assume(await load('test')).equals(a);
   });
-  
+
   it('should accept a virtual component', async () => {
     let a = {a: 1};
 
@@ -93,7 +93,7 @@ describe('component loader', () => {
 
     assume(valA).does.not.equal(valB);
   });
-  
+
   it('should reinitialize components', async () => {
     let load = subject({
       test: {
@@ -109,7 +109,7 @@ describe('component loader', () => {
   it('should load a simple dependency', async () => {
     let a = {a: 1};
     let called = false;
-    
+
     let load = subject({
       dep: {
         setup: () => {
@@ -297,7 +297,7 @@ describe('component loader', () => {
 
     await load('base');
   });
-  
+
   it('should be able to build a graphviz file', async () => {
     let load = subject({
       dep1: {

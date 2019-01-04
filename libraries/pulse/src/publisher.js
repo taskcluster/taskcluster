@@ -20,9 +20,9 @@ class Exchanges {
 
   declare(entryOptions) {
     const entry = new Entry({exchanges: this, ...entryOptions});
-    assert(!this.entries.some(e => e.name == entry.name),
+    assert(!this.entries.some(e => e.name === entry.name),
       `entry with name ${entry.name} already declared`);
-    assert(!this.entries.some(e => e.exchange == entry.exchange),
+    assert(!this.entries.some(e => e.exchange === entry.exchange),
       `entry with exchange ${entry.exchange} already declared`);
     this.entries.push(entry);
   }
@@ -153,7 +153,7 @@ class Entry {
         `routingKey declaration ${key.name} must have maxSize > 0`);
 
       // Check size left in routingKey space
-      if (sizeLeft != 255) {
+      if (sizeLeft !== 255) {
         sizeLeft -= 1; // Remove one for the joining dot
       }
       sizeLeft -= key.maxSize;
@@ -317,10 +317,10 @@ class PulsePublisher {
             tries++ ? 'Republishing' : 'Publishing', exchange, routingKey);
           await new Promise((resolve, reject) => {
             channel.publish(exchange, routingKey, payload, {
-              persistent:         true,
-              contentType:        'application/json',
-              contentEncoding:    'utf-8',
-              CC:                 CCs,
+              persistent: true,
+              contentType: 'application/json',
+              contentEncoding: 'utf-8',
+              CC: CCs,
             }, (err) => {
               if (err) {
                 reject(err);
@@ -411,10 +411,10 @@ class PulsePublisher {
 
     const s3 = new AWS.S3(aws);
     await s3.putObject({
-      Bucket:           hostname,
-      Key:              path.slice(1), // omit leading `/`
-      Body:             JSON.stringify(reference, undefined, 2),
-      ContentType:      'application/json',
+      Bucket: hostname,
+      Key: path.slice(1), // omit leading `/`
+      Body: JSON.stringify(reference, undefined, 2),
+      ContentType: 'application/json',
     }).promise();
   }
 }

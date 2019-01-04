@@ -143,4 +143,3 @@ exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, w
     },
   });
 };
-

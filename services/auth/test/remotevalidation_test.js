@@ -86,10 +86,10 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('header auth (temp creds)', async () => {
     let myClient2 = new helper.TestClient({
       rootUrl: helper.rootUrl,
-      credentials:  taskcluster.createTemporaryCredentials({
-        expiry:       taskcluster.fromNow('10 min'),
-        scopes:       ['myapi:*'],
-        credentials:  rootCredentials,
+      credentials: taskcluster.createTemporaryCredentials({
+        expiry: taskcluster.fromNow('10 min'),
+        scopes: ['myapi:*'],
+        credentials: rootCredentials,
       }),
     });
     let result = await myClient2.resource();
@@ -99,10 +99,10 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('header auth (temp creds - wrong scope)', async () => {
     let myClient2 = new helper.TestClient({
       rootUrl: helper.rootUrl,
-      credentials:  taskcluster.createTemporaryCredentials({
-        expiry:       taskcluster.fromNow('10 min'),
-        scopes:       ['myapi--'],
-        credentials:  rootCredentials,
+      credentials: taskcluster.createTemporaryCredentials({
+        expiry: taskcluster.fromNow('10 min'),
+        scopes: ['myapi--'],
+        credentials: rootCredentials,
       }),
     });
     await myClient2.resource().then(() => {
@@ -115,10 +115,10 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('header auth (temp creds + authorizedScopes)', async () => {
     let myClient2 = new helper.TestClient({
       rootUrl: helper.rootUrl,
-      credentials:  taskcluster.createTemporaryCredentials({
-        expiry:       taskcluster.fromNow('10 min'),
-        scopes:       ['myapi:*'],
-        credentials:  rootCredentials,
+      credentials: taskcluster.createTemporaryCredentials({
+        expiry: taskcluster.fromNow('10 min'),
+        scopes: ['myapi:*'],
+        credentials: rootCredentials,
       }),
       authorizedScopes: ['myapi:resource'],
     });
@@ -129,10 +129,10 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('header auth (temp creds + invalid authorizedScopes)', async () => {
     let myClient2 = new helper.TestClient({
       rootUrl: helper.rootUrl,
-      credentials:  taskcluster.createTemporaryCredentials({
-        expiry:       taskcluster.fromNow('10 min'),
-        scopes:       ['myapi:*'],
-        credentials:  rootCredentials,
+      credentials: taskcluster.createTemporaryCredentials({
+        expiry: taskcluster.fromNow('10 min'),
+        scopes: ['myapi:*'],
+        credentials: rootCredentials,
       }),
       authorizedScopes: ['myapi:-'],
     });
@@ -146,10 +146,10 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('header auth (temp creds + overstep authorizedScopes)', async () => {
     let myClient2 = new helper.TestClient({
       rootUrl: helper.rootUrl,
-      credentials:  taskcluster.createTemporaryCredentials({
-        expiry:       taskcluster.fromNow('10 min'),
-        scopes:       ['myapi:'],
-        credentials:  rootCredentials,
+      credentials: taskcluster.createTemporaryCredentials({
+        expiry: taskcluster.fromNow('10 min'),
+        scopes: ['myapi:'],
+        credentials: rootCredentials,
       }),
       authorizedScopes: ['myapi:*'],
     });
@@ -163,17 +163,17 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('auth with non-root user', async () => {
     let clientId = slugid.v4();
     let result = await helper.apiClient.createClient(clientId, {
-      expires:      new Date(3000, 1, 1), // far out in the future
-      description:  'Client used by automatic tests, file a bug and delete if' +
+      expires: new Date(3000, 1, 1), // far out in the future
+      description: 'Client used by automatic tests, file a bug and delete if' +
                     ' you ever see this client!',
-      scopes:       ['myapi:*'],
+      scopes: ['myapi:*'],
     });
 
     let myClient = new helper.TestClient({
       rootUrl: helper.rootUrl,
       credentials: {
-        clientId:     result.clientId,
-        accessToken:  result.accessToken,
+        clientId: result.clientId,
+        accessToken: result.accessToken,
       },
     });
     await myClient.resource();
@@ -182,17 +182,17 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('auth with non-root user (expired)', async () => {
     let clientId = slugid.v4();
     let result = await helper.apiClient.createClient(clientId, {
-      expires:      new Date(1998, 1, 1), // far back in the past
-      description:  'Client used by automatic tests, file a bug and delete if' +
+      expires: new Date(1998, 1, 1), // far back in the past
+      description: 'Client used by automatic tests, file a bug and delete if' +
                     ' you ever see this client!',
-      scopes:       ['myapi:*'],
+      scopes: ['myapi:*'],
     });
 
     let myClient = new helper.TestClient({
       rootUrl: helper.rootUrl,
       credentials: {
-        clientId:     result.clientId,
-        accessToken:  result.accessToken,
+        clientId: result.clientId,
+        accessToken: result.accessToken,
       },
     });
     await myClient.resource().then(() => {

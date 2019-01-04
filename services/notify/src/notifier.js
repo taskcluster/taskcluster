@@ -44,7 +44,7 @@ class Notifier {
 
   async setup() {
     this.queueUrl = (await this.sqs.createQueue({
-      QueueName:  this.queueName,
+      QueueName: this.queueName,
     }).promise()).QueueUrl;
   }
 
@@ -84,14 +84,14 @@ class Notifier {
 
     debug(`Sending email to ${address}`);
     // It is very, very important that this uses the sanitize option
-    let formatted  = marked(content, {
-      gfm:          true,
-      tables:       true,
-      breaks:       true,
-      pedantic:     false,
-      sanitize:     true,
-      smartLists:   true,
-      smartypants:  false,
+    let formatted = marked(content, {
+      gfm: true,
+      tables: true,
+      breaks: true,
+      pedantic: false,
+      sanitize: true,
+      smartLists: true,
+      smartypants: false,
     });
 
     const res = await this.emailer.send({
@@ -130,9 +130,9 @@ class Notifier {
     }
     debug(`sending irc message to ${user || channel}.`);
     return this.sqs.sendMessage({
-      QueueUrl:       this.queueUrl,
-      MessageBody:    JSON.stringify({channel, user, message}),
-      DelaySeconds:   0,
+      QueueUrl: this.queueUrl,
+      MessageBody: JSON.stringify({channel, user, message}),
+      DelaySeconds: 0,
     }).promise().then(res => {
       this.markSent(channel, user, message);
       return res;

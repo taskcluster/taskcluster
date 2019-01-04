@@ -4,7 +4,7 @@ const pulse = require('taskcluster-lib-pulse');
 const _ = require('lodash');
 
 /**
- * Create pulse client and consumers to trigger hooks with pulse messages 
+ * Create pulse client and consumers to trigger hooks with pulse messages
  *
  * options:
  * {
@@ -30,7 +30,7 @@ class HookListeners {
 
   /**
    * Setup a new pulse client using the credentials
-   * Additionally create pulse consumers for the exchanges - 
+   * Additionally create pulse consumers for the exchanges -
    * `hook-created, `hook-updated` and  `hook-deleted`
   */
   async setup() {
@@ -51,7 +51,7 @@ class HookListeners {
         routingKeyPattern: '#',
       }],
       queueName: 'hookChanged',
-      maxLength : 50,
+      maxLength: 50,
     }, (msg) => this.reconcileConsumers()
     );
     debug('Listening to hook exchanges');
@@ -64,16 +64,16 @@ class HookListeners {
   /** Create a new pulse consumer for a hook */
   async createListener(hook) {
     this.hook = hook;
-    const client =  this.client;
+    const client = this.client;
     const queueName = `${hook.hookGroupId}/${hook.hookId}`; // serves as unique id for every listener
     const listener = await pulse.consume({
       client,
       queueName,
-      maxLength : 50,
+      maxLength: 50,
     }, async ({payload}) => {
       const hook = this.hook;
       // Fire the hook
-      await this.taskcreator.fire(hook, {firedBy:'pulseMessage', payload});
+      await this.taskcreator.fire(hook, {firedBy: 'pulseMessage', payload});
     });
     this.listeners.push(listener);
   }
@@ -101,7 +101,7 @@ class HookListeners {
       }
     }
   }
-  
+
   /** Add / Remove bindings from he queue */
   async syncBindings(queueName, newBindings, oldBindings) {
     debug(`Updating the bindings of ${queueName}`);
@@ -129,10 +129,10 @@ class HookListeners {
         {},
         {
           limit: 1000,
-          handler:(queue) => queues.push(queue),
+          handler: (queue) => queues.push(queue),
         }
       );
-      
+
       await this.Hook.scan({}, {
         limit: 1000,
         handler: async (hook) => {
@@ -168,7 +168,7 @@ class HookListeners {
           }
         },
       });
-    
+
       // Delete the queues now left in the queues list.
       for (let queue of queues) {
         // Delete the amqp queue
