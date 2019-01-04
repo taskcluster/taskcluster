@@ -30,7 +30,6 @@ tasks:
     - taskcluster-lib-azure
     - taskcluster-client
     - taskcluster-lib-docs
-    - eslint-config-taskcluster
     - taskcluster-lib-iterate
     - taskcluster-lib-loader
     - taskcluster-lib-monitor

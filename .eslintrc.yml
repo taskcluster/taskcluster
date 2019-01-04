@@ -10,7 +10,7 @@ parserOptions:
   sourceType: module
 
 rules:
-  # These seem like good ideas
+  # These seem like good ideas on top of the recommended settings
   require-atomic-updates: error
   array-callback-return: error
   curly: error
@@ -53,13 +53,11 @@ rules:
     - error
     - 2
 
-  # Let's turn these on eventually
+  # These are disabled for now and we will slowly turn them on
   block-scoped-var: off
   eqeqeq: off
   require-await: off
   no-var: off
-
-  # These are disabled for now and we will slowly turn them on
   no-case-declarations: off
   no-unused-vars: off
   no-undef: off
@@ -69,4 +67,3 @@ rules:
   no-console: off # We don't mind these being used for now until structured logging is available
   no-constant-condition: off # This is legitimately sometimes useful
   no-useless-escape: off # This isn't such a big deal and sometimes improves readability
-
