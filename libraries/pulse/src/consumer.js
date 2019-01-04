@@ -164,7 +164,7 @@ class PulseConsumer {
           // channel is probably sick; but if this is an IllegalOperationError,
           // there's no need to report it (that is basically saying the channel
           // has closed, so we'll re-connect)
-          if (!err instanceof amqplib.IllegalOperationError) {
+          if (!(err instanceof amqplib.IllegalOperationError)) {
             this.client.monitor.reportError(err, {
               queueName,
               exchange: msg.exchange,
