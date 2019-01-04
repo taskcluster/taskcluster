@@ -8,8 +8,8 @@ const validateExpression = (expr) => {
     return validScope(expr);
   }
   return Object.keys(expr).length === 1 && (
-    'AnyOf' in expr && expr.AnyOf.every(validateExpression) ||
-    'AllOf' in expr && expr.AllOf.every(validateExpression)
+    expr.hasOwnProperty('AnyOf') && expr.AnyOf.every(validateExpression) ||
+    expr.hasOwnProperty('AllOf') && expr.AllOf.every(validateExpression)
   );
 };
 
@@ -28,8 +28,8 @@ exports.satisfiesExpression = function(scopeset, expression) {
       return scopeset.some(s => patternMatch(s, expr));
     }
     return (
-      'AllOf' in expr && expr.AllOf.every(isSatisfied) ||
-      'AnyOf' in expr && expr.AnyOf.some(isSatisfied)
+      expr.hasOwnProperty('AllOf') && expr.AllOf.every(isSatisfied) ||
+      expr.hasOwnProperty('AnyOf') && expr.AnyOf.some(isSatisfied)
     );
   };
 
@@ -61,7 +61,7 @@ exports.removeGivenScopes = function(scopeset, expression) {
       return expr;
     }
 
-    if ('AllOf' in expr) {
+    if (expr.hasOwnProperty('AllOf')) {
       const AllOf = expr.AllOf.map(simplify).filter(e => e !== null);
       if (AllOf.length === 0) {
         return null;
@@ -72,7 +72,7 @@ exports.removeGivenScopes = function(scopeset, expression) {
       return {AllOf};
     }
 
-    if ('AnyOf' in expr) {
+    if (expr.hasOwnProperty('AnyOf')) {
       const AnyOf = expr.AnyOf.map(simplify);
       if (AnyOf.includes(null)) {
         return null;
