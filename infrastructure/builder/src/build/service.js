@@ -21,27 +21,27 @@ const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => 
   }
 
   switch (repository.service.buildtype) {
-    case 'heroku-buildpack':
-      herokuBuildpackTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
-      break;
+  case 'heroku-buildpack':
+    herokuBuildpackTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
+    break;
 
-    case 'tools-ui':
-      assert(!isMonorepo, 'monorepo not supported for this buildtype');
-      toolsUiTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
-      break;
+  case 'tools-ui':
+    assert(!isMonorepo, 'monorepo not supported for this buildtype');
+    toolsUiTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
+    break;
 
-    case 'docs':
-      assert(!isMonorepo, 'monorepo not supported for this buildtype');
-      docsTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
-      break;
+  case 'docs':
+    assert(!isMonorepo, 'monorepo not supported for this buildtype');
+    docsTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
+    break;
 
-    case 'references':
-      assert(!isMonorepo, 'monorepo not supported for this buildtype');
-      referencesTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
-      break;
+  case 'references':
+    assert(!isMonorepo, 'monorepo not supported for this buildtype');
+    referencesTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
+    break;
 
-    default:
-      throw new Error(`Unknown buildtype ${repository.service.buildtype}`);
+  default:
+    throw new Error(`Unknown buildtype ${repository.service.buildtype}`);
   }
 
   tasks.push({

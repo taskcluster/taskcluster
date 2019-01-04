@@ -193,96 +193,96 @@ builder.declare({
   let present = false;
   let uploadId;
   switch (storageType) {
-    case 'blob':
-      // Generate the details that we'll be using.
-      details.contentLength = input.contentLength;
-      details.contentSha256 = input.contentSha256;
-      if (input.transferLength) {
-        details.transferLength = input.transferLength;
+  case 'blob':
+    // Generate the details that we'll be using.
+    details.contentLength = input.contentLength;
+    details.contentSha256 = input.contentSha256;
+    if (input.transferLength) {
+      details.transferLength = input.transferLength;
+    }
+    if (input.transferSha256) {
+      details.transferSha256 = input.transferSha256;
+    }
+    // We want to ensure, for idempotency reasons, that any following
+    // requests to createArtifact() use the same set of part information.
+    // Instead of storing the entire parts list in the entity, we'll instead
+    // store a hash of the JSON serialized version of the list.
+    //
+    // Note that this means that for loaded entities we'll need to use the
+    // details.partsHash field to check whether we're multipart or not
+    // instead of the details.parts list
+    if (input.parts) {
+      let partsHash = crypto.createHash('sha256');
+      for (let part of input.parts) {
+        partsHash.update(`${part.sha256}:${part.size}_`);
       }
-      if (input.transferSha256) {
-        details.transferSha256 = input.transferSha256;
-      }
-      // We want to ensure, for idempotency reasons, that any following
-      // requests to createArtifact() use the same set of part information.
-      // Instead of storing the entire parts list in the entity, we'll instead
-      // store a hash of the JSON serialized version of the list.
-      //
-      // Note that this means that for loaded entities we'll need to use the
-      // details.partsHash field to check whether we're multipart or not
-      // instead of the details.parts list
-      if (input.parts) {
-        let partsHash = crypto.createHash('sha256');
-        for (let part of input.parts) {
-          partsHash.update(`${part.sha256}:${part.size}_`);
-        }
-        partsHash = partsHash.digest('hex');
-        details.partsHash = partsHash;
-      }
+      partsHash = partsHash.digest('hex');
+      details.partsHash = partsHash;
+    }
 
-      details.provider = 's3';
-      details.region = this.blobRegion;
-      if (input.contentEncoding) {
-        details.contentEncoding = input.contentEncoding;
-      }
+    details.provider = 's3';
+    details.region = this.blobRegion;
+    if (input.contentEncoding) {
+      details.contentEncoding = input.contentEncoding;
+    }
 
-      if (isPublic) {
-        details.bucket = this.publicBlobBucket;
-      } else {
-        details.bucket = this.privateBlobBucket;
-      }
+    if (isPublic) {
+      details.bucket = this.publicBlobBucket;
+    } else {
+      details.bucket = this.privateBlobBucket;
+    }
 
-      details.key = `${taskId}/${runId}/${name}`;
-      if (input.parts) {
-        uploadId = await this.s3Controller.initiateMultipartUpload({
-          bucket: details.bucket,
-          key: details.key,
-          sha256: details.contentSha256,
-          size: details.contentLength,
-          transferSha256: details.transferSha256 ? details.transferSha256 : details.contentSha256,
-          transferSize: details.transferLength ? details.transferLength : details.contentLength,
-          metadata: {taskId, runId, name},
-          contentType: contentType,
-          contentEncoding: details.contentEncoding || 'identity',
-        });
-        debug(`Multipart Artifact init ${details.bucket}/${details.key} ${uploadId}`);
-        assert(uploadId);
-        details.uploadId = uploadId;
-      }
-      break;
-    case 's3':
-      present = true;
-      // TODO: Once we're deprecating this artifact type, we'll throw an error
-      // here
-      if (isPublic) {
-        details.bucket = this.publicBucket.bucket;
-      } else {
-        details.bucket = this.privateBucket.bucket;
-      }
-      details.prefix = [taskId, runId, name].join('/');
-      break;
+    details.key = `${taskId}/${runId}/${name}`;
+    if (input.parts) {
+      uploadId = await this.s3Controller.initiateMultipartUpload({
+        bucket: details.bucket,
+        key: details.key,
+        sha256: details.contentSha256,
+        size: details.contentLength,
+        transferSha256: details.transferSha256 ? details.transferSha256 : details.contentSha256,
+        transferSize: details.transferLength ? details.transferLength : details.contentLength,
+        metadata: {taskId, runId, name},
+        contentType: contentType,
+        contentEncoding: details.contentEncoding || 'identity',
+      });
+      debug(`Multipart Artifact init ${details.bucket}/${details.key} ${uploadId}`);
+      assert(uploadId);
+      details.uploadId = uploadId;
+    }
+    break;
+  case 's3':
+    present = true;
+    // TODO: Once we're deprecating this artifact type, we'll throw an error
+    // here
+    if (isPublic) {
+      details.bucket = this.publicBucket.bucket;
+    } else {
+      details.bucket = this.privateBucket.bucket;
+    }
+    details.prefix = [taskId, runId, name].join('/');
+    break;
 
-    case 'azure':
-      present = true;
-      // TODO: Once we're deprecating this artifact type, we'll throw an error
-      // here
-      details.container = this.blobStore.container;
-      details.path = [taskId, runId, name].join('/');
-      break;
+  case 'azure':
+    present = true;
+    // TODO: Once we're deprecating this artifact type, we'll throw an error
+    // here
+    details.container = this.blobStore.container;
+    details.path = [taskId, runId, name].join('/');
+    break;
 
-    case 'reference':
-      present = true;
-      details.url = input.url;
-      break;
+  case 'reference':
+    present = true;
+    details.url = input.url;
+    break;
 
-    case 'error':
-      present = true;
-      details.message = input.message;
-      details.reason = input.reason;
-      break;
+  case 'error':
+    present = true;
+    details.message = input.message;
+    details.reason = input.reason;
+    break;
 
-    default:
-      throw new Error('Unknown storageType: ' + storageType);
+  default:
+    throw new Error('Unknown storageType: ' + storageType);
   }
 
   let artifact;
@@ -406,85 +406,85 @@ builder.declare({
   }
 
   switch (artifact.storageType) {
-    case 'blob': {
-      let expiry = new Date(new Date().getTime() + 15 * 60 * 1000);
-      let requests;
-      // If we're supposed to do a multipart upload, we should generate an UploadId
-      // if it doesn't already exist.  We should store that ID in the entity
-      if (input.parts) {
-        requests = await this.s3Controller.generateMultipartRequest({
-          bucket: artifact.details.bucket,
-          key: artifact.details.key,
-          uploadId: artifact.details.uploadId,
-          parts: input.parts,
-        });
-      } else {
-        let singlePartRequest = await this.s3Controller.generateSinglepartRequest({
-          bucket: artifact.details.bucket,
-          key: artifact.details.key,
-          sha256: artifact.details.contentSha256,
-          size: artifact.details.contentLength,
-          transferSha256: artifact.details.transferSha256,
-          transferSize: artifact.details.transferLength,
-          metadata: {taskId, runId, name},
-          tags: {taskId, runId, name},
-          contentType: artifact.contentType,
-          contentEncoding: artifact.details.contentEncoding || 'identity',
-        });
-        requests = [singlePartRequest];
-      }
-      res.reply({
-        storageType: 'blob',
-        expires: expiry.toJSON(),
-        requests: requests,
+  case 'blob': {
+    let expiry = new Date(new Date().getTime() + 15 * 60 * 1000);
+    let requests;
+    // If we're supposed to do a multipart upload, we should generate an UploadId
+    // if it doesn't already exist.  We should store that ID in the entity
+    if (input.parts) {
+      requests = await this.s3Controller.generateMultipartRequest({
+        bucket: artifact.details.bucket,
+        key: artifact.details.key,
+        uploadId: artifact.details.uploadId,
+        parts: input.parts,
       });
-      break;
-    }
-    case 's3': {
-      // Reply with signed S3 URL
-      let expiry = new Date(new Date().getTime() + 45 * 60 * 1000);
-      let bucket = null;
-      if (artifact.details.bucket === this.publicBucket.bucket) {
-        bucket = this.publicBucket;
-      }
-      if (artifact.details.bucket === this.privateBucket.bucket) {
-        bucket = this.privateBucket;
-      }
-      // Create put URL
-      let putUrl = await bucket.createPutUrl(
-        artifact.details.prefix, {
-          contentType: artifact.contentType,
-          expires: 45 * 60 + 10, // Add 10 sec for clock drift
-        },
-      );
-      return res.reply({
-        storageType: 's3',
+    } else {
+      let singlePartRequest = await this.s3Controller.generateSinglepartRequest({
+        bucket: artifact.details.bucket,
+        key: artifact.details.key,
+        sha256: artifact.details.contentSha256,
+        size: artifact.details.contentLength,
+        transferSha256: artifact.details.transferSha256,
+        transferSize: artifact.details.transferLength,
+        metadata: {taskId, runId, name},
+        tags: {taskId, runId, name},
         contentType: artifact.contentType,
-        expires: expiry.toJSON(),
-        putUrl: putUrl,
+        contentEncoding: artifact.details.contentEncoding || 'identity',
       });
+      requests = [singlePartRequest];
     }
-    case 'azure': {
-      // Reply with SAS for azure
-      var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
-      // Generate SAS
-      let putUrl = this.blobStore.generateWriteSAS(
-        artifact.details.path, {expiry},
-      );
-      return res.reply({
-        storageType: 'azure',
+    res.reply({
+      storageType: 'blob',
+      expires: expiry.toJSON(),
+      requests: requests,
+    });
+    break;
+  }
+  case 's3': {
+    // Reply with signed S3 URL
+    let expiry = new Date(new Date().getTime() + 45 * 60 * 1000);
+    let bucket = null;
+    if (artifact.details.bucket === this.publicBucket.bucket) {
+      bucket = this.publicBucket;
+    }
+    if (artifact.details.bucket === this.privateBucket.bucket) {
+      bucket = this.privateBucket;
+    }
+    // Create put URL
+    let putUrl = await bucket.createPutUrl(
+      artifact.details.prefix, {
         contentType: artifact.contentType,
-        expires: expiry.toJSON(),
-        putUrl,
-      });
-    }
-    case 'reference':
-    case 'error':
-      // For 'reference' and 'error' the response is simple
-      return res.reply({storageType});
+        expires: 45 * 60 + 10, // Add 10 sec for clock drift
+      },
+    );
+    return res.reply({
+      storageType: 's3',
+      contentType: artifact.contentType,
+      expires: expiry.toJSON(),
+      putUrl: putUrl,
+    });
+  }
+  case 'azure': {
+    // Reply with SAS for azure
+    var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
+    // Generate SAS
+    let putUrl = this.blobStore.generateWriteSAS(
+      artifact.details.path, {expiry},
+    );
+    return res.reply({
+      storageType: 'azure',
+      contentType: artifact.contentType,
+      expires: expiry.toJSON(),
+      putUrl,
+    });
+  }
+  case 'reference':
+  case 'error':
+    // For 'reference' and 'error' the response is simple
+    return res.reply({storageType});
 
-    default:
-      throw new Error('Unknown storageType: ' + artifact.storageType);
+  default:
+    throw new Error('Unknown storageType: ' + artifact.storageType);
   }
 });
 

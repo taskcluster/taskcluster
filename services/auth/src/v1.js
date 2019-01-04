@@ -751,14 +751,14 @@ builder.declare({
     });
   } catch (err) {
     switch (err.code) {
-      case 'InvalidScopeError':
-        return res.reportError('InputError', err.message, {scope: err.scope});
-      case 'DependencyCycleError':
-        return res.reportError('InputError', err.message, {cycle: err.cycle});
-      case 'RoleIdExists':
-        return res.reportError('RequestConflict', err.message, {roleId: err.roleId});
-      default:
-        throw err;
+    case 'InvalidScopeError':
+      return res.reportError('InputError', err.message, {scope: err.scope});
+    case 'DependencyCycleError':
+      return res.reportError('InputError', err.message, {cycle: err.cycle});
+    case 'RoleIdExists':
+      return res.reportError('RequestConflict', err.message, {roleId: err.roleId});
+    default:
+      throw err;
     }
   }
 
@@ -836,14 +836,14 @@ builder.declare({
     });
   } catch (err) {
     switch (err.code) {
-      case 'InvalidScopeError':
-        return res.reportError('InputError', err.message, {scope: err.scope});
-      case 'DependencyCycleError':
-        return res.reportError('InputError', err.message, {cycle: err.cycle});
-      case 'RoleNotFound':
-        return res.reportError('ResourceNotFound', err.message, {roleId: err.roleId});
-      default:
-        throw err;
+    case 'InvalidScopeError':
+      return res.reportError('InputError', err.message, {scope: err.scope});
+    case 'DependencyCycleError':
+      return res.reportError('InputError', err.message, {cycle: err.cycle});
+    case 'RoleNotFound':
+      return res.reportError('ResourceNotFound', err.message, {roleId: err.roleId});
+    default:
+      throw err;
     }
   }
 

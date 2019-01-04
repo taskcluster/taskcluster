@@ -49,12 +49,14 @@ rules:
     - mode: strict
   no-trailing-spaces: error
   eol-last: error
+  indent:
+    - error
+    - 2
 
   # Let's turn these on eventually
   block-scoped-var: off
   eqeqeq: off
   require-await: off
-  indent: off
   no-var: off
 
   # These are disabled for now and we will slowly turn them on

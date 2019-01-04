@@ -4,14 +4,14 @@ const DEFAULT_POLICY = 'collaborators';
 
 async function prAllowed(options) {
   switch (await getRepoPolicy(options)) {
-    case 'collaborators':
-      return await isCollaborator(options);
+  case 'collaborators':
+    return await isCollaborator(options);
 
-    case 'public':
-      return true;
+  case 'public':
+    return true;
 
-    default:
-      return false;
+  default:
+    return false;
   }
 }
 

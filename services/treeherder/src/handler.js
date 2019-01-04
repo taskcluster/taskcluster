@@ -12,32 +12,32 @@ let debug = Debug('taskcluster-treeherder:handler');
 
 function stateFromRun(run) {
   switch (run.state) {
-    case 'exception':
-    case 'failed':
-      return 'completed';
-    default:
-      return run.state;
+  case 'exception':
+  case 'failed':
+    return 'completed';
+  default:
+    return run.state;
   }
 }
 
 function resultFromRun(run) {
   switch (run.state) {
-    case 'completed':
-      return 'success';
-    case 'failed':
-      return 'fail';
-    case 'exception':
-      if (run.reasonResolved === 'canceled') {
-        return 'canceled';
-      }
+  case 'completed':
+    return 'success';
+  case 'failed':
+    return 'fail';
+  case 'exception':
+    if (run.reasonResolved === 'canceled') {
+      return 'canceled';
+    }
 
-      if (run.reasonResolved === 'superseded') {
-        return 'superseded';
-      }
+    if (run.reasonResolved === 'superseded') {
+      return 'superseded';
+    }
 
-      return 'exception';
-    default:
-      return 'unknown';
+    return 'exception';
+  default:
+    return 'unknown';
   }
 }
 
@@ -167,26 +167,26 @@ module.exports = class Handler {
     }
 
     switch (this.eventMap[message.exchange]) {
-      case 'pending':
-        let runId = message.payload.runId;
-        let run = message.payload.status.runs[message.payload.runId];
-        // If the task run was created for an infrastructure rerun, then resolve
-        // the previous run as retried.
-        if (runId > 0) {
-          await this.handleTaskRerun(parsedRoute, task, message.payload);
-        }
+    case 'pending':
+      let runId = message.payload.runId;
+      let run = message.payload.status.runs[message.payload.runId];
+      // If the task run was created for an infrastructure rerun, then resolve
+      // the previous run as retried.
+      if (runId > 0) {
+        await this.handleTaskRerun(parsedRoute, task, message.payload);
+      }
 
-        return await this.handleTaskPending(parsedRoute, task, message.payload);
-      case 'running':
-        return await this.handleTaskRunning(parsedRoute, task, message.payload);
-      case 'completed':
-        return await this.handleTaskCompleted(parsedRoute, task, message.payload);
-      case 'failed':
-        return await this.handleTaskFailed(parsedRoute, task, message.payload);
-      case 'exception':
-        return await this.handleTaskException(parsedRoute, task, message.payload);
-      default:
-        throw new Error(`Unknown exchange: ${message.exchange}`);
+      return await this.handleTaskPending(parsedRoute, task, message.payload);
+    case 'running':
+      return await this.handleTaskRunning(parsedRoute, task, message.payload);
+    case 'completed':
+      return await this.handleTaskCompleted(parsedRoute, task, message.payload);
+    case 'failed':
+      return await this.handleTaskFailed(parsedRoute, task, message.payload);
+    case 'exception':
+      return await this.handleTaskException(parsedRoute, task, message.payload);
+    default:
+      throw new Error(`Unknown exchange: ${message.exchange}`);
     }
 
   }

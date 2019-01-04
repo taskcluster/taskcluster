@@ -54,21 +54,21 @@ const checkStaging = async () => {
 
     update(`state: ${status.state}`);
     switch (status.state) {
-      case 'pending':
-        break;
+    case 'pending':
+      break;
 
-      case 'failed':
-        throw new Error('task run failed');
-        break;
+    case 'failed':
+      throw new Error('task run failed');
+      break;
 
-      case 'success':
-        done = true;
-        update('PASSED');
-        break;
+    case 'success':
+      done = true;
+      update('PASSED');
+      break;
 
-      default:
-        throw new Error(`unexpected status state ${status.state}`);
-        break;
+    default:
+      throw new Error(`unexpected status state ${status.state}`);
+      break;
     }
   }
 };
