@@ -206,7 +206,7 @@ suite('publisher_test.js', function() {
         folder: path.join(__dirname, 'schemas'),
       });
 
-      publisher = await exchanges.publisher({
+      publisher = await exchanges.publisher({ // eslint-disable-line require-atomic-updates
         rootUrl: libUrls.testRootUrl(),
         schemaset,
         client,
@@ -312,7 +312,7 @@ suite('publisher_test.js', function() {
         folder: path.join(__dirname, 'schemas'),
       });
 
-      publisher = await exchanges.publisher({
+      publisher = await exchanges.publisher({ // eslint-disable-line require-atomic-updates
         rootUrl: libUrls.testRootUrl(),
         schemaset,
         client,

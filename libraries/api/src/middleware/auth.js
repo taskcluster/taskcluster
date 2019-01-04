@@ -210,7 +210,9 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     try {
       /** Create method that returns list of scopes the caller has */
       req.scopes = async () => {
-        result = await (result || authenticate(req));
+        if (!result) {
+          result = await authenticate(req);
+        }
         if (result.status !== 'auth-success') {
           return Promise.resolve([]);
         }
@@ -218,7 +220,9 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
       };
 
       req.clientId = async () => {
-        result = await (result || authenticate(req));
+        if (!result) {
+          result = await authenticate(req);
+        }
         if (result.status === 'auth-success') {
           return result.clientId || 'unknown-clientId';
         }
@@ -226,7 +230,9 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
       };
 
       req.expires = async () => {
-        result = await (result || authenticate(req));
+        if (!result) {
+          result = await authenticate(req);
+        }
         if (result.status === 'auth-success') {
           return new Date(result.expires);
         }
@@ -244,7 +250,9 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
        * code = 'AuthorizationError'.
        */
       req.authorize = async (params) => {
-        result = await (result || authenticate(req));
+        if (!result) {
+          result = await authenticate(req);
+        }
 
         // If authentication failed
         if (result.status === 'auth-failed') {
