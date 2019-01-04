@@ -311,6 +311,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 			contents += "set " + envVar + "=" + envValue + "\r\n"
 		}
 		contents += "set TASK_ID=" + task.TaskID + "\r\n"
+		contents += "set TASKCLUSTER_ROOT_URL=" + config.RootURL + "\r\n"
 		contents += "cd \"" + taskContext.TaskDir + "\"" + "\r\n"
 
 		// Otherwise get the env from the previous command
@@ -393,6 +394,20 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	// log.Print("Contents:")
 	// log.Print(contents)
 
+	return nil
+}
+
+// Set an environment variable in each command.  This can be called from a feature's
+// NewTaskFeature method to set variables for the task.
+func (task *TaskRun) setVariable(variable string, value string) error {
+	for i := range task.Commands {
+		newEnv := []string{fmt.Sprintf("%s=%s", variable, value)}
+		combined, err := win32.MergeEnvLists(&task.Commands[i].Cmd.Env, &newEnv)
+		if err != nil {
+			return err
+		}
+		task.Commands[i].Cmd.Env = *combined
+	}
 	return nil
 }
 

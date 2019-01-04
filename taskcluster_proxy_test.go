@@ -7,16 +7,24 @@ import (
 )
 
 func TestTaskclusterProxy(t *testing.T) {
+	if os.Getenv("TASKCLUSTER_CLIENT_ID") == "" ||
+		os.Getenv("TASKCLUSTER_ACCESS_TOKEN") == "" ||
+		os.Getenv("TASKCLUSTER_ROOT_URL") == "" {
+		t.Skip("Skipping test since TASKCLUSTER_{CLIENT_ID,ACCESS_TOKEN,ROOT_URL} env vars not set")
+	}
+
 	defer setup(t)()
 	payload := GenericWorkerPayload{
 		Command: append(
 			append(
 				goEnv(),
+				// long enough to reclaim and get new credentials
 				sleep(12)...,
 			),
 			goRun(
 				"curlget.go",
-				fmt.Sprintf("http://localhost:%v/queue/v1/task/KTBKfEgxR5GdfIIREQIvFQ/runs/0/artifacts/SampleArtifacts/_/X.txt", config.TaskclusterProxyPort),
+				// note that curlget.go supports substituting the proxy URL from its runtime environment
+				fmt.Sprintf("TASKCLUSTER_PROXY_URL/queue/v1/task/KTBKfEgxR5GdfIIREQIvFQ/runs/0/artifacts/SampleArtifacts/_/X.txt"),
 			)...,
 		),
 		MaxRunTime: 60,

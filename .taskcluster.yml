@@ -68,6 +68,9 @@ tasks:
       - generic-worker:cache:generic-worker-checkout
     payload:
       maxRunTime: 3600
+      env:
+        # once bug 1508383 is landed, this won't be required (the worker will supply it)
+        TASKCLUSTER_ROOT_URL: https://taskcluster.net
       command:
         - set CGO_ENABLED=0
         - set GOPATH=%CD%\gopath1.10.3
@@ -150,6 +153,9 @@ tasks:
       - generic-worker:cache:generic-worker-checkout
     payload:
       maxRunTime: 3600
+      env:
+        # once bug 1508383 is landed, this won't be required (the worker will supply it)
+        TASKCLUSTER_ROOT_URL: https://taskcluster.net
       command:
         - set CGO_ENABLED=0
         - set GOPATH=%CD%\gopath1.10.3
@@ -221,6 +227,9 @@ tasks:
       - generic-worker:cache:generic-worker-checkout
     payload:
       maxRunTime: 3600
+      env:
+        # once bug 1508383 is landed, this won't be required (the worker will supply it)
+        TASKCLUSTER_ROOT_URL: https://taskcluster.net
       command:
         - set CGO_ENABLED=0
         - set GOPATH=%CD%\gopath1.10.3
@@ -303,6 +312,9 @@ tasks:
       - generic-worker:cache:generic-worker-checkout
     payload:
       maxRunTime: 3600
+      env:
+        # once bug 1508383 is landed, this won't be required (the worker will supply it)
+        TASKCLUSTER_ROOT_URL: https://taskcluster.net
       command:
         - - /bin/bash
           - -vxec
@@ -445,6 +457,9 @@ tasks:
         taskclusterProxy: true
       maxRunTime: 3600
       image: golang
+      env:
+        # once bug 1508383 is landed, this won't be required (the worker will supply it)
+        TASKCLUSTER_ROOT_URL: https://taskcluster.net
       command:
         - /bin/bash
         - -vxec

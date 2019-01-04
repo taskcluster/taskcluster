@@ -43,6 +43,7 @@ type (
 		QueueBaseURL                   string                 `json:"queueBaseURL"`
 		Region                         string                 `json:"region"`
 		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
+		RootURL                        string                 `json:"rootURL"`
 		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
 		RunTasksAsCurrentUser          bool                   `json:"runTasksAsCurrentUser"`
 		SentryProject                  string                 `json:"sentryProject"`
@@ -100,6 +101,7 @@ func (c *Config) Validate() error {
 		{value: c.LiveLogSecret, name: "livelogSecret", disallowed: ""},
 		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
 		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
+		{value: c.RootURL, name: "rootURL", disallowed: ""},
 		{value: c.SigningKeyLocation, name: "signingKeyLocation", disallowed: ""},
 		{value: c.Subdomain, name: "subdomain", disallowed: ""},
 		{value: c.TasksDir, name: "tasksDir", disallowed: ""},

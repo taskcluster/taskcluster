@@ -92,8 +92,8 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 
 func TestIdleWithoutCrash(t *testing.T) {
 	defer setup(t)()
-	if config.ClientID == "" || config.AccessToken == "" {
-		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
+	if config.ClientID == "" || config.AccessToken == "" || config.RootURL == "" {
+		t.Skip("Skipping test since TASKCLUSTER_{CLIENT_ID,ACCESS_TOKEN,ROOT_URL} env vars not set")
 	}
 	start := time.Now()
 	config.IdleTimeoutSecs = 7

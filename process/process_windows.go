@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"os/exec"
 	"strconv"
 	"sync"
@@ -53,15 +54,22 @@ func (r *Result) Crashed() bool {
 }
 
 func NewCommand(commandLine []string, workingDirectory string, env []string, accessToken syscall.Token) (*Command, error) {
+	var err error
+	var combined *[]string
 	if accessToken != 0 {
-		environment, err := win32.CreateEnvironment(&env, accessToken)
-		if err != nil {
-			return nil, err
-		}
-		env = *environment
+		// in task-user mode, we must merge env with the task user's environment
+		combined, err = win32.CreateEnvironment(&env, accessToken)
+	} else {
+		// in current-user mode, we merge env with the *current* environment
+		parentEnv := os.Environ()
+		combined, err = win32.MergeEnvLists(&parentEnv, &env)
+
+	}
+	if err != nil {
+		return nil, err
 	}
 	cmd := exec.Command(commandLine[0], commandLine[1:]...)
-	cmd.Env = env
+	cmd.Env = *combined
 	cmd.Dir = workingDirectory
 	isWindows8OrGreater := win32.IsWindows8OrGreater()
 	creationFlags := uint32(win32.CREATE_NEW_PROCESS_GROUP | win32.CREATE_NEW_CONSOLE)
