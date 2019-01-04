@@ -52,5 +52,9 @@
       ":preserveSemverRanges",
       ":rebaseStalePrs"
     ]
-  }
+  },
+  "eslintIgnore": [
+    "**/node_modules/**",
+    "**/test/fixtures/**"
+  ]
 }
