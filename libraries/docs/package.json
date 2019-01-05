@@ -1,5 +1,6 @@
 {
   "name": "taskcluster-lib-docs",
+  "private": true,
   "version": "11.0.0",
   "author": "Kristel Teng <kteng@mozilla.com>",
   "description": "Find and upload documents for taskcluster projects",

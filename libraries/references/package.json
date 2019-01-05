@@ -1,5 +1,6 @@
 {
   "name": "taskcluster-lib-references",
+  "private": true,
   "version": "1.4.0",
   "main": "src/index.js",
   "engine-strict": true,

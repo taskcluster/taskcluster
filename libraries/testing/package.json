@@ -1,5 +1,6 @@
 {
   "name": "taskcluster-lib-testing",
+  "private": true,
   "version": "12.1.2",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-testing",

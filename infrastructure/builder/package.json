@@ -1,5 +1,6 @@
 {
   "name": "taskcluster-builder",
+  "private": true,
   "version": "0.0.1",
   "author": "Brian Stack <bstack@mozilla.com>",
   "description": "Build taskcluster images",

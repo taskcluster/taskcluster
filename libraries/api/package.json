@@ -1,5 +1,6 @@
 {
   "name": "taskcluster-lib-api",
+  "private": true,
   "version": "12.8.1",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-api",
