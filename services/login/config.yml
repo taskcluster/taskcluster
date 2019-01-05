@@ -1,4 +1,5 @@
-Defaults:
+---
+defaults:
   taskcluster:
     rootUrl:        !env TASKCLUSTER_ROOT_URL
   app:
@@ -32,45 +33,44 @@ Defaults:
     forceSSL:   !env:flag FORCE_SSL
     env:        !env NODE_ENV
     trustProxy: !env:flag TRUST_PROXY
-Profiles:
-  production:
-    handlers:
-      mozilla-auth0:
-        domain:         !env AUTH0_DOMAIN
-        apiAudience:    !env AUTH0_API_AUDIENCE
-        clientId:       !env AUTH0_CLIENT_ID
-        clientSecret:   !env AUTH0_CLIENT_SECRET
-    server:
-      forceSSL: true
-  test:
-    handlers:
-      test:
-    app:
-      temporaryCredentials:
-        credentials:
-          clientId:     'dummy'
-          accessToken:  'lol no secret here'
-    monitoring:
-      enable: false
-    server:
-      port: 60174
-      env: development
-      forceSSL: false
-  ngrok:
-    handlers:
-      test:
-    app:
-      temporaryCredentials:
-        credentials:
-          clientId:     'dummy'
-          accessToken:  'lol no secret here'
+production:
+  handlers:
+    mozilla-auth0:
+      domain:         !env AUTH0_DOMAIN
+      apiAudience:    !env AUTH0_API_AUDIENCE
+      clientId:       !env AUTH0_CLIENT_ID
+      clientSecret:   !env AUTH0_CLIENT_SECRET
+  server:
+    forceSSL: true
+test:
+  handlers:
+    test:
+  app:
+    temporaryCredentials:
       credentials:
-        clientId:     !env TASKCLUSTER_CLIENT_ID
-        accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
-    monitoring:
-      enable: false
-    server:
-      port: 60174
-      forceSSL:   true
-      trustProxy: true
-      env: development
+        clientId:     'dummy'
+        accessToken:  'lol no secret here'
+  monitoring:
+    enable: false
+  server:
+    port: 60174
+    env: development
+    forceSSL: false
+ngrok:
+  handlers:
+    test:
+  app:
+    temporaryCredentials:
+      credentials:
+        clientId:     'dummy'
+        accessToken:  'lol no secret here'
+    credentials:
+      clientId:     !env TASKCLUSTER_CLIENT_ID
+      accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
+  monitoring:
+    enable: false
+  server:
+    port: 60174
+    forceSSL:   true
+    trustProxy: true
+    env: development
