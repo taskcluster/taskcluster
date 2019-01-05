@@ -1,4 +1,4 @@
-const config = require('taskcluster-lib-config');
+const config = require('typed-env-config');
 const loader = require('taskcluster-lib-loader');
 const scanner = require('./scanner');
 const App = require('taskcluster-lib-app');
