@@ -15,7 +15,7 @@
     "lodash": "^4.17.4",
     "promise": "^8.0.1",
     "slugid": "^1.1.0",
-    "superagent": "~3.8.1"
+    "superagent": "^4.0.0"
   },
   "engines": {
     "node": ">=8"
@@ -23,6 +23,5 @@
   "files": [
     "src"
   ],
-  "main": "./src/index.js",
-  "optionalDependencies": {}
+  "main": "./src/index.js"
 }
