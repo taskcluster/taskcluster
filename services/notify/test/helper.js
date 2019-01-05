@@ -11,6 +11,7 @@ const builder = require('../src/api');
 const exchanges = require('../src/exchanges');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
+const slugid = require('slugid');
 
 // Load configuration
 const cfg = config({profile: 'test'});
@@ -75,7 +76,11 @@ exports.withSQS = (mock, skipping) => {
 
     if (mock) {
       sqs = new MockSQS();
-      exports.ircSQSQueue = cfg.app.sqsQueueName;
+      const queueSuffix = slugid.nice().replace(/[_-]/g, '').slice(-10);
+      // use a unique sqs queue name to allow multiple versions of this test to run
+      // simultaneously without stepping on toes
+      exports.ircSQSQueue = `${cfg.app.sqsQueueName}-${queueSuffix}`;
+      exports.load.cfg('app.sqsQueueName', exports.ircSQSQueue);
       exports.load.inject('sqs', sqs);
       exports.checkSQSMessage = (queueUrl, check) => {
         const messages = sqs.queues[queueUrl];
