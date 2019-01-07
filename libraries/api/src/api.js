@@ -73,11 +73,15 @@ class API {
     // Create S3 object
     const s3 = new aws.S3(this.options.aws);
 
+    // Get the reference and make it absolute
+    const reference = this.builder.reference();
+    reference.$schema = reference.$schema.replace(/\/schemas/, 'https://schemas.taskcluster.net');
+
     // Upload object
     await s3.putObject({
       Bucket: this.options.referenceBucket,
       Key: `${this.builder.serviceName}/${this.builder.apiVersion}/api.json`,
-      Body: JSON.stringify(this.builder.reference(), undefined, 2),
+      Body: JSON.stringify(reference, undefined, 2),
       ContentType: 'application/json',
     }).promise();
   }
