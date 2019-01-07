@@ -84,7 +84,7 @@ tasks:
                 then: true
               TEST_BUCKET: 'test-bucket-for-any-garbage' # TODO: Allow each project to specify its own env
             maxRunTime: 3600
-            image: "node:8"
+            image: "node:10.14.0"
             command:
               - "/bin/bash"
               - "-lc"
