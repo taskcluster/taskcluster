@@ -312,16 +312,16 @@ expiration time to prevent callers from extending their access beyond the
 allowed time.
 
 The `async req.authorize(params, options)` throws an error with the code
-'AuthorizationError' if the client does not satisfy the scope
+'InsufficientScopes' if the client does not satisfy the scope
 expression in `options.scopes`. You can catch this if you wish
 or let it bubble up and taskcluster-lib-api will return a detailed error message
 to the client.
 
-The AuthorizationError has 3 extra fields to help inspect the results.
+The InsufficientScopes error object has 3 extra fields to help inspect the results.
 
-**err.scopes:** The scopeset containing the scopes the client has
-**err.expression:** The scope expression that was not satisfied
-**err.missing:** The reduced subset of the expression containing only scopes that were missing
+**err.details.scopes:** The scopeset containing the scopes the client has
+**err.details.required:** The scope expression that was not satisfied
+**err.details.unsatisfied:** The reduced subset of the expression containing only scopes that were missing
 
 The first argument to `req.authorize` must be an object where the keys are parameters
 to the scope expression defined in the method definition. If any parameters are missing

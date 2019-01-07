@@ -27,11 +27,6 @@ const callHandler = ({entry, context, monitor}) => {
         }
       }
     }).catch((err) => {
-      if (err.code === 'AuthorizationError') {
-        return next(new ErrorReply({code: 'InsufficientScopes', message: err.message, details: err.details}));
-      } else if (err.code === 'AuthenticationError') {
-        return next(new ErrorReply({code: 'AuthenticationFailed', message: err.message, details: err.details}));
-      }
       return next(err);
     });
   };
