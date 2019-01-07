@@ -119,6 +119,7 @@ suite('api/publish', function() {
       Key: 'test/v1/api.json',
     }).promise();
     const reference = JSON.parse(res.Body);
+    assert(reference.$schema.startsWith('https://schemas.taskcluster.net/common'));
     assert(reference.entries, 'Missing entries');
     assert.equal(reference.entries.length, 8);
     assert(reference.title, 'Missing title');
