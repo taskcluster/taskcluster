@@ -33,10 +33,10 @@ helper.setup = function(options = {}) {
       helper.login = new helper.Login({
         // Ensure that we use global agent, to avoid problems with keepAlive
         // preventing tests from exiting
-        agent:            require('http').globalAgent,
+        agent: require('http').globalAgent,
         credentials: {
-          clientId:       'test-client',
-          accessToken:    'none',
+          clientId: 'test-client',
+          accessToken: 'none',
         },
         authorizedScopes: scopes.length > 0 ? scopes : undefined,
         rootUrl: helper.rootUrl,

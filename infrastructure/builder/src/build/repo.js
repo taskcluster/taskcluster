@@ -117,4 +117,3 @@ const generateRepoTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
 };
 
 module.exports = generateRepoTasks;
-

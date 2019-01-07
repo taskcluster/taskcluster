@@ -68,12 +68,12 @@ const compileTemplate = (template) => {
   if (template.hasOwnProperty('if')) {
     if (!template.hasOwnProperty('else')) {
       return {
-        if:   template.if,
+        if: template.if,
         then: compileTemplate(template.then),
       };
     }
     return {
-      if:   template.if,
+      if: template.if,
       then: compileTemplate(template.then),
       else: compileTemplate(template.else),
     };

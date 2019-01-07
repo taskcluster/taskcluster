@@ -9,10 +9,10 @@ const Entity = require('azure-entities');
 
 /** Post artifact */
 builder.declare({
-  method:     'post',
-  route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
-  name:       'createArtifact',
-  stability:  APIBuilder.stability.stable,
+  method: 'post',
+  route: '/task/:taskId/runs/:runId/artifacts/:name(*)',
+  name: 'createArtifact',
+  stability: APIBuilder.stability.stable,
   scopes: {AnyOf: [
     'queue:create-artifact:<taskId>/<runId>',
     {AllOf: [
@@ -20,9 +20,9 @@ builder.declare({
       'assume:worker-id:<workerGroup>/<workerId>',
     ]},
   ]},
-  input:      'post-artifact-request.json#',
-  output:     'post-artifact-response.json#',
-  title:      'Create Artifact',
+  input: 'post-artifact-request.json#',
+  output: 'post-artifact-response.json#',
+  title: 'Create Artifact',
   description: [
     'This API end-point creates an artifact for a specific run of a task. This',
     'should **only** be used by a worker currently operating on this task, or',
@@ -96,10 +96,10 @@ builder.declare({
     'reference artifacts your process has created.',
   ].join('\n'),
 }, async function(req, res) {
-  var taskId      = req.params.taskId;
-  var runId       = parseInt(req.params.runId, 10);
-  var name        = req.params.name;
-  var input       = req.body;
+  var taskId = req.params.taskId;
+  var runId = parseInt(req.params.runId, 10);
+  var name = req.params.name;
+  var input = req.body;
   var storageType = input.storageType;
   var contentType = input.contentType || 'application/json';
 
@@ -135,7 +135,7 @@ builder.declare({
 
   // Get workerGroup and workerId
   var workerGroup = run.workerGroup;
-  var workerId    = run.workerId;
+  var workerId = run.workerId;
 
   // It is possible for these to be null if the task was
   // cancelled or otherwise never claimed
@@ -159,8 +159,8 @@ builder.declare({
       'Artifact expires ({{expires}}) after the task expiration ' +
       '{{taskExpires}} (task.expires < expires) - this is not allowed, ' +
       'artifacts may not expire after the task they belong to expires', {
-        taskExpires:      task.expires.toJSON(),
-        expires:          expires.toJSON(),
+        taskExpires: task.expires.toJSON(),
+        expires: expires.toJSON(),
       });
   }
 
@@ -182,107 +182,107 @@ builder.declare({
         'This to ensure that artifacts have been uploaded before ' +
         'a task is \'completed\' and output is consumed by a ' +
         'dependent task\n\nTask status: {{status}}', {
-          status:   task.status(),
+          status: task.status(),
         });
     }
   }
 
   // Construct details for different storage types
   var isPublic = /^public\//.test(name);
-  var details  = {};
+  var details = {};
   let present = false;
   let uploadId;
   switch (storageType) {
-    case 'blob':
-      // Generate the details that we'll be using.
-      details.contentLength = input.contentLength;
-      details.contentSha256 = input.contentSha256;
-      if (input.transferLength) {
-        details.transferLength = input.transferLength;
+  case 'blob':
+    // Generate the details that we'll be using.
+    details.contentLength = input.contentLength;
+    details.contentSha256 = input.contentSha256;
+    if (input.transferLength) {
+      details.transferLength = input.transferLength;
+    }
+    if (input.transferSha256) {
+      details.transferSha256 = input.transferSha256;
+    }
+    // We want to ensure, for idempotency reasons, that any following
+    // requests to createArtifact() use the same set of part information.
+    // Instead of storing the entire parts list in the entity, we'll instead
+    // store a hash of the JSON serialized version of the list.
+    //
+    // Note that this means that for loaded entities we'll need to use the
+    // details.partsHash field to check whether we're multipart or not
+    // instead of the details.parts list
+    if (input.parts) {
+      let partsHash = crypto.createHash('sha256');
+      for (let part of input.parts) {
+        partsHash.update(`${part.sha256}:${part.size}_`);
       }
-      if (input.transferSha256) {
-        details.transferSha256 = input.transferSha256;
-      }
-      // We want to ensure, for idempotency reasons, that any following
-      // requests to createArtifact() use the same set of part information.
-      // Instead of storing the entire parts list in the entity, we'll instead
-      // store a hash of the JSON serialized version of the list.
-      //
-      // Note that this means that for loaded entities we'll need to use the
-      // details.partsHash field to check whether we're multipart or not
-      // instead of the details.parts list
-      if (input.parts) {
-        let partsHash = crypto.createHash('sha256');
-        for (let part of input.parts) {
-          partsHash.update(`${part.sha256}:${part.size}_`);
-        }
-        partsHash = partsHash.digest('hex');
-        details.partsHash = partsHash;
-      }
+      partsHash = partsHash.digest('hex');
+      details.partsHash = partsHash;
+    }
 
-      details.provider = 's3';
-      details.region = this.blobRegion;
-      if (input.contentEncoding) {
-        details.contentEncoding = input.contentEncoding;
-      }
+    details.provider = 's3';
+    details.region = this.blobRegion;
+    if (input.contentEncoding) {
+      details.contentEncoding = input.contentEncoding;
+    }
 
-      if (isPublic) {
-        details.bucket = this.publicBlobBucket;
-      } else {
-        details.bucket = this.privateBlobBucket;
-      }
+    if (isPublic) {
+      details.bucket = this.publicBlobBucket;
+    } else {
+      details.bucket = this.privateBlobBucket;
+    }
 
-      details.key = `${taskId}/${runId}/${name}`;
-      if (input.parts) {
-        uploadId = await this.s3Controller.initiateMultipartUpload({
-          bucket: details.bucket,
-          key: details.key,
-          sha256: details.contentSha256,
-          size: details.contentLength,
-          transferSha256: details.transferSha256 ? details.transferSha256 : details.contentSha256,
-          transferSize: details.transferLength ? details.transferLength : details.contentLength,
-          metadata: {taskId, runId, name},
-          contentType: contentType,
-          contentEncoding: details.contentEncoding || 'identity',
-        });
-        debug(`Multipart Artifact init ${details.bucket}/${details.key} ${uploadId}`);
-        assert(uploadId);
-        details.uploadId = uploadId;
-      }
-      break;
-    case 's3':
-      present = true;
-      // TODO: Once we're deprecating this artifact type, we'll throw an error
-      // here
-      if (isPublic) {
-        details.bucket  = this.publicBucket.bucket;
-      } else {
-        details.bucket  = this.privateBucket.bucket;
-      }
-      details.prefix    = [taskId, runId, name].join('/');
-      break;
+    details.key = `${taskId}/${runId}/${name}`;
+    if (input.parts) {
+      uploadId = await this.s3Controller.initiateMultipartUpload({
+        bucket: details.bucket,
+        key: details.key,
+        sha256: details.contentSha256,
+        size: details.contentLength,
+        transferSha256: details.transferSha256 ? details.transferSha256 : details.contentSha256,
+        transferSize: details.transferLength ? details.transferLength : details.contentLength,
+        metadata: {taskId, runId, name},
+        contentType: contentType,
+        contentEncoding: details.contentEncoding || 'identity',
+      });
+      debug(`Multipart Artifact init ${details.bucket}/${details.key} ${uploadId}`);
+      assert(uploadId);
+      details.uploadId = uploadId;
+    }
+    break;
+  case 's3':
+    present = true;
+    // TODO: Once we're deprecating this artifact type, we'll throw an error
+    // here
+    if (isPublic) {
+      details.bucket = this.publicBucket.bucket;
+    } else {
+      details.bucket = this.privateBucket.bucket;
+    }
+    details.prefix = [taskId, runId, name].join('/');
+    break;
 
-    case 'azure':
-      present = true;
-      // TODO: Once we're deprecating this artifact type, we'll throw an error
-      // here
-      details.container = this.blobStore.container;
-      details.path      = [taskId, runId, name].join('/');
-      break;
+  case 'azure':
+    present = true;
+    // TODO: Once we're deprecating this artifact type, we'll throw an error
+    // here
+    details.container = this.blobStore.container;
+    details.path = [taskId, runId, name].join('/');
+    break;
 
-    case 'reference':
-      present = true;
-      details.url       = input.url;
-      break;
+  case 'reference':
+    present = true;
+    details.url = input.url;
+    break;
 
-    case 'error':
-      present = true;
-      details.message   = input.message;
-      details.reason    = input.reason;
-      break;
+  case 'error':
+    present = true;
+    details.message = input.message;
+    details.reason = input.reason;
+    break;
 
-    default:
-      throw new Error('Unknown storageType: ' + storageType);
+  default:
+    throw new Error('Unknown storageType: ' + storageType);
   }
 
   let artifact;
@@ -316,9 +316,9 @@ builder.declare({
         'Artifact already exists, with different type or later expiration\n\n' +
         'Existing artifact information: {{originalArtifact}}', {
           originalArtifact: {
-            storageType:  artifact.storageType,
-            contentType:  artifact.contentType,
-            expires:      artifact.expires,
+            storageType: artifact.storageType,
+            contentType: artifact.contentType,
+            expires: artifact.expires,
           },
         });
     }
@@ -353,9 +353,9 @@ builder.declare({
           'Artifact already exists, with different contentType or error message\n\n' +
           'Existing artifact information: {{originalArtifact}}', {
             originalArtifact: {
-              storageType:  artifact.storageType,
-              contentType:  artifact.contentType,
-              expires:      artifact.expires,
+              storageType: artifact.storageType,
+              contentType: artifact.contentType,
+              expires: artifact.expires,
             },
           });
       }
@@ -365,9 +365,9 @@ builder.declare({
         'Artifact already exists, with different contentType or error message\n\n' +
         'Existing artifact information: {{originalArtifact}}', {
           originalArtifact: {
-            storageType:  artifact.storageType,
-            contentType:  artifact.contentType,
-            expires:      artifact.expires,
+            storageType: artifact.storageType,
+            contentType: artifact.contentType,
+            expires: artifact.expires,
           },
         });
     }
@@ -397,8 +397,8 @@ builder.declare({
   if (artifact.storageType === 'error' || artifact.storageType === 'reference') {
     // Publish message about artifact creation
     await this.publisher.artifactCreated({
-      status:         task.status(),
-      artifact:       artifact.json(),
+      status: task.status(),
+      artifact: artifact.json(),
       workerGroup,
       workerId,
       runId,
@@ -406,84 +406,85 @@ builder.declare({
   }
 
   switch (artifact.storageType) {
-    case 'blob':
-      var expiry = new Date(new Date().getTime() + 15 * 60 * 1000);
-      let requests;
-      // If we're supposed to do a multipart upload, we should generate an UploadId
-      // if it doesn't already exist.  We should store that ID in the entity
-      if (input.parts) {
-        requests = await this.s3Controller.generateMultipartRequest({
-          bucket: artifact.details.bucket,
-          key: artifact.details.key,
-          uploadId: artifact.details.uploadId,
-          parts: input.parts,
-        });
-      } else {
-        let singlePartRequest = await this.s3Controller.generateSinglepartRequest({
-          bucket: artifact.details.bucket,
-          key: artifact.details.key,
-          sha256: artifact.details.contentSha256,
-          size: artifact.details.contentLength,
-          transferSha256: artifact.details.transferSha256,
-          transferSize: artifact.details.transferLength,
-          metadata: {taskId, runId, name},
-          tags: {taskId, runId, name},
-          contentType: artifact.contentType,
-          contentEncoding: artifact.details.contentEncoding || 'identity',
-        });
-        requests = [singlePartRequest];
-      }
-      res.reply({
-        storageType: 'blob',
-        expires: expiry.toJSON(),
-        requests: requests,
+  case 'blob': {
+    let expiry = new Date(new Date().getTime() + 15 * 60 * 1000);
+    let requests;
+    // If we're supposed to do a multipart upload, we should generate an UploadId
+    // if it doesn't already exist.  We should store that ID in the entity
+    if (input.parts) {
+      requests = await this.s3Controller.generateMultipartRequest({
+        bucket: artifact.details.bucket,
+        key: artifact.details.key,
+        uploadId: artifact.details.uploadId,
+        parts: input.parts,
       });
-      break;
-    case 's3':
-      // Reply with signed S3 URL
-      var expiry = new Date(new Date().getTime() + 45 * 60 * 1000);
-      var bucket = null;
-      if (artifact.details.bucket === this.publicBucket.bucket) {
-        bucket = this.publicBucket;
-      }
-      if (artifact.details.bucket === this.privateBucket.bucket) {
-        bucket = this.privateBucket;
-      }
-      // Create put URL
-      var putUrl = await bucket.createPutUrl(
-        artifact.details.prefix, {
-          contentType:      artifact.contentType,
-          expires:          45 * 60 + 10, // Add 10 sec for clock drift
-        },
-      );
-      return res.reply({
-        storageType:  's3',
-        contentType:  artifact.contentType,
-        expires:      expiry.toJSON(),
-        putUrl:       putUrl,
+    } else {
+      let singlePartRequest = await this.s3Controller.generateSinglepartRequest({
+        bucket: artifact.details.bucket,
+        key: artifact.details.key,
+        sha256: artifact.details.contentSha256,
+        size: artifact.details.contentLength,
+        transferSha256: artifact.details.transferSha256,
+        transferSize: artifact.details.transferLength,
+        metadata: {taskId, runId, name},
+        tags: {taskId, runId, name},
+        contentType: artifact.contentType,
+        contentEncoding: artifact.details.contentEncoding || 'identity',
       });
+      requests = [singlePartRequest];
+    }
+    res.reply({
+      storageType: 'blob',
+      expires: expiry.toJSON(),
+      requests: requests,
+    });
+    break;
+  }
+  case 's3': {
+    // Reply with signed S3 URL
+    let expiry = new Date(new Date().getTime() + 45 * 60 * 1000);
+    let bucket = null;
+    if (artifact.details.bucket === this.publicBucket.bucket) {
+      bucket = this.publicBucket;
+    }
+    if (artifact.details.bucket === this.privateBucket.bucket) {
+      bucket = this.privateBucket;
+    }
+    // Create put URL
+    let putUrl = await bucket.createPutUrl(
+      artifact.details.prefix, {
+        contentType: artifact.contentType,
+        expires: 45 * 60 + 10, // Add 10 sec for clock drift
+      },
+    );
+    return res.reply({
+      storageType: 's3',
+      contentType: artifact.contentType,
+      expires: expiry.toJSON(),
+      putUrl: putUrl,
+    });
+  }
+  case 'azure': {
+    // Reply with SAS for azure
+    var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
+    // Generate SAS
+    let putUrl = this.blobStore.generateWriteSAS(
+      artifact.details.path, {expiry},
+    );
+    return res.reply({
+      storageType: 'azure',
+      contentType: artifact.contentType,
+      expires: expiry.toJSON(),
+      putUrl,
+    });
+  }
+  case 'reference':
+  case 'error':
+    // For 'reference' and 'error' the response is simple
+    return res.reply({storageType});
 
-    case 'azure':
-      // Reply with SAS for azure
-      var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
-      // Generate SAS
-      var putUrl = this.blobStore.generateWriteSAS(
-        artifact.details.path, {expiry},
-      );
-      return res.reply({
-        storageType:  'azure',
-        contentType:  artifact.contentType,
-        expires:      expiry.toJSON(),
-        putUrl,
-      });
-
-    case 'reference':
-    case 'error':
-      // For 'reference' and 'error' the response is simple
-      return res.reply({storageType});
-
-    default:
-      throw new Error('Unknown storageType: ' + artifact.storageType);
+  default:
+    throw new Error('Unknown storageType: ' + artifact.storageType);
   }
 });
 
@@ -549,7 +550,7 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
       // CDN (cloudfront) for those requests which require it
       let skipCacheHeader = (req.headers['x-taskcluster-skip-cache'] || '').toLowerCase();
       let skipCDNHeader = (req.headers['x-taskcluster-skip-cdn'] || '').toLowerCase();
-      
+
       let skipCache = false;
       if (skipCacheHeader === 'true' || skipCacheHeader === '1') {
         skipCache = true;
@@ -612,7 +613,7 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
       await this.monitor.reportError(err);
     }
     // Generate URL expiration time
-    var expiry = new Date();
+    let expiry = new Date();
     expiry.setMinutes(expiry.getMinutes() + 30);
     // Create and redirect to signed URL
     return res.redirect(303, this.blobStore.createSignedGetUrl(
@@ -629,8 +630,8 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
   if (artifact.storageType === 'error') {
     // The caller is not expecting an API response, so send a JSON response
     return res.status(424).json({
-      reason:     artifact.details.reason,
-      message:    artifact.details.message,
+      reason: artifact.details.reason,
+      message: artifact.details.message,
     });
   }
 
@@ -642,10 +643,10 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
 
 /** Complete artifact */
 builder.declare({
-  method:     'put',
-  route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
-  name:       'completeArtifact',
-  stability:  APIBuilder.stability.experimental,
+  method: 'put',
+  route: '/task/:taskId/runs/:runId/artifacts/:name(*)',
+  name: 'completeArtifact',
+  stability: APIBuilder.stability.experimental,
   scopes: {AnyOf: [
     'queue:create-artifact:<taskId>/<runId>',
     {AllOf: [
@@ -653,8 +654,8 @@ builder.declare({
       'assume:worker-id:<workerGroup>/<workerId>',
     ]},
   ]},
-  input:      'put-artifact-request.json#',
-  title:      'Complete Artifact',
+  input: 'put-artifact-request.json#',
+  title: 'Complete Artifact',
   description: [
     'This endpoint finalises an upload done through the blob `storageType`.',
     'The queue will ensure that the task/run is still allowing artifacts',
@@ -667,11 +668,11 @@ builder.declare({
     'endpoint *must* be called for all artifacts of storageType \'blob\'',
   ].join('\n'),
 }, async function(req, res) {
-  let taskId      = req.params.taskId;
-  let runId       = parseInt(req.params.runId, 10);
-  let name        = req.params.name;
-  let input       = req.body;
-  let isPublic    = /^public\//.test(name);
+  let taskId = req.params.taskId;
+  let runId = parseInt(req.params.runId, 10);
+  let name = req.params.name;
+  let input = req.body;
+  let isPublic = /^public\//.test(name);
 
   let [artifact, task] = await Promise.all([
     this.Artifact.load({taskId, runId, name}, true),
@@ -695,28 +696,28 @@ builder.declare({
     name,
   });
 
-  // Ensure that the run is running 
-  if (run.state !== 'running') { 
-    var allow = false; 
-    if (run.state === 'exception') { 
-      // If task was resolved exception, we'll allow artifacts to be uploaded 
-      // up to 25 min past resolution. This allows us to report exception as 
-      // soon as we know and then upload logs if possible. 
-      // Useful because exception usually implies something badly wrong. 
-      allow = new Date(run.resolved).getTime() > Date.now() - 25 * 60 * 1000; 
-    } 
-    if (!allow) { 
-      return res.reportError('RequestConflict', 
-        'Artifacts cannot be completed for a task after it is ' + 
-        'resolved, unless it is resolved \'exception\', and even ' + 
-        'in this case only up to 25 min past resolution.' + 
-        'This to ensure that artifacts have been uploaded before ' + 
-        'a task is \'completed\' and output is consumed by a ' + 
-        'dependent task\n\nTask status: {{status}}', { 
-          status:   task.status(), 
-        }); 
-    } 
-  } 
+  // Ensure that the run is running
+  if (run.state !== 'running') {
+    var allow = false;
+    if (run.state === 'exception') {
+      // If task was resolved exception, we'll allow artifacts to be uploaded
+      // up to 25 min past resolution. This allows us to report exception as
+      // soon as we know and then upload logs if possible.
+      // Useful because exception usually implies something badly wrong.
+      allow = new Date(run.resolved).getTime() > Date.now() - 25 * 60 * 1000;
+    }
+    if (!allow) {
+      return res.reportError('RequestConflict',
+        'Artifacts cannot be completed for a task after it is ' +
+        'resolved, unless it is resolved \'exception\', and even ' +
+        'in this case only up to 25 min past resolution.' +
+        'This to ensure that artifacts have been uploaded before ' +
+        'a task is \'completed\' and output is consumed by a ' +
+        'dependent task\n\nTask status: {{status}}', {
+          status: task.status(),
+        });
+    }
+  }
 
   if (artifact.storageType !== 'blob') {
     return res.reportError('InputError',
@@ -755,7 +756,7 @@ builder.declare({
       }
 
       let headRes = await this.s3Runner.run({
-        req:{
+        req: {
           url,
           method: 'HEAD',
           headers: {},
@@ -796,17 +797,17 @@ builder.declare({
 
 /** Get artifact from run */
 builder.declare({
-  method:     'get',
-  route:      '/task/:taskId/runs/:runId/artifacts/:name(*)',
-  name:       'getArtifact',
-  stability:  APIBuilder.stability.stable,
+  method: 'get',
+  route: '/task/:taskId/runs/:runId/artifacts/:name(*)',
+  name: 'getArtifact',
+  stability: APIBuilder.stability.stable,
   scopes: {
     if: 'private',
     then: {
       AllOf: ['queue:get-artifact:<name>'],
     },
   },
-  title:      'Get Artifact from Run',
+  title: 'Get Artifact from Run',
   description: [
     'Get artifact by `<name>` from a specific run.',
     '',
@@ -889,8 +890,8 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   var taskId = req.params.taskId;
-  var runId  = parseInt(req.params.runId, 10);
-  var name   = req.params.name;
+  var runId = parseInt(req.params.runId, 10);
+  var name = req.params.name;
 
   await req.authorize({
     private: !/^public\//.test(name),
@@ -902,17 +903,17 @@ builder.declare({
 
 /** Get latest artifact from task */
 builder.declare({
-  method:     'get',
-  route:      '/task/:taskId/artifacts/:name(*)',
-  name:       'getLatestArtifact',
-  stability:  APIBuilder.stability.stable,
+  method: 'get',
+  route: '/task/:taskId/artifacts/:name(*)',
+  name: 'getLatestArtifact',
+  stability: APIBuilder.stability.stable,
   scopes: {
     if: 'private',
     then: {
       AllOf: ['queue:get-artifact:<name>'],
     },
   },
-  title:      'Get Artifact from Latest Run',
+  title: 'Get Artifact from Latest Run',
   description: [
     'Get artifact by `<name>` from the last run of a task.',
     '',
@@ -932,7 +933,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   var taskId = req.params.taskId;
-  var name   = req.params.name;
+  var name = req.params.name;
 
   await req.authorize({
     private: !/^public\//.test(name),
@@ -961,16 +962,16 @@ builder.declare({
 
 /** Get artifacts from run */
 builder.declare({
-  method:     'get',
-  route:      '/task/:taskId/runs/:runId/artifacts',
+  method: 'get',
+  route: '/task/:taskId/runs/:runId/artifacts',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
-  name:       'listArtifacts',
-  stability:  APIBuilder.stability.experimental,
-  output:     'list-artifacts-response.json#',
-  title:      'Get Artifacts from Run',
+  name: 'listArtifacts',
+  stability: APIBuilder.stability.experimental,
+  output: 'list-artifacts-response.json#',
+  title: 'Get Artifacts from Run',
   description: [
     'Returns a list of artifacts and associated meta-data for a given run.',
     '',
@@ -983,10 +984,10 @@ builder.declare({
     'you may limit this with the query-string parameter `limit`.',
   ].join('\n'),
 }, async function(req, res) {
-  let taskId        = req.params.taskId;
-  let runId         = parseInt(req.params.runId, 10);
-  let continuation  = req.query.continuationToken || null;
-  let limit         = parseInt(req.query.limit || 1000, 10);
+  let taskId = req.params.taskId;
+  let runId = parseInt(req.params.runId, 10);
+  let continuation = req.query.continuationToken || null;
+  let limit = parseInt(req.query.limit || 1000, 10);
   // TODO: Add support querying using prefix
 
   let [task, artifacts] = await Promise.all([
@@ -1028,16 +1029,16 @@ builder.declare({
 
 /** Get latest artifacts from task */
 builder.declare({
-  method:     'get',
-  route:      '/task/:taskId/artifacts',
-  name:       'listLatestArtifacts',
+  method: 'get',
+  route: '/task/:taskId/artifacts',
+  name: 'listLatestArtifacts',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
-  stability:  APIBuilder.stability.experimental,
-  output:     'list-artifacts-response.json#',
-  title:      'Get Artifacts from Latest Run',
+  stability: APIBuilder.stability.experimental,
+  output: 'list-artifacts-response.json#',
+  title: 'Get Artifacts from Latest Run',
   description: [
     'Returns a list of artifacts and associated meta-data for the latest run',
     'from the given task.',
@@ -1051,9 +1052,9 @@ builder.declare({
     'you may limit this with the query-string parameter `limit`.',
   ].join('\n'),
 }, async function(req, res) {
-  let taskId        = req.params.taskId;
-  let continuation  = req.query.continuationToken || null;
-  let limit         = parseInt(req.query.limit || 1000, 10);
+  let taskId = req.params.taskId;
+  let continuation = req.query.continuationToken || null;
+  let limit = parseInt(req.query.limit || 1000, 10);
   // TODO: Add support querying using prefix
 
   // Load task status structure from table

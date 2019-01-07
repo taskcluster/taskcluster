@@ -37,8 +37,8 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('auth.deleteClient (invalid root credentials)', async () => {
     await (new helper.AuthClient({
       rootUrl: helper.rootUrl,
-      clientId:     'static/taskcluster/root',
-      accessToken:  'wrong',
+      clientId: 'static/taskcluster/root',
+      accessToken: 'wrong',
     })).deleteClient(CLIENT_ID).then(() => {
       assert(false, 'Expected an error');
       helper.checkNoNextMessage();
@@ -49,8 +49,8 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('auth.deleteClient (invalid credentials)', async () => {
     await (new helper.AuthClient({
       rootUrl: helper.rootUrl,
-      clientId:     'wrong-client',
-      accessToken:  'no-secret',
+      clientId: 'wrong-client',
+      accessToken: 'no-secret',
     })).deleteClient(CLIENT_ID).then(() => {
       assert(false, 'Expected an error');
       helper.checkNoNextMessage();
@@ -353,10 +353,10 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('auth.currentScopes with root credentials and authorizedScopes', async () => {
     let auth = new helper.AuthClient({
-      rootUrl:          helper.rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: {
-        clientId:       'static/taskcluster/root',
-        accessToken:    helper.rootAccessToken,
+        clientId: 'static/taskcluster/root',
+        accessToken: helper.rootAccessToken,
       },
       authorizedScopes: ['myapi:a', 'myapi:b'],
     });
@@ -366,13 +366,13 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('auth.currentScopes with temp credentials', async () => {
     let auth = new helper.AuthClient({
-      rootUrl:          helper.rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: taskcluster.createTemporaryCredentials({
-        expiry:       taskcluster.fromNow('10 min'),
-        scopes:       ['myapi:x', 'myapi:y'],
-        credentials:  {
-          clientId:       'static/taskcluster/root',
-          accessToken:    helper.rootAccessToken,
+        expiry: taskcluster.fromNow('10 min'),
+        scopes: ['myapi:x', 'myapi:y'],
+        credentials: {
+          clientId: 'static/taskcluster/root',
+          accessToken: helper.rootAccessToken,
         },
       }),
     });
@@ -382,13 +382,13 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('auth.currentScopes with temp credentials and authorizedScopes', async () => {
     let auth = new helper.AuthClient({
-      rootUrl:          helper.rootUrl,
+      rootUrl: helper.rootUrl,
       credentials: taskcluster.createTemporaryCredentials({
-        expiry:       taskcluster.fromNow('10 min'),
-        scopes:       ['myapi:x', 'myapi:y'],
-        credentials:  {
-          clientId:       'static/taskcluster/root',
-          accessToken:    helper.rootAccessToken,
+        expiry: taskcluster.fromNow('10 min'),
+        scopes: ['myapi:x', 'myapi:y'],
+        credentials: {
+          clientId: 'static/taskcluster/root',
+          accessToken: helper.rootAccessToken,
         },
       }),
       authorizedScopes: ['myapi:x'],

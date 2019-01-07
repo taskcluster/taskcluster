@@ -45,7 +45,7 @@ function getPushDetails(eventData) {
   let ref = eventData.ref;
   // parsing the ref refs/heads/<branch-name> is the most reliable way
   // to get a branch name
-  // However, tags are identified the ref refs/tags/<tag-name> 
+  // However, tags are identified the ref refs/tags/<tag-name>
   let refName = ref.split('/').slice(2).join('/');
   let isTagEvent = ref.split('/')[1] === 'tags';
   let details = {
@@ -72,7 +72,7 @@ function getPushDetails(eventData) {
 
   }
   return details;
-  
+
 }
 
 // See https://developer.github.com/v3/activity/events/types/#releaseevent
@@ -140,7 +140,7 @@ async function installationAuthenticate(owner, OwnersDirectory, github) {
 /***
  Helper function to find the most fresh status set by our bot.
  Gets the bot's ID, gets statuses for the repo/branch, finds there the status by the bot's ID
- 
+
  Receives authenticated github object; names of owner, repo and branch; and configuration object
  Returns either status object or undefined (if not found).
 ***/
@@ -154,7 +154,7 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
 /** API end-point for version v1/
  */
 let builder = new APIBuilder({
-  title:        'Taskcluster GitHub API Documentation',
+  title: 'Taskcluster GitHub API Documentation',
   description: [
     'The github service is responsible for creating tasks in reposnse',
     'to GitHub events, and posting results to the GitHub UI.',
@@ -178,11 +178,11 @@ module.exports = builder;
 
 /** Define tasks */
 builder.declare({
-  method:     'post',
-  route:      '/github',
-  name:       'githubWebHookConsumer',
-  title:      'Consume GitHub WebHook',
-  stability:  'experimental',
+  method: 'post',
+  route: '/github',
+  name: 'githubWebHookConsumer',
+  title: 'Consume GitHub WebHook',
+  stability: 'experimental',
   description: [
     'Capture a GitHub event and publish it via pulse, if it\'s a push,',
     'release or pull request.',
@@ -229,47 +229,47 @@ builder.declare({
 
     switch (eventType) {
 
-      case 'pull_request':
-        msg.organization = sanitizeGitHubField(body.repository.owner.login);
-        msg.action = body.action;
-        msg.details = getPullRequestDetails(body);
-        msg.installationId = body.installation.id;
-        publisherKey = 'pullRequest';
-        msg.tasks_for = 'github-pull-request';
-        msg.branch = body.pull_request.head.ref;
-        break;
+    case 'pull_request':
+      msg.organization = sanitizeGitHubField(body.repository.owner.login);
+      msg.action = body.action;
+      msg.details = getPullRequestDetails(body);
+      msg.installationId = body.installation.id;
+      publisherKey = 'pullRequest';
+      msg.tasks_for = 'github-pull-request';
+      msg.branch = body.pull_request.head.ref;
+      break;
 
-      case 'push':
-        msg.organization = sanitizeGitHubField(body.repository.owner.name);
-        msg.details = getPushDetails(body);
-        msg.installationId = body.installation.id;
-        publisherKey = 'push';
-        msg.tasks_for = 'github-push';
-        msg.branch = body.ref.split('/').slice(2).join('/');
-        break;
+    case 'push':
+      msg.organization = sanitizeGitHubField(body.repository.owner.name);
+      msg.details = getPushDetails(body);
+      msg.installationId = body.installation.id;
+      publisherKey = 'push';
+      msg.tasks_for = 'github-push';
+      msg.branch = body.ref.split('/').slice(2).join('/');
+      break;
 
-      case 'ping':
-        return resolve(res, 200, 'Received ping event!');
+    case 'ping':
+      return resolve(res, 200, 'Received ping event!');
 
-      case 'release':
-        msg.organization = sanitizeGitHubField(body.repository.owner.login);
-        msg.details = getReleaseDetails(body);
-        msg.installationId = body.installation.id;
-        publisherKey = 'release';
-        msg.tasks_for = 'github-release';
-        msg.branch = body.release.target_commitish;
-        break;
+    case 'release':
+      msg.organization = sanitizeGitHubField(body.repository.owner.login);
+      msg.details = getReleaseDetails(body);
+      msg.installationId = body.installation.id;
+      publisherKey = 'release';
+      msg.tasks_for = 'github-release';
+      msg.branch = body.release.target_commitish;
+      break;
 
-      case 'integration_installation':
-        // Creates a new entity or overwrites an existing one
-        await this.OwnersDirectory.create({
-          installationId: body.installation.id,
-          owner: body.installation.account.login,
-        }, true);
-        return resolve(res, 200, 'Created table row!');
+    case 'integration_installation':
+      // Creates a new entity or overwrites an existing one
+      await this.OwnersDirectory.create({
+        installationId: body.installation.id,
+        owner: body.installation.account.login,
+      }, true);
+      return resolve(res, 200, 'Created table row!');
 
-      default:
-        return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
+    default:
+      return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
     }
   } catch (e) {
     debug('Error processing webhook payload!');
@@ -302,12 +302,12 @@ builder.declare({
 });
 
 builder.declare({
-  method:     'get',
-  route:      '/builds',
-  name:       'builds',
-  title:      'List of Builds',
-  stability:  'experimental',
-  output:     'build-list.yml',
+  method: 'get',
+  route: '/builds',
+  name: 'builds',
+  title: 'List of Builds',
+  stability: 'experimental',
+  output: 'build-list.yml',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
@@ -359,7 +359,7 @@ builder.declare({
 
   // This has nothing to do with user input, so we should be safe
   let fileConfig = {
-    root : __dirname + '/../assets/',
+    root: __dirname + '/../assets/',
     headers: {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
     },

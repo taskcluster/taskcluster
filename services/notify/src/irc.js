@@ -25,14 +25,14 @@ class IRCBot {
    * ```
    */
   constructor(options) {
-    assert(options,           'options is required');
-    assert(options.server,    'options.server is required');
-    assert(options.port,      'options.port is required');
-    assert(options.nick,      'options.nick is required');
-    assert(options.userName,  'options.userName is required');
-    assert(options.realName,  'options.realName is required');
-    assert(options.password,  'options.password is required');
-    assert(options.aws,       'options.aws is required');
+    assert(options, 'options is required');
+    assert(options.server, 'options.server is required');
+    assert(options.port, 'options.port is required');
+    assert(options.nick, 'options.nick is required');
+    assert(options.userName, 'options.userName is required');
+    assert(options.realName, 'options.realName is required');
+    assert(options.password, 'options.password is required');
+    assert(options.aws, 'options.aws is required');
     assert(options.queueName, 'options.queueName is required');
     this.client = new irc.Client(options.server, options.nick, {
       userName: options.userName,
@@ -65,7 +65,7 @@ class IRCBot {
     });
 
     let queueUrl = await this.sqs.createQueue({
-      QueueName:  this.queueName,
+      QueueName: this.queueName,
     }).promise().then(req => req.QueueUrl);
 
     this.done = (async () => {
@@ -73,11 +73,11 @@ class IRCBot {
       while (!this.stopping) {
         debug('Waiting for message from sqs.');
         let req = await this.sqs.receiveMessage({
-          QueueUrl:             queueUrl,
-          AttributeNames:       ['ApproximateReceiveCount'],
-          MaxNumberOfMessages:  10,
-          VisibilityTimeout:    30,
-          WaitTimeSeconds:      20,
+          QueueUrl: queueUrl,
+          AttributeNames: ['ApproximateReceiveCount'],
+          MaxNumberOfMessages: 10,
+          VisibilityTimeout: 30,
+          WaitTimeSeconds: 20,
         }).promise();
         if (!req.Messages) {
           debug('Did not receive any messages from sqs in timeout.');
@@ -97,8 +97,8 @@ class IRCBot {
           }
           // Delete message
           await this.sqs.deleteMessage({
-            QueueUrl:       queueUrl,
-            ReceiptHandle:  message.ReceiptHandle,
+            QueueUrl: queueUrl,
+            ReceiptHandle: message.ReceiptHandle,
           }).promise();
           success += 1;
         }

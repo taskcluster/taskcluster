@@ -3,11 +3,11 @@ class ErrorReply extends Error {
     super();
 
     Error.captureStackTrace(this, this.constructor);
-    
+
     this.code = code;
     this.message = message;
     this.details = details;
   }
 }
-  
+
 module.exports = ErrorReply;

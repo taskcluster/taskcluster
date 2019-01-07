@@ -1,10 +1,10 @@
-let debug         = require('debug')('app:dependency-resolver');
-let slugid        = require('slugid');
-let assert        = require('assert');
-let _             = require('lodash');
-let data          = require('./data');
-let QueueService  = require('./queueservice');
-let events        = require('events');
+let debug = require('debug')('app:dependency-resolver');
+let slugid = require('slugid');
+let assert = require('assert');
+let _ = require('lodash');
+let data = require('./data');
+let QueueService = require('./queueservice');
+let events = require('events');
 
 /**
  * When a task is resolved, we put a message in the resolvedQueue, this class
@@ -25,9 +25,9 @@ class DependencyResolver {
    * }
    */
   constructor(options = {}) {
-    assert(options,                   'options are required');
+    assert(options, 'options are required');
     assert(options.dependencyTracker, 'Expected options.dependencyTracker');
-    assert(options.queueService,      'Expected options.queueService');
+    assert(options.queueService, 'Expected options.queueService');
     assert(typeof options.pollingDelay === 'number',
       'Expected pollingDelay to be a number');
     assert(typeof options.parallelism === 'number',
@@ -35,18 +35,18 @@ class DependencyResolver {
     assert(options.monitor !== null, 'options.monitor required!');
 
     // Remember options
-    this.dependencyTracker  = options.dependencyTracker;
-    this.queueService       = options.queueService;
-    this.monitor            = options.monitor;
+    this.dependencyTracker = options.dependencyTracker;
+    this.queueService = options.queueService;
+    this.monitor = options.monitor;
 
     // Set polling delay and parallelism
-    this._pollingDelay  = options.pollingDelay;
-    this._parallelism   = options.parallelism;
+    this._pollingDelay = options.pollingDelay;
+    this._parallelism = options.parallelism;
 
     // Promise that polling is done
-    this._done          = null;
+    this._done = null;
     // Boolean that polling should stop
-    this._stopping      = false;
+    this._stopping = false;
   }
 
   /** Start polling for resolved-task messages */

@@ -103,10 +103,10 @@ helper.secrets.mockSuite('index_test.js', ['taskcluster'], function(mock, skippi
     const task = makeTask();
     task.extra = {
       index: {
-        rank:       42,
-        expires:    taskcluster.fromNow('1 hour'),
+        rank: 42,
+        expires: taskcluster.fromNow('1 hour'),
         data: {
-          hello:    'world',
+          hello: 'world',
         },
       },
     };
@@ -141,44 +141,44 @@ helper.secrets.mockSuite('index_test.js', ['taskcluster'], function(mock, skippi
     const expiry = new Date();
 
     expiry.setDate(expiry.getDate() - 1);
-    
-    const myns     = slugid.v4();
-    const taskId   = slugid.v4();
-    const taskId2  = slugid.v4();
+
+    const myns = slugid.v4();
+    const taskId = slugid.v4();
+    const taskId2 = slugid.v4();
     await helper.index.insertTask(myns + '.my-task', {
-      taskId:     taskId,
-      rank:       41,
-      data:       {hello: 'world'},
-      expires:    expiry.toJSON(),
+      taskId: taskId,
+      rank: 41,
+      data: {hello: 'world'},
+      expires: expiry.toJSON(),
     });
     try {
       await helper.index.findTask(myns + '.my-task');
     } catch (err) {
       assert(err.statusCode === 404, 'Should have returned 404');
       return;
-    } 
+    }
 
     expiry.setDate(expiry.getDate() + 1);
     await helper.index.insertTask(myns + '.my-task2', {
-      taskId:     taskId2,
-      rank:       42,
-      data:       {hello: 'world two'},
-      expires:    expiry.toJSON(),
+      taskId: taskId2,
+      rank: 42,
+      data: {hello: 'world two'},
+      expires: expiry.toJSON(),
     });
     result = await helper.index.findTask(myns + '.my-task2');
     assert(result.taskId === taskId2, 'Wrong taskId');
-    
-    // Set now to one day in the past 
+
+    // Set now to one day in the past
     const now = taskcluster.fromNow('- 1 day');
     debug('Expiring indexed tasks at: %s, from before %s', new Date(), now);
     await helper.IndexedTask.expireTasks(now);
-    
+
     try {
       await helper.index.findTask(myns + '.my-task');
     } catch (err) {
       assert(err.statusCode === 404, 'Should have returned 404');
       return;
-    }    
+    }
     assert(false, 'This shouldn\'t have worked');
 
   });
@@ -187,15 +187,15 @@ helper.secrets.mockSuite('index_test.js', ['taskcluster'], function(mock, skippi
     // Create expiration
     const expiry = new Date();
     expiry.setDate(expiry.getDate() - 1);
-    const myns     = slugid.v4();
-    const taskId   = slugid.v4();
-    const taskId2  = slugid.v4();
+    const myns = slugid.v4();
+    const taskId = slugid.v4();
+    const taskId2 = slugid.v4();
 
     await helper.index.insertTask(myns+'.one-ns.my-task', {
-      taskId:     taskId,
-      rank:       41,
-      data:       {hello: 'world'},
-      expires:    expiry.toJSON(),
+      taskId: taskId,
+      rank: 41,
+      data: {hello: 'world'},
+      expires: expiry.toJSON(),
     });
 
     try {
@@ -203,28 +203,28 @@ helper.secrets.mockSuite('index_test.js', ['taskcluster'], function(mock, skippi
     } catch (err) {
       assert(err.statusCode === 404, 'Should have returned 404');
       return;
-    } 
+    }
     await helper.index.insertTask(myns + '.another-ns.my-task', {
-      taskId:     taskId2,
-      rank:       42,
-      data:       {hello: 'world two'},
-      expires:    expiry.toJSON(),
+      taskId: taskId2,
+      rank: 42,
+      data: {hello: 'world two'},
+      expires: expiry.toJSON(),
     });
     result = await helper.index.findTask(myns + '.another-ns.my-task');
     assert(result.taskId === taskId2, 'Wrong taskId');
-    // Set now to one day in the past 
+    // Set now to one day in the past
     const now = new Date();
     now.setDate(now.getDate() - 1);
-    
+
     debug('Expiring namespace at: %s, from before %s', new Date(), now);
     await helper.Namespace.expireEntries(now);
-    
+
     result = await helper.index.listNamespaces(myns, {});
     assert.equal(result.namespaces.length, 1, 'Expected 1 namespace');
     assert(result.namespaces.some(function(ns) {
       return ns.name === 'one-ns';
     }), 'Expected to find one-ns');
-    
+
   });
 
   const insert10Tasks = async function(myns) {
@@ -234,10 +234,10 @@ helper.secrets.mockSuite('index_test.js', ['taskcluster'], function(mock, skippi
     for (let i = 1; i <= 10; i++) {
       const taskId = slugid.nice();
       await helper.index.insertTask(myns + '.my-task' + _.toString(i) + '.new' + _.toString(i), {
-        taskId:     taskId,
-        rank:       i,
-        data:       {hello: 'world ' + _.toString(i)},
-        expires:    expiry.toJSON(),
+        taskId: taskId,
+        rank: i,
+        data: {hello: 'world ' + _.toString(i)},
+        expires: expiry.toJSON(),
       });
       const result = await helper.index.findTask(myns + '.my-task' + _.toString(i) + '.new' + _.toString(i));
       res.push(result);

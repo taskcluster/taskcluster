@@ -1,46 +1,46 @@
-const request         = require('superagent');
-const assert          = require('assert');
-const Promise         = require('promise');
-const APIBuilder      = require('../');
-const monitoring      = require('taskcluster-lib-monitor');
-const helper          = require('./helper');
-const libUrls         = require('taskcluster-lib-urls');
+const request = require('superagent');
+const assert = require('assert');
+const Promise = require('promise');
+const APIBuilder = require('../');
+const monitoring = require('taskcluster-lib-monitor');
+const helper = require('./helper');
+const libUrls = require('taskcluster-lib-urls');
 
 suite('api/responsetimer', function() {
   // Create test api
   const builder = new APIBuilder({
-    title:        'Test Api',
-    description:  'Another test api',
-    serviceName:  'test',
-    apiVersion:   'v1',
+    title: 'Test Api',
+    description: 'Another test api',
+    serviceName: 'test',
+    apiVersion: 'v1',
   });
 
   builder.declare({
-    method:   'get',
-    route:    '/single-param/:myparam',
-    name:     'testParam',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/single-param/:myparam',
+    name: 'testParam',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(200).send(req.params.myparam);
   });
 
   builder.declare({
-    method:   'get',
-    route:    '/slash-param/:name(*)',
-    name:     'testSlashParam',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/slash-param/:name(*)',
+    name: 'testSlashParam',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(404).send(req.params.name);
   });
 
   builder.declare({
-    method:   'get',
-    route:    '/another-param/:name(*)',
-    name:     'testAnotherParam',
-    title:    'Test End-Point',
-    description:  'Place we can call to test something',
+    method: 'get',
+    route: '/another-param/:name(*)',
+    name: 'testAnotherParam',
+    title: 'Test End-Point',
+    description: 'Place we can call to test something',
   }, function(req, res) {
     res.status(500).send(req.params.name);
   });

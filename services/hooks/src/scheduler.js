@@ -28,22 +28,22 @@ class Scheduler extends events.EventEmitter {
   constructor(options) {
     super();
     assert(options, 'options must be given');
-    assert(options.Hook.prototype instanceof data.Hook, 
+    assert(options.Hook.prototype instanceof data.Hook,
       'Expected data.Hook instance');
     assert(options.taskcreator instanceof taskcreator.TaskCreator,
       'An instance of taskcreator.TaskCreator is required');
     assert(typeof options.pollingDelay === 'number',
       'Expected pollingDelay to be a number');
     // Store options on this for use in event handlers
-    this.Hook         = options.Hook;
-    this.taskcreator  = options.taskcreator;
-    this.notify          = options.notify;
+    this.Hook = options.Hook;
+    this.taskcreator = options.taskcreator;
+    this.notify = options.notify;
     this.pollingDelay = options.pollingDelay;
     // Promise that the polling is done
-    this.done         = null;
+    this.done = null;
 
     // Boolean that the polling should stop
-    this.stopping     = false;
+    this.stopping = false;
   }
 
   /** Start polling */
@@ -71,7 +71,7 @@ class Scheduler extends events.EventEmitter {
   async poll() {
     // Get all hooks that have a scheduled date that is earlier than now
     await this.Hook.scan({
-      nextScheduledDate:  Entity.op.lessThan(new Date()),
+      nextScheduledDate: Entity.op.lessThan(new Date()),
     }, {
       limit: 100,
       handler: (hook) => this.handleHook(hook),
@@ -191,4 +191,3 @@ class Scheduler extends events.EventEmitter {
 
 // Export Scheduler
 module.exports = Scheduler;
-

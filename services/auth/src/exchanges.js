@@ -26,12 +26,12 @@ module.exports = exchanges;
 const buildRoutingKey = (options) => {
   return [
     {
-      name:             'reserved',
-      summary:          'Space reserved for future routing-key entries, you ' +
+      name: 'reserved',
+      summary: 'Space reserved for future routing-key entries, you ' +
                         'should always match this entry with `#`. As ' +
                         'automatically done by our tooling, if not specified.',
-      multipleWords:    true,
-      maxSize:          1,
+      multipleWords: true,
+      maxSize: 1,
     },
   ];
 };
@@ -43,85 +43,85 @@ const commonMessageBuilder = (message) => {
 };
 
 exchanges.declare({
-  exchange:           'client-created',
-  name:               'clientCreated',
-  title:              'Client Created Messages',
+  exchange: 'client-created',
+  name: 'clientCreated',
+  title: 'Client Created Messages',
   description: [
     'Message that a new client has been created.',
   ].join('\n'),
-  routingKey:         buildRoutingKey(),
-  schema:             'client-message.yml',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  () => '',
-  CCBuilder:          () => [],
+  routingKey: buildRoutingKey(),
+  schema: 'client-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: () => '',
+  CCBuilder: () => [],
 });
 
 exchanges.declare({
-  exchange:           'client-updated',
-  name:               'clientUpdated',
-  title:              'Client Updated Messages',
+  exchange: 'client-updated',
+  name: 'clientUpdated',
+  title: 'Client Updated Messages',
   description: [
     'Message that a new client has been updated.',
   ].join('\n'),
-  routingKey:         buildRoutingKey(),
-  schema:             'client-message.yml',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  () => '',
-  CCBuilder:          () => [],
+  routingKey: buildRoutingKey(),
+  schema: 'client-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: () => '',
+  CCBuilder: () => [],
 });
 
 exchanges.declare({
-  exchange:           'client-deleted',
-  name:               'clientDeleted',
-  title:              'Client Deleted Messages',
+  exchange: 'client-deleted',
+  name: 'clientDeleted',
+  title: 'Client Deleted Messages',
   description: [
     'Message that a new client has been deleted.',
   ].join('\n'),
-  routingKey:         buildRoutingKey(),
-  schema:             'client-message.yml',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  () => '',
-  CCBuilder:          () => [],
+  routingKey: buildRoutingKey(),
+  schema: 'client-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: () => '',
+  CCBuilder: () => [],
 });
 
 exchanges.declare({
-  exchange:           'role-created',
-  name:               'roleCreated',
-  title:              'Role Created Messages',
+  exchange: 'role-created',
+  name: 'roleCreated',
+  title: 'Role Created Messages',
   description: [
     'Message that a new role has been created.',
   ].join('\n'),
-  routingKey:         buildRoutingKey(),
-  schema:             'role-message.yml',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  () => '',
-  CCBuilder:          () => [],
+  routingKey: buildRoutingKey(),
+  schema: 'role-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: () => '',
+  CCBuilder: () => [],
 });
 
 exchanges.declare({
-  exchange:           'role-updated',
-  name:               'roleUpdated',
-  title:              'Role Updated Messages',
+  exchange: 'role-updated',
+  name: 'roleUpdated',
+  title: 'Role Updated Messages',
   description: [
     'Message that a new role has been updated.',
   ].join('\n'),
-  routingKey:         buildRoutingKey(),
-  schema:             'role-message.yml',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  () => '',
-  CCBuilder:          () => [],
+  routingKey: buildRoutingKey(),
+  schema: 'role-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: () => '',
+  CCBuilder: () => [],
 });
 
 exchanges.declare({
-  exchange:           'role-deleted',
-  name:               'roleDeleted',
-  title:              'Role Deleted Messages',
+  exchange: 'role-deleted',
+  name: 'roleDeleted',
+  title: 'Role Deleted Messages',
   description: [
     'Message that a new role has been deleted.',
   ].join('\n'),
-  routingKey:         buildRoutingKey(),
-  schema:             'role-message.yml',
-  messageBuilder:     commonMessageBuilder,
-  routingKeyBuilder:  () => '',
-  CCBuilder:          () => [],
+  routingKey: buildRoutingKey(),
+  schema: 'role-message.yml',
+  messageBuilder: commonMessageBuilder,
+  routingKeyBuilder: () => '',
+  CCBuilder: () => [],
 });

@@ -31,12 +31,12 @@ suite('app', function() {
 
       // Create a simple app
       server = await App({
-        port:             1459,
-        env:              'development',
-        forceSSL:         false,
-        forceHSTS:        true,
-        trustProxy:       false,
-        apis:             [fakeApi],
+        port: 1459,
+        env: 'development',
+        forceSSL: false,
+        forceHSTS: true,
+        trustProxy: false,
+        apis: [fakeApi],
       });
     });
 
@@ -85,11 +85,11 @@ suite('app', function() {
       } catch (err) {
         assert.equal(err.status, 404, 'Status code is 404');
         assert.equal(err.response.body.error, 'Not found', 'Response message is correct');
-        assert.equal(err.response.headers['content-type'], 'application/json; charset=utf-8', 
+        assert.equal(err.response.headers['content-type'], 'application/json; charset=utf-8',
           'Correct content-type is set to headers');
         assert.equal(
           err.response.headers['content-security-policy'],
-          'report-uri /__cspreport__;default-src \'none\';frame-ancestors \'none\';', 
+          'report-uri /__cspreport__;default-src \'none\';frame-ancestors \'none\';',
           'Correct CSP is set in headers');
         return;
       }
@@ -101,4 +101,3 @@ suite('app', function() {
     });
   });
 });
-

@@ -23,8 +23,8 @@ const load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => new SchemaSet({
       serviceName: 'purge-cache',
-      publish:  cfg.app.publishMetaData,
-      aws:      cfg.aws,
+      publish: cfg.app.publishMetaData,
+      aws: cfg.aws,
     }),
   },
 

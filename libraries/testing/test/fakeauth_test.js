@@ -1,31 +1,31 @@
-var debug        = require('debug')('test');
-var _            = require('lodash');
-var nock         = require('nock');
-var hawk         = require('hawk');
-var request      = require('superagent');
-var SchemaSet    = require('taskcluster-lib-validate');
-var APIBuilder   = require('taskcluster-lib-api');
-var App          = require('taskcluster-lib-app');
-var assert       = require('assert');
-var taskcluster  = require('taskcluster-client');
-var Promise      = require('promise');
-var path         = require('path');
-var libUrls      = require('taskcluster-lib-urls');
+var debug = require('debug')('test');
+var _ = require('lodash');
+var nock = require('nock');
+var hawk = require('hawk');
+var request = require('superagent');
+var SchemaSet = require('taskcluster-lib-validate');
+var APIBuilder = require('taskcluster-lib-api');
+var App = require('taskcluster-lib-app');
+var assert = require('assert');
+var taskcluster = require('taskcluster-client');
+var Promise = require('promise');
+var path = require('path');
+var libUrls = require('taskcluster-lib-urls');
 
 var builder = new APIBuilder({
-  title:        'Test Server',
-  description:  'for testing',
-  serviceName:         'test',
-  apiVersion:      'v1',
+  title: 'Test Server',
+  description: 'for testing',
+  serviceName: 'test',
+  apiVersion: 'v1',
 });
 
 builder.declare({
-  method:       'get',
-  route:        '/test',
-  name:         'test',
-  scopes:       'test.scope',
-  title:        'Test function',
-  description:  'for testing',
+  method: 'get',
+  route: '/test',
+  name: 'test',
+  scopes: 'test.scope',
+  title: 'Test function',
+  description: 'for testing',
 }, async function(req, res) {
   try {
     await req.authorize();
@@ -47,7 +47,7 @@ suite('fakeauth', function() {
     const schemaset = new SchemaSet({
       rootUrl,
       serviceName: 'lib-testing',
-      folder:  path.join(__dirname, 'schemas'),
+      folder: path.join(__dirname, 'schemas'),
     });
 
     // Create router for the API
@@ -58,13 +58,13 @@ suite('fakeauth', function() {
 
     // Create application
     server = await App({
-      port:           1208,
-      env:            'development',
-      forceSSL:       false,
-      trustProxy:     false,
-      rootDocsLink:   false,
-      serviceName:    'test',
-      apis:           [api],
+      port: 1208,
+      env: 'development',
+      forceSSL: false,
+      trustProxy: false,
+      rootDocsLink: false,
+      serviceName: 'test',
+      apis: [api],
     });
 
     // Time out connections after 500 ms, prevents tests from hanging
@@ -85,9 +85,9 @@ suite('fakeauth', function() {
     var content = {
       ttlSec: 60 * 5,
       credentials: {
-        id:         clientId,
-        key:        'unused',
-        algorithm:  'sha256',
+        id: clientId,
+        key: 'unused',
+        algorithm: 'sha256',
       },
     };
     if (extContent) {

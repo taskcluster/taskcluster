@@ -131,8 +131,8 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     if (req.headers && req.headers.authorization &&
         req.query && req.query.bewit) {
       return Promise.resolve({
-        status:   'auth-failed',
-        message:  'Cannot use two authentication schemes at once ' +
+        status: 'auth-failed',
+        message: 'Cannot use two authentication schemes at once ' +
                   'this request has both bewit in querystring and ' +
                   'and \'authorization\' header',
       });
@@ -159,13 +159,13 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     }
 
     // Send input to signatureValidator (auth server or local validator)
-    const result = await Promise.resolve(signatureValidator({
-      method:           req.method.toLowerCase(),
-      resource:         req.originalUrl,
-      host:             host.name,
-      port:             parseInt(port, 10),
-      authorization:    req.headers.authorization,
-      sourceIp:         req.ip,
+    let result = await Promise.resolve(signatureValidator({
+      method: req.method.toLowerCase(),
+      resource: req.originalUrl,
+      host: host.name,
+      port: parseInt(port, 10),
+      authorization: req.headers.authorization,
+      sourceIp: req.ip,
     }));
 
     // Validate request hash if one is provided
@@ -210,7 +210,8 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     try {
       /** Create method that returns list of scopes the caller has */
       req.scopes = async () => {
-        result = await (result || authenticate(req));
+        // This lint can be disabled because authenticate() will always return the same value
+        result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
         if (result.status !== 'auth-success') {
           return Promise.resolve([]);
         }
@@ -218,7 +219,8 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
       };
 
       req.clientId = async () => {
-        result = await (result || authenticate(req));
+        // This lint can be disabled because authenticate() will always return the same value
+        result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
         if (result.status === 'auth-success') {
           return result.clientId || 'unknown-clientId';
         }
@@ -226,7 +228,8 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
       };
 
       req.expires = async () => {
-        result = await (result || authenticate(req));
+        // This lint can be disabled because authenticate() will always return the same value
+        result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
         if (result.status === 'auth-success') {
           return new Date(result.expires);
         }
@@ -244,7 +247,8 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
        * code = 'AuthorizationError'.
        */
       req.authorize = async (params) => {
-        result = await (result || authenticate(req));
+        // This lint can be disabled because authenticate() will always return the same value
+        result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
 
         // If authentication failed
         if (result.status === 'auth-failed') {
@@ -305,7 +309,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
       // If authentication is deferred or satisfied, then we proceed,
       // substituting the request parameters by default
       if (!entry.scopes) {
-        req.hasAuthed = true;  // No need to check auth if there are no scopes
+        req.hasAuthed = true; // No need to check auth if there are no scopes
         next();
       } else {
         // If url parameters is enough to parameterize we do it automatically
@@ -321,7 +325,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
         return next(new ErrorReply({code: 'AuthenticationFailed', message: err.message, details: err.details}));
       }
       return next(err);
-    };
+    }
   };
 };
 

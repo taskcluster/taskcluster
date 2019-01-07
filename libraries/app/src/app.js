@@ -1,14 +1,14 @@
-var express         = require('express');
-var _               = require('lodash');
-var debug           = require('debug')('base:app');
-var assert          = require('assert');
-var morganDebug     = require('morgan-debug');
-var Promise         = require('promise');
-var http            = require('http');
-var sslify          = require('express-sslify');
-var hsts            = require('hsts');
-var csp             = require('content-security-policy');
-var uuidv4          = require('uuid/v4');
+var express = require('express');
+var _ = require('lodash');
+var debug = require('debug')('base:app');
+var assert = require('assert');
+var morganDebug = require('morgan-debug');
+var Promise = require('promise');
+var http = require('http');
+var sslify = require('express-sslify');
+var hsts = require('hsts');
+var csp = require('content-security-policy');
+var uuidv4 = require('uuid/v4');
 
 /** Notify LocalApp if running under this */
 var notifyLocalAppInParentProcess = function(port) {
@@ -17,9 +17,9 @@ var notifyLocalAppInParentProcess = function(port) {
   // testing and hopefully won't cause pain anywhere else.
   if (process.send) {
     process.send({
-      ready:  true,
-      port:   port,
-      appId:  process.env.LOCAL_APP_IDENTIFIER,
+      ready: true,
+      port: port,
+      appId: process.env.LOCAL_APP_IDENTIFIER,
     });
   }
 };
@@ -33,7 +33,7 @@ var createServer = function() {
     res.setHeader('Content-Type', 'application/json');
     res.status(404).json({error: 'Not found'});
   });
-  
+
   return new Promise(function(accept, reject) {
     // Launch HTTP server
     var server = http.createServer(that);
@@ -64,16 +64,16 @@ var createServer = function() {
 /** Create express application.  See the README for docs.
  */
 var app = async function(options) {
-  assert(options,                           'options are required');
+  assert(options, 'options are required');
   _.defaults(options, {
     contentSecurityPolicy: true,
     robotsTxt: true,
   });
   assert(typeof options.port === 'number', 'Port must be a number');
-  assert(options.env == 'development' ||
-         options.env == 'production',       'env must be production or development');
-  assert(options.forceSSL !== undefined,    'forceSSL must be defined');
-  assert(options.trustProxy !== undefined,  'trustProxy must be defined');
+  assert(options.env === 'development' ||
+         options.env === 'production', 'env must be production or development');
+  assert(options.forceSSL !== undefined, 'forceSSL must be defined');
+  assert(options.trustProxy !== undefined, 'trustProxy must be defined');
   assert(options.apis, 'Must provide an array of apis');
   assert(!options.rootDocsLink, '`rootDocsLink` is no longer allowed');
   assert(!options.docs, '`docs` is no longer allowed');
@@ -98,7 +98,7 @@ var app = async function(options) {
   if (options.forceSSL || options.forceHSTS) {
     app.use(hsts({
       maxAge: 1000 * 60 * 60 * 24 * 90,
-      force:true,
+      force: true,
     }));
   }
 
@@ -128,7 +128,7 @@ var app = async function(options) {
   });
 
   // output user-agent and referrer in production, which can be useful when debugging API (ab)use
-  const format = app.get('env') == 'development' ?
+  const format = app.get('env') === 'development' ?
     'dev' : '[:date[clf]] :method :url -> :status; ip=:remote-addr referrer=":referrer" ua=":user-agent"';
   app.use(morganDebug('app:request', format));
 

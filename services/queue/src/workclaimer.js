@@ -1,8 +1,8 @@
-let assert      = require('assert');
-let _           = require('lodash');
-let events      = require('events');
+let assert = require('assert');
+let _ = require('lodash');
+let events = require('events');
 let taskcluster = require('taskcluster-client');
-let taskCreds   = require('./task-creds');
+let taskCreds = require('./task-creds');
 
 /**
  * HintPoller polls for hints for pending tasks.
@@ -236,15 +236,15 @@ class WorkClaimer extends events.EventEmitter {
       }
 
       // Change state of the run (claiming it)
-      run.state         = 'running';
-      run.workerGroup   = workerGroup;
-      run.workerId      = workerId;
-      run.hintId        = hintId;
-      run.takenUntil    = takenUntil.toJSON();
-      run.started       = new Date().toJSON();
+      run.state = 'running';
+      run.workerGroup = workerGroup;
+      run.workerId = workerId;
+      run.hintId = hintId;
+      run.takenUntil = takenUntil.toJSON();
+      run.started = new Date().toJSON();
 
       // Set takenUntil on the task
-      task.takenUntil   = takenUntil;
+      task.takenUntil = takenUntil;
     });
 
     // Find run that we (may) have modified
@@ -255,11 +255,11 @@ class WorkClaimer extends events.EventEmitter {
 
     // If the run wasn't claimed by this workerGroup/workerId, then we return
     // 'conflict' as it must have claimed by someone else
-    if (task.runs.length - 1  !== runId ||
-        run.state             !== 'running' ||
-        run.workerGroup       !== workerGroup ||
-        run.workerId          !== workerId ||
-        run.hintId            !== hintId) {
+    if (task.runs.length - 1 !== runId ||
+        run.state !== 'running' ||
+        run.workerGroup !== workerGroup ||
+        run.workerId !== workerId ||
+        run.hintId !== hintId) {
       return 'conflict';
     }
 
@@ -269,11 +269,11 @@ class WorkClaimer extends events.EventEmitter {
     // Publish task running message, it's important that we publish even if this
     // is a retry request and we didn't make any changes in task.modify
     await this._publisher.taskRunning({
-      status:       status,
-      runId:        runId,
-      workerGroup:  workerGroup,
-      workerId:     workerId,
-      takenUntil:   run.takenUntil,
+      status: status,
+      runId: runId,
+      workerGroup: workerGroup,
+      workerId: workerId,
+      takenUntil: run.takenUntil,
     }, task.routes);
 
     let credentials = taskCreds(
@@ -288,13 +288,13 @@ class WorkClaimer extends events.EventEmitter {
 
     // Return claim structure
     return {
-      status:       status,
-      runId:        runId,
-      workerGroup:  workerGroup,
-      workerId:     workerId,
-      takenUntil:   run.takenUntil,
-      task:         await task.definition(),
-      credentials:  credentials,
+      status: status,
+      runId: runId,
+      workerGroup: workerGroup,
+      workerId: workerId,
+      takenUntil: run.takenUntil,
+      task: await task.definition(),
+      credentials: credentials,
     };
   }
 }

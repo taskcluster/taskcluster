@@ -6,11 +6,11 @@ suite('route parsing', () => {
     assert.deepEqual(
       parseRoute('treeherder.v2.try.XYZ.234'),
       {
-        destination:  'treeherder',
-        origin:       'hg.mozilla.org',
-        project:      'try',
-        revision:     'XYZ',
-        pushId:       234,
+        destination: 'treeherder',
+        origin: 'hg.mozilla.org',
+        project: 'try',
+        revision: 'XYZ',
+        pushId: 234,
       }
     );
   });
@@ -19,12 +19,12 @@ suite('route parsing', () => {
     assert.deepEqual(
       parseRoute('treeherder.v2.dummy/try.XYZ.234'),
       {
-        destination:  'treeherder',
-        origin:       'github.com',
-        owner:        'dummy',
-        project:      'try',
-        revision:     'XYZ',
-        pushId:       234,
+        destination: 'treeherder',
+        origin: 'github.com',
+        owner: 'dummy',
+        project: 'try',
+        revision: 'XYZ',
+        pushId: 234,
       }
     );
   });

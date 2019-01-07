@@ -1,11 +1,11 @@
-const debug       = require('debug')('test:query');
-const assert      = require('assert');
-const slugid      = require('slugid');
-const _           = require('lodash');
+const debug = require('debug')('test:query');
+const assert = require('assert');
+const slugid = require('slugid');
+const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
-const assume      = require('assume');
-const helper      = require('./helper');
-const testing     = require('taskcluster-lib-testing');
+const assume = require('assume');
+const helper = require('./helper');
+const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
@@ -18,24 +18,24 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('pendingTasks >= 1', async () => {
     const taskDef = {
-      provisionerId:    'no-provisioner',
-      workerType:       'query-test-worker',
-      schedulerId:      'my-scheduler',
-      taskGroupId:      'dSlITZ4yQgmvxxAi4A8fHQ',
-      routes:           [],
-      retries:          5,
-      created:          taskcluster.fromNowJSON(),
-      deadline:         taskcluster.fromNowJSON('2 minutes'),
-      scopes:           [],
-      payload:          {},
+      provisionerId: 'no-provisioner',
+      workerType: 'query-test-worker',
+      schedulerId: 'my-scheduler',
+      taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
+      routes: [],
+      retries: 5,
+      created: taskcluster.fromNowJSON(),
+      deadline: taskcluster.fromNowJSON('2 minutes'),
+      scopes: [],
+      payload: {},
       metadata: {
-        name:           'Unit testing task',
-        description:    'Task created during unit tests',
-        owner:          'jonsafj@mozilla.com',
-        source:         'https://github.com/taskcluster/taskcluster-queue',
+        name: 'Unit testing task',
+        description: 'Task created during unit tests',
+        owner: 'jonsafj@mozilla.com',
+        source: 'https://github.com/taskcluster/taskcluster-queue',
       },
       tags: {
-        purpose:        'taskcluster-testing',
+        purpose: 'taskcluster-testing',
       },
     };
 

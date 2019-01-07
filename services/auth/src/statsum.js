@@ -3,14 +3,14 @@ const Statsum = require('statsum');
 const taskcluster = require('taskcluster-client');
 
 builder.declare({
-  method:     'get',
-  route:      '/statsum/:project/token',
-  name:       'statsumToken',
-  input:      undefined,
-  output:     'statsum-token-response.yml',
-  stability:  'stable',
-  scopes:     'auth:statsum:<project>',
-  title:      'Get Token for Statsum Project',
+  method: 'get',
+  route: '/statsum/:project/token',
+  name: 'statsumToken',
+  input: undefined,
+  output: 'statsum-token-response.yml',
+  stability: 'stable',
+  scopes: 'auth:statsum:<project>',
+  title: 'Get Token for Statsum Project',
   description: [
     'Get temporary `token` and `baseUrl` for sending metrics to statsum.',
     '',
@@ -24,8 +24,8 @@ builder.declare({
 
   return res.reply({
     project,
-    token:    Statsum.createToken(project, this.statsum.secret, '25h'),
-    baseUrl:  this.statsum.baseUrl,
-    expires:  taskcluster.fromNowJSON('24 hours'),
+    token: Statsum.createToken(project, this.statsum.secret, '25h'),
+    baseUrl: this.statsum.baseUrl,
+    expires: taskcluster.fromNowJSON('24 hours'),
   });
 });

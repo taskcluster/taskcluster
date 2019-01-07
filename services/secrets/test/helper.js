@@ -5,8 +5,13 @@ const mocha = require('mocha');
 const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
 const load = require('../src/main');
 const config = require('typed-env-config');
+const slugid = require('slugid');
 const data = require('../src/data');
 const builder = require('../src/api.js');
+
+// a suffix used to generate unique table names so that parallel test runs do not
+// interfere with one another.  We remove these at the end of the test run.
+const TABLE_SUFFIX = slugid.nice().replace(/[_-]/g, '');
 
 exports.load = stickyLoader(load);
 
@@ -45,6 +50,11 @@ exports.withSecret = (mock, skipping) => {
         cryptoKey: cfg.azure.cryptoKey,
         signingKey: cfg.azure.signingKey,
       }));
+    } else {
+      // suffix the table name config with a short suffix so that parallel
+      // test runs have a good chance of not stepping on each others' feet
+      const cfg = await exports.load('cfg');
+      exports.load.cfg('azure.tableName', cfg.azure.tableName + TABLE_SUFFIX);
     }
 
     exports.Secret = await exports.load('Secret');

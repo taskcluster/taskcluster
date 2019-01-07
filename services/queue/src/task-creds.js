@@ -16,7 +16,7 @@ var taskCredentials = function(taskId, runId, workerGroup, workerId, takenUntil,
   ].join('/');
   return taskcluster.createTemporaryCredentials({
     clientId,
-    start:  new Date(),
+    start: new Date(),
     expiry: takenUntil,
     scopes: [
       'queue:reclaim-task:' + taskId + '/' + runId,

@@ -305,12 +305,12 @@ const testServiceBuilder = new Builder({
 });
 
 testServiceBuilder.declare({
-  method:       'get',
-  route:        '/resource',
-  name:         'resource',
-  scopes:       {AllOf: ['myapi:resource']},
-  title:        'Get Resource',
-  description:  '...',
+  method: 'get',
+  route: '/resource',
+  name: 'resource',
+  scopes: {AllOf: ['myapi:resource']},
+  title: 'Get Resource',
+  description: '...',
 }, function(req, res) {
   res.status(200).json({
     message: 'Hello World',
@@ -348,8 +348,8 @@ exports.withServers = (mock, skipping) => {
     exports.setupScopes = (...scopes) => {
       exports.apiClient = new exports.AuthClient({
         credentials: {
-          clientId:       'static/taskcluster/root',
-          accessToken:    exports.rootAccessToken,
+          clientId: 'static/taskcluster/root',
+          accessToken: exports.rootAccessToken,
         },
         rootUrl: exports.rootUrl,
         authorizedScopes: scopes.length > 0 ? scopes : undefined,
@@ -363,8 +363,8 @@ exports.withServers = (mock, skipping) => {
     exports.TestClient = taskcluster.createClient(testServiceBuilder.reference());
     exports.testClient = new exports.TestClient({
       credentials: {
-        clientId:       'static/taskcluster/root',
-        accessToken:    exports.rootAccessToken,
+        clientId: 'static/taskcluster/root',
+        accessToken: exports.rootAccessToken,
       },
       rootUrl: exports.rootUrl,
     });
@@ -378,12 +378,12 @@ exports.withServers = (mock, skipping) => {
     });
 
     testServer = await App({
-      port:           60553,
-      env:            'development',
-      forceSSL:       false,
-      trustProxy:     false,
-      rootDocsLink:   false,
-      apis:           [testServiceApi],
+      port: 60553,
+      env: 'development',
+      forceSSL: false,
+      trustProxy: false,
+      rootDocsLink: false,
+      apis: [testServiceApi],
     });
 
     // Finally, we set up a proxy that runs on rootUrl

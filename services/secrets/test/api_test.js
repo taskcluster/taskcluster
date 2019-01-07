@@ -8,7 +8,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   helper.withServer(mock, skipping);
 
   const SECRET_NAME = `captain:${slugid.v4()}`;
-  const testValueFoo  = {
+  const testValueFoo = {
     secret: {data: 'bar'},
     expires: taskcluster.fromNowJSON('1 day'),
   };
@@ -16,7 +16,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     secret: {data: 'foo'},
     expires: taskcluster.fromNowJSON('1 day'),
   };
-  const testValueExpired  = {
+  const testValueExpired = {
     secret: {data: 'bar'},
     expires: taskcluster.fromNowJSON('- 2 hours'),
   };
@@ -64,28 +64,28 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   test('set allowed key (twice)', async function() {
     await makeApiCall({
       clientName: 'captain-write',
-      apiCall:    'set',
-      name:       SECRET_NAME,
-      args:       testValueFoo,
-      res:        {},
+      apiCall: 'set',
+      name: SECRET_NAME,
+      args: testValueFoo,
+      res: {},
     });
 
     // a second call overwrites the value of the secret, without error
     await makeApiCall({
       clientName: 'captain-write',
-      apiCall:    'set',
-      name:       SECRET_NAME,
-      args:       testValueBar,
-      res:        {},
+      apiCall: 'set',
+      name: SECRET_NAME,
+      args: testValueBar,
+      res: {},
     });
   });
 
   test('set disallowed key', async function() {
     await makeApiCall({
       clientName: 'captain-write',
-      apiCall:    'set',
-      name:       'some-other-name',
-      args:       testValueFoo,
+      apiCall: 'set',
+      name: 'some-other-name',
+      args: testValueFoo,
       statusCode: 403, // It's not authorized!
     });
   });
@@ -95,8 +95,8 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     await client.set(SECRET_NAME, testValueFoo);
     await makeApiCall({
       clientName: 'captain-write',
-      apiCall:    'get',
-      name:       SECRET_NAME,
+      apiCall: 'get',
+      name: SECRET_NAME,
       statusCode: 403, // it's not authorized!
     });
   });
@@ -106,9 +106,9 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     await client.set(SECRET_NAME, testValueFoo);
     await makeApiCall({
       clientName: 'captain-read',
-      apiCall:    'get',
-      name:       SECRET_NAME,
-      res:        testValueFoo,
+      apiCall: 'get',
+      name: SECRET_NAME,
+      res: testValueFoo,
     });
   });
 
@@ -118,9 +118,9 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     await client.set(SECRET_NAME, testValueBar);
     await makeApiCall({
       clientName: 'captain-read',
-      apiCall:    'get',
-      name:        SECRET_NAME,
-      res:        testValueBar,
+      apiCall: 'get',
+      name: SECRET_NAME,
+      res: testValueBar,
     });
   });
 
@@ -129,8 +129,8 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     await client.set(SECRET_NAME, testValueBar);
     await makeApiCall({
       clientName: 'captain-read',
-      apiCall:    'remove',
-      name:        SECRET_NAME,
+      apiCall: 'remove',
+      name: SECRET_NAME,
       statusCode: 403, // It's not authorized!
     });
   });
@@ -140,9 +140,9 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     await client.set(SECRET_NAME, testValueBar);
     await makeApiCall({
       clientName: 'captain-write',
-      apiCall:    'remove',
-      name:        SECRET_NAME,
-      res:        {},
+      apiCall: 'remove',
+      name: SECRET_NAME,
+      res: {},
     });
     assert(!await helper.Secret.load({name: SECRET_NAME}, true));
   });
@@ -150,8 +150,8 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   test('getting a missing secret is a 404', async function() {
     await makeApiCall({
       clientName: 'captain-read',
-      apiCall:    'get',
-      name:        SECRET_NAME,
+      apiCall: 'get',
+      name: SECRET_NAME,
       statusCode: 404,
       errMessage: 'Secret not found',
     });
@@ -160,8 +160,8 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   test('deleting a missing secret is a 404', function() {
     return makeApiCall({
       clientName: 'captain-write',
-      apiCall:    'remove',
-      name:        SECRET_NAME,
+      apiCall: 'remove',
+      name: SECRET_NAME,
       statusCode: 404,
       errMessage: 'Secret not found',
     });
@@ -172,8 +172,8 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     await client.set(SECRET_NAME, testValueExpired);
     await makeApiCall({
       clientName: 'captain-read',
-      apiCall:    'get',
-      name:        SECRET_NAME,
+      apiCall: 'get',
+      name: SECRET_NAME,
       statusCode: 410,
       errMessage: 'The requested resource has expired.',
     });

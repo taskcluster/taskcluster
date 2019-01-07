@@ -57,7 +57,7 @@ exports.validate = (references) => {
 
       const refOk = ref => {
         if (ref.startsWith('#')) {
-          return true;  // URL doesn't like fragment-only relative URLs, but they are OK..
+          return true; // URL doesn't like fragment-only relative URLs, but they are OK..
         }
 
         const refUrl = new URL(ref, idUrl).toString();

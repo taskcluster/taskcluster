@@ -56,7 +56,7 @@ const load = loader({
     },
   },
 
-  LastFire : {
+  LastFire: {
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => {
       return data.LastFire.setup({
@@ -98,24 +98,24 @@ const load = loader({
   publisher: {
     requires: ['cfg', 'schemaset', 'monitor', 'pulseClient'],
     setup: async ({cfg, schemaset, monitor, pulseClient}) => await exchanges.publisher({
-      rootUrl:            cfg.taskcluster.rootUrl,
-      client:             pulseClient,
-      credentials:        cfg.pulse,
+      rootUrl: cfg.taskcluster.rootUrl,
+      client: pulseClient,
+      credentials: cfg.pulse,
       schemaset,
-      namespace:          'taskcluster-hooks',
-      publish:            cfg.app.publishMetaData,
-      validator:          await schemaset.validator(cfg.taskcluster.rootUrl),
-      aws:                cfg.aws.validator,
-      monitor:            monitor.prefix('publisher'),
+      namespace: 'taskcluster-hooks',
+      publish: cfg.app.publishMetaData,
+      validator: await schemaset.validator(cfg.taskcluster.rootUrl),
+      aws: cfg.aws.validator,
+      monitor: monitor.prefix('publisher'),
     }),
   },
 
   taskcreator: {
     requires: ['cfg', 'LastFire', 'monitor'],
     setup: ({cfg, LastFire, monitor}) => new taskcreator.TaskCreator({
-      ...cfg.taskcluster, 
-      LastFire, 
-      monitor:  monitor.prefix('taskcreator'),
+      ...cfg.taskcluster,
+      LastFire,
+      monitor: monitor.prefix('taskcreator'),
     }),
   },
 

@@ -20,18 +20,18 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   // Use the same task definition for everything
   const makeTask = () => {
     const task = {
-      provisionerId:    'no-provisioner',
-      workerType:       'test-worker',
+      provisionerId: 'no-provisioner',
+      workerType: 'test-worker',
       // Legal because we allow a small bit of clock drift
-      created:          taskcluster.fromNowJSON('- 5 seconds'),
-      deadline:         taskcluster.fromNowJSON('15 seconds'),
-      retries:          1,
-      payload:          {},
+      created: taskcluster.fromNowJSON('- 5 seconds'),
+      deadline: taskcluster.fromNowJSON('15 seconds'),
+      retries: 1,
+      payload: {},
       metadata: {
-        name:           'Unit testing task',
-        description:    'Task created during unit tests',
-        owner:          'jonsafj@mozilla.com',
-        source:         'https://github.com/taskcluster/taskcluster-queue',
+        name: 'Unit testing task',
+        description: 'Task created during unit tests',
+        owner: 'jonsafj@mozilla.com',
+        source: 'https://github.com/taskcluster/taskcluster-queue',
       },
     };
     return {taskId: slugid.v4(), task};
@@ -110,8 +110,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim task');
     const r2 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running');
 
@@ -148,8 +148,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim task');
     const r2 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup:    'my-worker-group',
-      workerId:       'my-worker',
+      workerGroup: 'my-worker-group',
+      workerId: 'my-worker',
     });
     helper.checkNextMessage('task-running');
 

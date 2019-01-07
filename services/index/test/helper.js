@@ -7,8 +7,13 @@ const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
 const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
 const {FakeClient} = require('taskcluster-lib-pulse');
+const slugid = require('slugid');
 
 const helper = module.exports;
+
+// a suffix used to generate unique table names so that parallel test runs do not
+// interfere with one another.  We remove these at the end of the test run.
+const TABLE_SUFFIX = slugid.nice().replace(/[_-]/g, '');
 
 exports.load = stickyLoader(load);
 
@@ -57,6 +62,15 @@ exports.withEntities = (mock, skipping) => {
           context: tbl.context ? await tbl.context() : undefined,
         }));
       }));
+    } else {
+      // suffix each ..TableName config with a short suffix so that parallel
+      // test runs have a good chance of not stepping on each others' feet
+      const cfg = await helper.load('cfg');
+      Object.keys(cfg.app).forEach(prop => {
+        if (prop.endsWith('TableName')) {
+          helper.load.cfg(`app.${prop}`, cfg.app[prop] + TABLE_SUFFIX);
+        }
+      });
     }
 
     await Promise.all(tables.map(async tbl => {
@@ -139,14 +153,14 @@ exports.withServer = (mock, skipping) => {
       const options = {
         // Ensure that we use global agent, to avoid problems with keepAlive
         // preventing tests from exiting
-        agent:            require('http').globalAgent,
+        agent: require('http').globalAgent,
         rootUrl: helper.rootUrl,
       };
       // if called as scopes('none'), don't pass credentials at all
       if (scopes && scopes[0] !== 'none') {
         options['credentials'] = {
-          clientId:       'test-client',
-          accessToken:    'none',
+          clientId: 'test-client',
+          accessToken: 'none',
         };
         options['authorizedScopes'] = scopes.length > 0 ? scopes : undefined;
       }
@@ -184,7 +198,7 @@ const stubbedQueue = () => {
   const tasks = {};
   const queue = new taskcluster.Queue({
     rootUrl: helper.rootUrl,
-    credentials:      {
+    credentials: {
       clientId: 'index-server',
       accessToken: 'none',
     },

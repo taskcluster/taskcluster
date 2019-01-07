@@ -1,8 +1,8 @@
-const testing         = require('taskcluster-lib-testing');
-const SchemaSet       = require('taskcluster-lib-validate');
-const assert          = require('assert');
-const path            = require('path');
-const express         = require('express');
+const testing = require('taskcluster-lib-testing');
+const SchemaSet = require('taskcluster-lib-validate');
+const assert = require('assert');
+const path = require('path');
+const express = require('express');
 
 let runningServer = null;
 

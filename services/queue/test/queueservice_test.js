@@ -33,25 +33,25 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
 
     if (mock) {
       queueService = new QueueService({
-        prefix:             cfg.app.queuePrefix2,
-        credentials:        {fake: true},
-        claimQueue:         cfg.app.claimQueue,
-        resolvedQueue:      cfg.app.resolvedQueue,
-        deadlineQueue:      cfg.app.deadlineQueue,
+        prefix: cfg.app.queuePrefix2,
+        credentials: {fake: true},
+        claimQueue: cfg.app.claimQueue,
+        resolvedQueue: cfg.app.resolvedQueue,
+        deadlineQueue: cfg.app.deadlineQueue,
         pendingPollTimeout: 30 * 1000,
-        deadlineDelay:      10,
+        deadlineDelay: 10,
         monitor,
       });
     } else {
       queueService = new QueueService({
         // use a unique set of queues for each run
-        prefix:             `t${crypto.randomBytes(3).toString('hex').slice(0, 5)}`,
-        credentials:        cfg.azure,
-        claimQueue:         cfg.app.claimQueue,
-        resolvedQueue:      cfg.app.resolvedQueue,
-        deadlineQueue:      cfg.app.deadlineQueue,
+        prefix: `t${crypto.randomBytes(3).toString('hex').slice(0, 5)}`,
+        credentials: cfg.azure,
+        claimQueue: cfg.app.claimQueue,
+        resolvedQueue: cfg.app.resolvedQueue,
+        deadlineQueue: cfg.app.deadlineQueue,
         pendingPollTimeout: 30 * 1000,
-        deadlineDelay:      1000,
+        deadlineDelay: 1000,
         monitor,
       });
     }
@@ -68,7 +68,7 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
   });
 
   // Dummy identifiers for use in this test
-  const workerType    = 'no-worker';
+  const workerType = 'no-worker';
   const provisionerId = slugid.v4(); // make a unique provisionerId
 
   test('putDeadlineMessage, pollDeadlineQueue', helper.runWithFakeTime(async () => {
@@ -100,8 +100,8 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
   }, mock));
 
   test('putClaimMessage, pollClaimQueue', helper.runWithFakeTime(async () => {
-    const taskId      = slugid.v4();
-    const takenUntil  = new Date(new Date().getTime() + 2 * 1000);
+    const taskId = slugid.v4();
+    const takenUntil = new Date(new Date().getTime() + 2 * 1000);
     debug('Putting message with taskId: %s', taskId);
     // Put message
     await queueService.putClaimMessage(taskId, 0, takenUntil);
@@ -126,7 +126,7 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
   }, mock));
 
   test('putResolvedMessage, pollResolvedQueue', helper.runWithFakeTime(async () => {
-    const taskId      = slugid.v4();
+    const taskId = slugid.v4();
     const taskGroupId = slugid.v4();
     const schedulerId = slugid.v4();
     debug('Putting message with taskId: %s, taskGroupId: %s', taskId, taskGroupId);
@@ -154,14 +154,14 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
 
   // not supported for mock QueueService
   test('put, poll, release, poll, delete (priority: lowest)', helper.runWithFakeTime(async () => {
-    const taskId  = slugid.v4();
-    const runId   = 0;
-    const task    = {
-      taskId:             taskId,
-      provisionerId:      provisionerId,
-      workerType:         workerType,
-      priority:           'lowest',
-      deadline:           new Date(new Date().getTime() + 5 * 60 * 1000),
+    const taskId = slugid.v4();
+    const runId = 0;
+    const task = {
+      taskId: taskId,
+      provisionerId: provisionerId,
+      workerType: workerType,
+      priority: 'lowest',
+      deadline: new Date(new Date().getTime() + 5 * 60 * 1000),
     };
 
     // Put message into pending queue
@@ -239,14 +239,14 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
     // signed URLs are not supported for mock QueueService, so no need for these
     // tests in that case.
     test('put, get, delete (priority: high) (signed URLs)', async function() {
-      const taskId  = slugid.v4();
-      const runId   = 0;
-      const task    = {
-        taskId:             taskId,
-        provisionerId:      provisionerId,
-        workerType:         workerType,
-        priority:           'high',
-        deadline:           new Date(new Date().getTime() + 5 * 60 * 1000),
+      const taskId = slugid.v4();
+      const runId = 0;
+      const task = {
+        taskId: taskId,
+        provisionerId: provisionerId,
+        workerType: workerType,
+        priority: 'high',
+        deadline: new Date(new Date().getTime() + 5 * 60 * 1000),
       };
 
       // Put message into pending queue
@@ -299,14 +299,14 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
     });
 
     test('put, get, delete (priority: lowest) (signed URLs)', async function() {
-      const taskId  = slugid.v4();
-      const runId   = 0;
-      const task    = {
-        taskId:             taskId,
-        provisionerId:      provisionerId,
-        workerType:         workerType,
-        priority:           'lowest',
-        deadline:           new Date(new Date().getTime() + 5 * 60 * 1000),
+      const taskId = slugid.v4();
+      const runId = 0;
+      const task = {
+        taskId: taskId,
+        provisionerId: provisionerId,
+        workerType: workerType,
+        priority: 'lowest',
+        deadline: new Date(new Date().getTime() + 5 * 60 * 1000),
       };
 
       // Put message into pending queue

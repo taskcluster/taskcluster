@@ -10,7 +10,7 @@ program.command('build')
   .option('--no-cache', 'Do not use any cached state, instead building everything from scratch')
   .option('--target-service <service>', 'Target a specific service, rather than all services')
   .action((...options) => {
-    if (options.length != 1) {
+    if (options.length !== 1) {
       console.error('unexpected command-line arguments');
       process.exit(1);
     }

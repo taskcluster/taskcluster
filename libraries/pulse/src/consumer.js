@@ -164,7 +164,7 @@ class PulseConsumer {
           // channel is probably sick; but if this is an IllegalOperationError,
           // there's no need to report it (that is basically saying the channel
           // has closed, so we'll re-connect)
-          if (!err instanceof amqplib.IllegalOperationError) {
+          if (!(err instanceof amqplib.IllegalOperationError)) {
             this.client.monitor.reportError(err, {
               queueName,
               exchange: msg.exchange,
@@ -196,11 +196,11 @@ class PulseConsumer {
   async _handleMessage(msg) {
     // Construct message
     let message = {
-      payload:      JSON.parse(msg.content.toString('utf8')),
-      exchange:     msg.fields.exchange,
-      routingKey:   msg.fields.routingKey,
-      redelivered:  msg.fields.redelivered,
-      routes:       [],
+      payload: JSON.parse(msg.content.toString('utf8')),
+      exchange: msg.fields.exchange,
+      routingKey: msg.fields.routingKey,
+      redelivered: msg.fields.redelivered,
+      routes: [],
     };
 
     // Find CC'ed routes
@@ -247,7 +247,7 @@ class PulseConsumer {
           routing[ref.name] = keys.pop();
         }
         // Check that we only have one multiWord routing key
-        assert(i == j, 'i != j really shouldn\'t be the case');
+        assert(i === j, 'i != j really shouldn\'t be the case');
         routing[routingKeyReference[i].name] = keys.join('.');
       }
 

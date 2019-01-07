@@ -51,7 +51,7 @@ class MockMonitor extends BaseMonitor {
 
   prefix(prefix) {
     const newopts = _.cloneDeep(this._opts);
-    newopts.prefix = (this._opts.prefix || '')  + '.' + prefix;
+    newopts.prefix = (this._opts.prefix || '') + '.' + prefix;
     return new MockMonitor(
       newopts,
       this.counts,

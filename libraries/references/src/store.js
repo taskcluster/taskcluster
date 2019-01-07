@@ -68,4 +68,3 @@ const store = async ({references, schemas, output, rootUrl}) => {
 };
 
 exports.store = store;
-

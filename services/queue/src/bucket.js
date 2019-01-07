@@ -1,7 +1,7 @@
-let aws         = require('aws-sdk');
-let _           = require('lodash');
-let debug       = require('debug')('app:bucket');
-let assert      = require('assert');
+let aws = require('aws-sdk');
+let _ = require('lodash');
+let debug = require('debug')('app:bucket');
+let assert = require('assert');
 
 /**
  * Create S3 bucket wrapper.
@@ -20,12 +20,12 @@ let assert      = require('assert');
  * }
  */
 var Bucket = function(options) {
-  assert(options,             'options must be given');
-  assert(options.bucket,      'bucket must be specified');
+  assert(options, 'options must be given');
+  assert(options.bucket, 'bucket must be specified');
   assert(options.credentials, 'credentials must be specified');
   assert(!options.bucketCDN || typeof options.bucketCDN === 'string',
     'Expected bucketCDN to be a hostname or empty string for none');
-  assert(options.monitor,     'options.monitor is required');
+  assert(options.monitor, 'options.monitor is required');
   if (options.bucketCDN) {
     assert(/^https?:\/\//.test(options.bucketCDN), 'bucketCDN must be http(s)');
     assert(/[^\/]$/.test(options.bucketCDN),
@@ -39,7 +39,7 @@ var Bucket = function(options) {
   if (!options.credentials.mock) {
     this.s3 = new aws.S3(_.defaults({
       params: {
-        Bucket:   options.bucket,
+        Bucket: options.bucket,
       },
     }, options.credentials));
   } else {
@@ -62,18 +62,18 @@ module.exports = Bucket;
  * }
  */
 Bucket.prototype.createPutUrl = function(prefix, options) {
-  assert(prefix,                'prefix must be given');
-  assert(options,               'options must be given');
-  assert(options.contentType,   'contentType must be given');
-  assert(options.expires,       'expires must be given');
+  assert(prefix, 'prefix must be given');
+  assert(options, 'options must be given');
+  assert(options.contentType, 'contentType must be given');
+  assert(options.expires, 'expires must be given');
 
   // This is an explicitly created promise due to
   // https://github.com/aws/aws-sdk-js/issues/1008
   return new Promise((accept, reject) => {
     this.s3.getSignedUrl('putObject', {
-      Key:          prefix,
-      ContentType:  options.contentType,
-      Expires:      options.expires,
+      Key: prefix,
+      ContentType: options.contentType,
+      Expires: options.expires,
     }, (err, url) => {
       if (err) {
         return reject(err);
@@ -103,16 +103,16 @@ Bucket.prototype.createGetUrl = function(prefix, forceS3 = false) {
  * }
  */
 Bucket.prototype.createSignedGetUrl = function(prefix, options) {
-  assert(prefix,                'prefix must be given');
-  assert(options,               'options must be given');
-  assert(options.expires,       'expires must be given');
+  assert(prefix, 'prefix must be given');
+  assert(options, 'options must be given');
+  assert(options.expires, 'expires must be given');
 
   // This is an explicitly created promise due to
   // https://github.com/aws/aws-sdk-js/issues/1008
   return new Promise((accept, reject) => {
     this.s3.getSignedUrl('getObject', {
-      Key:          prefix,
-      Expires:      options.expires,
+      Key: prefix,
+      Expires: options.expires,
     }, (err, url) => {
       if (err) {
         return reject(err);
@@ -126,7 +126,7 @@ Bucket.prototype.createSignedGetUrl = function(prefix, options) {
 Bucket.prototype.deleteObject = function(prefix) {
   assert(prefix, 'prefix must be provided');
   return this.s3.deleteObject({
-    Key:  prefix,
+    Key: prefix,
   }).promise();
 };
 
@@ -137,7 +137,7 @@ Bucket.prototype.deleteObjects = function(prefixes) {
     Delete: {
       Objects: prefixes.map(function(prefix) {
         return {
-          Key:  prefix,
+          Key: prefix,
         };
       }),
     },
@@ -151,8 +151,8 @@ Bucket.prototype.setupCORS = async function() {
       AllowedOrigins: ['*'],
       AllowedMethods: ['GET', 'PUT', 'HEAD', 'POST', 'DELETE'],
       AllowedHeaders: ['*'],
-      MaxAgeSeconds:  60 * 60,
-      ExposeHeaders:  [],
+      MaxAgeSeconds: 60 * 60,
+      ExposeHeaders: [],
     },
   ];
   try {

@@ -82,15 +82,15 @@ class ScopeResolver extends events.EventEmitter {
    */
   async setup(options) {
     options = _.defaults({}, options || {}, {
-      cacheExpiry:    20 * 60 * 1000,   // default to 20 min
+      cacheExpiry: 20 * 60 * 1000, // default to 20 min
     });
     assert(options.Client, 'Expected options.Client');
     assert(options.Roles, 'Expected options.Roles');
     assert(options.exchangeReference, 'Expected options.exchangeReference');
     assert(options.pulseClient, 'Expected options.pulseClient');
     assert(options.rootUrl, 'Expected options.rootUrl');
-    this._Client        = options.Client;
-    this._Roles         = options.Roles;
+    this._Client = options.Client;
+    this._Roles = options.Roles;
 
     await this.reloadOnNotifications(options);
 
@@ -175,12 +175,12 @@ class ScopeResolver extends events.EventEmitter {
         let lastUsedDate = new Date(client.details.lastDateUsed);
         let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
         this._clients.push({
-          clientId:         client.clientId,
-          accessToken:      client.accessToken,
-          expires:          client.expires,
-          updateLastUsed:   lastUsedDate < minLastUsed,
+          clientId: client.clientId,
+          accessToken: client.accessToken,
+          expires: client.expires,
+          updateLastUsed: lastUsedDate < minLastUsed,
           unexpandedScopes: client.scopes,
-          disabled:         client.disabled,
+          disabled: client.disabled,
         });
       }
       this._rebuildResolver(this._roles, this._clients);
@@ -200,7 +200,7 @@ class ScopeResolver extends events.EventEmitter {
 
       // Load clients and roles in parallel
       let clients = [];
-      let roles   = [];
+      let roles = [];
       await Promise.all([
         // Load all clients on a simplified form:
         // {clientId, accessToken, updateLastUsed}
@@ -210,15 +210,15 @@ class ScopeResolver extends events.EventEmitter {
             let lastUsedDate = new Date(client.details.lastDateUsed);
             let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
             clients.push({
-              clientId:         client.clientId,
-              accessToken:      client.accessToken,
-              expires:          client.expires,
+              clientId: client.clientId,
+              accessToken: client.accessToken,
+              expires: client.expires,
               // Note that lastUsedDate should be updated, if it's out-dated by
               // more than 6 hours.
               // (cheap way to know if it's been used recently)
-              updateLastUsed:   lastUsedDate < minLastUsed,
+              updateLastUsed: lastUsedDate < minLastUsed,
               unexpandedScopes: client.scopes,
-              disabled:         client.disabled,
+              disabled: client.disabled,
             });
           },
         }),

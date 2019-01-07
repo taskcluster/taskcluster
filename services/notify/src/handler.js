@@ -87,42 +87,42 @@ class Handler {
       // convert from on- syntax to state. e.g. on-exception -> exception
       let decider = _.join(_.slice(route[route.length -1], 3), '');
       if (decider !== 'any' && status.state !== decider) {
-        return;
+        return null;
       }
 
       let ircMessage = `Task "${task.metadata.name}" complete with status '${status.state}'. Inspect: ${href}`;
 
       switch (route[1]) {
-        case 'irc-user':
-          this.monitor.count('notification-requested.irc-user');
-          if (_.has(task, 'extra.notify.ircUserMessage')) {
-            ircMessage = this.renderMessage(task.extra.notify.ircUserMessage, {task, status});
-          }
-          return this.notifier.irc({
-            user: route[2],
-            message: ircMessage,
-          });
+      case 'irc-user':
+        this.monitor.count('notification-requested.irc-user');
+        if (_.has(task, 'extra.notify.ircUserMessage')) {
+          ircMessage = this.renderMessage(task.extra.notify.ircUserMessage, {task, status});
+        }
+        return this.notifier.irc({
+          user: route[2],
+          message: ircMessage,
+        });
 
-        case 'irc-channel':
-          this.monitor.count('notification-requested.irc-channel');
-          if (_.has(task, 'extra.notify.ircChannelMessage')) {
-            ircMessage = this.renderMessage(task.extra.notify.ircChannelMessage, {task, status});
-          }
-          return this.notifier.irc({
-            channel: route[2],
-            message: ircMessage,
-          });
+      case 'irc-channel':
+        this.monitor.count('notification-requested.irc-channel');
+        if (_.has(task, 'extra.notify.ircChannelMessage')) {
+          ircMessage = this.renderMessage(task.extra.notify.ircChannelMessage, {task, status});
+        }
+        return this.notifier.irc({
+          channel: route[2],
+          message: ircMessage,
+        });
 
-        case 'pulse':
-          this.monitor.count('notification-requested.pulse');
-          return this.notifier.pulse({
-            routingKey: _.join(_.slice(route, 2, route.length - 1), '.'),
-            message: status,
-          });
+      case 'pulse':
+        this.monitor.count('notification-requested.pulse');
+        return this.notifier.pulse({
+          routingKey: _.join(_.slice(route, 2, route.length - 1), '.'),
+          message: status,
+        });
 
-        case 'email':
-          this.monitor.count('notification-requested.email');
-          let content = `
+      case 'email':
+        this.monitor.count('notification-requested.email');
+        let content = `
 Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHref}) is complete.
 
 **Status:** ${status.state} (in ${runCount} run${runCount === 1? '' : 's'})
@@ -131,25 +131,26 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
 **Owner:** ${task.metadata.owner}
 **Source:** ${task.metadata.source}
           `;
-          let link = {text: 'Inspect Task', href};
-          let subject = `Task ${status.state}: ${task.metadata.name} - ${taskId}`;
-          let template = 'simple';
-          if (_.has(task, 'extra.notify.email')) {
-            let extra = task.extra.notify.email;
-            content = extra.content ? this.renderMessage(extra.content, {task, status}) : content;
-            subject = extra.subject ? this.renderMessage(extra.subject, {task, status}) : subject;
-            link = extra.link ? jsone(extra.link, {task, status}) : link;
-            template = extra.template ? jsone(extra.template, {task, status}) : template;
-          }
-          return this.notifier.email({
-            address:  _.join(_.slice(route, 2, route.length - 1), '.'),
-            content,
-            subject,
-            link,
-            template,
-          });
+        let link = {text: 'Inspect Task', href};
+        let subject = `Task ${status.state}: ${task.metadata.name} - ${taskId}`;
+        let template = 'simple';
+        if (_.has(task, 'extra.notify.email')) {
+          let extra = task.extra.notify.email;
+          content = extra.content ? this.renderMessage(extra.content, {task, status}) : content;
+          subject = extra.subject ? this.renderMessage(extra.subject, {task, status}) : subject;
+          link = extra.link ? jsone(extra.link, {task, status}) : link;
+          template = extra.template ? jsone(extra.template, {task, status}) : template;
+        }
+        return this.notifier.email({
+          address: _.join(_.slice(route, 2, route.length - 1), '.'),
+          content,
+          subject,
+          link,
+          template,
+        });
 
-        default:
+      default:
+        return null;
       }
     }));
   }

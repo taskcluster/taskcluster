@@ -44,7 +44,7 @@ const loadSchemas = (serviceDirectory, schemas) => {
       }
     } else {
       schemas.push({
-        filename, 
+        filename,
         content: JSON.parse(fs.readFileSync(filename)),
       });
     }

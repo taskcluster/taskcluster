@@ -73,14 +73,14 @@ suite('consumer_test.js', function() {
           }, async message => {
             debug(`handling message ${message.payload.i}`);
             // message three gets retried once and then discarded.
-            if (message.payload.i == 3) {
+            if (message.payload.i === 3) {
               // inject an error to test retrying
               throw new Error('uhoh');
             }
 
             // recycle the client after we've had a few messages, just for exercise.
             // Note that we continue to process this message here
-            if (got.length == 4) {
+            if (got.length === 4) {
               client.recycle();
             }
             got.push(message);
@@ -146,7 +146,7 @@ suite('consumer_test.js', function() {
               got.push({connected: true});
               // if this is the second reconnection, then we're done -- no further
               // messages are expected, as they were lost when we reconnected
-              if (got.filter(x => x.connected).length == 2) {
+              if (got.filter(x => x.connected).length === 2) {
                 // stop the PulseConsumer in a tenth-second, to exercise that code
                 // (this isn't how pq.stop would normally be called!). The delay
                 // is to allow any further message deliveries (but we expect none)
@@ -156,7 +156,7 @@ suite('consumer_test.js', function() {
             handleMessage: async message => {
               debug(`handling message ${message.payload.i}`);
               // message three gets retried once and then discarded.
-              if (message.payload.i == 3) {
+              if (message.payload.i === 3) {
                 // inject an error to test retrying
                 throw new Error('uhoh');
               }
@@ -165,7 +165,7 @@ suite('consumer_test.js', function() {
               // Note that we continue to process this message here.  We will lose any
               // remaining messages ("ephemeral", right?), so onConnected will resolve
               // the promise once this occurs.
-              if (got.length == 4) {
+              if (got.length === 4) {
                 client.recycle();
               }
               got.push(message);

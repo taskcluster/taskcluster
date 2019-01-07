@@ -106,12 +106,12 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
   });
 
   pulseTest({
-    testName:     'Publish Push',
-    listenFor:    'push',
+    testName: 'Publish Push',
+    listenFor: 'push',
     exchangeFunc: 'push',
-    routingKey:   'primary.TaskClusterRobot.hooks-testing',
+    routingKey: 'primary.TaskClusterRobot.hooks-testing',
     eventId: '9637a980-d8fb-11e6-9830-1244ca57c95f',
-    details:      {
+    details: {
       'event.base.ref': 'refs/heads/master',
       'event.base.repo.branch': 'master',
       'event.base.repo.name': 'hooks-testing',
@@ -128,18 +128,18 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
       'event.type': 'push',
       'event.head.user.email': 'anotheruser@github.com',
     },
-    jsonFile:     'webhook.push.json',
+    jsonFile: 'webhook.push.json',
     tasks_for: 'github-push',
     branch: 'master',
   });
 
   pulseTest({
-    testName:     'Publish Release',
-    listenFor:    'release',
+    testName: 'Publish Release',
+    listenFor: 'release',
     exchangeFunc: 'release',
     routingKey: 'primary.TaskClusterRobot.hooks-testing',
     eventId: '2c81a200-cd36-11e6-9106-ad0d7be0e22e',
-    details:      {
+    details: {
       'event.type': 'release',
       'event.base.repo.branch': 'master',
       'event.head.user.login': 'TaskClusterRobot',
@@ -155,18 +155,18 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
       'event.zip': 'https://api.github.com/repos/TaskClusterRobot/hooks-testing/zipball/testing-789',
       'event.head.user.email': 'someuser@github.com',
     },
-    jsonFile:     'webhook.release.json',
+    jsonFile: 'webhook.release.json',
     tasks_for: 'github-release',
     branch: 'master',
   });
 
   pulseTest({
-    testName:     'Publish Tag Push',
-    listenFor:    'push',
+    testName: 'Publish Tag Push',
+    listenFor: 'push',
     exchangeFunc: 'push',
-    routingKey:   'primary.TaskClusterRobot.hooks-testing',
+    routingKey: 'primary.TaskClusterRobot.hooks-testing',
     eventId: '9637a980-d8fb-11e6-9830-1244ca57c95f',
-    details:      {
+    details: {
       'event.base.ref': 'refs/tags/v1.0.2',
       'event.base.repo.name': 'hooks-testing',
       'event.base.repo.url': 'https://github.com/TaskClusterRobot/hooks-testing.git',
@@ -182,7 +182,7 @@ helper.secrets.mockSuite('pulse', ['taskcluster'], function(mock, skipping) {
       'event.type': 'tag',
       'event.head.user.email': 'anotheruser@github.com',
     },
-    jsonFile:     'webhook.tag_push.json',
+    jsonFile: 'webhook.tag_push.json',
     tasks_for: 'github-push',
     branch: 'v1.0.2',
   });
