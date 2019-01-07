@@ -97,7 +97,7 @@ const authLog = process.env.NODE_ENV === 'production' ?
  * client satisfies the scope expression in `options.scopes` after the
  * parameters denoted by `<...>` and `{for: ..., each: ..., in: ...}` are
  * substituted in. If the client does not satisfy the scope expression, it
- * throws an Error with code = 'AuthorizationError'.
+ * throws an Error.
  *
  * The `req.scopes()` method returns a Promise for the set of scopes the caller
  * has. Please, note that `req.scopes()` returns `[]` if there was an
@@ -244,7 +244,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
        * Create method to check if request satisfies the scope expression. Given
        * extra parameters.
        * Return true, if successful and if unsuccessful it throws an Error with
-       * code = 'AuthorizationError'.
+       * code = 'AuthenticationFailed'.
        */
       req.authorize = async (params) => {
         // This lint can be disabled because authenticate() will always return the same value
@@ -253,12 +253,11 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
         // If authentication failed
         if (result.status === 'auth-failed') {
           res.set('www-authenticate', 'hawk');
-          const err = new Error('Authentication failed'); // This way instead of subclassing due to babel/babel#3083
-          err.name = 'AuthenticationError';
-          err.code = 'AuthenticationError';
-          err.message = result.message;
-          err.details = result;
-          throw err;
+          throw new ErrorReply({
+            code: 'AuthenticationFailed',
+            message: result.message,
+            details: result,
+          });
         }
 
         // Render the scope expression template
@@ -269,34 +268,33 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
         req.hasAuthed = true;
 
         if (!authed) {
-          const err = new Error('Authorization failed'); // This way instead of subclassing due to babel/babel#3083
-          err.name = 'AuthorizationError';
-          err.code = 'AuthorizationError';
-          err.messageTemplate = [
-            'Client ID ' + result.clientId + ' does not have sufficient scopes and are missing the following scopes:',
-            '',
-            '```',
-            '{{unsatisfied}}',
-            '```',
-            '',
-            'You have the scopes:',
-            '',
-            '```',
-            '{{scopes}}',
-            '```',
-            '',
-            'This request requires you to satisfy this scope expression:',
-            '',
-            '```',
-            '{{required}}',
-            '```',
-          ].join('\n');
-          err.details = {
-            scopes: result.scopes,
-            required: scopeExpression,
-            unsatisfied: scopes.removeGivenScopes(result.scopes, scopeExpression),
-          };
-          throw err;
+          throw new ErrorReply({
+            code: 'InsufficientScopes',
+            message: [
+              'Client ID ' + result.clientId + ' does not have sufficient scopes and are missing the following scopes:',
+              '',
+              '```',
+              '{{unsatisfied}}',
+              '```',
+              '',
+              'You have the scopes:',
+              '',
+              '```',
+              '{{scopes}}',
+              '```',
+              '',
+              'This request requires you to satisfy this scope expression:',
+              '',
+              '```',
+              '{{required}}',
+              '```',
+            ].join('\n'),
+            details: {
+              scopes: result.scopes,
+              required: scopeExpression,
+              unsatisfied: scopes.removeGivenScopes(result.scopes, scopeExpression),
+            },
+          });
         }
 
         // TODO: log this in a structured format when structured logging is
@@ -319,11 +317,6 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
         next();
       }
     } catch (err) {
-      if (err.code === 'AuthorizationError') {
-        return next(new ErrorReply({code: 'InsufficientScopes', message: err.messageTemplate, details: err.details}));
-      } else if (err.code === 'AuthenticationError') {
-        return next(new ErrorReply({code: 'AuthenticationFailed', message: err.message, details: err.details}));
-      }
       return next(err);
     }
   };

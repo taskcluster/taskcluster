@@ -7,6 +7,7 @@ const makeApp = require('taskcluster-lib-app');
 const APIBuilder = require('../');
 const testing = require('taskcluster-lib-testing');
 const path = require('path');
+const debug = require('debug')('auth_test');
 
 suite('api/auth', function() {
   // Reference for test api server
@@ -266,6 +267,44 @@ suite('api/auth', function() {
 
   testEndpoint({
     method: 'get',
+    route: '/insuff-scopes-details',
+    name: 'insuffScopes',
+    scopes: {AllOf: ['service:<param>', 'another-irrelevant-scope']},
+    handler: async (req, res) => {
+      try {
+        await req.authorize({param: 'myfolder/resource'});
+        res.reply({});
+      } catch (err) {
+        if (err.code === 'InsufficientScopes') {
+          debug(`got details: ${JSON.stringify(err.details, null, 2)}`);
+          if (!_.isEqual(err.details.scopes, ['another-irrelevant-scope'])) {
+            throw err;
+          }
+          if (!_.isEqual(err.details.required, { AllOf: ['service:myfolder/resource', 'another-irrelevant-scope']})) {
+            throw err;
+          }
+          if (!_.isEqual(err.details.unsatisfied, 'service:myfolder/resource')) {
+            throw err;
+          }
+
+          return res.reply({});
+        }
+        throw err;
+      }
+      throw new Error('did not get InsufficientScopes error');
+    },
+    tests: [
+      {
+        label: 'insufficient scopes has documented details',
+        id: 'nobody',
+        desiredStatus: 200,
+        tester: (auth, url) => request.get(url).hawk(auth),
+      },
+    ],
+  });
+
+  testEndpoint({
+    method: 'get',
     route: '/crash-override',
     name: 'crashOverride',
     scopes: {AllOf: ['service:<param>']},
@@ -274,7 +313,7 @@ suite('api/auth', function() {
         await req.authorize({param: 'myfolder/resource'});
         res.reply({});
       } catch (err) {
-        if (err.code === 'AuthorizationError') {
+        if (err.code === 'InsufficientScopes') {
           // we probably wouldn't normally throw a resource expired error for
           // missing scopes, but this is a convenient way to assert we have
           // overridden the error
@@ -342,9 +381,9 @@ suite('api/auth', function() {
         await req.authorize({param: 'myfolder/other-resource'});
         res.reply({});
       } catch (err) {
-        if (err.code === 'AuthorizationError') {
-          assert(err.messageTemplate.indexOf('Client ID nobody does not have sufficient scopes')!==-1);
-          return res.reportError('InsufficientScopes', err.messageTemplate, err.details);
+        if (err.code === 'InsufficientScopes') {
+          assert(err.message.indexOf('Client ID nobody does not have sufficient scopes')!==-1);
+          throw err;
         }
         throw err;
       }

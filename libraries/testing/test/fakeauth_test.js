@@ -31,7 +31,7 @@ builder.declare({
     await req.authorize();
     return res.reply({hasTestScope: true});
   } catch (err) {
-    if (err.code !== 'AuthorizationError') {
+    if (err.code !== 'InsufficientScopes') {
       throw err;
     }
     return res.reply({hasTestScope: false});
