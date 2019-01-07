@@ -39,6 +39,9 @@ The response will contain the header `x-websocktunnel-client-url` giving the URL
 Clients can pass this URL, or URLs derived from it, to viewers.
 Clients should not make assumptions about the form of this URL.
 
+The client ID must be URL-safe, specifically matching `/^[a-zA-Z0-9_~.-%]+$/`.
+It is recommended to urlencode any string to meet this requirement.
+
 ### Authorization
 
 The token included in the `Authorization` header must be a [JWT](https://jwt.io/).

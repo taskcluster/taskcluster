@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -21,6 +22,10 @@ import (
 
 const (
 	monthUnix = 31 * 24 * time.Hour
+)
+
+var (
+	clientIdRe = regexp.MustCompile(`^[a-zA-Z0-9_~.%-]+$`)
 )
 
 // Config contains the run time parameters for the proxy
@@ -142,6 +147,11 @@ func (p *proxy) removeTunnel(id string) {
 // The request must contain the tunnel ID in the url.
 // The request is validated by the proxy and the http connection is upgraded to websocket.
 func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString string) {
+	if !clientIdRe.MatchString(id) {
+		p.logerrorf(id, r.RemoteAddr, "client ID is invalid")
+		http.Error(w, http.StatusText(400), 400)
+		return
+	}
 
 	p.logf(id, r.RemoteAddr, "requesting client registration")
 	if tokenString == "" {

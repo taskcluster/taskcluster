@@ -99,6 +99,39 @@ func TestProxyRegister(t *testing.T) {
 	_ = conn2.Close()
 }
 
+func TestProxyRegisterInvalidClientId(t *testing.T) {
+	//  start proxy server
+	proxyConfig := Config{
+		Upgrader:   upgrader,
+		Logger:     genLogger(),
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+	}
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	// get url
+	wsURL := util.MakeWsURL(server.URL)
+
+	// invalid worker ID (/ is not allowed)
+	workerid := "worker/id"
+	// set auth header dial connection to proxy
+	header := make(http.Header)
+	header.Set("Authorization ", "Bearer "+workeridjwt)
+	header.Set("x-websocktunnel-id", workerid)
+	_, _, err = websocket.DefaultDialer.Dial(wsURL, header)
+	if err == nil {
+		t.Fatalf("Did not get expected error")
+	}
+	// all we get from gorilla/websocket is "bad handshake", unfortunately
+}
+
 // TestProxyRequest
 func TestProxyRequest(t *testing.T) {
 	proxyConfig := Config{

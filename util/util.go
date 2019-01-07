@@ -18,14 +18,8 @@ func Min(a, b int) int {
 }
 
 var (
-	idReplaceRe = regexp.MustCompile(`^/(\w+)(/?)`)
-	jwtRe       = regexp.MustCompile(`^Bearer ([\w-\.]+)$`)
+	jwtRe = regexp.MustCompile(`^Bearer ([\w-\.]+)$`)
 )
-
-// ReplaceID replaces id in "/{id}/path" with "/path"
-func ReplaceID(path string) string {
-	return idReplaceRe.ReplaceAllString(path, "/")
-}
 
 // MakeWsURL converts http:// to ws://
 func MakeWsURL(url string) string {
