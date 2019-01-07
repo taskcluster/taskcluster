@@ -213,7 +213,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
     assert(result.roles.some(role => role.roleId === `thing-id:${clientId}`));
     assert(result.roles.some(role => role.description === 'test role'));
-    assert(result.roles.some(role => role.scopes === ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2']));
+    assert(result.roles.some(role => _.isEqual(role.scopes, ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'])));
     assert(result.roles.length === 4);
   });
 
