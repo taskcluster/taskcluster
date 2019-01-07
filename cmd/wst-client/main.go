@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"io"
 	"net"
 	"os"
@@ -13,8 +14,6 @@ import (
 	set "github.com/deckarep/golang-set"
 	"github.com/docopt/docopt-go"
 	log "github.com/sirupsen/logrus"
-	"github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcauth"
 	"github.com/taskcluster/websocktunnel/client"
 )
 
@@ -25,23 +24,36 @@ the internet.
 
 [Firewall/NAT [User] <--]---> [websocktunnel] <--- [Web]
 
-Usage: wst-client <clientID> <accessToken> <targetPort> [--cert=<cert>] [--out-file=<outFile>] [--json]
-client -h | --help
+Usage:
+    wst-client <wstServer> <wstClientID> <targetPort> [--token <jwtToken>] [--out-file=<outFile>]
+	           [--verbose] [--json] 
+    wst-client -h | --help
+
+The wstClientID is the ID to register with the websocktunnel server.  The JWT
+token must authorize the same ID.
+
+If --token is not provided, then each line of input on stdin will be treated as
+a token as soon as it arrives.  This allows wst-client to operate as a
+subprocess of some other server for which it is managing the tunnel.  That
+server can then "feed" wst-client a new token before the most recent token
+expires.
 
 Options:
--h --help 		Show help
---cert=<cert> 		Certificate for temporary credentials
---out-file=<outFile> 	Dump url to this file
---json 			Output logs in JSON format`
+-h --help               Show help
+--verbose               Verbose logging
+--token                 JWT Token, if not given on stdin (see above)
+--out-file=<outFile>    Dump url to this file
+--json                  Output logs in JSON format`
 
 const closeWait = 2 * time.Second
 
 func main() {
-	arguments, _ := docopt.Parse(usage, nil, true, "Webhook Client 0.1", false)
+	arguments, _ := docopt.Parse(usage, nil, true, "Websocktunnel Client 0.1", false)
 
-	clientID, accessToken, cert := arguments["<clientID>"].(string), arguments["<accessToken>"].(string), ""
-	if arguments["--cert"] != nil {
-		cert = arguments["--cert"].(string)
+	var jwtToken string
+	wstServer, wstClientID := arguments["<wstServer>"].(string), arguments["<wstClientID>"].(string)
+	if arguments["<jwtToken>"] != nil {
+		jwtToken = arguments["<jwtToken>"].(string)
 	}
 
 	targetPort, err := strconv.Atoi(arguments["<targetPort>"].(string))
@@ -58,6 +70,10 @@ func main() {
 		log.SetFormatter(&log.JSONFormatter{})
 	}
 
+	if arguments["--verbose"].(bool) {
+		log.SetLevel(log.DebugLevel)
+	}
+
 	// Configure signals for graceful handling
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
@@ -71,7 +87,7 @@ func main() {
 	// accept new streams from this channel
 	strChan := make(chan net.Conn, 1)
 
-	client, err := client.New(makeConfigurer(clientID, accessToken, cert))
+	client, err := client.New(makeConfigurer(wstServer, wstClientID, jwtToken))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -132,6 +148,7 @@ func main() {
 			}
 			os.Exit(0)
 		case stream := <-strChan:
+			log.Debug("Accepting new connection")
 			f := &forwarder{
 				stream: stream,
 				port:   targetPort,
@@ -199,22 +216,56 @@ func (f *forwarder) kill() {
 	}
 }
 
-func makeConfigurer(clientID, accessToken, certificate string) func() (client.Config, error) {
+func makeConfigurer(wstServer, wstClientID, jwtToken string) func() (client.Config, error) {
+	if jwtToken != "" {
+		configurer := func() (client.Config, error) {
+			return client.Config{
+				ID:         wstClientID,
+				Token:      jwtToken,
+				TunnelAddr: wstServer,
+			}, nil
+		}
+		return configurer
+	}
+
+	// we now have the more complex case of getting updated JWTs on stdin
+
+	// define a condition variable over the `jwtToken` local variable
+	var mux sync.Mutex
+	var cond = sync.NewCond(&mux)
+
+	// read from stdin, rewriting `token` on each
+	go func() {
+		reader := bufio.NewReader(os.Stdin)
+		for {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				log.Warningf("error reading stdin; no more JWT tokens will be read: %s", err)
+				return
+			}
+
+			log.Debug("Got new JWT token on stdin")
+			mux.Lock()
+			jwtToken = line
+			cond.Broadcast()
+			mux.Unlock()
+		}
+	}()
+
 	configurer := func() (client.Config, error) {
-		creds := &tcclient.Credentials{
-			ClientID:    clientID,
-			AccessToken: accessToken,
-			Certificate: certificate,
+		log.Info("Reconfiguring")
+		mux.Lock()
+		for jwtToken == "" {
+			log.Debug("Waiting for first JWT token on stdin")
+			cond.Wait()
 		}
-		myAuth := tcauth.New(creds)
-		whtResponse, err := myAuth.WebhooktunnelToken()
-		if err != nil {
-			return client.Config{}, err
-		}
+		token := jwtToken
+		mux.Unlock()
+
 		return client.Config{
-			ID:         whtResponse.TunnelID,
-			Token:      whtResponse.Token,
-			TunnelAddr: whtResponse.ProxyURL,
+			ID:         wstClientID,
+			Token:      token,
+			TunnelAddr: wstServer,
 		}, nil
 	}
 	return configurer

@@ -44,7 +44,13 @@ It is recommended to urlencode any string to meet this requirement.
 
 ### Authorization
 
-The token included in the `Authorization` header must be a [JWT](https://jwt.io/).
+The token included in the `Authorization` header must be a [JWT](https://jwt.io/) with the following claims:
+
+ * `tid` -- clientID for the tunnel
+ * `iat` -- issuance time (epoch timestamp)
+ * `exp` -- expiration time
+ * `nbf` -- not-before (set to some time before iat to allow clock skew)
+
 It must use method `HS256` and be signed with either of the secrets in the service configuration.
 It must be valid at the current time, and must not be valid for more than 31 days (specifically, the `nbf` and `exp` claims must be less than 31 days apart).
 Its `tid` claim must match the client ID exactly.
@@ -70,7 +76,8 @@ That is entirely up to the client.
 # CLI
 
 The `wst-client` command implements a client that will connect to a websocktunnel service and proxy all connections to a specific local port.
-It takes Taskcluster credentials and uses them to generate JWTs using the Auth service.
+It takes a JWT either on the command line or (to enable replacing tokens without losing connections) on stdin.
+See the command's `--help` output for details.
 
 # Hosting
 
