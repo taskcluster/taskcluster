@@ -1,10 +1,10 @@
-import { BrowserRouter, Switch } from 'react-router-dom';
 import React, { Component, Fragment } from 'react';
-import { object } from 'prop-types';
+import { BrowserRouter, Switch } from 'react-router-dom';
+import { object, arrayOf } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import RouteWithProps from '../components/RouteWithProps';
-import routes from './routes';
 import ErrorPanel from '../components/ErrorPanel';
+import { route } from '../utils/prop-types';
 
 @withStyles(theme => ({
   '@global': {
@@ -128,6 +128,7 @@ import ErrorPanel from '../components/ErrorPanel';
 export default class Main extends Component {
   static propTypes = {
     error: object,
+    routes: arrayOf(route).isRequired,
   };
 
   static defaultProps = {
@@ -135,7 +136,7 @@ export default class Main extends Component {
   };
 
   render() {
-    const { error } = this.props;
+    const { error, routes } = this.props;
 
     return (
       <Fragment>

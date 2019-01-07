@@ -20,6 +20,11 @@ export const user = shape({
 
 export const date = oneOfType([string, instanceOf(Date)]);
 
+export const route = shape({
+  path: string,
+  component: object,
+});
+
 export const pageInfo = shape({
   hasNextPage: bool,
   hasPreviousPage: bool,

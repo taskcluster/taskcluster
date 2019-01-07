@@ -8,7 +8,13 @@
   LOGIN_STRATEGIES = ""
   TASKCLUSTER_ROOT_URL = "https://taskcluster.net"
 
-# Rule for Single Page Applications
+# Rule for Single Page Applications (docs)
+[[redirects]]
+  from = "/docs/*"
+  to = "/docs.html"
+  status = 200
+
+# Rule for Single Page Applications (app)
 [[redirects]]
   from = "/*"
   to = "/index.html"

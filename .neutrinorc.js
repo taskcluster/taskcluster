@@ -9,6 +9,12 @@ require('@babel/register')({
 const theme = require('./src/theme').default;
 
 module.exports = {
+  options: {
+    mains: {
+      index: 'index.jsx',
+      docs: 'docs.jsx',
+    },
+  },
   use: [
     ['@mozilla-frontend-infra/react-lint', {
       parserOptions: {
@@ -27,7 +33,12 @@ module.exports = {
       },
       devServer: {
         port: process.env.PORT,
-        historyApiFallback: { disableDotRule: true },
+        historyApiFallback: {
+          disableDotRule: true,
+          rewrites: [
+            { from: /^\/docs/, to: '/docs.html' },
+          ],
+        },
         proxy: {
           '/login': {
             target: 'http://localhost:3050',

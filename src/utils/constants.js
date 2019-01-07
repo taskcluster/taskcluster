@@ -15,6 +15,7 @@ import FileVideoIcon from 'mdi-react/FileVideoIcon';
 import FileImageIcon from 'mdi-react/FileImageIcon';
 import FileMusicIcon from 'mdi-react/FileMusicIcon';
 import FileIcon from 'mdi-react/FileIcon';
+import { join } from 'path';
 
 // eslint-disable-next-line import/prefer-default-export
 export const ARTIFACTS_PAGE_SIZE = 10;
@@ -172,25 +173,25 @@ export const DOCS_MENU_ITEMS = [
   },
   {
     label: 'Tutorial',
-    path: `${DOCS_PATH_PREFIX}/tutorial`,
+    path: join(DOCS_PATH_PREFIX, 'tutorial'),
     hasChildren: false,
     icon: OneTwoThreeIcon,
   },
   {
     label: 'Manual',
-    path: `${DOCS_PATH_PREFIX}/manual`,
+    path: join(DOCS_PATH_PREFIX, 'manual'),
     hasChildren: true,
     icon: BookOpenVariantIcon,
   },
   {
     label: 'Reference',
-    path: `${DOCS_PATH_PREFIX}/reference`,
+    path: join(DOCS_PATH_PREFIX, 'reference'),
     hasChildren: true,
     icon: BookOpenOutlineIcon,
   },
   {
     label: 'Resources',
-    path: `${DOCS_PATH_PREFIX}/resources`,
+    path: join(DOCS_PATH_PREFIX, 'resources'),
     hasChildren: false,
     icon: OpenInNewIcon,
   },

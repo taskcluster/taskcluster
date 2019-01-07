@@ -1,12 +1,13 @@
 import { lazy } from 'react';
+import { join } from 'path';
 import { DOCS_PATH_PREFIX } from '../utils/constants';
 
 export default [
   {
     component: lazy(() =>
-      import(/* webpackChunkName: 'Documentation' */ '../views/Documentation')
+      import(/* webpackChunkName: 'SwitchEntryPoint' */ '../views/SwitchEntryPoint')
     ),
-    path: `${DOCS_PATH_PREFIX}/:path*`,
+    path: join(DOCS_PATH_PREFIX, ':path*'),
   },
   {
     component: lazy(() =>
@@ -97,6 +98,7 @@ export default [
       import(/* webpackChunkName: 'HomeOrDashboard' */ '../views/HomeOrDashboard')
     ),
     path: '/',
+    exact: true,
   },
   {
     component: lazy(() =>
