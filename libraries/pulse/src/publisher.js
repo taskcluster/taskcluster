@@ -55,7 +55,12 @@ class Exchanges {
       assert.equal(rootUrl, 'https://taskcluster.net',
         'only taskcluster.net publishes references to S3');
       assert(aws, 'aws is required to publish references to S3');
-      await publisher.publishReference(aws, this.reference());
+
+      // get the reference with an absoute $schema
+      const reference = this.reference();
+      reference.$schema = reference.$schema.replace(/\/schemas/, 'https://schemas.taskcluster.net');
+
+      await publisher.publishReference(aws, reference);
     }
     await publisher._start();
     return publisher;
