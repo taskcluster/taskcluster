@@ -83,7 +83,7 @@ class Handler {
   async profileFromUserId(userId) {
     const a0 = await this.getManagementApi();
 
-    return a0.getUser(userId);
+    return a0.getUser({id: userId});
   }
 
   async userFromRequest(req, res) {
