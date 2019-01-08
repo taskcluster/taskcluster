@@ -14,18 +14,33 @@ import (
 	"net/http"
 	"os"
 
-	log "github.com/sirupsen/logrus"
-	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
-
+	"github.com/docopt/docopt-go"
 	"github.com/gorilla/websocket"
 	mozlog "github.com/mozilla-services/go-mozlogrus"
+	log "github.com/sirupsen/logrus"
+	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
 	"github.com/taskcluster/websocktunnel/wsproxy"
 )
 
-// starts websocktunnel on a random port on the system
+const usage = `Websocketunnel Server
+
+Usage: websocktunnel [-h | --help]
+
+Environment:
+ HOSTNAME (required)                         hostname of this service
+ PORT (optional; defaults to 80 or 443)      port on which this service is available
+ TLS_CERT (optional; no TLS if not provided) base64-encoded TLS certificate
+ TLS_KEY                                     corresponding base64-encoded TLS key
+ TASKCLUSTER_PROXY_SECRET_A                  JWT secret
+ TASKCLUSTER_PROXY_SECRET_B                  alternate JWT secret
+ SYSLOG_ADDR                                 address to which to send syslog output
+
+Options:
+-h --help       Show help`
+
 func main() {
-	// Load required env variables
-	// Load Hostname
+	_, _ = docopt.Parse(usage, nil, true, "websocktunnel", false)
+
 	hostname := os.Getenv("HOSTNAME")
 	if hostname == "" {
 		panic("hostname required")
@@ -93,7 +108,6 @@ func main() {
 		TLS:        useTLS,
 	})
 
-	// TODO: Read TLS config
 	server := &http.Server{Addr: ":" + port, Handler: proxy}
 	defer func() {
 		_ = server.Close()
@@ -101,7 +115,7 @@ func main() {
 	logger.WithFields(log.Fields{
 		"server-addr": server.Addr,
 		"hostname":    hostname,
-	}).Infof("starting server")
+	}).Info("starting server")
 
 	// create tls config and serve
 	if useTLS {

@@ -1,3 +1,10 @@
+// +build !go1.7
+// +build !go1.8
+// +build !go1.9
+// +build go1.10
+// +build !go1.11
+// +build !go1.12
+
 package main
 
 import (
