@@ -12,10 +12,5 @@
     "azure-entities": "^5.1.0",
     "debug": "^3.1.0",
     "lodash": "^4.11.1"
-  },
-  "engine-strict": true,
-  "engines": {
-    "node": "10.14.0",
-    "yarn": "^1.0.0"
   }
 }

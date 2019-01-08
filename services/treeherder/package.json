@@ -11,10 +11,5 @@
     "debug": "^3.1.0",
     "lodash": "^4.17.10",
     "slugid": "^2.0.0"
-  },
-  "engine-strict": true,
-  "engines": {
-    "node": "10.14.0",
-    "yarn": "^1.0.0"
   }
 }

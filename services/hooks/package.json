@@ -19,10 +19,5 @@
     "json-e": "^2.3.5",
     "lodash": "^4.17.4",
     "promise": "^8.0.1"
-  },
-  "engine-strict": true,
-  "engines": {
-    "node": "10.14.0",
-    "yarn": "^1.0.0"
   }
 }

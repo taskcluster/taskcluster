@@ -20,10 +20,5 @@
     "jsonwebtoken": "^8.1.0",
     "lodash": "^4.11.1",
     "slugid": "^1.1.0"
-  },
-  "engine-strict": true,
-  "engines": {
-    "node": "10.14.0",
-    "yarn": "^1.0.0"
   }
 }
