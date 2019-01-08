@@ -28,10 +28,5 @@
     "slugid": "^1.1.0",
     "statsum": "^0.5.1",
     "superagent": "^3.8.1"
-  },
-  "engine-strict": true,
-  "engines": {
-    "node": "10.14.0",
-    "yarn": "^1.0.0"
   }
 }
