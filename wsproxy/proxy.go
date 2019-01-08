@@ -236,7 +236,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 				p.onSessionRemove(id)
 			}
 		},
-		// Log: p.logger,
+		Log: p.logger,
 	}
 
 	p.pool[id] = wsmux.Server(conn, conf)

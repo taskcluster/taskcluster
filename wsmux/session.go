@@ -138,7 +138,6 @@ func (s *Session) Accept() (net.Conn, error) {
 			s.abort(err)
 			return nil, err
 		}
-		s.logger.Printf("accepted connection: id=%d", str.id)
 		return str, nil
 	}
 }
@@ -224,7 +223,6 @@ func (s *Session) Close() error {
 	// invoke callback
 	defer func() {
 		if s.closeCallback != nil {
-			s.logger.Printf("invoking close callback")
 			s.closeCallback()
 		}
 	}()
@@ -235,7 +233,6 @@ func (s *Session) Close() error {
 	s.streams = nil
 	s.acceptErr = ErrSessionClosed
 
-	s.logger.Printf("closing session: ")
 	close(s.closed)
 	close(s.streamCh)
 	return err
@@ -271,6 +268,18 @@ func (s *Session) pongHandler(data string) error {
 func (s *Session) sendKeepAlives() {
 	ticker := time.NewTicker(s.keepAliveInterval)
 	for {
+		s.sendLock.Lock()
+		err := s.conn.WriteControl(
+			websocket.PingMessage, nil,
+			// use a deadline of half the keepAliveInterval, to ensure the message
+			// is sent in a reasonable amount of time
+			time.Now().Add(s.keepAliveInterval/2))
+		s.sendLock.Unlock()
+		if err != nil {
+			s.abort(err)
+			return
+		}
+
 		select {
 		case <-ticker.C:
 		case <-s.closed:
@@ -284,19 +293,8 @@ func (s *Session) sendKeepAlives() {
 		s.pongSeen = false
 		s.mu.Unlock()
 		if !pongSeen {
+			s.logger.Printf("No pong message seen; aborting session")
 			s.abort(ErrKeepAliveExpired)
-		}
-
-		s.sendLock.Lock()
-		err := s.conn.WriteControl(
-			websocket.PingMessage, nil,
-			// use a deadline of half the keepAliveInterval, to ensure the message
-			// is sent in a reasonable amount of time
-			time.Now().Add(s.keepAliveInterval/2))
-		s.sendLock.Unlock()
-		if err != nil {
-			s.abort(err)
-			return
 		}
 	}
 }
@@ -316,7 +314,7 @@ func (s *Session) send(f frame) error {
 
 // called when websocket connection is closed
 func (s *Session) closeHandler(code int, text string) error {
-	s.logger.Printf("ws conn closed: code %d : %s", code, text)
+	s.logger.Printf("wsmux connection closed: code %d : %s", code, text)
 	s.mu.Lock()
 	// indicate that `s.Close()` need not close the websocket connection,
 	// as it is already closed.
@@ -420,7 +418,6 @@ func (s *Session) removeDeadStreams() {
 		for _, str := range s.streams {
 
 			if str.isRemovable() {
-				s.logger.Printf("stream is removable")
 				delete(s.streams, str.id)
 			}
 		}
