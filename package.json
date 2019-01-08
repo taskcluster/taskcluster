@@ -8,11 +8,10 @@
     "infrastructure/*"
   ],
   "dependencies": {
-    "taskcluster-lib-urls": "^12.0.0",
+    "taskcluster-client": "link:libraries/client",
     "taskcluster-lib-api": "link:libraries/api",
     "taskcluster-lib-app": "link:libraries/app",
     "taskcluster-lib-azure": "link:libraries/azure",
-    "taskcluster-client": "link:libraries/client",
     "taskcluster-lib-docs": "link:libraries/docs",
     "taskcluster-lib-iterate": "link:libraries/iterate",
     "taskcluster-lib-loader": "link:libraries/loader",
@@ -20,8 +19,9 @@
     "taskcluster-lib-pulse": "link:libraries/pulse",
     "taskcluster-lib-references": "link:libraries/references",
     "taskcluster-lib-scopes": "link:libraries/scopes",
-    "typed-env-config": "link:libraries/typed-env-config",
-    "taskcluster-lib-validate": "link:libraries/validate"
+    "taskcluster-lib-urls": "^12.0.0",
+    "taskcluster-lib-validate": "link:libraries/validate",
+    "typed-env-config": "link:libraries/typed-env-config"
   },
   "devDependencies": {
     "assume": "^2.1.0",
@@ -29,12 +29,15 @@
     "capture-console": "^1.0.1",
     "cliff": "^0.1.10",
     "commander": "^2.19.0",
+    "depcheck": "^0.6.11",
     "eslint": "5.10.0",
     "fs-extra": "^7.0.1",
     "got": "^9.5.0",
     "http-proxy": "^1.17.0",
     "intercept-stdout": "^0.1.2",
     "is-uuid": "^1.0.2",
+    "uuid": "^3.3.2",
+    "js-yaml": "^3.12.1",
     "json-stable-stringify": "^1.0.1",
     "lodash": "^4.17.11",
     "mocha": "^5.2.0",
@@ -51,6 +54,7 @@
     "superagent-hawk": "^0.0.6",
     "taskcluster-lib-testing": "link:libraries/testing",
     "temporary": "^0.0.8",
+    "tmp": "^0.0.33",
     "typed-env-config": "link:libraries/typed-env-config",
     "url-join": "^4.0.0",
     "xml2js": "^0.4.19",

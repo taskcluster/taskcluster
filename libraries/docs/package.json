@@ -23,7 +23,6 @@
     "lodash": "^4.13.1",
     "mkdirp": "^0.5.1",
     "mz": "^2.7.0",
-    "promise": "^8.0.1",
     "recursive-readdir-sync": "^1.0.6",
     "s3-upload-stream": "^1.0.7",
     "tar-stream": "^1.5.4"

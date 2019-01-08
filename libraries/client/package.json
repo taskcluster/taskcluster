@@ -9,7 +9,6 @@
     "test": "mocha test/*_test.js"
   },
   "dependencies": {
-    "amqplib": "^0.5.1",
     "debug": "^3.1.0",
     "hawk": "^6.0.2",
     "lodash": "^4.17.4",

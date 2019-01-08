@@ -20,7 +20,7 @@
   "license": "MPL-2.0",
   "dependencies": {
     "ajv": "^6.5.5",
-    "js-yaml": "^3.12.0",
+    "js-yaml": "^3.12.1",
     "lodash": "^4.17.10",
     "mkdirp": "^0.5.1",
     "regex-escape": "^3.4.8",
