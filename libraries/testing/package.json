@@ -15,7 +15,7 @@
   ],
   "dependencies": {
     "debug": "^3.1.0",
-    "express": "4.16.2",
+    "express": "4.16.4",
     "hawk": "^4.1.2",
     "lodash": "^4.17.10",
     "nock": "^9.4.3",
