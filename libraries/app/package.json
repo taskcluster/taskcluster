@@ -1,5 +1,6 @@
 {
   "name": "taskcluster-lib-app",
+  "private": true,
   "version": "10.2.0",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-app",
@@ -18,8 +19,8 @@
     "express-sslify": "1.2.0",
     "hsts": "^2.1.0",
     "lodash": "4.17.11",
-    "morgan": "^1.9.0",
     "morgan-debug": "^2.0.0",
+    "morgan": "^1.0.0",
     "promise": "^8.0.1",
     "uuid": "^3.3.2"
   },

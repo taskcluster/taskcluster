@@ -1,5 +1,6 @@
 {
   "name": "typed-env-config",
+  "private": true,
   "version": "3.0.0",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "Configuration loader that injects env variables into YAML",
@@ -14,7 +15,7 @@
   ],
   "dependencies": {
     "debug": "^4.1.0",
-    "js-yaml": "^3.12.0",
+    "js-yaml": "^3.12.1",
     "lodash": "^4.17.11"
   }
 }

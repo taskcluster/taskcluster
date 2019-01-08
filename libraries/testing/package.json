@@ -1,5 +1,6 @@
 {
   "name": "taskcluster-lib-testing",
+  "private": true,
   "version": "12.1.2",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-testing",
@@ -13,17 +14,13 @@
     "lib"
   ],
   "dependencies": {
-    "azure-table-node": "1.5.0",
     "debug": "^3.1.0",
     "express": "4.16.2",
     "hawk": "^4.1.2",
     "lodash": "^4.17.10",
     "nock": "^9.4.3",
     "promise": "^8.0.1",
-    "superagent": "3.8.2",
-    "taskcluster-client": "file:../../libraries/client",
-    "taskcluster-lib-urls": "^12.0.0",
-    "taskcluster-lib-validate": "file:../../libraries/validate"
+    "superagent": "^4.0.0"
   },
   "engines": {
     "node": ">=8"

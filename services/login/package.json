@@ -13,21 +13,11 @@
   "dependencies": {
     "auth0-js": "9.3.3",
     "debug": "^3.1.0",
-    "eslint-config-taskcluster": "^3.1.0",
     "express-jwt": "^5.3.0",
     "jsonwebtoken": "^8.1.1",
     "jwks-rsa": "^1.2.1",
     "lodash": "^4.17.5",
-    "superagent": "^3.8.2",
-    "taskcluster-client": "file:../../libraries/client",
-    "taskcluster-lib-api": "file:../../libraries/api",
-    "taskcluster-lib-app": "file:../../libraries/app",
-    "taskcluster-lib-config": "^0.9.1",
-    "taskcluster-lib-docs": "file:../../libraries/docs",
-    "taskcluster-lib-loader": "file:../../libraries/loader",
-    "taskcluster-lib-monitor": "file:../../libraries/monitor",
-    "taskcluster-lib-scopes": "file:../../libraries/scopes",
-    "taskcluster-lib-validate": "file:../../libraries/validate"
+    "superagent": "^3.8.2"
   },
   "engine-strict": true,
   "engines": {

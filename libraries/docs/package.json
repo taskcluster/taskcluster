@@ -1,5 +1,6 @@
 {
   "name": "taskcluster-lib-docs",
+  "private": true,
   "version": "11.0.0",
   "author": "Kristel Teng <kteng@mozilla.com>",
   "description": "Find and upload documents for taskcluster projects",
@@ -22,11 +23,9 @@
     "lodash": "^4.13.1",
     "mkdirp": "^0.5.1",
     "mz": "^2.7.0",
-    "promise": "^8.0.1",
     "recursive-readdir-sync": "^1.0.6",
     "s3-upload-stream": "^1.0.7",
-    "tar-stream": "^1.5.4",
-    "taskcluster-client": "file:../../libraries/client"
+    "tar-stream": "^1.5.4"
   },
   "main": "./src/index.js"
 }

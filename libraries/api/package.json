@@ -1,5 +1,6 @@
 {
   "name": "taskcluster-lib-api",
+  "private": true,
   "version": "12.8.1",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "taskcluster-lib-api",
@@ -20,8 +21,6 @@
     "lodash": "^4.15.0",
     "promise": "^8.0.1",
     "slugid": "^2.0.0",
-    "taskcluster-client": "file:../../libraries/client",
-    "taskcluster-lib-scopes": "file:../../libraries/scopes",
     "type-is": "^1.6.15",
     "uuid": "^3.1.0"
   },
