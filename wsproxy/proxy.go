@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/websocket"
 	"github.com/taskcluster/websocktunnel/util"
 	"github.com/taskcluster/websocktunnel/wsmux"
@@ -40,8 +40,11 @@ type Config struct {
 	// JWTSecretA and JWTSecretB are used by the proxy to verify JWTs from Clients.
 	JWTSecretA []byte
 	JWTSecretB []byte
-	// Domain where proxy will be hosted
+
+	// Domain and port where proxy will be hosted
 	Domain string
+	Port   int
+
 	// set to true if serving with TLS
 	TLS bool
 }
@@ -57,6 +60,7 @@ type proxy struct {
 	jwtSecretA      []byte
 	jwtSecretB      []byte
 	domain          string
+	port            int
 	tls             bool
 }
 
@@ -102,7 +106,12 @@ func newProxy(conf Config) (*proxy, error) {
 		jwtSecretA: conf.JWTSecretA,
 		jwtSecretB: conf.JWTSecretB,
 		domain:     conf.Domain,
+		port:       conf.Port,
 		tls:        conf.TLS,
+	}
+
+	if conf.Port == 0 {
+		panic("no port specified")
 	}
 
 	if len(p.jwtSecretA) == 0 || len(p.jwtSecretB) == 0 {
@@ -199,11 +208,17 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 	header := make(http.Header)
 
 	urlScheme := "http://"
+	defaultPort := 80
 	if p.tls {
 		urlScheme = "https://"
+		defaultPort = 443
+	}
+	var portStr string
+	if p.port != defaultPort {
+		portStr = fmt.Sprintf(":%d", p.port)
 	}
 
-	url := urlScheme + p.domain + "/" + id
+	url := urlScheme + p.domain + portStr + "/" + id
 	header.Set("x-websocktunnel-client-url", url)
 	p.logf(id, r.RemoteAddr, "sending url= %s", url)
 	conn, err := p.upgrader.Upgrade(w, r, header)

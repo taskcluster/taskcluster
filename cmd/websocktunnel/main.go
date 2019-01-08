@@ -6,8 +6,9 @@ import (
 	"log/syslog"
 	"net/http"
 	"os"
+	"strconv"
 
-	"github.com/docopt/docopt-go"
+	docopt "github.com/docopt/docopt-go"
 	"github.com/gorilla/websocket"
 	mozlog "github.com/mozilla-services/go-mozlogrus"
 	log "github.com/sirupsen/logrus"
@@ -84,6 +85,10 @@ func main() {
 			port = "80"
 		}
 	}
+	portNum, err := strconv.Atoi(port)
+	if err != nil {
+		panic(err)
+	}
 
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
@@ -98,6 +103,7 @@ func main() {
 		JWTSecretA: []byte(signingSecretA),
 		JWTSecretB: []byte(signingSecretB),
 		Domain:     hostname,
+		Port:       portNum,
 		TLS:        useTLS,
 	})
 
