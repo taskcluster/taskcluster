@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const expressJwt = require('express-jwt');
 const jwks = require('jwks-rsa');
 const Debug = require('debug');
-const auth0js = require('auth0-js');
+const auth0 = require('auth0');
 const request = require('superagent');
 
 const debug = Debug('handlers.mozilla-auth0');
@@ -71,7 +71,7 @@ class Handler {
     let expires = decoded.exp;
 
     // create a new
-    this._managementApi = new auth0js.Management({
+    this._managementApi = new auth0.ManagementClient({
       domain: this.domain,
       token: token,
     });
