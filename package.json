@@ -35,7 +35,7 @@
     "cliff": "^0.1.10",
     "commander": "^2.19.0",
     "depcheck": "^0.6.11",
-    "eslint": "5.10.0",
+    "eslint": "5.12.0",
     "fs-extra": "^7.0.1",
     "got": "^9.5.0",
     "http-proxy": "^1.17.0",
