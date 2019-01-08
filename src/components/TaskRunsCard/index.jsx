@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { func, number, string } from 'prop-types';
@@ -28,6 +28,7 @@ import LockIcon from 'mdi-react/LockIcon';
 import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import Button from '../Button';
+import AnchorOrLink from '../Markdown/AnchorOrLink';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
@@ -62,10 +63,6 @@ const DOTS_VARIANT_LIMIT = 5;
     listItemButton: {
       ...theme.mixins.listItemButton,
     },
-    pre: {
-      margin: 0,
-      fontSize: theme.typography.body2.fontSize,
-    },
     pointer: {
       cursor: 'pointer',
     },
@@ -95,6 +92,25 @@ const DOTS_VARIANT_LIMIT = 5;
       '& button, & a': {
         ...theme.mixins.listItemButton,
       },
+    },
+    artifactLink: {
+      textDecoration: 'none',
+      width: '100%',
+      display: 'block',
+      height: '100%',
+      verticalAlign: 'middle',
+    },
+    artifactTableRow: {
+      height: 'auto',
+    },
+    artifactNameTableCell: {
+      width: '100%',
+    },
+    artifactsTableCell: {
+      padding: `${theme.spacing.unit}px ${theme.spacing.triple}px`,
+    },
+    artifactNameWrapper: {
+      display: 'inline-flex',
     },
   }),
   { withTheme: true }
@@ -136,30 +152,23 @@ export default class TaskRunsCard extends Component {
     return this.props.runs[this.props.selectedRunId];
   }
 
-  handleArtifactClick = ({ url, isLog }) => {
+  getArtifactUrl = ({ url, isLog }) => {
     if (!url) {
-      return null;
+      return '';
     }
 
-    return () => {
-      const { history } = this.props;
-      const { taskId, runId, state } = this.getCurrentRun();
+    const { taskId, runId, state } = this.getCurrentRun();
 
-      if (isLog) {
-        const live = state === 'PENDING' || state === 'RUNNING';
-        const encoded = encodeURIComponent(url);
-        const path = live
-          ? `/tasks/${taskId}/runs/${runId}/logs/live/${encoded}`
-          : `/tasks/${taskId}/runs/${runId}/logs/${encoded}`;
+    if (isLog) {
+      const live = state === 'PENDING' || state === 'RUNNING';
+      const encoded = encodeURIComponent(url);
 
-        history.push(path);
-      } else {
-        Object.assign(window.open(), {
-          opener: null,
-          location: url,
-        });
-      }
-    };
+      return live
+        ? `/tasks/${taskId}/runs/${runId}/logs/live/${encoded}`
+        : `/tasks/${taskId}/runs/${runId}/logs/${encoded}`;
+    }
+
+    return url;
   };
 
   handleNext = () => {
@@ -219,30 +228,44 @@ export default class TaskRunsCard extends Component {
         renderRow={({ node: artifact }) => (
           <TableRow
             key={`run-artifact-${run.taskId}-${run.runId}-${artifact.name}`}
-            className={classNames(classes.listItemButton, {
-              [classes.pointer]: !!artifact.url,
-            })}
-            onClick={this.handleArtifactClick(artifact)}
+            className={classNames(
+              classes.listItemButton,
+              classes.artifactTableRow,
+              {
+                [classes.pointer]: !!artifact.url,
+              }
+            )}
             hover={!!artifact.url}>
-            <TableCell>
-              {artifact.isPublic && <LockOpenOutlineIcon />}
-              {!artifact.isPublic && <LockIcon />}
-            </TableCell>
-            <TableCell>
-              <Fragment>
-                {artifact.isLog && (
-                  <Label status="info" mini className={classes.logButton}>
-                    LOG
-                  </Label>
-                )}
-                {artifact.name}
-              </Fragment>
-            </TableCell>
-            <TableCell className={classes.linkCell}>
-              {artifact.isPublic && <LinkIcon size={16} />}
-              {!artifact.isPublic &&
-                artifact.url && <OpenInNewIcon size={16} />}
-            </TableCell>
+            <AnchorOrLink
+              className={classes.artifactLink}
+              href={this.getArtifactUrl(artifact)}>
+              <TableCell className={classes.artifactsTableCell}>
+                {artifact.isPublic && <LockOpenOutlineIcon />}
+                {!artifact.isPublic && artifact.url && <LockIcon />}
+              </TableCell>
+              <TableCell
+                className={classNames(
+                  classes.artifactNameTableCell,
+                  classes.artifactsTableCell
+                )}>
+                <div className={classes.artifactNameWrapper}>
+                  {artifact.isLog && (
+                    <Label status="info" mini className={classes.logButton}>
+                      LOG
+                    </Label>
+                  )}
+                  <Typography>{artifact.name}</Typography>
+                </div>
+              </TableCell>
+              <TableCell
+                className={classNames(
+                  classes.linkCell,
+                  classes.artifactsTableCell
+                )}>
+                {artifact.isPublic && <LinkIcon />}
+                {!artifact.isPublic && artifact.url && <OpenInNewIcon />}
+              </TableCell>
+            </AnchorOrLink>
           </TableRow>
         )}
       />
@@ -383,7 +406,8 @@ export default class TaskRunsCard extends Component {
                   <ListItem
                     button
                     className={classes.listItemButton}
-                    onClick={this.handleArtifactClick(liveLogArtifact)}>
+                    component={Link}
+                    to={this.getArtifactUrl(liveLogArtifact)}>
                     <ListItemText
                       primary="View Live Log"
                       secondary={liveLogArtifact.name}
