@@ -39,6 +39,6 @@
     "tar-fs": "^1.16.0",
     "tar-stream": "^1.5.5",
     "temporary": "^0.0.8",
-    "zen-observable": "^0.7.1"
+    "zen-observable": "^0.8.0"
   }
 }
