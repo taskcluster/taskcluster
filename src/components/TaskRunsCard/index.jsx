@@ -379,6 +379,7 @@ export default class TaskRunsCard extends Component {
                       </IconButton>
                     </CopyToClipboard>
                     <IconButton
+                      title="View Worker"
                       component={Link}
                       to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
                         run.workerId
