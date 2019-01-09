@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	version  = "5.0.0"
+	version  = "5.0.1"
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
 	usage    = `
 Taskcluster authentication proxy. By default this pulls all scopes from a
