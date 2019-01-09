@@ -4127,10 +4127,15 @@ node-status-codes@^1.0.0:
   resolved "https://registry.yarnpkg.com/node-status-codes/-/node-status-codes-1.0.0.tgz#5ae5541d024645d32a58fcddc9ceecea7ae3ac2f"
   integrity sha1-WuVUHQJGRdMqWPzdyc7s6nrjrC8=
 
-nodemailer@^4.6.8, nodemailer@^4.7.0:
+nodemailer@^4.6.8:
   version "4.7.0"
   resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-4.7.0.tgz#4420e06abfffd77d0618f184ea49047db84f4ad8"
   integrity sha512-IludxDypFpYw4xpzKdMAozBSkzKHmNBvGanUREjJItgJ2NYcK/s8+PggVhj7c2yGFQykKsnnmv1+Aqo0ZfjHmw==
+
+nodemailer@^5.0.0:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-5.0.1.tgz#39590e1d324512f641de3756f44f87f051266520"
+  integrity sha512-S1jpwJ5XL7KIqibINuyYNJwlaWolWDfeljLU6UIhmuX+rY5xT1/z33ZUQLNbIrTlQYMo4F8GZOzKLp4Tlhf1CQ==
 
 nopt@^4.0.1:
   version "4.0.1"
