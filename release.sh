@@ -156,5 +156,5 @@ echo "The docker image for taskcluster-proxy ${NEW_VERSION} has been published t
 echo "  * https://hub.docker.com/r/taskcluster/taskcluster-proxy/tags/"
 echo "======================================================================================================"
 echo
-echo "It is HIGHLY RECOMMENDED to test the new docker-worker release before using it:"
+echo "It is HIGHLY RECOMMENDED to test the released docker image before deploying it:"
 echo "  * https://github.com/taskcluster/taskcluster-proxy/tree/v${NEW_VERSION}#testing-your-locally-built-docker-container"
