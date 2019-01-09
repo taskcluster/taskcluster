@@ -203,11 +203,15 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   });
 
   test('azureContainers', async function() {
-    return helper.apiClient.azureContainers(
-      helper.testaccount,
-    ).then(function(result) {
-      assert(result.containers.includes('container-test'));
-    });
+    let extra = {};
+    do {
+      result = await helper.apiClient.azureContainers(helper.testaccount, extra);
+      extra.continuationToken = result.continuationToken;
+      if (result.containers.includes('container-test')) {
+        return;
+      }
+    } while (extra.continuationToken);
+    assert(false, 'container was not in account!');
   });
 
   test('azureContainerSAS (read-only)', async () => {
