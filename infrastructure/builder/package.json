@@ -24,7 +24,7 @@
     "console-taskgraph": "^1.5.0",
     "dockerode": "^2.5.3",
     "dot": "^1.1.2",
-    "got": "^8.3.0",
+    "got": "^9.0.0",
     "json-e": "^2.5.0",
     "json-stable-stringify": "^1.0.1",
     "js-yaml": "^3.11.0",
