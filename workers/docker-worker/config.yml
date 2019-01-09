@@ -53,7 +53,7 @@ defaults:
   restrictCPU: false
 
   # Image used to  create the taskcluster proxy container.
-  taskclusterProxyImage: 'taskcluster/taskcluster-proxy:5.0.0'
+  taskclusterProxyImage: 'taskcluster/taskcluster-proxy:5.0.1'
   taskclusterLogImage: 'taskcluster/livelog:v4'
   testdroidProxyImage: 'taskcluster/testdroid-proxy:0.0.7'
   balrogVPNProxyImage: 'taskclusterprivate/taskcluster-vpn-proxy:0.0.3'
