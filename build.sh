@@ -72,9 +72,6 @@ fi
 
 find "${GOPATH}/bin" -name 'taskcluster-proxy*'
 
-# capital X here ... we only want to delete things that are ignored!
-git clean -fdX
-
 if $TEST; then
   CGO_ENABLED=1 GORACE="history_size=7" go test -ldflags "-X github.com/taskcluster/taskcluster-proxy.revision=$(git rev-parse HEAD)" -race -timeout 1h ./...
 fi
