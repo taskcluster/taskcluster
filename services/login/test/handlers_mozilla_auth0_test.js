@@ -16,6 +16,20 @@ suite('handlers/mozilla-auth0', function() {
       },
     },
   });
+  handler.getManagementApi = () => {
+    return {
+      getUser: ({id}) => {
+        switch (id) {
+        case 'LDAP':
+          return {};
+        case 'github':
+          return {};
+        default:
+          return {};
+        }
+      },
+    };
+  };
 
   suite('conversions', function() {
     const testClientId = (name, {clientId, userId, identity}) => {
