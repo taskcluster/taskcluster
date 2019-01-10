@@ -3,7 +3,6 @@
   "definitions": {
     "artifact": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "type": {
           "title": "Artifact upload type.",
@@ -36,7 +35,6 @@
     "image",
     "maxRunTime"
   ],
-  "additionalProperties": false,
   "properties": {
     "log": {
       "title": "Custom log location",
@@ -54,7 +52,6 @@
         {
           "type": "object",
           "title": "Named docker image",
-          "additionalProperties": false,
           "properties": {
             "type": {
               "type": "string",
@@ -74,7 +71,6 @@
         {
           "type": "object",
           "title": "Indexed docker image",
-          "additionalProperties": false,
           "properties": {
             "type": {
               "type": "string",
@@ -98,7 +94,6 @@
         {
           "type": "object",
           "title": "Docker image artifact",
-          "additionalProperties": false,
           "properties": {
             "type": {
               "type": "string",
@@ -124,16 +119,12 @@
     "cache": {
       "title": "Caches to mount point mapping.",
       "description": "Caches are mounted within the docker container at the mount point specified. Example: ```{ \"CACHE NAME\": \"/mount/path/in/container\" }```",
-      "additionalProperties": {
-        "type": "string"
-      },
       "type": "object"
     },
     "capabilities": {
       "title": "Capabilities that must be available/enabled for the task container.",
       "description": "Set of capabilities that must be enabled or made available to the task container Example: ```{ \"capabilities\": { \"privileged\": true }```",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "privileged": {
           "title": "Privileged container",
@@ -145,7 +136,6 @@
           "title": "Devices to be attached to task containers",
           "description": "Allows devices from the host system to be attached to a task container similar to using `--device` in docker. ",
           "type": "object",
-          "additionalProperties": false,
           "properties": {
             "loopbackVideo": {
               "title": "Loopback Video device",
@@ -182,9 +172,6 @@
     "env": {
       "title": "Environment variable mappings.",
       "description": "Example: ```\n{\n  \"PATH\": '/borked/path' \n  \"ENV_NAME\": \"VALUE\" \n}\n```",
-      "additionalProperties": {
-        "type": "string"
-      },
       "type": "object"
     },
     "maxRunTime": {
@@ -199,7 +186,6 @@
       "title": "Exit status handling",
       "description": "By default docker-worker will fail a task with a non-zero exit status without retrying.  This payload property allows a task owner to define certain exit statuses that will be marked as a retriable exception.",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "retry": {
           "title": "Retriable exit statuses",
@@ -239,7 +225,6 @@
       "title": "Feature flags",
       "description": "Used to enable additional functionality.",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "localLiveLog": {
           "type": "boolean",
