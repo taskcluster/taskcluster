@@ -3,17 +3,17 @@ title: Building Taskcluster
 order: 10
 ---
 
-The build process produces a Taskcluster release, which takes the form of a [terraform-json.md](Terraform JSON) file.
+The build process produces a Taskcluster release, which takes the form of a [Terraform JSON](./terraform-json.md) file.
 A release can be deployed anywhere, so the build process does not contain any deployment-specific settings, and in particular, has no rootUrl.
 Most installations of Taskcluster will deploy the "upstream" release produced by the Taskcluster team, incorporating deployment-specific configuration such as rootUrl.
 
 # Building Taskcluster
 
-The build process takes a [cluster spec](./cluster-spec) and source code and, along with lots of external resources like docker images, third-party packages, and so on, produces a "release".
+The build process takes a [cluster spec](./cluster-spec.md) and source code and, along with lots of external resources like docker images, third-party packages, and so on, produces a "release".
 The build process uses a *build config* for credentials to access artifact repositories, etc.
 The content of the configuration does not affect the result of the build.
 
-The output of the build process is a Taskcluster release, which takes the form of a [terraform-json.md](Terraform JSON) file.
+The output of the build process is a Taskcluster release, which takes the form of a [Terraform JSON](./terraform-json.md) file.
 
 Note that builds are not deterministic.
 Two builds of exactly the same source may produce artifacts with different hashes.
