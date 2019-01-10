@@ -29,7 +29,7 @@ packer_config() {
   echo "deploy/packer/$1.json"
 }
 
-cmd_app() {
+tar_docker_worker() {
   local docker_worker_tgz=/tmp/docker-worker-$$.tgz
   # Package up the node app.
   tar \
@@ -46,8 +46,16 @@ cmd_app() {
     --exclude='./worker-types-backup.json' \
     --exclude='./docker-worker-amis.json' \
     --exclude='./packer-artifacts.json' \
+    --exclude='docker-worker.tar.gz' \
+    --exclude='modules.tar.gz' \
+    --exclude='kernel.tar.gz' \
+    --exclude='initrd.tar.gz' \
     -zcvf $docker_worker_tgz .
   mv $docker_worker_tgz docker-worker.tgz
+}
+
+cmd_app() {
+  tar_docker_worker
   local git_rev=$(git rev-parse --verify HEAD)
 
   # Configure the deployment if needed...
@@ -77,6 +85,11 @@ cmd_base() {
     $(packer_config base)
 }
 
+cmd_packet() {
+  tar_docker_worker
+  make -C deploy packet
+}
+
 if [ ! -x $(which packer) ];
 then
   echo "This tool requires packer go download and install it first."
@@ -92,6 +105,9 @@ case "$1" in
   ;;
 "base")
   cmd_base ${@:2}
+  ;;
+"packet")
+  cmd_packet ${@:2}
   ;;
 *)
   cmd_help

@@ -8,6 +8,11 @@ $(DEPLOY_TAR): all
 
 all: $(TARGETS)
 
+packet: $(DEPLOY_TAR)
+	bin/build-packet.sh
+
+.PHONY: packet
+
 # Pick up changes when we update variables.js or configure.js
 $(CONFIG_FILE): variables.js bin/configure.js
 	./bin/configure $(CONFIG_FILE)

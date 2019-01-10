@@ -1,0 +1,12 @@
+[Unit]
+Description=Taskcluster docker worker
+Requires=docker.service
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/node /root/docker_worker/src/bin/worker.js --host test production
+Restart=on-failure
+User=root
+
+[Install]
+WantedBy=multi-user.target

@@ -289,6 +289,27 @@ folders.
     directly, use the [release.sh](/release.sh) script, which does some safe
     checks before releasing.
 
+### Packet.net deployment
+
+To generate the packet.net image, you need the `ubuntu_18_04-base` docker
+image. You obtain this image, clone the
+[packet-images](https://github.com/packethost/packet-images), and run:
+
+```
+$ sudo ./tools/build.sh -d ubuntu_18_04 -p t1.small.x86 -a x86_64 -b ubuntu_18_04-t1.small.x86-dev
+```
+
+You will need a valid Github ssh key in the root/.ssh directory.
+
+Then, run:
+
+```
+deploy/bin/build packet
+```
+
+You can find information on how to deploy the custom image in the
+[packet website](https://support.packet.com/kb/articles/custom-images).
+
 ### Block-Device Mapping
 
 The AMI built with packer will mount all available instances storage under
