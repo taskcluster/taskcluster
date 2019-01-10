@@ -1,11 +1,18 @@
 const debug = require('debug')('notify');
-const Promise = require('bluebird');
-const irc = Promise.promisifyAll(require('irc-upd'));
+const util = require('util');
+const irc_upd = require('irc-upd');
 const assert = require('assert');
 const aws = require('aws-sdk');
 const _ = require('lodash');
 
 const MAX_RETRIES = 5;
+const irc = JSON.parse(JSON.stringify(irc_upd));
+Object.keys(irc_upd).forEach( key => {
+  let val = irc_upd.key;
+  if (typeof val === 'function' ) {
+    irc.prototype[`${key}Async`] = util.promisify(val);
+  }
+});
 
 /** IRC bot for delivering notifications */
 class IRCBot {

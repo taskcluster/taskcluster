@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "aws-sdk": "^2.379.0",
-    "bluebird": "^3.5.1",
     "debug": "^3.1.0",
     "email-templates": "^5.0.2",
     "irc-upd": "^0.10.0",
