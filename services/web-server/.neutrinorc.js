@@ -1,10 +1,5 @@
 module.exports = {
   use: [
-    ['@mozilla-frontend-infra/node-lint', {
-      rules: {
-        'no-nested-ternary': 'off',
-      },
-    }],
     ['@neutrinojs/node', {
       hot: false,
       babel: {

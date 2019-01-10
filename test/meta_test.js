@@ -31,6 +31,7 @@ suite('Repo Meta Tests', function() {
     const depOptions = {
       ignoreMatches: [
         'morgan', // Peer dependency of morgan-debug
+        'ejs', // This dependency is used in web-server (see createApp.js)
       ],
     };
     const root = await depcheck(ROOT_DIR, depOptions);

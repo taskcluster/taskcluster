@@ -5,10 +5,6 @@
   "main": "build/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
-  "engines": {
-    "node": ">=10.0.0",
-    "yarn": ">=1.10.0"
-  },
   "scripts": {
     "build": "webpack --mode production",
     "start": "webpack --watch --mode development",
@@ -16,25 +12,7 @@
     "lint": "eslint --cache --format codeframe --ext mjs,js src test",
     "test": "mocha --require mocha.config.js --recursive"
   },
-  "devDependencies": {
-    "@babel/core": "^7.2.2",
-    "@babel/plugin-proposal-class-properties": "^7.1.0",
-    "@babel/plugin-proposal-decorators": "^7.1.2",
-    "@neutrinojs/mocha": "9.0.0-rc.0",
-    "@neutrinojs/node": "9.0.0-rc.0",
-    "eslint": "^5.10.0",
-    "eslint-config-prettier": "^3.1.0",
-    "eslint-plugin-prettier": "^3.0.0",
-    "mocha": "^5.2.0",
-    "neutrino": "9.0.0-rc.0",
-    "prettier": "^1.14.3",
-    "raw-loader": "^1.0.0",
-    "webpack": "^4.25.1",
-    "webpack-cli": "^3.1.2"
-  },
   "dependencies": {
-    "@mozilla-frontend-infra/node-lint": "^1.1.1",
-    "amqp-match": "^0.0.0",
     "apollo-server-express": "^2.3.1",
     "async-decorators": "^0.1.5",
     "body-parser-graphql": "^1.0.0",
@@ -49,7 +27,6 @@
     "graphql-depth-limit": "^1.1.0",
     "graphql-iso-date": "^3.5.0",
     "graphql-playground-middleware-express": "^1.7.8",
-    "graphql-tools": "^4.0.3",
     "graphql-type-json": "^0.2.0",
     "graphql-validation-complexity": "^0.2.3",
     "immutable": "^3.8.2",
@@ -59,13 +36,6 @@
     "passport-github": "^1.1.0",
     "ramda": "^0.25.0",
     "sift": "^6.0.0",
-    "source-map-support": "^0.5.4",
-    "subscriptions-transport-ws": "^0.9.7",
-    "taskcluster-client": "^12.2.0",
-    "taskcluster-lib-loader": "^10.0.1",
-    "taskcluster-lib-monitor": "^10.0.0",
-    "taskcluster-lib-pulse": "^11.1.0",
-    "taskcluster-lib-urls": "^10.1.1",
-    "typed-env-config": "^2.0.0"
+    "subscriptions-transport-ws": "^0.9.7"
   }
 }

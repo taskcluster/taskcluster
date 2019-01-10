@@ -27,15 +27,15 @@ export default ({ queue }, isAuthed, rootUrl) => {
         ...artifact,
         url: hasRunId
           ? urls.api(
-              'queue',
-              'v1',
-              `task/${taskId}/runs/${runId}/artifacts/${artifact.name}`
-            )
+            'queue',
+            'v1',
+            `task/${taskId}/runs/${runId}/artifacts/${artifact.name}`
+          )
           : urls.api(
-              'queue',
-              'v1',
-              `task/${taskId}/artifacts/${artifact.name}`
-            ),
+            'queue',
+            'v1',
+            `task/${taskId}/artifacts/${artifact.name}`
+          ),
       };
     }
 

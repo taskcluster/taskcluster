@@ -11,6 +11,7 @@ services/purge-cache @imbstack
 services/queue @jhford
 services/secrets @djmitche
 services/treeherder @imbstack
+services/web-server @helfi92
 
 libraries/eslint-config @owlishDeveloper
 libraries/client @jhford

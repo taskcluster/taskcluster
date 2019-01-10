@@ -2,3 +2,4 @@ node_modules
 lerna-debug.log
 .eslintcache
 user-build-config.yml
+**/yarn-error.log
