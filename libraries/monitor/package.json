@@ -15,7 +15,6 @@
   "dependencies": {
     "app-root-dir": "^1.0.2",
     "aws-sdk": "^2.30.0",
-    "bluebird": "^3.5.1",
     "debug": "^3.1.0",
     "lodash": "^4.5.1",
     "raven": "^2.2.1",

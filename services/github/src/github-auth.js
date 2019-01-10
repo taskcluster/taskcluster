@@ -1,5 +1,4 @@
 const debug = require('debug')('taskcluster-github:github-auth');
-const Promise = require('bluebird');
 const jwt = require('jsonwebtoken');
 
 const retryPlugin = (octokit, options) => {

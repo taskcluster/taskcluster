@@ -3,7 +3,7 @@ const exchanges = require('./exchanges');
 const Handlers = require('./handlers');
 const Intree = require('./intree');
 const data = require('./data');
-const Promise = require('bluebird');
+const _ = require('lodash');
 const Ajv = require('ajv');
 const config = require('typed-env-config');
 const monitor = require('taskcluster-lib-monitor');
@@ -186,12 +186,12 @@ const load = loader({
       return monitor.oneShot('syncInstallations', async () => {
         const gh = await github.getIntegrationGithub();
         const installations = (await gh.apps.getInstallations({})).data;
-        await Promise.map(installations, inst => {
+        await Promise.all(_.map(installations, inst => {
           return OwnersDirectory.create({
             installationId: inst.id,
             owner: inst.account.login,
           }, true);
-        });
+        }));
       });
     },
   },
