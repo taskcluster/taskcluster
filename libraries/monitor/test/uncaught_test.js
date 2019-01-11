@@ -6,7 +6,6 @@ const authmock = require('./authmock');
 const path = require('path');
 const fork = require('child_process').fork;
 const _ = require('lodash');
-const Promise = require('bluebird');
 const libUrls = require('taskcluster-lib-urls');
 
 suite('Uncaught Errors', () => {
