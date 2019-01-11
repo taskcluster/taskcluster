@@ -13,7 +13,7 @@ import ajv from '../../utils/ajv';
 
 export default async ({ task, form, action, apolloClient, taskActions }) => {
   const actions = removeKeys(cloneDeep(taskActions), ['__typename']);
-  const taskGroup = task.taskId === task.taskGroupId ? task : task.taskGroup;
+  const taskGroup = task.taskId === task.taskGroupId ? task : task.decisionTask;
   const input = safeLoad(form);
   const validate = ajv.compile(action.schema || {});
   const valid = validate(input);

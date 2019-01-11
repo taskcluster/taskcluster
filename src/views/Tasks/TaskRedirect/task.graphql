@@ -3,7 +3,7 @@ query Task($taskId: ID!) {
     provisionerId
     workerType
     schedulerId
-    taskGroupId
+    decisionTask
     dependencies
     requires
     routes

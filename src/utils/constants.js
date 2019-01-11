@@ -153,7 +153,7 @@ export const ACTIONS_JSON_KNOWN_KINDS = ['task', 'hook'];
 // remove parent fields added by the GraphQL gateway.
 export const TASK_ADDED_FIELDS = [
   'taskId',
-  'taskGroup',
+  'decisionTask',
   'status',
   'latestArtifacts',
   'taskActions',

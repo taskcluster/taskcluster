@@ -54,7 +54,7 @@ query Task($taskId: ID!, $artifactsConnection: PageConnection, $taskActionsFilte
       version
     }
 
-    taskGroup {
+    decisionTask {
       scopes
     }
   }
