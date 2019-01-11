@@ -199,6 +199,11 @@ export default class Log extends Component {
     } = this.props;
     const highlight = this.getHighlightFromHash();
     const scrollToLine = this.getScrollToLine();
+    const containerStyle = {
+      width: 'auto',
+      maxWidth: 'initial',
+      overflow: 'initial',
+    };
     const rawLogButton = (
       <Tooltip placement="left" title="Raw log">
         <Button
@@ -220,6 +225,7 @@ export default class Log extends Component {
       return (
         <Fragment>
           <LazyLog
+            containerStyle={containerStyle}
             url={url}
             selectableLines
             highlight={highlight}
@@ -248,6 +254,7 @@ export default class Log extends Component {
         render={({ follow }) => (
           <Fragment>
             <LazyLog
+              containerStyle={containerStyle}
               url={url}
               onScroll={this.handleScroll}
               stream
