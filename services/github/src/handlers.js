@@ -85,6 +85,8 @@ class Handlers {
     this.deprecatedResultStatusPq = null;
     this.initialTaskStatusPq = null;
     this.deprecatedInitialStatusPq = null;
+
+    this.queueClient = null;
   }
 
   /**
@@ -97,6 +99,11 @@ class Handlers {
     assert(!this.initialTaskStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedResultStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedInitialStatusPq, 'Cannot setup twice!');
+
+    this.queueClient = new taskcluster.Queue({
+      rootUrl: this.context.cfg.taskcluster.rootUrl,
+      credentials: this.context.cfg.taskcluster.credentials,
+    });
 
     // Listen for new jobs created via the api webhook endpoint
     const GithubEvents = taskcluster.createClient(this.reference);
@@ -218,12 +225,8 @@ class Handlers {
 
   // Create a collection of tasks, centralized here to enable testing without creating tasks.
   async createTasks({scopes, tasks}) {
-    let queue = new taskcluster.Queue({
-      rootUrl: this.context.cfg.taskcluster.rootUrl,
-      credentials: this.context.cfg.taskcluster.credentials,
-      authorizedScopes: scopes,
-    });
-    await Promise.all(tasks.map(t => queue.createTask(t.taskId, t.task)));
+    const scopedQueueClient = this.queueClient.use({authorizedScopes: scopes});
+    await Promise.all(tasks.map(t => scopedQueueClient.createTask(t.taskId, t.task)));
   }
 
   // Send an exception to Github in the form of a comment.
@@ -406,14 +409,18 @@ async function statusHandler(message) {
         check_run_id: checkRun.checkRunId,
       });
     } else {
+      const taskDefinition = await this.queueClient.task(taskId).catch(debug);
+      debug(`Result status. Got task build from DB and task definition for ${taskId} from Queue service`);
+
       const checkRun = await instGithub.checks.create({
         owner: organization,
         repo: repository,
-        name: `Task ${taskId}`,
+        name: `${taskDefinition.metadata.name}: task ${taskId}`,
         head_sha: sha,
-        output: { // TODO: a helpful output
-          title: `TaskGroup: queued for ${eventType})`,
-          summary: `Check for ${eventType}`,
+        output: {
+          title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
+          summary: `${taskDefinition.metadata.description}`,
+          text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}}`)})`,
         },
         details_url: libUrls.ui(
           this.context.cfg.taskcluster.rootUrl,
@@ -647,7 +654,7 @@ async function jobHandler(message) {
 }
 
 /**
- * When the task was defined, post the initial status to github
+ * When the task group was defined, post the initial status to github
  * statuses api function
  *
  * @param message - taskGroupCreationRequested exchange message
@@ -710,6 +717,9 @@ async function taskDefinedHandler(message) {
     installationId,
   } = await this.context.Builds.load({taskGroupId});
 
+  const taskDefinition = await this.queueClient.task(taskId).catch(debug);
+  debug(`Initial status. Got task build from DB and task definition for ${taskId} from Queue service`);
+
   // Authenticating as installation.
   const instGithub = await this.context.github.getInstallationGithub(installationId);
 
@@ -718,11 +728,12 @@ async function taskDefinedHandler(message) {
   const checkRun = await instGithub.checks.create({
     owner: organization,
     repo: repository,
-    name: `Task ${taskId}: ${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
+    name: `${taskDefinition.metadata.name}: task ${taskId}`,
     head_sha: sha,
     output: {
-      title: `TaskGroup: Queued (for ${eventType})`,
-      summary: `Check for ${eventType}`,
+      title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
+      summary: `${taskDefinition.metadata.description}`,
+      text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}}`)})`,
     },
     details_url: libUrls.ui(
       this.context.cfg.taskcluster.rootUrl,
