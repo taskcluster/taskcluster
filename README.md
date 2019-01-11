@@ -1,5 +1,6 @@
 Taskcluster
 -----------
+[![Task Status](https://github.taskcluster.net/v1/repository/taskcluster/taskcluster/master/badge.svg)](https://github.taskcluster.net/v1/repository/taskcluster/taskcluster/master/latest)
 
 Taskcluster is the task execution framework that supports Mozilla's continuous integration and release processes.
 
