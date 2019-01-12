@@ -19,7 +19,7 @@
     "fast-azure-storage": "^2.3.0",
     "hashids": "^1.2.2",
     "hawk": "^4.1.2",
-    "hoek": "^5.0.3",
+    "hoek": "^6.0.0",
     "jsonwebtoken": "^8.1.0",
     "lodash": "^4.17.4",
     "morgan-debug": "^2.0.0",
