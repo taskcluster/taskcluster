@@ -19,6 +19,6 @@
     "lodash": "^4.11.1",
     "marked": "^0.6.0",
     "nodemailer": "^5.0.0",
-    "slugid": "^1.1.0"
+    "slugid": "^2.0.0"
   }
 }
