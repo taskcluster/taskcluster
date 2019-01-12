@@ -13,7 +13,7 @@
     "hawk": "^6.0.2",
     "lodash": "^4.17.4",
     "promise": "^8.0.1",
-    "slugid": "^1.1.0",
+    "slugid": "^2.0.0",
     "superagent": "^4.0.0",
     "taskcluster-lib-urls": "^12.0.0"
   },
