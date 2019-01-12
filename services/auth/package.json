@@ -11,7 +11,7 @@
     "checkStaging": "mocha test/check-staging.js"
   },
   "dependencies": {
-    "assume": "^1.5.2",
+    "assume": "^2.0.0",
     "aws-sdk": "^2.150.0",
     "azure-blob-storage": "^3.0.0",
     "azure-entities": "^5.1.0",
