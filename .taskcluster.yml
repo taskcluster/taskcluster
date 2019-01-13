@@ -49,6 +49,7 @@ tasks:
         - name: taskcluster-lib-iterate
         - name: taskcluster-lib-loader
         - name: taskcluster-lib-monitor
+        - name: taskcluster-lib-postgres
         - name: taskcluster-lib-pulse
           image: taskcluster/rabbit-test:${node}
           env:
