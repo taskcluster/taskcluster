@@ -99,6 +99,7 @@
     "taskcluster-lib-iterate": "link:libraries/iterate",
     "taskcluster-lib-loader": "link:libraries/loader",
     "taskcluster-lib-monitor": "link:libraries/monitor",
+    "taskcluster-lib-postgres": "link:libraries/postgres",
     "taskcluster-lib-pulse": "link:libraries/pulse",
     "taskcluster-lib-references": "link:libraries/references",
     "taskcluster-lib-scopes": "link:libraries/scopes",

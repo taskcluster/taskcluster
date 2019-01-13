@@ -1,0 +1,19 @@
+{
+  "name": "taskcluster-lib-postgres",
+  "private": true,
+  "version": "10.0.0",
+  "author": "Dustin J. Mitchell <dustin@mozilla.com>",
+  "description": "Postgres schema and query management for Taskcluster.",
+  "license": "MPL-2.0",
+  "scripts": {
+    "lint": "eslint src/*.js test/*.js",
+    "test": "mocha test/*_test.js"
+  },
+  "files": [
+    "src"
+  ],
+  "main": "./src/index.js",
+  "dependencies": {
+    "pg": "^7.8.0"
+  }
+}
