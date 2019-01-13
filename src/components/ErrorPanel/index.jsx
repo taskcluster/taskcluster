@@ -23,6 +23,7 @@ import palette from '../../utils/palette';
       padding: `0 ${2 * theme.spacing.unit}px`,
       display: 'flex',
       justifyContent: 'space-between',
+      alignItems: 'center',
     },
     // Make sure the markdown doesn't overflow the panel
     markdownContent: {
