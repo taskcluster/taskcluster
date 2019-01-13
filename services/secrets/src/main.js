@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const Debug = require('debug');
 const builder = require('../src/api');
-const data = require('../src/data');
+const schema = require('./schema');
 const assert = require('assert');
 const path = require('path');
 const _ = require('lodash');
@@ -12,7 +12,6 @@ const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
 const config = require('typed-env-config');
-const {sasCredentials} = require('taskcluster-lib-azure');
 
 let debug = Debug('secrets:server');
 
@@ -43,27 +42,16 @@ var load = loader({
     }),
   },
 
-  Secret: {
-    requires: ['cfg', 'monitor', 'process'],
-    setup: ({cfg, monitor, process}) => data.Secret.setup({
-      tableName: cfg.azure.tableName,
-      credentials: sasCredentials({
-        accountId: cfg.azure.accountId,
-        tableName: cfg.azure.tableName,
-        rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.taskcluster.credentials,
-      }),
-      cryptoKey: cfg.azure.cryptoKey,
-      signingKey: cfg.azure.signingKey,
-      monitor: monitor.prefix('table.secrets'),
-    }),
+  db: {
+    requires: ['cfg'],
+    setup: ({cfg}) => schema.setup(cfg.postgres),
   },
 
   api: {
-    requires: ['cfg', 'Secret', 'schemaset', 'monitor'],
-    setup: async ({cfg, Secret, schemaset, monitor}) => builder.build({
+    requires: ['cfg', 'db', 'schemaset', 'monitor'],
+    setup: async ({cfg, db, schemaset, monitor}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {cfg, Secret},
+      context: {cfg, db},
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
       monitor: monitor.prefix('api'),
@@ -93,6 +81,14 @@ var load = loader({
     setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
+  // NOTE: this would be done from the deployment scripts instead
+  upgradeDb: {
+    requires: ['cfg'],
+    setup: async ({cfg}) => {
+      await schema.upgrade(cfg.postgres);
+    },
+  },
+
   server: {
     requires: ['cfg', 'api', 'docs'],
     setup: ({cfg, api, docs}) => App({
@@ -105,14 +101,14 @@ var load = loader({
   },
 
   expire: {
-    requires: ['cfg', 'Secret', 'monitor'],
-    setup: ({cfg, Secret, monitor}) => {
+    requires: ['cfg', 'db', 'monitor'],
+    setup: ({cfg, db, monitor}) => {
       return monitor.oneShot('expire', async () => {
         const delay = cfg.app.secretExpirationDelay;
         const now = taskcluster.fromNow(delay);
 
         debug('Expiring secrets');
-        const count = await Secret.expire(now);
+        const count = await Secret.expire(now); // TODO
         debug('Expired ' + count + ' secrets');
       });
     },
