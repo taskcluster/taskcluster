@@ -8,8 +8,5 @@ const data = {
   ],
 };
 
-<CodeEditor
-  options={{ mode: 'json' }}
-  value={JSON.stringify(data, null, 2)}
-/>
+<CodeEditor value={JSON.stringify(data, null, 2)} />
 ```

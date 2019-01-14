@@ -23,7 +23,7 @@ import palette from '../../utils/palette';
       padding: `0 ${2 * theme.spacing.unit}px`,
       display: 'flex',
       justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'flex-start',
     },
     // Make sure the markdown doesn't overflow the panel
     markdownContent: {
@@ -61,6 +61,9 @@ import palette from '../../utils/palette';
     heading: {
       fontSize: theme.typography.pxToRem(15),
       fontWeight: theme.typography.fontWeightRegular,
+    },
+    closeIcon: {
+      marginTop: theme.spacing.unit,
     },
   }),
   { withTheme: true }
@@ -135,7 +138,7 @@ export default class ErrorPanel extends Component {
           )}>
           {markdown}
           {onClose && (
-            <IconButton onClick={onClose}>
+            <IconButton className={classes.closeIcon} onClick={onClose}>
               <CloseIcon color={iconColor} />
             </IconButton>
           )}

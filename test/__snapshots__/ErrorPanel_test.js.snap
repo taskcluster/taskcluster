@@ -12,6 +12,7 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
     className={null}
     classes={
       Object {
+        "closeIcon": "ErrorPanel-closeIcon-11",
         "disabled": "ErrorPanel-disabled-9",
         "error": "ErrorPanel-error-5",
         "errorText": "ErrorPanel-errorText-7",
@@ -398,33 +399,33 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
         className="ErrorPanel-panel-1 ErrorPanel-paper-2 ErrorPanel-error-5"
         classes={
           Object {
-            "elevation0": "MuiPaper-elevation0-13",
-            "elevation1": "MuiPaper-elevation1-14",
-            "elevation10": "MuiPaper-elevation10-23",
-            "elevation11": "MuiPaper-elevation11-24",
-            "elevation12": "MuiPaper-elevation12-25",
-            "elevation13": "MuiPaper-elevation13-26",
-            "elevation14": "MuiPaper-elevation14-27",
-            "elevation15": "MuiPaper-elevation15-28",
-            "elevation16": "MuiPaper-elevation16-29",
-            "elevation17": "MuiPaper-elevation17-30",
-            "elevation18": "MuiPaper-elevation18-31",
-            "elevation19": "MuiPaper-elevation19-32",
-            "elevation2": "MuiPaper-elevation2-15",
-            "elevation20": "MuiPaper-elevation20-33",
-            "elevation21": "MuiPaper-elevation21-34",
-            "elevation22": "MuiPaper-elevation22-35",
-            "elevation23": "MuiPaper-elevation23-36",
-            "elevation24": "MuiPaper-elevation24-37",
-            "elevation3": "MuiPaper-elevation3-16",
-            "elevation4": "MuiPaper-elevation4-17",
-            "elevation5": "MuiPaper-elevation5-18",
-            "elevation6": "MuiPaper-elevation6-19",
-            "elevation7": "MuiPaper-elevation7-20",
-            "elevation8": "MuiPaper-elevation8-21",
-            "elevation9": "MuiPaper-elevation9-22",
-            "root": "MuiPaper-root-11",
-            "rounded": "MuiPaper-rounded-12",
+            "elevation0": "MuiPaper-elevation0-14",
+            "elevation1": "MuiPaper-elevation1-15",
+            "elevation10": "MuiPaper-elevation10-24",
+            "elevation11": "MuiPaper-elevation11-25",
+            "elevation12": "MuiPaper-elevation12-26",
+            "elevation13": "MuiPaper-elevation13-27",
+            "elevation14": "MuiPaper-elevation14-28",
+            "elevation15": "MuiPaper-elevation15-29",
+            "elevation16": "MuiPaper-elevation16-30",
+            "elevation17": "MuiPaper-elevation17-31",
+            "elevation18": "MuiPaper-elevation18-32",
+            "elevation19": "MuiPaper-elevation19-33",
+            "elevation2": "MuiPaper-elevation2-16",
+            "elevation20": "MuiPaper-elevation20-34",
+            "elevation21": "MuiPaper-elevation21-35",
+            "elevation22": "MuiPaper-elevation22-36",
+            "elevation23": "MuiPaper-elevation23-37",
+            "elevation24": "MuiPaper-elevation24-38",
+            "elevation3": "MuiPaper-elevation3-17",
+            "elevation4": "MuiPaper-elevation4-18",
+            "elevation5": "MuiPaper-elevation5-19",
+            "elevation6": "MuiPaper-elevation6-20",
+            "elevation7": "MuiPaper-elevation7-21",
+            "elevation8": "MuiPaper-elevation8-22",
+            "elevation9": "MuiPaper-elevation9-23",
+            "root": "MuiPaper-root-12",
+            "rounded": "MuiPaper-rounded-13",
           }
         }
         component="div"
@@ -432,7 +433,7 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
         square={false}
       >
         <div
-          className="MuiPaper-root-11 MuiPaper-elevation2-15 MuiPaper-rounded-12 ErrorPanel-panel-1 ErrorPanel-paper-2 ErrorPanel-error-5"
+          className="MuiPaper-root-12 MuiPaper-elevation2-16 MuiPaper-rounded-13 ErrorPanel-panel-1 ErrorPanel-paper-2 ErrorPanel-error-5"
         >
           <WithStyles(Markdown)
             className="ErrorPanel-markdownContent-3 ErrorPanel-errorText-7 ErrorPanel-pad-4"
@@ -441,12 +442,12 @@ exports[`<ErrorPanel /> should render correctly 1`] = `
               className="ErrorPanel-markdownContent-3 ErrorPanel-errorText-7 ErrorPanel-pad-4"
               classes={
                 Object {
-                  "root": "Markdown-root-38",
+                  "root": "Markdown-root-39",
                 }
               }
             >
               <span
-                className="Markdown-root-38 ErrorPanel-markdownContent-3 ErrorPanel-errorText-7 ErrorPanel-pad-4"
+                className="Markdown-root-39 ErrorPanel-markdownContent-3 ErrorPanel-errorText-7 ErrorPanel-pad-4"
                 dangerouslySetInnerHTML={
                   Object {
                     "__html": "<p>Foo</p>
