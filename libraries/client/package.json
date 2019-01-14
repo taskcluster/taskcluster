@@ -9,7 +9,7 @@
     "test": "mocha test/*_test.js"
   },
   "dependencies": {
-    "debug": "^3.1.0",
+    "debug": "^4.0.0",
     "hawk": "^6.0.2",
     "lodash": "^4.17.4",
     "promise": "^8.0.1",
