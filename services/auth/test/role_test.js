@@ -199,13 +199,13 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     // Create 4 dummy roles
     await helper.apiClient.createRole(`thing-id:${clientId}`, {
       description: 'test role',
-      scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
+      expandedScopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
     for (let i=0;i<3;i++) {
       let tempRoleId = `${clientId}${i}`;
       await helper.apiClient.createRole(tempRoleId, {
         description: 'test role',
-        scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
+        expandedScopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
       });
     }
 
