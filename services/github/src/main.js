@@ -186,7 +186,7 @@ const load = loader({
       return monitor.oneShot('syncInstallations', async () => {
         const gh = await github.getIntegrationGithub();
         const installations = (await gh.apps.getInstallations({})).data;
-        await Promise.all(_.map(installations, inst => {
+        await Promise.all(installations.map(inst => {
           return OwnersDirectory.create({
             installationId: inst.id,
             owner: inst.account.login,

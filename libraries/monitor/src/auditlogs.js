@@ -139,7 +139,7 @@ class KinesisLog extends events.EventEmitter {
         this._scheduleFlush();
       }
     };
-    await Promise.all(_.map(chunks, chunkHandle));
+    await Promise.all(chunks.map(chunkHandle));
     const d = process.hrtime(start);
     this._statsum.measure('auditlog.report', d[0] * 1000 + d[1] / 1000000);
   }

@@ -7,20 +7,6 @@ const _ = require('lodash');
 
 const MAX_RETRIES = 5;
 
-Object.keys(irc).forEach( key => {
-  let prototypeVal;
-  let val = irc[key];
-  if (typeof val === 'function' ) {
-    irc[`${key}Async`] = util.promisify(val);
-    Object.getOwnPropertyNames(irc[`${key}`].prototype).forEach(name => {
-      prototypeVal = irc[`${key}`].prototype[`${name}`];
-      if (typeof prototypeVal === 'function') {
-        irc[`${key}`].prototype[`${name}Async`] = util.promisify(prototypeVal);
-      }
-    });
-  }
-});
-
 /** IRC bot for delivering notifications */
 class IRCBot {
   /**
@@ -71,7 +57,7 @@ class IRCBot {
   }
 
   async start() {
-    await this.client.connectAsync().catch((e) => {
+    await util.promisify(this.client.connect)().catch((e) => {
       // We always get an error when connecting to irc.mozilla.org
       if (e.command !== 'rpl_welcome') {
         throw e;
@@ -144,7 +130,7 @@ class IRCBot {
   async terminate() {
     this.stopping = true;
     await this.done;
-    await this.client.disconnectAsync();
+    await util.promisify(this.client.disconnect)();
   }
 
 }
