@@ -13,7 +13,7 @@
     "ajv": "6.7.0",
     "aws-sdk": "^2.164.0",
     "azure-entities": "^5.1.0",
-    "cron-parser": "2.4.3",
+    "cron-parser": "2.7.3",
     "debug": "^4.0.0",
     "json-e": "^2.3.5",
     "lodash": "^4.17.4",
