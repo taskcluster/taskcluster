@@ -11,6 +11,7 @@ import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/lint/lint.css';
 import 'codemirror/theme/material.css';
 import './yaml-lint';
+import './json-lint';
 
 @withStyles({
   root: {
