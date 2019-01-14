@@ -26,6 +26,6 @@
     "sentry-api": "^0.1.1",
     "slugid": "^2.0.0",
     "statsum": "^0.6.0",
-    "superagent": "^3.8.1"
+    "superagent": "^4.0.0"
   }
 }

@@ -5377,7 +5377,7 @@ superagent-proxy@^1.0.2:
     debug "^3.1.0"
     proxy-agent "2"
 
-superagent@^3.8.0, superagent@^3.8.1, superagent@^3.8.2:
+superagent@^3.8.0:
   version "3.8.3"
   resolved "https://registry.yarnpkg.com/superagent/-/superagent-3.8.3.tgz#460ea0dbdb7d5b11bc4f78deba565f86a178e128"
   integrity sha512-GLQtLMCoEIK4eDv6OGtkOoSMt3D+oq0y3dsxMuYuDvaNUvuT8eFBuLmfR0iYYzHC1e8hpzC6ZsxbuP6DIalMFA==
