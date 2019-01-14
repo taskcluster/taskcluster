@@ -14,7 +14,7 @@
     "lib"
   ],
   "dependencies": {
-    "debug": "^3.1.0",
+    "debug": "^4.0.0",
     "express": "4.16.4",
     "hawk": "^4.1.2",
     "lodash": "^4.17.10",
