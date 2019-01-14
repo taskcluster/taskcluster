@@ -62,9 +62,6 @@ import palette from '../../utils/palette';
       fontSize: theme.typography.pxToRem(15),
       fontWeight: theme.typography.fontWeightRegular,
     },
-    closeIcon: {
-      marginTop: theme.spacing.unit,
-    },
   }),
   { withTheme: true }
 )
@@ -138,7 +135,7 @@ export default class ErrorPanel extends Component {
           )}>
           {markdown}
           {onClose && (
-            <IconButton className={classes.closeIcon} onClick={onClose}>
+            <IconButton onClick={onClose}>
               <CloseIcon color={iconColor} />
             </IconButton>
           )}
