@@ -75,9 +75,7 @@ exports.withEntities = (mock, skipping, options={}) => {
     }
 
     await Promise.all(tables.map(async tbl => {
-      await exports[tbl.name].scan({}, {handler: e => {
-        e.remove();
-      }});
+      await exports[tbl.name].scan({}, {handler: e => e.remove()});
     }));
   };
   if (!options.orderedTests) {
