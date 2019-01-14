@@ -21,7 +21,7 @@ const roleToJson = (role, context) => _.defaults(
  * Helper to fetch roles
  * This involves building response for pagination
  */
-const rolesResponseBuilder = async (req, res) => {
+const rolesResponseBuilder = async (that, req, res) => {
   let hashids = new Hashids();
   let continuationToken;
   let limit = parseInt(req.query.limit, 10) || undefined;
@@ -41,7 +41,7 @@ const rolesResponseBuilder = async (req, res) => {
   }
 
   // Load all roles
-  let roles = await this.Roles.get();
+  let roles = await that.Roles.get();
   let length = roles.length;
 
   // Slice the list of roles based on continuationToken and limit
@@ -655,7 +655,7 @@ builder.declare({
 }, async function(req, res) {
 
   // Fetch roles and build response
-  const { response, roles } = await rolesResponseBuilder(req, res);
+  const { response, roles } = await rolesResponseBuilder(this, req, res);
 
   // Generate a list of roleIds corresponding to the selected roles
   let roleIds = roles.map(r => r.roleId);
@@ -686,7 +686,7 @@ builder.declare({
 }, async function(req, res) {
 
   // Fetch roles and build response
-  const { response, roles } = await rolesResponseBuilder(req, res);
+  const { response, roles } = await rolesResponseBuilder(this, req, res);
 
   response.roles = roles;
 
