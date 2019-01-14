@@ -84,7 +84,7 @@ oneOf:
           The worst case is that we have artifacts which incorrectly do not
           validate, which is not as big of a security concern.
         type: array
-        minLength: 1
+        minItems: 1
         items:
           title: "Multipart Part"
           type: object
