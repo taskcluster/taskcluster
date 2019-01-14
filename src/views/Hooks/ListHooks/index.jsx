@@ -37,9 +37,9 @@ export default class ListHooks extends Component {
     this.setState({ hookSearch });
   };
 
-  handleLeafClick = (leaf, parent) => {
+  handleLeafClick = ({ value, parent }) => {
     this.props.history.push(
-      `/hooks/${parent.value}/${encodeURIComponent(leaf)}`
+      `/hooks/${parent.value}/${encodeURIComponent(value)}`
     );
   };
 

@@ -125,6 +125,7 @@ export default class DialogAction extends Component {
               disabled={executing}
               onClick={this.handleSubmit}
               color="secondary"
+              variant="outlined"
               autoFocus>
               {confirmText}
             </Button>

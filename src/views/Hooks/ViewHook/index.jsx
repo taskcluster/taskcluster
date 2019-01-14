@@ -26,10 +26,16 @@ export default class ViewHook extends Component {
   state = {
     actionLoading: false,
     error: null,
+    dialogError: null,
+    dialogOpen: false,
+  };
+
+  preRunningAction = () => {
+    this.setState({ dialogError: null, actionLoading: true });
   };
 
   handleCreateHook = async ({ hookId, hookGroupId, payload }) => {
-    this.setState({ error: null, actionLoading: true });
+    this.preRunningAction();
 
     try {
       await this.props.client.mutate({
@@ -51,7 +57,7 @@ export default class ViewHook extends Component {
   };
 
   handleDeleteHook = async ({ hookId, hookGroupId }) => {
-    this.setState({ error: null, actionLoading: true });
+    this.preRunningAction();
 
     try {
       await this.props.client.mutate({
@@ -70,27 +76,21 @@ export default class ViewHook extends Component {
   };
 
   handleTriggerHook = async ({ hookGroupId, hookId, payload }) => {
-    this.setState({ error: null, actionLoading: true });
+    this.preRunningAction();
 
-    try {
-      await this.props.client.mutate({
-        mutation: triggerHookQuery,
-        variables: {
-          hookId,
-          hookGroupId,
-          payload,
-        },
-      });
-      await this.props.data.refetch();
-
-      this.setState({ error: null, actionLoading: false });
-    } catch (error) {
-      this.setState({ error, actionLoading: false });
-    }
+    await this.props.client.mutate({
+      mutation: triggerHookQuery,
+      variables: {
+        hookId,
+        hookGroupId,
+        payload,
+      },
+    });
+    await this.props.data.refetch();
   };
 
   handleUpdateHook = async ({ hookGroupId, hookId, payload }) => {
-    this.setState({ error: null, actionLoading: true });
+    this.preRunningAction();
 
     try {
       await this.props.client.mutate({
@@ -108,33 +108,55 @@ export default class ViewHook extends Component {
     }
   };
 
+  handleActionDialogClose = () => {
+    this.setState({
+      actionLoading: false,
+      dialogOpen: false,
+      dialogError: null,
+      error: null,
+    });
+  };
+
+  handleDialogOpen = () => {
+    this.setState({ dialogOpen: true });
+  };
+
+  handleDialogActionError = error => {
+    this.setState({ dialogError: error, actionLoading: false });
+  };
+
   render() {
     const { isNewHook, data } = this.props;
-    const { error, actionLoading } = this.state;
+    const { error: err, dialogError, actionLoading, dialogOpen } = this.state;
+    const error = (data && data.error) || err;
 
     return (
       <Dashboard title={isNewHook ? 'Create Hook' : 'Hook'}>
+        <ErrorPanel error={error} />
         {isNewHook ? (
           <Fragment>
             <HookForm
-              error={error}
               isNewHook
+              dialogError={dialogError}
+              actionLoading={actionLoading}
               onCreateHook={this.handleCreateHook}
             />
           </Fragment>
         ) : (
           <Fragment>
             {!data.hook && data.loading && <Spinner loading />}
-            <ErrorPanel error={error} />
-            {data && <ErrorPanel error={data.error} />}
             {data.hook && (
               <HookForm
-                error={error}
+                dialogError={dialogError}
+                actionLoading={actionLoading}
                 hook={data.hook}
+                dialogOpen={dialogOpen}
                 onTriggerHook={this.handleTriggerHook}
                 onUpdateHook={this.handleUpdateHook}
                 onDeleteHook={this.handleDeleteHook}
-                actionLoading={actionLoading}
+                onActionDialogClose={this.handleActionDialogClose}
+                onDialogActionError={this.handleDialogActionError}
+                onDialogOpen={this.handleDialogOpen}
               />
             )}
           </Fragment>

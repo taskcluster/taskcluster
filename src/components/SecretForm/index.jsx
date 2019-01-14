@@ -163,6 +163,7 @@ export default class SecretForm extends Component {
               <CodeEditor
                 onChange={this.handleEditorChange}
                 mode="yaml"
+                lint
                 value={
                   typeof editorValue === 'object' ? newSecret : editorValue
                 }
