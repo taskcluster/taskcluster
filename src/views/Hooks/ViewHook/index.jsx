@@ -47,10 +47,12 @@ export default class ViewHook extends Component {
         },
       });
 
-      this.setState({ error: null, actionLoading: false });
       this.props.history.push(
         `/hooks/${encodeURIComponent(hookGroupId)}/${hookId}`
       );
+
+      await this.props.data.refetch();
+      this.setState({ error: null, actionLoading: false });
     } catch (error) {
       this.setState({ error, actionLoading: false });
     }

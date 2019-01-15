@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { string, bool, func, oneOfType, object } from 'prop-types';
 import classNames from 'classnames';
-import { assocPath } from 'ramda';
+import { equals, assocPath } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import Code from '@mozilla-frontend-infra/components/Code';
@@ -151,13 +151,28 @@ export default class HookForm extends Component {
     onDialogActionError: func,
   };
 
-  constructor(props) {
-    super(props);
+  state = {
+    hook: null,
+    // eslint-disable-next-line react/no-unused-state
+    previousHook: null,
+    taskInput: '',
+    triggerSchemaInput: '',
+    triggerContextInput: '',
+    scheduleTextField: '',
+    taskValidJson: true,
+    triggerSchemaValidJson: true,
+  };
+
+  static getDerivedStateFromProps(props, state) {
+    if (equals(props.hook, state.previousHook)) {
+      return null;
+    }
 
     const hook = props.isNewHook ? initialHook : props.hook;
 
-    this.state = {
-      hook,
+    return {
+      hook: props.hook,
+      previousHook: props.hook,
       taskInput: JSON.stringify(
         removeKeys(cloneDeep(hook.task), ['__typename']),
         null,
