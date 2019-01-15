@@ -35,7 +35,7 @@ variable "rabbitmq_hostname" {
 
 variable "rabbitmq_vhost" {
   type        = "string"
-  description = "rabbitmq hostname"
+  description = "rabbitmq vhost name"
 }
 
 variable "notify_ses_arn" {
