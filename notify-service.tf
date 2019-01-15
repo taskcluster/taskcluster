@@ -1,5 +1,5 @@
 resource "aws_sqs_queue" "notify_irc_queue" {
-  name = "tasklcuster-notify-irc"
+  name = "${var.prefix}-notify-irc"
 }
 
 locals {
