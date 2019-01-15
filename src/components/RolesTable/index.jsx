@@ -18,6 +18,7 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.roleId, b.node.roleId)),
   map(({ node: { roleId } }) => roleId)
 );
+const tableHeaders = ['Role ID'];
 
 @withStyles(theme => ({
   tableCell: {
@@ -47,8 +48,8 @@ export default class RolesTable extends Component {
   };
 
   state = {
-    sortBy: null,
-    sortDirection: null,
+    sortBy: tableHeaders[0],
+    sortDirection: 'asc',
   };
 
   createSortedRolesConnection = memoize(
@@ -107,7 +108,7 @@ export default class RolesTable extends Component {
         pageSize={VIEW_ROLES_PAGE_SIZE}
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
-        headers={['Role ID']}
+        headers={tableHeaders}
         sortByHeader={sortBy}
         sortDirection={sortDirection}
         renderRow={({ node: role }) => (

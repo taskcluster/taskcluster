@@ -19,6 +19,7 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.clientId, b.node.clientId)),
   map(({ node: { clientId } }) => clientId)
 );
+const tableHeaders = ['Client ID', 'Last Date Used'];
 
 @withStyles(theme => ({
   tableCell: {
@@ -42,8 +43,8 @@ export default class ClientsTable extends Component {
   };
 
   state = {
-    sortBy: null,
-    sortDirection: null,
+    sortBy: tableHeaders[0],
+    sortDirection: 'asc',
   };
 
   createSortedClientsConnection = memoize(
@@ -99,7 +100,7 @@ export default class ClientsTable extends Component {
           sortDirection
         )}
         pageSize={VIEW_CLIENTS_PAGE_SIZE}
-        headers={['Client ID', 'Last Date Used']}
+        headers={tableHeaders}
         sortByHeader={sortBy}
         sortDirection={sortDirection}
         onHeaderClick={this.handleHeaderClick}
