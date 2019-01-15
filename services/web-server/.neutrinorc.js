@@ -1,3 +1,5 @@
+const nodeExternals = require('webpack-node-externals');
+
 module.exports = {
   use: [
     ['@neutrinojs/node', {
@@ -10,6 +12,19 @@ module.exports = {
       },
     }],
     (neutrino) => {
+      neutrino.config.merge({
+        externals: [
+          nodeExternals({
+            whitelist: [/^webpack/]
+          }),
+          nodeExternals({
+            modulesFromFile: true,
+          }),
+          nodeExternals({
+            modulesDir: '../../node_modules',
+          }),
+        ],
+      });
       neutrino.config.module
         .rule('graphql')
           .test(/\.graphql$/)

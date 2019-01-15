@@ -86,6 +86,7 @@
     "uuid": "^3.3.2",
     "webpack": "^4.25.1",
     "webpack-cli": "^3.1.2",
+    "webpack-node-externals": "^1.7.2",
     "xml2js": "^0.4.19",
     "xmlbuilder": "^10.1.1",
     "zen-observable": "^0.8.11",
