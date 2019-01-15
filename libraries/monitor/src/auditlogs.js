@@ -1,6 +1,5 @@
 const debug = require('debug')('taskcluster-lib-monitor');
 const events = require('events');
-const _ = require('lodash');
 const AWS = require('aws-sdk');
 
 // This number comes from the Kinesis docs.

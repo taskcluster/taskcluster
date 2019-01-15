@@ -3,7 +3,6 @@ const exchanges = require('./exchanges');
 const Handlers = require('./handlers');
 const Intree = require('./intree');
 const data = require('./data');
-const _ = require('lodash');
 const Ajv = require('ajv');
 const config = require('typed-env-config');
 const monitor = require('taskcluster-lib-monitor');

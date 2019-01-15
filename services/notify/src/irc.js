@@ -3,7 +3,6 @@ const util = require('util');
 const irc = require('irc-upd');
 const assert = require('assert');
 const aws = require('aws-sdk');
-const _ = require('lodash');
 
 const MAX_RETRIES = 5;
 
