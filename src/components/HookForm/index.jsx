@@ -31,7 +31,6 @@ import DateDistance from '../DateDistance';
 import { HOOKS_LAST_FIRE_TYPE } from '../../utils/constants';
 import { hook } from '../../utils/prop-types';
 import removeKeys from '../../utils/removeKeys';
-import withAlertOnClose from '../../utils/withAlertOnClose';
 
 const initialHook = {
   metadata: {
@@ -65,7 +64,6 @@ const initialHook = {
   },
 };
 
-@withAlertOnClose
 @withStyles(theme => ({
   actionButton: {
     ...theme.mixins.fab,

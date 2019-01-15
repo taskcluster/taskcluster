@@ -30,7 +30,6 @@ import {
   ISO_8601_REGEX,
 } from '../../../utils/constants';
 import urls from '../../../utils/urls';
-import withAlertOnClose from '../../../utils/withAlertOnClose';
 import createTaskQuery from '../createTask.graphql';
 import Button from '../../../components/Button';
 
@@ -59,7 +58,6 @@ const defaultTask = {
 
 @hot(module)
 @withApollo
-@withAlertOnClose
 @withStyles(theme => ({
   createIcon: {
     ...theme.mixins.successIcon,
