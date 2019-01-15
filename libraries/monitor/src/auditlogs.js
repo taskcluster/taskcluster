@@ -1,7 +1,5 @@
 const debug = require('debug')('taskcluster-lib-monitor');
 const events = require('events');
-const _ = require('lodash');
-const Promise = require('bluebird');
 const AWS = require('aws-sdk');
 
 // This number comes from the Kinesis docs.
@@ -98,7 +96,7 @@ class KinesisLog extends events.EventEmitter {
 
     // Now submit the chunks
     const start = process.hrtime();
-    await Promise.map(chunks, async chunk => {
+    const chunkHandle = async chunk => {
       const {records} = chunk;
       let res;
       try {
@@ -139,7 +137,8 @@ class KinesisLog extends events.EventEmitter {
       if (this._records.length) {
         this._scheduleFlush();
       }
-    });
+    };
+    await Promise.all(chunks.map(chunkHandle));
     const d = process.hrtime(start);
     this._statsum.measure('auditlog.report', d[0] * 1000 + d[1] / 1000000);
   }

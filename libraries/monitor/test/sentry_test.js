@@ -1,5 +1,4 @@
 const assert = require('assert');
-const Promise = require('bluebird');
 const monitoring = require('../');
 const debug = require('debug')('test');
 const nock = require('nock');

@@ -1,9 +1,8 @@
 const debug = require('debug')('notify');
-const Promise = require('bluebird');
-const irc = Promise.promisifyAll(require('irc-upd'));
+const util = require('util');
+const irc = require('irc-upd');
 const assert = require('assert');
 const aws = require('aws-sdk');
-const _ = require('lodash');
 
 const MAX_RETRIES = 5;
 
@@ -57,7 +56,7 @@ class IRCBot {
   }
 
   async start() {
-    await this.client.connectAsync().catch((e) => {
+    await util.promisify(this.client.connect)().catch((e) => {
       // We always get an error when connecting to irc.mozilla.org
       if (e.command !== 'rpl_welcome') {
         throw e;
@@ -130,7 +129,7 @@ class IRCBot {
   async terminate() {
     this.stopping = true;
     await this.done;
-    await this.client.disconnectAsync();
+    await util.promisify(this.client.disconnect)();
   }
 
 }

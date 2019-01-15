@@ -1,6 +1,5 @@
 const debug = require('debug')('taskcluster-lib-monitor');
 const _ = require('lodash');
-const Promise = require('bluebird');
 const raven = require('raven');
 const BaseMonitor = require('./base');
 
