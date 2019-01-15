@@ -54,6 +54,7 @@ const encodeUserData = obj => {
   },
   fab: {
     ...theme.mixins.fab,
+    ...theme.mixins.actionButton,
   },
 }))
 export default class ViewWorkerTypeDefinition extends Component {

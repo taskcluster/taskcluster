@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { string, bool, func, oneOfType, object } from 'prop-types';
+import classNames from 'classnames';
 import { assocPath } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
@@ -65,11 +66,11 @@ const initialHook = {
 };
 
 @withStyles(theme => ({
-  actionButton: {
+  actionButtonSpan: {
     ...theme.mixins.fab,
+    ...theme.mixins.actionButton,
   },
   saveHookSpan: {
-    ...theme.mixins.fab,
     position: 'fixed',
     bottom: theme.spacing.double,
     right: theme.spacing.unit * 11,
@@ -627,7 +628,7 @@ export default class HookForm extends Component {
         </List>
         {isNewHook ? (
           <Button
-            spanProps={{ className: classes.actionButton }}
+            spanProps={{ className: classes.actionButtonSpan }}
             tooltipProps={{ title: 'Save Hook' }}
             requiresAuth
             classes={{ root: classes.successIcon }}
@@ -639,7 +640,12 @@ export default class HookForm extends Component {
         ) : (
           <Fragment>
             <Button
-              spanProps={{ className: classes.saveHookSpan }}
+              spanProps={{
+                className: classNames(
+                  classes.actionButtonSpan,
+                  classes.saveHookSpan
+                ),
+              }}
               tooltipProps={{ title: 'Save Hook' }}
               requiresAuth
               classes={{ root: classes.successIcon }}

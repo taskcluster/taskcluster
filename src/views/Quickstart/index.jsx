@@ -124,6 +124,7 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
   },
   resetButtonSpan: {
     ...theme.mixins.fab,
+    ...theme.mixins.actionButton,
   },
   errorPanels: {
     marginTop: theme.spacing.double,
