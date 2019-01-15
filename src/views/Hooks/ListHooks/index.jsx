@@ -71,6 +71,9 @@ export default class ListHooks extends Component {
         <ErrorPanel error={error} />
         {hookGroups && (
           <MuiTreeView
+            // key is necessary to expand the list of hook when searching
+            key={hookSearch}
+            defaultExpanded={Boolean(hookSearch)}
             listItemProps={{ color: classes.listItemProps }}
             searchTerm={hookSearch || null}
             tree={tree}
