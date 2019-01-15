@@ -174,6 +174,14 @@ export default class TaskDetailsCard extends Component {
                   </IconButton>
                 </ListItemSecondaryAction>
               </ListItem>
+              <CopyToClipboard
+                title={`${task.taskId} (Copy)`}
+                text={task.taskId}>
+                <ListItem button className={classes.listItemButton}>
+                  <ListItemText primary="Task ID" secondary={task.taskId} />
+                  <ContentCopyIcon />
+                </ListItem>
+              </CopyToClipboard>
               <ListItem>
                 <ListItemText
                   primary="State"
