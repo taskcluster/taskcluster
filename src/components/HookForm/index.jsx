@@ -322,6 +322,8 @@ export default class HookForm extends Component {
     const { hook, taskValidJson, triggerSchemaValidJson } = this.state;
 
     return (
+      hook.hookGroupId &&
+      hook.hookId &&
       hook.metadata.name &&
       hook.metadata.owner &&
       taskValidJson &&
@@ -444,7 +446,6 @@ export default class HookForm extends Component {
           </ListItem>
           <ListItem>
             <TextField
-              required
               label="Description"
               name="description"
               placeholder="Hook description (markdown)"
