@@ -158,9 +158,9 @@ export default class RoleForm extends Component {
               label="Scopes"
               name="scopeText"
               onChange={this.handleInputChange}
+              spellCheck={false}
               fullWidth
               multiline
-              rows={5}
               placeholder={isNewRole ? 'new-scope:for-something:*' : null}
               value={scopeText}
             />

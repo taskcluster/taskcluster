@@ -280,7 +280,7 @@ export default class ClientForm extends Component {
               onChange={this.handleInputChange}
               fullWidth
               multiline
-              rows={5}
+              spellCheck={false}
               placeholder={isNewClient ? 'new-scope:for-something:*' : null}
               value={scopeText}
             />
