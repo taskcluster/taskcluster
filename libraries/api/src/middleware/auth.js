@@ -268,10 +268,11 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
         req.hasAuthed = true;
 
         if (!authed) {
+          const clientId = await req.clientId();
           throw new ErrorReply({
             code: 'InsufficientScopes',
             message: [
-              'Client ID ' + result.clientId + ' does not have sufficient scopes and are missing the following scopes:',
+              'Client ID ' + clientId + ' does not have sufficient scopes and are missing the following scopes:',
               '',
               '```',
               '{{unsatisfied}}',
