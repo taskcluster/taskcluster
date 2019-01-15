@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "content-security-policy": "^0.3.0",
-    "debug": "^3.1.0",
+    "debug": "^4.0.0",
     "express": "4.16.4",
     "express-sslify": "1.2.0",
     "hsts": "^2.1.0",

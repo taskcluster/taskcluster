@@ -255,15 +255,15 @@ agent-base@4, agent-base@^4.1.0, agent-base@^4.2.0:
   dependencies:
     es6-promisify "^5.0.0"
 
-ajv@6.5.1:
-  version "6.5.1"
-  resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.5.1.tgz#88ebc1263c7133937d108b80c5572e64e1d9322d"
-  integrity sha512-pgZos1vgOHDiC7gKNbZW8eKvCnNXARv2oqrGQT7Hzbq5Azp7aZG6DJzADnkuSq7RH6qkXp4J/m68yPX/2uBHyQ==
+ajv@6.7.0:
+  version "6.7.0"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.7.0.tgz#e3ce7bb372d6577bb1839f1dfdfcbf5ad2948d96"
+  integrity sha512-RZXPviBTtfmtka9n9sy1N5M5b82CbxWIR6HIis4s3WQTXDJamc/0gpCWNGz6EWdWp4DOfjzJfhz/AS9zVPjjWg==
   dependencies:
     fast-deep-equal "^2.0.1"
     fast-json-stable-stringify "^2.0.0"
     json-schema-traverse "^0.4.1"
-    uri-js "^4.2.1"
+    uri-js "^4.2.2"
 
 ajv@^5.3.0, ajv@^5.5.0:
   version "5.5.2"
@@ -1298,13 +1298,13 @@ create-error-class@^3.0.1:
   dependencies:
     capture-stack-trace "^1.0.0"
 
-cron-parser@2.4.3:
-  version "2.4.3"
-  resolved "https://registry.yarnpkg.com/cron-parser/-/cron-parser-2.4.3.tgz#cae844c20117fc72c678f63ac83c7884be199e78"
-  integrity sha512-IcAjsFKIF7C3zCIqRDs5sKMNtiyPuj07JN94LP4IjwaZYgKm/Tc4pihanHqJhq6FeqMp0SG0wUTb+LAmPqexAw==
+cron-parser@2.7.3:
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/cron-parser/-/cron-parser-2.7.3.tgz#12603f89f5375af353a9357be2543d3172eac651"
+  integrity sha512-t9Kc7HWBWPndBzvbdQ1YG9rpPRB37Tb/tTviziUOh1qs3TARGh3b1p+tnkOHNe1K5iI3oheBPgLqwotMM7+lpg==
   dependencies:
     is-nan "^1.2.1"
-    moment-timezone "^0.5.0"
+    moment-timezone "^0.5.23"
 
 cross-spawn@^5.0.1:
   version "5.1.0"
@@ -3800,7 +3800,7 @@ mockdate@^2.0.2:
   resolved "https://registry.yarnpkg.com/mockdate/-/mockdate-2.0.2.tgz#5ae0c0eaf8fe23e009cd01f9889b42c4f634af12"
   integrity sha1-WuDA6vj+I+AJzQH5iJtCxPY0rxI=
 
-moment-timezone@^0.5.0:
+moment-timezone@^0.5.23:
   version "0.5.23"
   resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.23.tgz#7cbb00db2c14c71b19303cb47b0fb0a6d8651463"
   integrity sha512-WHFH85DkCfiNMDX5D3X7hpNH3/PUhjTGcD0U1SgfBGZxJ3qUmJh5FdvaFjcClxOvB3rzdfj4oRffbI38jEnC1w==
@@ -5377,7 +5377,7 @@ superagent-proxy@^1.0.2:
     debug "^3.1.0"
     proxy-agent "2"
 
-superagent@^3.8.0, superagent@^3.8.1, superagent@^3.8.2:
+superagent@^3.8.0:
   version "3.8.3"
   resolved "https://registry.yarnpkg.com/superagent/-/superagent-3.8.3.tgz#460ea0dbdb7d5b11bc4f78deba565f86a178e128"
   integrity sha512-GLQtLMCoEIK4eDv6OGtkOoSMt3D+oq0y3dsxMuYuDvaNUvuT8eFBuLmfR0iYYzHC1e8hpzC6ZsxbuP6DIalMFA==
@@ -5489,7 +5489,7 @@ tar@^4:
 "taskcluster-client@link:libraries/client":
   version "12.2.0"
   dependencies:
-    debug "^3.1.0"
+    debug "^4.0.0"
     hawk "^6.0.2"
     lodash "^4.17.4"
     promise "^8.0.1"
@@ -5515,7 +5515,7 @@ tar@^4:
   version "10.2.0"
   dependencies:
     content-security-policy "^0.3.0"
-    debug "^3.1.0"
+    debug "^4.0.0"
     express "4.16.4"
     express-sslify "1.2.0"
     hsts "^2.1.0"
@@ -5533,7 +5533,7 @@ tar@^4:
   dependencies:
     app-root-dir "^1.0.2"
     aws-sdk "^2.147.0"
-    debug "^3.1.0"
+    debug "^4.0.0"
     lodash "^4.13.1"
     mkdirp "^0.5.1"
     mz "^2.7.0"
@@ -5560,7 +5560,7 @@ tar@^4:
     app-root-dir "^1.0.2"
     aws-sdk "^2.30.0"
     bluebird "^3.5.1"
-    debug "^3.1.0"
+    debug "^4.0.0"
     lodash "^4.5.1"
     raven "^2.2.1"
     statsum "^0.6.0"
@@ -5570,7 +5570,7 @@ tar@^4:
   dependencies:
     amqplib "^0.5.2"
     aws-sdk "^2.331.0"
-    debug "^3.1.0"
+    debug "^4.0.0"
 
 "taskcluster-lib-references@link:libraries/references":
   version "1.4.0"
@@ -5588,7 +5588,7 @@ tar@^4:
 "taskcluster-lib-testing@link:libraries/testing":
   version "12.1.2"
   dependencies:
-    debug "^3.1.0"
+    debug "^4.0.0"
     express "4.16.4"
     hawk "^4.1.2"
     lodash "^4.17.10"
@@ -5607,7 +5607,7 @@ taskcluster-lib-urls@^12.0.0:
     ajv "^6.5.0"
     app-root-dir "^1.0.2"
     aws-sdk "^2.142.0"
-    debug "^3.1.0"
+    debug "^4.0.0"
     js-yaml "^3.12.1"
     lodash "^4.5.1"
     mkdirp "^0.5.1"
@@ -5897,7 +5897,7 @@ upper-case@^1.0.3, upper-case@^1.1.0, upper-case@^1.1.1:
   resolved "https://registry.yarnpkg.com/upper-case/-/upper-case-1.1.3.tgz#f6b4501c2ec4cdd26ba78be7222961de77621598"
   integrity sha1-9rRQHC7EzdJrp4vnIilh3ndiFZg=
 
-uri-js@^4.2.1, uri-js@^4.2.2:
+uri-js@^4.2.2:
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/uri-js/-/uri-js-4.2.2.tgz#94c540e1ff772956e2299507c010aea6c8838eb0"
   integrity sha512-KY9Frmirql91X2Qgjry0Wd4Y+YTdrdZheS8TFwvkbLWf/G5KNJDCh6pKL5OZctEW4+0Baa5idK2ZQuELRwPznQ==

@@ -195,7 +195,7 @@ exports.herokuBuildpackTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, re
       const appGitDir = path.join(appDir, '.git');
       return tar.pack(workDir, {
         entries: ['app', 'Dockerfile'],
-        ignore: fulname => name.startsWith(appGitDir),
+        ignore: name => name.startsWith(appGitDir),
       });
     },
   });

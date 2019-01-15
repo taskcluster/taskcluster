@@ -8,6 +8,7 @@ const mocha = require('mocha');
 const load = require('../src/main');
 const config = require('typed-env-config');
 const {stickyLoader, Secrets, fakeauth} = require('taskcluster-lib-testing');
+const slugid = require('slugid');
 
 const testclients = {
   'test-client': ['*'],
@@ -16,6 +17,10 @@ const testclients = {
 
 exports.suiteName = path.basename;
 exports.rootUrl = 'http://localhost:60415';
+
+// a suffix used to generate unique table names so that parallel test runs do not
+// interfere with one another.  We remove these at the end of the test run.
+const TABLE_SUFFIX = slugid.nice().replace(/[_-]/g, '');
 
 exports.load = stickyLoader(load);
 
@@ -61,6 +66,15 @@ exports.withEntities = (mock, skipping, options={}) => {
           context: tbl.context ? await tbl.context() : undefined,
         }));
       }));
+    } else {
+      // suffix each ..TableName config with a short suffix so that parallel
+      // test runs have a good chance of not stepping on each others' feet
+      const cfg = await exports.load('cfg');
+      Object.keys(cfg.app).forEach(prop => {
+        if (prop.endsWith('TableName')) {
+          exports.load.cfg(`app.${prop}`, cfg.app[prop] + TABLE_SUFFIX);
+        }
+      });
     }
 
     await Promise.all(tables.map(async tbl => {
@@ -75,9 +89,7 @@ exports.withEntities = (mock, skipping, options={}) => {
     }
 
     await Promise.all(tables.map(async tbl => {
-      await exports[tbl.name].scan({}, {handler: e => {
-        e.remove();
-      }});
+      await exports[tbl.name].scan({}, {handler: e => e.remove()});
     }));
   };
   if (!options.orderedTests) {

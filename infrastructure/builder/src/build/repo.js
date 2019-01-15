@@ -25,39 +25,33 @@ const generateRepoTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
     ],
     locks: ['git'],
     run: async (requirements, utils) => {
-      if (isMonorepo) {
-        const repoDir = require('app-root-dir').get();
-        const {exactRev} = await gitId({dir: repoDir, utils});
-        const stamp = new Stamp({step: 'monorepo-id', version: 1}, exactRev);
-        return {
-          ['monorepo-dir']: repoDir,
-          ['monorepo-exact-source']: `https://github.com/taskcluster/taskcluster#${exactRev}`,
-          ['monorepo-stamp']: stamp,
-        };
+      // using an external git repository, so clone that
+      const repoDir = path.join(baseDir, `repo-${name}`);
+      const source = isMonorepo ? spec.build.monorepo : repository.source;
+      const {exactRev, changed} = await gitClone({
+        dir: repoDir,
+        url: source,
+        utils,
+      });
+
+      const [repoUrl] = source.split('#');
+      const stamp = new Stamp({step: 'repo-clone', version: 1},
+        `${repoUrl}#${exactRev}`);
+
+      const provides = isMonorepo ? {
+        'monorepo-dir': repoDir,
+        'monorepo-exact-source': `${repoUrl}#${exactRev}`,
+        'monorepo-stamp': stamp,
+      } : {
+        [`repo-${name}-dir`]: repoDir,
+        [`repo-${name}-exact-source`]: `${repoUrl}#${exactRev}`,
+        [`repo-${name}-stamp`]: stamp,
+      };
+
+      if (changed) {
+        return provides;
       } else {
-        // using an external git repository, so clone that
-        const repoDir = path.join(baseDir, `repo-${name}`);
-        const {exactRev, changed} = await gitClone({
-          dir: repoDir,
-          url: repository.source,
-          utils,
-        });
-
-        const [repoUrl] = repository.source.split('#');
-        const stamp = new Stamp({step: 'repo-clone', version: 1},
-          `${repoUrl}#${exactRev}`);
-
-        const provides = {
-          [`repo-${name}-dir`]: repoDir,
-          [`repo-${name}-exact-source`]: `${repoUrl}#${exactRev}`,
-          [`repo-${name}-stamp`]: stamp,
-        };
-
-        if (changed) {
-          return provides;
-        } else {
-          return utils.skip({provides});
-        }
+        return utils.skip({provides});
       }
     },
   });

@@ -1,4 +1,8 @@
 ---
+# http://bugzil.la/1516347 will remove this ugliness!
+monorepo:
+  https://github.com/taskcluster/taskcluster#master
+
 repositories:
 
 # services
