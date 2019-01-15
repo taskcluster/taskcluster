@@ -100,6 +100,9 @@ class Handlers {
     assert(!this.deprecatedResultStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedInitialStatusPq, 'Cannot setup twice!');
 
+    // This is a simple Queue client without scopes to use throughout the handlers for simple things
+    // Where scopes are needed, use this.queueClient.use({authorizedScopes: scopes}).blahblah
+    // (see this.createTasks for example)
     this.queueClient = new taskcluster.Queue({
       rootUrl: this.context.cfg.taskcluster.rootUrl,
       credentials: this.context.cfg.taskcluster.credentials,
@@ -409,7 +412,7 @@ async function statusHandler(message) {
         check_run_id: checkRun.checkRunId,
       });
     } else {
-      const taskDefinition = await this.queueClient.task(taskId).catch(debug);
+      const taskDefinition = await this.queueClient.task(taskId);
       debug(`Result status. Got task build from DB and task definition for ${taskId} from Queue service`);
 
       const checkRun = await instGithub.checks.create({
@@ -717,7 +720,7 @@ async function taskDefinedHandler(message) {
     installationId,
   } = await this.context.Builds.load({taskGroupId});
 
-  const taskDefinition = await this.queueClient.task(taskId).catch(debug);
+  const taskDefinition = await this.queueClient.task(taskId);
   debug(`Initial status. Got task build from DB and task definition for ${taskId} from Queue service`);
 
   // Authenticating as installation.
