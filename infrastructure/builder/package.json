@@ -10,6 +10,6 @@
   },
   "scripts": {
     "lint": "eslint src/*.js src/*/*.js test/*.js test/*/*_test.js",
-    "test": "mocha test/*_test.js test/*/*_test.js"
+    "test": "mocha test/*/*_test.js"
   }
 }

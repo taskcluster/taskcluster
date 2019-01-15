@@ -19,7 +19,7 @@ class TerraformJson {
     this.buildContext = buildContext;
   }
 
-  write(filename) {
+  write() {
     const locals = {};
     const context = this.buildContext;
 
@@ -31,7 +31,7 @@ class TerraformJson {
       }
     });
 
-    fs.writeFileSync(filename, JSON.stringify({locals}, null, 2));
+    console.log(JSON.stringify({locals}, null, 2));
   }
 }
 
