@@ -29,6 +29,7 @@ import RestartIcon from 'mdi-react/RestartIcon';
 import Dashboard from '../../../components/Dashboard';
 import TaskDetailsCard from '../../../components/TaskDetailsCard';
 import TaskRunsCard from '../../../components/TaskRunsCard';
+import Helmet from '../../../components/Helmet';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import SpeedDial from '../../../components/SpeedDial';
@@ -691,6 +692,7 @@ export default class ViewTask extends Component {
       <Dashboard
         helpView={<HelpView description={description} />}
         search={<Search onSubmit={this.handleTaskSearchSubmit} />}>
+        <Helmet state={task && task.status.state} />
         {loading && <Spinner loading />}
         <ErrorPanel
           error={error}

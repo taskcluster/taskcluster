@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { string } from 'prop-types';
 import { Helmet as ReactHelmet } from 'react-helmet';
-import { taskGroupState } from '../../utils/prop-types';
+import { taskFaviconState } from '../../utils/prop-types';
 import { TASK_STATE } from '../../utils/constants';
 import Logo from '../../images/logo.png';
 import LogoCompleted from '../../images/logoCompleted.png';
@@ -11,10 +11,10 @@ import LogoRunning from '../../images/logoRunning.png';
 export default class Helmet extends Component {
   static propTypes = {
     /**
-     * The state of the task group.
-     * Leave this value undefined outside the Task Group view.
+     * The state of the task or task group.
+     * Leave this value undefined outside the Task and Task Group view.
      */
-    state: taskGroupState,
+    state: taskFaviconState,
     /** The document title */
     title: string,
   };
