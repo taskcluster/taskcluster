@@ -278,6 +278,7 @@ export default class ClientForm extends Component {
             <TextField
               label="Scopes"
               name="scopeText"
+              helperText="1 scope per line"
               onChange={this.handleInputChange}
               fullWidth
               multiline
