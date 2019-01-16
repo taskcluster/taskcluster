@@ -94,8 +94,5 @@
   "eslintIgnore": [
     "**/node_modules/**",
     "**/test/fixtures/**"
-  ],
-  "resolutions": {
-    "**/remotely-signed-s3/libxmljs": "^0.19.5"
-  }
+  ]
 }
