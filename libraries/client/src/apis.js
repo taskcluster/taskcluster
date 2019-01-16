@@ -183,22 +183,6 @@ module.exports = {
         {
           "args": [
           ],
-          "description": "Get a list of all roles, each role object also includes the list of\nscopes it expands to. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
-          "method": "get",
-          "name": "listRoles2",
-          "output": "v1/list-roles2-response.json#",
-          "query": [
-            "continuationToken",
-            "limit"
-          ],
-          "route": "/roles2/",
-          "stability": "stable",
-          "title": "List Roles",
-          "type": "function"
-        },
-        {
-          "args": [
-          ],
           "description": "If no limit is given, the roleIds of all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
           "method": "get",
           "name": "listRoleIds",

@@ -199,13 +199,13 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     // Create 4 dummy roles
     await helper.apiClient.createRole(`thing-id:${clientId}`, {
       description: 'test role',
-      expandedScopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
+      scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
     for (let i=0;i<3;i++) {
       let tempRoleId = `${clientId}${i}`;
       await helper.apiClient.createRole(tempRoleId, {
         description: 'test role',
-        expandedScopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
+        scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
       });
     }
 
@@ -213,7 +213,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
     assert(result.roles.some(role => role.roleId === `thing-id:${clientId}`));
     assert(result.roles.some(role => role.description === 'test role'));
-    assert(result.roles.some(role => _.isEqual(role.scopes, ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'])));
+    assert(result.roles.some(role => _.isEqual(role.scopes.sort(), ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'].sort())));
     assert(result.roles.length === 4);
   });
 

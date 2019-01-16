@@ -688,7 +688,7 @@ builder.declare({
   // Fetch roles and build response
   const { response, roles } = await rolesResponseBuilder(this, req, res);
 
-  response.roles = roles;
+  response.roles = roles.map(r => roleToJson(r, this));
 
   res.reply(response);
 });
