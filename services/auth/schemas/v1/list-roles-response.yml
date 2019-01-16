@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:                      "Get All Roles (no pagination)"
 description: |
   List of roles

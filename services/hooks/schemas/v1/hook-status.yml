@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:   "Hook status response"
 description: |
   A snapshot of the current status of a hook.

@@ -1,4 +1,4 @@
-$schema:            http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:              ".taskcluster.yml format"
 description: |
  Description of a taskcluster.yml file v0, which may be used to generate a taskgraph
@@ -69,6 +69,7 @@ properties:
           created:          {$const: created}
           deadline:         {$const: deadline}
         additionalProperties: true
+        required: []
 additionalProperties: false
 required:
   - version

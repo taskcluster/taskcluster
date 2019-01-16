@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:                      "Get Client Response"
 description: |
   Get all details about a client, useful for tools modifying a client

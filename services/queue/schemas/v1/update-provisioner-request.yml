@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:          "Provisioner Request"
 description: |
   Request to update a provisioner.
@@ -27,3 +27,4 @@ properties:
     format:       date-time
   actions:        {$ref: "actions.json#"}
 additionalProperties: false
+required: []

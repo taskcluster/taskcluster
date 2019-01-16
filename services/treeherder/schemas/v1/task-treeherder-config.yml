@@ -1,9 +1,10 @@
-$schema: "http://json-schema.org/draft-06/schema#"
+$schema: "/schemas/common/metaschema.json#"
 title: "Treeherder Configuration"
 description: |
   Definition of the Treeherder configuration data that can be contained within
   a task definition under task.extra.treeherder.  This information is useful for
   determining job properties to report to Treeherder.
+type: object
 properties:
   reason:
     description: |
@@ -65,6 +66,7 @@ properties:
         pattern: "^[A-Za-z0-9_-]+$"
         minLength: 1
         maxLength: 25
+    additionalProperties: false
     required: [platform]
   labels:
     title: "labels"

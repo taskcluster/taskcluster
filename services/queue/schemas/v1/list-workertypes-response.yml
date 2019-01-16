@@ -1,4 +1,4 @@
-$schema:            http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:              "List Worker-Types Response"
 description: |
   Response from a `listWorkerTypes` request.
@@ -55,6 +55,13 @@ properties:
           type:         string
           format:       date-time
       additionalProperties: false
+      required:
+        - workerType
+        - provisionerId
+        - stability
+        - description
+        - expires
+        - lastDateActive
   continuationToken:
     type:               string
     title:              "Continuation Token"

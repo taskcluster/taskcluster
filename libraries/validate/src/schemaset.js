@@ -85,20 +85,6 @@ class SchemaSet {
       throw walkErr;
     }
 
-    // load the schema, just to let Ajv repot errors
-    const ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
-    ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
-    _.forEach(this.abstractSchemas(), (schema, name) => {
-      try {
-        ajv.addSchema(schema);
-      } catch (err) {
-        if (!err.toString().match(/^Error: schema is invalid/)) {
-          throw err;
-        }
-        throw new Error(`While loading ${name}: ${err.message}`);
-      }
-    });
-
     debug('finished walking tree of schemas');
   }
 
@@ -121,7 +107,14 @@ class SchemaSet {
   async validator(rootUrl) {
     await publish({cfg: this.cfg, schemaset: this, rootUrl});
 
-    const ajv = Ajv({useDefaults: true, format: 'full', verbose: true, allErrors: true});
+    const ajv = Ajv({
+      useDefaults: true,
+      format: 'full',
+      verbose: true,
+      // schema validation occurs in the tests and need not be done here
+      validateSchema: false,
+      allErrors: true,
+    });
     ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
     _.forEach(this.absoluteSchemas(rootUrl), schema => {
       ajv.addSchema(schema);

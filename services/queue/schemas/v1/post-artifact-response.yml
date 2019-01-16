@@ -1,4 +1,4 @@
-$schema:            http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:              "Post Artifact Response"
 description: |
   Response to a request for posting an artifact.
@@ -7,6 +7,7 @@ oneOf:
   - title: "Blob Artifact Response"
     description: |
       Response to a request for creating a new blob artifact
+    type: object
     properties:
       storageType:
         description: |
