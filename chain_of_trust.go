@@ -26,12 +26,12 @@ const (
 var (
 	certifiedLogPath = filepath.Join("generic-worker", "certified.log")
 	certifiedLogName = "public/logs/certified.log"
-	signedCertPath   = filepath.Join("generic-worker", "chainOfTrust.json.asc")
-	signedCertName   = "public/chainOfTrust.json.asc"
+	openpgpSignedCertPath   = filepath.Join("generic-worker", "chainOfTrust.json.asc")
+	openpgpSignedCertName   = "public/chainOfTrust.json.asc"
 )
 
 type ChainOfTrustFeature struct {
-	PrivateKey *packet.PrivateKey
+	OpenpgpPrivateKey *packet.PrivateKey
 }
 
 type ArtifactHash struct {
@@ -59,7 +59,7 @@ type ChainOfTrustData struct {
 
 type ChainOfTrustTaskFeature struct {
 	task    *TaskRun
-	privKey *packet.PrivateKey
+	openpgpPrivKey *packet.PrivateKey
 }
 
 func (feature *ChainOfTrustFeature) Name() string {
@@ -71,7 +71,7 @@ func (feature *ChainOfTrustFeature) PersistState() error {
 }
 
 func (feature *ChainOfTrustFeature) Initialise() (err error) {
-	feature.PrivateKey, err = readPrivateKey()
+	feature.OpenpgpPrivateKey, err = readOpenpgpPrivateKey()
 	if err != nil {
 		return
 	}
@@ -82,7 +82,7 @@ func (feature *ChainOfTrustFeature) Initialise() (err error) {
 	return
 }
 
-func readPrivateKey() (privateKey *packet.PrivateKey, err error) {
+func readOpenpgpPrivateKey() (privateKey *packet.PrivateKey, err error) {
 	var privKeyFile *os.File
 	privKeyFile, err = os.Open(config.SigningKeyLocation)
 	if err != nil {
@@ -107,13 +107,13 @@ func (feature *ChainOfTrustFeature) IsEnabled(task *TaskRun) bool {
 func (feature *ChainOfTrustFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	return &ChainOfTrustTaskFeature{
 		task:    task,
-		privKey: feature.PrivateKey,
+		openpgpPrivKey: feature.OpenpgpPrivateKey,
 	}
 }
 
 func (feature *ChainOfTrustTaskFeature) ReservedArtifacts() []string {
 	return []string{
-		signedCertName,
+		openpgpSignedCertName,
 		certifiedLogName,
 	}
 }
@@ -139,7 +139,7 @@ func (feature *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
 func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	logFile := filepath.Join(taskContext.TaskDir, logPath)
 	certifiedLogFile := filepath.Join(taskContext.TaskDir, certifiedLogPath)
-	signedCert := filepath.Join(taskContext.TaskDir, signedCertPath)
+	openpgpSignedCert := filepath.Join(taskContext.TaskDir, openpgpSignedCertPath)
 	copyErr := copyFileContents(logFile, certifiedLogFile)
 	if copyErr != nil {
 		panic(copyErr)
@@ -186,13 +186,13 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	certBytes = append(certBytes, '\n')
 
 	in := bytes.NewBuffer(certBytes)
-	out, e := os.Create(signedCert)
+	out, e := os.Create(openpgpSignedCert)
 	if e != nil {
 		panic(e)
 	}
 	defer out.Close()
 
-	w, e := clearsign.Encode(out, feature.privKey, nil)
+	w, e := clearsign.Encode(out, feature.openpgpPrivKey, nil)
 	if e != nil {
 		panic(e)
 	}
@@ -203,5 +203,5 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	w.Close()
 	out.Write([]byte{'\n'})
 	out.Close()
-	err.add(feature.task.uploadLog(signedCertName, signedCertPath))
+	err.add(feature.task.uploadLog(openpgpSignedCertName, openpgpSignedCertPath))
 }
