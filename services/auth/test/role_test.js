@@ -192,6 +192,62 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
         err => assert(err.statusCode === 400, 'Expected 400'));
   });
 
+  test('listRoles2', async () => {
+    // Clear existing roles
+    await helper.Roles.modify((roles) => roles.splice(0));
+
+    // Create 4 dummy roles
+    await helper.apiClient.createRole(`thing-id:${clientId}`, {
+      description: 'test role',
+      scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
+    });
+    for (let i=0;i<3;i++) {
+      let tempRoleId = `${clientId}${i}`;
+      await helper.apiClient.createRole(tempRoleId, {
+        description: 'test role',
+        scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
+      });
+    }
+
+    let result = await helper.apiClient.listRoles2();
+
+    assert(result.roles.some(role => role.roleId === `thing-id:${clientId}`));
+    assert(result.roles.some(role => role.description === 'test role'));
+    assert(result.roles.some(role => _.isEqual(role.scopes.sort(), ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'].sort())));
+    assert(result.roles.length === 4);
+  });
+
+  test('listRoles2 (limit, [continuationToken])', async () => {
+    let roles = [];
+    let allRoles = {};
+    let count=0;
+    let query = {limit: 1};
+
+    allRoles = await helper.apiClient.listRoles2();
+
+    while (true) {
+      let result = await helper.apiClient.listRoles2(query);
+      assume(result.roles.length).to.be.lessThan(2);
+      query.continuationToken = result.continuationToken;
+      roles = roles.concat(result.roles);
+      count++;
+      if (!query.continuationToken) {
+        break;
+      }
+    }
+
+    assume(roles.sort()).to.deeply.equal(allRoles.roles.sort());
+    assume(count).to.be.greaterThan(1);
+
+    // Testing for erroneous continuationToken
+    query.limit = 1;
+    query.continuationToken = 'FOOBAR';
+
+    await helper.apiClient.listRoles2(query)
+      .then(() => assert(false, 'Expected error'),
+        err => assert(err.statusCode === 400, 'Expected 400'));
+  });
+
   test('updateRole with a **-scope', async () => {
     await helper.apiClient.updateRole('thing-id:' + clientId, {
       description: 'other',
