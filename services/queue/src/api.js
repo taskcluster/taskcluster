@@ -1332,8 +1332,14 @@ builder.declare({
     workerId,
   }, true);
 
-  // Don't record tasks when worker is quarantined
+  // Don't claim tasks when worker is quarantined (but do record the worker
+  // being seen, and be sure to wait the 20 seconds so as not to cause a
+  // tight loop of claimWork calls from the worker
   if (worker && worker.quarantineUntil.getTime() > new Date().getTime()) {
+    await Promise.all([
+      this.workerInfo.seen(provisionerId, workerType, workerGroup, workerId),
+      sleep20Seconds(),
+    ]);
     return res.reply({
       tasks: [],
     });
