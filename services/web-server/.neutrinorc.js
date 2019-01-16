@@ -1,4 +1,5 @@
 const nodeExternals = require('webpack-node-externals');
+const { join } = require('path');
 
 module.exports = {
   use: [
@@ -21,7 +22,7 @@ module.exports = {
             modulesFromFile: true,
           }),
           nodeExternals({
-            modulesDir: '../../node_modules',
+            modulesDir: join('..', '..', 'node_modules'),
           }),
         ],
       });
