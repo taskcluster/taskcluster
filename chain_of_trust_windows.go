@@ -48,7 +48,7 @@ func secureSigningKey() (err error) {
 			false,
 			// grant Administrators group full control
 			acl.GrantName(windows.GENERIC_ALL, "Administrators"),
-		}
-	)
+		)
+	}
 	return
 }
