@@ -545,7 +545,7 @@ async function jobHandler(message) {
   }
 
   if (message.payload.details['event.type'].startsWith('pull_request.')) {
-    debug(`Checking pull request permission for for ${organization}/${repository}@${sha}...`);
+    debug(`Checking pull request permission for ${organization}/${repository}@${sha}...`);
 
     // Decide if a user has permissions to run tasks.
     let login = message.payload.details['event.head.user.login'];
