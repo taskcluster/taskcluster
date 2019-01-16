@@ -70,6 +70,7 @@ func main() {
 			DeploymentID:                   "",
 			DisableReboots:                 true,
 			DownloadsDir:                   "",
+			Ed25519SigningKeyLocation:      "",
 			IdleTimeoutSecs:                7200,
 			LiveLogCertificate:             "C:\\generic-worker\\livelog.crt",
 			LiveLogExecutable:              "C:\\generic-worker\\livelog.exe",

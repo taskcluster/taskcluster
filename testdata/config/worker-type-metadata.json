@@ -7,7 +7,8 @@
   "workerGroup" : "abcde",
   "workerType" : "some-worker-type",
   "publicIP" : "2.1.2.1",
-  "openpgpSigningKeyLocation": "C:\\somewhere.key",
+  "ed25519SigningKeyLocation": "C:\\somewhere.ed25519.key",
+  "openpgpSigningKeyLocation": "C:\\somewhere.openpgp.key",
   "workerTypeMetadata": {
     "generic-worker": {
       "version": "generic-worker 2.0.0",

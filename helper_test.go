@@ -112,6 +112,7 @@ func setup(t *testing.T) (teardown func()) {
 		// Need common downloads directory across tests, since files
 		// directory-caches.json and file-caches.json are not per-test.
 		DownloadsDir:       filepath.Join(cwd, "downloads"),
+		Ed25519SigningKeyLocation:      filepath.Join(testdataDir, "ed25519_private_key"),
 		IdleTimeoutSecs:    60,
 		InstanceID:         "test-instance-id",
 		InstanceType:       "p3.enormous",
@@ -122,6 +123,7 @@ func setup(t *testing.T) (teardown func()) {
 		LiveLogPUTPort:     43264,
 		LiveLogSecret:      "xyz",
 		NumberOfTasksToRun: 1,
+		OpenpgpSigningKeyLocation:      filepath.Join(testdataDir, "private-opengpg-key"),
 		PrivateIP:          net.ParseIP("87.65.43.21"),
 		ProvisionerBaseURL: "",
 		ProvisionerID:      "test-provisioner",
@@ -138,7 +140,6 @@ func setup(t *testing.T) (teardown func()) {
 		SentryProject:                  "generic-worker-tests",
 		ShutdownMachineOnIdle:          false,
 		ShutdownMachineOnInternalError: false,
-		OpenpgpSigningKeyLocation:      filepath.Join(testdataDir, "private-opengpg-key"),
 		Subdomain:                      "taskcluster-worker.net",
 		TaskclusterProxyExecutable:     "taskcluster-proxy",
 		TaskclusterProxyPort:           34569,

@@ -85,6 +85,7 @@ func TestRunAsAdministratorMissingOSGroup(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 }
 
+// TODO can we parameterize these to test both openpgp + ed25519 paths?
 func TestChainOfTrustWithRunAsAdministrator(t *testing.T) {
 	defer setup(t)()
 	payload := GenericWorkerPayload{
