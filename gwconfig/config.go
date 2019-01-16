@@ -36,7 +36,7 @@ type (
 		LiveLogPUTPort                 uint16                 `json:"livelogPUTPort"`
 		LiveLogSecret                  string                 `json:"livelogSecret"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
-		OpenpgpSigningKeyLocation      string                 `json:"openpgpSigningKeyLocation"`
+		OpenPGPSigningKeyLocation      string                 `json:"openpgpSigningKeyLocation"`
 		PrivateIP                      net.IP                 `json:"privateIP"`
 		ProvisionerBaseURL             string                 `json:"provisionerBaseURL"`
 		ProvisionerID                  string                 `json:"provisionerId"`
@@ -101,7 +101,7 @@ func (c *Config) Validate() error {
 		{value: c.LiveLogPUTPort, name: "livelogPUTPort", disallowed: 0},
 		{value: c.LiveLogGETPort, name: "livelogGETPort", disallowed: 0},
 		{value: c.LiveLogSecret, name: "livelogSecret", disallowed: ""},
-		{value: c.OpenpgpSigningKeyLocation, name: "openpgpSigningKeyLocation", disallowed: ""},
+		{value: c.OpenPGPSigningKeyLocation, name: "openpgpSigningKeyLocation", disallowed: ""},
 		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
 		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
 		{value: c.RootURL, name: "rootURL", disallowed: ""},

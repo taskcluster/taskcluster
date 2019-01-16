@@ -79,7 +79,7 @@ func main() {
 			LiveLogPUTPort:                 1234,
 			// LiveLogSecret:                  "",
 			NumberOfTasksToRun:             0,
-			OpenpgpSigningKeyLocation:      "",
+			OpenPGPSigningKeyLocation:      "",
 			SentryProject:                  "generic-worker",
 			ProvisionerID:                  "",
 			RequiredDiskSpaceMegabytes:     3,

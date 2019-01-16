@@ -13,7 +13,7 @@ import (
 func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error {
 	accessToken := cot.task.PlatformData.CommandAccessToken
 	signingKeyPaths := [2]string{
-		config.OpenpgpSigningKeyLocation,
+		config.OpenPGPSigningKeyLocation,
 		config.Ed25519SigningKeyLocation,
 	}
 	for _, path := range signingKeyPaths {
@@ -34,7 +34,7 @@ func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error 
 // private signing key file, and grant them full control.
 func secureSigningKey() (err error) {
 	signingKeyPaths := [2]string{
-		config.OpenpgpSigningKeyLocation,
+		config.OpenPGPSigningKeyLocation,
 		config.Ed25519SigningKeyLocation,
 	}
 	for _, path := range signingKeyPaths {

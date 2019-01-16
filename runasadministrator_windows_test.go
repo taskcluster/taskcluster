@@ -90,7 +90,7 @@ func TestChainOfTrustWithRunAsAdministrator(t *testing.T) {
 	defer setup(t)()
 	payload := GenericWorkerPayload{
 		Command: []string{
-			`type "` + config.OpenpgpSigningKeyLocation + `"`,
+			`type "` + config.OpenPGPSigningKeyLocation + `"`,
 		},
 		MaxRunTime: 5,
 		OSGroups:   []string{"Administrators"},
@@ -124,7 +124,7 @@ func TestChainOfTrustWithoutRunAsAdministrator(t *testing.T) {
 	defer setup(t)()
 	payload := GenericWorkerPayload{
 		Command: []string{
-			`type "` + config.OpenpgpSigningKeyLocation + `"`,
+			`type "` + config.OpenPGPSigningKeyLocation + `"`,
 		},
 		MaxRunTime: 5,
 		OSGroups:   []string{"Administrators"},

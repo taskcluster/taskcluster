@@ -13,7 +13,7 @@ import (
 
 func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error {
 	signingKeyPaths := [2]string{
-		config.OpenpgpSigningKeyLocation,
+		config.OpenPGPSigningKeyLocation,
 		config.Ed25519SigningKeyLocation,
 	}
 	for _, path := range signingKeyPaths {
@@ -46,7 +46,7 @@ func secureSigningKey() (err error) {
 		return err
 	}
 	signingKeyPaths := [2]string{
-		config.OpenpgpSigningKeyLocation,
+		config.OpenPGPSigningKeyLocation,
 		config.Ed25519SigningKeyLocation,
 	}
 	for _, path := range signingKeyPaths {

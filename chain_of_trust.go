@@ -37,7 +37,7 @@ var (
 )
 
 type ChainOfTrustFeature struct {
-	OpenpgpPrivateKey *packet.PrivateKey
+	OpenPGPPrivateKey *packet.PrivateKey
 	Ed25519PrivateKey ed25519.PrivateKey
 }
 
@@ -79,7 +79,7 @@ func (feature *ChainOfTrustFeature) PersistState() error {
 }
 
 func (feature *ChainOfTrustFeature) Initialise() (err error) {
-	feature.OpenpgpPrivateKey, err = readOpenpgpPrivateKey()
+	feature.OpenPGPPrivateKey, err = readOpenPGPPrivateKey()
 	if err != nil {
 		return
 	}
@@ -106,11 +106,11 @@ func readEd25519PrivateKey() (privateKey ed25519.PrivateKey, err error) {
 	return
 }
 
-func readOpenpgpPrivateKey() (privateKey *packet.PrivateKey, err error) {
+func readOpenPGPPrivateKey() (privateKey *packet.PrivateKey, err error) {
 	var privKeyFile *os.File
-	privKeyFile, err = os.Open(config.OpenpgpSigningKeyLocation)
+	privKeyFile, err = os.Open(config.OpenPGPSigningKeyLocation)
 	if err != nil {
-		log.Printf("FATAL: Was not able to open chain of trust signing key file '%v'.", config.OpenpgpSigningKeyLocation)
+		log.Printf("FATAL: Was not able to open chain of trust signing key file '%v'.", config.OpenPGPSigningKeyLocation)
 		log.Printf("The chain of trust signing key file location is configured in file '%v' in property 'openpgpSigningKeyLocation'.", configFile)
 		return
 	}
@@ -132,7 +132,7 @@ func (feature *ChainOfTrustFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	return &ChainOfTrustTaskFeature{
 		task:           task,
 		ed25519PrivKey: feature.Ed25519PrivateKey,
-		openpgpPrivKey: feature.OpenpgpPrivateKey,
+		openpgpPrivKey: feature.OpenPGPPrivateKey,
 	}
 }
 
