@@ -418,7 +418,7 @@ async function statusHandler(message) {
       const checkRun = await instGithub.checks.create({
         owner: organization,
         repo: repository,
-        name: `${taskDefinition.metadata.name}: task ${taskId}`,
+        name: `${taskDefinition.metadata.name}`,
         head_sha: sha,
         output: {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
@@ -731,7 +731,7 @@ async function taskDefinedHandler(message) {
   const checkRun = await instGithub.checks.create({
     owner: organization,
     repo: repository,
-    name: `${taskDefinition.metadata.name}: task ${taskId}`,
+    name: `${taskDefinition.metadata.name}`,
     head_sha: sha,
     output: {
       title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
