@@ -387,10 +387,12 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG',
         foo: 'triggerHook'});
+      const cfg = await helper.load('cfg');
+      const clientId = mock? 'test-client':cfg.taskcluster.credentials.clientId;
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        context: {firedBy: 'triggerHook', payload: {location: 'Belo Horizonte, MG', foo: 'triggerHook'}},
+        context: {firedBy: 'triggerHook', clientId, payload: {location: 'Belo Horizonte, MG', foo: 'triggerHook'}},
         options: {},
       }]);
     });
@@ -575,7 +577,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        context: {firedBy: 'triggerHookWithToken', payload: {location: 'New Zealand'}},
+        context: {firedBy: 'triggerHookWithToken', clientId: null, payload: {location: 'New Zealand'}},
         options: {},
       }]);
     });
@@ -619,7 +621,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        context: {firedBy: 'triggerHookWithToken', payload},
+        context: {firedBy: 'triggerHookWithToken', clientId: null, payload},
         options: {},
       }]);
     });
