@@ -62,7 +62,7 @@ const rolesResponseBuilder = async (that, req, res) => {
   }
 
   return { response, roles };
-}
+};
 
 /** API end-point for version v1/ */
 const builder = new APIBuilder({
@@ -667,17 +667,17 @@ builder.declare({
 
 /** List roles **/
 builder.declare({
-  method:     'get',
-  route:      '/roles2/',
+  method: 'get',
+  route: '/roles2/',
   query: {
     continuationToken: /./,
     limit: /^[0-9]+$/,
   },
-  name:       'listRoles2',
-  input:      undefined,
-  output:     'list-roles2-response.yml',
-  stability:  'stable',
-  title:      'List Roles',
+  name: 'listRoles2',
+  input: undefined,
+  output: 'list-roles2-response.yml',
+  stability: 'stable',
+  title: 'List Roles',
   description: [
     'If no limit is given, all roles are returned. Since this',
     'list may become long, callers can use the `limit` and `continuationToken`',
