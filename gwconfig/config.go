@@ -49,7 +49,7 @@ type (
 		SentryProject                  string                 `json:"sentryProject"`
 		ShutdownMachineOnIdle          bool                   `json:"shutdownMachineOnIdle"`
 		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
-		SigningKeyLocation             string                 `json:"signingKeyLocation"`
+		OpenpgpSigningKeyLocation      string                 `json:"openpgpSigningKeyLocation"`
 		Subdomain                      string                 `json:"subdomain"`
 		TaskclusterProxyExecutable     string                 `json:"taskclusterProxyExecutable"`
 		TaskclusterProxyPort           uint16                 `json:"taskclusterProxyPort"`
@@ -102,7 +102,7 @@ func (c *Config) Validate() error {
 		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
 		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
 		{value: c.RootURL, name: "rootURL", disallowed: ""},
-		{value: c.SigningKeyLocation, name: "signingKeyLocation", disallowed: ""},
+		{value: c.OpenpgpSigningKeyLocation, name: "openpgpSigningKeyLocation", disallowed: ""},
 		{value: c.Subdomain, name: "subdomain", disallowed: ""},
 		{value: c.TasksDir, name: "tasksDir", disallowed: ""},
 		{value: c.WorkerGroup, name: "workerGroup", disallowed: ""},

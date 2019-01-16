@@ -7,5 +7,5 @@
   "workerGroup" : "abcde",
   "workerType" : "some-worker-type",
   "publicIP" : "2.1.2.1",
-  "signingKeyLocation": "C:\\some\\place.key"
+  "openpgpSigningKeyLocation": "C:\\some\\place.key"
 }

@@ -12,7 +12,7 @@ import (
 )
 
 func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error {
-	c, err := process.NewCommand([]string{"/bin/cat", config.SigningKeyLocation}, cwd, cot.task.EnvVars())
+	c, err := process.NewCommand([]string{"/bin/cat", config.OpenpgpSigningKeyLocation}, cwd, cot.task.EnvVars())
 	if err != nil {
 		panic(fmt.Errorf("SERIOUS BUG: Could not create command (not even trying to execute it yet) to cat private chain of trust key - %v", err))
 	}
@@ -40,7 +40,7 @@ func secureSigningKey() (err error) {
 		return err
 	}
 	err = os.Chown(
-		config.SigningKeyLocation,
+		config.OpenpgpSigningKeyLocation,
 		uid,
 		gid,
 	)
@@ -48,7 +48,7 @@ func secureSigningKey() (err error) {
 		return err
 	}
 	err = os.Chmod(
-		config.SigningKeyLocation,
+		config.OpenpgpSigningKeyLocation,
 		0600,
 	)
 	return

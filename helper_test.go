@@ -138,7 +138,7 @@ func setup(t *testing.T) (teardown func()) {
 		SentryProject:                  "generic-worker-tests",
 		ShutdownMachineOnIdle:          false,
 		ShutdownMachineOnInternalError: false,
-		SigningKeyLocation:             filepath.Join(testdataDir, "private-opengpg-key"),
+		OpenpgpSigningKeyLocation:      filepath.Join(testdataDir, "private-opengpg-key"),
 		Subdomain:                      "taskcluster-worker.net",
 		TaskclusterProxyExecutable:     "taskcluster-proxy",
 		TaskclusterProxyPort:           34569,

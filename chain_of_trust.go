@@ -84,10 +84,10 @@ func (feature *ChainOfTrustFeature) Initialise() (err error) {
 
 func readOpenpgpPrivateKey() (privateKey *packet.PrivateKey, err error) {
 	var privKeyFile *os.File
-	privKeyFile, err = os.Open(config.SigningKeyLocation)
+	privKeyFile, err = os.Open(config.OpenpgpSigningKeyLocation)
 	if err != nil {
-		log.Printf("FATAL: Was not able to open chain of trust signing key file '%v'.", config.SigningKeyLocation)
-		log.Printf("The chain of trust signing key file location is configured in file '%v' in property 'signingKeyLocation'.", configFile)
+		log.Printf("FATAL: Was not able to open chain of trust signing key file '%v'.", config.OpenpgpSigningKeyLocation)
+		log.Printf("The chain of trust signing key file location is configured in file '%v' in property 'openpgpSigningKeyLocation'.", configFile)
 		return
 	}
 	defer privKeyFile.Close()

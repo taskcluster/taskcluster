@@ -173,7 +173,7 @@ and reports back results to the queue.
           rootURL                           The root URL of the Taskcluster deploment to which
                                             clientId and accessToken grant access. For example,
                                             'https://taskcluster.net'.
-          signingKeyLocation                The PGP signing key for signing artifacts with.
+          openpgpSigningKeyLocation         The PGP signing key for signing artifacts with.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.

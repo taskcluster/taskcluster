@@ -44,7 +44,7 @@ details about how to retrieve the public key, for signature verification.
 The worker uses the openpgp private key from the file location specified by the
 [worker configuration
 setting](/reference/workers/generic-worker#set-up-your-env)
-`signingKeyLocation`.
+`openpgpSigningKeyLocation`.
 
 No scopes are presently required for enabling this feature.
 

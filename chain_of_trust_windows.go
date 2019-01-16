@@ -12,7 +12,7 @@ import (
 
 func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error {
 	accessToken := cot.task.PlatformData.CommandAccessToken
-	c, err := process.NewCommand([]string{"cmd.exe", "/c", "type", config.SigningKeyLocation}, cwd, nil, accessToken)
+	c, err := process.NewCommand([]string{"cmd.exe", "/c", "type", config.OpenpgpSigningKeyLocation}, cwd, nil, accessToken)
 	if err != nil {
 		panic(fmt.Errorf("SERIOUS BUG: Could not create command (not even trying to execute it yet) to cat private chain of trust key - %v", err))
 	}
@@ -30,7 +30,7 @@ func secureSigningKey() (err error) {
 	err = acl.Apply(
 
 		// Private signing key file
-		config.SigningKeyLocation,
+		config.OpenpgpSigningKeyLocation,
 		// delete existing permissions (ACLs)
 		true,
 		// don't inherit permissions (ACLs)

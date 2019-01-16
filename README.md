@@ -76,7 +76,7 @@ Once you have been granted the above scope:
     "livelogSecret":              "<anything you like>",
     "provisionerId":              "test-provisioner",
     "publicIP":                   "<ideally an IP address of one of your network interfaces>",
-    "signingKeyLocation":         "<file location you wrote gpg private key to>",
+    "openpgpSigningKeyLocation":  "<file location you wrote gpg private key to>",
     "workerGroup":                "test-worker-group",
     "workerId":                   "test-worker-id",
     "workerType":                 "<a unique name that only you will use for your test worker(s)>"
@@ -183,7 +183,7 @@ and reports back results to the queue.
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
-          signingKeyLocation                The PGP signing key for signing artifacts with.
+          openpgpSigningKeyLocation         The PGP signing key for signing artifacts with.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.
