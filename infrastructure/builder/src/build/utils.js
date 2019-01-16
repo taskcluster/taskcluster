@@ -10,6 +10,7 @@ const Docker = require('dockerode');
 const Observable = require('zen-observable');
 const {PassThrough, Transform} = require('stream');
 const got = require('got');
+const glob = require('glob');
 const {spawn} = require('child_process');
 const Stamp = require('./stamp');
 
@@ -452,4 +453,16 @@ exports.serviceDockerImageTask = ({tasks, baseDir, workDir, cfg, name, requires,
       return provides;
     },
   });
+};
+
+/**
+ * List all of the services in the given monorepo repository
+ */
+exports.listServices = ({repoDir}) => {
+  // look for package.json's, so that we're not fooled by any
+  // stray empty or gitignore'd directories
+  const packageJsons = glob.sync(
+    'services/*/package.json',
+    {cwd: repoDir});
+  return packageJsons.map(filename => filename.split('/')[1]);
 };

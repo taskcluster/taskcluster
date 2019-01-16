@@ -31,6 +31,8 @@ class TerraformJson {
       }
     });
 
+    locals['taskcluster_image_monoimage'] = context['monoimage-docker-image'];
+
     console.log(JSON.stringify({locals}, null, 2));
   }
 }

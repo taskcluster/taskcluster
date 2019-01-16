@@ -10,15 +10,10 @@ const {gitClone, gitId, ensureTask} = require('./utils');
 
 const generateRepoTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
   const repository = _.find(spec.build.repositories, {name});
-  const isMonorepo = repository.source === 'monorepo';
 
   ensureTask(tasks, {
-    title: isMonorepo ? 'Monorepo Setup' : `Repo ${name} - Clone`,
-    provides: isMonorepo ? [
-      'monorepo-dir', // full path of the repository
-      'monorepo-exact-source', // exact source URL for the repository
-      'monorepo-stamp',
-    ] : [
+    title: `Repo ${name} - Clone`,
+    provides: [
       `repo-${name}-dir`, // full path of the repository
       `repo-${name}-exact-source`, // exact source URL for the repository
       `repo-${name}-stamp`,
@@ -27,7 +22,7 @@ const generateRepoTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
     run: async (requirements, utils) => {
       // using an external git repository, so clone that
       const repoDir = path.join(baseDir, `repo-${name}`);
-      const source = isMonorepo ? spec.build.monorepo : repository.source;
+      const source = repository.source;
       const {exactRev, changed} = await gitClone({
         dir: repoDir,
         url: source,
@@ -38,11 +33,7 @@ const generateRepoTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
       const stamp = new Stamp({step: 'repo-clone', version: 1},
         `${repoUrl}#${exactRev}`);
 
-      const provides = isMonorepo ? {
-        'monorepo-dir': repoDir,
-        'monorepo-exact-source': `${repoUrl}#${exactRev}`,
-        'monorepo-stamp': stamp,
-      } : {
+      const provides = {
         [`repo-${name}-dir`]: repoDir,
         [`repo-${name}-exact-source`]: `${repoUrl}#${exactRev}`,
         [`repo-${name}-stamp`]: stamp,
