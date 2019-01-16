@@ -106,6 +106,7 @@
   },
   "eslintIgnore": [
     "**/node_modules/**",
-    "**/test/fixtures/**"
+    "**/test/fixtures/**",
+    "web-server"
   ]
 }
