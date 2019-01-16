@@ -70,6 +70,7 @@ const (
 	WORKER_SHUTDOWN                          ExitCode = 72
 	INVALID_CONFIG                           ExitCode = 73
 	CANT_GRANT_CONTROL_OF_WINSTA_AND_DESKTOP ExitCode = 74
+	CANT_CREATE_ED25519_KEYPAIR              ExitCode = 75
 )
 
 func usage(versionName string) string {
@@ -88,7 +89,8 @@ and reports back results to the queue.
                                             [--config         CONFIG-FILE]
                                             [--configure-for-aws]
     generic-worker show-payload-schema
-    generic-worker new-openpgp-keypair      --file PRIVATE-KEY-FILE
+    generic-worker new-openpgp-keypair      --file OPENPGP-PRIVATE-KEY-FILE
+    generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
     generic-worker grant-winsta-access      --sid SID
     generic-worker --help
     generic-worker --version
@@ -113,6 +115,10 @@ and reports back results to the queue.
                                             instead explicitly start the service when the
                                             preconditions have been met.
     new-openpgp-keypair                     This will generate a fresh, new OpenPGP
+                                            compliant private/public key pair. The public
+                                            key will be written to stdout and the private
+                                            key will be written to the specified file.
+    new-ed25519-keypair                     This will generate a fresh, new ed25519
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
                                             key will be written to the specified file.
@@ -174,6 +180,7 @@ and reports back results to the queue.
                                             clientId and accessToken grant access. For example,
                                             'https://taskcluster.net'.
           openpgpSigningKeyLocation         The PGP signing key for signing artifacts with.
+          ed25519SigningKeyLocation         The PGP signing key for signing artifacts with.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.
@@ -347,6 +354,7 @@ and reports back results to the queue.
     73     The config provided to the worker is invalid.
     74     Could not grant provided SID full control of interactive windows stations and
            desktop.
+    75     Not able to create an ed25519 key pair.
 `
 }
 
@@ -456,6 +464,13 @@ func main() {
 			log.Println("Error generating OpenPGP keypair for worker:")
 			log.Printf("%#v\n", err)
 			os.Exit(int(CANT_CREATE_OPENPGP_KEYPAIR))
+		}
+	case arguments["new-ed25519-keypair"]:
+		err := generateEd25519Keypair(arguments["--file"].(string))
+		if err != nil {
+			log.Println("Error generating ed25519 keypair for worker:")
+			log.Printf("%#v\n", err)
+			os.Exit(int(CANT_CREATE_ED25519_KEYPAIR))
 		}
 	case arguments["grant-winsta-access"]:
 		sid := arguments["--sid"].(string)
