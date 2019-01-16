@@ -26,10 +26,10 @@ const (
 )
 
 var (
-	certifiedLogPath = filepath.Join("generic-worker", "certified.log")
-	certifiedLogName = "public/logs/certified.log"
-	unsignedCertPath = filepath.Join("generic-worker", "chain-of-trust.json")
-	unsignedCertName = "public/chain-of-trust.json"
+	certifiedLogPath      = filepath.Join("generic-worker", "certified.log")
+	certifiedLogName      = "public/logs/certified.log"
+	unsignedCertPath      = filepath.Join("generic-worker", "chain-of-trust.json")
+	unsignedCertName      = "public/chain-of-trust.json"
 	ed25519SignedCertPath = filepath.Join("generic-worker", "chain-of-trust.json.sig")
 	ed25519SignedCertName = "public/chain-of-trust.json.sig"
 	openpgpSignedCertPath = filepath.Join("generic-worker", "chainOfTrust.json.asc")
@@ -65,7 +65,7 @@ type ChainOfTrustData struct {
 }
 
 type ChainOfTrustTaskFeature struct {
-	task    *TaskRun
+	task           *TaskRun
 	ed25519PrivKey ed25519.PrivateKey
 	openpgpPrivKey *packet.PrivateKey
 }
@@ -130,7 +130,7 @@ func (feature *ChainOfTrustFeature) IsEnabled(task *TaskRun) bool {
 
 func (feature *ChainOfTrustFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	return &ChainOfTrustTaskFeature{
-		task:    task,
+		task:           task,
 		ed25519PrivKey: feature.Ed25519PrivateKey,
 		openpgpPrivKey: feature.OpenpgpPrivateKey,
 	}

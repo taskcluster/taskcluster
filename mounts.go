@@ -843,7 +843,7 @@ func (bc *Base64Content) Download(task *TaskRun) (file string, sha256 string, er
 }
 
 func (bc *Base64Content) String() string {
-	return "Base64 (" +  bc.Base64 + ")"
+	return "Base64 (" + bc.Base64 + ")"
 }
 
 func (bc *Base64Content) UniqueKey() string {
