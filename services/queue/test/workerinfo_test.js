@@ -219,6 +219,24 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     );
   });
 
+  test('queue.listWorkers returns quarantined workers even after expiration', async () => {
+    const past = new Date('2001-01-01');
+    const future = new Date('3001-01-01');
+    const workers = [
+      await makeWorker({workerId: 'old', expires: past, quarantineUntil: past}),
+      await makeWorker({workerId: 'q', expires: past, quarantineUntil: future}),
+      await makeWorker({workerId: 'new', expires: future, quarantineUntil: past}),
+      await makeWorker({workerId: 'newq', expires: future, quarantineUntil: future}),
+    ];
+
+    const result = await helper.queue.listWorkers(workers[0].provisionerId, workers[0].workerType);
+
+    assert(result.workers.length === 3, 'expected three workers');
+    assert(result.workers.some(w => w.workerId === 'q'));
+    assert(result.workers.some(w => w.workerId === 'new'));
+    assert(result.workers.some(w => w.workerId === 'newq'));
+  });
+
   test('queue.listWorkers returns actions with the right context', async () => {
     await makeProvisioner({
       actions: [{
@@ -605,7 +623,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'expected different lastDateActive');
   });
 
-  test('queue.getWorker returns workers', async () => {
+  test('queue.getWorker returns a worker', async () => {
     const taskId = slugid.v4();
     const taskId2 = slugid.v4();
 
@@ -655,6 +673,41 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     }
     assert(err, 'expected an error');
     assert(err.statusCode === 404, 'expected 404');
+  });
+
+  test('queue.getWorker returns 404 for an expired Worker', async () => {
+    await makeProvisioner({});
+    const wType = await makeWorkerType({});
+    const worker = await makeWorker({expires: new Date('2001-01-01')});
+
+    let err;
+    try {
+      const result = await helper.queue.getWorker(
+        worker.provisionerId,
+        worker.workerType,
+        worker.workerGroup,
+        worker.workerId);
+    } catch (e) {
+      err = e;
+    }
+    assert(err, 'expected an error');
+    assert(err.statusCode === 404, 'expected 404');
+  });
+
+  test('queue.getWorker returns an expired Worker that is quarantined', async () => {
+    await makeProvisioner({});
+    const wType = await makeWorkerType({});
+    const worker = await makeWorker({
+      expires: new Date('2001-01-01'),
+      quarantineUntil: new Date('3001-01-01'),
+    });
+
+    const result = await helper.queue.getWorker(
+      worker.provisionerId,
+      worker.workerType,
+      worker.workerGroup,
+      worker.workerId);
+    assert.equal(result.workerId, worker.workerId);
   });
 
   test('queue.getWorker returns 404 for a missing WorkerType', async () => {
