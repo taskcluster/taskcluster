@@ -1,22 +1,6 @@
-* @taskcluster/core
-services/ @taskcluster/services-reviewers
-libraries/ @taskcluster/services-reviewers
+* @taskcluster/services-reviewers
 
-services/github @owlishDeveloper
-services/notify @imbstack
-services/purge-cache @imbstack
 services/queue @jhford
-services/treeherder @imbstack
-
-libraries/eslint-config @owlishDeveloper
 libraries/client @jhford
-libraries/api @imbstack
-libraries/app @imbstack
-libraries/docs @imbstack
-libraries/iterate @jhford
-libraries/loader @imbstack
-libraries/monitor @imbstack
-libraries/validate @imbstack
-libraries/typed-env-config @imbstack
 
 infrastructure/builder @djmitche
