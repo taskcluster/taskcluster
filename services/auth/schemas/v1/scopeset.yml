@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:                      "Set of scopes"
 description: |
   A set of scopes
@@ -14,4 +14,4 @@ properties:
       type:                 string
       pattern: "^[\x20-\x7e]*$"
     uniqueItems:            true
-
+required: [scopes]

@@ -89,7 +89,7 @@ class Build {
     });
     const context = await taskgraph.run();
 
-    if (target) {
+    if (target.length > 0) {
       // if targeting, just show the build results, since we don't have all the data to
       // create a TerraformJson file.
       target.forEach(tgt => {
@@ -99,7 +99,7 @@ class Build {
       // create a TerraformJson output based on the result of the build
       const tfJson = new TerraformJson(this.spec, context);
       // ..and write it out
-      tfJson.write(process.stdout);
+      tfJson.write();
     }
   }
 }

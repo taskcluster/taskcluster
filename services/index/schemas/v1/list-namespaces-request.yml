@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:              "List Namespaces Request"
 description: |
   Request to list namespaces within a given namespace.
@@ -21,3 +21,4 @@ properties:
       request. This property is optional and should not be provided for first
       requests.
 additionalProperties: false
+required: []

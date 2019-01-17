@@ -78,9 +78,20 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
     github = await helper.load('github');
     handlers = await helper.load('handlers');
 
+    await handlers.setup();
+
     // stub out `createTasks` so that we don't actually create tasks
     handlers.createTasks = sinon.stub();
-    await handlers.setup();
+    handlers.queueClient = {
+      task: (_) => {
+        return Promise.resolve({
+          metadata: {
+            name: 'Task Name',
+            description: 'Task Description',
+          },
+        });
+      },
+    };
 
     // set up the allowPullRequests key
     github.inst(5828).setRepoInfo({

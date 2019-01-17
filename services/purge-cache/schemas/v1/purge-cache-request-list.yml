@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:        "Open Purge Request List"
 description: |
   A list of currently open purge-cache requests.

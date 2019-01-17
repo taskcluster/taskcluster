@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:        "Create Comment Request"
 description: |
   Write a new comment on a GitHub Issue or Pull Request.

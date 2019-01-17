@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:          "Worker Request"
 description: |
   Request to update a worker.
@@ -12,3 +12,4 @@ properties:
     type:         string
     format:       date-time
 additionalProperties: false
+required: []

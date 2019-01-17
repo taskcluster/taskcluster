@@ -1,4 +1,4 @@
-$schema:        http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:          "LastFires list"
 description:    |
   List of lastFires
@@ -45,3 +45,5 @@ properties:
         - taskCreateTime
         - result
         - error
+additionalProperties: false
+required: [lastFires]

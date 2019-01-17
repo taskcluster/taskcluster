@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:   "List of Bindings"
 type: "array"
 properties:
@@ -16,3 +16,5 @@ properties:
     required:
       - exchange
       - routingKeyPattern
+additionalProperties: false
+required: [items]

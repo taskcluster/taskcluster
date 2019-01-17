@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:                      "Get Role Ids Response"
 description: |
   If no limit is given, the roleIds of all roles are returned. Since this

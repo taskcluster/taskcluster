@@ -1,4 +1,4 @@
-$schema:        http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:          "Trigger Hook Request"
 description:    |
   A request to trigger a hook.  The payload must be a JSON object, and is used as the context
