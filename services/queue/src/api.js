@@ -2286,7 +2286,6 @@ builder.declare({
   const workerQuery = {
     provisionerId,
     workerType,
-    expires: Entity.op.greaterThan(now),
   };
 
   if (quarantined === 'true') {
@@ -2298,7 +2297,11 @@ builder.declare({
   const workers = await this.Worker.scan(workerQuery, {continuation, limit});
 
   const result = {
-    workers: workers.entries.map(worker => {
+    workers: workers.entries.filter(worker => {
+      // filter out anything that is both expired and not quarantined,
+      // so that quarantined workers remain visible even after expiration
+      return worker.expires >= now || worker.quarantineUntil >= now;
+    }).map(worker => {
       let entry = {
         workerGroup: worker.workerGroup,
         workerId: worker.workerId,
@@ -2341,13 +2344,16 @@ builder.declare({
       workerType,
       workerGroup,
       workerId,
-      expires: Entity.op.greaterThan(new Date()),
     }, true),
     this.WorkerType.load({provisionerId, workerType}, true),
     this.Provisioner.load({provisionerId}, true),
   ]);
 
-  if (!worker || !wType || !provisioner) {
+  // do not consider workers expired until their quarantine date expires.
+  const now = new Date();
+  const expired = worker && worker.expires < now && worker.quarantineUntil < now;
+
+  if (expired || !worker || !wType || !provisioner) {
     return res.reportError('ResourceNotFound',
       'Worker with workerId `{{workerId}}`, workerGroup `{{workerGroup}}`,' +
       'worker-type `{{workerType}}` and provisionerId `{{provisionerId}}` not found. ' +
