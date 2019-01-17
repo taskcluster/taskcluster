@@ -29,6 +29,11 @@
     "typed-env-config": "link:libraries/typed-env-config"
   },
   "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/plugin-proposal-decorators": "^7.1.2",
+    "@neutrinojs/mocha": "9.0.0-rc.0",
+    "@neutrinojs/node": "9.0.0-rc.0",
     "app-root-dir": "^1.0.2",
     "assume": "^2.1.0",
     "aws-sdk-mock": "^4.3.0",
@@ -40,6 +45,8 @@
     "dockerode": "^2.5.8",
     "dot": "^1.1.2",
     "eslint": "5.12.0",
+    "eslint-config-prettier": "^3.1.0",
+    "eslint-plugin-prettier": "^3.0.0",
     "fs-extra": "^7.0.1",
     "got": "^9.5.0",
     "http-proxy": "^1.17.0",
@@ -55,7 +62,10 @@
     "mock-aws-s3": "^3.0.0",
     "mock-fs": "^4.7.0",
     "mockdate": "^2.0.2",
+    "neutrino": "9.0.0-rc.0",
     "nock": "^10.0.6",
+    "prettier": "^1.14.3",
+    "raw-loader": "^1.0.0",
     "recursive-copy": "^2.0.9",
     "rimraf": "^2.6.3",
     "rmp": "^0.0.0",
@@ -74,6 +84,9 @@
     "typed-env-config": "link:libraries/typed-env-config",
     "url-join": "^4.0.0",
     "uuid": "^3.3.2",
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-node-externals": "^1.7.2",
     "xml2js": "^0.4.19",
     "xmlbuilder": "^10.1.1",
     "zen-observable": "^0.8.11",
@@ -93,6 +106,7 @@
   },
   "eslintIgnore": [
     "**/node_modules/**",
-    "**/test/fixtures/**"
+    "**/test/fixtures/**",
+    "web-server"
   ]
 }

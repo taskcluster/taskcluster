@@ -51,6 +51,7 @@ tasks:
     - taskcluster-secrets
     - taskcluster-treeherder
     - taskcluster-builder
+    - taskcluster-web-server
     others:
     - lint
     - test:meta

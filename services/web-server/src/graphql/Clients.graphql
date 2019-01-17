@@ -1,0 +1,70 @@
+type Client {
+  clientId: ID!
+  expires: DateTime!
+  deleteOnExpiration: Boolean!
+  description: String!
+  created: DateTime!
+  lastModified: DateTime!
+  lastDateUsed: DateTime!
+  lastRotated: DateTime!
+  scopes: [String]!
+  expandedScopes: [String]!
+  disabled: Boolean!
+}
+
+input ClientInput {
+  expires: DateTime!
+  description: String!
+  deleteOnExpiration: Boolean
+  scopes: [String]
+}
+
+input ClientUpdateInput {
+  expires: DateTime
+  description: String
+  deleteOnExpiration: Boolean
+  scopes: [String]
+}
+
+type CreatedClient {
+  clientId: ID!
+  accessToken: String!
+  expires: DateTime!
+  deleteOnExpiration: Boolean!
+  description: String!
+  created: DateTime!
+  lastModified: DateTime!
+  lastDateUsed: DateTime!
+  lastRotated: DateTime!
+  scopes: [String]!
+  expandedScopes: [String]!
+  disabled: Boolean!
+}
+
+type ClientsConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [ClientsEdge]
+}
+
+type ClientsEdge implements Edge {
+  cursor: String
+  node: Client
+}
+
+input ClientsOptions {
+  prefix: String
+}
+
+extend type Query {
+  clients(clientOptions: ClientsOptions, connection: PageConnection, filter: JSON): ClientsConnection
+  client(clientId: ID!): Client
+}
+
+extend type Mutation {
+  resetAccessToken(clientId: ID!): CreatedClient
+  createClient(clientId: ID!, client: ClientInput!): CreatedClient
+  updateClient(clientId: ID!, client: ClientUpdateInput!): CreatedClient
+  enableClient(clientId: ID!): CreatedClient
+  disableClient(clientId: ID!): CreatedClient
+  deleteClient(clientId: ID!): ID
+}

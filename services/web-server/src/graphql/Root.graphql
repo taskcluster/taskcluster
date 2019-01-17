@@ -1,0 +1,61 @@
+scalar Date
+scalar Time
+scalar DateTime
+scalar JSON
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  cursor: String
+  previousCursor: String
+  nextCursor: String
+}
+
+input PageConnection {
+  limit: Int
+  previousCursor: String
+  cursor: String
+}
+
+# Every new edge implementation needs to declare its Node type here :(
+union Node =
+  Artifact |
+  Task |
+  Provisioner |
+  WorkerType |
+  Worker |
+  WorkerCompact |
+  Namespace |
+  IndexedTask |
+  CachePurge |
+  SecretListItem |
+  Client |
+  RoleCompact
+
+interface Edge {
+  cursor: String
+  node: Node
+}
+
+interface Connection {
+  pageInfo: PageInfo
+  edges: [Edge]
+}
+
+type Query {
+  root: Boolean
+}
+
+type Mutation {
+  root: Boolean
+}
+
+type Subscription {
+  root: Boolean
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}

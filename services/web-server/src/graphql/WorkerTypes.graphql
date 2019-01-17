@@ -1,0 +1,45 @@
+enum WorkerTypeStability {
+  EXPERIMENTAL
+  STABLE
+  DEPRECATED
+}
+
+type WorkerType {
+  provisionerId: String!
+  workerType: String!
+  stability: WorkerTypeStability!
+  description: String!
+  expires: DateTime!
+  lastDateActive: DateTime!
+  actions: [ProvisionerAction]!
+
+  workers(
+    provisionerId: String = provisionerId,
+    workerType: String = workerType,
+    connection: PageConnection,
+    filter: JSON
+  ): WorkersCompactConnection
+  worker(
+    provisionerId: String = provisionerId,
+    workerType: String = workerType,
+    workerGroup: String!,
+    workerId: ID!
+  ): Worker
+  pendingTasks(provisionerId: String = provisionerId, workerType: String = workerType): Int!
+}
+
+type WorkerTypesEdge implements Edge {
+  cursor: String
+  node: WorkerType
+}
+
+type WorkerTypesConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [WorkerTypesEdge]
+}
+
+extend type Query {
+  workerType(provisionerId: String!, workerType: String!): WorkerType
+  pendingTasks(provisionerId: String!, workerType: String!): Int!
+  workerTypes(provisionerId: String!, connection: PageConnection, filter: JSON): WorkerTypesConnection
+}

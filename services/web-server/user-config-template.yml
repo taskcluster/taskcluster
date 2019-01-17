@@ -1,0 +1,9 @@
+defaults:
+  taskcluster:
+      rootUrl: ...
+  pulse:
+    namespace:
+    username: ..
+    password: ..
+    hostname: ..
+    vhost: ..

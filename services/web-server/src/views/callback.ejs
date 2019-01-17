@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Logging in...</title>
+  </head>
+  <body>
+    <script>
+      window.addEventListener('load', () => {
+        if (window.opener) {
+          window.opener.postMessage({
+            type: 'login',
+            credentials: <%- JSON.stringify(user.credentials) %>,
+            expires: <%- JSON.stringify(user.expires.toISOString()) %>,
+            profile: <%- JSON.stringify(user.profile) %>,
+          }, window.opener.location);
+          window.close();
+        }
+      });
+    </script>
+  </body>
+</html>
