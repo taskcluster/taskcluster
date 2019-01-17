@@ -29,6 +29,10 @@ Example:
 
 #### Since: generic-worker 5.3.0
 
+This feature was added in generic-worker 5.3.0, with gpg support.
+
+#### Since: generic-worker TBD
+
 Enabling this feature will mean that the generic worker will publish three
 additional task artifacts: `public/chain-of-trust.json`,
 `public/chain-of-trust.json.sig`, and `public/chainOfTrust.json.asc`. These

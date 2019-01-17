@@ -617,7 +617,7 @@ func taskPayloadSchema() string {
       "properties": {
         "chainOfTrust": {
           "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + `, ` + "`" + `public/chain-of-trust.json.sig` + "`" + `,\n` + "`" + `public/chainOfTrust.json.asc` + "`" + ` should be generated which will include information\nfor downstream tasks to build a level of trust for the artifacts produced by the\ntask and the environment it ran in.\n\nSince: generic-worker 5.3.0",
-          "title": "Enable generation of a openpgp signed Chain of Trust artifact",
+          "title": "Enable generation of signed Chain of Trust artifacts",
           "type": "boolean"
         },
         "taskclusterProxy": {
