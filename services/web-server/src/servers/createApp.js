@@ -29,13 +29,10 @@ export default async ({ cfg }) => {
     })
   );
 
-  await Promise.all(
-    cfg.app.loginStrategies.map(async strategy => {
-      const { default: loginStrategy } = await import(`../login/${strategy}`);
-
-      loginStrategy(app, cfg);
-    })
-  );
+  cfg.app.loginStrategies.forEach(strategy => {
+    const { default: loginStrategy } = require(`../login/${strategy}`);
+    loginStrategy(app, cfg);
+  });
 
   return app;
 };

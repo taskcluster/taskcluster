@@ -175,34 +175,35 @@ export default class PulseEngine {
     });
   }
 
-  @serialize
   async innerReconcileSubscriptions() {
-    debug('Reconciling subscriptions');
+    return serialize(async () => {
+      debug('Reconciling subscriptions');
 
-    const { connection, client } = this;
+      const { connection, client } = this;
 
-    // if there's no connection, there's nothing to do; reconciliation
-    // will occur again on the next connection
-    if (!connection) {
-      return;
-    }
+      // if there's no connection, there's nothing to do; reconciliation
+      // will occur again on the next connection
+      if (!connection) {
+        return;
+      }
 
-    if (!this.channel) {
-      this.channel = await connection.amqp.createChannel();
-    }
+      if (!this.channel) {
+        this.channel = await connection.amqp.createChannel();
+      }
 
-    const { channel } = this;
+      const { channel } = this;
 
-    await Promise.all(
-      Array.from(this.subscriptions.values()).map(sub =>
-        sub.reconcile(client, connection, channel)
-      )
-    );
+      await Promise.all(
+        Array.from(this.subscriptions.values()).map(sub =>
+          sub.reconcile(client, connection, channel)
+        )
+      );
 
-    // clean up any garbage
-    Array.from(this.subscriptions.values())
-      .filter(sub => sub.garbage)
-      .forEach(sub => this.subscriptions.delete(sub.subscriptionId));
+      // clean up any garbage
+      Array.from(this.subscriptions.values())
+        .filter(sub => sub.garbage)
+        .forEach(sub => this.subscriptions.delete(sub.subscriptionId));
+    });
   }
 
   /**

@@ -107,6 +107,6 @@
   "eslintIgnore": [
     "**/node_modules/**",
     "**/test/fixtures/**",
-    "web-server"
+    "services/web-server/build"
   ]
 }
