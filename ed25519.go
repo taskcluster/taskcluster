@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"encoding/base64"
-	"encoding/gob"
 	"io"
 	"io/ioutil"
 	"os"
@@ -34,11 +32,12 @@ func writeEd25519PublicKeyToLog(publicKey []byte) error {
 }
 
 func writeEd25519PrivateKeyToFile(privateKey ed25519.PrivateKey, privateKeyFile string) error {
-	seedStr := base64.StdEncoding.EncodeToString(privateKey.Seed())
-	buf := &bytes.Buffer{}
-	gob.NewEncoder(buf).Encode(seedStr)
-	seed := buf.Bytes()
-	err := ioutil.WriteFile(privateKeyFile, seed, 0400)
+	seed := base64.StdEncoding.EncodeToString(privateKey.Seed())
+	f, err := os.Create(privateKeyFile)
+	if err != nil {
+		return err
+	}
+	_, err = f.WriteString(seed)
 	if err != nil {
 		return err
 	}
