@@ -266,5 +266,4 @@ if (!module.parent) {
   });
 }
 
-// Export load for tests
 module.exports = load;
