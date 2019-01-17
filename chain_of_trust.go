@@ -84,7 +84,7 @@ func (feature *ChainOfTrustFeature) Initialise() (err error) {
 		return
 	}
 
-	feature.Ed25519PrivateKey, err = readEd25519PrivateKey()
+	feature.Ed25519PrivateKey, err = readEd25519PrivateKeyFromFile(config.Ed25519SigningKeyLocation)
 	if err != nil {
 		return
 	}
@@ -92,17 +92,6 @@ func (feature *ChainOfTrustFeature) Initialise() (err error) {
 	// platform-specific mechanism to lock down file permissions
 	// of private signing key
 	err = secureSigningKey()
-	return
-}
-
-func readEd25519PrivateKey() (privateKey ed25519.PrivateKey, err error) {
-	seed, err := ioutil.ReadFile(config.Ed25519SigningKeyLocation)
-	if err != nil {
-		log.Printf("FATAL: Was not able to open chain of trust signing key file '%v'.", config.Ed25519SigningKeyLocation)
-		log.Printf("The chain of trust signing key file location is configured in file '%v' in property 'Ed25519SigningKeyLocation'.", configFile)
-		return
-	}
-	privateKey = ed25519.NewKeyFromSeed(seed)
 	return
 }
 
