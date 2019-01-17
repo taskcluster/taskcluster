@@ -1,6 +1,5 @@
 import Debug from 'debug';
 import { slugid } from 'taskcluster-client';
-import { serialize } from 'async-decorators';
 import PulseIterator from './PulseIterator';
 import MessageIterator from './MessageIterator';
 import EventIterator from './EventIterator';
@@ -118,6 +117,9 @@ export default class PulseEngine {
 
     this.reset();
     this.client.onConnected(conn => this.connected(conn));
+
+    // Promise that we're done reloading, used to serialize reload operations
+    this._reloadDone = Promise.resolve();
   }
 
   reset() {
@@ -175,34 +177,44 @@ export default class PulseEngine {
     });
   }
 
-  @serialize
-  async innerReconcileSubscriptions() {
-    debug('Reconciling subscriptions');
+  /**
+   * Execute async `reloader` function, after any earlier async `reloader`
+   * function given this function has completed. Ensuring that the `reloader`
+   * functions are executed in serial.
+   */
+  _syncReload(reloader) {
+    return this._reloadDone = this._reloadDone.catch(() => {}).then(reloader);
+  }
 
-    const { connection, client } = this;
+  innerReconcileSubscriptions() {
+    return this._syncReload(async () => {
+      debug('Reconciling subscriptions');
 
-    // if there's no connection, there's nothing to do; reconciliation
-    // will occur again on the next connection
-    if (!connection) {
-      return;
-    }
+      const { connection, client } = this;
 
-    if (!this.channel) {
-      this.channel = await connection.amqp.createChannel();
-    }
+      // if there's no connection, there's nothing to do; reconciliation
+      // will occur again on the next connection
+      if (!connection) {
+        return;
+      }
 
-    const { channel } = this;
+      if (!this.channel) {
+        this.channel = await connection.amqp.createChannel();
+      }
 
-    await Promise.all(
-      Array.from(this.subscriptions.values()).map(sub =>
-        sub.reconcile(client, connection, channel)
-      )
-    );
+      const { channel } = this;
 
-    // clean up any garbage
-    Array.from(this.subscriptions.values())
-      .filter(sub => sub.garbage)
-      .forEach(sub => this.subscriptions.delete(sub.subscriptionId));
+      await Promise.all(
+        Array.from(this.subscriptions.values()).map(sub =>
+          sub.reconcile(client, connection, channel)
+        )
+      );
+
+      // clean up any garbage
+      Array.from(this.subscriptions.values())
+        .filter(sub => sub.garbage)
+        .forEach(sub => this.subscriptions.delete(sub.subscriptionId));
+    });
   }
 
   /**

@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "apollo-server-express": "^2.3.1",
-    "async-decorators": "^0.1.5",
     "body-parser-graphql": "^1.0.0",
     "compression": "^1.7.2",
     "cors": "^2.8.4",

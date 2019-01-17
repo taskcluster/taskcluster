@@ -60,9 +60,9 @@ export default {
         filter,
       });
     },
-    async taskGroup(parent, args, { loaders }) {
-      if (parent.taskGroup) {
-        return parent.taskGroup;
+    async decisionTask(parent, args, { loaders }) {
+      if (parent.decisionTask) {
+        return parent.decisionTask;
       }
 
       try {
