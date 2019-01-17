@@ -7,7 +7,6 @@ module.exports = {
       hot: false,
       babel: {
         plugins: [
-          [require.resolve('@babel/plugin-proposal-decorators'), { legacy: true }],
           require.resolve('@babel/plugin-proposal-class-properties'),
         ]
       },
