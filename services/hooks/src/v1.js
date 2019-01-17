@@ -495,9 +495,12 @@ builder.declare({
 /**
  * Common implementation of triggerHook and triggerHookWithToken
  */
-const triggerHookCommon = async function({req, res, hook, payload, clientId = null, firedBy}) {
+const triggerHookCommon = async function({req, res, hook, payload, clientId, firedBy}) {
   const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
-  const context = {firedBy, payload, clientId};
+  const context = {firedBy, payload };
+  if (clientId) {
+    context.clientId = clientId;
+  }
   let lastFire;
   let resp;
   let error;

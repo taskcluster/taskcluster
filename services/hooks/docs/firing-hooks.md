@@ -40,15 +40,18 @@ When a hook is fired at a scheduled time, the JSON-e context is simply:
 
 ### TriggerHook
 
-Calls to the `triggerHook` method include a payload. The payload is validated
-against the hook's `triggerSchema`, and supplied in the JSON-e context as
-`context`:
+Calls to the `triggerHook` method include a payload which is then validated
+against the hook's `triggerSchema`. Getting to identify the hook triggerer can 
+be helpful. Example, it would help to detect the source of many retriggers. 
+Hence apart from payload, clientId  of the triggerer extracted from the request
+object is also supplied in the JSON-e context as `context`:
 
 ```
 {
     firedBy: "triggerHook",
     taskId: 'IgfFQSAqQwysozyeB7udBw',
-    payload: {..}               // API call payload
+    payload: {..},               // API call payload
+    clientId: 'mozilla-auth0/ad|Mozilla-LDAP|xyz'
 }
 ```
 
