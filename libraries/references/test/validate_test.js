@@ -340,4 +340,28 @@ suite('validate_test.js', function() {
       'test-api-ref.yml: entries[0].output does not exist',
     ]);
   });
+
+  test('api reference with entry output that exists but has wrong $schema fails', function() {
+    const references = new RefBuilder()
+      .schema({
+        $schema: 'http://json-schema.org/draft-06/schema#',
+        $id: '/schemas/test/v2/resource.json#',
+      })
+      .apiref({entries: [{output: 'v2/resource.json#'}]})
+      .end();
+    assertProblems(references, [
+      'test/v2/resource.json#\'s $schema is not the metaschema',
+    ]);
+  });
+
+  test('api reference with entry output that exists but has right $schema passes', function() {
+    const references = new RefBuilder()
+      .schema({
+        $schema: 'https://tc-tests.example.com/schemas/common/metaschema.json#',
+        $id: '/schemas/test/v2/resource.json#',
+      })
+      .apiref({entries: [{output: 'v2/resource.json#'}]})
+      .end();
+    assertProblems(references, []);
+  });
 });

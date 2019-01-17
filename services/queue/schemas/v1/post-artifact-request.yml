@@ -1,4 +1,4 @@
-$schema:            http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:              "Post Artifact Request"
 description: "Request a authorization to put and artifact or posting of a URL as an artifact. Note that the `storageType` property is referenced in the response as well."
 oneOf:
@@ -104,6 +104,7 @@ oneOf:
                 a single part is 5GB.  The overall size may not exceed 5TB
               type: integer
               minimum: 0
+          required: [sha256, size]
     additionalProperties: false
     required:
       - storageType

@@ -126,16 +126,20 @@ exports.validate = (references) => {
   // reference entries are OK
 
   if (!problems.length) {
+    const metaschemaUrl = libUrls.schema(references.rootUrl, 'common', 'metaschema.json#');
     // check that a schema link is relative to the service
     for (let {filename, content} of references.references) {
-      const checkRelativeSchema = (name, serviceName, schema, i) => {
-        if (schema.match(/^\/|^[a-z]*:|^\.\./)) {
+      const checkRelativeSchema = (name, serviceName, schemaName, i) => {
+        if (schemaName.match(/^\/|^[a-z]*:|^\.\./)) {
           problems.push(`${filename}: entries[${i}].${name} is not relative to the service`);
           return;
         }
-        const fullSchema = libUrls.schema(references.rootUrl, serviceName, schema);
-        if (!references.getSchema(fullSchema, {skipValidation: true})) {
+        const fullSchema = libUrls.schema(references.rootUrl, serviceName, schemaName);
+        const schema = references.getSchema(fullSchema, {skipValidation: true});
+        if (!schema) {
           problems.push(`${filename}: entries[${i}].${name} does not exist`);
+        } else if (schema.$schema !== metaschemaUrl) {
+          problems.push(`${serviceName}/${schemaName}'s $schema is not the metaschema`);
         }
       };
 
@@ -182,3 +186,5 @@ class ValidationProblems extends Error {
     this.problems = problems;
   }
 }
+
+exports.ValidationProblems = ValidationProblems;

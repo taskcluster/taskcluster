@@ -1,5 +1,5 @@
-$schema:  http://json-schema.org/draft-06/schema#
-title:                      "Get Roles Response"
+$schema: "/schemas/common/metaschema.json#"
+title:                      "Get All Roles Response"
 description: |
   If no limit is given, all roles are returned. Since this
   list may become long, callers can use the `limit` and `continuationToken`

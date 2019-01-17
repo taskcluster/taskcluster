@@ -1,9 +1,19 @@
-$schema: "http://json-schema.org/draft-06/schema#"
+$schema: "/schemas/common/metaschema.json#"
 $id: "/schemas/common/metadata-metaschema.json#"
 title: "JSON-Schema Meta-Schema, with the addition of a `metadata` property"
-allOf:
-  - {$ref: "http://json-schema.org/draft-06/schema#"}
-  - type: object
+description: |
+  This is a refinement of the Taskcluster metaschema, with the following changes:
+
+    * top level must be an object (no trivial true or false schemas)
+    * `{metadata: {name, version}}` must be present at the top level
+
+  Note that any schema that validates against this metaschema will also
+  validate against the upstream draft-06 metaschema, and is usable by any
+  JSON-schema tool.
+definitions:
+  # require that every schema have a top-level metadata metaschema
+  topLevelMetadata:
+    type: object
     properties:
       metadata:
         title: "Metadata for this schema"
@@ -27,9 +37,14 @@ allOf:
           version:
             title: "Version of the document format"
             type: integer
-          additionalProperties: false
+        additionalProperties: false
         required:
           - version
           - name
+    additionalProperties: true
     required:
       - metadata
+
+allOf:
+  - {$ref: "./metaschema.json#"}
+  - {$ref: "#/definitions/topLevelMetadata"}

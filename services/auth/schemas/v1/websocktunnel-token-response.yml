@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:                      "Websocktunnel Token Response"
 description: |
     Token for connecting a worker to websocktunnel proxy

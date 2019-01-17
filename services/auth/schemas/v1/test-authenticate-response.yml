@@ -1,4 +1,4 @@
-$schema:  http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title:                      "Test Authenticate Response"
 description: |
   Details on how the test request was authenticated.
@@ -20,3 +20,4 @@ properties:
       type:                 string
       pattern: "^[\x20-\x7e]*$"
     uniqueItems:            true
+required: [clientId, scopes]

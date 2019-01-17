@@ -7,7 +7,7 @@
 ##                                                                                                      ##
 ##########################################################################################################
 
-$schema: "http://json-schema.org/draft-06/schema#"
+$schema: "/schemas/common/metaschema.json#"
 title: "Job Definition"
 description: |
   Definition of a single job that can be added to Treeherder
@@ -306,6 +306,7 @@ properties:
           - linkText
           - label
     additionalProperties: false
+    required: [summary, links]
 
   logs:
     type: "array"
@@ -348,6 +349,7 @@ properties:
                       type: integer
                       minimum: 0
                   additionalProperties: false
+                  required: [line, linenumber]
               name:
                 type: string
                 minLength: 1
