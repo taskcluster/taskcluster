@@ -105,7 +105,6 @@ class Handlers {
     // (see this.createTasks for example)
     this.queueClient = new taskcluster.Queue({
       rootUrl: this.context.cfg.taskcluster.rootUrl,
-      credentials: this.context.cfg.taskcluster.credentials,
     });
 
     // Listen for new jobs created via the api webhook endpoint
@@ -228,7 +227,10 @@ class Handlers {
 
   // Create a collection of tasks, centralized here to enable testing without creating tasks.
   async createTasks({scopes, tasks}) {
-    const scopedQueueClient = this.queueClient.use({authorizedScopes: scopes});
+    const scopedQueueClient = this.queueClient.use({
+      authorizedScopes: scopes,
+      credentials: this.context.cfg.taskcluster.credentials,
+    });
     await Promise.all(tasks.map(t => scopedQueueClient.createTask(t.taskId, t.task)));
   }
 
