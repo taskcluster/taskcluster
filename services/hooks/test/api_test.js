@@ -390,7 +390,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'foo',
         hookId: 'bar',
-        context: {firedBy: 'triggerHook', payload: {location: 'Belo Horizonte, MG', foo: 'triggerHook'}},
+        context: {firedBy: 'triggerHook', clientId: 'test-client', payload: {location: 'Belo Horizonte, MG', foo: 'triggerHook'}},
         options: {},
       }]);
     });

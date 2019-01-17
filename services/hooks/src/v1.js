@@ -381,12 +381,13 @@ builder.declare({
   await req.authorize({hookGroupId, hookId});
 
   const payload = req.body;
+  const clientId = await req.clientId();
   const hook = await this.Hook.load({hookGroupId, hookId}, true);
 
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
-  return triggerHookCommon.call(this, {req, res, hook, payload, firedBy: 'triggerHook'});
+  return triggerHookCommon.call(this, {req, res, hook, payload, clientId, firedBy: 'triggerHook'});
 });
 
 /** Get secret token for a trigger **/
@@ -494,9 +495,12 @@ builder.declare({
 /**
  * Common implementation of triggerHook and triggerHookWithToken
  */
-const triggerHookCommon = async function({req, res, hook, payload, firedBy}) {
+const triggerHookCommon = async function({req, res, hook, payload, clientId, firedBy}) {
   const ajv = new Ajv({format: 'full', verbose: true, allErrors: true});
-  const context = {firedBy, payload};
+  const context = {firedBy, payload };
+  if (clientId) {
+    context.clientId = clientId;
+  }
   let lastFire;
   let resp;
   let error;
