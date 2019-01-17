@@ -1,1 +1,1 @@
-web: cd services/web-server && node build/index.js
+web: cd services/web-server && yarn build && node build/index.js
