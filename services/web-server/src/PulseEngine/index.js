@@ -1,6 +1,5 @@
 import Debug from 'debug';
 import { slugid } from 'taskcluster-client';
-import { serialize } from 'async-decorators';
 import PulseIterator from './PulseIterator';
 import MessageIterator from './MessageIterator';
 import EventIterator from './EventIterator';
@@ -118,6 +117,9 @@ export default class PulseEngine {
 
     this.reset();
     this.client.onConnected(conn => this.connected(conn));
+
+    // Promise that we're done reloading, used to serialize reload operations
+    this._reloadDone = Promise.resolve();
   }
 
   reset() {
@@ -175,8 +177,17 @@ export default class PulseEngine {
     });
   }
 
-  async innerReconcileSubscriptions() {
-    return serialize(async () => {
+  /**
+   * Execute async `reloader` function, after any earlier async `reloader`
+   * function given this function has completed. Ensuring that the `reloader`
+   * functions are executed in serial.
+   */
+  _syncReload(reloader) {
+    return this._reloadDone = this._reloadDone.catch(() => {}).then(reloader);
+  }
+
+  innerReconcileSubscriptions() {
+    return this._syncReload(async () => {
       debug('Reconciling subscriptions');
 
       const { connection, client } = this;

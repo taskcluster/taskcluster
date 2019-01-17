@@ -1595,13 +1595,6 @@ astral-regex@^1.0.0:
   resolved "https://registry.yarnpkg.com/astral-regex/-/astral-regex-1.0.0.tgz#6c8c3fb827dd43ee3918f27b82782ab7658a6fd9"
   integrity sha512-+Ryf6g3BKoRc7jfp7ad8tM4TtMiaWvbF/1/sQcZPkkS7ag3D5nMBCe2UfOTONtAkaG0tO0ij3C5Lwmf1EiyjHg==
 
-async-decorators@^0.1.5:
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/async-decorators/-/async-decorators-0.1.5.tgz#23fcbfdd45b668b53d1f4e5ff4b2951552021d95"
-  integrity sha1-I/y/3UW2aLU9H05f9LKVFVICHZU=
-  dependencies:
-    lodash "^3.10.1"
-
 async-each@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/async-each/-/async-each-1.0.1.tgz#19d386a1d9edc6e7c1c85d388aedbcc56d33602d"
