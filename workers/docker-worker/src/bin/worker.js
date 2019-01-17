@@ -232,7 +232,11 @@ program.parse(process.argv);
 
   // Instantiate PrivateKey object for decrypting secure data
   // (currently encrypted environment variables)
-  runtime.privateKey = new PrivateKey(runtime.dockerWorkerPrivateKey);
+  try {
+    runtime.privateKey = new PrivateKey(runtime.dockerWorkerPrivateKey);
+  } catch (err) {
+    runtime.log(`Running with no support for encrypted environment variables: ${err}`);
+  }
 
   // Billing cycle logic is host specific so we cannot handle shutdowns without
   // both the host and the configuration to shutdown.

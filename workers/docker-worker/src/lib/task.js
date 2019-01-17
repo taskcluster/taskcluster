@@ -360,9 +360,11 @@ class Task extends EventEmitter {
 
     let config = this.task.payload;
 
-    await this.runtime.privateKey.decryptEnvVariables(
-      config, this.status.taskId
-    );
+    if (this.runtime.privateKey) {
+      await this.runtime.privateKey.decryptEnvVariables(
+        config, this.status.taskId
+      );
+    }
 
     // Allow task specific environment vars to overwrite those provided by hooks
     let env = _.defaults({}, config.env || {}, linkInfo.env || {});
