@@ -24,17 +24,6 @@ suite('TerraformJson', function() {
 
   test('load cluster spec from directory', function() {
     const cs = new ClusterSpec(path.join(__dirname, 'example'));
-    const context = {'service-ping-docker-image': 'tc/tc-ping:SVC-1234'};
     const filename = path.join(makeTempDir(), 'out.tf.json');
-
-    const tfJson = new TerraformJson(cs, context);
-    tfJson.write(filename);
-
-    const output = JSON.parse(fs.readFileSync(filename));
-    assume(output).to.deeply.equal({
-      locals: {
-        taskcluster_image_ping: 'tc/tc-ping:SVC-1234',
-      },
-    });
   });
 });
