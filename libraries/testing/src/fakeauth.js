@@ -28,7 +28,7 @@ exports.start = function(clients, {rootUrl}={}) {
         // https://github.com/hueniverse/hawk/blob/0833f99ba64558525995a7e21d4093da1f3e15fa/lib/server.js#L366-L383
         let bewitString = url.parse(body.resource, true).query.bewit;
         if (bewitString) {
-          let bewit = new Buffer(bewitString, 'base64').toString('utf-8');
+          let bewit = Buffer.from(bewitString, 'base64').toString('utf-8');
           let bewitParts = bewit.split('\\');
           clientId = bewitParts[0];
           if (!(clientId in clients)) {
@@ -40,7 +40,7 @@ exports.start = function(clients, {rootUrl}={}) {
         }
       }
       if (ext) {
-        ext = JSON.parse(new Buffer(ext, 'base64').toString('utf-8'));
+        ext = JSON.parse(Buffer.from(ext, 'base64').toString('utf-8'));
       } else {
         ext = {};
       }

@@ -284,7 +284,7 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
       }, 20 * queues.length, 1000);
 
       // Load the payload
-      let payload = new Buffer(message.MessageText[0], 'base64').toString();
+      let payload = Buffer.from(message.MessageText[0], 'base64').toString();
       payload = JSON.parse(payload);
 
       assert(payload.taskId === taskId, 'Got wrong taskId');
@@ -343,7 +343,7 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
       }, 20 * queues.length);
 
       // Load the payload
-      let payload = new Buffer(message.MessageText[0], 'base64').toString();
+      let payload = Buffer.from(message.MessageText[0], 'base64').toString();
       payload = JSON.parse(payload);
       debug('Received message with payload: %j', payload);
 

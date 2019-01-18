@@ -154,7 +154,7 @@ suite('api/auth', function() {
         label: 'static-scope with authorizedScopes',
         id: 'admin',
         tester: (auth, url) => request.get(url).hawk(auth, {
-          ext: new Buffer(JSON.stringify({
+          ext: Buffer.from(JSON.stringify({
             authorizedScopes: ['service:magic'],
           })).toString('base64'),
         }),
@@ -163,7 +163,7 @@ suite('api/auth', function() {
         label: 'static-scope with authorizedScopes (star)',
         id: 'admin',
         tester: (auth, url) => request.get(url).hawk(auth, {
-          ext: new Buffer(JSON.stringify({
+          ext: Buffer.from(JSON.stringify({
             authorizedScopes: ['service:ma*'],
           })).toString('base64'),
         }),
@@ -173,7 +173,7 @@ suite('api/auth', function() {
         id: 'admin',
         desiredStatus: 403,
         tester: (auth, url) => request.get(url).hawk(auth, {
-          ext: new Buffer(JSON.stringify({
+          ext: Buffer.from(JSON.stringify({
             authorizedScopes: ['some-irrelevant-scope'],
           })).toString('base64'),
         }),
@@ -441,7 +441,7 @@ suite('api/auth', function() {
             ],
           })
           .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
+            ext: Buffer.from(JSON.stringify({
               authorizedScopes: ['got-all/*', 'got-only/this'],
             })).toString('base64'),
           }),
@@ -463,7 +463,7 @@ suite('api/auth', function() {
             ],
           })
           .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
+            ext: Buffer.from(JSON.stringify({
               authorizedScopes: ['got-all/*', 'got-only/this'],
             })).toString('base64'),
           }),
@@ -480,7 +480,7 @@ suite('api/auth', function() {
             ],
           })
           .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
+            ext: Buffer.from(JSON.stringify({
               authorizedScopes: ['got-only/this'],
             })).toString('base64'),
           }),
@@ -545,7 +545,7 @@ suite('api/auth', function() {
             public: true,
           })
           .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
+            ext: Buffer.from(JSON.stringify({
               authorizedScopes: ['nothing:useful'],
             })).toString('base64'),
           }),
@@ -568,7 +568,7 @@ suite('api/auth', function() {
             public: false,
           })
           .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
+            ext: Buffer.from(JSON.stringify({
               authorizedScopes: ['nothing:useful'],
             })).toString('base64'),
           }),
@@ -630,7 +630,7 @@ suite('api/auth', function() {
             ],
           })
           .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
+            ext: Buffer.from(JSON.stringify({
               authorizedScopes: ['got-only/this'],
             })).toString('base64'),
           }),
@@ -660,7 +660,7 @@ suite('api/auth', function() {
             ],
           })
           .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
+            ext: Buffer.from(JSON.stringify({
               authorizedScopes: ['got-only/this'],
             })).toString('base64'),
           }),

@@ -489,7 +489,7 @@ async function jobHandler(message) {
       path: '.taskcluster.yml',
       ref: sha,
     });
-    repoconf = new Buffer(tcyml.data.content, 'base64').toString();
+    repoconf = Buffer.from(tcyml.data.content, 'base64').toString();
   } catch (e) {
     if (e.code === 404) {
       debug(`${organization}/${repository}@${sha} has no '.taskcluster.yml'. Skipping.`);

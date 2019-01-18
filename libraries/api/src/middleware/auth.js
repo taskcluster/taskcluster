@@ -171,7 +171,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     // Validate request hash if one is provided
     if (typeof result.hash === 'string' && result.scheme === 'hawk') {
       const hash = hawk.crypto.calculatePayloadHash(
-        new Buffer(req.text, 'utf-8'),
+        Buffer.from(req.text, 'utf-8'),
         'sha256',
         req.headers['content-type']
       );
