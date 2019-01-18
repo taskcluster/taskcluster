@@ -15,9 +15,8 @@
   "dependencies": {
     "app-root-dir": "^1.0.2",
     "debug": "^4.0.0",
-    "lodash": "^4.5.1",
-    "raven": "^2.2.1",
-    "statsum": "^0.6.0"
+    "fast-json-stable-stringify": "^2.0.0",
+    "lodash": "^4.5.1"
   },
   "main": "./src/index.js",
   "engines": {
