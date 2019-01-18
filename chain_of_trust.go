@@ -213,7 +213,16 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	if e != nil {
 		panic(e)
 	}
-	err.add(feature.task.uploadLog(ed25519SignedCertName, ed25519SignedCertPath))
+	err.add(feature.task.uploadArtifact(
+		&S3Artifact{
+			BaseArtifact: &BaseArtifact{
+				Name:        ed25519SignedCertName,
+				Expires:     feature.task.Definition.Expires,
+				ContentType: "application/octet-stream",
+			},
+			Path: ed25519SignedCertPath,
+		},
+	))
 
 	// OpenPGP block. XXX Remove this block when we remove CoT gpg support
 	// separate signature from json with a new line

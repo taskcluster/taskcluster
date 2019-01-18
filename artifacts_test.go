@@ -808,7 +808,7 @@ func TestUpload(t *testing.T) {
 			Expires:         td.Expires,
 		},
 		"public/chain-of-trust.json.sig": {
-			ContentType:     "text/plain; charset=utf-8",
+			ContentType:     "application/octet-stream",
 			ContentEncoding: "gzip",
 			Expires:         td.Expires,
 		},
