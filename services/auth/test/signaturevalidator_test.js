@@ -1,6 +1,5 @@
 const helper = require('./helper');
 const assert = require('assert');
-const mocha = require('mocha');
 const debug = require('debug')('test:signaturevalidator');
 const hawk = require('hawk');
 const _ = require('lodash');
@@ -45,8 +44,8 @@ suite(helper.suiteName(__filename), function() {
     });
   });
 
-  let test = function(name, input, expected) {
-    mocha.test(name, async function() {
+  let makeTest = function(name, input, expected) {
+    test(name, async function() {
       // defer creation of input until the test runs, if necessary
       if (typeof input == 'function') {
         input = input();
@@ -189,7 +188,7 @@ suite(helper.suiteName(__filename), function() {
 
     // Only make the certificate at test runtime; then the expiry times
     // are relevant to when the cert is examined
-    test(name, makeInput, expected);
+    makeTest(name, makeInput, expected);
   };
 
   // shorthands
@@ -215,20 +214,20 @@ suite(helper.suiteName(__filename), function() {
     return {status: 'auth-failed', message};
   };
 
-  test('simple credentials', {
+  makeTest('simple credentials', {
     authorization: {
       credentials: {id: 'root'},
     },
   }, success(['*']));
 
-  test('simple credentials with payload hash', {
+  makeTest('simple credentials with payload hash', {
     authorization: {
       credentials: {id: 'root'},
       payload: '{}',
     },
   }, success(['*'], {hash: 'XtNvx1FqrUYVOLlne3l2WzcyRfj9QeC6YtmhMKKFMGY='}));
 
-  test('simple credentials, empty ext', {
+  makeTest('simple credentials, empty ext', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -236,7 +235,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, success(['*']));
 
-  test('simple credentials, unknown field in ext (forward-compat)', {
+  makeTest('simple credentials, unknown field in ext (forward-compat)', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -245,7 +244,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, success(['*']));
 
-  test('simple credentials, bad secret', {
+  makeTest('simple credentials, bad secret', {
     authorization: {
       credentials: {
         id: 'root',
@@ -254,7 +253,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, failed('Unauthorized: Bad mac'));
 
-  test('simple credentials, bad id', {
+  makeTest('simple credentials, bad id', {
     authorization: {
       credentials: {
         id: 'unknown',
@@ -263,14 +262,14 @@ suite(helper.suiteName(__filename), function() {
     },
   }, failed('no such clientId'));
 
-  test('invalid: bad ext', {
+  makeTest('invalid: bad ext', {
     authorization: {
       credentials: {id: 'root'},
       ext: 'abcd',
     },
   }, failed('Failed to parse ext'));
 
-  test('invalid: non-object ext.certificate', {
+  makeTest('invalid: non-object ext.certificate', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -279,7 +278,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, failed('ext.certificate must be a JSON object'));
 
-  test('invalid: bad ext.certificate.version', {
+  makeTest('invalid: bad ext.certificate.version', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -294,7 +293,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, failed('ext.certificate.version must be 1'));
 
-  test('invalid: bad seed type', {
+  makeTest('invalid: bad seed type', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -309,7 +308,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, failed('ext.certificate.seed must be a string'));
 
-  test('invalid: bad seed length', {
+  makeTest('invalid: bad seed length', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -324,7 +323,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, failed('ext.certificate.seed must be 44 characters'));
 
-  test('invalid: bad seed length', {
+  makeTest('invalid: bad seed length', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -339,7 +338,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, failed('ext.certificate.seed must be 44 characters'));
 
-  test('invalid: bad start type', {
+  makeTest('invalid: bad start type', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -354,7 +353,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, failed('ext.certificate.start must be a number'));
 
-  test('invalid: bad expiry type', {
+  makeTest('invalid: bad expiry type', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -369,7 +368,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, failed('ext.certificate.expiry must be a number'));
 
-  test('invalid: bad scopes type', {
+  makeTest('invalid: bad scopes type', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -384,7 +383,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, failed('ext.certificate.scopes must be an array'));
 
-  test('invalid: bad scope type', {
+  makeTest('invalid: bad scope type', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -399,7 +398,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, failed('ext.certificate.scopes must be an array of valid scopes'));
 
-  test('invalid: bad scope format', {
+  makeTest('invalid: bad scope format', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -414,7 +413,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, failed('ext.certificate.scopes must be an array of valid scopes'));
 
-  test('authorized scopes', {
+  makeTest('authorized scopes', {
     authorization: {
       credentials: {id: 'root'},
       ext: {
@@ -423,7 +422,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, success(['scope1:*', 'scope2']));
 
-  test('invalid: authorized scopes not satisfied by clientId', {
+  makeTest('invalid: authorized scopes not satisfied by clientId', {
     authorization: {
       credentials: {id: 'unpriv'},
       ext: {
@@ -434,7 +433,7 @@ suite(helper.suiteName(__filename), function() {
     + `credentials have scopes [${clients.unpriv.scopes}]; `
     + 'authorizedScopes are [scope1:*,scope2]'));
 
-  test('invalid: authorizedScopes not an array', {
+  makeTest('invalid: authorizedScopes not an array', {
     authorization: {
       credentials: {id: 'unpriv'},
       ext: {
@@ -443,7 +442,7 @@ suite(helper.suiteName(__filename), function() {
     },
   }, failed('ext.authorizedScopes must be an array'));
 
-  test('invalid: authorizedScopes invalid scope', {
+  makeTest('invalid: authorizedScopes invalid scope', {
     authorization: {
       credentials: {id: 'unpriv'},
       ext: {
@@ -673,13 +672,13 @@ suite(helper.suiteName(__filename), function() {
   }), failed('ext.certificate issuer `unpriv` doesn\'t have ' +
              '`auth:create-client:cant-create-this` for supplied clientId.'));
 
-  test('simple bewit', {
+  makeTest('simple bewit', {
     bewit: {
       id: 'root',
     },
   }, success(['*']));
 
-  test('bewit with authorizedScopes', {
+  makeTest('bewit with authorizedScopes', {
     bewit: {
       id: 'root',
       ext: {
@@ -688,24 +687,24 @@ suite(helper.suiteName(__filename), function() {
     },
   }, success(['scope1:*']));
 
-  test('invalid: bewit with bad key', {
+  makeTest('invalid: bewit with bad key', {
     bewit: {
       id: 'root',
       key: 'not-root',
     },
   }, failed('Unauthorized: Bad mac'));
 
-  test('invalid: bogus bewit', {
+  makeTest('invalid: bogus bewit', {
     resource: '/?bewit=' + slugid.v4(),
   }, failed('Bad Request: Invalid bewit structure'));
 
-  test('invalid: bewit with unknown client', {
+  makeTest('invalid: bewit with unknown client', {
     bewit: {
       id: 'somebody',
     },
   }, failed('no such clientId'));
 
-  test('bewit with unknown client', {
+  makeTest('bewit with unknown client', {
     bewit: {
       id: 'somebody',
     },
