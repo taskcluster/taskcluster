@@ -483,8 +483,8 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 		t.Fatalf("Error listing artifacts: %v", err)
 	}
 
-	if l := len(artifacts.Artifacts); l != 6 {
-		t.Fatalf("Was expecting 5 artifacts, but got %v", l)
+	if l := len(artifacts.Artifacts); l != 9 {
+		t.Fatalf("Was expecting 8 artifacts, but got %v", l)
 	}
 
 	// use the artifact names as keys in a map, so we can look up that each key exists
@@ -808,7 +808,7 @@ func TestUpload(t *testing.T) {
 			Expires:         td.Expires,
 		},
 		"public/chain-of-trust.json.sig": {
-			ContentType:     "application/octet-stream",
+			ContentType:     "text/plain; charset=utf-8",
 			ContentEncoding: "gzip",
 			Expires:         td.Expires,
 		},
