@@ -91,7 +91,7 @@ suite('fakeauth', function() {
       },
     };
     if (extContent) {
-      content['ext'] = new Buffer(JSON.stringify(extContent)).toString('base64');
+      content['ext'] = Buffer.from(JSON.stringify(extContent)).toString('base64');
     }
 
     var header = hawk.client.header(reqUrl, 'GET', content);

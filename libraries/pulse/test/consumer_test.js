@@ -39,7 +39,7 @@ suite('consumer_test.js', function() {
       const chan = await conn.createChannel();
 
       for (let i = 0; i < 10; i++) {
-        const message = new Buffer(JSON.stringify({data: 'Hello', i}));
+        const message = Buffer.from(JSON.stringify({data: 'Hello', i}));
         debug(`publishing fake message ${i} to exchange ${exchangeName}`);
         await chan.publish(exchangeName, routingKey, message);
       }

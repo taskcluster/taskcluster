@@ -239,7 +239,7 @@ exports.createClient = function(reference, name) {
 
       // ext has any keys we better base64 encode it, and set ext on extra
       if (_.keys(ext).length > 0) {
-        this._extData = new Buffer(JSON.stringify(ext)).toString('base64');
+        this._extData = Buffer.from(JSON.stringify(ext)).toString('base64');
       }
     }
 

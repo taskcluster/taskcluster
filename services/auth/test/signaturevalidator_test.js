@@ -69,7 +69,7 @@ suite(helper.suiteName(__filename), function() {
 
         // stringify ext
         if (typeof input.authorization.ext === 'object') {
-          input.authorization.ext = new Buffer(
+          input.authorization.ext = Buffer.from(
             JSON.stringify(input.authorization.ext))
             .toString('base64');
         }
@@ -87,7 +87,7 @@ suite(helper.suiteName(__filename), function() {
         });
 
         if (typeof input.bewit.ext === 'object') {
-          input.bewit.ext = new Buffer(
+          input.bewit.ext = Buffer.from(
             JSON.stringify(input.bewit.ext))
             .toString('base64');
         }

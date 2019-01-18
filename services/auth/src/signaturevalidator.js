@@ -18,7 +18,7 @@ const crypto = require('crypto');
 const parseExt = function(ext) {
   // Attempt to parse ext
   try {
-    ext = JSON.parse(new Buffer(ext, 'base64').toString('utf-8'));
+    ext = JSON.parse(Buffer.from(ext, 'base64').toString('utf-8'));
   } catch (err) {
     throw new Error('Failed to parse ext');
   }

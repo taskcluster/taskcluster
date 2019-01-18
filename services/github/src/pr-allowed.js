@@ -33,7 +33,7 @@ async function getRepoPolicy({login, organization, repository, instGithub, debug
       path: '.taskcluster.yml',
       ref: branch,
     });
-    taskclusterYml = yaml.safeLoad(new Buffer(content.data.content, 'base64').toString());
+    taskclusterYml = yaml.safeLoad(Buffer.from(content.data.content, 'base64').toString());
   } catch (e) {
     if (e.code === 404) {
       return DEFAULT_POLICY;
