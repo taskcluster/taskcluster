@@ -20,7 +20,7 @@
   "author": "Dustin J. Mitchell <dustin@mozilla.com>",
   "license": "MPL-2.0",
   "dependencies": {
-    "taskcluster-lib-references": "^1.1.0"
+    "taskcluster-lib-references": "^1.5.0"
   },
   "devDependencies": {
     "eslint-config-taskcluster": "^3.1.0",

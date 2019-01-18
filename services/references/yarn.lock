@@ -509,9 +509,10 @@ js-tokens@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-3.0.2.tgz#9866df395102130e38f7f996bceb65443209c25b"
 
-js-yaml@^3.12.0:
-  version "3.12.0"
-  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.12.0.tgz#eaed656ec8344f10f527c6bfa1b6e2244de167d1"
+js-yaml@^3.12.1:
+  version "3.12.1"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.12.1.tgz#295c8632a18a23e054cf5c9d3cecafe678167600"
+  integrity sha512-um46hB9wNOKlwkHgiuyEVAybXBjwFUV0Z/RaHJblRd9DXltue9FTYvzCr9ErQrK9Adz5MU4gHWVaNUfdmrC8qA==
   dependencies:
     argparse "^1.0.7"
     esprima "^4.0.0"
@@ -828,22 +829,17 @@ table@4.0.2:
     slice-ansi "1.0.0"
     string-width "^2.1.1"
 
-taskcluster-lib-references@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-references/-/taskcluster-lib-references-1.1.0.tgz#01ec0db45f6e6e0278dad19b4d1f40b90b346116"
-  integrity sha512-a5C48JJpWTF2VzwbgcbHStpP50nOHzMf60LY44+IFHsc6nFUVluZXeNsrciZtXYlfIp51O0jzqyJWmbsYa3xhQ==
+taskcluster-lib-references@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/taskcluster-lib-references/-/taskcluster-lib-references-1.5.0.tgz#c39f19f8ac7e24e493898cbc92e28944031104df"
+  integrity sha512-Td7AIbL45ep974Gq7H4/DbHly4pmKmBU5yj19kuyahJPj2gkQ2CNrDP0tUqKXZF26cUrGLaauFGZ5I9cpSH4hA==
   dependencies:
     ajv "^6.5.5"
-    js-yaml "^3.12.0"
+    js-yaml "^3.12.1"
     lodash "^4.17.10"
     mkdirp "^0.5.1"
     regex-escape "^3.4.8"
     rimraf "^2.6.2"
-    taskcluster-lib-urls "^11.0.0"
-
-taskcluster-lib-urls@^11.0.0:
-  version "11.0.1"
-  resolved "https://registry.yarnpkg.com/taskcluster-lib-urls/-/taskcluster-lib-urls-11.0.1.tgz#ebdbffec41278c7bfa0075f42314e75f917632df"
 
 text-table@~0.2.0:
   version "0.2.0"
