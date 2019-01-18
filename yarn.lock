@@ -3024,10 +3024,15 @@ deepmerge@^1.5.1, deepmerge@^1.5.2:
   resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-1.5.2.tgz#10499d868844cdad4fee0842df8c7f6f0c95a753"
   integrity sha512-95k0GDqvBjZavkuvzx/YqVLv/6YYa17fz6ILMSf7neqQITCPbnfEnQvEgMPNjH4kgobe7+WIL0yJEHku+H3qtQ==
 
-deepmerge@^2.0.1, deepmerge@^2.1.0:
+deepmerge@^2.1.0:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-2.2.1.tgz#5d3ff22a01c00f645405a2fbc17d0778a1801170"
   integrity sha512-R9hc1Xa/NOBi9WRVUWg19rl1UB7Tt4kuPd+thNJgFZoxXsTz7ncaPaeIm+40oSGuP33DfMb4sZt1QIGiJzC4EA==
+
+deepmerge@^3.0.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-3.1.0.tgz#a612626ce4803da410d77554bfd80361599c034d"
+  integrity sha512-/TnecbwXEdycfbsM2++O3eGiatEFHjjNciHEwJclM+T5Kd94qD1AP+2elP/Mq0L5b9VZJao5znR01Mz6eX8Seg==
 
 defer-to-connect@^1.0.1:
   version "1.0.1"
@@ -8730,52 +8735,113 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:libraries/client":
-  version "0.0.0"
-  uid ""
+  version "12.2.0"
+  dependencies:
+    debug "^4.0.0"
+    hawk "^6.0.2"
+    lodash "^4.17.4"
+    promise "^8.0.1"
+    slugid "^2.0.0"
+    superagent "^4.0.0"
+    taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "0.0.0"
-  uid ""
+  version "12.8.1"
+  dependencies:
+    aws-sdk "^2.151.0"
+    body-parser "1.18.3"
+    debug "^4.0.0"
+    express "4.16.4"
+    hawk "6.0.2"
+    lodash "^4.15.0"
+    promise "^8.0.1"
+    slugid "^2.0.0"
+    type-is "^1.6.15"
+    uuid "^3.1.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "0.0.0"
-  uid ""
+  version "10.2.0"
+  dependencies:
+    content-security-policy "^0.3.0"
+    debug "^4.0.0"
+    express "4.16.4"
+    express-sslify "1.2.0"
+    hsts "^2.1.0"
+    lodash "4.17.11"
+    morgan "^1.0.0"
+    morgan-debug "^2.0.0"
+    promise "^8.0.1"
+    uuid "^3.3.2"
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "0.0.0"
-  uid ""
+  version "10.0.0"
 
 "taskcluster-lib-docs@link:libraries/docs":
-  version "0.0.0"
-  uid ""
+  version "11.0.0"
+  dependencies:
+    app-root-dir "^1.0.2"
+    aws-sdk "^2.147.0"
+    debug "^4.0.0"
+    lodash "^4.13.1"
+    mkdirp "^0.5.1"
+    mz "^2.7.0"
+    recursive-readdir-sync "^1.0.6"
+    s3-upload-stream "^1.0.7"
+    tar-stream "^1.5.4"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "0.0.0"
-  uid ""
+  version "11.0.0"
+  dependencies:
+    debug "^4.1.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "0.0.0"
-  uid ""
+  version "11.0.0"
+  dependencies:
+    assume "^2.1.0"
+    debug "^4.1.0"
+    lodash "^4.17.11"
+    topo-sort "^1.0.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "0.0.0"
-  uid ""
+  version "11.1.1"
+  dependencies:
+    app-root-dir "^1.0.2"
+    aws-sdk "^2.30.0"
+    debug "^4.0.0"
+    lodash "^4.5.1"
+    raven "^2.2.1"
+    statsum "^0.6.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "0.0.0"
-  uid ""
+  version "11.1.1"
+  dependencies:
+    amqplib "^0.5.2"
+    aws-sdk "^2.331.0"
+    debug "^4.0.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "0.0.0"
-  uid ""
+  version "1.4.0"
+  dependencies:
+    ajv "^6.5.5"
+    js-yaml "^3.12.1"
+    lodash "^4.17.10"
+    mkdirp "^0.5.1"
+    regex-escape "^3.4.8"
+    rimraf "^2.6.2"
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "0.0.0"
-  uid ""
+  version "10.0.1"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "0.0.0"
-  uid ""
+  version "12.1.2"
+  dependencies:
+    debug "^4.0.0"
+    express "4.16.4"
+    hawk "^4.1.2"
+    lodash "^4.17.10"
+    nock "^10.0.0"
+    promise "^8.0.1"
+    superagent "^4.0.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -8783,8 +8849,18 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "0.0.0"
-  uid ""
+  version "12.0.0"
+  dependencies:
+    ajv "^6.5.0"
+    app-root-dir "^1.0.2"
+    aws-sdk "^2.142.0"
+    debug "^4.0.0"
+    js-yaml "^3.12.1"
+    lodash "^4.5.1"
+    mkdirp "^0.5.1"
+    promise "^8.0.1"
+    rimraf "^2.6.2"
+    walk "^2.3.9"
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"
@@ -9053,8 +9129,11 @@ typechecker@~2.0.1:
   integrity sha1-6D2oS7ZMWEzLNFg4V2xAsDN9uC4=
 
 "typed-env-config@link:libraries/typed-env-config":
-  version "0.0.0"
-  uid ""
+  version "3.0.0"
+  dependencies:
+    debug "^4.1.0"
+    js-yaml "^3.12.1"
+    lodash "^4.17.11"
 
 typedarray@^0.0.6:
   version "0.0.6"
