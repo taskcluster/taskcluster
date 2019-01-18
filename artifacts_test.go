@@ -885,7 +885,7 @@ func TestUpload(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error opening ed25519 public key file")
 	}
-	ed25519Pubkey, err = base64.StdEncoding.DecodeString(base64Ed25519Pubkey)
+	ed25519Pubkey, err = base64.StdEncoding.DecodeString(string(base64Ed25519Pubkey))
 	if err != nil {
 		t.Fatalf("Error converting ed25519 public key to a valid pubkey")
 	}
