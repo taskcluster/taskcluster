@@ -872,7 +872,6 @@ func TestUpload(t *testing.T) {
 		t.Fatalf("Did not get correct signer identity in public/chainOfTrust.json.asc - %#v", signer.Identities)
 	}
 
-	// TODO ed25519 tests
 	cotUnsignedBytes, _, _, _ := getArtifactContent(t, taskID, "public/chain-of-trust.json")
 	var cotCert ChainOfTrustData
 	err = json.Unmarshal(cotUnsignedBytes, &cotCert)
