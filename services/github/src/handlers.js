@@ -425,7 +425,7 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}}`)})`,
+          text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}`)})`,
         },
         details_url: libUrls.ui(
           this.context.cfg.taskcluster.rootUrl,
@@ -738,7 +738,7 @@ async function taskDefinedHandler(message) {
     output: {
       title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
       summary: `${taskDefinition.metadata.description}`,
-      text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}}`)})`,
+      text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}`)})`,
     },
     details_url: libUrls.ui(
       this.context.cfg.taskcluster.rootUrl,
