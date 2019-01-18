@@ -111,7 +111,7 @@ var makeRequest = function(client, method, url, payload, query) {
       },
       ext: client._extData,
     });
-    req.set('Authorization', header.field);
+    req.set('Authorization', header.header);
   }
 
   // Return request
@@ -628,8 +628,8 @@ exports.createClient = function(reference, name) {
       throw new Error('accessToken must be given');
     }
 
-    // Create bewit (this is messed up, function differs in browser)
-    var bewit = (hawk.client.getBewit || hawk.client.bewit)(requestUrl, {
+    // Create bewit
+    var bewit = hawk.client.getBewit(requestUrl, {
       credentials: {
         id: this._options.credentials.clientId,
         key: this._options.credentials.accessToken,
