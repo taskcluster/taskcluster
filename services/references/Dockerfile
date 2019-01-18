@@ -1,4 +1,4 @@
-FROM nginx:1.13.12-alpine
+FROM nginx:1.15.8-alpine
 
 ADD package.json yarn.lock /app/
 ADD input /app/input/
