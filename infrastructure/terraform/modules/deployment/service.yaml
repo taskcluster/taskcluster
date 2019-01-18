@@ -1,0 +1,17 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: ${project_name}
+spec:
+  type: NodePort
+  selector:
+    application: taskcluster
+    taskcluster-service: ${project_name}
+    taskcluster-proc:
+      $if: 'proc_name != "0"'
+      then: '${proc_name}'
+      else: 'static'
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
