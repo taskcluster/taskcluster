@@ -53,21 +53,34 @@ tasks:
     - taskcluster-builder
     - taskcluster-web-server
     others:
-    - lint
-    - test:meta
+    - name: lint
+      command: yarn lint
+    - name: test:meta
+      command: yarn test:meta
+    - name: taskcluster-terraform
+      image: 'jonatanblue/gitlab-ci-terraform:latest'
+      command: 'cd infrastructure/terraform; terraform fmt -check'
+    node: '10.14.0'
   in:
     $let:
       js:
         $map:
           $flatten:
-            - $map: {$eval: others}
-              each(other):
-                name: ${other}
-                command: yarn ${other}
+            # for "packages", run tests for that package
             - $map: {$eval: packages}
               each(package):
                 name: ${package}
+                image: node:${node}
                 command: yarn workspace ${package} test
+            # for "others", do whatever they say to do
+            - $map: {$eval: others}
+              each(other):
+                name: ${other.name}
+                image:  # use `image` if given, falling back to the node image
+                  $if: other['image']
+                  then: ${other.image}
+                  else: "node:${node}"
+                command: ${other.command}
         each(job):
           taskId: {$eval: as_slugid(job.name)}
           provisionerId: aws-provisioner-v1
@@ -86,7 +99,7 @@ tasks:
                 then: true
               TEST_BUCKET: 'test-bucket-for-any-garbage' # TODO: Allow each project to specify its own env
             maxRunTime: 3600
-            image: "node:10.14.0"
+            image: ${job.image}
             command:
               - "/bin/bash"
               - "-lc"

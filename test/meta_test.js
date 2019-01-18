@@ -10,11 +10,14 @@ const depcheck = require('depcheck');
 const ROOT_DIR = path.join(__dirname, '..');
 
 suite('Repo Meta Tests', function() {
+  const packageJsonFile = path.join(ROOT_DIR, 'package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonFile, 'utf8'));
+
+  const taskclusterYmlFile = path.join(ROOT_DIR, '.taskcluster.yml');
+  const taskclusterYml = yaml.safeLoad(fs.readFileSync(taskclusterYmlFile, 'utf8'));
 
   test('All packages in CI', async function() {
-    const tcconf = path.join(ROOT_DIR, '.taskcluster.yml');
-    const tcyml = yaml.safeLoad(fs.readFileSync(tcconf, 'utf8'));
-    const configured = tcyml.tasks['$let'].packages;
+    const configured = taskclusterYml.tasks['$let'].packages;
 
     const {stdout, stderr} = await exec('yarn workspaces info -s');
     const existing = Object.keys(JSON.parse(stdout));
@@ -25,6 +28,10 @@ suite('Repo Meta Tests', function() {
     const warning = 'CI configuration in .taskcluster.yml is misconfigured.';
     assert(missing.length === 0, `${warning} Missing: ${JSON.stringify(missing)}`);
     assert(extra.length === 0, `${warning} Remove: ${JSON.stringify(extra)}`);
+  });
+
+  test('Node version in .taskcluster.yml matches that in package.json', function() {
+    assert.equal(taskclusterYml.tasks.$let.node, packageJson.engines.node);
   });
 
   test('Dependencies are not missing/unused', async function() {
