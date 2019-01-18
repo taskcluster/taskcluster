@@ -92,6 +92,11 @@ class SchemaSet {
     return _.mapValues(this._schemas, (schema, jsonName) => {
       const newSchema = _.clone(schema);
       newSchema.$id = libUrls.schema(rootUrl, this.cfg.serviceName, jsonName + '#');
+      // rewrite a relative `/schemas/<service>/<path>..` URI to point to a full URL
+      const match = /^\/schemas\/([^\/]*)\/(.*)$/.exec(newSchema.$schema);
+      if (match) {
+        newSchema.$schema = libUrls.schema(rootUrl, match[1], match[2]);
+      }
       return newSchema;
     });
   }
