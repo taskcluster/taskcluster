@@ -5,14 +5,13 @@ const BaseMonitor = require('./base');
 
 class Monitor extends BaseMonitor {
 
-  constructor(sentryDSN, sentry, statsumClient, auditlog, opts) {
+  constructor(sentryDSN, sentry, statsumClient, opts) {
     super();
     this._opts = opts;
     this._sentryDSN = sentryDSN;
     // This must be a Promise that resolves to {client, expires}
     this._sentry = sentry || Promise.resolve({client: null, expires: new Date(0)});
     this._statsum = statsumClient;
-    this._auditlog = auditlog;
     this._resourceInterval = null;
   }
 
@@ -78,7 +77,7 @@ class Monitor extends BaseMonitor {
   }
 
   log(record) {
-    this._auditlog.log(record);
+    console.log('Replace me');
   }
 
   count(key, val) {
@@ -96,7 +95,6 @@ class Monitor extends BaseMonitor {
   async flush() {
     await Promise.all([
       this._statsum && this._statsum.flush(),
-      this._auditlog.flush(),
     ]);
   }
 
@@ -107,7 +105,6 @@ class Monitor extends BaseMonitor {
       this._sentryDSN,
       this._sentry,
       this._statsum && this._statsum.prefix(prefix),
-      this._auditlog,
       newopts
     );
   }

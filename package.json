@@ -36,6 +36,7 @@
     "@neutrinojs/node": "9.0.0-rc.0",
     "app-root-dir": "^1.0.2",
     "assume": "^2.1.0",
+    "aws-sdk": "^2.390.0",
     "aws-sdk-mock": "^4.3.0",
     "capture-console": "^1.0.1",
     "cliff": "^0.1.10",

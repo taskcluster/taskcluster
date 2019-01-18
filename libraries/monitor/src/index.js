@@ -5,7 +5,6 @@ const taskcluster = require('taskcluster-client');
 const Statsum = require('statsum');
 const MockMonitor = require('./mockmonitor');
 const Monitor = require('./monitor');
-const auditlogs = require('./auditlogs');
 const rootdir = require('app-root-dir');
 const fs = require('fs');
 const path = require('path');
@@ -34,8 +33,6 @@ const path = require('path');
  *
  *   // If you'd like to use the logging bits, you'll need to provide
  *   // s3 creds directly for now
- *   aws: {credentials: {accessKeyId, secretAccessKey}},
- *   logName: '', // name of audit log
  *   gitVersion: undefined, // git version (for correlating errors); or..
  *   gitVersionFile: '.git-version', // file containing git version (relative to app root)
  * }
@@ -45,13 +42,11 @@ async function monitor(options) {
     patchGlobal: true,
     bailOnUnhandledRejection: false,
     reportStatsumErrors: true,
-    reportAuditLogErrors: true,
     resourceInterval: 10,
     crashTimeout: 5 * 1000,
     mock: false,
     enable: true,
     logName: null,
-    aws: null,
     sentryOptions: {},
     gitVersionFile: '.git-version',
   });
@@ -97,14 +92,6 @@ async function monitor(options) {
     });
   }
 
-  let auditlog;
-  if (options.enable && options.aws && options.logName) {
-    auditlog = new auditlogs.KinesisLog(Object.assign({}, options, {statsum}));
-  } else {
-    auditlog = new auditlogs.NoopLog();
-  }
-  await auditlog.setup();
-
   // read gitVersionFile, if gitVersion is not set
   if (!options.gitVersion) {
     const gitVersionFile = path.resolve(rootdir.get(), options.gitVersionFile);
@@ -116,13 +103,10 @@ async function monitor(options) {
   }
   delete options.gitVersionFile;
 
-  const m = new Monitor(sentryDSN, null, statsum, auditlog, options);
+  const m = new Monitor(sentryDSN, null, statsum, options);
 
   if (statsum && options.reportStatsumErrors) {
     statsum.on('error', err => m.reportError(err, 'warning'));
-  }
-  if (options.reportAuditLogErrors) {
-    auditlog.on('error', err => m.reportError(err, 'warning'));
   }
 
   registerSigtermHandler(async () => {
