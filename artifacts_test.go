@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -483,7 +484,7 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 		t.Fatalf("Error listing artifacts: %v", err)
 	}
 
-	if l := len(artifacts.Artifacts); l != 9 {
+	if l := len(artifacts.Artifacts); l != 8 {
 		t.Fatalf("Was expecting 8 artifacts, but got %v", l)
 	}
 
@@ -880,9 +881,13 @@ func TestUpload(t *testing.T) {
 	}
 	cotSignature, _, _, _ := getArtifactContent(t, taskID, "public/chain-of-trust.json.sig")
 	var ed25519Pubkey ed25519.PublicKey
-	ed25519Pubkey, err = ioutil.ReadFile(filepath.Join("testdata", "public-openpgp-key"))
+	base64Ed25519Pubkey, err := ioutil.ReadFile(filepath.Join("testdata", "public-openpgp-key"))
 	if err != nil {
 		t.Fatalf("Error opening ed25519 public key file")
+	}
+	ed25519Pubkey, err = base64.StdEncoding.DecodeString(base64Ed25519Pubkey)
+	if err != nil {
+		t.Fatalf("Error converting ed25519 public key to a valid pubkey")
 	}
 	ed25519Verified := ed25519.Verify(ed25519Pubkey, cotUnsignedBytes, cotSignature)
 	if ed25519Verified != true {
