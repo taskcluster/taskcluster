@@ -881,7 +881,7 @@ func TestUpload(t *testing.T) {
 	}
 	cotSignature, _, _, _ := getArtifactContent(t, taskID, "public/chain-of-trust.json.sig")
 	var ed25519Pubkey ed25519.PublicKey
-	base64Ed25519Pubkey, err := ioutil.ReadFile(filepath.Join("testdata", "public-openpgp-key"))
+	base64Ed25519Pubkey, err := ioutil.ReadFile(filepath.Join("testdata", "ed25519_public_key"))
 	if err != nil {
 		t.Fatalf("Error opening ed25519 public key file")
 	}
