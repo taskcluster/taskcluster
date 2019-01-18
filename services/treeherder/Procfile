@@ -1,1 +1,3 @@
 handlers: cd services/treeherder && node src/main.js server
+# no docs here, but this gets called in the build process
+write-docs: true
