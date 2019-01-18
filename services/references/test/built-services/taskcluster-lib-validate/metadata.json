@@ -1,6 +1,0 @@
-{
-  "version": 1,
-  "project": "taskcluster-lib-validate",
-  "tier": "libraries",
-  "menuIndex": 10
-}

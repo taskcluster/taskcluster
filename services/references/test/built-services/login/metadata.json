@@ -1,6 +1,0 @@
-{
-  "version": 1,
-  "project": "taskcluster-login",
-  "tier": "integrations",
-  "menuIndex": 10
-}

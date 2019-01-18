@@ -1,6 +1,0 @@
-{
-  "version": 1,
-  "project": "taskcluster-events",
-  "tier": "core",
-  "menuIndex": 10
-}

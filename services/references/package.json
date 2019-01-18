@@ -11,8 +11,8 @@
     "yarn": "^1.0.0"
   },
   "scripts": {
-    "lint": "eslint src/*.js test/*.js",
-    "test": "mocha test/*_test.js",
+    "lint": "eslint src/*.js",
+    "test": "echo 'no tests for tc-references'",
     "build": "node src/main.js /app/input /app/built"
   },
   "author": "Dustin J. Mitchell <dustin@mozilla.com>",
