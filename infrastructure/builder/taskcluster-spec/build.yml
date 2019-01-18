@@ -43,17 +43,6 @@ repositories:
     node: 10
   source: https://github.com/taskcluster/taskcluster-tools#master
 
-# references (and schemas)
-- name: references
-  kind: service
-  docs:
-    tier: integrations
-    projectName: taskcluster-references
-  service:
-    buildtype: references
-    node: 8
-  source: https://github.com/taskcluster/taskcluster-references#master
-
 # docs/metadata sources that are not compiled into the final product
 
 # workers

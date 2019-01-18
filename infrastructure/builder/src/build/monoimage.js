@@ -113,6 +113,16 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
     },
   });
 
+  hooks.push({
+    name: 'References',
+    entrypoints: async (requirements, utils, procs) => {
+      // this script:
+      //  - reads the references from /docs and generates rootUrl-relative output
+      //  - starts nginx to serve that rootUrl-relative output
+      procs['references/web'] = 'exec sh infrastructure/references/references.sh';
+    },
+  });
+
   ensureTask(tasks, {
     title: 'Clone Monorepo from Working Copy',
     provides: [
