@@ -41,14 +41,6 @@ class BaseMonitor {
     this._resourceInterval = null;
   }
 
-  /**
-   * captureError is an alias for reportError to match up
-   * with the raven api better.  Subclasses provide reportError.
-   */
-  async captureError(err, level='error', tags={}) {
-    return this.reportError(err, level, tags);
-  }
-
   timer(key, funcOrPromise) {
     const start = process.hrtime();
     const done = (x) => {

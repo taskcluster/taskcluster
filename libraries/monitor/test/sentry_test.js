@@ -25,28 +25,6 @@ suite('Sentry', () => {
       authmock.teardown();
     });
 
-    test('should log to sentry', function(done) {
-
-      const sentryScope = nock('https://app.getsentry.com')
-        .filteringRequestBody(/.*/, '*')
-        .post('/api/12345/store/', '*')
-        .twice()
-        .reply(200, () => {
-          debug('called Sentry.');
-        })
-        .post('/api/12345/store/', '*')
-        .reply(200, () => {
-          debug('called Sentry the correct amount of times.');
-          done();
-        });
-
-      Promise.all([
-        monitor.reportError('create sentry error test'),
-        monitor.reportError('another time'),
-        monitor.captureError('this is the same as reportError'),
-      ]).then(results => assert.deepEqual(results, [true, true, true]));
-    });
-
     test('should handle sentry error', async function() {
       let stdout = '';
       capcon.startIntercept(process.stdout, data => { stdout += data; });

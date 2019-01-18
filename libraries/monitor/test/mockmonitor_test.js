@@ -39,11 +39,6 @@ suite('MockMonitor', () => {
     assert.deepEqual(monitor.errors, ['testing123']);
   });
 
-  test('should capture errors', function() {
-    monitor.captureError('testing123');
-    assert.deepEqual(monitor.errors, ['testing123']);
-  });
-
   test('should count', function() {
     monitor.count('test-key');
     assert.deepEqual(monitor.counts, {'mm.test-key': 1});
