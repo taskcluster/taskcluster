@@ -11,7 +11,7 @@ properties:
       `workerType`
     type:           string
     minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
+    maxLength:      {$const: identifier-extended-max-length}
     pattern:        {$const: identifier-pattern}
   workerType:
     title:          "Worker Type"
@@ -19,7 +19,7 @@ properties:
       Unique identifier for a worker-type within a specific provisioner
     type:           string
     minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
+    maxLength:      {$const: identifier-extended-max-length}
     pattern:        {$const: identifier-pattern}
   schedulerId:
     title:          "Scheduler Identifier"
@@ -36,7 +36,7 @@ properties:
     type:           string
     default:        '-'
     minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
+    maxLength:      {$const: identifier-extended-max-length}
     pattern:        {$const: identifier-pattern}
   taskGroupId:
     title:          "Task-Group Identifier"

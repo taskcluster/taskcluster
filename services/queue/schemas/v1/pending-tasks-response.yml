@@ -11,7 +11,7 @@ properties:
       Unique identifier for the provisioner
     type:           string
     minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
+    maxLength:      {$const: identifier-extended-max-length}
     pattern:        {$const: identifier-pattern}
   workerType:
     title:          "Worker Type"
@@ -19,7 +19,7 @@ properties:
       Identifier for worker type within the specified provisioner
     type:           string
     minLength:      {$const: identifier-min-length}
-    maxLength:      {$const: identifier-max-length}
+    maxLength:      {$const: identifier-extended-max-length}
     pattern:        {$const: identifier-pattern}
   pendingTasks:
     type:           integer

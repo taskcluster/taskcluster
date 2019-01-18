@@ -64,6 +64,7 @@ const PRIORITY_LEVELS = [
 // Common patterns URL parameters
 var SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
 var GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,22}$/;
+var GENERIC_EXTENDED_ID_PATTERN = /^[a-zA-Z0-9-_]{1,40}$/;
 var RUN_ID_PATTERN = /^[1-9]*[0-9]+$/;
 
 /** API end-point for version v1/ */
@@ -85,8 +86,8 @@ var builder = new APIBuilder({
   params: {
     taskId: SLUGID_PATTERN,
     taskGroupId: SLUGID_PATTERN,
-    provisionerId: GENERIC_ID_PATTERN,
-    workerType: GENERIC_ID_PATTERN,
+    provisionerId: GENERIC_EXTENDED_ID_PATTERN,
+    workerType: GENERIC_EXTENDED_ID_PATTERN,
     workerGroup: GENERIC_ID_PATTERN,
     workerId: GENERIC_ID_PATTERN,
     runId: RUN_ID_PATTERN,

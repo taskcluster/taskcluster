@@ -1,6 +1,7 @@
 identifier-pattern:     "^([a-zA-Z0-9-_]*)$"
 identifier-min-length:  1
 identifier-max-length:  22
+identifier-extended-max-length:  40
 
 hookGroupId:
   type:                 string

@@ -12,7 +12,7 @@ properties:
           title:        "Provisioner ID"
           type:         string
           minLength:    {$const: identifier-min-length}
-          maxLength:    {$const: identifier-max-length}
+          maxLength:    {$const: identifier-extended-max-length}
           pattern:      {$const: identifier-pattern}
         stability:
           title:        "Stability"
