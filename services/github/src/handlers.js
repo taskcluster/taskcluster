@@ -298,15 +298,18 @@ async function deprecatedStatusHandler(message) {
 
       for (let i = 0; i < group.tasks.length; i++) {
         // don't post group status for checks API
-        if (group.tasks[i].task.routes.includes(this.context.cfg.app.checkTaskRoute)) {return;}
+        if (group.tasks[i].task.routes.includes(this.context.cfg.app.checkTaskRoute)) {
+          debug(`Task group result status not updated: Task group ${taskGroupId} uses Checks API. Exiting`);
+          return;
+        }
 
         if (['failed', 'exception'].includes(group.tasks[i].status.state)) {
           state = 'failure';
-          break; // one failure is enough, no need to loop through the whole thing
+          break; // one failure is enough
         }
       }
 
-    } while (params.continuationToken);
+    } while (params.continuationToken && state === 'success');
   }
 
   if (message.exchange.endsWith('task-exception') || message.exchange.endsWith('task-failed')) {
