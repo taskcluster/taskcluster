@@ -295,11 +295,17 @@ async function deprecatedStatusHandler(message) {
     do {
       let group = await this.queueClient.listTaskGroup(message.payload.taskGroupId, params);
       params.continuationToken = group.continuationToken;
-      group.tasks.forEach(task => {
-        if (['failed', 'exception'].includes(task.status.state)) {
+
+      for (let i = 0; i < group.tasks.length; i++) {
+        // don't post group status for checks API
+        if (group.tasks[i].task.routes.includes(this.context.cfg.app.checkTaskRoute)) {return;}
+
+        if (['failed', 'exception'].includes(group.tasks[i].status.state)) {
           state = 'failure';
+          break; // one failure is enough, no need to loop through the whole thing
         }
-      });
+      }
+
     } while (params.continuationToken);
   }
 
