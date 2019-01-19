@@ -19,7 +19,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   const makeProvisioner = async (opts) => {
     const provisioner = Object.assign({
-      provisionerId: 'prov1',
+      provisionerId: 'prov1-extended-extended-extended',
       expires: new Date('3017-07-29'),
       lastDateActive: new Date(),
       description: 'test-provisioner',
@@ -32,8 +32,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   const makeWorkerType = async (opts) => {
     const wType = Object.assign({
-      provisionerId: 'prov1',
-      workerType: 'gecko-b-2-linux',
+      provisionerId: 'prov1-extended-extended-extended',
+      workerType: 'gecko-b-2-linux-extended-extended',
       expires: new Date('3017-07-29'),
       lastDateActive: new Date(),
       description: 'test-worker-type',
@@ -46,8 +46,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   const makeWorker = async (opts) => {
     const worker = Object.assign({
-      provisionerId: 'prov1',
-      workerType: 'gecko-b-2-linux',
+      provisionerId: 'prov1-extended-extended-extended',
+      workerType: 'gecko-b-2-linux-extended-extended',
       workerGroup: 'my-worker-group',
       workerId: 'my-worker',
       recentTasks: [],
@@ -81,7 +81,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     const result = await helper.queue.listProvisioners();
 
     assert(result.provisioners.length === 1, 'expected provisioners');
-    assert(result.provisioners[0].provisionerId === provisioner.provisionerId, 'expected prov1');
+    assert(result.provisioners[0].provisionerId === provisioner.provisionerId, 'expected prov1-extended-extended-extended');
     assert(result.provisioners[0].description === provisioner.description, 'expected description');
     assert(result.provisioners[0].stability === provisioner.stability, 'expected stability');
     assert(result.provisioners[0].actions.length === 0, 'expected no actions');
@@ -118,7 +118,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   test('queue.listWorkerTypes returns workerTypes', async () => {
     const wType = await makeWorkerType({});
 
-    const result = await helper.queue.listWorkerTypes('prov1');
+    const result = await helper.queue.listWorkerTypes('prov1-extended-extended-extended');
 
     assert(result.workerTypes.length === 1, 'expected workerTypes');
     assert(result.workerTypes[0].workerType === wType.workerType, `expected ${wType.workerType}`);
@@ -152,15 +152,15 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   });
 
   test('list worker-types (limit and continuationToken)', async () => {
-    await makeWorkerType({workerType: 'gecko-b-2-linux'});
+    await makeWorkerType({workerType: 'gecko-b-2-linux-extended-extended'});
     await makeWorkerType({workerType: 'gecko-b-2-android'});
 
-    let result = await helper.queue.listWorkerTypes('prov1', {limit: 1});
+    let result = await helper.queue.listWorkerTypes('prov1-extended-extended-extended', {limit: 1});
 
     assert(result.continuationToken);
     assert(result.workerTypes.length === 1);
 
-    result = await helper.queue.listWorkerTypes('prov1', {
+    result = await helper.queue.listWorkerTypes('prov1-extended-extended-extended', {
       limit: 1,
       continuationToken: result.continuationToken,
     });
@@ -171,7 +171,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('worker-type seen creates and updates a worker-type', async () => {
     const workerInfo = await helper.load('workerInfo');
-    const workerType = 'gecko-b-2-linux';
+    const workerType = 'gecko-b-2-linux-extended-extended';
 
     await Promise.all([
       workerInfo.seen('prov2', workerType),
@@ -189,12 +189,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     await helper.runExpiration('expire-worker-info');
 
-    const result = await helper.queue.listWorkerTypes('prov1');
+    const result = await helper.queue.listWorkerTypes('prov1-extended-extended-extended');
     assert(result.workerTypes.length === 0, 'expected no worker-types');
   });
 
   test('queue.listWorkers returns an empty list', async () => {
-    const result = await helper.queue.listWorkers('prov1', 'gecko-b-2-linux');
+    const result = await helper.queue.listWorkers('prov1-extended-extended-extended', 'gecko-b-2-linux-extended-extended');
 
     assert(result.workers.length === 0, 'Did not expect any workers');
   });
@@ -280,7 +280,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('list workers (limit and continuationToken)', async () => {
     const provisionerId = 'prov2';
-    const workerType = 'gecko-b-2-linux';
+    const workerType = 'gecko-b-2-linux-extended-extended';
 
     await makeWorker({provisionerId, workerType, workerId: 'my-worker1'});
     await makeWorker({provisionerId, workerType, workerId: 'my-worker2'});
@@ -299,8 +299,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('workerSeen creates and updates a worker', async () => {
     const workerInfo = await helper.load('workerInfo');
-    const provisionerId = 'prov1';
-    const workerType = 'gecko-b-2-linux';
+    const provisionerId = 'prov1-extended-extended-extended';
+    const workerType = 'gecko-b-2-linux-extended-extended';
     const workerGroup = 'my-worker-group';
     const workerId = 'my-worker';
 
@@ -441,7 +441,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   });
 
   test('queue.declareWorkerType creates a provisioner and worker-type', async () => {
-    const provisionerId = 'prov1';
+    const provisionerId = 'prov1-extended-extended-extended';
     const workerType = 'wtype';
     const updateProps = {
       description: 'desc-wType',
@@ -483,7 +483,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   });
 
   test('queue.declareProvisioner creates a provisioner', async () => {
-    const provisionerId = 'prov1';
+    const provisionerId = 'prov1-extended-extended-extended';
     const updateProps = {
       description: 'desc-provisioner',
       actions: [{
@@ -508,7 +508,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('queue.declareProvisioner updates a provisioner', async () => {
     const provisioner = await makeProvisioner({
-      provisionerId: 'prov1',
+      provisionerId: 'prov1-extended-extended-extended',
       description: 'test-provisioner',
       actions: [],
     });
@@ -572,8 +572,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     await makeProvisioner({});
     const wType = {
-      provisionerId: 'prov1',
-      workerType: 'gecko-b-2-linux',
+      provisionerId: 'prov1-extended-extended-extended',
+      workerType: 'gecko-b-2-linux-extended-extended',
       lastDateActive: new Date(),
     };
     await makeWorkerType(wType);
@@ -776,7 +776,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   });
 
   test('queue.declareWorker creates a worker, workerType, and Provisioner', async () => {
-    const provisionerId = 'prov1';
+    const provisionerId = 'prov1-extended-extended-extended';
     const workerType = 'wtype';
     const workerGroup = 'wgroup';
     const workerId = 'wid';
@@ -830,8 +830,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   });
 
   test('queue.claimWork adds a task to a worker', async () => {
-    const provisionerId = 'prov1';
-    const workerType = 'gecko-b-2-linux';
+    const provisionerId = 'prov1-extended-extended-extended';
+    const workerType = 'gecko-b-2-linux-extended-extended';
     const workerGroup = 'my-worker-group';
     const workerId = 'my-worker';
     const taskId = slugid.v4();

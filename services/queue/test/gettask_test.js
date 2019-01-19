@@ -16,9 +16,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   helper.withServer(mock, skipping);
 
   const taskDef = {
-    provisionerId: 'no-provisioner',
-    workerType: 'test-worker',
-    schedulerId: 'my-scheduler',
+    provisionerId: 'no-provisioner-extended-extended',
+    workerType: 'test-worker-extended-extended',
+    schedulerId: 'my-scheduler-extended-extended',
     taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
     dependencies: [],
     requires: 'all-completed',

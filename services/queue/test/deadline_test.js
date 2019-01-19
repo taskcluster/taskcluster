@@ -20,8 +20,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   // Use the same task definition for everything
   const makeTask = () => {
     const task = {
-      provisionerId: 'no-provisioner',
-      workerType: 'test-worker',
+      provisionerId: 'no-provisioner-extended-extended',
+      workerType: 'test-worker-extended-extended',
       // Legal because we allow a small bit of clock drift
       created: taskcluster.fromNowJSON('- 5 seconds'),
       deadline: taskcluster.fromNowJSON('15 seconds'),

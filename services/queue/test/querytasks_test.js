@@ -18,8 +18,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('pendingTasks >= 1', async () => {
     const taskDef = {
-      provisionerId: 'no-provisioner',
-      workerType: 'query-test-worker',
+      provisionerId: 'no-provisioner-extended-extended',
+      workerType: 'query-test-worker-extended-extended',
       schedulerId: 'my-scheduler',
       taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
       routes: [],
@@ -49,8 +49,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     ]);
 
     const r1 = await helper.queue.pendingTasks(
-      'no-provisioner',
-      'query-test-worker',
+      'no-provisioner-extended-extended',
+      'query-test-worker-extended-extended',
     );
     assume(r1.pendingTasks).is.greaterThan(1);
 
@@ -63,8 +63,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     // do: queue.createTask + queue.pendingTasks, if not that's also sort of a
     // bug we should investigate
     const r2 = await helper.queue.pendingTasks(
-      'no-provisioner',
-      'query-test-worker',
+      'no-provisioner-extended-extended',
+      'query-test-worker-extended-extended',
     );
     assume(r2.pendingTasks).is.equals(r1.pendingTasks);
 
@@ -78,8 +78,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       // At some point in the future we have to got fetch a new result saying
       // more tasks are now in the queue...
       const r3 = await helper.queue.pendingTasks(
-        'no-provisioner',
-        'query-test-worker',
+        'no-provisioner-extended-extended',
+        'query-test-worker-extended-extended',
       );
       assume(r3.pendingTasks).is.greaterThan(r1.pendingTasks);
     }, 30, 1000);
@@ -87,13 +87,13 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('pendingTasks == 0', async () => {
     const r1 = await helper.queue.pendingTasks(
-      'no-provisioner',
+      'no-provisioner-extended-extended',
       'empty-test-worker',
     );
     assume(r1.pendingTasks).equals(0);
 
     const r2 = await helper.queue.pendingTasks(
-      'no-provisioner',
+      'no-provisioner-extended-extended',
       'empty-test-worker',
     );
     assume(r2.pendingTasks).equals(0);

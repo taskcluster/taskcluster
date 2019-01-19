@@ -19,9 +19,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   // Use the same task definition for everything
   const taskDef = {
-    provisionerId: 'no-provisioner',
-    workerType: 'test-worker',
-    schedulerId: 'dummy-scheduler',
+    provisionerId: 'no-provisioner-extended-extended',
+    workerType: 'test-worker-extended-extended',
+    schedulerId: 'dummy-scheduler-extended-extended',
     created: taskcluster.fromNowJSON(),
     deadline: taskcluster.fromNowJSON('1 days'),
     expires: taskcluster.fromNowJSON('2 days'),
@@ -83,7 +83,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       helper.messages.some(message => {
         if (message.exchange.endsWith('task-group-resolved') &&
           message.payload.taskGroupId === taskGroupId &&
-          message.payload.schedulerId === 'dummy-scheduler') {
+          message.payload.schedulerId === 'dummy-scheduler-extended-extended') {
           return true;
         }
         return false;
@@ -101,7 +101,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let taskGroupId = slugid.v4();
 
     helper.scopes(
-      'queue:define-task:no-provisioner/test-worker',
+      'queue:define-task:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:task-group-id:*',
       'queue:schedule-task:*',
     );
@@ -109,13 +109,13 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Creating taskA');
     await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
-      schedulerId: 'dummy-scheduler-1',
+      schedulerId: 'dummy-scheduler-extended-extended-1',
     }, taskDef));
 
     debug('### Creating taskB');
     await helper.queue.createTask(taskIdB, _.defaults({
       taskGroupId,
-      schedulerId: 'dummy-scheduler-2',
+      schedulerId: 'dummy-scheduler-extended-extended-2',
     }, taskDef)).then(() => {assert(false, 'expected an error');}, err => {
       if (err.statusCode !== 409) {
         throw err;
@@ -209,7 +209,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     // schedulerId (this is tested in one of the cases above)
     await helper.queue.createTask(taskIdB, _.defaults({
       taskGroupId,
-      schedulerId: 'dummy-scheduler-2',
+      schedulerId: 'dummy-scheduler-extended-extended-2',
     }, taskDef));
   });
 
@@ -230,7 +230,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Creating taskB');
     await helper.queue.createTask(taskIdB, _.defaults({
       taskGroupId,
-      schedulerId: 'dummy-scheduler-2',
+      schedulerId: 'dummy-scheduler-extended-extended-2',
     }, taskDef)).then(() => {assert(false, 'expected an error');}, err => {
       assert(err.statusCode === 409, 'Expected a 409 error');
     });

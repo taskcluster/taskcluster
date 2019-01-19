@@ -18,8 +18,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   helper.withServer(mock, skipping);
 
   const taskDef = () => ({
-    provisionerId: 'no-provisioner',
-    workerType: 'test-worker',
+    provisionerId: 'no-provisioner-extended-extendeda',
+    workerType: 'test-worker-extended-extended',
     created: taskcluster.fromNowJSON(),
     deadline: taskcluster.fromNowJSON('1 days'),
     expires: taskcluster.fromNowJSON('2 days'),

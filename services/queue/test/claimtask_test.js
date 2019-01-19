@@ -18,9 +18,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   // Use the same task definition for everything
   const taskDef = () => ({
-    provisionerId: 'no-provisioner',
-    workerType: 'test-worker',
-    schedulerId: 'my-scheduler',
+    provisionerId: 'no-provisioner-extended-extended',
+    workerType: 'test-worker-extended-extended',
+    schedulerId: 'my-scheduler-extended-extended',
     taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
     routes: [],
     retries: 5,
@@ -51,7 +51,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     // Reduce scopes available to test minimum set of scopes required
     helper.scopes(
       'queue:claim-task',
-      'assume:worker-type:no-provisioner/test-worker',
+      'assume:worker-type:no-provisioner-extended-extended/test-worker-extended-extended',
       'assume:worker-id:my-worker-group/my-worker',
     );
     // First runId is always 0, so we should be able to claim it here
@@ -135,7 +135,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     // leave out a required scope
     helper.scopes(
-      'assume:worker-type:no-provisioner/test-worker',
+      'assume:worker-type:no-provisioner-extended-extended/test-worker-extended-extended',
       'assume:worker-id:my-worker-group/my-worker',
     );
     // First runId is always 0, so we should be able to claim it here
@@ -170,7 +170,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     // leave out a required scope
     helper.scopes(
       'queue:claim-task',
-      'assume:worker-type:no-provisioner/test-worker',
+      'assume:worker-type:no-provisioner-extended-extended/test-worker-extended-extended',
     );
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {

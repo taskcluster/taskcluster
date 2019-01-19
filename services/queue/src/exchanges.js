@@ -99,17 +99,17 @@ var buildCommonRoutingKey = function(options) {
       name: 'provisionerId',
       summary: '`provisionerId` this task is targeted at.',
       required: true,
-      maxSize: 22,
+      maxSize: 40,
     }, {
       name: 'workerType',
       summary: '`workerType` this task must run on.',
       required: true,
-      maxSize: 22,
+      maxSize: 40,
     }, {
       name: 'schedulerId',
       summary: '`schedulerId` this task was created by.',
       required: true,
-      maxSize: 22,
+      maxSize: 40,
     }, {
       name: 'taskGroupId',
       summary: '`taskGroupId` this task was created in.',
@@ -145,7 +145,7 @@ var buildTaskGroupRoutingKey = function(options) {
       name: 'schedulerId',
       summary: '`schedulerId` for the task-group this message concerns',
       required: true,
-      maxSize: 22,
+      maxSize: 40,
     }, {
       name: 'reserved',
       summary: 'Space reserved for future routing-key entries, you ' +

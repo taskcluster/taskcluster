@@ -19,8 +19,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   // Use the same task definition for everything
   const taskDef = {
-    provisionerId: 'no-provisioner',
-    workerType: 'test-worker',
+    provisionerId: 'no-provisioner-extended-extended',
+    workerType: 'test-worker-extended-extended',
     created: taskcluster.fromNowJSON(),
     deadline: taskcluster.fromNowJSON('3 days'),
     retries: 1,

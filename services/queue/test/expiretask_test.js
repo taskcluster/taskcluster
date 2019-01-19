@@ -18,8 +18,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   // Use the same task definition for everything
   const makeTask = (expiration) => {
     const task = {
-      provisionerId: 'no-provisioner',
-      workerType: 'test-worker',
+      provisionerId: 'no-provisioner-extended-extended',
+      workerType: 'test-worker-extended-extended',
       created: taskcluster.fromNowJSON(),
       deadline: taskcluster.fromNowJSON('1 day'),
       // Notice that in config/test.js we've configured
