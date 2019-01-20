@@ -90,6 +90,10 @@ or duplication: when this connection fails, the server will delete the queues
 and any pending messages.  If this is not acceptable for your application, use a
 durable queue.
 
+Also note that the queues will have a TTL policy: by default, they will expire in 
+4 days after last time used. If you want a different expiration period, you can pass in 
+the `queueOptions` object (see below) with `expires` property and the desirable value in ms.
+
 The library cannot detect all problems with an existing connection.  If any
 method produces an error that might be fixed by reconnecting, call the
 connection's `failed` method.  This will mark the connection as failed and
