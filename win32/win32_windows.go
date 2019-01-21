@@ -352,6 +352,7 @@ func SetFolder(hUser syscall.Token, folder *syscall.GUID, value string) (err err
 }
 
 func SetAndCreateFolder(hUser syscall.Token, folder *syscall.GUID, value string) (err error) {
+	log.Printf("Creating folder %v", value)
 	err = SetFolder(hUser, folder, value)
 	if err != nil {
 		return
