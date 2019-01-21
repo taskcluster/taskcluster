@@ -1,5 +1,4 @@
 const debug = require('debug');
-const events = require('events');
 const amqplib = require('amqplib');
 const assert = require('assert');
 const slugid = require('slugid');
@@ -20,7 +19,7 @@ class PulseConsumer {
     this.bindings = bindings;
     this.handleMessage = handleMessage;
     this.prefetch = typeof prefetch !== 'undefined' ? prefetch : 5;
-    this.queueOptions = queueOptions;
+    this.queueOptions = queueOptions || {};
 
     if (ephemeral) {
       assert(!queueName, 'Must not pass a queueName for ephemeral consumers');
@@ -105,6 +104,7 @@ class PulseConsumer {
 
   async _createAndBindQueue(channel) {
     const queueName = this.client.fullObjectName('queue', this.queueName);
+    this.queueOptions.expires = this.queueOptions.expires || 345600000; // ms; 4 days
     await channel.assertQueue(queueName, {
       exclusive: this.ephemeral,
       durable: true,
