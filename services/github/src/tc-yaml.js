@@ -128,7 +128,7 @@ class VersionZero extends TcYaml {
         throw new Error('Cannot specify both `branches` and `excludeBranches` in the same task!');
       }
 
-      return _.some(events, ev => {
+      return events.some(ev => {
         if (!event.startsWith(_.trimEnd(ev, '*'))) {
           return false;
         }
@@ -138,9 +138,9 @@ class VersionZero extends TcYaml {
         }
 
         if (includeBranches) {
-          return _.includes(includeBranches, branch);
+          return includeBranches.includes(branch);
         } else if (excludeBranches) {
-          return !_.includes(excludeBranches, branch);
+          return !excludeBranches.includes(branch);
         } else {
           return true;
         }
@@ -154,7 +154,7 @@ class VersionZero extends TcYaml {
       config.tasks = config.tasks.map((task) => {
         return {
           taskId: task.taskId,
-          task: _.extend(task.task, {taskGroupId, schedulerId: cfg.taskcluster.schedulerId}),
+          task: {...task.task, ...{taskGroupId, schedulerId: cfg.taskcluster.schedulerId}},
         };
       });
     }
