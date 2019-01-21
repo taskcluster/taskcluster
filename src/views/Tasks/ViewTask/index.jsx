@@ -691,7 +691,12 @@ export default class ViewTask extends Component {
     return (
       <Dashboard
         helpView={<HelpView description={description} />}
-        search={<Search onSubmit={this.handleTaskSearchSubmit} />}>
+        search={
+          <Search
+            onSubmit={this.handleTaskSearchSubmit}
+            defaultValue={match.params.taskId}
+          />
+        }>
         <Helmet state={task && task.status.state} />
         {loading && <Spinner loading />}
         <ErrorPanel
