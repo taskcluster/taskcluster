@@ -84,7 +84,7 @@ const generateRepoTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
       await mkdirp(path.dirname(docsDir));
 
       const documentor = await libDocs.documenter({
-        project: repository.docs.projectName || name,
+        projectName: repository.docs.projectName || name,
         readme: path.join(repoDir, 'README.md'),
         docsFolder: path.join(repoDir, 'docs'),
         tier: repository.docs.tier,

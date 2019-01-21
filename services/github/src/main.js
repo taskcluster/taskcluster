@@ -56,6 +56,7 @@ const load = loader({
     setup: ({cfg, schemaset, reference}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-github',
       tier: 'integrations',
       schemaset: schemaset,
       publish: cfg.app.publishMetaData,

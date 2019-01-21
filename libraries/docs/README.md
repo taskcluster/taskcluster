@@ -146,9 +146,7 @@ The following are the options that can be passed to the publisher function in th
     // the rootUrl for these credentials (required for publishing)
     rootUrl: '...',
 
-    // The name of the project will automatically be set to your package name from package.json,
-    // but can be overridden if needed.
-    project: '<name of project in package.json>',
+    projectName: '<projectName>', // required
 
     // The path to the README.md file for the project
     readme: '<project root>/README.md',

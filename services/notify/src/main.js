@@ -57,6 +57,7 @@ const load = loader({
     setup: async ({cfg, schemaset, reference}) => await docs.documenter({
       credentials: cfg.taskcluster.credentials,
       rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-notify',
       tier: 'core',
       publish: cfg.app.publishMetaData,
       schemaset,
