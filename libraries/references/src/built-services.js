@@ -59,6 +59,10 @@ const load = ({directory}) => {
   const schemas = [];
 
   fs.readdirSync(directory).forEach(dentry => {
+    if (dentry.startsWith('.')) {
+      return;
+    }
+
     const filename = path.join(directory, dentry);
     if (!fs.lstatSync(filename).isDirectory()) {
       throw new Error(`${filename} is not a directory`);
