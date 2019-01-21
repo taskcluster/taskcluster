@@ -36,10 +36,21 @@ export default ({ hooks }) => {
     )
   );
 
+  const hookLastFires = new DataLoader(queries =>
+    Promise.all(
+      queries.map(async ({hookGroupId, hookId}) => {
+        const { lastFires } = await hooks.listLastFires(hookGroupId, hookId);
+        return lastFires;
+      }
+      )
+    )
+  );
+
   return {
     hookGroups,
     hooks: hooksForGroup,
     hook,
     hookStatus,
+    hookLastFires,
   };
 };
