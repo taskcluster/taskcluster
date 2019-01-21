@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "debug": "^4.0.0",
-    "hawk": "^6.0.2",
+    "hawk": "^7.0.0",
     "lodash": "^4.17.4",
     "promise": "^8.0.1",
     "slugid": "^2.0.0",
