@@ -306,7 +306,9 @@ export default class TaskRunsCard extends Component {
                     secondary={<StatusLabel state={run.reasonCreated} />}
                   />
                 </ListItem>
-                <CopyToClipboard title={run.scheduled} text={run.scheduled}>
+                <CopyToClipboard
+                  title={`${run.scheduled} (Copy)`}
+                  text={run.scheduled}>
                   <ListItem button className={classes.listItemButton}>
                     <ListItemText
                       primary="Scheduled"
@@ -315,7 +317,9 @@ export default class TaskRunsCard extends Component {
                     <ContentCopyIcon />
                   </ListItem>
                 </CopyToClipboard>
-                <CopyToClipboard title={run.started} text={run.started}>
+                <CopyToClipboard
+                  title={`${run.started} (Copy)`}
+                  text={run.started}>
                   <ListItem button className={classes.listItemButton}>
                     <ListItemText
                       primary="Started"
@@ -333,7 +337,9 @@ export default class TaskRunsCard extends Component {
                     <ContentCopyIcon />
                   </ListItem>
                 </CopyToClipboard>
-                <CopyToClipboard title={run.resolved} text={run.resolved}>
+                <CopyToClipboard
+                  title={`${run.resolved} (Copy)`}
+                  text={run.resolved}>
                   <ListItem button className={classes.listItemButton}>
                     <ListItemText
                       primary="Resolved"
@@ -373,7 +379,9 @@ export default class TaskRunsCard extends Component {
                   <ListItemText primary="Worker ID" secondary={run.workerId} />
                   <ListItemSecondaryAction
                     className={classes.listItemSecondaryAction}>
-                    <CopyToClipboard text={run.workerId}>
+                    <CopyToClipboard
+                      title={`${run.workerId} (Copy)`}
+                      text={run.workerId}>
                       <IconButton>
                         <ContentCopyIcon />
                       </IconButton>
@@ -388,7 +396,9 @@ export default class TaskRunsCard extends Component {
                     </IconButton>
                   </ListItemSecondaryAction>
                 </ListItem>
-                <CopyToClipboard title={run.takenUntil} text={run.takenUntil}>
+                <CopyToClipboard
+                  title={`${run.takenUntil} (Copy)`}
+                  text={run.takenUntil}>
                   <ListItem button className={classes.listItemButton}>
                     <ListItemText
                       primary="Taken Until"

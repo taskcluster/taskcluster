@@ -175,7 +175,7 @@ export default class WorkersTable extends Component {
               {<StatusLabel state={latestTask.run.state} />}
             </TableCell>
             <CopyToClipboard
-              title={latestTask.run.started}
+              title={`${latestTask.run.started} (Copy)`}
               text={latestTask.run.started}>
               <TableCell>
                 <TableCellListItem button>
@@ -192,7 +192,7 @@ export default class WorkersTable extends Component {
               </TableCell>
             </CopyToClipboard>
             <CopyToClipboard
-              title={latestTask.run.resolved}
+              title={`${latestTask.run.resolved} (Copy)`}
               text={latestTask.run.resolved}>
               <TableCell>
                 {latestTask.run.resolved ? (
@@ -212,7 +212,7 @@ export default class WorkersTable extends Component {
                 )}
               </TableCell>
             </CopyToClipboard>
-            <CopyToClipboard title={firstClaim} text={firstClaim}>
+            <CopyToClipboard title={`${firstClaim} (Copy)`} text={firstClaim}>
               <TableCell>
                 <TableCellListItem button>
                   <ListItemText
