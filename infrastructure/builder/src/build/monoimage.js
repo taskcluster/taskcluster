@@ -9,8 +9,9 @@ const tar = require('tar-fs');
 const copy = require('recursive-copy');
 const Stamp = require('./stamp');
 const appRootDir = require('app-root-dir');
-const {gitClone, dockerRun, dockerPull, dockerImages, dockerBuild, dockerRegistryCheck,
-  serviceDockerImageTask, ensureDockerImage, ensureTask, listServices} = require('./utils');
+const {gitClone, gitIsDirty, dockerRun, dockerPull, dockerImages, dockerBuild,
+  dockerRegistryCheck, serviceDockerImageTask, ensureDockerImage, ensureTask,
+  listServices} = require('./utils');
 
 const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
   const packageJson = JSON.parse(fs.readFileSync(path.join(appRootDir.get(), 'package.json')));
@@ -28,7 +29,7 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
   ensureDockerImage(tasks, baseDir, nodeAlpineImage);
 
   ensureTask(tasks, {
-    title: 'Clone Monorepo',
+    title: 'Clone Monorepo from Working Copy',
     provides: [
       'monorepo-dir', // full path of the repository
       'monorepo-exact-source', // exact source URL for the repository
@@ -36,15 +37,30 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
     ],
     locks: ['git'],
     run: async (requirements, utils) => {
+      const sourceDir = appRootDir.get();
       const repoDir = path.join(baseDir, 'monorepo');
-      const source = spec.build.monorepo;
+
+      // Clone from the current working copy, rather than anything upstream;
+      // this avoids the need to land-and-push changes.  This is a git clone
+      // operation instead of a raw filesystem copy so that any non-checked-in
+      // files are not accidentally built into docker images.
+      if (!cmdOptions.ignoreUncommittedFiles) {
+        if (await gitIsDirty({dir: sourceDir})) {
+          throw new Error([
+            'The current git working copy is not clean. Any non-checked-in files will',
+            'not be reflected in the built image, so this is treatd as an error by default.',
+            'Either check in the dirty files, or run with --ignore-uncommitted-files to',
+            'override this error.  Never check in files containing secrets!',
+          ].join(' '));
+        }
+      }
       const {exactRev, changed} = await gitClone({
         dir: repoDir,
-        url: source,
+        url: sourceDir + '#HEAD',
         utils,
       });
 
-      const [repoUrl] = source.split('#');
+      const repoUrl = 'https://github.com/taskcluster/taskcluster';
       const stamp = new Stamp({step: 'repo-clone', version: 1},
         `${repoUrl}#${exactRev}`);
 
