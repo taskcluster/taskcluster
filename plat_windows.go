@@ -696,12 +696,20 @@ func (task *TaskRun) removeUserFromGroups(groups []string) (updatedGroups []stri
 	return
 }
 
-func RedirectAppData(hUser syscall.Token, folder string) (err error) {
-	err = win32.SetAndCreateFolder(hUser, &win32.FOLDERID_RoamingAppData, filepath.Join(folder, "Roaming"))
+func RedirectAppData(hUser syscall.Token, folder string) error {
+	RoamingAppDataFolder := filepath.Join(folder, "Roaming")
+	LocalAppDataFolder := filepath.Join(folder, "Local")
+	err := win32.SetAndCreateFolder(hUser, &win32.FOLDERID_RoamingAppData, RoamingAppDataFolder)
 	if err != nil {
-		return
+		log.Printf("%v", err)
+		log.Printf("WARNING: Not able to redirect Roaming App Data folder to %v - IGNORING!", RoamingAppDataFolder)
 	}
-	return win32.SetAndCreateFolder(hUser, &win32.FOLDERID_LocalAppData, filepath.Join(folder, "Local"))
+	err = win32.SetAndCreateFolder(hUser, &win32.FOLDERID_LocalAppData, LocalAppDataFolder)
+	if err != nil {
+		log.Printf("%v", err)
+		log.Printf("WARNING: Not able to redirect Local App Data folder to %v - IGNORING!", LocalAppDataFolder)
+	}
+	return nil
 }
 
 func defaultTasksDir() string {
