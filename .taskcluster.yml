@@ -49,6 +49,7 @@ tasks:
     - taskcluster-notify
     - taskcluster-purge-cache
     - taskcluster-queue
+    - taskcluster-worker-manager
     - taskcluster-secrets
     - taskcluster-treeherder
     - taskcluster-builder
