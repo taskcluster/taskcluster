@@ -36,7 +36,7 @@ BlobUploader.prototype.putBlock = function(blockId, block) {
   // Construct URL
   var url = this.buildUrl({
     comp: 'block',
-    blockid: new Buffer('' + blockId).toString('base64'),
+    blockid: Buffer.from('' + blockId).toString('base64'),
   });
 
   // Send request
@@ -68,7 +68,7 @@ BlobUploader.prototype.putBlockList = function(blockIds, contentType) {
     encoding: 'utf-8',
   });
   blockIds.forEach(function(blockId) {
-    var id = new Buffer('' + blockId).toString('base64');
+    var id = Buffer.from('' + blockId).toString('base64');
     blockList.element('Latest', id);
   });
   var xml = blockList.end({

@@ -3,7 +3,6 @@ const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
 const yaml = require('js-yaml');
 const assert = require('assert');
-const _ = require('lodash');
 const prAllowed = require('./pr-allowed');
 const {consume} = require('taskcluster-lib-pulse');
 
@@ -292,19 +291,25 @@ async function deprecatedStatusHandler(message) {
   let state = 'success';
 
   if (message.exchange.endsWith('task-group-resolved')) {
-    let queue = new taskcluster.Queue({
-      rootUrl: this.context.cfg.taskcluster.rootUrl,
-    });
     let params = {};
     do {
-      let group = await queue.listTaskGroup(message.payload.taskGroupId, params);
+      let group = await this.queueClient.listTaskGroup(message.payload.taskGroupId, params);
       params.continuationToken = group.continuationToken;
-      group.tasks.forEach(task => {
-        if (_.includes(['failed', 'exception'], task.status.state)) {
-          state = 'failure';
+
+      for (let i = 0; i < group.tasks.length; i++) {
+        // don't post group status for checks API
+        if (group.tasks[i].task.routes.includes(this.context.cfg.app.checkTaskRoute)) {
+          debug(`Task group result status not updated: Task group ${taskGroupId} uses Checks API. Exiting`);
+          return;
         }
-      });
-    } while (params.continuationToken);
+
+        if (['failed', 'exception'].includes(group.tasks[i].status.state)) {
+          state = 'failure';
+          break; // one failure is enough
+        }
+      }
+
+    } while (params.continuationToken && state === 'success');
   }
 
   if (message.exchange.endsWith('task-exception') || message.exchange.endsWith('task-failed')) {
@@ -425,7 +430,7 @@ async function statusHandler(message) {
         output: {
           title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
           summary: `${taskDefinition.metadata.description}`,
-          text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}}`)})`,
+          text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}`)})`,
         },
         details_url: libUrls.ui(
           this.context.cfg.taskcluster.rootUrl,
@@ -489,19 +494,19 @@ async function jobHandler(message) {
       path: '.taskcluster.yml',
       ref: sha,
     });
-    repoconf = new Buffer(tcyml.data.content, 'base64').toString();
+    repoconf = Buffer.from(tcyml.data.content, 'base64').toString();
   } catch (e) {
     if (e.code === 404) {
       debug(`${organization}/${repository}@${sha} has no '.taskcluster.yml'. Skipping.`);
       return;
     }
-    if (_.endsWith(e.message, '</body>\n</html>\n') && e.message.length > 10000) {
+    if (e.message.endsWith('</body>\n</html>\n') && e.message.length > 10000) {
       // We kept getting full html 500/400 pages from github in the logs.
       // I consider this to be a hard-to-fix bug in octokat, so let's make
       // the logs usable for now and try to fix this later. It's a relatively
       // rare occurence.
       debug('Detected an extremely long error. Truncating!');
-      e.message = _.join(_.take(e.message, 100).concat('...'), '');
+      e.message = e.message.slice(0, 100).concat('...');
       e.stack = e.stack.split('</body>\n</html>\n')[1] || e.stack;
     }
     debug(`Error fetching yaml for ${organization}/${repository}@${sha}: ${e.message} \n ${e.stack}`);
@@ -738,7 +743,7 @@ async function taskDefinedHandler(message) {
     output: {
       title: `${this.context.cfg.app.statusContext} (${eventType.split('.')[0]})`,
       summary: `${taskDefinition.metadata.description}`,
-      text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}}`)})`,
+      text: `[Task group](${libUrls.ui(this.context.cfg.taskcluster.rootUrl, `/groups/${taskGroupId}`)})`,
     },
     details_url: libUrls.ui(
       this.context.cfg.taskcluster.rootUrl,

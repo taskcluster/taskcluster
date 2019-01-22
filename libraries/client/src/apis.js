@@ -1835,7 +1835,23 @@ module.exports = {
           "stability": "stable",
           "title": "Trigger a hook with a token",
           "type": "function"
-        }
+        },
+        {
+          "args": [
+            "hookGroupId",
+            "hookId"
+          ],
+          "description": "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not",
+          "method": "get",
+          "name": "listLastFires",
+          "output": "v1/list-lastFires-response.json#",
+          "query": [
+          ],
+          "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
+          "stability": "experimental",
+          "title": "Get information about recent hook fires",
+          "type": "function"
+        },
       ],
       "serviceName": "hooks",
       "title": "Hooks API Documentation"

@@ -21,7 +21,7 @@ let globalAzureQueueAgent = new azure.Agent({
 
 /** Decode Url-safe base64, our identifiers satisfies these requirements */
 let decodeUrlSafeBase64 = data => {
-  return new Buffer(data.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
+  return Buffer.from(data.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
 };
 
 /** Get seconds until `target` relative to now (by default) */
@@ -151,7 +151,7 @@ class QueueService {
   }
 
   _putMessage(queue, message, {visibility, ttl}) {
-    var text = new Buffer(JSON.stringify(message)).toString('base64');
+    var text = Buffer.from(JSON.stringify(message)).toString('base64');
     return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
       visibilityTimeout: visibility,
       messageTTL: ttl,
@@ -165,7 +165,7 @@ class QueueService {
     }));
     return messages.map(msg => {
       return {
-        payload: JSON.parse(new Buffer(msg.messageText, 'base64')),
+        payload: JSON.parse(Buffer.from(msg.messageText, 'base64')),
         remove: this.client.deleteMessage.bind(
           this.client,
           queue,
