@@ -46,7 +46,8 @@ tar_docker_worker() {
     --exclude='./worker-types-backup.json' \
     --exclude='./docker-worker-amis.json' \
     --exclude='./packer-artifacts.json' \
-    --exclude='docker-worker.tar.gz' \
+    --exclude='docker-worker.tgz' \
+    --exclude='image.tar.gz' \
     --exclude='modules.tar.gz' \
     --exclude='kernel.tar.gz' \
     --exclude='initrd.tar.gz' \
