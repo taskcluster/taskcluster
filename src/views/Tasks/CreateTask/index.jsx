@@ -65,8 +65,6 @@ const defaultTask = {
   createIconSpan: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
-    position: 'fixed',
-    bottom: theme.spacing.double,
     right: theme.spacing.unit * 11,
   },
 }))
