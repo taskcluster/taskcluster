@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react';
-import classNames from 'classnames';
 import { func } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
@@ -7,7 +6,6 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import TextField from '@material-ui/core/TextField';
-import Tooltip from '@material-ui/core/Tooltip';
 import NumericIcon from 'mdi-react/NumericIcon';
 import Button from '../Button';
 
@@ -58,17 +56,15 @@ export default class GoToLineButton extends Component {
 
     return (
       <Fragment>
-        <Tooltip placement="bottom" title="Go to line">
-          <Button
-            className={classNames(classes.fabIcon, className)}
-            variant="round"
-            mini
-            color="secondary"
-            onClick={this.handleOpenClick}
-            {...props}>
-            <NumericIcon />
-          </Button>
-        </Tooltip>
+        <Button
+          spanProps={{ className }}
+          tooltipProps={{ title: 'Go to Line' }}
+          variant="round"
+          color="secondary"
+          onClick={this.handleOpenClick}
+          {...props}>
+          <NumericIcon />
+        </Button>
         <Dialog
           open={open}
           onClose={this.handleClose}

@@ -4,8 +4,8 @@ import classNames from 'classnames';
 import { withRouter } from 'react-router-dom';
 import { LazyLog, ScrollFollow } from 'react-lazylog';
 import storage from 'localforage';
+import { omit } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Tooltip from '@material-ui/core/Tooltip';
 import ArrowDownBoldCircleOutlineIcon from 'mdi-react/ArrowDownBoldCircleOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import GoToLineButton from './GoToLineButton';
@@ -47,10 +47,7 @@ const FOLLOW_STORAGE_KEY = 'follow-log';
     },
   },
   followButtonFollowing: {
-    backgroundColor: theme.palette.success.main,
-    '&:hover': {
-      backgroundColor: theme.palette.success.dark,
-    },
+    ...theme.mixins.successIcon,
   },
   fabIcon: {
     ...theme.mixins.fabIcon,
@@ -205,21 +202,20 @@ export default class Log extends Component {
       overflow: 'initial',
     };
     const rawLogButton = (
-      <Tooltip placement="left" title="Raw log">
-        <Button
-          component="a"
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          variant="round"
-          mini
-          color="secondary"
-          className={classNames(classes.fabIcon, RawLogButtonClassName)}
-          {...RawLogButtonPropsRest}>
-          <OpenInNewIcon />
-        </Button>
-      </Tooltip>
+      <Button
+        spanProps={{ className: RawLogButtonClassName }}
+        tooltipProps={{ title: 'Raw Log' }}
+        component="a"
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        variant="round"
+        color="secondary"
+        {...RawLogButtonPropsRest}>
+        <OpenInNewIcon />
+      </Button>
     );
+    const FollowLogButtonRest = omit(['className'], FollowLogButtonProps);
 
     if (!stream) {
       return (
@@ -235,7 +231,7 @@ export default class Log extends Component {
             lineClassName={classes.line}
             highlightLineClassName={classes.highlight}
             loadingComponent={Loading}
-            extraLines={1}
+            extraLines={5}
             {...props}
           />
           {rawLogButton}
@@ -267,7 +263,7 @@ export default class Log extends Component {
               lineClassName={classes.line}
               highlightLineClassName={classes.highlight}
               loadingComponent={Loading}
-              extraLines={1}
+              extraLines={5}
               {...props}
             />
             {rawLogButton}
@@ -275,24 +271,21 @@ export default class Log extends Component {
               onLineNumberChange={this.handleLineNumberChange}
               {...GoToLineButtonProps}
             />
-            <Tooltip
-              placement="bottom"
-              title={follow ? 'Unfollow log' : 'Follow log'}>
-              <Button
-                variant="round"
-                mini
-                color={follow ? 'inherit' : 'secondary'}
-                onClick={this.handleFollowClick}
-                {...FollowLogButtonProps}
-                className={classNames(
-                  {
-                    [classes.followButtonFollowing]: follow,
-                  },
-                  FollowLogButtonProps && FollowLogButtonProps.className
-                )}>
-                <ArrowDownBoldCircleOutlineIcon />
-              </Button>
-            </Tooltip>
+            <Button
+              spanProps={{
+                className:
+                  FollowLogButtonProps && FollowLogButtonProps.className,
+              }}
+              tooltipProps={{ title: follow ? 'Unfollow Log' : 'Follow Log' }}
+              variant="round"
+              className={classNames({
+                [classes.followButtonFollowing]: follow,
+              })}
+              color={follow ? 'inherit' : 'secondary'}
+              onClick={this.handleFollowClick}
+              {...FollowLogButtonRest}>
+              <ArrowDownBoldCircleOutlineIcon />
+            </Button>
             {actions}
           </Fragment>
         )}

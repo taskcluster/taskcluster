@@ -2,7 +2,6 @@ import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
-import Tooltip from '@material-ui/core/Tooltip';
 import ArrowRightIcon from 'mdi-react/ArrowRightIcon';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
@@ -11,25 +10,28 @@ import Log from '../../../components/Log';
 @hot(module)
 @withStyles(theme => ({
   fab: {
-    position: 'absolute',
-    right: theme.spacing.double,
-    top: theme.spacing.double,
-    ...theme.mixins.fabIcon,
+    ...theme.mixins.fab,
+    ...theme.mixins.actionButton,
+    bottom: theme.spacing.triple,
+    right: theme.spacing.triple,
   },
   goToLineButton: {
-    position: 'absolute',
-    right: theme.spacing.unit * 10,
-    top: theme.spacing.triple,
+    ...theme.mixins.fab,
+    ...theme.mixins.actionButton,
+    bottom: theme.spacing.triple,
+    right: theme.spacing.unit * 11,
   },
   followButton: {
-    position: 'absolute',
-    right: theme.spacing.unit * 16,
-    top: theme.spacing.triple,
+    ...theme.mixins.fab,
+    ...theme.mixins.actionButton,
+    bottom: theme.spacing.triple,
+    right: theme.spacing.unit * 19,
   },
   rawLogButton: {
-    position: 'absolute',
-    right: theme.spacing.unit * 22,
-    top: theme.spacing.triple,
+    ...theme.mixins.fab,
+    ...theme.mixins.actionButton,
+    bottom: theme.spacing.triple,
+    right: theme.spacing.unit * 27,
   },
 }))
 export default class LiveTaskLog extends Component {
@@ -46,16 +48,15 @@ export default class LiveTaskLog extends Component {
           FollowLogButtonProps={{ className: classes.followButton }}
           RawLogButtonProps={{ className: classes.rawLogButton }}
           actions={
-            <Tooltip placement="bottom" title="View task">
-              <Button
-                component={Link}
-                to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}
-                variant="round"
-                className={classes.fab}
-                color="secondary">
-                <ArrowRightIcon />
-              </Button>
-            </Tooltip>
+            <Button
+              spanProps={{ className: classes.fab }}
+              tooltipProps={{ title: 'View Task' }}
+              component={Link}
+              to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}
+              variant="round"
+              color="secondary">
+              <ArrowRightIcon />
+            </Button>
           }
         />
       </Dashboard>
