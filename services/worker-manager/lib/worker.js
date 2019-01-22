@@ -19,13 +19,13 @@ class Worker extends WMObject {
       this._throw(errors.InvalidWorker, 'worker group must be string');
     }
     this.group = group;
-    
+
     if (typeof workerConfigurationId !== 'string') {
       this._throw(errors.InvalidWorker, 'worker workerConfigurationId must be string');
     }
     this.workerConfigurationId = workerConfigurationId;
-    
-    if (typeof workerType !== 'workerType') {
+
+    if (typeof workerType !== 'string') {
       this._throw(errors.InvalidWorker, 'workerType must be string');
     }
     this.workerType = workerType;

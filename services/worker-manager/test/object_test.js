@@ -1,4 +1,3 @@
-
 const assume = require('assume');
 const {WMObject, errors} = require('../lib/base');
 
@@ -50,7 +49,7 @@ suite('WMObject', () => {
         assume(err).has.property('message', errors.UnknownError.name);
       }
     });
-  
+
     test('should throw correct code', () => {
       class TestObject extends WMObject {
         throwIt() {
@@ -87,7 +86,7 @@ suite('WMObject', () => {
     test('should throw correct msg', () => {
       class TestObject extends WMObject {
         throwIt() {
-          this._throw(errors.InvalidSatisfiers, 'test-message', {a:1});
+          this._throw(errors.InvalidSatisfiers, 'test-message', {a: 1});
         }
       }
 

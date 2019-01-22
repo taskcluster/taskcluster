@@ -1,4 +1,3 @@
-
 const sinon = require('sinon');
 const assume = require('assume');
 const {BaseDatastore, InMemoryDatastore} = require('../lib/data-storage');

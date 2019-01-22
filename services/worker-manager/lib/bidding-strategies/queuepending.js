@@ -33,7 +33,7 @@ class QueuePending extends BiddingStrategy {
   }
 
   /**
-   * Given a workerType and biddingStrategyData, determine how much 
+   * Given a workerType and biddingStrategyData, determine how much
    * demand there is for this workerType.
    */
   async determineDemand({workerType, biddingStrategyData}, runningCapacity, pendingCapacity) {
@@ -44,7 +44,7 @@ class QueuePending extends BiddingStrategy {
       minPrice,
       maxPrice,
     } = biddingStrategyData;
-    
+
     let pendingTasks = await this._getPendingTasks(workerType);
 
     // NOTE: The following code of this function was copied verbatim from the
@@ -94,17 +94,17 @@ class QueuePending extends BiddingStrategy {
     // For each 10 minutes of estimated delay, remove priority by 5%
     let delayPenalty = bid.estimatedDelay / 600000;
     value /= 1 - (delayPenalty / (100/5));
-  
+
     return value;
   }
 
   async selectBids({workerType, biddingStrategyData, bids, demand}) {
     let outcome = {accept: [], reject: []};
-    
+
     // Avoid modifying bids list passed in
     let _bids = bids.slice();
     _bids.sort((a, b) => {
-      return this._bidValue(a) - this._bidValue(b); 
+      return this._bidValue(a) - this._bidValue(b);
     });
 
     // Select the best bids until we've selected enough to fulfill the demand,

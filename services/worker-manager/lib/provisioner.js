@@ -109,6 +109,7 @@ class Provisioner extends WMObject {
       if (providerBids.length > 0) {
         return provider.submitBids({bids: providerBids});
       }
+      return Promise.resolve();
     }));
   }
 
@@ -187,7 +188,7 @@ class Provisioner extends WMObject {
       return provider.proposeBids({
         workerType,
         workerConfiguration: new Proxy(workerConfiguration, providerDataProxyHandler),
-        demand
+        demand,
       });
     }));
     bids = bids.flat();
@@ -208,7 +209,7 @@ class Provisioner extends WMObject {
       workerType,
       biddingStrategyData,
       bids: censoredBids,
-      demand
+      demand,
     });
 
     // Reject the bids we don't care about as soon as we can.  Since bid
@@ -222,6 +223,7 @@ class Provisioner extends WMObject {
             .map(x => bidMap.get(x)),
         });
       }
+      return Promise.resolve();
     }));
     return accept.map(x => bidMap.get(x));
   }
@@ -230,4 +232,3 @@ class Provisioner extends WMObject {
 module.exports = {
   Provisioner,
 };
-

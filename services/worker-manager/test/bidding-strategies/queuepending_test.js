@@ -16,11 +16,11 @@ suite('QueuePending Bidding Strategy', () => {
     sandbox = sinon.createSandbox();
     sandbox.stub(subject, '_getPendingTasks');
     subject._getPendingTasks.returns(0);
-  })
+  });
 
   teardown(() => {
     sandbox.restore();
-  })
+  });
 
   testBiddingStrategy(subject, {
     scalingRatio: 1,

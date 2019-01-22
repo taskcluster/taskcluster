@@ -31,7 +31,7 @@ function createBids(...capacities) {
       firm: false,
       reliability: 7000,
       estimatedDelay: 1000,
-      providerData: {}
+      providerData: {},
     }));
   }
 
@@ -54,7 +54,7 @@ function createMockBid(overrides) {
     firm: false,
     reliability: 7000,
     estimatedDelay: 1000,
-    providerData: {}
+    providerData: {},
   }, overrides));
 }
 
@@ -150,4 +150,4 @@ module.exports = {
   createBids,
   createMockBid,
   testBiddingStrategy,
-}
+};

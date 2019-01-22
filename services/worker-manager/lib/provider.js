@@ -4,7 +4,7 @@ const {WMObject, errors, loadPlugin} = require('./base');
 
 /**
  * A Provider implementation is a class which understands the details of a
- * specific resource pool.  For explaining the terms of the Provider model, an
+ * secific resource pool.  For explaining the terms of the Provider model, an
  * example of an EC2 region is used.  This is not to suggest it being
  * impossible for other systems.
  *
@@ -182,7 +182,7 @@ class Provider extends WMObject {
 // Load a provider class
 Provider.load = function(className) {
   return loadPlugin(Provider, 'providers', className);
-}
+};
 
 /**
  * These are the states which are valid and must be used for all providers as
@@ -199,11 +199,11 @@ const validStates = [
 let states = {};
 
 validStates.forEach(x => {
-  states[x] = x; 
+  states[x] = x;
 });
 
 Provider.states = Object.freeze(states);
 
 module.exports = {
   Provider,
-}
+};

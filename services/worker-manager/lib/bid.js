@@ -123,4 +123,4 @@ class Bid extends WMObject {
 
 module.exports = {
   Bid,
-}
+};

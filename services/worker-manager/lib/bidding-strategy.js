@@ -95,8 +95,7 @@ class BiddingStrategy extends WMObject {
 // Load a bidding strategy class
 BiddingStrategy.load = function(className) {
   return loadPlugin(BiddingStrategy, 'bidding-strategies', className);
-}
-
+};
 
 module.exports = {
   BiddingStrategy,

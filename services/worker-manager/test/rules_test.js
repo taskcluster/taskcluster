@@ -1,4 +1,3 @@
-
 const sinon = require('sinon');
 const assume = require('assume');
 
@@ -47,8 +46,8 @@ suite('assign()', () => {
   });
 
   test('should be able to delete properties in an object', () => {
-    let expected = {a:1};
-    let actual = {a:1, b:2};
+    let expected = {a: 1};
+    let actual = {a: 1, b: 2};
 
     assign(actual, {b: null});
     assume(actual).deeply.equals(expected);
@@ -83,7 +82,7 @@ suite('Conditions', () => {
       });
       assume(conditions.evaluate({string: 'test'})).is.ok();
     });
-    
+
     test('should return true when one of many string satisifies requirement', () => {
       let conditions = new Conditions({
         id: 'cond1',
@@ -103,7 +102,7 @@ suite('Conditions', () => {
       });
       assume(conditions.evaluate({string: 'test'})).is.not.ok();
     });
-    
+
     test('should return false when none of many string satisifies requirement', () => {
       let conditions = new Conditions({
         id: 'cond1',
@@ -123,7 +122,7 @@ suite('Conditions', () => {
 
     test('should throw when satisfiers is not object', () => {
       let conditions = new Conditions({
-        id: 'cond1', 
+        id: 'cond1',
         conditions: {
           string: 'test',
         },
@@ -207,7 +206,7 @@ suite('Rule', () => {
           rule1val: 'set',
         },
         description: 'test rule',
-      });    
+      });
     });
 
     test('should return true and set values with satisfied requirements', () => {
@@ -215,7 +214,7 @@ suite('Rule', () => {
       assume(outcome).is.ok();
       assume(target).deeply.equals({rule1val: 'set'});
     });
-    
+
     test('should return false and not set values with unsatisfied requirements', () => {
       let outcome = rule.evaluate({string: 'nottest'}, target);
       assume(outcome).is.not.ok();
@@ -251,7 +250,7 @@ suite('Rule', () => {
 });
 
 suite('Ruleset', () => {
-  
+
   let rules;
 
   setup(() => {
@@ -274,7 +273,7 @@ suite('Ruleset', () => {
           provider: 'ec2',
         },
         values: {
-          rule2: 'matched', 
+          rule2: 'matched',
         },
         description: 'worker1 in ec2 only',
       }, {
@@ -339,7 +338,7 @@ suite('Required Satisfiers', () => {
     });
     assume(cond.requiredSatisfiers()).is.array(['string1', 'string2']);
   });
-  
+
   test('should be able to list required satisfiers on Rules', () => {
     let rule = new Rule({
       id: 'rule-1',
@@ -349,7 +348,7 @@ suite('Required Satisfiers', () => {
     });
     assume(rule.requiredSatisfiers()).is.array(['string1', 'string2']);
   });
-  
+
   test('should be able to list required satisfiers on Conditions', () => {
     let rules = new Ruleset({
       id: 'ruleset-1',
@@ -387,7 +386,7 @@ suite('Required Satisfiers', () => {
     });
     assume(rules.requiredSatisfiers()).is.array([
       'string1',
-      'string2', 
+      'string2',
       'string3',
       'string4',
       'string5',

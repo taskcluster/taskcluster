@@ -1,7 +1,7 @@
 'use strict';
 
 const {WMObject, errors} = require('./base');
-const {Ruleset} = require('./rules')
+const {Ruleset} = require('./rules');
 
 /**
  * A WorkerConfiguration in the simplist terms maps an identifier
@@ -31,7 +31,7 @@ const {Ruleset} = require('./rules')
  *
  * In order to ensure that the difference between these two is clear, any
  * worker type which has either a provisonerIds list or biddingStrategyId must
- * have both.  The bidding strategy id is a string and provider ids is a list of 
+ * have both.  The bidding strategy id is a string and provider ids is a list of
  * strings.  Each of these ids referes to the id of the respective type of object.
  *
  * Rules:
@@ -90,6 +90,7 @@ class WorkerConfiguration extends WMObject {
           }
         }
       } else if (!biddingStrategyId && !providerIds) {
+        // Do nothing
       } else {
         this._throw(errors.InvalidWorkerConfiguration,
           'must provide both bidding strategy id and provide ids or neither' );
@@ -113,11 +114,11 @@ class WorkerConfiguration extends WMObject {
    */
   evaluate(satisfiers) {
     if (typeof satisfiers !== 'object') {
-      this._throw(errors.InvalidSatisfiers, 'invalid satisfiers provided'); 
+      this._throw(errors.InvalidSatisfiers, 'invalid satisfiers provided');
     }
 
     if (typeof satisfiers.workerType !== 'string') {
-      this._throw(errors.InvalidSatisfiers, 'workerType is required satisfier'); 
+      this._throw(errors.InvalidSatisfiers, 'workerType is required satisfier');
     }
 
     let outcome = this.rules.evaluate(satisfiers);
@@ -178,7 +179,6 @@ class WorkerConfiguration extends WMObject {
   }
 }
 
-
 /**
  * This function understands how to convert the serialised format of a worker
  * configuration and create either a Provisioned or Static WorkerConfiguration
@@ -206,7 +206,7 @@ function buildWorkerConfiguration(config) {
 
   const err = (msg) => {
     throw new errors.InvalidWorkerConfiguration(`${id}: ${msg}`);
-  }
+  };
 
   const assertArrayOfStrings = (array, msg) => {
     if (!Array.isArray(array)) {
@@ -217,7 +217,7 @@ function buildWorkerConfiguration(config) {
         err(msg);
       }
     }
-  } 
+  };
 
   if (defaultBiddingStrategyId && typeof defaultBiddingStrategyId !== 'string') {
     err('default bidding strategy id must be string');

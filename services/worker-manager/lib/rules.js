@@ -21,7 +21,7 @@ class Conditions extends WMObject {
     super({id});
 
     if (conditions !== null && typeof conditions !== 'object') {
-        this._throw(errors.InvalidConditions, 'conditions must be null or an object');
+      this._throw(errors.InvalidConditions, 'conditions must be null or an object');
     }
 
     // Validate that every condition is either a string or a list of strings
@@ -251,4 +251,4 @@ module.exports = {
   Rule,
   Ruleset,
   assign,
-}
+};

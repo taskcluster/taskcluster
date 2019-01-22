@@ -1,4 +1,3 @@
-
 const assume = require('assume');
 const {client: _client, server: _server} = require('./helper');
 const fs = require('fs');
@@ -6,7 +5,7 @@ const path = require('path');
 
 suite('API', () => {
   let server;
-  let client; 
+  let client;
   let workerConfig;
 
   suiteSetup(async () => {

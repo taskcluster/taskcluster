@@ -1,4 +1,3 @@
-
 const path = require('path');
 const fs = require('fs');
 const assume = require('assume');
@@ -40,7 +39,7 @@ class FakeProvider extends Provider {
       firm: false,
       reliability: 7500,
       estimatedDelay: 1000,
-      providerData: {a:1},
+      providerData: {a: 1},
     });
   }
 }
@@ -116,7 +115,7 @@ suite('Provisioner', () => {
     sandbox.assert.calledOnce(biddingStrategy.determineDemand);
     sandbox.assert.calledWith(biddingStrategy.determineDemand.firstCall, {
       workerType: 'worker-type-1',
-      biddingStrategyData: {minCapacity:0, maxCapacity:300},
+      biddingStrategyData: {minCapacity: 0, maxCapacity: 300},
     });
 
   });
@@ -135,7 +134,7 @@ suite('Provisioner', () => {
     sandbox.assert.calledOnce(biddingStrategy.determineDemand);
     sandbox.assert.calledWith(biddingStrategy.determineDemand.firstCall, {
       workerType: 'worker-type-1',
-      biddingStrategyData: {minCapacity:0, maxCapacity:300},
+      biddingStrategyData: {minCapacity: 0, maxCapacity: 300},
     });
 
   });
@@ -168,7 +167,7 @@ suite('Provisioner', () => {
 
   test('should receive bids from providers, reject all', async () =>{
     let bids = [
-      provider.createBid({price:1, capacity:4, utilityFactor:1}),
+      provider.createBid({price: 1, capacity: 4, utilityFactor: 1}),
     ];
 
     biddingStrategy.determineDemand
@@ -190,7 +189,7 @@ suite('Provisioner', () => {
     sandbox.assert.calledOnce(biddingStrategy.determineDemand);
     sandbox.assert.calledWith(biddingStrategy.determineDemand.firstCall, {
       workerType: 'worker-type-1',
-      biddingStrategyData: {minCapacity:0, maxCapacity:300},
+      biddingStrategyData: {minCapacity: 0, maxCapacity: 300},
     });
 
     sandbox.assert.calledOnce(provider.proposeBids);
@@ -208,7 +207,7 @@ suite('Provisioner', () => {
     sandbox.assert.calledOnce(biddingStrategy.selectBids);
     sandbox.assert.calledWith(biddingStrategy.selectBids.firstCall, {
       workerType: 'worker-type-1',
-      biddingStrategyData: {minCapacity:0, maxCapacity:300},
+      biddingStrategyData: {minCapacity: 0, maxCapacity: 300},
       bids: sandbox.match.every(sandbox.match.instanceOf(Bid)),
       demand: 1,
     });
@@ -217,7 +216,7 @@ suite('Provisioner', () => {
 
   test('should receive bids from providers, submit all', async () =>{
     let bids = [
-      provider.createBid({price:1, capacity:4, utilityFactor:1}),
+      provider.createBid({price: 1, capacity: 4, utilityFactor: 1}),
     ];
 
     biddingStrategy.determineDemand
@@ -239,7 +238,7 @@ suite('Provisioner', () => {
     sandbox.assert.calledOnce(biddingStrategy.determineDemand);
     sandbox.assert.calledWith(biddingStrategy.determineDemand.firstCall, {
       workerType: 'worker-type-1',
-      biddingStrategyData: {minCapacity:0, maxCapacity:300},
+      biddingStrategyData: {minCapacity: 0, maxCapacity: 300},
     });
 
     sandbox.assert.calledOnce(provider.proposeBids);
@@ -257,7 +256,7 @@ suite('Provisioner', () => {
     sandbox.assert.calledOnce(biddingStrategy.selectBids);
     sandbox.assert.calledWith(biddingStrategy.selectBids.firstCall, {
       workerType: 'worker-type-1',
-      biddingStrategyData: {minCapacity:0, maxCapacity:300},
+      biddingStrategyData: {minCapacity: 0, maxCapacity: 300},
       bids: sandbox.match.every(sandbox.match.instanceOf(Bid)),
       demand: 1,
     });
@@ -265,7 +264,7 @@ suite('Provisioner', () => {
 
   test('it should run as an iterating function', async () => {
     let bids = [
-      provider.createBid({price:1, capacity:4, utilityFactor:1}),
+      provider.createBid({price: 1, capacity: 4, utilityFactor: 1}),
     ];
 
     biddingStrategy.determineDemand
@@ -289,4 +288,3 @@ suite('Provisioner', () => {
     await provisioner.terminate();
   });
 });
-

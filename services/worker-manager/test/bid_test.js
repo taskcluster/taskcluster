@@ -14,7 +14,7 @@ suite('Bid', () => {
       firm: false,
       reliability: 7500,
       estimatedDelay: 1000,
-      providerData: {a:1},
+      providerData: {a: 1},
     });
   });
 
@@ -30,7 +30,7 @@ suite('Bid', () => {
       firm: false,
       reliability: 7500,
       estimatedDelay: 1000,
-      providerData: {a:1},
+      providerData: {a: 1},
     }).valuePerCapacity()).equals(1);
   });
 });

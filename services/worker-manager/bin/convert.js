@@ -9,7 +9,7 @@ const fs = require('fs');
  * It takes the following options:
  *   --input <file>: read this file instead of standard input
  *   --output <file>: write to this file instead of standard output
- * 
+ *
  * This program can also be imported into other projects through the
  * convert(inputStream, outputStream) option.
  *
@@ -58,8 +58,8 @@ async function convert(inputStream, outputStream) {
         scalingRatio: data.scalingRatio,
         minPrice: data.minPrice,
         maxPrice: data.maxPrice,
-      }
-    }
+      },
+    },
   });
 
   config.rules.push({
@@ -71,7 +71,7 @@ async function convert(inputStream, outputStream) {
     values: {
       documentationData: {},
       schemaData: {},
-    }
+    },
   });
 
   function addRule(list, prop) {
@@ -97,7 +97,7 @@ async function convert(inputStream, outputStream) {
         throw new Error('invalid list item: ' + prop);
       }
       if (isEmpty(item.userData) && isEmpty(item.launchSpec)) {
-        continue
+        continue;
       }
       let conditions = {};
       conditions[prop] = item[prop];
@@ -109,7 +109,7 @@ async function convert(inputStream, outputStream) {
           providerData: {
             userData: item.userData || {},
             launchSpec: item.launchSpec || {},
-          }
+          },
         },
       });
     }
@@ -129,19 +129,19 @@ async function main(argv) {
 
   for (let i = 2; i < argv.length; i++) {
     switch(argv[i]) {
-      case '--input':
-        if (argv[++i] && fs.existsSync(argv[i])) {
-          inputStream = fs.createReadStream(argv[i]);
-        }
-        break;
-      case '--output':
-        if (argv[++i] && fs.existsSync(argv[i])) {
-          outputStream = fs.createWriteStream(argv[i]);
-        }
-        break;
-      default:
-        process.stderr.write('unsupported argument: ' + argv[i] + '\n');
-        process.exit(1);
+    case '--input':
+      if (argv[++i] && fs.existsSync(argv[i])) {
+        inputStream = fs.createReadStream(argv[i]);
+      }
+      break;
+    case '--output':
+      if (argv[++i] && fs.existsSync(argv[i])) {
+        outputStream = fs.createWriteStream(argv[i]);
+      }
+      break;
+    default:
+      process.stderr.write('unsupported argument: ' + argv[i] + '\n');
+      process.exit(1);
     }
   }
 
@@ -153,4 +153,3 @@ module.exports = {main, convert};
 if (!module.parent) {
   main(process.argv).catch(console.error);
 }
-

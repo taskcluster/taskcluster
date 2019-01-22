@@ -1,4 +1,3 @@
-
 const sinon = require('sinon');
 const assume = require('assume');
 
@@ -110,7 +109,7 @@ suite('WorkerConfiguration', () => {
       },
       providerData: {
         info3: 'rule-3-applied',
-      }, 
+      },
       workerType: 'worker-type-1',
       schemaData: {
       },
@@ -132,7 +131,7 @@ suite('WorkerConfiguration', () => {
       providerData: {
         info1: 'rule-1-applied',
         info3: 'rule-3-applied',
-      }, 
+      },
       workerType: 'worker-type-1',
       schemaData: {
       },
@@ -218,14 +217,14 @@ suite('buildWorkerConfiguration', () => {
         providerData: {
           info1: 'rule-1-applied',
           info3: 'rule-3-applied',
-        }, 
+        },
         workerType: 'worker-type-1',
         schemaData: {
         },
       });
       assume(result).instanceof(WorkerConfiguration);
     });
-    
+
     test('should allow setting default provisioner ids', () => {
       let result = buildWorkerConfiguration({
         id: 'worker-configuration-1',
@@ -248,14 +247,14 @@ suite('buildWorkerConfiguration', () => {
         providerData: {
           info1: 'rule-1-applied',
           info3: 'rule-3-applied',
-        }, 
+        },
         workerType: 'worker-type-1',
         schemaData: {
         },
       });
       assume(result).instanceof(WorkerConfiguration);
     });
-    
+
     test('should allow setting default bidding strategy id', () => {
       let result = buildWorkerConfiguration({
         id: 'worker-configuration-1',
@@ -278,13 +277,13 @@ suite('buildWorkerConfiguration', () => {
         providerData: {
           info1: 'rule-1-applied',
           info3: 'rule-3-applied',
-        }, 
+        },
         workerType: 'worker-type-1',
         schemaData: {
         },
       });
       assume(result).instanceof(WorkerConfiguration);
-    });    
+    });
 
     test('should string worker type list', () => {
       let result = buildWorkerConfiguration({
@@ -306,13 +305,13 @@ suite('buildWorkerConfiguration', () => {
         providerData: {
           info1: 'rule-1-applied',
           info3: 'rule-3-applied',
-        }, 
+        },
         workerType: 'worker-type-1',
         schemaData: {
         },
       });
       assume(result).instanceof(WorkerConfiguration);
-    }); 
+    });
 
     test('should throw without setting provisioner ids', () => {
       assume(() => {
@@ -338,6 +337,6 @@ suite('buildWorkerConfiguration', () => {
           rules: mockRules(),
         });
       }).throws(errors.InvalidWorkerConfiguration);
-    });    
+    });
   });
 });

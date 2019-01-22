@@ -22,11 +22,11 @@ class UnknownError extends Error {
     }
     this.code = this.constructor.name;
   }
-};
+}
 
 // Sadly, errors which are base classes for other errors need
 // to be declared outside the loop. Luckily there's few
-class InvalidWorkerConfiguration extends UnknownError {};
+class InvalidWorkerConfiguration extends UnknownError {}
 
 const _errors = [
   UnknownError,
@@ -48,7 +48,7 @@ const _errors = [
   class InvalidPluginConfiguration extends UnknownError {},
 ];
 
-let x = {}
+let x = {};
 for (let error of _errors) {
   if (x[error.name]) {
     throw new Error('Duplicated Error: ' + error.name);
@@ -63,7 +63,7 @@ const errors = new Proxy(x, {
       throw new UnknownError('Unknown Error Type: ' + prop);
     }
     return e;
-  }
+  },
 });
 
 /**
@@ -108,7 +108,7 @@ class WMObject {
  * This function loads a Plugin in a generalised manner.
  * This design is intentionally kept as minimal as possible to enable
  * a simple extensibility model without creating too complex a model.
- * 
+ *
  * All plugins must:
  *   1. Be in a file named the all lower case version of their className.
  *   Example: `EC2Provider` -> `ec2provider.js`
@@ -137,7 +137,7 @@ function loadPlugin(type, dir, className) {
     throw new errors.InvalidPluginConfiguration(`${className} not found in ${file} exports`);
   }
 
-  if (!clazz.prototype instanceof type) {
+  if (!(clazz.prototype instanceof type)) {
     throw new errors.InvalidPluginConfiguration(`${file}:exports.${clazz.name} does not derive from ${type.name}`);
   }
 

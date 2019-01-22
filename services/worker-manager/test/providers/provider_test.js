@@ -88,7 +88,7 @@ function testProvider(subject, workerConfiguration, runBefore, runAfter) {
       }
 
       await assume(() => {
-        return subject.listWorkers({states: ['invalid'], workerTypes: [workerType]}); 
+        return subject.listWorkers({states: ['invalid'], workerTypes: [workerType]});
       }).rejects();
     });
 
@@ -115,7 +115,7 @@ function testProvider(subject, workerConfiguration, runBefore, runAfter) {
         demand: 10,
       });
 
-      assume(bids).not.empty()
+      assume(bids).not.empty();
 
       for (let bid of bids) {
         assume(bid).inherits(Bid);
@@ -166,4 +166,4 @@ function testProvider(subject, workerConfiguration, runBefore, runAfter) {
 
 module.exports = {
   testProvider,
-}
+};

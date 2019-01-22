@@ -78,7 +78,7 @@ builder.declare({
   input: 'worker-configuration.yml',
   scopes: 'worker-manager:manage-worker-configuration:<workerConfigurationId>',
   description: [
-    'Create a worker configuration'
+    'Create a worker configuration',
   ].join('\n'),
 }, async function(req, res) {
   let id = req.params.workerConfigurationId;
@@ -91,9 +91,9 @@ builder.declare({
   let workerTypeConflicts = await workerTypeAlreadyTracked(this.datastore, workerConfiguration);
   if (workerTypeConflicts.length > 0) {
     return res.reportError('RequestConflict', 'worker type conflicts', {
-      conflicts: workerTypeConflicts
+      conflicts: workerTypeConflicts,
     });
-  };
+  }
 
   // TODO Idempotency
   await this.datastore.set('worker-configurations', id, req.body);
@@ -110,7 +110,7 @@ builder.declare({
   scopes: 'worker-manager:manage-worker-configuration:<workerConfigurationId>',
   input: 'worker-configuration.yml',
   description: [
-    'Update a worker configuration'
+    'Update a worker configuration',
   ].join('\n'),
 }, async function(req, res) {
   let id = req.params.workerConfigurationId;
@@ -132,9 +132,9 @@ builder.declare({
   let workerTypeConflicts = await workerTypeAlreadyTracked(this.datastore, workerConfiguration);
   if (workerTypeConflicts.length > 0) {
     return res.reportError('RequestConflict', 'worker type conflicts', {
-      conflicts: workerTypeConflicts
+      conflicts: workerTypeConflicts,
     });
-  };
+  }
 
   await this.datastore.set('worker-configurations', id, req.body);
 
@@ -149,7 +149,7 @@ builder.declare({
   stability: APIBuilder.stability.experimental,
   output: 'worker-configuration.yml',
   description: [
-    'Get a worker configuration'
+    'Get a worker configuration',
   ].join('\n'),
 }, async function(req, res) {
   let id = req.params.workerConfigurationId;
@@ -170,7 +170,7 @@ builder.declare({
   title: 'Remove Worker Configuration',
   stability: APIBuilder.stability.experimental,
   description: [
-    'Get a worker configuration'
+    'Get a worker configuration',
   ].join('\n'),
 }, async function(req, res) {
   let id = req.params.workerConfigurationId;
@@ -185,7 +185,7 @@ builder.declare({
   title: 'Retrieve Worker Configuration',
   stability: 'experimental',
   description: [
-    'Retrieve a worker configuration as a set of rules'
+    'Retrieve a worker configuration as a set of rules',
   ].join('\n'),
 }, async function(req, res) {
   let id = req.params.workerConfigurationId;

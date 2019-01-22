@@ -88,7 +88,7 @@ class BaseDatastore extends WMObject {
   async _listNamespaces() {
     this._throw(errors.MethodUnimplemented, 'BaseDatastore.list()');
   }
-  
+
   async _list(namespace) {
     this._throw(errors.MethodUnimplemented, 'BaseDatastore.list()');
   }
@@ -130,7 +130,7 @@ class InMemoryDatastore extends BaseDatastore {
   }
 
   async _delete(namespace, key, value) {
-    let ns = this._getNamespace(namespace)
+    let ns = this._getNamespace(namespace);
     ns.delete(key, value);
     if (ns.size === 0) {
       this.namespaces.delete(namespace);
@@ -150,5 +150,3 @@ module.exports = {
   BaseDatastore,
   InMemoryDatastore,
 };
-
-

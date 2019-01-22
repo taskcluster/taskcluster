@@ -32,7 +32,7 @@ let load = loader({
     require: ['cfg'],
     setup: async ({cfg}) =>{
       return new InMemoryDatastore({id: 'worker-manager'});
-    }
+    },
   },
 
   schemaset: {
@@ -80,7 +80,7 @@ let load = loader({
         providers.push(provider);
       }
       return providers;
-    }
+    },
   },
 
   biddingStrategies: {
@@ -93,7 +93,7 @@ let load = loader({
         biddingStrategies.push(biddingStrategy);
       }
       return biddingStrategies;
-    }
+    },
   },
 
   provisioner: {
@@ -105,14 +105,14 @@ let load = loader({
         biddingStrategies,
         datastore,
       });
-    }
+    },
   },
 
   provisionerservice: {
     requires: ['provisioner'],
     setup: async ({provisioner}) => {
       await provisioner.initiate();
-    }
+    },
   },
 
 }, ['process', 'profile']);

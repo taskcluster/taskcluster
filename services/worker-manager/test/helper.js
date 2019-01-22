@@ -1,4 +1,3 @@
-
 const {fakeauth} = require('taskcluster-lib-testing');
 const client = require('taskcluster-client');
 const builder = require('../lib/api');
