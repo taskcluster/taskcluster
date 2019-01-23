@@ -4,7 +4,7 @@ Requires=docker.service
 
 [Service]
 Type=notify
-ExecStart=/usr/local/bin/node /root/docker_worker/src/bin/worker.js --host test production
+ExecStart=/usr/local/bin/node /root/docker_worker/src/bin/worker.js --host packet production
 Restart=on-failure
 User=root
 
