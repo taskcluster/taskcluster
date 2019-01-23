@@ -4,7 +4,6 @@ const assert = require('assert');
 const _ = require('lodash');
 // Someone should rename utils to scopes...
 const utils = require('taskcluster-lib-scopes');
-const hoek = require('hoek');
 const https = require('https');
 const crypto = require('crypto');
 
@@ -302,7 +301,10 @@ const createSignatureValidator = function(options) {
 
           let bewitString;
           try {
-            bewitString = hoek.base64urlDecode(parts[3]);
+            if (!/^[\w\-]*$/.test(parts[3])) {
+              throw new Error('invalid character in bewit');
+            }
+            bewitString = Buffer.from(parts[3], 'base64').toString('binary');
           } catch (err) {
             bewitString = err;
           }
