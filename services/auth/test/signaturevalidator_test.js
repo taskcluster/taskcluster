@@ -77,7 +77,7 @@ suite(helper.suiteName(__filename), function() {
         // create the authorization "header"
         let url = 'https://' + input.host + input.resource;
         input['authorization'] = hawk.client.header(
-          url, input.method, input.authorization).field;
+          url, input.method, input.authorization).header;
       }
 
       if (input.bewit) {

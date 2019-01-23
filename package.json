@@ -74,7 +74,6 @@
     "source-map-support": "^0.5.9",
     "split": "^1.0.1",
     "superagent": "^4.1.0",
-    "superagent-hawk": "^0.0.6",
     "tar-fs": "^1.16.3",
     "tar-stream": "^1.6.2",
     "taskcluster-lib-testing": "link:libraries/testing",
