@@ -1,10 +1,6 @@
 {
   "name": "taskcluster-references",
   "version": "1.0.0",
-  "main": "src/main.js",
-  "bin": {
-    "taskcluster-installer": "./src/main.js"
-  },
   "scripts": {
     "lint": "eslint src/*.js",
     "test": "echo 'no tests for tc-references'",
