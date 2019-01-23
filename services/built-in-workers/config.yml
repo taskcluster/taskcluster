@@ -2,7 +2,7 @@ defaults:
   app:
     publishMetaData: !env:bool PUBLISH_METADATA
 
-  # TaskCluster credentials
+  # Taskcluster credentials
   taskcluster:
     rootUrl: !env TASKCLUSTER_ROOT_URL
     credentials:

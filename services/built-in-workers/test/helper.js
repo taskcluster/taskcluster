@@ -44,7 +44,7 @@ const stubbedQueue = () => {
   };
   const queue = new taskcluster.Queue({
     rootUrl: helper.rootUrl,
-    credentials:      {
+    credentials: {
       clientId: 'index-server',
       accessToken: 'none',
     },

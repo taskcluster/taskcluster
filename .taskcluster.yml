@@ -41,6 +41,7 @@ tasks:
     - typed-env-config
     - taskcluster-lib-validate
     - taskcluster-auth
+    - taskcluster-built-in-workers
     - taskcluster-github
     - taskcluster-hooks
     - taskcluster-index

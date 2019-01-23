@@ -74,7 +74,7 @@ suite('TaskQueue_test.js', function() {
             provisionerId: 'garbage-hybrid1999',
             workerType: 'succeed',
             payload: {
-              task:'put',
+              task: 'put',
             },
           },
         },
@@ -103,7 +103,7 @@ suite('TaskQueue_test.js', function() {
             provisionerId: 'garbage-hybrid1999',
             workerType: 'fail',
             payload: {
-              task:'put',
+              task: 'put',
             },
           },
         },
