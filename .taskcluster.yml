@@ -62,7 +62,7 @@ tasks:
       image: 'jonatanblue/gitlab-ci-terraform:latest'
       command: 'cd infrastructure/terraform; terraform fmt -check'
     - name: ui
-      image: 'taskcluster/taskcluster-web-tests@sha256:64bf5f8dfa9b0a23f8457ff2548b82040d35f64c7c6b3b1d98975d17e3ae54ef'
+      image: 'taskcluster/tc-web-testing@sha256:b60f2d5a151e48bdac4e3e4735619fd0a3e0e4ef815e050cdfed2d3e4a26220d'
       env:
         NO_TEST_SKIP: 'true'
       command: 'cd ui && yarn && yarn lint && { Xvfb :99 -screen 0 640x480x8 -nolisten tcp & } && sleep 2 && DISPLAY=:99 yarn test'
