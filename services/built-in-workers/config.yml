@@ -12,6 +12,10 @@ defaults:
   monitoring:
     enable: !env:bool MONITORING_ENABLE
 
+  worker:
+    provisionerId: "built-in"
+    workerGroup: "built-in"
+
 test:
   app:
     publishMetaData: false

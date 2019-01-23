@@ -3,6 +3,7 @@ const monitor = require('taskcluster-lib-monitor');
 const docs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
 const config = require('typed-env-config');
+const taskqueue = require('./TaskQueue');
 
 const load = loader({
   cfg: {
@@ -22,6 +23,14 @@ const load = loader({
     }),
   },
 
+  queue: {
+    requires: ['cfg'],
+    setup: ({cfg}) => new taskcluster.Queue({
+      rootUrl: cfg.taskcluster.rootUrl,
+      credentials: cfg.taskcluster.credentials,
+    }),
+  },
+
   docs: {
     requires: ['cfg'],
     setup: ({cfg}) => docs.documenter({
@@ -37,10 +46,22 @@ const load = loader({
     setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
-  server: {
-    requires: ['cfg', 'docs'],
-    setup: ({cfg, docs}) => {
-      console.log('Hello, world.');
+  succeedTaskQueue:{
+    requires: ['queue', 'cfg'],
+    setup: ({cfg, queue}) => new taskqueue.TaskQueue(cfg, queue, 'succeed'),
+  },
+
+  failTaskQueue:{
+    requires: ['queue', 'cfg'],
+    setup: ({cfg, queue}) => new taskqueue.TaskQueue(cfg, queue, 'fail'),
+  },
+  server:{
+    requires:['succeedTaskQueue', 'failTaskQueue'],
+    setup: ({failTaskQueue, succeedTaskQueue}) => async function() {
+      await Promise.all([
+        this.succeedTaskQueue.runWorker(),
+        this.failTaskQueue.runWorker(),
+      ]);
     },
   },
 }, ['process', 'profile']);
@@ -55,6 +76,5 @@ if (!module.parent) {
     process.exit(1);
   });
 }
-
 // Export load for tests
 module.exports = load;
