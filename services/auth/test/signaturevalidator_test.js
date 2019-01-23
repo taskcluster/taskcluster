@@ -68,7 +68,7 @@ suite(helper.suiteName(__filename), function() {
 
         // stringify ext
         if (typeof input.authorization.ext === 'object') {
-          input.authorization.ext = new Buffer(
+          input.authorization.ext = Buffer.from(
             JSON.stringify(input.authorization.ext))
             .toString('base64');
         }
@@ -76,7 +76,7 @@ suite(helper.suiteName(__filename), function() {
         // create the authorization "header"
         let url = 'https://' + input.host + input.resource;
         input['authorization'] = hawk.client.header(
-          url, input.method, input.authorization).field;
+          url, input.method, input.authorization).header;
       }
 
       if (input.bewit) {
@@ -86,7 +86,7 @@ suite(helper.suiteName(__filename), function() {
         });
 
         if (typeof input.bewit.ext === 'object') {
-          input.bewit.ext = new Buffer(
+          input.bewit.ext = Buffer.from(
             JSON.stringify(input.bewit.ext))
             .toString('base64');
         }

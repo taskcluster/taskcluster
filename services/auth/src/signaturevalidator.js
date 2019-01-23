@@ -17,7 +17,7 @@ const crypto = require('crypto');
 const parseExt = function(ext) {
   // Attempt to parse ext
   try {
-    ext = JSON.parse(new Buffer(ext, 'base64').toString('utf-8'));
+    ext = JSON.parse(Buffer.from(ext, 'base64').toString('utf-8'));
   } catch (err) {
     throw new Error('Failed to parse ext');
   }
@@ -204,104 +204,59 @@ const createSignatureValidator = function(options) {
     'options.expandScopes must be a function');
   assert(options.monitor, 'options.monitor must be provided');
   assert(!options.nonceManager, 'nonceManager is not supported');
-  let loadCredentials = function(clientId, ext, callback) {
+
+  const loadCredentials = async (clientId, ext) => {
     // We may have two clientIds here: the credentialName (the one the caller
     // sent in the Hawk Authorization header) and the issuingClientId (the one
     // that signed the temporary credentials).
     let credentialName = clientId,
       issuingClientId = clientId;
 
-    (async () => {
-      // extract ext.certificate.issuer, if present
-      if (ext) {
-        ext = parseExt(ext);
-        if (ext.certificate && ext.certificate.issuer) {
-          issuingClientId = ext.certificate.issuer;
-          if (typeof issuingClientId !== 'string') {
-            throw new Error('ext.certificate.issuer must be a string');
-          }
-          if (issuingClientId === credentialName) {
-            throw new Error('ext.certificate.issuer must differ from the supplied clientId');
-          }
+    // extract ext.certificate.issuer, if present
+    if (ext) {
+      ext = parseExt(ext);
+      if (ext.certificate && ext.certificate.issuer) {
+        issuingClientId = ext.certificate.issuer;
+        if (typeof issuingClientId !== 'string') {
+          throw new Error('ext.certificate.issuer must be a string');
+        }
+        if (issuingClientId === credentialName) {
+          throw new Error('ext.certificate.issuer must differ from the supplied clientId');
         }
       }
+    }
 
-      let accessToken, scopes, expires;
-      ({clientId, expires, accessToken, scopes} = await options.clientLoader(issuingClientId));
+    let accessToken, scopes, expires;
+    ({clientId, expires, accessToken, scopes} = await options.clientLoader(issuingClientId));
 
-      // apply restrictions based on the ext field
-      if (ext) {
-        ({scopes, expires, accessToken} = limitClientWithExt(
-          credentialName, issuingClientId, accessToken,
-          scopes, expires, ext, options.expandScopes));
-      }
+    // apply restrictions based on the ext field
+    if (ext) {
+      ({scopes, expires, accessToken} = limitClientWithExt(
+        credentialName, issuingClientId, accessToken,
+        scopes, expires, ext, options.expandScopes));
+    }
 
-      callback(null, {
-        key: accessToken,
-        algorithm: 'sha256',
-        clientId: credentialName,
-        expires: expires,
-        scopes: scopes,
-      });
-    })().catch(callback);
+    return {
+      key: accessToken,
+      algorithm: 'sha256',
+      clientId: credentialName,
+      expires: expires,
+      scopes: scopes,
+    };
   };
-  return function(req) {
-    return new Promise(function(accept) {
-      let authenticated = function(err, credentials, artifacts) {
-        let result = null;
-        if (err) {
-          let message = 'Unknown authorization error';
-          if (err.output && err.output.payload && err.output.payload.error) {
-            message = err.output.payload.error;
-            if (err.output.payload.message) {
-              message += ': ' + err.output.payload.message;
-            }
-          } else if (err.message) {
-            message = err.message;
-          }
-          result = {
-            status: 'auth-failed',
-            message: '' + message,
-          };
-        } else {
-          result = {
-            status: 'auth-success',
-            scheme: 'hawk',
-            expires: credentials.expires,
-            scopes: credentials.scopes,
-            clientId: credentials.clientId,
-          };
-          if (artifacts.hash) {
-            result.hash = artifacts.hash;
-          }
-        }
-        options.monitor.log({
-          time: new Date(),
-          event: 'signature-validation',
-          version: 3,
-          expires: credentials? credentials.expires : '',
-          scopes: credentials? credentials.scopes : [],
-          clientId: credentials? credentials.clientId : '',
-          status: result.status || '',
-          scheme: result.scheme || '',
-          message: result.message || '',
-          hash: result.hash || '',
-          host: req.host,
-          port: req.port,
-          resource: req.resource,
-          method: req.method.toUpperCase(),
-          sourceIp: req.sourceIp || '0.0.0.0',
-        });
-        return accept(result);
-      };
+
+  return async function(req) {
+    let credentials, attributes, result;
+
+    try {
       if (req.authorization) {
-        hawk.server.authenticate({
+        authResult = await hawk.server.authenticate({
           method: req.method.toUpperCase(),
           url: req.resource,
           host: req.host,
           port: req.port,
           authorization: req.authorization,
-        }, function(clientId, callback) {
+        }, async (clientId) => {
           let ext = undefined;
 
           // Parse authorization header for ext
@@ -314,7 +269,7 @@ const createSignatureValidator = function(options) {
           }
 
           // Get credentials with ext
-          loadCredentials(clientId, ext, callback);
+          return loadCredentials(clientId, ext);
         }, {
           // Not sure if JSON stringify is not deterministic by specification.
           // I suspect not, so we'll postpone this till we're sure we want to do
@@ -325,15 +280,18 @@ const createSignatureValidator = function(options) {
           // since all our services require https we hardcode the allowed skew
           // to a very high number (15 min) similar to AWS.
           timestampSkewSec: 15 * 60,
-        }, authenticated);
+        });
+
+        credentials = authResult.credentials;
+        attributes = authResult.artifacts; // Hawk uses "artifacts" and "attributes"
       } else {
         // If there is no authorization header we'll attempt a login with bewit
-        hawk.uri.authenticate({
+        authResult = await hawk.uri.authenticate({
           method: req.method.toUpperCase(),
           url: req.resource,
           host: req.host,
           port: req.port,
-        }, function(clientId, callback) {
+        }, async (clientId) => {
           let ext = undefined;
 
           // Get bewit string (stolen from hawk)
@@ -360,10 +318,59 @@ const createSignatureValidator = function(options) {
           }
 
           // Get credentials with ext
-          loadCredentials(clientId, ext, callback);
-        }, {}, authenticated);
+          return loadCredentials(clientId, ext);
+        }, {});
+
+        credentials = authResult.credentials;
+        attributes = authResult.attributes;
       }
+
+      result = {
+        status: 'auth-success',
+        scheme: 'hawk',
+        expires: credentials.expires,
+        scopes: credentials.scopes,
+        clientId: credentials.clientId,
+      };
+      if (attributes.hash) {
+        result.hash = attributes.hash;
+      }
+    } catch (err) {
+      let message = err.message || err.toString();
+      // Hawk converts all errors to Boom's, hiding errors from things like
+      // clientLoader.  However, it leaves err.message alone.  So, handle
+      // non-server boom's by getting the payload error/message, but return
+      // others as a simple error string.
+      if (err.isBoom && !err.isServer) {
+        message = err.output.payload.error;
+        if (err.output.payload.message) {
+          message += ': ' + err.output.payload.message;
+        }
+      }
+      result = {
+        status: 'auth-failed',
+        message: message.toString(),
+      };
+    }
+    options.monitor.log({
+      time: new Date(),
+      event: 'signature-validation',
+      version: 3,
+      expires: credentials? credentials.expires : '',
+      scopes: credentials? credentials.scopes : [],
+      clientId: credentials? credentials.clientId : '',
+      status: result.status || '',
+      scheme: result.scheme || '',
+      message: result.message || '',
+      hash: result.hash || '',
+      host: req.host,
+      port: req.port,
+      resource: req.resource,
+      method: req.method.toUpperCase(),
+      sourceIp: req.sourceIp || '0.0.0.0',
     });
+
+    return result;
   };
 };
 

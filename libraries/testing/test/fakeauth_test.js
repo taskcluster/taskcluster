@@ -91,17 +91,17 @@ suite('fakeauth', function() {
       },
     };
     if (extContent) {
-      content['ext'] = new Buffer(JSON.stringify(extContent)).toString('base64');
+      content['ext'] = Buffer.from(JSON.stringify(extContent)).toString('base64');
     }
 
-    var header = hawk.client.header(reqUrl, 'GET', content);
+    var {header} = hawk.client.header(reqUrl, 'GET', content);
 
     var bewit = hawk.uri.getBewit(reqUrl, content);
     var bewitUrl = reqUrl + '?bewit=' + bewit;
     return Promise.all([
       request
         .get(reqUrl)
-        .set('Authorization', header.field)
+        .set('Authorization', header)
         .then(function(res) {
           debug(res.body);
           return res;

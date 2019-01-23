@@ -1,5 +1,6 @@
 const _ = require('lodash');
-const request = require('superagent-hawk')(require('superagent'));
+const request = require('superagent');
+const hawk = require('hawk');
 const assert = require('assert');
 const Promise = require('promise');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -105,6 +106,14 @@ suite('api/auth', function() {
     });
   };
 
+  const requestWithHawk = (url, auth, ext) => {
+    const {header} = hawk.client.header(url, 'GET', {
+      credentials: auth,
+      ext,
+    });
+    return request.get(url).set('Authorization', header);
+  };
+
   testEndpoint({
     method: 'get',
     route: '/test-deprecated-satisfies',
@@ -119,7 +128,7 @@ suite('api/auth', function() {
         label: 'function that still uses satisfies fails',
         desiredStatus: 500,
         id: 'nobody',
-        tester: (auth, url) => request.get(url).hawk(auth),
+        tester: (auth, url) => requestWithHawk(url, auth),
       },
     ],
   });
@@ -136,47 +145,47 @@ suite('api/auth', function() {
       {
         label: 'request with static scope',
         id: 'test-client',
-        tester: (auth, url) => request.get(url).hawk(auth),
+        tester: (auth, url) => requestWithHawk(url, auth),
       },
       {
         label: 'request with static scope - fail no scope',
         desiredStatus: 403,
         id: 'nobody',
-        tester: (auth, url) => request.get(url).hawk(auth),
+        tester: (auth, url) => requestWithHawk(url, auth),
       },
       {
         label: 'request with static scope - fail bad authentication',
         desiredStatus: 401,
         id: 'doesntexist',
-        tester: (auth, url) => request.get(url).hawk(auth),
+        tester: (auth, url) => requestWithHawk(url, auth),
       },
       {
         label: 'static-scope with authorizedScopes',
         id: 'admin',
-        tester: (auth, url) => request.get(url).hawk(auth, {
-          ext: new Buffer(JSON.stringify({
+        tester: (auth, url) => requestWithHawk(url, auth,
+          Buffer.from(JSON.stringify({
             authorizedScopes: ['service:magic'],
           })).toString('base64'),
-        }),
+        ),
       },
       {
         label: 'static-scope with authorizedScopes (star)',
         id: 'admin',
-        tester: (auth, url) => request.get(url).hawk(auth, {
-          ext: new Buffer(JSON.stringify({
+        tester: (auth, url) => requestWithHawk(url, auth,
+          Buffer.from(JSON.stringify({
             authorizedScopes: ['service:ma*'],
           })).toString('base64'),
-        }),
+        ),
       },
       {
         label: 'static-scope with authorizedScopes (too strict)',
         id: 'admin',
         desiredStatus: 403,
-        tester: (auth, url) => request.get(url).hawk(auth, {
-          ext: new Buffer(JSON.stringify({
+        tester: (auth, url) => requestWithHawk(url, auth,
+          Buffer.from(JSON.stringify({
             authorizedScopes: ['some-irrelevant-scope'],
           })).toString('base64'),
-        }),
+        ),
       },
     ],
   });
@@ -197,7 +206,7 @@ suite('api/auth', function() {
       {
         label: 'request scopes from caller',
         id: 'test-client',
-        tester: (auth, url) => request.get(url).hawk(auth)
+        tester: (auth, url) => requestWithHawk(url, auth)
           .then(function(res) {
             assert(res.ok, 'Request failed');
             assert(res.body.scopes.length === 1, 'wrong number of scopes');
@@ -225,13 +234,13 @@ suite('api/auth', function() {
       {
         label: 'parameterized scopes',
         id: 'param',
-        tester: (auth, url) => request.get(url).hawk(auth),
+        tester: (auth, url) => requestWithHawk(url, auth),
       },
       {
         label: 'can\'t cheat parameterized scopes',
         id: 'nobody',
         desiredStatus: 403,
-        tester: (auth, url) => request.get(url).hawk(auth),
+        tester: (auth, url) => requestWithHawk(url, auth),
       },
     ],
   });
@@ -254,13 +263,13 @@ suite('api/auth', function() {
       {
         label: 'Parameterized scopes, if authorized is called twice',
         id: 'param2',
-        tester: (auth, url) => request.get(url).hawk(auth),
+        tester: (auth, url) => requestWithHawk(url, auth),
       },
       {
         label: 'Parameterized scopes, if authorized is called twice, with bad scope',
         desiredStatus: 403,
         id: 'param',
-        tester: (auth, url) => request.get(url).hawk(auth),
+        tester: (auth, url) => requestWithHawk(url, auth),
       },
     ],
   });
@@ -298,7 +307,7 @@ suite('api/auth', function() {
         label: 'insufficient scopes has documented details',
         id: 'nobody',
         desiredStatus: 200,
-        tester: (auth, url) => request.get(url).hawk(auth),
+        tester: (auth, url) => requestWithHawk(url, auth),
       },
     ],
   });
@@ -327,7 +336,7 @@ suite('api/auth', function() {
         label: 'override error',
         id: 'nobody',
         desiredStatus: 410,
-        tester: (auth, url) => request.get(url).hawk(auth),
+        tester: (auth, url) => requestWithHawk(url, auth),
       },
     ],
   });
@@ -362,7 +371,7 @@ suite('api/auth', function() {
       {
         label: 'client has sufficient scopes',
         id: 'admin',
-        tester: (auth, url) => request.get(url).hawk(auth)
+        tester: (auth, url) => requestWithHawk(url, auth)
           .then(function(res) {
             assert(res.body.clientId === 'admin');
             return res;
@@ -393,9 +402,7 @@ suite('api/auth', function() {
         label: 'client lacks scopes',
         desiredStatus: 403,
         id: 'nobody',
-        tester: (auth, url) => request
-          .get(url)
-          .hawk(auth),
+        tester: (auth, url) => requestWithHawk(url, auth),
       },
     ],
   });
@@ -413,8 +420,7 @@ suite('api/auth', function() {
       {
         label: 'With dynamic authentication',
         id: 'admin',
-        tester: (auth, url) => request
-          .get(url)
+        tester: (auth, url) => requestWithHawk(url, auth)
           .send({
             scopes: [
               'got-all/folder/t',
@@ -423,14 +429,15 @@ suite('api/auth', function() {
               'got-all/*',
               'got-only/this',
             ],
-          })
-          .hawk(auth),
+          }),
       },
       {
         label: 'With dynamic authentication (authorizedScopes)',
         id: 'admin',
-        tester: (auth, url) => request
-          .get(url)
+        tester: (auth, url) => requestWithHawk(url, auth,
+          Buffer.from(JSON.stringify({
+            authorizedScopes: ['got-all/*', 'got-only/this'],
+          })).toString('base64'))
           .send({
             scopes: [
               'got-all/folder/t',
@@ -439,19 +446,16 @@ suite('api/auth', function() {
               'got-all/*',
               'got-only/this',
             ],
-          })
-          .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
-              authorizedScopes: ['got-all/*', 'got-only/this'],
-            })).toString('base64'),
           }),
       },
       {
         label: 'With dynamic authentication (miss scoped)',
         desiredStatus: 403,
         id: 'admin',
-        tester: (auth, url) => request
-          .get(url)
+        tester: (auth, url) => requestWithHawk(url, auth,
+          Buffer.from(JSON.stringify({
+            authorizedScopes: ['got-all/*', 'got-only/this'],
+          })).toString('base64'))
           .send({
             scopes: [
               'got-all/folder/t',
@@ -461,28 +465,20 @@ suite('api/auth', function() {
               'got-only/this',
               'got-*',
             ],
-          })
-          .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
-              authorizedScopes: ['got-all/*', 'got-only/this'],
-            })).toString('base64'),
           }),
       },
       {
         label: 'With dynamic authentication (miss scoped again)',
         desiredStatus: 403,
         id: 'admin',
-        tester: (auth, url) => request
-          .get(url)
+        tester: (auth, url) => requestWithHawk(url, auth,
+          Buffer.from(JSON.stringify({
+            authorizedScopes: ['got-only/this'],
+          })).toString('base64'))
           .send({
             scopes: [
               'got-only/this*',
             ],
-          })
-          .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
-              authorizedScopes: ['got-only/this'],
-            })).toString('base64'),
           }),
       },
     ],
@@ -511,13 +507,11 @@ suite('api/auth', function() {
         label: 'extra scope expresesions',
         id: 'admin',
         params: {provisionerId: 'test-provisioner', workerType: 'test-worker'},
-        tester: (auth, url) => request
-          .get(url)
+        tester: (auth, url) => requestWithHawk(url, auth)
           .send({
             routes: ['routeA', 'routeB'],
             scopes: ['scope1', 'scope2'],
-          })
-          .hawk(auth),
+          }),
       },
     ],
   });
@@ -539,15 +533,12 @@ suite('api/auth', function() {
       {
         label: 'scope expression if/then (success)',
         id: 'admin',
-        tester: (auth, url) => request
-          .get(url)
+        tester: (auth, url) => requestWithHawk(url, auth,
+          Buffer.from(JSON.stringify({
+            authorizedScopes: ['nothing:useful'],
+          })).toString('base64'))
           .send({
             public: true,
-          })
-          .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
-              authorizedScopes: ['nothing:useful'],
-            })).toString('base64'),
           }),
       },
       {
@@ -562,15 +553,12 @@ suite('api/auth', function() {
         label: 'scope expression if/then (failure)',
         desiredStatus: 403,
         id: 'admin',
-        tester: (auth, url) => request
-          .get(url)
+        tester: (auth, url) => requestWithHawk(url, auth,
+          Buffer.from(JSON.stringify({
+            authorizedScopes: ['nothing:useful'],
+          })).toString('base64'))
           .send({
             public: false,
-          })
-          .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
-              authorizedScopes: ['nothing:useful'],
-            })).toString('base64'),
           }),
       },
       {
@@ -601,10 +589,7 @@ suite('api/auth', function() {
         label: 'forgot to auth simple',
         desiredStatus: 500,
         id: 'admin',
-        tester: (auth, url) => request
-          .get(url)
-          .send({})
-          .hawk(auth),
+        tester: (auth, url) => requestWithHawk(url, auth).send({}),
       },
     ],
   });
@@ -619,20 +604,17 @@ suite('api/auth', function() {
     },
     tests: [
       {
-        label: 'forgot to auth dyn-auth',
+        label: 'forgot to auth dyn-auth 1',
         desiredStatus: 500,
         id: 'admin',
-        tester: (auth, url) => request
-          .get(url)
+        tester: (auth, url) => requestWithHawk(url, auth,
+          Buffer.from(JSON.stringify({
+            authorizedScopes: ['got-only/this'],
+          })).toString('base64'))
           .send({
             scopes: [
               'got-only/this*',
             ],
-          })
-          .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
-              authorizedScopes: ['got-only/this'],
-            })).toString('base64'),
           }),
       },
     ],
@@ -649,20 +631,17 @@ suite('api/auth', function() {
     },
     tests: [
       {
-        label: 'forgot to auth dyn-auth',
+        label: 'forgot to auth dyn-auth 2',
         id: 'admin',
         desiredStatus: 500,
-        tester: (auth, url) => request
-          .get(url)
+        tester: (auth, url) => requestWithHawk(url, auth,
+          Buffer.from(JSON.stringify({
+            authorizedScopes: ['got-only/this'],
+          })).toString('base64'))
           .send({
             scopes: [
               'got-only/this*',
             ],
-          })
-          .hawk(auth, {
-            ext: new Buffer(JSON.stringify({
-              authorizedScopes: ['got-only/this'],
-            })).toString('base64'),
           }),
       },
     ],
@@ -685,7 +664,7 @@ suite('api/auth', function() {
         desiredStatus: 403,
         tester: async (auth, url, sideEffects) => {
           try {
-            await request.get(url).hawk(auth);
+            await requestWithHawk(url, auth);
             assert(false, 'should have failed');
           } catch (err) {
             assert(!sideEffects['got-here'], 'side effect occured after failed authorization!');
@@ -699,7 +678,7 @@ suite('api/auth', function() {
         desiredStatus: 401,
         tester: async (auth, url, sideEffects) => {
           try {
-            await request.get(url).hawk(auth);
+            await requestWithHawk(url, auth);
             assert(false, 'should have failed');
           } catch (err) {
             assert(!sideEffects['got-here'], 'side effect occured after failed authorization!');

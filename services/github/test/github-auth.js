@@ -79,7 +79,7 @@ class FakeGithub {
         assert.equal(path, '.taskcluster.yml');
         const key = `${owner}/${repo}@${ref}`;
         if (this._taskcluster_yml_files[key]) {
-          return {data: {content: new Buffer(
+          return {data: {content: Buffer.from(
             JSON.stringify(this._taskcluster_yml_files[key])
           ).toString('base64')}};
         } else {

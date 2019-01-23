@@ -19,7 +19,7 @@ const connectionTests = connectionString => {
   const exchangeName = `exchanges/test/${unique}`;
   const queueName = `queues/test/${unique}`;
   const routingKey = 'greetings';
-  const message = new Buffer('Hello');
+  const message = Buffer.from('Hello');
   const debug = debugModule('test');
 
   let monitor;

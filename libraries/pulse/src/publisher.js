@@ -285,7 +285,7 @@ class PulsePublisher {
         assert(CCs instanceof Array, 'CCBuilder must return an array');
 
         // Serialize message to buffer
-        const payload = new Buffer(JSON.stringify(message), 'utf8');
+        const payload = Buffer.from(JSON.stringify(message), 'utf8');
 
         await this._send(exchange, routingKey, payload, CCs);
       };
