@@ -10,6 +10,7 @@ ENV PAPERTRAIL logs2.papertrailapp.com:22395
 
 COPY ./deploy/packer/base/scripts/configure_syslog.sh /tmp/
 COPY ./deploy/packer/base/scripts/node.sh /tmp/
+COPY ./deploy/fake-keys/docker-worker-cot-signing.key /etc/
 
 RUN chmod +x /tmp/configure_syslog.sh /tmp/node.sh
 
