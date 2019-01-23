@@ -1,0 +1,19 @@
+fragment Artifacts on ArtifactsConnection {
+  pageInfo {
+    hasNextPage
+    hasPreviousPage
+    cursor
+    previousCursor
+    nextCursor
+  }
+
+  edges {
+    node {
+      name
+      contentType
+      url
+      isPublic
+      isLog
+    }
+  }
+}

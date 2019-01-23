@@ -1,0 +1,12 @@
+build
+node_modules
+*.swp
+.idea/
+*.log
+.Rhistory
+.env
+/styleguide
+.coverage
+.DS_Store
+.eslintcache
+.netlify/

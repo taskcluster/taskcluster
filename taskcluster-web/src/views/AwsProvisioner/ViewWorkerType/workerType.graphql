@@ -1,0 +1,22 @@
+query AwsProvisionerWorkerType($workerType: String!) {
+  awsProvisionerWorkerTypeErrors(workerType: $workerType) {
+    code
+    type
+    region
+    az
+    instanceType
+    workerType
+    time
+    message
+  }
+
+  awsProvisionerWorkerTypeState(workerType: $workerType)
+
+  awsProvisionerWorkerType(workerType: $workerType) {
+    instanceTypes {
+      instanceType
+      capacity
+    }
+    launchSpec
+  }
+}

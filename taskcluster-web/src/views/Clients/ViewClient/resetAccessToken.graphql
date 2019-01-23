@@ -1,0 +1,5 @@
+mutation ResetAccessToken($clientId: ID!) {
+  resetAccessToken(clientId: $clientId) {
+    accessToken
+  }
+}

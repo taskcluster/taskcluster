@@ -1,0 +1,5 @@
+mutation UpdateAwsProvisionerWorkerType($workerType: String!, $payload: AwsProvisionerWorkerTypeInput!) {
+  updateAwsProvisionerWorkerType(workerType: $workerType, payload: $payload) {
+    workerType
+  }
+}

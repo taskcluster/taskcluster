@@ -1,0 +1,16 @@
+query RoleIds($rolesConnection: PageConnection, $filter: JSON) {
+  listRoleIds(connection: $rolesConnection, filter: $filter) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        roleId
+      }
+    }
+  }
+}

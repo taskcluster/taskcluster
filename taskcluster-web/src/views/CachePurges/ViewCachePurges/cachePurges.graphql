@@ -1,0 +1,19 @@
+query CachePurges($cachePurgesConnection: PageConnection) {
+  cachePurges(connection: $cachePurgesConnection) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      cursor
+      previousCursor
+      nextCursor
+    }
+    edges {
+      node {
+        provisionerId
+        workerType
+        before
+        cacheName
+      }
+    }
+  }
+}
