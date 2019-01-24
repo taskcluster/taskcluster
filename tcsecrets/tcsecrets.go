@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// https://references.taskcluster.net/secrets/v1/api.json
+// https://taskcluster-staging.net/references/secrets/v1/api.json
 
 // The secrets service provides a simple key/value store for small bits of secret
 // data.  Access is limited by scopes, so values can be considered secret from
@@ -16,7 +16,7 @@
 // longer be read.  This is useful for short-term secrets such as a temporary
 // service credential or a one-time signing key.
 //
-// See: https://docs.taskcluster.net/reference/core/secrets/api-docs
+// See:
 //
 // How to use this package
 //
@@ -37,7 +37,7 @@
 // Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
-// https://references.taskcluster.net/secrets/v1/api.json together with the input and output schemas it references, downloaded on
+// https://taskcluster-staging.net/references/secrets/v1/api.json together with the input and output schemas it references, downloaded on
 // Thu, 4 Oct 2018 at 08:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcsecrets
@@ -49,43 +49,47 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "https://secrets.taskcluster.net/v1/"
-)
-
 type Secrets tcclient.Client
 
 // New returns a Secrets client, configured to run against production. Pass in
-// nil to create a client without authentication. The
+// nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  secrets := tcsecrets.New(nil)                              // client without authentication
-//  secrets.BaseURL = "http://localhost:1234/api/Secrets/v1"   // alternative API endpoint (production by default)
-//  err := secrets.Ping(.....)                                 // for example, call the Ping(.....) API endpoint (described further down)...
+//  secrets := tcsecrets.New(
+//      nil,                                      // client without authentication
+//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//  )
+//  err := secrets.Ping(.....)                    // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Secrets {
+func New(credentials *tcclient.Credentials, rootURL string) *Secrets {
 	return &Secrets{
 		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(rootURL, "secrets", "v1"),
 		Authenticate: credentials != nil,
 	}
 }
 
-// NewFromEnv returns a Secrets client with credentials taken from the environment variables:
+// NewFromEnv returns a *Secrets configured from environment variables.
+//
+// The root URL is taken from TASKCLUSTER_PROXY_URL if set to a non-empty
+// string, otherwise from TASKCLUSTER_ROOT_URL if set, otherwise the empty
+// string.
+//
+// The credentials are taken from environment variables:
 //
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
-// authentication will be disabled.
+// If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
+// disabled.
 func NewFromEnv() *Secrets {
 	c := tcclient.CredentialsFromEnvVars()
 	return &Secrets{
 		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "secrets", "v1"),
 		Authenticate: c.ClientID != "",
 	}
 }
@@ -93,7 +97,7 @@ func NewFromEnv() *Secrets {
 // Respond without doing anything.
 // This endpoint is used to check that the service is up.
 //
-// See https://docs.taskcluster.net/reference/core/secrets/api-docs#ping
+// See #ping
 func (secrets *Secrets) Ping() error {
 	cd := tcclient.Client(*secrets)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
@@ -106,7 +110,7 @@ func (secrets *Secrets) Ping() error {
 // Required scopes:
 //   secrets:set:<name>
 //
-// See https://docs.taskcluster.net/reference/core/secrets/api-docs#set
+// See #set
 func (secrets *Secrets) Set(name string, payload *Secret) error {
 	cd := tcclient.Client(*secrets)
 	_, _, err := (&cd).APICall(payload, "PUT", "/secret/"+url.QueryEscape(name), nil, nil)
@@ -118,7 +122,7 @@ func (secrets *Secrets) Set(name string, payload *Secret) error {
 // Required scopes:
 //   secrets:set:<name>
 //
-// See https://docs.taskcluster.net/reference/core/secrets/api-docs#remove
+// See #remove
 func (secrets *Secrets) Remove(name string) error {
 	cd := tcclient.Client(*secrets)
 	_, _, err := (&cd).APICall(nil, "DELETE", "/secret/"+url.QueryEscape(name), nil, nil)
@@ -133,7 +137,7 @@ func (secrets *Secrets) Remove(name string) error {
 // Required scopes:
 //   secrets:get:<name>
 //
-// See https://docs.taskcluster.net/reference/core/secrets/api-docs#get
+// See #get
 func (secrets *Secrets) Get(name string) (*Secret, error) {
 	cd := tcclient.Client(*secrets)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/secret/"+url.QueryEscape(name), new(Secret), nil)
@@ -163,7 +167,7 @@ func (secrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*url
 // If you are not interested in listing all the members at once, you may
 // use the query-string option `limit` to return fewer.
 //
-// See https://docs.taskcluster.net/reference/core/secrets/api-docs#list
+// See #list
 func (secrets *Secrets) List(continuationToken, limit string) (*SecretsList, error) {
 	v := url.Values{}
 	if continuationToken != "" {

@@ -6,13 +6,12 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// https://references.taskcluster.net/notify/v1/api.json
+// https://taskcluster-staging.net/references/notify/v1/api.json
 
-// The notification service, typically available at `notify.taskcluster.net`
-// listens for tasks with associated notifications and handles requests to
-// send emails and post pulse messages.
+// The notification service listens for tasks with associated notifications
+// and handles requests to send emails and post pulse messages.
 //
-// See: https://docs.taskcluster.net/reference/core/notify/api-docs
+// See:
 //
 // How to use this package
 //
@@ -33,7 +32,7 @@
 // Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
-// https://references.taskcluster.net/notify/v1/api.json together with the input and output schemas it references, downloaded on
+// https://taskcluster-staging.net/references/notify/v1/api.json together with the input and output schemas it references, downloaded on
 // Thu, 4 Oct 2018 at 08:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcnotify
@@ -42,43 +41,47 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "https://notify.taskcluster.net/v1/"
-)
-
 type Notify tcclient.Client
 
 // New returns a Notify client, configured to run against production. Pass in
-// nil to create a client without authentication. The
+// nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  notify := tcnotify.New(nil)                              // client without authentication
-//  notify.BaseURL = "http://localhost:1234/api/Notify/v1"   // alternative API endpoint (production by default)
-//  err := notify.Ping(.....)                                // for example, call the Ping(.....) API endpoint (described further down)...
+//  notify := tcnotify.New(
+//      nil,                                      // client without authentication
+//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//  )
+//  err := notify.Ping(.....)                     // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Notify {
+func New(credentials *tcclient.Credentials, rootURL string) *Notify {
 	return &Notify{
 		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(rootURL, "notify", "v1"),
 		Authenticate: credentials != nil,
 	}
 }
 
-// NewFromEnv returns a Notify client with credentials taken from the environment variables:
+// NewFromEnv returns a *Notify configured from environment variables.
+//
+// The root URL is taken from TASKCLUSTER_PROXY_URL if set to a non-empty
+// string, otherwise from TASKCLUSTER_ROOT_URL if set, otherwise the empty
+// string.
+//
+// The credentials are taken from environment variables:
 //
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
-// authentication will be disabled.
+// If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
+// disabled.
 func NewFromEnv() *Notify {
 	c := tcclient.CredentialsFromEnvVars()
 	return &Notify{
 		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "notify", "v1"),
 		Authenticate: c.ClientID != "",
 	}
 }
@@ -86,7 +89,7 @@ func NewFromEnv() *Notify {
 // Respond without doing anything.
 // This endpoint is used to check that the service is up.
 //
-// See https://docs.taskcluster.net/reference/core/notify/api-docs#ping
+// See #ping
 func (notify *Notify) Ping() error {
 	cd := tcclient.Client(*notify)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
@@ -103,7 +106,7 @@ func (notify *Notify) Ping() error {
 // Required scopes:
 //   notify:email:<address>
 //
-// See https://docs.taskcluster.net/reference/core/notify/api-docs#email
+// See #email
 func (notify *Notify) Email(payload *SendEmailRequest) error {
 	cd := tcclient.Client(*notify)
 	_, _, err := (&cd).APICall(payload, "POST", "/email", nil, nil)
@@ -117,7 +120,7 @@ func (notify *Notify) Email(payload *SendEmailRequest) error {
 // Required scopes:
 //   notify:pulse:<routingKey>
 //
-// See https://docs.taskcluster.net/reference/core/notify/api-docs#pulse
+// See #pulse
 func (notify *Notify) Pulse(payload *PostPulseMessageRequest) error {
 	cd := tcclient.Client(*notify)
 	_, _, err := (&cd).APICall(payload, "POST", "/pulse", nil, nil)
@@ -142,7 +145,7 @@ func (notify *Notify) Pulse(payload *PostPulseMessageRequest) error {
 //   If channelRequest:
 //     notify:irc-channel:<channel>
 //
-// See https://docs.taskcluster.net/reference/core/notify/api-docs#irc
+// See #irc
 func (notify *Notify) Irc(payload *PostIRCMessageRequest) error {
 	cd := tcclient.Client(*notify)
 	_, _, err := (&cd).APICall(payload, "POST", "/irc", nil, nil)

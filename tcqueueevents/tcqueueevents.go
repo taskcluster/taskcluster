@@ -6,11 +6,11 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// https://references.taskcluster.net/queue/v1/exchanges.json
+// https://taskcluster-staging.net/references/queue/v1/exchanges.json
 
-// The queue, typically available at `queue.taskcluster.net`, is responsible
-// for accepting tasks and track their state as they are executed by
-// workers. In order ensure they are eventually resolved.
+// The queue service is responsible for accepting tasks and track their state
+// as they are executed by workers. In order ensure they are eventually
+// resolved.
 //
 // This document describes AMQP exchanges offered by the queue, which allows
 // third-party listeners to monitor tasks as they progress to resolution.
@@ -56,7 +56,7 @@
 // future. For now we suggest you ignore this corner case, and notify us
 // if this corner case is of concern to you.
 //
-// See: https://docs.taskcluster.net/reference/platform/queue/exchanges
+// See:
 //
 // How to use this package
 //
@@ -96,7 +96,7 @@ import (
 // Please, note that messages are also published on this exchange if defined
 // using `createTask`.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskDefined
+// See #taskDefined
 type TaskDefined struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -130,7 +130,7 @@ func (binding TaskDefined) NewPayloadObject() interface{} {
 // efficiently and they would be able to reduce their polling interval
 // significantly without affecting general responsiveness.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskPending
+// See #taskPending
 type TaskPending struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -159,7 +159,7 @@ func (binding TaskPending) NewPayloadObject() interface{} {
 // Whenever a task is claimed by a worker, a run is started on the worker,
 // and a message is posted on this exchange.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskRunning
+// See #taskRunning
 type TaskRunning struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -204,7 +204,7 @@ func (binding TaskRunning) NewPayloadObject() interface{} {
 // smarter to index artifacts after the task in question have completed
 // successfully.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges#artifactCreated
+// See #artifactCreated
 type ArtifactCreated struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -236,7 +236,7 @@ func (binding ArtifactCreated) NewPayloadObject() interface{} {
 // that completed the task. But information about additional runs is also
 // available from the task status structure.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskCompleted
+// See #taskCompleted
 type TaskCompleted struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -266,7 +266,7 @@ func (binding TaskCompleted) NewPayloadObject() interface{} {
 // to this exchange. This is same as worker ran task-specific code, but the
 // task specific code exited non-zero.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskFailed
+// See #taskFailed
 type TaskFailed struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -300,7 +300,7 @@ func (binding TaskFailed) NewPayloadObject() interface{} {
 // The specific _reason_ is evident from that task status structure, refer
 // to the `reasonResolved` property for the last run.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskException
+// See #taskException
 type TaskException struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskID         string `mwords:"*"`
@@ -332,7 +332,7 @@ func (binding TaskException) NewPayloadObject() interface{} {
 // not. A task group may be resolved multiple times, since new tasks may
 // be submitted against an already resolved task group.
 //
-// See https://docs.taskcluster.net/reference/platform/queue/exchanges#taskGroupResolved
+// See #taskGroupResolved
 type TaskGroupResolved struct {
 	RoutingKeyKind string `mwords:"*"`
 	TaskGroupID    string `mwords:"*"`

@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// https://references.taskcluster.net/github/v1/exchanges.json
+// https://taskcluster-staging.net/references/github/v1/exchanges.json
 
 // The github service publishes a pulse
 // message for supported github events, translating Github webhook
@@ -15,7 +15,7 @@
 // This document describes the exchange offered by the taskcluster
 // github service
 //
-// See: https://docs.taskcluster.net/reference/core/github/exchanges
+// See:
 //
 // How to use this package
 //
@@ -50,7 +50,7 @@ import (
 // exchange with the designated `organization` and `repository`
 // in the routing-key along with event specific metadata in the payload.
 //
-// See https://docs.taskcluster.net/reference/core/github/exchanges#pullRequest
+// See #pullRequest
 type PullRequest struct {
 	RoutingKeyKind string `mwords:"*"`
 	Organization   string `mwords:"*"`
@@ -74,7 +74,7 @@ func (binding PullRequest) NewPayloadObject() interface{} {
 // exchange with the designated `organization` and `repository`
 // in the routing-key along with event specific metadata in the payload.
 //
-// See https://docs.taskcluster.net/reference/core/github/exchanges#push
+// See #push
 type Push struct {
 	RoutingKeyKind string `mwords:"*"`
 	Organization   string `mwords:"*"`
@@ -97,7 +97,7 @@ func (binding Push) NewPayloadObject() interface{} {
 // exchange with the designated `organization` and `repository`
 // in the routing-key along with event specific metadata in the payload.
 //
-// See https://docs.taskcluster.net/reference/core/github/exchanges#release
+// See #release
 type Release struct {
 	RoutingKeyKind string `mwords:"*"`
 	Organization   string `mwords:"*"`
@@ -114,6 +114,32 @@ func (binding Release) ExchangeName() string {
 
 func (binding Release) NewPayloadObject() interface{} {
 	return new(GitHubReleaseMessage)
+}
+
+// supposed to signal that taskCreate API has been called for every task in the task group
+// for this particular repo and this particular organization
+// currently used for creating initial status indicators in GitHub UI using Statuses API.
+// This particular exchange can also be bound to RabbitMQ queues by custom routes - for that,
+// Pass in the array of routes as a second argument to the publish method. Currently, we do
+// use the statuses routes to bind the handler that creates the initial status.
+//
+// See #taskGroupCreationRequested
+type TaskGroupCreationRequested struct {
+	RoutingKeyKind string `mwords:"*"`
+	Organization   string `mwords:"*"`
+	Repository     string `mwords:"*"`
+}
+
+func (binding TaskGroupCreationRequested) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding TaskGroupCreationRequested) ExchangeName() string {
+	return "exchange/taskcluster-github/v1/task-group-creation-requested"
+}
+
+func (binding TaskGroupCreationRequested) NewPayloadObject() interface{} {
+	return new(TaskGroupDefinedCreateStatus)
 }
 
 func generateRoutingKey(x interface{}) string {

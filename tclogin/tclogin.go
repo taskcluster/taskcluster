@@ -6,12 +6,12 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// https://references.taskcluster.net/login/v1/api.json
+// https://taskcluster-staging.net/references/login/v1/api.json
 
 // The Login service serves as the interface between external authentication
 // systems and Taskcluster credentials.
 //
-// See: https://docs.taskcluster.net/reference/core/login/api-docs
+// See:
 //
 // How to use this package
 //
@@ -32,7 +32,7 @@
 // Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
-// https://references.taskcluster.net/login/v1/api.json together with the input and output schemas it references, downloaded on
+// https://taskcluster-staging.net/references/login/v1/api.json together with the input and output schemas it references, downloaded on
 // Thu, 4 Oct 2018 at 08:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tclogin
@@ -43,43 +43,47 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "https://login.taskcluster.net/v1"
-)
-
 type Login tcclient.Client
 
 // New returns a Login client, configured to run against production. Pass in
-// nil to create a client without authentication. The
+// nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  login := tclogin.New(nil)                              // client without authentication
-//  login.BaseURL = "http://localhost:1234/api/Login/v1"   // alternative API endpoint (production by default)
-//  err := login.Ping(.....)                               // for example, call the Ping(.....) API endpoint (described further down)...
+//  login := tclogin.New(
+//      nil,                                      // client without authentication
+//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//  )
+//  err := login.Ping(.....)                      // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Login {
+func New(credentials *tcclient.Credentials, rootURL string) *Login {
 	return &Login{
 		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(rootURL, "login", "v1"),
 		Authenticate: credentials != nil,
 	}
 }
 
-// NewFromEnv returns a Login client with credentials taken from the environment variables:
+// NewFromEnv returns a *Login configured from environment variables.
+//
+// The root URL is taken from TASKCLUSTER_PROXY_URL if set to a non-empty
+// string, otherwise from TASKCLUSTER_ROOT_URL if set, otherwise the empty
+// string.
+//
+// The credentials are taken from environment variables:
 //
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
-// authentication will be disabled.
+// If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
+// disabled.
 func NewFromEnv() *Login {
 	c := tcclient.CredentialsFromEnvVars()
 	return &Login{
 		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "login", "v1"),
 		Authenticate: c.ClientID != "",
 	}
 }
@@ -87,7 +91,7 @@ func NewFromEnv() *Login {
 // Respond without doing anything.
 // This endpoint is used to check that the service is up.
 //
-// See https://docs.taskcluster.net/reference/core/login/api-docs#ping
+// See #ping
 func (login *Login) Ping() error {
 	cd := tcclient.Client(*login)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
@@ -118,7 +122,7 @@ func (login *Login) Ping() error {
 // monitor this expiration and refresh the credentials if necessary, by calling
 // this endpoint again, if they have expired.
 //
-// See https://docs.taskcluster.net/reference/core/login/api-docs#oidcCredentials
+// See #oidcCredentials
 func (login *Login) OidcCredentials(provider string) (*CredentialsResponse, error) {
 	cd := tcclient.Client(*login)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/oidc-credentials/"+url.QueryEscape(provider), new(CredentialsResponse), nil)

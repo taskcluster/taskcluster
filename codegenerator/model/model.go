@@ -1,6 +1,6 @@
 package model
 
-//go:generate go run generatemodel.go -u http://references.taskcluster.net/manifest.json -f apis.json -o ../.. -m ../model-data.txt
+//go:generate go run generatemodel.go -o ../.. -m ../model-data.txt
 
 import (
 	"bytes"
@@ -12,13 +12,13 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/taskcluster/jsonschema2go"
 	"github.com/taskcluster/jsonschema2go/text"
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	"github.com/xeipuuv/gojsonschema"
 	"golang.org/x/tools/imports"
 )
@@ -41,6 +41,7 @@ func (a SortedAPIDefs) Less(i, j int) bool { return a[i].URL < a[j].URL }
 // AMQP APIs.
 type APIModel interface {
 	String() string
+	Name() string
 	postPopulate(apiDef *APIDefinition)
 	generateAPICode(name string) string
 	setAPIDefinition(apiDef *APIDefinition)
@@ -51,7 +52,6 @@ type APIModel interface {
 // format, together with a URL to a json schema to validate the definition
 type APIDefinition struct {
 	URL            string `json:"url"`
-	Name           string `json:"name"`
 	DocRoot        string `json:"docroot"`
 	Data           APIModel
 	schemaURLs     []string
@@ -71,10 +71,10 @@ func exitOnFail(err error) {
 }
 
 func (apiDef *APIDefinition) generateAPICode() string {
-	return apiDef.Data.generateAPICode(apiDef.Name)
+	return apiDef.Data.generateAPICode(apiDef.Data.Name())
 }
 
-func (apiDef *APIDefinition) loadJSON(reader io.Reader) {
+func (apiDef *APIDefinition) loadJSON(reader io.Reader, rootURL string) {
 	b := new(bytes.Buffer)
 	_, err := b.ReadFrom(reader)
 	exitOnFail(err)
@@ -86,9 +86,9 @@ func (apiDef *APIDefinition) loadJSON(reader io.Reader) {
 	apiDef.SchemaURL = schema
 	var m APIModel
 	switch schema {
-	case "http://schemas.taskcluster.net/base/v1/api-reference.json#":
+	case tcurls.APIReferenceSchema(rootURL, "v0") + "#":
 		m = new(API)
-	case "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#":
+	case tcurls.ExchangesReferenceSchema(rootURL, "v0") + "#":
 		m = new(Exchange)
 	default:
 		panic(fmt.Errorf("Do not know how to handle API with schema %q", schema))
@@ -110,63 +110,31 @@ func (apiDef *APIDefinition) loadJSON(reader io.Reader) {
 //
 // When LoadAPIs returns, all json schemas and sub schemas should have been
 // read and unmarhsalled into go objects.
-func LoadAPIs(apiManifestURL, supplementaryDataFile string) []APIDefinition {
+func LoadAPIs(rootURL string) APIDefinitions {
+	apiManifestURL := tcurls.APIManifest(rootURL)
+	fmt.Printf("Downloading manifest from url: '%v'...\n", apiManifestURL)
 	resp, err := http.Get(apiManifestURL)
 	if err != nil {
 		fmt.Printf("Could not download api manifest from url: '%v'!\n", apiManifestURL)
 	}
 	exitOnFail(err)
-	supDataReader, err := os.Open(supplementaryDataFile)
-	if err != nil {
-		fmt.Printf("Could not load supplementary data json file: '%v'!\n", supplementaryDataFile)
-	}
-	exitOnFail(err)
 	apiManifestDecoder := json.NewDecoder(resp.Body)
-	apiMan := make(map[string]string)
+	apiMan := TaskclusterServiceManifest{}
 	err = apiManifestDecoder.Decode(&apiMan)
 	exitOnFail(err)
-	supDataDecoder := json.NewDecoder(supDataReader)
-	var apiDefs []APIDefinition
-	err = supDataDecoder.Decode(&apiDefs)
-	exitOnFail(err)
-	sort.Sort(SortedAPIDefs(apiDefs))
-
-	// build up apis based on data in *both* data sources
-	for i := range apiMan {
-		// seach for apiMan[i] in apis
-		k := sort.Search(len(apiDefs), func(j int) bool {
-			return apiDefs[j].URL >= apiMan[i]
-		})
-		if k < len(apiDefs) && apiDefs[k].URL == apiMan[i] {
-			// url is present in supplementary data
-			apiDefs[k].Name = i
-		} else {
-			fmt.Printf(
-				"\nFATAL: Manifest from url '%v' contains key '%v' with url '%v', but this url does not exist in supplementary data file '%v', therefore exiting...\n\n",
-				apiManifestURL, i, apiMan[i], supplementaryDataFile)
-			//	os.Exit(64)
-		}
-	}
-	for i := range apiDefs {
-		if apiDefs[i].Name == "" {
-			fmt.Printf(
-				"\nFATAL: Manifest from url '%v' does not contain url '%v' which does exist in supplementary data file '%v', therefore exiting...\n\n",
-				apiManifestURL, apiDefs[i].URL, supplementaryDataFile)
-			os.Exit(65)
-		}
-	}
-	for i := range apiDefs {
-
+	apiDefs := make([]APIDefinition, len(apiMan.References), len(apiMan.References))
+	for i := range apiMan.References {
 		var resp *http.Response
-		resp, err = http.Get(apiDefs[i].URL)
+		resp, err = http.Get(apiMan.References[i])
 		exitOnFail(err)
 		defer resp.Body.Close()
-		apiDefs[i].loadJSON(resp.Body)
+		apiDefs[i].URL = apiMan.References[i]
+		apiDefs[i].loadJSON(resp.Body, rootURL)
 
 		// check that the json schema is valid!
 		validateJSON(apiDefs[i].SchemaURL, apiDefs[i].URL)
 	}
-	return apiDefs
+	return APIDefinitions(apiDefs)
 }
 
 func validateJSON(schemaURL, docURL string) {
@@ -186,7 +154,7 @@ func validateJSON(schemaURL, docURL string) {
 	}
 }
 
-func formatSourceAndSave(sourceFile string, sourceCode []byte) {
+func FormatSourceAndSave(sourceFile string, sourceCode []byte) {
 	fmt.Println("Formatting source code " + sourceFile + "...")
 	// first run goimports to clean up unused imports
 	fixedImports, err := imports.Process(sourceFile, sourceCode, nil)
@@ -207,12 +175,14 @@ func formatSourceAndSave(sourceFile string, sourceCode []byte) {
 	exitOnFail(ioutil.WriteFile(sourceFile, formattedContent, 0644))
 }
 
+type APIDefinitions []APIDefinition
+
 // GenerateCode takes the objects loaded into memory in LoadAPIs
 // and writes them out as go code.
-func GenerateCode(goOutputDir, modelData string, downloaded time.Time, apiDefs []APIDefinition) {
+func (apiDefs APIDefinitions) GenerateCode(goOutputDir, modelData string, downloaded time.Time) {
 	downloadedTime = downloaded
 	for i := range apiDefs {
-		apiDefs[i].PackageName = "tc" + strings.ToLower(apiDefs[i].Name)
+		apiDefs[i].PackageName = "tc" + strings.ToLower(apiDefs[i].Data.Name())
 		// Used throughout docs, and also methods that use the class, we need a
 		// variable name to be used when referencing the go type. It should not
 		// clash with either the package name or the go type of the principle
@@ -221,9 +191,9 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time, apiDefs [
 		// either package or principle member, we'll just use my<Name>. This
 		// results in e.g. `var myQueue queue.Queue`, but `var awsProvisioner
 		// awsprovisioner.AwsProvisioner`.
-		apiDefs[i].ExampleVarName = strings.ToLower(string(apiDefs[i].Name[0])) + apiDefs[i].Name[1:]
-		if apiDefs[i].ExampleVarName == apiDefs[i].Name || apiDefs[i].ExampleVarName == apiDefs[i].PackageName {
-			apiDefs[i].ExampleVarName = "my" + apiDefs[i].Name
+		apiDefs[i].ExampleVarName = strings.ToLower(string(apiDefs[i].Data.Name()[0])) + apiDefs[i].Data.Name()[1:]
+		if apiDefs[i].ExampleVarName == apiDefs[i].Data.Name() || apiDefs[i].ExampleVarName == apiDefs[i].PackageName {
+			apiDefs[i].ExampleVarName = "my" + apiDefs[i].Data.Name()
 		}
 		apiDefs[i].PackagePath = filepath.Join(goOutputDir, apiDefs[i].PackageName)
 		err = os.MkdirAll(apiDefs[i].PackagePath, 0755)
@@ -242,7 +212,7 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time, apiDefs [
 
 		apiDefs[i].schemas = result.SchemaSet
 		typesSourceFile := filepath.Join(apiDefs[i].PackagePath, "types.go")
-		formatSourceAndSave(typesSourceFile, result.SourceCode)
+		FormatSourceAndSave(typesSourceFile, result.SourceCode)
 
 		fmt.Printf("Generating functions and methods for %s\n", job.Package)
 		content := `
@@ -259,7 +229,7 @@ func GenerateCode(goOutputDir, modelData string, downloaded time.Time, apiDefs [
 `
 		content += apiDefs[i].generateAPICode()
 		sourceFile := filepath.Join(apiDefs[i].PackagePath, apiDefs[i].PackageName+".go")
-		formatSourceAndSave(sourceFile, []byte(content))
+		FormatSourceAndSave(sourceFile, []byte(content))
 	}
 
 	content := "Generated: " + strconv.FormatInt(downloadedTime.Unix(), 10) + "\n"

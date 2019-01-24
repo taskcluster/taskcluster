@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// https://references.taskcluster.net/auth/v1/api.json
+// https://taskcluster-staging.net/references/auth/v1/api.json
 
 // Authentication related API end-points for Taskcluster and related
 // services. These API end-points are of interest if you wish to:
@@ -48,7 +48,7 @@
 // Taskcluster credentials to grant access to a third-party service used
 // by many Taskcluster components.
 //
-// See: https://docs.taskcluster.net/reference/platform/auth/api-docs
+// See:
 //
 // How to use this package
 //
@@ -69,7 +69,7 @@
 // Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
-// https://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
+// https://taskcluster-staging.net/references/auth/v1/api.json together with the input and output schemas it references, downloaded on
 // Thu, 4 Oct 2018 at 08:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcauth
@@ -81,43 +81,47 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "https://auth.taskcluster.net/v1"
-)
-
 type Auth tcclient.Client
 
 // New returns an Auth client, configured to run against production. Pass in
-// nil to create a client without authentication. The
+// nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  auth := tcauth.New(nil)                              // client without authentication
-//  auth.BaseURL = "http://localhost:1234/api/Auth/v1"   // alternative API endpoint (production by default)
-//  err := auth.Ping(.....)                              // for example, call the Ping(.....) API endpoint (described further down)...
+//  auth := tcauth.New(
+//      nil,                                      // client without authentication
+//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//  )
+//  err := auth.Ping(.....)                       // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Auth {
+func New(credentials *tcclient.Credentials, rootURL string) *Auth {
 	return &Auth{
 		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(rootURL, "auth", "v1"),
 		Authenticate: credentials != nil,
 	}
 }
 
-// NewFromEnv returns an Auth client with credentials taken from the environment variables:
+// NewFromEnv returns an *Auth configured from environment variables.
+//
+// The root URL is taken from TASKCLUSTER_PROXY_URL if set to a non-empty
+// string, otherwise from TASKCLUSTER_ROOT_URL if set, otherwise the empty
+// string.
+//
+// The credentials are taken from environment variables:
 //
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
-// authentication will be disabled.
+// If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
+// disabled.
 func NewFromEnv() *Auth {
 	c := tcclient.CredentialsFromEnvVars()
 	return &Auth{
 		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "auth", "v1"),
 		Authenticate: c.ClientID != "",
 	}
 }
@@ -125,7 +129,7 @@ func NewFromEnv() *Auth {
 // Respond without doing anything.
 // This endpoint is used to check that the service is up.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#ping
+// See #ping
 func (auth *Auth) Ping() error {
 	cd := tcclient.Client(*auth)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
@@ -142,7 +146,7 @@ func (auth *Auth) Ping() error {
 // keep calling `listClients` with the last `continuationToken` until you
 // get a result without a `continuationToken`.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#listClients
+// See #listClients
 func (auth *Auth) ListClients(continuationToken, limit, prefix string) (*ListClientResponse, error) {
 	v := url.Values{}
 	if continuationToken != "" {
@@ -161,7 +165,7 @@ func (auth *Auth) ListClients(continuationToken, limit, prefix string) (*ListCli
 
 // Get information about a single client.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#client
+// See #client
 func (auth *Auth) Client(clientId string) (*GetClientResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
@@ -186,7 +190,7 @@ func (auth *Auth) Client(clientId string) (*GetClientResponse, error) {
 //   * auth:create-client:<clientId>
 //   * For scope in scopes each <scope>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#createClient
+// See #createClient
 func (auth *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*CreateClientResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/clients/"+url.QueryEscape(clientId), new(CreateClientResponse), nil)
@@ -203,7 +207,7 @@ func (auth *Auth) CreateClient(clientId string, payload *CreateClientRequest) (*
 // Required scopes:
 //   auth:reset-access-token:<clientId>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#resetAccessToken
+// See #resetAccessToken
 func (auth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/reset", new(CreateClientResponse), nil)
@@ -221,7 +225,7 @@ func (auth *Auth) ResetAccessToken(clientId string) (*CreateClientResponse, erro
 //   * auth:update-client:<clientId>
 //   * For scope in scopesAdded each <scope>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#updateClient
+// See #updateClient
 func (auth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*GetClientResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/clients/"+url.QueryEscape(clientId), new(GetClientResponse), nil)
@@ -237,7 +241,7 @@ func (auth *Auth) UpdateClient(clientId string, payload *CreateClientRequest) (*
 // Required scopes:
 //   auth:enable-client:<clientId>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#enableClient
+// See #enableClient
 func (auth *Auth) EnableClient(clientId string) (*GetClientResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/enable", new(GetClientResponse), nil)
@@ -252,7 +256,7 @@ func (auth *Auth) EnableClient(clientId string) (*GetClientResponse, error) {
 // Required scopes:
 //   auth:disable-client:<clientId>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#disableClient
+// See #disableClient
 func (auth *Auth) DisableClient(clientId string) (*GetClientResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "POST", "/clients/"+url.QueryEscape(clientId)+"/disable", new(GetClientResponse), nil)
@@ -265,7 +269,7 @@ func (auth *Auth) DisableClient(clientId string) (*GetClientResponse, error) {
 // Required scopes:
 //   auth:delete-client:<clientId>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#deleteClient
+// See #deleteClient
 func (auth *Auth) DeleteClient(clientId string) error {
 	cd := tcclient.Client(*auth)
 	_, _, err := (&cd).APICall(nil, "DELETE", "/clients/"+url.QueryEscape(clientId), nil, nil)
@@ -275,17 +279,53 @@ func (auth *Auth) DeleteClient(clientId string) error {
 // Get a list of all roles, each role object also includes the list of
 // scopes it expands to.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#listRoles
-func (auth *Auth) ListRoles() (*ListRolesResponse, error) {
+// See #listRoles
+func (auth *Auth) ListRoles() (*GetAllRolesNoPagination, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/roles/", new(ListRolesResponse), nil)
-	return responseObject.(*ListRolesResponse), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/roles/", new(GetAllRolesNoPagination), nil)
+	return responseObject.(*GetAllRolesNoPagination), err
+}
+
+// If no limit is given, the roleIds of all roles are returned. Since this
+// list may become long, callers can use the `limit` and `continuationToken`
+// query arguments to page through the responses.
+//
+// See #listRoleIds
+func (auth *Auth) ListRoleIds(continuationToken, limit string) (*GetRoleIdsResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*auth)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/roleids/", new(GetRoleIdsResponse), v)
+	return responseObject.(*GetRoleIdsResponse), err
+}
+
+// If no limit is given, all roles are returned. Since this
+// list may become long, callers can use the `limit` and `continuationToken`
+// query arguments to page through the responses.
+//
+// See #listRoles2
+func (auth *Auth) ListRoles2(continuationToken, limit string) (*GetAllRolesResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*auth)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/roles2/", new(GetAllRolesResponse), v)
+	return responseObject.(*GetAllRolesResponse), err
 }
 
 // Get information about a single role, including the set of scopes that the
 // role expands to.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#role
+// See #role
 func (auth *Auth) Role(roleId string) (*GetRoleResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
@@ -307,7 +347,7 @@ func (auth *Auth) Role(roleId string) (*GetRoleResponse, error) {
 //   * auth:create-role:<roleId>
 //   * For scope in scopes each <scope>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#createRole
+// See #createRole
 func (auth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
@@ -327,7 +367,7 @@ func (auth *Auth) CreateRole(roleId string, payload *CreateRoleRequest) (*GetRol
 //   * auth:update-role:<roleId>
 //   * For scope in scopesAdded each <scope>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#updateRole
+// See #updateRole
 func (auth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRoleResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/roles/"+url.QueryEscape(roleId), new(GetRoleResponse), nil)
@@ -340,7 +380,7 @@ func (auth *Auth) UpdateRole(roleId string, payload *CreateRoleRequest) (*GetRol
 // Required scopes:
 //   auth:delete-role:<roleId>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#deleteRole
+// See #deleteRole
 func (auth *Auth) DeleteRole(roleId string) error {
 	cd := tcclient.Client(*auth)
 	_, _, err := (&cd).APICall(nil, "DELETE", "/roles/"+url.QueryEscape(roleId), nil, nil)
@@ -355,7 +395,7 @@ func (auth *Auth) DeleteRole(roleId string) error {
 // This call uses the GET method with an HTTP body.  It remains only for
 // backward compatibility.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#expandScopesGet
+// See #expandScopesGet
 func (auth *Auth) ExpandScopesGet(payload *SetOfScopes) (*SetOfScopes, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(payload, "GET", "/scopes/expand", new(SetOfScopes), nil)
@@ -365,7 +405,7 @@ func (auth *Auth) ExpandScopesGet(payload *SetOfScopes) (*SetOfScopes, error) {
 // Return an expanded copy of the given scopeset, with scopes implied by any
 // roles included.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#expandScopes
+// See #expandScopes
 func (auth *Auth) ExpandScopes(payload *SetOfScopes) (*SetOfScopes, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/scopes/expand", new(SetOfScopes), nil)
@@ -376,7 +416,7 @@ func (auth *Auth) ExpandScopes(payload *SetOfScopes) (*SetOfScopes, error) {
 // of scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,
 // and roles).
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#currentScopes
+// See #currentScopes
 func (auth *Auth) CurrentScopes() (*SetOfScopes, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/scopes/current", new(SetOfScopes), nil)
@@ -455,7 +495,7 @@ func (auth *Auth) CurrentScopes() (*SetOfScopes, error) {
 //     - auth:aws-s3:read-only:<bucket>/<prefix>
 //     - auth:aws-s3:read-write:<bucket>/<prefix>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#awsS3Credentials
+// See #awsS3Credentials
 func (auth *Auth) AwsS3Credentials(level, bucket, prefix, format string) (*AWSS3CredentialsResponse, error) {
 	v := url.Values{}
 	if format != "" {
@@ -489,7 +529,7 @@ func (auth *Auth) AwsS3Credentials_SignedURL(level, bucket, prefix, format strin
 // Required scopes:
 //   auth:azure-table:list-accounts
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureAccounts
+// See #azureAccounts
 func (auth *Auth) AzureAccounts() (*AzureListAccountResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/accounts", new(AzureListAccountResponse), nil)
@@ -512,7 +552,7 @@ func (auth *Auth) AzureAccounts_SignedURL(duration time.Duration) (*url.URL, err
 // Required scopes:
 //   auth:azure-table:list-tables:<account>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureTables
+// See #azureTables
 func (auth *Auth) AzureTables(account, continuationToken string) (*AzureListTableResponse, error) {
 	v := url.Values{}
 	if continuationToken != "" {
@@ -551,7 +591,7 @@ func (auth *Auth) AzureTables_SignedURL(account, continuationToken string, durat
 //     - auth:azure-table:read-only:<account>/<table>
 //     - auth:azure-table:read-write:<account>/<table>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureTableSAS
+// See #azureTableSAS
 func (auth *Auth) AzureTableSAS(account, table, level string) (*AzureTableSharedAccessSignature, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/table/"+url.QueryEscape(table)+"/"+url.QueryEscape(level), new(AzureTableSharedAccessSignature), nil)
@@ -577,7 +617,7 @@ func (auth *Auth) AzureTableSAS_SignedURL(account, table, level string, duration
 // Required scopes:
 //   auth:azure-container:list-containers:<account>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureContainers
+// See #azureContainers
 func (auth *Auth) AzureContainers(account, continuationToken string) (*AzureListContainersResponse, error) {
 	v := url.Values{}
 	if continuationToken != "" {
@@ -616,7 +656,7 @@ func (auth *Auth) AzureContainers_SignedURL(account, continuationToken string, d
 //     - auth:azure-container:read-only:<account>/<container>
 //     - auth:azure-container:read-write:<account>/<container>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#azureContainerSAS
+// See #azureContainerSAS
 func (auth *Auth) AzureContainerSAS(account, container, level string) (*AzureBlobSharedAccessSignature, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/azure/"+url.QueryEscape(account)+"/containers/"+url.QueryEscape(container)+"/"+url.QueryEscape(level), new(AzureBlobSharedAccessSignature), nil)
@@ -648,7 +688,7 @@ func (auth *Auth) AzureContainerSAS_SignedURL(account, container, level string, 
 // Required scopes:
 //   auth:sentry:<project>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#sentryDSN
+// See #sentryDSN
 func (auth *Auth) SentryDSN(project string) (*SentryDSNResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/sentry/"+url.QueryEscape(project)+"/dsn", new(SentryDSNResponse), nil)
@@ -673,7 +713,7 @@ func (auth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*
 // Required scopes:
 //   auth:statsum:<project>
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#statsumToken
+// See #statsumToken
 func (auth *Auth) StatsumToken(project string) (*StatsumTokenResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/statsum/"+url.QueryEscape(project)+"/token", new(StatsumTokenResponse), nil)
@@ -691,28 +731,28 @@ func (auth *Auth) StatsumToken_SignedURL(project string, duration time.Duration)
 	return (&cd).SignedURL("/statsum/"+url.QueryEscape(project)+"/token", nil, duration)
 }
 
-// Get temporary `token` and `id` for connecting to webhooktunnel
+// Get temporary `token` and `id` for connecting to websocktunnel
 // The token is valid for 96 hours, clients should refresh after expiration.
 //
 // Required scopes:
-//   auth:webhooktunnel
+//   auth:websocktunnel
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#webhooktunnelToken
-func (auth *Auth) WebhooktunnelToken() (*WebhooktunnelTokenResponse, error) {
+// See #websocktunnelToken
+func (auth *Auth) WebsocktunnelToken() (*WebsocktunnelTokenResponse, error) {
 	cd := tcclient.Client(*auth)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/webhooktunnel", new(WebhooktunnelTokenResponse), nil)
-	return responseObject.(*WebhooktunnelTokenResponse), err
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/websocktunnel", new(WebsocktunnelTokenResponse), nil)
+	return responseObject.(*WebsocktunnelTokenResponse), err
 }
 
-// Returns a signed URL for WebhooktunnelToken, valid for the specified duration.
+// Returns a signed URL for WebsocktunnelToken, valid for the specified duration.
 //
 // Required scopes:
-//   auth:webhooktunnel
+//   auth:websocktunnel
 //
-// See WebhooktunnelToken for more details.
-func (auth *Auth) WebhooktunnelToken_SignedURL(duration time.Duration) (*url.URL, error) {
+// See WebsocktunnelToken for more details.
+func (auth *Auth) WebsocktunnelToken_SignedURL(duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
-	return (&cd).SignedURL("/webhooktunnel", nil, duration)
+	return (&cd).SignedURL("/websocktunnel", nil, duration)
 }
 
 // Validate the request signature given on input and return list of scopes
@@ -722,7 +762,7 @@ func (auth *Auth) WebhooktunnelToken_SignedURL(duration time.Duration) (*url.URL
 // credentials for authentication. This way we can use Hawk without having
 // the secret credentials leave this service.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#authenticateHawk
+// See #authenticateHawk
 func (auth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest) (*HawkSignatureAuthenticationResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/authenticate-hawk", new(HawkSignatureAuthenticationResponse), nil)
@@ -741,7 +781,7 @@ func (auth *Auth) AuthenticateHawk(payload *HawkSignatureAuthenticationRequest) 
 // from the request body. On success, the response contains the clientId
 // and scopes as seen by the API method.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#testAuthenticate
+// See #testAuthenticate
 func (auth *Auth) TestAuthenticate(payload *TestAuthenticateRequest) (*TestAuthenticateResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/test-authenticate", new(TestAuthenticateResponse), nil)
@@ -764,7 +804,7 @@ func (auth *Auth) TestAuthenticate(payload *TestAuthenticateRequest) (*TestAuthe
 // This method may later be extended to allow specification of client and
 // required scopes via query arguments.
 //
-// See https://docs.taskcluster.net/reference/platform/auth/api-docs#testAuthenticateGet
+// See #testAuthenticateGet
 func (auth *Auth) TestAuthenticateGet() (*TestAuthenticateResponse, error) {
 	cd := tcclient.Client(*auth)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/test-authenticate-get/", new(TestAuthenticateResponse), nil)

@@ -2,8 +2,6 @@ package integrationtest
 
 import (
 	"encoding/json"
-	"net/url"
-	"os"
 	"testing"
 	"time"
 
@@ -24,8 +22,8 @@ import (
 // Note, no credentials are needed, so this can be run even on travis-ci.org,
 // for example.
 func TestFindLatestLinux64DebugBuild(t *testing.T) {
-	Index := tcindex.New(nil)
-	Queue := tcqueue.New(nil)
+	Index := tcindex.New(nil, "https://taskcluster.net")
+	Queue := tcqueue.New(nil, "https://taskcluster.net")
 	itr, err := Index.FindTask("gecko.v2.mozilla-inbound.latest.firefox.linux64-debug")
 	if err != nil {
 		t.Fatalf("%v\n", err)
@@ -56,21 +54,24 @@ func TestFindLatestLinux64DebugBuild(t *testing.T) {
 }
 
 func permaCreds(t *testing.T) *tcclient.Credentials {
-	permaCreds := &tcclient.Credentials{
-		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
-	}
+	permaCreds := tcclient.CredentialsFromEnvVars()
 	if permaCreds.ClientID == "" || permaCreds.AccessToken == "" {
-		t.Skip("Skipping test TestDefineTask since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
+		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
+	}
+	if permaCreds.Certificate != "" {
+		t.Skip("Skipping test since temporary credentials are in use, and permanent credentials are needed")
 	}
 	return permaCreds
 }
 
 // Tests whether it is possible to define a task against the production Queue.
 func TestDefineTask(t *testing.T) {
+	rootURL := tcclient.RootURLFromEnvVars()
+	if rootURL == "" {
+		t.Skip("Cannot run test, neither TASKCLUSTER_PROXY_URL nor TASKCLUSTER_ROOT_URL are set to non-empty strings")
+	}
 	permaCreds := permaCreds(t)
-	myQueue := tcqueue.New(permaCreds)
+	myQueue := tcqueue.New(permaCreds, rootURL)
 
 	taskID := slugid.Nice()
 	taskGroupID := slugid.Nice()
@@ -105,9 +106,7 @@ func TestDefineTask(t *testing.T) {
 		WorkerType:  "win2008-worker",
 	}
 
-	cd := tcclient.Client(*myQueue)
-	resp, cs, err := (&cd).APICall(td, "POST", "/task/"+url.QueryEscape(taskID)+"/define", new(tcqueue.TaskStatusResponse), nil)
-	tsr := resp.(*tcqueue.TaskStatusResponse)
+	tsr, err := myQueue.CreateTask(taskID, td)
 
 	//////////////////////////////////
 	// And now validate results.... //
@@ -117,9 +116,9 @@ func TestDefineTask(t *testing.T) {
 		t.Fatalf("%s", err)
 	}
 
-	t.Logf("Task https://queue.taskcluster.net/v1/task/%v created successfully", taskID)
+	t.Logf("Task %v created successfully in %v", taskID, rootURL)
 
-	if provisionerID := cs.HTTPRequestObject.(*tcqueue.TaskDefinitionRequest).ProvisionerID; provisionerID != "win-provisioner" {
+	if provisionerID := tsr.Status.ProvisionerID; provisionerID != "win-provisioner" {
 		t.Errorf("provisionerId 'win-provisioner' expected but got %s", provisionerID)
 	}
 	if schedulerID := tsr.Status.SchedulerID; schedulerID != "go-test-test-scheduler" {
@@ -128,10 +127,21 @@ func TestDefineTask(t *testing.T) {
 	if retriesLeft := tsr.Status.RetriesLeft; retriesLeft != 5 {
 		t.Errorf("Expected 'retriesLeft' to be 5, but got %v", retriesLeft)
 	}
-	if state := tsr.Status.State; state != "unscheduled" {
-		t.Errorf("Expected 'state' to be 'unscheduled', but got %s", state)
+	if state := tsr.Status.State; state != "pending" {
+		t.Errorf("Expected 'state' to be 'pending', but got %s", state)
 	}
-	submittedPayload := cs.HTTPRequestBody
+
+	taskDef, err := myQueue.Task(taskID)
+
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	submittedPayload, err := json.Marshal(taskDef)
+
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
 
 	// only the contents is relevant below - the formatting and order of properties does not matter
 	// since a json comparison is done, not a string comparison...
@@ -150,6 +160,9 @@ func TestDefineTask(t *testing.T) {
 	      "relengApiProxy":true
 	    }
 	  },
+
+      "dependencies": [],
+      "requires": "all-completed",
 
 	  "priority":      "high",
 	  "provisionerId": "win-provisioner",
@@ -182,7 +195,7 @@ func TestDefineTask(t *testing.T) {
 	}
 	`)
 
-	jsonCorrect, formattedExpected, formattedActual, err := jsontest.JsonEqual(expectedJSON, []byte(submittedPayload))
+	jsonCorrect, formattedExpected, formattedActual, err := jsontest.JsonEqual(expectedJSON, submittedPayload)
 	if err != nil {
 		t.Fatalf("Exception thrown formatting json data!\n%s\n\nStruggled to format either:\n%s\n\nor:\n\n%s", err, string(expectedJSON), submittedPayload)
 	}
@@ -199,7 +212,7 @@ func TestDefineTask(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Exception thrown generating temporary credentials!\n\n%s\n\n", err)
 	}
-	myQueue = tcqueue.New(tempCreds)
+	myQueue = tcqueue.New(tempCreds, rootURL)
 	_, err = myQueue.CancelTask(taskID)
 	if err != nil {
 		t.Fatalf("Exception thrown cancelling task with temporary credentials!\n\n%s\n\n", err)

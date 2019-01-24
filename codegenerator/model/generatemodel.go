@@ -6,12 +6,17 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"regexp"
 	"strconv"
 	"time"
 
 	docopt "github.com/docopt/docopt-go"
+	"github.com/taskcluster/jsonschema2go"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/codegenerator/model"
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 )
 
 var (
@@ -24,26 +29,19 @@ go generate commands in the model package. See go generate --help and ../build.s
 this is used by the build process for this taskcluster-client-go go project.
 
   Usage:
-      generatemodel -u API-MANIFEST -f SUPPLEMENTARY-DATA -o GO-OUTPUT-DIR -m MODEL-DATA-FILE
+      generatemodel -o GO-OUTPUT-DIR -m MODEL-DATA-FILE
       generatemodel --help
 
   Options:
     -h --help               Display this help text.
-    -u API-MANIFEST         The URL to retrieve the api manifest from, typically
-                            http://references.taskcluster.net/manifest.json.
-                            This lists the available APIs to generate, as a
-                            json file containing a dictionary of api names to
-                            json schema urls.
-    -f SUPPLEMENTARY-DATA   Input file to read supplmentary information from
-                            pertaining to the apis being generated. This
-                            includes a base doc url for generating links to
-                            in the generated go docs for each rest api method.
-                            Typically the codegenerator/model/apis.json file.
     -o GO-OUTPUT-DIR        Directory to place generated go packages.
     -m MODEL-DATA-FILE      When all api descriptions have been downloaded and
                             parsed, and their dependencies have also been
                             processed, an overview of all the processed data
                             will be written to this file.
+
+Please note, you *must* set TASKCLUSTER_ROOT_URL to a valid taskcluster deployment to
+retrieve the manifest/references/schemas from.
 `
 )
 
@@ -69,6 +67,39 @@ func main() {
 		downloadedTime = time.Unix(i, 0)
 	}
 
-	apiDefs := model.LoadAPIs(arguments["-u"].(string), arguments["-f"].(string))
-	model.GenerateCode(arguments["-o"].(string), arguments["-m"].(string), downloadedTime, apiDefs)
+	rootURL := tcclient.RootURLFromEnvVars()
+	if rootURL == "" {
+		log.Fatal("No TASKCLUSTER_ROOT_URL/TASKCLUSTER_PROXY_URL environment variable found to download manifest/references/schemas from.")
+	}
+
+	// echo "https://taskcluster-staging.net/schemas/common/api-reference-v0.json
+	// https://taskcluster-staging.net/schemas/common/manifest-v3.json" | "${GOPATH}/bin/jsonschema2go" -o model | sed 's/^\([[:space:]]*\)API\(Entry struct\)/\1\2/' | sed 's/json\.RawMessage/ScopeExpressionTemplate/g' > codegenerator/model/types.go
+
+	log.Print("Generating go types for code generator...")
+	job := &jsonschema2go.Job{
+		Package: "model",
+		URLs: []string{
+			tcurls.APIReferenceSchema(rootURL, "v0"),
+			tcurls.ExchangesReferenceSchema(rootURL, "v0"),
+			tcurls.APIManifestSchema(rootURL, "v3"),
+		},
+		ExportTypes:          true,
+		TypeNameBlacklist:    jsonschema2go.StringSet(map[string]bool{}),
+		DisableNestedStructs: true,
+	}
+	result, err := job.Execute()
+	if err != nil {
+		log.Fatalf("Error generating go types for code generator: %v", err)
+	}
+
+	source := regexp.MustCompile(`APIEntry struct`).ReplaceAll(result.SourceCode, []byte(`Entry struct`))
+	source = regexp.MustCompile(`json\.RawMessage`).ReplaceAll(source, []byte(`ScopeExpressionTemplate`))
+
+	model.FormatSourceAndSave("types.go", source)
+
+	log.Print("Loading APIs...")
+	apiDefs := model.LoadAPIs(rootURL)
+	log.Print("Generating code...")
+	apiDefs.GenerateCode(arguments["-o"].(string), arguments["-m"].(string), downloadedTime)
+	log.Print("All done")
 }

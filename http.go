@@ -293,8 +293,8 @@ func (client *Client) SignedURL(route string, query url.Values, duration time.Du
 // string as meaning the ext header is not needed.
 //
 // See:
-//   * https://docs.taskcluster.net/manual/apis/authorized-scopes
-//   * https://docs.taskcluster.net/manual/apis/temporary-credentials
+//   * https://docs.taskcluster.net/docs/manual/design/apis/hawk/authorized-scopes
+//   * https://docs.taskcluster.net/docs/manual/design/apis/hawk/temporary-credentials
 func getExtHeader(credentials *Credentials) (header string, err error) {
 	ext := &ExtHeader{}
 	if credentials.Certificate != "" {
