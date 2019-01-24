@@ -1,0 +1,29 @@
+query Task($taskId: ID!, $artifactsConnection: PageConnection) {
+  task(taskId: $taskId) {
+    metadata {
+      name
+      description
+      owner
+    }
+
+    status {
+      state
+    }
+
+    latestArtifacts(taskId: $taskId, connection: $artifactsConnection) {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        cursor
+        previousCursor
+        nextCursor
+      }
+      edges {
+        node {
+          name
+          url
+        }
+      }
+    }
+  }
+}

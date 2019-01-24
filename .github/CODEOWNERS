@@ -2,6 +2,7 @@
 
 services/queue @jhford
 services/web-server @taskcluster/frontend-reviewers
+ui @taskcluster/frontend-reviewers
 libraries/client @jhford
 
 infrastructure/builder @djmitche

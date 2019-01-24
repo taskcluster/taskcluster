@@ -1,0 +1,5 @@
+mutation EnableClient($clientId: ID!) {
+  enableClient(clientId: $clientId) {
+    disabled
+  }
+}

@@ -1,0 +1,5 @@
+mutation RerunTask($taskId: ID!) {
+  rerunTask(taskId: $taskId) {
+    taskId
+  }
+}
