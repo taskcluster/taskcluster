@@ -227,10 +227,10 @@
 			"revisionTime": "2017-01-30T11:31:45Z"
 		},
 		{
-			"checksumSHA1": "tQJiIYU7lIwPhpJjddDXiFkDsZ8=",
+			"checksumSHA1": "cJzhHoaG8LCiFCeWxeEfJrdOtFU=",
 			"path": "github.com/taskcluster/go-got",
-			"revision": "be30a15e825169a70a00fcea97f7f6a611145c1e",
-			"revisionTime": "2017-03-09T01:07:44Z"
+			"revision": "fcbc014b28837ba46ba58fa9a16e02aa31395167",
+			"revisionTime": "2019-01-24T14:30:19Z"
 		},
 		{
 			"checksumSHA1": "yGGqDZjev+9RMQwccdCGPqgFFWw=",
