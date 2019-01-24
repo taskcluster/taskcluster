@@ -8,29 +8,36 @@ import (
 	"strings"
 
 	"github.com/taskcluster/jsonschema2go/text"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 )
 
 //////////////////////////////////////////////////////////////////
 //
-// From: http://schemas.taskcluster.net/base/v1/api-reference.json
+// From: https://schemas.taskcluster.net/base/v1/api-reference.json
 //
 //////////////////////////////////////////////////////////////////
 
 // API represents the HTTP interface of a Taskcluster service
 type API struct {
 	*APIReferenceFile
-	apiDef *APIDefinition
+	apiDef   *APIDefinition
+	typeName string
+}
+
+func (api *API) Name() string {
+	if api.typeName == "" {
+		api.typeName = text.GoIdentifierFrom(api.ServiceName, true, api.apiDef.members)
+	}
+	return api.typeName
 }
 
 func (api *API) String() string {
 	result := fmt.Sprintf(
-		"Version     = '%v'\n"+
-			"Schema      = '%v'\n"+
+		"Schema      = '%v'\n"+
 			"Title       = '%v'\n"+
-			"Description = '%v'\n"+
-			"Base URL    = '%v'\n",
-		api.Version, api.Schema, api.Title, api.Description, api.BaseURL,
+			"Description = '%v'\n",
+		api.Schema, api.Title, api.Description,
 	)
 	for i, entry := range api.Entries {
 		result += fmt.Sprintf("Entry %-6v=\n%v", i, entry.String())
@@ -42,9 +49,8 @@ func (api *API) postPopulate(apiDef *APIDefinition) {
 
 	// reserved package members
 	api.apiDef.members = map[string]bool{
-		api.apiDef.Name: true,
-		"New":           true,
-		"NewFromEnv":    true,
+		"New":        true,
+		"NewFromEnv": true,
 	}
 
 	// make sure each entry defined for this API has a unique generated method name
@@ -86,7 +92,7 @@ func (api *API) generateAPICode(apiName string) string {
 	comment += "//\n"
 	comment += "// How to use this package\n"
 	comment += "//\n"
-	comment += "// First create " + text.IndefiniteArticle(api.apiDef.Name) + " " + api.apiDef.Name + " object:\n"
+	comment += "// First create " + text.IndefiniteArticle(api.Name()) + " " + api.Name() + " object:\n"
 	comment += "//\n"
 	comment += "//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(nil)\n"
 	comment += "//\n"
@@ -123,38 +129,40 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "` + api.BaseURL + `"
-)
+type ` + api.Name() + ` tcclient.Client
 
-type ` + api.apiDef.Name + ` tcclient.Client
-
-// New returns ` + text.IndefiniteArticle(api.apiDef.Name) + ` ` + api.apiDef.Name + ` client, configured to run against production. Pass in
-// nil to create a client without authentication. The
+// New returns ` + text.IndefiniteArticle(api.Name()) + ` ` + api.Name() + ` client, configured to run against production. Pass in
+// nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
 `
 	// Here we want to add spaces between commands and comments, such that the comments line up, e.g.:
 	//
-	//  myQueue, credsError := queue.New(nil)                    // credentials loaded from TASKCLUSTER_* environment variables
-	//  if credsError != nil {
-	//      // handle malformed credentials...
-	//  }
-	//  myQueue.Authenticate = false                             // disable authentication (creds above are now ignored)
-	//  myQueue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
-	//  data, err := myQueue.Task(.....)                         // for example, call the Task(.....) API endpoint (described further down)...
+	//  queue := tcqueue.New(
+	//      nil,                                      // client without authentication
+	//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+	//  )
+	//  err := queue.Ping(.....)                      // for example, call the Ping(.....) API endpoint (described further down)...
 	//
 	// We do this by generating the code, then calculating the max length of one of the code lines,
 	// and then padding with spaces based on max line length and adding comments.
 
 	commentedSection := [][]string{
 		{
-			"//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(nil)",
+			"//  " + exampleVarName + " := " + api.apiDef.PackageName + ".New(",
+			"",
+		},
+		{
+			"//      nil,",
 			"// client without authentication",
 		},
 		{
-			"//  " + exampleVarName + ".BaseURL = \"http://localhost:1234/api/" + apiName + "/v1\"",
-			"// alternative API endpoint (production by default)",
+			"//      \"http://localhost:1234/my/taskcluster\",",
+			"// taskcluster hosted at this root URL on local machine",
+		},
+		{
+			"//  )",
+			"",
 		},
 		{
 			exampleCall,
@@ -180,27 +188,33 @@ type ` + api.apiDef.Name + ` tcclient.Client
 	content += "//  	// handle errors...\n"
 	content += "//  }"
 	content += `
-func New(credentials *tcclient.Credentials) *` + api.apiDef.Name + ` {
-	return &` + api.apiDef.Name + `{
+func New(credentials *tcclient.Credentials, rootURL string) *` + api.Name() + ` {
+	return &` + api.Name() + `{
 		Credentials: credentials,
-		BaseURL: DefaultBaseURL,
+		BaseURL: tcclient.BaseURL(rootURL, "` + api.ServiceName + `", "` + api.APIVersion + `"),
 		Authenticate: credentials != nil,
 	}
 }
 
-// NewFromEnv returns ` + text.IndefiniteArticle(api.apiDef.Name) + ` ` + api.apiDef.Name + ` client with credentials taken from the environment variables:
+// NewFromEnv returns ` + text.IndefiniteArticle(api.Name()) + ` *` + api.Name() + ` configured from environment variables.
+//
+// The root URL is taken from TASKCLUSTER_PROXY_URL if set to a non-empty
+// string, otherwise from TASKCLUSTER_ROOT_URL if set, otherwise the empty
+// string.
+//
+// The credentials are taken from environment variables:
 //
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
-// authentication will be disabled.
-func NewFromEnv() *` + api.apiDef.Name + ` {
+// If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
+// disabled.
+func NewFromEnv() *` + api.Name() + ` {
 	c := tcclient.CredentialsFromEnvVars()
-	return &` + api.apiDef.Name + `{
+	return &` + api.Name() + `{
 		Credentials: c,
-		BaseURL: DefaultBaseURL,
+		BaseURL: tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "` + api.ServiceName + `", "` + api.APIVersion + `"),
 		Authenticate: c.ClientID != "",
 	}
 }
@@ -229,11 +243,11 @@ type APIEntry struct {
 // Add entry.Input and entry.Output to schemaURLs, if they are set
 func (entry *APIEntry) postPopulate(apiDef *APIDefinition) {
 	if x := &entry.Parent.apiDef.schemaURLs; entry.Input != "" {
-		entry.InputURL = tcurls.Schema("https://taskcluster.net", entry.Parent.ServiceName, entry.Input)
+		entry.InputURL = tcurls.Schema(tcclient.RootURLFromEnvVars(), entry.Parent.ServiceName, entry.Input)
 		*x = append(*x, entry.InputURL)
 	}
 	if x := &entry.Parent.apiDef.schemaURLs; entry.Output != "" {
-		entry.OutputURL = tcurls.Schema("https://taskcluster.net", entry.Parent.ServiceName, entry.Output)
+		entry.OutputURL = tcurls.Schema(tcclient.RootURLFromEnvVars(), entry.Parent.ServiceName, entry.Output)
 		*x = append(*x, entry.OutputURL)
 	}
 }
@@ -326,7 +340,7 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	}
 
 	content := comment
-	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
+	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.Name() + ") " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
 	content += queryCode
 	content += "\tcd := tcclient.Client(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
 	if entry.OutputURL != "" {
@@ -360,7 +374,7 @@ func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
 	}
 
 	content := comment
-	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "_SignedURL(" + inputParams + ") (*url.URL, error) {\n"
+	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.Name() + ") " + entry.MethodName + "_SignedURL(" + inputParams + ") (*url.URL, error) {\n"
 	content += queryCode
 	content += "\tcd := tcclient.Client(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
 	content += "\treturn (&cd).SignedURL(\"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", " + queryExpr + ", duration)\n"
@@ -527,7 +541,7 @@ func (this *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// See http://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate
+// See https://schemas.taskcluster.net/base/v1/api-reference.json#/definitions/scopeExpressionTemplate
 type ScopeExpressionTemplate struct {
 	RawMessage json.RawMessage
 	// One of:

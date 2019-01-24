@@ -4,26 +4,35 @@ import (
 	"fmt"
 
 	"github.com/taskcluster/jsonschema2go/text"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 )
 
 ////////////////////////////////////////////////////////////////////////
 //
-// From: http://schemas.taskcluster.net/base/v1/exchanges-reference.json
+// From: https://schemas.taskcluster.net/base/v1/exchanges-reference.json
 //
 ////////////////////////////////////////////////////////////////////////
 
 // Exchange represents the set of AMQP interfaces for a Taskcluster service
 type Exchange struct {
+	Schema         string          `json:"$schema"`
+	APIVersion     interface{}     `json:"apiVersion"`
 	Description    string          `json:"description"`
 	Entries        []ExchangeEntry `json:"entries"`
 	ExchangePrefix string          `json:"exchangePrefix"`
-	Schema         string          `json:"$schema"`
-	Title          string          `json:"title"`
-	Version        interface{}     `json:"version"`
 	ServiceName    string          `json:"serviceName"`
+	Title          string          `json:"title"`
 
-	apiDef *APIDefinition
+	apiDef   *APIDefinition
+	typeName string
+}
+
+func (exchange *Exchange) Name() string {
+	if exchange.typeName == "" {
+		exchange.typeName = text.GoIdentifierFrom(exchange.ServiceName+"Events", true, exchange.apiDef.members)
+	}
+	return exchange.typeName
 }
 
 func (exchange *Exchange) String() string {
@@ -33,7 +42,7 @@ func (exchange *Exchange) String() string {
 			"Title           = '%v'\n"+
 			"Description     = '%v'\n"+
 			"Exchange Prefix = '%v'\n",
-		exchange.Version, exchange.Schema, exchange.Title,
+		exchange.APIVersion, exchange.Schema, exchange.Title,
 		exchange.Description, exchange.ExchangePrefix,
 	)
 	for i, entry := range exchange.Entries {
@@ -71,7 +80,7 @@ type ExchangeEntry struct {
 
 func (entry *ExchangeEntry) postPopulate(apiDef *APIDefinition) {
 	entry.typeName = text.GoIdentifierFrom(entry.Name, true, entry.Parent.apiDef.members)
-	entry.schemaURL = tcurls.Schema("https://taskcluster.net", entry.Parent.ServiceName, entry.Schema)
+	entry.schemaURL = tcurls.Schema(tcclient.RootURLFromEnvVars(), entry.Parent.ServiceName, entry.Schema)
 	entry.Parent.apiDef.schemaURLs = append(entry.Parent.apiDef.schemaURLs, entry.schemaURL)
 }
 

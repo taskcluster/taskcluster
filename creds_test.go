@@ -70,7 +70,11 @@ func checkAuthenticate(t *testing.T, response *tcauth.TestAuthenticateResponse, 
 }
 
 func Test_PermaCred(t *testing.T) {
-	client := tcauth.New(testCreds)
+	rootURL := tcclient.RootURLFromEnvVars()
+	if rootURL == "" {
+		t.Skip("Cannot run test, neither TASKCLUSTER_PROXY_URL nor TASKCLUSTER_ROOT_URL are set to non-empty strings")
+	}
+	client := tcauth.New(testCreds, rootURL)
 	response, err := client.TestAuthenticate(&tcauth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:this"},
@@ -80,12 +84,16 @@ func Test_PermaCred(t *testing.T) {
 }
 
 func Test_TempCred(t *testing.T) {
+	rootURL := tcclient.RootURLFromEnvVars()
+	if rootURL == "" {
+		t.Skip("Cannot run test, neither TASKCLUSTER_PROXY_URL nor TASKCLUSTER_ROOT_URL are set to non-empty strings")
+	}
 	tempCreds, err := testCreds.CreateTemporaryCredentials(1*time.Hour, "scope:1", "scope:2")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	client := tcauth.New(tempCreds)
+	client := tcauth.New(tempCreds, rootURL)
 	response, err := client.TestAuthenticate(&tcauth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:1"},
@@ -95,13 +103,17 @@ func Test_TempCred(t *testing.T) {
 }
 
 func Test_NamedTempCred(t *testing.T) {
+	rootURL := tcclient.RootURLFromEnvVars()
+	if rootURL == "" {
+		t.Skip("Cannot run test, neither TASKCLUSTER_PROXY_URL nor TASKCLUSTER_ROOT_URL are set to non-empty strings")
+	}
 	tempCreds, err := testCreds.CreateNamedTemporaryCredentials("jimmy", 1*time.Hour,
 		"scope:1", "scope:2")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	client := tcauth.New(tempCreds)
+	client := tcauth.New(tempCreds, rootURL)
 	response, err := client.TestAuthenticate(&tcauth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*", "auth:create-client:jimmy"},
 		RequiredScopes: []string{"scope:1"},
@@ -146,9 +158,13 @@ func Test_TempCred_TooLong(t *testing.T) {
 }
 
 func Test_AuthorizedScopes(t *testing.T) {
+	rootURL := tcclient.RootURLFromEnvVars()
+	if rootURL == "" {
+		t.Skip("Cannot run test, neither TASKCLUSTER_PROXY_URL nor TASKCLUSTER_ROOT_URL are set to non-empty strings")
+	}
 	authCreds := *testCreds
 	authCreds.AuthorizedScopes = []string{"scope:1", "scope:3"}
-	client := tcauth.New(&authCreds)
+	client := tcauth.New(&authCreds, rootURL)
 	response, err := client.TestAuthenticate(&tcauth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:1"},
@@ -158,13 +174,17 @@ func Test_AuthorizedScopes(t *testing.T) {
 }
 
 func Test_TempCredWithAuthorizedScopes(t *testing.T) {
+	rootURL := tcclient.RootURLFromEnvVars()
+	if rootURL == "" {
+		t.Skip("Cannot run test, neither TASKCLUSTER_PROXY_URL nor TASKCLUSTER_ROOT_URL are set to non-empty strings")
+	}
 	tempCreds, err := testCreds.CreateTemporaryCredentials(1*time.Hour, "scope:1", "scope:2")
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	tempCreds.AuthorizedScopes = []string{"scope:1"}
-	client := tcauth.New(tempCreds)
+	client := tcauth.New(tempCreds, rootURL)
 	response, err := client.TestAuthenticate(&tcauth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:1"},
@@ -174,6 +194,10 @@ func Test_TempCredWithAuthorizedScopes(t *testing.T) {
 }
 
 func Test_NamedTempCredWithAuthorizedScopes(t *testing.T) {
+	rootURL := tcclient.RootURLFromEnvVars()
+	if rootURL == "" {
+		t.Skip("Cannot run test, neither TASKCLUSTER_PROXY_URL nor TASKCLUSTER_ROOT_URL are set to non-empty strings")
+	}
 	tempCreds, err := testCreds.CreateNamedTemporaryCredentials("julie", 1*time.Hour,
 		"scope:1", "scope:2")
 	if err != nil {
@@ -181,7 +205,7 @@ func Test_NamedTempCredWithAuthorizedScopes(t *testing.T) {
 		return
 	}
 	tempCreds.AuthorizedScopes = []string{"scope:1"} // note: no create-client
-	client := tcauth.New(tempCreds)
+	client := tcauth.New(tempCreds, rootURL)
 	response, err := client.TestAuthenticate(&tcauth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*", "auth:create-client:j*"},
 		RequiredScopes: []string{"scope:1"},

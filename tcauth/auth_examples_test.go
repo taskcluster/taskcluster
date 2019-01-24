@@ -19,6 +19,7 @@ func Example_scopes() {
 			ClientID:    "SOME-CLIENT-ID",
 			AccessToken: "SOME-WELL-FORMED-ACCESS-TOKEN",
 		},
+		"https://taskcluster.net",
 	)
 
 	// Look up client details for client id "project/taskcluster/tc-client-go/tests"...
@@ -44,9 +45,9 @@ func Example_scopes() {
 func Example_updateClient() {
 
 	// In this example we will connect to a local auth server running on
-	// localhost with authentication disabled. This would also work for
-	// connecting to a local taskcluster-proxy instance.
-	myAuth := tcauth.New(nil)
+	// localhost:8080 with authentication disabled. This could be, for
+	// example, a locally deployed taskcluster-proxy instance.
+	myAuth := tcauth.New(nil, "http://localhost:8080")
 
 	// Set target url to localhost url...
 	myAuth.BaseURL = "http://localhost:60024/v1"

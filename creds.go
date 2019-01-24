@@ -15,9 +15,11 @@ import (
 
 	"github.com/taskcluster/jsonschema2go/text"
 	"github.com/taskcluster/slugid-go/slugid"
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 )
 
-// Credentials represents the set of credentials required to access protected Taskcluster HTTP APIs.
+// Credentials represents the set of credentials required to access protected
+// Taskcluster HTTP APIs.
 type Credentials struct {
 	// ClientID
 	ClientID string `json:"clientId"`
@@ -32,7 +34,7 @@ type Credentials struct {
 	// to nil is not the same as setting to an empty array. If AuthorizedScopes
 	// is set to an empty array rather than nil, this is equivalent to having
 	// no scopes at all.
-	// See https://docs.taskcluster.net/manual/apis/authorized-scopes
+	// See https://docs.taskcluster.net/docs/manual/design/apis/hawk/authorized-scopes
 	AuthorizedScopes []string `json:"authorizedScopes"`
 }
 
@@ -41,7 +43,7 @@ func (creds *Credentials) String() string {
 		"ClientId: %q\nAccessToken: %q\nCertificate: %q\nAuthorizedScopes: %q",
 		creds.ClientID,
 		text.StarOut(creds.AccessToken),
-		text.StarOut(creds.Certificate),
+		creds.Certificate,
 		creds.AuthorizedScopes,
 	)
 }
@@ -51,8 +53,9 @@ func (creds *Credentials) String() string {
 // required for all HTTP operations.
 type Client struct {
 	Credentials *Credentials
-	// The URL of the API endpoint to hit.
-	// For example, "https://auth.taskcluster.net/v1" for production auth service.
+	// The Base URL of the service, beneath the root URL of the deployment.
+	// Typically tcclient.BaseURL function will create it for you.
+	// For example, "https://auth.taskcluster.net/v1" for current production auth service.
 	BaseURL string
 	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
 	Authenticate bool
@@ -64,7 +67,7 @@ type Client struct {
 }
 
 // Certificate represents the certificate used in Temporary Credentials. See
-// https://docs.taskcluster.net/manual/apis/temporary-credentials
+// https://docs.taskcluster.net/docs/manual/design/apis/hawk/temporary-credentials
 type Certificate struct {
 	Version   int      `json:"version"`
 	Scopes    []string `json:"scopes"`
@@ -87,7 +90,7 @@ type Certificate struct {
 // https://github.com/taskcluster/taskcluster-auth/pull/117 so no clock skew is
 // applied in this method, nor should be applied by the caller.
 //
-// See https://docs.taskcluster.net/manual/apis/temporary-credentials
+// See https://docs.taskcluster.net/docs/manual/design/apis/hawk/temporary-credentials
 func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientID string, duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
 	if duration > 31*24*time.Hour {
 		return nil, errors.New("Temporary credentials must expire within 31 days; however a duration of " + duration.String() + " was specified to (*tcclient.Client).CreateTemporaryCredentials(...) method")
@@ -203,10 +206,12 @@ func (creds *Credentials) Cert() (cert *Certificate, err error) {
 
 // CredentialsFromEnvVars creates and returns Taskcluster credentials
 // initialised from the values of environment variables:
+//
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
-// No validation is performed on the loaded values, and unset environment
+//
+// No validation is performed on the assigned values, and unset environment
 // variables will result in empty string values.
 func CredentialsFromEnvVars() *Credentials {
 	return &Credentials{
@@ -214,4 +219,19 @@ func CredentialsFromEnvVars() *Credentials {
 		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
 	}
+}
+
+// RootURLFromEnvVars returns the value of environment variable
+// TASKCLUSTER_PROXY_URL if set to a non-empty string, otherwise the value of
+// TASKCLUSTER_ROOT_URL if set, otherwise the empty string.
+func RootURLFromEnvVars() string {
+	if proxyURL := os.Getenv("TASKCLUSTER_PROXY_URL"); proxyURL != "" {
+		return proxyURL
+	}
+	return os.Getenv("TASKCLUSTER_ROOT_URL")
+}
+
+func BaseURL(rootURL string, service string, version string) string {
+	b := tcurls.API(rootURL, service, version, "")
+	return b[:len(b)-1] // strip trailing slash
 }
