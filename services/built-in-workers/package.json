@@ -1,0 +1,13 @@
+{
+  "name": "taskcluster-built-in-workers",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
+    "test": "mocha test/*_test.js",
+    "lint": "eslint src/*.js test/*.js"
+  },
+  "dependencies": {
+    "debug": "^4.1.0"
+  }
+}
