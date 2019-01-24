@@ -15,3 +15,7 @@ docker-worker.tgz
 yarn-error.log
 packer-artifacts.json
 worker-types-backup.json
+image.tar.gz
+initrd.tar.gz
+kernel.tar.gz
+modules.tar.gz

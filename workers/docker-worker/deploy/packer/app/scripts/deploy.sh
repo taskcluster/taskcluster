@@ -24,7 +24,7 @@ sudo tar xzf $template_source -C / --strip-components=1
 target=$HOME/docker_worker
 mkdir -p $target
 cd $target
-tar xzf $docker_worker_source -C $target --strip-components=1
+tar xzf $docker_worker_source -C $target
 sudo chown -R $USER:$USER /home/ubuntu/docker_worker
 
 sudo npm install -g yarn@1.0.2

@@ -114,6 +114,6 @@ RUN tar xzf /tmp/deploy.tar.gz -C / --strip-components=1
 
 RUN mkdir -p $HOME/docker_worker
 RUN npm i -g yarn
-RUN cd $HOME/docker_worker && tar xzf /tmp/docker-worker.tgz -C . --strip-components=1 && yarn install --frozen-lockfile
+RUN cd $HOME/docker_worker && tar xzf /tmp/docker-worker.tgz -C . && yarn install --frozen-lockfile
 
 # END OF APP IMAGE
