@@ -29,7 +29,10 @@ spec:
           - name: ${project_name}-${lowercase(job_name)}
             image: ${docker_image}
             imagePullPolicy: Always
-            args: ['${job_name}']
+            args:
+              $if: is_monoimage == 'true' # terraform-style "boolean"
+              then: ['${service_name}/${job_name}']
+              else: ['${job_name}']
             resources:
               # TODO: Make configurable
               requests:

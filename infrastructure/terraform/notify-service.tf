@@ -100,7 +100,7 @@ module "notify_web_service" {
   secrets_hash   = "${module.notify_secrets.secrets_hash}"
   root_url       = "${var.root_url}"
   secret_keys    = "${module.notify_secrets.env_var_keys}"
-  docker_image   = "${local.taskcluster_image_notify}"
+  docker_image   = "${local.taskcluster_image_monoimage}"
 }
 
 module "notify_handler" {
@@ -113,7 +113,7 @@ module "notify_handler" {
   secrets_hash   = "${module.notify_secrets.secrets_hash}"
   root_url       = "${var.root_url}"
   secret_keys    = "${module.notify_secrets.env_var_keys}"
-  docker_image   = "${local.taskcluster_image_notify}"
+  docker_image   = "${local.taskcluster_image_monoimage}"
 }
 
 module "notify_irc" {
@@ -126,5 +126,5 @@ module "notify_irc" {
   secrets_hash   = "${module.notify_secrets.secrets_hash}"
   root_url       = "${var.root_url}"
   secret_keys    = "${module.notify_secrets.env_var_keys}"
-  docker_image   = "${local.taskcluster_image_notify}"
+  docker_image   = "${local.taskcluster_image_monoimage}"
 }

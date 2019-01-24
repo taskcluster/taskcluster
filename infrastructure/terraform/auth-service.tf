@@ -207,20 +207,21 @@ module "auth_secrets" {
 module "auth_web_service" {
   source            = "modules/deployment"
   project_name      = "taskcluster-auth"
-  disabled_services = "${var.disabled_services}"
   service_name      = "auth"
   proc_name         = "web"
+  disabled_services = "${var.disabled_services}"
   readiness_path    = "/api/auth/v1/ping"
   secret_name       = "${module.auth_secrets.secret_name}"
   secrets_hash      = "${module.auth_secrets.secrets_hash}"
   root_url          = "${var.root_url}"
   secret_keys       = "${module.auth_secrets.env_var_keys}"
-  docker_image      = "${local.taskcluster_image_auth}"
+  docker_image      = "${local.taskcluster_image_monoimage}"
 }
 
 module "auth_purge_expired_clients" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-auth"
+  service_name     = "auth"
   job_name         = "purgeExpiredClients"
   schedule         = "0 0 * * *"
   deadline_seconds = 86400
@@ -228,5 +229,5 @@ module "auth_purge_expired_clients" {
   secrets_hash     = "${module.auth_secrets.secrets_hash}"
   root_url         = "${var.root_url}"
   secret_keys      = "${module.auth_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_auth}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
 }

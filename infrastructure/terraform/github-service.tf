@@ -46,7 +46,7 @@ module "github_web_service" {
   secrets_hash   = "${module.github_secrets.secrets_hash}"
   root_url       = "${var.root_url}"
   secret_keys    = "${module.github_secrets.env_var_keys}"
-  docker_image   = "${local.taskcluster_image_github}"
+  docker_image   = "${local.taskcluster_image_monoimage}"
 }
 
 module "github_handler" {
@@ -59,12 +59,13 @@ module "github_handler" {
   secrets_hash   = "${module.github_secrets.secrets_hash}"
   root_url       = "${var.root_url}"
   secret_keys    = "${module.github_secrets.env_var_keys}"
-  docker_image   = "${local.taskcluster_image_github}"
+  docker_image   = "${local.taskcluster_image_monoimage}"
 }
 
 module "github_sync_installations" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-github"
+  service_name     = "github"
   job_name         = "sync"
   schedule         = "0 0 * * *"
   deadline_seconds = 86400
@@ -72,5 +73,5 @@ module "github_sync_installations" {
   secrets_hash     = "${module.github_secrets.secrets_hash}"
   root_url         = "${var.root_url}"
   secret_keys      = "${module.github_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_github}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
 }
