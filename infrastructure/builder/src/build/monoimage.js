@@ -11,7 +11,7 @@ const Stamp = require('./stamp');
 const appRootDir = require('app-root-dir');
 const {gitClone, gitIsDirty, dockerRun, dockerPull, dockerImages, dockerBuild,
   dockerRegistryCheck, serviceDockerImageTask, ensureDockerImage, ensureTask,
-  listServices} = require('./utils');
+  listServices, dockerPush} = require('./utils');
 
 /**
  * The "monoimage" is a single docker image containing all tasks.  This build process goes
@@ -447,6 +447,38 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
       await dockerBuild({
         tarball: tarball,
         logfile: `${workDir}/docker-build.log`,
+        tag,
+        utils,
+        baseDir,
+      });
+
+      return provides;
+    },
+  });
+
+  ensureTask(tasks, {
+    title: `Monoimage - Push Image`,
+    requires: [
+      `monoimage-docker-image`,
+      `monoimage-image-on-registry`,
+    ],
+    provides: [
+      `target-monoimage`,
+    ],
+    run: async (requirements, utils) => {
+      const tag = requirements[`monoimage-docker-image`];
+      const provides = {[`target-monoimage`]: tag};
+
+      if (!cmdOptions.push) {
+        return utils.skip({provides});
+      }
+
+      if (requirements[`monoimage-image-on-registry`]) {
+        return utils.skip({provides});
+      }
+
+      await dockerPush({
+        logfile: `${workDir}/docker-push.log`,
         tag,
         utils,
         baseDir,
