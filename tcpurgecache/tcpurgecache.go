@@ -6,16 +6,15 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// https://references.taskcluster.net/purge-cache/v1/api.json
+// https://taskcluster-staging.net/references/purge-cache/v1/api.json
 
-// The purge-cache service, typically available at
-// `purge-cache.taskcluster.net`, is responsible for publishing a pulse
+// The purge-cache service is responsible for publishing a pulse
 // message for workers, so they can purge cache upon request.
 //
 // This document describes the API end-point for publishing the pulse
 // message. This is mainly intended to be used by tools.
 //
-// See: https://docs.taskcluster.net/reference/core/purge-cache/api-docs
+// See:
 //
 // How to use this package
 //
@@ -36,7 +35,7 @@
 // Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
-// https://references.taskcluster.net/purge-cache/v1/api.json together with the input and output schemas it references, downloaded on
+// https://taskcluster-staging.net/references/purge-cache/v1/api.json together with the input and output schemas it references, downloaded on
 // Thu, 4 Oct 2018 at 08:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcpurgecache
@@ -47,43 +46,47 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "https://purge-cache.taskcluster.net/v1/"
-)
-
 type PurgeCache tcclient.Client
 
 // New returns a PurgeCache client, configured to run against production. Pass in
-// nil to create a client without authentication. The
+// nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  purgeCache := tcpurgecache.New(nil)                              // client without authentication
-//  purgeCache.BaseURL = "http://localhost:1234/api/PurgeCache/v1"   // alternative API endpoint (production by default)
-//  err := purgeCache.Ping(.....)                                    // for example, call the Ping(.....) API endpoint (described further down)...
+//  purgeCache := tcpurgecache.New(
+//      nil,                                      // client without authentication
+//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//  )
+//  err := purgeCache.Ping(.....)                 // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *PurgeCache {
+func New(credentials *tcclient.Credentials, rootURL string) *PurgeCache {
 	return &PurgeCache{
 		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(rootURL, "purge-cache", "v1"),
 		Authenticate: credentials != nil,
 	}
 }
 
-// NewFromEnv returns a PurgeCache client with credentials taken from the environment variables:
+// NewFromEnv returns a *PurgeCache configured from environment variables.
+//
+// The root URL is taken from TASKCLUSTER_PROXY_URL if set to a non-empty
+// string, otherwise from TASKCLUSTER_ROOT_URL if set, otherwise the empty
+// string.
+//
+// The credentials are taken from environment variables:
 //
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
-// authentication will be disabled.
+// If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
+// disabled.
 func NewFromEnv() *PurgeCache {
 	c := tcclient.CredentialsFromEnvVars()
 	return &PurgeCache{
 		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "purge-cache", "v1"),
 		Authenticate: c.ClientID != "",
 	}
 }
@@ -91,7 +94,7 @@ func NewFromEnv() *PurgeCache {
 // Respond without doing anything.
 // This endpoint is used to check that the service is up.
 //
-// See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#ping
+// See #ping
 func (purgeCache *PurgeCache) Ping() error {
 	cd := tcclient.Client(*purgeCache)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
@@ -105,7 +108,7 @@ func (purgeCache *PurgeCache) Ping() error {
 // Required scopes:
 //   purge-cache:<provisionerId>/<workerType>:<cacheName>
 //
-// See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#purgeCache
+// See #purgeCache
 func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, payload *PurgeCacheRequest) error {
 	cd := tcclient.Client(*purgeCache)
 	_, _, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, nil)
@@ -118,7 +121,7 @@ func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, paylo
 // endpoint that is specific to their workerType and
 // provisionerId.
 //
-// See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#allPurgeRequests
+// See #allPurgeRequests
 func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) (*OpenAllPurgeRequestsList, error) {
 	v := url.Values{}
 	if continuationToken != "" {
@@ -136,7 +139,7 @@ func (purgeCache *PurgeCache) AllPurgeRequests(continuationToken, limit string) 
 // a certain time. This is safe to be used in automation from
 // workers.
 //
-// See https://docs.taskcluster.net/reference/core/purge-cache/api-docs#purgeRequests
+// See #purgeRequests
 func (purgeCache *PurgeCache) PurgeRequests(provisionerId, workerType, since string) (*OpenPurgeRequestList, error) {
 	v := url.Values{}
 	if since != "" {

@@ -6,11 +6,11 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// https://references.taskcluster.net/index/v1/api.json
+// https://taskcluster-staging.net/references/index/v1/api.json
 
-// The task index, typically available at `index.taskcluster.net`, is
-// responsible for indexing tasks. The service ensures that tasks can be
-// located by recency and/or arbitrary strings. Common use-cases include:
+// The task index is responsible for indexing tasks. The service ensures that
+// tasks can be located by recency and/or arbitrary strings. Common
+// use-cases include:
 //
 //  * Locate tasks by git or mercurial `<revision>`, or
 //  * Locate latest task from given `<branch>`, such as a release.
@@ -101,7 +101,7 @@
 // good idea to document task index hierarchies, as these make up extension
 // points in their own.
 //
-// See: https://docs.taskcluster.net/reference/core/index/api-docs
+// See:
 //
 // How to use this package
 //
@@ -122,7 +122,7 @@
 // Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
-// https://references.taskcluster.net/index/v1/api.json together with the input and output schemas it references, downloaded on
+// https://taskcluster-staging.net/references/index/v1/api.json together with the input and output schemas it references, downloaded on
 // Thu, 4 Oct 2018 at 08:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tcindex
@@ -134,43 +134,47 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "https://index.taskcluster.net/v1"
-)
-
 type Index tcclient.Client
 
 // New returns an Index client, configured to run against production. Pass in
-// nil to create a client without authentication. The
+// nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  index := tcindex.New(nil)                              // client without authentication
-//  index.BaseURL = "http://localhost:1234/api/Index/v1"   // alternative API endpoint (production by default)
-//  err := index.Ping(.....)                               // for example, call the Ping(.....) API endpoint (described further down)...
+//  index := tcindex.New(
+//      nil,                                      // client without authentication
+//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//  )
+//  err := index.Ping(.....)                      // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Index {
+func New(credentials *tcclient.Credentials, rootURL string) *Index {
 	return &Index{
 		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(rootURL, "index", "v1"),
 		Authenticate: credentials != nil,
 	}
 }
 
-// NewFromEnv returns an Index client with credentials taken from the environment variables:
+// NewFromEnv returns an *Index configured from environment variables.
+//
+// The root URL is taken from TASKCLUSTER_PROXY_URL if set to a non-empty
+// string, otherwise from TASKCLUSTER_ROOT_URL if set, otherwise the empty
+// string.
+//
+// The credentials are taken from environment variables:
 //
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
-// authentication will be disabled.
+// If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
+// disabled.
 func NewFromEnv() *Index {
 	c := tcclient.CredentialsFromEnvVars()
 	return &Index{
 		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "index", "v1"),
 		Authenticate: c.ClientID != "",
 	}
 }
@@ -178,7 +182,7 @@ func NewFromEnv() *Index {
 // Respond without doing anything.
 // This endpoint is used to check that the service is up.
 //
-// See https://docs.taskcluster.net/reference/core/index/api-docs#ping
+// See #ping
 func (index *Index) Ping() error {
 	cd := tcclient.Client(*index)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
@@ -188,7 +192,7 @@ func (index *Index) Ping() error {
 // Find a task by index path, returning the highest-rank task with that path. If no
 // task exists for the given path, this API end-point will respond with a 404 status.
 //
-// See https://docs.taskcluster.net/reference/core/index/api-docs#findTask
+// See #findTask
 func (index *Index) FindTask(indexPath string) (*IndexedTaskResponse, error) {
 	cd := tcclient.Client(*index)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(indexPath), new(IndexedTaskResponse), nil)
@@ -203,7 +207,7 @@ func (index *Index) FindTask(indexPath string) (*IndexedTaskResponse, error) {
 // request. For the initial request, the payload should be an empty JSON
 // object.
 //
-// See https://docs.taskcluster.net/reference/core/index/api-docs#listNamespaces
+// See #listNamespaces
 func (index *Index) ListNamespaces(namespace, continuationToken, limit string) (*ListNamespacesResponse, error) {
 	v := url.Values{}
 	if continuationToken != "" {
@@ -228,7 +232,7 @@ func (index *Index) ListNamespaces(namespace, continuationToken, limit string) (
 // **Remark**, this end-point is designed for humans browsing for tasks, not
 // services, as that makes little sense.
 //
-// See https://docs.taskcluster.net/reference/core/index/api-docs#listTasks
+// See #listTasks
 func (index *Index) ListTasks(namespace, continuationToken, limit string) (*ListTasksResponse, error) {
 	v := url.Values{}
 	if continuationToken != "" {
@@ -251,7 +255,7 @@ func (index *Index) ListTasks(namespace, continuationToken, limit string) (*List
 // Required scopes:
 //   index:insert-task:<namespace>
 //
-// See https://docs.taskcluster.net/reference/core/index/api-docs#insertTask
+// See #insertTask
 func (index *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, error) {
 	cd := tcclient.Client(*index)
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
@@ -265,8 +269,8 @@ func (index *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*I
 // if a new task is inserted into the index between calls. Avoid using this method as
 // a stable link to multiple, connected files if the index path does not contain a
 // unique identifier.  For example, the following two links may return unrelated files:
-// * https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/installer.exe`
-// * https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`
+// * https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/installer.exe`
+// * https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`
 //
 // This problem be remedied by including the revision in the index path or by bundling both
 // installer and debug symbols into a single artifact.
@@ -277,7 +281,7 @@ func (index *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*I
 //   If private:
 //     queue:get-artifact:<name>
 //
-// See https://docs.taskcluster.net/reference/core/index/api-docs#findArtifactFromTask
+// See #findArtifactFromTask
 func (index *Index) FindArtifactFromTask(indexPath, name string) error {
 	cd := tcclient.Client(*index)
 	_, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(indexPath)+"/artifacts/"+url.QueryEscape(name), nil, nil)

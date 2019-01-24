@@ -9,67 +9,67 @@ import (
 type (
 	// A list of currently open purge-cache requests. Should not be used by workers.
 	//
-	// See https://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#
+	// See https://taskcluster-staging.net/schemas/purge-cache/v1/all-purge-cache-request-list.json#
 	OpenAllPurgeRequestsList struct {
 
 		// Passed back from Azure to allow us to page through long result sets.
 		//
-		// See https://schemas.taskcluster.net/purge-cache/v1/all-purge-cache-request-list.json#/properties/continuationToken
+		// See https://taskcluster-staging.net/schemas/purge-cache/v1/all-purge-cache-request-list.json#/properties/continuationToken
 		ContinuationToken string `json:"continuationToken,omitempty"`
 
 		// A list of Purge Cache requests that the Purge Cache service has previously received.
 		//
-		// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
+		// See https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#
 		Requests []PurgeCacheRequestsEntry `json:"requests"`
 	}
 
 	// A list of currently open purge-cache requests.
 	//
-	// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-request-list.json#
+	// See https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-request-list.json#
 	OpenPurgeRequestList struct {
 
 		// A list of Purge Cache requests that the Purge Cache service has previously received.
 		//
-		// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#
+		// See https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#
 		Requests []PurgeCacheRequestsEntry `json:"requests"`
 	}
 
 	// Request that a message be published to purge a specific cache.
 	//
-	// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#
+	// See https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-request.json#
 	PurgeCacheRequest struct {
 
 		// Name of cache to purge. Notice that if a `workerType` have multiple kinds
 		// of caches (with independent names), it should purge all caches identified
 		// by `cacheName` regardless of cache type.
 		//
-		// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-request.json#/properties/cacheName
+		// See https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-request.json#/properties/cacheName
 		CacheName string `json:"cacheName"`
 	}
 
 	// An entry in a list of Purge Cache Requests that the Purge Cache service has previously received.
 	//
-	// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items
+	// See https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#/items
 	PurgeCacheRequestsEntry struct {
 
 		// All caches that match this provisionerId, workerType, and cacheName must be destroyed if they were created _before_ this time.
 		//
-		// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/before
+		// See https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#/items/properties/before
 		Before tcclient.Time `json:"before"`
 
 		// Name of cache to purge.
 		//
-		// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/cacheName
+		// See https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#/items/properties/cacheName
 		CacheName string `json:"cacheName"`
 
 		// ProvisionerId associated with the workerType.
 		//
-		// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/provisionerId
+		// See https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#/items/properties/provisionerId
 		ProvisionerID string `json:"provisionerId"`
 
 		// Workertype cache exists on.
 		//
-		// See https://schemas.taskcluster.net/purge-cache/v1/purge-cache-requests.json#/items/properties/workerType
+		// See https://taskcluster-staging.net/schemas/purge-cache/v1/purge-cache-requests.json#/items/properties/workerType
 		WorkerType string `json:"workerType"`
 	}
 )

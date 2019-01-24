@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// https://references.taskcluster.net/hooks/v1/api.json
+// https://taskcluster-staging.net/references/hooks/v1/api.json
 
 // Hooks are a mechanism for creating tasks in response to events.
 //
@@ -28,7 +28,7 @@
 // [/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)
 // for more information.
 //
-// See: https://docs.taskcluster.net/reference/core/hooks/api-docs
+// See:
 //
 // How to use this package
 //
@@ -49,7 +49,7 @@
 // Taskcluster Schema
 //
 // The source code of this go package was auto-generated from the API definition at
-// https://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
+// https://taskcluster-staging.net/references/hooks/v1/api.json together with the input and output schemas it references, downloaded on
 // Thu, 4 Oct 2018 at 08:23:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package tchooks
@@ -61,43 +61,47 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "https://hooks.taskcluster.net/v1"
-)
-
 type Hooks tcclient.Client
 
 // New returns a Hooks client, configured to run against production. Pass in
-// nil to create a client without authentication. The
+// nil credentials to create a client without authentication. The
 // returned client is mutable, so returned settings can be altered.
 //
-//  hooks := tchooks.New(nil)                              // client without authentication
-//  hooks.BaseURL = "http://localhost:1234/api/Hooks/v1"   // alternative API endpoint (production by default)
-//  err := hooks.Ping(.....)                               // for example, call the Ping(.....) API endpoint (described further down)...
+//  hooks := tchooks.New(
+//      nil,                                      // client without authentication
+//      "http://localhost:1234/my/taskcluster",   // taskcluster hosted at this root URL on local machine
+//  )
+//  err := hooks.Ping(.....)                      // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Hooks {
+func New(credentials *tcclient.Credentials, rootURL string) *Hooks {
 	return &Hooks{
 		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(rootURL, "hooks", "v1"),
 		Authenticate: credentials != nil,
 	}
 }
 
-// NewFromEnv returns a Hooks client with credentials taken from the environment variables:
+// NewFromEnv returns a *Hooks configured from environment variables.
+//
+// The root URL is taken from TASKCLUSTER_PROXY_URL if set to a non-empty
+// string, otherwise from TASKCLUSTER_ROOT_URL if set, otherwise the empty
+// string.
+//
+// The credentials are taken from environment variables:
 //
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
-// authentication will be disabled.
+// If TASKCLUSTER_CLIENT_ID is empty/unset, authentication will be
+// disabled.
 func NewFromEnv() *Hooks {
 	c := tcclient.CredentialsFromEnvVars()
 	return &Hooks{
 		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
+		BaseURL:      tcclient.BaseURL(tcclient.RootURLFromEnvVars(), "hooks", "v1"),
 		Authenticate: c.ClientID != "",
 	}
 }
@@ -105,7 +109,7 @@ func NewFromEnv() *Hooks {
 // Respond without doing anything.
 // This endpoint is used to check that the service is up.
 //
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#ping
+// See #ping
 func (hooks *Hooks) Ping() error {
 	cd := tcclient.Client(*hooks)
 	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
@@ -114,7 +118,7 @@ func (hooks *Hooks) Ping() error {
 
 // This endpoint will return a list of all hook groups with at least one hook.
 //
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#listHookGroups
+// See #listHookGroups
 func (hooks *Hooks) ListHookGroups() (*HookGroups, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks", new(HookGroups), nil)
@@ -124,7 +128,7 @@ func (hooks *Hooks) ListHookGroups() (*HookGroups, error) {
 // This endpoint will return a list of all the hook definitions within a
 // given hook group.
 //
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#listHooks
+// See #listHooks
 func (hooks *Hooks) ListHooks(hookGroupId string) (*HookList, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId), new(HookList), nil)
@@ -134,7 +138,7 @@ func (hooks *Hooks) ListHooks(hookGroupId string) (*HookList, error) {
 // This endpoint will return the hook definition for the given `hookGroupId`
 // and hookId.
 //
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#hook
+// See #hook
 func (hooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
@@ -144,7 +148,7 @@ func (hooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, error) {
 // This endpoint will return the current status of the hook.  This represents a
 // snapshot in time and may vary from one call to the next.
 //
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#getHookStatus
+// See #getHookStatus
 func (hooks *Hooks) GetHookStatus(hookGroupId, hookId string) (*HookStatusResponse, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/status", new(HookStatusResponse), nil)
@@ -162,7 +166,7 @@ func (hooks *Hooks) GetHookStatus(hookGroupId, hookId string) (*HookStatusRespon
 //   * hooks:modify-hook:<hookGroupId>/<hookId>
 //   * assume:hook-id:<hookGroupId>/<hookId>
 //
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#createHook
+// See #createHook
 func (hooks *Hooks) CreateHook(hookGroupId, hookId string, payload *HookCreationRequest) (*HookDefinition, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(payload, "PUT", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
@@ -177,7 +181,7 @@ func (hooks *Hooks) CreateHook(hookGroupId, hookId string, payload *HookCreation
 //   * hooks:modify-hook:<hookGroupId>/<hookId>
 //   * assume:hook-id:<hookGroupId>/<hookId>
 //
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#updateHook
+// See #updateHook
 func (hooks *Hooks) UpdateHook(hookGroupId, hookId string, payload *HookCreationRequest) (*HookDefinition, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
@@ -189,7 +193,7 @@ func (hooks *Hooks) UpdateHook(hookGroupId, hookId string, payload *HookCreation
 // Required scopes:
 //   hooks:modify-hook:<hookGroupId>/<hookId>
 //
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#removeHook
+// See #removeHook
 func (hooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 	cd := tcclient.Client(*hooks)
 	_, _, err := (&cd).APICall(nil, "DELETE", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), nil, nil)
@@ -205,7 +209,7 @@ func (hooks *Hooks) RemoveHook(hookGroupId, hookId string) error {
 // Required scopes:
 //   hooks:trigger-hook:<hookGroupId>/<hookId>
 //
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHook
+// See #triggerHook
 func (hooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerHookRequest) (*TaskStatusStructure, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger", new(TaskStatusStructure), nil)
@@ -218,7 +222,7 @@ func (hooks *Hooks) TriggerHook(hookGroupId, hookId string, payload *TriggerHook
 // Required scopes:
 //   hooks:get-trigger-token:<hookGroupId>/<hookId>
 //
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#getTriggerToken
+// See #getTriggerToken
 func (hooks *Hooks) GetTriggerToken(hookGroupId, hookId string) (*TriggerTokenResponse, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/token", new(TriggerTokenResponse), nil)
@@ -242,7 +246,7 @@ func (hooks *Hooks) GetTriggerToken_SignedURL(hookGroupId, hookId string, durati
 // Required scopes:
 //   hooks:reset-trigger-token:<hookGroupId>/<hookId>
 //
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#resetTriggerToken
+// See #resetTriggerToken
 func (hooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerTokenResponse, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(nil, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/token", new(TriggerTokenResponse), nil)
@@ -255,9 +259,21 @@ func (hooks *Hooks) ResetTriggerToken(hookGroupId, hookId string) (*TriggerToken
 // provided as the `payload` property of the JSON-e context used to render the
 // task template.
 //
-// See https://docs.taskcluster.net/reference/core/hooks/api-docs#triggerHookWithToken
+// See #triggerHookWithToken
 func (hooks *Hooks) TriggerHookWithToken(hookGroupId, hookId, token string, payload *TriggerHookRequest) (*TaskStatusStructure, error) {
 	cd := tcclient.Client(*hooks)
 	responseObject, _, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/trigger/"+url.QueryEscape(token), new(TaskStatusStructure), nil)
 	return responseObject.(*TaskStatusStructure), err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// This endpoint will return information about the the last few times this hook has been
+// fired, including whether the hook was fired successfully or not
+//
+// See #listLastFires
+func (hooks *Hooks) ListLastFires(hookGroupId, hookId string) (*LastFiresList, error) {
+	cd := tcclient.Client(*hooks)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/last-fires", new(LastFiresList), nil)
+	return responseObject.(*LastFiresList), err
 }
