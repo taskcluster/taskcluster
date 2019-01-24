@@ -19,3 +19,14 @@ This will install all required dependencies from the Yarn registry.
 To build the Taskcluster services, run `./taskcluster-builder build`.
 The configuration for this command is in `build-config.yml`, and can be overridden with `user-build-config.yml` as necessary.
 See `build-config.yml` for advice on what to override.
+
+## Team Mentions
+
+Do you need to reach a specific subset of the team? Use the team handles to mention us with GitHub's @mention feature.
+
+| Team Name | Use To... |
+| --------- | --------- |
+| `@taskcluster/Core` | ping members of the Taskcluster team at Mozilla |
+| `@taskcluster/services-reviewers` | ping reviewers for changes to platform services and libraries  |
+| `@taskcluster/frontend-reviewers` | ping people who can review changes to frontend (and related) code in the services monorepo |
+| `@taskcluster/security-folks` | ping people who do security things |
