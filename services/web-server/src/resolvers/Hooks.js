@@ -19,8 +19,8 @@ export default {
   },
   HookFiredBy: {
     SCHEDULE: 'schedule',
-    TRIGGERHOOK: 'triggerHook',
-    TRIGGERHOOKWITHTOKEN: 'triggerHookWithToken',
+    TRIGGER_HOOK: 'triggerHook',
+    TRIGGER_HOOK_WITH_TOKEN: 'triggerHookWithToken',
   },
   Hook: {
     status({ hookGroupId, hookId }, args, { loaders }) {
@@ -45,8 +45,8 @@ export default {
     hookStatus(parent, { hookGroupId, hookId }, { loaders }) {
       return loaders.hookStatus.load({ hookGroupId, hookId });
     },
-    hookLastFires(parent, {hookGroupId, hookId}, {loaders}) {
-      return loaders.hookLastFires.load({hookGroupId, hookId});
+    hookLastFires(parent, {hookGroupId, hookId, filter}, {loaders}) {
+      return loaders.hookLastFires.load({hookGroupId, hookId, filter});
     },
   },
   Mutation: {

@@ -35,8 +35,8 @@ enum HookFireResult {
 
 enum HookFiredBy {
   SCHEDULE
-  TRIGGERHOOK
-  TRIGGERHOOKWITHTOKEN
+  TRIGGER_HOOK
+  TRIGGER_HOOK_WITH_TOKEN
 }
 
 type HookSuccessfulFire {
@@ -98,7 +98,7 @@ input HookInput {
 type HookLastFire {
   hookGroupId: ID!,
   hookId: ID!,
-  firedBy: HookFiredBy!,
+  firedBy: HookFiredBy,
   taskId: String!,
   taskCreateTime: DateTime!,
   result:HookFireResult!,
@@ -110,7 +110,7 @@ extend type Query {
   hooks(hookGroupId: ID!, filter: JSON): [Hook]
   hook(hookGroupId: ID!, hookId: ID!): Hook
   hookStatus(hookGroupId: ID!, hookId: ID!): HookStatus
-  hookLastFires(hookGroupId: ID!, hookId: ID!): [HookLastFire]
+  hookLastFires(hookGroupId: ID!, hookId: ID!, filter: JSON): [HookLastFire]
 }
 
 extend type Mutation {

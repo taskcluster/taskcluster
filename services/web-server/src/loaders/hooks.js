@@ -38,9 +38,10 @@ export default ({ hooks }) => {
 
   const hookLastFires = new DataLoader(queries =>
     Promise.all(
-      queries.map(async ({hookGroupId, hookId}) => {
+      queries.map(async ({hookGroupId, hookId, filter}) => {
         const { lastFires } = await hooks.listLastFires(hookGroupId, hookId);
-        return lastFires;
+
+        return filter ? sift(filter, lastFires) : lastFires;
       }
       )
     )
