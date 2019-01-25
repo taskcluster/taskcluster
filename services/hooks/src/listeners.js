@@ -70,6 +70,8 @@ class HookListeners {
       client,
       queueName,
       maxLength: 50,
+      // we manage bindings manually in syncBindings
+      bindings: [],
     }, async ({payload}) => {
       const hook = this.hook;
       // Fire the hook
