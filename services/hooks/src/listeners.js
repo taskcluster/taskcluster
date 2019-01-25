@@ -125,7 +125,15 @@ class HookListeners {
         await this.client.withChannel(async channel => channel.unbindQueue(fullQueueName, exchange, routingKeyPattern));
       }
       for (let {exchange, routingKeyPattern} of addBindings) {
-        await this.client.withChannel(async channel => channel.bindQueue(fullQueueName, exchange, routingKeyPattern));
+        try {
+          await this.client.withChannel(async channel => channel.bindQueue(fullQueueName, exchange, routingKeyPattern));
+        } catch (err) {
+          if (err.isOperational) {
+            debug(`cannot bind to ${exchange} with pattern ${routingKeyPattern}: ${err}`);
+            continue;
+          }
+          throw err;
+        }
       }
     }
   }
