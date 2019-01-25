@@ -805,10 +805,10 @@
   dependencies:
     "@types/whatwg-streams" "^0.0.7"
 
-"@mozilla-frontend-infra/components@^2.2.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-2.2.1.tgz#0f6ecaee2fb28e4c3c26f79b69f6b0215bcdfac1"
-  integrity sha512-718hS32PT/Rq78/h9CjZcCJkGROUuCkO104VrCphXAk/KUqwITaq6imvrgjuwOOL9ClvvRRDHBzId1FaN9xpGw==
+"@mozilla-frontend-infra/components@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/components/-/components-2.2.2.tgz#45fa3898924b95f3ddf36342ba8674dd60d10660"
+  integrity sha512-6H3Y9xflK8RhpyPtyCgJIinyTIRnQZDe8fgSR1CpfnKEDfLNMCE1G14AhKAirYBpW08LMHnwepyKsvnelwS+bQ==
   dependencies:
     classnames "^2.2.6"
     codemirror "^5.39.0"
@@ -10524,7 +10524,8 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-lib-scopes@link:../libraries/scopes":
-  version "10.0.1"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
