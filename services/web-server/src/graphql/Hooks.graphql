@@ -98,7 +98,7 @@ input HookInput {
 type HookLastFire {
   hookGroupId: ID!,
   hookId: ID!,
-  firedBy: HookFiredBy,
+  firedBy: HookFiredBy!,
   taskId: String!,
   taskCreateTime: DateTime!,
   result:HookFireResult!,
