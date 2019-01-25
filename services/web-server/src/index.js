@@ -164,8 +164,11 @@ const load = loader(
 );
 
 if (!module.parent) {
-  load(process.argv[2], {
-    process: process.argv[2],
+  // default to 'devServer' since webpack does not pass any command-line args
+  // when running in development mode
+  const target = process.argv[2] || 'devServer';
+  load(target, {
+    process: target,
     profile: process.env.NODE_ENV || 'development',
   }).catch(err => {
     console.log(err.stack); // eslint-disable-line no-console
