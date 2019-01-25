@@ -1,9 +1,5 @@
 # Taskcluster Azure Shim
 
-[![Build Status](https://travis-ci.org/taskcluster/taskcluster-lib-azure.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-lib-azure)
-[![npm](https://img.shields.io/npm/v/taskcluster-lib-azure.svg?maxAge=2592000)](https://www.npmjs.com/package/taskcluster-lib-azure)
-[![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
-
 A simple library to allow using `azure-entities` and the like, with Taskcluster credentials.
 
 Changelog

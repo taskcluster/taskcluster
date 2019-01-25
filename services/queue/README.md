@@ -1,4 +1,4 @@
-# Taskcluster Queue [![Build Status](https://travis-ci.org/taskcluster/taskcluster-queue.png?branch=master)](https://travis-ci.org/taskcluster/taskcluster-queue)
+# Taskcluster Queue
 
 This is the central queue coordinating execution of tasks in the Taskcluster setup.
 
