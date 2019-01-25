@@ -101,7 +101,7 @@ type HookLastFire {
   firedBy: HookFiredBy!,
   taskId: String!,
   taskCreateTime: DateTime!,
-  result:HookFireResult!,
+  result: HookFireResult!,
   error: String!,
 }
 
