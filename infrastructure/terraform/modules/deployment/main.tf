@@ -14,6 +14,7 @@ locals {
     replicas       = "${var.replicas}"
     background_job = "${var.background_job}"
     volume_mounts  = "${var.volume_mounts}"
+    is_monoimage   = "${var.is_monoimage}"
   }
 
   is_enabled = "${contains(var.disabled_services, var.project_name) ? 0 : 1}"

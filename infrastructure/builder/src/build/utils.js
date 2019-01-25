@@ -10,6 +10,7 @@ const Docker = require('dockerode');
 const Observable = require('zen-observable');
 const {PassThrough, Transform} = require('stream');
 const got = require('got');
+const glob = require('glob');
 const {spawn} = require('child_process');
 const Stamp = require('./stamp');
 
@@ -50,9 +51,21 @@ exports.gitClone = async ({dir, url, sha, utils}) => {
   // Instead, we just blow it away and clone. This is lightweight since we
   // do use that depth=1 anyway.
   await exec('rm', ['-rf', dir]);
-  await exec('git', ['clone', repo, dir, '--depth=1', '-b', ref]);
+  const cloneArgs = ['clone', repo, dir, '--depth=1'].concat(ref === 'HEAD' ? [] : ['-b', ref]);
+  await exec('git', cloneArgs);
   const exactRev = (await exec('git', ['rev-parse', 'HEAD'], opts)).stdout;
   return {exactRev: exactRev.split(/\s+/)[0], changed: true};
+};
+
+/**
+ * Call `git status --porcelain` in repoDir and return true if anything appears.
+ */
+exports.gitIsDirty = async ({dir}) => {
+  const opts = {cwd: dir};
+  const status = (await exec('git', ['status', '--porcelain'], opts))
+    .stdout.split(/\n/)
+    .filter(l => l !== '');
+  return status.length > 0;
 };
 
 /**
@@ -452,4 +465,16 @@ exports.serviceDockerImageTask = ({tasks, baseDir, workDir, cfg, name, requires,
       return provides;
     },
   });
+};
+
+/**
+ * List all of the services in the given monorepo repository
+ */
+exports.listServices = ({repoDir}) => {
+  // look for package.json's, so that we're not fooled by any
+  // stray empty or gitignore'd directories
+  const packageJsons = glob.sync(
+    'services/*/package.json',
+    {cwd: repoDir});
+  return packageJsons.map(filename => filename.split('/')[1]);
 };

@@ -11,6 +11,7 @@ const {TerraformJson} = require('../formats/tf-json');
 const {TaskGraph, Lock, ConsoleRenderer, LogRenderer} = require('console-taskgraph');
 const {gitClone} = require('./utils');
 const generateRepoTasks = require('./repo');
+const generateMonoimageTasks = require('./monoimage');
 
 const _kindTaskGenerators = {
   service: require('./service'),
@@ -68,6 +69,14 @@ class Build {
         name: repo.name,
         cmdOptions: this.cmdOptions,
       });
+    });
+
+    generateMonoimageTasks({
+      tasks,
+      baseDir: this.baseDir,
+      spec: this.spec,
+      cfg: this.cfg,
+      cmdOptions: this.cmdOptions,
     });
 
     const target = [];

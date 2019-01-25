@@ -1,18 +1,9 @@
 {
   "locals": {
-    "taskcluster_image_auth": "taskcluster/taskcluster-auth:SVC-605580128943",
-    "taskcluster_image_queue": "taskcluster/taskcluster-queue:SVC-605580128943",
-    "taskcluster_image_index": "taskcluster/taskcluster-index:SVC-605580128943",
-    "taskcluster_image_purge-cache": "taskcluster/taskcluster-purge-cache:SVC-605580128943",
-    "taskcluster_image_github": "taskcluster/taskcluster-github:SVC-605580128943",
-    "taskcluster_image_login": "taskcluster/taskcluster-login:SVC-605580128943",
-    "taskcluster_image_hooks": "taskcluster/taskcluster-hooks:SVC-605580128943",
-    "taskcluster_image_secrets": "taskcluster/taskcluster-secrets:SVC-605580128943",
-    "taskcluster_image_notify": "taskcluster/taskcluster-notify:SVC-605580128943",
     "taskcluster_image_gce-provider": "taskcluster/taskcluster-gce-provider:SVC-d93c9b13f9b1",
     "taskcluster_image_events": "taskcluster/taskcluster-events:SVC-95c3cacc81f5",
-    "taskcluster_image_docs": "taskcluster/taskcluster-docs:SVC-528f9e960692",
+    "taskcluster_image_docs": "taskcluster/taskcluster-docs:SVC-ed0c80921f7f",
     "taskcluster_image_tools": "taskcluster/taskcluster-tools:SVC-a6a0705442b3",
-    "taskcluster_image_references": "taskcluster/taskcluster-references:SVC-5fb6dbd324e6"
+    "taskcluster_image_monoimage": "taskcluster/taskcluster-monoimage:SVC-261287f2434d"
   }
 }

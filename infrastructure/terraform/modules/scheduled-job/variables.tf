@@ -15,6 +15,11 @@ variable "project_name" {
   description = "The name of the service (with taskcluster-)."
 }
 
+variable "service_name" {
+  type        = "string"
+  description = "The name of the service."
+}
+
 variable "job_name" {
   type        = "string"
   description = "The process in the Procfile to run."
@@ -49,4 +54,10 @@ variable "volume_mounts" {
   type        = "list"
   default     = []
   description = "A set of fields from the secrets to mount as files."
+}
+
+variable "is_monoimage" {
+  type        = "string"
+  default     = "true"
+  description = "True if this service runs from the monorepo"
 }

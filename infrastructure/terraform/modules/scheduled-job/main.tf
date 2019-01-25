@@ -4,12 +4,14 @@ locals {
     schedule         = "${var.schedule}"
     deadline_seconds = "${var.deadline_seconds}"
     project_name     = "${var.project_name}"
+    service_name     = "${var.service_name}"
     job_name         = "${var.job_name}"
     secret_keys      = "${var.secret_keys}"
     secrets_hash     = "${var.secrets_hash}"
     secret_name      = "${var.secret_name}"
     root_url         = "${var.root_url}"
     volume_mounts    = "${var.volume_mounts}"
+    is_monoimage     = "${var.is_monoimage}"
   }
 }
 

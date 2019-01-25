@@ -124,6 +124,7 @@ const load = Loader({
     setup: ({cfg, schemaset}) => Docs.documenter({
       aws: cfg.aws,
       rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-auth',
       tier: 'platform',
       schemaset,
       bucket: cfg.app.buckets.docs,

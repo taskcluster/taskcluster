@@ -82,3 +82,9 @@ variable "background_job" {
   description = "If true, this is a background job and will not have web traffic."
   default     = false
 }
+
+variable "is_monoimage" {
+  type        = "string"
+  default     = "true"
+  description = "True if this service runs from the monorepo"
+}

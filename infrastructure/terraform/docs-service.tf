@@ -17,4 +17,5 @@ module "docs_ui" {
   docker_image   = "${local.taskcluster_image_docs}"
   secrets_hash   = "${module.docs_secrets.secrets_hash}"
   readiness_path = "/docs"
+  is_monoimage   = "false"
 }

@@ -35,6 +35,7 @@ const load = loader({
     requires: ['cfg'],
     setup: ({cfg}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
+      projectName: 'taskcluster-built-in-workers',
       tier: 'core',
       publish: cfg.app.publishMetaData,
       references: [],

@@ -55,7 +55,7 @@ module "hooks_web_service" {
   secrets_hash   = "${module.hooks_secrets.secrets_hash}"
   root_url       = "${var.root_url}"
   secret_keys    = "${module.hooks_secrets.env_var_keys}"
-  docker_image   = "${local.taskcluster_image_hooks}"
+  docker_image   = "${local.taskcluster_image_monoimage}"
 }
 
 module "hooks_scheduler" {
@@ -68,7 +68,7 @@ module "hooks_scheduler" {
   secrets_hash   = "${module.hooks_secrets.secrets_hash}"
   root_url       = "${var.root_url}"
   secret_keys    = "${module.hooks_secrets.env_var_keys}"
-  docker_image   = "${local.taskcluster_image_hooks}"
+  docker_image   = "${local.taskcluster_image_monoimage}"
 }
 
 module "hooks_listeners" {
@@ -81,5 +81,5 @@ module "hooks_listeners" {
   secrets_hash   = "${module.hooks_secrets.secrets_hash}"
   root_url       = "${var.root_url}"
   secret_keys    = "${module.hooks_secrets.env_var_keys}"
-  docker_image   = "${local.taskcluster_image_hooks}"
+  docker_image   = "${local.taskcluster_image_monoimage}"
 }

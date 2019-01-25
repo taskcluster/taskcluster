@@ -8,14 +8,16 @@ const doT = require('dot');
 const tar = require('tar-fs');
 const copy = require('recursive-copy');
 const Stamp = require('../stamp');
+const appRootDir = require('app-root-dir');
 const {dockerRun, dockerPull, dockerImages, dockerBuild, dockerRegistryCheck,
-  serviceDockerImageTask, ensureDockerImage} = require('../utils');
+  serviceDockerImageTask, ensureDockerImage, listServices} = require('../utils');
 
 doT.templateSettings.strip = false;
 const DOCS_DOCKERFILE_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'docs-dockerfile.dot')));
 
 exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir}) => {
-  const docNames = spec.build.repositories.filter(repo => repo.docs).map(repo => repo.name);
+  const services = listServices({repoDir: appRootDir.get()});
+  const docNames = spec.build.repositories.filter(repo => repo.docs).map(repo => repo.name).concat(services);
 
   const nginxImage = 'nginx:alpine';
   const nodeImage = `node:${repository.service.node}`;
@@ -74,7 +76,12 @@ exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, w
         utils.status({message: docName});
 
         const src = requirements[`docs-${docName}-dir`];
-        const project = JSON.parse(fs.readFileSync(path.join(src, 'metadata.json'))).project;
+        const metadataFile = path.join(src, 'metadata.json');
+        if (!fs.existsSync(metadataFile)) {
+          // skip docs building for services with no docs
+          continue;
+        }
+        const project = JSON.parse(fs.readFileSync(metadataFile)).project;
         const dst = path.join(appDir, 'raw', 'reference', project);
 
         await mkdirp(path.dirname(dst));

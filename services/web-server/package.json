@@ -6,8 +6,8 @@
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
   "scripts": {
-    "build": "webpack --mode production",
-    "start": "webpack --watch --mode development",
+    "build": "NODE_ENV=production webpack",
+    "start": "NODE_ENV=development webpack",
     "lint": "eslint --cache --format codeframe --ext mjs,js src test",
     "test": "mocha --require mocha.config.js --recursive"
   },

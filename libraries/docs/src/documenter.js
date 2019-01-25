@@ -19,7 +19,7 @@ async function documenter(options) {
     referenceUrl: 'https://docs.taskcluster.net/reference/',
     aws: null,
     credentials: undefined,
-    project: null,
+    projectName: null,
     tier: null,
     schemaset: null,
     menuIndex: 10,
@@ -54,11 +54,7 @@ class Documenter {
     assert(TIERS.indexOf(options.tier) !== -1,
       `options.tier must be one of ${TIERS.join(', ')}`
     );
-
-    if (!options.project) {
-      let pack = require(path.join(rootdir.get(), 'package.json'));
-      options.project = pack.name;
-    }
+    assert(options.projectName, 'options.projectName must be given');
     this.options = options;
   }
 
@@ -66,7 +62,7 @@ class Documenter {
    * Get the URL for documentation for this service; used in error messages.
    */
   get documentationUrl() {
-    return this.options.referenceUrl + this.options.tier + '/' + this.options.project;
+    return this.options.referenceUrl + this.options.tier + '/' + this.options.projectName;
   }
 
   /**
@@ -85,7 +81,7 @@ class Documenter {
 
     let metadata = {
       version: 1,
-      project: this.options.project,
+      project: this.options.projectName,
       tier: this.options.tier,
       menuIndex: this.options.menuIndex,
     };
@@ -185,7 +181,7 @@ class Documenter {
         rootUrl: this.options.rootUrl,
       });
 
-      creds = await auth.awsS3Credentials('read-write', this.options.bucket, this.options.project + '/');
+      creds = await auth.awsS3Credentials('read-write', this.options.bucket, this.options.projectName + '/');
     }
 
     let s3 = new aws.S3(creds.credentials);
@@ -193,7 +189,7 @@ class Documenter {
 
     let upload = s3Stream.upload({
       Bucket: this.options.bucket,
-      Key: this.options.project + '/latest.tar.gz',
+      Key: this.options.projectName + '/latest.tar.gz',
     });
 
     // handle progress
