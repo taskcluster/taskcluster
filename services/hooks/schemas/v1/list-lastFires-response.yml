@@ -42,6 +42,7 @@ properties:
         - hookGroupId
         - hookId
         - taskId
+        - firedBy
         - taskCreateTime
         - result
         - error
