@@ -99,7 +99,8 @@
     "extends": [
       "config:base",
       ":preserveSemverRanges",
-      ":rebaseStalePrs"
+      ":rebaseStalePrs",
+      "schedule:weekly"
     ]
   },
   "eslintIgnore": [
