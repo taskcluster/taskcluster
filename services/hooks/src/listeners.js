@@ -23,6 +23,7 @@ class HookListeners {
     this.Hook = options.Hook;
     this.Queues = options.Queues;
     this.client = options.client;
+    this.monitor = options.monitor;
     this.pulseHookChangedListener = null;
     this.listeners = null;
     this._reconcileDone = Promise.resolve();
@@ -123,8 +124,13 @@ class HookListeners {
     }
   }
 
+  /**
+   * Run only one exeuction of this function at a time, reporting any errors to the monitor.
+   */
   _synchronise(asyncfunc) {
-    return this._reconcileDone = this._reconcileDone.then(asyncfunc).catch(() => {});
+    return this._reconcileDone = this._reconcileDone
+      .then(asyncfunc)
+      .catch(err => this.monitor.reportError(err));
   }
 
   reconcileConsumers() {
