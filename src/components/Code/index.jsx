@@ -24,7 +24,7 @@ export default class Code extends Component {
     /**
      * A highlight.js language identifier.
      */
-    language: validLanguage,
+    language: validLanguage.isRequired,
     /** The CSS class name of the wrapper element */
     className: string,
   };
@@ -33,21 +33,9 @@ export default class Code extends Component {
     className: null,
   };
 
-  state = {
-    code: null,
-  };
-
-  componentDidMount() {
-    const { children, language } = this.props;
-
-    this.setState({
-      code: highlight(language, children, true).value,
-    });
-  }
-
   render() {
-    const { language, className, ...props } = this.props;
-    const { code } = this.state;
+    const { children, language, className, ...props } = this.props;
+    const code = highlight(language, children, true).value;
 
     /* eslint-disable react/no-danger */
     return (
