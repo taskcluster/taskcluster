@@ -50,7 +50,7 @@ export default class Button extends Component {
     spanProps: object,
   };
 
-  handleButtonClick = () => {
+  handleButtonClick = e => {
     const { onClick, track } = this.props;
 
     if (track && process.env.GA_TRACKING_ID) {
@@ -60,7 +60,7 @@ export default class Button extends Component {
     }
 
     if (onClick) {
-      onClick();
+      onClick(e);
     }
   };
 

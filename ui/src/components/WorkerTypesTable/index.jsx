@@ -141,7 +141,7 @@ export default class WorkerTypesTable extends Component {
     });
   };
 
-  handleDrawerOpen = ({ target: { name } }) =>
+  handleDrawerOpen = ({ currentTarget: { name } }) =>
     memoize(
       name =>
         this.setState({
