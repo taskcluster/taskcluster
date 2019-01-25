@@ -1,0 +1,14 @@
+$schema:  "/schemas/common/metaschema.json#"
+title:  "Modify Notificaiton Request"
+description:  |
+  Properties to modify a notification
+type: object
+properties:
+  oldAddress:
+    $ref: 'notification-address.json#'
+  newAddress:
+    $ref: 'notification-address.json#'
+additionalProperties: false
+required:
+  - oldAddress
+  - newAddress

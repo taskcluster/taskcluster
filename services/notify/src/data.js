@@ -9,5 +9,5 @@ const BlacklistedNotification = Entity.configure({
     notificationType: Entity.keys.String,
     // the address of the blacklisted destination
     notificationAddress: Entity.keys.JSON,
-  }
+  },
 });

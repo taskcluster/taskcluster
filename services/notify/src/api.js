@@ -1,5 +1,6 @@
 const APIBuilder = require('taskcluster-lib-api');
 const debug = require('debug')('notify');
+const Entity = require('azure-entities');
 
 const builder = new APIBuilder({
   title: 'Notification Service',
@@ -11,6 +12,7 @@ const builder = new APIBuilder({
   apiVersion: 'v1',
   context: [
     'notifier',
+    'BlacklistedNotification',
   ],
 });
 
@@ -88,4 +90,159 @@ builder.declare({
   });
   await this.notifier.irc(input);
   res.sendStatus(200);
+});
+
+builder.declare({
+  method: 'post',
+  route: '/blacklist/add',
+  name: 'addBlacklistAddress',
+  // I don't know what to put in the scopes.
+  scopes: {
+    if: 'channelRequest',
+    then: 'notify:irc-channel:<channel>',
+    else: 'notify:irc-user:<user>',
+  },
+  input: 'notification-address.yml',
+  title: 'Blacklist Given Address',
+  description: [
+    'Add the given address to the notification blacklist. The address',
+    'can be of either of the three supported address type namely pulse, email',
+    'or IRC(user or channel). Addresses in the blacklist will be ignored',
+    'by the notification service.',
+  ].join('\n'),
+}, async function(req, res) {
+  // The address to blacklist
+  let address = Object.assign({}, {
+    notificationType: req.body.notificationType,
+    notificationAddress: req.body.notificationAddress,
+  });
+
+  try {
+    await this.BlacklistedNotification.create({address});
+  } catch (e) {
+    if (e.name === 'ResourceConflictError') {
+      return res.reportError(
+        'ResourceConflict',
+        'Notification address already exists',
+        {}
+      );
+    } else {
+      throw e;
+    }
+  }
+  res.reply({});
+});
+
+builder.declare({
+  method: 'delete',
+  route: '/blacklist/delete',
+  name: 'deleteBlacklistAddress',
+  scopes: 'secrets:set:<name>',
+  title: 'Delete Blacklisted Address',
+  description: [
+    'Delete the specified address from the notification blacklist.',
+  ].join('\n'),
+}, async function(req, res) {
+  // The address to remove from the blacklist
+  let address = Object.assign({}, {
+    notificationType: req.body.notificationType,
+    notificationAddress: req.body.notificationAddress,
+  });
+  try {
+    await this.BlacklistedNotification.remove({address});
+  } catch (e) {
+    if (e.name === 'ResourceNotFoundError') {
+      return res.reportError(
+        'ResourceNotFound',
+        'Notification address not found',
+        {}
+      );
+    } else {
+      throw e;
+    }
+  }
+  res.reply({});
+});
+
+builder.declare({
+  method: 'get',
+  route: '/blacklist/list',
+  name: 'list',
+  output: 'notification-address-list.yml',
+  title: 'List Blacklisted Notifications',
+  query: {
+    continuationToken: Entity.continuationTokenPattern,
+    limit: /^[0-9]+$/,
+  },
+  description: [
+    'Lists all the blacklisted addresses.',
+    '',
+    'By default this end-point will try to return up to 1000 addresses in one',
+    'request. But it **may return less**, even if more tasks are available.',
+    'It may also return a `continuationToken` even though there are no more',
+    'results. However, you can only be sure to have seen all results if you',
+    'keep calling `list` with the last `continuationToken` until you',
+    'get a result without a `continuationToken`.',
+    '',
+    'If you are not interested in listing all the members at once, you may',
+    'use the query-string option `limit` to return fewer.',
+  ].join('\n'),
+}, async function(req, res) {
+  const continuation = req.query.continuationToken || null;
+  const limit = Math.min(parseInt(req.query.limit || 1000, 10), 1000);
+  const query = await this.BlacklistedNotification.scan({}, {continuation, limit});
+
+  return res.reply({
+    addresses: query.entries,
+    continuationToken: query.continuation || undefined,
+  });
+});
+
+builder.declare({
+  method: 'post',
+  route: '/blacklist/modify',
+  name: 'modifyBlacklistAddress',
+  scopes: {
+    if: 'channelRequest',
+    then: 'notify:irc-channel:<channel>',
+    else: 'notify:irc-user:<user>',
+  },
+  input: 'modify-notification.yml',
+  title: 'Modify Existing Blacklist Address',
+  description: [
+    'Modify an already existing blacklist address. The method throws an',
+    'error if the address does not already exist in the blacklist',
+  ].join('\n'),
+}, async function(req, res) {
+  //The address to add to the blacklist
+  let oldAddress = Object.assign({}, {
+    notificationType: req.body.oldAddress.notificationType,
+    notificationAddress: req.body.oldAddress.notificationAddress,
+  });
+
+  let newAddress = Object.assign({}, {
+    notificationType: req.body.newAddress.notificationType,
+    notificationAddress: req.body.newAddress.notificationAddress,
+  });
+
+  try {
+    // Retrieve old address
+    let item = await this.BlacklistedNotification.load({oldAddress});
+    // Modify the address
+    await item.modify(function() {
+      this.notificationType = newAddress.notificationType;
+      this.notificationAddress = newAddress.notificationAddress;
+    });
+  } catch (e) {
+    if (e.name === 'ResourceNotFoundError') {
+      return res.reportError(
+        'ResourceNotFound',
+        'Notification address not found',
+        {}
+      );
+    } else {
+      throw e;
+    }
+  }
+  res.reply({});
 });
