@@ -1,8 +1,6 @@
 Taskcluster Purge Worker Cache Service
 ======================================
 
-[![Build Status](https://travis-ci.org/taskcluster/taskcluster-purge-cache.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-purge-cache)
-
 Many taskcluster workers implements some generic form cache folders.
 These cache often have a `name` that identifies them, for example a task
 that builds code may have a cache folder called `master-object-directory` which
