@@ -62,10 +62,9 @@ class HookListeners {
   }
 
   /** Create a new pulse consumer for a hook */
-  async createListener(hook) {
+  async createListener(hook, queueName) {
     this.hook = hook;
     const client = this.client;
-    const queueName = `${hook.hookGroupId}/${hook.hookId}`; // serves as unique id for every listener
     const listener = await pulse.consume({
       client,
       queueName,
@@ -144,7 +143,7 @@ class HookListeners {
             if (queue) {
               if (!this.haveListener(queue.queueName)) {
                 debug('Existing queue..creating listener');
-                await this.createListener(hook);
+                await this.createListener(hook, queue.queueName);
               }
               _.pull(queues, queue);
               // update the bindings of the queue to be in sync with that in the Hooks table
@@ -154,9 +153,9 @@ class HookListeners {
                 queue.bindings = hook.bindings;
               });
             } else {
-              debug('New queue..creating listener');
-              await this.createListener(hook);
               const queueName = `${hookGroupId}/${hookId}`;
+              debug(`New queue ${queueName}.. creating listener`);
+              await this.createListener(hook, queueName);
               await this.syncBindings(queueName, hook.bindings, []);
               // Add to Queues table
               debug('Adding to Queues table');
