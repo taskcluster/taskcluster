@@ -96,25 +96,29 @@ class HookListeners {
 
   /** Deletes the amqp queue if it exists for a real pulse client */
   async deleteQueue(queueName) {
+    const fullQueueName = this.client.fullObjectName('queue', queueName);
     if (!this.client.isFakeClient) {
-      if (await this.client.withChannel(async channel => channel.checkQueue(queueName))) {
-        await this.client.withChannel(async channel => channel.deleteQueue(queueName));
-      }
+      await this.client.withChannel(async channel => {
+        await channel.deleteQueue(fullQueueName);
+      });
     }
   }
 
   /** Add / Remove bindings from he queue */
   async syncBindings(queueName, newBindings, oldBindings) {
+    // for direct AMQP operations, we need the full name of the queue (with the
+    // queue/<namespace> prefix)
+    const fullQueueName = this.client.fullObjectName('queue', queueName);
     debug(`Updating the bindings of ${queueName}`);
     if (!this.client.isFakeClient) {
       let intersection = _.intersectionWith(oldBindings, newBindings, _.isEqual);
       oldBindings = _.differenceWith(oldBindings, intersection, _.isEqual);
       newBindings = _.differenceWith(newBindings, intersection, _.isEqual);
       for (let {exchange, routingKeyPattern} of oldBindings) {
-        await this.client.withChannel(async channel => channel.unbindQueue(queueName, exchange, routingKeyPattern));
+        await this.client.withChannel(async channel => channel.unbindQueue(fullQueueName, exchange, routingKeyPattern));
       }
       for (let {exchange, routingKeyPattern} of newBindings) {
-        await this.client.withChannel(async channel => channel.bindQueue(queueName, exchange, routingKeyPattern));
+        await this.client.withChannel(async channel => channel.bindQueue(fullQueueName, exchange, routingKeyPattern));
       }
     }
   }

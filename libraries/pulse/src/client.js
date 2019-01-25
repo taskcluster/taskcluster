@@ -242,6 +242,10 @@ class FakeClient {
     this.debug = debug('taskcluster-lib-pulse.conn-fake');
   }
 
+  fullObjectName(kind, name) {
+    return `${kind}/namespace/${name}`;
+  }
+
   async stop() { }
   async recycle() {}
   get activeConnection() {
