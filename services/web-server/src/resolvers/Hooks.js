@@ -46,7 +46,7 @@ export default {
       return loaders.hookStatus.load({ hookGroupId, hookId });
     },
     hookLastFires(parent, { hookGroupId, hookId, filter }, { loaders }) {
-      return loaders.hookLastFires.load({hookGroupId, hookId, filter});
+      return loaders.hookLastFires.load({ hookGroupId, hookId, filter });
     },
   },
   Mutation: {
