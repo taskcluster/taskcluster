@@ -70,9 +70,10 @@ func TestWithTwoScopes(t *testing.T) {
 }
 
 func TestWithTaskWithNoScopes(t *testing.T) {
+	taskID, _, _ := createPrivateArtifact(t, nil)
 	routes, _, err := ParseCommandArgs(
 		[]string{
-			"--task-id", "KTBKfEgxR5GdfIIREQIvFQ",
+			"--task-id", taskID,
 		},
 		false,
 	)
@@ -85,17 +86,19 @@ func TestWithTaskWithNoScopes(t *testing.T) {
 }
 
 func TestWithTaskWithScopes(t *testing.T) {
+	exampleScope := "queue:get-artifact:taskcluster-proxy-test/512-random-bytes"
+	taskID, _, _ := createPrivateArtifact(t, []string{exampleScope})
 	routes, _, err := ParseCommandArgs(
 		[]string{
-			"--task-id", "eQgo-rE5RHWgHeYRKGrHKA",
+			"--task-id", taskID,
 		},
 		false,
 	)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	if scopes := routes.Credentials.AuthorizedScopes; len(scopes) != 1 || scopes[0] != "queue:get-artifact:SampleArtifacts/_/X.txt" {
-		t.Fatalf("Was expecting authorized scopes to be the single scope queue:get-artifact:SampleArtifacts/_/X.txt, but instead got: %v", scopes)
+	if scopes := routes.Credentials.AuthorizedScopes; len(scopes) != 1 || scopes[0] != exampleScope {
+		t.Fatalf("Was expecting authorized scopes to be the single scope %v, but instead got: %v", exampleScope, scopes)
 	}
 }
 

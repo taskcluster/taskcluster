@@ -38,6 +38,11 @@ var urlConversions = []struct {
 		"https://aws-provisioner.taskcluster.net/v1/y/z",
 	},
 	{
+		"https://tc.example.com",
+		"https://xfoo.com/aws-provisioner/v1/y/z",
+		"https://tc.example.com/api/aws-provisioner/v1/y/z",
+	},
+	{
 		"https://taskcluster.net",
 		"https://xfoo.com/queue/v1/y%2fz",
 		"https://queue.taskcluster.net/v1/y%2fz",

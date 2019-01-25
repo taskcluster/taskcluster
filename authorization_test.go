@@ -17,6 +17,7 @@ import (
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 )
 
 var (
@@ -154,6 +155,7 @@ func checkStatusCode(t *testing.T, res *httptest.ResponseRecorder, statusCode in
 }
 
 func TestBewit(t *testing.T) {
+	taskID, artifactName, artifactContent := createPrivateArtifact(t, nil)
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
@@ -163,10 +165,12 @@ func TestBewit(t *testing.T) {
 				Credentials: creds,
 			},
 		)
+		// go identifier `url` is already used by net/url package - so call var `_url` instead
+		_url := tcurls.API(os.Getenv("TASKCLUSTER_ROOT_URL"), "queue", "v1", "task/"+taskID+"/runs/0/artifacts/"+url.QueryEscape(artifactName))
 		req, err := http.NewRequest(
 			"POST",
 			"http://localhost:60024/bewit",
-			bytes.NewBufferString("https://queue.taskcluster.net/v1/task/Ad1vxrS_QgC8WV15UzgZkA/runs/0/artifacts/taskcluster-proxy-test%2F512-random-bytes"),
+			bytes.NewBufferString(_url),
 		)
 		if err != nil {
 			log.Fatal(err)
@@ -194,9 +198,8 @@ func TestBewit(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Exception thrown:\n%s", err)
 		}
-		if len(respBody) != 512 {
-			t.Logf("Response received:\n%s", string(respBody))
-			t.Fatalf("Expected response body to be 512 bytes, but was %v bytes", len(respBody))
+		if string(respBody) != string(artifactContent) {
+			t.Fatalf("Expected response body to be %v but was %v", artifactContent, respBody)
 		}
 		return res
 	}
@@ -397,7 +400,7 @@ func TestOversteppedScopes(t *testing.T) {
 			t,
 			res,
 			map[string]string{
-				"X-Taskcluster-Endpoint":          "https://secrets.taskcluster.net/v1/secret/garbage/pmoore/foo",
+				"X-Taskcluster-Endpoint":          tcurls.API(rootURL, "secrets", "v1", "secret/garbage/pmoore/foo"),
 				"X-Taskcluster-Authorized-Scopes": `["secrets:get:garbage/pmoore/foo"]`,
 			},
 		)
@@ -474,6 +477,7 @@ func TestInvalidEndpoint(t *testing.T) {
 }
 
 func TestRetrievePrivateArtifact(t *testing.T) {
+	taskID, artifactName, artifactContent := createPrivateArtifact(t, nil)
 	test := func(t *testing.T, creds *tcclient.Credentials) *httptest.ResponseRecorder {
 
 		// Test setup
@@ -485,10 +489,9 @@ func TestRetrievePrivateArtifact(t *testing.T) {
 			},
 		)
 
-		// See https://github.com/taskcluster/generic-worker/blob/c91adbc9fc65c28b3c9e76da1fb0f7f84a69eebf/testdata/tasks/KTBKfEgxR5GdfIIREQIvFQ.json
 		req, err := http.NewRequest(
 			"GET",
-			"http://localhost:60024/queue/v1/task/KTBKfEgxR5GdfIIREQIvFQ/runs/0/artifacts/SampleArtifacts%2F_%2FX.txt",
+			"http://localhost:60024/queue/v1/task/"+taskID+"/runs/0/artifacts/"+url.QueryEscape(artifactName),
 			nil,
 		)
 		if err != nil {
@@ -499,6 +502,9 @@ func TestRetrievePrivateArtifact(t *testing.T) {
 		// Function to test
 		routes.RootHandler(res, req)
 
+		if res.Body.String() != string(artifactContent) {
+			t.Fatalf("Artifact content does not match: %v vs %v", res.Body.String(), string(artifactContent))
+		}
 		return res
 	}
 	testWithPermCreds(t, test, 200)
