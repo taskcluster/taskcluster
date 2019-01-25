@@ -24,7 +24,7 @@ export default class Code extends Component {
     /**
      * A highlight.js language identifier.
      */
-    language: validLanguage.isRequired,
+    language: validLanguage,
     /** The CSS class name of the wrapper element */
     className: string,
   };
