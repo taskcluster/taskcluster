@@ -186,20 +186,7 @@ class HookListeners {
   }
 
   async terminate() {
-    debug('Deleting all queues..');
-    await this.Queues.scan(
-      {},
-      {
-        limit: 1000,
-        handler: async (queue) => {
-          // Delete the amqp queue
-          await this.deleteQueue(queue.queueName);
-          await queue.remove();
-        },
-      }
-    );
-
-    // stop all consumers instead
+    // stop all consumers
     if (!this.client.isFakeClient) {
       this.listeners.forEach(async (consumer) => {
         await consumer.stop();
