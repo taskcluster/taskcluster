@@ -127,6 +127,6 @@
   },
   "optionalDependencies": {
     "bufferutil": "^3.0.5",
-    "utf-8-validate": "^4.0.2"
+    "utf-8-validate": "^5.0.0"
   }
 }
