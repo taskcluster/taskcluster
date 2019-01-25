@@ -172,10 +172,14 @@ class HookListeners {
 
       // Delete the queues now left in the queues list.
       for (let queue of queues) {
-        // Delete the amqp queue
-        await this.deleteQueue(queue.queueName);
-        // Delete from this.listeners
+        // Stop listening to the queue
+        debug(`stop listening on ${queue.queueName}`);
         await this.removeListener(queue.queueName);
+        // Delete the queue
+        debug(`delete pulse queue ${queue.queueName}`);
+        await this.deleteQueue(queue.queueName);
+        // finally, delete the record of it from the table
+        debug(`delete Queue entity ${queue.queueName}`);
         await queue.remove();
       }
     });
