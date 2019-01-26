@@ -147,7 +147,7 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 	if arguments["--task-id"] != nil {
 		taskID := arguments["--task-id"].(string)
 		log.Printf("taskId: '%v'", taskID)
-		queue := tcqueue.New(nil)
+		queue := tcqueue.New(nil, rootURL.(string))
 
 		// Fetch the task to get the scopes we should be using...
 		var task *tcqueue.TaskDefinitionResponse
@@ -163,12 +163,6 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 	// if no --task-id specified, AND no scopes were specified, don't restrict AuthorizedScopes
 	if arguments["--task-id"] == nil && len(authorizedScopes) == 0 {
 		authorizedScopes = nil
-	}
-
-	// This will include rootURL in creds, once the client supports it; until then it had better be https://taskcluster.net
-	if rootURL != "https://taskcluster.net" {
-		err = fmt.Errorf("Only the legacy rootUrl is currently supported, not %s", rootURL)
-		return
 	}
 
 	creds := &tcclient.Credentials{
