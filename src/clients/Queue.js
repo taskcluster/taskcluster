@@ -10,40 +10,48 @@ export default class Queue extends Client {
       exchangePrefix: '',
       ...options,
     });
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
     this.task.entry = {type:'function',method:'get',route:'/task/<taskId>',query:[],args:['taskId'],name:'task',stability:'stable',output:true}; // eslint-disable-line
     this.status.entry = {type:'function',method:'get',route:'/task/<taskId>/status',query:[],args:['taskId'],name:'status',stability:'stable',output:true}; // eslint-disable-line
     this.listTaskGroup.entry = {type:'function',method:'get',route:'/task-group/<taskGroupId>/list',query:['continuationToken','limit'],args:['taskGroupId'],name:'listTaskGroup',stability:'stable',output:true}; // eslint-disable-line
     this.listDependentTasks.entry = {type:'function',method:'get',route:'/task/<taskId>/dependents',query:['continuationToken','limit'],args:['taskId'],name:'listDependentTasks',stability:'stable',output:true}; // eslint-disable-line
-    this.createTask.entry = {type:'function',method:'put',route:'/task/<taskId>',query:[],args:['taskId'],name:'createTask',stability:'stable',scopes:{AllOf:[{'for':'scope','in':'scopes',each:'<scope>'},{'for':'route','in':'routes',each:'queue:route:<route>'},{AnyOf:[{AllOf:['queue:scheduler-id:<schedulerId>',{AnyOf:[{'for':'priority','in':'priorities',each:'queue:create-task:<priority>:<provisionerId>/<workerType>'}]}]},{'if':'legacyScopes',then:{AnyOf:['queue:create-task:<provisionerId>/<workerType>',{AllOf:['queue:define-task:<provisionerId>/<workerType>','queue:task-group-id:<schedulerId>/<taskGroupId>','queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>']}]}}]}]},input:true,output:true}; // eslint-disable-line
-    this.defineTask.entry = {type:'function',method:'post',route:'/task/<taskId>/define',query:[],args:['taskId'],name:'defineTask',stability:'deprecated',scopes:{AllOf:[{'for':'scope','in':'scopes',each:'<scope>'},{'for':'route','in':'routes',each:'queue:route:<route>'},{AnyOf:[{AllOf:['queue:scheduler-id:<schedulerId>',{AnyOf:[{'for':'priority','in':'priorities',each:'queue:create-task:<priority>:<provisionerId>/<workerType>'}]}]},{'if':'legacyScopes',then:{AnyOf:['queue:define-task:<provisionerId>/<workerType>','queue:create-task:<provisionerId>/<workerType>',{AllOf:['queue:define-task:<provisionerId>/<workerType>','queue:task-group-id:<schedulerId>/<taskGroupId>']}]}}]}]},input:true,output:true}; // eslint-disable-line
-    this.scheduleTask.entry = {type:'function',method:'post',route:'/task/<taskId>/schedule',query:[],args:['taskId'],name:'scheduleTask',stability:'stable',scopes:{AnyOf:['queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',{AllOf:['queue:schedule-task','assume:scheduler-id:<schedulerId>/<taskGroupId>']}]},output:true}; // eslint-disable-line
-    this.rerunTask.entry = {type:'function',method:'post',route:'/task/<taskId>/rerun',query:[],args:['taskId'],name:'rerunTask',stability:'deprecated',scopes:{AnyOf:['queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',{AllOf:['queue:rerun-task','assume:scheduler-id:<schedulerId>/<taskGroupId>']}]},output:true}; // eslint-disable-line
-    this.cancelTask.entry = {type:'function',method:'post',route:'/task/<taskId>/cancel',query:[],args:['taskId'],name:'cancelTask',stability:'stable',scopes:{AnyOf:['queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>',{AllOf:['queue:cancel-task','assume:scheduler-id:<schedulerId>/<taskGroupId>']}]},output:true}; // eslint-disable-line
-    this.pollTaskUrls.entry = {type:'function',method:'get',route:'/poll-task-url/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'pollTaskUrls',stability:'stable',scopes:{AnyOf:['queue:poll-task-urls:<provisionerId>/<workerType>',{AllOf:['queue:poll-task-urls','assume:worker-type:<provisionerId>/<workerType>']}]},output:true}; // eslint-disable-line
-    this.claimWork.entry = {type:'function',method:'post',route:'/claim-work/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'claimWork',stability:'stable',scopes:{AllOf:['queue:claim-work:<provisionerId>/<workerType>','queue:worker-id:<workerGroup>/<workerId>']},input:true,output:true}; // eslint-disable-line
-    this.claimTask.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/claim',query:[],args:['taskId','runId'],name:'claimTask',stability:'stable',scopes:{AnyOf:[{AllOf:['queue:claim-task:<provisionerId>/<workerType>','queue:worker-id:<workerGroup>/<workerId>']},{AllOf:['queue:claim-task','assume:worker-type:<provisionerId>/<workerType>','assume:worker-id:<workerGroup>/<workerId>']}]},input:true,output:true}; // eslint-disable-line
-    this.reclaimTask.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/reclaim',query:[],args:['taskId','runId'],name:'reclaimTask',stability:'stable',scopes:{AnyOf:['queue:reclaim-task:<taskId>/<runId>',{AllOf:['queue:claim-task','assume:worker-id:<workerGroup>/<workerId>']}]},output:true}; // eslint-disable-line
-    this.reportCompleted.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/completed',query:[],args:['taskId','runId'],name:'reportCompleted',stability:'stable',scopes:{AnyOf:['queue:resolve-task:<taskId>/<runId>',{AllOf:['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>']}]},output:true}; // eslint-disable-line
-    this.reportFailed.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/failed',query:[],args:['taskId','runId'],name:'reportFailed',stability:'stable',scopes:{AnyOf:['queue:resolve-task:<taskId>/<runId>',{AllOf:['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>']}]},output:true}; // eslint-disable-line
-    this.reportException.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/exception',query:[],args:['taskId','runId'],name:'reportException',stability:'stable',scopes:{AnyOf:['queue:resolve-task:<taskId>/<runId>',{AllOf:['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>']}]},input:true,output:true}; // eslint-disable-line
-    this.createArtifact.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/artifacts/<name>',query:[],args:['taskId','runId','name'],name:'createArtifact',stability:'stable',scopes:{AnyOf:['queue:create-artifact:<taskId>/<runId>',{AllOf:['queue:create-artifact:<name>','assume:worker-id:<workerGroup>/<workerId>']}]},input:true,output:true}; // eslint-disable-line
-    this.completeArtifact.entry = {type:'function',method:'put',route:'/task/<taskId>/runs/<runId>/artifacts/<name>',query:[],args:['taskId','runId','name'],name:'completeArtifact',stability:'experimental',scopes:{AnyOf:['queue:create-artifact:<taskId>/<runId>',{AllOf:['queue:create-artifact:<name>','assume:worker-id:<workerGroup>/<workerId>']}]},input:true}; // eslint-disable-line
+    this.createTask.entry = {type:'function',method:'put',route:'/task/<taskId>',query:[],args:['taskId'],name:'createTask',stability:'stable',input:true,output:true,scopes:{AllOf:[{'for':'scope','in':'scopes',each:'<scope>'},{'for':'route','in':'routes',each:'queue:route:<route>'},{AnyOf:[{AllOf:['queue:scheduler-id:<schedulerId>',{AnyOf:[{'for':'priority','in':'priorities',each:'queue:create-task:<priority>:<provisionerId>/<workerType>'}]}]},{'if':'legacyScopes',then:{AnyOf:['queue:create-task:<provisionerId>/<workerType>',{AllOf:['queue:define-task:<provisionerId>/<workerType>','queue:task-group-id:<schedulerId>/<taskGroupId>','queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>']}]}}]}]}}; // eslint-disable-line
+    this.defineTask.entry = {type:'function',method:'post',route:'/task/<taskId>/define',query:[],args:['taskId'],name:'defineTask',stability:'deprecated',input:true,output:true,scopes:{AllOf:[{'for':'scope','in':'scopes',each:'<scope>'},{'for':'route','in':'routes',each:'queue:route:<route>'},{AnyOf:[{AllOf:['queue:scheduler-id:<schedulerId>',{AnyOf:[{'for':'priority','in':'priorities',each:'queue:create-task:<priority>:<provisionerId>/<workerType>'}]}]},{'if':'legacyScopes',then:{AnyOf:['queue:define-task:<provisionerId>/<workerType>','queue:create-task:<provisionerId>/<workerType>',{AllOf:['queue:define-task:<provisionerId>/<workerType>','queue:task-group-id:<schedulerId>/<taskGroupId>']}]}}]}]}}; // eslint-disable-line
+    this.scheduleTask.entry = {type:'function',method:'post',route:'/task/<taskId>/schedule',query:[],args:['taskId'],name:'scheduleTask',stability:'stable',output:true,scopes:{AnyOf:['queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',{AllOf:['queue:schedule-task','assume:scheduler-id:<schedulerId>/<taskGroupId>']}]}}; // eslint-disable-line
+    this.rerunTask.entry = {type:'function',method:'post',route:'/task/<taskId>/rerun',query:[],args:['taskId'],name:'rerunTask',stability:'deprecated',output:true,scopes:{AnyOf:['queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',{AllOf:['queue:rerun-task','assume:scheduler-id:<schedulerId>/<taskGroupId>']}]}}; // eslint-disable-line
+    this.cancelTask.entry = {type:'function',method:'post',route:'/task/<taskId>/cancel',query:[],args:['taskId'],name:'cancelTask',stability:'stable',output:true,scopes:{AnyOf:['queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>',{AllOf:['queue:cancel-task','assume:scheduler-id:<schedulerId>/<taskGroupId>']}]}}; // eslint-disable-line
+    this.claimWork.entry = {type:'function',method:'post',route:'/claim-work/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'claimWork',stability:'stable',input:true,output:true,scopes:{AllOf:['queue:claim-work:<provisionerId>/<workerType>','queue:worker-id:<workerGroup>/<workerId>']}}; // eslint-disable-line
+    this.claimTask.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/claim',query:[],args:['taskId','runId'],name:'claimTask',stability:'deprecated',input:true,output:true,scopes:{AnyOf:[{AllOf:['queue:claim-task:<provisionerId>/<workerType>','queue:worker-id:<workerGroup>/<workerId>']},{AllOf:['queue:claim-task','assume:worker-type:<provisionerId>/<workerType>','assume:worker-id:<workerGroup>/<workerId>']}]}}; // eslint-disable-line
+    this.reclaimTask.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/reclaim',query:[],args:['taskId','runId'],name:'reclaimTask',stability:'stable',output:true,scopes:{AnyOf:['queue:reclaim-task:<taskId>/<runId>',{AllOf:['queue:claim-task','assume:worker-id:<workerGroup>/<workerId>']}]}}; // eslint-disable-line
+    this.reportCompleted.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/completed',query:[],args:['taskId','runId'],name:'reportCompleted',stability:'stable',output:true,scopes:{AnyOf:['queue:resolve-task:<taskId>/<runId>',{AllOf:['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>']}]}}; // eslint-disable-line
+    this.reportFailed.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/failed',query:[],args:['taskId','runId'],name:'reportFailed',stability:'stable',output:true,scopes:{AnyOf:['queue:resolve-task:<taskId>/<runId>',{AllOf:['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>']}]}}; // eslint-disable-line
+    this.reportException.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/exception',query:[],args:['taskId','runId'],name:'reportException',stability:'stable',input:true,output:true,scopes:{AnyOf:['queue:resolve-task:<taskId>/<runId>',{AllOf:['queue:resolve-task','assume:worker-id:<workerGroup>/<workerId>']}]}}; // eslint-disable-line
+    this.createArtifact.entry = {type:'function',method:'post',route:'/task/<taskId>/runs/<runId>/artifacts/<name>',query:[],args:['taskId','runId','name'],name:'createArtifact',stability:'stable',input:true,output:true,scopes:{AnyOf:['queue:create-artifact:<taskId>/<runId>',{AllOf:['queue:create-artifact:<name>','assume:worker-id:<workerGroup>/<workerId>']}]}}; // eslint-disable-line
+    this.completeArtifact.entry = {type:'function',method:'put',route:'/task/<taskId>/runs/<runId>/artifacts/<name>',query:[],args:['taskId','runId','name'],name:'completeArtifact',stability:'experimental',input:true,scopes:{AnyOf:['queue:create-artifact:<taskId>/<runId>',{AllOf:['queue:create-artifact:<name>','assume:worker-id:<workerGroup>/<workerId>']}]}}; // eslint-disable-line
     this.getArtifact.entry = {type:'function',method:'get',route:'/task/<taskId>/runs/<runId>/artifacts/<name>',query:[],args:['taskId','runId','name'],name:'getArtifact',stability:'stable',scopes:{'if':'private',then:{AllOf:['queue:get-artifact:<name>']}}}; // eslint-disable-line
     this.getLatestArtifact.entry = {type:'function',method:'get',route:'/task/<taskId>/artifacts/<name>',query:[],args:['taskId','name'],name:'getLatestArtifact',stability:'stable',scopes:{'if':'private',then:{AllOf:['queue:get-artifact:<name>']}}}; // eslint-disable-line
     this.listArtifacts.entry = {type:'function',method:'get',route:'/task/<taskId>/runs/<runId>/artifacts',query:['continuationToken','limit'],args:['taskId','runId'],name:'listArtifacts',stability:'experimental',output:true}; // eslint-disable-line
     this.listLatestArtifacts.entry = {type:'function',method:'get',route:'/task/<taskId>/artifacts',query:['continuationToken','limit'],args:['taskId'],name:'listLatestArtifacts',stability:'experimental',output:true}; // eslint-disable-line
     this.listProvisioners.entry = {type:'function',method:'get',route:'/provisioners',query:['continuationToken','limit'],args:[],name:'listProvisioners',stability:'experimental',output:true}; // eslint-disable-line
     this.getProvisioner.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>',query:[],args:['provisionerId'],name:'getProvisioner',stability:'experimental',output:true}; // eslint-disable-line
-    this.declareProvisioner.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>',query:[],args:['provisionerId'],name:'declareProvisioner',stability:'experimental',scopes:{AllOf:[{'for':'property','in':'properties',each:'queue:declare-provisioner:<provisionerId>#<property>'}]},input:true,output:true}; // eslint-disable-line
+    this.declareProvisioner.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>',query:[],args:['provisionerId'],name:'declareProvisioner',stability:'experimental',input:true,output:true,scopes:{AllOf:[{'for':'property','in':'properties',each:'queue:declare-provisioner:<provisionerId>#<property>'}]}}; // eslint-disable-line
     this.pendingTasks.entry = {type:'function',method:'get',route:'/pending/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'pendingTasks',stability:'stable',output:true}; // eslint-disable-line
     this.listWorkerTypes.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types',query:['continuationToken','limit'],args:['provisionerId'],name:'listWorkerTypes',stability:'experimental',output:true}; // eslint-disable-line
     this.getWorkerType.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>',query:[],args:['provisionerId','workerType'],name:'getWorkerType',stability:'experimental',output:true}; // eslint-disable-line
-    this.declareWorkerType.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>',query:[],args:['provisionerId','workerType'],name:'declareWorkerType',stability:'experimental',scopes:{AllOf:[{'for':'property','in':'properties',each:'queue:declare-worker-type:<provisionerId>/<workerType>#<property>'}]},input:true,output:true}; // eslint-disable-line
+    this.declareWorkerType.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>',query:[],args:['provisionerId','workerType'],name:'declareWorkerType',stability:'experimental',input:true,output:true,scopes:{AllOf:[{'for':'property','in':'properties',each:'queue:declare-worker-type:<provisionerId>/<workerType>#<property>'}]}}; // eslint-disable-line
     this.listWorkers.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers',query:['continuationToken','limit','quarantined'],args:['provisionerId','workerType'],name:'listWorkers',stability:'experimental',output:true}; // eslint-disable-line
     this.getWorker.entry = {type:'function',method:'get',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'getWorker',stability:'experimental',output:true}; // eslint-disable-line
-    this.quarantineWorker.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'quarantineWorker',stability:'experimental',scopes:{AllOf:['queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>']},input:true,output:true}; // eslint-disable-line
-    this.declareWorker.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'declareWorker',stability:'experimental',scopes:{AllOf:[{'for':'property','in':'properties',each:'queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>'}]},input:true,output:true}; // eslint-disable-line
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
+    this.quarantineWorker.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'quarantineWorker',stability:'experimental',input:true,output:true,scopes:{AllOf:['queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>']}}; // eslint-disable-line
+    this.declareWorker.entry = {type:'function',method:'put',route:'/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>',query:[],args:['provisionerId','workerType','workerGroup','workerId'],name:'declareWorker',stability:'experimental',input:true,output:true,scopes:{AllOf:[{'for':'property','in':'properties',each:'queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>'}]}}; // eslint-disable-line
+  }
+  /* eslint-disable max-len */
+  // Respond without doing anything.
+  // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
+  ping(...args) {
+    this.validate(this.ping.entry, args);
+
+    return this.request(this.ping.entry, args);
   }
   /* eslint-disable max-len */
   // This end-point will return the task-definition. Notice that the task
@@ -106,23 +114,28 @@ export default class Queue extends Client {
   /* eslint-disable max-len */
   // Create a new task, this is an **idempotent** operation, so repeat it if
   // you get an internal server error or network connection is dropped.
-  // **Task `deadline´**, the deadline property can be no more than 5 days
+  // **Task `deadline`**: the deadline property can be no more than 5 days
   // into the future. This is to limit the amount of pending tasks not being
   // taken care of. Ideally, you should use a much shorter deadline.
-  // **Task expiration**, the `expires` property must be greater than the
+  // **Task expiration**: the `expires` property must be greater than the
   // task `deadline`. If not provided it will default to `deadline` + one
   // year. Notice, that artifacts created by task must expire before the task.
-  // **Task specific routing-keys**, using the `task.routes` property you may
+  // **Task specific routing-keys**: using the `task.routes` property you may
   // define task specific routing-keys. If a task has a task specific
   // routing-key: `<route>`, then when the AMQP message about the task is
   // published, the message will be CC'ed with the routing-key:
   // `route.<route>`. This is useful if you want another component to listen
   // for completed tasks you have posted.  The caller must have scope
   // `queue:route:<route>` for each route.
-  // **Dependencies**, any tasks referenced in `task.dependencies` must have
+  // **Dependencies**: any tasks referenced in `task.dependencies` must have
   // already been created at the time of this call.
-  // **Important** Any scopes the task requires are also required for creating
-  // the task. Please see the Request Payload (Task Definition) for details.
+  // **Scopes**: Note that the scopes required to complete this API call depend
+  // on the content of the `scopes`, `routes`, `schedulerId`, `priority`,
+  // `provisionerId`, and `workerType` properties of the task definition.
+  // **Legacy Scopes**: The `queue:create-task:..` scope without a priority and
+  // the `queue:define-task:..` and `queue:task-group-id:..` scopes are considered
+  // legacy and should not be used. Note that the new, non-legacy scopes require
+  // a `queue:scheduler-id:..` scope as well as scopes for the proper priority.
   /* eslint-enable max-len */
   createTask(...args) {
     this.validate(this.createTask.entry, args);
@@ -161,6 +174,8 @@ export default class Queue extends Client {
   // _completed_. This is useful if your task completes unsuccessfully, and
   // you just want to run it from scratch again. This will also reset the
   // number of `retries` allowed.
+  // This method is deprecated in favour of creating a new task with the same
+  // task definition (but with a new taskId).
   // Remember that `retries` in the task status counts the number of runs that
   // the queue have started because the worker stopped responding, for example
   // because a spot node died.
@@ -192,17 +207,13 @@ export default class Queue extends Client {
     return this.request(this.cancelTask.entry, args);
   }
   /* eslint-disable max-len */
-  // Get a signed URLs to get and delete messages from azure queue.
-  // Once messages are polled from here, you can claim the referenced task
-  // with `claimTask`, and afterwards you should always delete the message.
-  /* eslint-enable max-len */
-  pollTaskUrls(...args) {
-    this.validate(this.pollTaskUrls.entry, args);
-
-    return this.request(this.pollTaskUrls.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Claim any task, more to be added later... long polling up to 20s.
+  // Claim pending task(s) for the given `provisionerId`/`workerType` queue.
+  // If any work is available (even if fewer than the requested number of
+  // tasks, this will return immediately. Otherwise, it will block for tens of
+  // seconds waiting for work.  If no work appears, it will return an emtpy
+  // list of tasks.  Callers should sleep a short while (to avoid denial of
+  // service in an error condition) and call the endpoint again.  This is a
+  // simple implementation of "long polling".
   /* eslint-enable max-len */
   claimWork(...args) {
     this.validate(this.claimWork.entry, args);
@@ -210,7 +221,7 @@ export default class Queue extends Client {
     return this.request(this.claimWork.entry, args);
   }
   /* eslint-disable max-len */
-  // claim a task, more to be added later...
+  // claim a task - never documented
   /* eslint-enable max-len */
   claimTask(...args) {
     this.validate(this.claimTask.entry, args);
@@ -330,9 +341,9 @@ export default class Queue extends Client {
   // would otherwise have uploaded. For example docker-worker will upload an
   // error artifact, if the file it was supposed to upload doesn't exists or
   // turns out to be a directory. Clients requesting an error artifact will
-  // get a `403` (Forbidden) response. This is mainly designed to ensure that
-  // dependent tasks can distinguish between artifacts that were suppose to
-  // be generated and artifacts for which the name is misspelled.
+  // get a `424` (Failed Dependency) response. This is mainly designed to
+  // ensure that dependent tasks can distinguish between artifacts that were
+  // suppose to be generated and artifacts for which the name is misspelled.
   // **Artifact immutability**, generally speaking you cannot overwrite an
   // artifact when created. But if you repeat the request with the same
   // properties the request will succeed as the operation is idempotent.
@@ -613,14 +624,5 @@ export default class Queue extends Client {
     this.validate(this.declareWorker.entry, args);
 
     return this.request(this.declareWorker.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Respond without doing anything.
-  // This endpoint is used to check that the service is up.
-  /* eslint-enable max-len */
-  ping(...args) {
-    this.validate(this.ping.entry, args);
-
-    return this.request(this.ping.entry, args);
   }
 }

@@ -10,10 +10,19 @@ export default class PurgeCache extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.purgeCache.entry = {type:'function',method:'post',route:'/purge-cache/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'purgeCache',stability:'stable',scopes:'purge-cache:<provisionerId>/<workerType>:<cacheName>',input:true}; // eslint-disable-line
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
+    this.purgeCache.entry = {type:'function',method:'post',route:'/purge-cache/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'purgeCache',stability:'stable',input:true,scopes:'purge-cache:<provisionerId>/<workerType>:<cacheName>'}; // eslint-disable-line
     this.allPurgeRequests.entry = {type:'function',method:'get',route:'/purge-cache/list',query:['continuationToken','limit'],args:[],name:'allPurgeRequests',stability:'stable',output:true}; // eslint-disable-line
     this.purgeRequests.entry = {type:'function',method:'get',route:'/purge-cache/<provisionerId>/<workerType>',query:['since'],args:['provisionerId','workerType'],name:'purgeRequests',stability:'stable',output:true}; // eslint-disable-line
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
+  }
+  /* eslint-disable max-len */
+  // Respond without doing anything.
+  // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
+  ping(...args) {
+    this.validate(this.ping.entry, args);
+
+    return this.request(this.ping.entry, args);
   }
   /* eslint-disable max-len */
   // Publish a purge-cache message to purge caches named `cacheName` with
@@ -46,14 +55,5 @@ export default class PurgeCache extends Client {
     this.validate(this.purgeRequests.entry, args);
 
     return this.request(this.purgeRequests.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Respond without doing anything.
-  // This endpoint is used to check that the service is up.
-  /* eslint-enable max-len */
-  ping(...args) {
-    this.validate(this.ping.entry, args);
-
-    return this.request(this.ping.entry, args);
   }
 }

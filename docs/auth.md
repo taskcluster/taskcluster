@@ -53,6 +53,11 @@ const auth = new taskcluster.Auth(options);
 ## Methods in Auth Client
 
 ```js
+// auth.ping :: () -> Promise Nothing
+auth.ping()
+```
+
+```js
 // auth.listClients :: [options] -> Promise Result
 auth.listClients()
 auth.listClients(options)
@@ -96,6 +101,18 @@ auth.deleteClient(clientId)
 ```js
 // auth.listRoles :: () -> Promise Result
 auth.listRoles()
+```
+
+```js
+// auth.listRoleIds :: [options] -> Promise Result
+auth.listRoleIds()
+auth.listRoleIds(options)
+```
+
+```js
+// auth.listRoles2 :: [options] -> Promise Result
+auth.listRoles2()
+auth.listRoles2(options)
 ```
 
 ```js
@@ -177,8 +194,8 @@ auth.statsumToken(project)
 ```
 
 ```js
-// auth.webhooktunnelToken :: () -> Promise Result
-auth.webhooktunnelToken()
+// auth.websocktunnelToken :: () -> Promise Result
+auth.websocktunnelToken()
 ```
 
 ```js
@@ -194,10 +211,5 @@ auth.testAuthenticate(payload)
 ```js
 // auth.testAuthenticateGet :: () -> Promise Result
 auth.testAuthenticateGet()
-```
-
-```js
-// auth.ping :: () -> Promise Nothing
-auth.ping()
 ```
 

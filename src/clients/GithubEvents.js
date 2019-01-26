@@ -17,7 +17,7 @@ export default class GithubEvents extends Client {
   // in the routing-key along with event specific metadata in the payload.
   /* eslint-enable max-len */
   pullRequest(pattern) {
-    const entry = {type:'topic-exchange',exchange:'pull-request',name:'pullRequest',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true},{name:'action',multipleWords:false,required:true}],schema:'v1/github-pull-request-message.json#'}; // eslint-disable-line
+    const entry = {type:'topic-exchange',exchange:'pull-request',name:'pullRequest',schema:'v1/github-pull-request-message.json#',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true},{name:'action',multipleWords:false,required:true}]}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -27,7 +27,7 @@ export default class GithubEvents extends Client {
   // in the routing-key along with event specific metadata in the payload.
   /* eslint-enable max-len */
   push(pattern) {
-    const entry = {type:'topic-exchange',exchange:'push',name:'push',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}],schema:'v1/github-push-message.json#'}; // eslint-disable-line
+    const entry = {type:'topic-exchange',exchange:'push',name:'push',schema:'v1/github-push-message.json#',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}]}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -37,7 +37,20 @@ export default class GithubEvents extends Client {
   // in the routing-key along with event specific metadata in the payload.
   /* eslint-enable max-len */
   release(pattern) {
-    const entry = {type:'topic-exchange',exchange:'release',name:'release',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}],schema:'v1/github-release-message.json#'}; // eslint-disable-line
+    const entry = {type:'topic-exchange',exchange:'release',name:'release',schema:'v1/github-release-message.json#',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}]}; // eslint-disable-line
+
+    return this.normalizePattern(entry, pattern);
+  }
+  /* eslint-disable max-len */
+  // supposed to signal that taskCreate API has been called for every task in the task group
+  // for this particular repo and this particular organization
+  // currently used for creating initial status indicators in GitHub UI using Statuses API.
+  // This particular exchange can also be bound to RabbitMQ queues by custom routes - for that,
+  // Pass in the array of routes as a second argument to the publish method. Currently, we do
+  // use the statuses routes to bind the handler that creates the initial status.
+  /* eslint-enable max-len */
+  taskGroupCreationRequested(pattern) {
+    const entry = {type:'topic-exchange',exchange:'task-group-creation-requested',name:'taskGroupCreationRequested',schema:'v1/task-group-creation-requested.json#',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'organization',multipleWords:false,required:true},{name:'repository',multipleWords:false,required:true}]}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }

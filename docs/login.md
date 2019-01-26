@@ -16,12 +16,12 @@ const login = new taskcluster.Login(options);
 ## Methods in Login Client
 
 ```js
-// login.oidcCredentials :: provider -> Promise Result
-login.oidcCredentials(provider)
+// login.ping :: () -> Promise Nothing
+login.ping()
 ```
 
 ```js
-// login.ping :: () -> Promise Nothing
-login.ping()
+// login.oidcCredentials :: provider -> Promise Result
+login.oidcCredentials(provider)
 ```
 

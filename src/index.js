@@ -23,7 +23,6 @@ export { default as Index } from './clients/Index';
 export { default as Login } from './clients/Login';
 export { default as Notify } from './clients/Notify';
 export { default as PurgeCache } from './clients/PurgeCache';
-export { default as PurgeCacheEvents } from './clients/PurgeCacheEvents';
 export { default as Queue } from './clients/Queue';
 export { default as QueueEvents } from './clients/QueueEvents';
 export { default as Secrets } from './clients/Secrets';

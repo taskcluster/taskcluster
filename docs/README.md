@@ -5,7 +5,7 @@ generated from the [Manifest Reference](http://references.taskcluster.net/manife
 Detailed documentation with description, payload, and result formats is available on
 [Taskcluster Docs](https://docs.taskcluster.net/).
 
-In the Taskcluster documentation, entries have a
+On the [documentation site](https://docs.taskcluster.net/) entries often have a
 _signature_; you'll find that it corresponds with the signatures below. Note that all
 the methods return a `Promise`. A method marked with `Promise Result` is a promise that
 resolves with the API result. A method marked with `Promise Nothing` will also return a
@@ -24,7 +24,6 @@ that may be rejected from a Promise.
 - [Login](login.md)
 - [Notify](notify.md)
 - [PurgeCache](purgecache.md)
-- [PurgeCacheEvents](purgecacheevents.md)
 - [Queue](queue.md)
 - [QueueEvents](queueevents.md)
 - [Secrets](secrets.md)

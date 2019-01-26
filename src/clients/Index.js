@@ -10,12 +10,21 @@ export default class Index extends Client {
       exchangePrefix: '',
       ...options,
     });
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
     this.findTask.entry = {type:'function',method:'get',route:'/task/<indexPath>',query:[],args:['indexPath'],name:'findTask',stability:'stable',output:true}; // eslint-disable-line
     this.listNamespaces.entry = {type:'function',method:'get',route:'/namespaces/<namespace>',query:['continuationToken','limit'],args:['namespace'],name:'listNamespaces',stability:'stable',output:true}; // eslint-disable-line
     this.listTasks.entry = {type:'function',method:'get',route:'/tasks/<namespace>',query:['continuationToken','limit'],args:['namespace'],name:'listTasks',stability:'stable',output:true}; // eslint-disable-line
-    this.insertTask.entry = {type:'function',method:'put',route:'/task/<namespace>',query:[],args:['namespace'],name:'insertTask',stability:'stable',scopes:'index:insert-task:<namespace>',input:true,output:true}; // eslint-disable-line
+    this.insertTask.entry = {type:'function',method:'put',route:'/task/<namespace>',query:[],args:['namespace'],name:'insertTask',stability:'stable',input:true,output:true,scopes:'index:insert-task:<namespace>'}; // eslint-disable-line
     this.findArtifactFromTask.entry = {type:'function',method:'get',route:'/task/<indexPath>/artifacts/<name>',query:[],args:['indexPath','name'],name:'findArtifactFromTask',stability:'stable',scopes:{'if':'private',then:'queue:get-artifact:<name>'}}; // eslint-disable-line
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
+  }
+  /* eslint-disable max-len */
+  // Respond without doing anything.
+  // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
+  ping(...args) {
+    this.validate(this.ping.entry, args);
+
+    return this.request(this.ping.entry, args);
   }
   /* eslint-disable max-len */
   // Find a task by index path, returning the highest-rank task with that path. If no
@@ -72,8 +81,8 @@ export default class Index extends Client {
   // if a new task is inserted into the index between calls. Avoid using this method as
   // a stable link to multiple, connected files if the index path does not contain a
   // unique identifier.  For example, the following two links may return unrelated files:
-  // * https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/installer.exe`
-  // * https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`
+  // * https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/installer.exe`
+  // * https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`
   // This problem be remedied by including the revision in the index path or by bundling both
   // installer and debug symbols into a single artifact.
   // If no task exists for the given index path, this API end-point responds with 404.
@@ -82,14 +91,5 @@ export default class Index extends Client {
     this.validate(this.findArtifactFromTask.entry, args);
 
     return this.request(this.findArtifactFromTask.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Respond without doing anything.
-  // This endpoint is used to check that the service is up.
-  /* eslint-enable max-len */
-  ping(...args) {
-    this.validate(this.ping.entry, args);
-
-    return this.request(this.ping.entry, args);
   }
 }
