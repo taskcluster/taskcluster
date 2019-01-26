@@ -136,6 +136,7 @@ export default class InteractiveConnect extends Component {
     artifactsLoading: true,
     // eslint-disable-next-line react/no-unused-state
     previousTaskId: this.props.match.params.taskId,
+    notificationEnabled: true,
   };
 
   componentDidUpdate(prevProps) {
@@ -145,6 +146,22 @@ export default class InteractiveConnect extends Component {
         params: { taskId },
       },
     } = this.props;
+
+    if (
+      this.getInteractiveStatus === INTERACTIVE_TASK_STATUS.READY &&
+      this.state.notificationEnabled &&
+      Notification.permission === 'granted'
+    ) {
+      const notification = new Notification('Session is ready');
+
+      setTimeout(() => {
+        notification.close();
+      }, 10000);
+
+      this.setState({
+        notificationEnabled: false,
+      });
+    }
 
     if (prevProps.match.params.taskId !== taskId) {
       previousCursor = INITIAL_CURSOR;
@@ -210,6 +227,10 @@ export default class InteractiveConnect extends Component {
         },
       });
     }
+  }
+
+  componentDidMount() {
+    Notification.requestPermission();
   }
 
   getInteractiveStatus = () => {
