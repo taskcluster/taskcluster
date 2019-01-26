@@ -2,9 +2,9 @@
 
 ##
 
-The queue, typically available at `queue.taskcluster.net`, is responsible
-for accepting tasks and track their state as they are executed by
-workers. In order ensure they are eventually resolved.
+The queue service is responsible for accepting tasks and track their state
+as they are executed by workers. In order ensure they are eventually
+resolved.
 
 This document describes the API end-points offered by the queue. These 
 end-points targets the following audience:
@@ -21,6 +21,11 @@ const queue = new taskcluster.Queue(options);
 ```
 
 ## Methods in Queue Client
+
+```js
+// queue.ping :: () -> Promise Nothing
+queue.ping()
+```
 
 ```js
 // queue.task :: taskId -> Promise Result
@@ -67,11 +72,6 @@ queue.rerunTask(taskId)
 ```js
 // queue.cancelTask :: taskId -> Promise Result
 queue.cancelTask(taskId)
-```
-
-```js
-// queue.pollTaskUrls :: (provisionerId -> workerType) -> Promise Result
-queue.pollTaskUrls(provisionerId, workerType)
 ```
 
 ```js
@@ -192,10 +192,5 @@ queue.quarantineWorker(provisionerId, workerType, workerGroup, workerId, payload
 ```js
 // queue.declareWorker :: (provisionerId -> workerType -> workerGroup -> workerId -> payload) -> Promise Result
 queue.declareWorker(provisionerId, workerType, workerGroup, workerId, payload)
-```
-
-```js
-// queue.ping :: () -> Promise Nothing
-queue.ping()
 ```
 

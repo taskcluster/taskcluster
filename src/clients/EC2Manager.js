@@ -10,29 +10,37 @@ export default class EC2Manager extends Client {
       exchangePrefix: '',
       ...options,
     });
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
     this.listWorkerTypes.entry = {type:'function',method:'get',route:'/worker-types',query:[],args:[],name:'listWorkerTypes',stability:'experimental',output:true}; // eslint-disable-line
-    this.runInstance.entry = {type:'function',method:'put',route:'/worker-types/<workerType>/instance',query:[],args:['workerType'],name:'runInstance',stability:'experimental',scopes:[['ec2-manager:manage-resources:<workerType>']],input:true}; // eslint-disable-line
-    this.terminateWorkerType.entry = {type:'function',method:'delete',route:'/worker-types/<workerType>/resources',query:[],args:['workerType'],name:'terminateWorkerType',stability:'experimental',scopes:[['ec2-manager:manage-resources:<workerType>']]}; // eslint-disable-line
+    this.runInstance.entry = {type:'function',method:'put',route:'/worker-types/<workerType>/instance',query:[],args:['workerType'],name:'runInstance',stability:'experimental',input:true,scopes:'ec2-manager:manage-resources:<workerType>'}; // eslint-disable-line
+    this.terminateWorkerType.entry = {type:'function',method:'delete',route:'/worker-types/<workerType>/resources',query:[],args:['workerType'],name:'terminateWorkerType',stability:'experimental',scopes:'ec2-manager:manage-resources:<workerType>'}; // eslint-disable-line
     this.workerTypeStats.entry = {type:'function',method:'get',route:'/worker-types/<workerType>/stats',query:[],args:['workerType'],name:'workerTypeStats',stability:'experimental',output:true}; // eslint-disable-line
     this.workerTypeHealth.entry = {type:'function',method:'get',route:'/worker-types/<workerType>/health',query:[],args:['workerType'],name:'workerTypeHealth',stability:'experimental',output:true}; // eslint-disable-line
     this.workerTypeErrors.entry = {type:'function',method:'get',route:'/worker-types/<workerType>/errors',query:[],args:['workerType'],name:'workerTypeErrors',stability:'experimental',output:true}; // eslint-disable-line
     this.workerTypeState.entry = {type:'function',method:'get',route:'/worker-types/<workerType>/state',query:[],args:['workerType'],name:'workerTypeState',stability:'experimental',output:true}; // eslint-disable-line
-    this.ensureKeyPair.entry = {type:'function',method:'get',route:'/key-pairs/<name>',query:[],args:['name'],name:'ensureKeyPair',stability:'experimental',scopes:[['ec2-manager:manage-key-pairs:<name>']],input:true}; // eslint-disable-line
-    this.removeKeyPair.entry = {type:'function',method:'delete',route:'/key-pairs/<name>',query:[],args:['name'],name:'removeKeyPair',stability:'experimental',scopes:[['ec2-manager:manage-key-pairs:<name>']]}; // eslint-disable-line
-    this.terminateInstance.entry = {type:'function',method:'delete',route:'/region/<region>/instance/<instanceId>',query:[],args:['region','instanceId'],name:'terminateInstance',stability:'experimental',scopes:[['ec2-manager:manage-instances:<region>:<instanceId>'],['ec2-manager:manage-resources:<workerType>']]}; // eslint-disable-line
+    this.ensureKeyPair.entry = {type:'function',method:'get',route:'/key-pairs/<name>',query:[],args:['name'],name:'ensureKeyPair',stability:'experimental',input:true,scopes:'ec2-manager:manage-key-pairs:<name>'}; // eslint-disable-line
+    this.removeKeyPair.entry = {type:'function',method:'delete',route:'/key-pairs/<name>',query:[],args:['name'],name:'removeKeyPair',stability:'experimental',scopes:'ec2-manager:manage-key-pairs:<name>'}; // eslint-disable-line
+    this.terminateInstance.entry = {type:'function',method:'delete',route:'/region/<region>/instance/<instanceId>',query:[],args:['region','instanceId'],name:'terminateInstance',stability:'experimental',scopes:{AnyOf:['ec2-manager:manage-instances:<region>:<instanceId>',{'if':'hasWorkerType',then:'ec2-manager:manage-resources:<workerType>'}]}}; // eslint-disable-line
     this.getPrices.entry = {type:'function',method:'get',route:'/prices',query:[],args:[],name:'getPrices',stability:'experimental',output:true}; // eslint-disable-line
     this.getSpecificPrices.entry = {type:'function',method:'post',route:'/prices',query:[],args:[],name:'getSpecificPrices',stability:'experimental',input:true,output:true}; // eslint-disable-line
     this.getHealth.entry = {type:'function',method:'get',route:'/health',query:[],args:[],name:'getHealth',stability:'experimental',output:true}; // eslint-disable-line
     this.getRecentErrors.entry = {type:'function',method:'get',route:'/errors',query:[],args:[],name:'getRecentErrors',stability:'experimental',output:true}; // eslint-disable-line
-    this.regions.entry = {type:'function',method:'get',route:'/internal/regions',query:[],args:[],name:'regions',stability:'experimental',scopes:[['ec2-manager:internals']]}; // eslint-disable-line
-    this.amiUsage.entry = {type:'function',method:'get',route:'/internal/ami-usage',query:[],args:[],name:'amiUsage',stability:'experimental',scopes:[['ec2-manager:internals']]}; // eslint-disable-line
-    this.ebsUsage.entry = {type:'function',method:'get',route:'/internal/ebs-usage',query:[],args:[],name:'ebsUsage',stability:'experimental',scopes:[['ec2-manager:internals']]}; // eslint-disable-line
-    this.dbpoolStats.entry = {type:'function',method:'get',route:'/internal/db-pool-stats',query:[],args:[],name:'dbpoolStats',stability:'experimental',scopes:[['ec2-manager:internals']]}; // eslint-disable-line
-    this.allState.entry = {type:'function',method:'get',route:'/internal/all-state',query:[],args:[],name:'allState',stability:'experimental',scopes:[['ec2-manager:internals']]}; // eslint-disable-line
-    this.sqsStats.entry = {type:'function',method:'get',route:'/internal/sqs-stats',query:[],args:[],name:'sqsStats',stability:'experimental',scopes:[['ec2-manager:internals']]}; // eslint-disable-line
-    this.purgeQueues.entry = {type:'function',method:'get',route:'/internal/purge-queues',query:[],args:[],name:'purgeQueues',stability:'experimental',scopes:[['ec2-manager:internals']]}; // eslint-disable-line
-    this.apiReference.entry = {type:'function',method:'get',route:'/internal/api-reference',query:[],args:[],name:'apiReference',stability:'experimental'}; // eslint-disable-line
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
+    this.regions.entry = {type:'function',method:'get',route:'/internal/regions',query:[],args:[],name:'regions',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
+    this.amiUsage.entry = {type:'function',method:'get',route:'/internal/ami-usage',query:[],args:[],name:'amiUsage',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
+    this.ebsUsage.entry = {type:'function',method:'get',route:'/internal/ebs-usage',query:[],args:[],name:'ebsUsage',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
+    this.dbpoolStats.entry = {type:'function',method:'get',route:'/internal/db-pool-stats',query:[],args:[],name:'dbpoolStats',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
+    this.allState.entry = {type:'function',method:'get',route:'/internal/all-state',query:[],args:[],name:'allState',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
+    this.sqsStats.entry = {type:'function',method:'get',route:'/internal/sqs-stats',query:[],args:[],name:'sqsStats',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
+    this.purgeQueues.entry = {type:'function',method:'get',route:'/internal/purge-queues',query:[],args:[],name:'purgeQueues',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
+  }
+  /* eslint-disable max-len */
+  // Respond without doing anything.
+  // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
+  ping(...args) {
+    this.validate(this.ping.entry, args);
+
+    return this.request(this.ping.entry, args);
   }
   /* eslint-disable max-len */
   // This method is only for debugging the ec2-manager
@@ -215,22 +223,5 @@ export default class EC2Manager extends Client {
     this.validate(this.purgeQueues.entry, args);
 
     return this.request(this.purgeQueues.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Generate an API reference for this service
-  /* eslint-enable max-len */
-  apiReference(...args) {
-    this.validate(this.apiReference.entry, args);
-
-    return this.request(this.apiReference.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Respond without doing anything.
-  // This endpoint is used to check that the service is up.
-  /* eslint-enable max-len */
-  ping(...args) {
-    this.validate(this.ping.entry, args);
-
-    return this.request(this.ping.entry, args);
   }
 }

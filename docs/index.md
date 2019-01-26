@@ -2,9 +2,9 @@
 
 ##
 
-The task index, typically available at `index.taskcluster.net`, is
-responsible for indexing tasks. The service ensures that tasks can be
-located by recency and/or arbitrary strings. Common use-cases include:
+The task index is responsible for indexing tasks. The service ensures that
+tasks can be located by recency and/or arbitrary strings. Common
+use-cases include:
 
  * Locate tasks by git or mercurial `<revision>`, or
  * Locate latest task from given `<branch>`, such as a release.
@@ -106,6 +106,11 @@ const index = new taskcluster.Index(options);
 ## Methods in Index Client
 
 ```js
+// index.ping :: () -> Promise Nothing
+index.ping()
+```
+
+```js
 // index.findTask :: indexPath -> Promise Result
 index.findTask(indexPath)
 ```
@@ -130,10 +135,5 @@ index.insertTask(namespace, payload)
 ```js
 // index.findArtifactFromTask :: (indexPath -> name) -> Promise Nothing
 index.findArtifactFromTask(indexPath, name)
-```
-
-```js
-// index.ping :: () -> Promise Nothing
-index.ping()
 ```
 

@@ -2,9 +2,8 @@
 
 ##
 
-The notification service, typically available at `notify.taskcluster.net`
-listens for tasks with associated notifications and handles requests to
-send emails and post pulse messages.
+The notification service listens for tasks with associated notifications
+and handles requests to send emails and post pulse messages.
 
 ## Notify Client
 
@@ -15,6 +14,11 @@ const notify = new taskcluster.Notify(options);
 ```
 
 ## Methods in Notify Client
+
+```js
+// notify.ping :: () -> Promise Nothing
+notify.ping()
+```
 
 ```js
 // notify.email :: payload -> Promise Nothing
@@ -29,10 +33,5 @@ notify.pulse(payload)
 ```js
 // notify.irc :: payload -> Promise Nothing
 notify.irc(payload)
-```
-
-```js
-// notify.ping :: () -> Promise Nothing
-notify.ping()
 ```
 

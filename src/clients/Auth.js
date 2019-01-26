@@ -10,35 +10,46 @@ export default class Auth extends Client {
       exchangePrefix: '',
       ...options,
     });
+    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
     this.listClients.entry = {type:'function',method:'get',route:'/clients/',query:['prefix','continuationToken','limit'],args:[],name:'listClients',stability:'stable',output:true}; // eslint-disable-line
     this.client.entry = {type:'function',method:'get',route:'/clients/<clientId>',query:[],args:['clientId'],name:'client',stability:'stable',output:true}; // eslint-disable-line
-    this.createClient.entry = {type:'function',method:'put',route:'/clients/<clientId>',query:[],args:['clientId'],name:'createClient',stability:'stable',scopes:{AllOf:['auth:create-client:<clientId>',{'for':'scope','in':'scopes',each:'<scope>'}]},input:true,output:true}; // eslint-disable-line
-    this.resetAccessToken.entry = {type:'function',method:'post',route:'/clients/<clientId>/reset',query:[],args:['clientId'],name:'resetAccessToken',stability:'stable',scopes:'auth:reset-access-token:<clientId>',output:true}; // eslint-disable-line
-    this.updateClient.entry = {type:'function',method:'post',route:'/clients/<clientId>',query:[],args:['clientId'],name:'updateClient',stability:'stable',scopes:{AllOf:['auth:update-client:<clientId>',{'for':'scope','in':'scopesAdded',each:'<scope>'}]},input:true,output:true}; // eslint-disable-line
-    this.enableClient.entry = {type:'function',method:'post',route:'/clients/<clientId>/enable',query:[],args:['clientId'],name:'enableClient',stability:'stable',scopes:'auth:enable-client:<clientId>',output:true}; // eslint-disable-line
-    this.disableClient.entry = {type:'function',method:'post',route:'/clients/<clientId>/disable',query:[],args:['clientId'],name:'disableClient',stability:'stable',scopes:'auth:disable-client:<clientId>',output:true}; // eslint-disable-line
+    this.createClient.entry = {type:'function',method:'put',route:'/clients/<clientId>',query:[],args:['clientId'],name:'createClient',stability:'stable',input:true,output:true,scopes:{AllOf:['auth:create-client:<clientId>',{'for':'scope','in':'scopes',each:'<scope>'}]}}; // eslint-disable-line
+    this.resetAccessToken.entry = {type:'function',method:'post',route:'/clients/<clientId>/reset',query:[],args:['clientId'],name:'resetAccessToken',stability:'stable',output:true,scopes:'auth:reset-access-token:<clientId>'}; // eslint-disable-line
+    this.updateClient.entry = {type:'function',method:'post',route:'/clients/<clientId>',query:[],args:['clientId'],name:'updateClient',stability:'stable',input:true,output:true,scopes:{AllOf:['auth:update-client:<clientId>',{'for':'scope','in':'scopesAdded',each:'<scope>'}]}}; // eslint-disable-line
+    this.enableClient.entry = {type:'function',method:'post',route:'/clients/<clientId>/enable',query:[],args:['clientId'],name:'enableClient',stability:'stable',output:true,scopes:'auth:enable-client:<clientId>'}; // eslint-disable-line
+    this.disableClient.entry = {type:'function',method:'post',route:'/clients/<clientId>/disable',query:[],args:['clientId'],name:'disableClient',stability:'stable',output:true,scopes:'auth:disable-client:<clientId>'}; // eslint-disable-line
     this.deleteClient.entry = {type:'function',method:'delete',route:'/clients/<clientId>',query:[],args:['clientId'],name:'deleteClient',stability:'stable',scopes:'auth:delete-client:<clientId>'}; // eslint-disable-line
     this.listRoles.entry = {type:'function',method:'get',route:'/roles/',query:[],args:[],name:'listRoles',stability:'stable',output:true}; // eslint-disable-line
+    this.listRoleIds.entry = {type:'function',method:'get',route:'/roleids/',query:['continuationToken','limit'],args:[],name:'listRoleIds',stability:'stable',output:true}; // eslint-disable-line
+    this.listRoles2.entry = {type:'function',method:'get',route:'/roles2/',query:['continuationToken','limit'],args:[],name:'listRoles2',stability:'stable',output:true}; // eslint-disable-line
     this.role.entry = {type:'function',method:'get',route:'/roles/<roleId>',query:[],args:['roleId'],name:'role',stability:'stable',output:true}; // eslint-disable-line
-    this.createRole.entry = {type:'function',method:'put',route:'/roles/<roleId>',query:[],args:['roleId'],name:'createRole',stability:'stable',scopes:{AllOf:['auth:create-role:<roleId>',{'for':'scope','in':'scopes',each:'<scope>'}]},input:true,output:true}; // eslint-disable-line
-    this.updateRole.entry = {type:'function',method:'post',route:'/roles/<roleId>',query:[],args:['roleId'],name:'updateRole',stability:'stable',scopes:{AllOf:['auth:update-role:<roleId>',{'for':'scope','in':'scopesAdded',each:'<scope>'}]},input:true,output:true}; // eslint-disable-line
+    this.createRole.entry = {type:'function',method:'put',route:'/roles/<roleId>',query:[],args:['roleId'],name:'createRole',stability:'stable',input:true,output:true,scopes:{AllOf:['auth:create-role:<roleId>',{'for':'scope','in':'scopes',each:'<scope>'}]}}; // eslint-disable-line
+    this.updateRole.entry = {type:'function',method:'post',route:'/roles/<roleId>',query:[],args:['roleId'],name:'updateRole',stability:'stable',input:true,output:true,scopes:{AllOf:['auth:update-role:<roleId>',{'for':'scope','in':'scopesAdded',each:'<scope>'}]}}; // eslint-disable-line
     this.deleteRole.entry = {type:'function',method:'delete',route:'/roles/<roleId>',query:[],args:['roleId'],name:'deleteRole',stability:'stable',scopes:'auth:delete-role:<roleId>'}; // eslint-disable-line
     this.expandScopesGet.entry = {type:'function',method:'get',route:'/scopes/expand',query:[],args:[],name:'expandScopesGet',stability:'deprecated',input:true,output:true}; // eslint-disable-line
     this.expandScopes.entry = {type:'function',method:'post',route:'/scopes/expand',query:[],args:[],name:'expandScopes',stability:'stable',input:true,output:true}; // eslint-disable-line
     this.currentScopes.entry = {type:'function',method:'get',route:'/scopes/current',query:[],args:[],name:'currentScopes',stability:'stable',output:true}; // eslint-disable-line
-    this.awsS3Credentials.entry = {type:'function',method:'get',route:'/aws/s3/<level>/<bucket>/<prefix>',query:['format'],args:['level','bucket','prefix'],name:'awsS3Credentials',stability:'stable',scopes:{'if':'levelIsReadOnly',then:{AnyOf:['auth:aws-s3:read-only:<bucket>/<prefix>','auth:aws-s3:read-write:<bucket>/<prefix>']},'else':'auth:aws-s3:read-write:<bucket>/<prefix>'},output:true}; // eslint-disable-line
-    this.azureAccounts.entry = {type:'function',method:'get',route:'/azure/accounts',query:[],args:[],name:'azureAccounts',stability:'stable',scopes:'auth:azure-table:list-accounts',output:true}; // eslint-disable-line
-    this.azureTables.entry = {type:'function',method:'get',route:'/azure/<account>/tables',query:['continuationToken'],args:['account'],name:'azureTables',stability:'stable',scopes:'auth:azure-table:list-tables:<account>',output:true}; // eslint-disable-line
-    this.azureTableSAS.entry = {type:'function',method:'get',route:'/azure/<account>/table/<table>/<level>',query:[],args:['account','table','level'],name:'azureTableSAS',stability:'stable',scopes:{'if':'levelIsReadOnly',then:{AnyOf:['auth:azure-table:read-only:<account>/<table>','auth:azure-table:read-write:<account>/<table>']},'else':'auth:azure-table:read-write:<account>/<table>'},output:true}; // eslint-disable-line
-    this.azureContainers.entry = {type:'function',method:'get',route:'/azure/<account>/containers',query:['continuationToken'],args:['account'],name:'azureContainers',stability:'stable',scopes:'auth:azure-container:list-containers:<account>',output:true}; // eslint-disable-line
-    this.azureContainerSAS.entry = {type:'function',method:'get',route:'/azure/<account>/containers/<container>/<level>',query:[],args:['account','container','level'],name:'azureContainerSAS',stability:'stable',scopes:{'if':'levelIsReadOnly',then:{AnyOf:['auth:azure-container:read-only:<account>/<container>','auth:azure-container:read-write:<account>/<container>']},'else':'auth:azure-container:read-write:<account>/<container>'},output:true}; // eslint-disable-line
-    this.sentryDSN.entry = {type:'function',method:'get',route:'/sentry/<project>/dsn',query:[],args:['project'],name:'sentryDSN',stability:'stable',scopes:'auth:sentry:<project>',output:true}; // eslint-disable-line
-    this.statsumToken.entry = {type:'function',method:'get',route:'/statsum/<project>/token',query:[],args:['project'],name:'statsumToken',stability:'stable',scopes:'auth:statsum:<project>',output:true}; // eslint-disable-line
-    this.webhooktunnelToken.entry = {type:'function',method:'get',route:'/webhooktunnel',query:[],args:[],name:'webhooktunnelToken',stability:'stable',scopes:'auth:webhooktunnel',output:true}; // eslint-disable-line
+    this.awsS3Credentials.entry = {type:'function',method:'get',route:'/aws/s3/<level>/<bucket>/<prefix>',query:['format'],args:['level','bucket','prefix'],name:'awsS3Credentials',stability:'stable',output:true,scopes:{'if':'levelIsReadOnly',then:{AnyOf:['auth:aws-s3:read-only:<bucket>/<prefix>','auth:aws-s3:read-write:<bucket>/<prefix>']},'else':'auth:aws-s3:read-write:<bucket>/<prefix>'}}; // eslint-disable-line
+    this.azureAccounts.entry = {type:'function',method:'get',route:'/azure/accounts',query:[],args:[],name:'azureAccounts',stability:'stable',output:true,scopes:'auth:azure-table:list-accounts'}; // eslint-disable-line
+    this.azureTables.entry = {type:'function',method:'get',route:'/azure/<account>/tables',query:['continuationToken'],args:['account'],name:'azureTables',stability:'stable',output:true,scopes:'auth:azure-table:list-tables:<account>'}; // eslint-disable-line
+    this.azureTableSAS.entry = {type:'function',method:'get',route:'/azure/<account>/table/<table>/<level>',query:[],args:['account','table','level'],name:'azureTableSAS',stability:'stable',output:true,scopes:{'if':'levelIsReadOnly',then:{AnyOf:['auth:azure-table:read-only:<account>/<table>','auth:azure-table:read-write:<account>/<table>']},'else':'auth:azure-table:read-write:<account>/<table>'}}; // eslint-disable-line
+    this.azureContainers.entry = {type:'function',method:'get',route:'/azure/<account>/containers',query:['continuationToken'],args:['account'],name:'azureContainers',stability:'stable',output:true,scopes:'auth:azure-container:list-containers:<account>'}; // eslint-disable-line
+    this.azureContainerSAS.entry = {type:'function',method:'get',route:'/azure/<account>/containers/<container>/<level>',query:[],args:['account','container','level'],name:'azureContainerSAS',stability:'stable',output:true,scopes:{'if':'levelIsReadOnly',then:{AnyOf:['auth:azure-container:read-only:<account>/<container>','auth:azure-container:read-write:<account>/<container>']},'else':'auth:azure-container:read-write:<account>/<container>'}}; // eslint-disable-line
+    this.sentryDSN.entry = {type:'function',method:'get',route:'/sentry/<project>/dsn',query:[],args:['project'],name:'sentryDSN',stability:'stable',output:true,scopes:'auth:sentry:<project>'}; // eslint-disable-line
+    this.statsumToken.entry = {type:'function',method:'get',route:'/statsum/<project>/token',query:[],args:['project'],name:'statsumToken',stability:'stable',output:true,scopes:'auth:statsum:<project>'}; // eslint-disable-line
+    this.websocktunnelToken.entry = {type:'function',method:'get',route:'/websocktunnel',query:[],args:[],name:'websocktunnelToken',stability:'stable',output:true,scopes:'auth:websocktunnel'}; // eslint-disable-line
     this.authenticateHawk.entry = {type:'function',method:'post',route:'/authenticate-hawk',query:[],args:[],name:'authenticateHawk',stability:'stable',input:true,output:true}; // eslint-disable-line
     this.testAuthenticate.entry = {type:'function',method:'post',route:'/test-authenticate',query:[],args:[],name:'testAuthenticate',stability:'stable',input:true,output:true}; // eslint-disable-line
     this.testAuthenticateGet.entry = {type:'function',method:'get',route:'/test-authenticate-get/',query:[],args:[],name:'testAuthenticateGet',stability:'stable',output:true}; // eslint-disable-line
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
+  }
+  /* eslint-disable max-len */
+  // Respond without doing anything.
+  // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
+  ping(...args) {
+    this.validate(this.ping.entry, args);
+
+    return this.request(this.ping.entry, args);
   }
   /* eslint-disable max-len */
   // Get a list of all clients.  With `prefix`, only clients for which
@@ -141,6 +152,26 @@ export default class Auth extends Client {
     this.validate(this.listRoles.entry, args);
 
     return this.request(this.listRoles.entry, args);
+  }
+  /* eslint-disable max-len */
+  // If no limit is given, the roleIds of all roles are returned. Since this
+  // list may become long, callers can use the `limit` and `continuationToken`
+  // query arguments to page through the responses.
+  /* eslint-enable max-len */
+  listRoleIds(...args) {
+    this.validate(this.listRoleIds.entry, args);
+
+    return this.request(this.listRoleIds.entry, args);
+  }
+  /* eslint-disable max-len */
+  // If no limit is given, all roles are returned. Since this
+  // list may become long, callers can use the `limit` and `continuationToken`
+  // query arguments to page through the responses.
+  /* eslint-enable max-len */
+  listRoles2(...args) {
+    this.validate(this.listRoles2.entry, args);
+
+    return this.request(this.listRoles2.entry, args);
   }
   /* eslint-disable max-len */
   // Get information about a single role, including the set of scopes that the
@@ -351,13 +382,13 @@ export default class Auth extends Client {
     return this.request(this.statsumToken.entry, args);
   }
   /* eslint-disable max-len */
-  // Get temporary `token` and `id` for connecting to webhooktunnel
+  // Get temporary `token` and `id` for connecting to websocktunnel
   // The token is valid for 96 hours, clients should refresh after expiration.
   /* eslint-enable max-len */
-  webhooktunnelToken(...args) {
-    this.validate(this.webhooktunnelToken.entry, args);
+  websocktunnelToken(...args) {
+    this.validate(this.websocktunnelToken.entry, args);
 
-    return this.request(this.webhooktunnelToken.entry, args);
+    return this.request(this.websocktunnelToken.entry, args);
   }
   /* eslint-disable max-len */
   // Validate the request signature given on input and return list of scopes
@@ -405,14 +436,5 @@ export default class Auth extends Client {
     this.validate(this.testAuthenticateGet.entry, args);
 
     return this.request(this.testAuthenticateGet.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Respond without doing anything.
-  // This endpoint is used to check that the service is up.
-  /* eslint-enable max-len */
-  ping(...args) {
-    this.validate(this.ping.entry, args);
-
-    return this.request(this.ping.entry, args);
   }
 }

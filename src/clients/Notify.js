@@ -10,10 +10,19 @@ export default class Notify extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.email.entry = {type:'function',method:'post',route:'/email',query:[],args:[],name:'email',stability:'experimental',scopes:'notify:email:<address>',input:true}; // eslint-disable-line
-    this.pulse.entry = {type:'function',method:'post',route:'/pulse',query:[],args:[],name:'pulse',stability:'experimental',scopes:'notify:pulse:<routingKey>',input:true}; // eslint-disable-line
-    this.irc.entry = {type:'function',method:'post',route:'/irc',query:[],args:[],name:'irc',stability:'experimental',scopes:{'if':'channelRequest',then:'notify:irc-channel:<channel>','else':'notify:irc-user:<user>'},input:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
+    this.email.entry = {type:'function',method:'post',route:'/email',query:[],args:[],name:'email',stability:'experimental',input:true,scopes:'notify:email:<address>'}; // eslint-disable-line
+    this.pulse.entry = {type:'function',method:'post',route:'/pulse',query:[],args:[],name:'pulse',stability:'experimental',input:true,scopes:'notify:pulse:<routingKey>'}; // eslint-disable-line
+    this.irc.entry = {type:'function',method:'post',route:'/irc',query:[],args:[],name:'irc',stability:'experimental',input:true,scopes:{'if':'channelRequest',then:'notify:irc-channel:<channel>','else':'notify:irc-user:<user>'}}; // eslint-disable-line
+  }
+  /* eslint-disable max-len */
+  // Respond without doing anything.
+  // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
+  ping(...args) {
+    this.validate(this.ping.entry, args);
+
+    return this.request(this.ping.entry, args);
   }
   /* eslint-disable max-len */
   // Send an email to `address`. The content is markdown and will be rendered
@@ -49,14 +58,5 @@ export default class Notify extends Client {
     this.validate(this.irc.entry, args);
 
     return this.request(this.irc.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Respond without doing anything.
-  // This endpoint is used to check that the service is up.
-  /* eslint-enable max-len */
-  ping(...args) {
-    this.validate(this.ping.entry, args);
-
-    return this.request(this.ping.entry, args);
   }
 }

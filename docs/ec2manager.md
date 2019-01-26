@@ -15,6 +15,11 @@ const eC2Manager = new taskcluster.EC2Manager(options);
 ## Methods in EC2Manager Client
 
 ```js
+// eC2Manager.ping :: () -> Promise Nothing
+eC2Manager.ping()
+```
+
+```js
 // eC2Manager.listWorkerTypes :: () -> Promise Result
 eC2Manager.listWorkerTypes()
 ```
@@ -117,15 +122,5 @@ eC2Manager.sqsStats()
 ```js
 // eC2Manager.purgeQueues :: () -> Promise Nothing
 eC2Manager.purgeQueues()
-```
-
-```js
-// eC2Manager.apiReference :: () -> Promise Nothing
-eC2Manager.apiReference()
-```
-
-```js
-// eC2Manager.ping :: () -> Promise Nothing
-eC2Manager.ping()
 ```
 

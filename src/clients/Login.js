@@ -10,8 +10,17 @@ export default class Login extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.oidcCredentials.entry = {type:'function',method:'get',route:'/oidc-credentials/<provider>',query:[],args:['provider'],name:'oidcCredentials',stability:'experimental',output:true}; // eslint-disable-line
     this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
+    this.oidcCredentials.entry = {type:'function',method:'get',route:'/oidc-credentials/<provider>',query:[],args:['provider'],name:'oidcCredentials',stability:'experimental',output:true}; // eslint-disable-line
+  }
+  /* eslint-disable max-len */
+  // Respond without doing anything.
+  // This endpoint is used to check that the service is up.
+  /* eslint-enable max-len */
+  ping(...args) {
+    this.validate(this.ping.entry, args);
+
+    return this.request(this.ping.entry, args);
   }
   /* eslint-disable max-len */
   // Given an OIDC `access_token` from a trusted OpenID provider, return a
@@ -24,7 +33,7 @@ export default class Login extends Client {
   // Authorization: Bearer abc.xyz
   // ```
   // The `access_token` is first verified against the named
-  // :provider, then passed to the provider's API to retrieve a user
+  // :provider, then passed to the provider's APIBuilder to retrieve a user
   // profile. That profile is then used to generate Taskcluster credentials
   // appropriate to the user. Note that the resulting credentials may or may
   // not include a `certificate` property. Callers should be prepared for either
@@ -37,14 +46,5 @@ export default class Login extends Client {
     this.validate(this.oidcCredentials.entry, args);
 
     return this.request(this.oidcCredentials.entry, args);
-  }
-  /* eslint-disable max-len */
-  // Respond without doing anything.
-  // This endpoint is used to check that the service is up.
-  /* eslint-enable max-len */
-  ping(...args) {
-    this.validate(this.ping.entry, args);
-
-    return this.request(this.ping.entry, args);
   }
 }

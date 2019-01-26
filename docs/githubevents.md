@@ -36,3 +36,8 @@ githubEvents.push(routingKeyPattern)
 // githubEvents.release :: routingKeyPattern -> Promise BindingInfo
 githubEvents.release(routingKeyPattern)
 ```
+
+```js
+// githubEvents.taskGroupCreationRequested :: routingKeyPattern -> Promise BindingInfo
+githubEvents.taskGroupCreationRequested(routingKeyPattern)
+```
