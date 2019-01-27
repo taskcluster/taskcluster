@@ -6,8 +6,8 @@ const BlacklistedNotification = Entity.configure({
   rowKey: Entity.keys.StringKey('notificationAddress'),
   properties: {
     // the type could be email, pulse, irc-user or irc-channel
-    notificationType: Entity.keys.String,
+    notificationType: Entity.types.String,
     // the address of the blacklisted destination
-    notificationAddress: Entity.keys.JSON,
+    notificationAddress: Entity.types.String,
   },
 });

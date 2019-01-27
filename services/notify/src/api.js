@@ -123,7 +123,7 @@ builder.declare({
     if (e.name === 'ResourceConflictError') {
       return res.reportError(
         'ResourceConflict',
-        'Notification address already exists',
+        'Notification address already exists in the blacklist',
         {}
       );
     } else {
@@ -134,8 +134,35 @@ builder.declare({
 });
 
 builder.declare({
+  method: 'get',
+  route: '/blacklist/get/:address',
+  name: 'getBlacklistAddress',
+  output: 'notification-address.yml',
+  scopes: 'secrets:get:<name>',
+  title: 'Read Blacklisted Notification',
+  description: [
+    'Read the notification, associated with some address, from the blacklist.',
+    'If the caller lacks the scope necessary to get the notification, the call',
+    'will fail with a 403 code regardless of whether the notification exists.',
+  ].join('\n'),
+}, async function(req, res) {
+  let {address} = req.params;
+  let item = undefined;
+  try {
+    item = await this.BlacklistedNotification.load({address});
+  } catch (e) {
+    if (e.name === 'ResourceNotFoundError') {
+      return res.reportError('ResourceNotFound', 'Secret not found', {});
+    } else {
+      throw e;
+    }
+  }
+  res.reply(JSON.stringify(item));
+});
+
+builder.declare({
   method: 'delete',
-  route: '/blacklist/delete',
+  route: '/blacklist/delete/:address',
   name: 'deleteBlacklistAddress',
   scopes: 'secrets:set:<name>',
   title: 'Delete Blacklisted Address',
@@ -144,17 +171,14 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   // The address to remove from the blacklist
-  let address = Object.assign({}, {
-    notificationType: req.body.notificationType,
-    notificationAddress: req.body.notificationAddress,
-  });
+  let {address} = req.params;
   try {
     await this.BlacklistedNotification.remove({address});
   } catch (e) {
     if (e.name === 'ResourceNotFoundError') {
       return res.reportError(
         'ResourceNotFound',
-        'Notification address not found',
+        'Notification address not found in the blacklist',
         {}
       );
     } else {
@@ -199,15 +223,15 @@ builder.declare({
 });
 
 builder.declare({
-  method: 'post',
-  route: '/blacklist/modify',
+  method: 'put',
+  route: '/blacklist/modify/:address',
   name: 'modifyBlacklistAddress',
   scopes: {
     if: 'channelRequest',
     then: 'notify:irc-channel:<channel>',
     else: 'notify:irc-user:<user>',
   },
-  input: 'modify-notification.yml',
+  input: 'notification-address.yml',
   title: 'Modify Existing Blacklist Address',
   description: [
     'Modify an already existing blacklist address. The method throws an',
@@ -215,14 +239,11 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   //The address to add to the blacklist
-  let oldAddress = Object.assign({}, {
-    notificationType: req.body.oldAddress.notificationType,
-    notificationAddress: req.body.oldAddress.notificationAddress,
-  });
+  let oldAddress = req.params.address;
 
   let newAddress = Object.assign({}, {
-    notificationType: req.body.newAddress.notificationType,
-    notificationAddress: req.body.newAddress.notificationAddress,
+    notificationType: req.body.notificationType,
+    notificationAddress: req.body.notificationAddress,
   });
 
   try {

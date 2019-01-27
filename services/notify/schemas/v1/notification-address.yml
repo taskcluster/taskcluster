@@ -1,0 +1,19 @@
+$schema:  "/schemas/common/metaschema.json#"
+title:  "Notificaiton Type And Address"
+description:  |
+  Type of notification and its corresponding address.
+type: object
+properties:
+  notificationType:
+    type: string
+    enum:
+      - "email"
+      - "pulse"
+      - "irc-user"
+      - "irc-channel"
+  notificationAddress:
+    type: string
+additionalProperties: false
+required:
+  - notificationType
+  - notificationAddress
