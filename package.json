@@ -78,7 +78,7 @@
     "tar-fs": "^1.16.3",
     "tar-stream": "^1.6.2",
     "taskcluster-lib-testing": "link:libraries/testing",
-    "temporary": "^0.0.8",
+    "temporary": "^1.0.0",
     "tmp": "^0.0.33",
     "typed-env-config": "link:libraries/typed-env-config",
     "url-join": "^4.0.0",
