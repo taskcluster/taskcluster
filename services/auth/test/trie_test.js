@@ -6,6 +6,14 @@ const ScopeSetBuilder = require('../src/scopesetbuilder');
 const trie = require('../src/trie');
 const trietestcases = require('./trietestcases');
 
+// This test suite was designed to test every conceivable combination of
+// inputs to the trie implementation, in an effort to suss out any hidden bugs
+// by a kind of fuzzing approach.  That's great, but the result is slow (about
+// 4 minutes) and unnecessary unless the trie implementation has beem modified.
+// So by default we run tests only only a smaller set of inputs.  To run the
+// total test suite, just set FULL_TESTS=1.
+const FULL_TESTS = !!process.env.FULL_TESTS;
+
 suite(helper.suiteName(__filename), () => {
 
   /**
@@ -288,7 +296,7 @@ suite(helper.suiteName(__filename), () => {
     };
   };
 
-  const testCases = [
+  const testCases = FULL_TESTS ? [
     // All test cases as is
     ...trietestcases,
     // All test cases with characters mapped to [<hex>] excluding '*'
@@ -304,6 +312,8 @@ suite(helper.suiteName(__filename), () => {
       `*${c.codePointAt(0).toString(16).padStart(2, '0')}*!`,
     )),
     ...allSetsOfTwo(trietestcases).map(mergeTestCases),
+  ] : [
+    ...trietestcases,
   ];
 
   /** Function for building a trie that only supports direct matches */
@@ -550,14 +560,4 @@ suite(helper.suiteName(__filename), () => {
       });
     }
   });
-
-  // withPrefix + build + execute (for all walks)
-  // withSuffix + build + execute (for all walks)
-  // withPrefix + withSuffix + build + execute (for all walks)
-  // withSuffix + withPrefix + build + execute (for all walks)
-
-  // withPrefix recursively
-  // withSuffix recursively
-  // withPrefix + withSuffix interleaved recursively
-  // withSuffix + withPrefix interleaved recursively
 });
