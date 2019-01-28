@@ -10,7 +10,7 @@ let builder = new APIBuilder({
     'This service manages workers, including provisioning',
   ].join('\n'),
   serviceName: 'worker-manager',
-  version: 'v1',
+  apiVersion: 'v1',
   context: [
     'datastore',
   ],
