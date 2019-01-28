@@ -116,4 +116,6 @@ RUN mkdir -p $HOME/docker_worker
 RUN npm i -g yarn
 RUN cd $HOME/docker_worker && tar xzf /tmp/docker-worker.tgz -C . && yarn install --frozen-lockfile
 
+RUN ln -sf /usr/lib/systemd/system/docker-worker.service /etc/systemd/system/multi-user.target.wants/docker-worker.service
+
 # END OF APP IMAGE
