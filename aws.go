@@ -195,11 +195,13 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	c.ProvisionerID = userData.ProvisionerID
 	c.Region = userData.Region
 	c.ProvisionerBaseURL = userData.ProvisionerBaseURL
+	c.RootURL = userData.TaskclusterRootURL
 
-	awsprov := tcawsprovisioner.AwsProvisioner{
-		Authenticate: false,
-		BaseURL:      userData.ProvisionerBaseURL,
-	}
+	// We need an AWS Provisioner client for fetching taskcluster credentials.
+	// Ensure auth is disabled in client, since we don't have credentials yet.
+	awsprov := c.AWSProvisioner()
+	awsprov.Authenticate = false
+	awsprov.Credentials = nil
 
 	secToken, getErr := awsprov.GetSecret(userData.SecurityToken)
 	// remove secrets even if we couldn't retrieve them!
@@ -214,7 +216,6 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	c.AccessToken = secToken.Credentials.AccessToken
 	c.Certificate = secToken.Credentials.Certificate
 	c.ClientID = secToken.Credentials.ClientID
-	c.RootURL = userData.TaskclusterRootURL
 	c.WorkerGroup = userData.Region
 	c.WorkerType = userData.WorkerType
 

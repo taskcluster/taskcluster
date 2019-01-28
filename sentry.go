@@ -6,8 +6,6 @@ import (
 	"strconv"
 
 	raven "github.com/getsentry/raven-go"
-	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcauth"
 )
 
 func ReportCrashToSentry(r interface{}) {
@@ -15,14 +13,7 @@ func ReportCrashToSentry(r interface{}) {
 		log.Println("No sentry project defined, not reporting to sentry")
 		return
 	}
-	Auth := tcauth.New(
-		&tcclient.Credentials{
-			ClientID:    config.ClientID,
-			AccessToken: config.AccessToken,
-			Certificate: config.Certificate,
-		},
-	)
-	Auth.BaseURL = config.AuthBaseURL
+	Auth := config.Auth()
 	res, err := Auth.SentryDSN(config.SentryProject)
 	if err != nil {
 		log.Printf("WARNING: Could not get sentry DSN: %v", err)

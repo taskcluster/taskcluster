@@ -93,7 +93,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) func() {
 				"instanceType":        "p3.teenyweeny",
 				"spotBid":             3.5,
 				"price":               3.02,
-				"taskclusterRootUrl":  "http://localhost:13243",
+				"taskclusterRootUrl":  os.Getenv("TASKCLUSTER_ROOT_URL"), // don't use tcclient.RootURLFromEnvVars() since we don't want ClientID of CI
 				"launchSpecGenerated": time.Now(),
 				"lastModified":        time.Now().Add(time.Minute * -30),
 				"provisionerBaseUrl":  "http://localhost:13243/provisioner",
