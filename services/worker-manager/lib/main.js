@@ -3,6 +3,7 @@ const App = require('taskcluster-lib-app');
 const monitor = require('taskcluster-lib-monitor');
 const config = require('typed-env-config');
 const SchemaSet = require('taskcluster-lib-validate');
+const docs = require('taskcluster-lib-docs');
 const builder = require('./api');
 
 const {InMemoryDatastore} = require('./data-storage');
@@ -57,6 +58,29 @@ let load = loader({
       monitor: monitor.prefix('api'),
       schemaset,
     }),
+  },
+
+  docs: {
+    requires: ['cfg', 'schemaset'],
+    setup: ({cfg, schemaset}) => docs.documenter({
+      credentials: cfg.taskcluster.credentials,
+      rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-worker-manager',
+      tier: 'core',
+      schemaset,
+      publish: cfg.app.publishMetaData,
+      references: [
+        {
+          name: 'api',
+          reference: builder.reference(),
+        },
+      ],
+    }),
+  },
+
+  writeDocs: {
+    requires: ['docs'],
+    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
   server: {
