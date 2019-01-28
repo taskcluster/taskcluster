@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -234,4 +235,89 @@ func TestNonExecutableBinaryFailsTask(t *testing.T) {
 	td := testTask(t)
 
 	_ = submitAndAssert(t, td, payload, "failed", "failed")
+}
+
+// TestRemoveTaskDirs creates a temp directory containing files and folders
+// whose names begin with 'task_', other files and folders that don't, then
+// calls removeTaskDirs(tempDir), and tests that only folders that started with
+// 'task_' were deleted and that the other files and folders were not.
+func TestRemoveTaskDirs(t *testing.T) {
+	d, err := ioutil.TempDir("", "TestRemoveTaskDirs")
+	if err != nil {
+		t.Fatalf("Could not create temp directory: %v", err)
+	}
+	defer func() {
+		err := os.RemoveAll(d)
+		if err != nil {
+			t.Fatalf("Could not remove temp dir TestRemoveTaskDirs: %v", err)
+		}
+	}()
+	for _, dir := range []string{
+		"task_12345",     // should be deleted
+		"task_task_test", // should be deleted
+		"testt_12345",    // should remain
+		"bfdnbdfd",       // should remain
+	} {
+		err = os.MkdirAll(filepath.Join(d, dir), 0777)
+		if err != nil {
+			t.Fatalf("Could not create temp %v directory: %v", dir, err)
+		}
+	}
+	for _, file := range []string{
+		"task_23456",                         // should remain
+		"task_best_vest",                     // should remain
+		"testt_65536",                        // should remain
+		"applesnpears",                       // should remain
+		filepath.Join("task_12345", "abcde"), // should be deleted
+	} {
+		err = ioutil.WriteFile(filepath.Join(d, file), []byte("hello world"), 0777)
+		if err != nil {
+			t.Fatalf("Could not write %v file: %v", file, err)
+		}
+	}
+	err = removeTaskDirs(d)
+	if err != nil {
+		t.Fatalf("Could not remove task directories: %v", err)
+	}
+	taskDirsParent, err := os.Open(d)
+	if err != nil {
+		t.Fatalf("Could not open %v directory: %v", d, err)
+	}
+	defer func() {
+		err := taskDirsParent.Close()
+		if err != nil {
+			t.Fatalf("Could not close %v directory: %v", d, err)
+		}
+	}()
+	fi, err := taskDirsParent.Readdir(-1)
+	if err != nil {
+		t.Fatalf("Error reading directory listing of %v: %v", d, err)
+	}
+	expectedDirs := map[string]bool{
+		"testt_12345": true,
+		"bfdnbdfd":    true,
+	}
+	expectedFiles := map[string]bool{
+		"task_23456":     true,
+		"task_best_vest": true,
+		"testt_65536":    true,
+		"applesnpears":   true,
+	}
+	if len(fi) != len(expectedDirs)+len(expectedFiles) {
+		for _, file := range fi {
+			t.Logf("File %v", file.Name())
+		}
+		t.Fatalf("Expected to find %v directory records (%v dirs + %v files) but found %v", len(expectedDirs)+len(expectedFiles), len(expectedDirs), len(expectedFiles), len(fi))
+	}
+	for _, file := range fi {
+		if file.IsDir() {
+			if !expectedDirs[file.Name()] {
+				t.Fatalf("Didn't expect to find dir %v but found it under temp dir %v", file.Name(), d)
+			}
+		} else {
+			if !expectedFiles[file.Name()] {
+				t.Fatalf("Didn't expect to find file %v but found it under temp dir %v", file.Name(), d)
+			}
+		}
+	}
 }
