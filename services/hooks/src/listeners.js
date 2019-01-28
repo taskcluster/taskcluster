@@ -113,6 +113,8 @@ class HookListeners {
     // for direct AMQP operations, we need the full name of the queue (with the
     // queue/<namespace> prefix)
     const fullQueueName = this.client.fullObjectName('queue', queueName);
+    const result = [...oldBindings];
+
     if (!this.client.isFakeClient) {
       let intersection = _.intersectionWith(oldBindings, newBindings, _.isEqual);
       const delBindings = _.differenceWith(oldBindings, intersection, _.isEqual);
@@ -121,21 +123,23 @@ class HookListeners {
         return;
       }
       debug(`${queueName}: updating bindings to ${JSON.stringify(newBindings)}`);
-      for (let {exchange, routingKeyPattern} of delBindings) {
-        await this.client.withChannel(async channel => channel.unbindQueue(fullQueueName, exchange, routingKeyPattern));
-      }
-      for (let {exchange, routingKeyPattern} of addBindings) {
-        try {
-          await this.client.withChannel(async channel => channel.bindQueue(fullQueueName, exchange, routingKeyPattern));
-        } catch (err) {
-          if (err.isOperational) {
-            debug(`cannot bind to ${exchange} with pattern ${routingKeyPattern}: ${err}`);
-            continue;
-          }
-          throw err;
+      await this.client.withChannel(async channel => {
+        // perform unbinds first; these do not fail if the binding doesn't exist,
+        // making them idempotent.
+        for (let {exchange, routingKeyPattern} of delBindings) {
+          await channel.unbindQueue(fullQueueName, exchange, routingKeyPattern);
         }
-      }
+        // bindings will fail if the exchange doesn't exist, and such a failure
+        // will kill the connection.  So if a user adds two new binding, and the
+        // first is invalid, the second won't be added until the first is fixed.
+        // Errors will be reported via monitor.
+        for (let {exchange, routingKeyPattern} of addBindings) {
+          await channel.bindQueue(fullQueueName, exchange, routingKeyPattern);
+        }
+      });
     }
+
+    return result;
   }
 
   /**
@@ -159,16 +163,21 @@ class HookListeners {
     return this._synchronise(async () => {
       let queues = [];
       await this.Queues.scan({}, {
-          limit: 1000,
-          handler: (queue) => queues.push(queue)});
+        limit: 1000,
+        handler: (queue) => queues.push(queue)});
 
       await this.Hook.scan({}, {
         limit: 1000,
         handler: async (hook) => {
+          if (hook.bindings.length === 0) {
+            return;
+          }
+
           const {hookGroupId, hookId} = hook;
           const queueName = `${hookGroupId}/${hookId}`;
           const hookDebug = msg => debug(`${queueName}: ${msg}`);
-          if (hook.bindings.length !== 0) {
+
+          try {
             const queue = _.find(queues, {hookGroupId, hookId});
             if (queue) {
               if (!this.haveListener(queue.queueName)) {
@@ -197,6 +206,9 @@ class HookListeners {
                 bindings: hook.bindings,
               });
             }
+          } catch (err) {
+            // report errors per hook, and continue on to try to reconcile the next hook.
+            this.monitor.reportError(err, {hookGroupId, hookId});
           }
         },
       });
