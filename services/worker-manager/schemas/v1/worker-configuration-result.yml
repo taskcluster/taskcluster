@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title: "Outcome of a worker configuration evaluation"
 type: object
 properties:

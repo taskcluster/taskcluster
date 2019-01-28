@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-06/schema#
+$schema: "/schemas/common/metaschema.json#"
 title: "Rule Condition Satisfiers"
 description: |
   An object which satisfies conditions for rules in a rule set
