@@ -17,11 +17,17 @@ defaults:
         - canceled
         - deadline-exceeded
 
-  taskcluster: 
+  taskcluster:
     rootUrl:          !env TASKCLUSTER_ROOT_URL
     credentials:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
+
+  azure:
+    accountId:                    !env AZURE_ACCOUNT
+    tableName:                    !env AZURE_TABLE_NAME
+    cryptoKey:                    !env AZURE_CRYPTO_KEY
+    signingKey:                   !env AZURE_SIGNING_KEY
 
   monitoring:
     project: !env MONITORING_PROJECT

@@ -11,3 +11,5 @@ const BlacklistedNotification = Entity.configure({
     notificationAddress: Entity.types.String,
   },
 });
+
+exports.BlacklistedNotification = BlacklistedNotification;

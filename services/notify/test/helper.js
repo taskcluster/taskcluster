@@ -12,6 +12,7 @@ const exchanges = require('../src/exchanges');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
 const slugid = require('slugid');
+const data = require('../src/data');
 
 // Load configuration
 const cfg = config({profile: 'test'});
@@ -385,5 +386,31 @@ exports.withServer = (mock, skipping) => {
       webServer = null;
     }
     fakeauth.stop();
+  });
+};
+
+exports.withBlacklist = (mock, skipping) => {
+  suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+
+    if (mock) {
+      const cfg = await exports.load('cfg');
+      exports.load.inject('BlacklistedNotification', data.BlacklistedNotification.setup({
+        tableName: 'BlacklistedNotification',
+        credentials: 'inMemory',
+        cryptoKey: cfg.azure.cryptoKey,
+        signingKey: cfg.azure.signingKey,
+      }));
+    } else {
+      // suffix the table name config with a short suffix so that parallel
+      // test runs have a good chance of not stepping on each others' feet
+      const cfg = await exports.load('cfg');
+      exports.load.cfg('azure.tableName', cfg.azure.tableName + TABLE_SUFFIX);
+    }
+
+    exports.BlacklistedNotification = await exports.load('BlacklistedNotification');
+    await exports.BlacklistedNotification.ensureTable();
   });
 };

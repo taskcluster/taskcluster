@@ -5,6 +5,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
   helper.withPulse(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withSQS(mock, skipping);
+  helper.withBlacklist(mock, skipping);
   helper.withServer(mock, skipping);
 
   test('ping', async function() {
@@ -61,4 +62,10 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
       assert.equal(body.message, 'Does this work?');
     });
   });
+});
+
+// Just to check if the table is loading (TODO: Investigate client )
+test('test of test', async function() {
+  let item = await helper.apiClient.list();
+  assert.deepEqual(item.addresses, []);
 });
