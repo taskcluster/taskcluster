@@ -31,15 +31,16 @@ func ReportCrashToSentry(r interface{}) {
 		map[string]string{
 			"cleanUpTaskDirs":       strconv.FormatBool(config.CleanUpTaskDirs),
 			"deploymentId":          config.DeploymentID,
-			"instanceType":          config.InstanceType,
-			"runTasksAsCurrentUser": strconv.FormatBool(config.RunTasksAsCurrentUser),
-			"workerGroup":           config.WorkerGroup,
-			"workerId":              config.WorkerID,
-			"workerType":            config.WorkerType,
 			"gwVersion":             version,
 			"gwRevision":            revision,
 			"GOOS":                  runtime.GOOS,
 			"GOARCH":                runtime.GOARCH,
+			"instanceType":          config.InstanceType,
+			"provisionerId":         config.ProvisionerID,
+			"runTasksAsCurrentUser": strconv.FormatBool(config.RunTasksAsCurrentUser),
+			"workerGroup":           config.WorkerGroup,
+			"workerId":              config.WorkerID,
+			"workerType":            config.WorkerType,
 		},
 	)
 }
