@@ -12,13 +12,19 @@ import (
 )
 
 func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error {
-	c, err := process.NewCommand([]string{"/bin/cat", config.SigningKeyLocation}, cwd, cot.task.EnvVars())
-	if err != nil {
-		panic(fmt.Errorf("SERIOUS BUG: Could not create command (not even trying to execute it yet) to cat private chain of trust key - %v", err))
+	signingKeyPaths := [2]string{
+		config.OpenPGPSigningKeyLocation,
+		config.Ed25519SigningKeyLocation,
 	}
-	r := c.Execute()
-	if !r.Failed() {
-		return fmt.Errorf(ChainOfTrustKeyNotSecureMessage)
+	for _, path := range signingKeyPaths {
+		c, err := process.NewCommand([]string{"/bin/cat", path}, cwd, cot.task.EnvVars())
+		if err != nil {
+			panic(fmt.Errorf("SERIOUS BUG: Could not create command (not even trying to execute it yet) to cat private chain of trust key %v - %v", path, err))
+		}
+		r := c.Execute()
+		if !r.Failed() {
+			return fmt.Errorf(ChainOfTrustKeyNotSecureMessage)
+		}
 	}
 	return nil
 }
@@ -39,17 +45,26 @@ func secureSigningKey() (err error) {
 	if err != nil {
 		return err
 	}
-	err = os.Chown(
-		config.SigningKeyLocation,
-		uid,
-		gid,
-	)
-	if err != nil {
-		return err
+	signingKeyPaths := [2]string{
+		config.OpenPGPSigningKeyLocation,
+		config.Ed25519SigningKeyLocation,
 	}
-	err = os.Chmod(
-		config.SigningKeyLocation,
-		0600,
-	)
+	for _, path := range signingKeyPaths {
+		err = os.Chown(
+			path,
+			uid,
+			gid,
+		)
+		if err != nil {
+			return err
+		}
+		err = os.Chmod(
+			path,
+			0600,
+		)
+		if err != nil {
+			return err
+		}
+	}
 	return
 }

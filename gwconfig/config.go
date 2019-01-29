@@ -30,6 +30,7 @@ type (
 		DeploymentID                   string                 `json:"deploymentId"`
 		DisableReboots                 bool                   `json:"disableReboots"`
 		DownloadsDir                   string                 `json:"downloadsDir"`
+		Ed25519SigningKeyLocation      string                 `json:"ed25519SigningKeyLocation"`
 		IdleTimeoutSecs                uint                   `json:"idleTimeoutSecs"`
 		InstanceID                     string                 `json:"instanceId"`
 		InstanceType                   string                 `json:"instanceType"`
@@ -40,6 +41,7 @@ type (
 		LiveLogPUTPort                 uint16                 `json:"livelogPUTPort"`
 		LiveLogSecret                  string                 `json:"livelogSecret"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
+		OpenPGPSigningKeyLocation      string                 `json:"openpgpSigningKeyLocation"`
 		PrivateIP                      net.IP                 `json:"privateIP"`
 		ProvisionerBaseURL             string                 `json:"provisionerBaseURL"`
 		ProvisionerID                  string                 `json:"provisionerId"`
@@ -54,7 +56,6 @@ type (
 		SentryProject                  string                 `json:"sentryProject"`
 		ShutdownMachineOnIdle          bool                   `json:"shutdownMachineOnIdle"`
 		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
-		SigningKeyLocation             string                 `json:"signingKeyLocation"`
 		Subdomain                      string                 `json:"subdomain"`
 		TaskclusterProxyExecutable     string                 `json:"taskclusterProxyExecutable"`
 		TaskclusterProxyPort           uint16                 `json:"taskclusterProxyPort"`
@@ -100,14 +101,15 @@ func (c *Config) Validate() error {
 		{value: c.CachesDir, name: "cachesDir", disallowed: ""},
 		{value: c.ClientID, name: "clientId", disallowed: ""},
 		{value: c.DownloadsDir, name: "downloadsDir", disallowed: ""},
+		{value: c.Ed25519SigningKeyLocation, name: "ed25519SigningKeyLocation", disallowed: ""},
 		{value: c.LiveLogExecutable, name: "livelogExecutable", disallowed: ""},
 		{value: c.LiveLogPUTPort, name: "livelogPUTPort", disallowed: 0},
 		{value: c.LiveLogGETPort, name: "livelogGETPort", disallowed: 0},
 		{value: c.LiveLogSecret, name: "livelogSecret", disallowed: ""},
+		{value: c.OpenPGPSigningKeyLocation, name: "openpgpSigningKeyLocation", disallowed: ""},
 		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
 		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
 		{value: c.RootURL, name: "rootURL", disallowed: ""},
-		{value: c.SigningKeyLocation, name: "signingKeyLocation", disallowed: ""},
 		{value: c.Subdomain, name: "subdomain", disallowed: ""},
 		{value: c.TasksDir, name: "tasksDir", disallowed: ""},
 		{value: c.WorkerGroup, name: "workerGroup", disallowed: ""},

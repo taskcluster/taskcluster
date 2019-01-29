@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 
+	"golang.org/x/crypto/ed25519"
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/clearsign"
 	"golang.org/x/crypto/openpgp/packet"
@@ -24,14 +26,19 @@ const (
 )
 
 var (
-	certifiedLogPath = filepath.Join("generic-worker", "certified.log")
-	certifiedLogName = "public/logs/certified.log"
-	signedCertPath   = filepath.Join("generic-worker", "chainOfTrust.json.asc")
-	signedCertName   = "public/chainOfTrust.json.asc"
+	certifiedLogPath      = filepath.Join("generic-worker", "certified.log")
+	certifiedLogName      = "public/logs/certified.log"
+	unsignedCertPath      = filepath.Join("generic-worker", "chain-of-trust.json")
+	unsignedCertName      = "public/chain-of-trust.json"
+	ed25519SignedCertPath = filepath.Join("generic-worker", "chain-of-trust.json.sig")
+	ed25519SignedCertName = "public/chain-of-trust.json.sig"
+	openpgpSignedCertPath = filepath.Join("generic-worker", "chainOfTrust.json.asc")
+	openpgpSignedCertName = "public/chainOfTrust.json.asc"
 )
 
 type ChainOfTrustFeature struct {
-	PrivateKey *packet.PrivateKey
+	OpenPGPPrivateKey *packet.PrivateKey
+	Ed25519PrivateKey ed25519.PrivateKey
 }
 
 type ArtifactHash struct {
@@ -58,8 +65,9 @@ type ChainOfTrustData struct {
 }
 
 type ChainOfTrustTaskFeature struct {
-	task    *TaskRun
-	privKey *packet.PrivateKey
+	task           *TaskRun
+	ed25519PrivKey ed25519.PrivateKey
+	openpgpPrivKey *packet.PrivateKey
 }
 
 func (feature *ChainOfTrustFeature) Name() string {
@@ -71,7 +79,12 @@ func (feature *ChainOfTrustFeature) PersistState() error {
 }
 
 func (feature *ChainOfTrustFeature) Initialise() (err error) {
-	feature.PrivateKey, err = readPrivateKey()
+	feature.OpenPGPPrivateKey, err = readOpenPGPPrivateKey()
+	if err != nil {
+		return
+	}
+
+	feature.Ed25519PrivateKey, err = readEd25519PrivateKeyFromFile(config.Ed25519SigningKeyLocation)
 	if err != nil {
 		return
 	}
@@ -82,12 +95,12 @@ func (feature *ChainOfTrustFeature) Initialise() (err error) {
 	return
 }
 
-func readPrivateKey() (privateKey *packet.PrivateKey, err error) {
+func readOpenPGPPrivateKey() (privateKey *packet.PrivateKey, err error) {
 	var privKeyFile *os.File
-	privKeyFile, err = os.Open(config.SigningKeyLocation)
+	privKeyFile, err = os.Open(config.OpenPGPSigningKeyLocation)
 	if err != nil {
-		log.Printf("FATAL: Was not able to open chain of trust signing key file '%v'.", config.SigningKeyLocation)
-		log.Printf("The chain of trust signing key file location is configured in file '%v' in property 'signingKeyLocation'.", configFile)
+		log.Printf("FATAL: Was not able to open chain of trust signing key file '%v'.", config.OpenPGPSigningKeyLocation)
+		log.Printf("The chain of trust signing key file location is configured in file '%v' in property 'openpgpSigningKeyLocation'.", configFile)
 		return
 	}
 	defer privKeyFile.Close()
@@ -106,14 +119,17 @@ func (feature *ChainOfTrustFeature) IsEnabled(task *TaskRun) bool {
 
 func (feature *ChainOfTrustFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	return &ChainOfTrustTaskFeature{
-		task:    task,
-		privKey: feature.PrivateKey,
+		task:           task,
+		ed25519PrivKey: feature.Ed25519PrivateKey,
+		openpgpPrivKey: feature.OpenPGPPrivateKey,
 	}
 }
 
 func (feature *ChainOfTrustTaskFeature) ReservedArtifacts() []string {
 	return []string{
-		signedCertName,
+		unsignedCertName,
+		ed25519SignedCertName,
+		openpgpSignedCertName,
 		certifiedLogName,
 	}
 }
@@ -139,7 +155,9 @@ func (feature *ChainOfTrustTaskFeature) Start() *CommandExecutionError {
 func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	logFile := filepath.Join(taskContext.TaskDir, logPath)
 	certifiedLogFile := filepath.Join(taskContext.TaskDir, certifiedLogPath)
-	signedCert := filepath.Join(taskContext.TaskDir, signedCertPath)
+	unsignedCert := filepath.Join(taskContext.TaskDir, unsignedCertPath)
+	ed25519SignedCert := filepath.Join(taskContext.TaskDir, ed25519SignedCertPath)
+	openpgpSignedCert := filepath.Join(taskContext.TaskDir, openpgpSignedCertPath)
 	copyErr := copyFileContents(logFile, certifiedLogFile)
 	if copyErr != nil {
 		panic(copyErr)
@@ -182,17 +200,41 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	if e != nil {
 		panic(e)
 	}
-	// separate signature from json with a new line
-	certBytes = append(certBytes, '\n')
-
-	in := bytes.NewBuffer(certBytes)
-	out, e := os.Create(signedCert)
+	// create unsigned chain-of-trust.json
+	e = ioutil.WriteFile(unsignedCert, certBytes, 0644)
 	if e != nil {
 		panic(e)
 	}
-	defer out.Close()
+	err.add(feature.task.uploadLog(unsignedCertName, unsignedCertPath))
 
-	w, e := clearsign.Encode(out, feature.privKey, nil)
+	// create detached ed25519 chain-of-trust.json.sig
+	sig := ed25519.Sign(feature.ed25519PrivKey, certBytes)
+	e = ioutil.WriteFile(ed25519SignedCert, sig, 0644)
+	if e != nil {
+		panic(e)
+	}
+	err.add(feature.task.uploadArtifact(
+		&S3Artifact{
+			BaseArtifact: &BaseArtifact{
+				Name:        ed25519SignedCertName,
+				Expires:     feature.task.Definition.Expires,
+				ContentType: "application/octet-stream",
+			},
+			Path: ed25519SignedCertPath,
+		},
+	))
+
+	// OpenPGP block. XXX Remove this block when we remove CoT gpg support
+	// separate signature from json with a new line
+	certBytes = append(certBytes, '\n')
+	in := bytes.NewBuffer(certBytes)
+	openpgpOut, e := os.Create(openpgpSignedCert)
+	if e != nil {
+		panic(e)
+	}
+	defer openpgpOut.Close()
+
+	w, e := clearsign.Encode(openpgpOut, feature.openpgpPrivKey, nil)
 	if e != nil {
 		panic(e)
 	}
@@ -201,7 +243,7 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 		panic(e)
 	}
 	w.Close()
-	out.Write([]byte{'\n'})
-	out.Close()
-	err.add(feature.task.uploadLog(signedCertName, signedCertPath))
+	openpgpOut.Write([]byte{'\n'})
+	openpgpOut.Close()
+	err.add(feature.task.uploadLog(openpgpSignedCertName, openpgpSignedCertPath))
 }

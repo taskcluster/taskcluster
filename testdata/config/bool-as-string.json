@@ -7,6 +7,7 @@
   "workerGroup" : "abcde",
   "workerType" : "some-worker-type",
   "publicIP" : "2.1.2.1",
-  "signingKeyLocation": "C:\\some\\place.key",
+  "ed25519SigningKeyLocation": "C:\\some\\place.ed25519.key",
+  "openpgpSigningKeyLocation": "C:\\some\\place.openpgp.key",
   "runTasksAsCurrentUser": "true"
 }

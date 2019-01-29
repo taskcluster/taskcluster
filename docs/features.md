@@ -29,22 +29,28 @@ Example:
 
 #### Since: generic-worker 5.3.0
 
-Enabling this feature will mean that the generic worker will publish an
-additional task artifact `public/chainOfTrust.json.asc`. This will be a clear
-text openpgp-signed json object, storing the SHA 256 hashes of the task
-artifacts, plus some information about the worker. This is signed by a openpgp
-private key, both generated and stored on the worker. This private key is never
-transmitted across the network. In future you will be able to verify the
-signature of this artifact against the public openpgp key of the worker type,
-to be confident that it really was created by the worker. However currently
-this is not possible, since we do not yet publish the openpgp public key
-anywhere. When this has been implemented, this page will be updated with
-details about how to retrieve the public key, for signature verification.
+This feature was added in generic-worker 5.3.0, with gpg support.
 
-The worker uses the openpgp private key from the file location specified by the
+#### Since: generic-worker 12.0.0
+
+Enabling this feature will mean that the generic worker will publish three
+additional task artifacts: `public/chain-of-trust.json`,
+`public/chain-of-trust.json.sig`, and `public/chainOfTrust.json.asc`. These
+are a text json object, storing the SHA 256 hashes of the task artifacts,
+plus some information about the worker. The `.sig` file is signed by an
+ed25519 private key, and the `.asc` file is signed by a openpgp private key,
+both generated and stored on the worker. These private keys are never
+transmitted across the network. In future you will be able to verify the
+signature of this artifact against the public keys of the worker type,
+to be confident that it really was created by the worker. However currently
+this is not possible, since we do not yet publish the public keys anywhere.
+When this has been implemented, this page will be updated with details about
+how to retrieve the public key, for signature verification.
+
+The worker uses the openpgp and ed25519 private keys from the file locations specified by the
 [worker configuration
 setting](/reference/workers/generic-worker#set-up-your-env)
-`signingKeyLocation`.
+`openpgpSigningKeyLocation` and `ed25519SigningKeyLocation`.
 
 No scopes are presently required for enabling this feature.
 

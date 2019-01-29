@@ -66,6 +66,7 @@ Once you have been granted the above scope:
 # Set up your env
 
 * Generate a GPG key pair with `generic-worker new-openpgp-keypair --file <file>` where `file` is where you want the generated GPG private key to be written to
+* Generate a GPG key pair with `generic-worker new-ed25519-keypair --file <file>` where `file` is where you want the generated ed25519 private key to be written to
 * Create a generic worker configuration file somewhere, with the following content:
 
 ```
@@ -73,10 +74,11 @@ Once you have been granted the above scope:
     "accessToken":                "<access token of your permanent credentials>",
     "certificate":                "",
     "clientId":                   "<client ID of your permanent credentials>",
+    "ed25519SigningKeyLocation":  "<file location you wrote ed25519 private key to>",
     "livelogSecret":              "<anything you like>",
+    "openpgpSigningKeyLocation":  "<file location you wrote gpg private key to>",
     "provisionerId":              "test-provisioner",
     "publicIP":                   "<ideally an IP address of one of your network interfaces>",
-    "signingKeyLocation":         "<file location you wrote gpg private key to>",
     "workerGroup":                "test-worker-group",
     "workerId":                   "test-worker-id",
     "workerType":                 "<a unique name that only you will use for your test worker(s)>"
@@ -101,6 +103,7 @@ and reports back results to the queue.
                                             [--config         CONFIG-FILE]
                                             [--configure-for-aws]
     generic-worker show-payload-schema
+    generic-worker new-ed25519-keypair      --file PRIVATE-KEY-FILE
     generic-worker new-openpgp-keypair      --file PRIVATE-KEY-FILE
     generic-worker grant-winsta-access      --sid SID
     generic-worker --help
@@ -125,6 +128,10 @@ and reports back results to the queue.
                                             after you have installed the service, and
                                             instead explicitly start the service when the
                                             preconditions have been met.
+    new-ed25519-keypair                     This will generate a fresh, new ed25519
+                                            compliant private/public key pair. The public
+                                            key will be written to stdout and the private
+                                            key will be written to the specified file.
     new-openpgp-keypair                     This will generate a fresh, new OpenPGP
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
@@ -176,9 +183,11 @@ and reports back results to the queue.
                                             to talk to taskcluster queue.
           clientId                          Taskcluster client id used by generic worker to
                                             talk to taskcluster queue.
+          ed25519SigningKeyLocation         The ed25519 signing key for signing artifacts with.
           livelogSecret                     This should match the secret used by the
                                             stateless dns server; see
                                             https://github.com/taskcluster/stateless-dns-server
+          openpgpSigningKeyLocation         The PGP signing key for signing artifacts with.
           publicIP                          The IP address for clients to be directed to
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
@@ -186,7 +195,6 @@ and reports back results to the queue.
           rootURL                           The root URL of the Taskcluster deploment to which
                                             clientId and accessToken grant access. For example,
                                             'https://taskcluster.net'.
-          signingKeyLocation                The PGP signing key for signing artifacts with.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.
@@ -360,6 +368,7 @@ and reports back results to the queue.
     73     The config provided to the worker is invalid.
     74     Could not grant provided SID full control of interactive windows stations and
            desktop.
+    75     Not able to create an ed25519 key pair.
 ```
 
 # Start the generic worker

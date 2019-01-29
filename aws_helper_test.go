@@ -156,7 +156,8 @@ func (m *MockAWSProvisionedEnvironment) Secrets(t *testing.T) interface{} {
 			"sentryProject":                  "generic-worker-tests",
 			"shutdownMachineOnIdle":          false,
 			"shutdownMachineOnInternalError": false,
-			"signingKeyLocation":             filepath.Join(testdataDir, "private-opengpg-key"),
+			"openpgpSigningKeyLocation":      filepath.Join(testdataDir, "private-opengpg-key"),
+			"ed25519SigningKeyLocation":      filepath.Join(testdataDir, "ed25519_private_key"),
 			"subdomain":                      "taskcluster-worker.net",
 			"tasksDir":                       filepath.Join(testdataDir, t.Name()),
 			"workerTypeMetadata": map[string]interface{}{

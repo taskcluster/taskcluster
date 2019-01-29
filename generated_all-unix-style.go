@@ -117,10 +117,10 @@ type (
 	// Since: generic-worker 5.3.0
 	FeatureFlags struct {
 
-		// An artifact named `public/chainOfTrust.json.asc` should be generated
-		// which will include information for downstream tasks to build a level
-		// of trust for the artifacts produced by the task and the environment
-		// it ran in.
+		// Artifacts named `public/chain-of-trust.json`, `public/chain-of-trust.json.sig`,
+		// `public/chainOfTrust.json.asc` should be generated which will include information
+		// for downstream tasks to build a level of trust for the artifacts produced by the
+		// task and the environment it ran in.
 		//
 		// Since: generic-worker 5.3.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
@@ -616,8 +616,8 @@ func taskPayloadSchema() string {
       "description": "Feature flags enable additional functionality.\n\nSince: generic-worker 5.3.0",
       "properties": {
         "chainOfTrust": {
-          "description": "An artifact named ` + "`" + `public/chainOfTrust.json.asc` + "`" + ` should be generated\nwhich will include information for downstream tasks to build a level\nof trust for the artifacts produced by the task and the environment\nit ran in.\n\nSince: generic-worker 5.3.0",
-          "title": "Enable generation of a openpgp signed Chain of Trust artifact",
+          "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + `, ` + "`" + `public/chain-of-trust.json.sig` + "`" + `,\n` + "`" + `public/chainOfTrust.json.asc` + "`" + ` should be generated which will include information\nfor downstream tasks to build a level of trust for the artifacts produced by the\ntask and the environment it ran in.\n\nSince: generic-worker 5.3.0",
+          "title": "Enable generation of signed Chain of Trust artifacts",
           "type": "boolean"
         },
         "taskclusterProxy": {
