@@ -46,6 +46,8 @@ class PulseConsumer {
     // when that number goes to zero
     this.processingMessages = 0;
     this.idleCallback = null;
+
+    this.debug = debug('pulse-consumer');
   }
 
   /**
