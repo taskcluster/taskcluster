@@ -96,7 +96,8 @@
     "lint": "eslint --cache --ext js libraries services infrastructure",
     "test": "yarn workspaces run test",
     "test:meta": "mocha test/*_test.js",
-    "build": "node infrastructure/builder/src/main.js build"
+    "build": "node infrastructure/builder/src/main.js build",
+    "generate": "node infrastructure/builder/src/main.js generate"
   },
   "renovate": {
     "extends": [

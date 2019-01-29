@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 const program = require('commander');
-const {version} = require('../package.json');
+const {version} = require('../../../package.json');
 
 program.version(version);
 program.command('build')
@@ -16,6 +16,21 @@ program.command('build')
       process.exit(1);
     }
     require('./build')(options[0]).then(
+      () => {},
+      err => {
+        console.error(err);
+        process.exit(1);
+      });
+  });
+
+program.command('generate')
+  .option('--target <generator>', 'Run a specific generator, rather than all of them')
+  .action((...options) => {
+    if (options.length !== 1) {
+      console.error('unexpected command-line arguments');
+      process.exit(1);
+    }
+    require('./generate')(options[0]).then(
       () => {},
       err => {
         console.error(err);
