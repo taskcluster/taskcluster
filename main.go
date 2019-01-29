@@ -23,9 +23,6 @@ import (
 	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcauth"
-	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
-	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -474,7 +471,7 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 
 	// first assign defaults
 	c := &gwconfig.Config{
-		AuthBaseURL:                    tcauth.DefaultBaseURL,
+		AuthBaseURL:                    "",
 		CachesDir:                      "caches",
 		CheckForNewDeploymentEverySecs: 1800,
 		CleanUpTaskDirs:                true,
@@ -487,8 +484,8 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 		NumberOfTasksToRun:             0,
 		ProvisionerBaseURL:             "",
 		ProvisionerID:                  "test-provisioner",
-		PurgeCacheBaseURL:              tcpurgecache.DefaultBaseURL,
-		QueueBaseURL:                   tcqueue.DefaultBaseURL,
+		PurgeCacheBaseURL:              "",
+		QueueBaseURL:                   "",
 		RequiredDiskSpaceMegabytes:     10240,
 		RootURL:                        "",
 		RunAfterUserCreation:           "",
@@ -618,16 +615,9 @@ func RunWorker() (exitCode ExitCode) {
 		log.Printf("OH NO!!!\n\n%#v", err)
 		panic(err)
 	}
-	creds := &tcclient.Credentials{
-		ClientID:    config.ClientID,
-		AccessToken: config.AccessToken,
-		Certificate: config.Certificate,
-	}
 	// Queue is the object we will use for accessing queue api
-	queue = tcqueue.New(creds)
-	queue.BaseURL = config.QueueBaseURL
-	provisioner = tcawsprovisioner.New(creds)
-	provisioner.BaseURL = config.ProvisionerBaseURL
+	queue = config.Queue()
+	provisioner = config.AWSProvisioner()
 
 	err = initialiseFeatures()
 	if err != nil {
@@ -787,8 +777,12 @@ func ClaimWork() *TaskRun {
 				AccessToken: taskResponse.Credentials.AccessToken,
 				Certificate: taskResponse.Credentials.Certificate,
 			},
+			config.RootURL,
 		)
-		taskQueue.BaseURL = config.QueueBaseURL
+		// if queueBaseURL is configured, this takes precedence over rootURL
+		if config.QueueBaseURL != "" {
+			taskQueue.BaseURL = config.QueueBaseURL
+		}
 		task := &TaskRun{
 			TaskID:            taskResponse.Status.TaskID,
 			RunID:             uint(taskResponse.RunID),
@@ -1166,7 +1160,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 			log.Printf("Creating task feature %v...", feature.Name())
 			taskFeature := feature.NewTaskFeature(task)
 			requiredScopes := taskFeature.RequiredScopes()
-			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, tcauth.New(nil))
+			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, config.Auth())
 			if scopeValidationErr != nil {
 				// presumably we couldn't expand assume:* scopes due to auth
 				// service unavailability
