@@ -259,10 +259,23 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.removeHook('foo', 'bar');
       await helper.hooks.hook('foo', 'bar').then(
-        () => { throw new Error('The resource should not exist'); },
+        () => { throw new Error('The resource in Hook Table should not exist'); },
         (err) => { assume(err.statusCode).equals(404); });
       helper.checkNextMessage('hook-deleted', ({payload}) =>
         assume({hookGroupId: 'foo', hookId: 'bar'}).deep.equals(payload));
+      await helper.hooks.listLastFires('foo', 'bar').then(
+        () => { throw new Error('The resource in LastFires table should not exist'); },
+        (err) => { assume(err.statusCode).equals(404); });
+    });
+
+    test('remove all lastFires info of the hook ', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG',
+        foo: 'triggerHook'});
+      await helper.hooks.removeHook('foo', 'bar');
+      await helper.hooks.listLastFires('foo', 'bar').then(
+        () => { throw new Error('The resource in LastFires table should not exist'); },
+        (err) => { assume(err.statusCode).equals(404); });
     });
 
     test('removed empty groups', async () => {

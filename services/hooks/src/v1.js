@@ -354,6 +354,22 @@ builder.declare({
   await this.Hook.remove({hookGroupId, hookId}, true);
   this.publisher.hookDeleted({hookGroupId, hookId});
 
+  try {
+    await this.LastFire.query({
+      hookGroupId: req.params.hookGroupId,
+      hookId: req.params.hookId,
+    }, {
+      handler: async (lastFire) => {
+        await lastFire.remove(false, true);
+      },
+    });
+
+    this.publisher.hookLastFiresDeleted({hookGroupId, hookId});
+    // eslint-disable-next-line no-empty
+  } catch (err) {
+    // The hook may have not been ever triggered
+  }
+
   return res.status(200).json({});
 });
 
