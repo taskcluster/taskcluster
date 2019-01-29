@@ -8,6 +8,12 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
   helper.withBlacklist(mock, skipping);
   helper.withServer(mock, skipping);
 
+  // Dummy address for blacklist tests
+  let dummyAddress = {
+    notificationType: "email",
+    notificationAddress: "name6@name.com"
+  };
+
   test('ping', async function() {
     await helper.apiClient.ping();
   });
@@ -62,10 +68,17 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
       assert.equal(body.message, 'Does this work?');
     });
   });
-});
 
-// Just to check if the table is loading (TODO: Investigate client )
-test('test of test', async function() {
-  let item = await helper.apiClient.list();
-  assert.deepEqual(item.addresses, []);
+  test('Blacklist: addBlacklistAddress()', async function() {
+    // Try adding an address to the blacklist
+    await helper.apiClient.addBlacklistAddress(dummyAddress);
+
+    //await helper.BlacklistedNotification.create(dummyAddress);
+
+    let item = await helper.BlacklistedNotification.load(dummyAddress);
+    item = item._properties;
+
+    assert.deepEqual(item, dummyAddress);
+  });
+
 });

@@ -15,6 +15,7 @@ const RateLimit = require('./ratelimit');
 const Handler = require('./handler');
 const exchanges = require('./exchanges');
 const IRC = require('./irc');
+const data = require ('./data');
 
 // Create component loader
 const load = loader({
@@ -49,6 +50,22 @@ const load = loader({
     setup: ({cfg}) => exchanges.reference({
       rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.pulse,
+    }),
+  },
+
+  BlacklistedNotification: {
+    requires: ['cfg', 'monitor', 'process'],
+    setup: ({cfg, monitor, process}) => data.BlacklistedNotification.setup({
+      tableName: cfg.azure.tableName,
+      credentials: sasCredentials({
+        accountId: cfg.azure.accountId,
+        tableName: cfg.azure.tableName,
+        rootUrl: cfg.taskcluster.rootUrl,
+        credentials: cfg.taskcluster.credentials,
+      }),
+      cryptoKey: cfg.azure.cryptoKey,
+      signingKey: cfg.azure.signingKey,
+      monitor: monitor.prefix('table.blacklist'),
     }),
   },
 
@@ -183,10 +200,10 @@ const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'monitor', 'schemaset', 'notifier'],
-    setup: ({cfg, monitor, schemaset, notifier}) => builder.build({
+    requires: ['cfg', 'monitor', 'schemaset', 'notifier', 'BlacklistedNotification'],
+    setup: ({cfg, monitor, schemaset, notifier, BlacklistedNotification}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {notifier},
+      context: {notifier, BlacklistedNotification},
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
       monitor: monitor.prefix('api'),

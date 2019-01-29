@@ -96,7 +96,6 @@ builder.declare({
   method: 'post',
   route: '/blacklist/add',
   name: 'addBlacklistAddress',
-  // I don't know what to put in the scopes.
   scopes: {
     if: 'channelRequest',
     then: 'notify:irc-channel:<channel>',
@@ -118,11 +117,11 @@ builder.declare({
   });
 
   try {
-    await this.BlacklistedNotification.create({address});
+    await this.BlacklistedNotification.create(address);
   } catch (e) {
-    if (e.name === 'ResourceConflictError') {
+    if (e.name === 'EntityAlreadyExistsError') {
       return res.reportError(
-        'ResourceConflict',
+        'EntityAlreadyExists',
         'Notification address already exists in the blacklist',
         {}
       );
