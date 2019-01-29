@@ -519,7 +519,7 @@ type (
 		Error string `json:"error"`
 
 		// See https://taskcluster-staging.net/schemas/hooks/v1/list-lastFires-response.json#/properties/lastFires/items/properties/firedBy
-		FiredBy string `json:"firedBy,omitempty"`
+		FiredBy string `json:"firedBy"`
 
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
 		// Min length: 1

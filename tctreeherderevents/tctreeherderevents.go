@@ -6,7 +6,7 @@
 // go install && go generate
 //
 // This package was generated from the schema defined at
-// https://references.taskcluster.net/treeherder/v1/exchanges.json
+// https://taskcluster-staging.net/references/treeherder/v1/exchanges.json
 
 // The taskcluster-treeherder service is responsible for processing
 // task events published by TaskCluster Queue and producing job messages
@@ -16,7 +16,7 @@
 // attached to the exchange.  This could be a production Treeheder instance,
 // a local development environment, or a custom dashboard.
 //
-// See: https://docs.taskcluster.net/reference/core/treeherder/exchanges
+// See:
 //
 // How to use this package
 //
@@ -50,7 +50,7 @@ import (
 // When a task run is scheduled or resolved, a message is posted to
 // this exchange in a Treeherder consumable format.
 //
-// See https://docs.taskcluster.net/reference/core/treeherder/exchanges#jobs
+// See #jobs
 type Jobs struct {
 	Destination string `mwords:"*"`
 	Project     string `mwords:"*"`
