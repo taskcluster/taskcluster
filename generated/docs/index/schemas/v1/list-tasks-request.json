@@ -1,0 +1,24 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "List Tasks Request",
+  "description": "Request to list tasks within a given namespace.\n",
+  "type": "object",
+  "properties": {
+    "limit": {
+      "title": "Result limit",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 1000,
+      "description": "Maximum number of results per page. If there are more results than this\na continuation token will be return.\n"
+    },
+    "continuationToken": {
+      "title": "Continuation Token",
+      "type": "string",
+      "description": "A continuation token previously returned in a response to this list\nrequest. This property is optional and should not be provided for first\nrequests.\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [],
+  "$id": "/schemas/index/v1/list-tasks-request.json#"
+}

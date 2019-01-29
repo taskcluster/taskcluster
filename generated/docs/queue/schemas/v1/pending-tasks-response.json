@@ -1,0 +1,37 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Count Pending Tasks Response",
+  "description": "Response to a request for the number of pending tasks for a given\n`provisionerId` and `workerType`.\n",
+  "type": "object",
+  "properties": {
+    "provisionerId": {
+      "title": "Provisioner Id",
+      "description": "Unique identifier for the provisioner\n",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 22,
+      "pattern": "^([a-zA-Z0-9-_]*)$"
+    },
+    "workerType": {
+      "title": "Worker Type",
+      "description": "Identifier for worker type within the specified provisioner\n",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 22,
+      "pattern": "^([a-zA-Z0-9-_]*)$"
+    },
+    "pendingTasks": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Number of Pending Tasks",
+      "description": "An approximate number of pending tasks for the given `provisionerId` and\n`workerType`. This is based on Azure Queue Storage metadata API, thus,\nnumber of reported here may be higher than actual number of pending tasks.\nBut there cannot be more pending tasks reported here. Ie. this is an\n**upper-bound** on the number of pending tasks.\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "provisionerId",
+    "workerType",
+    "pendingTasks"
+  ],
+  "$id": "/schemas/queue/v1/pending-tasks-response.json#"
+}

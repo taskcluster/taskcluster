@@ -1,0 +1,22 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Hook Changed Message",
+  "description": "Message reporting that a hook has changed\n",
+  "type": "object",
+  "properties": {
+    "hookGroupId": {
+      "description": "`hookGroupId` of the hook that was changed\n",
+      "type": "string"
+    },
+    "hookId": {
+      "description": "`hookId` of the hook that was changed\n",
+      "type": "string"
+    }
+  },
+  "additionalProperties": true,
+  "required": [
+    "hookId",
+    "hookGroupId"
+  ],
+  "$id": "/schemas/hooks/v1/pulse-hook-changed-message.json#"
+}

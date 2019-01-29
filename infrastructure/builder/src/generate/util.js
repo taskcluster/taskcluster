@@ -1,6 +1,7 @@
 const {promisify} = require('util');
 const path = require('path');
 const fs = require('fs');
+const stringify = require('json-stable-stringify');
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
@@ -15,6 +16,20 @@ exports.readFile = async filename => {
   return await readFile(
     path.join(REPO_ROOT, filename),
     {encoding: 'utf8'});
+};
+
+/**
+ * Read a JSON file
+ */
+exports.readJSON = async filename => {
+  return JSON.parse(await exports.readFile(filename));
+};
+
+/**
+ * Write a JSON file out using JSON-stable-stringify
+ */
+exports.writeJSON = async (filename, data) => {
+  return await writeFile(filename, stringify(data, {space: 2}), {encoding: 'utf8'});
 };
 
 /**

@@ -1,0 +1,24 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "List Client Response",
+  "description": "List of clients\n",
+  "type": "object",
+  "properties": {
+    "clients": {
+      "type": "array",
+      "items": {
+        "$ref": "get-client-response.json#"
+      }
+    },
+    "continuationToken": {
+      "title": "Continuation Token",
+      "type": "string",
+      "description": "A continuation token is returned if there are more results than listed\nhere. You can optionally provide the token in the request payload to\nload the additional results.\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "clients"
+  ],
+  "$id": "/schemas/auth/v1/list-clients-response.json#"
+}

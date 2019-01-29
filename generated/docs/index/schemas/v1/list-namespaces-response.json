@@ -1,0 +1,53 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "List Namespaces Response",
+  "description": "Response from a request to list namespaces within a given namespace.\n",
+  "type": "object",
+  "properties": {
+    "namespaces": {
+      "title": "Namespaces",
+      "description": "List of namespaces.\n",
+      "type": "array",
+      "items": {
+        "title": "Namespace",
+        "description": "Representation of a namespace that contains indexed tasks.\n",
+        "type": "object",
+        "properties": {
+          "namespace": {
+            "title": "Namespace",
+            "description": "Fully qualified name of the namespace, you can use this to list\nnamespaces or tasks under this namespace.\n",
+            "type": "string",
+            "maxLength": 255
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Name of namespace within it's parent namespace.\n"
+          },
+          "expires": {
+            "title": "Expiration",
+            "description": "Date at which this entry, and by implication all entries below it,\nexpires from the task index.\n",
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "namespace",
+          "name",
+          "expires"
+        ]
+      }
+    },
+    "continuationToken": {
+      "title": "Continuation Token",
+      "type": "string",
+      "description": "A continuation token is returned if there are more results than listed\nhere. You can optionally provide the token in the request payload to\nload the additional results.\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "namespaces"
+  ],
+  "$id": "/schemas/index/v1/list-namespaces-response.json#"
+}

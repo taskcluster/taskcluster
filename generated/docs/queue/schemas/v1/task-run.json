@@ -1,0 +1,27 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Task Run",
+  "description": "A run of a task.\n",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "taskId": {
+      "title": "Task Identifier",
+      "description": "Unique task identifier, this is UUID encoded as\n[URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and\nstripped of `=` padding.\n",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$"
+    },
+    "runId": {
+      "title": "Run Identifier",
+      "description": "Id of this task run, `run-id`s always starts from `0`\n",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000
+    }
+  },
+  "required": [
+    "taskId",
+    "runId"
+  ],
+  "$id": "/schemas/queue/v1/task-run.json#"
+}

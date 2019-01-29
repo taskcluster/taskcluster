@@ -1,0 +1,132 @@
+{
+  "$schema": "/schemas/common/exchanges-reference-v0.json#",
+  "serviceName": "github",
+  "apiVersion": "v1",
+  "title": "Taskcluster-Github Exchanges",
+  "description": "The github service publishes a pulse\nmessage for supported github events, translating Github webhook\nevents into pulse messages.\n\nThis document describes the exchange offered by the taskcluster\ngithub service",
+  "exchangePrefix": "exchange/taskcluster-github/v1/",
+  "entries": [
+    {
+      "type": "topic-exchange",
+      "exchange": "pull-request",
+      "name": "pullRequest",
+      "title": "GitHub Pull Request Event",
+      "description": "When a GitHub pull request event is posted it will be broadcast on this\nexchange with the designated `organization` and `repository`\nin the routing-key along with event specific metadata in the payload.",
+      "schema": "v1/github-pull-request-message.json#",
+      "routingKey": [
+        {
+          "name": "routingKeyKind",
+          "summary": "Identifier for the routing-key kind. This is always `\"primary\"` for the formalized routing key.",
+          "constant": "primary",
+          "multipleWords": false,
+          "required": true
+        },
+        {
+          "name": "organization",
+          "summary": "The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.",
+          "multipleWords": false,
+          "required": true
+        },
+        {
+          "name": "repository",
+          "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.",
+          "multipleWords": false,
+          "required": true
+        },
+        {
+          "name": "action",
+          "summary": "The GitHub `action` which triggered an event. See for possible values see the payload actions property.",
+          "multipleWords": false,
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "topic-exchange",
+      "exchange": "push",
+      "name": "push",
+      "title": "GitHub push Event",
+      "description": "When a GitHub push event is posted it will be broadcast on this\nexchange with the designated `organization` and `repository`\nin the routing-key along with event specific metadata in the payload.",
+      "schema": "v1/github-push-message.json#",
+      "routingKey": [
+        {
+          "name": "routingKeyKind",
+          "summary": "Identifier for the routing-key kind. This is always `\"primary\"` for the formalized routing key.",
+          "constant": "primary",
+          "multipleWords": false,
+          "required": true
+        },
+        {
+          "name": "organization",
+          "summary": "The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.",
+          "multipleWords": false,
+          "required": true
+        },
+        {
+          "name": "repository",
+          "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.",
+          "multipleWords": false,
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "topic-exchange",
+      "exchange": "release",
+      "name": "release",
+      "title": "GitHub release Event",
+      "description": "When a GitHub release event is posted it will be broadcast on this\nexchange with the designated `organization` and `repository`\nin the routing-key along with event specific metadata in the payload.",
+      "schema": "v1/github-release-message.json#",
+      "routingKey": [
+        {
+          "name": "routingKeyKind",
+          "summary": "Identifier for the routing-key kind. This is always `\"primary\"` for the formalized routing key.",
+          "constant": "primary",
+          "multipleWords": false,
+          "required": true
+        },
+        {
+          "name": "organization",
+          "summary": "The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.",
+          "multipleWords": false,
+          "required": true
+        },
+        {
+          "name": "repository",
+          "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.",
+          "multipleWords": false,
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": "topic-exchange",
+      "exchange": "task-group-creation-requested",
+      "name": "taskGroupCreationRequested",
+      "title": "tc-gh requested the Queue service to create all the tasks in a group",
+      "description": "supposed to signal that taskCreate API has been called for every task in the task group\nfor this particular repo and this particular organization\ncurrently used for creating initial status indicators in GitHub UI using Statuses API.\nThis particular exchange can also be bound to RabbitMQ queues by custom routes - for that,\nPass in the array of routes as a second argument to the publish method. Currently, we do\nuse the statuses routes to bind the handler that creates the initial status.",
+      "schema": "v1/task-group-creation-requested.json#",
+      "routingKey": [
+        {
+          "name": "routingKeyKind",
+          "summary": "Identifier for the routing-key kind. This is always `\"primary\"` for the formalized routing key.",
+          "constant": "primary",
+          "multipleWords": false,
+          "required": true
+        },
+        {
+          "name": "organization",
+          "summary": "The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.",
+          "multipleWords": false,
+          "required": true
+        },
+        {
+          "name": "repository",
+          "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.",
+          "multipleWords": false,
+          "required": true
+        }
+      ]
+    }
+  ]
+}

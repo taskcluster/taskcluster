@@ -1,0 +1,55 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Hook creation request",
+  "description": "Definition of a hook that can create tasks at defined times.\n",
+  "type": "object",
+  "properties": {
+    "hookGroupId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^([a-zA-Z0-9-_]*)$"
+    },
+    "hookId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^([a-zA-Z0-9-_/]*)$"
+    },
+    "metadata": {
+      "$ref": "hook-metadata.json#"
+    },
+    "bindings": {
+      "$ref": "bindings.json#"
+    },
+    "schedule": {
+      "description": "Definition of the times at which a hook will result in creation of a task.\nIf several patterns are specified, tasks will be created at any time\nspecified by one or more patterns.\n",
+      "type": "array",
+      "items": {
+        "title": "Cron Pattern",
+        "type": "string",
+        "description": "Cron-like specification for when tasks should be created.  The pattern is\nparsed in a UTC context.\nSee [cron-parser on npm](https://www.npmjs.com/package/cron-parser).\nNote that tasks may not be created at exactly the time specified.\n"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "task": {
+      "title": "Task Template",
+      "description": "Template for the task definition.  This is rendered using [JSON-e](https://taskcluster.github.io/json-e/)\nas described in [firing hooks](/docs/reference/core/taskcluster-hooks/docs/firing-hooks) to produce\na task definition that is submitted to the Queue service.\n",
+      "type": "object"
+    },
+    "triggerSchema": {
+      "type": "object",
+      "default": {
+        "type": "object",
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "metadata",
+    "task"
+  ],
+  "$id": "/schemas/hooks/v1/create-hook-request.json#"
+}

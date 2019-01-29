@@ -1,0 +1,20 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Open All Purge Requests List",
+  "description": "A list of currently open purge-cache requests. Should not be used by workers.\n",
+  "type": "object",
+  "properties": {
+    "continuationToken": {
+      "type": "string",
+      "description": "Passed back from Azure to allow us to page through long result sets."
+    },
+    "requests": {
+      "$ref": "purge-cache-requests.json#"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "requests"
+  ],
+  "$id": "/schemas/purge-cache/v1/all-purge-cache-request-list.json#"
+}

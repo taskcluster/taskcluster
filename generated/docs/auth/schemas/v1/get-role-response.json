@@ -1,0 +1,58 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Get Role Response",
+  "description": "Get all details about a role\n",
+  "type": "object",
+  "properties": {
+    "roleId": {
+      "description": "roleId of the role requested\n",
+      "type": "string",
+      "pattern": "^[\\x20-\\x7e]+$"
+    },
+    "scopes": {
+      "description": "List of scopes the role grants access to.  Scopes must be composed of\nprintable ASCII characters and spaces.\n",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "name": "Scope",
+        "description": "A single scope. A scope must be composed of\nprintable ASCII characters and spaces.  Scopes ending in more than\none `*` character are forbidden.\n",
+        "pattern": "^[ -~]*$"
+      }
+    },
+    "description": {
+      "description": "Description of what this role is used for in markdown.\nShould include who is the owner, point of contact.\n",
+      "type": "string",
+      "maxLength": 10240
+    },
+    "created": {
+      "description": "Date and time when this role was created\n",
+      "type": "string",
+      "format": "date-time"
+    },
+    "lastModified": {
+      "description": "Date and time of last modification\n",
+      "type": "string",
+      "format": "date-time"
+    },
+    "expandedScopes": {
+      "description": "List of scopes granted anyone who assumes this role, including anything\ngranted by roles that can be assumed when you have this role.\nHence, this includes any scopes in-directly granted as well.\n",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "name": "Scope",
+        "description": "A single scope. A scope must be composed of\nprintable ASCII characters and spaces.  Scopes ending in more than\none `*` character are forbidden.\n",
+        "pattern": "^[ -~]*$"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "roleId",
+    "scopes",
+    "description",
+    "created",
+    "lastModified",
+    "expandedScopes"
+  ],
+  "$id": "/schemas/auth/v1/get-role-response.json#"
+}
