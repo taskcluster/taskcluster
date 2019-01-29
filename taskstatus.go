@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster-client-go"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
@@ -167,11 +167,11 @@ func (tsm *TaskStatusManager) reclaim() error {
 
 			task.TaskReclaimResponse = *tcrsp
 			task.queueMux.Lock()
-			task.Queue = tcqueue.New(&tcclient.Credentials{
+			task.Queue.Credentials = &tcclient.Credentials{
 				ClientID:    tcrsp.Credentials.ClientID,
 				AccessToken: tcrsp.Credentials.AccessToken,
 				Certificate: tcrsp.Credentials.Certificate,
-			})
+			}
 			task.queueMux.Unlock()
 			tsm.status = tcrsp.Status
 			tsm.takenUntil = tcrsp.TakenUntil

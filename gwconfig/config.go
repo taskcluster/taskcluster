@@ -9,6 +9,11 @@ import (
 	"runtime"
 
 	"github.com/taskcluster/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
+	"github.com/taskcluster/taskcluster-client-go/tcauth"
+	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
+	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
 type (
@@ -128,4 +133,49 @@ func (c *Config) Validate() error {
 
 func (err MissingConfigError) Error() string {
 	return "Config setting \"" + err.Setting + "\" has not been defined"
+}
+
+func (c *Config) Credentials() *tcclient.Credentials {
+	return &tcclient.Credentials{
+		AccessToken: c.AccessToken,
+		ClientID:    c.ClientID,
+		Certificate: c.Certificate,
+	}
+}
+
+func (c *Config) Auth() *tcauth.Auth {
+	auth := tcauth.New(c.Credentials(), c.RootURL)
+	// If authBaseURL provided, it should take precedence over rootURL
+	if c.AuthBaseURL != "" {
+		auth.BaseURL = c.AuthBaseURL
+	}
+	return auth
+}
+
+func (c *Config) Queue() *tcqueue.Queue {
+	queue := tcqueue.New(c.Credentials(), c.RootURL)
+	// If queueBaseURL provided, it should take precedence over rootURL
+	if c.QueueBaseURL != "" {
+		queue.BaseURL = c.QueueBaseURL
+	}
+	return queue
+}
+
+func (c *Config) AWSProvisioner() *tcawsprovisioner.AwsProvisioner {
+	awsProvisioner := tcawsprovisioner.New(c.Credentials())
+	awsProvisioner.BaseURL = tcclient.BaseURL(c.RootURL, "aws-provisioner", "v1")
+	// If provisionerBaseURL provided, it should take precedence over rootURL
+	if c.ProvisionerBaseURL != "" {
+		awsProvisioner.BaseURL = c.ProvisionerBaseURL
+	}
+	return awsProvisioner
+}
+
+func (c *Config) PurgeCache() *tcpurgecache.PurgeCache {
+	purgeCache := tcpurgecache.New(c.Credentials(), c.RootURL)
+	// If purgeCacheBaseURL provided, it should take precedence over rootURL
+	if c.PurgeCacheBaseURL != "" {
+		purgeCache.BaseURL = c.PurgeCacheBaseURL
+	}
+	return purgeCache
 }

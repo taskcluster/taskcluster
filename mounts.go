@@ -151,8 +151,7 @@ func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
 func (feature *MountsFeature) Initialise() error {
 	fileCaches.LoadFromFile("file-caches.json", config.CachesDir)
 	directoryCaches.LoadFromFile("directory-caches.json", config.DownloadsDir)
-	pc = tcpurgecache.New(nil)
-	pc.BaseURL = config.PurgeCacheBaseURL
+	pc = config.PurgeCache()
 	return nil
 }
 

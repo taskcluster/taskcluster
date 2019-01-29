@@ -23,8 +23,6 @@ import (
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcauth"
-	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
@@ -98,7 +96,7 @@ func setup(t *testing.T) (teardown func()) {
 	testDir := filepath.Join(testdataDir, t.Name())
 	config = &gwconfig.Config{
 		AccessToken:      os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-		AuthBaseURL:      tcauth.DefaultBaseURL,
+		AuthBaseURL:      "",
 		AvailabilityZone: "outer-space",
 		// Need common caches directory across tests, since files
 		// directory-caches.json and file-caches.json are not per-test.
@@ -128,13 +126,13 @@ func setup(t *testing.T) (teardown func()) {
 		ProvisionerBaseURL:        "",
 		ProvisionerID:             "test-provisioner",
 		PublicIP:                  net.ParseIP("12.34.56.78"),
-		PurgeCacheBaseURL:         tcpurgecache.DefaultBaseURL,
-		QueueBaseURL:              tcqueue.DefaultBaseURL,
+		PurgeCacheBaseURL:         "",
+		QueueBaseURL:              "",
 		Region:                    "test-worker-group",
-		RootURL:                   os.Getenv("TASKCLUSTER_ROOT_URL"),
 		// should be enough for tests, and travis-ci.org CI environments don't
 		// have a lot of free disk
 		RequiredDiskSpaceMegabytes:     16,
+		RootURL:                   os.Getenv("TASKCLUSTER_ROOT_URL"),
 		RunAfterUserCreation:           "",
 		RunTasksAsCurrentUser:          os.Getenv("GW_TESTS_RUN_AS_TASK_USER") == "",
 		SentryProject:                  "generic-worker-tests",
@@ -179,7 +177,9 @@ func NewQueue(t *testing.T) *tcqueue.Queue {
 		os.Getenv("TASKCLUSTER_ROOT_URL") == "" {
 		t.Skip("Skipping test since TASKCLUSTER_{CLIENT_ID,ACCESS_TOKEN,ROOT_URL} env vars not set")
 	}
-	return tcqueue.NewFromEnv()
+	// BaseURL shouldn't be proxy otherwise requests will use CI clientId
+	// rather than env var TASKCLUSTER_CLIENT_ID
+	return tcqueue.New(tcclient.CredentialsFromEnvVars(), os.Getenv("TASKCLUSTER_ROOT_URL"))
 }
 
 func scheduleTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string) {
