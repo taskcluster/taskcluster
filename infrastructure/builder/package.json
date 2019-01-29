@@ -5,9 +5,6 @@
   "author": "Brian Stack <bstack@mozilla.com>",
   "description": "Build taskcluster images",
   "license": "MPL-2.0",
-  "bin": {
-    "taskcluster-builder": "./src/main.js"
-  },
   "scripts": {
     "lint": "eslint src/*.js src/*/*.js test/*.js test/*/*_test.js",
     "test": "mocha test/*/*_test.js"

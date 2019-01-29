@@ -39,7 +39,7 @@ To run tests for a specific package, you can either cd into the directory and `y
 
 ### Build
 
-To build the Taskcluster services, run `./taskcluster-builder build`.
+To build the Taskcluster services, run `yarn build`.
 The configuration for this command is in `build-config.yml`, and can be overridden with `user-build-config.yml` as necessary.
 See `build-config.yml` for advice on what to override.
 
