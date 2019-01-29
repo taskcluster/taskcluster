@@ -2,24 +2,13 @@ package scopes
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
-	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/tcauth"
 )
 
-var myAuth *tcauth.Auth
-
-func init() {
-	myAuth = tcauth.New(
-		&tcclient.Credentials{
-			ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
-		},
-	)
-}
+// tests only call public APIs, so no myAuth needed and we can use mozilla production deployment
+var myAuth *tcauth.Auth = tcauth.New(nil, "https://taskcluster.net")
 
 func accept(t *testing.T, given Given, required Required) {
 	satisfied, err := given.Satisfies(required, myAuth)
