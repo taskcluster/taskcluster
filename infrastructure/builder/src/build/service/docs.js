@@ -17,7 +17,6 @@ const DOCS_DOCKERFILE_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirnam
 
 exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir}) => {
   const services = listServices({repoDir: appRootDir.get()});
-  const docNames = spec.build.repositories.filter(repo => repo.docs).map(repo => repo.name).concat(services);
 
   const nginxImage = 'nginx:alpine';
   const nodeImage = `node:${repository.service.node}`;
@@ -31,8 +30,8 @@ exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, w
       `docker-image-${nginxImage}`,
       `repo-${name}-stamp`,
       `repo-${name}-dir`,
-      ...docNames.map(name => `docs-${name}-dir`),
-      ...docNames.map(name => `docs-${name}-stamp`),
+      'monorepo-dir',
+      'monorepo-stamp',
     ],
     provides: [
       `service-${name}-built-app-dir`,
@@ -46,10 +45,9 @@ exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, w
       const cacheDir = path.join(workDir, 'cache');
       const staticDir = path.join(appDir, 'static');
       const stamp = new Stamp({step: 'docs-build', version: 1},
-        // our own repo
+        // our own repo and the monorepo
         requirements[`repo-${name}-stamp`],
-        // all of the input docs
-        ...docNames.map(n => requirements[`docs-${n}-stamp`]));
+        requirements['monorepo-stamp']);
       const provides = {
         [`service-${name}-built-app-dir`]: appDir,
         [`service-${name}-stamp`]: stamp,
@@ -67,26 +65,6 @@ exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, w
       // copy from the repo (omitting .git as it's not needed)
       await copy(repoDir, appDir, {filter: ['**/*', '!**/.git/**', '!**/.git'], dot: true});
       assert(fs.existsSync(appDir));
-
-      utils.step({title: 'Copy Docs'});
-
-      // copy each docs directory to the appropriate place
-      // in the docs source tree
-      for (let docName of docNames) {
-        utils.status({message: docName});
-
-        const src = requirements[`docs-${docName}-dir`];
-        const metadataFile = path.join(src, 'metadata.json');
-        if (!fs.existsSync(metadataFile)) {
-          // skip docs building for services with no docs
-          continue;
-        }
-        const project = JSON.parse(fs.readFileSync(metadataFile)).project;
-        const dst = path.join(appDir, 'raw', 'reference', project);
-
-        await mkdirp(path.dirname(dst));
-        await copy(src, dst, {dot: true});
-      }
 
       utils.step({title: 'Install Dependencies'});
 
@@ -106,6 +84,7 @@ exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, w
 
       utils.step({title: 'Build'});
 
+      await mkdirp(path.join(appDir, 'raw', 'reference'));
       await dockerRun({
         image: nodeImage,
         workingDir: '/app',
@@ -114,6 +93,8 @@ exports.docsTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, w
         utils,
         binds: [
           `${appDir}:/app`,
+          // mount the generated docs at raw/reference/ in the app
+          `${requirements['monorepo-dir']}/generated/docs:/app/raw/reference`,
         ],
         baseDir,
       });

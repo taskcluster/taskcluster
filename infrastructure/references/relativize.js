@@ -1,7 +1,9 @@
+const fs = require('fs');
 const References = require('taskcluster-lib-references');
 
 const build = (input, output, rootUrl) => {
-  const refs = References.fromBuiltServices({directory: input});
+  const serializable = JSON.parse(fs.readFileSync(input, {encoding: 'utf8'}));
+  const refs = References.fromSerializable({serializable});
   refs.asAbsolute(rootUrl).writeUriStructured({directory: output});
 };
 
