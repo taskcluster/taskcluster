@@ -158,13 +158,14 @@ const load = loader({
   },
 
   listeners: {
-    requires: ['Hook', 'taskcreator', 'Queues', 'pulseClient'],
-    setup: async ({Hook, taskcreator, Queues, pulseClient}) => {
+    requires: ['Hook', 'taskcreator', 'Queues', 'pulseClient', 'monitor'],
+    setup: async ({Hook, taskcreator, Queues, pulseClient, monitor}) => {
       let listeners = new HookListeners({
         Hook,
         Queues,
         taskcreator,
         client: pulseClient,
+        monitor,
       });
       await listeners.setup();
       return listeners;

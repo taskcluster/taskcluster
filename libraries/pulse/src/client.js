@@ -213,7 +213,7 @@ class Client extends events.EventEmitter {
 
       // consider any errors on the channel to be potentially fatal to the whole
       // connection, out of an abundance of caution
-      channel.on('error', () => this.recycle());
+      channel.on('error', () => conn.failed());
 
       try {
         return await fn(channel);
@@ -223,7 +223,7 @@ class Client extends events.EventEmitter {
         } catch (err) {
           // an error trying to close the channel suggests the connection is dead, so
           // recycle, but continue to throw the first error
-          this.recycle();
+          conn.failed();
         }
       }
     });
@@ -240,6 +240,10 @@ class FakeClient {
   constructor() {
     this.isFakeClient = true;
     this.debug = debug('taskcluster-lib-pulse.conn-fake');
+  }
+
+  fullObjectName(kind, name) {
+    return `${kind}/namespace/${name}`;
   }
 
   async stop() { }
