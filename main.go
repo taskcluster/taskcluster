@@ -47,7 +47,7 @@ var (
 	logName = "public/logs/live_backing.log"
 	logPath = filepath.Join("generic-worker", "live_backing.log")
 
-	version  = "11.1.1"
+	version  = "12.0.0"
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
 )
 

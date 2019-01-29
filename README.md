@@ -88,7 +88,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker 11.1.1
+generic-worker 12.0.0
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -103,8 +103,8 @@ and reports back results to the queue.
                                             [--config         CONFIG-FILE]
                                             [--configure-for-aws]
     generic-worker show-payload-schema
-    generic-worker new-ed25519-keypair      --file PRIVATE-KEY-FILE
-    generic-worker new-openpgp-keypair      --file PRIVATE-KEY-FILE
+    generic-worker new-openpgp-keypair      --file OPENPGP-PRIVATE-KEY-FILE
+    generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
     generic-worker grant-winsta-access      --sid SID
     generic-worker --help
     generic-worker --version
@@ -128,11 +128,11 @@ and reports back results to the queue.
                                             after you have installed the service, and
                                             instead explicitly start the service when the
                                             preconditions have been met.
-    new-ed25519-keypair                     This will generate a fresh, new ed25519
+    new-openpgp-keypair                     This will generate a fresh, new OpenPGP
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
                                             key will be written to the specified file.
-    new-openpgp-keypair                     This will generate a fresh, new OpenPGP
+    new-ed25519-keypair                     This will generate a fresh, new ed25519
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
                                             key will be written to the specified file.
@@ -183,11 +183,9 @@ and reports back results to the queue.
                                             to talk to taskcluster queue.
           clientId                          Taskcluster client id used by generic worker to
                                             talk to taskcluster queue.
-          ed25519SigningKeyLocation         The ed25519 signing key for signing artifacts with.
           livelogSecret                     This should match the secret used by the
                                             stateless dns server; see
                                             https://github.com/taskcluster/stateless-dns-server
-          openpgpSigningKeyLocation         The PGP signing key for signing artifacts with.
           publicIP                          The IP address for clients to be directed to
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
@@ -195,6 +193,8 @@ and reports back results to the queue.
           rootURL                           The root URL of the Taskcluster deploment to which
                                             clientId and accessToken grant access. For example,
                                             'https://taskcluster.net'.
+          openpgpSigningKeyLocation         The PGP signing key for signing artifacts with.
+          ed25519SigningKeyLocation         The PGP signing key for signing artifacts with.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.
@@ -406,7 +406,7 @@ go test -v ./...
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 11.1.1
+$ ./release.sh 12.0.0
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
