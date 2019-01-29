@@ -7,11 +7,11 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/tcauth"
 )
 
-// tests only call public APIs, so no myAuth needed and we can use mozilla production deployment
-var myAuth *tcauth.Auth = tcauth.New(nil, "https://taskcluster.net")
+// tests only call public APIs, so no auth needed and we can use mozilla production deployment
+var auth *tcauth.Auth = tcauth.New(nil, "https://taskcluster.net")
 
 func accept(t *testing.T, given Given, required Required) {
-	satisfied, err := given.Satisfies(required, myAuth)
+	satisfied, err := given.Satisfies(required, auth)
 	if err != nil {
 		t.Fatalf("Hit error: %v", err)
 	}
@@ -21,7 +21,7 @@ func accept(t *testing.T, given Given, required Required) {
 }
 
 func reject(t *testing.T, given Given, required Required) {
-	satisfied, err := given.Satisfies(required, myAuth)
+	satisfied, err := given.Satisfies(required, auth)
 	if err != nil {
 		t.Fatalf("Hit error: %v", err)
 	}
@@ -241,15 +241,15 @@ func TestStarNotExpandedWhenNotAtEnd(t *testing.T) {
 // character.
 func ExampleGiven_Satisfies_wildcard() {
 	given := Given{"queue:*"}
-	out, _ := given.Satisfies(Required{{"queue:route:*"}}, myAuth)
+	out, _ := given.Satisfies(Required{{"queue:route:*"}}, auth)
 	fmt.Println(out)
-	out, _ = given.Satisfies(Required{{"queue:*"}}, myAuth)
+	out, _ = given.Satisfies(Required{{"queue:*"}}, auth)
 	fmt.Println(out)
-	out, _ = given.Satisfies(Required{{"*"}}, myAuth)
+	out, _ = given.Satisfies(Required{{"*"}}, auth)
 	fmt.Println(out)
 
 	given = Given{"queue:route"}
-	out, _ = given.Satisfies(Required{{"queue:*"}}, myAuth)
+	out, _ = given.Satisfies(Required{{"queue:*"}}, auth)
 	fmt.Println(out)
 	// Output:
 	// true
@@ -285,7 +285,7 @@ func ExampleGiven_Satisfies_compound() {
 				"Xxyz", // NOT satisfied
 			}, // => NOT satisfied since not all scopes in set are satisfied
 		}, // => satisfied since at least one set above is satisfied
-		myAuth,
+		auth,
 	)
 	fmt.Println(satisfies)
 	// Output: true
@@ -312,7 +312,7 @@ func ExampleGiven_Satisfies_expanded() {
 				"secrets:set:garbage/*",
 			},
 		},
-		myAuth,
+		auth,
 	)
 	fmt.Println(satisfies)
 	// Output: true
