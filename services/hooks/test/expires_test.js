@@ -4,44 +4,79 @@ const assume = require('assume');
 
 suite('expires_test', function() {
   helper.secrets.mockSuite('expires_test.js', ['taskcluster'], function(mock, skipping) {
+    helper.withHook(mock, skipping);
     helper.withLastFire(mock, skipping);
 
     test('expire nothing', async function() {
-      const count = await helper.LastFire.expires(new Date());
+      const count = await helper.LastFire.expires(helper.Hook, new Date());
       assume(count).to.equal(0);
     });
 
-    test('keep only 5 most recent lastfire', async function() {
-      const taskIds = [];
-      let entity = {
-        hookGroupId: 'testHookGroup',
-        hookId: 'testhook',
+    test('keep only 5 most recent lastfires for each hookId', async function() {
+      const hookGroupId ='testHookGroup';
+      const hookId1 = 'testhook';
+      const hookId2 = 'testhook2';
+      const hookIdToTaskIds ={ [hookId1]: [], [hookId2]: [] };
+      const hook = {
+        hookGroupId,
+        hookId: hookId1,
+        task: {},
+        metadata: {},
+        bindings: [],
+        schedule: {},
+        triggerToken: taskcluster.slugid(),
+        lastFire: {},
+        nextTaskId: taskcluster.slugid(),
+        nextScheduledDate: new Date(2000, 0, 0, 0, 0, 0, 0),
+        triggerSchema: {
+          type: 'object',
+          properties: {
+            location: {
+              type: 'string',
+              default: 'Niskayuna, NY',
+            },
+          },
+          additionalProperties: false,
+        },
+      };
+      helper.Hook.create(hook);
+      helper.Hook.create({...hook, hookId: hookId2});
+      const entity = {
+        hookGroupId,
+        hookId: '',
         firedBy: 'expires-test',
         result: 'success',
         error: '',
       };
-      for(let i=0; i<12;i++) {
-        taskIds.push(taskcluster.slugid());
-        time = new Date();
-        await helper.LastFire.create({...entity, taskId: taskIds[i], taskCreateTime: new Date()});
+      for (hookId of [hookId1, hookId2]) {
+        for(let i=0; i<12;i++) {
+          hookIdToTaskIds[hookId].push(taskcluster.slugid());
+          time = new Date();
+          await helper.LastFire.create({...entity, hookId,
+            taskId: hookIdToTaskIds[hookId][i],
+            taskCreateTime: new Date()});
+        }
       }
-      const count = await helper.LastFire.expires(new Date(), 5);
-      assume(count).to.equal(7);
 
-      recentTaskIds = [];
-      await helper.LastFire.query({
-        hookGroupId: 'testHookGroup',
-        hookId: 'testhook'},
-      {
-        handler: async lastFire => {
-          item = await lastFire.definition();
-          const { taskId } = item;
-          recentTaskIds.push(taskId);
-        },
+      const count = await helper.LastFire.expires(helper.Hook, new Date(), 5);
+      assume(count).to.equal(14);
+
+      for (let hookId of [hookId1, hookId2] ) {
+        recentTaskIds = [];
+        await helper.LastFire.query({
+          hookGroupId,
+          hookId },
+        {
+          handler: async lastFire => {
+            item = await lastFire.definition();
+            const { taskId } = item;
+            recentTaskIds.push(taskId);
+          },
+        }
+        );
+        hookIdToTaskIds[hookId].splice(0, 7);
+        assume(recentTaskIds.sort()).eql(hookIdToTaskIds[hookId].sort());
       }
-      );
-      taskIds.splice(0, 7);
-      assume(recentTaskIds.sort()).eql(taskIds.sort());
     });
   });
 });

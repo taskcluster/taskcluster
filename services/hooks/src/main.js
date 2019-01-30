@@ -227,12 +227,12 @@ const load = loader({
   },
 
   expires: {
-    requires: ['cfg', 'LastFire', 'monitor'],
-    setup: ({cfg, LastFire, monitor}) => {
+    requires: ['cfg', 'Hook', 'LastFire', 'monitor'],
+    setup: ({cfg, Hook, LastFire, monitor}) => {
       return monitor.oneShot('expire LastFires', async () => {
         const expirationTime = taskcluster.fromNow(cfg.app.lastFiresExpirationDelay);
         debug('Expiring lastFires rows');
-        const count = await LastFire.expires(expirationTime);
+        const count = await LastFire.expires(Hook, expirationTime);
         debug(`Expired ${count} rows`);
       });
     },

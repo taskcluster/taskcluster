@@ -221,39 +221,42 @@ LastFire.prototype.definition = function() {
   });
 };
 
-LastFire.expires = async function(now, n = 100) {
-  const hookIdsToData = {};
+LastFire.expires = async function(Hook, now, n = 100) {
+  const hookIds = new Set();
   let count = 0;
-  await this.scan({
-    taskCreateTime: Entity.op.lessThan(now)}, {
-    limit: 100,
-    handler: async item => {
-      const { hookGroupId, hookId, taskId, taskCreateTime } = await item.definition();
-      if (!(hookId in hookIdsToData)) {
-        hookIdsToData[hookId] = [];
-      }
-      hookIdsToData[hookId].push({hookGroupId, taskId, taskCreateTime});
+  await Hook.scan({},
+    {
+      handler: async hook => {
+        const { hookId } = await hook.definition();
+        hookIds.add(hookId);
+      },
     },
-  });
+  );
 
-  for( let key in hookIdsToData) {
-    if (Object.hasOwnProperty.call(hookIdsToData, key)) {
-      hookIdsToData[key].sort((a, b) =>
-        new Date(b.taskCreateTime) - new Date(a.taskCreateTime));
+  for (hookId of hookIds) {
+    const hookData = [];
+    await this.scan({
+      taskCreateTime: Entity.op.lessThan(now),
+      hookId: Entity.op.equal(hookId)}, {
+      limit: 500,
+      handler: async item => {
+        const { hookGroupId, taskId, taskCreateTime } = await item.definition();
+        hookData.push({hookGroupId, taskId, taskCreateTime});
+      },
+    },
+    );
+    hookData.sort((a, b) =>
+      new Date(b.taskCreateTime) - new Date(a.taskCreateTime));
 
-      // eslint-disable-next-line no-empty
-      let row;
-      for(let i=n; i<hookIdsToData[key].length;i++) {
-        await this.remove({
-          hookGroupId: hookIdsToData[key][i].hookGroupId,
-          hookId: key,
-          taskId: hookIdsToData[key][i].taskId});
-        count++;
-      }
+    for(let i=n;i<hookData.length;i++) {
+      await this.remove({
+        hookGroupId: hookData[i].hookGroupId,
+        hookId,
+        taskId: hookData[i].taskId});
+      count++;
     }
   }
   return count;
 };
-
 // export LastFire
 exports.LastFire = LastFire;
