@@ -413,4 +413,13 @@ exports.withBlacklist = (mock, skipping) => {
     exports.BlacklistedNotification = await exports.load('BlacklistedNotification');
     await exports.BlacklistedNotification.ensureTable();
   });
+
+  // Clear the table entries before each test
+  const cleanup = async () => {
+    if (!skipping()) {
+      await exports.BlacklistedNotification.scan({}, {handler: address => address.remove()});
+    }
+  };
+  setup(cleanup);
+  suiteTeardown(cleanup);
 };

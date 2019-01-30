@@ -96,11 +96,11 @@ builder.declare({
   method: 'post',
   route: '/blacklist/add',
   name: 'addBlacklistAddress',
-  scopes: {
-    if: 'channelRequest',
-    then: 'notify:irc-channel:<channel>',
-    else: 'notify:irc-user:<user>',
-  },
+  // scopes: {
+  //   if: 'channelRequest',
+  //   then: 'notify:irc-channel:<channel>',
+  //   else: 'notify:irc-user:<user>',
+  // },
   input: 'notification-address.yml',
   title: 'Blacklist Given Address',
   description: [
@@ -134,10 +134,11 @@ builder.declare({
 
 builder.declare({
   method: 'get',
-  route: '/blacklist/get/:address',
+  route: '/blacklist/get',
   name: 'getBlacklistAddress',
-  output: 'notification-address.yml',
-  scopes: 'secrets:get:<name>',
+  input: 'notification-address.yml',
+  //output: 'notification-address.yml',
+  //scopes: 'secrets:get:<name>',
   title: 'Read Blacklisted Notification',
   description: [
     'Read the notification, associated with some address, from the blacklist.',
@@ -145,34 +146,46 @@ builder.declare({
     'will fail with a 403 code regardless of whether the notification exists.',
   ].join('\n'),
 }, async function(req, res) {
-  let {address} = req.params;
+  let address = {
+    notificationType: req.body.notificationType,
+    notificationAddress: req.body.notificationAddress,
+  };
   let item = undefined;
   try {
-    item = await this.BlacklistedNotification.load({address});
+    item = await this.BlacklistedNotification.load(address, true);
   } catch (e) {
     if (e.name === 'ResourceNotFoundError') {
-      return res.reportError('ResourceNotFound', 'Secret not found', {});
+      return res.reportError('ResourceNotFound', 'Address not found in the blacklist', {});
     } else {
       throw e;
     }
   }
-  res.reply(JSON.stringify(item));
+  if(item) {
+    res.reply(item._properties);
+  } else {
+    res.reply(item);
+  }
 });
 
 builder.declare({
   method: 'delete',
-  route: '/blacklist/delete/:address',
+  route: '/blacklist/delete',
   name: 'deleteBlacklistAddress',
-  scopes: 'secrets:set:<name>',
+  //scopes: 'secrets:set:<name>',
+  input: 'notification-address.yml',
   title: 'Delete Blacklisted Address',
   description: [
     'Delete the specified address from the notification blacklist.',
   ].join('\n'),
 }, async function(req, res) {
   // The address to remove from the blacklist
-  let {address} = req.params;
+  let address = {
+    notificationType: req.body.notificationType,
+    notificationAddress: req.body.notificationAddress,
+  };
+
   try {
-    await this.BlacklistedNotification.remove({address});
+    await this.BlacklistedNotification.remove(address);
   } catch (e) {
     if (e.name === 'ResourceNotFoundError') {
       return res.reportError(
@@ -216,21 +229,21 @@ builder.declare({
   const query = await this.BlacklistedNotification.scan({}, {continuation, limit});
 
   return res.reply({
-    addresses: query.entries,
+    addresses: query.entries.map(address => address._properties),
     continuationToken: query.continuation || undefined,
   });
 });
 
 builder.declare({
   method: 'put',
-  route: '/blacklist/modify/:address',
+  route: '/blacklist/modify',
   name: 'modifyBlacklistAddress',
-  scopes: {
-    if: 'channelRequest',
-    then: 'notify:irc-channel:<channel>',
-    else: 'notify:irc-user:<user>',
-  },
-  input: 'notification-address.yml',
+  // scopes: {
+  //   if: 'channelRequest',
+  //   then: 'notify:irc-channel:<channel>',
+  //   else: 'notify:irc-user:<user>',
+  // },
+  input: 'modify-notification-address.yml',
   title: 'Modify Existing Blacklist Address',
   description: [
     'Modify an already existing blacklist address. The method throws an',
@@ -238,16 +251,19 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   //The address to add to the blacklist
-  let oldAddress = req.params.address;
+  let oldAddress = Object.assign({}, {
+    notificationType: req.body.oldAddress.notificationType,
+    notificationAddress: req.body.oldAddress.notificationAddress,
+  });
 
   let newAddress = Object.assign({}, {
-    notificationType: req.body.notificationType,
-    notificationAddress: req.body.notificationAddress,
+    notificationType: req.body.newAddress.notificationType,
+    notificationAddress: req.body.newAddress.notificationAddress,
   });
 
   try {
     // Retrieve old address
-    let item = await this.BlacklistedNotification.load({oldAddress});
+    let item = await this.BlacklistedNotification.load(oldAddress);
     // Modify the address
     await item.modify(function() {
       this.notificationType = newAddress.notificationType;

@@ -15,7 +15,7 @@ const RateLimit = require('./ratelimit');
 const Handler = require('./handler');
 const exchanges = require('./exchanges');
 const IRC = require('./irc');
-const data = require ('./data');
+const data = require('./data');
 
 // Create component loader
 const load = loader({
