@@ -100,7 +100,7 @@ $client.DownloadFile("https://github.com/taskcluster/generic-worker/releases/dow
 $client.DownloadFile("https://github.com/taskcluster/livelog/releases/download/v1.1.0/livelog-windows-amd64.exe", "C:\generic-worker\livelog.exe")
 
 # download taskcluster-proxy
-$client.DownloadFile("https://github.com/taskcluster/taskcluster-proxy/releases/download/v4.1.0/taskcluster-proxy-windows-amd64.exe", "C:\generic-worker\taskcluster-proxy.exe")
+$client.DownloadFile("https://github.com/taskcluster/taskcluster-proxy/releases/download/v5.0.1/taskcluster-proxy-windows-amd64.exe", "C:\generic-worker\taskcluster-proxy.exe")
 
 # install generic-worker
 Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install service --configure-for-aws --nssm C:\nssm-2.24\win64\nssm.exe --config C:\generic-worker\generic-worker.config" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\install.log -RedirectStandardError C:\generic-worker\install.err
