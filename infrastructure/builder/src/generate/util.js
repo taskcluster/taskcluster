@@ -26,6 +26,13 @@ exports.readJSON = async filename => {
 };
 
 /**
+ * Write a file out
+ */
+exports.writeFile = async (filename, data) => {
+  return await writeFile(filename, data, {encoding: 'utf8'});
+};
+
+/**
  * Write a JSON file out using JSON-stable-stringify
  */
 exports.writeJSON = async (filename, data) => {
