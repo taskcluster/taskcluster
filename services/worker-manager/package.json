@@ -1,0 +1,24 @@
+{
+  "name": "taskcluster-worker-manager",
+  "version": "1.0.0",
+  "description": "Taskcluster Worker Manager",
+  "main": "index.js",
+  "author": "John Ford <john@johnford.org>",
+  "license": "MPL-2.0",
+  "engine-strict": true,
+  "private": true,
+  "bin": {
+    "convert-worker-type": "./bin/convert.js"
+  },
+  "scripts": {
+    "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
+    "lint": "eslint src/*.js test/*.js",
+    "fixlint": "eslint --fix src/*.js test/*.js",
+    "test": "mocha test/*_test.js test/bidding-strategies/*_test.js"
+  },
+  "dependencies": {
+    "array.prototype.flat": "^1.2.1",
+    "array.prototype.flatmap": "^1.2.1",
+    "moment": "^2.22.2"
+  }
+}

@@ -1530,6 +1530,24 @@ array-unique@^0.3.2:
   resolved "https://registry.yarnpkg.com/array-unique/-/array-unique-0.3.2.tgz#a894b75d4bc4f6cd679ef3244a9fd8f46ae2d428"
   integrity sha1-qJS3XUvE9s1nnvMkSp/Y9Gri1Cg=
 
+array.prototype.flat@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/array.prototype.flat/-/array.prototype.flat-1.2.1.tgz#812db8f02cad24d3fab65dd67eabe3b8903494a4"
+  integrity sha512-rVqIs330nLJvfC7JqYvEWwqVr5QjYF1ib02i3YJtR/fICO6527Tjpc/e4Mvmxh3GIePPreRXMdaGyC99YphWEw==
+  dependencies:
+    define-properties "^1.1.2"
+    es-abstract "^1.10.0"
+    function-bind "^1.1.1"
+
+array.prototype.flatmap@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/array.prototype.flatmap/-/array.prototype.flatmap-1.2.1.tgz#3103cd4826ef90019c9b0a4839b2535fa6faf4e9"
+  integrity sha512-i18e2APdsiezkcqDyZor78Pbfjfds3S94dG6dgIV2ZASJaUf1N0dz2tGdrmwrmlZuNUgxH+wz6Z0zYVH2c5xzQ==
+  dependencies:
+    define-properties "^1.1.2"
+    es-abstract "^1.10.0"
+    function-bind "^1.1.1"
+
 arrify@^1.0.0, arrify@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/arrify/-/arrify-1.0.1.tgz#898508da2226f380df904728456849c1501a4b0d"
@@ -3382,7 +3400,7 @@ error-ex@^1.2.0:
   dependencies:
     is-arrayish "^0.2.1"
 
-es-abstract@^1.5.1:
+es-abstract@^1.10.0, es-abstract@^1.5.1:
   version "1.13.0"
   resolved "https://registry.yarnpkg.com/es-abstract/-/es-abstract-1.13.0.tgz#ac86145fdd5099d8dd49558ccba2eaf9b88e24e9"
   integrity sha512-vDZfg/ykNxQVwup/8E1BZhVzFfBxs9NqMzGcvIJrqg5k2/5Za2bWo40dK2J1pgLngZ7c+Shh8lwYtLGyrwPutg==
@@ -5923,6 +5941,13 @@ memory-fs@^0.4.0, memory-fs@~0.4.1:
     errno "^0.1.3"
     readable-stream "^2.0.1"
 
+memory-streams@^0.1.3:
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/memory-streams/-/memory-streams-0.1.3.tgz#d9b0017b4b87f1d92f55f2745c9caacb1dc93ceb"
+  integrity sha512-qVQ/CjkMyMInPaaRMrwWNDvf6boRZXaT/DbQeMYcCWuXPEBf1v8qChOc9OlEVQp2uOvRXa1Qu30fLmKhY6NipA==
+  dependencies:
+    readable-stream "~1.0.2"
+
 mensch@^0.3.3:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/mensch/-/mensch-0.3.3.tgz#e200ff4dd823717f8e0563b32e3f5481fca262b2"
@@ -7459,7 +7484,7 @@ readable-stream@^3.0.6:
     string_decoder "^1.1.1"
     util-deprecate "^1.0.1"
 
-readable-stream@~1.0.26-4:
+readable-stream@~1.0.2, readable-stream@~1.0.26-4:
   version "1.0.34"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-1.0.34.tgz#125820e34bc842d2f2aaafafe4c2916ee32c157c"
   integrity sha1-Elgg40vIQtLyqq+v5MKRbuMsFXw=
@@ -8507,113 +8532,52 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:libraries/client":
-  version "12.2.0"
-  dependencies:
-    debug "^4.0.0"
-    hawk "^7.0.10"
-    lodash "^4.17.4"
-    promise "^8.0.1"
-    slugid "^2.0.0"
-    superagent "^4.0.0"
-    taskcluster-lib-urls "^12.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-api@link:libraries/api":
-  version "12.8.1"
-  dependencies:
-    aws-sdk "^2.151.0"
-    body-parser "1.18.3"
-    debug "^4.0.0"
-    express "4.16.4"
-    hawk "^7.0.10"
-    lodash "^4.15.0"
-    promise "^8.0.1"
-    slugid "^2.0.0"
-    type-is "^1.6.15"
-    uuid "^3.1.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-app@link:libraries/app":
-  version "10.2.0"
-  dependencies:
-    content-security-policy "^0.3.0"
-    debug "^4.0.0"
-    express "4.16.4"
-    express-sslify "1.2.0"
-    hsts "^2.1.0"
-    lodash "4.17.11"
-    morgan "^1.0.0"
-    morgan-debug "^2.0.0"
-    promise "^8.0.1"
-    uuid "^3.3.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "10.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-docs@link:libraries/docs":
-  version "11.0.0"
-  dependencies:
-    app-root-dir "^1.0.2"
-    aws-sdk "^2.147.0"
-    debug "^4.0.0"
-    lodash "^4.13.1"
-    mkdirp "^0.5.1"
-    mz "^2.7.0"
-    recursive-readdir-sync "^1.0.6"
-    s3-upload-stream "^1.0.7"
-    tar-stream "^1.5.4"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "11.0.0"
-  dependencies:
-    debug "^4.1.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "11.0.0"
-  dependencies:
-    assume "^2.1.0"
-    debug "^4.1.0"
-    lodash "^4.17.11"
-    topo-sort "^1.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "11.1.1"
-  dependencies:
-    app-root-dir "^1.0.2"
-    aws-sdk "^2.30.0"
-    debug "^4.0.0"
-    lodash "^4.5.1"
-    raven "^2.2.1"
-    statsum "^0.6.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "11.1.1"
-  dependencies:
-    amqplib "^0.5.2"
-    aws-sdk "^2.331.0"
-    debug "^4.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-references@link:libraries/references":
-  version "1.5.0"
-  dependencies:
-    ajv "^6.5.5"
-    js-yaml "^3.12.1"
-    lodash "^4.17.10"
-    mkdirp "^0.5.1"
-    regex-escape "^3.4.8"
-    rimraf "^2.6.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "10.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "12.1.2"
-  dependencies:
-    debug "^4.0.0"
-    express "4.16.4"
-    hawk "^7.0.10"
-    lodash "^4.17.10"
-    nock "^10.0.0"
-    promise "^8.0.1"
-    superagent "^4.0.0"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -8621,18 +8585,8 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "12.0.0"
-  dependencies:
-    ajv "^6.5.0"
-    app-root-dir "^1.0.2"
-    aws-sdk "^2.142.0"
-    debug "^4.0.0"
-    js-yaml "^3.12.1"
-    lodash "^4.5.1"
-    mkdirp "^0.5.1"
-    promise "^8.0.1"
-    rimraf "^2.6.2"
-    walk "^2.3.9"
+  version "0.0.0"
+  uid ""
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"
@@ -8904,11 +8858,8 @@ typechecker@~2.0.1:
   integrity sha1-6D2oS7ZMWEzLNFg4V2xAsDN9uC4=
 
 "typed-env-config@link:libraries/typed-env-config":
-  version "3.0.0"
-  dependencies:
-    debug "^4.1.0"
-    js-yaml "^3.12.1"
-    lodash "^4.17.11"
+  version "0.0.0"
+  uid ""
 
 typedarray@^0.0.6:
   version "0.0.6"
