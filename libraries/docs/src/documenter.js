@@ -7,6 +7,7 @@ let recursiveReadSync = require('recursive-readdir-sync');
 let zlib = require('zlib');
 let rootdir = require('app-root-dir');
 let aws = require('aws-sdk');
+let promisepipe = require('promisepipe');
 
 let client = require('taskcluster-client');
 let S3UploadStream = require('s3-upload-stream');
@@ -150,11 +151,9 @@ class Documenter {
       extract.on('entry', (header, stream, next) => {
         // NOTE: we ignore permissions, ownership, etc..
         const pathname = path.join(docsDir, header.name);
-        mkdirp(path.dirname(pathname)).then(() => {
-          stream.once('end', next);
-          stream.once('error', reject);
-          stream.pipe(fs.createWriteStream(pathname));
-        }).catch(reject);
+        mkdirp(path.dirname(pathname))
+          .then(() => promisepipe(stream, fs.createWriteStream(pathname)))
+          .then(() => next(), err => reject(err));
       });
 
       extract.on('finish', resolve);
