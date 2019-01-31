@@ -363,11 +363,9 @@ builder.declare({
         await lastFire.remove(false, true);
       },
     });
-
-    this.publisher.hookLastFiresDeleted({hookGroupId, hookId});
-    // eslint-disable-next-line no-empty
   } catch (err) {
     // The hook may have not been ever triggered
+    throw err;
   }
 
   return res.status(200).json({});
