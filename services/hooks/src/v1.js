@@ -354,6 +354,14 @@ builder.declare({
   await this.Hook.remove({hookGroupId, hookId}, true);
   this.publisher.hookDeleted({hookGroupId, hookId});
 
+  await this.LastFire.query({
+    hookGroupId: req.params.hookGroupId,
+    hookId: req.params.hookId,
+  }, {
+    handler: async (lastFire) => {
+      await lastFire.remove(false, true);
+    },
+  });
   return res.status(200).json({});
 });
 

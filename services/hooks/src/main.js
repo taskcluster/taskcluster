@@ -227,6 +227,18 @@ const load = loader({
     setup: ({schedulerNoStart}) => schedulerNoStart.start(),
   },
 
+  expires: {
+    requires: ['cfg', 'Hook', 'LastFire', 'monitor'],
+    setup: ({cfg, Hook, LastFire, monitor}) => {
+      return monitor.oneShot('expire LastFires', async () => {
+        const expirationTime = taskcluster.fromNow(cfg.app.lastFiresExpirationDelay);
+        debug('Expiring lastFires rows');
+        const count = await LastFire.expires(Hook, expirationTime);
+        debug(`Expired ${count} rows`);
+      });
+    },
+  },
+
 }, ['profile', 'process']);
 
 // If this file is executed launch component from first argument
