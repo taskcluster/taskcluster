@@ -8,6 +8,7 @@ A hook can be "fired" in a variety of ways:
  * on a schedule
  * via the `triggerHook` API method
  * via a webhook, utilizing a security token
+ * in response to a pulse message
 
 In each case, the hooks service creates a task based on the hook definition and
 submits it to the Queue service via `Queue.createTask`.
@@ -71,6 +72,19 @@ The context is similar to that for `triggerHook`:
     firedBy: "triggerHookWithToken",
     taskId: 'IgfFQSAqQwysozyeB7udBw',
     payload: {..}               // API call payload
+}
+```
+
+### Pulse Messages
+
+When a pulse message arrives that matches the bindings for a hook, the hook's
+task payload is rendered with the following context:
+
+```
+{
+    firedBy: "pulseMessage",
+    taskId: 'IgfFQSAqQwysozyeB7udBw',
+    payload: {..}               // pulse message payload
 }
 ```
 
