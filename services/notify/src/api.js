@@ -96,11 +96,7 @@ builder.declare({
   method: 'post',
   route: '/blacklist/add',
   name: 'addBlacklistAddress',
-  // scopes: {
-  //   if: 'channelRequest',
-  //   then: 'notify:irc-channel:<channel>',
-  //   else: 'notify:irc-user:<user>',
-  // },
+  scopes: 'notify:manage-blacklist:<notificationType>/<notificationAddress>',
   input: 'notification-address.yml',
   title: 'Blacklist Given Address',
   description: [
@@ -119,13 +115,7 @@ builder.declare({
   try {
     await this.BlacklistedNotification.create(address);
   } catch (e) {
-    if (e.name === 'EntityAlreadyExistsError') {
-      return res.reportError(
-        'EntityAlreadyExists',
-        'Notification address already exists in the blacklist',
-        {}
-      );
-    } else {
+    if (e.name !== 'EntityAlreadyExistsError') {
       throw e;
     }
   }
@@ -133,45 +123,10 @@ builder.declare({
 });
 
 builder.declare({
-  method: 'get',
-  route: '/blacklist/get',
-  name: 'getBlacklistAddress',
-  input: 'notification-address.yml',
-  //output: 'notification-address.yml',
-  //scopes: 'secrets:get:<name>',
-  title: 'Read Blacklisted Notification',
-  description: [
-    'Read the notification, associated with some address, from the blacklist.',
-    'If the caller lacks the scope necessary to get the notification, the call',
-    'will fail with a 403 code regardless of whether the notification exists.',
-  ].join('\n'),
-}, async function(req, res) {
-  let address = {
-    notificationType: req.body.notificationType,
-    notificationAddress: req.body.notificationAddress,
-  };
-  let item = undefined;
-  try {
-    item = await this.BlacklistedNotification.load(address, true);
-  } catch (e) {
-    if (e.name === 'ResourceNotFoundError') {
-      return res.reportError('ResourceNotFound', 'Address not found in the blacklist', {});
-    } else {
-      throw e;
-    }
-  }
-  if(item) {
-    res.reply(item._properties);
-  } else {
-    res.reply(item);
-  }
-});
-
-builder.declare({
   method: 'delete',
   route: '/blacklist/delete',
   name: 'deleteBlacklistAddress',
-  //scopes: 'secrets:set:<name>',
+  scopes: 'notify:manage-blacklist:<notificationType>/<notificationAddress>',
   input: 'notification-address.yml',
   title: 'Delete Blacklisted Address',
   description: [
@@ -187,13 +142,7 @@ builder.declare({
   try {
     await this.BlacklistedNotification.remove(address);
   } catch (e) {
-    if (e.name === 'ResourceNotFoundError') {
-      return res.reportError(
-        'ResourceNotFound',
-        'Notification address not found in the blacklist',
-        {}
-      );
-    } else {
+    if (e.name !== 'ResourceNotFoundError') {
       throw e;
     }
   }
@@ -232,53 +181,4 @@ builder.declare({
     addresses: query.entries.map(address => address._properties),
     continuationToken: query.continuation || undefined,
   });
-});
-
-builder.declare({
-  method: 'put',
-  route: '/blacklist/modify',
-  name: 'modifyBlacklistAddress',
-  // scopes: {
-  //   if: 'channelRequest',
-  //   then: 'notify:irc-channel:<channel>',
-  //   else: 'notify:irc-user:<user>',
-  // },
-  input: 'modify-notification-address.yml',
-  title: 'Modify Existing Blacklist Address',
-  description: [
-    'Modify an already existing blacklist address. The method throws an',
-    'error if the address does not already exist in the blacklist',
-  ].join('\n'),
-}, async function(req, res) {
-  //The address to add to the blacklist
-  let oldAddress = Object.assign({}, {
-    notificationType: req.body.oldAddress.notificationType,
-    notificationAddress: req.body.oldAddress.notificationAddress,
-  });
-
-  let newAddress = Object.assign({}, {
-    notificationType: req.body.newAddress.notificationType,
-    notificationAddress: req.body.newAddress.notificationAddress,
-  });
-
-  try {
-    // Retrieve old address
-    let item = await this.BlacklistedNotification.load(oldAddress);
-    // Modify the address
-    await item.modify(function() {
-      this.notificationType = newAddress.notificationType;
-      this.notificationAddress = newAddress.notificationAddress;
-    });
-  } catch (e) {
-    if (e.name === 'ResourceNotFoundError') {
-      return res.reportError(
-        'ResourceNotFound',
-        'Notification address not found',
-        {}
-      );
-    } else {
-      throw e;
-    }
-  }
-  res.reply({});
 });

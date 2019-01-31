@@ -17,10 +17,6 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
     notificationType: "irc-user",
     notificationAddress: "username",
   };
-  let dummyAddress3 = {
-    notificationType: "email",
-    notificationAddress: "username@name.com",
-  };
 
   test('ping', async function() {
     await helper.apiClient.ping();
@@ -94,19 +90,6 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
     }
   });
 
-  test('Blacklist: getBlacklistAddress()', async function() {
-    // Add an address
-    await helper.apiClient.addBlacklistAddress(dummyAddress1);
-
-    // Retrieve the address and make sure it is correct
-    let item = await helper.apiClient.getBlacklistAddress(dummyAddress1);
-    assert.deepEqual(item, dummyAddress1);
-
-    // Try retrieving an address that doesn't exist
-    let item2 = await helper.apiClient.getBlacklistAddress(dummyAddress2);
-    assert.equal(item2, null);
-  });
-
   test('Blacklist: deleteBlacklistAddress()', async function() {
     // Add some items
     await helper.apiClient.addBlacklistAddress(dummyAddress1);
@@ -134,33 +117,12 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
     assert(addressList.addresses, []);
 
     // Add some items
-    await helper.apiClient.addBlacklistAddress(dummyAddress1);
-    await helper.apiClient.addBlacklistAddress(dummyAddress2);
+    await helper.BlacklistedNotification.create(dummyAddress1);
+    await helper.BlacklistedNotification.create(dummyAddress2);
 
     // check the result of list()
     addressList = await helper.apiClient.list();
     let expectedResult = [dummyAddress1, dummyAddress2].sort();
     assert.deepEqual(addressList.addresses.sort(), expectedResult);
-  });
-
-  test('Blacklist: modifyBlacklistAddress()', async function() {
-    // Try to modify a non existant address
-    try {
-      await helper.apiClient.modifyBlacklistAddress();
-    } catch(e) {
-      assert(e.name, 'ResourceNotFoundError');
-    }
-
-    // Add an address
-    await helper.apiClient.addBlacklistAddress(dummyAddress1);
-
-    // Modify the address and check for success
-    await helper.apiClient.modifyBlacklistAddress({
-      oldAddress: dummyAddress1,
-      newAddress: dummyAddress3,
-    });
-    let item = await helper.apiClient.list();
-    item = item.addresses[0];
-    assert.deepEqual(item, dummyAddress3);
   });
 });
