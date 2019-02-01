@@ -16,6 +16,7 @@ const Handler = require('./handler');
 const exchanges = require('./exchanges');
 const IRC = require('./irc');
 const data = require('./data');
+const {sasCredentials} = require('taskcluster-lib-azure');
 
 // Create component loader
 const load = loader({

@@ -14,6 +14,10 @@ const RateLimit = require('../src/ratelimit');
 const slugid = require('slugid');
 const data = require('../src/data');
 
+// a suffix used to generate unique table names so that parallel test runs do not
+// interfere with one another.  We remove these at the end of the test run.
+const TABLE_SUFFIX = slugid.nice().replace(/[_-]/g, '');
+
 // Load configuration
 const cfg = config({profile: 'test'});
 
