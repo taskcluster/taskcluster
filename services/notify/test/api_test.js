@@ -31,7 +31,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
     // Add an address to the blacklist
     await helper.apiClient.addBlacklistAddress({
       notificationType: 'pulse',
-      notificationAddress: 'notify-test'
+      notificationAddress: 'notify-test',
     });
     // Ensure sending notification to that address fails with appropriate error
     try {
@@ -54,7 +54,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
     // Add an address to the blacklist
     await helper.apiClient.addBlacklistAddress({
       notificationType: 'email',
-      notificationAddress: 'success@simulator.amazonses.com'
+      notificationAddress: 'success@simulator.amazonses.com',
     });
     // Ensure sending notification to that address fails with appropriate error
     try {
@@ -65,7 +65,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
         link: {text: 'Inspect Task', href: 'https://tools.taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ'},
       });
     } catch(e) {
-      assert.equal(e.code, "InternalServerError")
+      assert.equal(e.code, "InternalServerError");
     }
   });
 
@@ -92,7 +92,6 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
     });
   });
 
-
   test('irc', async function() {
     await helper.apiClient.irc({message: 'Does this work?', channel: '#taskcluster-test'});
     await helper.checkSQSMessage(helper.ircSQSQueue, body => {
@@ -102,7 +101,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
     // Add an irc-channel address to the blacklist
     await helper.apiClient.addBlacklistAddress({
       notificationType: 'irc-channel',
-      notificationAddress: '#taskcluster-test'
+      notificationAddress: '#taskcluster-test',
     });
     // Ensure sending notification to that address fails with appropriate error
     try {

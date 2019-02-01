@@ -36,9 +36,9 @@ builder.declare({
   await req.authorize(req.body);
 
   let address = {
-  notificationType: "email",
-  notificationAddress: req.body.address,
-  }
+    notificationType: "email",
+    notificationAddress: req.body.address,
+  };
   // Ensure that the address is not in the blacklist
   let response = await this.BlacklistedNotification.load(address, true);
   if(!response) {
@@ -67,7 +67,7 @@ builder.declare({
   let notificationAddress = {
     notificationType: "pulse",
     notificationAddress: req.body.routingKey,
-  }
+  };
   // Ensure that the address is not in the blacklist
   let response = await this.BlacklistedNotification.load(notificationAddress, true);
   if(!response) {
@@ -115,7 +115,7 @@ builder.declare({
   let notificationAddress = {
     notificationType: input.user ? "irc-user" : "irc-channel",
     notificationAddress: input.user ? input.user : input.channel,
-  }
+  };
   // Ensure that the address is not in the blacklist
   let response = await this.BlacklistedNotification.load(notificationAddress, true);
   if(!response) {
@@ -125,7 +125,6 @@ builder.declare({
     return res.reportError('BlacklistedAddress', `${input.channel || input.user} is blacklisted`, {});
   }
 });
-
 
 builder.declare({
   method: 'post',
