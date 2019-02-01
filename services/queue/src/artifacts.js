@@ -763,6 +763,13 @@ builder.declare({
         },
       });
 
+      if (headRes.statusCode >= 300 || headRes.statusCode < 200) {
+        return res.reportError('InternalServerError', [
+          `When attempting to do a HEAD request for the uploaded artifact ${url}`,
+          `a status code of ${headRes.statusCode} was returned.`,
+        ].join(' '), {});
+      }
+
       if (headRes.headers['x-amz-meta-content-sha256'] !== artifact.details.contentSha256) {
         let msg = [
           'Expected S3 object to have SHA256 of ',
