@@ -181,7 +181,7 @@ and reports back results to the queue.
 
           accessToken                       Taskcluster access token used by generic worker
                                             to talk to taskcluster queue.
-          clientId                          Taskcluster client id used by generic worker to
+          clientId                          Taskcluster client ID used by generic worker to
                                             talk to taskcluster queue.
           ed25519SigningKeyLocation         The ed25519 signing key for signing artifacts with.
           livelogSecret                     This should match the secret used by the
@@ -192,9 +192,10 @@ and reports back results to the queue.
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
-          rootURL                           The root URL of the Taskcluster deploment to which
+          rootURL                           The root URL of the taskcluster deployment to which
                                             clientId and accessToken grant access. For example,
-                                            'https://taskcluster.net'.
+                                            'https://taskcluster.net'. Individual services can
+                                            override this settings - see the *BaseURL settings.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.
@@ -202,7 +203,11 @@ and reports back results to the queue.
         ** OPTIONAL ** properties
         =========================
 
-          authBaseURL                       The base URL for API calls to the auth service.
+          authBaseURL                       The base URL for taskcluster auth API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://auth.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/auth/v1 for all other rootURLs
           availabilityZone                  The EC2 availability zone of the worker.
           cachesDir                         The directory where task caches should be stored on
                                             the worker. The directory will be created if it does
@@ -267,14 +272,24 @@ and reports back results to the queue.
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           privateIP                         The private IP of the worker, used by chain of trust.
-          provisionerBaseURL                The base URL for API calls to the provisioner in
-                                            order to determine if there is a new deploymentId.
+          provisionerBaseURL                The base URL for aws-provisioner API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://aws-provisioner.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/aws-provisioner/v1 for all other rootURLs
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: test-provisioner]
-          purgeCacheBaseURL                 The base URL for API calls to the purge cache
-                                            service.
+          purgeCacheBaseURL                 The base URL for purge cache API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://purge-cache.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/purge-cache/v1 for all other rootURLs
           queueBaseURL                      The base URL for API calls to the queue service.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://queue.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/queue/v1 for all other rootURLs
           region                            The EC2 region of the worker.
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
