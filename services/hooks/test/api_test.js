@@ -408,6 +408,14 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       }]);
     });
 
+    test('returns an empty object when the hook does not create a task', async () => {
+      await helper.hooks.createHook('foo', 'bar',
+        Object.assign({}, hookWithTriggerSchema, {task: {$if: 'false', then: true}}));
+      helper.creator.shouldNotProduceTask = true;
+      const res = await helper.hooks.triggerHook('foo', 'bar', {});
+      assume(res).deep.equals({});
+    });
+
     test('fails when creating the task fails', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       helper.creator.shouldFail = { // firing the hook should fail..

@@ -127,6 +127,7 @@ helper.withTaskCreator = function(mock, skipping) {
   setup(function() {
     helper.creator.fireCalls = [];
     helper.creator.shouldFail = false;
+    helper.creator.shouldNotProduceTask = false;
   });
 };
 
