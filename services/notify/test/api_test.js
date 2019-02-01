@@ -28,6 +28,17 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
       assert.deepEqual(m.payload.message, {test: 123});
       assert.deepEqual(m.CCs, ['route.notify-test']);
     });
+    // Add an address to the blacklist
+    await helper.apiClient.addBlacklistAddress({
+      notificationType: 'pulse',
+      notificationAddress: 'notify-test'
+    });
+    // Ensure sending notification to that address fails with appropriate error
+    try {
+      await helper.apiClient.pulse({routingKey: 'notify-test', message: {test: 123}});
+    } catch(e) {
+      assert(e.code, 'InternalServerError');
+    }
   });
 
   test('email', async function() {
@@ -40,6 +51,22 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
     helper.checkEmails(email => {
       assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
     });
+    // Add an address to the blacklist
+    await helper.apiClient.addBlacklistAddress({
+      notificationType: 'email',
+      notificationAddress: 'success@simulator.amazonses.com'
+    });
+    // Ensure sending notification to that address fails with appropriate error
+    try {
+      await helper.apiClient.email({
+        address: 'success@simulator.amazonses.com',
+        subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is Complete',
+        content: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is finished. It took 124 minutes.',
+        link: {text: 'Inspect Task', href: 'https://tools.taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ'},
+      });
+    } catch(e) {
+      assert.equal(e.code, "InternalServerError")
+    }
   });
 
   test('email without link', async function() {
@@ -65,12 +92,31 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
     });
   });
 
+
   test('irc', async function() {
     await helper.apiClient.irc({message: 'Does this work?', channel: '#taskcluster-test'});
     await helper.checkSQSMessage(helper.ircSQSQueue, body => {
       assert.equal(body.channel, '#taskcluster-test');
       assert.equal(body.message, 'Does this work?');
     });
+    // Add an irc-channel address to the blacklist
+    await helper.apiClient.addBlacklistAddress({
+      notificationType: 'irc-channel',
+      notificationAddress: '#taskcluster-test'
+    });
+    // Ensure sending notification to that address fails with appropriate error
+    try {
+      await helper.apiClient.irc({message: 'Does this work?', channel: '#taskcluster-test'});
+    } catch(e) {
+      assert(e.code, 'InternalServerError');
+    }
+    // Repeat for a blacklisted user
+    await helper.apiClient.addBlacklistAddress({notificationType: 'irc-user', notificationAddress: 'notify-me'});
+    try {
+      await helper.apiClient.irc({message: 'Does this work?', user: 'notify-me'});
+    } catch(e) {
+      assert(e.code, 'InternalServerError');
+    }
   });
 
   test('Blacklist: addBlacklistAddress()', async function() {
@@ -82,12 +128,8 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
     item = item._properties;
     assert.deepEqual(item, dummyAddress1);
 
-    // Try adding a duplicate address
-    try {
-      await helper.apiClient.addBlacklistAddress(dummyAddress1);
-    } catch(e) {
-      assert(e.name, 'EntityAlreadyExistsError');
-    }
+    // Duplicate addresses should not throw an exception
+    await helper.apiClient.addBlacklistAddress(dummyAddress1);
   });
 
   test('Blacklist: deleteBlacklistAddress()', async function() {
@@ -109,6 +151,9 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, s
     // Only dummyAddress2 should be left in the table
     let item = items[0]._properties;
     assert.deepEqual(item, dummyAddress2);
+
+    // Removing non-existant addresses should not throw an exception
+    await helper.apiClient.deleteBlacklistAddress(dummyAddress1);
   });
 
   test('Blacklist: list()', async function() {

@@ -34,8 +34,19 @@ builder.declare({
 }, async function(req, res) {
   debug(`Received request to send email to ${req.body.address}`);
   await req.authorize(req.body);
-  await this.notifier.email(req.body);
-  res.sendStatus(200);
+
+  let address = {
+  notificationType: "email",
+  notificationAddress: req.body.address,
+  }
+  // Ensure that the address is not in the blacklist
+  let response = await this.BlacklistedNotification.load(address, true);
+  if(!response) {
+    await this.notifier.email(req.body);
+    res.sendStatus(200);
+  } else {
+    return res.reportError('BlacklistedAddress', `${req.body.address} is blacklisted`, {});
+  }
 });
 
 builder.declare({
@@ -52,7 +63,19 @@ builder.declare({
   debug(`Received request to publish message on ${req.body.routingKey}`);
   await req.authorize({routingKey: req.body.routingKey});
   await this.notifier.pulse(req.body);
-  res.sendStatus(200);
+
+  let notificationAddress = {
+    notificationType: "pulse",
+    notificationAddress: req.body.routingKey,
+  }
+  // Ensure that the address is not in the blacklist
+  let response = await this.BlacklistedNotification.load(notificationAddress, true);
+  if(!response) {
+    await this.notifier.pulse(req.body);
+    res.sendStatus(200);
+  } else {
+    return res.reportError('BlacklistedAddress', `${req.body.address} is blacklisted`, {});
+  }
 });
 
 builder.declare({
@@ -88,9 +111,21 @@ builder.declare({
     channel: input.channel,
     user: input.user,
   });
-  await this.notifier.irc(input);
-  res.sendStatus(200);
+
+  let notificationAddress = {
+    notificationType: input.user ? "irc-user" : "irc-channel",
+    notificationAddress: input.user ? input.user : input.channel,
+  }
+  // Ensure that the address is not in the blacklist
+  let response = await this.BlacklistedNotification.load(notificationAddress, true);
+  if(!response) {
+    await this.notifier.irc(input);
+    res.sendStatus(200);
+  } else {
+    return res.reportError('BlacklistedAddress', `${input.channel || input.user} is blacklisted`, {});
+  }
 });
+
 
 builder.declare({
   method: 'post',
@@ -112,6 +147,7 @@ builder.declare({
     notificationAddress: req.body.notificationAddress,
   });
 
+  await req.authorize(req.body);
   try {
     await this.BlacklistedNotification.create(address);
   } catch (e) {
@@ -119,7 +155,7 @@ builder.declare({
       throw e;
     }
   }
-  res.reply({});
+  res.sendStatus(200);
 });
 
 builder.declare({
@@ -139,6 +175,7 @@ builder.declare({
     notificationAddress: req.body.notificationAddress,
   };
 
+  await req.authorize(req.body);
   try {
     await this.BlacklistedNotification.remove(address);
   } catch (e) {
@@ -146,7 +183,7 @@ builder.declare({
       throw e;
     }
   }
-  res.reply({});
+  res.sendStatus(200);
 });
 
 builder.declare({
