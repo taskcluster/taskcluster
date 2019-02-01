@@ -28,6 +28,17 @@ action that led to the hook firing; as well as `taskId` giving the taskId (and
 default `taskGroupId`) of the task being created. The other properties of the
 object vary depending on the `firedBy` property.
 
+If the task template renders to `null`, no task is created.
+This enables top-level conditionals in the task definition such as
+
+```yaml
+$if: some-condition
+then:
+  .. // task definition
+```
+
+where if the condition is false, nothing happens.
+
 ### Scheduled Tasks
 
 When a hook is fired at a scheduled time, the JSON-e context is simply:
