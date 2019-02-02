@@ -34,6 +34,8 @@ var (
 	cwd = CwdOrPanic()
 	// Whether we are running under the aws provisioner
 	configureForAws bool
+	// Whether we are running in GCP
+	configureForGcp bool
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
 	taskContext = &TaskContext{}
@@ -80,11 +82,11 @@ and reports back results to the queue.
 
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
-                                            [--configure-for-aws]
+                                            [--configure-for-aws | --configure-for-gcp]
     generic-worker install service          [--nssm           NSSM-EXE]
                                             [--service-name   SERVICE-NAME]
                                             [--config         CONFIG-FILE]
-                                            [--configure-for-aws]
+                                            [--configure-for-aws | --configure-for-gcp]
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
     generic-worker new-openpgp-keypair      --file OPENPGP-PRIVATE-KEY-FILE
@@ -138,6 +140,9 @@ and reports back results to the queue.
                                             to self-configure, based on AWS metadata, information
                                             from the provisioner, and the worker type definition
                                             that the provisioner holds for the worker type.
+    --configure-for-gcp                     This will create the CONFIG-FILE for a GCP
+                                            installation by querying the GCP environment
+                                            and setting appropriate values.
     --nssm NSSM-EXE                         The full path to nssm.exe to use for installing
                                             the service.
                                             [default: C:\nssm-2.24\win64\nssm.exe]
@@ -410,6 +415,7 @@ func main() {
 
 	case arguments["run"]:
 		configureForAws = arguments["--configure-for-aws"].(bool)
+		configureForGcp = arguments["--configure-for-gcp"].(bool)
 		configFile = arguments["--config"].(string)
 		absConfigFile, err := filepath.Abs(configFile)
 		if err != nil {
@@ -418,7 +424,7 @@ func main() {
 			os.Exit(int(CANT_LOAD_CONFIG))
 		}
 		configFile = absConfigFile
-		config, err = loadConfig(configFile, configureForAws)
+		config, err = loadConfig(configFile, configureForAws, configureForGcp)
 		// persist before checking for error, so we can see what the problem was...
 		if config != nil {
 			config.Persist(configFile)
@@ -480,7 +486,7 @@ func main() {
 	}
 }
 
-func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
+func loadConfig(filename string, queryAwsUserData bool, queryGcpMetaData bool) (*gwconfig.Config, error) {
 	// TODO: would be better to have a json schema, and also define defaults in
 	// only one place if possible (defaults also declared in `usage`)
 
@@ -516,10 +522,12 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 		WorkerTypeMetadata:             map[string]interface{}{},
 	}
 
-	// now overlay with data from amazon, if applicable
-	if queryUserData {
-		// don't check errors, since maybe secrets are gone, but maybe we had them already from first run...
+	// now overlay with data from amazon/gcp, if applicable
+	// don't check errors, since maybe secrets are gone, but maybe we had them already from first run...
+	if queryAwsUserData {
 		updateConfigWithAmazonSettings(c)
+	} else if queryGcpMetaData {
+		updateConfigWithGcpSettings(c)
 	}
 
 	configFileAbs, err := filepath.Abs(filename)

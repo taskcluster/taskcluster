@@ -13,7 +13,7 @@ import (
 func TestMissingIPConfig(t *testing.T) {
 	file := filepath.Join("testdata", "config", "noip.json")
 	const setting = "publicIP"
-	config, err := loadConfig(file, false)
+	config, err := loadConfig(file, false, false)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -35,7 +35,7 @@ func TestValidConfig(t *testing.T) {
 	file := filepath.Join("testdata", "config", "valid.json")
 	const ipaddr = "2.1.2.1"
 	const workerType = "some-worker-type"
-	config, err := loadConfig(file, false)
+	config, err := loadConfig(file, false, false)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -53,7 +53,7 @@ func TestValidConfig(t *testing.T) {
 
 func TestInvalidIPConfig(t *testing.T) {
 	file := filepath.Join("testdata", "config", "invalid-ip.json")
-	_, err := loadConfig(file, false)
+	_, err := loadConfig(file, false, false)
 	if err == nil {
 		t.Fatal("Was expecting to get an error back due to an invalid IP address, but didn't get one!")
 	}
@@ -67,7 +67,7 @@ func TestInvalidIPConfig(t *testing.T) {
 
 func TestInvalidJsonConfig(t *testing.T) {
 	file := filepath.Join("testdata", "config", "invalid-json.json")
-	_, err := loadConfig(file, false)
+	_, err := loadConfig(file, false, false)
 	if err == nil {
 		t.Fatal("Was expecting to get an error back due to an invalid JSON config, but didn't get one!")
 	}
@@ -81,7 +81,7 @@ func TestInvalidJsonConfig(t *testing.T) {
 
 func TestMissingConfigFile(t *testing.T) {
 	file := filepath.Join("testdata", "config", "non-existent-json.json")
-	config, err := loadConfig(file, false)
+	config, err := loadConfig(file, false, false)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -99,7 +99,7 @@ func TestMissingConfigFile(t *testing.T) {
 
 func TestWorkerTypeMetadata(t *testing.T) {
 	file := filepath.Join("testdata", "config", "worker-type-metadata.json")
-	config, err := loadConfig(file, false)
+	config, err := loadConfig(file, false, false)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -123,7 +123,7 @@ func TestWorkerTypeMetadata(t *testing.T) {
 
 func TestBoolAsString(t *testing.T) {
 	file := filepath.Join("testdata", "config", "bool-as-string.json")
-	_, err := loadConfig(file, false)
+	_, err := loadConfig(file, false, false)
 	if err == nil {
 		t.Fatal("Was expecting to get an error back due to a bool being specified as a string, but didn't get one!")
 	}
