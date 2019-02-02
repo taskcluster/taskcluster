@@ -178,7 +178,7 @@ and reports back results to the queue.
           rootURL                           The root URL of the taskcluster deployment to which
                                             clientId and accessToken grant access. For example,
                                             'https://taskcluster.net'. Individual services can
-                                            override this settings - see the *BaseURL settings.
+                                            override this setting - see the *BaseURL settings.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.
