@@ -30,7 +30,7 @@ func WriteJSON(t *testing.T, w http.ResponseWriter, resp interface{}) {
 func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) func() {
 	teardown := setupEnvironment(t)
 	workerType := slugid.Nice()
-	configureForAws = true
+	configureForAWS = true
 	oldEC2MetadataBaseURL := EC2MetadataBaseURL
 	EC2MetadataBaseURL = "http://localhost:13243/latest"
 
@@ -129,7 +129,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) func() {
 			t.Fatalf("Error shutting down http server: %v", err)
 		}
 		EC2MetadataBaseURL = oldEC2MetadataBaseURL
-		configureForAws = false
+		configureForAWS = false
 	}
 }
 
