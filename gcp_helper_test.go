@@ -18,7 +18,6 @@ type MockGCPProvisionedEnvironment struct {
 func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 	teardown := setupEnvironment(t)
 	workerType := slugid.Nice()
-	configureForAWS = false
 	configureForGCP = true
 	oldGCPMetadataBaseURL := GCPMetadataBaseURL
 	GCPMetadataBaseURL = "http://localhost:13243/computeMetadata/v1/"
