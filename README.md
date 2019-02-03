@@ -97,11 +97,11 @@ and reports back results to the queue.
 
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
-                                            [--configure-for-aws]
+                                            [--configure-for-aws | --configure-for-gcp]
     generic-worker install service          [--nssm           NSSM-EXE]
                                             [--service-name   SERVICE-NAME]
                                             [--config         CONFIG-FILE]
-                                            [--configure-for-aws]
+                                            [--configure-for-aws | --configure-for-gcp]
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
     generic-worker new-openpgp-keypair      --file OPENPGP-PRIVATE-KEY-FILE
@@ -155,6 +155,9 @@ and reports back results to the queue.
                                             to self-configure, based on AWS metadata, information
                                             from the provisioner, and the worker type definition
                                             that the provisioner holds for the worker type.
+    --configure-for-gcp                     This will create the CONFIG-FILE for a GCP
+                                            installation by querying the GCP environment
+                                            and setting appropriate values.
     --nssm NSSM-EXE                         The full path to nssm.exe to use for installing
                                             the service.
                                             [default: C:\nssm-2.24\win64\nssm.exe]

@@ -18,10 +18,10 @@ type MockGCPProvisionedEnvironment struct {
 func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 	teardown := setupEnvironment(t)
 	workerType := slugid.Nice()
-	configureForAws = false
-	configureForGcp = true
-	oldGcpMetadataBaseURL := GcpMetadataBaseURL
-	GcpMetadataBaseURL = "http://localhost:13243/computeMetadata/v1/"
+	configureForAWS = false
+	configureForGCP = true
+	oldGCPMetadataBaseURL := GCPMetadataBaseURL
+	GCPMetadataBaseURL = "http://localhost:13243/computeMetadata/v1/"
 
 	// Create custom *http.ServeMux rather than using http.DefaultServeMux, so
 	// registered handler functions won't interfere with future tests that also
@@ -99,7 +99,7 @@ func (m *MockGCPProvisionedEnvironment) Setup(t *testing.T) func() {
 		if err != nil {
 			t.Fatalf("Error shutting down http server: %v", err)
 		}
-		GcpMetadataBaseURL = oldGcpMetadataBaseURL
-		configureForGcp = false
+		GCPMetadataBaseURL = oldGCPMetadataBaseURL
+		configureForGCP = false
 	}
 }

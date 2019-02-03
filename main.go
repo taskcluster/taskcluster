@@ -33,9 +33,9 @@ var (
 	// Current working directory of process
 	cwd = CwdOrPanic()
 	// Whether we are running under the aws provisioner
-	configureForAws bool
+	configureForAWS bool
 	// Whether we are running in GCP
-	configureForGcp bool
+	configureForGCP bool
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
 	taskContext = &TaskContext{}
@@ -429,8 +429,8 @@ func main() {
 		fmt.Println(taskPayloadSchema())
 
 	case arguments["run"]:
-		configureForAws = arguments["--configure-for-aws"].(bool)
-		configureForGcp = arguments["--configure-for-gcp"].(bool)
+		configureForAWS = arguments["--configure-for-aws"].(bool)
+		configureForGCP = arguments["--configure-for-gcp"].(bool)
 		configFile = arguments["--config"].(string)
 		absConfigFile, err := filepath.Abs(configFile)
 		if err != nil {
@@ -439,7 +439,7 @@ func main() {
 			os.Exit(int(CANT_LOAD_CONFIG))
 		}
 		configFile = absConfigFile
-		config, err = loadConfig(configFile, configureForAws, configureForGcp)
+		config, err = loadConfig(configFile, configureForAWS, configureForGCP)
 		// persist before checking for error, so we can see what the problem was...
 		if config != nil {
 			config.Persist(configFile)
@@ -501,7 +501,7 @@ func main() {
 	}
 }
 
-func loadConfig(filename string, queryAwsUserData bool, queryGcpMetaData bool) (*gwconfig.Config, error) {
+func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (*gwconfig.Config, error) {
 	// TODO: would be better to have a json schema, and also define defaults in
 	// only one place if possible (defaults also declared in `usage`)
 
@@ -539,10 +539,10 @@ func loadConfig(filename string, queryAwsUserData bool, queryGcpMetaData bool) (
 
 	// now overlay with data from amazon/gcp, if applicable
 	// don't check errors, since maybe secrets are gone, but maybe we had them already from first run...
-	if queryAwsUserData {
+	if queryAWSUserData {
 		updateConfigWithAmazonSettings(c)
-	} else if queryGcpMetaData {
-		updateConfigWithGcpSettings(c)
+	} else if queryGCPMetaData {
+		updateConfigWithGCPSettings(c)
 	}
 
 	configFileAbs, err := filepath.Abs(filename)
@@ -685,7 +685,7 @@ func RunWorker() (exitCode ExitCode) {
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
 		// outdated, and shut down if a new deployment is required.
 		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
-		if configureForAws && time.Now().Round(0).Sub(lastQueriedProvisioner) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
+		if configureForAWS && time.Now().Round(0).Sub(lastQueriedProvisioner) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
 			lastQueriedProvisioner = time.Now()
 			if deploymentIDUpdated() {
 				return NONCURRENT_DEPLOYMENT_ID
@@ -730,7 +730,7 @@ func RunWorker() (exitCode ExitCode) {
 			log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
 			if remainingTasks == 0 {
 				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
-				if configureForAws && deploymentIDUpdated() {
+				if configureForAWS && deploymentIDUpdated() {
 					return NONCURRENT_DEPLOYMENT_ID
 				}
 				return TASKS_COMPLETE
@@ -1296,7 +1296,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	// with the reason `worker-shutdown`. Upon such report the queue will
 	// resolve the run as exception and create a new run, if the task has
 	// additional retries left.
-	if configureForAws {
+	if configureForAWS {
 		stopHandlingWorkerShutdown := handleWorkerShutdown(func() {
 			task.StatusManager.Abort(
 				&CommandExecutionError{
