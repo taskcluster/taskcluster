@@ -220,9 +220,9 @@ export default class ViewWorkerTypeDefinition extends Component {
             ? 'AWS Provisioner Create Worker Type'
             : 'AWS Provisioner Worker Type Definition'
         }>
-        {data &&
-          !data.awsProvisionerWorkerType &&
-          data.loading && <Spinner loading />}
+        {data && !data.awsProvisionerWorkerType && data.loading && (
+          <Spinner loading />
+        )}
         {data && <ErrorPanel error={data.error} />}
         <ErrorPanel error={error} />
         <List>

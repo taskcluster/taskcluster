@@ -85,15 +85,14 @@ export default class ViewRole extends Component {
             <Fragment>
               {data.loading && <Spinner loading />}
               {data && <ErrorPanel error={data.error} />}
-              {data &&
-                data.role && (
-                  <RoleForm
-                    role={data.role}
-                    loading={loading}
-                    onDeleteRole={this.handleDeleteRole}
-                    onSaveRole={this.handleSaveRole}
-                  />
-                )}
+              {data && data.role && (
+                <RoleForm
+                  role={data.role}
+                  loading={loading}
+                  onDeleteRole={this.handleDeleteRole}
+                  onSaveRole={this.handleSaveRole}
+                />
+              )}
             </Fragment>
           )}
         </Fragment>

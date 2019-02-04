@@ -51,28 +51,25 @@ export default class NoTaskGroup extends Component {
         <Typography className={classes.infoText}>
           Enter a task group ID in the search box
         </Typography>
-        {recentTaskGroups &&
-          Boolean(recentTaskGroups.length) && (
-            <List
-              dense
-              subheader={
-                <ListSubheader component="div">
-                  Recent Task Groups
-                </ListSubheader>
-              }>
-              {recentTaskGroups.map(({ taskGroupId }) => (
-                <ListItem
-                  button
-                  className={classes.listItemButton}
-                  component={Link}
-                  to={`/tasks/groups/${taskGroupId}`}
-                  key={taskGroupId}>
-                  <ListItemText primary={taskGroupId} />
-                  <LinkIcon />
-                </ListItem>
-              ))}
-            </List>
-          )}
+        {recentTaskGroups && Boolean(recentTaskGroups.length) && (
+          <List
+            dense
+            subheader={
+              <ListSubheader component="div">Recent Task Groups</ListSubheader>
+            }>
+            {recentTaskGroups.map(({ taskGroupId }) => (
+              <ListItem
+                button
+                className={classes.listItemButton}
+                component={Link}
+                to={`/tasks/groups/${taskGroupId}`}
+                key={taskGroupId}>
+                <ListItemText primary={taskGroupId} />
+                <LinkIcon />
+              </ListItem>
+            ))}
+          </List>
+        )}
       </Dashboard>
     );
   }

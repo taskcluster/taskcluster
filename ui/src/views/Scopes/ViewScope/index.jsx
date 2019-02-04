@@ -103,25 +103,23 @@ export default class ViewScope extends Component {
           </Tabs>
           {loading && <Spinner loading />}
           <ErrorPanel error={error} />
-          {roles &&
-            currentTabIndex === 0 && (
-              <RoleScopesTable
-                roles={roles}
-                searchTerm={searchTerm}
-                selectedScope={selectedScope}
-                searchProperty={searchProperty}
-              />
-            )}
-          {clients &&
-            currentTabIndex === 1 && (
-              <ClientScopesTable
-                clientsConnection={clients}
-                onPageChange={this.handleClientsPageChange}
-                searchTerm={searchTerm}
-                selectedScope={selectedScope}
-                searchProperty={searchProperty}
-              />
-            )}
+          {roles && currentTabIndex === 0 && (
+            <RoleScopesTable
+              roles={roles}
+              searchTerm={searchTerm}
+              selectedScope={selectedScope}
+              searchProperty={searchProperty}
+            />
+          )}
+          {clients && currentTabIndex === 1 && (
+            <ClientScopesTable
+              clientsConnection={clients}
+              onPageChange={this.handleClientsPageChange}
+              searchTerm={searchTerm}
+              selectedScope={selectedScope}
+              searchProperty={searchProperty}
+            />
+          )}
         </Fragment>
       </Dashboard>
     );

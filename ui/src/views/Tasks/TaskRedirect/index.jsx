@@ -37,23 +37,22 @@ export default class TaskRedirect extends Component {
           ) : (
             <Fragment>
               {loading && <Spinner />}
-              {!loading &&
-                task && (
-                  <Redirect
-                    to={{
-                      pathname:
+              {!loading && task && (
+                <Redirect
+                  to={{
+                    pathname:
+                      action === 'interactive'
+                        ? '/tasks/create/interactive'
+                        : '/tasks/create',
+                    state: {
+                      task:
                         action === 'interactive'
-                          ? '/tasks/create/interactive'
-                          : '/tasks/create',
-                      state: {
-                        task:
-                          action === 'interactive'
-                            ? parameterizeTask(sanitizedTask)
-                            : sanitizedTask,
-                      },
-                    }}
-                  />
-                )}
+                          ? parameterizeTask(sanitizedTask)
+                          : sanitizedTask,
+                    },
+                  }}
+                />
+              )}
             </Fragment>
           )}
         </Fragment>

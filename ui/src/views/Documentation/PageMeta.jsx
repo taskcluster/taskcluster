@@ -92,13 +92,12 @@ export default class PageMeta extends Component {
 
     return (
       <Fragment>
-        {pageInfo.data &&
-          pageInfo.data.followup && (
-            <Fragment>
-              <Divider className={classes.divider} light />
-              <h2>Next Steps</h2>
-            </Fragment>
-          )}
+        {pageInfo.data && pageInfo.data.followup && (
+          <Fragment>
+            <Divider className={classes.divider} light />
+            <h2>Next Steps</h2>
+          </Fragment>
+        )}
         {this.renderSubtext()}
         {this.renderLinks()}
         {pageInfo && (

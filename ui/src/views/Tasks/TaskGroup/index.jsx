@@ -335,10 +335,9 @@ export default class TaskGroup extends Component {
         )}
         <br />
         {!error && !taskGroupLoaded && <Spinner loading />}
-        {!loading &&
-          taskGroupLoaded && (
-            <TaskGroupTable filter={filter} taskGroupConnection={taskGroup} />
-          )}
+        {!loading && taskGroupLoaded && (
+          <TaskGroupTable filter={filter} taskGroupConnection={taskGroup} />
+        )}
         {!loading && groupActions && groupActions.length ? (
           <SpeedDial>
             {groupActions.map(action => (
