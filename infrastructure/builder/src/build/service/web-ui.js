@@ -14,7 +14,7 @@ const {dockerRun, dockerPull, dockerImages, dockerBuild, dockerRegistryCheck,
 doT.templateSettings.strip = false;
 const TOOLS_UI_DOCKERFILE_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'web-ui-dockerfile.dot')));
 
-exports.toolsUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir}) => {
+exports.webUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir}) => {
   const nodeImage = `node:${repository.service.node}`;
   ensureDockerImage(tasks, baseDir, nodeImage);
 

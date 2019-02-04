@@ -39,7 +39,7 @@ repositories:
     tier: integrations
     projectName: taskcluster-web
   service:
-    buildtype: tools-ui
+    buildtype: web-ui
     node: 10.14.0-jessie
   source: https://github.com/taskcluster/taskcluster#master
 
