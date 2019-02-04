@@ -44,7 +44,7 @@
     "change-case": "^3.0.2",
     "classnames": "^2.2.6",
     "codemirror": "^5.39.0",
-    "date-fns": "2.0.0-alpha.7",
+    "date-fns": "2.0.0-alpha.27",
     "deep-sort-object": "^1.0.2",
     "deepmerge": "^2.1.1",
     "dexie": "^2.0.4",
