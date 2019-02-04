@@ -1,5 +1,4 @@
-Taskcluster User Login Service
-==============================
+# Login Service
 
 This service supports the generation of Taskcluster credentials appropriate to
 a user.

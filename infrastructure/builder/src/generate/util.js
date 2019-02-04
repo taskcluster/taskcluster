@@ -2,6 +2,7 @@ const {promisify} = require('util');
 const path = require('path');
 const fs = require('fs');
 const stringify = require('json-stable-stringify');
+const exec = promisify(require('child_process').execFile);
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
@@ -63,4 +64,14 @@ exports.modifyJSON = async (filename, modifier) => {
     const modified = await modifier(data);
     return JSON.stringify(data, null, 2) + '\n';
   });
+};
+
+/**
+ * Call `git ls-files`
+ */
+exports.gitLsFiles = async () => {
+  const opts = {cwd: REPO_ROOT};
+  const files = (await exec('git', ['ls-files', '-z'], opts))
+    .stdout.split(/\0/);
+  return files;
 };

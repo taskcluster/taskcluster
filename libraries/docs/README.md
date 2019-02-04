@@ -1,4 +1,4 @@
-# Taskcluster Documentation Tool
+# Docs Library
 
 A simple library to support generation of metadata for Taskcluster libraries, services, and applications.
 

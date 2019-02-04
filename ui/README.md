@@ -101,3 +101,14 @@ import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 ```
 
 <sup>* We use this library because it provides substantially more icons with minimal file-system headaches.</sup>
+
+## Table of Contents
+
+<!-- TOC BEGIN -->
+* [src/components/DateDistance](src/components/DateDistance)
+* [src/components/StatusLabel](src/components/StatusLabel)
+* [src/components/SpeedDial](src/components/SpeedDial)
+* [src/components/Snackbar](src/components/Snackbar)
+* [src/components/Markdown](src/components/Markdown)
+* [src/components/Search](src/components/Search)
+<!-- TOC END -->

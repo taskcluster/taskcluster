@@ -1,4 +1,4 @@
-# Taskcluster Queue
+# Queue Service
 
 This is the central queue coordinating execution of tasks in the Taskcluster setup.
 

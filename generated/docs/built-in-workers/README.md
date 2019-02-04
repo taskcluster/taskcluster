@@ -1,4 +1,4 @@
-# Taskcluster Built-In Workers
+# Built-In Workers Service
 
 This service implements the `built-in/succeed` and `built-in/fail` workerTypes, which simply succeed or fail immediately.
 Such workerTypes are useful the same way the `true` and `false` commands are useful in UNIX.

@@ -1,5 +1,4 @@
-Taskcluster Purge Worker Cache Service
-======================================
+# Purge-Cache Service
 
 Many taskcluster workers implements some generic form cache folders.
 These cache often have a `name` that identifies them, for example a task

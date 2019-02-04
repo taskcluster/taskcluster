@@ -1,4 +1,4 @@
-# Taskcluster Terraform
+# Terraform
 
 A simple module to set up some requirements for a Taskcluster deployment.
 

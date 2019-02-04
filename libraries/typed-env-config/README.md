@@ -1,5 +1,4 @@
-YAML Configuration Loader
-=========================
+# Typed-Env-Config Library
 
 This module makes it easy to load configuration from YAML files, and allows
 these YAML files to specify environment variables to substitute into the

@@ -1,5 +1,4 @@
-Taskcluster Scopes Utilities
-============================
+# Scopes Library
 
 Simple utilities to validate scopes, scope-sets, and scope-expression satisfiability.
 

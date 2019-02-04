@@ -1,5 +1,4 @@
-TaskCluster - Task Index
-========================
+# Index Service
 
 The task _index_ provides a service that indexes successfully completed tasks.
 To get a task indexed you must add routes on the form `index.<namespace>`, where

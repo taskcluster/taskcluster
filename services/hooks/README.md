@@ -1,5 +1,4 @@
-TaskCluster Hooks
-=================
+# Hooks Service
 
 A hooks service for triggering tasks from events.
 
