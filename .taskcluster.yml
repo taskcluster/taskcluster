@@ -64,6 +64,16 @@ tasks:
     - name: taskcluster-terraform
       image: 'jonatanblue/gitlab-ci-terraform:latest'
       command: 'cd infrastructure/terraform; terraform fmt -check'
+    - name: yarn generate
+      command: |
+          yarn generate | cat &&
+          git status &&
+          git diff &&
+          if ! git diff-files --exit-code --ignore-submodules --; then
+              echo "*** yarn generate produced changes to the repository; these changes should be checked in ***";
+              git diff;
+              exit 1;
+          fi
     - name: ui
       image: 'taskcluster/tc-web-testing@sha256:b60f2d5a151e48bdac4e3e4735619fd0a3e0e4ef815e050cdfed2d3e4a26220d'
       env:
