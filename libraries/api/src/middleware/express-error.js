@@ -40,12 +40,16 @@ const expressError = ({errorCodes, entry, monitor}) => {
       // then formulate a generic error to send to the HTTP client
       const details = {incidentId};
       if (!exports.isProduction) {
-        details.stack = err.stack.toString();
+        if (err.stack) {
+          details.error = err.stack.toString();
+        } else {
+          details.error = err.toString();
+        }
       }
       const message = 'Internal Server Error, incidentId {{incidentId}}.' +
         (exports.isProduction ?
           '' :
-          ' Error stack (not shown in production):\n```\n{{stack}}\n```');
+          ' Error (not shown in production):\n```\n{{error}}\n```');
 
       err = new ErrorReply({code: 'InternalServerError', message, details});
     }

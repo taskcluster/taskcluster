@@ -159,6 +159,7 @@ class MockTaskCreator extends TaskCreator {
   constructor() {
     super({credentials: {}, rootUrl: libUrls.testRootUrl()});
     this.shouldFail = false;
+    this.shouldNotProduceTask = false;
     this.fireCalls = [];
   }
 
@@ -174,6 +175,9 @@ class MockTaskCreator extends TaskCreator {
       hookId: hook.hookId,
       context,
       options});
+    if (this.shouldNotProduceTask) {
+      return;
+    }
     const taskId = options.taskId || taskcluster.slugid();
     return {
       status: {

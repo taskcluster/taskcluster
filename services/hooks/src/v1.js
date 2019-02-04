@@ -372,7 +372,7 @@ builder.declare({
   name: 'triggerHook',
   scopes: 'hooks:trigger-hook:<hookGroupId>/<hookId>',
   input: 'trigger-hook.yml',
-  output: 'task-status.yml',
+  output: 'trigger-hook-response.yml',
   title: 'Trigger a hook',
   stability: 'stable',
   description: [
@@ -469,7 +469,7 @@ builder.declare({
   route: '/hooks/:hookGroupId/:hookId/trigger/:token',
   name: 'triggerHookWithToken',
   input: 'trigger-hook.yml',
-  output: 'task-status.yml',
+  output: 'trigger-hook-response.yml',
   title: 'Trigger a hook with a token',
   stability: 'stable',
   description: [
@@ -525,6 +525,10 @@ const triggerHookCommon = async function({req, res, hook, payload, clientId, fir
 
   try {
     resp = await this.taskcreator.fire(hook, context);
+    if (!resp) {
+      // hook did not produce a response, so return an empty object
+      return res.reply({});
+    }
     lastFire = {
       result: 'success',
       taskId: resp.status.taskId,
