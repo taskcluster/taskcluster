@@ -32,16 +32,16 @@ repositories:
     node: 9
   source: https://github.com/taskcluster/taskcluster-docs#master
 
-# tools
-- name: tools
+# tc-web ui
+- name: ui
   kind: service
   docs:
     tier: integrations
-    projectName: taskcluster-tools
+    projectName: taskcluster-web
   service:
     buildtype: tools-ui
-    node: 10
-  source: https://github.com/taskcluster/taskcluster-tools#master
+    node: 10.14.0-jessie
+  source: https://github.com/taskcluster/taskcluster#master
 
 # docs/metadata sources that are not compiled into the final product
 
