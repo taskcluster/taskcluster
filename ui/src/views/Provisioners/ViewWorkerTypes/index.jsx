@@ -106,39 +106,38 @@ export default class ViewWorkerTypes extends Component {
         <Fragment>
           {!workerTypes && loading && <Spinner loading />}
           <ErrorPanel error={error} />
-          {provisioners &&
-            workerTypes && (
-              <Fragment>
-                <div className={classes.actionBar}>
-                  <TextField
-                    disabled={loading}
-                    className={classes.dropdown}
-                    select
-                    label="Provisioner ID"
-                    value={provisionerId}
-                    onChange={this.handleProvisionerChange}>
-                    <MenuItem value="">
-                      <em>None</em>
+          {provisioners && workerTypes && (
+            <Fragment>
+              <div className={classes.actionBar}>
+                <TextField
+                  disabled={loading}
+                  className={classes.dropdown}
+                  select
+                  label="Provisioner ID"
+                  value={provisionerId}
+                  onChange={this.handleProvisionerChange}>
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {provisioners.edges.map(({ node }) => (
+                    <MenuItem
+                      key={node.provisionerId}
+                      value={node.provisionerId}>
+                      {node.provisionerId}
                     </MenuItem>
-                    {provisioners.edges.map(({ node }) => (
-                      <MenuItem
-                        key={node.provisionerId}
-                        value={node.provisionerId}>
-                        {node.provisionerId}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </div>
-                <WorkerTypesTable
-                  workerTypesConnection={workerTypes}
-                  provisionerId={provisionerId}
-                  onPageChange={this.handlePageChange}
-                  awsProvisionerWorkerTypeSummaries={
-                    awsProvisionerWorkerTypeSummaries
-                  }
-                />
-              </Fragment>
-            )}
+                  ))}
+                </TextField>
+              </div>
+              <WorkerTypesTable
+                workerTypesConnection={workerTypes}
+                provisionerId={provisionerId}
+                onPageChange={this.handlePageChange}
+                awsProvisionerWorkerTypeSummaries={
+                  awsProvisionerWorkerTypeSummaries
+                }
+              />
+            </Fragment>
+          )}
         </Fragment>
       </Dashboard>
     );

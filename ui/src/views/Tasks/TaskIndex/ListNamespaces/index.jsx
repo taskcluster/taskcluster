@@ -143,32 +143,28 @@ export default class ListNamespaces extends Component {
           {loading && <Spinner loading />}
           <ErrorPanel error={namespacesError} />
           <ErrorPanel error={taskNamespaceError} />
-          {!loading &&
-            !hasNamespaces &&
-            !hasIndexedTasks && (
-              <Typography>No items for this page.</Typography>
-            )}
-          {!loading &&
-            hasNamespaces && (
-              <Fragment>
-                <Typography variant="subtitle1">Namespaces</Typography>
-                <IndexNamespacesTable
-                  onPageChange={this.handleNamespacesPageChange}
-                  connection={namespaces}
-                />
-              </Fragment>
-            )}
-          {!loading &&
-            hasIndexedTasks && (
-              <Fragment>
-                <Typography variant="subtitle1">Indexed Tasks</Typography>
-                <IndexTaskNamespaceTable
-                  onTaskNamespaceClick={this.handleTaskNamespaceClick}
-                  onPageChange={this.handleTaskNamespacePageChange}
-                  connection={taskNamespace}
-                />
-              </Fragment>
-            )}
+          {!loading && !hasNamespaces && !hasIndexedTasks && (
+            <Typography>No items for this page.</Typography>
+          )}
+          {!loading && hasNamespaces && (
+            <Fragment>
+              <Typography variant="subtitle1">Namespaces</Typography>
+              <IndexNamespacesTable
+                onPageChange={this.handleNamespacesPageChange}
+                connection={namespaces}
+              />
+            </Fragment>
+          )}
+          {!loading && hasIndexedTasks && (
+            <Fragment>
+              <Typography variant="subtitle1">Indexed Tasks</Typography>
+              <IndexTaskNamespaceTable
+                onTaskNamespaceClick={this.handleTaskNamespaceClick}
+                onPageChange={this.handleTaskNamespacePageChange}
+                connection={taskNamespace}
+              />
+            </Fragment>
+          )}
         </Fragment>
       </Dashboard>
     );

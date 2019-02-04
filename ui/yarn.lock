@@ -828,26 +828,26 @@
     redbox-react "^1.6.0"
     typeface-roboto "^0.0.54"
 
-"@mozilla-frontend-infra/lint@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/lint/-/lint-1.1.1.tgz#e2387541a43f555d892dfc7746518d2724266526"
-  integrity sha512-fgzezUK96lNO1U72cXN4VaMywbT1dz2HwL2UYf0Oarbiw+jUphblnEGnqlWtKyjqS7/PI9X4y7toR9D9VqtuLw==
+"@mozilla-frontend-infra/lint@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/lint/-/lint-1.2.1.tgz#bb315b687874dcd04be043e2f095771995ecb63f"
+  integrity sha512-w12Btm4IpEC0KCRj9mPk3BC8kNw8Nql/mvYCkAa3iWTBLpeXc5JLwm3GHuC5R5bxM8iEeyx5A0TBOefoh3xfYA==
   dependencies:
     deepmerge "^2.2.1"
     eslint-config-prettier "^3.3.0"
-    eslint-plugin-prettier "^3.0.0"
-    prettier "^1.15.2"
+    eslint-plugin-prettier "^3.0.1"
+    prettier "^1.16.4"
 
-"@mozilla-frontend-infra/react-lint@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/react-lint/-/react-lint-1.1.1.tgz#fba231d61307a470fb9349149121248a357ce567"
-  integrity sha512-+BdMfDEe/iTTGEA46n0YP4HBTmr0hgzJXqnHshDESQVyJKA5+1QxYzkOOQhZmR+IxUfbHW5opabwca15dkTAmQ==
+"@mozilla-frontend-infra/react-lint@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@mozilla-frontend-infra/react-lint/-/react-lint-1.2.1.tgz#4ae6c179cd0de3517651df452ad5cde79b9f2fe7"
+  integrity sha512-t9cquGhyPqWEkIiRRhQ2rYgDX7HnR4/si23WNDdg9kKIWMRWMiszh9JGV0GddVLj1la7HLFlY4pLa7NUeiGc4w==
   dependencies:
-    "@mozilla-frontend-infra/lint" "^1.1.1"
+    "@mozilla-frontend-infra/lint" "^1.2.1"
     "@neutrinojs/airbnb" "^9.0.0-beta.1"
     deepmerge "^2.2.1"
     eslint-plugin-react "^7.11.1"
-    prettier "^1.15.2"
+    prettier "^1.16.4"
 
 "@neutrinojs/airbnb@^9.0.0-beta.1":
   version "9.0.0-beta.1"
@@ -3891,13 +3891,6 @@ eslint-config-airbnb@^17.1.0:
     object.assign "^4.1.0"
     object.entries "^1.0.4"
 
-eslint-config-prettier@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-3.1.0.tgz#2c26d2cdcfa3a05f0642cd7e6e4ef3316cdabfa2"
-  integrity sha512-QYGfmzuc4q4J6XIhlp8vRKdI/fI0tQfQPy1dME3UOLprE+v4ssH/3W9LM2Q7h5qBcy5m0ehCrBDU2YF8q6OY8w==
-  dependencies:
-    get-stdin "^6.0.0"
-
 eslint-config-prettier@^3.3.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-3.3.0.tgz#41afc8d3b852e757f06274ed6c44ca16f939a57d"
@@ -3969,10 +3962,10 @@ eslint-plugin-jsx-a11y@^6.1.2:
     has "^1.0.3"
     jsx-ast-utils "^2.0.1"
 
-eslint-plugin-prettier@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-prettier/-/eslint-plugin-prettier-3.0.0.tgz#f6b823e065f8c36529918cdb766d7a0e975ec30c"
-  integrity sha512-4g11opzhqq/8+AMmo5Vc2Gn7z9alZ4JqrbZ+D4i8KlSyxeQhZHlmIrY8U9Akf514MoEhogPa87Jgkq87aZ2Ohw==
+eslint-plugin-prettier@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-prettier/-/eslint-plugin-prettier-3.0.1.tgz#19d521e3981f69dd6d14f64aec8c6a6ac6eb0b0d"
+  integrity sha512-/PMttrarPAY78PLvV3xfWibMOdMDl57hmlQ2XqFeA37wd+CJ7WSxV7txqjVPHi/AAFKd2lX0ZqfsOc/i5yFCSQ==
   dependencies:
     prettier-linter-helpers "^1.0.0"
 
@@ -8467,15 +8460,10 @@ prettier-linter-helpers@^1.0.0:
   dependencies:
     fast-diff "^1.1.2"
 
-prettier@^1.14.3:
-  version "1.14.3"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.14.3.tgz#90238dd4c0684b7edce5f83b0fb7328e48bd0895"
-  integrity sha512-qZDVnCrnpsRJJq5nSsiHCE3BYMED2OtsI+cmzIzF1QIfqm5ALf8tEJcO27zV1gKNKRPdhjO0dNWnrzssDQ1tFg==
-
-prettier@^1.15.2:
-  version "1.15.2"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.15.2.tgz#d31abe22afa4351efa14c7f8b94b58bb7452205e"
-  integrity sha512-YgPLFFA0CdKL4Eg2IHtUSjzj/BWgszDHiNQAe0VAIBse34148whfdzLagRL+QiKS+YfK5ftB6X4v/MBw8yCoug==
+prettier@^1.16.4:
+  version "1.16.4"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.16.4.tgz#73e37e73e018ad2db9c76742e2647e21790c9717"
+  integrity sha512-ZzWuos7TI5CKUeQAtFd6Zhm2s6EpAD/ZLApIhsF9pRvRtM1RFo61dM/4MSRUA0SuLugA/zgrZD8m0BaY46Og7g==
 
 pretty-error@^2.1.1:
   version "2.1.1"

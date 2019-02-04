@@ -207,76 +207,74 @@ export default class AwsProvisionerHealthTable extends Component {
             <Typography variant="h5" className={classes.headline}>
               {drawerItem && drawerItem.columnName}
             </Typography>
-            {drawerItem &&
-              drawerItem.columnName === 'Healthy' && (
-                <List>
-                  <ListItem>
-                    <ListItemText
-                      primary="Successful Requests"
-                      secondary={or0(drawerItem.successful)}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Clean Shutdown"
-                      secondary={or0(drawerItem.cleanShutdown)}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Running"
-                      secondary={or0(drawerItem.running)}
-                    />
-                  </ListItem>
-                </List>
-              )}
-            {drawerItem &&
-              drawerItem.columnName === 'Unhealthy' && (
-                <List>
-                  <ListItem>
-                    <ListItemText
-                      primary="Failed Requests"
-                      secondary={or0(drawerItem.failed)}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Spot Kill"
-                      secondary={or0(drawerItem.spotKill)}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Insufficient Capacity"
-                      secondary={or0(drawerItem.insufficientCapacity)}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Volume Limit Exceeded"
-                      secondary={or0(drawerItem.volumeLimitExceeded)}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Missing AMI"
-                      secondary={or0(drawerItem.missingAmi)}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Unknown Codes"
-                      secondary={or0(drawerItem.unknownCodes)}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="No Codes"
-                      secondary={or0(drawerItem.noCode)}
-                    />
-                  </ListItem>
-                </List>
-              )}
+            {drawerItem && drawerItem.columnName === 'Healthy' && (
+              <List>
+                <ListItem>
+                  <ListItemText
+                    primary="Successful Requests"
+                    secondary={or0(drawerItem.successful)}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Clean Shutdown"
+                    secondary={or0(drawerItem.cleanShutdown)}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Running"
+                    secondary={or0(drawerItem.running)}
+                  />
+                </ListItem>
+              </List>
+            )}
+            {drawerItem && drawerItem.columnName === 'Unhealthy' && (
+              <List>
+                <ListItem>
+                  <ListItemText
+                    primary="Failed Requests"
+                    secondary={or0(drawerItem.failed)}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Spot Kill"
+                    secondary={or0(drawerItem.spotKill)}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Insufficient Capacity"
+                    secondary={or0(drawerItem.insufficientCapacity)}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Volume Limit Exceeded"
+                    secondary={or0(drawerItem.volumeLimitExceeded)}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Missing AMI"
+                    secondary={or0(drawerItem.missingAmi)}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Unknown Codes"
+                    secondary={or0(drawerItem.unknownCodes)}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="No Codes"
+                    secondary={or0(drawerItem.noCode)}
+                  />
+                </ListItem>
+              </List>
+            )}
           </div>
         </Drawer>
       </Fragment>

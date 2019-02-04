@@ -84,28 +84,27 @@ export default class Display extends Component {
         {display && (
           <VncDisplay url={`${props.socketUrl}?display=${display}`} shared />
         )}
-        {!display &&
-          displays && (
-            <DataTable
-              items={displays}
-              headers={['Display']}
-              noItemsMessage={
-                error ? 'No displays available.' : 'No displays yet. Loading...'
-              }
-              renderRow={({ display }) => (
-                <TableRow key={display}>
-                  <TableCell>
-                    <TableCellListItem
-                      button
-                      onClick={() => this.handleDisplayClick(display)}>
-                      <span className={classes.displayText}>{display}</span>
-                      <LinkIcon size={iconSize} />
-                    </TableCellListItem>
-                  </TableCell>
-                </TableRow>
-              )}
-            />
-          )}
+        {!display && displays && (
+          <DataTable
+            items={displays}
+            headers={['Display']}
+            noItemsMessage={
+              error ? 'No displays available.' : 'No displays yet. Loading...'
+            }
+            renderRow={({ display }) => (
+              <TableRow key={display}>
+                <TableCell>
+                  <TableCellListItem
+                    button
+                    onClick={() => this.handleDisplayClick(display)}>
+                    <span className={classes.displayText}>{display}</span>
+                    <LinkIcon size={iconSize} />
+                  </TableCellListItem>
+                </TableCell>
+              </TableRow>
+            )}
+          />
+        )}
       </Dashboard>
     );
   }

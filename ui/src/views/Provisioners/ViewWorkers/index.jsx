@@ -163,49 +163,48 @@ export default class ViewWorkers extends Component {
           {(!workers || !workerType) && loading && <Spinner loading />}
           <ErrorPanel error={this.state.error} />
           <ErrorPanel error={error} />
-          {workers &&
-            workerType && (
-              <Fragment>
-                <div className={classes.actionBar}>
-                  <TextField
-                    disabled={loading}
-                    className={classes.dropdown}
-                    select
-                    label="Filter By"
-                    value={filterBy || ''}
-                    onChange={this.handleFilterChange}>
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    <MenuItem value="Quarantined">Quarantined</MenuItem>
-                  </TextField>
-                </div>
-                <br />
-                <WorkersTable
-                  workersConnection={workers}
-                  onPageChange={this.handlePageChange}
-                  workerType={params.workerType}
-                  provisionerId={params.provisionerId}
-                />
-                {workerType.actions.length ? (
-                  <SpeedDial>
-                    {workerType.actions.map(action => (
-                      <SpeedDialAction
-                        requiresAuth
-                        tooltipOpen
-                        key={action.title}
-                        ButtonProps={{
-                          disabled: actionLoading,
-                        }}
-                        icon={<HammerIcon />}
-                        tooltipTitle={action.title}
-                        onClick={() => this.handleActionClick(action)}
-                      />
-                    ))}
-                  </SpeedDial>
-                ) : null}
-              </Fragment>
-            )}
+          {workers && workerType && (
+            <Fragment>
+              <div className={classes.actionBar}>
+                <TextField
+                  disabled={loading}
+                  className={classes.dropdown}
+                  select
+                  label="Filter By"
+                  value={filterBy || ''}
+                  onChange={this.handleFilterChange}>
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value="Quarantined">Quarantined</MenuItem>
+                </TextField>
+              </div>
+              <br />
+              <WorkersTable
+                workersConnection={workers}
+                onPageChange={this.handlePageChange}
+                workerType={params.workerType}
+                provisionerId={params.provisionerId}
+              />
+              {workerType.actions.length ? (
+                <SpeedDial>
+                  {workerType.actions.map(action => (
+                    <SpeedDialAction
+                      requiresAuth
+                      tooltipOpen
+                      key={action.title}
+                      ButtonProps={{
+                        disabled: actionLoading,
+                      }}
+                      icon={<HammerIcon />}
+                      tooltipTitle={action.title}
+                      onClick={() => this.handleActionClick(action)}
+                    />
+                  ))}
+                </SpeedDial>
+              ) : null}
+            </Fragment>
+          )}
           {dialogOpen && (
             <DialogAction
               error={dialogError}

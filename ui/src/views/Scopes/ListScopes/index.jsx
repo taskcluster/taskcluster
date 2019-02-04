@@ -109,18 +109,16 @@ export default class ListScopes extends PureComponent {
                 <Tab label="Roles" />
                 <Tab label="Clients" />
               </Tabs>
-              {roles &&
-                currentTabIndex === 0 && (
-                  <RoleScopesTable roles={roles} searchTerm={searchTerm} />
-                )}
-              {clients &&
-                currentTabIndex === 1 && (
-                  <ClientScopesTable
-                    searchTerm={searchTerm}
-                    onPageChange={this.handleClientsPageChange}
-                    clientsConnection={clients}
-                  />
-                )}
+              {roles && currentTabIndex === 0 && (
+                <RoleScopesTable roles={roles} searchTerm={searchTerm} />
+              )}
+              {clients && currentTabIndex === 1 && (
+                <ClientScopesTable
+                  searchTerm={searchTerm}
+                  onPageChange={this.handleClientsPageChange}
+                  clientsConnection={clients}
+                />
+              )}
             </Fragment>
           )}
         </Fragment>

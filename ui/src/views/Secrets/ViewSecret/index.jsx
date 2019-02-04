@@ -97,15 +97,14 @@ export default class ViewSecret extends Component {
           <Fragment>
             {data.loading && <Spinner loading />}
             {data && <ErrorPanel error={data.error} />}
-            {data &&
-              data.secret && (
-                <SecretForm
-                  loading={loading}
-                  secret={data.secret}
-                  onSaveSecret={this.handleSaveSecret}
-                  onDeleteSecret={this.handleDeleteSecret}
-                />
-              )}
+            {data && data.secret && (
+              <SecretForm
+                loading={loading}
+                secret={data.secret}
+                onSaveSecret={this.handleSaveSecret}
+                onDeleteSecret={this.handleDeleteSecret}
+              />
+            )}
           </Fragment>
         )}
       </Dashboard>

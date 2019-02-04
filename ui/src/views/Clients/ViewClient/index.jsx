@@ -234,18 +234,17 @@ export default class ViewClient extends Component {
             <Fragment>
               {data.loading && <Spinner loading />}
               {data && <ErrorPanel error={data.error} />}
-              {data &&
-                data.client && (
-                  <ClientForm
-                    loading={loading}
-                    client={data.client}
-                    onResetAccessToken={this.handleResetAccessToken}
-                    onSaveClient={this.handleSaveClient}
-                    onDeleteClient={this.handleDeleteClient}
-                    onDisableClient={this.handleDisableClient}
-                    onEnableClient={this.handleEnableClient}
-                  />
-                )}
+              {data && data.client && (
+                <ClientForm
+                  loading={loading}
+                  client={data.client}
+                  onResetAccessToken={this.handleResetAccessToken}
+                  onSaveClient={this.handleSaveClient}
+                  onDeleteClient={this.handleDeleteClient}
+                  onDisableClient={this.handleDisableClient}
+                  onEnableClient={this.handleEnableClient}
+                />
+              )}
             </Fragment>
           )}
         </Fragment>

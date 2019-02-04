@@ -114,16 +114,14 @@ export default class IndexedTask extends Component {
         {loading && <Spinner loading />}
         {!loading && <ErrorPanel error={indexedTaskError} />}
         {!loading && <ErrorPanel error={latestArtifactsError} />}
-        {latestArtifacts &&
-          indexedTask &&
-          task && (
-            <IndexedEntry
-              onArtifactsPageChange={this.handleArtifactsPageChange}
-              latestArtifactsConnection={latestArtifacts}
-              indexedTask={indexedTask}
-              created={task.created}
-            />
-          )}
+        {latestArtifacts && indexedTask && task && (
+          <IndexedEntry
+            onArtifactsPageChange={this.handleArtifactsPageChange}
+            latestArtifactsConnection={latestArtifacts}
+            indexedTask={indexedTask}
+            created={task.created}
+          />
+        )}
       </Dashboard>
     );
   }

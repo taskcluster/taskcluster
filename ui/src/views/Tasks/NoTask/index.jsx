@@ -48,26 +48,25 @@ export default class NoTask extends Component {
         <Typography className={classes.infoText}>
           Enter a task ID in the search box
         </Typography>
-        {recentTasks &&
-          Boolean(recentTasks.length) && (
-            <List
-              dense
-              subheader={
-                <ListSubheader component="div">Recent Tasks</ListSubheader>
-              }>
-              {recentTasks.map(({ taskId }) => (
-                <ListItem
-                  button
-                  className={classes.listItemButton}
-                  component={Link}
-                  to={`/tasks/${taskId}`}
-                  key={taskId}>
-                  <ListItemText primary={taskId} />
-                  <LinkIcon />
-                </ListItem>
-              ))}
-            </List>
-          )}
+        {recentTasks && Boolean(recentTasks.length) && (
+          <List
+            dense
+            subheader={
+              <ListSubheader component="div">Recent Tasks</ListSubheader>
+            }>
+            {recentTasks.map(({ taskId }) => (
+              <ListItem
+                button
+                className={classes.listItemButton}
+                component={Link}
+                to={`/tasks/${taskId}`}
+                key={taskId}>
+                <ListItemText primary={taskId} />
+                <LinkIcon />
+              </ListItem>
+            ))}
+          </List>
+        )}
       </Dashboard>
     );
   }

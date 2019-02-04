@@ -132,48 +132,38 @@ export default class ViewWorkerType extends Component {
           <Tab label="EC2 Resources" />
         </Tabs>
         {loading && <Spinner className={classes.spinner} loading />}
-        {!error &&
-          !loading &&
-          currentTab === 0 && (
-            <AwsProvisionerWorkerTypeStatus
-              workerType={awsProvisionerWorkerType}
-              awsState={awsProvisionerWorkerTypeState}
-            />
-          )}
-        {!error &&
-          !loading &&
-          currentTab === 1 && (
-            <AwsProvisionerErrorsTable
-              errors={awsProvisionerWorkerTypeErrors}
-            />
-          )}
-        {!error &&
-          !loading &&
-          currentTab === 2 && (
-            <Ec2ResourcesTable
-              onTerminateInstance={this.handleTerminateInstance}
-              workerType={awsProvisionerWorkerType}
-              awsState={awsProvisionerWorkerTypeState}
-              actionLoading={actionLoading}
-            />
-          )}
-        {!error &&
-          !loading &&
-          currentTab === 2 && (
-            <Button
-              spanProps={{ className: classes.fab }}
-              tooltipProps={{ title: 'Terminate All' }}
-              disabled={
-                actionLoading ||
-                awsProvisionerWorkerTypeState.instances.length === 0
-              }
-              requiresAuth
-              onClick={this.handleTerminateAllInstances}
-              variant="round"
-              className={classes.terminateButton}>
-              <DeleteEmptyIcon />
-            </Button>
-          )}
+        {!error && !loading && currentTab === 0 && (
+          <AwsProvisionerWorkerTypeStatus
+            workerType={awsProvisionerWorkerType}
+            awsState={awsProvisionerWorkerTypeState}
+          />
+        )}
+        {!error && !loading && currentTab === 1 && (
+          <AwsProvisionerErrorsTable errors={awsProvisionerWorkerTypeErrors} />
+        )}
+        {!error && !loading && currentTab === 2 && (
+          <Ec2ResourcesTable
+            onTerminateInstance={this.handleTerminateInstance}
+            workerType={awsProvisionerWorkerType}
+            awsState={awsProvisionerWorkerTypeState}
+            actionLoading={actionLoading}
+          />
+        )}
+        {!error && !loading && currentTab === 2 && (
+          <Button
+            spanProps={{ className: classes.fab }}
+            tooltipProps={{ title: 'Terminate All' }}
+            disabled={
+              actionLoading ||
+              awsProvisionerWorkerTypeState.instances.length === 0
+            }
+            requiresAuth
+            onClick={this.handleTerminateAllInstances}
+            variant="round"
+            className={classes.terminateButton}>
+            <DeleteEmptyIcon />
+          </Button>
+        )}
         <Snackbar
           open={showTerminateAllInstancesSnackbar}
           onClose={this.handleSnackbarClose}
