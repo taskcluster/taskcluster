@@ -44,7 +44,7 @@
     "dockerode": "^2.5.8",
     "dot": "^1.1.2",
     "eslint": "5.13.0",
-    "eslint-config-prettier": "^3.1.0",
+    "eslint-config-prettier": "^4.0.0",
     "eslint-plugin-prettier": "^3.0.0",
     "fs-extra": "^7.0.1",
     "glob": "^7.1.3",
