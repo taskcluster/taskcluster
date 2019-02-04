@@ -13,8 +13,8 @@ FROM {{=it.nodeImage}}
 # * gnupg1 -> gnupg2
 # * non-amd64 arch support removed
 
-ENV NGINX_VERSION 1.13.12-1~stretch
-ENV NJS_VERSION   1.13.12.0.2.0-1~stretch
+ENV NGINX_VERSION 1.13.12-1~jessie
+ENV NJS_VERSION   1.13.12.0.2.0-1~jessie
 
 RUN set -x \
        && apt-get update \
@@ -44,7 +44,7 @@ RUN set -x \
        && case "$dpkgArch" in \
                amd64|i386) \
 # arches officialy built by upstream
-                       echo "deb https://nginx.org/packages/mainline/debian/ stretch nginx" >> /etc/apt/sources.list.d/nginx.list \
+                       echo "deb https://nginx.org/packages/mainline/debian/ jessie nginx" >> /etc/apt/sources.list.d/nginx.list \
                        && apt-get update \
                        ;; \
                *) \
@@ -77,4 +77,4 @@ COPY nginx-site.conf /etc/nginx/conf.d/default.conf
 COPY app /app
 
 # on start, run `yarn build` before starting nginx
-CMD ["sh", "-c", "cd /app && yarn build && exec nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "cd /app/ui && yarn build && exec nginx -g 'daemon off;'"]
