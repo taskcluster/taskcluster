@@ -20,7 +20,7 @@ suite('built-services_test.js', function() {
     mockFs({'/test/input/svc': {}});
     assert.throws(
       () => load({directory: '/test/input'}),
-      /no such file or directory .*metadata.json/);
+      /no such file or directory.*metadata.json/);
   });
 
   test('fails on metadata.json with unknown version', function() {
