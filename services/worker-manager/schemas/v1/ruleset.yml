@@ -17,7 +17,7 @@ items:
     description:
       type: string
   additionalProperties: false
-  requiredProperties:
+  required:
     - id
     - conditions
     - values
