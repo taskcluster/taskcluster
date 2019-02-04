@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
@@ -34,8 +34,8 @@ export default class AwsProvisionerErrorsTable extends Component {
   };
 
   state = {
-    sortBy: null,
-    sortDirection: null,
+    sortBy: 'Time',
+    sortDirection: 'asc',
   };
 
   createSortedErrors = memoize(
@@ -100,54 +100,52 @@ export default class AwsProvisionerErrorsTable extends Component {
     const sortedErrors = this.createSortedErrors(errors, sortBy, sortDirection);
 
     return (
-      <Fragment>
-        <DataTable
-          items={sortedErrors}
-          headers={[
-            'AZ',
-            'Type',
-            'Instance Type',
-            'Code',
-            'Region',
-            'Time',
-            'Message',
-          ]}
-          sortByHeader={sortBy}
-          sortDirection={sortDirection}
-          onHeaderClick={this.handleHeaderClick}
-          noItemsMessage="Errors not available"
-          renderRow={(error, index) => (
-            <TableRow
-              key={`${index}-${error.az}-${error.instanceType}-${error.type}-${
-                error.time
-              }`}>
-              <TableCell>
-                <Typography>{error.az}</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography>{this.getErrorType(error.type)}</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography>{error.instanceType}</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography>
-                  <code>{error.code}</code>
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography>{error.region}</Typography>
-              </TableCell>
-              <TableCell>
-                <DateDistance from={error.time} />
-              </TableCell>
-              <TableCell>
-                <Typography>{error.message}</Typography>
-              </TableCell>
-            </TableRow>
-          )}
-        />
-      </Fragment>
+      <DataTable
+        items={sortedErrors}
+        headers={[
+          'AZ',
+          'Type',
+          'Instance Type',
+          'Code',
+          'Region',
+          'Time',
+          'Message',
+        ]}
+        sortByHeader={sortBy}
+        sortDirection={sortDirection}
+        onHeaderClick={this.handleHeaderClick}
+        noItemsMessage="Errors not available"
+        renderRow={(error, index) => (
+          <TableRow
+            key={`${index}-${error.az}-${error.instanceType}-${error.type}-${
+              error.time
+            }`}>
+            <TableCell>
+              <Typography>{error.az}</Typography>
+            </TableCell>
+            <TableCell>
+              <Typography>{this.getErrorType(error.type)}</Typography>
+            </TableCell>
+            <TableCell>
+              <Typography>{error.instanceType}</Typography>
+            </TableCell>
+            <TableCell>
+              <Typography>
+                <code>{error.code}</code>
+              </Typography>
+            </TableCell>
+            <TableCell>
+              <Typography>{error.region}</Typography>
+            </TableCell>
+            <TableCell>
+              <DateDistance from={error.time} />
+            </TableCell>
+            <TableCell>
+              <Typography>{error.message}</Typography>
+            </TableCell>
+          </TableRow>
+        )}
+      />
     );
   }
 }
