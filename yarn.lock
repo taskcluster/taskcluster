@@ -8504,7 +8504,7 @@ tar@^4:
     safe-buffer "^5.1.2"
     yallist "^3.0.2"
 
-"taskcluster-client@link:libraries/client":
+"taskcluster-client@link:clients/client":
   version "0.0.0"
   uid ""
 

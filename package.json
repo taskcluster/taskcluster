@@ -10,10 +10,11 @@
   "workspaces": [
     "libraries/*",
     "services/*",
-    "infrastructure/*"
+    "infrastructure/*",
+    "clients/client"
   ],
   "dependencies": {
-    "taskcluster-client": "link:libraries/client",
+    "taskcluster-client": "link:clients/client",
     "taskcluster-lib-api": "link:libraries/api",
     "taskcluster-lib-app": "link:libraries/app",
     "taskcluster-lib-azure": "link:libraries/azure",
@@ -90,7 +91,7 @@
     "zurvan": "^0.5.2"
   },
   "scripts": {
-    "lint": "eslint --cache --ext js libraries services infrastructure",
+    "lint": "eslint --cache --ext js libraries services infrastructure clients/client",
     "test": "yarn workspaces run test",
     "test:meta": "mocha test/*_test.js",
     "build": "node infrastructure/builder/src/main.js build",

@@ -1,0 +1,41 @@
+{
+  "name": "taskcluster-client",
+  "version": "12.2.0",
+  "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
+  "description": "Client for interfacing taskcluster components",
+  "license": "MPL-2.0",
+  "repository": "taskcluster/taskcluster",
+  "scripts": {
+    "test": "mocha test/*_test.js"
+  },
+  "dependencies": {
+    "debug": "^4.0.0",
+    "hawk": "^7.0.10",
+    "lodash": "^4.17.4",
+    "promise": "^8.0.1",
+    "slugid": "^2.0.0",
+    "superagent": "^4.0.0",
+    "taskcluster-lib-urls": "^12.0.0"
+  },
+  "devDependencies": {
+    "http-proxy": "^1.17.0",
+    "mocha": "^5.2.0",
+    "nock": "^10.0.6",
+    "taskcluster-lib-app": "link:../../libraries/app",
+    "taskcluster-lib-lib": "link:../../libraries/lib",
+    "taskcluster-lib-monitor": "link:../../libraries/monitor",
+    "taskcluster-lib-testing": "link:../../libraries/testing",
+    "taskcluster-lib-validate": "link:../../libraries/validate"
+  },
+  "NOTES": [
+      "All devDependencies must be included here",
+      "Cannot depend on anything else in the repo"
+  ],
+  "engines": {
+    "node": ">=8"
+  },
+  "files": [
+    "src"
+  ],
+  "main": "./src/index.js"
+}

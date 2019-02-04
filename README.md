@@ -30,6 +30,10 @@ It is not possible to run a full Taskcluster deployment directly from this repos
 ## Table of Contents
 
 <!-- TOC BEGIN -->
+* [Clients](clients#readme)
+    * [Taskcluster Client](clients/client#readme)
+        * [Taskcluster Client Web](clients/client-web#readme)
+            * [Documentation](clients/client-web/docs#readme)
 * [Infrastructure](infrastructure#readme)
     * [Taskcluster Builder](infrastructure/builder#readme)
     * [References](infrastructure/references#readme)
@@ -38,7 +42,6 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [API Library](libraries/api#readme)
     * [App Library](libraries/app#readme)
     * [Azure Library](libraries/azure#readme)
-    * [Taskcluster Client](libraries/client#readme)
     * [Docs Library](libraries/docs#readme)
     * [Iterate Library](libraries/iterate#readme)
     * [Loader Library](libraries/loader#readme)
