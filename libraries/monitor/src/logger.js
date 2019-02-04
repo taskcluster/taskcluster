@@ -1,5 +1,6 @@
 const os = require('os');
 const assert = require('assert');
+const chalk = require('chalk');
 const stringify = require('fast-json-stable-stringify');
 
 const LEVELS = {
@@ -12,6 +13,16 @@ const LEVELS = {
   info: 6,
   debug: 7,
 };
+const LEVELS_REVERSE = [
+  chalk.red.bold('EMERGENCY'),
+  chalk.red('ALERT'),
+  chalk.red('CRITICAL'),
+  chalk.red('ERROR'),
+  chalk.yellow('WARNING'),
+  chalk.blue('NOTICE'),
+  chalk.green('INFO'),
+  chalk.magenta('DEBUG'),
+];
 
 /*
  * Implements the mozlog standard as defined in
@@ -65,21 +76,29 @@ class Logger {
       fields.meta = this.metadata;
     }
 
-    const event = {
-      Timestamp: Date.now() * 1000000,
-      Type: type,
-      Logger: this.name,
-      Hostname: this.hostname,
-      EnvVersion: '2.0',
-      Severity: level,
-      Pid: this.pid,
-      Fields: fields,
-    };
+    // TODO: figure out if I need to handle flushes for non-stdout stuff
 
     if (this.pretty) {
-      this.destination.write(stringify(event)); // TODO: use chalk here
+      const msg = fields.msg ? fields.msg : '';
+      const extra = Object.keys(fields).reduce((s, f) => {
+        if (f !== 'msg') {
+          s = s + `\n\t${f}: ${fields[f]}`;
+        }
+        return s;
+      }, '');
+      const line = chalk`${(new Date()).toJSON()} ${LEVELS_REVERSE[level]} (${this.pid} on ${this.hostname}): {blue ${msg}}{gray ${extra}}\n`;
+      this.destination.write(line);
     } else {
-      this.destination.write(stringify(event));
+      this.destination.write(stringify({
+        Timestamp: Date.now() * 1000000,
+        Type: type,
+        Logger: this.name,
+        Hostname: this.hostname,
+        EnvVersion: '2.0',
+        Severity: level,
+        Pid: this.pid,
+        Fields: fields,
+      }));
     }
   }
 
