@@ -105,7 +105,7 @@ class TaskclusterProxy {
             task.runtime.log('Credentials updated', {
               taskId: task.status.taskId,
               runId: task.runId,
-              credentials: creds
+              clientId: creds.clientId,
             });
             accept();
           } else {
