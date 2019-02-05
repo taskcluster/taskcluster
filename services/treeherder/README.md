@@ -1,5 +1,4 @@
-TaskCluster - Treeherder Integration
-====================================
+# Treeherder Service
 
 taskcluster-treeherder is a service that will respond to TaskCluster task events
 (e.g. task completed, task failed, etc) and compose a Treeherder job pulse message

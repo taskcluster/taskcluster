@@ -1,5 +1,4 @@
-TaskCluster-Lib-App
-===================
+# App Library
 
 This library supports TaskCluster microservices, providing a pre-built Express
 server based on a common configuration format.

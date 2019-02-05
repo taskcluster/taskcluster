@@ -1,5 +1,4 @@
-Taskcluster Builder
-===================
+# Taskcluster Builder
 
 This tool builds Taskcluster images and performs code generation.
 

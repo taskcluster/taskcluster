@@ -1,4 +1,4 @@
-# taskcluster-lib-pulse
+# Pulse Library
 
 Library for interacting with Pulse and Taskcluster-Pulse.  See [the
 docs](https://docs.taskcluster.net/manual/design/apis/pulse) for more

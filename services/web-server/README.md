@@ -1,4 +1,4 @@
-# Taskcluster Web Server
+# Web-Server Service
 
 A web server for supporting the taskcluster-web UI repository. Serves as a
 GraphQL gateway to the Taskcluster REST APIs, and should eventually support and

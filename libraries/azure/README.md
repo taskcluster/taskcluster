@@ -1,4 +1,4 @@
-# Taskcluster Azure Shim
+# Azure Library
 
 A simple library to allow using `azure-entities` and the like, with Taskcluster credentials.
 

@@ -1,4 +1,4 @@
-# taskcluster-lib-references
+# References Library
 
 Taskcluster-lib-references is responsible for handling the API reference data,
 including manifests, API references, exchange references, and JSON schemas.

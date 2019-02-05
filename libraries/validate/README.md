@@ -1,5 +1,4 @@
-TaskCluster Validation Library
-==============================
+# Validate Library
 
 A single purpose library to wrap up all of the logic for ensuring that
 content matches established schemas. This is a replacement for

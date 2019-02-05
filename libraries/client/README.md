@@ -1,4 +1,4 @@
-# TaskCluster Client
+# Taskcluster Client
 
 This client library is generated from the auto-generated API reference.
 You can create a Client class from a JSON reference object at runtime using

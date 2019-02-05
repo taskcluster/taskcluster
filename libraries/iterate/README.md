@@ -1,4 +1,4 @@
-# taskcluster-lib-iterate
+# Iterate Library
 
 The motivation for this library is to provide a common framework for the running
 of code many times in a robust and fail-safe manner.  At its core, this library

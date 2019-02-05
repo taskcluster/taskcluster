@@ -1,5 +1,4 @@
-TaskCluster API
-===============
+# API Library
 
 This library provides support for building an API for a TaskCluster
 microservice.  It consists of some abstractions over `express` for declaring

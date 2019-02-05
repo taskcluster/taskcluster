@@ -1,5 +1,4 @@
-Taskcluster - Authentication Server
------------------------------------
+# Auth Service
 
 The taskcluster authentication server manages permissions and credentials
 in the taskcluster eco-system. Identifiers, credentials and authorized
