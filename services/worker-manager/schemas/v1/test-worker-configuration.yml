@@ -6,6 +6,7 @@ type: object
 properties: 
   workerConfiguration: {$ref: 'worker-configuration.json#'}
   satisfiers: {$ref: 'satisfiers.json#'}
+additionalProperties: false
 required:
   - workerConfiguration
   - satisfiers

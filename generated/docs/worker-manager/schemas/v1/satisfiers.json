@@ -1,0 +1,9 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Rule Condition Satisfiers",
+  "description": "An object which satisfies conditions for rules in a rule set\n",
+  "additionalProperties": {
+    "type": "string"
+  },
+  "$id": "/schemas/worker-manager/v1/satisfiers.json#"
+}

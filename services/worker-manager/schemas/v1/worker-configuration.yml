@@ -21,14 +21,16 @@ properties:
           type: string
       required:
         - workerType
+      additionalProperties: false
   rules: {$ref: 'ruleset.json#'}
   biddingStrategyId:
     type: string
-  providersIds:
+  providerIds:
     type: array
     items:
       type: string
-requiredProperties:
+additionalProperties: false
+required:
   - id
   - rules
   - workerTypes

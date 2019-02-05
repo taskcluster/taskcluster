@@ -1,0 +1,72 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "List Provisioners Response",
+  "type": "object",
+  "properties": {
+    "provisioners": {
+      "type": "array",
+      "items": {
+        "title": "Provisioner Information",
+        "type": "object",
+        "properties": {
+          "provisionerId": {
+            "title": "Provisioner ID",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 22,
+            "pattern": "^([a-zA-Z0-9-_]*)$"
+          },
+          "stability": {
+            "title": "Stability",
+            "description": "This is the stability of the provisioner. Accepted values:\n * `experimental`\n * `stable`\n * `deprecated`\n",
+            "type": "string",
+            "enum": [
+              "experimental",
+              "stable",
+              "deprecated"
+            ]
+          },
+          "description": {
+            "title": "Description",
+            "description": "Description of the provisioner.\n",
+            "type": "string"
+          },
+          "expires": {
+            "title": "Provisioner Expiration",
+            "description": "Date and time after which the provisioner created will be automatically\ndeleted by the queue.\n",
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastDateActive": {
+            "title": "Provisioner Last Date Active",
+            "description": "Date and time where the provisioner was last seen active\n",
+            "type": "string",
+            "format": "date-time"
+          },
+          "actions": {
+            "$ref": "actions.json#"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "provisionerId",
+          "description",
+          "stability",
+          "expires",
+          "lastDateActive",
+          "actions"
+        ]
+      }
+    },
+    "continuationToken": {
+      "type": "string",
+      "title": "Continuation Token",
+      "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of provisioners.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called with `continuationToken` until you get a\nresult without a `continuationToken`.\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "provisioners"
+  ],
+  "$id": "/schemas/queue/v1/list-provisioners-response.json#"
+}

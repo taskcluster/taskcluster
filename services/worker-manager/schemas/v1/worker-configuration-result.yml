@@ -12,7 +12,7 @@ properties:
     type: object
   schemaData:
     type: object
-requiredProperties:
+required:
   - workerType
   - providerData
   - biddingStrategyData

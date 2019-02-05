@@ -20,8 +20,7 @@ const {gitClone, gitIsDirty, dockerRun, dockerPull, dockerImages, dockerBuild,
  *  - Clone the monorepo (from the current working copy)
  *  - Build it (install dependencies, transpile, etc.)
  *    - generate an "entrypoint" script to allow things like "docker run <monoimage> service/web"
- *  - Generate the docs for each service, bundling them into a single docsDir
- *  - Build the docker image containing both the app (/app) and built docs directory (/docs)
+ *  - Build the docker image containing the app (/app)
  *
  *  All of this is done using a "hooks" approach to allow segmenting the various oddball bits of
  *  this process by theme.
@@ -34,8 +33,6 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
 
   // list of all services in the monorepo
   const services = listServices({repoDir: appRootDir.get()});
-  // list of all services including those not (yet) in the monorepo
-  const docNames = spec.build.repositories.filter(repo => repo.docs).map(repo => repo.name).concat(services);
 
   // we need the "full" node image to install buffertools, for example..
   const nodeImage = `node:${nodeVersion}`;
@@ -117,7 +114,7 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
     name: 'References',
     entrypoints: async (requirements, utils, procs) => {
       // this script:
-      //  - reads the references from /docs and generates rootUrl-relative output
+      //  - reads the references from generated/ and creates rootUrl-relative output
       //  - starts nginx to serve that rootUrl-relative output
       procs['references/web'] = 'exec sh infrastructure/references/references.sh';
     },
@@ -289,97 +286,12 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
     },
   });
 
-  services.forEach(name => {
-    tasks.push({
-      title: `Service ${name} - Generate Docs`,
-      requires: [
-        `monoimage-built-app-dir`,
-        `monoimage-stamp`,
-        `docker-image-${nodeAlpineImage}`,
-      ],
-      provides: [
-        `docs-${name}-dir`,
-        `docs-${name}-stamp`,
-      ],
-      locks: ['docker'],
-      run: async (requirements, utils) => {
-        const appDir = requirements['monoimage-built-app-dir'];
-        // note that docs directory paths must have this form (${basedir}/docs is
-        // mounted in docker images)
-        const docsDir = path.join(baseDir, 'docs', name);
-
-        const stamp = new Stamp({step: 'service-docs', version: 1},
-          requirements['monoimage-stamp']);
-        const provides = {
-          [`docs-${name}-dir`]: docsDir,
-          [`docs-${name}-stamp`]: stamp,
-        };
-
-        // if we've already built this docsDir with this revision, we're done.
-        if (stamp.dirStamped(docsDir)) {
-          return utils.skip({provides});
-        }
-        await rimraf(docsDir);
-        await mkdirp(path.dirname(docsDir));
-
-        await dockerRun({
-          image: nodeAlpineImage,
-          command: ['/app/entrypoint', `${name}/write-docs`],
-          env: [
-            `DOCS_OUTPUT_DIR=/basedir/docs/${name}`,
-            'NODE_ENV=production',
-            'PUBLISH_METADATA=false', // this defaults to true otherwise..
-          ],
-          logfile: `${workDir}/generate-${name}-docs.log`,
-          workingDir: '/app',
-          utils,
-          binds: [
-            `${appDir}:/app`,
-            `${baseDir}:/basedir`,
-          ],
-          baseDir,
-        });
-
-        stamp.stampDir(docsDir);
-        return provides;
-      },
-    });
-  });
-
-  ensureTask(tasks, {
-    title: `Build Docs Directory`,
-    requires: [
-      ...docNames.map(name => `docs-${name}-dir`),
-      ...docNames.map(name => `docs-${name}-stamp`),
-    ],
-    provides: [
-      'docs-dir',
-      'docs-stamp',
-    ],
-    locks: ['docker'],
-    run: async (requirements, utils) => {
-      // all of the docs are in baseDir/docs, so just use that as the target directory.
-      const docsDir = path.join(baseDir, 'docs');
-      const stamp = new Stamp({step: 'docs-dir', version: 1},
-        ...docNames.map(name => requirements[`docs-${name}-stamp`]));
-      // there's nothing much to do here; really this task is just a milestone to indicate
-      // that all service docs have been built and are available under docs-dir.
-      stamp.stampDir(docsDir);
-      return {
-        'docs-dir': docsDir,
-        'docs-stamp': stamp,
-      };
-    },
-  });
-
   ensureTask(tasks, {
     title: `Build Monoimage`,
     requires: [
       'monoimage-stamp',
       'monoimage-built-app-dir',
       `docker-image-${nodeAlpineImage}`,
-      'docs-dir',
-      'docs-stamp',
     ],
     provides: [
       'monoimage-docker-image',
@@ -391,8 +303,7 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
       // find the requirements ending in '-stamp' that we should depend on
       const stamp = new Stamp({step: 'build-image', version: 1},
         {nodeAlpineImage},
-        requirements['monoimage-stamp'],
-        requirements['docs-stamp']);
+        requirements['monoimage-stamp']);
       const tag = `${cfg.docker.repositoryPrefix}monoimage:SVC-${stamp.hash()}`;
 
       utils.step({title: 'Check for Existing Images'});
@@ -420,24 +331,12 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
       const tarball = tar.pack(workDir, {
         // include the built app dir as app/
         entries: ['app', 'Dockerfile'],
-        finalize: false,
-        finish: pack => {
-          // rewrite the built docs dir to docs/
-          tar.pack(requirements['docs-dir'], {
-            map: header => {
-              header.name = `docs/${header.name}`;
-              return header;
-            },
-            pack,
-          });
-        },
       });
 
       const dockerfile = [
         `FROM ${nodeAlpineImage}`,
         'RUN apk update && apk add nginx && mkdir /run/nginx',
         'COPY app /app',
-        'COPY docs /docs',
         'ENV HOME=/app',
         'WORKDIR /app',
         'ENTRYPOINT ["/app/entrypoint"]',

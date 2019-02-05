@@ -1,0 +1,19 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Quarantine Worker Request",
+  "description": "Request to update a worker's quarantineUntil property.\n",
+  "type": "object",
+  "properties": {
+    "quarantineUntil": {
+      "title": "Worker Quarantine",
+      "description": "Quarantining a worker allows the machine to remain alive but not accept jobs.\nOnce the quarantineUntil time has elapsed, the worker resumes accepting jobs.\nNote that a quarantine can be lifted by setting `quarantineUntil` to the present time (or\nsomewhere in the past).\n",
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "quarantineUntil"
+  ],
+  "$id": "/schemas/queue/v1/quarantine-worker-request.json#"
+}

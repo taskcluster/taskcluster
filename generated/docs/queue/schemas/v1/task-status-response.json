@@ -1,0 +1,16 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Task Status Response",
+  "description": "Response to a task status request\n",
+  "type": "object",
+  "properties": {
+    "status": {
+      "$ref": "task-status.json#"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "status"
+  ],
+  "$id": "/schemas/queue/v1/task-status-response.json#"
+}

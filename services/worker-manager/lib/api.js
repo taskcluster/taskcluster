@@ -121,7 +121,7 @@ builder.declare({
   }
 
   try {
-    res.reply(await this.datastore.get('worker-configurations', id));
+    await this.datastore.get('worker-configurations', id);
   } catch (err) {
     if (err instanceof errors.InvalidDatastoreKey) {
       return res.reportError('ResourceNotFound', `${id} is unknown`);

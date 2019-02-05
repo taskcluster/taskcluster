@@ -1,0 +1,67 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "GitHub Release Message",
+  "description": "Message reporting that a GitHub release has occurred\n",
+  "type": "object",
+  "properties": {
+    "version": {
+      "description": "Message version",
+      "enum": [
+        1
+      ]
+    },
+    "organization": {
+      "description": "The GitHub `organization` which had an event.\n",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^([a-zA-Z0-9-_%]*)$"
+    },
+    "repository": {
+      "description": "The GitHub `repository` which had an event.\n",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^([a-zA-Z0-9-_%]*)$"
+    },
+    "installationId": {
+      "description": "The installation which had an event.\n",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000000000
+    },
+    "eventId": {
+      "type": "string",
+      "description": "The GitHub webhook deliveryId. Extracted from the header 'X-GitHub-Delivery'\n",
+      "pattern": "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$"
+    },
+    "details": {
+      "type": "object",
+      "description": "Metadata describing the release (for version 0)\n"
+    },
+    "body": {
+      "type": "object",
+      "description": "The raw body of github event (for version 1)\n"
+    },
+    "tasks_for": {
+      "type": "string",
+      "description": "The type of the event (for version 1)\n"
+    },
+    "branch": {
+      "type": "string",
+      "description": "The head ref of the event (for version 1)\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "organization",
+    "repository",
+    "installationId",
+    "eventId",
+    "body",
+    "tasks_for",
+    "branch"
+  ],
+  "$id": "/schemas/github/v1/github-release-message.json#"
+}

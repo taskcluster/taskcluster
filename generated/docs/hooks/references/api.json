@@ -1,0 +1,216 @@
+{
+  "$schema": "/schemas/common/api-reference-v0.json#",
+  "title": "Hooks API Documentation",
+  "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a \"schedule\" indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `['0 0 1 * * *']` -- daily at 1:00 UTC\n * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon\n\nThe task definition is used as a JSON-e template, with a context depending on how it is fired.  See\n[/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)\nfor more information.",
+  "serviceName": "hooks",
+  "apiVersion": "v1",
+  "entries": [
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/ping",
+      "query": [],
+      "args": [],
+      "name": "ping",
+      "stability": "stable",
+      "title": "Ping Server",
+      "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/hooks",
+      "query": [],
+      "args": [],
+      "name": "listHookGroups",
+      "stability": "stable",
+      "title": "List hook groups",
+      "output": "v1/list-hook-groups-response.json#",
+      "description": "This endpoint will return a list of all hook groups with at least one hook."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/hooks/<hookGroupId>",
+      "query": [],
+      "args": [
+        "hookGroupId"
+      ],
+      "name": "listHooks",
+      "stability": "stable",
+      "title": "List hooks in a given group",
+      "output": "v1/list-hooks-response.json#",
+      "description": "This endpoint will return a list of all the hook definitions within a\ngiven hook group."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/hooks/<hookGroupId>/<hookId>",
+      "query": [],
+      "args": [
+        "hookGroupId",
+        "hookId"
+      ],
+      "name": "hook",
+      "stability": "stable",
+      "title": "Get hook definition",
+      "output": "v1/hook-definition.json#",
+      "description": "This endpoint will return the hook definition for the given `hookGroupId`\nand hookId."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/hooks/<hookGroupId>/<hookId>/status",
+      "query": [],
+      "args": [
+        "hookGroupId",
+        "hookId"
+      ],
+      "name": "getHookStatus",
+      "stability": "stable",
+      "title": "Get hook status",
+      "output": "v1/hook-status.json#",
+      "description": "This endpoint will return the current status of the hook.  This represents a\nsnapshot in time and may vary from one call to the next."
+    },
+    {
+      "type": "function",
+      "method": "put",
+      "route": "/hooks/<hookGroupId>/<hookId>",
+      "query": [],
+      "args": [
+        "hookGroupId",
+        "hookId"
+      ],
+      "name": "createHook",
+      "stability": "stable",
+      "title": "Create a hook",
+      "input": "v1/create-hook-request.json#",
+      "output": "v1/hook-definition.json#",
+      "description": "This endpoint will create a new hook.\n\nThe caller's credentials must include the role that will be used to\ncreate the task.  That role must satisfy task.scopes as well as the\nnecessary scopes to add the task to the queue.",
+      "scopes": {
+        "AllOf": [
+          "hooks:modify-hook:<hookGroupId>/<hookId>",
+          "assume:hook-id:<hookGroupId>/<hookId>"
+        ]
+      }
+    },
+    {
+      "type": "function",
+      "method": "post",
+      "route": "/hooks/<hookGroupId>/<hookId>",
+      "query": [],
+      "args": [
+        "hookGroupId",
+        "hookId"
+      ],
+      "name": "updateHook",
+      "stability": "stable",
+      "title": "Update a hook",
+      "input": "v1/create-hook-request.json#",
+      "output": "v1/hook-definition.json#",
+      "description": "This endpoint will update an existing hook.  All fields except\n`hookGroupId` and `hookId` can be modified.",
+      "scopes": {
+        "AllOf": [
+          "hooks:modify-hook:<hookGroupId>/<hookId>",
+          "assume:hook-id:<hookGroupId>/<hookId>"
+        ]
+      }
+    },
+    {
+      "type": "function",
+      "method": "delete",
+      "route": "/hooks/<hookGroupId>/<hookId>",
+      "query": [],
+      "args": [
+        "hookGroupId",
+        "hookId"
+      ],
+      "name": "removeHook",
+      "stability": "stable",
+      "title": "Delete a hook",
+      "description": "This endpoint will remove a hook definition.",
+      "scopes": "hooks:modify-hook:<hookGroupId>/<hookId>"
+    },
+    {
+      "type": "function",
+      "method": "post",
+      "route": "/hooks/<hookGroupId>/<hookId>/trigger",
+      "query": [],
+      "args": [
+        "hookGroupId",
+        "hookId"
+      ],
+      "name": "triggerHook",
+      "stability": "stable",
+      "title": "Trigger a hook",
+      "input": "v1/trigger-hook.json#",
+      "output": "v1/task-status.json#",
+      "description": "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
+      "scopes": "hooks:trigger-hook:<hookGroupId>/<hookId>"
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/hooks/<hookGroupId>/<hookId>/token",
+      "query": [],
+      "args": [
+        "hookGroupId",
+        "hookId"
+      ],
+      "name": "getTriggerToken",
+      "stability": "stable",
+      "title": "Get a trigger token",
+      "output": "v1/trigger-token-response.json#",
+      "description": "Retrieve a unique secret token for triggering the specified hook. This\ntoken can be deactivated with `resetTriggerToken`.",
+      "scopes": "hooks:get-trigger-token:<hookGroupId>/<hookId>"
+    },
+    {
+      "type": "function",
+      "method": "post",
+      "route": "/hooks/<hookGroupId>/<hookId>/token",
+      "query": [],
+      "args": [
+        "hookGroupId",
+        "hookId"
+      ],
+      "name": "resetTriggerToken",
+      "stability": "stable",
+      "title": "Reset a trigger token",
+      "output": "v1/trigger-token-response.json#",
+      "description": "Reset the token for triggering a given hook. This invalidates token that\nmay have been issued via getTriggerToken with a new token.",
+      "scopes": "hooks:reset-trigger-token:<hookGroupId>/<hookId>"
+    },
+    {
+      "type": "function",
+      "method": "post",
+      "route": "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
+      "query": [],
+      "args": [
+        "hookGroupId",
+        "hookId",
+        "token"
+      ],
+      "name": "triggerHookWithToken",
+      "stability": "stable",
+      "title": "Trigger a hook with a token",
+      "input": "v1/trigger-hook.json#",
+      "output": "v1/task-status.json#",
+      "description": "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template."
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
+      "query": [],
+      "args": [
+        "hookGroupId",
+        "hookId"
+      ],
+      "name": "listLastFires",
+      "stability": "experimental",
+      "title": "Get information about recent hook fires",
+      "output": "v1/list-lastFires-response.json#",
+      "description": "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not"
+    }
+  ]
+}

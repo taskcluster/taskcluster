@@ -1,0 +1,10 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Get All Roles (no pagination)",
+  "description": "List of roles\n",
+  "type": "array",
+  "items": {
+    "$ref": "get-role-response.json#"
+  },
+  "$id": "/schemas/auth/v1/list-roles-response.json#"
+}
