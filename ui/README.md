@@ -105,10 +105,10 @@ import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 ## Table of Contents
 
 <!-- TOC BEGIN -->
-* [src/components/DateDistance](src/components/DateDistance)
-* [src/components/StatusLabel](src/components/StatusLabel)
-* [src/components/SpeedDial](src/components/SpeedDial)
-* [src/components/Snackbar](src/components/Snackbar)
-* [src/components/Markdown](src/components/Markdown)
-* [src/components/Search](src/components/Search)
+* [src/components/DateDistance](src/components/DateDistance#readme)
+* [src/components/StatusLabel](src/components/StatusLabel#readme)
+* [src/components/SpeedDial](src/components/SpeedDial#readme)
+* [src/components/Snackbar](src/components/Snackbar#readme)
+* [src/components/Markdown](src/components/Markdown#readme)
+* [src/components/Search](src/components/Search#readme)
 <!-- TOC END -->
