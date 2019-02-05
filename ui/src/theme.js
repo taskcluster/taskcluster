@@ -73,7 +73,7 @@ const createTheme = isDarkTheme => ({
     h4: Roboto400,
     h5: Roboto400,
     h6: Roboto500,
-    subtitle1: Roboto400,
+    subtitle1: Roboto500,
     body1: Roboto500,
     body2: Roboto400,
     caption: Roboto400,
@@ -199,6 +199,18 @@ const createTheme = isDarkTheme => ({
         backgroundColor: isDarkTheme ? THEME.PRIMARY_DARK : THEME.PRIMARY_LIGHT,
       },
     },
+    MuiFormLabel: {
+      filled: {
+        ...Roboto500,
+        color: isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
+      },
+    },
+    MuiListSubheader: {
+      root: {
+        ...Roboto500,
+        color: isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
+      },
+    },
     MuiButton: {
       sizeSmall: {
         minWidth: 36,
@@ -229,21 +241,25 @@ const createTheme = isDarkTheme => ({
       },
     },
     MuiPickersYear: {
-      root: {
-        '&:focus': {
+      year: {
+        root: {
+          '&:focus': {
+            color: isDarkTheme ? 'white' : '#000',
+          },
+        },
+        '&$selected': {
           color: isDarkTheme ? 'white' : '#000',
         },
       },
-      selected: {
-        color: isDarkTheme ? 'white' : '#000',
-      },
     },
     MuiPickersDay: {
-      selected: {
-        backgroundColor: THEME.SECONDARY,
-      },
-      current: {
-        color: isDarkTheme ? 'white' : '#000',
+      day: {
+        '&$selected': {
+          backgroundColor: THEME.SECONDARY,
+        },
+        current: {
+          color: isDarkTheme ? 'white' : '#000',
+        },
       },
     },
     MuiPickersModal: {

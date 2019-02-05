@@ -5,6 +5,7 @@ import Markdown from '@mozilla-frontend-infra/components/Markdown';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
+import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -17,7 +18,6 @@ import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
 import { camelCase } from 'change-case';
 import LinkIcon from 'mdi-react/LinkIcon';
-import Button from '../Button';
 import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
 import TableCellListItem from '../TableCellListItem';
@@ -42,6 +42,7 @@ const sorted = pipe(
   infoButton: {
     marginLeft: -theme.spacing.double,
     marginRight: theme.spacing.unit,
+    borderRadius: 4,
   },
   headline: {
     paddingLeft: theme.spacing.triple,
@@ -208,13 +209,12 @@ export default class WorkerTypesTable extends Component {
           renderRow={({ node: workerType }) => (
             <TableRow key={workerType.workerType}>
               <TableCell>
-                <Button
+                <IconButton
                   className={classes.infoButton}
-                  size="small"
                   name={workerType.workerType}
                   onClick={this.handleDrawerOpen}>
                   <InformationVariantIcon size={iconSize} />
-                </Button>
+                </IconButton>
                 <TableCellListItem
                   button
                   component={Link}

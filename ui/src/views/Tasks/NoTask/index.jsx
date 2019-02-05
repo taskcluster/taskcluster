@@ -61,7 +61,10 @@ export default class NoTask extends Component {
                 component={Link}
                 to={`/tasks/${taskId}`}
                 key={taskId}>
-                <ListItemText primary={taskId} />
+                <ListItemText
+                  disableTypography
+                  primary={<Typography>{taskId}</Typography>}
+                />
                 <LinkIcon />
               </ListItem>
             ))}
