@@ -1683,7 +1683,7 @@ module.exports = {
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHook",
-          "output": "v1/task-status.json#",
+          "output": "v1/trigger-hook-response.json#",
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger",
@@ -1736,7 +1736,7 @@ module.exports = {
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHookWithToken",
-          "output": "v1/task-status.json#",
+          "output": "v1/trigger-hook-response.json#",
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger/<token>",

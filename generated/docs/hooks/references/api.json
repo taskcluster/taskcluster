@@ -144,7 +144,7 @@
       "stability": "stable",
       "title": "Trigger a hook",
       "input": "v1/trigger-hook.json#",
-      "output": "v1/task-status.json#",
+      "output": "v1/trigger-hook-response.json#",
       "description": "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.",
       "scopes": "hooks:trigger-hook:<hookGroupId>/<hookId>"
     },
@@ -194,7 +194,7 @@
       "stability": "stable",
       "title": "Trigger a hook with a token",
       "input": "v1/trigger-hook.json#",
-      "output": "v1/task-status.json#",
+      "output": "v1/trigger-hook-response.json#",
       "description": "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template."
     },
     {

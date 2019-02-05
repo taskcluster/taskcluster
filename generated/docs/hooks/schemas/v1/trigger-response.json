@@ -1,0 +1,5 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Trigger Hook Response",
+  "$id": "/schemas/hooks/v1/trigger-response.json#"
+}

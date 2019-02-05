@@ -4140,6 +4140,14 @@
   },
   {
     "content": {
+      "$id": "/schemas/hooks/v1/trigger-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "title": "Trigger Hook Response"
+    },
+    "filename": "schemas/hooks/v1/trigger-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/hooks/v1/trigger-hook.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "description": "A request to trigger a hook.  The payload must be a JSON object, and is used as the context\nfor a JSON-e rendering of the hook's task template, as described in \"Firing Hooks\".\n",
@@ -4147,6 +4155,29 @@
       "type": "object"
     },
     "filename": "schemas/hooks/v1/trigger-hook.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/hooks/v1/trigger-hook-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "anyOf": [
+        {
+          "$ref": "task-status.json#"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Empty response indicating no task was created",
+          "properties": {
+          },
+          "required": [
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "Response to a `triggerHook` or `triggerHookWithToken` call.\n\nIn most cases, this is a task status, but in cases where the hook template\ndoes not generate a task, it is an empty object with no `status` property.\n",
+      "title": "Trigger Hook Response"
+    },
+    "filename": "schemas/hooks/v1/trigger-hook-response.json"
   },
   {
     "content": {
@@ -9734,7 +9765,7 @@
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHook",
-          "output": "v1/task-status.json#",
+          "output": "v1/trigger-hook-response.json#",
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger",
@@ -9787,7 +9818,7 @@
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHookWithToken",
-          "output": "v1/task-status.json#",
+          "output": "v1/trigger-hook-response.json#",
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
