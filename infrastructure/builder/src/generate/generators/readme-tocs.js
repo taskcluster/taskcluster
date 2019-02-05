@@ -44,7 +44,7 @@ exports.tasks = [{
       for (let child of children) {
         const relative = path.relative(dir, child.dir);
         const title = child.title || relative;
-        lines.push(`${indent}* [${title}](${relative})`);
+        lines.push(`${indent}* [${title}](${relative}#readme)`);
         tocLines(lines, `${indent}    `, dir, child.children);
       }
       return lines;
