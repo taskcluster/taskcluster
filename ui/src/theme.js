@@ -73,7 +73,7 @@ const createTheme = isDarkTheme => ({
     h4: Roboto400,
     h5: Roboto400,
     h6: Roboto500,
-    subtitle1: Roboto400,
+    subtitle1: Roboto500,
     body1: Roboto500,
     body2: Roboto400,
     caption: Roboto400,
@@ -197,6 +197,18 @@ const createTheme = isDarkTheme => ({
     MuiPaper: {
       root: {
         backgroundColor: isDarkTheme ? THEME.PRIMARY_DARK : THEME.PRIMARY_LIGHT,
+      },
+    },
+    MuiFormLabel: {
+      filled: {
+        ...Roboto500,
+        color: isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
+      },
+    },
+    MuiListSubheader: {
+      root: {
+        ...Roboto500,
+        color: isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
       },
     },
     MuiButton: {
