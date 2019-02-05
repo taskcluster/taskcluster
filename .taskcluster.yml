@@ -67,11 +67,9 @@ tasks:
     - name: yarn generate
       command: |
           yarn generate | cat &&
-          git status &&
-          git diff &&
-          if ! git diff-files --exit-code --ignore-submodules --; then
+          if ! output=$(git status --porcelain) || [ -n "$output" ]; then
               echo "*** yarn generate produced changes to the repository; these changes should be checked in ***";
-              git diff;
+              git --no-pager diff;
               exit 1;
           fi
     - name: ui
