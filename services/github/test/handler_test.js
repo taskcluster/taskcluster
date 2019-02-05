@@ -20,7 +20,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
   async function addBuild({state, taskGroupId}) {
     debug(`adding Build row for ${taskGroupId} in state ${state}`);
     await helper.Builds.create({
-      organization: 'TaskClusterRobot',
+      organization: 'TaskclusterRobot',
       repository: 'hooks-testing',
       sha: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
       taskGroupId,
@@ -95,7 +95,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
     // set up the allowPullRequests key
     github.inst(5828).setRepoInfo({
-      owner: 'TaskClusterRobot',
+      owner: 'TaskclusterRobot',
       repo: 'hooks-testing',
       info: {default_branch: 'development'},
     });
@@ -124,7 +124,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
           'event.base.repo.branch': 'tc-gh-tests',
           'event.head.repo.branch': 'tc-gh-tests',
           'event.head.user.login': user,
-          'event.head.repo.url': 'https://github.com/TaskClusterRobot/hooks-testing.git',
+          'event.head.repo.url': 'https://github.com/TaskclusterRobot/hooks-testing.git',
           'event.head.sha': head || '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
           'event.head.ref': 'refs/heads/tc-gh-tests',
           'event.base.sha': base || '2bad4edf90e7d4fb4643456a4df333da348bbed4',
@@ -142,7 +142,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
           routingKey: 'ignored',
           routes: [],
           payload: {
-            organization: 'TaskClusterRobot',
+            organization: 'TaskclusterRobot',
             details: details,
             repository: 'hooks-testing',
             eventId: '26370a80-ed65-11e6-8f4c-80082678482d',
@@ -160,18 +160,18 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
     test('valid push (owner is collaborator) creates a taskGroup', async function() {
       github.inst(5828).setTaskclusterYml({
-        owner: 'TaskClusterRobot',
+        owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./valid-yaml.json'),
       });
-      await simulateJobMessage({user: 'TaskClusterRobot'});
+      await simulateJobMessage({user: 'TaskclusterRobot'});
 
       assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
       let build = await helper.Builds.load({taskGroupId});
-      assert.equal(build.organization, 'TaskClusterRobot');
+      assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(build.state, 'pending');
@@ -179,12 +179,12 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
     test('valid pull_request (user is collaborator) creates a taskGroup', async function() {
       github.inst(5828).setRepoCollaborator({
-        owner: 'TaskClusterRobot',
+        owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         username: 'goodBuddy',
       });
       github.inst(5828).setTaskclusterYml({
-        owner: 'TaskClusterRobot',
+        owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./valid-yaml.json'),
@@ -195,7 +195,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
       let build = await helper.Builds.load({taskGroupId});
-      assert.equal(build.organization, 'TaskClusterRobot');
+      assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(build.state, 'pending');
@@ -203,17 +203,17 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
     test('valid push (but not collaborator) creates a taskGroup', async function() {
       github.inst(5828).setTaskclusterYml({
-        owner: 'TaskClusterRobot',
+        owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./valid-yaml.json'),
       });
-      await simulateJobMessage({user: 'TaskClusterCollaborator', eventType: 'push'});
+      await simulateJobMessage({user: 'TaskclusterCollaborator', eventType: 'push'});
 
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
       let build = await helper.Builds.load({taskGroupId});
-      assert.equal(build.organization, 'TaskClusterRobot');
+      assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(build.state, 'pending');
@@ -221,13 +221,13 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
     test('valid tag push (but not collaborator) creates a taskGroup', async function() {
       github.inst(5828).setTaskclusterYml({
-        owner: 'TaskClusterRobot',
+        owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./valid-yaml.json'),
       });
       await simulateJobMessage({
-        user: 'TaskClusterRobotCollaborator',
+        user: 'TaskclusterRobotCollaborator',
         base: '0000000000000000000000000000000000000000',
         eventType: 'tag'}
       );
@@ -236,7 +236,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
       let args = handlers.createTasks.firstCall.args[0];
       let taskGroupId = args.tasks[0].task.taskGroupId;
       let build = await helper.Builds.load({taskGroupId});
-      assert.equal(build.organization, 'TaskClusterRobot');
+      assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(build.state, 'pending');
@@ -244,17 +244,17 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
     test('invalid YAML results in a comment', async function() {
       github.inst(5828).setTaskclusterYml({
-        owner: 'TaskClusterRobot',
+        owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./invalid-yaml.json'),
       });
-      await simulateJobMessage({user: 'TaskClusterRobot'});
+      await simulateJobMessage({user: 'TaskclusterRobot'});
 
       assert(github.inst(5828).repos.createStatus.callCount === 0, 'Status was unexpectedly updated!');
       assert(github.inst(5828).repos.createCommitComment.calledOnce);
       let args = github.inst(5828).repos.createCommitComment.args;
-      assert.equal(args[0][0].owner, 'TaskClusterRobot');
+      assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert(args[0][0].body.indexOf('data should NOT have additional properties') !== -1);
@@ -262,17 +262,17 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
     test('error creating task is reported correctly', async function() {
       github.inst(5828).setTaskclusterYml({
-        owner: 'TaskClusterRobot',
+        owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./valid-yaml.json'),
       });
       handlers.createTasks.returns(Promise.reject({body: {error: 'oh noes'}}));
-      await simulateJobMessage({user: 'TaskClusterRobot'});
+      await simulateJobMessage({user: 'TaskclusterRobot'});
 
       assert(github.inst(5828).repos.createCommitComment.calledOnce);
       let args = github.inst(5828).repos.createCommitComment.args;
-      assert.equal(args[0][0].owner, 'TaskClusterRobot');
+      assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert(args[0][0].body.indexOf('oh noes') !== -1);
@@ -280,7 +280,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
     test('not an org member or collaborator is reported correctly for pull requests', async function() {
       github.inst(5828).setTaskclusterYml({
-        owner: 'TaskClusterRobot',
+        owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./valid-yaml.json'),
@@ -289,7 +289,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
       assert(github.inst(5828).issues.createComment.calledOnce);
       let args = github.inst(5828).issues.createComment.args;
-      assert.equal(args[0][0].owner, 'TaskClusterRobot');
+      assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].number, '36');
       assert(args[0][0].body.indexOf('No Taskcluster jobs started for this pull request') !== -1);
@@ -297,13 +297,13 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
     test('specifying allowPullRequests: public in the default branch allows all', async function() {
       github.inst(5828).setTaskclusterYml({
-        owner: 'TaskClusterRobot',
+        owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./valid-yaml.json'),
       });
       github.inst(5828).setTaskclusterYml({
-        owner: 'TaskClusterRobot',
+        owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
         content: {allowPullRequests: 'public'},
@@ -315,13 +315,13 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
     test('specifying allowPullRequests: collaborators in the default branch disallows public', async function() {
       github.inst(5828).setTaskclusterYml({
-        owner: 'TaskClusterRobot',
+        owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./valid-yaml.json'),
       });
       github.inst(5828).setTaskclusterYml({
-        owner: 'TaskClusterRobot',
+        owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
         content: {allowPullRequests: 'collaborators'},
@@ -334,7 +334,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
     test('user name not checked for pushes, so status is created', async function() {
       github.inst(5828).setTaskclusterYml({
-        owner: 'TaskClusterRobot',
+        owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
         content: require('./valid-yaml.json'),
@@ -361,7 +361,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
     async function assertStatusUpdate(state) {
       assert(github.inst(9988).repos.createStatus.calledOnce, 'createStatus was not called');
       let args = github.inst(9988).repos.createStatus.firstCall.args[0];
-      assert.equal(args.owner, 'TaskClusterRobot');
+      assert.equal(args.owner, 'TaskclusterRobot');
       assert.equal(args.repo, 'hooks-testing');
       assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
       assert.equal(args.state, state);
@@ -445,7 +445,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
     async function assertStatusUpdate(state) {
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
       let args = github.inst(9988).checks.update.firstCall.args[0];
-      assert.equal(args.owner, 'TaskClusterRobot');
+      assert.equal(args.owner, 'TaskclusterRobot');
       assert.equal(args.repo, 'hooks-testing');
       assert.equal(args.check_run_id, '22222');
       assert.equal(args.conclusion, CONCLUSIONS[state]);
@@ -456,7 +456,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
       github.inst(9988).checks.create.firstCall.args.forEach(args => {
         if (args.state === state) {
-          assert.equal(args.owner, 'TaskClusterRobot');
+          assert.equal(args.owner, 'TaskclusterRobot');
           assert.equal(args.repo, 'hooks-testing');
           assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
           debug('Created task group: ' + args.target_url);
@@ -555,7 +555,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
       github.inst(9988).repos.createStatus.firstCall.args.forEach(args => {
         if (args.state === state) {
-          assert.equal(args.owner, 'TaskClusterRobot');
+          assert.equal(args.owner, 'TaskclusterRobot');
           assert.equal(args.repo, 'hooks-testing');
           assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
           debug('Created task group: ' + args.target_url);
@@ -597,7 +597,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
 
       github.inst(9988).checks.create.firstCall.args.forEach(args => {
         if (args.state === state) {
-          assert.equal(args.owner, 'TaskClusterRobot');
+          assert.equal(args.owner, 'TaskclusterRobot');
           assert.equal(args.repo, 'hooks-testing');
           assert.equal(args.sha, '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf');
           debug('Created task group: ' + args.target_url);

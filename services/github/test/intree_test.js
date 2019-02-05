@@ -282,7 +282,7 @@ suite('intree config', function() {
     },
     {
       'tasks[0].task.metadata.owner': '', // private email
-      'tasks[0].task.metadata.source': 'https://github.com/TaskClusterRobot/hooks-testing',
+      'tasks[0].task.metadata.source': 'https://github.com/TaskclusterRobot/hooks-testing',
       scopes: ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
     });
 
@@ -299,7 +299,7 @@ suite('intree config', function() {
     },
     {
       'tasks[0].task.metadata.owner': '', // private email
-      'tasks[0].task.metadata.source': 'https://github.com/TaskClusterRobot/hooks-testing',
+      'tasks[0].task.metadata.source': 'https://github.com/TaskclusterRobot/hooks-testing',
       scopes: ['assume:repo:github.com/testorg/testrepo:branch:default_branch'],
     });
 
