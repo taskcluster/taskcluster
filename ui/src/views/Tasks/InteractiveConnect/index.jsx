@@ -11,6 +11,8 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 import ConsoleIcon from 'mdi-react/ConsoleIcon';
 import MonitorIcon from 'mdi-react/MonitorIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -136,7 +138,8 @@ export default class InteractiveConnect extends Component {
     artifactsLoading: true,
     // eslint-disable-next-line react/no-unused-state
     previousTaskId: this.props.match.params.taskId,
-    notificationEnabled: true,
+    notificationNotFired: true,
+    notificationToggle: false,
   };
 
   componentDidUpdate(prevProps) {
@@ -146,20 +149,24 @@ export default class InteractiveConnect extends Component {
         params: { taskId },
       },
     } = this.props;
+    const { notificationNotFired, notificationToggle } = this.state;
 
     if (
-      this.getInteractiveStatus === INTERACTIVE_TASK_STATUS.READY &&
-      this.state.notificationEnabled &&
+      // this.getInteractiveStatus === INTERACTIVE_TASK_STATUS.READY &&
+      notificationNotFired &&
+      notificationToggle &&
       Notification.permission === 'granted'
     ) {
-      const notification = new Notification('Session is ready');
+      const notification = new Notification(
+        'Your interactive task is ready for connecting. Connect while the task is available.'
+      );
 
       setTimeout(() => {
         notification.close();
-      }, 10000);
+      }, 30000);
 
       this.setState({
-        notificationEnabled: false,
+        notificationNotFired: false,
       });
     }
 
@@ -266,6 +273,11 @@ export default class InteractiveConnect extends Component {
     }
   };
 
+  handleNotificationChange = ({ target: { checked } }) => {
+    console.log(checked);
+    this.setState({ notificationToggle: checked });
+  };
+
   renderTask = () => {
     const {
       classes,
@@ -275,6 +287,7 @@ export default class InteractiveConnect extends Component {
       },
       user,
     } = this.props;
+    const { notificationToggle } = this.state;
     const interactiveStatus = this.getInteractiveStatus();
     const isSessionReady = interactiveStatus === INTERACTIVE_TASK_STATUS.READY;
     const isSessionResolved =
@@ -319,6 +332,18 @@ export default class InteractiveConnect extends Component {
             <ListItemText
               primary="Interactive Status"
               secondary={<StatusLabel state={interactiveStatus} />}
+            />
+          </ListItem>
+          <ListItem>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={notificationToggle}
+                  onChange={this.handleNotificationChange}
+                  color="secondary"
+                />
+              }
+              label="Notify Me on Ready"
             />
           </ListItem>
           <ListItem
