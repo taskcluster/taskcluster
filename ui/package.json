@@ -27,7 +27,7 @@
     ]
   },
   "dependencies": {
-    "@material-ui/core": "^3.6.2",
+    "@material-ui/core": "^3.9.2",
     "@material-ui/icons": "^3.0.1",
     "@material-ui/lab": "3.0.0-alpha.25",
     "@mozilla-frontend-infra/components": "^2.2.2",

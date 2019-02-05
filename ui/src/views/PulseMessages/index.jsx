@@ -78,6 +78,7 @@ const getBindingsFromProps = props => {
   infoButton: {
     marginLeft: -theme.spacing.double,
     marginRight: theme.spacing.unit,
+    padding: 4,
   },
   drawerContainer: {
     paddingTop: theme.spacing.double,
@@ -352,12 +353,11 @@ export default class PulseMessages extends Component {
                 <TableRow
                   key={`message-${message.routingKey}-${message.exchange}`}>
                   <TableCell>
-                    <Button
+                    <IconButton
                       className={classes.infoButton}
-                      size="small"
                       onClick={() => this.handleMessageDrawerOpen(message)}>
                       <InformationVariantIcon size={iconSize} />
-                    </Button>
+                    </IconButton>
                     {message.exchange}
                   </TableCell>
                   <TableCell>{message.routingKey}</TableCell>

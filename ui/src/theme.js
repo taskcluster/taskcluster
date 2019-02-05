@@ -229,21 +229,25 @@ const createTheme = isDarkTheme => ({
       },
     },
     MuiPickersYear: {
-      root: {
-        '&:focus': {
+      year: {
+        root: {
+          '&:focus': {
+            color: isDarkTheme ? 'white' : '#000',
+          },
+        },
+        '&$selected': {
           color: isDarkTheme ? 'white' : '#000',
         },
       },
-      selected: {
-        color: isDarkTheme ? 'white' : '#000',
-      },
     },
     MuiPickersDay: {
-      selected: {
-        backgroundColor: THEME.SECONDARY,
-      },
-      current: {
-        color: isDarkTheme ? 'white' : '#000',
+      day: {
+        '&$selected': {
+          backgroundColor: THEME.SECONDARY,
+        },
+        current: {
+          color: isDarkTheme ? 'white' : '#000',
+        },
       },
     },
     MuiPickersModal: {
