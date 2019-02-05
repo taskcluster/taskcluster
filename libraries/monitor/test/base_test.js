@@ -168,30 +168,6 @@ suite('BaseMonitor', function() {
     });
   });
 
-  suite('structured logging', function() {
-    test('basic levels', function() {
-      const levels = [
-        'debug',
-        'info',
-        'warn',
-        'error',
-        'fatal',
-      ];
-      levels.forEach((level, i) => {
-        monitor[level](`something.${level}`, {bar: i});
-      });
-
-      assert.equal(monitor.events.length, 5);
-      levels.forEach((level, i) => {
-        assert.equal(monitor.events[i].Logger, `taskcluster-testing-service.root`);
-        assert.equal(monitor.events[i].Type, `something.${level}`);
-        assert.equal(monitor.events[i].Fields.bar, i);
-      });
-    });
-  });
-
-  // TODO: Some sort of test that logs match mozlog schema
-
   suite('uncaught and unhandled', function() {
 
     const testExits = (done, args, check) => {

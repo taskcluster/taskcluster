@@ -55,7 +55,14 @@ class Monitor {
       this.events = [];
       destination = new stream.Writable({
         write: (chunk, encoding, next) => {
-          this.events.push(JSON.parse(chunk));
+          try {
+            chunk = JSON.parse(chunk);
+          } catch (err) {
+            if (err.name !== 'SyntaxError') {
+              throw err;
+            }
+          }
+          this.events.push(chunk);
           next();
         },
       });
@@ -113,15 +120,27 @@ class Monitor {
     this.log.info(...args);
   }
 
-  warn(...args) {
+  notice(...args) {
+    this.log.notice(...args);
+  }
+
+  warning(...args) {
     this.log.warning(...args);
   }
 
-  error(...args) {
+  err(...args) {
     this.log.err(...args);
   }
 
-  fatal(...args) {
+  crit(...args) {
+    this.log.crit(...args);
+  }
+
+  alert(...args) {
+    this.log.alert(...args);
+  }
+
+  emerg(...args) {
     this.log.emerg(...args);
   }
 
@@ -349,7 +368,7 @@ class Monitor {
     if (!(err instanceof Error)) {
       err = new Error(err);
     }
-    this.error('generic-error', {
+    this.err('generic-error', {
       name: err.name,
       message: err.message,
       error: err.toString(),

@@ -13,6 +13,7 @@ const LEVELS = {
   info: 6,
   debug: 7,
 };
+
 const LEVELS_REVERSE = [
   chalk.red.bold('EMERGENCY'),
   chalk.red('ALERT'),
@@ -58,16 +59,23 @@ class Logger {
       type = 'generic';
     }
     if (typeof fields === 'number') {
-      fields = fields.toString();
+      fields = {val: fields};
     }
     if (typeof fields === 'string') {
       fields = {msg: fields};
     }
 
+    if (fields === null || typeof fields === 'boolean') {
+      level = LEVELS['alert'];
+      fields = {
+        error: 'Invalid field to be logged.',
+        orig: fields,
+      };
+    }
     if (fields.meta !== undefined) {
       level = LEVELS['alert'];
       fields = {
-        err: 'You may not set meta fields on logs directly.',
+        error: 'You may not set meta fields on logs directly.',
         orig: fields,
       };
     }
