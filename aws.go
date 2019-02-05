@@ -69,12 +69,36 @@ type UserData struct {
 	ProvisionerBaseURL  string      `json:"provisionerBaseUrl"`
 	TaskclusterRootURL  string      `json:"taskclusterRootUrl"`
 	SecurityToken       string      `json:"securityToken"`
+	// GenericWorker could be defined as type PublicHostSetup, but then
+	// we wouldn't have a way to call dec.DisallowUnknownFields() without also
+	// affecting unpacking of UserData struct (which may have unknown fields).
+	GenericWorker json.RawMessage `json:"genericWorker"`
 }
 
-type Secrets struct {
-	GenericWorker struct {
-		Config json.RawMessage `json:"config"`
-	} `json:"generic-worker"`
+// PublicHostSetup is the data structure that is passed into AWS userdata by
+// the provisioner via the userData property/properties of the worker type
+// definition. Since this data is included in the worker type definition, it
+// should not contain any secret/private/confidential information. For
+// confidential information, see PrivateHostSetup struct.
+type PublicHostSetup struct {
+	// Non-confidential generic-worker config settings
+	Config gwconfig.PublicConfig `json:"config"`
+	// Non-confidential static files to write to the host environment, that for
+	// some reason are not already present in the AMI that this worker runs on.
+	// Usually these should be set up on during the creation of the worker
+	// AMIs.
+	Files []File `json:"files"`
+}
+
+// PrivateHostSetup is the data structure that is stored in the taskcluster
+// secret worker-type:<provisionerId>/<workerType>. This should be anything
+// private/confidential, that should not be visible in the worker type
+// definition.
+type PrivateHostSetup struct {
+	// Confidential generic-worker config settings
+	Config gwconfig.PrivateConfig `json:"config"`
+	// Confidential static files to write to the host environment, that are not
+	// included in the AMI creation process (usually to keep the AMI public).
 	Files []File `json:"files"`
 }
 
@@ -190,6 +214,7 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 
 	userData, err := queryUserData()
 	if err != nil {
+		// if we can't read user data, this is a serious problem
 		return err
 	}
 	c.ProvisionerID = userData.ProvisionerID
@@ -203,21 +228,27 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	awsprov.Authenticate = false
 	awsprov.Credentials = nil
 
-	secToken, getErr := awsprov.GetSecret(userData.SecurityToken)
-	// remove secrets even if we couldn't retrieve them!
-	removeErr := awsprov.RemoveSecret(userData.SecurityToken)
-	if getErr != nil {
-		return getErr
-	}
-	if removeErr != nil {
-		return removeErr
-	}
+	// Retrieving credentials from provisioner only happens on first run. After
+	// that, they are not available, so only look for them if we need them.
+	if c.AccessToken == "" || c.ClientID == "" {
+		secToken, getErr := awsprov.GetSecret(userData.SecurityToken)
+		// remove secrets even if we couldn't retrieve them!
+		removeErr := awsprov.RemoveSecret(userData.SecurityToken)
+		if getErr != nil {
+			// serious error
+			return getErr
+		}
+		if removeErr != nil {
+			// security risk if we can't delete secret, so return err
+			return removeErr
+		}
 
-	c.AccessToken = secToken.Credentials.AccessToken
-	c.Certificate = secToken.Credentials.Certificate
-	c.ClientID = secToken.Credentials.ClientID
-	c.WorkerGroup = userData.Region
-	c.WorkerType = userData.WorkerType
+		c.AccessToken = secToken.Credentials.AccessToken
+		c.Certificate = secToken.Credentials.Certificate
+		c.ClientID = secToken.Credentials.ClientID
+		c.WorkerGroup = userData.Region
+		c.WorkerType = userData.WorkerType
+	}
 
 	awsMetadata := map[string]interface{}{}
 	for _, url := range []string{
@@ -232,6 +263,7 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 		key := url[strings.LastIndex(url, "/")+1:]
 		value, err := queryMetaData(url)
 		if err != nil {
+			// not being able to read metadata is serious error
 			return err
 		}
 		awsMetadata[key] = value
@@ -244,20 +276,46 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	c.InstanceType = awsMetadata["instance-type"].(string)
 	c.AvailabilityZone = awsMetadata["availability-zone"].(string)
 
-	secrets := new(Secrets)
-	err = json.Unmarshal(secToken.Data, secrets)
+	// Parse the config before applying it, to ensure that no disallowed fields
+	// are included.
+	publicHostSetup, err := userData.PublicHostSetup()
 	if err != nil {
 		return err
 	}
 
-	// Now overlay existing config with values in secrets
-	err = c.MergeInJSON([]byte(secrets.GenericWorker.Config))
+	// Host setup per worker type "userData" section.
+	//
+	// Note, we first update configuration from public host setup, before
+	// calling tc-secrets to get private host setup, in case secretsBaseURL is
+	// configured in userdata.
+	c.MergeInJSON(userData.GenericWorker, func(a map[string]interface{}) map[string]interface{} {
+		return a["config"].(map[string]interface{})
+	})
+
+	// Fetch additional (secret) host setup from taskcluster-secrets service.
+	// See: https://bugzil.la/1375200
+	tcsec := c.Secrets()
+	secretName := "worker-type:" + c.ProvisionerID + "/" + c.WorkerType
+	sec, err := tcsec.Get(secretName)
+	if err != nil {
+		return err
+	}
+	b := bytes.NewBuffer([]byte(sec.Secret))
+	d := json.NewDecoder(b)
+	d.DisallowUnknownFields()
+	var privateHostSetup PrivateHostSetup
+	err = d.Decode(&privateHostSetup)
 	if err != nil {
 		return err
 	}
 
-	// Now put secret files in place...
-	for _, f := range secrets.Files {
+	// Now overlay existing config
+	c.MergeInJSON(sec.Secret, func(a map[string]interface{}) map[string]interface{} {
+		return a["config"].(map[string]interface{})
+	})
+
+	// Now put files in place...
+	for _, f := range append(publicHostSetup.Files, privateHostSetup.Files...) {
 		err := f.Extract()
 		if err != nil {
 			return err
@@ -277,23 +335,22 @@ func deploymentIDUpdated() bool {
 		log.Printf("**** Can't reach provisioner to see if there is a new deploymentId: %v", err)
 		return false
 	}
-	secrets := new(Secrets)
-	err = json.Unmarshal(wtr.Secrets, secrets)
+	userData := new(UserData)
+	err = json.Unmarshal(wtr.UserData, &userData)
 	if err != nil {
-		log.Printf("**** Can't unmarshal worker type secrets - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
+		log.Printf("WARNING: Can't unmarshal custom worker type userdata - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
 		return false
 	}
-	c := new(gwconfig.Config)
-	err = json.Unmarshal(secrets.GenericWorker.Config, c)
+	publicHostSetup, err := userData.PublicHostSetup()
 	if err != nil {
-		log.Printf("**** Can't unmarshal config - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
+		log.Printf("WARNING: Can't extract public host setup from latest userdata for worker type %v - not shutting down as latest user data is probably botched", config.WorkerType)
+	}
+	latestDeploymentID := publicHostSetup.Config.DeploymentID
+	if latestDeploymentID == config.DeploymentID {
+		log.Printf("No change to deploymentId - %q == %q", config.DeploymentID, latestDeploymentID)
 		return false
 	}
-	if c.DeploymentID == config.DeploymentID {
-		log.Printf("No change to deploymentId - %q == %q", config.DeploymentID, c.DeploymentID)
-		return false
-	}
-	log.Printf("New deploymentId found! %q => %q - therefore shutting down!", config.DeploymentID, c.DeploymentID)
+	log.Printf("New deploymentId found! %q => %q - therefore shutting down!", config.DeploymentID, latestDeploymentID)
 	return true
 }
 
@@ -320,4 +377,13 @@ func handleWorkerShutdown(abort func()) func() {
 		}
 	}()
 	return ticker.Stop
+}
+
+func (userData *UserData) PublicHostSetup() (publicHostSetup *PublicHostSetup, err error) {
+	publicHostSetup = &PublicHostSetup{}
+	b := bytes.NewBuffer([]byte(userData.GenericWorker))
+	d := json.NewDecoder(b)
+	d.DisallowUnknownFields()
+	err = d.Decode(publicHostSetup)
+	return
 }

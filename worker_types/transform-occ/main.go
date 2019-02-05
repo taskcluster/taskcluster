@@ -85,6 +85,7 @@ func main() {
 	}
 	defer resp.Body.Close()
 	dec := json.NewDecoder(resp.Body)
+	dec.DisallowUnknownFields()
 	var o OCCManifest
 	err = dec.Decode(&o)
 	if err != nil {

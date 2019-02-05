@@ -2,16 +2,85 @@ package main
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
+func TestPrivateDataInUserData(t *testing.T) {
+	m := &MockAWSProvisionedEnvironment{}
+	m.PublicHostSetupFunc = func(t *testing.T) interface{} {
+		// start with default public host setup data
+		data := m.PublicHostSetup(t).(map[string]interface{})
+		// then add public config settings that should be in userdata, not in secret
+		config := data["config"].(map[string]interface{})
+		config["livelogSecret"] = "this-shouldn't-be-here"
+		return data
+	}
+	teardown, err := m.Setup(t)
+	defer teardown()
+	if err == nil || !strings.Contains(err.Error(), "json: unknown field") {
+		t.Fatal("Was expecting error 'json: unknown field' but didn't get it")
+	}
+}
+
+func TestPublicDataInWorkerTypeSecret(t *testing.T) {
+	m := &MockAWSProvisionedEnvironment{}
+	m.PrivateHostSetupFunc = func(t *testing.T) interface{} {
+		// start with default private host setup data
+		data := m.PrivateHostSetup(t).(map[string]interface{})
+		// then add public config settings that should be in userdata, not in secret
+		config := data["config"].(map[string]interface{})
+		config["tasksDir"] = "this-shouldn't-be-here"
+		return data
+	}
+	teardown, err := m.Setup(t)
+	defer teardown()
+	if err == nil || !strings.Contains(err.Error(), "json: unknown field") {
+		t.Fatal("Was expecting error 'json: unknown field' but didn't get it")
+	}
+}
+
+func TestAdditionalFieldInUserdataGenericWorkerProperty(t *testing.T) {
+	m := &MockAWSProvisionedEnvironment{}
+	m.PublicHostSetupFunc = func(t *testing.T) interface{} {
+		// start with default public host setup data
+		data := m.PublicHostSetup(t).(map[string]interface{})
+		// then add an additional field to top level, that shouldn't be there
+		data["additionalField"] = "this-shouldn't-be-here"
+		return data
+	}
+	teardown, err := m.Setup(t)
+	defer teardown()
+	if err == nil || !strings.Contains(err.Error(), "json: unknown field") {
+		t.Fatal("Was expecting error 'json: unknown field' but didn't get it")
+	}
+}
+
+func TestAdditionalFieldInWorkerTypeSecret(t *testing.T) {
+	m := &MockAWSProvisionedEnvironment{}
+	m.PrivateHostSetupFunc = func(t *testing.T) interface{} {
+		// start with default private host setup data
+		data := m.PrivateHostSetup(t).(map[string]interface{})
+		// then add an additional field to top level, that shouldn't be there
+		data["additionalField"] = "this-shouldn't-be-here"
+		return data
+	}
+	teardown, err := m.Setup(t)
+	defer teardown()
+	if err == nil || !strings.Contains(err.Error(), "json: unknown field") {
+		t.Fatal("Was expecting error 'json: unknown field' but didn't get it")
+	}
+}
+
 func TestWorkerShutdown(t *testing.T) {
 	m := &MockAWSProvisionedEnvironment{
-		SecretFiles:     nil,
-		Terminating:     true,
-		PretendMetadata: "",
+		Terminating: true,
 	}
-	defer m.Setup(t)()
+	teardown, err := m.Setup(t)
+	defer teardown()
+	if err != nil {
+		t.Fatalf("Error: %#v", err)
+	}
 	payload := GenericWorkerPayload{
 		Command:    sleep(20),
 		MaxRunTime: 15,
@@ -22,12 +91,12 @@ func TestWorkerShutdown(t *testing.T) {
 }
 
 func TestNoShutdown(t *testing.T) {
-	m := &MockAWSProvisionedEnvironment{
-		SecretFiles:     nil,
-		Terminating:     false,
-		PretendMetadata: "",
+	m := &MockAWSProvisionedEnvironment{}
+	teardown, err := m.Setup(t)
+	defer teardown()
+	if err != nil {
+		t.Fatalf("Error: %#v", err)
 	}
-	defer m.Setup(t)()
 	payload := GenericWorkerPayload{
 		Command:    sleep(10),
 		MaxRunTime: 8,
@@ -40,11 +109,13 @@ func TestNoShutdown(t *testing.T) {
 func TestAWSWorkerTypeMetadata(t *testing.T) {
 	expected := "I was provided by the Mock AWS provisioner service"
 	m := &MockAWSProvisionedEnvironment{
-		SecretFiles:     nil,
-		Terminating:     false,
 		PretendMetadata: expected,
 	}
-	defer m.Setup(t)()
+	teardown, err := m.Setup(t)
+	defer teardown()
+	if err != nil {
+		t.Fatalf("Error: %#v", err)
+	}
 	md := config.WorkerTypeMetadata
 	machineSetup := md["machine-setup"].(map[string]interface{})
 	actual := machineSetup["pretend-metadata"].(string)
@@ -55,10 +126,7 @@ func TestAWSWorkerTypeMetadata(t *testing.T) {
 
 func TestFileExtraction(t *testing.T) {
 
-	m := &MockAWSProvisionedEnvironment{
-		Terminating:     false,
-		PretendMetadata: "",
-	}
+	m := &MockAWSProvisionedEnvironment{}
 
 	testDir := filepath.Join(testdataDir, t.Name())
 
@@ -81,7 +149,11 @@ func TestFileExtraction(t *testing.T) {
 		},
 	}
 
-	defer m.Setup(t)()
+	teardown, err := m.Setup(t)
+	defer teardown()
+	if err != nil {
+		t.Fatalf("Error: %#v", err)
+	}
 	checkSHA256OfFile(t, filepath.Join(testDir, "important-docs", "mydad.svg"), "7a8402876469a063097fb1241462bf0adf456c5e5863def3850e9eb1d4fa1734")
 	checkSHA256OfFile(t, filepath.Join(testDir, "nothing-special.txt"), "b874e6c45ab0a910095b9580f7a4955c33d153afb8ad3ae6e04b30daaa3d9d34")
 }

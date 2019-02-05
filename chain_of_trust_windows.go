@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"golang.org/x/sys/windows"
-
-	acl "github.com/hectane/go-acl"
 	"github.com/taskcluster/generic-worker/process"
 )
 
@@ -28,27 +25,4 @@ func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error 
 		}
 	}
 	return nil
-}
-
-// Ensure only administrators have access permissions for the chain of trust
-// private signing key file, and grant them full control.
-func secureSigningKey() (err error) {
-	signingKeyPaths := [2]string{
-		config.OpenPGPSigningKeyLocation,
-		config.Ed25519SigningKeyLocation,
-	}
-	for _, path := range signingKeyPaths {
-		err = acl.Apply(
-
-			// Private signing key file
-			path,
-			// delete existing permissions (ACLs)
-			true,
-			// don't inherit permissions (ACLs)
-			false,
-			// grant Administrators group full control
-			acl.GrantName(windows.GENERIC_ALL, "Administrators"),
-		)
-	}
-	return
 }

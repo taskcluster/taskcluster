@@ -24,9 +24,7 @@ func TestLiveLog(t *testing.T) {
 	//
 	// TODO: Think about if there is a better way to handle this, e.g. with a
 	// callback function or the method itself killing the process if there is
-	// an error after process is started up, etc. Maybe not worth the work as
-	// this will be refactored later to not use livelog in a separate process,
-	// but in a different go routine.
+	// an error after process is started up, etc.
 	defer func() {
 		err := ll.Terminate()
 		if err != nil {
