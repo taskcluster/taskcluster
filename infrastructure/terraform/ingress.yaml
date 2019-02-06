@@ -16,11 +16,11 @@ spec:
         $flatten:
         - path: '/'
           backend:
-            serviceName: taskcluster-tools
+            serviceName: taskcluster-ui
             servicePort: 80
         - path: '/docs'
           backend:
-            serviceName: taskcluster-docs
+            serviceName: taskcluster-ui
             servicePort: 80
         - path: '/references/'
           backend:

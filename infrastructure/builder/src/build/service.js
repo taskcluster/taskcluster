@@ -8,7 +8,7 @@ const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const {dockerPush} = require('./utils');
 const {herokuBuildpackTasks} = require('./service/heroku-buildpack');
-const {toolsUiTasks} = require('./service/tools-ui');
+const {webUiTasks} = require('./service/web-ui');
 const {docsTasks} = require('./service/docs');
 
 const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
@@ -24,9 +24,9 @@ const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => 
     herokuBuildpackTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
     break;
 
-  case 'tools-ui':
-    assert(!isMonorepo, 'monorepo not supported for this buildtype');
-    toolsUiTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
+  case 'web-ui':
+    assert(!isMonorepo, 'monorepo not supported for this buildtype'); // TODO build from monorepo
+    webUiTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
     break;
 
   case 'docs':

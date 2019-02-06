@@ -12,9 +12,9 @@ const {dockerRun, dockerPull, dockerImages, dockerBuild, dockerRegistryCheck,
   ensureDockerImage, serviceDockerImageTask} = require('../utils');
 
 doT.templateSettings.strip = false;
-const TOOLS_UI_DOCKERFILE_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'tools-ui-dockerfile.dot')));
+const TOOLS_UI_DOCKERFILE_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'web-ui-dockerfile.dot')));
 
-exports.toolsUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir}) => {
+exports.webUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir}) => {
   const nodeImage = `node:${repository.service.node}`;
   ensureDockerImage(tasks, baseDir, nodeImage);
 
@@ -58,7 +58,7 @@ exports.toolsUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository
 
       await dockerRun({
         image: nodeImage,
-        workingDir: '/app',
+        workingDir: '/app/ui',
         env: ['YARN_CACHE_FOLDER=/cache'],
         command: ['yarn'],
         logfile: `${workDir}/yarn.log`,
@@ -88,7 +88,7 @@ exports.toolsUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository
     makeTarball: (requirements, utils) => {
       const appDir = requirements[`service-${name}-installed-app-dir`];
       const dockerfile = TOOLS_UI_DOCKERFILE_TEMPLATE({nodeImage});
-      const nginxConf = fs.readFileSync(path.join(__dirname, 'tools-ui-nginx-site.conf'));
+      const nginxConf = fs.readFileSync(path.join(__dirname, 'web-ui-nginx-site.conf'));
 
       return tar.pack(appDir, {
         finalize: false,

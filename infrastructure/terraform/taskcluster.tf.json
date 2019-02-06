@@ -3,7 +3,7 @@
     "taskcluster_image_gce-provider": "taskcluster/taskcluster-gce-provider:SVC-56e9bfe2cb57",
     "taskcluster_image_events": "taskcluster/taskcluster-events:SVC-5c1fed4cdf31",
     "taskcluster_image_docs": "taskcluster/taskcluster-docs:SVC-ce175a671eb6",
-    "taskcluster_image_tools": "taskcluster/taskcluster-tools:SVC-a6a0705442b3",
-    "taskcluster_image_monoimage": "taskcluster/taskcluster-monoimage:SVC-6d6f4e25eebf"
+    "taskcluster_image_monoimage": "taskcluster/taskcluster-monoimage:SVC-6d6f4e25eebf",
+    "taskcluster_image_ui": "taskcluster/taskcluster-ui:SVC-6613f867cbe6"
   }
 }

@@ -147,6 +147,9 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
     },
   });
 
+  // TODO: add hooks push for web-ui
+  // TODO: add entry point for docker run for web-ui
+
   ensureTask(tasks, {
     title: 'Clone Monorepo from Working Copy',
     provides: [
