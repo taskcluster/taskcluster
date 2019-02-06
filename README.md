@@ -32,8 +32,8 @@ It is not possible to run a full Taskcluster deployment directly from this repos
 <!-- TOC BEGIN -->
 * [Clients](clients#readme)
     * [Taskcluster Client](clients/client#readme)
-        * [Taskcluster Client Web](clients/client-web#readme)
-            * [Documentation](clients/client-web/docs#readme)
+    * [Taskcluster Client Web](clients/client-web#readme)
+        * [Documentation](clients/client-web/docs#readme)
 * [Infrastructure](infrastructure#readme)
     * [Taskcluster Builder](infrastructure/builder#readme)
     * [References](infrastructure/references#readme)
