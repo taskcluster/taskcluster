@@ -55,24 +55,25 @@ func queryMetaData(url string) (string, error) {
 
 // taken from https://github.com/taskcluster/aws-provisioner/blob/5a2bc7c57b20df00f9c4357e0daeb7967e6f5ee8/lib/worker-type.js#L607-L624
 type UserData struct {
-	Data                interface{} `json:"data"`
-	Capacity            int         `json:"capacity"`
-	WorkerType          string      `json:"workerType"`
-	ProvisionerID       string      `json:"provisionerId"`
-	Region              string      `json:"region"`
-	AvailabilityZone    string      `json:"availabilityZone"`
-	InstanceType        string      `json:"instanceType"`
-	SpotBid             float64     `json:"spotBid"`
-	Price               float64     `json:"price"`
-	LaunchSpecGenerated time.Time   `json:"launchSpecGenerated"`
-	LastModified        time.Time   `json:"lastModified"`
-	ProvisionerBaseURL  string      `json:"provisionerBaseUrl"`
-	TaskclusterRootURL  string      `json:"taskclusterRootUrl"`
-	SecurityToken       string      `json:"securityToken"`
-	// GenericWorker could be defined as type PublicHostSetup, but then
-	// we wouldn't have a way to call dec.DisallowUnknownFields() without also
-	// affecting unpacking of UserData struct (which may have unknown fields).
-	GenericWorker json.RawMessage `json:"genericWorker"`
+	Data struct {
+		// GenericWorker could be defined as type PublicHostSetup, but then
+		// we wouldn't have a way to call dec.DisallowUnknownFields() without also
+		// affecting unpacking of UserData struct (which may have unknown fields).
+		GenericWorker json.RawMessage `json:"genericWorker"`
+	} `json:"data"`
+	Capacity            int       `json:"capacity"`
+	WorkerType          string    `json:"workerType"`
+	ProvisionerID       string    `json:"provisionerId"`
+	Region              string    `json:"region"`
+	AvailabilityZone    string    `json:"availabilityZone"`
+	InstanceType        string    `json:"instanceType"`
+	SpotBid             float64   `json:"spotBid"`
+	Price               float64   `json:"price"`
+	LaunchSpecGenerated time.Time `json:"launchSpecGenerated"`
+	LastModified        time.Time `json:"lastModified"`
+	ProvisionerBaseURL  string    `json:"provisionerBaseUrl"`
+	TaskclusterRootURL  string    `json:"taskclusterRootUrl"`
+	SecurityToken       string    `json:"securityToken"`
 }
 
 // PublicHostSetup is the data structure that is passed into AWS userdata by
@@ -288,7 +289,7 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	// Note, we first update configuration from public host setup, before
 	// calling tc-secrets to get private host setup, in case secretsBaseURL is
 	// configured in userdata.
-	c.MergeInJSON(userData.GenericWorker, func(a map[string]interface{}) map[string]interface{} {
+	c.MergeInJSON(userData.Data.GenericWorker, func(a map[string]interface{}) map[string]interface{} {
 		return a["config"].(map[string]interface{})
 	})
 
@@ -381,7 +382,7 @@ func handleWorkerShutdown(abort func()) func() {
 
 func (userData *UserData) PublicHostSetup() (publicHostSetup *PublicHostSetup, err error) {
 	publicHostSetup = &PublicHostSetup{}
-	b := bytes.NewBuffer([]byte(userData.GenericWorker))
+	b := bytes.NewBuffer([]byte(userData.Data.GenericWorker))
 	d := json.NewDecoder(b)
 	d.DisallowUnknownFields()
 	err = d.Decode(publicHostSetup)

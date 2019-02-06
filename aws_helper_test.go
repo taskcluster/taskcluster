@@ -112,7 +112,9 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 				pub = m.PublicHostSetupFunc
 			}
 			resp := map[string]interface{}{
-				"data":                map[string]interface{}{},
+				"data": map[string]interface{}{
+					"genericWorker": pub(t),
+				},
 				"capacity":            1,
 				"workerType":          workerType,
 				"provisionerId":       "test-provisioner",
@@ -126,7 +128,6 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 				"lastModified":        time.Now().Add(time.Minute * -30),
 				"provisionerBaseUrl":  "http://localhost:13243/provisioner",
 				"securityToken":       "12345",
-				"genericWorker":       pub(t),
 			}
 			WriteJSON(t, w, resp)
 		default:
