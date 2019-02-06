@@ -23,6 +23,7 @@ import Markdown from '../../../components/Markdown';
 import StatusLabel from '../../../components/StatusLabel';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { withAuth } from '../../../utils/Auth';
+import notify from '../../../utils/notify';
 import taskQuery from './task.graphql';
 import {
   INITIAL_CURSOR,
@@ -31,6 +32,7 @@ import {
   INTERACTIVE_CONNECT_TASK_POLL_INTERVAL,
 } from '../../../utils/constants';
 
+const NOTIFY_KEY = 'interactive-notify';
 let previousCursor;
 
 @hot(module)
@@ -118,11 +120,6 @@ export default class InteractiveConnect extends Component {
       };
     }
 
-    // Stop polling when we have both URLs
-    if (shellUrl && displayUrl) {
-      props.data.stopPolling();
-    }
-
     return null;
   }
 
@@ -130,6 +127,7 @@ export default class InteractiveConnect extends Component {
     super(props);
 
     previousCursor = INITIAL_CURSOR;
+    this.hasNotified = false;
   }
 
   state = {
@@ -138,8 +136,8 @@ export default class InteractiveConnect extends Component {
     artifactsLoading: true,
     // eslint-disable-next-line react/no-unused-state
     previousTaskId: this.props.match.params.taskId,
-    notificationNotFired: true,
-    notificationToggle: false,
+    notifyOnReady:
+      'Notification' in window && localStorage.getItem(NOTIFY_KEY) === 'true',
   };
 
   componentDidUpdate(prevProps) {
@@ -149,25 +147,18 @@ export default class InteractiveConnect extends Component {
         params: { taskId },
       },
     } = this.props;
-    const { notificationNotFired, notificationToggle } = this.state;
+    const { notifyOnReady } = this.state;
 
     if (
-      // this.getInteractiveStatus === INTERACTIVE_TASK_STATUS.READY &&
-      notificationNotFired &&
-      notificationToggle &&
-      Notification.permission === 'granted'
+      this.getInteractiveStatus() === INTERACTIVE_TASK_STATUS.READY &&
+      !this.hasNotified &&
+      notifyOnReady
     ) {
-      const notification = new Notification(
-        'Your interactive task is ready for connecting. Connect while the task is available.'
-      );
-
-      setTimeout(() => {
-        notification.close();
-      }, 30000);
-
-      this.setState({
-        notificationNotFired: false,
+      notify({
+        body: 'Interactive task is ready for connecting',
       });
+
+      this.hasNotified = true;
     }
 
     if (prevProps.match.params.taskId !== taskId) {
@@ -236,10 +227,6 @@ export default class InteractiveConnect extends Component {
     }
   }
 
-  componentDidMount() {
-    Notification.requestPermission();
-  }
-
   getInteractiveStatus = () => {
     const { shellUrl, displayUrl } = this.state;
     const { status } = this.props.data.task;
@@ -273,9 +260,19 @@ export default class InteractiveConnect extends Component {
     }
   };
 
-  handleNotificationChange = ({ target: { checked } }) => {
-    console.log(checked);
-    this.setState({ notificationToggle: checked });
+  handleNotificationChange = async ({ target: { checked } }) => {
+    if (Notification.permission === 'granted') {
+      localStorage.setItem(NOTIFY_KEY, checked);
+
+      return this.setState({ notifyOnReady: checked });
+    }
+
+    // The user is requesting to be notified, but has not yet granted permission
+    const permission = await Notification.requestPermission();
+    const notifyOnReady = permission === 'granted';
+
+    localStorage.setItem(NOTIFY_KEY, notifyOnReady);
+    this.setState({ notifyOnReady });
   };
 
   renderTask = () => {
@@ -287,7 +284,7 @@ export default class InteractiveConnect extends Component {
       },
       user,
     } = this.props;
-    const { notificationToggle } = this.state;
+    const { notifyOnReady } = this.state;
     const interactiveStatus = this.getInteractiveStatus();
     const isSessionReady = interactiveStatus === INTERACTIVE_TASK_STATUS.READY;
     const isSessionResolved =
@@ -338,7 +335,11 @@ export default class InteractiveConnect extends Component {
             <FormControlLabel
               control={
                 <Switch
-                  checked={notificationToggle}
+                  disabled={
+                    !('Notification' in window) ||
+                    Notification.permission === 'denied'
+                  }
+                  checked={notifyOnReady}
                   onChange={this.handleNotificationChange}
                   color="secondary"
                 />
