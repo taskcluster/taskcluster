@@ -101,8 +101,8 @@ func main() {
 		}
 	}
 
-	secretsMap := wt["secrets"].(map[string]interface{})
-	genericWorker := secretsMap["generic-worker"].(map[string]interface{})
+	userDataMap := wt["userData"].(map[string]interface{})
+	genericWorker := userDataMap["genericWorker"].(map[string]interface{})
 	config := genericWorker["config"].(map[string]interface{})
 	oldDeploymentID := config["deploymentId"].(string)
 	newDeploymentID := slugid.Nice()
