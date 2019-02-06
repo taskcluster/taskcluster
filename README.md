@@ -88,7 +88,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker 12.0.0
+generic-worker 13.0.0
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -195,6 +195,7 @@ and reports back results to the queue.
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
+                                            Also used by chain of trust.
           rootURL                           The root URL of the taskcluster deployment to which
                                             clientId and accessToken grant access. For example,
                                             'https://taskcluster.net'. Individual services can
@@ -259,8 +260,8 @@ and reports back results to the queue.
                                             the idle state" - i.e. continue running
                                             indefinitely. See also shutdownMachineOnIdle.
                                             [default: 0]
-          instanceID                        The EC2 instance ID of the worker.
-          instanceType                      The EC2 instance Type of the worker.
+          instanceID                        The EC2 instance ID of the worker. Used by chain of trust.
+          instanceType                      The EC2 instance Type of the worker. Used by chain of trust.
           livelogCertificate                SSL certificate to be used by livelog for hosting
                                             logs over https. If not set, http will be used.
           livelogExecutable                 Filepath of LiveLog executable to use; see
@@ -293,7 +294,7 @@ and reports back results to the queue.
                                             instead derived from rootURL setting as follows:
                                               * https://queue.taskcluster.net/v1 for rootURL https://taskcluster.net
                                               * <rootURL>/api/queue/v1 for all other rootURLs
-          region                            The EC2 region of the worker.
+          region                            The EC2 region of the worker. Used by chain of trust.
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
                                             when each task starts. If it cannot free enough
@@ -311,6 +312,11 @@ and reports back results to the queue.
                                             Administrator.
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
                                             the current OS user will be used. [default: true]
+          secretsBaseURL                    The base URL for taskcluster secrets API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://secrets.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/secrets/v1 for all other rootURLs
           sentryProject                     The project name used in https://sentry.io for
                                             reporting worker crashes. Permission to publish
                                             crash reports is granted via the scope
@@ -364,7 +370,10 @@ and reports back results to the queue.
 
     0      Tasks completed successfully; no more tasks to run (see config setting
            numberOfTasksToRun).
-    64     Not able to load specified generic-worker config file.
+    64     Not able to load generic-worker config. This could be a problem reading the
+           generic-worker config file on the filesystem, a problem talking to AWS/GCP
+           metadata service, or a problem retrieving config/files from the taskcluster
+           secrets service.
     65     Not able to install generic-worker on the system.
     66     Not able to create an OpenPGP key pair.
     67     A task user has been created, and the generic-worker needs to reboot in order
@@ -387,6 +396,8 @@ and reports back results to the queue.
     74     Could not grant provided SID full control of interactive windows stations and
            desktop.
     75     Not able to create an ed25519 key pair.
+    76     Not able to save generic-worker config file after applying defaults and reading
+           config in from external sources, such as AWS/GCP metadata and taskcluster secrets.
 ```
 
 # Start the generic worker
@@ -424,7 +435,7 @@ go test -v ./...
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 12.0.0
+$ ./release.sh 13.0.0
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
