@@ -106,9 +106,9 @@ import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 
 <!-- TOC BEGIN -->
 * [src/components/DateDistance](src/components/DateDistance#readme)
-* [src/components/StatusLabel](src/components/StatusLabel#readme)
-* [src/components/SpeedDial](src/components/SpeedDial#readme)
-* [src/components/Snackbar](src/components/Snackbar#readme)
 * [src/components/Markdown](src/components/Markdown#readme)
 * [src/components/Search](src/components/Search#readme)
+* [src/components/Snackbar](src/components/Snackbar#readme)
+* [src/components/SpeedDial](src/components/SpeedDial#readme)
+* [src/components/StatusLabel](src/components/StatusLabel#readme)
 <!-- TOC END -->

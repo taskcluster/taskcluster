@@ -41,7 +41,7 @@ exports.tasks = [{
 
     // generate the lines of a table of contents for a particular README
     const tocLines = (lines, indent, dir, children) => {
-      for (let child of children) {
+      for (let child of children.sort(({dir: a}, {dir: b}) => a < b ? -1 : a > b ? 1 : 0)) {
         const relative = path.relative(dir, child.dir);
         const title = child.title || relative;
         lines.push(`${indent}* [${title}](${relative}#readme)`);

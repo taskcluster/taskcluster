@@ -5,16 +5,16 @@ These are any packages that are run as part of a deployment of Taskcluster.
 ## Table of Contents
 
 <!-- TOC BEGIN -->
-* [Built-In Workers Service](built-in-workers#readme)
-* [Purge-Cache Service](purge-cache#readme)
-* [Web-Server Service](web-server#readme)
-* [Treeherder Service](treeherder#readme)
-* [Secrets Service](secrets#readme)
-* [Notify Service](notify#readme)
-* [Github Service](github#readme)
-* [Queue Service](queue#readme)
-* [Login Service](login#readme)
-* [Index Service](index#readme)
-* [Hooks Service](hooks#readme)
 * [Auth Service](auth#readme)
+* [Built-In Workers Service](built-in-workers#readme)
+* [Github Service](github#readme)
+* [Hooks Service](hooks#readme)
+* [Index Service](index#readme)
+* [Login Service](login#readme)
+* [Notify Service](notify#readme)
+* [Purge-Cache Service](purge-cache#readme)
+* [Queue Service](queue#readme)
+* [Secrets Service](secrets#readme)
+* [Treeherder Service](treeherder#readme)
+* [Web-Server Service](web-server#readme)
 <!-- TOC END -->
