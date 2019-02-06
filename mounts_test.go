@@ -323,7 +323,9 @@ func TestCachesCanBeModified(t *testing.T) {
 
 func Test32BitOverflow(t *testing.T) {
 	config = &gwconfig.Config{
-		RequiredDiskSpaceMegabytes: 1024 * 10,
+		PublicConfig: gwconfig.PublicConfig{
+			RequiredDiskSpaceMegabytes: 1024 * 10,
+		},
 	}
 	if requiredFreeSpace := requiredSpaceBytes(); requiredFreeSpace != 10737418240 {
 		t.Fatalf("Some kind of int overflow problem: requiredFreeSpace is %v but expected it to be 10737418240", requiredFreeSpace)

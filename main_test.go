@@ -321,3 +321,10 @@ func TestRemoveTaskDirs(t *testing.T) {
 		}
 	}
 }
+
+func TestUsage(t *testing.T) {
+	usage := usage("generic-worker")
+	if !strings.Contains(usage, "Exit Codes:") {
+		t.Fatal("Was expecting the usage text to include information about exit codes")
+	}
+}

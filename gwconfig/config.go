@@ -14,16 +14,20 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
 	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
+	"github.com/taskcluster/taskcluster-client-go/tcsecrets"
 )
 
 type (
 	// Generic Worker config
 	Config struct {
-		AccessToken                    string                 `json:"accessToken"`
+		PrivateConfig
+		PublicConfig
+	}
+
+	PublicConfig struct {
 		AuthBaseURL                    string                 `json:"authBaseURL"`
 		AvailabilityZone               string                 `json:"availabilityZone"`
 		CachesDir                      string                 `json:"cachesDir"`
-		Certificate                    string                 `json:"certificate"`
 		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs"`
 		CleanUpTaskDirs                bool                   `json:"cleanUpTaskDirs"`
 		ClientID                       string                 `json:"clientId"`
@@ -39,7 +43,6 @@ type (
 		LiveLogGETPort                 uint16                 `json:"livelogGETPort"`
 		LiveLogKey                     string                 `json:"livelogKey"`
 		LiveLogPUTPort                 uint16                 `json:"livelogPUTPort"`
-		LiveLogSecret                  string                 `json:"livelogSecret"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
 		OpenPGPSigningKeyLocation      string                 `json:"openpgpSigningKeyLocation"`
 		PrivateIP                      net.IP                 `json:"privateIP"`
@@ -53,6 +56,7 @@ type (
 		RootURL                        string                 `json:"rootURL"`
 		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
 		RunTasksAsCurrentUser          bool                   `json:"runTasksAsCurrentUser"`
+		SecretsBaseURL                 string                 `json:"secretsBaseURL"`
 		SentryProject                  string                 `json:"sentryProject"`
 		ShutdownMachineOnIdle          bool                   `json:"shutdownMachineOnIdle"`
 		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
@@ -64,6 +68,12 @@ type (
 		WorkerID                       string                 `json:"workerId"`
 		WorkerType                     string                 `json:"workerType"`
 		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
+	}
+
+	PrivateConfig struct {
+		AccessToken   string `json:"accessToken"`
+		Certificate   string `json:"certificate"`
+		LiveLogSecret string `json:"livelogSecret"`
 	}
 
 	MissingConfigError struct {
@@ -89,8 +99,7 @@ func (c *Config) String() string {
 }
 
 func (c *Config) Validate() error {
-	// TODO: could probably do this with reflection to avoid explicitly listing
-	// all members
+	// TODO: we should be using json schema here
 
 	fields := []struct {
 		value      interface{}
@@ -178,4 +187,13 @@ func (c *Config) PurgeCache() *tcpurgecache.PurgeCache {
 		purgeCache.BaseURL = c.PurgeCacheBaseURL
 	}
 	return purgeCache
+}
+
+func (c *Config) Secrets() *tcsecrets.Secrets {
+	secrets := tcsecrets.New(c.Credentials(), c.RootURL)
+	// If secretsBaseURL provided, it should take precedence over rootURL
+	if c.SecretsBaseURL != "" {
+		secrets.BaseURL = c.SecretsBaseURL
+	}
+	return secrets
 }
