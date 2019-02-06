@@ -77,7 +77,7 @@ tasks:
       env:
         NO_TEST_SKIP: 'true'
       command: 'cd ui && yarn && yarn lint && { Xvfb :99 -screen 0 640x480x8 -nolisten tcp & } && sleep 2 && DISPLAY=:99 yarn test'
-    node: '10.14.0'
+    node: '10.15.1'
   in:
     $let:
       js:
