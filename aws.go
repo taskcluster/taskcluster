@@ -56,6 +56,9 @@ func queryMetaData(url string) (string, error) {
 // taken from https://github.com/taskcluster/aws-provisioner/blob/5a2bc7c57b20df00f9c4357e0daeb7967e6f5ee8/lib/worker-type.js#L607-L624
 type UserData struct {
 	Data struct {
+		// GenericWorker could be defined as type PublicHostSetup, but then
+		// we wouldn't have a way to call dec.DisallowUnknownFields() without also
+		// affecting unpacking of UserData struct (which may have unknown fields).
 		GenericWorker json.RawMessage `json:"genericWorker"`
 	} `json:"data"`
 	Capacity            int       `json:"capacity"`
@@ -71,9 +74,6 @@ type UserData struct {
 	ProvisionerBaseURL  string    `json:"provisionerBaseUrl"`
 	TaskclusterRootURL  string    `json:"taskclusterRootUrl"`
 	SecurityToken       string    `json:"securityToken"`
-	// GenericWorker could be defined as type PublicHostSetup, but then
-	// we wouldn't have a way to call dec.DisallowUnknownFields() without also
-	// affecting unpacking of UserData struct (which may have unknown fields).
 }
 
 // PublicHostSetup is the data structure that is passed into AWS userdata by
