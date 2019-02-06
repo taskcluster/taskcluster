@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+
+if (!process.env.TASKCLUSTER_ROOT_URL) {
+  throw new Error('Missing required environment variable TASKCLUSTER_ROOT_URL');
+}
+
+const cliff = require('cliff');
+const fetchApis = require('./fetch-apis');
+
+fetchApis()
+  .then(apis => {
+    const rows = Object
+      .keys(apis)
+      .sort()
+      .reduce((rows, name) => [...rows, [name, apis[name].referenceUrl]], [
+        ['Name', 'referenceUrl'],
+        ['====', '============']
+      ]);
+
+    console.log(cliff.stringifyRows(rows));
+  });
