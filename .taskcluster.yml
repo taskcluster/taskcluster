@@ -74,7 +74,13 @@ tasks:
     - name: taskcluster-client
       # taskcluster-client tests depend on a "production" install of the rest of the monorepo,
       # but only get devDependencies from the client's package.json
-      command: 'yarn install --production; cd clients/client; yarn && yarn test'
+      command: |
+          set -x &&
+          yarn install --production &&
+          cd clients/client &&
+          yarn &&
+          yarn test &&
+          yarn package-test
     - name: ui
       image: 'taskcluster/tc-web-testing@sha256:b60f2d5a151e48bdac4e3e4735619fd0a3e0e4ef815e050cdfed2d3e4a26220d'
       env:

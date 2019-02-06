@@ -6,7 +6,8 @@
   "license": "MPL-2.0",
   "repository": "taskcluster/taskcluster",
   "scripts": {
-    "test": "mocha test/*_test.js"
+    "test": "mocha test/*_test.js",
+    "package-test": "sh package_test.sh"
   },
   "dependencies": {
     "debug": "^4.0.0",
@@ -20,17 +21,8 @@
   "devDependencies": {
     "http-proxy": "^1.17.0",
     "mocha": "^5.2.0",
-    "nock": "^10.0.6",
-    "taskcluster-lib-app": "link:../../libraries/app",
-    "taskcluster-lib-lib": "link:../../libraries/lib",
-    "taskcluster-lib-monitor": "link:../../libraries/monitor",
-    "taskcluster-lib-testing": "link:../../libraries/testing",
-    "taskcluster-lib-validate": "link:../../libraries/validate"
+    "nock": "^10.0.6"
   },
-  "NOTES": [
-      "All devDependencies must be included here",
-      "Cannot depend on anything else in the repo"
-  ],
   "engines": {
     "node": ">=8"
   },
