@@ -37,7 +37,7 @@ repositories:
   kind: service
   docs:
     tier: integrations
-    projectName: taskcluster-web
+    projectName: taskcluster-ui
   service:
     buildtype: web-ui
     node: 10.14.0-jessie
