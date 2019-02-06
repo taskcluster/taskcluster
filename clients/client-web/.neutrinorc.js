@@ -7,7 +7,6 @@ module.exports = {
         'no-underscore-dangle': 'off'
       }
     }],
-    'neutrino-preset-mozilla-frontend-infra/stage',
     ['@neutrinojs/library', { name: 'taskcluster' }],
     ['@neutrinojs/env', ['NODE_ENV', 'TASKCLUSTER_ROOT_URL']],
     (neutrino) => {

@@ -15,7 +15,6 @@
     "compile-clients": "rm -f src/clients/* && node -r dotenv/config bin/compile-clients && yarn lint --fix",
     "lint": "neutrino lint",
     "list-clients": "node -r dotenv/config bin/list-clients",
-    "precommit": "neutrino stage",
     "prepare": "yarn build",
     "show-client": "node -r dotenv/config bin/show-client",
     "test": "neutrino test --require dotenv/config",
