@@ -1,4 +1,5 @@
 const assert = require('assert');
+const stream = require('stream');
 const Ajv = require('ajv');
 const Monitor = require('../src');
 
@@ -26,6 +27,30 @@ suite('Logging', function() {
 
     const ajv = new Ajv();
     assert(ajv.validate(schema, event), ajv.errorsText());
+  });
+
+  test('logger separates lines with newlines', function() {
+    let results = Buffer.alloc(0);
+    const destination = new stream.Writable({
+      write: (chunk, encoding, next) => {
+        results = Buffer.concat([results, chunk]);
+        next();
+      },
+    });
+    const m = new Monitor({
+      projectName: 'taskcluster-testing-service',
+      level: 'debug',
+      destination,
+    });
+
+    m.info('hello', 5);
+    m.warning('oh.hi', {newlined: 'foo\nbar'});
+    m.warning('goodbye', 6);
+    results = results.toString().split('\n');
+    assert.equal(results.length, 4); // 3 log lines and one trailing newline
+    JSON.parse(results[0]);
+    JSON.parse(results[1]);
+    JSON.parse(results[2]);
   });
 
   test('empty data still logs', function() {
@@ -109,11 +134,25 @@ suite('Logging', function() {
       mock: true,
       pretty: true,
     });
-    m.info('something', {whatever: 5}); // This should not get logged
+    m.info('something', {whatever: 5});
     assert.equal(m.events.length, 1);
     const event = m.events[0].toString();
     assert(event.includes('INFO'));
     assert(event.includes('whatever: 5'));
+  });
+
+  test('pretty with newline', function() {
+    const m = new Monitor({
+      projectName: 'taskcluster-level',
+      level: 'debug',
+      mock: true,
+      pretty: true,
+    });
+    m.err('something', {whatever: 'foo\nbar'});
+    assert.equal(m.events.length, 1);
+    const event = m.events[0].toString();
+    assert(event.includes('ERROR'));
+    assert(event.includes('whatever: foo\\nbar'));
   });
 
   test('disabling works', function() {

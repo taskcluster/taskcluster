@@ -85,10 +85,10 @@ class Logger {
     }
 
     if (this.pretty) {
-      const msg = fields.msg ? fields.msg : '';
+      const msg = fields.msg ? fields.msg.toString().replace(/\n/g, '\\n') : '';
       const extra = Object.keys(fields).reduce((s, f) => {
         if (f !== 'msg') {
-          s = s + `\n\t${f}: ${fields[f]}`;
+          s = s + `\n\t${f}: ${fields[f].toString().replace(/\n/g, '\\n')}`;
         }
         return s;
       }, '');
@@ -104,7 +104,7 @@ class Logger {
         Severity: level,
         Pid: this.pid,
         Fields: fields,
-      }));
+      }) + '\n');
     }
   }
 
