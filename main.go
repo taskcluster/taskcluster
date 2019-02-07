@@ -560,19 +560,6 @@ func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (
 		},
 	}
 
-	// now overlay with data from amazon/gcp, if applicable
-	var err error
-	switch {
-	case queryAWSUserData:
-		err = updateConfigWithAmazonSettings(c)
-	case queryGCPMetaData:
-		err = updateConfigWithGCPSettings(c)
-	}
-	if err != nil {
-		log.Printf("FATAL: problem updating worker config: %v", err)
-		return nil, err
-	}
-
 	configFileAbs, err := filepath.Abs(filename)
 	if err != nil {
 		return nil, fmt.Errorf("Cannot determine absolute path location for generic-worker config file '%v': %v", filename, err)
@@ -580,9 +567,22 @@ func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (
 
 	log.Printf("Loading generic-worker config file '%v'...", configFileAbs)
 	configData, err := ioutil.ReadFile(configFileAbs)
-	// if we are querying metadata, it isn't (yet) serious that we couldn't open config file
+	// configFileAbs won't exist on the first run of generic-worker in gcp/aws
+	// so an error here could indicate that we need to fetch config externally
 	if err != nil {
-		log.Printf("WARNING: Failed to read local config file %v (not a problem if config is retrieved from another source): %v", filename, err)
+		// overlay with data from amazon/gcp, if applicable
+		switch {
+		case queryAWSUserData:
+			err = updateConfigWithAmazonSettings(c)
+		case queryGCPMetaData:
+			err = updateConfigWithGCPSettings(c)
+		default:
+			// don't wrap this with fmt.Errorf as different platforms produce different error text, so easier to process native error type
+			return nil, err
+		}
+		if err != nil {
+			return nil, fmt.Errorf("FATAL: problem loading generic worker config file or retrieving config from aws/gcp: %v", err)
+		}
 	} else {
 		buffer := bytes.NewBuffer(configData)
 		decoder := json.NewDecoder(buffer)
@@ -591,11 +591,14 @@ func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (
 		err = decoder.Decode(&newConfig)
 		if err != nil {
 			// An error here is serious - it means the file existed but was invalid
-			return c, err
+			return c, fmt.Errorf("Error unmarshaling generic worker config file %v as JSON: %v", configFileAbs, err)
 		}
-		c.MergeInJSON(configData, func(a map[string]interface{}) map[string]interface{} {
+		err = c.MergeInJSON(configData, func(a map[string]interface{}) map[string]interface{} {
 			return a
 		})
+		if err != nil {
+			return c, fmt.Errorf("Error overlaying config file %v on top of defaults: %v", configFileAbs, err)
+		}
 	}
 
 	// Add any useful worker config to worker metadata
