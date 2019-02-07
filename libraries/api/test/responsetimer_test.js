@@ -2,7 +2,7 @@ const request = require('superagent');
 const assert = require('assert');
 const Promise = require('promise');
 const APIBuilder = require('../');
-const monitoring = require('taskcluster-lib-monitor');
+const Monitor = require('taskcluster-lib-monitor');
 const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
 
@@ -51,45 +51,36 @@ suite('api/responsetimer', function() {
 
   // Create a mock authentication server
   setup(async () => {
-    monitor = await monitoring({
+    monitor = new Monitor({
       projectName: 'tc-lib-api-test',
-      credentials: {clientId: 'fake', accessToken: 'fake'},
       mock: true,
     });
 
     await helper.setupServer({builder, monitor: monitor.prefix('api')});
   });
-  teardown(helper.teardownServer);
+  teardown(() => {
+    monitor.terminate();
+    helper.teardownServer();
+  });
 
-  test('single parameter', function() {
+  test('single parameter', async function() {
     const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
-    return Promise.all([
-      request.get(u('/single-param/Hello')),
-      request.get(u('/single-param/Goodbye')),
-      request.get(u('/slash-param/Slash')).catch(err => {}),
-      request.get(u('/another-param/Another')).catch(err => {}),
-    ]).then(function() {
-      assert.equal(Object.keys(monitor.counts).length, 9);
-      assert.equal(monitor.counts['tc-lib-api-test.api.testParam.success'], 2);
-      assert.equal(monitor.counts['tc-lib-api-test.api.testParam.all'], 2);
-      assert.equal(monitor.counts['tc-lib-api-test.api.testSlashParam.client-error'], 1);
-      assert.equal(monitor.counts['tc-lib-api-test.api.testSlashParam.all'], 1);
-      assert.equal(monitor.counts['tc-lib-api-test.api.testAnotherParam.server-error'], 1);
-      assert.equal(monitor.counts['tc-lib-api-test.api.testAnotherParam.all'], 1);
-      assert.equal(monitor.counts['tc-lib-api-test.api.all,success'], 2);
-      assert.equal(monitor.counts['tc-lib-api-test.api.all,server-error'], 1);
-      assert.equal(monitor.counts['tc-lib-api-test.api.all,client-error'], 1);
-
-      assert.equal(Object.keys(monitor.measures).length, 9);
-      assert.equal(monitor.measures['tc-lib-api-test.api.testParam.success'].length, 2);
-      assert.equal(monitor.measures['tc-lib-api-test.api.testParam.all'].length, 2);
-      assert.equal(monitor.measures['tc-lib-api-test.api.testSlashParam.client-error'].length, 1);
-      assert.equal(monitor.measures['tc-lib-api-test.api.testSlashParam.all'].length, 1);
-      assert.equal(monitor.measures['tc-lib-api-test.api.testAnotherParam.server-error'].length, 1);
-      assert.equal(monitor.measures['tc-lib-api-test.api.testAnotherParam.all'].length, 1);
-      assert.equal(monitor.measures['tc-lib-api-test.api.all,success'].length, 2);
-      assert.equal(monitor.measures['tc-lib-api-test.api.all,server-error'].length, 1);
-      assert.equal(monitor.measures['tc-lib-api-test.api.all,client-error'].length, 1);
+    await request.get(u('/single-param/Hello')),
+    await request.get(u('/single-param/Goodbye')),
+    await request.get(u('/slash-param/Slash')).catch(err => {}),
+    await request.get(u('/another-param/Another')).catch(err => {}),
+    assert.equal(monitor.events.length, 4);
+    monitor.events.forEach(event => {
+      assert.equal(event.Type, 'monitor.express');
+      assert.equal(event.Logger, 'tc-lib-api-test.root.api');
     });
+    assert.equal(monitor.events[0].Fields.name, 'testParam');
+    assert.equal(monitor.events[0].Fields.statusCode, 200);
+    assert.equal(monitor.events[1].Fields.name, 'testParam');
+    assert.equal(monitor.events[1].Fields.statusCode, 200);
+    assert.equal(monitor.events[2].Fields.name, 'testSlashParam');
+    assert.equal(monitor.events[2].Fields.statusCode, 404);
+    assert.equal(monitor.events[3].Fields.name, 'testAnotherParam');
+    assert.equal(monitor.events[3].Fields.statusCode, 500);
   });
 });

@@ -21,8 +21,7 @@ exports.ERROR_CODES = ERROR_CODES;
  * Middleware that adds `res.reportError(code, message, details)`
  *
  * The `method` is the name of the API method, `errorCodes` is a mapping from
- * allowed error codes to HTTP status codes, and `monitor` is an instance of
- * `raven.Client` from an instance of taskcluster-lib-monitor.
+ * allowed error codes to HTTP status codes.
  */
 const buildReportErrorMethod = () => {
   return (req, res, next) => {

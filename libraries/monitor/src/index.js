@@ -236,16 +236,9 @@ class Monitor {
 
           const d = process.hrtime(start);
 
-          let success = 'success';
-          if (res.statusCode >= 500) {
-            success = 'server-error';
-          } else if (res.statusCode >= 400) {
-            success = 'client-error';
-          }
-
           this.log.info('monitor.express', {
             name,
-            status: success,
+            statusCode: res.statusCode,
             duration: d[0] * 1000 + d[1] / 1000000,
           });
         } catch (e) {
@@ -374,11 +367,11 @@ class Monitor {
   /**
    * Take a standard error and break it up into loggable bits.
    */
-  reportError(err) {
+  reportError(err, extra) {
     if (!(err instanceof Error)) {
       err = new Error(err);
     }
-    this.err('monitor.error', serializeError(err));
+    this.err('monitor.error', Object.assign({}, serializeError(err), extra));
   }
 
   /**

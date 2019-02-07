@@ -5,7 +5,7 @@ const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
 const path = require('path');
 const SchemaSet = require('taskcluster-lib-validate');
-const monitoring = require('taskcluster-lib-monitor');
+const Monitor = require('taskcluster-lib-monitor');
 
 suite('api/validate', function() {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
@@ -117,14 +117,16 @@ suite('api/validate', function() {
   // Create a mock authentication server
   let monitor;
   setup(async () => {
-    monitor = await monitoring({
+    monitor = new Monitor({
       projectName: 'tc-lib-api-test',
-      credentials: {clientId: 'fake', accessToken: 'fake'},
       mock: true,
     });
     helper.setupServer({builder, monitor});
   });
-  teardown(helper.teardownServer);
+  teardown(() => {
+    monitor.terminate();
+    helper.teardownServer();
+  });
 
   // Test valid input
   test('input (valid)', function() {
@@ -171,10 +173,8 @@ suite('api/validate', function() {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
         assert(!err.toString().match(/data.value should be/));
-        assert.equal(monitor.errors.length, 1);
-        assert(
-          monitor.errors[0].toString().match(/data.value should be <= 10/),
-          monitor.errors[0].toString());
+        assert.equal(monitor.events.length, 2);
+        assert(monitor.events[0].Fields.message.match(/data.value should be <= 10/));
       });
   });
 
@@ -256,10 +256,8 @@ suite('api/validate', function() {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
         assert(!err.toString().match(/data should be object/));
-        assert.equal(monitor.errors.length, 1);
-        assert(
-          monitor.errors[0].toString().match(/data should be object/),
-          monitor.errors[0].toString());
+        assert.equal(monitor.events.length, 2);
+        assert(monitor.events[0].Fields.message.match(/data should be object/));
       });
   });
 
