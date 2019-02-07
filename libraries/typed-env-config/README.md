@@ -52,7 +52,7 @@ applied as each file is read.  Values appearing later in the process overwrite
 those from earlier.
 
 The default setting is to read from `config.yml` and `user-config.yml`, and
-this is the normal means of configuring a TaskCluster service.  `config.yml` is
+this is the normal means of configuring a Taskcluster service.  `config.yml` is
 checked in, and `user-config.yml` is in `.gitignore` and used by developers to
 provide credentials. So in most cases, services load load configuration with
 `config({profile})` (where `profile` comes from `$NODE_ENV`).

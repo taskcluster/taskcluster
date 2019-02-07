@@ -125,7 +125,7 @@ var makeRequest = function(client, method, url, payload, query) {
  * Returns a Client class which can be initialized with following options:
  * options:
  * {
- *   // TaskCluster credentials, if not provided fallback to defaults from
+ *   // Taskcluster credentials, if not provided fallback to defaults from
  *   // environment variables, if defaults are not explicitly set with
  *   // taskcluster.config({...}).
  *   // To create a client without authentication (and not using defaults)

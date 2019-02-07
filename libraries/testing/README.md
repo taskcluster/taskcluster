@@ -1,8 +1,8 @@
 # Testing Library
 
-Support for testing TaskCluster components.
+Support for testing Taskcluster components.
 
-This module contains a number of utilities that facilitate testing TaskCluster
+This module contains a number of utilities that facilitate testing Taskcluster
 components.  It is typically installed as a devDependency, so it is not used in
 production code.
 

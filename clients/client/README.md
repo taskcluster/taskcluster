@@ -633,7 +633,7 @@ queue.defineTask(taskId taskDefinition).then(function(result) {
 
 
 ## Using the Listener
-TaskCluster relies on pulse for exchange of messages. You'll need an pulse
+Taskcluster relies on pulse for exchange of messages. You'll need an pulse
 credentials for using `taskcluster.PulseListener`.
 An outline of how to create an instance and use is given below. Note, you
 must call `resume()` before message starts arriving.
@@ -658,7 +658,7 @@ var listener = new taskcluster.PulseListener({
 
 listener.bind({exchange, routingKeyPattern}).then(...);
                                     // bind to an exchange; note that for
-                                    // TaskCluster components the argument
+                                    // Taskcluster components the argument
                                     // can be created by Client; see above.
 listener.connect().then(...);       // Setup listener and bind queue
 listener.resume().then(...);        // Start getting new messages
@@ -755,7 +755,7 @@ var dateObject2 = taskcluster.fromNow("1 year", dateObject1);
 
 ## Handling Credentials
 
-Your users may find the options for TaskCluster credentials overwhelming.  You
+Your users may find the options for Taskcluster credentials overwhelming.  You
 can help by interpreting the credentials for them.
 
 The `credentialInformation(rootUrl, credentials)` function returns a promise

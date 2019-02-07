@@ -1,6 +1,6 @@
 # API Library
 
-This library provides support for building an API for a TaskCluster
+This library provides support for building an API for a Taskcluster
 microservice.  It consists of some abstractions over `express` for declaring
 APIs with reference formats that enables automatic documentation, authorization
 checking, and generation of client libraries.
@@ -436,7 +436,7 @@ The resulting object has a `reference()` method that will return the API
 reference data structure, and an `express(app)` method that configures the API
 on the given express app.
 
-For most TaskCluster services, the startup process uses
+For most Taskcluster services, the startup process uses
 [taskcluster-lib-loader](https://github.com/taskcluster/taskcluster-lib-loader),
 and the relevant loader components are defined like this:
 
@@ -466,7 +466,7 @@ let load = loader({
 }, ['profile', 'process']);
 ```
 
-Consult the source of some of the existing TaskCluster services direcly for
+Consult the source of some of the existing Taskcluster services direcly for
 more fully-worked examples.
 
 # Development

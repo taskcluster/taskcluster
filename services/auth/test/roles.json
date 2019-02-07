@@ -15371,7 +15371,7 @@
     "scopes": [
       "assume:project:taskcluster:tutorial"
     ],
-    "description": "Users with un-vouched Mozillians profiles (which is to say, just about anyone with an email address and a few minutes' work) get this group.  It should only have the scopes required to run the tutorial, and nothing that might harm other users of TaskCluster.",
+    "description": "Users with un-vouched Mozillians profiles (which is to say, just about anyone with an email address and a few minutes' work) get this group.  It should only have the scopes required to run the tutorial, and nothing that might harm other users of Taskcluster.",
     "lastModified": "2016-03-12T20:59:38.887Z",
     "created": "2016-03-12T14:09:22.952Z"
   },
@@ -18052,7 +18052,7 @@
       "secrets:get:garbage/*",
       "secrets:set:garbage/*"
     ],
-    "description": "The scopes required to complete the taskcluster tutorial.  These should have no potential to impact other production processes on TaskCluster.",
+    "description": "The scopes required to complete the taskcluster tutorial.  These should have no potential to impact other production processes on Taskcluster.",
     "lastModified": "2017-09-20T20:01:30.042Z",
     "created": "2016-03-12T20:59:19.033Z"
   },
@@ -19761,7 +19761,7 @@
   },
   {
     "expandedScopes": [
-      "assume:repo:github.com/TaskClusterRobot/hooks-testing*",
+      "assume:repo:github.com/TaskclusterRobot/hooks-testing*",
       "queue:create-task:aws-provisioner-v1/github-worker",
       "queue:create-task:aws-provisioner-v1/win2012r2",
       "queue:create-task:dummy-provisioner/dummy-worker",
@@ -19772,7 +19772,7 @@
       "secrets:get:garbage/*",
       "secrets:set:garbage/*"
     ],
-    "roleId": "repo:github.com/TaskClusterRobot/hooks-testing*",
+    "roleId": "repo:github.com/TaskclusterRobot/hooks-testing*",
     "scopes": [
       "queue:create-task:dummy-provisioner/dummy-worker",
       "queue:route:notify.email.bstack@mozilla.com.*",

@@ -42,6 +42,11 @@ suite('Repo Meta Tests', function() {
     assert.equal(taskclusterYml.tasks.$let.node, uiPackageJson.engines.node);
   });
 
+  test('git grep test', async function() {
+    const Taskcluster = await exec('git grep "TaskCluster" ');
+    assert.equal(Taskcluster.stdout,"")
+  })
+
   test('Dependencies are not missing/unused', async function() {
     const depOptions = {
       ignoreMatches: [

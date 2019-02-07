@@ -39278,7 +39278,7 @@
     "lastRotated": "2016-12-22T20:01:45.731Z",
     "deleteOnExpiration": false,
     "scopes": [
-      "assume:repo:github.com/TaskClusterRobot/hooks-testing:*",
+      "assume:repo:github.com/TaskclusterRobot/hooks-testing:*",
       "assume:repo:github.com/ochameau/ff-dt:*",
       "assume:repo:github.com/owlishDeveloper/helloWorld:*",
       "assume:repo:github.com/taskcluster/taskcluster-github-testing:*",
@@ -39291,7 +39291,7 @@
     ],
     "expandedScopes": [
       "assume:project:taskcluster:mozilla-github-repository",
-      "assume:repo:github.com/TaskClusterRobot/hooks-testing:*",
+      "assume:repo:github.com/TaskclusterRobot/hooks-testing:*",
       "assume:repo:github.com/ochameau/ff-dt:*",
       "assume:repo:github.com/owlishDeveloper/helloWorld:*",
       "assume:repo:github.com/taskcluster/taskcluster-github-testing:*",
