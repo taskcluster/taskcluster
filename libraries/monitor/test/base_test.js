@@ -114,13 +114,14 @@ suite('BaseMonitor', function() {
       assert.equal(monitor.events.length, 2);
       assert(monitor.events[0].Fields.key);
       assert(monitor.events[0].Fields.duration);
-      assert.equal(monitor.events[1].Fields.error, 'Error: uhoh');
+      assert.equal(monitor.events[1].Fields.name, 'Error');
+      assert.equal(monitor.events[1].Fields.message, 'uhoh');
     });
 
     test('missing name', async function() {
       await monitor.oneShot(async () => { throw new Error('uhoh'); });
       assert.equal(exitStatus, 1);
-      assert(monitor.events[0].Fields.error.startsWith('AssertionError'));
+      assert(monitor.events[0].Fields.name.startsWith('AssertionError'));
     });
   });
 
@@ -284,7 +285,8 @@ suite('BaseMonitor', function() {
     test('should record errors', function() {
       monitor.reportError(new Error('oh no'));
       assert.equal(monitor.events.length, 1);
-      assert.equal(monitor.events[0].Fields.error, 'Error: oh no');
+      assert.equal(monitor.events[0].Fields.name, 'Error');
+      assert.equal(monitor.events[0].Fields.message, 'oh no');
       assert(monitor.events[0].Fields.stack);
     });
 

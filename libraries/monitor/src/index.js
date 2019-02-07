@@ -4,6 +4,7 @@ const rootdir = require('app-root-dir');
 const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
+const serializeError = require('serialize-error');
 const Logger = require('./logger');
 const TimeKeeper = require('./timekeeper');
 
@@ -377,12 +378,7 @@ class Monitor {
     if (!(err instanceof Error)) {
       err = new Error(err);
     }
-    this.err('monitor.error', {
-      name: err.name,
-      message: err.message,
-      error: err.toString(),
-      stack: err.stack,
-    });
+    this.err('monitor.error', serializeError(err));
   }
 
   /**
