@@ -1,0 +1,21 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Outcome of a worker configuration evaluation"
+type: object
+properties:
+  workerType:
+    type: string
+  providerData:
+    type: object
+  biddingStrategyData:
+    type: object
+  documentationData:
+    type: object
+  schemaData:
+    type: object
+required:
+  - workerType
+  - providerData
+  - biddingStrategyData
+  - documentationData
+  - schemaData
+additionalProperties: false

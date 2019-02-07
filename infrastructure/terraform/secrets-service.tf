@@ -49,12 +49,13 @@ module "secrets_web_service" {
   secrets_hash   = "${module.secrets_secrets.secrets_hash}"
   root_url       = "${var.root_url}"
   secret_keys    = "${module.secrets_secrets.env_var_keys}"
-  docker_image   = "${local.taskcluster_image_secrets}"
+  docker_image   = "${local.taskcluster_image_monoimage}"
 }
 
 module "secrets_expire_job" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-secrets"
+  service_name     = "secrets"
   job_name         = "expire"
   schedule         = "0 * * * *"
   deadline_seconds = 600
@@ -62,5 +63,5 @@ module "secrets_expire_job" {
   secrets_hash     = "${module.secrets_secrets.secrets_hash}"
   root_url         = "${var.root_url}"
   secret_keys      = "${module.secrets_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_secrets}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
 }

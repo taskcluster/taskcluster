@@ -221,5 +221,44 @@ LastFire.prototype.definition = function() {
   });
 };
 
+LastFire.expires = async function(Hook, now, n = 100) {
+  const hookKeys = [];
+  let count = 0;
+  await Hook.scan({},
+    {
+      handler: async hook => {
+        const { hookGroupId, hookId } = await hook.definition();
+        hookKeys.push({ hookGroupId, hookId });
+      },
+    },
+  );
+
+  for ({ hookGroupId, hookId } of hookKeys) {
+    const hookData = [];
+    await this.scan({
+      taskCreateTime: Entity.op.lessThan(now),
+      hookGroupId: Entity.op.equal(hookGroupId),
+      hookId: Entity.op.equal(hookId)}, {
+      limit: 500,
+      handler: async item => {
+        const { taskId, taskCreateTime } = await item.definition();
+        hookData.push({taskId, taskCreateTime});
+      },
+    },
+    );
+    hookData.sort((a, b) =>
+      new Date(b.taskCreateTime) - new Date(a.taskCreateTime));
+
+    hookData.splice(0, n);
+    for(let data of hookData) {
+      await this.remove({
+        hookGroupId,
+        hookId,
+        taskId: data.taskId});
+      count++;
+    }
+  }
+  return count;
+};
 // export LastFire
 exports.LastFire = LastFire;

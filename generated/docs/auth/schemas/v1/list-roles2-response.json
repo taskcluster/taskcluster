@@ -1,0 +1,25 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Get All Roles Response",
+  "description": "If no limit is given, all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.\n",
+  "type": "object",
+  "properties": {
+    "roles": {
+      "description": "A list of requested roles\n",
+      "type": "array",
+      "items": {
+        "$ref": "get-role-response.json#"
+      }
+    },
+    "continuationToken": {
+      "title": "Continuation Token",
+      "type": "string",
+      "description": "A continuation token is returned if there are more results than listed\nhere. You can optionally provide the token in the request payload to\nload the additional results.\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "roles"
+  ],
+  "$id": "/schemas/auth/v1/list-roles2-response.json#"
+}

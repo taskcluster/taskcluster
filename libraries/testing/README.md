@@ -1,5 +1,4 @@
-TaskCluster-Lib-Testing
-=======================
+# Testing Library
 
 Support for testing TaskCluster components.
 

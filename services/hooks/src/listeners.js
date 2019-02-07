@@ -23,6 +23,7 @@ class HookListeners {
     this.Hook = options.Hook;
     this.Queues = options.Queues;
     this.client = options.client;
+    this.monitor = options.monitor;
     this.pulseHookChangedListener = null;
     this.listeners = null;
     this._reconcileDone = Promise.resolve();
@@ -62,24 +63,27 @@ class HookListeners {
   }
 
   /** Create a new pulse consumer for a hook */
-  async createListener(hook) {
-    this.hook = hook;
+  async createListener(hook, queueName) {
+    debug(`${queueName}: creating listener (and queue if necessary)`);
+
     const client = this.client;
-    const queueName = `${hook.hookGroupId}/${hook.hookId}`; // serves as unique id for every listener
     const listener = await pulse.consume({
       client,
       queueName,
       maxLength: 50,
+      // we manage bindings manually in syncBindings
+      bindings: [],
     }, async ({payload}) => {
-      const hook = this.hook;
       // Fire the hook
       await this.taskcreator.fire(hook, {firedBy: 'pulseMessage', payload});
     });
+
     this.listeners.push(listener);
   }
 
   /** Delete a listener for the given queueName  */
   async removeListener(queueName) {
+    debug(`${queueName}: stop listening`);
     let removeIndex = this.listeners.findIndex(({_queueName}) => _queueName === queueName);
     if (removeIndex > -1) {
       const listener = this.listeners[removeIndex];
@@ -95,69 +99,106 @@ class HookListeners {
 
   /** Deletes the amqp queue if it exists for a real pulse client */
   async deleteQueue(queueName) {
+    debug(`${queueName}: delete queue`);
+    const fullQueueName = this.client.fullObjectName('queue', queueName);
     if (!this.client.isFakeClient) {
-      if (await this.client.withChannel(async channel => channel.checkQueue(queueName))) {
-        await this.client.withChannel(async channel => channel.deleteQueue(queueName));
-      }
+      await this.client.withChannel(async channel => {
+        await channel.deleteQueue(fullQueueName);
+      });
     }
   }
 
   /** Add / Remove bindings from he queue */
   async syncBindings(queueName, newBindings, oldBindings) {
-    debug(`Updating the bindings of ${queueName}`);
+    // for direct AMQP operations, we need the full name of the queue (with the
+    // queue/<namespace> prefix)
+    const fullQueueName = this.client.fullObjectName('queue', queueName);
+    const result = [...oldBindings];
+
     if (!this.client.isFakeClient) {
       let intersection = _.intersectionWith(oldBindings, newBindings, _.isEqual);
-      oldBindings = _.differenceWith(oldBindings, intersection, _.isEqual);
-      newBindings = _.differenceWith(newBindings, intersection, _.isEqual);
-      for (let {exchange, routingKeyPattern} of oldBindings) {
-        await this.client.withChannel(async channel => channel.unbindQueue(queueName, exchange, routingKeyPattern));
+      const delBindings = _.differenceWith(oldBindings, intersection, _.isEqual);
+      const addBindings = _.differenceWith(newBindings, intersection, _.isEqual);
+      if (!addBindings.length && !delBindings.length) {
+        return;
       }
-      for (let {exchange, routingKeyPattern} of newBindings) {
-        await this.client.withChannel(async channel => channel.bindQueue(queueName, exchange, routingKeyPattern));
-      }
+      debug(`${queueName}: updating bindings to ${JSON.stringify(newBindings)}`);
+      await this.client.withChannel(async channel => {
+        // perform unbinds first; these do not fail if the binding doesn't exist,
+        // making them idempotent.
+        for (let {exchange, routingKeyPattern} of delBindings) {
+          await channel.unbindQueue(fullQueueName, exchange, routingKeyPattern);
+        }
+        // bindings will fail if the exchange doesn't exist, and such a failure
+        // will kill the connection.  So if a user adds two new binding, and the
+        // first is invalid, the second won't be added until the first is fixed.
+        // Errors will be reported via monitor.
+        for (let {exchange, routingKeyPattern} of addBindings) {
+          await channel.bindQueue(fullQueueName, exchange, routingKeyPattern);
+        }
+      });
     }
+
+    return result;
   }
 
+  /**
+   * Run only one exeuction of this function at a time, reporting any errors to the monitor.
+   */
   _synchronise(asyncfunc) {
-    return this._reconcileDone = this._reconcileDone.then(asyncfunc).catch(() => {});
+    return this._reconcileDone = this._reconcileDone
+      .then(asyncfunc)
+      .catch(err => this.monitor.reportError(err));
   }
 
+  /**
+   * Reconcile consumers with the set of active queues and the current contents
+   * of the Hooks table.
+   *
+   * This is a three-way synchronization: the Hooks table is authoritative, and
+   * is used both to update the state of the pulse AMQP server and to configure
+   * the consumers in this process.
+   */
   reconcileConsumers() {
     return this._synchronise(async () => {
       let queues = [];
-      await this.Queues.scan(
-        {},
-        {
-          limit: 1000,
-          handler: (queue) => queues.push(queue),
-        }
-      );
+      await this.Queues.scan({}, {
+        limit: 1000,
+        handler: (queue) => queues.push(queue)});
 
       await this.Hook.scan({}, {
         limit: 1000,
         handler: async (hook) => {
-          if (hook.bindings.length !== 0) {
-            const {hookGroupId, hookId} = hook;
+          if (hook.bindings.length === 0) {
+            return;
+          }
+
+          const {hookGroupId, hookId} = hook;
+          const queueName = `${hookGroupId}/${hookId}`;
+          const hookDebug = msg => debug(`${queueName}: ${msg}`);
+
+          try {
             const queue = _.find(queues, {hookGroupId, hookId});
             if (queue) {
               if (!this.haveListener(queue.queueName)) {
-                debug('Existing queue..creating listener');
-                await this.createListener(hook);
+                await this.createListener(hook, queue.queueName);
               }
-              _.pull(queues, queue);
-              // update the bindings of the queue to be in sync with that in the Hooks table
+
+              // update the bindings of the queue to be in sync with the Hooks table
               await this.syncBindings(queue.queueName, hook.bindings, queue.bindings);
+
               // update the bindings in the Queues Azure table
               await queue.modify((queue) => {
                 queue.bindings = hook.bindings;
               });
+
+              // this queue has been reconciled, so remove it from the list
+              _.pull(queues, queue);
             } else {
-              debug('New queue..creating listener');
-              await this.createListener(hook);
-              const queueName = `${hookGroupId}/${hookId}`;
+              await this.createListener(hook, queueName);
               await this.syncBindings(queueName, hook.bindings, []);
+
               // Add to Queues table
-              debug('Adding to Queues table');
               await this.Queues.create({
                 hookGroupId,
                 hookId,
@@ -165,36 +206,24 @@ class HookListeners {
                 bindings: hook.bindings,
               });
             }
+          } catch (err) {
+            // report errors per hook, and continue on to try to reconcile the next hook.
+            this.monitor.reportError(err, {hookGroupId, hookId});
           }
         },
       });
 
       // Delete the queues now left in the queues list.
       for (let queue of queues) {
-        // Delete the amqp queue
-        await this.deleteQueue(queue.queueName);
-        // Delete from this.listeners
         await this.removeListener(queue.queueName);
+        await this.deleteQueue(queue.queueName);
         await queue.remove();
       }
     });
   }
 
   async terminate() {
-    debug('Deleting all queues..');
-    await this.Queues.scan(
-      {},
-      {
-        limit: 1000,
-        handler: async (queue) => {
-          // Delete the amqp queue
-          await this.deleteQueue(queue.queueName);
-          await queue.remove();
-        },
-      }
-    );
-
-    // stop all consumers instead
+    // stop all consumers
     if (!this.client.isFakeClient) {
       this.listeners.forEach(async (consumer) => {
         await consumer.stop();

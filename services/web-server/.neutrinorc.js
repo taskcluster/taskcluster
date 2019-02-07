@@ -1,6 +1,8 @@
 const nodeExternals = require('webpack-node-externals');
 const { join } = require('path');
 
+const isEnvDevelopment = process.env.NODE_ENV === 'development';
+
 module.exports = {
   use: [
     ['@neutrinojs/node', {
@@ -13,6 +15,8 @@ module.exports = {
     }],
     (neutrino) => {
       neutrino.config.merge({
+        mode: isEnvDevelopment ? 'development' : 'production',
+        watch: isEnvDevelopment,
         externals: [
           nodeExternals({
             whitelist: [/^webpack/]

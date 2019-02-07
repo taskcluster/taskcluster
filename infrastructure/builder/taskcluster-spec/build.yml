@@ -1,94 +1,8 @@
----
-# http://bugzil.la/1516347 will remove this ugliness!
-monorepo:
-  https://github.com/taskcluster/taskcluster#master
-
 repositories:
 
 # services
 
 # microservices
-- name: auth
-  kind: service
-  source: monorepo
-  docs: generated
-  service:
-    buildtype: heroku-buildpack
-    stack: heroku-16
-    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
-
-- name: queue
-  kind: service
-  source: monorepo
-  docs: generated
-  service:
-    buildtype: heroku-buildpack
-    stack: heroku-16
-    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
-
-- name: index
-  kind: service
-  source: monorepo
-  docs: generated
-  service:
-    buildtype: heroku-buildpack
-    stack: heroku-16
-    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
-
-- name: purge-cache
-  kind: service
-  source: monorepo
-  docs: generated
-  service:
-    buildtype: heroku-buildpack
-    stack: heroku-16
-    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
-
-- name: github
-  kind: service
-  source: monorepo
-  docs: generated
-  service:
-    buildtype: heroku-buildpack
-    stack: heroku-16
-    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
-
-- name: login
-  kind: service
-  source: monorepo
-  docs: generated
-  service:
-    buildtype: heroku-buildpack
-    stack: heroku-16
-    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
-
-- name: hooks
-  kind: service
-  source: monorepo
-  docs: generated
-  service:
-    buildtype: heroku-buildpack
-    stack: heroku-16
-    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
-
-- name: secrets
-  kind: service
-  source: monorepo
-  docs: generated
-  service:
-    buildtype: heroku-buildpack
-    stack: heroku-16
-    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
-
-- name: notify
-  kind: service
-  source: monorepo
-  docs: generated
-  service:
-    buildtype: heroku-buildpack
-    stack: heroku-16
-    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
-
 - name: gce-provider
   kind: service
   source: https://github.com/imbstack/taskcluster-gce-provider-concept#master
@@ -118,27 +32,16 @@ repositories:
     node: 9
   source: https://github.com/taskcluster/taskcluster-docs#master
 
-# tools
-- name: tools
+# tc-web ui
+- name: ui
   kind: service
   docs:
     tier: integrations
-    projectName: taskcluster-tools
+    projectName: taskcluster-ui
   service:
-    buildtype: tools-ui
-    node: 10
-  source: https://github.com/taskcluster/taskcluster-tools#master
-
-# references (and schemas)
-- name: references
-  kind: service
-  docs:
-    tier: integrations
-    projectName: taskcluster-references
-  service:
-    buildtype: references
-    node: 8
-  source: https://github.com/taskcluster/taskcluster-references#master
+    buildtype: web-ui
+    node: 10.14.0-jessie
+  source: https://github.com/taskcluster/taskcluster#master
 
 # docs/metadata sources that are not compiled into the final product
 

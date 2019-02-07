@@ -1,0 +1,36 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Worker Configuration"
+description: |
+  Worker Configuration
+type: object
+properties:
+  id:
+    type: string
+  workerTypes:
+    type: array
+    items:
+      type: 
+        - string
+        - object
+      properties:
+        workerType:
+          type: string
+        biddingStrategyId:
+          type: string
+        providerIds:
+          type: string
+      required:
+        - workerType
+      additionalProperties: false
+  rules: {$ref: 'ruleset.json#'}
+  biddingStrategyId:
+    type: string
+  providerIds:
+    type: array
+    items:
+      type: string
+additionalProperties: false
+required:
+  - id
+  - rules
+  - workerTypes

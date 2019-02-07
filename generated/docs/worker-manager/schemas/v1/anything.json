@@ -1,0 +1,5 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Anything",
+  "$id": "/schemas/worker-manager/v1/anything.json#"
+}

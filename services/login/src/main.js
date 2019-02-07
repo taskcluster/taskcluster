@@ -53,6 +53,7 @@ let load = loader({
     setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.app.credentials,
       rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-login',
       tier: 'integrations',
       schemaset,
       publish: cfg.app.publishMetaData,

@@ -114,6 +114,7 @@ suite('documenter', () => {
     let doc = await documenter({
       schemaset,
       tier,
+      projectName: 'docs-testing',
     });
     assert.ok(await doc._tarballStream());
   });
@@ -122,6 +123,7 @@ suite('documenter', () => {
     let doc = await documenter({
       docsFolder: './test/docs',
       tier,
+      projectName: 'docs-testing',
     });
     let shoulds = [
       'docs/example.md',
@@ -134,6 +136,7 @@ suite('documenter', () => {
     let doc = await documenter({
       schemaset,
       tier,
+      projectName: 'docs-testing',
     });
     let shoulds = [
       'schemas/foo.json',
@@ -148,6 +151,7 @@ suite('documenter', () => {
     let doc = await documenter({
       references,
       tier,
+      projectName: 'docs-testing',
     });
     let shoulds = [
       'references/api.json',
@@ -161,6 +165,7 @@ suite('documenter', () => {
   test('tarball contains only metadata', async function() {
     let doc = await documenter({
       tier,
+      projectName: 'docs-testing',
     });
     let shoulds = [
       'docs/documenting-non-services.md',
@@ -174,6 +179,7 @@ suite('documenter', () => {
       docsFolder: './test/docs',
       schemaset,
       tier,
+      projectName: 'docs-testing',
     });
     const tmpdir = tmp.dirSync({unsafeCleanup: true});
     const docsDir = path.join(tmpdir.name, 'docs_output_dir');
@@ -205,7 +211,7 @@ suite('documenter', () => {
 
   const publishTest = async function(mock) {
     const options = {
-      project: 'docs-testing',
+      projectName: 'docs-testing',
       schemaset,
       tier,
       docsFolder: './test/docs/',

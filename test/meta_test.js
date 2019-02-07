@@ -11,7 +11,9 @@ const ROOT_DIR = path.join(__dirname, '..');
 
 suite('Repo Meta Tests', function() {
   const packageJsonFile = path.join(ROOT_DIR, 'package.json');
+  const uiPackageJsonFile = path.join(ROOT_DIR, 'ui/package.json');
   const packageJson = JSON.parse(fs.readFileSync(packageJsonFile, 'utf8'));
+  const uiPackageJson = JSON.parse(fs.readFileSync(uiPackageJsonFile, 'utf8'));
 
   const taskclusterYmlFile = path.join(ROOT_DIR, '.taskcluster.yml');
   const taskclusterYml = yaml.safeLoad(fs.readFileSync(taskclusterYmlFile, 'utf8'));
@@ -32,6 +34,10 @@ suite('Repo Meta Tests', function() {
 
   test('Node version in .taskcluster.yml matches that in package.json', function() {
     assert.equal(taskclusterYml.tasks.$let.node, packageJson.engines.node);
+  });
+
+  test('Node version for UI matches the rest of the repo', function() {
+    assert.equal(taskclusterYml.tasks.$let.node, uiPackageJson.engines.node);
   });
 
   test('Dependencies are not missing/unused', async function() {

@@ -1,5 +1,7 @@
 version: 1
 reporting: checks-v1
+policy:
+  pullRequests: public
 tasks:
   $let:
     debug:
@@ -41,6 +43,7 @@ tasks:
     - typed-env-config
     - taskcluster-lib-validate
     - taskcluster-auth
+    - taskcluster-built-in-workers
     - taskcluster-github
     - taskcluster-hooks
     - taskcluster-index
@@ -48,7 +51,7 @@ tasks:
     - taskcluster-notify
     - taskcluster-purge-cache
     - taskcluster-queue
-    - taskcluster-references
+    - taskcluster-worker-manager
     - taskcluster-secrets
     - taskcluster-treeherder
     - taskcluster-builder
@@ -61,6 +64,19 @@ tasks:
     - name: taskcluster-terraform
       image: 'jonatanblue/gitlab-ci-terraform:latest'
       command: 'cd infrastructure/terraform; terraform fmt -check'
+    - name: yarn generate
+      command: |
+          yarn generate | cat &&
+          if ! output=$(git status --porcelain) || [ -n "$output" ]; then
+              echo "*** yarn generate produced changes to the repository; these changes should be checked in ***";
+              git --no-pager diff;
+              exit 1;
+          fi
+    - name: ui
+      image: 'taskcluster/tc-web-testing@sha256:b60f2d5a151e48bdac4e3e4735619fd0a3e0e4ef815e050cdfed2d3e4a26220d'
+      env:
+        NO_TEST_SKIP: 'true'
+      command: 'cd ui && yarn && yarn lint && { Xvfb :99 -screen 0 640x480x8 -nolisten tcp & } && sleep 2 && DISPLAY=:99 yarn test'
     node: '10.14.0'
   in:
     $let:

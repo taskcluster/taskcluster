@@ -2,6 +2,7 @@ import assert from 'assert';
 import depthLimit from 'graphql-depth-limit';
 import { createComplexityLimitRule } from 'graphql-validation-complexity';
 import loader from 'taskcluster-lib-loader';
+import docs from 'taskcluster-lib-docs';
 import config from 'typed-env-config';
 import monitor from 'taskcluster-lib-monitor';
 import { createServer } from 'http';
@@ -20,18 +21,7 @@ const load = loader(
   {
     cfg: {
       requires: ['profile'],
-      setup: ({ profile }) => {
-        const cfg = config({ profile });
-
-        // apply some sanity-checks
-        assert(cfg.server.port, 'config server.port is required');
-        assert(
-          cfg.taskcluster.rootUrl,
-          'config taskcluster.rootUrl is required'
-        );
-
-        return cfg;
-      },
+      setup: ({ profile }) => config({ profile }),
     },
 
     monitor: {
@@ -44,6 +34,24 @@ const load = loader(
           mock: cfg.monitoring.mock,
           enable: cfg.monitoring.enable,
         }),
+    },
+
+    docs: {
+      requires: ['cfg'],
+      setup: ({cfg, schemaset}) => docs.documenter({
+        credentials: cfg.taskcluster.credentials,
+        rootUrl: cfg.taskcluster.rootUrl,
+        projectName: 'taskcluster-web-server',
+        tier: 'platform',
+        schemaset,
+        publish: false,
+        references: [],
+      }),
+    },
+
+    writeDocs: {
+      requires: ['docs'],
+      setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
     },
 
     pulseClient: {
@@ -133,6 +141,13 @@ const load = loader(
     devServer: {
       requires: ['cfg', 'server'],
       setup: async ({ cfg, server }) => {
+        // apply some sanity-checks
+        assert(cfg.server.port, 'config server.port is required');
+        assert(
+          cfg.taskcluster.rootUrl,
+          'config taskcluster.rootUrl is required'
+        );
+
         await new Promise(resolve => server.listen(cfg.server.port, resolve));
 
         /* eslint-disable no-console */
@@ -149,8 +164,11 @@ const load = loader(
 );
 
 if (!module.parent) {
-  load('devServer', {
-    process: 'devServer',
+  // default to 'devServer' since webpack does not pass any command-line args
+  // when running in development mode
+  const target = process.argv[2] || 'devServer';
+  load(target, {
+    process: target,
     profile: process.env.NODE_ENV || 'development',
   }).catch(err => {
     console.log(err.stack); // eslint-disable-line no-console

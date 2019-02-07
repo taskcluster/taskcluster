@@ -94,6 +94,7 @@ let load = loader({
     setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-queue',
       tier: 'platform',
       schemaset,
       publish: cfg.app.publishMetaData,

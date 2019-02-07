@@ -1,0 +1,16 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Open Purge Request List",
+  "description": "A list of currently open purge-cache requests.\n",
+  "type": "object",
+  "properties": {
+    "requests": {
+      "$ref": "purge-cache-requests.json#"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "requests"
+  ],
+  "$id": "/schemas/purge-cache/v1/purge-cache-request-list.json#"
+}

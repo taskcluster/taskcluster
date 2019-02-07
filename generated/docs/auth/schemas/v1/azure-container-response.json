@@ -1,0 +1,23 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Azure Blob Shared-Access-Signature",
+  "description": "Response to a request for an Shared-Access-Signature to access an Azure\nBlob Storage container.\n",
+  "type": "object",
+  "properties": {
+    "sas": {
+      "description": "Shared-Access-Signature string. This is the querystring parameters to\nbe appened after `?` or `&` depending on whether or not a querystring is\nalready present in the URL.\n",
+      "type": "string"
+    },
+    "expiry": {
+      "description": "Date and time of when the Shared-Access-Signature expires.\n",
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "sas",
+    "expiry"
+  ],
+  "$id": "/schemas/auth/v1/azure-container-response.json#"
+}

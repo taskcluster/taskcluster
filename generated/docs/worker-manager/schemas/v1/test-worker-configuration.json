@@ -1,0 +1,20 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Worker Configuration Testing",
+  "description": "Request body for testing a worker configuration\n",
+  "type": "object",
+  "properties": {
+    "workerConfiguration": {
+      "$ref": "worker-configuration.json#"
+    },
+    "satisfiers": {
+      "$ref": "satisfiers.json#"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "workerConfiguration",
+    "satisfiers"
+  ],
+  "$id": "/schemas/worker-manager/v1/test-worker-configuration.json#"
+}

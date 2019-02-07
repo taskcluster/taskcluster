@@ -1,3 +1,4 @@
+const assert = require('assert');
 const assume = require('assume');
 const taskcreator = require('../src/taskcreator');
 const debug = require('debug')('test:test_schedule_hooks');
@@ -102,6 +103,24 @@ suite('taskcreator_test.js', function() {
       }
     };
 
+    const assertNoTask = async taskId => {
+      if (mock) {
+        assert(!creator.lastCreateTask);
+      } else {
+        // in real runs, ask the queue for the resulting task
+        const cfg = await helper.load('cfg');
+        const queue = new taskcluster.Queue(cfg.taskcluster);
+        try {
+          await queue.task(taskId);
+          assume(false, 'task was found!');
+        } catch (err) {
+          if (err.code !== 'ResourceNotFound') {
+            throw err;
+          }
+        }
+      }
+    };
+
     test('firing a real task succeeds', async function() {
       let hook = await createTestHook([], {
         context: '${context}',
@@ -146,6 +165,15 @@ suite('taskcreator_test.js', function() {
       });
       assume(new Date(task.deadline) - new Date(task.created)).to.equal(60000);
       assume(new Date(task.expires) - new Date(task.created)).to.equal(120000);
+    });
+
+    test('firing a hook where the json-e renders to nothing does nothing', async function() {
+      const hook = _.cloneDeep(defaultHook);
+      hook.task = {$if: 'false', then: hook.task};
+      await helper.Hook.create(hook);
+      let taskId = taskcluster.slugid();
+      let resp = await creator.fire(hook, {});
+      await assertNoTask(taskId);
     });
 
     test('firing a real task that sets its own task times works', async function() {

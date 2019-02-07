@@ -1,0 +1,41 @@
+query AwsProvisionerWorkerType($workerType: String!) {
+  awsProvisionerWorkerType(workerType: $workerType) {
+    launchSpec
+    description
+    owner
+    secrets
+    userData
+    minCapacity
+    maxCapacity
+    scalingRatio
+    minPrice
+    maxPrice
+    canUseOndemand
+    canUseSpot
+    lastModified
+    instanceTypes {
+      instanceType
+      capacity
+      utility
+      launchSpec
+      secrets
+      userData
+      scopes
+    }
+    regions {
+      region
+      launchSpec
+      secrets
+      userData
+      scopes
+    }
+    availabilityZones {
+      availabilityZone
+      region
+      launchSpec
+      secrets
+      userData
+    }
+    scopes
+  }
+}

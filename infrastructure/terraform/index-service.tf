@@ -42,7 +42,7 @@ module "index_web_service" {
   secrets_hash   = "${module.index_secrets.secrets_hash}"
   root_url       = "${var.root_url}"
   secret_keys    = "${module.index_secrets.env_var_keys}"
-  docker_image   = "${local.taskcluster_image_index}"
+  docker_image   = "${local.taskcluster_image_monoimage}"
 }
 
 module "index_handlers" {
@@ -55,12 +55,13 @@ module "index_handlers" {
   secrets_hash   = "${module.index_secrets.secrets_hash}"
   root_url       = "${var.root_url}"
   secret_keys    = "${module.index_secrets.env_var_keys}"
-  docker_image   = "${local.taskcluster_image_index}"
+  docker_image   = "${local.taskcluster_image_monoimage}"
 }
 
 module "index_expire_job" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-index"
+  service_name     = "index"
   job_name         = "expire"
   schedule         = "0 0 * * *"
   deadline_seconds = 86400
@@ -68,5 +69,5 @@ module "index_expire_job" {
   secrets_hash     = "${module.index_secrets.secrets_hash}"
   root_url         = "${var.root_url}"
   secret_keys      = "${module.index_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_index}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
 }

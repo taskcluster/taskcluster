@@ -1,8 +1,4 @@
-# Taskcluster Documentation Tool
-
-[![Build Status](https://travis-ci.org/taskcluster/taskcluster-lib-docs.svg?branch=master)](https://travis-ci.org/taskcluster/taskcluster-lib-docs)
-[![npm](https://img.shields.io/npm/v/taskcluster-lib-docs.svg?maxAge=2592000)](https://www.npmjs.com/package/taskcluster-lib-docs)
-[![License](https://img.shields.io/badge/license-MPL%202.0-orange.svg)](http://mozilla.org/MPL/2.0)
+# Docs Library
 
 A simple library to support generation of metadata for Taskcluster libraries, services, and applications.
 
@@ -146,9 +142,7 @@ The following are the options that can be passed to the publisher function in th
     // the rootUrl for these credentials (required for publishing)
     rootUrl: '...',
 
-    // The name of the project will automatically be set to your package name from package.json,
-    // but can be overridden if needed.
-    project: '<name of project in package.json>',
+    projectName: '<projectName>', // required
 
     // The path to the README.md file for the project
     readme: '<project root>/README.md',

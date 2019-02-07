@@ -83,6 +83,7 @@ const load = loader({
     setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-purge-cache',
       tier: 'core',
       schemaset,
       publish: cfg.app.publishMetaData,

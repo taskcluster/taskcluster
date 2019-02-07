@@ -1,0 +1,39 @@
+defaults:
+  app:
+    publishMetaData: !env:bool PUBLISH_METADATA
+    statsComponent: 'worker-manager'
+  monitoring:
+    enable: false
+    mock: true
+  taskcluster:
+    rootUrl: !env TASKCLUSTER_ROOT_URL
+    credentials:
+      clientId: !env TASKCLUSTER_CLIENT_ID
+      accessToken: !env TASKCLUSTER_ACCESS_TOKEN
+  server:
+    port: !env:number PORT
+    env: 'development'
+    forceSSL: false
+    trustProxy: false
+  aws:
+    accessKeyId: !env AWS_ACCESS_KEY_ID
+    secretAccessKey: !env AWS_SECRET_ACCESS_KEY
+    region: 'us-west-2'
+    apiVersion: '2014-01-01'
+  biddingStrategies:
+    - className: QueuePending
+      args:
+        - rootUrl: !env TASKCLUSTER_ROOT_URL
+          credentials:
+            clientId: !env TASKCLUSTER_CLIENT_ID
+            accessToken: !env TASKCLUSTER_ACCESS_TOKEN
+            certificate: !env TASKCLUSTER_CERTIFICATE
+  providers: []
+test:
+  taskcluster:
+    rootUrl: 'http://localhost:5555'
+  server:
+    port: 5555
+    env: 'development'
+    forceSSL: false
+    trustProxy: false

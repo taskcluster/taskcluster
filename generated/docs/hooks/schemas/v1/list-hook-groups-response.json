@@ -1,0 +1,20 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Hook groups",
+  "description": "List of `hookGroupIds`.\n",
+  "type": "object",
+  "properties": {
+    "groups": {
+      "title": "Groups",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "groups"
+  ],
+  "$id": "/schemas/hooks/v1/list-hook-groups-response.json#"
+}

@@ -112,11 +112,13 @@ module "gce_provider_web_service" {
   root_url       = "${var.root_url}"
   secret_keys    = "${module.gce_provider_secrets.env_var_keys}"
   docker_image   = "${local.taskcluster_image_gce-provider}"
+  is_monoimage   = "false"
 }
 
 module "gce_provider_create_workers" {
   source           = "modules/scheduled-job"
   project_name     = "gce-provider"
+  service_name     = "gce-provider"
   job_name         = "createTypes"
   schedule         = "*/5 * * * *"
   deadline_seconds = 300
@@ -125,6 +127,7 @@ module "gce_provider_create_workers" {
   root_url         = "${var.root_url}"
   secret_keys      = "${module.gce_provider_secrets.env_var_keys}"
   docker_image     = "${local.taskcluster_image_gce-provider}"
+  is_monoimage     = "false"
 
   volume_mounts = [
     {

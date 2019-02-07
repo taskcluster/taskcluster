@@ -1,3 +1,2 @@
-web: cd services/web-server && yarn build && node build/index.js
-# no docs here, but this gets called in the build process
-write-docs: true
+web: cd services/web-server && yarn build && node build/index.js devServer
+write-docs: cd services/web-server && yarn build && node build/index.js writeDocs

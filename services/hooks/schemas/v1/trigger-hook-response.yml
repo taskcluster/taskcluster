@@ -1,0 +1,14 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Trigger Hook Response"
+description: |
+  Response to a `triggerHook` or `triggerHookWithToken` call.
+
+  In most cases, this is a task status, but in cases where the hook template
+  does not generate a task, it is an empty object with no `status` property.
+anyOf:
+ - {$ref: "task-status.json#"}
+ - type: object
+   description: Empty response indicating no task was created
+   properties: {}
+   additionalProperties: false
+   required: []

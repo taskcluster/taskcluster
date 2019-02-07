@@ -70,8 +70,10 @@ let load = loader({
     setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-treeherder',
       tier: 'integrations',
       schemaset,
+      publish: cfg.app.publishMetaData,
       references: [
         {
           name: 'events',
@@ -82,6 +84,11 @@ let load = loader({
         },
       ],
     }),
+  },
+
+  writeDocs: {
+    requires: ['docs'],
+    setup: ({docs}) => docs.write({docsDir: process.env['DOCS_OUTPUT_DIR']}),
   },
 
   server: {

@@ -46,6 +46,8 @@ class PulseConsumer {
     // when that number goes to zero
     this.processingMessages = 0;
     this.idleCallback = null;
+
+    this.debug = debug('pulse-consumer');
   }
 
   /**
@@ -140,6 +142,15 @@ class PulseConsumer {
       channel.on('error', () => conn.failed());
 
       const consumer = await channel.consume(queueName, async (msg) => {
+        // If the consumer is cancelled by RabbitMQ, the message callback will
+        // be invoked with null.  This might happen if the queue is deleted, in
+        // which case we probably want to reconnect and redeclare everything.
+        if (msg === null) {
+          this.debug(`${queueName} consumer was deleted by rabbitmq`);
+          conn.failed();
+          return;
+        }
+
         try {
           this.processingMessages++;
           try {

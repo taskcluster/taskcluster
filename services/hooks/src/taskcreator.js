@@ -27,6 +27,9 @@ class TaskCreator {
 
   taskForHook(hook, context, options) {
     let task = jsone(hook.task, _.defaults({}, {taskId: options.taskId}, context));
+    if (!task) {
+      return;
+    }
     let created = options.created || new Date();
     // only apply created, deadline, and expires if they are not set
     if (!task.created) {
@@ -84,10 +87,14 @@ class TaskCreator {
       retries: options.retry ? 0 : 5,
     });
 
+    const task = this.taskForHook(hook, context, options);
+    if (!task) {
+      debug(`hook ${hook.hookGroupId}/${hook.hookId} declined to produce a task`);
+      return;
+    }
+
     debug('firing hook %s/%s to create taskId: %s',
       hook.hookGroupId, hook.hookId, options.taskId);
-    const task = this.taskForHook(hook, context, options);
-
     if (this.fakeCreate) {
       // for testing, just record that we *would* hvae called this..
       this.lastCreateTask = {taskId: options.taskId, task};
@@ -152,6 +159,7 @@ class MockTaskCreator extends TaskCreator {
   constructor() {
     super({credentials: {}, rootUrl: libUrls.testRootUrl()});
     this.shouldFail = false;
+    this.shouldNotProduceTask = false;
     this.fireCalls = [];
   }
 
@@ -167,6 +175,9 @@ class MockTaskCreator extends TaskCreator {
       hookId: hook.hookId,
       context,
       options});
+    if (this.shouldNotProduceTask) {
+      return;
+    }
     const taskId = options.taskId || taskcluster.slugid();
     return {
       status: {

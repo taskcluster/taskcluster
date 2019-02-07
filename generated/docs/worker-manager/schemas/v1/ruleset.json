@@ -1,0 +1,37 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Ruleset",
+  "description": "Ruleset\n",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "conditions": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
+      "values": {
+        "type": "object"
+      },
+      "description": {
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "conditions",
+      "values",
+      "description"
+    ]
+  },
+  "$id": "/schemas/worker-manager/v1/ruleset.json#"
+}

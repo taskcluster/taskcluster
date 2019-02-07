@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "project": "taskcluster-github",
+  "tier": "integrations",
+  "menuIndex": 10
+}

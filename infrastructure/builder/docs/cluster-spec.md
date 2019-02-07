@@ -35,7 +35,7 @@ For `kind='service'`, there is an additional `service` property with:
 
 For `buildType == "heroku-buildpack"`, there are additional properties `stack` (the Heroku stack on which the image is based) and `buildpack` (the URL of the buildpack repository).
 
-The tools and docs sites are special-cased with `buildType == "tools-ui"` `buildType == "docs"`, which has the additional property `node` giving the node version.
+The tools and docs sites are special-cased with `buildType == "web-ui"` `buildType == "docs"`, which has the additional property `node` giving the node version.
 
 ## `other`
 

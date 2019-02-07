@@ -45,7 +45,10 @@ in:
           imagePullPolicy: Always
           args:
             $if: 'proc_name != "static"'
-            then: ['${proc_name}']
+            then:
+              $if: is_monoimage == 'true' # terraform-style "boolean"
+              then: ['${service_name}/${proc_name}']
+              else: ['${proc_name}']
           resources:
             requests:
               cpu: ${cpu}

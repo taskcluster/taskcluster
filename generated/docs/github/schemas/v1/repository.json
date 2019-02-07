@@ -1,0 +1,17 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Repository Response",
+  "description": "Any Taskcluster-specific Github repository information.\n",
+  "type": "object",
+  "properties": {
+    "installed": {
+      "type": "boolean",
+      "description": "True if integration is installed, False otherwise.\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "installed"
+  ],
+  "$id": "/schemas/github/v1/repository.json#"
+}

@@ -1,4 +1,4 @@
-# Taskcluster Component Loader
+# Loader Library
 
 This library provides a means of loading application "components", each of
 which can depend on other components.  This makes application startup more

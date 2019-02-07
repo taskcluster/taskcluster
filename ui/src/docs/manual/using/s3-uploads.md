@@ -1,0 +1,133 @@
+---
+title: Uploading to S3
+order: 70
+---
+
+Many projects upload the result of their build or release process to Amazon S3
+for hosting.  For example, a package might upload its generated documentation
+to a bucket for hosting on a custom domain, or a blog site might upload the
+rendered site to a bucket. For these cases, Taskcluster artifacts are not
+suitable.
+
+The recommended approach to this requirement is to store S3 credentials in the
+[taskcluster-secrets service](/docs/reference/core/taskcluster-secrets), then
+download those credentials within the task and use them to upload the
+appropriate files.
+
+## IAM Setup
+
+To begin, create an AWS IAM user with limited permission to perform the actions
+you expect your task to perform. The IAM policy language is arcane at best. Here
+is a starter policy allowing upload access to the bucket `myblog.com`:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket"
+            ],
+            "Resource": [
+                "arn:aws:s3:::myblog.com"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:PutObjectAcl"
+            ],
+            "Resource": [
+                "arn:aws:s3:::myblog.com/*"
+            ]
+        }
+    ]
+}
+```
+
+A few tips:
+ * Tools that "synchronize" rather than just upload will need to list the bucket
+   contents. If this is not required, you can omit the first statement.
+ * Many upload tools intended to upload to public buckets use
+   `PutObjectAcl` (or pass an ACL to `PutObject`, which has the same effect), so
+   it is helpful to include that action in the list.
+ * If the bucket is shared with other uses, the `*` in the second statement can be
+   extended to include only a specific prefix, e.g., `myblog.com/blog/*`.
+
+Generate an AWS access key ID and secret access key for this new user .
+*Warning* do not simply generate credentials for your own, administrative user!
+While this solution is is secure, it is easy to accidentally disclose the
+credentials while debugging.
+
+## Secret Setup
+
+Set up a new secret using the [secret
+tool](https://tools.taskcluster.net/secrets), named after the repository from
+which the task runs, e.g., `repo:github.com/myblog/myblog.com`. Add the
+credentials:
+
+```json
+{
+  "AWS_ACCESS_KEY_ID": "..",
+  "AWS_SECRET_ACCESS_KEY": ".."
+}
+```
+
+Note that you may need some help from the Taskcluster team to get permission to
+do this.
+
+Then, add the scopes to read that secret to the appropriate repository role.
+Keep in mind that, for Github repositories at least, it is possible to
+distinguish PRs and specific branches.  If, for example, only the master branch
+should be allowed to upload, then you would add add
+`secrets:get:repo:github.com/myblog/myblog.com` to role
+`repo:github.com/myblog/myblog.com:branch:master`.
+
+## Task Setup
+
+In the repository's `.taskcluster.yml`, set up a task with the necessary bits
+to perform the upload:
+
+```yaml
+tasks:
+  - ...
+    # only run on pushes to master
+    extra:
+      github:
+        branches: [master]
+        events: [push]
+    # task has access to the secret
+    scopes: [secrets:get:repo:github.com/myblog/myblog.com]
+    payload:
+	  # the script will use taskclusterProxy to read the secret
+      features:
+        taskclusterProxy: true
+      command:
+        - '/bin/bash'
+        - '--login'
+        - '-c'
+        - >-
+          git clone {{event.head.repo.url}} repo && cd repo && git checkout {{event.head.sha}} && ./upload.sh
+```
+
+The `upload.sh` script looks like this:
+
+```sh
+#! /bin/sh
+# stop on errors -- do NOT set -x here, or you will disclose your secret access key!
+set -e
+# the `secrets.get" endpoint, using the taskcluster proxy (http://taskcluster)
+export secret_url="http://taskcluster/secrets/v1/secret/repo:github.com/myblog/myblog.com"
+# fetch and decode the two secrets
+export AWS_ACCESS_KEY_ID=$(curl ${secret_url} | python -c 'import json, sys; a = json.load(sys.stdin); print a["secret"]["AWS_ACCESS_KEY_ID"]')
+export AWS_SECRET_ACCESS_KEY=$(curl ${secret_url} | python -c 'import json, sys; a = json.load(sys.stdin); print a["secret"]["AWS_SECRET_ACCESS_KEY"]')
+
+# use the AWS CLI to actually upload the data
+aws s3 sync --exclude "assets/*" --exclude "data/*" --exclude "img/*" --delete ./site/ s3://myblog.com
+```
+
+You will, of course, need to adapt this to your needs, and ensure that the task
+runs in a Docker image that contains Python and the AWS CLI.

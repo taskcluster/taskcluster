@@ -42,4 +42,5 @@ module "events_web_service" {
   root_url       = "${var.root_url}"
   secret_keys    = "${module.events_secrets.env_var_keys}"
   docker_image   = "${local.taskcluster_image_events}"
+  is_monoimage   = "false"
 }

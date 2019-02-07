@@ -158,13 +158,14 @@ const load = loader({
   },
 
   listeners: {
-    requires: ['Hook', 'taskcreator', 'Queues', 'pulseClient'],
-    setup: async ({Hook, taskcreator, Queues, pulseClient}) => {
+    requires: ['Hook', 'taskcreator', 'Queues', 'pulseClient', 'monitor'],
+    setup: async ({Hook, taskcreator, Queues, pulseClient, monitor}) => {
       let listeners = new HookListeners({
         Hook,
         Queues,
         taskcreator,
         client: pulseClient,
+        monitor,
       });
       await listeners.setup();
       return listeners;
@@ -176,6 +177,7 @@ const load = loader({
     setup: ({cfg, schemaset}) => docs.documenter({
       credentials: cfg.taskcluster.credentials,
       rootUrl: cfg.taskcluster.rootUrl,
+      projectName: 'taskcluster-hooks',
       tier: 'core',
       schemaset,
       publish: cfg.app.publishMetaData,
@@ -223,6 +225,18 @@ const load = loader({
   scheduler: {
     requires: ['schedulerNoStart'],
     setup: ({schedulerNoStart}) => schedulerNoStart.start(),
+  },
+
+  expires: {
+    requires: ['cfg', 'Hook', 'LastFire', 'monitor'],
+    setup: ({cfg, Hook, LastFire, monitor}) => {
+      return monitor.oneShot('expire LastFires', async () => {
+        const expirationTime = taskcluster.fromNow(cfg.app.lastFiresExpirationDelay);
+        debug('Expiring lastFires rows');
+        const count = await LastFire.expires(Hook, expirationTime);
+        debug(`Expired ${count} rows`);
+      });
+    },
   },
 
 }, ['profile', 'process']);

@@ -100,7 +100,7 @@ module "queue_web_service" {
   secrets_hash      = "${module.queue_secrets.secrets_hash}"
   root_url          = "${var.root_url}"
   secret_keys       = "${module.queue_secrets.env_var_keys}"
-  docker_image      = "${local.taskcluster_image_queue}"
+  docker_image      = "${local.taskcluster_image_monoimage}"
 }
 
 module "queue_claim_resolver" {
@@ -114,7 +114,7 @@ module "queue_claim_resolver" {
   secrets_hash      = "${module.queue_secrets.secrets_hash}"
   root_url          = "${var.root_url}"
   secret_keys       = "${module.queue_secrets.env_var_keys}"
-  docker_image      = "${local.taskcluster_image_queue}"
+  docker_image      = "${local.taskcluster_image_monoimage}"
 }
 
 module "queue_deadline_resolver" {
@@ -128,7 +128,7 @@ module "queue_deadline_resolver" {
   secrets_hash      = "${module.queue_secrets.secrets_hash}"
   root_url          = "${var.root_url}"
   secret_keys       = "${module.queue_secrets.env_var_keys}"
-  docker_image      = "${local.taskcluster_image_queue}"
+  docker_image      = "${local.taskcluster_image_monoimage}"
 }
 
 module "queue_dependency_resolver" {
@@ -142,12 +142,13 @@ module "queue_dependency_resolver" {
   secrets_hash      = "${module.queue_secrets.secrets_hash}"
   root_url          = "${var.root_url}"
   secret_keys       = "${module.queue_secrets.env_var_keys}"
-  docker_image      = "${local.taskcluster_image_queue}"
+  docker_image      = "${local.taskcluster_image_monoimage}"
 }
 
 module "queue_expire_artifacts" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-queue"
+  service_name     = "queue"
   job_name         = "expireArtifacts"
   schedule         = "0 0 * * *"
   deadline_seconds = 86400
@@ -155,12 +156,13 @@ module "queue_expire_artifacts" {
   secrets_hash     = "${module.queue_secrets.secrets_hash}"
   root_url         = "${var.root_url}"
   secret_keys      = "${module.queue_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_queue}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
 }
 
 module "queue_expire_task" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-queue"
+  service_name     = "queue"
   job_name         = "expireTask"
   schedule         = "0 0 * * *"
   deadline_seconds = 86400
@@ -168,12 +170,13 @@ module "queue_expire_task" {
   secrets_hash     = "${module.queue_secrets.secrets_hash}"
   root_url         = "${var.root_url}"
   secret_keys      = "${module.queue_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_queue}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
 }
 
 module "queue_expire_queues" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-queue"
+  service_name     = "queue"
   job_name         = "expireQueues"
   schedule         = "0 0 * * *"
   deadline_seconds = 86400
@@ -181,12 +184,13 @@ module "queue_expire_queues" {
   secrets_hash     = "${module.queue_secrets.secrets_hash}"
   root_url         = "${var.root_url}"
   secret_keys      = "${module.queue_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_queue}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
 }
 
 module "queue_expire_task_requirement" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-queue"
+  service_name     = "queue"
   job_name         = "expireTaskRequirement"
   schedule         = "0 0 * * *"
   deadline_seconds = 86400
@@ -194,12 +198,13 @@ module "queue_expire_task_requirement" {
   secrets_hash     = "${module.queue_secrets.secrets_hash}"
   root_url         = "${var.root_url}"
   secret_keys      = "${module.queue_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_queue}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
 }
 
 module "queue_expire_task_dependency" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-queue"
+  service_name     = "queue"
   job_name         = "expireTaskDependency"
   schedule         = "0 0 * * *"
   deadline_seconds = 86400
@@ -207,12 +212,13 @@ module "queue_expire_task_dependency" {
   secrets_hash     = "${module.queue_secrets.secrets_hash}"
   root_url         = "${var.root_url}"
   secret_keys      = "${module.queue_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_queue}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
 }
 
 module "queue_expire_task_groups" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-queue"
+  service_name     = "queue"
   job_name         = "expireTaskGroups"
   schedule         = "0 0 * * *"
   deadline_seconds = 86400
@@ -220,12 +226,13 @@ module "queue_expire_task_groups" {
   secrets_hash     = "${module.queue_secrets.secrets_hash}"
   root_url         = "${var.root_url}"
   secret_keys      = "${module.queue_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_queue}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
 }
 
 module "queue_expire_task_group_members" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-queue"
+  service_name     = "queue"
   job_name         = "expireTaskGroupMembers"
   schedule         = "0 0 * * *"
   deadline_seconds = 86400
@@ -233,12 +240,13 @@ module "queue_expire_task_group_members" {
   secrets_hash     = "${module.queue_secrets.secrets_hash}"
   root_url         = "${var.root_url}"
   secret_keys      = "${module.queue_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_queue}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
 }
 
 module "queue_expire_task_group_sizes" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-queue"
+  service_name     = "queue"
   job_name         = "expireTaskGroupSizes"
   schedule         = "0 0 * * *"
   deadline_seconds = 86400
@@ -246,12 +254,13 @@ module "queue_expire_task_group_sizes" {
   secrets_hash     = "${module.queue_secrets.secrets_hash}"
   root_url         = "${var.root_url}"
   secret_keys      = "${module.queue_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_queue}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
 }
 
 module "queue_expire_worker_info" {
   source           = "modules/scheduled-job"
   project_name     = "taskcluster-queue"
+  service_name     = "queue"
   job_name         = "expireWorkerInfo"
   schedule         = "0 0 * * *"
   deadline_seconds = 86400
@@ -259,5 +268,5 @@ module "queue_expire_worker_info" {
   secrets_hash     = "${module.queue_secrets.secrets_hash}"
   root_url         = "${var.root_url}"
   secret_keys      = "${module.queue_secrets.env_var_keys}"
-  docker_image     = "${local.taskcluster_image_queue}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
 }
