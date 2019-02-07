@@ -1,6 +1,5 @@
 const assert = require('assert');
 const taskDefinition = require('./fixtures/task');
-const Monitor = require('taskcluster-lib-monitor');
 const artifactLinkTransform = require('../src/transform/artifact_links');
 const helper = require('./helper');
 const taskcluster = require('taskcluster-client');

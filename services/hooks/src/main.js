@@ -12,7 +12,7 @@ const config = require('typed-env-config');
 const loader = require('taskcluster-lib-loader');
 const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
-const monitor = require('taskcluster-lib-monitor');
+const Monitor = require('taskcluster-lib-monitor');
 const taskcluster = require('taskcluster-client');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const exchanges = require('./exchanges');
@@ -28,13 +28,11 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitor({
-      rootUrl: cfg.taskcluster.rootUrl,
+    setup: ({process, profile, cfg}) => new Monitor({
       projectName: 'taskcluster-hooks',
       enable: cfg.monitoring.enable,
-      credentials: cfg.taskcluster.credentials,
       mock: profile !== 'production',
-      process,
+      processName: process,
     }),
   },
 

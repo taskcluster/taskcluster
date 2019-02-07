@@ -1,7 +1,6 @@
 const assert = require('assert');
 const path = require('path');
 const Handler = require('../src/handler');
-const Monitor = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');

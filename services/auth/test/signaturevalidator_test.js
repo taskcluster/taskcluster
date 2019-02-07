@@ -40,7 +40,7 @@ suite(helper.suiteName(__filename), function() {
         return clients[clientId];
       },
       expandScopes: scopes => scopes,
-      monitor: await Monitor({projectName: 'foo', mock: true}),
+      monitor: new Monitor({projectName: 'foo', mock: true}),
     });
   });
 

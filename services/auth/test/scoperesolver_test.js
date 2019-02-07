@@ -11,8 +11,11 @@ const assume = require('assume');
 suite(helper.suiteName(__filename), () => {
   let monitor, scopeResolver;
   setup(async () => {
-    monitor = await Monitor({projectName: 'mock-auth', mock: true});
+    monitor = new Monitor({projectName: 'mock-auth', mock: true});
     scopeResolver = new ScopeResolver({monitor, disableCache: true});
+  });
+  teardown(() => {
+    monitor.terminate();
   });
 
   helper.secrets.mockSuite('setup and listening', ['app', 'azure'], function(mock, skipping) {

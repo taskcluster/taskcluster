@@ -4,7 +4,7 @@ const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 const App = require('taskcluster-lib-app');
 const loader = require('taskcluster-lib-loader');
 const config = require('typed-env-config');
-const monitor = require('taskcluster-lib-monitor');
+const Monitor = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const docs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
@@ -27,13 +27,11 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitor({
-      rootUrl: cfg.taskcluster.rootUrl,
+    setup: ({process, profile, cfg}) => new Monitor({
       projectName: cfg.monitoring.project || 'taskcluster-notify',
       enable: cfg.monitoring.enable,
-      credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
-      process,
+      processName: process,
     }),
   },
 

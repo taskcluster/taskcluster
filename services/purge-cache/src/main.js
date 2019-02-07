@@ -4,7 +4,7 @@ const path = require('path');
 const _ = require('lodash');
 const config = require('typed-env-config');
 const loader = require('taskcluster-lib-loader');
-const monitor = require('taskcluster-lib-monitor');
+const Monitor = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const App = require('taskcluster-lib-app');
@@ -30,13 +30,11 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitor({
-      rootUrl: cfg.taskcluster.rootUrl,
+    setup: ({process, profile, cfg}) => new Monitor({
       projectName: cfg.monitoring.project,
       enable: cfg.monitoring.enable,
-      credentials: cfg.taskcluster.credentials,
       mock: profile === 'test',
-      process,
+      processName: process,
     }),
   },
 

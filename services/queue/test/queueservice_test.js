@@ -24,8 +24,7 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
 
     const cfg = await helper.load('cfg');
 
-    monitor = await Monitor({
-      credentials: {},
+    monitor = new Monitor({
       projectName: 'test',
       mock: true,
       patchGlobal: false,
@@ -61,6 +60,8 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
     if (skipping()) {
       return;
     }
+
+    monitor.terminate();
 
     if (queueService) {
       queueService.terminate();

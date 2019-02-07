@@ -19,7 +19,7 @@ let WorkClaimer = require('./workclaimer');
 let WorkerInfo = require('./workerinfo');
 let loader = require('taskcluster-lib-loader');
 let config = require('typed-env-config');
-let monitor = require('taskcluster-lib-monitor');
+let Monitor = require('taskcluster-lib-monitor');
 let SchemaSet = require('taskcluster-lib-validate');
 let docs = require('taskcluster-lib-docs');
 let App = require('taskcluster-lib-app');
@@ -36,24 +36,11 @@ let load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitor({
+    setup: ({process, profile, cfg}) => new Monitor({
       projectName: 'taskcluster-queue',
       enable: cfg.monitoring.enable,
-      rootUrl: cfg.taskcluster.rootUrl,
-      credentials: cfg.taskcluster.credentials,
       mock: cfg.monitor.mock,
-      process,
-      // Bug 1452611 - fingerprint SSL errors
-      sentryOptions: {
-        dataCallback: data => {
-          if (/SSL3_GET_RECORD:decryption failed or bad record mac/.test(data.message || '')) {
-            data.fingerprint = ['Bug 1452611'];
-          } else if (/SSL routines:ssl3_read_bytes:sslv3 alert bad record mac:/.test(data.message || '')) {
-            data.fingerprint = ['Bug 1452611'];
-          }
-          return data;
-        },
-      },
+      processName: process,
     }),
   },
 

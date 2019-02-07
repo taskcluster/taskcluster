@@ -48,31 +48,11 @@ const load = Loader({
   monitor: {
     requires: ['cfg', 'sentryManager', 'profile', 'process'],
     setup: ({cfg, sentryManager, profile, process}) => {
-      return Monitor({
+      return new Monitor({
         projectName: cfg.monitoring.project || 'taskcluster-auth',
-        rootUrl: cfg.taskcluster.rootUrl,
         enable: cfg.monitoring.enable,
-        process,
+        processName: process,
         mock: profile === 'test',
-        aws: {credentials: _.pick(cfg.aws, ['accessKeyId', 'secretAccessKey']), region: cfg.aws.region},
-        logName: cfg.app.auditLog, // Audit logs will be noop if this is null
-        statsumToken: async (project) => {
-          return {
-            project,
-            token: Statsum.createToken(project, cfg.app.statsum.secret, '25h'),
-            baseUrl: cfg.app.statsum.baseUrl,
-            expires: taskcluster.fromNowJSON('24 hours'),
-          };
-
-        },
-        sentryDSN: async (project) => {
-          let key = await sentryManager.projectDSN(project);
-          return {
-            project,
-            dsn: _.pick(key.dsn, ['secret', 'public']),
-            expires: key.expires.toJSON(),
-          };
-        },
       });
     },
   },

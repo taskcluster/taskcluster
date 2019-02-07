@@ -7,7 +7,7 @@ const path = require('path');
 const _ = require('lodash');
 const loader = require('taskcluster-lib-loader');
 const SchemaSet = require('taskcluster-lib-validate');
-const monitor = require('taskcluster-lib-monitor');
+const Monitor = require('taskcluster-lib-monitor');
 const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
@@ -24,13 +24,11 @@ var load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitor({
-      rootUrl: cfg.taskcluster.rootUrl,
+    setup: ({process, profile, cfg}) => new Monitor({
       projectName: 'taskcluster-secrets',
       enable: cfg.monitoring.enable,
-      credentials: cfg.taskcluster.credentials,
       mock: profile !== 'production',
-      process,
+      processName: process,
     }),
   },
 
