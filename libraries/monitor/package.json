@@ -15,9 +15,7 @@
   "dependencies": {
     "app-root-dir": "^1.0.2",
     "chalk": "^2.4.2",
-    "debug": "^4.0.0",
-    "fast-json-stable-stringify": "^2.0.0",
-    "lodash": "^4.5.1"
+    "fast-json-stable-stringify": "^2.0.0"
   },
   "main": "./src/index.js",
   "engines": {
