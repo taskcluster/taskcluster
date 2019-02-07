@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -216,7 +217,7 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	userData, err := queryUserData()
 	if err != nil {
 		// if we can't read user data, this is a serious problem
-		return err
+		return fmt.Errorf("Could not query user data: %v", err)
 	}
 	c.ProvisionerID = userData.ProvisionerID
 	c.Region = userData.Region
@@ -229,27 +230,23 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	awsprov.Authenticate = false
 	awsprov.Credentials = nil
 
-	// Retrieving credentials from provisioner only happens on first run. After
-	// that, they are not available, so only look for them if we need them.
-	if c.AccessToken == "" || c.ClientID == "" {
-		secToken, getErr := awsprov.GetSecret(userData.SecurityToken)
-		// remove secrets even if we couldn't retrieve them!
-		removeErr := awsprov.RemoveSecret(userData.SecurityToken)
-		if getErr != nil {
-			// serious error
-			return getErr
-		}
-		if removeErr != nil {
-			// security risk if we can't delete secret, so return err
-			return removeErr
-		}
-
-		c.AccessToken = secToken.Credentials.AccessToken
-		c.Certificate = secToken.Credentials.Certificate
-		c.ClientID = secToken.Credentials.ClientID
-		c.WorkerGroup = userData.Region
-		c.WorkerType = userData.WorkerType
+	secToken, getErr := awsprov.GetSecret(userData.SecurityToken)
+	// remove secrets even if we couldn't retrieve them!
+	removeErr := awsprov.RemoveSecret(userData.SecurityToken)
+	if getErr != nil {
+		// serious error
+		return fmt.Errorf("Could not fetch credentials from AWS Provisioner: %v", getErr)
 	}
+	if removeErr != nil {
+		// security risk if we can't delete secret, so return err
+		return fmt.Errorf("Could not delete credentials for worker in AWS Provisioner: %v", removeErr)
+	}
+
+	c.AccessToken = secToken.Credentials.AccessToken
+	c.Certificate = secToken.Credentials.Certificate
+	c.ClientID = secToken.Credentials.ClientID
+	c.WorkerGroup = userData.Region
+	c.WorkerType = userData.WorkerType
 
 	awsMetadata := map[string]interface{}{}
 	for _, url := range []string{
@@ -265,7 +262,7 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 		value, err := queryMetaData(url)
 		if err != nil {
 			// not being able to read metadata is serious error
-			return err
+			return fmt.Errorf("Error querying AWS metadata url %v: %v", url, err)
 		}
 		awsMetadata[key] = value
 	}
@@ -281,7 +278,7 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	// are included.
 	publicHostSetup, err := userData.PublicHostSetup()
 	if err != nil {
-		return err
+		return fmt.Errorf("Error retrieving/interpreting host setup from /data/genericWorker in AWS userdata: %v", err)
 	}
 
 	// Host setup per worker type "userData" section.
@@ -289,9 +286,12 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	// Note, we first update configuration from public host setup, before
 	// calling tc-secrets to get private host setup, in case secretsBaseURL is
 	// configured in userdata.
-	c.MergeInJSON(userData.Data.GenericWorker, func(a map[string]interface{}) map[string]interface{} {
+	err = c.MergeInJSON(userData.Data.GenericWorker, func(a map[string]interface{}) map[string]interface{} {
 		return a["config"].(map[string]interface{})
 	})
+	if err != nil {
+		return fmt.Errorf("Error applying /data/genericWorker/config from AWS userdata to config: %v", err)
+	}
 
 	// Fetch additional (secret) host setup from taskcluster-secrets service.
 	// See: https://bugzil.la/1375200
@@ -299,7 +299,7 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	secretName := "worker-type:" + c.ProvisionerID + "/" + c.WorkerType
 	sec, err := tcsec.Get(secretName)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error fetching secret %v from taskcluster-secrets service: %v", secretName, err)
 	}
 	b := bytes.NewBuffer([]byte(sec.Secret))
 	d := json.NewDecoder(b)
@@ -307,19 +307,22 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	var privateHostSetup PrivateHostSetup
 	err = d.Decode(&privateHostSetup)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error converting secret %v from taskcluster-secrets service into config/files: %v", secretName, err)
 	}
 
-	// Now overlay existing config
-	c.MergeInJSON(sec.Secret, func(a map[string]interface{}) map[string]interface{} {
+	// Apply config from secret
+	err = c.MergeInJSON(sec.Secret, func(a map[string]interface{}) map[string]interface{} {
 		return a["config"].(map[string]interface{})
 	})
+	if err != nil {
+		return fmt.Errorf("Error applying config from secret %v to generic worker config: %v", secretName, err)
+	}
 
-	// Now put files in place...
+	// Put files in place...
 	for _, f := range append(publicHostSetup.Files, privateHostSetup.Files...) {
 		err := f.Extract()
 		if err != nil {
-			return err
+			return fmt.Errorf("Error extracing file %v: %v", f.Path, err)
 		}
 	}
 	if c.IdleTimeoutSecs == 0 {
