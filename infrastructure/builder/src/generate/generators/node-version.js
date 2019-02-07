@@ -34,11 +34,5 @@ exports.tasks = [{
         contents.engines.node = nodeVersion;
         return contents;
       });
-
-    utils.status({message: 'ui/taskcluster-web-tests/Dockerfile'});
-    await modifyFile('ui/taskcluster-web-tests/Dockerfile',
-      contents => contents.replace(
-        /^(FROM node:)[0-9.]+(.*)$/m,
-        `$1${nodeVersion}$2`));
   },
 }];

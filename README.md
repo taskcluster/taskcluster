@@ -35,6 +35,7 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Taskcluster Client Web](clients/client-web#readme)
         * [Documentation](clients/client-web/docs#readme)
 * [Infrastructure](infrastructure#readme)
+    * [Browser-Test Docker Image](infrastructure/browser-test#readme)
     * [Taskcluster Builder](infrastructure/builder#readme)
     * [References](infrastructure/references#readme)
     * [Terraform](infrastructure/terraform#readme)

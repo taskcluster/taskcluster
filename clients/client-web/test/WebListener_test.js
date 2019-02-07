@@ -1,6 +1,7 @@
 import { WebListener, QueueEvents } from '../src';
 
-describe('WebListener', function() {
+// skipped -- https://bugzilla.mozilla.org/show_bug.cgi?id=1525764
+describe.skip('WebListener', function() {
   this.timeout(30000);
 
   const rootUrl = 'https://taskcluster.net';
