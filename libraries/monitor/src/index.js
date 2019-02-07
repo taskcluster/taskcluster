@@ -8,19 +8,6 @@ const Logger = require('./logger');
 const TimeKeeper = require('./timekeeper');
 
 class Monitor {
-  /**
-   * Create a new monitor, given options:
-   * {
-   *   projectName: '...',
-   *   patchGlobal:  true,
-   *   bailOnUnhandledRejection: false,
-   *   resourceInterval: 10, // seconds
-   *   mock: false,
-   *   enable: true,
-   *   gitVersion: undefined, // git version (for correlating errors); or..
-   *   gitVersionFile: '.git-version', // file containing git version (relative to app root)
-   * }
-   */
   constructor({
     projectName,
     patchGlobal = true,
@@ -32,9 +19,7 @@ class Monitor {
     processName = null,
     level = 'info',
     subject = 'root',
-    metadata = {
-      gitVersion: undefined,
-    },
+    metadata = {},
     pretty = false,
     destination = null,
     ...extra
@@ -158,20 +143,26 @@ class Monitor {
     process.exit(1);
   }
 
-  /*
-   * TODO
-   */
   terminate() {
     this.stopResourceMonitoring();
     process.removeListener('uncaughtException', this.uncaughtExceptionHandler);
     process.removeListener('unhandledRejection', this.unhandledRejectionHandler);
+    if (this.mock) {
+      this.destination.end();
+    }
   }
 
+  /*
+   * The most basic timer.
+   */
   timer(key, funcOrPromise) {
     const start = process.hrtime();
     const done = (x) => {
       const d = process.hrtime(start);
-      this.measure(key, d[0] * 1000 + d[1] / 1000000);
+      this.log.info('monitor.timer', {
+        key,
+        duration: d[0] * 1000 + d[1] / 1000000,
+      });
     };
     if (funcOrPromise instanceof Function) {
       try {
@@ -204,8 +195,10 @@ class Monitor {
         const d = process.hrtime(start);
         for (let stat of [success, 'all']) {
           const k = [name, stat].join('.');
-          this.measure(k, d[0] * 1000 + d[1] / 1000000);
-          this.count(k);
+          this.log.info('monitor.timedHandler', {
+            key: k,
+            duration: d[0] * 1000 + d[1] / 1000000,
+          });
         }
       }
     };
@@ -236,15 +229,13 @@ class Monitor {
             success = 'client-error';
           }
 
-          for (let stat of [success, 'all']) {
-            const k = [name, stat].join('.');
-            this.measure(k, d[0] * 1000 + d[1] / 1000000);
-            this.count(k);
-          }
-          this.measure(['all', success], d[0] * 1000 + d[1] / 1000000);
-          this.count(['all', success]);
+          this.log.info('monitor.express', {
+            name,
+            status: success,
+            duration: d[0] * 1000 + d[1] / 1000000,
+          });
         } catch (e) {
-          this.debug('Error while compiling response times: %s, %j', err, err, err.stack);
+          this.reportError(err);
         }
       };
       res.once('finish', send);
@@ -253,6 +244,9 @@ class Monitor {
     };
   }
 
+  /*
+   * Simply return a Timekeeper object
+   */
   timeKeeper(name) {
     return new TimeKeeper(this, name);
   }
@@ -267,13 +261,12 @@ class Monitor {
       const r = makeRequest.call(this, operation, params, callback);
       r.on('complete', () => {
         const requestTime = (new Date()).getTime() - r.startTime.getTime();
-        monitor.measure(`global.${operation}.duration`, requestTime);
-        monitor.count(`global.${operation}.count`, 1);
-        if (service.config && service.config.region) {
-          const region = service.config.region;
-          monitor.measure(`${region}.${operation}.duration`, requestTime);
-          monitor.count(`${region}.${operation}.count`, 1);
-        }
+        monitor.info('monitor.aws', {
+          service: service.serviceIdentifier,
+          operation,
+          duration: requestTime,
+          region: service.config ? service.config.region : undefined,
+        });
       });
       return r;
     };
@@ -291,8 +284,7 @@ class Monitor {
         assert.equal(typeof name, 'string');
         assert.equal(typeof fn, 'function');
 
-        await this.timer(`${name}.duration`, fn);
-        this.count(`${name}.done`);
+        await this.timer(name, fn);
       } catch (err) {
         this.reportError(err);
         exitStatus = 1;
@@ -321,7 +313,7 @@ class Monitor {
     this._resourceInterval = setInterval(() => {
       lastCpuUsage = process.cpuUsage(lastCpuUsage);
       lastMemoryUsage = process.memoryUsage(lastMemoryUsage);
-      this.log.info({lastCpuUsage, lastMemoryUsage});
+      this.log.info('monitor.resources', {lastCpuUsage, lastMemoryUsage});
     }, interval * 1000);
 
     return () => this.stopResourceMonitoring();
@@ -335,7 +327,9 @@ class Monitor {
   }
 
   /*
-   * TODO
+   * Simple counts. Generally should no longer be used. Prefer logging
+   * specific types. Counts are designed to be summed up in a time period
+   * for monitoring purposes.
    */
   count(key, val) {
     val = val || 1;
@@ -345,11 +339,13 @@ class Monitor {
       this.reportError({key, val, error});
       return;
     }
-    this.log.info('count', {key, val});
+    this.log.info('monitor.count', {key, val});
   }
 
   /*
-   * TODO
+   * Simple measures. Generally should no longer be used. Prefer logging
+   * specific types. Measures are designed to have percentiles taken over
+   * them for monitoring purposes.
    */
   measure(key, val) {
     try {
@@ -358,17 +354,17 @@ class Monitor {
       this.reportError({key, val, error});
       return;
     }
-    this.log.info('measure', {key, val});
+    this.log.info('monitor.measure', {key, val});
   }
 
   /**
-   * TODO
+   * Take a standard error and break it up into loggable bits.
    */
   reportError(err) {
     if (!(err instanceof Error)) {
       err = new Error(err);
     }
-    this.err('generic-error', {
+    this.err('monitor.error', {
       name: err.name,
       message: err.message,
       error: err.toString(),
@@ -377,13 +373,15 @@ class Monitor {
   }
 
   /**
-   * TODO
+   * Return a new monitor that will append a prefix to the logger name.
+   * Useful for indicating that a message comes from an api rather than
+   * a handler for instance.
    */
   prefix(pre, metadata = {}) {
     return new Monitor({
       projectName: this.projectName,
       subject: `${this.subject}.${pre}`,
-      metadata,
+      metadata: Object.assign({}, this.metadata, metadata),
       mock: this.mock,
       destination: this.destination,
       patchGlobal: false, // Handled by root

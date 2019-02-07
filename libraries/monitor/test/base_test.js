@@ -30,6 +30,7 @@ suite('BaseMonitor', function() {
         assert.equal(monitor.events.length, len);
         monitor.events.forEach(m => {
           assert.equal(m.Logger, 'taskcluster-testing-service.root');
+          assert.equal(m.Type, 'monitor.timer');
           assert.equal(m.Fields.key, 'pfx');
         });
       });
@@ -52,7 +53,7 @@ suite('BaseMonitor', function() {
     test('of an async function', async function() {
       assert.equal(await monitor.timer('pfx', takes100ms), 13);
       await checkMonitor(1);
-      assert(monitor.events[0].Fields.val >= 90);
+      assert(monitor.events[0].Fields.duration >= 90);
     });
 
     test('of an async function that fails', async function() {
@@ -69,7 +70,7 @@ suite('BaseMonitor', function() {
     test('of a promise', async function() {
       assert.equal(await monitor.timer('pfx', takes100ms()), 13);
       await checkMonitor(1);
-      assert(monitor.events[0].Fields.val >= 90);
+      assert(monitor.events[0].Fields.duration >= 90);
     });
 
     test('of a failed promise', async function() {
@@ -103,18 +104,18 @@ suite('BaseMonitor', function() {
     test('successful async function', async function() {
       await monitor.oneShot('expire', async () => {});
       assert.equal(exitStatus, 0);
+      assert.equal(monitor.events.length, 1);
       assert.equal(monitor.events[0].Logger, 'taskcluster-testing-service.root');
-      assert.equal(monitor.events[1].Logger, 'taskcluster-testing-service.root');
-      assert.equal(monitor.events[0].Fields.key, 'expire.duration');
-      assert.equal(monitor.events[1].Fields.key, 'expire.done');
-      assert.equal(monitor.events.length, 2);
+      assert(monitor.events[0].Fields.key);
+      assert(monitor.events[0].Fields.duration);
     });
 
     test('unsuccessful async function', async function() {
       await monitor.oneShot('expire', async () => { throw new Error('uhoh'); });
       assert.equal(exitStatus, 1);
-      assert.equal(monitor.events[0].Fields.key, 'expire.duration');
       assert.equal(monitor.events.length, 2);
+      assert(monitor.events[0].Fields.key);
+      assert(monitor.events[0].Fields.duration);
       assert.equal(monitor.events[1].Fields.error, 'Error: uhoh');
     });
 
@@ -344,15 +345,12 @@ suite('BaseMonitor', function() {
       await ec2.describeAvailabilityZones().promise().catch(err => {
         // Ignored ec2 error, we measure duration, not success
       });
-      assert.equal(monitor.events.length, 4);
-      monitor.events.forEach(event => {
-        assert.equal(event.Logger, 'taskcluster-testing-service.root.ec2');
-      });
-      assert.equal(monitor.events[0].Fields.key, 'global.describeAvailabilityZones.duration');
-      assert.equal(monitor.events[1].Fields.key, 'global.describeAvailabilityZones.count');
-      assert.equal(monitor.events[2].Fields.key, 'us-west-2.describeAvailabilityZones.duration');
-      assert.equal(monitor.events[3].Fields.key, 'us-west-2.describeAvailabilityZones.count');
-      // TODO: Do these as one event -- so this should only emit 2 events
+      assert.equal(monitor.events.length, 1);
+      assert.equal(monitor.events[0].Logger, 'taskcluster-testing-service.root.ec2');
+      assert.equal(monitor.events[0].Fields.operation, 'describeAvailabilityZones');
+      assert.equal(monitor.events[0].Fields.service, 'ec2');
+      assert.equal(monitor.events[0].Fields.region, 'us-west-2');
+      assert(monitor.events[0].Fields.duration > 0);
     });
   });
 });

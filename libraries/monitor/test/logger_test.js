@@ -119,10 +119,9 @@ suite('Logging', function() {
   test('disabling works', function() {
     const m = new Monitor({
       projectName: 'taskcluster-level',
-      enable: false,
       level: 'debug',
       mock: true,
-      pretty: true,
+      enable: false,
     });
     m.info('something', {whatever: 5}); // This should not get logged
     assert.equal(m.events.length, 0);

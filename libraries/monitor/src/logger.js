@@ -16,8 +16,8 @@ const LEVELS = {
 
 const LEVELS_REVERSE = [
   chalk.red.bold('EMERGENCY'),
-  chalk.red('ALERT'),
-  chalk.red('CRITICAL'),
+  chalk.red.bold('ALERT'),
+  chalk.red.bold('CRITICAL'),
   chalk.red('ERROR'),
   chalk.yellow('WARNING'),
   chalk.blue('NOTICE'),
