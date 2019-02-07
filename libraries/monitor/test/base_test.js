@@ -36,8 +36,6 @@ suite('BaseMonitor', function() {
       });
     };
 
-    // TODO: Use specific types for timers etc, whatever
-
     test('of a sync function', async function() {
       assert.equal(monitor.timer('pfx', () => 13), 13);
       await checkMonitor(1);
@@ -166,6 +164,30 @@ suite('BaseMonitor', function() {
       assert.equal(monitor.events[1].Logger, 'taskcluster-testing-service.root.api');
       assert.equal(monitor.events[0].Fields.meta, undefined);
       assert.equal(monitor.events[1].Fields.meta.addition, 1000);
+    });
+
+    test('can configure child loggers with specific levels and default to root', function() {
+      const m = new Monitor({
+        projectName: 'taskcluster-testing-service',
+        level: 'root:info root.api:debug',
+        mock: true,
+      });
+      const child1 = m.prefix('api');
+      const child2 = m.prefix('handler');
+      m.debug('foobar', 1);
+      child1.debug('bazbing', 2);
+      child2.debug('what', 3);
+
+      assert.equal(m.events.length, 1);
+      assert.equal(m.events[0].Logger, 'taskcluster-testing-service.root.api');
+    });
+
+    test('if using child logger levels, must specify root', function() {
+      assert.throws(() => new Monitor({
+        projectName: 'taskcluster-testing-service',
+        level: 'root.api:debug',
+        mock: true,
+      }));
     });
   });
 

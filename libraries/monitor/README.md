@@ -1,5 +1,7 @@
 # Monitor Library
 
+TODO: Update README
+
 A convenient library to wrap up all of the pieces needed for a Taskcluster service to record metrics with Statsum and report errors with Sentry.
 By default it will report any errors that cause the process to exit, and report as warnings any errors that cause stats writing to not work. To
 disable any of these, you can see the Options and Defaults section below.

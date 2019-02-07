@@ -31,8 +31,23 @@ class Monitor {
     this.projectName = projectName;
     this.mock = mock;
     this.subject = subject;
+    this.level = level;
     this.metadata = metadata;
     this.bailOnUnhandledRejection = bailOnUnhandledRejection;
+
+    if (level.includes(':')) {
+      const levels = level.split(' ').reduce((o, conf) => {
+        const c = conf.split(':');
+        o[c[0]] = c[1];
+        return o;
+      }, {});
+      assert(levels['root'], 'Must specify `root:` level if using child-specific levels.');
+      if (levels[subject]) {
+        level = levels[subject];
+      } else {
+        level = levels['root'];
+      }
+    }
 
     if (destination) {
       assert(destination.write, 'Must provide writeable stream as destination');
@@ -66,8 +81,6 @@ class Monitor {
       }
     }
 
-    // TODO: Handle per-prefix levels
-
     this.log = new Logger({
       name: `${projectName}.${subject}`,
       level,
@@ -91,7 +104,7 @@ class Monitor {
   }
 
   /*
-   * TODO
+   * Returns the raw logger if someone wants to do something strange with it.
    */
   logger() {
     return this.log;
@@ -381,6 +394,7 @@ class Monitor {
     return new Monitor({
       projectName: this.projectName,
       subject: `${this.subject}.${pre}`,
+      level: this.level,
       metadata: Object.assign({}, this.metadata, metadata),
       mock: this.mock,
       destination: this.destination,

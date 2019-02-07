@@ -44,7 +44,7 @@ class Logger {
     this.pid = process.pid;
     this.hostname = os.hostname();
 
-    // TODO: Do things with child-specific logging levels. perhaps this happens in index?
+    level = level.trim();
     assert(LEVELS[level] !== undefined, `Error levels must correspond to syslog severity levels. ${level} is invalid.`);
     this.level = LEVELS[level];
   }
@@ -83,8 +83,6 @@ class Logger {
     if (this.metadata) {
       fields.meta = this.metadata;
     }
-
-    // TODO: figure out if I need to handle flushes for non-stdout stuff
 
     if (this.pretty) {
       const msg = fields.msg ? fields.msg : '';
