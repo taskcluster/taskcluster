@@ -8,13 +8,13 @@ Taskcluster.
 ## Web Server
 
 The taskcluster-web UI application relies on a server application in order to
-perform queries to the Taskcluster APIs. That repo is
-[taskcluster-web-server](https://github.com/taskcluster/taskcluster-web-server).
-Clone that repo and follow the instructions for starting it prior to launching
-the web UI. You will need to launch the web-server in a terminal
+perform queries to the Taskcluster APIs. That package is
+[web-server](https://github.com/taskcluster/taskcluster/tree/master/services/web-server).
+**Follow the instructions** for starting it prior to launching
+the web UI. You will need to launch web-server in a terminal
 instance separate from the UI in order to run both simultaneously.
 
-For development, the tc-web-server process must be serving on
+For development, the web-server process must be serving on
 http://localhost:3050, but otherwise need not be publicly accessible. The
 development server for this repo will proxy requests as necessary to
 http://localhost:3050.
