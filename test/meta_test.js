@@ -19,10 +19,12 @@ suite('Repo Meta Tests', function() {
   const taskclusterYml = yaml.safeLoad(fs.readFileSync(taskclusterYmlFile, 'utf8'));
 
   test('All packages in CI', async function() {
-    const configured = taskclusterYml.tasks['$let'].packages;
+    const configured = taskclusterYml.tasks.in.$let.packages;
 
     const {stdout, stderr} = await exec('yarn workspaces info -s');
-    const existing = Object.keys(JSON.parse(stdout));
+    const existing = Object.keys(JSON.parse(stdout))
+      // taskcluster-client is tested separately
+      .filter(name => name !== 'taskcluster-client');
 
     const extra = _.difference(configured, existing);
     const missing = _.difference(existing, configured);

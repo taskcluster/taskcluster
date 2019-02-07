@@ -4,9 +4,10 @@
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "Client for interfacing taskcluster components",
   "license": "MPL-2.0",
+  "repository": "https://github.com/taskcluster/taskcluster/tree/master/clients/client",
   "scripts": {
-    "lint": "eslint src/*.js test/*.js",
-    "test": "mocha test/*_test.js"
+    "test": "mocha test/*_test.js",
+    "package-test": "sh package_test.sh"
   },
   "dependencies": {
     "debug": "^4.0.0",
@@ -16,6 +17,11 @@
     "slugid": "^2.0.0",
     "superagent": "^4.0.0",
     "taskcluster-lib-urls": "^12.0.0"
+  },
+  "devDependencies": {
+    "http-proxy": "^1.17.0",
+    "mocha": "^5.2.0",
+    "nock": "^10.0.6"
   },
   "engines": {
     "node": ">=8"

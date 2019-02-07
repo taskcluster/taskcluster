@@ -30,7 +30,8 @@ exports.tasks = [{
     for (let readme of [...readmes]) {
       const remainder = [];
       for (let child of readmes) {
-        if (child.dir.length > readme.dir.length && child.dir.startsWith(readme.dir)) {
+        if (child.dir.length > readme.dir.length &&
+          (readme.dir === '' || child.dir.startsWith(`${readme.dir}/`))) {
           readme.children.push(child);
         } else {
           remainder.push(child);

@@ -35,7 +35,7 @@ exports.tasks = [{
     // continue generating clients
     Object.assign(apis, require('./deprecated-services.json'));
 
-    await writeFile('libraries/client/src/apis.js',
+    await writeFile('clients/client/src/apis.js',
       '/* eslint-disable */\nmodule.exports = ' + stringify(apis, {space: 2}) + ';');
   },
 }];
