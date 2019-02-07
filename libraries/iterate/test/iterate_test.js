@@ -2,7 +2,7 @@ let subject = require('../');
 let sandbox = require('sinon').createSandbox();
 let assume = require('assume');
 let debug = require('debug')('iterate-test');
-let monitoring = require('taskcluster-lib-monitor');
+let Monitor = require('taskcluster-lib-monitor');
 
 let possibleEvents = [
   'started',
@@ -54,7 +54,7 @@ describe('Iterate', () => {
   let monitor;
 
   beforeEach(async () => {
-    monitor = await monitoring({projectName: 'iterate', credentials: {}, mock: true});
+    monitor = new Monitor({projectName: 'iterate', mock: true});
   });
 
   afterEach(() => {
@@ -99,7 +99,10 @@ describe('Iterate', () => {
       assume(i.keepGoing).is.ok();
       i.stop();
       assume(i.keepGoing).is.not.ok();
-      assume(monitor.counts['iterate.successful-iteration']).equals(5);
+      assume(monitor.events.length).equals(5);
+      monitor.events.forEach(event => {
+        assume(event.Fields.status).equals('success');
+      });
     }, 5000);
 
   });
