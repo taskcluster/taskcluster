@@ -56,12 +56,13 @@ const load = loader({
     requires: ['queue', 'cfg'],
     setup: ({cfg, queue}) => new taskqueue.TaskQueue(cfg, queue, 'fail'),
   },
+
   server: {
     requires: ['succeedTaskQueue', 'failTaskQueue'],
-    setup: ({failTaskQueue, succeedTaskQueue}) => async function() {
+    setup: async ({failTaskQueue, succeedTaskQueue}) => {
       await Promise.all([
-        this.succeedTaskQueue.runWorker(),
-        this.failTaskQueue.runWorker(),
+        succeedTaskQueue.runWorker(),
+        failTaskQueue.runWorker(),
       ]);
     },
   },
