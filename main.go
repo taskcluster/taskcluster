@@ -581,7 +581,7 @@ func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (
 			return nil, err
 		}
 		if err != nil {
-			return nil, fmt.Errorf("FATAL: problem loading generic worker config file or retrieving config from aws/gcp: %v", err)
+			return nil, fmt.Errorf("FATAL: problem retrieving config/secrets from aws/gcp: %v", err)
 		}
 	} else {
 		buffer := bytes.NewBuffer(configData)
