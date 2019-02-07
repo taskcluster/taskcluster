@@ -3600,14 +3600,14 @@ module.exports = {
         }
       ],
       "serviceName": "secrets",
-      "title": "TaskCluster Secrets API Documentation"
+      "title": "Taskcluster Secrets API Documentation"
     }
   },
   "TreeherderEvents": {
     "reference": {
       "$schema": "/schemas/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The taskcluster-treeherder service is responsible for processing\ntask events published by TaskCluster Queue and producing job messages\nthat are consumable by Treeherder.\n\nThis exchange provides that job messages to be consumed by any queue that\nattached to the exchange.  This could be a production Treeheder instance,\na local development environment, or a custom dashboard.",
+      "description": "The taskcluster-treeherder service is responsible for processing\ntask events published by Taskcluster Queue and producing job messages\nthat are consumable by Treeherder.\n\nThis exchange provides that job messages to be consumed by any queue that\nattached to the exchange.  This could be a production Treeheder instance,\na local development environment, or a custom dashboard.",
       "entries": [
         {
           "description": "When a task run is scheduled or resolved, a message is posted to\nthis exchange in a Treeherder consumable format.",
@@ -3769,7 +3769,7 @@ module.exports = {
         }
       ],
       "serviceName": "worker-manager",
-      "title": "TaskCluster Worker Manager"
+      "title": "Taskcluster Worker Manager"
     }
   }
 };

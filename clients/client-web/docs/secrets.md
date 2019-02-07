@@ -1,4 +1,4 @@
-# TaskCluster Secrets API Documentation
+# Taskcluster Secrets API Documentation
 
 ##
 

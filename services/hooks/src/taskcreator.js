@@ -10,7 +10,7 @@ class TaskCreator {
    *
    * options:
    * {
-   *   credentials:   // TaskCluster credentials
+   *   credentials:   // Taskcluster credentials
    * }
    * */
   constructor(options) {

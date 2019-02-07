@@ -3,7 +3,7 @@
   "serviceName": "treeherder",
   "apiVersion": "v1",
   "title": "Taskcluster-treeherder Pulse Exchange",
-  "description": "The taskcluster-treeherder service is responsible for processing\ntask events published by TaskCluster Queue and producing job messages\nthat are consumable by Treeherder.\n\nThis exchange provides that job messages to be consumed by any queue that\nattached to the exchange.  This could be a production Treeheder instance,\na local development environment, or a custom dashboard.",
+  "description": "The taskcluster-treeherder service is responsible for processing\ntask events published by Taskcluster Queue and producing job messages\nthat are consumable by Treeherder.\n\nThis exchange provides that job messages to be consumed by any queue that\nattached to the exchange.  This could be a production Treeheder instance,\na local development environment, or a custom dashboard.",
   "exchangePrefix": "exchange/taskcluster-treeherder/v1/",
   "entries": [
     {

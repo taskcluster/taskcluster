@@ -42,7 +42,7 @@ defaults:
 
   # Configuration of access to other taskcluster components
   taskcluster:
-    # TaskCluster credentials for this server, these must have scopes:
+    # Taskcluster credentials for this server, these must have scopes:
     # auth:credentials, queue:*
     # (typically configured using environment variables)
     rootUrl: !env TASKCLUSTER_ROOT_URL

@@ -82,7 +82,7 @@ Finally, an example to tie it all together. This is the as-of-this-writing ``.ta
 ```yaml
 version: 0
 metadata:
-  name: "TaskCluster GitHub Tests"
+  name: "Taskcluster GitHub Tests"
   description: "All non-integration tests for taskcluster github"
   owner: "{{ event.head.user.email }}"
   source: "{{ event.head.repo.url }}"
@@ -112,7 +112,7 @@ tasks:
         - "-lc"
         - "git clone {{event.head.repo.url}} repo && cd repo && git checkout {{event.head.sha}} && npm install . && npm test"
     metadata:
-      name: "TaskCluster GitHub Tests"
+      name: "Taskcluster GitHub Tests"
       description: "All non-integration tests"
       owner: "{{ event.head.user.email }}"
       source: "{{ event.head.repo.url }}"

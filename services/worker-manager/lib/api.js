@@ -5,7 +5,7 @@ const {buildWorkerConfiguration} = require('./worker-config');
 const {errors} = require('./base');
 
 let builder = new APIBuilder({
-  title: 'TaskCluster Worker Manager',
+  title: 'Taskcluster Worker Manager',
   description: [
     'This service manages workers, including provisioning',
   ].join('\n'),

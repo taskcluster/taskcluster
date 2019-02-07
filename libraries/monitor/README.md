@@ -1,9 +1,4 @@
-<<<<<<< 79ee65e91d30f813285c8425a906a56368b3ba0e
 # Monitor Library
-=======
-Taskcluster Metrics and Monitoring Library
-==========================================
->>>>>>> Removing all capatialised C from Taskcluster
 
 A convenient library to wrap up all of the pieces needed for a Taskcluster service to record metrics with Statsum and report errors with Sentry.
 By default it will report any errors that cause the process to exit, and report as warnings any errors that cause stats writing to not work. To

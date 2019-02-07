@@ -42,9 +42,21 @@ suite('Repo Meta Tests', function() {
     assert.equal(taskclusterYml.tasks.$let.node, uiPackageJson.engines.node);
   });
 
-  test('git grep test', async function() {
-    const Taskcluster = await exec('git grep "TaskCluster" ');
-    assert.equal(Taskcluster.stdout,"")
+  test('proper capitalization of Taskcluster', async function() {
+    const Taskcluster = ["Task[C]luster", "Task [c]luster", "Task [C]luster"]
+    for (let pattern of Taskcluster) {
+      try {
+        res = await exec(`git grep '${pattern}'`); // <-- note quoting the pattern for the shell
+        // if the grep succeeded, then something matched
+        throw new Error(`misspellings found: ${res.stdout}`);
+      } catch (err) {
+        if (err.code === 1) {
+          // git grep found nothing
+          return;
+        }
+        throw err;
+      }
+    }
   })
 
   test('Dependencies are not missing/unused', async function() {

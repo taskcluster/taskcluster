@@ -1,6 +1,6 @@
 {
   "$schema": "/schemas/common/api-reference-v0.json#",
-  "title": "TaskCluster Worker Manager",
+  "title": "Taskcluster Worker Manager",
   "description": "This service manages workers, including provisioning",
   "serviceName": "worker-manager",
   "apiVersion": "v1",

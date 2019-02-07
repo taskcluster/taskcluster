@@ -1,9 +1,4 @@
-<<<<<<< 79ee65e91d30f813285c8425a906a56368b3ba0e
 # Validate Library
-=======
-Taskcluster Validation Library
-==============================
->>>>>>> Removing all capatialised C from Taskcluster
 
 A single purpose library to wrap up all of the logic for ensuring that
 content matches established schemas. This is a replacement for
