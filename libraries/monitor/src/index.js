@@ -11,6 +11,7 @@ const TimeKeeper = require('./timekeeper');
 class Monitor {
   constructor({
     projectName,
+    level = 'info',
     patchGlobal = true,
     bailOnUnhandledRejection = false,
     resourceInterval = 10,
@@ -18,7 +19,6 @@ class Monitor {
     enable = true,
     gitVersionFile = '.git-version',
     processName = null,
-    level = 'info',
     subject = 'root',
     metadata = {},
     pretty = false,
@@ -352,8 +352,8 @@ class Monitor {
     val = val || 1;
     try {
       assert(typeof val === 'number', 'Count values must be numbers');
-    } catch (error) {
-      this.reportError({key, val, error});
+    } catch (err) {
+      this.reportError(err, {key, val});
       return;
     }
     this.log.info('monitor.count', {key, val});
@@ -367,8 +367,8 @@ class Monitor {
   measure(key, val) {
     try {
       assert(typeof val === 'number', 'Measure values must be numbers');
-    } catch (error) {
-      this.reportError({key, val, error});
+    } catch (err) {
+      this.reportError(err, {key, val});
       return;
     }
     this.log.info('monitor.measure', {key, val});
@@ -376,10 +376,22 @@ class Monitor {
 
   /**
    * Take a standard error and break it up into loggable bits.
+   *
+   * * err: A string or Error object to be serialized and logged
+   * * level: Kept around for legacy reasons, only added to fields
+   * * extra: extra data to add to the serialized error
+   *
    */
-  reportError(err, extra) {
+  reportError(err, level, extra = {}) {
     if (!(err instanceof Error)) {
       err = new Error(err);
+    }
+    if (level) {
+      if (typeof level === 'string') {
+        extra['legacyLevel'] = level;
+      } else {
+        extra = level;
+      }
     }
     this.err('monitor.error', Object.assign({}, serializeError(err), extra));
   }

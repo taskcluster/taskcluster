@@ -299,6 +299,16 @@ suite('BaseMonitor', function() {
       assert(monitor.events[0].Fields.stack);
     });
 
+    test('should record errors with extra and level', function() {
+      monitor.reportError(new Error('oh no'), 'warning', {foo: 5});
+      assert.equal(monitor.events.length, 1);
+      assert.equal(monitor.events[0].Fields.name, 'Error');
+      assert.equal(monitor.events[0].Fields.message, 'oh no');
+      assert.equal(monitor.events[0].Fields.foo, 5);
+      assert.equal(monitor.events[0].Fields.legacyLevel, 'warning');
+      assert(monitor.events[0].Fields.stack);
+    });
+
     test('should record errors that are strings', function() {
       monitor.reportError('oh no');
       assert.equal(monitor.events.length, 1);
@@ -335,14 +345,14 @@ suite('BaseMonitor', function() {
       monitor.count('something', 'foo');
       assert.equal(monitor.events.length, 1);
       assert.equal(monitor.events[0].Severity, 3);
-      assert.equal(monitor.events[0].Fields.name, 'Error');
+      assert.equal(monitor.events[0].Fields.name, 'AssertionError [ERR_ASSERTION]');
     });
 
     test('should reject malformed measures', function() {
       monitor.measure('something', 'bar');
       assert.equal(monitor.events.length, 1);
       assert.equal(monitor.events[0].Severity, 3);
-      assert.equal(monitor.events[0].Fields.name, 'Error');
+      assert.equal(monitor.events[0].Fields.name, 'AssertionError [ERR_ASSERTION]');
     });
 
     test('should monitor resource usage', async function() {
