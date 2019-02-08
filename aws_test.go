@@ -1,86 +1,102 @@
 package main
 
 import (
+	"net/http"
 	"path/filepath"
-	"strings"
 	"testing"
 )
 
-func TestPrivateDataInUserData(t *testing.T) {
+func TestNoWorkerTypeUserDataGenericWorkerProperty(t *testing.T) {
 	m := &MockAWSProvisionedEnvironment{}
-	m.PublicHostSetupFunc = func(t *testing.T) interface{} {
-		// start with default public host setup data
-		data := m.PublicHostSetup(t).(map[string]interface{})
-		// then add public config settings that should be in userdata, not in secret
-		config := data["config"].(map[string]interface{})
-		config["livelogSecret"] = "this-shouldn't-be-here"
-		return data
+	m.WorkerTypeDefinitionUserDataFunc = func(t *testing.T) interface{} {
+		return map[string]string{"foo": "bar"}
 	}
-	teardown, err := m.Setup(t)
-	defer teardown()
-	if err == nil || !strings.Contains(err.Error(), "json: unknown field") {
-		t.Fatal("Was expecting error 'json: unknown field' but didn't get it")
-	}
+	defer m.ExpectError(t, "No /userData/genericWorker object defined in worker type definition")()
 }
 
-func TestPublicDataInWorkerTypeSecret(t *testing.T) {
+func TestNoPublicConfig(t *testing.T) {
 	m := &MockAWSProvisionedEnvironment{}
-	m.PrivateHostSetupFunc = func(t *testing.T) interface{} {
-		// start with default private host setup data
-		data := m.PrivateHostSetup(t).(map[string]interface{})
-		// then add public config settings that should be in userdata, not in secret
-		config := data["config"].(map[string]interface{})
-		config["tasksDir"] = "this-shouldn't-be-here"
-		return data
+	m.WorkerTypeDefinitionUserDataFunc = func(t *testing.T) interface{} {
+		return map[string]map[string]interface{}{
+			"genericWorker": {
+				"files": []File{},
+			},
+		}
 	}
-	teardown, err := m.Setup(t)
-	defer teardown()
-	if err == nil || !strings.Contains(err.Error(), "json: unknown field") {
-		t.Fatal("Was expecting error 'json: unknown field' but didn't get it")
-	}
+	defer m.ExpectError(t, "No /userData/genericWorker/config object defined in worker type definition")()
 }
 
-func TestAdditionalFieldInUserdataGenericWorkerProperty(t *testing.T) {
+func TestNoWorkerTypeSecret(t *testing.T) {
 	m := &MockAWSProvisionedEnvironment{}
-	m.PublicHostSetupFunc = func(t *testing.T) interface{} {
-		// start with default public host setup data
-		data := m.PublicHostSetup(t).(map[string]interface{})
-		// then add an additional field to top level, that shouldn't be there
-		data["additionalField"] = "this-shouldn't-be-here"
+	m.WorkerTypeSecretFunc = func(t *testing.T, w http.ResponseWriter) {
+		w.WriteHeader(404)
+	}
+	defer m.ExpectNoError(t)()
+}
+
+func TestSecretServiceError(t *testing.T) {
+	m := &MockAWSProvisionedEnvironment{}
+	m.WorkerTypeSecretFunc = func(t *testing.T, w http.ResponseWriter) {
+		w.WriteHeader(403)
+	}
+	defer m.ExpectError(t, "problem retrieving config/secrets from aws/gcp")()
+}
+
+func TestPrivateConfigInUserData(t *testing.T) {
+	m := &MockAWSProvisionedEnvironment{}
+	m.PublicConfig = m.ValidPublicConfig(t)
+	m.PublicConfig["livelogSecret"] = "this-shouldn't-he-here"
+	defer m.ExpectError(t, "json: unknown field")()
+}
+
+func TestPublicConfigInWorkerTypeSecret(t *testing.T) {
+	m := &MockAWSProvisionedEnvironment{}
+	m.PrivateConfig = m.ValidPrivateConfig(t)
+	m.PrivateConfig["tasksDir"] = "this-shouldn't-be-here"
+	defer m.ExpectError(t, "json: unknown field")()
+}
+
+func TestAdditionalPropertyUnderWorkerTypeDefinitionUserDataGenericWorkerProperty(t *testing.T) {
+	m := &MockAWSProvisionedEnvironment{}
+	m.WorkerTypeDefinitionUserDataFunc = func(t *testing.T) interface{} {
+		data := m.WorkerTypeDefinitionUserData(t)
+		data["genericWorker"]["whoops"] = 123
 		return data
 	}
-	teardown, err := m.Setup(t)
-	defer teardown()
-	if err == nil || !strings.Contains(err.Error(), "json: unknown field") {
-		t.Fatal("Was expecting error 'json: unknown field' but didn't get it")
+	defer m.ExpectError(t, "json: unknown field")()
+}
+
+func TestInvalidWorkerTypeDefinitionFiles(t *testing.T) {
+	m := &MockAWSProvisionedEnvironment{}
+	m.WorkerTypeDefinitionUserDataFunc = func(t *testing.T) interface{} {
+		data := m.WorkerTypeDefinitionUserData(t)
+		data["genericWorker"]["files"] = 123
+		return data
 	}
+	defer m.ExpectError(t, "json: cannot unmarshal number into Go struct field")()
 }
 
 func TestAdditionalFieldInWorkerTypeSecret(t *testing.T) {
 	m := &MockAWSProvisionedEnvironment{}
-	m.PrivateHostSetupFunc = func(t *testing.T) interface{} {
+	m.WorkerTypeSecretFunc = func(t *testing.T, w http.ResponseWriter) {
 		// start with default private host setup data
 		data := m.PrivateHostSetup(t).(map[string]interface{})
 		// then add an additional field to top level, that shouldn't be there
 		data["additionalField"] = "this-shouldn't-be-here"
-		return data
+		resp := map[string]interface{}{
+			"secret":  data,
+			"expires": "2077-08-19T00:00:00.000Z",
+		}
+		WriteJSON(t, w, resp)
 	}
-	teardown, err := m.Setup(t)
-	defer teardown()
-	if err == nil || !strings.Contains(err.Error(), "json: unknown field") {
-		t.Fatal("Was expecting error 'json: unknown field' but didn't get it")
-	}
+	defer m.ExpectError(t, "json: unknown field")()
 }
 
 func TestWorkerShutdown(t *testing.T) {
 	m := &MockAWSProvisionedEnvironment{
 		Terminating: true,
 	}
-	teardown, err := m.Setup(t)
-	defer teardown()
-	if err != nil {
-		t.Fatalf("Error: %#v", err)
-	}
+	defer m.ExpectNoError(t)()
 	payload := GenericWorkerPayload{
 		Command:    sleep(20),
 		MaxRunTime: 15,
@@ -92,11 +108,7 @@ func TestWorkerShutdown(t *testing.T) {
 
 func TestNoShutdown(t *testing.T) {
 	m := &MockAWSProvisionedEnvironment{}
-	teardown, err := m.Setup(t)
-	defer teardown()
-	if err != nil {
-		t.Fatalf("Error: %#v", err)
-	}
+	defer m.ExpectNoError(t)()
 	payload := GenericWorkerPayload{
 		Command:    sleep(10),
 		MaxRunTime: 8,
@@ -111,11 +123,7 @@ func TestAWSWorkerTypeMetadata(t *testing.T) {
 	m := &MockAWSProvisionedEnvironment{
 		PretendMetadata: expected,
 	}
-	teardown, err := m.Setup(t)
-	defer teardown()
-	if err != nil {
-		t.Fatalf("Error: %#v", err)
-	}
+	defer m.ExpectNoError(t)()
 	md := config.WorkerTypeMetadata
 	machineSetup := md["machine-setup"].(map[string]interface{})
 	actual := machineSetup["pretend-metadata"].(string)
@@ -130,7 +138,7 @@ func TestFileExtraction(t *testing.T) {
 
 	testDir := filepath.Join(testdataDir, t.Name())
 
-	m.SecretFiles = []map[string]string{
+	m.PrivateFiles = []map[string]string{
 
 		{
 			"content":     "cHJldGVuZCBjZXJ0Cg==",
@@ -149,11 +157,31 @@ func TestFileExtraction(t *testing.T) {
 		},
 	}
 
-	teardown, err := m.Setup(t)
-	defer teardown()
-	if err != nil {
-		t.Fatalf("Error: %#v", err)
-	}
+	defer m.ExpectNoError(t)()
 	checkSHA256OfFile(t, filepath.Join(testDir, "important-docs", "mydad.svg"), "7a8402876469a063097fb1241462bf0adf456c5e5863def3850e9eb1d4fa1734")
 	checkSHA256OfFile(t, filepath.Join(testDir, "nothing-special.txt"), "b874e6c45ab0a910095b9580f7a4955c33d153afb8ad3ae6e04b30daaa3d9d34")
+}
+
+func TestDeploymentIDUpdated(t *testing.T) {
+	m := &MockAWSProvisionedEnvironment{
+		OldDeploymentID: "old",
+		NewDeploymentID: "new",
+	}
+	defer m.ExpectNoError(t)()
+	provisioner = config.AWSProvisioner()
+	if !deploymentIDUpdated() {
+		t.Fatalf("Was expecting deploymentIDUpdated() function to see that deployment ID was updated")
+	}
+}
+
+func TestDeploymentIDNotUpdated(t *testing.T) {
+	m := &MockAWSProvisionedEnvironment{
+		OldDeploymentID: "old",
+		NewDeploymentID: "old",
+	}
+	defer m.ExpectNoError(t)()
+	provisioner = config.AWSProvisioner()
+	if deploymentIDUpdated() {
+		t.Fatalf("Was expecting deploymentIDUpdated() function to see that deployment ID was not updated")
+	}
 }

@@ -19,7 +19,9 @@ import (
 
 	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/httpbackoff"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
 	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
+	"github.com/taskcluster/taskcluster-client-go/tcsecrets"
 )
 
 var (
@@ -54,27 +56,29 @@ func queryMetaData(url string) (string, error) {
 	return string(content), err
 }
 
+type WorkerTypeDefinitionUserData struct {
+	// GenericWorker could be defined as type PublicHostSetup, but then
+	// we wouldn't have a way to call dec.DisallowUnknownFields() without also
+	// affecting unpacking of UserData struct (which may have unknown fields).
+	GenericWorker json.RawMessage `json:"genericWorker"`
+}
+
 // taken from https://github.com/taskcluster/aws-provisioner/blob/5a2bc7c57b20df00f9c4357e0daeb7967e6f5ee8/lib/worker-type.js#L607-L624
 type UserData struct {
-	Data struct {
-		// GenericWorker could be defined as type PublicHostSetup, but then
-		// we wouldn't have a way to call dec.DisallowUnknownFields() without also
-		// affecting unpacking of UserData struct (which may have unknown fields).
-		GenericWorker json.RawMessage `json:"genericWorker"`
-	} `json:"data"`
-	Capacity            int       `json:"capacity"`
-	WorkerType          string    `json:"workerType"`
-	ProvisionerID       string    `json:"provisionerId"`
-	Region              string    `json:"region"`
-	AvailabilityZone    string    `json:"availabilityZone"`
-	InstanceType        string    `json:"instanceType"`
-	SpotBid             float64   `json:"spotBid"`
-	Price               float64   `json:"price"`
-	LaunchSpecGenerated time.Time `json:"launchSpecGenerated"`
-	LastModified        time.Time `json:"lastModified"`
-	ProvisionerBaseURL  string    `json:"provisionerBaseUrl"`
-	TaskclusterRootURL  string    `json:"taskclusterRootUrl"`
-	SecurityToken       string    `json:"securityToken"`
+	Data                WorkerTypeDefinitionUserData `json:"data"`
+	Capacity            int                          `json:"capacity"`
+	WorkerType          string                       `json:"workerType"`
+	ProvisionerID       string                       `json:"provisionerId"`
+	Region              string                       `json:"region"`
+	AvailabilityZone    string                       `json:"availabilityZone"`
+	InstanceType        string                       `json:"instanceType"`
+	SpotBid             float64                      `json:"spotBid"`
+	Price               float64                      `json:"price"`
+	LaunchSpecGenerated time.Time                    `json:"launchSpecGenerated"`
+	LastModified        time.Time                    `json:"lastModified"`
+	ProvisionerBaseURL  string                       `json:"provisionerBaseUrl"`
+	TaskclusterRootURL  string                       `json:"taskclusterRootUrl"`
+	SecurityToken       string                       `json:"securityToken"`
 }
 
 // PublicHostSetup is the data structure that is passed into AWS userdata by
@@ -84,7 +88,7 @@ type UserData struct {
 // confidential information, see PrivateHostSetup struct.
 type PublicHostSetup struct {
 	// Non-confidential generic-worker config settings
-	Config gwconfig.PublicConfig `json:"config"`
+	Config *gwconfig.PublicConfig `json:"config"`
 	// Non-confidential static files to write to the host environment, that for
 	// some reason are not already present in the AMI that this worker runs on.
 	// Usually these should be set up on during the creation of the worker
@@ -98,7 +102,7 @@ type PublicHostSetup struct {
 // definition.
 type PrivateHostSetup struct {
 	// Confidential generic-worker config settings
-	Config gwconfig.PrivateConfig `json:"config"`
+	Config *gwconfig.PrivateConfig `json:"config"`
 	// Confidential static files to write to the host environment, that are not
 	// included in the AMI creation process (usually to keep the AMI public).
 	Files []File `json:"files"`
@@ -276,7 +280,7 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 
 	// Parse the config before applying it, to ensure that no disallowed fields
 	// are included.
-	publicHostSetup, err := userData.PublicHostSetup()
+	publicHostSetup, err := userData.Data.PublicHostSetup()
 	if err != nil {
 		return fmt.Errorf("Error retrieving/interpreting host setup from /data/genericWorker in AWS userdata: %v", err)
 	}
@@ -287,7 +291,10 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	// calling tc-secrets to get private host setup, in case secretsBaseURL is
 	// configured in userdata.
 	err = c.MergeInJSON(userData.Data.GenericWorker, func(a map[string]interface{}) map[string]interface{} {
-		return a["config"].(map[string]interface{})
+		if config, exists := a["config"]; exists {
+			return config.(map[string]interface{})
+		}
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("Error applying /data/genericWorker/config from AWS userdata to config: %v", err)
@@ -298,6 +305,22 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 	tcsec := c.Secrets()
 	secretName := "worker-type:" + c.ProvisionerID + "/" + c.WorkerType
 	sec, err := tcsec.Get(secretName)
+	if err != nil {
+		// 404 error is ok, since secrets aren't required. Anything else indicates there was a problem retrieving
+		// secret or talking to secrets service, so they should return an error
+		if apiCallException, isAPICallException := err.(*tcclient.APICallException); isAPICallException {
+			rootCause := apiCallException.RootCause
+			if badHTTPResponseCode, isBadHTTPResponseCode := rootCause.(httpbackoff.BadHttpResponseCode); isBadHTTPResponseCode {
+				if badHTTPResponseCode.HttpResponseCode == 404 {
+					log.Printf("WARNING: No worker secrets for worker type %v - secret %v does not exist.", c.WorkerType, secretName)
+					err = nil
+					sec = &tcsecrets.Secret{
+						Secret: json.RawMessage(`{}`),
+					}
+				}
+			}
+		}
+	}
 	if err != nil {
 		return fmt.Errorf("Error fetching secret %v from taskcluster-secrets service: %v", secretName, err)
 	}
@@ -312,7 +335,10 @@ func updateConfigWithAmazonSettings(c *gwconfig.Config) error {
 
 	// Apply config from secret
 	err = c.MergeInJSON(sec.Secret, func(a map[string]interface{}) map[string]interface{} {
-		return a["config"].(map[string]interface{})
+		if config, exists := a["config"]; exists {
+			return config.(map[string]interface{})
+		}
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("Error applying config from secret %v to generic worker config: %v", secretName, err)
@@ -339,15 +365,16 @@ func deploymentIDUpdated() bool {
 		log.Printf("**** Can't reach provisioner to see if there is a new deploymentId: %v", err)
 		return false
 	}
-	userData := new(UserData)
-	err = json.Unmarshal(wtr.UserData, &userData)
+	workerTypeDefinitionUserData := new(WorkerTypeDefinitionUserData)
+	err = json.Unmarshal(wtr.UserData, &workerTypeDefinitionUserData)
 	if err != nil {
-		log.Printf("WARNING: Can't unmarshal custom worker type userdata - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
+		log.Printf("WARNING: Can't decode /userData portion of worker type definition - probably somebody has botched a worker type update - not shutting down as in such a case, that would kill entire pool!")
 		return false
 	}
-	publicHostSetup, err := userData.PublicHostSetup()
+	publicHostSetup, err := workerTypeDefinitionUserData.PublicHostSetup()
 	if err != nil {
-		log.Printf("WARNING: Can't extract public host setup from latest userdata for worker type %v - not shutting down as latest user data is probably botched", config.WorkerType)
+		log.Printf("WARNING: Can't extract public host setup from latest userdata for worker type %v - not shutting down as latest user data is probably botched: %v", config.WorkerType, err)
+		return false
 	}
 	latestDeploymentID := publicHostSetup.Config.DeploymentID
 	if latestDeploymentID == config.DeploymentID {
@@ -383,11 +410,20 @@ func handleWorkerShutdown(abort func()) func() {
 	return ticker.Stop
 }
 
-func (userData *UserData) PublicHostSetup() (publicHostSetup *PublicHostSetup, err error) {
+func (workerTypeDefinitionUserData *WorkerTypeDefinitionUserData) PublicHostSetup() (publicHostSetup *PublicHostSetup, err error) {
+	if workerTypeDefinitionUserData.GenericWorker == nil {
+		return nil, fmt.Errorf("No /userData/genericWorker object defined in worker type definition and no readable generic worker config file - cannot configure worker!")
+	}
 	publicHostSetup = &PublicHostSetup{}
-	b := bytes.NewBuffer([]byte(userData.Data.GenericWorker))
+	b := bytes.NewBuffer([]byte(workerTypeDefinitionUserData.GenericWorker))
 	d := json.NewDecoder(b)
 	d.DisallowUnknownFields()
 	err = d.Decode(publicHostSetup)
+	if err != nil {
+		return
+	}
+	if publicHostSetup.Config == nil {
+		return nil, fmt.Errorf("No /userData/genericWorker/config object defined in worker type definition and no readable generic worker config file - cannot configure worker!")
+	}
 	return
 }
