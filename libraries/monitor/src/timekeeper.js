@@ -21,16 +21,16 @@ class TimeKeeper {
    * Compare the start and end times then submit the value to the monitor for
    * records.
    */
-  measure(force = false) {
+  measure(force = false, extra = {}) {
     if (!force && this.submitted) {
       throw new Error('Cannot submit measurement twice for ' + this.monitor.prefix + ' ' + this.name);
     }
     this.submitted = true;
     const d = process.hrtime(this.start);
-    this.monitor.info('timekeeper', {
+    this.monitor.info('timekeeper', Object.assign({
       key: this.name,
       duration: d[0] * 1000 + d[1] / 1000000,
-    });
+    }, extra));
   }
 }
 
