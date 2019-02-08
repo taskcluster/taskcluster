@@ -8,7 +8,7 @@
       "title": "Provisioner ID",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "stability": {

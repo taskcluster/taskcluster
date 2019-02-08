@@ -24,14 +24,14 @@
       "description": "Identifier for the worker-group within which the run with the created\nartifacted is running.\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "workerId": {
       "description": "Identifier for the worker within which the run with the created artifact\nis running.\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "artifact": {

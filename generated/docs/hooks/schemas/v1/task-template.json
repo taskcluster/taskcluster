@@ -9,7 +9,7 @@
       "description": "Unique identifier for a provisioner, that can supply specified\n`workerType`\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "workerType": {
@@ -17,7 +17,7 @@
       "description": "Unique identifier for a worker-type within a specific provisioner\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "schedulerId": {
@@ -25,7 +25,7 @@
       "description": "Identifier for the scheduler that _defined_ this task, this can be an\nidentifier for a user or a service like the `\"task-graph-scheduler\"`.\n**Task submitter required scopes**\n`queue:assume:scheduler-id:<schedulerId>/<taskGroupId>`.\nThis scope is also necessary to _schedule_ a defined task, or _rerun_ a\ntask.\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$",
       "default": "-"
     },

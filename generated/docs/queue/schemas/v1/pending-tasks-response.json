@@ -9,7 +9,7 @@
       "description": "Unique identifier for the provisioner\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "workerType": {
@@ -17,7 +17,7 @@
       "description": "Identifier for worker type within the specified provisioner\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "pendingTasks": {

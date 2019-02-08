@@ -17,14 +17,14 @@
       "description": "Identifier for the worker-group within which this run started.\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "workerId": {
       "description": "Identifier for the worker executing this run.\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "takenUntil": {

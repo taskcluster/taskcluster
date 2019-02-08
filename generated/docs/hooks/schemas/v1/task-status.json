@@ -18,7 +18,7 @@
           "description": "Unique identifier for the provisioner that this task must be scheduled on\n",
           "type": "string",
           "minLength": 1,
-          "maxLength": 22,
+          "maxLength": 38,
           "pattern": "^([a-zA-Z0-9-_]*)$"
         },
         "workerType": {
@@ -26,7 +26,7 @@
           "description": "Identifier for worker type within the specified provisioner\n",
           "type": "string",
           "minLength": 1,
-          "maxLength": 22,
+          "maxLength": 38,
           "pattern": "^([a-zA-Z0-9-_]*)$"
         },
         "schedulerId": {
@@ -34,7 +34,7 @@
           "description": "Identifier for the scheduler that _defined_ this task.\n",
           "type": "string",
           "minLength": 1,
-          "maxLength": 22,
+          "maxLength": 38,
           "pattern": "^([a-zA-Z0-9-_]*)$"
         },
         "taskGroupId": {
@@ -138,7 +138,7 @@
                 "description": "Identifier for group that worker who executes this run is a part of,\nthis identifier is mainly used for efficient routing.\nNote, this property is only present after the run is claimed.\n",
                 "type": "string",
                 "minLength": 1,
-                "maxLength": 22,
+                "maxLength": 38,
                 "pattern": "^([a-zA-Z0-9-_]*)$"
               },
               "workerId": {
@@ -146,7 +146,7 @@
                 "description": "Identifier for worker evaluating this run within given\n`workerGroup`. Note, this property is only available after the run\nhas been claimed.\n",
                 "type": "string",
                 "minLength": 1,
-                "maxLength": 22,
+                "maxLength": 38,
                 "pattern": "^([a-zA-Z0-9-_]*)$"
               },
               "takenUntil": {
