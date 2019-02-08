@@ -6,7 +6,7 @@ suite('retry-test', function() {
   const Promise = require('promise');
   const _ = require('lodash');
   const SchemaSet = require('taskcluster-lib-validate');
-  const _monitor = require('taskcluster-lib-monitor');
+  const Monitor = require('taskcluster-lib-monitor');
   const APIBuilder = require('taskcluster-lib-api');
   const testing = require('taskcluster-lib-testing');
   const App = require('taskcluster-lib-app');
@@ -111,9 +111,8 @@ suite('retry-test', function() {
       'test-client': ['auth:credentials', 'test:internal-error'],
     }, {rootUrl});
 
-    monitor = await _monitor({
+    monitor = new Monitor({
       projectName: 'tc-client',
-      credentials: {},
       mock: true,
     });
 
@@ -168,6 +167,7 @@ suite('retry-test', function() {
 
   // Close server
   teardown(function() {
+    monitor.reset();
     testing.fakeauth.stop();
     assert(_apiServer, '_apiServer doesn\'t exist');
     if (proxier) {
@@ -205,9 +205,8 @@ suite('retry-test', function() {
   });
 
   test('Can succeed after 3 attempts (record stats)', async function() {
-    let m = await _monitor({
+    let m = new Monitor({
       projectName: 'tc-client',
-      credentials: {},
       mock: true,
     });
     getOccasionalInternalErrorCount = 0;
@@ -221,7 +220,7 @@ suite('retry-test', function() {
     });
     return server2.getOccasionalInternalError().then(function() {
       assert(getOccasionalInternalErrorCount === 4, 'expected 4 attempts');
-      assert(_.keys(m.counts).length > 0);
+      assert(m.events.length > 0);
     });
   });
 
@@ -282,7 +281,7 @@ suite('retry-test', function() {
     }, function(err) {
       assert(err.code === 'ECONNRESET', 'Expect ECONNRESET error');
       assert(getConnectionErrorCount === 6, 'expected 6 retries');
-      assert(_.keys(monitor.counts).length > 0);
+      assert(monitor.events.length > 0);
     });
   });
 });

@@ -5,7 +5,7 @@ suite('client requests/responses', function() {
   var debug = require('debug')('test:client');
   var _ = require('lodash');
   var nock = require('nock');
-  var _monitor = require('taskcluster-lib-monitor');
+  var Monitor = require('taskcluster-lib-monitor');
 
   // This suite exercises the request and response functionality of
   // the client against a totally fake service defined by this reference
@@ -413,9 +413,8 @@ suite('client requests/responses', function() {
       });
 
       test('Report stats', async () => {
-        let monitor = await _monitor({
+        let monitor = new Monitor({
           projectName: 'tc-client',
-          credentials: {},
           mock: true,
         });
         let client = new Fake({
@@ -430,13 +429,12 @@ suite('client requests/responses', function() {
         nock(urlPrefix).get('/v1/get-test')
           .reply(200, {});
         await client.get();
-        assert(_.keys(monitor.counts).length > 0);
+        assert(monitor.events.length > 0);
       });
 
       test('Report stats (unauthorized)', async () => {
-        let monitor = await _monitor({
+        let monitor = new Monitor({
           projectName: 'tc-client',
-          credentials: {},
           mock: true,
         });
         let client = new Fake({
@@ -451,7 +449,7 @@ suite('client requests/responses', function() {
         nock(urlPrefix).get('/v1/get-test')
           .reply(401, authFailedError);
         await expectError(client.get(), 'AuthorizationFailed');
-        assert(_.keys(monitor.counts).length > 0);
+        assert(monitor.events.length > 0);
       });
 
       let assertBewitUrl = function(url, expected) {
