@@ -61,7 +61,7 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
       return;
     }
 
-    monitor.terminate();
+    monitor.reset();
 
     if (queueService) {
       queueService.terminate();
