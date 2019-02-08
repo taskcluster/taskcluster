@@ -29,8 +29,7 @@ taskId:
 # identifiers can't contain dots `.` is critical.
 identifier-pattern:     ^([a-zA-Z0-9-_]*)$
 identifier-min-length:  1
-identifier-max-length:  22
-identifier-extended-max-length: 40
+identifier-max-length:  38
 
 # Run identifier limitations, these are also somewhat founded in RabbitMQ
 # routing key limitations

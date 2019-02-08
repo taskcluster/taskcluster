@@ -5,8 +5,7 @@ const taskcluster = require('taskcluster-client');
 const Entity = require('azure-entities');
 
 // Common patterns URL parameters
-const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,22}$/;
-const GENERIC_EXTENDED_ID_PATTERN = /^[a-zA-Z0-9-_]{1,40}$/;
+const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
 
 /** API end-point for version v1/ */
 const builder = new APIBuilder({
@@ -17,8 +16,8 @@ const builder = new APIBuilder({
     'cachePurgeCache', // An Promise for cacheing cachepurge responses
   ],
   params: {
-    provisionerId: GENERIC_EXTENDED_ID_PATTERN,
-    workerType: GENERIC_EXTENDED_ID_PATTERN,
+    provisionerId: GENERIC_ID_PATTERN,
+    workerType: GENERIC_ID_PATTERN,
   },
   description: [
     'The purge-cache service is responsible for publishing a pulse',

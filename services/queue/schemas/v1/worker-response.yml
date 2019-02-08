@@ -8,7 +8,7 @@ properties:
     title:        "Provisioner ID"
     type:         string
     minLength:    {$const: identifier-min-length}
-    maxLength:    {$const: identifier-extended-max-length}
+    maxLength:    {$const: identifier-max-length}
     pattern:      {$const: identifier-pattern}
   workerType:
     type:         string
@@ -16,7 +16,7 @@ properties:
     description: |
       WorkerType name.
     minLength:    {$const: identifier-min-length}
-    maxLength:    {$const: identifier-extended-max-length}
+    maxLength:    {$const: identifier-max-length}
     pattern:      {$const: identifier-pattern}
   workerGroup:
     title:        "Worker Group"

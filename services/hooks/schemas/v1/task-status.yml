@@ -21,7 +21,7 @@ properties:
           Unique identifier for the provisioner that this task must be scheduled on
         type:           string
         minLength:      {$const: identifier-min-length}
-        maxLength:      {$const: identifier-extended-max-length}
+        maxLength:      {$const: identifier-max-length}
         pattern:        {$const: identifier-pattern}
       workerType:
         title:          "Worker Type"
@@ -29,7 +29,7 @@ properties:
           Identifier for worker type within the specified provisioner
         type:           string
         minLength:      {$const: identifier-min-length}
-        maxLength:      {$const: identifier-extended-max-length}
+        maxLength:      {$const: identifier-max-length}
         pattern:        {$const: identifier-pattern}
       schedulerId:
         title:          "Scheduler Identifier"
@@ -37,7 +37,7 @@ properties:
           Identifier for the scheduler that _defined_ this task.
         type:           string
         minLength:      {$const: identifier-min-length}
-        maxLength:      {$const: identifier-extended-max-length}
+        maxLength:      {$const: identifier-max-length}
         pattern:        {$const: identifier-pattern}
       taskGroupId:
         title:          "Task-Group Identifier"

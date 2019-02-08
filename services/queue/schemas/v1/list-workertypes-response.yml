@@ -19,13 +19,13 @@ properties:
           description: |
             WorkerType name.
           minLength:    {$const: identifier-min-length}
-          maxLength:    {$const: identifier-extended-max-length}
+          maxLength:    {$const: identifier-max-length}
           pattern:      {$const: identifier-pattern}
         provisionerId:
           title:        "Provisioner ID"
           type:         string
           minLength:    {$const: identifier-min-length}
-          maxLength:    {$const: identifier-extended-max-length}
+          maxLength:    {$const: identifier-max-length}
           pattern:      {$const: identifier-pattern}
         stability:
           title:        "Stability"

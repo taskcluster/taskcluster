@@ -88,28 +88,28 @@ var buildCommonRoutingKey = function(options) {
       summary: '`workerGroup` of latest run for the task, ' +
                         '`_` if no run is exists for the task.',
       required: options.hasWorker || false,
-      maxSize: 22,
+      maxSize: 38,
     }, {
       name: 'workerId',
       summary: '`workerId` of latest run for the task, ' +
                         '`_` if no run is exists for the task.',
       required: options.hasWorker || false,
-      maxSize: 22,
+      maxSize: 38,
     }, {
       name: 'provisionerId',
       summary: '`provisionerId` this task is targeted at.',
       required: true,
-      maxSize: 40,
+      maxSize: 38,
     }, {
       name: 'workerType',
       summary: '`workerType` this task must run on.',
       required: true,
-      maxSize: 40,
+      maxSize: 38,
     }, {
       name: 'schedulerId',
       summary: '`schedulerId` this task was created by.',
       required: true,
-      maxSize: 40,
+      maxSize: 38,
     }, {
       name: 'taskGroupId',
       summary: '`taskGroupId` this task was created in.',
@@ -145,7 +145,7 @@ var buildTaskGroupRoutingKey = function(options) {
       name: 'schedulerId',
       summary: '`schedulerId` for the task-group this message concerns',
       required: true,
-      maxSize: 40,
+      maxSize: 38,
     }, {
       name: 'reserved',
       summary: 'Space reserved for future routing-key entries, you ' +
