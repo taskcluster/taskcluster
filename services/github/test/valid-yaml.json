@@ -1,7 +1,7 @@
 {
   "version": 0,
   "metadata": {
-    "name": "TaskCluster GitHub Tests",
+    "name": "Taskcluster GitHub Tests",
     "description": "Tests for taskcluster github in production",
     "owner": "{{ event.head.user.email }}",
     "source": "{{ event.head.repo.url }}"
@@ -32,7 +32,7 @@
         ]
       },
       "metadata": {
-        "name": "TaskCluster GitHub Tests",
+        "name": "Taskcluster GitHub Tests",
         "description": "Tests for taskcluster github in production",
         "owner": "{{ event.head.user.email }}",
 		    "source": "{{ event.head.repo.url }}"

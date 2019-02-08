@@ -23,7 +23,7 @@ This will upload the docs directory and README, but does not include any referen
 The credentials must have the same scopes as described above.
 If upload-project-docs is run in a task with access to taskcluster-proxy, the credentials can be omitted.
 
-This is even easier from a task run within TaskCluster.
+This is even easier from a task run within Taskcluster.
 There is a docker image named `taskcluster/upload-project-docs:latest` which can do all of this with a command like
 
 ```

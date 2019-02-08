@@ -10,7 +10,7 @@ helper.secrets.mockSuite('webhook', ['taskcluster'], function(mock, skipping) {
 
   setup(async function() {
     github = await helper.load('github');
-    github.inst(5808).setUser({id: 14795478, email: 'someuser@github.com', username: 'TaskClusterRobot'});
+    github.inst(5808).setUser({id: 14795478, email: 'someuser@github.com', username: 'TaskclusterRobot'});
     github.inst(5808).setUser({id: 18102552, email: 'anotheruser@github.com', username: 'owlishDeveloper'});
   });
 

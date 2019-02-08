@@ -181,7 +181,7 @@ class Scheduler extends events.EventEmitter {
   The service will try again to create the task on the next iteration.
 
   Thanks,
-  TaskCluster Automation
+  Taskcluster Automation
 
   P.S. If you believe you have received this email in error, please hit reply to let us know.`,
 

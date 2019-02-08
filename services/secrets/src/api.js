@@ -7,7 +7,7 @@ const Entity = require('azure-entities');
  *
  */
 let builder = new APIBuilder({
-  title: 'TaskCluster Secrets API Documentation',
+  title: 'Taskcluster Secrets API Documentation',
   description: [
     'The secrets service provides a simple key/value store for small bits of secret',
     'data.  Access is limited by scopes, so values can be considered secret from',

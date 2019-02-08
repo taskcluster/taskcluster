@@ -210,7 +210,7 @@ helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, sk
       phrase = 'Details:';
       assume(lastEmail.content.search(phrase)).is.not.equal(-1);
 
-      phrase = 'TaskCluster Automation';
+      phrase = 'Taskcluster Automation';
       assume(lastEmail.content.search(phrase)).is.not.equal(-1);
     });
   });
