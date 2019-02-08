@@ -37,4 +37,3 @@ production:
   pulse:
     queueName: taskcluster-treeherder
     namespace: taskcluster-treeherder
-

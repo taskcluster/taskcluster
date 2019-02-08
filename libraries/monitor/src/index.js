@@ -99,7 +99,7 @@ class Monitor {
       process.on('unhandledRejection', this.unhandledRejectionHandler);
     }
 
-    if (processName) {
+    if (processName && !mock) {
       this.resources(processName, resourceInterval);
     }
   }
@@ -157,6 +157,9 @@ class Monitor {
     process.exit(1);
   }
 
+  /*
+   * Clear event listeners and timers from the monitor
+   */
   terminate() {
     this.stopResourceMonitoring();
     process.removeListener('uncaughtException', this.uncaughtExceptionHandler);
@@ -164,6 +167,13 @@ class Monitor {
     if (this.mock) {
       this.destination.end();
     }
+  }
+
+  /*
+   * For use in testing only. Clears the events so this can be used again.
+   */
+  reset() {
+    this.events = [];
   }
 
   /*

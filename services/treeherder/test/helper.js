@@ -89,4 +89,8 @@ exports.withHandler = () => {
     exports.handler.publishedMessages = [];
   });
 
+  teardown(() => {
+    exports.monitor.reset();
+  });
+
 };
