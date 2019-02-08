@@ -10,10 +10,10 @@ export default class PurgeCache extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
-    this.purgeCache.entry = {type:'function',method:'post',route:'/purge-cache/<provisionerId>/<workerType>',query:[],args:['provisionerId','workerType'],name:'purgeCache',stability:'stable',input:true,scopes:'purge-cache:<provisionerId>/<workerType>:<cacheName>'}; // eslint-disable-line
-    this.allPurgeRequests.entry = {type:'function',method:'get',route:'/purge-cache/list',query:['continuationToken','limit'],args:[],name:'allPurgeRequests',stability:'stable',output:true}; // eslint-disable-line
-    this.purgeRequests.entry = {type:'function',method:'get',route:'/purge-cache/<provisionerId>/<workerType>',query:['since'],args:['provisionerId','workerType'],name:'purgeRequests',stability:'stable',output:true}; // eslint-disable-line
+    this.ping.entry = {"args":[],"method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.purgeCache.entry = {"args":["provisionerId","workerType"],"input":true,"method":"post","name":"purgeCache","query":[],"route":"/purge-cache/<provisionerId>/<workerType>","scopes":"purge-cache:<provisionerId>/<workerType>:<cacheName>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.allPurgeRequests.entry = {"args":[],"method":"get","name":"allPurgeRequests","output":true,"query":["continuationToken","limit"],"route":"/purge-cache/list","stability":"stable","type":"function"}; // eslint-disable-line
+    this.purgeRequests.entry = {"args":["provisionerId","workerType"],"method":"get","name":"purgeRequests","output":true,"query":["since"],"route":"/purge-cache/<provisionerId>/<workerType>","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

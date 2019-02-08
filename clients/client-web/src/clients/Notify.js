@@ -10,10 +10,10 @@ export default class Notify extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
-    this.email.entry = {type:'function',method:'post',route:'/email',query:[],args:[],name:'email',stability:'experimental',input:true,scopes:'notify:email:<address>'}; // eslint-disable-line
-    this.pulse.entry = {type:'function',method:'post',route:'/pulse',query:[],args:[],name:'pulse',stability:'experimental',input:true,scopes:'notify:pulse:<routingKey>'}; // eslint-disable-line
-    this.irc.entry = {type:'function',method:'post',route:'/irc',query:[],args:[],name:'irc',stability:'experimental',input:true,scopes:{'if':'channelRequest',then:'notify:irc-channel:<channel>','else':'notify:irc-user:<user>'}}; // eslint-disable-line
+    this.ping.entry = {"args":[],"method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.email.entry = {"args":[],"input":true,"method":"post","name":"email","query":[],"route":"/email","scopes":"notify:email:<address>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.pulse.entry = {"args":[],"input":true,"method":"post","name":"pulse","query":[],"route":"/pulse","scopes":"notify:pulse:<routingKey>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.irc.entry = {"args":[],"input":true,"method":"post","name":"irc","query":[],"route":"/irc","scopes":{"else":"notify:irc-user:<user>","if":"channelRequest","then":"notify:irc-channel:<channel>"},"stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

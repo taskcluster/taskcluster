@@ -10,11 +10,11 @@ export default class Secrets extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
-    this.set.entry = {type:'function',method:'put',route:'/secret/<name>',query:[],args:['name'],name:'set',stability:'stable',input:true,scopes:'secrets:set:<name>'}; // eslint-disable-line
-    this.remove.entry = {type:'function',method:'delete',route:'/secret/<name>',query:[],args:['name'],name:'remove',stability:'stable',scopes:'secrets:set:<name>'}; // eslint-disable-line
-    this.get.entry = {type:'function',method:'get',route:'/secret/<name>',query:[],args:['name'],name:'get',stability:'stable',output:true,scopes:'secrets:get:<name>'}; // eslint-disable-line
-    this.list.entry = {type:'function',method:'get',route:'/secrets',query:['continuationToken','limit'],args:[],name:'list',stability:'stable',output:true}; // eslint-disable-line
+    this.ping.entry = {"args":[],"method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.set.entry = {"args":["name"],"input":true,"method":"put","name":"set","query":[],"route":"/secret/<name>","scopes":"secrets:set:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.remove.entry = {"args":["name"],"method":"delete","name":"remove","query":[],"route":"/secret/<name>","scopes":"secrets:set:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.get.entry = {"args":["name"],"method":"get","name":"get","output":true,"query":[],"route":"/secret/<name>","scopes":"secrets:get:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.list.entry = {"args":[],"method":"get","name":"list","output":true,"query":["continuationToken","limit"],"route":"/secrets","stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

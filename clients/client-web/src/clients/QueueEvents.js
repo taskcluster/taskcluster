@@ -21,7 +21,7 @@ export default class QueueEvents extends Client {
   // using `createTask`.
   /* eslint-enable max-len */
   taskDefined(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-defined',name:'taskDefined',schema:'v1/task-defined-message.json#',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:false},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"task-defined","name":"taskDefined","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-defined-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -34,7 +34,7 @@ export default class QueueEvents extends Client {
   // significantly without affecting general responsiveness.
   /* eslint-enable max-len */
   taskPending(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-pending',name:'taskPending',schema:'v1/task-pending-message.json#',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"task-pending","name":"taskPending","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":true},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-pending-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -43,7 +43,7 @@ export default class QueueEvents extends Client {
   // and a message is posted on this exchange.
   /* eslint-enable max-len */
   taskRunning(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-running',name:'taskRunning',schema:'v1/task-running-message.json#',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:true},{name:'workerId',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"task-running","name":"taskRunning","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-running-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -66,7 +66,7 @@ export default class QueueEvents extends Client {
   // successfully.
   /* eslint-enable max-len */
   artifactCreated(pattern) {
-    const entry = {type:'topic-exchange',exchange:'artifact-created',name:'artifactCreated',schema:'v1/artifact-created-message.json#',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:true},{name:'workerId',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"artifact-created","name":"artifactCreated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/artifact-created-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -78,7 +78,7 @@ export default class QueueEvents extends Client {
   // available from the task status structure.
   /* eslint-enable max-len */
   taskCompleted(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-completed',name:'taskCompleted',schema:'v1/task-completed-message.json#',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:true},{name:'workerGroup',multipleWords:false,required:true},{name:'workerId',multipleWords:false,required:true},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"task-completed","name":"taskCompleted","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-completed-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -88,7 +88,7 @@ export default class QueueEvents extends Client {
   // task specific code exited non-zero.
   /* eslint-enable max-len */
   taskFailed(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-failed',name:'taskFailed',schema:'v1/task-failed-message.json#',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:false},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"task-failed","name":"taskFailed","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-failed-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -101,7 +101,7 @@ export default class QueueEvents extends Client {
   // to the `reasonResolved` property for the last run.
   /* eslint-enable max-len */
   taskException(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-exception',name:'taskException',schema:'v1/task-exception-message.json#',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskId',multipleWords:false,required:true},{name:'runId',multipleWords:false,required:false},{name:'workerGroup',multipleWords:false,required:false},{name:'workerId',multipleWords:false,required:false},{name:'provisionerId',multipleWords:false,required:true},{name:'workerType',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"task-exception","name":"taskException","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-exception-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -113,7 +113,7 @@ export default class QueueEvents extends Client {
   // be submitted against an already resolved task group.
   /* eslint-enable max-len */
   taskGroupResolved(pattern) {
-    const entry = {type:'topic-exchange',exchange:'task-group-resolved',name:'taskGroupResolved',schema:'v1/task-group-resolved.json#',routingKey:[{name:'routingKeyKind',constant:'primary',multipleWords:false,required:true},{name:'taskGroupId',multipleWords:false,required:true},{name:'schedulerId',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"task-group-resolved","name":"taskGroupResolved","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-group-resolved.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }

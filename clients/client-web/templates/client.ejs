@@ -8,7 +8,7 @@ export default class <%= name %> extends Client {
       serviceName: '<%= serviceName %>',
       serviceVersion: '<%= serviceVersion %>',
       exchangePrefix: '<%= exchangePrefix %>',
-      ...options
+      ...options,
     });<% methods.forEach(entry => { %>
     this.<%= entry.name %>.entry = <%- stringify(omit(entry, ['description', 'title'])) %>; // eslint-disable-line<% }) %>
   }<% methods.forEach(entry => { %>
@@ -17,6 +17,7 @@ export default class <%= name %> extends Client {
   <%- '/* eslint-enable max-len */' %>
   <%= entry.name %>(...args) {
     this.validate(this.<%= entry.name %>.entry, args);
+
     return this.request(this.<%= entry.name %>.entry, args);
   }<% }) %><% topics.forEach(entry => { %>
   <%- '/* eslint-disable max-len */' %><% entry.description.split('\n').filter(Boolean).forEach(line => { %>

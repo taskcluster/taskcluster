@@ -10,28 +10,28 @@ export default class EC2Manager extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
-    this.listWorkerTypes.entry = {type:'function',method:'get',route:'/worker-types',query:[],args:[],name:'listWorkerTypes',stability:'experimental',output:true}; // eslint-disable-line
-    this.runInstance.entry = {type:'function',method:'put',route:'/worker-types/<workerType>/instance',query:[],args:['workerType'],name:'runInstance',stability:'experimental',input:true,scopes:'ec2-manager:manage-resources:<workerType>'}; // eslint-disable-line
-    this.terminateWorkerType.entry = {type:'function',method:'delete',route:'/worker-types/<workerType>/resources',query:[],args:['workerType'],name:'terminateWorkerType',stability:'experimental',scopes:'ec2-manager:manage-resources:<workerType>'}; // eslint-disable-line
-    this.workerTypeStats.entry = {type:'function',method:'get',route:'/worker-types/<workerType>/stats',query:[],args:['workerType'],name:'workerTypeStats',stability:'experimental',output:true}; // eslint-disable-line
-    this.workerTypeHealth.entry = {type:'function',method:'get',route:'/worker-types/<workerType>/health',query:[],args:['workerType'],name:'workerTypeHealth',stability:'experimental',output:true}; // eslint-disable-line
-    this.workerTypeErrors.entry = {type:'function',method:'get',route:'/worker-types/<workerType>/errors',query:[],args:['workerType'],name:'workerTypeErrors',stability:'experimental',output:true}; // eslint-disable-line
-    this.workerTypeState.entry = {type:'function',method:'get',route:'/worker-types/<workerType>/state',query:[],args:['workerType'],name:'workerTypeState',stability:'experimental',output:true}; // eslint-disable-line
-    this.ensureKeyPair.entry = {type:'function',method:'get',route:'/key-pairs/<name>',query:[],args:['name'],name:'ensureKeyPair',stability:'experimental',input:true,scopes:'ec2-manager:manage-key-pairs:<name>'}; // eslint-disable-line
-    this.removeKeyPair.entry = {type:'function',method:'delete',route:'/key-pairs/<name>',query:[],args:['name'],name:'removeKeyPair',stability:'experimental',scopes:'ec2-manager:manage-key-pairs:<name>'}; // eslint-disable-line
-    this.terminateInstance.entry = {type:'function',method:'delete',route:'/region/<region>/instance/<instanceId>',query:[],args:['region','instanceId'],name:'terminateInstance',stability:'experimental',scopes:{AnyOf:['ec2-manager:manage-instances:<region>:<instanceId>',{'if':'hasWorkerType',then:'ec2-manager:manage-resources:<workerType>'}]}}; // eslint-disable-line
-    this.getPrices.entry = {type:'function',method:'get',route:'/prices',query:[],args:[],name:'getPrices',stability:'experimental',output:true}; // eslint-disable-line
-    this.getSpecificPrices.entry = {type:'function',method:'post',route:'/prices',query:[],args:[],name:'getSpecificPrices',stability:'experimental',input:true,output:true}; // eslint-disable-line
-    this.getHealth.entry = {type:'function',method:'get',route:'/health',query:[],args:[],name:'getHealth',stability:'experimental',output:true}; // eslint-disable-line
-    this.getRecentErrors.entry = {type:'function',method:'get',route:'/errors',query:[],args:[],name:'getRecentErrors',stability:'experimental',output:true}; // eslint-disable-line
-    this.regions.entry = {type:'function',method:'get',route:'/internal/regions',query:[],args:[],name:'regions',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
-    this.amiUsage.entry = {type:'function',method:'get',route:'/internal/ami-usage',query:[],args:[],name:'amiUsage',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
-    this.ebsUsage.entry = {type:'function',method:'get',route:'/internal/ebs-usage',query:[],args:[],name:'ebsUsage',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
-    this.dbpoolStats.entry = {type:'function',method:'get',route:'/internal/db-pool-stats',query:[],args:[],name:'dbpoolStats',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
-    this.allState.entry = {type:'function',method:'get',route:'/internal/all-state',query:[],args:[],name:'allState',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
-    this.sqsStats.entry = {type:'function',method:'get',route:'/internal/sqs-stats',query:[],args:[],name:'sqsStats',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
-    this.purgeQueues.entry = {type:'function',method:'get',route:'/internal/purge-queues',query:[],args:[],name:'purgeQueues',stability:'experimental',scopes:'ec2-manager:internals'}; // eslint-disable-line
+    this.ping.entry = {"args":[],"method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.listWorkerTypes.entry = {"args":[],"method":"get","name":"listWorkerTypes","output":true,"query":[],"route":"/worker-types","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.runInstance.entry = {"args":["workerType"],"input":true,"method":"put","name":"runInstance","query":[],"route":"/worker-types/<workerType>/instance","scopes":"ec2-manager:manage-resources:<workerType>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.terminateWorkerType.entry = {"args":["workerType"],"method":"delete","name":"terminateWorkerType","query":[],"route":"/worker-types/<workerType>/resources","scopes":"ec2-manager:manage-resources:<workerType>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.workerTypeStats.entry = {"args":["workerType"],"method":"get","name":"workerTypeStats","output":true,"query":[],"route":"/worker-types/<workerType>/stats","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.workerTypeHealth.entry = {"args":["workerType"],"method":"get","name":"workerTypeHealth","output":true,"query":[],"route":"/worker-types/<workerType>/health","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.workerTypeErrors.entry = {"args":["workerType"],"method":"get","name":"workerTypeErrors","output":true,"query":[],"route":"/worker-types/<workerType>/errors","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.workerTypeState.entry = {"args":["workerType"],"method":"get","name":"workerTypeState","output":true,"query":[],"route":"/worker-types/<workerType>/state","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.ensureKeyPair.entry = {"args":["name"],"input":true,"method":"get","name":"ensureKeyPair","query":[],"route":"/key-pairs/<name>","scopes":"ec2-manager:manage-key-pairs:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.removeKeyPair.entry = {"args":["name"],"method":"delete","name":"removeKeyPair","query":[],"route":"/key-pairs/<name>","scopes":"ec2-manager:manage-key-pairs:<name>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.terminateInstance.entry = {"args":["region","instanceId"],"method":"delete","name":"terminateInstance","query":[],"route":"/region/<region>/instance/<instanceId>","scopes":{"AnyOf":["ec2-manager:manage-instances:<region>:<instanceId>",{"if":"hasWorkerType","then":"ec2-manager:manage-resources:<workerType>"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.getPrices.entry = {"args":[],"method":"get","name":"getPrices","output":true,"query":[],"route":"/prices","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.getSpecificPrices.entry = {"args":[],"input":true,"method":"post","name":"getSpecificPrices","output":true,"query":[],"route":"/prices","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.getHealth.entry = {"args":[],"method":"get","name":"getHealth","output":true,"query":[],"route":"/health","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.getRecentErrors.entry = {"args":[],"method":"get","name":"getRecentErrors","output":true,"query":[],"route":"/errors","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.regions.entry = {"args":[],"method":"get","name":"regions","query":[],"route":"/internal/regions","scopes":"ec2-manager:internals","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.amiUsage.entry = {"args":[],"method":"get","name":"amiUsage","query":[],"route":"/internal/ami-usage","scopes":"ec2-manager:internals","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.ebsUsage.entry = {"args":[],"method":"get","name":"ebsUsage","query":[],"route":"/internal/ebs-usage","scopes":"ec2-manager:internals","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.dbpoolStats.entry = {"args":[],"method":"get","name":"dbpoolStats","query":[],"route":"/internal/db-pool-stats","scopes":"ec2-manager:internals","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.allState.entry = {"args":[],"method":"get","name":"allState","query":[],"route":"/internal/all-state","scopes":"ec2-manager:internals","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.sqsStats.entry = {"args":[],"method":"get","name":"sqsStats","query":[],"route":"/internal/sqs-stats","scopes":"ec2-manager:internals","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.purgeQueues.entry = {"args":[],"method":"get","name":"purgeQueues","query":[],"route":"/internal/purge-queues","scopes":"ec2-manager:internals","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

@@ -11,14 +11,9 @@
   ],
   "scripts": {
     "build": "neutrino build --require dotenv/config",
-    "docs": "rm -f docs/* && node -r dotenv/config bin/generate-docs",
-    "compile-clients": "rm -f src/clients/* && node -r dotenv/config bin/compile-clients && yarn lint --fix",
     "lint": "neutrino lint",
-    "list-clients": "node -r dotenv/config bin/list-clients",
     "prepare": "yarn build",
-    "show-client": "node -r dotenv/config bin/show-client",
-    "test": "neutrino test --require dotenv/config",
-    "update-all": "yarn compile-clients && yarn build && yarn docs"
+    "test": "neutrino test --require dotenv/config"
   },
   "devDependencies": {
     "@neutrinojs/karma": "^8.2.3",
@@ -27,18 +22,10 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
-    "cliff": "^0.1.10",
-    "common-tags": "^1.4.0",
     "dotenv": "^6.0.0",
-    "ejs": "^2.5.7",
-    "got": "^9.0.0",
-    "javascript-stringify": "^1.6.0",
-    "json-schema-to-markdown": "^1.0.3",
-    "json-stable-stringify": "^1.0.1",
     "karma-sourcemap-loader": "^0.3.7",
     "neutrino": "^8.2.3",
-    "neutrino-preset-mozilla-frontend-infra": "^4.1.0",
-    "object.omit": "^3.0.0"
+    "neutrino-preset-mozilla-frontend-infra": "^4.1.0"
   },
   "dependencies": {
     "hawk": "^7.0.7",
