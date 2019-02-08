@@ -77,6 +77,8 @@ class TaskCreator {
       created: new Date(),
       retry: true,
     });
+    this.monitor.count(`fire.${context.firedBy}.all`);
+
     // create a queue instance with its authorized scopes limited to those
     // assigned to the hook.
     let role = 'assume:hook-id:' + hook.hookGroupId + '/' + hook.hookId;
@@ -89,9 +91,11 @@ class TaskCreator {
 
     const task = this.taskForHook(hook, context, options);
     if (!task) {
+      this.monitor.count(`fire.${context.firedBy}.declined`);
       debug(`hook ${hook.hookGroupId}/${hook.hookId} declined to produce a task`);
       return;
     }
+    this.monitor.count(`fire.${context.firedBy}.created`);
 
     debug('firing hook %s/%s to create taskId: %s',
       hook.hookGroupId, hook.hookId, options.taskId);
