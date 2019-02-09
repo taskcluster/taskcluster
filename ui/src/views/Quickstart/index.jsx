@@ -41,16 +41,16 @@ const initialYaml = {
       payload: {
         maxRunTime: 3600,
         image: 'node',
-        command: []
+        command: [],
       },
       metadata: {
         name: '',
         description: '',
         owner:'{{ event.sender.login }}@users.noreply.github.com',
-        source:'{{ event.repository.url }}'
-      }
-    }
-  }
+        source:'{{ event.repository.url }}',
+      },
+    },
+  },
 };
 const initialState = {
   events: new Set([
@@ -210,7 +210,7 @@ export default class QuickStart extends Component {
     const newYaml = safeDump({
       ...initialYaml,
       policy: {
-        pullRequests: this.state.access
+        pullRequests: this.state.access,
       },
       tasks: {
         $match: {
