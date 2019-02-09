@@ -68,20 +68,19 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
         'dbc.def2',
       ];
 
-      const expired_paths = [
+      const expiredPaths = [
         'pqr', 'pqr.stu', 'pqr.stu2',
         'ppt', 'ppt.stu',
       ];
 
       const taskId = slugid.v4();
 
-      for (let path of paths) {
-        await helper.index.insertTask(path, {taskId, rank: 13, data: {}, expires: taskcluster.fromNow('1 day')});
-      }
-
-      for (let path of expired_paths) {
-        await helper.index.insertTask(path, {taskId, rank: 13, data: {}, expires: taskcluster.fromNow('-1 day')});
-      }
+      await Promise.all([
+        ...paths.map(path =>
+          helper.index.insertTask(path, {taskId, rank: 13, data: {}, expires: taskcluster.fromNow('1 day')})),
+        ...expiredPaths.map(path =>
+          helper.index.insertTask(path, {taskId, rank: 13, data: {}, expires: taskcluster.fromNow('-1 day')})),
+      ]);
     });
 
     const testValidNamespaces = function(list, VALID_PREFIXES=['abc', 'bbc', 'cbc']) {

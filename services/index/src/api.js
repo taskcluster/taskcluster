@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const APIBuilder = require('taskcluster-lib-api');
 const helpers = require('./helpers');
 const Entity = require('azure-entities');
@@ -158,7 +157,7 @@ builder.declare({
     }
     return res.reportError('ResourceNotFound', 'Indexed task not found', {});
   }
-  if (_.isEmpty(tasks.entries)) {
+  if (!tasks.entries.length) {
     return res.reportError('ResourceNotFound', 'Indexed task has expired', {});
   }
   let task = tasks.entries[0];

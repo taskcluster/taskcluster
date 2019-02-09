@@ -13,7 +13,7 @@ const helper = module.exports;
 
 // a suffix used to generate unique table names so that parallel test runs do not
 // interfere with one another.  We remove these at the end of the test run.
-const TABLE_SUFFIX = slugid.nice().replace(/[_-]/g, '');
+const TABLE_SUFFIX = 'abcdef'; //slugid.nice().replace(/[_-]/g, '');
 
 exports.load = stickyLoader(load);
 
