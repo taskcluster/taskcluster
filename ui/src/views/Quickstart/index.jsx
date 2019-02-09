@@ -34,7 +34,7 @@ const initialYaml = {
   },
   tasks: {
     $match: {
-      taskId: { '$eval': 'as_slugid("pr_task")' },
+      taskId: { $eval: 'as_slugid("pr_task")' },
       provisionerId: '{{ taskcluster.docker.provisionerId }}',
       workerType: '{{ taskcluster.docker.workerType }}',
       scopes: ['secrets:get:project/taskcluster/testing/taskcluster-github'],
@@ -215,8 +215,8 @@ export default class QuickStart extends Component {
       tasks: {
         $match: {
           [`tasks_for == "github-pull-request" && event["action"] in ${[
-              ...this.state.events
-            ].sort()}`]: {
+            ...this.state.events,
+          ].sort()}`]: {
             ...initialYaml.$match,
             ...{
               metadata: {
