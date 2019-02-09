@@ -27,20 +27,17 @@ import urls from '../../utils/urls';
 import ErrorPanel from '../../components/ErrorPanel';
 import githubQuery from './github.graphql';
 
-
 const initialYaml = {
   version: 1,
   policy: {
-    pullRequests: ''
+    pullRequests: '',
   },
   tasks: {
     $match: {
-      taskId: {'$eval': 'as_slugid("pr_task")'},
+      taskId: { '$eval': 'as_slugid("pr_task")' },
       provisionerId: '{{ taskcluster.docker.provisionerId }}',
       workerType: '{{ taskcluster.docker.workerType }}',
-      scopes: [
-        'secrets:get:project/taskcluster/testing/taskcluster-github'
-      ],
+      scopes: ['secrets:get:project/taskcluster/testing/taskcluster-github'],
       payload: {
         maxRunTime: 3600,
         image: 'node',
