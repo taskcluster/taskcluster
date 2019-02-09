@@ -59,42 +59,48 @@ helper.secrets.mockSuite('index_test.js', ['taskcluster'], function(mock, skippi
     };
     helper.pq.fakeMessage(message);
 
-    debug('### Find task in index');
-    let result = await testing.poll(() => helper.index.findTask('my-ns.my-indexed-thing'));
-    assert.equal(result.taskId, taskId, 'Wrong taskId');
+    // poll until all of these succeed, as it's not well-defined in what
+    // order they will start succeeding
+    await testing.poll(async () => {
+      let result;
 
-    debug('### Find task in index (again)');
-    result = await helper.index.findTask('my-ns');
-    assert.equal(result.taskId, taskId, 'Wrong taskId');
+      debug('### Find task in index by `my-ns.my-indexed-thing`');
+      result = await helper.index.findTask('my-ns.my-indexed-thing');
+      assert.equal(result.taskId, taskId, 'Wrong taskId');
 
-    debug('### Find task in index (again)');
-    result = await helper.index.findTask('my-ns.my-indexed-thing-again');
-    assert.equal(result.taskId, taskId, 'Wrong taskId');
+      debug('### Find task in index by `my-ns`');
+      result = await helper.index.findTask('my-ns');
+      assert.equal(result.taskId, taskId, 'Wrong taskId');
 
-    debug('### List task in namespace');
-    result = await helper.index.listTasks('my-ns', {});
-    assert.equal(result.tasks.length, 2, 'Expected 2 tasks');
-    result.tasks.forEach(function(task) {
-      assert.equal(task.taskId, taskId, 'Wrong taskId');
-    });
+      debug('### Find task in index by `my-ns.my-indexed-thing-again`');
+      result = await helper.index.findTask('my-ns.my-indexed-thing-again');
+      assert.equal(result.taskId, taskId, 'Wrong taskId');
 
-    debug('### List namespaces in namespace');
-    result = await helper.index.listNamespaces('my-ns', {});
-    assert.equal(result.namespaces.length, 2, 'Expected 2 namespaces');
-    assert(result.namespaces.some(function(ns) {
-      return ns.name === 'one-ns';
-    }), 'Expected to find one-ns');
-    assert(result.namespaces.some(function(ns) {
-      return ns.name === 'another-ns';
-    }), 'Expected to find another-ns');
+      debug('### List task in namespace');
+      result = await helper.index.listTasks('my-ns', {});
+      assert.equal(result.tasks.length, 2, 'Expected 2 tasks');
+      result.tasks.forEach(function(task) {
+        assert.equal(task.taskId, taskId, 'Wrong taskId');
+      });
 
-    debug('### Find task in index');
-    await helper.index.findTask(
-      'my-ns.slash/things-are-ignored'
-    ).then(function() {
-      assert(false, 'Expected ill formated namespaces to be ignored!');
-    }, function(err) {
-      assert.equal(err.statusCode, 400, 'Expected 400');
+      debug('### List namespaces in namespace');
+      result = await helper.index.listNamespaces('my-ns', {});
+      assert.equal(result.namespaces.length, 2, 'Expected 2 namespaces');
+      assert(result.namespaces.some(function(ns) {
+        return ns.name === 'one-ns';
+      }), 'Expected to find one-ns');
+      assert(result.namespaces.some(function(ns) {
+        return ns.name === 'another-ns';
+      }), 'Expected to find another-ns');
+
+      debug('### Find task in index');
+      await helper.index.findTask(
+        'my-ns.slash/things-are-ignored'
+      ).then(function() {
+        assert(false, 'Expected ill formated namespaces to be ignored!');
+      }, function(err) {
+        assert.equal(err.statusCode, 400, 'Expected 400');
+      });
     });
   });
 

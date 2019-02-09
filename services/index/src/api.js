@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const APIBuilder = require('taskcluster-lib-api');
 const helpers = require('./helpers');
 const Entity = require('azure-entities');
@@ -133,8 +132,7 @@ builder.declare({
     'Find a task by index path, returning the highest-rank task with that path. If no',
     'task exists for the given path, this API end-point will respond with a 404 status.',
   ].join('\n'),
-}, function(req, res) {
-  var that = this;
+}, async function(req, res) {
   var indexPath = req.params.indexPath || '';
 
   // Get namespace and ensure that we have a least one dot
@@ -145,23 +143,25 @@ builder.declare({
   var namespace = indexPath.join('.');
 
   // Load indexed task
-  return that.IndexedTask.query({
-    namespace: namespace,
-    name: name,
-    expires: Entity.op.greaterThan(new Date()),
-  }).then(function(tasks) {
-    if (_.isEmpty(tasks.entries)) {
-      return res.reportError('ResourceNotFound', 'Indexed task has expired', {});
-    }
-    let task = tasks.entries[0];
-    return res.reply(task.json());
-  }, function(err) {
+  let tasks;
+  try {
+    tasks = await this.IndexedTask.query({
+      namespace: namespace,
+      name: name,
+      expires: Entity.op.greaterThan(new Date()),
+    });
+  } catch (err) {
     // Re-throw the error, if it's not a 404
     if (err.code !== 'ResourceNotFound') {
       throw err;
     }
     return res.reportError('ResourceNotFound', 'Indexed task not found', {});
-  });
+  }
+  if (!tasks.entries.length) {
+    return res.reportError('ResourceNotFound', 'Indexed task has expired', {});
+  }
+  let task = tasks.entries[0];
+  return res.reply(task.json());
 });
 
 /** GET List namespaces inside another namespace */
