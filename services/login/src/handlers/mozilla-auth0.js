@@ -99,7 +99,7 @@ class Handler {
     return user;
   }
 
-  // main method
+  // exposed method
   async userFromRequest(req, res) {
     // check the JWT's validity, setting req.user if sucessful
     try {
@@ -129,7 +129,7 @@ class Handler {
     }
   }
 
-  // main method
+  // exposed method
   userFromClientId(clientId) {
     const patternMatch = CLIENT_ID_PATTERN.exec(clientId);
     const identity = patternMatch && patternMatch[1];
