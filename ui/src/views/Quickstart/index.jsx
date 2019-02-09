@@ -27,31 +27,33 @@ import urls from '../../utils/urls';
 import ErrorPanel from '../../components/ErrorPanel';
 import githubQuery from './github.graphql';
 
+
 const initialYaml = {
   version: 1,
-  tasks: [
-    {
+  policy: {
+    pullRequests: ''
+  },
+  tasks: {
+    $match: {
+      taskId: {'$eval': 'as_slugid("pr_task")'},
       provisionerId: '{{ taskcluster.docker.provisionerId }}',
       workerType: '{{ taskcluster.docker.workerType }}',
-      extra: {
-        github: {
-          env: true,
-          events: [],
-        },
-      },
+      scopes: [
+        'secrets:get:project/taskcluster/testing/taskcluster-github'
+      ],
       payload: {
         maxRunTime: 3600,
         image: 'node',
-        command: [],
+        command: []
       },
       metadata: {
         name: '',
         description: '',
-        owner: '{{ event.head.user.email }}',
-        source: '{{ event.head.repo.url }}',
-      },
-    },
-  ],
+        owner:'{{ event.sender.login }}@users.noreply.github.com',
+        source:'{{ event.repository.url }}'
+      }
+    }
+  }
 };
 const initialState = {
   events: new Set([
@@ -210,29 +212,28 @@ export default class QuickStart extends Component {
   renderEditor() {
     const newYaml = safeDump({
       ...initialYaml,
-      access: this.state.access,
-      tasks: [
-        {
-          ...initialYaml.tasks[0],
-          ...{
-            metadata: {
-              ...initialYaml.tasks[0].metadata,
-              name: this.state.taskName,
-              description: this.state.taskDescription,
-            },
-            extra: {
-              github: {
-                events: [...this.state.events].sort(),
+      policy: {
+        pullRequests: this.state.access
+      },
+      tasks: {
+        $match: {
+          [`tasks_for == "github-pull-request" && event["action"] in ${[...this.state.events].sort()}`]: {
+            ...initialYaml.$match,
+            ...{
+              metadata: {
+                ...initialYaml.tasks.$match.metadata,
+                name: this.state.taskName,
+                description: this.state.taskDescription,
               },
-            },
-            payload: {
-              ...initialYaml.tasks[0].payload,
-              command: this.state.commands,
-              image: this.state.image,
+              payload: {
+                ...initialYaml.tasks.$match.payload,
+                command: this.state.commands,
+                image: this.state.image,
+              },
             },
           },
         },
-      ],
+      },
     });
 
     return (
