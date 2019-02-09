@@ -46,8 +46,8 @@ const initialYaml = {
       metadata: {
         name: '',
         description: '',
-        owner:'{{ event.sender.login }}@users.noreply.github.com',
-        source:'{{ event.repository.url }}',
+        owner: '{{ event.sender.login }}@users.noreply.github.com',
+        source: '{{ event.repository.url }}',
       },
     },
   },
@@ -214,7 +214,9 @@ export default class QuickStart extends Component {
       },
       tasks: {
         $match: {
-          [`tasks_for == "github-pull-request" && event["action"] in ${[...this.state.events].sort()}`]: {
+          [`tasks_for == "github-pull-request" && event["action"] in ${[
+              ...this.state.events
+            ].sort()}`]: {
             ...initialYaml.$match,
             ...{
               metadata: {
