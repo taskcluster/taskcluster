@@ -358,6 +358,13 @@ export default class HookForm extends Component {
       triggerSchemaValidJson
     );
   };
+  isHookValuesSaved = () => {
+    const { hook, previousHook } = this.state;
+
+    if (equals(hook, previousHook)) return true;
+
+    return false;
+  };
 
   handleHookGroupIdChange = e =>
     this.setState({
@@ -673,7 +680,7 @@ export default class HookForm extends Component {
             requiresAuth
             classes={{ root: classes.successIcon }}
             variant="round"
-            disabled={!this.validHook() || actionLoading}
+            disabled={!this.validHook() || this.isHookValuesSaved()}
             onClick={this.handleCreateHook}>
             <ContentSaveIcon />
           </Button>
@@ -690,7 +697,7 @@ export default class HookForm extends Component {
               requiresAuth
               classes={{ root: classes.successIcon }}
               variant="round"
-              disabled={!this.validHook() || actionLoading}
+              disabled={!this.validHook() || this.isHookValuesSaved()}
               onClick={this.handleUpdateHook}>
               <ContentSaveIcon />
             </Button>
