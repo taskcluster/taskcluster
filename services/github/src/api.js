@@ -390,6 +390,61 @@ builder.declare({
 });
 
 builder.declare({
+  name: 'checksBadge',
+  title: 'Latest Build Checksuite Status Badge',
+  description: [
+    'Checks the status of the latest checksuite of a given ref',
+    'and returns corresponding badge svg.',
+    'The ref can be a branch, a tag or SHA',
+  ].join('\n'),
+  stability: 'experimental',
+  method: 'get',
+  route: '/repository/:owner/:repo/:ref/checksBadge.svg',
+}, async function(req, res) {
+  // Extract owner, repo and branch from request into variables
+  let {owner, repo, ref} = req.params;
+
+  // This has nothing to do with user input, so we should be safe
+  let fileConfig = {
+    root: __dirname + '/../assets/',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+    },
+  };
+
+  let instGithub = await installationAuthenticate(owner, this.OwnersDirectory, this.github);
+
+  if (instGithub) {
+    try {
+      const checksuites = await instGithub.checks.listSuitesForRef({
+        owner,
+        repo,
+        ref,
+        app_id: instGithub.id,
+      });
+      const latest = checksuites.data.check_suites.shift();
+
+      let status = latest.conclusion || latest.status;
+
+      if (status) {
+        // If we got a status, send a corresponding image.
+        return res.sendFile(`${status}.svg`, fileConfig);
+      } else {
+        // otherwise, it's a commit without a TC status, which probably means a new repo
+        return res.sendFile('newrepo.svg', fileConfig);
+      }
+    } catch (e) {
+      if (e.code < 500) {
+        return res.sendFile('error.svg', fileConfig);
+      }
+      throw e;
+    }
+  } else {
+    return res.sendFile('newrepo.svg', fileConfig);
+  }
+});
+
+builder.declare({
   name: 'repository',
   title: 'Get Repository Info',
   description: [
