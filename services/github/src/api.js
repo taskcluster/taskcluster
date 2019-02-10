@@ -420,10 +420,9 @@ builder.declare({
         owner,
         repo,
         ref,
-        app_id: instGithub.id,
+        app_id: this.cfg.github.credentials.integrationId,
       });
       const latest = checksuites.data.check_suites.shift();
-
       let status = latest.conclusion || latest.status;
 
       if (status) {
