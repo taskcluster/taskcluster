@@ -18,7 +18,6 @@ import MonitorIcon from 'mdi-react/MonitorIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import Dashboard from '../../../components/Dashboard';
-import Search from '../../../components/Search';
 import Markdown from '../../../components/Markdown';
 import StatusLabel from '../../../components/StatusLabel';
 import ErrorPanel from '../../../components/ErrorPanel';
@@ -32,8 +31,27 @@ import {
   INTERACTIVE_CONNECT_TASK_POLL_INTERVAL,
 } from '../../../utils/constants';
 
-const NOTIFY_KEY = 'interactive-notify';
 let previousCursor;
+const NOTIFY_KEY = 'interactive-notify';
+const getInteractiveStatus = ({
+  shellUrl = null,
+  displayUrl = null,
+  taskStatusState = null,
+}) => {
+  if (!shellUrl || !displayUrl) {
+    return INTERACTIVE_TASK_STATUS.WAITING;
+  }
+
+  if (
+    [TASK_STATE.COMPLETED, TASK_STATE.FAILED, TASK_STATE.EXCEPTION].includes(
+      taskStatusState
+    )
+  ) {
+    return INTERACTIVE_TASK_STATUS.RESOLVED;
+  }
+
+  return INTERACTIVE_TASK_STATUS.READY;
+};
 
 @hot(module)
 @withAuth
@@ -65,7 +83,7 @@ let previousCursor;
 export default class InteractiveConnect extends Component {
   static getDerivedStateFromProps(
     props,
-    { displayUrl, shellUrl, artifactsLoading, previousTaskId }
+    { displayUrl, shellUrl, artifactsLoading, previousTaskId, sessionReady }
   ) {
     const {
       data: { task, error },
@@ -87,6 +105,7 @@ export default class InteractiveConnect extends Component {
         shellUrl: null,
         artifactsLoading: true,
         previousTaskId: taskId,
+        sessionReady: false,
       };
     }
 
@@ -117,6 +136,13 @@ export default class InteractiveConnect extends Component {
           ? { artifactsLoading: false }
           : null),
         previousTaskId: taskId,
+        sessionReady:
+          sessionReady ||
+          getInteractiveStatus({
+            shellUrl: urls.shellUrl,
+            displayUrl: urls.displayUrl,
+            taskStatusState: task && task.status.state,
+          }) === INTERACTIVE_TASK_STATUS.READY,
       };
     }
 
@@ -127,7 +153,6 @@ export default class InteractiveConnect extends Component {
     super(props);
 
     previousCursor = INITIAL_CURSOR;
-    this.hasNotified = false;
   }
 
   state = {
@@ -138,37 +163,27 @@ export default class InteractiveConnect extends Component {
     previousTaskId: this.props.match.params.taskId,
     notifyOnReady:
       'Notification' in window && localStorage.getItem(NOTIFY_KEY) === 'true',
+    sessionReady: false,
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     const {
-      data: { task, fetchMore, refetch },
+      data: { task, fetchMore },
       match: {
         params: { taskId },
       },
     } = this.props;
-    const { notifyOnReady } = this.state;
+    const { sessionReady, notifyOnReady } = this.state;
 
     if (
-      this.getInteractiveStatus() === INTERACTIVE_TASK_STATUS.READY &&
-      !this.hasNotified &&
+      // Do not notify initially even if a session is ready
+      prevProps.data.task &&
+      !prevState.sessionReady &&
+      sessionReady &&
       notifyOnReady
     ) {
       notify({
         body: 'Interactive task is ready for connecting',
-      });
-
-      this.hasNotified = true;
-    }
-
-    if (prevProps.match.params.taskId !== taskId) {
-      previousCursor = INITIAL_CURSOR;
-
-      return refetch({
-        pollInterval: INTERACTIVE_CONNECT_TASK_POLL_INTERVAL,
-        variables: {
-          taskId: this.props.match.params.taskId,
-        },
       });
     }
 
@@ -227,37 +242,12 @@ export default class InteractiveConnect extends Component {
     }
   }
 
-  getInteractiveStatus = () => {
-    const { shellUrl, displayUrl } = this.state;
-    const { status } = this.props.data.task;
-
-    if (!shellUrl || !displayUrl) {
-      return INTERACTIVE_TASK_STATUS.WAITING;
-    }
-
-    if (
-      [TASK_STATE.COMPLETED, TASK_STATE.FAILED, TASK_STATE.EXCEPTION].includes(
-        status.state
-      )
-    ) {
-      return INTERACTIVE_TASK_STATUS.RESOLVED;
-    }
-
-    return INTERACTIVE_TASK_STATUS.READY;
-  };
-
   handleDisplayOpen = () => {
     window.open(this.state.displayUrl, '_blank');
   };
 
   handleShellOpen = () => {
     window.open(this.state.shellUrl, '_blank');
-  };
-
-  handleTaskIdSearchSubmit = taskId => {
-    if (taskId && this.props.match.params.taskId !== taskId) {
-      this.props.history.push(`/tasks/${taskId}/connect`);
-    }
   };
 
   handleNotificationChange = async ({ target: { checked } }) => {
@@ -284,8 +274,12 @@ export default class InteractiveConnect extends Component {
       },
       user,
     } = this.props;
-    const { notifyOnReady } = this.state;
-    const interactiveStatus = this.getInteractiveStatus();
+    const { shellUrl, displayUrl, notifyOnReady } = this.state;
+    const interactiveStatus = getInteractiveStatus({
+      shellUrl,
+      displayUrl,
+      taskStatusState: task && task.status.state,
+    });
     const isSessionReady = interactiveStatus === INTERACTIVE_TASK_STATUS.READY;
     const isSessionResolved =
       interactiveStatus === INTERACTIVE_TASK_STATUS.RESOLVED;
@@ -337,7 +331,8 @@ export default class InteractiveConnect extends Component {
                 <Switch
                   disabled={
                     !('Notification' in window) ||
-                    Notification.permission === 'denied'
+                    Notification.permission === 'denied' ||
+                    isSessionReady
                   }
                   checked={notifyOnReady}
                   onChange={this.handleNotificationChange}
@@ -400,9 +395,7 @@ export default class InteractiveConnect extends Component {
     const { artifactsLoading } = this.state;
 
     return (
-      <Dashboard
-        title="Interactive Connect"
-        search={<Search onSubmit={this.handleTaskIdSearchSubmit} />}>
+      <Dashboard title="Interactive Connect">
         <Fragment>
           {!error && artifactsLoading && <Spinner loading />}
           <ErrorPanel error={error} />
