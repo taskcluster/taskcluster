@@ -3,6 +3,8 @@ defaults:
   taskcluster:
     rootUrl:        !env TASKCLUSTER_ROOT_URL
   app:
+    level: !env LEVEL
+
     # credentials used for the service (uploading docs, etc.)
     credentials:
       clientId:     !env TASKCLUSTER_CLIENT_ID

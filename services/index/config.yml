@@ -1,5 +1,7 @@
 defaults:
   app:
+    level: !env LEVEL
+
     # Route prefix used to form custom routes on the form
     #  'route.<routePrefix>.<namespace>'
     routePrefix: 'index'

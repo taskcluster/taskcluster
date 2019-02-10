@@ -50,6 +50,7 @@ const load = Loader({
     setup: ({cfg, sentryManager, profile, process}) => {
       return new Monitor({
         projectName: cfg.monitoring.project || 'taskcluster-auth',
+        level: cfg.app.level,
         enable: cfg.monitoring.enable,
         processName: process,
         mock: profile === 'test',

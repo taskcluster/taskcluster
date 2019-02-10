@@ -2,6 +2,8 @@ defaults:
   taskcluster:
     rootUrl:                  !env TASKCLUSTER_ROOT_URL
   app:
+    level:                    !env LEVEL
+
     # Azure table for the client table
     clientTableName:          !env CLIENT_TABLE_NAME
 

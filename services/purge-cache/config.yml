@@ -1,6 +1,8 @@
 ---
 defaults:
   app:
+    level: !env LEVEL
+
     exchangePrefix:              'v1/'
     cachePurgeTableName:         'CachePurges'
     cachePurgeExpirationDelay:   '- 1 hour'

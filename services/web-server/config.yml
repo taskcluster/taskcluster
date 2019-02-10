@@ -1,5 +1,6 @@
 defaults:
   app:
+    level: !env LEVEL
     # the URL at which this service will be available, without a trailing `/`
     publicUrl: !env PUBLIC_URL
     loginStrategies: !env:list LOGIN_STRATEGIES

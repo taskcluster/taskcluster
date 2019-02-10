@@ -1,5 +1,7 @@
 defaults:
   app:
+    level: !env LEVEL
+
     publishMetaData:              !env:bool PUBLISH_METADATA
     exchangePrefix:               v1/
 

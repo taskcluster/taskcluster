@@ -1,6 +1,7 @@
 ---
 defaults:
   app:
+    level: !env LEVEL
     jobQueue: null
     deprecatedResultStatusQueue: null
     deprecatedInitialStatusQueue: null

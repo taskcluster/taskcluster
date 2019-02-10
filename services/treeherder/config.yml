@@ -1,5 +1,6 @@
 defaults:
   app:
+    level: !env LEVEL
     # Publish references and schemas
     publishMetaData:  !env:bool PUBLISH_METADATA
   pulse:

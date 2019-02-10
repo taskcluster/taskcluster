@@ -1,5 +1,7 @@
 defaults:
   app:
+    level: !env LEVEL
+
     sourceEmail:                  !env EMAIL_SOURCE_ADDRESS
     sqsQueueName:                 !env SQS_QUEUE
     routePrefix:                  notify

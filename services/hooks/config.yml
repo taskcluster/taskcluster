@@ -1,6 +1,7 @@
 defaults:
   # defaults outlining all configuration options and some sane defaults
   app:
+    level: !env LEVEL
     component:        hooks
     hookTableName:     !env HOOK_TABLE_NAME
     lastFireTableName: !env LASTFIRE_TABLE_NAME
