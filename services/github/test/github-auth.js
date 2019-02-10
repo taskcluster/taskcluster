@@ -127,6 +127,35 @@ class FakeGithub {
         }
         return {};
       },
+      'checks.listSuitesForRef': async ({owner, repo, ref, app_id}) => {
+        let status = 'completed';
+        let conclusion;
+
+        switch (repo) {
+        case 'coolRepo':
+          conclusion = 'failure';
+          break;
+        case 'awesomeRepo':
+          conclusion = 'success';
+          break;
+        case 'unknownRepo':
+          conclusion = 'timed_out';
+          break;
+        case 'nonTCGHRepo':
+          break;
+        default:
+          status = 'queued';
+        }
+
+        return {
+          data: {
+            total_count: 1,
+            check_suites: [
+              {status, conclusion},
+            ],
+          },
+        };
+      },
     };
 
     const debug = Debug('FakeGithub');

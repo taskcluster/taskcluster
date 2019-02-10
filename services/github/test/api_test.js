@@ -148,7 +148,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     assert.deepEqual(result, {installed: false});
   });
 
-  test('build badges', async function() {
+  test('build badges - Statuses API', async function() {
     var res;
 
     // status: failure
@@ -165,6 +165,34 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
 
     // new repo (no info yet)
     res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'nonTCGHRepo', 'master'));
+    assert.equal(res.headers['content-length'], 7873);
+  });
+
+  test('build badges - Checks API - failure badge', async function() {
+    var res;
+
+    res = await got(helper.apiClient.buildUrl(helper.apiClient.checksBadge, 'abc123', 'coolRepo', 'master'));
+    assert.equal(res.headers['content-length'], 8615);
+  });
+
+  test('build badges - Checks API - success badge', async function() {
+    var res;
+
+    res = await got(helper.apiClient.buildUrl(helper.apiClient.checksBadge, 'abc123', 'awesomeRepo', 'master'));
+    assert.equal(res.headers['content-length'], 9189);
+  });
+
+  test('build badges - Checks API - error badge', async function() {
+    var res;
+
+    res = await got(helper.apiClient.buildUrl(helper.apiClient.checksBadge, 'abc123', 'unknownRepo', 'master'));
+    assert.equal(res.headers['content-length'], 4268);
+  });
+
+  test('build badges - Checks API - no info error badge', async function() {
+    var res;
+
+    res = await got(helper.apiClient.buildUrl(helper.apiClient.checksBadge, 'abc123', 'nonTCGHRepo', 'master'));
     assert.equal(res.headers['content-length'], 7873);
   });
 
