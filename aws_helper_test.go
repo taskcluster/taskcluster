@@ -8,24 +8,69 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
 type MockAWSProvisionedEnvironment struct {
-	SecretFiles     []map[string]string
-	Terminating     bool
-	PretendMetadata string
-	// PrivateHostSetupFunc is an optional function to mock the content of the
-	// worker type secret from the taskcluster secrets service.
-	// If nil, m.PrivateHostSetup will be called instead.
-	PrivateHostSetupFunc func(t *testing.T) interface{}
-	// PublicHostSetupFunc is an optional function to mock the content of the
-	// property genericWorker in the AWS userdata.
-	// If nil, m.PublicHostSetup will be called instead.
-	PublicHostSetupFunc func(t *testing.T) interface{}
+	PublicFiles                      []map[string]string
+	PrivateFiles                     []map[string]string
+	PublicConfig                     map[string]interface{}
+	PrivateConfig                    map[string]interface{}
+	WorkerTypeSecretFunc             func(t *testing.T, w http.ResponseWriter)
+	WorkerTypeDefinitionUserDataFunc func(t *testing.T) interface{}
+	Terminating                      bool
+	PretendMetadata                  string
+	OldDeploymentID                  string
+	NewDeploymentID                  string
+	// Set when provisioner secret (credentials) gets deleted
+	SecretDeleted bool
+}
+
+func (m *MockAWSProvisionedEnvironment) ValidPublicConfig(t *testing.T) map[string]interface{} {
+	return map[string]interface{}{
+		// Need common caches directory across tests, since files
+		// directory-caches.json and file-caches.json are not per-test.
+		"cachesDir":       filepath.Join(cwd, "caches"),
+		"cleanUpTaskDirs": false,
+		"deploymentId":    m.OldDeploymentID,
+		"disableReboots":  true,
+		// Need common downloads directory across tests, since files
+		// directory-caches.json and file-caches.json are not per-test.
+		"downloadsDir":       filepath.Join(cwd, "downloads"),
+		"idleTimeoutSecs":    60,
+		"numberOfTasksToRun": 1,
+		// should be enough for tests, and travis-ci.org CI environments
+		// don't have a lot of free disk
+		"queueBaseURL":               tcqueue.New(nil, os.Getenv("TASKCLUSTER_ROOT_URL")).BaseURL,
+		"purgeCacheBaseURL":          tcpurgecache.New(nil, os.Getenv("TASKCLUSTER_ROOT_URL")).BaseURL,
+		"requiredDiskSpaceMegabytes": 16,
+		"runTasksAsCurrentUser":      os.Getenv("GW_TESTS_RUN_AS_TASK_USER") == "",
+		// "secretsBaseURL":                 "http://localhost:13243/secrets",
+		"sentryProject":                  "generic-worker-tests",
+		"shutdownMachineOnIdle":          false,
+		"shutdownMachineOnInternalError": false,
+		"openpgpSigningKeyLocation":      filepath.Join(testdataDir, "private-opengpg-key"),
+		"ed25519SigningKeyLocation":      filepath.Join(testdataDir, "ed25519_private_key"),
+		"subdomain":                      "taskcluster-worker.net",
+		"tasksDir":                       filepath.Join(testdataDir, t.Name()),
+		"workerTypeMetadata": map[string]interface{}{
+			"machine-setup": map[string]string{
+				"pretend-metadata": m.PretendMetadata,
+			},
+		},
+	}
+}
+
+func (m *MockAWSProvisionedEnvironment) ValidPrivateConfig(t *testing.T) map[string]interface{} {
+	return map[string]interface{}{
+		"livelogSecret": "I have to confess, when me and my friends sort of used to run through the fields of wheat, um, the farmers weren't too pleased about that.",
+	}
 }
 
 func WriteJSON(t *testing.T, w http.ResponseWriter, resp interface{}) {
@@ -34,6 +79,101 @@ func WriteJSON(t *testing.T, w http.ResponseWriter, resp interface{}) {
 		t.Fatalf("Strange - I can't convert %#v to json: %v", resp, err)
 	}
 	w.Write(bytes)
+}
+
+func (m *MockAWSProvisionedEnvironment) workerTypeDefinition(t *testing.T, w http.ResponseWriter) {
+	resp := map[string]interface{}{
+		"userData": map[string]interface{}{
+			"genericWorker": map[string]interface{}{
+				"config": map[string]interface{}{
+					"deploymentId": m.NewDeploymentID,
+				},
+			},
+		},
+	}
+	WriteJSON(t, w, resp)
+}
+
+func (m *MockAWSProvisionedEnvironment) credentials(t *testing.T, w http.ResponseWriter) {
+	resp := map[string]interface{}{
+		"credentials": map[string]string{
+			"clientId":    os.Getenv("TASKCLUSTER_CLIENT_ID"),
+			"certificate": os.Getenv("TASKCLUSTER_CERTIFICATE"),
+			"accessToken": os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		},
+		"scopes": []string{},
+	}
+	WriteJSON(t, w, resp)
+}
+
+func (m *MockAWSProvisionedEnvironment) workerTypeSecret(t *testing.T, w http.ResponseWriter) {
+	if m.WorkerTypeSecretFunc != nil {
+		m.WorkerTypeSecretFunc(t, w)
+		return
+	}
+	resp := map[string]interface{}{
+		"secret":  m.PrivateHostSetup(t),
+		"expires": "2077-08-19T00:00:00.000Z",
+	}
+	WriteJSON(t, w, resp)
+}
+
+func (m *MockAWSProvisionedEnvironment) userData(t *testing.T, w http.ResponseWriter, workerType string) {
+	var data interface{}
+	if m.WorkerTypeDefinitionUserDataFunc != nil {
+		data = m.WorkerTypeDefinitionUserDataFunc(t)
+	} else {
+		data = m.WorkerTypeDefinitionUserData(t)
+	}
+	resp := map[string]interface{}{
+		"data":             data,
+		"capacity":         1,
+		"workerType":       workerType,
+		"provisionerId":    "test-provisioner",
+		"region":           "test-worker-group",
+		"availabilityZone": "neuss-germany",
+		"instanceType":     "p3.teenyweeny",
+		"spotBid":          3.5,
+		"price":            3.02,
+		// "taskclusterRootUrl":  os.Getenv("TASKCLUSTER_ROOT_URL"), // don't use tcclient.RootURLFromEnvVars() since we don't want ClientID of CI
+		"taskclusterRootUrl":  "http://localhost:13243",
+		"launchSpecGenerated": time.Now(),
+		"lastModified":        time.Now().Add(time.Minute * -30),
+		// "provisionerBaseUrl":  "http://localhost:13243/provisioner",
+		"securityToken": "12345",
+	}
+	WriteJSON(t, w, resp)
+}
+
+func (m *MockAWSProvisionedEnvironment) WorkerTypeDefinitionUserData(t *testing.T) map[string]map[string]interface{} {
+
+	workerTypeDefinitionUserData := map[string]map[string]interface{}{
+		"genericWorker": map[string]interface{}{},
+	}
+	if m.PublicConfig != nil {
+		workerTypeDefinitionUserData["genericWorker"]["config"] = m.PublicConfig
+	} else {
+		workerTypeDefinitionUserData["genericWorker"]["config"] = m.ValidPublicConfig(t)
+	}
+	if m.PublicFiles != nil {
+		workerTypeDefinitionUserData["genericWorker"]["files"] = m.PublicFiles
+	}
+	return workerTypeDefinitionUserData
+}
+
+func (m *MockAWSProvisionedEnvironment) PrivateHostSetup(t *testing.T) interface{} {
+
+	privateHostSetup := map[string]interface{}{}
+
+	if m.PrivateConfig != nil {
+		privateHostSetup["config"] = m.PrivateConfig
+	} else {
+		privateHostSetup["config"] = m.ValidPrivateConfig(t)
+	}
+	if m.PrivateFiles != nil {
+		privateHostSetup["files"] = m.PrivateFiles
+	}
+	return privateHostSetup
 }
 
 func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), err error) {
@@ -51,41 +191,24 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 		switch req.URL.EscapedPath() {
 
 		// simulate provisioner endpoints
-
-		case "/provisioner/worker-type/" + workerType:
-			// just return some json - no tests are currently using the
-			// contents, but require something to be returned
-			resp := map[string]interface{}{
-				"foo": "bar",
+		case "/api/aws-provisioner/v1/worker-type/" + workerType:
+			m.workerTypeDefinition(t, w)
+		case "/api/aws-provisioner/v1/secret/12345":
+			switch req.Method {
+			case "GET":
+				m.credentials(t, w)
+			case "DELETE":
+				fmt.Fprint(w, "Credentials deleted, yay!")
+				m.SecretDeleted = true
+			default:
+				w.WriteHeader(400)
 			}
-			WriteJSON(t, w, resp)
-
-		case "/provisioner/secret/12345":
-			resp := map[string]interface{}{
-				"credentials": map[string]string{
-					"clientId":    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-					"certificate": os.Getenv("TASKCLUSTER_CERTIFICATE"),
-					"accessToken": os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-				},
-				"scopes": []string{},
-			}
-			WriteJSON(t, w, resp)
 
 		// simulate taskcluster secrets endpoints
-
-		case "/secrets/secret/worker-type%3Atest-provisioner%2F" + workerType:
-			pri := m.PrivateHostSetup
-			if m.PrivateHostSetupFunc != nil {
-				pri = m.PrivateHostSetupFunc
-			}
-			resp := map[string]interface{}{
-				"secret":  pri(t),
-				"expires": "2077-08-19T00:00:00.000Z",
-			}
-			WriteJSON(t, w, resp)
+		case "/api/secrets/v1/secret/worker-type%3Atest-provisioner%2F" + workerType:
+			m.workerTypeSecret(t, w)
 
 		// simulate AWS endpoints
-
 		case "/latest/meta-data/ami-id":
 			fmt.Fprint(w, "test-ami")
 		case "/latest/meta-data/spot/termination-time":
@@ -107,29 +230,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 		case "/latest/meta-data/public-ipv4":
 			fmt.Fprint(w, "12.34.56.78")
 		case "/latest/user-data":
-			pub := m.PublicHostSetup
-			if m.PublicHostSetupFunc != nil {
-				pub = m.PublicHostSetupFunc
-			}
-			resp := map[string]interface{}{
-				"data": map[string]interface{}{
-					"genericWorker": pub(t),
-				},
-				"capacity":            1,
-				"workerType":          workerType,
-				"provisionerId":       "test-provisioner",
-				"region":              "test-worker-group",
-				"availabilityZone":    "neuss-germany",
-				"instanceType":        "p3.teenyweeny",
-				"spotBid":             3.5,
-				"price":               3.02,
-				"taskclusterRootUrl":  os.Getenv("TASKCLUSTER_ROOT_URL"), // don't use tcclient.RootURLFromEnvVars() since we don't want ClientID of CI
-				"launchSpecGenerated": time.Now(),
-				"lastModified":        time.Now().Add(time.Minute * -30),
-				"provisionerBaseUrl":  "http://localhost:13243/provisioner",
-				"securityToken":       "12345",
-			}
-			WriteJSON(t, w, resp)
+			m.userData(t, w, workerType)
 		default:
 			w.WriteHeader(400)
 			fmt.Fprintf(w, "Cannot serve URL %v", req.URL)
@@ -137,6 +238,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 			t.Fatalf("Cannot serve URL %v", req.URL)
 		}
 	})
+
 	s := &http.Server{
 		Addr:           "localhost:13243",
 		Handler:        ec2MetadataHandler,
@@ -155,57 +257,28 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 		if err != nil {
 			t.Fatalf("Error shutting down http server: %v", err)
 		}
+		if !m.SecretDeleted {
+			t.Fatal("Provisioner secret (credentials) not deleted")
+		}
 		EC2MetadataBaseURL = oldEC2MetadataBaseURL
 		configureForAWS = false
 	}, err
 }
 
-func (m *MockAWSProvisionedEnvironment) PublicHostSetup(t *testing.T) interface{} {
-
-	gwConfig := map[string]interface{}{
-		// Need common caches directory across tests, since files
-		// directory-caches.json and file-caches.json are not per-test.
-		"cachesDir":       filepath.Join(cwd, "caches"),
-		"cleanUpTaskDirs": false,
-		"deploymentId":    "sdkfjh4zxmnf",
-		"disableReboots":  true,
-		// Need common downloads directory across tests, since files
-		// directory-caches.json and file-caches.json are not per-test.
-		"downloadsDir":       filepath.Join(cwd, "downloads"),
-		"idleTimeoutSecs":    60,
-		"numberOfTasksToRun": 1,
-		// should be enough for tests, and travis-ci.org CI environments
-		// don't have a lot of free disk
-		"requiredDiskSpaceMegabytes":     16,
-		"runTasksAsCurrentUser":          os.Getenv("GW_TESTS_RUN_AS_TASK_USER") == "",
-		"secretsBaseUrl":                 "http://localhost:13243/secrets",
-		"sentryProject":                  "generic-worker-tests",
-		"shutdownMachineOnIdle":          false,
-		"shutdownMachineOnInternalError": false,
-		"openpgpSigningKeyLocation":      filepath.Join(testdataDir, "private-opengpg-key"),
-		"ed25519SigningKeyLocation":      filepath.Join(testdataDir, "ed25519_private_key"),
-		"subdomain":                      "taskcluster-worker.net",
-		"tasksDir":                       filepath.Join(testdataDir, t.Name()),
-		"workerTypeMetadata": map[string]interface{}{
-			"machine-setup": map[string]string{
-				"pretend-metadata": m.PretendMetadata,
-			},
-		},
+func (m *MockAWSProvisionedEnvironment) ExpectError(t *testing.T, errorText string) (teardown func()) {
+	var err error
+	teardown, err = m.Setup(t)
+	if err == nil || !strings.Contains(err.Error(), errorText) {
+		t.Fatalf("Was expecting error to include %q but got: %v", errorText, err)
 	}
-
-	return map[string]interface{}{
-		"config": gwConfig,
-	}
+	return
 }
 
-func (m *MockAWSProvisionedEnvironment) PrivateHostSetup(t *testing.T) interface{} {
-
-	gwConfig := map[string]interface{}{
-		"livelogSecret": "I have to confess, when me and my friends sort of used to run through the fields of wheat, um, the farmers weren't too pleased about that.",
+func (m *MockAWSProvisionedEnvironment) ExpectNoError(t *testing.T) (teardown func()) {
+	var err error
+	teardown, err = m.Setup(t)
+	if err != nil {
+		t.Fatalf("Was expecting no error but got: %v", err)
 	}
-
-	return map[string]interface{}{
-		"files":  m.SecretFiles,
-		"config": gwConfig,
-	}
+	return
 }
