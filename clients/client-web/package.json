@@ -31,7 +31,7 @@
     "common-tags": "^1.4.0",
     "dotenv": "^6.0.0",
     "ejs": "^2.5.7",
-    "got": "^8.3.1",
+    "got": "^9.0.0",
     "javascript-stringify": "^1.6.0",
     "json-schema-to-markdown": "^1.0.3",
     "json-stable-stringify": "^1.0.1",
