@@ -38,11 +38,7 @@ class Handler {
 
     this._managementApiExp = null;
     this._managementApi = null;
-    this._identityProviderId = 'mozilla-auth0';
-  }
-
-  get identityProviderId() {
-    return this._identityProviderId;
+    this.identityProviderId = 'mozilla-auth0';
   }
 
   // Get a management API instance, by requesting an API token as needed
@@ -80,12 +76,30 @@ class Handler {
     return this._managementApi;
   }
 
-  async profileFromUserId(userId) {
+  async getUser({userId}) {
     const a0 = await this.getManagementApi();
+    const userProfile = await a0.getUser({id: userId});
 
-    return a0.getUser({id: userId});
+    if ('active' in userProfile && !userProfile.active) {
+      debug('user is not active; rejecting');
+      return;
+    }
+
+    const user = new User();
+
+    user.identity = this.identityFromProfile(userProfile);
+    if (!user.identity) {
+      debug('No recognized identity providers');
+      return;
+    }
+
+    // take a user and attach roles to it
+    this.addRoles(userProfile, user);
+
+    return user;
   }
 
+  // exposed method
   async userFromRequest(req, res) {
     // check the JWT's validity, setting req.user if sucessful
     try {
@@ -105,14 +119,7 @@ class Handler {
     }
 
     try {
-      const profile = await this.profileFromUserId(req.user.sub);
-
-      if ('active' in profile && !profile.active) {
-        debug('user is not active; rejecting');
-        return;
-      }
-
-      const user = this.userFromProfile(profile);
+      const user = this.getUser({userId: req.user.sub});
       user.expires = new Date(req.user.exp * 1000);
 
       return user;
@@ -122,34 +129,10 @@ class Handler {
     }
   }
 
-  async userFromUserId(userId) {
-    try {
-      const profile = await this.profileFromUserId(userId);
-      const user = this.userFromProfile(profile);
-
-      return user;
-    } catch (err) {
-      debug(`error retrieving profile from userId: ${err}\n${err.stack}`);
-      return;
-    }
-  }
-
+  // exposed method
   userFromClientId(clientId) {
-    const userId = this.userIdFromClientId(clientId);
-    if (!userId) {
-      return;
-    }
-
-    return this.userFromUserId(userId);
-  }
-
-  identityFromClientId(clientId) {
     const patternMatch = CLIENT_ID_PATTERN.exec(clientId);
-    return patternMatch && patternMatch[1];
-  }
-
-  userIdFromClientId(clientId) {
-    const identity = this.identityFromClientId(clientId);
+    const identity = patternMatch && patternMatch[1];
 
     if (!identity) {
       return;
@@ -162,7 +145,7 @@ class Handler {
       encodedUserId = encodedUserId.replace(/\|[^|]*$/, '');
     }
 
-    return decode(encodedUserId);
+    return this.getUser({userId: decode(encodedUserId)});
   }
 
   identityFromProfile(profile) {
@@ -172,10 +155,10 @@ class Handler {
     // array as we do not use Auth0 user linking.
     profile.identities.forEach(({provider, connection}) => {
       if (
-        provider === 'ad' && connection === 'Mozilla-LDAP' ||
+        (provider === 'ad' && connection === 'Mozilla-LDAP') ||
         // The 'email' connection corresponds to a passwordless login.
-        provider === 'email' && connection === 'email' ||
-        provider === 'google-oauth2' && connection === 'google-oauth2'
+        (provider === 'email' && connection === 'email') ||
+        (provider === 'google-oauth2' && connection === 'google-oauth2')
       ) {
         assert(!profile.user_id.startsWith('github|'));
         identity = `${this.identityProviderId}/${encode(profile.user_id)}`;
@@ -191,21 +174,6 @@ class Handler {
     });
 
     return identity;
-  }
-
-  userFromProfile(profile) {
-    const user = new User();
-
-    user.identity = this.identityFromProfile(profile);
-    if (!user.identity) {
-      debug('No recognized identity providers');
-      return;
-    }
-
-    // take a user and attach roles to it
-    this.addRoles(profile, user);
-
-    return user;
   }
 
   addRoles(profile, user) {
