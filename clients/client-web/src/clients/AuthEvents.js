@@ -15,7 +15,7 @@ export default class AuthEvents extends Client {
   // Message that a new client has been created.
   /* eslint-enable max-len */
   clientCreated(pattern) {
-    const entry = {type:'topic-exchange',exchange:'client-created',name:'clientCreated',schema:'v1/client-message.json#',routingKey:[{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"client-created","name":"clientCreated","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/client-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -23,7 +23,7 @@ export default class AuthEvents extends Client {
   // Message that a new client has been updated.
   /* eslint-enable max-len */
   clientUpdated(pattern) {
-    const entry = {type:'topic-exchange',exchange:'client-updated',name:'clientUpdated',schema:'v1/client-message.json#',routingKey:[{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"client-updated","name":"clientUpdated","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/client-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -31,7 +31,7 @@ export default class AuthEvents extends Client {
   // Message that a new client has been deleted.
   /* eslint-enable max-len */
   clientDeleted(pattern) {
-    const entry = {type:'topic-exchange',exchange:'client-deleted',name:'clientDeleted',schema:'v1/client-message.json#',routingKey:[{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"client-deleted","name":"clientDeleted","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/client-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -39,7 +39,7 @@ export default class AuthEvents extends Client {
   // Message that a new role has been created.
   /* eslint-enable max-len */
   roleCreated(pattern) {
-    const entry = {type:'topic-exchange',exchange:'role-created',name:'roleCreated',schema:'v1/role-message.json#',routingKey:[{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"role-created","name":"roleCreated","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/role-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -47,7 +47,7 @@ export default class AuthEvents extends Client {
   // Message that a new role has been updated.
   /* eslint-enable max-len */
   roleUpdated(pattern) {
-    const entry = {type:'topic-exchange',exchange:'role-updated',name:'roleUpdated',schema:'v1/role-message.json#',routingKey:[{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"role-updated","name":"roleUpdated","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/role-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -55,7 +55,7 @@ export default class AuthEvents extends Client {
   // Message that a new role has been deleted.
   /* eslint-enable max-len */
   roleDeleted(pattern) {
-    const entry = {type:'topic-exchange',exchange:'role-deleted',name:'roleDeleted',schema:'v1/role-message.json#',routingKey:[{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"role-deleted","name":"roleDeleted","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/role-message.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }

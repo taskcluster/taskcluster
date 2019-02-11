@@ -10,12 +10,12 @@ export default class Index extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
-    this.findTask.entry = {type:'function',method:'get',route:'/task/<indexPath>',query:[],args:['indexPath'],name:'findTask',stability:'stable',output:true}; // eslint-disable-line
-    this.listNamespaces.entry = {type:'function',method:'get',route:'/namespaces/<namespace>',query:['continuationToken','limit'],args:['namespace'],name:'listNamespaces',stability:'stable',output:true}; // eslint-disable-line
-    this.listTasks.entry = {type:'function',method:'get',route:'/tasks/<namespace>',query:['continuationToken','limit'],args:['namespace'],name:'listTasks',stability:'stable',output:true}; // eslint-disable-line
-    this.insertTask.entry = {type:'function',method:'put',route:'/task/<namespace>',query:[],args:['namespace'],name:'insertTask',stability:'stable',input:true,output:true,scopes:'index:insert-task:<namespace>'}; // eslint-disable-line
-    this.findArtifactFromTask.entry = {type:'function',method:'get',route:'/task/<indexPath>/artifacts/<name>',query:[],args:['indexPath','name'],name:'findArtifactFromTask',stability:'stable',scopes:{'if':'private',then:'queue:get-artifact:<name>'}}; // eslint-disable-line
+    this.ping.entry = {"args":[],"method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.findTask.entry = {"args":["indexPath"],"method":"get","name":"findTask","output":true,"query":[],"route":"/task/<indexPath>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.listNamespaces.entry = {"args":["namespace"],"method":"get","name":"listNamespaces","output":true,"query":["continuationToken","limit"],"route":"/namespaces/<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.listTasks.entry = {"args":["namespace"],"method":"get","name":"listTasks","output":true,"query":["continuationToken","limit"],"route":"/tasks/<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.insertTask.entry = {"args":["namespace"],"input":true,"method":"put","name":"insertTask","output":true,"query":[],"route":"/task/<namespace>","scopes":"index:insert-task:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.findArtifactFromTask.entry = {"args":["indexPath","name"],"method":"get","name":"findArtifactFromTask","query":[],"route":"/task/<indexPath>/artifacts/<name>","scopes":{"if":"private","then":"queue:get-artifact:<name>"},"stability":"stable","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

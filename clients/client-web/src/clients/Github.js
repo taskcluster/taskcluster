@@ -10,14 +10,14 @@ export default class Github extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {type:'function',method:'get',route:'/ping',query:[],args:[],name:'ping',stability:'stable'}; // eslint-disable-line
-    this.githubWebHookConsumer.entry = {type:'function',method:'post',route:'/github',query:[],args:[],name:'githubWebHookConsumer',stability:'experimental'}; // eslint-disable-line
-    this.builds.entry = {type:'function',method:'get',route:'/builds',query:['continuationToken','limit','organization','repository','sha'],args:[],name:'builds',stability:'experimental',output:true}; // eslint-disable-line
-    this.badge.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>/<branch>/badge.svg',query:[],args:['owner','repo','branch'],name:'badge',stability:'experimental'}; // eslint-disable-line
-    this.repository.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>',query:[],args:['owner','repo'],name:'repository',stability:'experimental',output:true}; // eslint-disable-line
-    this.latest.entry = {type:'function',method:'get',route:'/repository/<owner>/<repo>/<branch>/latest',query:[],args:['owner','repo','branch'],name:'latest',stability:'experimental'}; // eslint-disable-line
-    this.createStatus.entry = {type:'function',method:'post',route:'/repository/<owner>/<repo>/statuses/<sha>',query:[],args:['owner','repo','sha'],name:'createStatus',stability:'experimental',input:true,scopes:'github:create-status:<owner>/<repo>'}; // eslint-disable-line
-    this.createComment.entry = {type:'function',method:'post',route:'/repository/<owner>/<repo>/issues/<number>/comments',query:[],args:['owner','repo','number'],name:'createComment',stability:'experimental',input:true,scopes:'github:create-comment:<owner>/<repo>'}; // eslint-disable-line
+    this.ping.entry = {"args":[],"method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.githubWebHookConsumer.entry = {"args":[],"method":"post","name":"githubWebHookConsumer","query":[],"route":"/github","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.builds.entry = {"args":[],"method":"get","name":"builds","output":true,"query":["continuationToken","limit","organization","repository","sha"],"route":"/builds","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.badge.entry = {"args":["owner","repo","branch"],"method":"get","name":"badge","query":[],"route":"/repository/<owner>/<repo>/<branch>/badge.svg","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.repository.entry = {"args":["owner","repo"],"method":"get","name":"repository","output":true,"query":[],"route":"/repository/<owner>/<repo>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.latest.entry = {"args":["owner","repo","branch"],"method":"get","name":"latest","query":[],"route":"/repository/<owner>/<repo>/<branch>/latest","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.createStatus.entry = {"args":["owner","repo","sha"],"input":true,"method":"post","name":"createStatus","query":[],"route":"/repository/<owner>/<repo>/statuses/<sha>","scopes":"github:create-status:<owner>/<repo>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.createComment.entry = {"args":["owner","repo","number"],"input":true,"method":"post","name":"createComment","query":[],"route":"/repository/<owner>/<repo>/issues/<number>/comments","scopes":"github:create-comment:<owner>/<repo>","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

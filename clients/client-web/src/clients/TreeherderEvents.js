@@ -16,7 +16,7 @@ export default class TreeherderEvents extends Client {
   // this exchange in a Treeherder consumable format.
   /* eslint-enable max-len */
   jobs(pattern) {
-    const entry = {type:'topic-exchange',exchange:'jobs',name:'jobs',schema:'v1/pulse-job.json#',routingKey:[{name:'destination',multipleWords:false,required:true},{name:'project',multipleWords:false,required:true},{name:'reserved',multipleWords:true,required:false}]}; // eslint-disable-line
+    const entry = {"exchange":"jobs","name":"jobs","routingKey":[{"multipleWords":false,"name":"destination","required":true},{"multipleWords":false,"name":"project","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-job.json#","type":"topic-exchange"}; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
