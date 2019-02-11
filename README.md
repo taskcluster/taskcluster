@@ -66,6 +66,7 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Secrets Service](services/secrets#readme)
     * [Treeherder Service](services/treeherder#readme)
     * [Web-Server Service](services/web-server#readme)
+    * [Worker Manager](services/worker-manager#readme)
 * [Taskcluster Web](ui#readme)
     * [ui/src/components/DateDistance](ui/src/components/DateDistance#readme)
     * [ui/src/components/Markdown](ui/src/components/Markdown#readme)

@@ -17,4 +17,5 @@ These are any packages that are run as part of a deployment of Taskcluster.
 * [Secrets Service](secrets#readme)
 * [Treeherder Service](treeherder#readme)
 * [Web-Server Service](web-server#readme)
+* [Worker Manager](worker-manager#readme)
 <!-- TOC END -->
