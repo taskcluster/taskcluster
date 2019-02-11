@@ -14,7 +14,7 @@ suite('api/auth', function() {
   // Reference for test api server
   let _apiServer = null;
 
-  this.timeout(500);
+  this.timeout(1500);
 
   // Create test api
   const builder = new APIBuilder({
