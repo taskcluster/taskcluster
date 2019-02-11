@@ -39,7 +39,7 @@ module "hooks_secrets" {
     PULSE_VHOST              = "${var.rabbitmq_vhost}"
     HOOK_TABLE_NAME          = "Hooks"
     QUEUE_TABLE_NAME         = "Queue"
-    LASTFIRE_TABLE_NAME      = "LastFire"
+    LASTFIRE_TABLE_NAME      = "LastFire2"
     TABLE_CRYPTO_KEY         = "${base64encode(random_string.hooks_table_crypto_key.result)}"
     TABLE_SIGNING_KEY        = "${random_string.hooks_table_signing_key.result}"
   }

@@ -195,7 +195,7 @@ exports.Queues = Queues;
 
 const LastFire = Entity.configure({
   version: 1,
-  partitionKey: Entity.keys.StringKey('hookGroupId', 'hookId'),
+  partitionKey: Entity.keys.CompositeKey('hookGroupId', 'hookId'),
   rowKey: Entity.keys.StringKey('taskId'),
   signEntities: true,
   properties: {
