@@ -76,11 +76,11 @@ class Handler {
     return this._managementApi;
   }
 
-  async getUser({userId, checkIfActive}) {
+  async getUser({userId}) {
     const a0 = await this.getManagementApi();
     const userProfile = await a0.getUser({id: userId});
 
-    if (checkIfActive && 'active' in userProfile && !userProfile.active) {
+    if ('active' in userProfile && !userProfile.active) {
       debug('user is not active; rejecting');
       return;
     }
@@ -119,7 +119,7 @@ class Handler {
     }
 
     try {
-      const user = this.getUser({userId: req.user.sub, checkIfActive: true});
+      const user = this.getUser({userId: req.user.sub});
       user.expires = new Date(req.user.exp * 1000);
 
       return user;
@@ -145,9 +145,7 @@ class Handler {
       encodedUserId = encodedUserId.replace(/\|[^|]*$/, '');
     }
 
-    const userId = decode(encodedUserId);
-
-    return this.getUser({userId, checkIfActive: false});
+    return this.getUser({userId: decode(encodedUserId)});
   }
 
   identityFromProfile(profile) {
