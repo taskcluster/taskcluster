@@ -13,6 +13,7 @@
     "build": "neutrino build --require dotenv/config",
     "lint": "neutrino lint",
     "prepare": "yarn build",
+    "pretest": "node -e 'require(\".\")'",
     "test": "neutrino test --require dotenv/config"
   },
   "devDependencies": {
@@ -28,6 +29,7 @@
     "neutrino-preset-mozilla-frontend-infra": "^4.1.0"
   },
   "dependencies": {
+    "crypto-js": "^3.1.9-1",
     "hawk": "^7.0.7",
     "query-string": "^6.1.0",
     "taskcluster-lib-urls": "^10.0.0"

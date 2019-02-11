@@ -95,6 +95,9 @@ require(['taskcluster-client-web'], ({ Queue }) => {
 </script>
 ```
 
+Note that this module can be imported in a Node.js environment without error, but is not guaranteed to work.
+If you need Taskcluster support in a Node.js environment, see the `taskcluster-client` package.
+
 ## Calling API Endpoints
 
 To invoke an API endpoint, instantiate a taskcluster client class.
