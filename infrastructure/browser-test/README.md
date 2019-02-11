@@ -7,7 +7,7 @@ includes a copy of the ESR version of Firefox.  Tests should not be
 particularly sensitive to the Firefox version.  The image label is based on the
 Node version defined in the root `package.json`.
 
-To generate the docker image, run `./build.sh`.
+To generate the docker image, [install jq](https://github.com/stedolan/jq/wiki/Installation) and run `./build.sh`.
 
 Test the image with the following, which approximates what runs in CI:
 
