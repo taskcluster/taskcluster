@@ -28,6 +28,8 @@ type MockAWSProvisionedEnvironment struct {
 	PretendMetadata                  string
 	OldDeploymentID                  string
 	NewDeploymentID                  string
+	// Set when provisioner secret (credentials) gets deleted
+	SecretDeleted bool
 }
 
 func (m *MockAWSProvisionedEnvironment) ValidPublicConfig(t *testing.T) map[string]interface{} {
@@ -197,6 +199,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 				m.credentials(t, w)
 			case "DELETE":
 				fmt.Fprint(w, "Credentials deleted, yay!")
+				m.SecretDeleted = true
 			default:
 				w.WriteHeader(500)
 			}
@@ -253,6 +256,9 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 		err := s.Shutdown(context.Background())
 		if err != nil {
 			t.Fatalf("Error shutting down http server: %v", err)
+		}
+		if !m.SecretDeleted {
+			t.Fatal("Provisioner secret (credentials) not deleted")
 		}
 		EC2MetadataBaseURL = oldEC2MetadataBaseURL
 		configureForAWS = false
