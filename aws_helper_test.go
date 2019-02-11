@@ -201,7 +201,7 @@ func (m *MockAWSProvisionedEnvironment) Setup(t *testing.T) (teardown func(), er
 				fmt.Fprint(w, "Credentials deleted, yay!")
 				m.SecretDeleted = true
 			default:
-				w.WriteHeader(500)
+				w.WriteHeader(400)
 			}
 
 		// simulate taskcluster secrets endpoints
