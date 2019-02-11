@@ -50,7 +50,9 @@ suite('Uncaught Errors', () => {
       path.resolve(__dirname, './should_exit_with_error.js'),
       ['--correct'],
       {
-        env: process.env,
+        // omit DEBUG so that its output does not obscure the
+        // expected output
+        env: Object.assign(process.env, {DEBUG: undefined}),
         silent: true,
       }
     );
