@@ -9,6 +9,7 @@ properties:
     description: |
       List of artifacts for given `taskId` and `runId`.
     type:         array
+    uniqueItems: true
     items:
       title:      "Artifact"
       description: |

@@ -37,6 +37,7 @@ properties:
     type: string
   entries:
     type: array
+    uniqueItems: true
     items:
       type: object
       properties:
@@ -62,6 +63,7 @@ properties:
           description: Description (ie. documentation) for the exchange
         routingKey:
           type: array
+          uniqueItems: true
           items:
             type: object
             properties:

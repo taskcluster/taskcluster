@@ -8,6 +8,7 @@
       "type": "array",
       "title": "WorkerTypes from the Provisioner",
       "description": "List of worker-types in this provisioner.\n",
+      "uniqueItems": true,
       "items": {
         "type": "object",
         "title": "Worker Type",

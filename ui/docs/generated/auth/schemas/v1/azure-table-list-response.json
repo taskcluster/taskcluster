@@ -8,6 +8,7 @@
       "title": "Azure Tables",
       "description": "A list of tables that are in an account. These are\nthe tables that can have SAS credentials fetched for them.\n",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "string"
       }

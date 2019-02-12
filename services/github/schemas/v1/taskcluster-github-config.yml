@@ -60,6 +60,7 @@ properties:
   tasks:
     type:           array
     default:        []
+    uniqueItems: false
     items:
         title:              "Task Definition"
         description: |

@@ -194,6 +194,7 @@
       "description": "The job guids that were coalesced to this job.",
       "title": "Coalesced job GUID",
       "type": "array",
+      "uniqueItems": false,
       "items": {
         "title": "Job GUID",
         "type": "string",
@@ -218,6 +219,7 @@
       "title": "Labels",
       "description": "Labels are a dimension of a platform.  The values here can vary wildly,\nso most strings are valid for this.  The list of labels that are used\nis maleable going forward.\n\nThese were formerly known as \"Options\" within \"Option Collections\" but\ncalling labels now so they can be understood to be just strings that\ndenotes a characteristic of the job.\n\nSome examples of labels that have been used:\n  opt    Optimize Compiler GCC optimize flags\n  debug  Debug flags passed in\n  pgo    Profile Guided Optimization - Like opt, but runs with profiling, then builds again using that profiling\n  asan   Address Sanitizer\n  tsan   Thread Sanitizer Build\n",
       "type": "array",
+      "uniqueItems": false,
       "items": {
         "title": "Label",
         "type": "string",
@@ -261,6 +263,7 @@
         },
         "links": {
           "type": "array",
+          "uniqueItems": false,
           "items": {
             "title": "Link",
             "type": "object",
@@ -299,6 +302,7 @@
     },
     "logs": {
       "type": "array",
+      "uniqueItems": false,
       "items": {
         "title": "Log",
         "type": "object",
@@ -317,12 +321,14 @@
           "steps": {
             "type": "array",
             "description": "This object defines what is seen in the Treeherder Log Viewer.\nThese values can be submitted here, or they will be generated\nby Treeherder's internal log parsing process from the\nsubmitted log.  If this value is submitted, Treeherder will\nconsider the log already parsed and skip parsing.\n",
+            "uniqueItems": false,
             "items": {
               "title": "Step",
               "type": "object",
               "properties": {
                 "errors": {
                   "type": "array",
+                  "uniqueItems": false,
                   "items": {
                     "title": "Error",
                     "type": "object",

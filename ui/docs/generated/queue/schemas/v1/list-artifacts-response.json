@@ -8,6 +8,7 @@
       "title": "Artifact List",
       "description": "List of artifacts for given `taskId` and `runId`.\n",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "title": "Artifact",
         "description": "Information about an artifact for the given `taskId` and `runId`.\n",

@@ -137,6 +137,7 @@ properties:
     description: |
       List of scopes that the task is authorized to use during its execution.
     type:           array
+    uniqueItems: false
     items: {$const: scope}
   payload:
     title:          "Task Payload"

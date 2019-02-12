@@ -120,6 +120,7 @@
       "title": "Scopes",
       "description": "List of scopes that the task is authorized to use during its execution.\n",
       "type": "array",
+      "uniqueItems": false,
       "items": {
         "type": "string",
         "name": "Scope",

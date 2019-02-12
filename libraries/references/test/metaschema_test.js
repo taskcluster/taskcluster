@@ -66,20 +66,20 @@ suite('metaschema_test.js', function() {
       }, f => f.match(/schema should have properties .* when property properties is present/));
     });
 
-    test('if entries are given, additionalProperties must be present', function() {
+    test('if items are given, additionalProperties must be present', function() {
       validate({
         $schema,
         type: 'object',
-        entries: {type: 'string'},
-      }, f => f.match(/schema should have properties type, uniqueItems when property entries is present/));
+        items: {type: 'string'},
+      }, f => f.match(/schema should have properties type, uniqueItems when property items is present/));
     });
 
-    test('if entries are given, type must be present', function() {
+    test('if items are given, type must be present', function() {
       validate({
         $schema,
         uniqueItems: true,
-        entries: {type: 'string'},
-      }, f => f.match(/schema should have properties type, uniqueItems when property entries is present/));
+        items: {type: 'string'},
+      }, f => f.match(/schema should have properties type, uniqueItems when property items is present/));
     });
   });
 

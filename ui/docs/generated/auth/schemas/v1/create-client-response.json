@@ -63,6 +63,7 @@
     "expandedScopes": {
       "description": "List of scopes granted to this client by matching roles, including the\nclient's scopes and the implicit role `client-id:<clientId>`.\n",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "string",
         "name": "Scope",

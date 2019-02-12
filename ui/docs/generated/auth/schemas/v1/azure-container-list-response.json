@@ -8,6 +8,7 @@
       "title": "Azure Containers",
       "description": "A list of containers that are in an account.  Credentials are available for\nthese containers from the `azureBlobSAS` method.\n",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "string"
       }

@@ -11,6 +11,7 @@ properties:
       List of signed URLs for queues to poll tasks from, they must be called
       in the order they are given. As the first entry in this array **may**
       have higher priority.
+    uniqueItems: false
     items:
       type:       object
       additionalProperties: false

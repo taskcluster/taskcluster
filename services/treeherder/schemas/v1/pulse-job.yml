@@ -188,6 +188,7 @@ properties:
     description: The job guids that were coalesced to this job.
     title: "Coalesced job GUID"
     type: "array"
+    uniqueItems: false
     items:
       title: "Job GUID"
       type: "string"
@@ -225,6 +226,7 @@ properties:
         asan   Address Sanitizer
         tsan   Thread Sanitizer Build
     type: "array"
+    uniqueItems: false
     items:
       title: "Label"
       type: "string"
@@ -281,6 +283,7 @@ properties:
           the final message about a task.
       links:
         type: array
+        uniqueItems: false
         items:
           title: "Link"
           type: object
@@ -310,6 +313,7 @@ properties:
 
   logs:
     type: "array"
+    uniqueItems: false
     items:
       title: "Log"
       type: "object"
@@ -331,12 +335,14 @@ properties:
             by Treeherder's internal log parsing process from the
             submitted log.  If this value is submitted, Treeherder will
             consider the log already parsed and skip parsing.
+          uniqueItems: false
           items:
             title: "Step"
             type: object
             properties:
               errors:
                 type: array
+                uniqueItems: false
                 items:
                   title: "Error"
                   type: object

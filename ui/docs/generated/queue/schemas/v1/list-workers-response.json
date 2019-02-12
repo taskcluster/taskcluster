@@ -8,6 +8,7 @@
       "type": "array",
       "title": "Workers from a WorkerType",
       "description": "List of workers in this worker-type.\n",
+      "uniqueItems": true,
       "items": {
         "title": "Worker",
         "type": "object",

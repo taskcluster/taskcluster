@@ -1,7 +1,7 @@
 $schema: "/schemas/common/metaschema.json#"
 title: "List of Bindings"
 type: "array"
-unqiueItems: true
+uniqueItems: true
 items:
   title: "Binding"
   description: |

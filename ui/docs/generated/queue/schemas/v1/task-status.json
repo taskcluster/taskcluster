@@ -59,6 +59,7 @@
       "title": "List of Runs",
       "description": "List of runs, ordered so that index `i` has `runId == i`\n",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "title": "Run Information",
         "description": "JSON object with information about a run\n",

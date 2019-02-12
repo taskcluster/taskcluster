@@ -57,6 +57,7 @@
     "expandedScopes": {
       "description": "List of scopes granted to this client by matching roles.  Scopes must be\ncomposed of printable ASCII characters and spaces.\n",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "description": "Scope that client is granted by a role\n",
         "type": "string",

@@ -73,6 +73,7 @@
       "description": "List of scopes (or scope-patterns) that the task is\nauthorized to use.\n",
       "type": "array",
       "default": [],
+      "uniqueItems": false,
       "items": {
         "title": "Scope",
         "description": "A scope (or scope-patterns) which the task is\nauthorized to use. This can be a string or a string\nending with `*` which will authorize all scopes for\nwhich the string is a prefix.  Scopes must be composed of\nprintable ASCII characters and spaces.\n**Task submitter required scopes** The same scope-pattern(s) given\n(otherwise a task could be submitted to perform an action that the\ntask submitter is not authorized to perform).\n",

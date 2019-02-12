@@ -10,6 +10,7 @@ properties:
       A list of containers that are in an account.  Credentials are available for
       these containers from the `azureBlobSAS` method.
     type:                 array
+    uniqueItems: true
     items:
       type: string
   continuationToken:

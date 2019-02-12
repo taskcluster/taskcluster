@@ -3,7 +3,8 @@ title: "Ruleset"
 description: |
   Ruleset
 type: array
-items:
+uniqueItems: true
+items: 
   type: object
   properties:
     id:

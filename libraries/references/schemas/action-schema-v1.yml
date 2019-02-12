@@ -40,6 +40,7 @@ definitions:
       title: tag-set
       description: |
         A set of key-value pairs specifying a _tag-set_.
+    uniqueItems: true
     description: |
       The `context` property determines in what context the action is
       relevant. Thus, what context the action should be presented to the
@@ -138,6 +139,7 @@ properties:
           - hookGroupId
           - hookId
           - hookPayload
+    uniqueItems: true
 
 additionalProperties: false
 required:

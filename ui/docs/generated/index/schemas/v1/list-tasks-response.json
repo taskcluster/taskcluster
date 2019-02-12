@@ -8,6 +8,7 @@
       "title": "Tasks",
       "description": "List of tasks.\n",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "title": "Task",
         "description": "Representation of a task.\n",

@@ -11,6 +11,7 @@ properties:
       the accounts that can have SAS credentials fetched for tables
       within them.
     type:                 array
+    uniqueItems: true
     items:
       type: string
 additionalProperties:       false

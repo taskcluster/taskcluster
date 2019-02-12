@@ -23,6 +23,7 @@
         "requests": {
           "description": "A list of generalized HTTP requests which must be run to upload the\nartifact.\n",
           "type": "array",
+          "uniqueItems": true,
           "items": {
             "title": "HTTP Request",
             "type": "object",

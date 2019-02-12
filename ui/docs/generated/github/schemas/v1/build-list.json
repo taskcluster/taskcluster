@@ -11,6 +11,7 @@
     "builds": {
       "type": "array",
       "description": "A simple list of builds.\n",
+      "uniqueItems": false,
       "items": {
         "title": "Build",
         "type": "object",

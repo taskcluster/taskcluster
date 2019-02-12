@@ -7,6 +7,7 @@
     "etags": {
       "description": "A list of the etags given by the API of the blob storage provider.  This is an opaque\nstring value provided by the API.\n",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "string"
       }

@@ -85,6 +85,7 @@ oneOf:
           validate, which is not as big of a security concern.
         type: array
         minItems: 1
+        uniqueItems: true
         items:
           title: "Multipart Part"
           type: object

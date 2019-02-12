@@ -8,6 +8,7 @@
       "type": "array",
       "title": "Queues To Poll From",
       "description": "List of signed URLs for queues to poll tasks from, they must be called\nin the order they are given. As the first entry in this array **may**\nhave higher priority.\n",
+      "uniqueItems": false,
       "items": {
         "type": "object",
         "additionalProperties": false,

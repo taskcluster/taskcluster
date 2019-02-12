@@ -10,6 +10,7 @@ properties:
       A list of tables that are in an account. These are
       the tables that can have SAS credentials fetched for them.
     type:                 array
+    uniqueItems: true
     items:
       type: string
   continuationToken:

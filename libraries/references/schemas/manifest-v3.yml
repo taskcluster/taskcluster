@@ -12,6 +12,7 @@ properties:
   references:
     type: array
     description: "Array of URLs of reference documents"
+    uniqueItems: true
     items:
       type: string
       formt: uri
