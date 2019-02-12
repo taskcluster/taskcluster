@@ -3,7 +3,7 @@
 **A Taskcluster client library for the browser.**
 
 This client library is generated from the auto-generated API reference. taskcluster-client-web differs from
-[taskcluster-client](https://github.com/taskcluster/taskcluster-client) by providing a version that is compatible
+[taskcluster-client](https://yarnpkg.com/en/package/taskcluster-client) by providing a version that is compatible
 with the browser out of the box and does not require a build step to use.
 
 ## Installation
@@ -94,6 +94,9 @@ require(['taskcluster-client-web'], ({ Queue }) => {
   const { Queue } = taskcluster;
 </script>
 ```
+
+Note that this module can be imported in a Node.js environment without error, but is not guaranteed to work.
+If you need Taskcluster support in a Node.js environment, see the `[taskcluster-client](https://yarnpkg.com/en/package/taskcluster-client)` package.
 
 ## Calling API Endpoints
 
@@ -377,7 +380,7 @@ queue
   .then(signedUrl => { /* ... });
 ```
 
-**NOTE**: This method returns a promise, unlike in taskcluster-client.
+**NOTE**: This method returns a promise, unlike in [taskcluster-client](https://yarnpkg.com/en/package/taskcluster-client).
 
 Please note that the `payload` parameter cannot be encoded in the signed URL
 and must be sent as request payload. This should work fine, just remember that
@@ -457,7 +460,7 @@ const auth = new Auth({
 ```
 
 This is common server-side when using
-[taskcluster-client](https://github.com/taskcluster/taskcluster-client), but
+[taskcluster-client](https://yarnpkg.com/en/package/taskcluster-client), but
 for web applications the credentials are usually acquired through some
 user-login process. For such cases, the client uses a `credentialAgent` to get
 Taskcluster credentials corresponding to the logged-in user. Agents can be

@@ -1,11 +1,11 @@
-import hawk from 'hawk';
+import { algo, enc } from 'crypto-js';
 import { v4 } from './utils';
 import Auth from './clients/Auth';
 
+const createHmac = (...args) => algo.HMAC.create(...args);
+const sha256 = algo.SHA256;
+const base64 = enc.Base64;
 const THIRTY_ONE_DAYS = 31 * 24 * 60 * 60 * 1000;
-const createHmac = (...args) => hawk.crypto.utils.algo.HMAC.create(...args);
-const sha256 = hawk.crypto.utils.algo.SHA256;
-const base64 = hawk.crypto.utils.enc.Base64;
 
 /**
  * Construct a set of temporary credentials.
