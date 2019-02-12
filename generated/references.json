@@ -4989,32 +4989,29 @@
     "content": {
       "$id": "/schemas/hooks/v1/bindings.json#",
       "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "properties": {
-        "items": {
-          "additionalProperties": false,
-          "description": "Exchange and RoutingKeyPattern for each binding\n",
-          "properties": {
-            "exchange": {
-              "type": "string"
-            },
-            "routingKeyPattern": {
-              "type": "string"
-            }
+      "items": {
+        "additionalProperties": false,
+        "description": "Exchange and RoutingKeyPattern for each binding\n",
+        "properties": {
+          "exchange": {
+            "minLength": 1,
+            "type": "string"
           },
-          "required": [
-            "exchange",
-            "routingKeyPattern"
-          ],
-          "title": "Binding",
-          "type": "object"
-        }
+          "routingKeyPattern": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "exchange",
+          "routingKeyPattern"
+        ],
+        "title": "Binding",
+        "type": "object"
       },
-      "required": [
-        "items"
-      ],
       "title": "List of Bindings",
-      "type": "array"
+      "type": "array",
+      "unqiueItems": true
     },
     "filename": "schemas/hooks/v1/bindings.json"
   },
