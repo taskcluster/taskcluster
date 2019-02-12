@@ -74,8 +74,14 @@ class HookListeners {
       // we manage bindings manually in syncBindings
       bindings: [],
     }, async ({payload}) => {
-      // Fire the hook
-      await this.taskcreator.fire(hook, {firedBy: 'pulseMessage', payload});
+      // Get a fresh copy of the hook and fire it, if it still exists
+      let latestHook = await this.Hook.load({
+        hookGroupId: hook.hookGroupId,
+        hookId: hook.hookId,
+      }, true);
+      if (latestHook) {
+        await this.taskcreator.fire(latestHook, {firedBy: 'pulseMessage', payload});
+      }
     });
 
     this.listeners.push(listener);
