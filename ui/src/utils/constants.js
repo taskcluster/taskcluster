@@ -35,6 +35,7 @@ export const HOOKS_LAST_FIRE_TYPE = {
 };
 
 export const THEME = {
+  WHITE: '#fff',
   TEN_PERCENT_WHITE: fade('#fff', 0.1),
   TEN_PERCENT_BLACK: fade('#000', 0.1),
   DARK_THEME_BACKGROUND: '#12202c',
@@ -42,8 +43,11 @@ export const THEME = {
   PRIMARY_LIGHT: '#fafafa',
   PRIMARY_TEXT_DARK: 'rgba(255, 255, 255, 0.9)',
   PRIMARY_TEXT_LIGHT: 'rgba(0, 0, 0, 0.9)',
+  SECONDARY_TEXT_DARK: 'rgba(255, 255, 255, 0.7)',
+  SECONDARY_TEXT_LIGHT: 'rgba(0, 0, 0, 0.7)',
   SECONDARY: '#4177a5',
   DRAWER_WIDTH: 240,
+  DIVIDER: 'rgba(0, 0, 0, 0.12)',
 };
 
 // eslint-disable-next-line max-len
@@ -196,3 +200,4 @@ export const DOCS_MENU_ITEMS = [
     icon: OpenInNewIcon,
   },
 ];
+export const DOCS_SCHEMA_REGEX = /<div data-render-schema="([^"]*)"><\/div>/;

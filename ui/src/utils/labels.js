@@ -24,4 +24,13 @@ export default {
   WAITING: 'default',
   RESOLVED: 'success',
   READY: 'info',
+  GET: 'default',
+  POST: 'default',
+  PUT: 'default',
+  DELETE: 'default',
+  CONSTANT_KEY: 'default',
+  OPTION_KEY: 'info',
+  MULTI_KEY: 'error',
+  AND: 'info',
+  OR: 'info',
 };
