@@ -26,13 +26,14 @@ export default class StatusLabel extends Component {
   };
 
   render() {
-    const { state, mini, className } = this.props;
+    const { state, mini, className, ...props } = this.props;
 
     return (
       <Label
         mini={mini}
         status={labels[state] || 'default'}
-        className={className}>
+        className={className}
+        {...props}>
         {state || 'UNKNOWN'}
       </Label>
     );
