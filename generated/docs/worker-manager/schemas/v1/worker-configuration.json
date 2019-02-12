@@ -16,7 +16,10 @@
         ],
         "properties": {
           "workerType": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 38,
+            "pattern": "^([a-zA-Z0-9-_]*)$"
           },
           "biddingStrategyId": {
             "type": "string"

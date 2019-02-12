@@ -32,6 +32,9 @@
                 "type": "string"
               },
               "workerType": {
+                "maxLength": 38,
+                "minLength": 1,
+                "pattern": "^([a-zA-Z0-9-_]*)$",
                 "type": "string"
               }
             },
@@ -75,6 +78,9 @@
           "type": "object"
         },
         "workerType": {
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
           "type": "string"
         }
       },
@@ -3501,10 +3507,16 @@
           },
           "provisionerId": {
             "description": "ProvisionerId associated with the workerType.",
+            "maxLength": 38,
+            "minLength": 1,
+            "pattern": "^([a-zA-Z0-9-_]*)$",
             "type": "string"
           },
           "workerType": {
             "description": "Workertype cache exists on.",
+            "maxLength": 38,
+            "minLength": 1,
+            "pattern": "^([a-zA-Z0-9-_]*)$",
             "type": "string"
           }
         },

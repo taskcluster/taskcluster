@@ -10,11 +10,17 @@
     "properties": {
       "provisionerId": {
         "type": "string",
-        "description": "ProvisionerId associated with the workerType."
+        "description": "ProvisionerId associated with the workerType.",
+        "minLength": 1,
+        "maxLength": 38,
+        "pattern": "^([a-zA-Z0-9-_]*)$"
       },
       "workerType": {
         "type": "string",
-        "description": "Workertype cache exists on."
+        "description": "Workertype cache exists on.",
+        "minLength": 1,
+        "maxLength": 38,
+        "pattern": "^([a-zA-Z0-9-_]*)$"
       },
       "cacheName": {
         "type": "string",
