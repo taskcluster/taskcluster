@@ -57,8 +57,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running', message => message.payload.status.taskId === taskIdA);
     await helper.queue.reportCompleted(taskIdA, 0);
@@ -66,8 +66,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskB');
     await helper.queue.claimTask(taskIdB, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running', message => message.payload.status.taskId === taskIdB);
     await helper.queue.reportCompleted(taskIdB, 0);

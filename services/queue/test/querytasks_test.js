@@ -88,13 +88,13 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   test('pendingTasks == 0', async () => {
     const r1 = await helper.queue.pendingTasks(
       'no-provisioner-extended-extended',
-      'empty-test-worker',
+      'empty-test-worker-extended-extended',
     );
     assume(r1.pendingTasks).equals(0);
 
     const r2 = await helper.queue.pendingTasks(
       'no-provisioner-extended-extended',
-      'empty-test-worker',
+      'empty-test-worker-extended-extended',
     );
     assume(r2.pendingTasks).equals(0);
   });

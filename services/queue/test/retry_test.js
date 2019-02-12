@@ -43,8 +43,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim task (runId: 0)');
     const r2 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     debug(`claimed until ${r2.takenUntil}, ${new Date(r2.takenUntil) - new Date()}ms from now`);
     helper.checkNextMessage('task-running');
@@ -72,8 +72,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim task (runId: 1)');
     const r4 = await helper.queue.claimTask(taskId, 1, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     assume(r4.status.retriesLeft).equals(0);
     debug(`claimed until ${r4.takenUntil}, ${new Date(r2.takenUntil) - new Date()}ms from now`);

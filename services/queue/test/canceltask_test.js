@@ -108,8 +108,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim task');
     const r2 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     assume(r2.status.state).equals('running');
     helper.checkNextMessage('task-running');

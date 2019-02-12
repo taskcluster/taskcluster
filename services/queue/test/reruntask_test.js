@@ -49,8 +49,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running');
 

@@ -412,9 +412,9 @@ class QueueService {
     }
 
     // Create promise, if it doesn't exist
-    assert(/^[A-Za-z0-9_-]{1,40}$/.test(provisionerId),
+    assert(/^[A-Za-z0-9_-]{1,38}$/.test(provisionerId),
       'Expected provisionerId to be an identifier');
-    assert(/^[A-Za-z0-9_-]{1,40}$/.test(workerType),
+    assert(/^[A-Za-z0-9_-]{1,38}$/.test(workerType),
       'Expected workerType to be an identifier');
 
     // Hash identifier to 24 characters

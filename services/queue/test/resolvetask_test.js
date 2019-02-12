@@ -47,8 +47,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNoNextMessage('task-completed');
 
@@ -83,15 +83,15 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNoNextMessage('task-completed');
 
     debug('### Reporting task failed');
     helper.scopes(
       'queue:resolve-task',
-      'assume:worker-id:my-worker-group/my-worker',
+      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     await helper.queue.reportFailed(taskId, 0);
     helper.checkNextMessage('task-failed', m =>
@@ -118,14 +118,14 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
 
     debug('### Reporting task exception');
     helper.scopes(
       'queue:resolve-task',
-      'assume:worker-id:my-worker-group/my-worker',
+      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     await helper.queue.reportException(taskId, 0, {
       reason: 'malformed-payload',
@@ -163,14 +163,14 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
 
     debug('### Reporting task exception');
     helper.scopes(
       'queue:resolve-task',
-      'assume:worker-id:my-worker-group/my-worker',
+      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     await helper.queue.reportException(taskId, 0, {
       reason: 'resource-unavailable',
@@ -208,14 +208,14 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
 
     debug('### Reporting task exception');
     helper.scopes(
       'queue:resolve-task',
-      'assume:worker-id:my-worker-group/my-worker'
+      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended'
     );
     await helper.queue.reportException(taskId, 0, {
       reason: 'internal-error',
@@ -253,14 +253,14 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     let r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
 
     debug('### Reporting task exception');
     helper.scopes(
       'queue:resolve-task',
-      'assume:worker-id:my-worker-group/my-worker',
+      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     await helper.queue.reportException(taskId, 0, {
       reason: 'superseded',
@@ -298,8 +298,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
 
     debug('### Reporting task exception (malformed-payload)');
@@ -340,15 +340,15 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running');
 
     debug('### Reporting task exception (worker-shutdown)');
     helper.scopes(
       'queue:resolve-task',
-      'assume:worker-id:my-worker-group/my-worker',
+      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     const r1 = await helper.queue.reportException(taskId, 0, {
       reason: 'worker-shutdown',
@@ -374,8 +374,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     helper.scopes();
     await helper.queue.claimTask(taskId, 1, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running');
 
@@ -398,13 +398,13 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
 
     debug('### Reporting task completed');
     helper.scopes(
-      'assume:worker-id:my-worker-group/my-worker',
+      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     await helper.queue.reportCompleted(taskId, 0).then(function() {
       throw new Error('Expected authentication error');
@@ -426,15 +426,15 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claiming task');
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running');
 
     debug('### Reporting task exception (intermittent-task)');
     helper.scopes(
       'queue:resolve-task',
-      'assume:worker-id:my-worker-group/my-worker',
+      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     const r1 = await helper.queue.reportException(taskId, 0, {
       reason: 'intermittent-task',
@@ -454,8 +454,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     helper.scopes();
     await helper.queue.claimTask(taskId, 1, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running');
 

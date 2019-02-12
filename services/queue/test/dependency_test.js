@@ -66,8 +66,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.reportCompleted(taskIdA, 0);
@@ -80,8 +80,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskB');
     await helper.queue.claimTask(taskIdB, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdB));
     await helper.queue.reportCompleted(taskIdB, 0);
@@ -154,8 +154,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.reportCompleted(taskIdA, 0);
@@ -225,13 +225,13 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim taskA and taskB');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.claimTask(taskIdB, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdB));
 
@@ -274,8 +274,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### claimTask');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
   }, mock));
 
@@ -300,8 +300,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### claimTask and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.reportCompleted(taskIdA, 0);
@@ -360,8 +360,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     await helper.queue.reportFailed(taskIdA, 0);
 
@@ -429,8 +429,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim and resolve taskA');
     await helper.queue.claimTask(taskIdA, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
     await helper.queue.reportFailed(taskIdA, 0);

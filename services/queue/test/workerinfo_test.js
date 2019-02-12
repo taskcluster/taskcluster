@@ -48,8 +48,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     const worker = Object.assign({
       provisionerId: 'prov1-extended-extended-extended',
       workerType: 'gecko-b-2-linux-extended-extended',
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
       recentTasks: [],
       expires: new Date('3017-07-29'),
       quarantineUntil: new Date(),
@@ -778,8 +778,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   test('queue.declareWorker creates a worker, workerType, and Provisioner', async () => {
     const provisionerId = 'prov1-extended-extended-extended';
     const workerType = 'wtype';
-    const workerGroup = 'wgroup';
-    const workerId = 'wid';
+    const workerGroup = 'wgroup-extended-extended';
+    const workerId = 'wid-extended-extended';
 
     const updateProps = {
       expires: new Date('3000-01-01'),
@@ -832,8 +832,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   test('queue.claimWork adds a task to a worker', async () => {
     const provisionerId = 'prov1-extended-extended-extended';
     const workerType = 'gecko-b-2-linux-extended-extended';
-    const workerGroup = 'my-worker-group';
-    const workerId = 'my-worker';
+    const workerGroup = 'my-worker-group-extended-extended';
+    const workerId = 'my-worker-extended-extended';
     const taskId = slugid.v4();
 
     const taskStatus = await helper.queue.createTask(taskId, {
@@ -867,8 +867,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   test('queue.getWorker returns 20 most recent taskIds', async () => {
     const provisionerId = 'no-provisioner';
     const workerType = 'gecko-b-1-android';
-    const workerGroup = 'my-worker-group';
-    const workerId = 'my-worker';
+    const workerGroup = 'my-worker-group-extended-extended';
+    const workerId = 'my-worker-extended-extended';
     await makeProvisioner({provisionerId});
 
     let taskIds = [];
