@@ -55,7 +55,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Reporting task completed');
     helper.scopes(
       'queue:resolve-task',
-      'assume:worker-id:my-worker-group/my-worker',
+      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     await helper.queue.reportCompleted(taskId, 0);
     helper.checkNextMessage('task-completed', m =>

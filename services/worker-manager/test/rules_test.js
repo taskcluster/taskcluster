@@ -259,7 +259,7 @@ suite('Ruleset', () => {
       rules: [{
         id: 'rule1',
         conditions: {
-          workerType: 'worker1',
+          workerType: 'worker1-extended-extended',
           provider: ['ec2', 'gcp'],
         },
         values: {
@@ -269,7 +269,7 @@ suite('Ruleset', () => {
       }, {
         id: 'rule2',
         conditions: {
-          workerType: 'worker1',
+          workerType: 'worker1-extended-extended',
           provider: 'ec2',
         },
         values: {
@@ -301,14 +301,14 @@ suite('Ruleset', () => {
   });
 
   test('should match worker1/ec2 correctly', () => {
-    assume(rules.evaluate({workerType: 'worker1', provider: 'ec2'})).deeply.equals({
+    assume(rules.evaluate({workerType: 'worker1-extended-extended', provider: 'ec2'})).deeply.equals({
       rule1: 'matched',
       rule2: 'matched',
     });
   });
 
   test('should match worker1/gcp correctly', () => {
-    assume(rules.evaluate({workerType: 'worker1', provider: 'ec2'})).deeply.equals({
+    assume(rules.evaluate({workerType: 'worker1-extended-extended', provider: 'ec2'})).deeply.equals({
       rule1: 'matched',
       rule2: 'matched',
     });

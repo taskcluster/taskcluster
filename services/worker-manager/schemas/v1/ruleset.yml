@@ -3,13 +3,19 @@ title: "Ruleset"
 description: |
   Ruleset
 type: array
-items: 
+items:
   type: object
   properties:
     id:
       type: string
     conditions:
-      type: ['object', 'null']
+      type: object
+      properties:
+        workerType:
+          type: string
+          minLength:    {$const: identifier-min-length}
+          maxLength:    {$const: identifier-max-length}
+          pattern:      {$const: identifier-pattern}
       additionalProperties:
         type: string
     values:
@@ -19,6 +25,5 @@ items:
   additionalProperties: false
   required:
     - id
-    - conditions
     - values
     - description

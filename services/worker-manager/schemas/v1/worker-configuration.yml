@@ -9,12 +9,18 @@ properties:
   workerTypes:
     type: array
     items:
-      type: 
+      type:
         - string
         - object
+      minLength:    {$const: identifier-min-length}
+      maxLength:    {$const: identifier-max-length}
+      pattern:      {$const: identifier-pattern}  
       properties:
         workerType:
           type: string
+          minLength:    {$const: identifier-min-length}
+          maxLength:    {$const: identifier-max-length}
+          pattern:      {$const: identifier-pattern}
         biddingStrategyId:
           type: string
         providerIds:

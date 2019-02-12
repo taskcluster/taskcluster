@@ -4,6 +4,9 @@ type: object
 properties:
   workerType:
     type: string
+    minLength:    {$const: identifier-min-length}
+    maxLength:    {$const: identifier-max-length}
+    pattern:      {$const: identifier-pattern}
   providerData:
     type: object
   biddingStrategyData:

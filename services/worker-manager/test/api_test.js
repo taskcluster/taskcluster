@@ -87,7 +87,7 @@ suite('API', () => {
         workerConfiguration: workerConfig,
         satisfiers: {
           biddingStrategyId: 'queue-pending-ratio',
-          workerType: 'gecko-3-b-linux',
+          workerType: 'gecko-3-b-linux-extended-extended',
           region: 'us-east-1',
           instanceType: 'c5d.4xlarge',
           availabilityZone: 'us-east-1a',
@@ -101,7 +101,7 @@ suite('API', () => {
         workerConfiguration: workerConfig,
         satisfiers: {
           biddingStrategyId: 'queue-pending-ratio',
-          workerType: 'gecko-3-b-linux',
+          workerType: 'gecko-3-b-linux-extended-extended',
           region: 'us-east-1',
           instanceType: 'c5d.4xlarge',
           availabilityZone: 'us-east-1a',

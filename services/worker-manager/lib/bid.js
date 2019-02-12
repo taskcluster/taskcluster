@@ -65,6 +65,10 @@ class Bid extends WMObject {
     if (typeof workerType !== 'string') {
       this._throw(errors.InvalidBid, 'workerType must be string');
     }
+
+    if (workerType.length > 38) {
+      this._throw(errors.InvalidBid, 'workerType must not be more than 38 characters long');
+    }
     this.workerType = workerType;
 
     if (typeof workerConfigurationId !== 'string') {

@@ -22,7 +22,7 @@ suite('AWS Provisioner WorkerType conversion', () => {
     // It should evaluate as expected for an evaluation
     let result = workerConfiguration.evaluate({
       biddingStrategyId: 'queue-pending-ratio',
-      workerType: 'gecko-3-b-linux',
+      workerType: 'gecko-3-b-linux-extended-extended',
       region: 'us-east-1',
       instanceType: 'c5d.4xlarge',
       availabilityZone: 'us-east-1a',

@@ -14,6 +14,9 @@
           "string",
           "object"
         ],
+        "minLength": 1,
+        "maxLength": 38,
+        "pattern": "^([a-zA-Z0-9-_]*)$",
         "properties": {
           "workerType": {
             "type": "string",
