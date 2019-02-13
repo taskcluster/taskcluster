@@ -80,7 +80,7 @@ export default class Snackbar extends Component {
     const isWarning = variant === 'warning';
 
     return (
-      <MuiSnackbar onClose={onClose} {...props}>
+      <MuiSnackbar autoHideDuration={5000} onClose={onClose} {...props}>
         <SnackbarContent
           className={classes[variant]}
           action={
