@@ -2,29 +2,26 @@
   "$schema": "/schemas/common/metaschema.json#",
   "title": "List of Bindings",
   "type": "array",
-  "properties": {
-    "items": {
-      "title": "Binding",
-      "description": "Exchange and RoutingKeyPattern for each binding\n",
-      "type": "object",
-      "properties": {
-        "exchange": {
-          "type": "string"
-        },
-        "routingKeyPattern": {
-          "type": "string"
-        }
+  "unqiueItems": true,
+  "items": {
+    "title": "Binding",
+    "description": "Exchange and RoutingKeyPattern for each binding\n",
+    "type": "object",
+    "properties": {
+      "exchange": {
+        "type": "string",
+        "minLength": 1
       },
-      "additionalProperties": false,
-      "required": [
-        "exchange",
-        "routingKeyPattern"
-      ]
-    }
+      "routingKeyPattern": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "exchange",
+      "routingKeyPattern"
+    ]
   },
-  "additionalProperties": false,
-  "required": [
-    "items"
-  ],
   "$id": "/schemas/hooks/v1/bindings.json#"
 }

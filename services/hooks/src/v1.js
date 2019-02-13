@@ -224,7 +224,7 @@ builder.declare({
   try {
     const hook = await this.Hook.create(
       _.defaults({}, hookDef, {
-        bindings: [], // TODO
+        bindings: [],
         triggerToken: taskcluster.slugid(),
         lastFire: {result: 'no-fire'},
         nextTaskId: taskcluster.slugid(),

@@ -147,6 +147,32 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
         });
     });
 
+    test('with invalid bindings (no routingKeyPattern)', async () => {
+      const invalidHookDef = _.defaults({
+        bindings: [{exchange: `exchanges/test-new/${unique}`}],
+      }, hookDef);
+      await helper.hooks.createHook('foo', 'bar', invalidHookDef).then(
+        () => { throw new Error('Expected an error'); },
+        (err) => {
+          if (!/should have required property 'routingKeyPattern'/.test(err)) {
+            throw err;
+          }
+        });
+    });
+
+    test('with invalid bindings (not an array)', async () => {
+      const invalidHookDef = _.defaults({
+        bindings: {exchange: `exchanges/test-new/${unique}`, routingKeyPattern: '#'},
+      }, hookDef);
+      await helper.hooks.createHook('foo', 'bar', invalidHookDef).then(
+        () => { throw new Error('Expected an error'); },
+        (err) => {
+          if (!/should be array/.test(err)) {
+            throw err;
+          }
+        });
+    });
+
     test('succeeds if a matching resource already exists', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
