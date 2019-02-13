@@ -63,6 +63,21 @@
     {
       "type": "function",
       "method": "get",
+      "route": "/repository/<owner>/<repo>/<ref>/checksBadge.svg",
+      "query": [],
+      "args": [
+        "owner",
+        "repo",
+        "ref"
+      ],
+      "name": "checksBadge",
+      "stability": "experimental",
+      "title": "Latest Build Checksuite Status Badge",
+      "description": "Checks the status of the latest checksuite of a given ref\nand returns corresponding badge svg.\nThe ref can be a branch, a tag or SHA"
+    },
+    {
+      "type": "function",
+      "method": "get",
       "route": "/repository/<owner>/<repo>",
       "query": [],
       "args": [

@@ -1328,6 +1328,22 @@ module.exports = {
         {
           "args": [
             "owner",
+            "repo",
+            "ref"
+          ],
+          "description": "Checks the status of the latest checksuite of a given ref\nand returns corresponding badge svg.\nThe ref can be a branch, a tag or SHA",
+          "method": "get",
+          "name": "checksBadge",
+          "query": [
+          ],
+          "route": "/repository/<owner>/<repo>/<ref>/checksBadge.svg",
+          "stability": "experimental",
+          "title": "Latest Build Checksuite Status Badge",
+          "type": "function"
+        },
+        {
+          "args": [
+            "owner",
             "repo"
           ],
           "description": "Returns any repository metadata that is\nuseful within Taskcluster related services.",

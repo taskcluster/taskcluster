@@ -14,6 +14,7 @@ export default class Github extends Client {
     this.githubWebHookConsumer.entry = {"args":[],"method":"post","name":"githubWebHookConsumer","query":[],"route":"/github","stability":"experimental","type":"function"}; // eslint-disable-line
     this.builds.entry = {"args":[],"method":"get","name":"builds","output":true,"query":["continuationToken","limit","organization","repository","sha"],"route":"/builds","stability":"experimental","type":"function"}; // eslint-disable-line
     this.badge.entry = {"args":["owner","repo","branch"],"method":"get","name":"badge","query":[],"route":"/repository/<owner>/<repo>/<branch>/badge.svg","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.checksBadge.entry = {"args":["owner","repo","ref"],"method":"get","name":"checksBadge","query":[],"route":"/repository/<owner>/<repo>/<ref>/checksBadge.svg","stability":"experimental","type":"function"}; // eslint-disable-line
     this.repository.entry = {"args":["owner","repo"],"method":"get","name":"repository","output":true,"query":[],"route":"/repository/<owner>/<repo>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.latest.entry = {"args":["owner","repo","branch"],"method":"get","name":"latest","query":[],"route":"/repository/<owner>/<repo>/<branch>/latest","stability":"experimental","type":"function"}; // eslint-disable-line
     this.createStatus.entry = {"args":["owner","repo","sha"],"input":true,"method":"post","name":"createStatus","query":[],"route":"/repository/<owner>/<repo>/statuses/<sha>","scopes":"github:create-status:<owner>/<repo>","stability":"experimental","type":"function"}; // eslint-disable-line
@@ -55,6 +56,16 @@ export default class Github extends Client {
     this.validate(this.badge.entry, args);
 
     return this.request(this.badge.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Checks the status of the latest checksuite of a given ref
+  // and returns corresponding badge svg.
+  // The ref can be a branch, a tag or SHA
+  /* eslint-enable max-len */
+  checksBadge(...args) {
+    this.validate(this.checksBadge.entry, args);
+
+    return this.request(this.checksBadge.entry, args);
   }
   /* eslint-disable max-len */
   // Returns any repository metadata that is
