@@ -414,6 +414,7 @@ export default class HookForm extends Component {
       hook,
       validation,
     } = this.state;
+    const isHookDirty = !equals(hook, this.props.hook);
     /* eslint-disable-next-line no-underscore-dangle */
     const lastFireTypeName = !isNewHook && hook.status.lastFire.__typename;
 
@@ -673,7 +674,7 @@ export default class HookForm extends Component {
             requiresAuth
             classes={{ root: classes.successIcon }}
             variant="round"
-            disabled={!this.validHook() || actionLoading}
+            disabled={!this.validHook() || actionLoading || !isHookDirty}
             onClick={this.handleCreateHook}>
             <ContentSaveIcon />
           </Button>
@@ -690,7 +691,7 @@ export default class HookForm extends Component {
               requiresAuth
               classes={{ root: classes.successIcon }}
               variant="round"
-              disabled={!this.validHook() || actionLoading}
+              disabled={!this.validHook() || actionLoading || !isHookDirty}
               onClick={this.handleUpdateHook}>
               <ContentSaveIcon />
             </Button>
