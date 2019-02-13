@@ -1,11 +1,11 @@
 const assert = require('assert');
 const helper = require('./helper');
 
-helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], function(mock, skipping) {
+  helper.withBlacklist(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withSQS(mock, skipping);
-  helper.withBlacklist(mock, skipping);
   helper.withServer(mock, skipping);
 
   // Dummy address for blacklist tests

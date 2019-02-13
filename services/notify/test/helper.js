@@ -13,6 +13,7 @@ const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
 const slugid = require('slugid');
 const data = require('../src/data');
+const libUrls = require('taskcluster-lib-urls');
 
 // a suffix used to generate unique table names so that parallel test runs do not
 // interfere with one another.  We remove these at the end of the test run.
@@ -41,6 +42,11 @@ suiteSetup(async function() {
 exports.secrets = new Secrets({
   secretName: 'project/taskcluster/testing/taskcluster-notify',
   secrets: {
+    taskcluster: [
+      {env: 'TASKCLUSTER_CLIENT_ID', cfg: 'taskcluster.credentials.clientId', name: 'clientId'},
+      {env: 'TASKCLUSTER_ACCESS_TOKEN', cfg: 'taskcluster.credentials.accessToken', name: 'accessToken'},
+      {env: 'TASKCLUSTER_ROOT_URL', cfg: 'taskcluster.rootUrl', name: 'rootUrl', mock: libUrls.testRootUrl()},
+    ],
     aws: [
       {env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId'},
       {env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey'},
@@ -411,7 +417,8 @@ exports.withBlacklist = (mock, skipping) => {
       // suffix the table name config with a short suffix so that parallel
       // test runs have a good chance of not stepping on each others' feet
       const cfg = await exports.load('cfg');
-      exports.load.cfg('azure.tableName', cfg.azure.tableName + TABLE_SUFFIX);
+      exports.load.cfg('app.blacklistedNotificationTableName',
+        cfg.app.blacklistedNotificationTableName + TABLE_SUFFIX);
     }
 
     exports.BlacklistedNotification = await exports.load('BlacklistedNotification');

@@ -12,6 +12,7 @@ defaults:
     maxMessageTime:               600
     # Email address to blacklist, useful to mitigate temporary misuse
     emailBlacklist:               !env:json EMAIL_BLACKLIST
+    blacklistedNotificationTableName: !env BLACKLISTED_NOTIFICATION_TABLE_NAME
     # ignore tasks with reasonResolved matching something in this list
     ignoreTaskReasonResolved:
         - canceled
@@ -25,9 +26,6 @@ defaults:
 
   azure:
     accountId:                    !env AZURE_ACCOUNT
-    tableName:                    !env AZURE_TABLE_NAME
-    cryptoKey:                    !env AZURE_CRYPTO_KEY
-    signingKey:                   !env AZURE_SIGNING_KEY
 
   monitoring:
     project: !env MONITORING_PROJECT
@@ -78,7 +76,10 @@ test:
     sourceEmail: '"Taskcluster Notify Testing" <taskcluster-noreply-testing@mozilla.com>'
     sqsQueueName: taskcluster-notify-test-irc
     routePrefix: test-notify
+    blacklistedNotificationTableName: TestBlacklistedNotification
     publishMetaData: false
+  azure:
+    accountId:        'jungle'
   monitoring:
     enable: false
   server:

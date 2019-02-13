@@ -57,10 +57,10 @@ const load = loader({
   BlacklistedNotification: {
     requires: ['cfg', 'monitor', 'process'],
     setup: ({cfg, monitor, process}) => data.BlacklistedNotification.setup({
-      tableName: cfg.azure.tableName,
+      tableName: cfg.app.blacklistedNotificationTableName,
       credentials: sasCredentials({
         accountId: cfg.azure.accountId,
-        tableName: cfg.azure.tableName,
+        tableName: cfg.app.blacklistedNotificationTableName,
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
