@@ -5,8 +5,8 @@ module "web_ui_secrets" {
   secrets = {
     APPLICATION_NAME              = "Taskcluster"
     PORT                          = ""
-    GRAPHQL_ENDPOINT              = "https://taskcluster-web-server.herokuapp.com/graphql"
-    GRAPHQL_SUBSCRIPTION_ENDPOINT = "wss://taskcluster-web-server.herokuapp.com/subscription"
+    GRAPHQL_ENDPOINT              = "${var.root_url}/graphql"
+    GRAPHQL_SUBSCRIPTION_ENDPOINT = "${var.root_url}/subscription"
     LOGIN_STRATEGIES              = ""
   }
 }
