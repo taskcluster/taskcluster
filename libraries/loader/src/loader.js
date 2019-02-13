@@ -1,6 +1,5 @@
 const util = require('util');
 const assume = require('assume');
-const _ = require('lodash');
 const TopoSort = require('topo-sort');
 const debug = require('debug')('taskcluster-lib-loader');
 
@@ -60,13 +59,12 @@ function renderGraph(componentDirectory, sortedComponents) {
 function loader(componentDirectory, virtualComponents = {}) {
   assume(componentDirectory).is.an('object');
   assume(virtualComponents).is.an('object');
-  assume(_.intersection(
-    Object.keys(componentDirectory), Object.keys(virtualComponents))
-  ).has.length(0);
-  componentDirectory = _.clone(componentDirectory);
+  const virtualKeys = Object.keys(virtualComponents);
+  assume(Object.keys(componentDirectory).filter(x => virtualKeys.includes(x))).has.length(0);
+  componentDirectory = Object.assign({}, componentDirectory);
 
   // Check for undefined components
-  _.forEach(componentDirectory, (def, name) => {
+  Object.entries(componentDirectory).forEach(([name, def]) => {
     validateComponent(def, name);
     for (let dep of def.requires || []) {
       if (componentDirectory[dep] === undefined && virtualComponents[dep] === undefined) {
@@ -77,7 +75,7 @@ function loader(componentDirectory, virtualComponents = {}) {
 
   // Do topological sort to check for cycles
   let tsort = new TopoSort();
-  _.forEach(componentDirectory, (def, name) => {
+  Object.entries(componentDirectory).forEach(([name, def]) => {
     tsort.add(name, def.requires || []);
   });
   for (let name of Object.keys(virtualComponents)) {
@@ -101,7 +99,7 @@ function loader(componentDirectory, virtualComponents = {}) {
   };
 
   return function(target, options = {}) {
-    options = _.clone(options);
+    options = Object.assign({}, options);
 
     if (typeof target !== 'string') {
       throw new Error(`Target is type ${typeof target}, not string`);
@@ -125,7 +123,7 @@ function loader(componentDirectory, virtualComponents = {}) {
 
     // Keep state of loaded components, make the virtual ones immediately loaded
     let loaded = {};
-    _.forEach(options, (comp, key) => {
+    Object.entries(options).forEach(([key, comp]) => {
       loaded[key] = Promise.resolve(comp);
     });
 
