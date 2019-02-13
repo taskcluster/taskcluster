@@ -7,6 +7,7 @@
 const crypto = require('crypto');
 const stream = require('stream');
 const openpgp = require('openpgp');
+const tweetnacl = require('tweetnacl');
 const Debug = require('debug');
 const fs = require('mz/fs');
 const streamClosed = require('../stream_closed');
@@ -25,6 +26,8 @@ class ChainOfTrust {
     this.hash = crypto.createHash('sha256');
     let armoredKey = fs.readFileSync(task.runtime.signingKeyLocation, 'ascii');
     this.key = openpgp.key.readArmored(armoredKey).keys;
+    this.ed25519Key = Buffer.from(await new Promise((accept, reject) =>
+      fs.readFile(task.runtime.ed25519SigningKeyLocation, 'ascii', (err, data) => err ? reject(err) : accept(data))), 'base64');
 
     this.file = new temporary.File();
     debug(`created temporary file: ${this.file.path}`);
@@ -93,14 +96,20 @@ class ChainOfTrust {
         certificate.environment[tag] = task.runtime[tag];
       }
     });
+    let chainOfTrust = JSON.stringify(certificate, null, 2);
+    let chainOfTrustSig = tweetnacl.sign.detached(Buffer.from(chainOfTrust), this.ed25519Key);
+    let cotBufferStream = new stream.PassThrough();
+    cotBufferStream.end(Buffer.from(chainOfTrust));
+    let sigBufferStream = new stream.PassThrough();
+    sigBufferStream.end(new Buffer(chainOfTrustSig));
 
     let signedChainOfTrust = await openpgp.sign({
-      data: JSON.stringify(certificate, null, 2),
+      data: chainOfTrust,
       privateKeys: this.key
     });
 
     // Initiate a buffer stream to read from when uploading
-    var bufferStream = new stream.PassThrough();
+    let bufferStream = new stream.PassThrough();
     bufferStream.end(new Buffer(signedChainOfTrust.data));
 
     try {
@@ -113,6 +122,19 @@ class ChainOfTrust {
       debug(err);
       throw err;
     }
+
+    await uploadToS3(task.queue, task.status.taskId, task.runId,
+      cotBufferStream, 'public/chain-of-trust.json', expiration, {
+        'content-type': 'text/plain',
+        'content-length': chainOfTrust.length
+      });
+
+    await uploadToS3(task.queue, task.status.taskId, task.runId,
+      sigBufferStream, 'public/chain-of-trust.json.sig', expiration, {
+        'content-type': 'application/octet-stream',
+        'content-length': chainOfTrustSig.length
+      });
+
   }
 
 }

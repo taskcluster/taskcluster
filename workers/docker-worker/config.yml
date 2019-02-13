@@ -144,6 +144,7 @@ defaults:
 
   dockerWorkerPrivateKey: '/etc/docker-worker-priv.pem'
   signingKeyLocation: '/etc/docker-worker-gpg-signing-key.key'
+  ed25519SigningKeyLocation: '/etc/docker-worker-ed25519-cot-signing-key.key'
 
   dockerSave:
     expiration: '7 days'
@@ -209,6 +210,7 @@ test:
 
   dockerWorkerPrivateKey: '/worker/test/docker-worker-priv.pem'
   signingKeyLocation: '/worker/test/fixtures/gpg_signing_key.key'
+  ed25519SigningKeyLocation: '/worker/test/fixtures/ed25519_private_key'
 
   interactive:
     artifactName: 'private/docker-worker-tests/'

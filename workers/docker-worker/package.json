@@ -76,6 +76,7 @@
     "taskcluster-lib-validate": "12.0.0",
     "taskcluster-task-factory": "^0.6.4",
     "temporary": "^0.0.8",
+    "tweetnacl": "^1.0.0",
     "typed-env-config": "^2.0.0",
     "uuid": "^2.0.0",
     "websocket-stream": "^3.3.0",

@@ -7,6 +7,9 @@ const cmd = require('./helper/cmd');
 const expires = require('./helper/expires');
 const testworker = require('../post_task');
 const openpgp = require('openpgp');
+const tweetnacl = require('tweetnacl');
+const taskcluster = require('taskcluster-client');
+const got = require('got');
 const {removeImage} = require('../../src/lib/util/remove_image');
 const {TASK_ID, TASK_IMAGE_HASH, TASK_IMAGE_ARTIFACT_HASH} = require('../fixtures/image_artifacts');
 
@@ -61,6 +64,8 @@ suite('certificate of trust', () => {
     assert.equal(result.run.reasonResolved, 'completed', 'task should be successful');
 
     let expectedArtifacts = ['public/logs/certified.log',
+      'public/chain-of-trust.json',
+      'public/chain-of-trust.json.sig',
       'public/chainOfTrust.json.asc',
       'public/logs/live.log',
       'public/logs/live_backing.log',
@@ -68,6 +73,16 @@ suite('certificate of trust', () => {
       'public/bar'].sort();
     assert.deepEqual(Object.keys(result.artifacts).sort(), expectedArtifacts);
 
+    // ed25519 cot
+    let chainOfTrust = await getArtifact(result, 'public/chain-of-trust.json');
+    let queue = new taskcluster.Queue();
+    let url = queue.buildUrl(queue.getArtifact, result.taskId, result.runId, 'public/chain-of-trust.json.sig');
+    let chainOfTrustSig = (await got(url, {encoding: null})).body;
+
+    let verifyKey = Buffer.from(fs.readFileSync('test/fixtures/ed25519_public_key', 'ascii'), 'base64');
+    assert(tweetnacl.sign.detached.verify(Buffer.from(chainOfTrust), Buffer.from(chainOfTrustSig), verifyKey), 'ed25519 chain of trust signature does not appear to be valid');
+
+    // openpgp cot
     let signedChainOfTrust = await getArtifact(result, 'public/chainOfTrust.json.asc');
     let armoredKey = fs.readFileSync('test/fixtures/gpg_signing_key.asc', 'ascii');
     let key = openpgp.key.readArmored(armoredKey);
@@ -77,7 +92,7 @@ suite('certificate of trust', () => {
     };
     let verified = await openpgp.verify(opts);
 
-    assert(verified.signatures[0].valid, 'Certificate does not appear to be valid');
+    assert(verified.signatures[0].valid, 'OpenPGP certificate does not appear to be valid');
 
     // computer the hash of the live_backing.log which should be the same as the
     // certified log that was uploaded

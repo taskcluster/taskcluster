@@ -50,5 +50,9 @@ module.exports = {
 
   'cotSigningKey': {
     description: 'Location of chain of trust signing key'
+  },
+
+  'cotEd25519SigningKey': {
+    description: 'Location of chain of trust ed25519 signing key'
   }
 };

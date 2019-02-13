@@ -36,8 +36,9 @@ const features = {
   },
 
   chainOfTrust: {
-    title: 'Enable generation of a openpgp signed Chain of Trust artifact',
-    description: 'An artifact named chainOfTrust.json.asc should be generated ' +
+    title: 'Enable generation of a openpgp- and ed25519- signed Chain of Trust artifacts',
+    description: 'Artifacts named chain-of-trust.json, chain-of-trust.json.sig, and ' +
+                 'chainOfTrust.json.asc should be generated ' +
                  'which will include information for downstream tasks to build ' +
                  'a level of trust for the artifacts produced by the task and ' +
                  'the environment it ran in.',
