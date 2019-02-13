@@ -11,7 +11,7 @@ const REPO_ROOT = path.join(__dirname, '../../../../');
 exports.REPO_ROOT = REPO_ROOT;
 
 /**
- * Read a file (relative to REPO_ROOT) and return its contents as a utf8 string
+ * Asynchronously read a file (relative to REPO_ROOT) and return its contents as a utf8 string
  */
 exports.readFile = async filename => {
   return await readFile(
@@ -20,10 +20,26 @@ exports.readFile = async filename => {
 };
 
 /**
- * Read a JSON file
+ * Synchronously read a file (relative to REPO_ROOT) and return its contents as a utf8 string
+ */
+exports.readFileSync = filename => {
+  return fs.readFileSync(
+    path.join(REPO_ROOT, filename),
+    {encoding: 'utf8'});
+};
+
+/**
+ * Asynchronously read a JSON file
  */
 exports.readJSON = async filename => {
   return JSON.parse(await exports.readFile(filename));
+};
+
+/**
+ * Synchronously read a JSON file
+ */
+exports.readJSONSync = filename => {
+  return JSON.parse(exports.readFileSync(filename));
 };
 
 /**

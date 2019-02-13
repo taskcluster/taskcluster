@@ -2,7 +2,7 @@ const fs = require('fs');
 const md = require('md-directory');
 const readDirectory = require('read-directory');
 const { join } = require('path');
-const { readJSON, writeJSON } = require('../util');
+const { readJSONSync, writeJSON } = require('../util');
 const removeExtension = require('../../../../../ui/src/utils/removeExtension');
 
 const DOCS_LOCATIONS = {
@@ -13,7 +13,7 @@ const DOCS_LOCATIONS = {
 const projectMetadata = {};
 function readProjectMetadata(name) {
   if (!projectMetadata[name]) {
-    projectMetadata[name] = readJSON(join(DOCS_LOCATIONS.GENERATED, name, 'metadata.json'));
+    projectMetadata[name] = readJSONSync(join(DOCS_LOCATIONS.GENERATED, name, 'metadata.json'));
   }
 
   return projectMetadata[name];
@@ -80,6 +80,7 @@ function readGeneratedDocs() {
 }
 
 let prevNode = null;
+// Traverse the nodes in order, setting `up`, `next`, and `prev` links
 function addNav(node, parentNode) {
   if (parentNode && parentNode.path) {
     node.up = {
