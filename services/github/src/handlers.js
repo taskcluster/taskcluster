@@ -485,6 +485,60 @@ async function jobHandler(message) {
   debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${sha}`);
   let repoconf = undefined;
 
+  // Checking pull request permission.
+  if (message.payload.details['event.type'].startsWith('pull_request.')){
+    debug(`Checking pull request permission for ${organization}/${repository}@${sha}...`);
+
+    // Decide if a user has permissions to run tasks.
+    let login = message.payload.details['event.head.user.login'];
+    try {
+      if (!await prAllowed({login, organization, repository, instGithub, debug, message})) {
+        if(message.payload.details['event.type'].startsWith('pull_request.opened')){
+          let body = [
+            '<details>\n',
+            '<summary>No Taskcluster jobs started for this pull request</summary>\n\n',
+            '```js\n',
+            'The `allowPullRequests` configuration for this repository (in `.taskcluster.yml` on the',
+            'default branch) does not allow starting tasks for this pull request.',
+            '```\n',
+            '</details>',
+          ].join('\n');
+          await instGithub.issues.createComment({
+            owner: organization,
+            repo: repository,
+            number: pullNumber,
+            body,
+          });
+        }
+        return;
+      }
+    } catch (e) {
+      if (e.name === 'YAMLException') {
+        let docsLink = 'https://docs.taskcluster.net/reference/integrations/github/docs/usage#who-can-trigger-jobs';
+        await instGithub.issues.createComment({
+          owner: organization,
+          repo: repository,
+          number: pullNumber,
+          body: [
+            '<details>\n',
+            '<summary>Error in `.taskcluster.yml` while checking',
+            'for permissions **on default branch ' + branch + '**.',
+            'Read more about this in',
+            '[the taskcluster docs](' + docsLink + ').',
+            'Details:</summary>\n\n',
+            '```js\n',
+            e.message,
+            '```\n',
+            '</details>',
+          ].join('\n'),
+        });
+        return;
+      }
+      debug(`Error checking PR permissions for ${organization}/${repository}@${sha}`);
+      throw e;
+    }
+  }
+
   // Try to fetch a .taskcluster.yml file for every request
   try {
     debug(`Trying to fetch the YML for ${organization}/${repository}@${sha}`);
@@ -549,57 +603,6 @@ async function jobHandler(message) {
       Leaving comment on Github.`);
     await this.createExceptionComment({instGithub, organization, repository, sha, error: e, pullNumber});
     return;
-  }
-
-  if (message.payload.details['event.type'].startsWith('pull_request.')) {
-    debug(`Checking pull request permission for ${organization}/${repository}@${sha}...`);
-
-    // Decide if a user has permissions to run tasks.
-    let login = message.payload.details['event.head.user.login'];
-    try {
-      if (!await prAllowed({login, organization, repository, instGithub, debug, message})) {
-        let body = [
-          '<details>\n',
-          '<summary>No Taskcluster jobs started for this pull request</summary>\n\n',
-          '```js\n',
-          'The `allowPullRequests` configuration for this repository (in `.taskcluster.yml` on the',
-          'default branch) does not allow starting tasks for this pull request.',
-          '```\n',
-          '</details>',
-        ].join('\n');
-        await instGithub.issues.createComment({
-          owner: organization,
-          repo: repository,
-          number: pullNumber,
-          body,
-        });
-        return;
-      }
-    } catch (e) {
-      if (e.name === 'YAMLException') {
-        let docsLink = 'https://docs.taskcluster.net/reference/integrations/github/docs/usage#who-can-trigger-jobs';
-        await instGithub.issues.createComment({
-          owner: organization,
-          repo: repository,
-          number: pullNumber,
-          body: [
-            '<details>\n',
-            '<summary>Error in `.taskcluster.yml` while checking',
-            'for permissions **on default branch ' + branch + '**.',
-            'Read more about this in',
-            '[the taskcluster docs](' + docsLink + ').',
-            'Details:</summary>\n\n',
-            '```js\n',
-            e.message,
-            '```\n',
-            '</details>',
-          ].join('\n'),
-        });
-        return;
-      }
-      debug(`Error checking PR permissions for ${organization}/${repository}@${sha}`);
-      throw e;
-    }
   }
 
   taskGroupId = graphConfig.tasks[0].task.taskGroupId;
