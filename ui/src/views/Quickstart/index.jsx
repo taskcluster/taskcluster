@@ -35,8 +35,8 @@ const initialYaml = {
   tasks: {
     $match: {
       taskId: { $eval: 'as_slugid("pr_task")' },
-      provisionerId: '{{ taskcluster.docker.provisionerId }}',
-      workerType: '{{ taskcluster.docker.workerType }}',
+      provisionerId: `{{ taskcluster.docker.provisionerId }}`,
+      workerType: `{{ taskcluster.docker.workerType }}`,
       scopes: ['secrets:get:project/taskcluster/testing/taskcluster-github'],
       payload: {
         maxRunTime: 3600,
@@ -46,8 +46,8 @@ const initialYaml = {
       metadata: {
         name: '',
         description: '',
-        owner: '{{ event.sender.login }}@users.noreply.github.com',
-        source: '{{ event.repository.url }}',
+        owner: `{{ event.sender.login }}@users.noreply.github.com`,
+        source: `{{ event.repository.url }}`,
       },
     },
   },
@@ -206,28 +206,63 @@ export default class QuickStart extends Component {
     this.setState(initialState);
   };
 
+  getMatchCondition = events => {
+    let condition = '';
+    const eventsJoin = Array.from(events).join(' ');
+
+    if (eventsJoin.includes('pull_request')) {
+      condition = `${condition}(tasks_for == "github-pull-request" && event["action"] in [${[
+        ...events,
+      ].sort()}])`;
+    }
+
+    if (eventsJoin.includes('push')) {
+      if (condition.length > 0) {
+        condition = `${condition} || `;
+      }
+
+      condition = `${condition}(tasks_for == "github-push")`;
+    }
+
+    if (eventsJoin.includes('release')) {
+      if (condition.length > 0) {
+        condition = `${condition} || `;
+      }
+
+      condition = `${condition}(tasks_for == "github-relase")`;
+    }
+
+    return condition;
+  };
+
   renderEditor() {
+    const {
+      access,
+      commands,
+      events,
+      image,
+      taskName,
+      taskDescription,
+    } = this.state;
     const newYaml = safeDump({
       ...initialYaml,
       policy: {
-        pullRequests: this.state.access,
+        pullRequests: access,
       },
       tasks: {
         $match: {
-          [`tasks_for == "github-pull-request" && event["action"] in ${[
-            ...this.state.events,
-          ].sort()}`]: {
-            ...initialYaml.$match,
+          [`${this.getMatchCondition(events)}`]: {
+            ...initialYaml.tasks.$match,
             ...{
               metadata: {
                 ...initialYaml.tasks.$match.metadata,
-                name: this.state.taskName,
-                description: this.state.taskDescription,
+                name: taskName,
+                description: taskDescription,
               },
               payload: {
                 ...initialYaml.tasks.$match.payload,
-                command: this.state.commands,
-                image: this.state.image,
+                image,
+                command: commands,
               },
             },
           },
