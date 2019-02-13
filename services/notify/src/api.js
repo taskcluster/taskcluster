@@ -14,6 +14,9 @@ const builder = new APIBuilder({
     'notifier',
     'BlacklistedNotification',
   ],
+  errorCodes: {
+    BlacklistedAddress: 400,
+  },
 });
 
 module.exports = builder;

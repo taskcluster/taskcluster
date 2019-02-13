@@ -37,7 +37,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
     try {
       await helper.apiClient.pulse({routingKey: 'notify-test', message: {test: 123}});
     } catch(e) {
-      assert(e.code, 'InternalServerError');
+      assert(e.code, 'BlacklistedAddress');
     }
   });
 
@@ -65,7 +65,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
         link: {text: 'Inspect Task', href: 'https://tools.taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ'},
       });
     } catch(e) {
-      assert.equal(e.code, "InternalServerError");
+      assert.equal(e.code, "BlacklistedAddress");
     }
   });
 
@@ -107,14 +107,14 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
     try {
       await helper.apiClient.irc({message: 'Does this work?', channel: '#taskcluster-test'});
     } catch(e) {
-      assert(e.code, 'InternalServerError');
+      assert(e.code, 'BlacklistedAddress');
     }
     // Repeat for a blacklisted user
     await helper.apiClient.addBlacklistAddress({notificationType: 'irc-user', notificationAddress: 'notify-me'});
     try {
       await helper.apiClient.irc({message: 'Does this work?', user: 'notify-me'});
     } catch(e) {
-      assert(e.code, 'InternalServerError');
+      assert(e.code, 'BlacklistedAddress');
     }
   });
 
