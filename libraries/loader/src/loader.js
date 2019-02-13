@@ -1,18 +1,12 @@
-let util = require('util');
-let assume = require('assume');
-let _ = require('lodash');
-let TopoSort = require('topo-sort');
-let debug = require('debug')('taskcluster-lib-loader');
+const util = require('util');
+const assume = require('assume');
+const _ = require('lodash');
+const TopoSort = require('topo-sort');
+const debug = require('debug')('taskcluster-lib-loader');
 
-// see babel issue 2215
-function includes(a, v) {
-  if (a.indexOf(v) === -1) {
-    return false;
-  }
-  return true;
-}
-
-/** Validate component definition */
+/**
+ * Validate component definition
+ */
 function validateComponent(def, name) {
   let e = 'Invalid component definition: ' + name;
   // Check that it's an object
@@ -61,79 +55,13 @@ function renderGraph(componentDirectory, sortedComponents) {
 
 /*
  * Construct a component loader function.
- *
- * The `componentDirectory` is an object mapping from component names to
- * component loaders as follows:
- * ```js
- * let load = loader({
- *   // Component loader that always returns 'test'
- *   profile: {
- *     setup: () => 'test'
- *   },
- *
- *   // Component loader that requires profile as input to the setup function
- *   config: {
- *     requires: ['profile'],
- *     setup: (options) => {
- *       return base.config({profile: options.profile});
- *     }
- *   },
- *
- *   // Component loader that loads asynchronously
- *   requestedValue: {
- *     requires: ['config'],
- *     setup: async (options) => {
- *       let res = await request.get(config.some_url).get().end();
- *       return res.body;
- *     }
- *   },
- *
- *   // Component loader that requires more than one component
- *   server: {
- *     requires: ['config', 'requestedValue'],
- *     setup: (options) => {
- *       return server.startListening({
- *         config: options.config,
- *         input: options.requestedValues,
- *       });
- *     }
- *   }
- * });
- * ```
- * With this `load` function you can load the server using:
- * ```js
- * let server = await load('server');
- * ```
- * Naturally, you can also load config `await load('config');` which is useful
- * for testing.
- *
- * Sometimes it's not convenient to hard code constant values into the component
- * directory, in the example above someone might want to load the
- * components with a different profile. Instead you can specify "profile" as
- * a `virtualComponents`, then it must be provided as an options when loading.
- *
- * ```js
- * let load = loader({
- *   // Component loader that requires profile as input to the setup function
- *   config: {
- *     requires: ['profile'],
- *     setup: (options) => {
- *       return base.config({profile: options.profile});
- *     }
- *   }
- * }, ['profile']);
- * ```
- *
- * Then you'll be able to load config as:
- * ```js
- * let config = await load('config', {profile: 'test'});
- * ```
+ * Usage is detailed in README.
  */
-function loader(componentDirectory, virtualComponents = []) {
+function loader(componentDirectory, virtualComponents = {}) {
   assume(componentDirectory).is.an('object');
-  assume(virtualComponents).is.an('array');
+  assume(virtualComponents).is.an('object');
   assume(_.intersection(
-    _.keys(componentDirectory), virtualComponents)
+    Object.keys(componentDirectory), Object.keys(virtualComponents))
   ).has.length(0);
   componentDirectory = _.clone(componentDirectory);
 
@@ -141,7 +69,7 @@ function loader(componentDirectory, virtualComponents = []) {
   _.forEach(componentDirectory, (def, name) => {
     validateComponent(def, name);
     for (let dep of def.requires || []) {
-      if (!componentDirectory[dep] && !includes(virtualComponents, dep)) {
+      if (componentDirectory[dep] === undefined && virtualComponents[dep] === undefined) {
         throw new Error('Cannot require undefined component: ' + dep);
       }
     }
@@ -152,21 +80,20 @@ function loader(componentDirectory, virtualComponents = []) {
   _.forEach(componentDirectory, (def, name) => {
     tsort.add(name, def.requires || []);
   });
-  for (let name of virtualComponents) {
+  for (let name of Object.keys(virtualComponents)) {
     tsort.add(name, []);
   }
   let topoSorted = tsort.sort();
 
   // Add graphviz target
-  if (componentDirectory.graphviz || includes(virtualComponents, 'graphviz')) {
+  if (componentDirectory.graphviz || virtualComponents.graphviz) {
     throw new Error('graphviz is reserved for an internal component');
   }
   componentDirectory.graphviz = {
     setup: () => renderGraph(componentDirectory, topoSorted),
   };
   // Add dump-dot target, which will print to terminal (useful for debugging)
-  if (componentDirectory['dump-dot'] ||
-      includes(virtualComponents, 'dump-dot')) {
+  if (componentDirectory['dump-dot'] || virtualComponents['dump-dot']) {
     throw new Error('dump-dot is reserved for an internal component');
   }
   componentDirectory['dump-dot'] = {
@@ -175,12 +102,13 @@ function loader(componentDirectory, virtualComponents = []) {
 
   return function(target, options = {}) {
     options = _.clone(options);
+
     if (typeof target !== 'string') {
       throw new Error(`Target is type ${typeof target}, not string`);
     }
 
     // Check that target is defined
-    if (!componentDirectory[target] && !includes(virtualComponents, target)) {
+    if (!componentDirectory[target] && !virtualComponents[target]) {
       throw new Error(`Target ${target} is not defined`);
     }
 
@@ -188,7 +116,8 @@ function loader(componentDirectory, virtualComponents = []) {
     if (typeof options !== 'object') {
       throw new Error('options must be an object');
     }
-    for (let vComp of virtualComponents) {
+    options = Object.assign({}, virtualComponents, options);
+    for (const vComp of Object.keys(options)) {
       if (!options[vComp]) {
         throw new Error(`Requested component '${vComp}' does not exist in loader`);
       }
@@ -231,5 +160,4 @@ function loader(componentDirectory, virtualComponents = []) {
   };
 }
 
-// Export loader
 module.exports = loader;

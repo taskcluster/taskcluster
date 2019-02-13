@@ -38,11 +38,29 @@ describe('component loader', () => {
           return deps.dep;
         },
       },
-    }, ['dep']);
+    }, {
+      dep: null,
+    });
 
     assume(await load('test', {
       dep: a,
     })).equals(a);
+  });
+
+  it('should allow setting defaults for virtual components', async () => {
+    let load = subject({
+      test: {
+        requires: ['dep'],
+        setup: deps => {
+          return deps.dep;
+        },
+      },
+    }, {
+      dep: 5,
+    });
+
+    assume(await load('test', {})).equals(5);
+    assume(await load('test')).equals(5);
   });
 
   it('should allow overwrites', async () => {
@@ -53,7 +71,7 @@ describe('component loader', () => {
           return 'Hello World';
         },
       },
-    }, []);
+    }, {});
 
     assume(await load('test', {
       test: 'Mocking Hello World',
@@ -372,7 +390,9 @@ describe('component loader', () => {
           return deps.dep;
         },
       },
-    }, ['dep']);
+    }, {
+      dep: null,
+    });
 
     await load('graphviz', {
       dep: a,
@@ -383,7 +403,9 @@ describe('component loader', () => {
     try {
       let load = subject({
         dep1: 'string',
-      }, ['dep1']);
+      }, {
+        'dep1': null,
+      });
       throw new Error();
     } catch (e) {
       if (!e.message.match(/assertation failure/)) {

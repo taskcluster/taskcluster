@@ -96,7 +96,9 @@ let server = await load('server', {port: 8080});
 ```
 
 Finally, you can specify virtual components, for example you may wish to force
-the caller of `load` to always specify a port.
+the caller of `load` to always specify a port or provide a default. If you
+set the default of the virtual component to a falsy value, you will force
+the user to provide a value for you.
 
 ```js
 let loader = require('taskcluster-lib-loader');
@@ -116,7 +118,7 @@ let load = loader({
       return server;
     }
   },
-  
+
   // Definition of 'express' component, notice that even through the 'server'
   // components setup function returns a promise, `ctx.server` is a server
   // object as resolved.
@@ -130,10 +132,10 @@ let load = loader({
     }
   }
 
-  // Virtual components that must always be specified for `load` to work
-}, ['port']);
+  // Virtual components that can be specified for `load` to work
+}, {'port': 900});
 
-// Create express (here we're forced to specify port)
+// Create express (here we specify a port)
 let server = await load('express', {port: 80});
 ```
 
@@ -150,18 +152,11 @@ particularly useful for getting a fresh component between tests.
 
 We generally recommend one component loader per project, and that you expose
 it in an executable such that you do `node server.js <component>` to start a
-process running the specified component.  A handy way to run the loader on startup,
-given both the profile ($NODE_ENV) and process (target component):
+process running the specified component.
 
 ```js
 // If this file is executed launch component from first argument
 if (!module.parent) {
-  load(process.argv[2], {
-    process: process.argv[2],
-    profile: process.env.NODE_ENV,
-  }).catch(err => {
-    console.log(err.stack);
-    process.exit(1);
-  });
+  load(process.argv[2]);
 }
 ```
