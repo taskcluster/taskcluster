@@ -160,18 +160,14 @@ const load = loader(
       },
     },
   },
-  ['profile', 'process']
+  {
+    // default to 'devServer' since webpack does not pass any command-line args
+    // when running in development mode
+    profile: process.env.NODE_ENV || 'development',
+    process: process.argv[2] || 'devServer',
+  }
 );
 
 if (!module.parent) {
-  // default to 'devServer' since webpack does not pass any command-line args
-  // when running in development mode
-  const target = process.argv[2] || 'devServer';
-  load(target, {
-    process: target,
-    profile: process.env.NODE_ENV || 'development',
-  }).catch(err => {
-    console.log(err.stack); // eslint-disable-line no-console
-    process.exit(1);
-  });
+  load(process.argv[2]);
 }
