@@ -131,11 +131,11 @@ module.exports = {
       secrets = await provisioner.getSecret(securityToken);
     }
     catch (e) {
-      // It's bad if secrets cannot be retrieved.  Either this could happen when
+      // It's bad if credentials cannot be retrieved.  Either this could happen when
       // worker first starts up because of an issue communicating with the provisioner
       // or if the worker respawned (because of an uncaught exception).  Either way,
       // alert and set capacity to 0.
-      log('[alert-operator] error retrieving secrets', {stack: e.stack});
+      log('[alert-operator] error retrieving credentials from provisioner', {stack: e.stack});
       spawn('shutdown', ['-h', 'now']);
     }
 
@@ -146,10 +146,30 @@ module.exports = {
     // Log config for record of configuration but without secrets
     log('config', config);
 
+    let tcsecrets = new taskcluster.Secrets({
+      rootUrl,
+      credentials: secrets.credentials
+    });
+
+    let workerTypeSecret;
+    try {
+      workerTypeSecret = await tcsecrets.get(
+        `worker-type:${userdata.provisionerId}/${userdata.workerType}`
+      );
+    }
+    catch (e) {
+      // Access to secret config is critical, so shutdown if not available
+      log(
+        '[alert-operator] error retrieving worker type secret from taskcluster secrets service',
+        {stack: e.stack}
+      );
+      spawn('shutdown', ['-h', 'now']);
+    }
+
     // Order of these matter.  We want secret data to override all else, including
     // taskcluster credentials (if perma creds are provided by secrets.data)
     return _.defaultsDeep(
-      secrets.data,
+      workerTypeSecret.secret,
       {taskcluster: secrets.credentials},
       {rootUrl},
       userdata.data,
