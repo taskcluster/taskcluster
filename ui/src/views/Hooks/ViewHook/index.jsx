@@ -45,13 +45,14 @@ export default class ViewHook extends Component {
           hookGroupId,
           payload,
         },
+        refetchQueries: ['Hook'],
+        awaitRefetchQueries: true,
       });
 
       this.props.history.push(
         `/hooks/${encodeURIComponent(hookGroupId)}/${hookId}`
       );
 
-      await this.props.data.refetch();
       this.setState({ error: null, actionLoading: false });
     } catch (error) {
       this.setState({ error, actionLoading: false });
@@ -87,8 +88,9 @@ export default class ViewHook extends Component {
         hookGroupId,
         payload,
       },
+      refetchQueries: ['Hook'],
+      awaitRefetchQueries: true,
     });
-    await this.props.data.refetch();
   };
 
   handleUpdateHook = async ({ hookGroupId, hookId, payload }) => {
@@ -102,6 +104,8 @@ export default class ViewHook extends Component {
           hookGroupId,
           payload,
         },
+        refetchQueries: ['Hook'],
+        awaitRefetchQueries: true,
       });
 
       this.setState({ error: null, actionLoading: false });
