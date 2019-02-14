@@ -708,7 +708,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
 
   suite('pulseHooks', function() {
     subSkip();
-    test('creates hook', async () => {
+    test('createing a hook sends a pulse message', async () => {
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithBindings);
       const r2 = await helper.hooks.hook('foo', 'bar');
       assume(r1).deep.equals(r2);
@@ -718,93 +718,15 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
 
     test('hook-created message reconciles consumers', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithBindings);
-      let reconcileConsumers = false;
-      helper.Listener.reconcileConsumers = async () => reconcileConsumers = true;
+      let reconciledConsumers = false;
+      helper.Listener.reconcileConsumers = async () => reconciledConsumers = true;
       await helper.Listener.pulseHookChangedListener.fakeMessage({
         payload: {
           hookId: 'bar',
           hookGroupId: 'foo',
         }, exchange: 'exchange/taskcluster-hooks/v1/hook-created',
       });
-      assert(reconcileConsumers);
-    });
-
-    test('hook-created message creates a new listener', async () => {
-      const r1 = await helper.hooks.createHook('foo', 'bar', hookWithBindings);
-      let createdListener = false;
-      helper.Listener.createListener = async (hook) => {
-        if (hook.hookId==='bar' && hook.hookGroupId==='foo' && _.isEqual(hook.bindings, r1.bindings)) {
-          createdListener = true;
-        }
-      };
-      await helper.Listener.pulseHookChangedListener.fakeMessage({
-        payload: {
-          hookId: 'bar',
-          hookGroupId: 'foo',
-        }, exchange: 'exchange/taskcluster-hooks/v1/hook-created',
-      });
-      assert(createdListener);
-      const queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
-      assume(queue.bindings).deep.equals(r1.bindings);
-    });
-
-    test('triggers hook with a pulse message', async () => {
-      const r1 = await helper.hooks.createHook('foo', 'bar', hookWithBindings);
-      await helper.Listener.pulseHookChangedListener.fakeMessage({
-        payload: {
-          hookId: 'bar',
-          hookGroupId: 'foo',
-        }, exchange: 'exchange/taskcluster-hooks/v1/hook-created',
-      });
-      let listener = _.last(helper.Listener.listeners);
-      await listener.fakeMessage({payload: {location: 'Orlando'}, exchange: r1.bindings[0].exchange});
-      assume(helper.creator.fireCalls).deep.equals([{
-        hookGroupId: 'foo',
-        hookId: 'bar',
-        context: {firedBy: 'pulseMessage', payload: {location: 'Orlando'}},
-        options: {},
-      }]);
-    });
-
-    test('updating a hook updates bindings of queue', async () => {
-      await helper.hooks.createHook('foo', 'bar', hookWithBindings);
-      await helper.Listener.pulseHookChangedListener.fakeMessage({
-        payload: {
-          hookId: 'bar',
-          hookGroupId: 'foo',
-        }, exchange: 'exchange/taskcluster-hooks/v1/hook-created',
-      });
-      const r1 = await helper.hooks.updateHook('foo', 'bar', hookWithNewBindings);
-      await helper.Listener.pulseHookChangedListener.fakeMessage({
-        payload: {
-          hookId: 'bar',
-          hookGroupId: 'foo',
-        }, exchange: 'exchange/taskcluster-hooks/v1/hook-updated',
-      });
-      const queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
-      assume(queue.bindings).deep.equals(r1.bindings);
-    });
-
-    test('removing a hook removes the queue', async () => {
-      const r1 = await helper.hooks.createHook('foo', 'bar', hookWithBindings);
-      await helper.Listener.pulseHookChangedListener.fakeMessage({
-        payload: {
-          hookId: 'bar',
-          hookGroupId: 'foo',
-        }, exchange: 'exchange/taskcluster-hooks/v1/hook-created',
-      });
-      let queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
-      assume(queue.bindings).deep.equals(r1.bindings);
-      await helper.hooks.removeHook('foo', 'bar');
-      await helper.Listener.pulseHookChangedListener.fakeMessage({
-        payload: {
-          hookId: 'bar',
-          hookGroupId: 'foo',
-        }, exchange: 'exchange/taskcluster-hooks/v1/hook-deleted',
-      });
-      queue = await helper.Queues.load({hookGroupId: 'foo', hookId: 'bar'}, true);
-      assert.equal(queue, null);
+      assert(reconciledConsumers);
     });
   });
-
 });

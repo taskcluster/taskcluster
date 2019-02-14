@@ -57,13 +57,17 @@ class HookListeners {
     );
     debug('Listening to hook exchanges');
     this.pulseHookChangedListener = consumer;
-    this.listeners = [];
+    this.listeners = {};
     // Reconcile on start up
     await this.reconcileConsumers();
   }
 
   /** Create a new pulse consumer for a hook */
-  async createListener(hook, queueName) {
+  async createListener(hookGroupId, hookId, queueName) {
+    if (this.listeners[queueName]) {
+      return;
+    }
+
     debug(`${queueName}: creating listener (and queue if necessary)`);
 
     const client = this.client;
@@ -76,31 +80,25 @@ class HookListeners {
     }, async ({payload}) => {
       // Get a fresh copy of the hook and fire it, if it still exists
       let latestHook = await this.Hook.load({
-        hookGroupId: hook.hookGroupId,
-        hookId: hook.hookId,
+        hookGroupId: hookGroupId,
+        hookId: hookId,
       }, true);
       if (latestHook) {
         await this.taskcreator.fire(latestHook, {firedBy: 'pulseMessage', payload});
       }
     });
 
-    this.listeners.push(listener);
+    this.listeners[queueName] = listener;
   }
 
   /** Delete a listener for the given queueName  */
   async removeListener(queueName) {
     debug(`${queueName}: stop listening`);
-    let removeIndex = this.listeners.findIndex(({_queueName}) => _queueName === queueName);
-    if (removeIndex > -1) {
-      const listener = this.listeners[removeIndex];
+    const listener = this.listeners[queueName];
+    delete this.listeners[queueName];
+    if (listener) {
       await listener.stop();
-      this.listeners.splice(removeIndex, 1);
     }
-  }
-
-  haveListener(queueName) {
-    const index = this.listeners.findIndex(({_queueName}) => _queueName === queueName);
-    return index > -1;
   }
 
   /** Deletes the amqp queue if it exists for a real pulse client */
@@ -181,27 +179,28 @@ class HookListeners {
 
           const {hookGroupId, hookId} = hook;
           const queueName = `${hookGroupId}/${hookId}`;
-          const hookDebug = msg => debug(`${queueName}: ${msg}`);
 
           try {
             const queue = _.find(queues, {hookGroupId, hookId});
             if (queue) {
-              if (!this.haveListener(queue.queueName)) {
-                await this.createListener(hook, queue.queueName);
+              if (!this.listeners[queue.queueName]) {
+                await this.createListener(hookGroupId, hookId, queue.queueName);
               }
 
               // update the bindings of the queue to be in sync with the Hooks table
               await this.syncBindings(queue.queueName, hook.bindings, queue.bindings);
 
               // update the bindings in the Queues Azure table
-              await queue.modify((queue) => {
-                queue.bindings = hook.bindings;
-              });
+              if (!_.isEqual(queue.bindings, hook.bindings)) {
+                await queue.modify((queue) => {
+                  queue.bindings = hook.bindings;
+                });
+              }
 
               // this queue has been reconciled, so remove it from the list
               _.pull(queues, queue);
             } else {
-              await this.createListener(hook, queueName);
+              await this.createListener(hookGroupId, hookId, queueName);
               await this.syncBindings(queueName, hook.bindings, []);
 
               // Add to Queues table
@@ -221,7 +220,9 @@ class HookListeners {
 
       // Delete the queues now left in the queues list.
       for (let queue of queues) {
-        await this.removeListener(queue.queueName);
+        if (this.listeners[queue.queueName]) {
+          await this.removeListener(queue.queueName);
+        }
         await this.deleteQueue(queue.queueName);
         await queue.remove();
       }
