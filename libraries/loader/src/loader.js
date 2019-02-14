@@ -58,7 +58,12 @@ function renderGraph(componentDirectory, sortedComponents) {
  */
 function loader(componentDirectory, virtualComponents = {}) {
   assume(componentDirectory).is.an('object');
-  assume(virtualComponents).is.an('object');
+  if (virtualComponents instanceof Array) {
+    virtualComponents = virtualComponents.reduce((acc, k) => {
+      acc[k] = null;
+      return acc;
+    }, {});
+  }
   const virtualKeys = Object.keys(virtualComponents);
   assume(Object.keys(componentDirectory).filter(x => virtualKeys.includes(x))).has.length(0);
   componentDirectory = Object.assign({}, componentDirectory);

@@ -47,6 +47,25 @@ describe('component loader', () => {
     })).equals(a);
   });
 
+  it('should accept a virtual component as array', async () => {
+    let a = {a: 1};
+
+    let load = subject({
+      test: {
+        requires: ['dep'],
+        setup: deps => {
+          return deps.dep;
+        },
+      },
+    }, [
+      'dep',
+    ]);
+
+    assume(await load('test', {
+      dep: a,
+    })).equals(a);
+  });
+
   it('should allow setting defaults for virtual components', async () => {
     let load = subject({
       test: {
