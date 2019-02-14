@@ -30,18 +30,18 @@ export default path => {
   if (!localDocsMatches.length) {
     if (path.endsWith('.json')) {
       return {
-        path: `/generated/docs/${docPath}.json`,
-        loader: import(/* webpackChunkName: 'Documentation.JSON' */ `../../../generated/docs/${docPath}.json`),
+        path: `/ui/docs/generated/${docPath}.json`,
+        loader: import(/* webpackChunkName: 'Documentation.JSON' */ `../../docs/generated/${docPath}.json`),
       };
     }
 
-    const mdFile = import(/* webpackChunkName: 'Documentation.page' */ `../../../generated/docs/${docPath}.md`).catch(
+    const mdFile = import(/* webpackChunkName: 'Documentation.page' */ `../../docs/generated/${docPath}.md`).catch(
       () =>
-        import(/* webpackChunkName: 'Documentation.page' */ `../../../generated/docs/${docPath}/index.md`)
+        import(/* webpackChunkName: 'Documentation.page' */ `../../docs/generated/${docPath}/index.md`)
     );
 
     return {
-      path: `/generated/docs/${docPath}.md`,
+      path: `/ui/docs/generated/${docPath}.md`,
       loader: mdFile,
     };
   }
@@ -51,7 +51,7 @@ export default path => {
       import(/* webpackChunkName: 'Documentation.page' */ `../docs/${doc}/index.md`)
   );
   const generatedDocsKeys = require
-    .context('../../../generated/docs', true, /.*(.md|.json)$/)
+    .context('../../docs/generated', true, /.*(.md|.json)$/)
     .keys();
 
   return {

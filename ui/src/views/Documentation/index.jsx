@@ -303,7 +303,7 @@ export default class Documentation extends Component {
           const schemaName = entry[prop].replace(/#$/, '');
           let {
             default: schema,
-          } = await import(/* webpackChunkName: 'Documentation.Schema' */ `../../../../generated/docs/${projectName}/schemas/${schemaName}`);
+          } = await import(/* webpackChunkName: 'Documentation.Schema' */ `../../../docs/generated/${projectName}/schemas/${schemaName}`);
 
           schema = this.sanitizeSchema(schema);
 
@@ -338,7 +338,7 @@ export default class Documentation extends Component {
                           url.pathname.replace(/^\/schemas\/[^\/]*\//, '');
                     const {
                       default: schema,
-                    } = await import(/* webpackChunkName: 'Documentation.Schema' */ `../../../../generated/docs/${projectName}/schemas/${schemaName}`);
+                    } = await import(/* webpackChunkName: 'Documentation.Schema' */ `../../../docs/generated/${projectName}/schemas/${schemaName}`);
 
                     callback(null, schema);
                   },

@@ -22,8 +22,8 @@ const SERVICES = glob.sync(
   // this can't run writeDocs without 'yarn build', so ignore it for now.
   .filter(service => service !== 'web-server');
 
-const genDir = path.join(REPO_ROOT, 'generated');
-const docsDir = path.join(genDir, 'docs');
+const docsDir = path.join(REPO_ROOT, 'ui', 'docs');
+const genDir = path.join(docsDir, 'generated');
 
 exports.tasks = [];
 
@@ -31,8 +31,8 @@ exports.tasks.push({
   title: `Clean Docs`,
   provides: ['clean-docs'],
   run: async (requirements, utils) => {
-    await rimraf(docsDir);
-    await mkdirp(docsDir);
+    await rimraf(genDir);
+    await mkdirp(genDir);
   },
 });
 
@@ -45,9 +45,9 @@ SERVICES.forEach(name => {
     requires: ['clean-docs'],
     provides: [`docs-tarball-${name}`],
     run: async (requirements, utils) => {
-      const svcDir = path.join(docsDir, name);
+      const svcDir = path.join(genDir, name);
 
-      await mkdirp(docsDir);
+      await mkdirp(genDir);
       await rimraf(svcDir);
 
       // worker-manager uses a different filename from the other services..
@@ -78,7 +78,7 @@ exports.tasks.push({
   run: async (requirements, utils) => {
     await mkdirp(genDir);
 
-    const refs = References.fromBuiltServices({directory: docsDir});
+    const refs = References.fromBuiltServices({directory: genDir});
     const serializable = refs.makeSerializable();
 
     // sort the serializable output by filename to ensure consistency
@@ -92,7 +92,7 @@ exports.tasks.push({
       }
     });
 
-    await writeJSON('generated/references.json', serializable);
+    await writeJSON('ui/docs/references.json', serializable);
 
     return {
       'target-references': true,
