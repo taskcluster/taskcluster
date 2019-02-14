@@ -6,6 +6,7 @@ db.version(1).stores({
   taskIdsHistory: 'taskId',
   taskGroupIdsHistory: 'taskGroupId',
   userPreferences: '',
+  taskDefinitions: 'metadata.name',
 });
 
 /**
