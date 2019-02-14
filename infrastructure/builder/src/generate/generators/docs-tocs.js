@@ -2,8 +2,7 @@ const fs = require('fs');
 const md = require('md-directory');
 const readDirectory = require('read-directory');
 const { join } = require('path');
-const { readJSONSync, writeJSON } = require('../util');
-const removeExtension = require('../../../../../ui/src/utils/removeExtension');
+const { removeExtension, readJSONSync, writeJSON } = require('../util');
 
 const DOCS_LOCATIONS = {
   GENERATED: join('ui', 'docs', 'generated'),
