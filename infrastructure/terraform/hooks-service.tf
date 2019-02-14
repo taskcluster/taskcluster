@@ -83,3 +83,17 @@ module "hooks_listeners" {
   secret_keys    = "${module.hooks_secrets.env_var_keys}"
   docker_image   = "${local.taskcluster_image_monoimage}"
 }
+
+module "hooks_expire_artifacts" {
+  source           = "modules/scheduled-job"
+  project_name     = "taskcluster-hooks"
+  service_name     = "hooks"
+  job_name         = "expires"
+  schedule         = "10 0 * * *"
+  deadline_seconds = 86400
+  secret_name      = "${module.hooks_secrets.secret_name}"
+  secrets_hash     = "${module.hooks_secrets.secrets_hash}"
+  root_url         = "${var.root_url}"
+  secret_keys      = "${module.hooks_secrets.env_var_keys}"
+  docker_image     = "${local.taskcluster_image_monoimage}"
+}
