@@ -1,8 +1,12 @@
+const { promisify } = require('util');
 const fs = require('fs');
 const md = require('md-directory');
-const readDirectory = require('read-directory');
 const { join } = require('path');
-const { removeExtension, readJSONSync, writeJSON } = require('../util');
+const { removeExtension, readJSON, writeJSON } = require('../util');
+
+const mdParseDir = promisify(md.parseDir);
+const readDirectory = promisify(require('read-directory'));
+const readdir = promisify(fs.readdir);
 
 const DOCS_LOCATIONS = {
   GENERATED: join('ui', 'docs', 'generated'),
@@ -10,9 +14,9 @@ const DOCS_LOCATIONS = {
 };
 
 const projectMetadata = {};
-function readProjectMetadata(name) {
+async function readProjectMetadata(name) {
   if (!projectMetadata[name]) {
-    projectMetadata[name] = readJSONSync(join(DOCS_LOCATIONS.GENERATED, name, 'metadata.json'));
+    projectMetadata[name] = await readJSON(join(DOCS_LOCATIONS.GENERATED, name, 'metadata.json'));
   }
 
   return projectMetadata[name];
@@ -43,17 +47,17 @@ function sortChildren(children) {
   children.sort(sort);
 }
 
-function readGeneratedDocs() {
-  return fs
-    .readdirSync(DOCS_LOCATIONS.GENERATED)
-    .reduce((acc, projectName) => {
-      const metadata = readProjectMetadata(projectName);
-      // We use md.parseDirSync instead of readDirectory in order
-      // to collect the front matter of the markdown file
-      const mdFiles = md.parseDirSync(join(DOCS_LOCATIONS.GENERATED, projectName), {
+async function readGeneratedDocs() {
+  const projects = await readdir(DOCS_LOCATIONS.GENERATED);
+  const generatedDocs = {};
+
+  for (const projectName of projects) {
+    const [metadata, mdFiles, jsonFiles] = await Promise.all([
+      readProjectMetadata(projectName),
+      mdParseDir(join(DOCS_LOCATIONS.GENERATED, projectName), {
         dirnames: true,
-      });
-      const jsonFiles = readDirectory.sync(
+      }),
+      readDirectory(
         join(DOCS_LOCATIONS.GENERATED, projectName),
         {
           filter: 'references/*.json',
@@ -62,20 +66,23 @@ function readGeneratedDocs() {
             data: { inline: true },
           }),
         }
-      );
-      const files = { ...mdFiles, ...jsonFiles };
+      ),
+    ]);
+    const files = { ...mdFiles, ...jsonFiles };
 
-      // Rename key
-      Object.keys(files).forEach(oldKey => {
-        const path = `reference/${metadata.tier}/${projectName}/${oldKey}`;
+    // Rename key
+    Object.keys(files).forEach(oldKey => {
+      const path = `reference/${metadata.tier}/${projectName}/${oldKey}`;
 
-        delete Object.assign(files, {
-          [removeExtension(path)]: Object.assign(files[oldKey]),
-        })[oldKey];
-      });
+      delete Object.assign(files, {
+        [removeExtension(path)]: Object.assign(files[oldKey]),
+      })[oldKey];
+    });
 
-      return Object.assign(acc, files);
-    }, {});
+    Object.assign(generatedDocs, files)
+  }
+
+  return generatedDocs;
 }
 
 let prevNode = null;
@@ -170,10 +177,13 @@ function makeToc({ files, rootPath }) {
 
 exports.tasks = [{
   title: 'Docs TOCs',
+  requires: ['target-references'],
   provides: ['docs-toc'],
   run: async (requirements, utils) => {
-    const generatedDocs = readGeneratedDocs();
-    const staticDocs = md.parseDirSync(DOCS_LOCATIONS.STATIC, { dirnames: true });
+    const [generatedDocs, staticDocs] = await Promise.all([
+      readGeneratedDocs(),
+      await mdParseDir(DOCS_LOCATIONS.STATIC, { dirnames: true })
+    ]);
     // generated + static docs
     const files = Object.assign(
       staticDocs,
