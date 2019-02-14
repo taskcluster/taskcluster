@@ -1,9 +1,8 @@
 {
   "locals": {
-    "taskcluster_image_gce-provider": "taskcluster/taskcluster-gce-provider:SVC-56e9bfe2cb57",
-    "taskcluster_image_events": "taskcluster/taskcluster-events:SVC-5c1fed4cdf31",
-    "taskcluster_image_docs": "taskcluster/taskcluster-docs:SVC-ce175a671eb6",
-    "taskcluster_image_monoimage": "taskcluster/taskcluster-monoimage:SVC-6d6f4e25eebf",
-    "taskcluster_image_ui": "taskcluster/taskcluster-ui:SVC-6613f867cbe6"
+    "taskcluster_image_gce-provider": "taskcluster/taskcluster-gce-provider:SVC-6539ef08a8f6",
+    "taskcluster_image_events": "taskcluster/taskcluster-events:SVC-43a5c6de328a",
+    "taskcluster_image_ui": "taskcluster/taskcluster-ui:SVC-d1c5b063ad57",
+    "taskcluster_image_monoimage": "taskcluster/taskcluster-monoimage:SVC-aaae734b1358"
   }
 }

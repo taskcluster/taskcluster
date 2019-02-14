@@ -9,7 +9,6 @@ const mkdirp = util.promisify(require('mkdirp'));
 const {dockerPush} = require('./utils');
 const {herokuBuildpackTasks} = require('./service/heroku-buildpack');
 const {webUiTasks} = require('./service/web-ui');
-const {docsTasks} = require('./service/docs');
 
 const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
   const repository = _.find(spec.build.repositories, {name});
@@ -27,11 +26,6 @@ const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => 
   case 'web-ui':
     assert(!isMonorepo, 'monorepo not supported for this buildtype'); // TODO build from monorepo
     webUiTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
-    break;
-
-  case 'docs':
-    assert(!isMonorepo, 'monorepo not supported for this buildtype');
-    docsTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
     break;
 
   default:
