@@ -96,7 +96,8 @@
     "test": "yarn workspaces run test",
     "test:meta": "mocha test/*_test.js",
     "build": "node infrastructure/builder/src/main.js build",
-    "generate": "node infrastructure/builder/src/main.js generate"
+    "generate": "node infrastructure/builder/src/main.js generate",
+    "heroku-postbuild": "echo Skip build on Heroku"
   },
   "renovate": {
     "extends": [
@@ -110,5 +111,6 @@
     "**/node_modules/**",
     "**/test/fixtures/**",
     "services/web-server/build"
-  ]
+  ],
+  "heroku-run-build-script": true
 }
