@@ -62,7 +62,7 @@ class PulseConsumer {
     await this.client.withChannel(channel => this._createAndBindQueue(channel));
 
     // then set up to call _handleConnection on all connections
-    this.client.onConnected(this._handleConnection);
+    this.stopHandlingConnections = this.client.onConnected(this._handleConnection);
   }
 
   /**
@@ -85,6 +85,9 @@ class PulseConsumer {
    */
   async _shutdown() {
     const {channel, consumerTag} = this;
+
+    // reverse the effect of onConnected
+    this.stopHandlingConnections();
 
     if (channel && consumerTag) {
       this.consumerTag = null;

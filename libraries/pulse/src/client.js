@@ -57,6 +57,10 @@ class Client extends events.EventEmitter {
     this.id = ++clientCounter;
     this.debug = debug(`taskcluster-lib-pulse.client-${this.id}`);
 
+    // we might have many event listeners in a busy service, each listening for
+    // 'connected'
+    this.setMaxListeners(Infinity);
+
     this.debug('starting');
     this.running = true;
     this.recycle();
@@ -160,20 +164,20 @@ class Client extends events.EventEmitter {
 
   /**
    * Listen for a `connected` event, but call the handler with the existing connection
-   * if this client is already connected.
+   * if this client is already connected.  Returns a callable that will stop listening.
    */
   onConnected(handler) {
-    const res = this.on('connected', handler);
+    this.on('connected', handler);
     const conn = this.activeConnection;
     if (conn) {
       handler(conn);
     }
-    return res;
+    return () => this.removeListener('connected', handler);
   }
 
   /**
    * The active connection, if any.  This is useful when starting to use an already-
-   * running client:
+   * running client (which is what onConnected does for you):
    *   client.on('connected', setupConnection);
    *   if (client.activeConnection) {
    *     await setupConnection(client.activeConnection);
@@ -312,6 +316,10 @@ class Connection extends events.EventEmitter {
     this.id = nextConnectionId++;
     this.amqp = null;
     this.debug = debug(`taskcluster-lib-pulse.conn-${this.id}`);
+
+    // we might have many event listeners in a busy service, each listening for
+    // 'retiring'
+    this.setMaxListeners(Infinity);
 
     this.debug('waiting');
     this.state = 'waiting';

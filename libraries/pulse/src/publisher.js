@@ -189,7 +189,7 @@ class PulsePublisher {
    */
   async _start() {
     this._setChannel(null);
-    this.client.onConnected(this._handleConnection);
+    this.stopHandlingConnections = this.client.onConnected(this._handleConnection);
 
     await this._assertExchanges();
     await this._declareMethods();
@@ -293,7 +293,7 @@ class PulsePublisher {
   }
 
   async stop() {
-    this.client.removeListener(this._handleConnection);
+    this.stopHandlingConnections();
     this.channelPromise = Promise.reject(new Error('PulsePublisher is stopped'));
   }
 
