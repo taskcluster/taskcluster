@@ -79,7 +79,7 @@ async function readGeneratedDocs() {
       })[oldKey];
     });
 
-    Object.assign(generatedDocs, files)
+    Object.assign(generatedDocs, files);
   }
 
   return generatedDocs;
@@ -182,7 +182,7 @@ exports.tasks = [{
   run: async (requirements, utils) => {
     const [generatedDocs, staticDocs] = await Promise.all([
       readGeneratedDocs(),
-      await mdParseDir(DOCS_LOCATIONS.STATIC, { dirnames: true })
+      await mdParseDir(DOCS_LOCATIONS.STATIC, { dirnames: true }),
     ]);
     // generated + static docs
     const files = Object.assign(

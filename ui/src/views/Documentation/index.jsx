@@ -284,22 +284,18 @@ export default class Documentation extends Component {
                   canRead: /^http*|^\/schemas|^taskcluster:\/schemas/,
                   read: async (file, callback) => {
                     const url = new URL(file.url);
-                    const schemaName =
-                      url.hostname === 'schemas.taskcluster.net'
-                        ? // e.g.,
-                          // https://schemas.taskcluster.net/hooks/v1/hook-definition.json -> strip /hooks/ from
-                          // the pathname
-                          // eslint-disable-next-line no-useless-escape
-                          url.pathname.replace(/^\/[^\/]*\//, '')
-                        : // e.g.,
-                          // https://taskcluster.example.com/schemas/hooks/v1/hook-definition.json
-                          // or
-                          // taskcluster:/schemas/hooks/v1/hook-definition.json
-                          // or
-                          // /schemas/hooks/v1/hook-definition.json
-                          // -> strip /schemas/hooks/ from the pathname
-                          // eslint-disable-next-line no-useless-escape
-                          url.pathname.replace(/^\/schemas\/[^\/]*\//, '');
+                    // e.g.,
+                    // https://taskcluster.example.com/schemas/hooks/v1/hook-definition.json
+                    // or
+                    // taskcluster:/schemas/hooks/v1/hook-definition.json
+                    // or
+                    // /schemas/hooks/v1/hook-definition.json
+                    // -> strip /schemas/hooks/ from the pathname
+                    const schemaName = url.pathname.replace(
+                      // eslint-disable-next-line no-useless-escape
+                      /^\/schemas\/[^\/]*\//,
+                      ''
+                    );
                     const {
                       default: schema,
                     } = await import(/* webpackChunkName: 'Documentation.Schema' */ `../../../docs/generated/${projectName}/schemas/${schemaName}`);
