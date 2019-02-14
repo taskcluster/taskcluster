@@ -169,7 +169,7 @@ const load = loader(
 );
 
 if (!module.parent) {
-  load(process.argv[2]).catch(err => {
+  load(process.argv[2] || 'devServer').catch(err => {
     console.log(err.stack); // eslint-disable-line no-console
     process.exit(1);
   });

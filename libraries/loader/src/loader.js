@@ -107,7 +107,7 @@ function loader(componentDirectory, virtualComponents = {}) {
     options = Object.assign({}, options);
 
     if (typeof target !== 'string') {
-      throw new Error(`Target is type ${typeof target}, not string`);
+      throw new Error(`Target ${target} is type ${typeof target}, not string`);
     }
 
     // Check that target is defined
