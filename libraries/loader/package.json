@@ -28,7 +28,6 @@
   "dependencies": {
     "assume": "^2.1.0",
     "debug": "^4.1.0",
-    "lodash": "^4.17.11",
     "topo-sort": "^1.0.0"
   }
 }
