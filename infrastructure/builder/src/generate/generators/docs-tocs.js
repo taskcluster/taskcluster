@@ -7,7 +7,7 @@ const removeExtension = require('../../../../../ui/src/utils/removeExtension');
 
 const DOCS_LOCATIONS = {
   GENERATED: join('ui', 'docs', 'generated'),
-  STATIC: join('ui', 'src', 'docs'),
+  STATIC: join('ui', 'docs', 'static'),
 };
 
 const projectMetadata = {};
