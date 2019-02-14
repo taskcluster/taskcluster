@@ -2,9 +2,6 @@ import React, { Component, Fragment } from 'react';
 import { object } from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
 import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import Entry from './Entry';
 import Markdown from '../../../components/Markdown';
 import HeaderWithAnchor from '../../../components/HeaderWithAnchor';
@@ -18,7 +15,7 @@ export default class Reference extends Component {
 
   render() {
     const {
-      json: { entries, title, baseUrl, description, exchangePrefix },
+      json: { entries, title, description, exchangePrefix },
     } = this.props;
     const functionEntries =
       entries && entries.filter(({ type }) => type === 'function');
@@ -29,17 +26,6 @@ export default class Reference extends Component {
       <div>
         <HeaderWithAnchor>{title}</HeaderWithAnchor>
         <Markdown>{description}</Markdown>
-        {baseUrl && (
-          <List>
-            <ListItem disableGutters>
-              <ListItemText
-                primary="Base URL"
-                secondary={<code>{baseUrl}</code>}
-              />
-            </ListItem>
-          </List>
-        )}
-        <br />
         {topicExchangeEntries && Boolean(topicExchangeEntries.length) && (
           <Fragment>
             <Typography gutterBottom component="h2" variant="h5">
