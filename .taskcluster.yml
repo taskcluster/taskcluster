@@ -68,6 +68,7 @@ tasks:
         command: 'cd infrastructure/terraform; terraform fmt -check'
       - name: yarn generate
         command: |
+            set -o pipefail;
             yarn generate | cat &&
             if ! output=$(git status --porcelain) || [ -n "$output" ]; then
                 echo "*** yarn generate produced changes to the repository; these changes should be checked in ***";
