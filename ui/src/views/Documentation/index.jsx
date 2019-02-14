@@ -62,7 +62,7 @@ export default class Documentation extends Component {
     referenceJson: null,
   };
 
-  async componentDidMount() {
+  componentDidMount() {
     this.load();
 
     window.addEventListener('load', this.handleDomLoad);
@@ -205,13 +205,6 @@ export default class Documentation extends Component {
       return {
         ...schema,
         $id: this.buildSchemaId(schema.$id),
-      };
-    }
-
-    if (schema.id) {
-      return {
-        ...schema,
-        id: this.buildSchemaId(schema.id),
       };
     }
 
