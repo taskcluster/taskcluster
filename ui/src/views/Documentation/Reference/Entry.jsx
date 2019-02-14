@@ -172,7 +172,7 @@ export default class Entry extends Component {
     );
   }
 
-  renderScopes(scopes) {
+  renderScopeExpression(scopes) {
     const { classes } = this.props;
 
     if (typeof scopes === 'string') {
@@ -193,7 +193,7 @@ export default class Entry extends Component {
             </strong>
           </Typography>
           <div className={classes.subScopeBox}>
-            {this.renderScopes(scopes.then)}
+            {this.renderScopeExpression(scopes.then)}
           </div>
           {scopes.else && (
             <Fragment>
@@ -201,7 +201,7 @@ export default class Entry extends Component {
                 else
               </Typography>
               <div className={classes.subScopeBox}>
-                {this.renderScopes(scopes.else)}
+                {this.renderScopeExpression(scopes.else)}
               </div>
             </Fragment>
           )}
@@ -225,7 +225,7 @@ export default class Entry extends Component {
             </strong>
           </Typography>
           <div className={classes.subScopeBox}>
-            {this.renderScopes(scopes.each)}
+            {this.renderScopeExpression(scopes.each)}
           </div>
         </Fragment>
       );
@@ -242,7 +242,7 @@ export default class Entry extends Component {
           <div className={classes.subScopeBox}>
             {scopes[operator].map((scope, index) => (
               <Fragment key={toString(scope)}>
-                {this.renderScopes(scope)}
+                {this.renderScopeExpression(scope)}
                 {index < scopes[operator].length - 1 && (
                   <StatusLabel
                     className={classes.statusLabel}
@@ -284,7 +284,7 @@ export default class Entry extends Component {
               primaryTypographyProps={primaryTypographyProps}
               secondaryTypographyProps={{ className: classes.scopesWrapper }}
               primary="Scopes"
-              secondary={this.renderScopes(entry.scopes)}
+              secondary={this.renderScopeExpression(entry.scopes)}
             />
           </ListItem>
         )}
@@ -358,10 +358,6 @@ export default class Entry extends Component {
               />
             </ListItem>
           )}
-          {entry.input &&
-            this.renderSchemaTable(entry.input, 'Request Payload')}
-          {entry.output &&
-            this.renderSchemaTable(entry.output, 'Response Payload')}
           <ListItem>
             <ListItemText
               primaryTypographyProps={primaryTypographyProps}
