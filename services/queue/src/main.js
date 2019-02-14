@@ -551,14 +551,14 @@ let load = loader({
   // Create the dependency-resolver process
   'dependency-resolver': {
     requires: ['cfg', 'queueService', 'dependencyTracker', 'monitor'],
-    setup: ({cfg, queueService, dependencyTracker, monitor}) => {
+    setup: async ({cfg, queueService, dependencyTracker, monitor}) => {
       let resolver = new DependencyResolver({
         queueService, dependencyTracker,
         pollingDelay: cfg.app.dependencyResolver.pollingDelay,
         parallelism: cfg.app.dependencyResolver.parallelism,
         monitor: monitor.monitor('dependency-resolver'),
       });
-      resolver.start();
+      await resolver.start();
       return resolver;
     },
   },
