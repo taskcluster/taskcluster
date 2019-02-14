@@ -8,9 +8,10 @@ superagent:   true
 docref:       true
 title:        Task Schema
 ---
+import SchemaTable from '../../../../src/components/SchemaTable'
 
 # Schema for `task.extra.treeherder`
 
 The following is the JSON schema for the contents of `task.extra.treeherder`:
 
-<div data-render-schema='/schemas/treeherder/v1/task-treeherder-config.json'></div>
+<SchemaTable schema="/schemas/treeherder/v1/task-treeherder-config.json" />

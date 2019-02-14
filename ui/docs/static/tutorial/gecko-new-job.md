@@ -3,6 +3,7 @@ title: Adding a new job
 marked: true
 ejs: true
 ---
+import SchemaTable from '../../../src/components/SchemaTable'
 
 Taskcluster runs tasks.
 It's just as happy to run your new tasks as any of the already-defined tasks!
@@ -19,7 +20,7 @@ If your new job isn't in TreeHerder, it's like it never happened.
 Gecko tasks carry a number of fields in `task.extra.treeherder` that describe how the task should be represented in TreeHerder.
 The schema for this information is as follows:
 
-<div data-render-schema='taskcluster:/schemas/taskcluster-treeherder/v1/task-treeherder-config.json'></div>
+<SchemaTable schema="taskcluster:/schemas/taskcluster-treeherder/v1/task-treeherder-config.json" />
 
 ---
 

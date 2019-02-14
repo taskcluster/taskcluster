@@ -6,6 +6,7 @@ followup:
   links:
     download-task-artifacts: Download task artifacts via API
 ---
+import SchemaTable from '../../../src/components/SchemaTable'
 
 Holding the `taskId` to a task, we can fetch the task status, using the
 `queue.status(taskId)` API end-point. This returns an object where the `status`
@@ -14,7 +15,7 @@ represent the status of a task in both API calls and pulse messages.
 Below is the JSON schema for the response from the `queue.status(taskId)`
 API end-point.
 
-<div data-render-schema="taskcluster:/schemas/queue/v1/task-status-response.json"></div>
+<SchemaTable schema="taskcluster:/schemas/queue/v1/task-status-response.json" />
 
 In the following example we expand `runTask` to use the `queue.status(taskId)`
 API endpoint to fetch status for the task created earlier. Notice that

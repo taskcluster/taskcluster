@@ -9,9 +9,10 @@ docref:       true
 title:        "Task Schema"
 order: 100
 ---
+import SchemaTable from '../../../../src/components/SchemaTable'
 
 # Task Definition
 
 The following is the JSON schema for a task definition:
 
-<div data-render-schema='http://schemas.taskcluster.net/queue/v1/create-task-request.json'></div>
+<SchemaTable schema="http://schemas.taskcluster.net/queue/v1/create-task-request.json" />

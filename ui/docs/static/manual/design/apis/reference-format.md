@@ -3,6 +3,7 @@ filename: design/apis/reference-format.md
 title: Reference Formats
 order: 40
 ---
+import SchemaTable from '../../../../../src/components/SchemaTable'
 
 Most Taskcluster services make heavy use of JSON schemas for validation of
 incoming and outgoing data, whether through APIs or AMQP exchanges. This makes
@@ -29,8 +30,7 @@ All services are linked in a reference manifest, available at
 
 The schema for this manifest is as follows:
 
-<div data-render-schema="taskcluster:/schemas/common/manifest-v2.json">
-</div>
+<SchemaTable schema="taskcluster:/schemas/common/manifest-v2.json" />
 
 ## API References
 
@@ -53,16 +53,14 @@ server responses may change by adding additional properties.
 
 The API reference format has the following format:
 
-<div data-render-schema="taskcluster:/schemas/common/api-reference-v0.json">
-</div>
+<SchemaTable schema="taskcluster:/schemas/common/api-reference-v0.json" />
 
 ## AMQP Exchange References
 
 Each service which sends Pulse messages has its exchanges and messages defined
 in a reference document with the following format.
 
-<div data-render-schema="taskcluster:/schemas/common/exchanges-reference-v0.json">
-</div>
+<SchemaTable schema="taskcluster:/schemas/common/exchanges-reference-v0.json" />
 
 Messages are validated on the server prior to publication.
 Note that clients should not validate received messages against the declared
