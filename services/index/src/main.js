@@ -183,8 +183,8 @@ var load = loader({
     },
   },
 }, {
-  profile: process.argv[2],
-  process: process.env.NODE_ENV,
+  profile: process.env.NODE_ENV,
+  process: process.argv[2],
 });
 
 // If this file is executed launch component from first argument
