@@ -1,4 +1,4 @@
-const Monitor = require('../');
+const MonitorBuilder = require('../');
 
 const options = {
   shouldError: false,
@@ -11,10 +11,10 @@ process.argv.slice(2).forEach(arg => {
   options[arg.slice(2)] = true;
 });
 
-const monitor = new Monitor({
+const builder = new MonitorBuilder({
   projectName: 'foo-testing',
-  ...options,
 });
+builder.setup(options);
 
 if (options.shouldError) {
   throw new Error('hello there');

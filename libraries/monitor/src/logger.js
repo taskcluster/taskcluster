@@ -40,7 +40,7 @@ class Logger {
     this.destination = destination;
     this.pretty = pretty;
     this.enable = enable;
-    this.metadata = metadata;
+    this.metadata = Object.keys(metadata).length > 0 ? metadata : null;
     this.pid = process.pid;
     this.hostname = os.hostname();
 

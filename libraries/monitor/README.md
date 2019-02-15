@@ -14,18 +14,26 @@ Usage
 -----
 
 ```js
-const Monitor = require('taskcluster-lib-monitor');
+const MonitorBuilder = require('taskcluster-lib-monitor');
 
-const mon = new Monitor({
+const builder = new MonitorBuilder({
   projectName: 'taskcluster-foo',
+});
+builder.setup({
   mock: cfg.monitor.mock,  // false in production, true in testing
   processName: 'server',       // or otherwise for e.g., periodic tasks
 });
+const monitor = builder.monitor(); // To get a root monitor
+const monitor = builder.monitor('prefix'); // To get a child monitor
+const monitor = builder.monitor('prefix', {meta: 5}); // To get a child monitor with extra metadata
 ```
 
-The available options are:
+The available options to the builder's constructor are:
 
  * `projectName` - The name of this service.
+
+The available options to the setup function are:
+
  * `level` - A syslog logging level. Any messages with less severity than this level will not be logged.
  * `pretty` - Only for development use. Pretty prints logs rather than using a structured form.
  * `patchGlobal` - If true (the default), any uncaught errors in the service will be reported.
@@ -72,6 +80,18 @@ It provides the following functions:
 The `type` will be set in the event object as the `Type` field in the mozlog format. Everything in `fields` will be set in the `Fields`.
 We default to `info` logging level so normally `debug` logs will not be logged.
 
+### Per-child Levels
+
+If you set the level during setup to a single valid syslog level, it will be propagated to all child loggers. If you would like more control,
+you can use a specifically formatted string:
+
+```
+level: 'root:info root.api:debug root.handler:warning'
+```
+
+When you use this format, you specify a prefix with `root` included and after a `:` you specify a valid syslog level. You _must_ set a value for
+`root` in these cases and any unspecified prefixes will default to that.
+
 ### Measuring and Counting Things
 
 To record a current measurement of a named value:
@@ -85,15 +105,6 @@ To increment the count of some value:
 ```js
 monitor.count('bar');
 monitor.count('bar', 4); // increment by 4
-```
-
-To construct an object capable of measuring and counting, but which adds a
-prefix to the measured and counted names, use
-
-```js
-const thingMonitor = monitor.prefix('thing');
-thing.measure('foo', 11);
-thing.count('bar');
 ```
 
 These events will have types of `monitor.measure` and `monitor.count` respectively. The fields will have `key` and `val`.
