@@ -7,8 +7,6 @@ import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
 import DotsVerticalIcon from 'mdi-react/DotsVerticalIcon';
 
-const IS_TOUCH = 'ontouchstart' in document.documentElement;
-
 @withStyles(theme => ({
   speedDial: {
     ...theme.mixins.fab,
@@ -63,8 +61,8 @@ export default class SpeedDial extends Component {
         onBlur={this.handleClose}
         onClick={this.handleClick}
         onClose={this.handleClose}
-        onFocus={!IS_TOUCH && this.handleOpen}
-        onMouseEnter={!IS_TOUCH && this.handleOpen}
+        onFocus={this.handleOpen}
+        onMouseEnter={this.handleOpen}
         onMouseLeave={this.handleClose}
         open={open}
         {...props}>
