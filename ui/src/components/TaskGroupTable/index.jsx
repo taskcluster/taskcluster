@@ -141,8 +141,8 @@ export default class TaskGroupTable extends Component {
   };
 
   state = {
-    sortBy: null,
-    sortDirection: null,
+    sortBy: 'Name',
+    sortDirection: 'asc',
     tasks: [],
   };
 
