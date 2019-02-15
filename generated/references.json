@@ -5993,6 +5993,77 @@
   },
   {
     "content": {
+      "$id": "/schemas/common/logs-reference-v0.json#",
+      "$schema": "/schemas/common/metadata-metaschema.json#",
+      "additionalProperties": false,
+      "description": "Reference of messages output by structured logging",
+      "metadata": {
+        "name": "logs",
+        "version": 0
+      },
+      "properties": {
+        "$schema": {
+          "description": "Link to schema for this reference. That is a link to this very document. Typically used to identify what kind of reference this file is.",
+          "format": "uri",
+          "title": "Schema Reference",
+          "type": "string"
+        },
+        "projectName": {
+          "description": "Name of the taskcluster project",
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Project Name",
+          "type": "string"
+        },
+        "types": {
+          "description": "Array of logs message types",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "description": "A description of this message type",
+                "type": "string"
+              },
+              "fields": {
+                "additionalProperties": true,
+                "description": "TODO",
+                "type": "object"
+              },
+              "type": {
+                "description": "The \"type\" of the message will be in the top-level keys of a message under the name \"Type\".",
+                "pattern": "^[a-z][a-z0-9.-_]*",
+                "type": "string"
+              },
+              "version": {
+                "description": "The version of the fields for this log type. Will increment for breaking changes.",
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "type",
+              "version",
+              "description",
+              "fields"
+            ],
+            "title": "Message Type",
+            "type": "object"
+          },
+          "title": "Types",
+          "type": "array"
+        }
+      },
+      "required": [
+        "projectName",
+        "$schema",
+        "types"
+      ],
+      "title": "Log Messages Reference File",
+      "type": "object"
+    },
+    "filename": "schemas/common/logs-reference-v0.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/common/exchanges-reference-v0.json#",
       "$schema": "/schemas/common/metadata-metaschema.json#",
       "additionalProperties": false,
@@ -7774,6 +7845,49 @@
   },
   {
     "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "projectName": "taskcluster-notify",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A request to send an email.",
+          "fields": {
+            "address": "The requested recepient of the email."
+          },
+          "type": "email",
+          "version": 1
+        },
+        {
+          "description": "A request to send a pulse message.",
+          "fields": {
+            "routingKey": "The requested routingKey of the message."
+          },
+          "type": "pulse",
+          "version": 1
+        },
+        {
+          "description": "A request to send an irc message.",
+          "fields": {
+            "channel": "A channel (including #), if this is a request to post a message to a channel",
+            "user": "A user, if this is a request to direct message a user"
+          },
+          "type": "irc",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/undefined/v1/logs.json"
+  },
+  {
+    "content": {
       "$schema": "/schemas/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The taskcluster-treeherder service is responsible for processing\ntask events published by Taskcluster Queue and producing job messages\nthat are consumable by Treeherder.\n\nThis exchange provides that job messages to be consumed by any queue that\nattached to the exchange.  This could be a production Treeheder instance,\na local development environment, or a custom dashboard.",
@@ -9514,6 +9628,7 @@
         "/references/queue/v1/exchanges.json",
         "/references/secrets/v1/api.json",
         "/references/treeherder/v1/exchanges.json",
+        "/references/undefined/v1/logs.json",
         "/references/worker-manager/v1/api.json"
       ]
     },

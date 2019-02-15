@@ -5,6 +5,7 @@ const path = require('path');
 const stream = require('stream');
 const Logger = require('./logger');
 const Monitor = require('./monitor');
+const builtins = require('./builtins');
 
 class MonitorBuilder {
   constructor({
@@ -12,6 +13,35 @@ class MonitorBuilder {
   }) {
     assert(projectName, 'Must provide a project name to MonitorBuilder');
     this.projectName = projectName;
+    this.types = {};
+    builtins.forEach(builtin => this.register(builtin));
+  }
+
+  /*
+   * Register a new log message type
+   */
+  register({
+    name,
+    type,
+    level,
+    version,
+    description,
+    fields = {}, // TODO: Consider making these defined with json-schema and validate only in dev or something
+  }) {
+    assert(/^[a-z][a-zA-Z0-9]*$/.test(name), `Invalid name type ${name}`);
+    assert(/^[a-z][a-z0-9.-_]*$/.test(type), `Invalid event type ${type}`);
+    assert(!this.types[name], `Cannot register event ${name} twice`);
+    assert(Number.isInteger(version), 'Version must be an integer');
+    Object.entries(fields).forEach((field, desc) => {
+      assert(/^[a-zA-Z0-9_]+$/.test(name), `Invalid field name ${name}.${field}`);
+    });
+    this.types[name] = {
+      type,
+      level,
+      version,
+      description,
+      fields,
+    };
   }
 
   /*
@@ -32,7 +62,7 @@ class MonitorBuilder {
     destination = null,
   }) {
     if (this.alreadySetup) {
-      throw new Error('Cannot double setup MonitorBuilder');
+      return this;
     }
     this.alreadySetup = true;
 
@@ -97,6 +127,7 @@ class MonitorBuilder {
 
     this.rootMonitor = new Monitor({
       logger,
+      types: this.types,
     });
 
     if (patchGlobal) {
@@ -110,6 +141,8 @@ class MonitorBuilder {
     if (processName && !mock) {
       this.rootMonitor.resources(processName, resourceInterval);
     }
+
+    return this;
   }
 
   _uncaughtExceptionHandler(err) {
@@ -156,6 +189,7 @@ class MonitorBuilder {
     prefix = `${this.subject}.${prefix}`;
     metadata = Object.assign({}, this.metadata, metadata);
     return new Monitor({
+      types: this.types,
       logger: new Logger({
         name: `${this.projectName}.${prefix}`,
         level: this.levels ? this.levels[prefix] || this.levels.root : this.level,
@@ -167,6 +201,23 @@ class MonitorBuilder {
     });
   }
 
+  /*
+   * Generate log message documentation
+   */
+  reference() {
+    return {
+      projectName: this.projectName,
+      $schema: '/schemas/common/logs-reference-v0.json#',
+      types: Object.values(this.types).map(type => {
+        return {
+          type: type.type,
+          version: type.version,
+          description: type.description,
+          fields: type.fields,
+        };
+      }),
+    };
+  }
 }
 
 module.exports = MonitorBuilder;

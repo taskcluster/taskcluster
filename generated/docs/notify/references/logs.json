@@ -1,0 +1,40 @@
+{
+  "projectName": "taskcluster-notify",
+  "$schema": "/schemas/common/logs-reference-v0.json#",
+  "types": [
+    {
+      "type": "monitor.timer",
+      "version": 1,
+      "description": "The most basic timer.",
+      "fields": {
+        "key": "A key that should be unique to the logger prefix.",
+        "duration": "The duration in ms of whatever was timed."
+      }
+    },
+    {
+      "type": "email",
+      "version": 1,
+      "description": "A request to send an email.",
+      "fields": {
+        "address": "The requested recepient of the email."
+      }
+    },
+    {
+      "type": "pulse",
+      "version": 1,
+      "description": "A request to send a pulse message.",
+      "fields": {
+        "routingKey": "The requested routingKey of the message."
+      }
+    },
+    {
+      "type": "irc",
+      "version": 1,
+      "description": "A request to send an irc message.",
+      "fields": {
+        "user": "A user, if this is a request to direct message a user",
+        "channel": "A channel (including #), if this is a request to post a message to a channel"
+      }
+    }
+  ]
+}

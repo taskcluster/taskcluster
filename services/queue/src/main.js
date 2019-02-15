@@ -38,7 +38,7 @@ let load = loader({
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => new Monitor({
       projectName: 'taskcluster-queue',
-      level: config.app.level,
+      level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: cfg.monitor.mock,
       processName: process,

@@ -3,47 +3,55 @@ const serializeError = require('serialize-error');
 const TimeKeeper = require('./timekeeper');
 
 class Monitor {
-  constructor({logger}) {
-    this.log = logger;
-  }
-
-  /*
-   * Returns the raw logger if someone wants to do something strange with it.
-   */
-  logger() {
-    return this.log;
+  constructor({logger, types = {}}) {
+    this._log = logger;
+    this.log = {};
+    Object.entries(types).forEach(([name, meta]) => {
+      this.register({name, ...meta});
+    });
   }
 
   debug(...args) {
-    this.log.debug(...args);
+    this._log.debug(...args);
   }
 
   info(...args) {
-    this.log.info(...args);
+    this._log.info(...args);
   }
 
   notice(...args) {
-    this.log.notice(...args);
+    this._log.notice(...args);
   }
 
   warning(...args) {
-    this.log.warning(...args);
+    this._log.warning(...args);
   }
 
   err(...args) {
-    this.log.err(...args);
+    this._log.err(...args);
   }
 
   crit(...args) {
-    this.log.crit(...args);
+    this._log.crit(...args);
   }
 
   alert(...args) {
-    this.log.alert(...args);
+    this._log.alert(...args);
   }
 
   emerg(...args) {
-    this.log.emerg(...args);
+    this._log.emerg(...args);
+  }
+
+  /*
+   * Register a new logging type
+   */
+  register({name, type, version, level, fields}) {
+    assert(!this[name], `Cannot override "${name}" as custom message type.`);
+    this.log[name] = fields => {
+      // TODO: In development (or perhaps on a flag), make assertions about input here
+      this._log[level](type, {v: version, ...fields});
+    };
   }
 
   /*
@@ -53,7 +61,7 @@ class Monitor {
     const start = process.hrtime();
     const done = (x) => {
       const d = process.hrtime(start);
-      this.log.info('monitor.timer', {
+      this.log.basicTimer({
         key,
         duration: d[0] * 1000 + d[1] / 1000000,
       });
@@ -89,7 +97,7 @@ class Monitor {
         const d = process.hrtime(start);
         for (let stat of [success, 'all']) {
           const k = [name, stat].join('.');
-          this.log.info('monitor.timedHandler', {
+          this._log.info('monitor.timedHandler', {
             key: k,
             duration: d[0] * 1000 + d[1] / 1000000,
           });
@@ -116,7 +124,7 @@ class Monitor {
 
           const d = process.hrtime(start);
 
-          this.log.info('monitor.express', {
+          this._log.info('monitor.express', {
             name,
             statusCode: res.statusCode,
             duration: d[0] * 1000 + d[1] / 1000000,
@@ -200,7 +208,7 @@ class Monitor {
     this._resourceInterval = setInterval(() => {
       lastCpuUsage = process.cpuUsage(lastCpuUsage);
       lastMemoryUsage = process.memoryUsage(lastMemoryUsage);
-      this.log.info('monitor.resources', {lastCpuUsage, lastMemoryUsage});
+      this._log.info('monitor.resources', {lastCpuUsage, lastMemoryUsage});
     }, interval * 1000);
 
     return () => this.stopResourceMonitoring();
@@ -226,7 +234,7 @@ class Monitor {
       this.reportError(err, {key, val});
       return;
     }
-    this.log.info('monitor.count', {key, val});
+    this._log.info('monitor.count', {key, val});
   }
 
   /*
@@ -241,7 +249,7 @@ class Monitor {
       this.reportError(err, {key, val});
       return;
     }
-    this.log.info('monitor.measure', {key, val});
+    this._log.info('monitor.measure', {key, val});
   }
 
   /**

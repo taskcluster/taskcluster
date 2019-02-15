@@ -4,11 +4,11 @@ const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 const App = require('taskcluster-lib-app');
 const loader = require('taskcluster-lib-loader');
 const config = require('typed-env-config');
-const Monitor = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const docs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
 const _ = require('lodash');
+const monitorBuilder = require('./monitor');
 const builder = require('./api');
 const Notifier = require('./notifier');
 const RateLimit = require('./ratelimit');
@@ -27,9 +27,8 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => new Monitor({
-      projectName: cfg.monitoring.project || 'taskcluster-notify',
-      level: config.app.level,
+    setup: ({process, profile, cfg}) => monitorBuilder.setup({
+      level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: profile === 'test',
       processName: process,
@@ -83,6 +82,9 @@ const load = loader({
         }, {
           name: 'events',
           reference: reference,
+        }, {
+          name: 'logs',
+          reference: monitorBuilder.reference(),
         },
       ],
     }),
@@ -170,7 +172,7 @@ const load = loader({
   irc: {
     requires: ['cfg', 'monitor'],
     setup: async ({cfg, monitor}) => {
-      monitor = monitor.prefix('irc');
+      monitor = monitor.monitor('irc');
       let client = new IRC(_.merge(cfg.irc, {
         aws: cfg.aws,
         queueName: cfg.app.sqsQueueName,
@@ -186,7 +188,7 @@ const load = loader({
       let handler = new Handler({
         rootUrl: cfg.taskcluster.rootUrl,
         notifier,
-        monitor: monitor.prefix('handler'),
+        monitor: monitor.monitor('handler'),
         routePrefix: cfg.app.routePrefix,
         ignoreTaskReasonResolved: cfg.app.ignoreTaskReasonResolved,
         queue,
@@ -205,7 +207,7 @@ const load = loader({
       context: {notifier, DenylistedNotification},
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
-      monitor: monitor.prefix('api'),
+      monitor: monitor.monitor('api'),
       schemaset,
     }),
   },

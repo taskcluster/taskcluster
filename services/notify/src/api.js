@@ -35,7 +35,7 @@ builder.declare({
     'HTML version of the email',
   ].join('\n'),
 }, async function(req, res) {
-  debug(`Received request to send email to ${req.body.address}`);
+  this.monitor.log.email({address: req.body.address});
   await req.authorize(req.body);
 
   let address = {
@@ -63,7 +63,7 @@ builder.declare({
     'Publish a message on pulse with the given `routingKey`.',
   ].join('\n'),
 }, async function(req, res) {
-  debug(`Received request to publish message on ${req.body.routingKey}`);
+  this.monitor.log.pulse({routingKey: req.body.routingKey});
   await req.authorize({routingKey: req.body.routingKey});
   await this.notifier.pulse(req.body);
 
@@ -108,7 +108,7 @@ builder.declare({
 }, async function(req, res) {
   let input = req.body;
   let required = [];
-  debug(`Received request to send irc message to ${input.channel || input.user}`);
+  this.monitor.log.irc({user: input.user, channel: input.channel});
   await req.authorize({
     channelRequest: input.channel !== undefined,
     channel: input.channel,

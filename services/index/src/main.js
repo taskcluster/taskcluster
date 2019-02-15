@@ -76,7 +76,7 @@ var load = loader({
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => new Monitor({
       projectName: cfg.monitoring.project || 'taskcluster-index',
-      level: config.app.level,
+      level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: profile === 'test',
       processName: process,
