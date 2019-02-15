@@ -73,6 +73,9 @@ const defaultTask = {
     ...theme.mixins.actionButton,
     right: theme.spacing.unit * 11,
   },
+  listItemButton: {
+    ...theme.mixins.listItemButton,
+  },
 }))
 export default class CreateTask extends Component {
   static defaultProps = {
@@ -91,7 +94,7 @@ export default class CreateTask extends Component {
     createdTaskError: null,
     interactive: false,
     loading: false,
-    recentTaskDefinitions: null,
+    recentTaskDefinitions: [],
   };
 
   async componentDidMount() {
@@ -101,10 +104,9 @@ export default class CreateTask extends Component {
       .reverse()
       .toArray();
 
-    this.setState({ recentTaskDefinitions });
-
     try {
       this.setState({
+        recentTaskDefinitions,
         interactive: this.props.interactive,
         task: this.parameterizeTask(task),
         error: null,
@@ -185,7 +187,7 @@ export default class CreateTask extends Component {
       invalid: false,
     });
 
-  UpdateEditor = task => {
+  handleRecentTaskDefinitionClick = task => {
     this.setState({
       task: this.parameterizeTask(task),
     });
@@ -246,6 +248,7 @@ export default class CreateTask extends Component {
       interactive,
       createdTaskId,
       loading,
+      recentTaskDefinitions,
     } = this.state;
 
     if (createdTaskId && interactive) {
@@ -286,33 +289,6 @@ export default class CreateTask extends Component {
           ) : (
             <Fragment>
               <ErrorPanel error={createdTaskError} />
-              {this.state.recentTaskDefinitions &&
-                Boolean(this.state.recentTaskDefinitions.length) && (
-                  <List
-                    dense
-                    subheader={
-                      <ListSubheader component="div">
-                        Recent Task Definitions
-                      </ListSubheader>
-                    }>
-                    {this.state.recentTaskDefinitions.map(value => (
-                      <ListItem
-                        button
-                        onClick={() => {
-                          this.UpdateEditor(value);
-                        }}
-                        key={value.created}>
-                        <ListItemText
-                          disableTypography
-                          primary={
-                            <Typography>{value.metadata.name}</Typography>
-                          }
-                        />
-                        <LinkIcon />
-                      </ListItem>
-                    ))}
-                  </List>
-                )}
               <FormControlLabel
                 control={
                   <Switch
@@ -329,6 +305,32 @@ export default class CreateTask extends Component {
                 value={task || ''}
                 onChange={this.handleTaskChange}
               />
+              <br />
+              {Boolean(recentTaskDefinitions.length) && (
+                <List
+                  dense
+                  subheader={
+                    <ListSubheader component="div">
+                      Recent Task Definitions
+                    </ListSubheader>
+                  }>
+                  {this.state.recentTaskDefinitions.map(task => (
+                    <ListItem
+                      className={classes.listItemButton}
+                      button
+                      onClick={() => {
+                        this.handleRecentTaskDefinitionClick(task);
+                      }}
+                      key={task.metadata.name}>
+                      <ListItemText
+                        disableTypography
+                        primary={<Typography>{task.metadata.name}</Typography>}
+                      />
+                      <LinkIcon />
+                    </ListItem>
+                  ))}
+                </List>
+              )}
               <Button
                 spanProps={{ className: classes.createIconSpan }}
                 tooltipProps={{ title: 'Create Task' }}
