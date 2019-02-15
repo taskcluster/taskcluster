@@ -2040,6 +2040,52 @@ module.exports = {
           "stability": "experimental",
           "title": "Post IRC Message",
           "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Add the given address to the notification blacklist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the blacklist will be ignored\nby the notification service.",
+          "input": "v1/notification-address.json#",
+          "method": "post",
+          "name": "addBlacklistAddress",
+          "query": [
+          ],
+          "route": "/blacklist/add",
+          "scopes": "notify:manage-blacklist:<notificationType>/<notificationAddress>",
+          "stability": "experimental",
+          "title": "Blacklist Given Address",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Delete the specified address from the notification blacklist.",
+          "input": "v1/notification-address.json#",
+          "method": "delete",
+          "name": "deleteBlacklistAddress",
+          "query": [
+          ],
+          "route": "/blacklist/delete",
+          "scopes": "notify:manage-blacklist:<notificationType>/<notificationAddress>",
+          "stability": "experimental",
+          "title": "Delete Blacklisted Address",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "description": "Lists all the blacklisted addresses.\n\nBy default this end-point will try to return up to 1000 addresses in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `list` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
+          "method": "get",
+          "name": "list",
+          "output": "v1/notification-address-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/blacklist/list",
+          "stability": "experimental",
+          "title": "List Blacklisted Notifications",
+          "type": "function"
         }
       ],
       "serviceName": "notify",

@@ -58,6 +58,47 @@
         "then": "notify:irc-channel:<channel>",
         "else": "notify:irc-user:<user>"
       }
+    },
+    {
+      "type": "function",
+      "method": "post",
+      "route": "/blacklist/add",
+      "query": [],
+      "args": [],
+      "name": "addBlacklistAddress",
+      "stability": "experimental",
+      "title": "Blacklist Given Address",
+      "input": "v1/notification-address.json#",
+      "description": "Add the given address to the notification blacklist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the blacklist will be ignored\nby the notification service.",
+      "scopes": "notify:manage-blacklist:<notificationType>/<notificationAddress>"
+    },
+    {
+      "type": "function",
+      "method": "delete",
+      "route": "/blacklist/delete",
+      "query": [],
+      "args": [],
+      "name": "deleteBlacklistAddress",
+      "stability": "experimental",
+      "title": "Delete Blacklisted Address",
+      "input": "v1/notification-address.json#",
+      "description": "Delete the specified address from the notification blacklist.",
+      "scopes": "notify:manage-blacklist:<notificationType>/<notificationAddress>"
+    },
+    {
+      "type": "function",
+      "method": "get",
+      "route": "/blacklist/list",
+      "query": [
+        "continuationToken",
+        "limit"
+      ],
+      "args": [],
+      "name": "list",
+      "stability": "experimental",
+      "title": "List Blacklisted Notifications",
+      "output": "v1/notification-address-list.json#",
+      "description": "Lists all the blacklisted addresses.\n\nBy default this end-point will try to return up to 1000 addresses in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `list` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer."
     }
   ]
 }

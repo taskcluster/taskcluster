@@ -14,6 +14,9 @@ export default class Notify extends Client {
     this.email.entry = {"args":[],"input":true,"method":"post","name":"email","query":[],"route":"/email","scopes":"notify:email:<address>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.pulse.entry = {"args":[],"input":true,"method":"post","name":"pulse","query":[],"route":"/pulse","scopes":"notify:pulse:<routingKey>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.irc.entry = {"args":[],"input":true,"method":"post","name":"irc","query":[],"route":"/irc","scopes":{"else":"notify:irc-user:<user>","if":"channelRequest","then":"notify:irc-channel:<channel>"},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.addBlacklistAddress.entry = {"args":[],"input":true,"method":"post","name":"addBlacklistAddress","query":[],"route":"/blacklist/add","scopes":"notify:manage-blacklist:<notificationType>/<notificationAddress>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.deleteBlacklistAddress.entry = {"args":[],"input":true,"method":"delete","name":"deleteBlacklistAddress","query":[],"route":"/blacklist/delete","scopes":"notify:manage-blacklist:<notificationType>/<notificationAddress>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.list.entry = {"args":[],"method":"get","name":"list","output":true,"query":["continuationToken","limit"],"route":"/blacklist/list","stability":"experimental","type":"function"}; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.
@@ -58,5 +61,40 @@ export default class Notify extends Client {
     this.validate(this.irc.entry, args);
 
     return this.request(this.irc.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Add the given address to the notification blacklist. The address
+  // can be of either of the three supported address type namely pulse, email
+  // or IRC(user or channel). Addresses in the blacklist will be ignored
+  // by the notification service.
+  /* eslint-enable max-len */
+  addBlacklistAddress(...args) {
+    this.validate(this.addBlacklistAddress.entry, args);
+
+    return this.request(this.addBlacklistAddress.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Delete the specified address from the notification blacklist.
+  /* eslint-enable max-len */
+  deleteBlacklistAddress(...args) {
+    this.validate(this.deleteBlacklistAddress.entry, args);
+
+    return this.request(this.deleteBlacklistAddress.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Lists all the blacklisted addresses.
+  // By default this end-point will try to return up to 1000 addresses in one
+  // request. But it **may return less**, even if more tasks are available.
+  // It may also return a `continuationToken` even though there are no more
+  // results. However, you can only be sure to have seen all results if you
+  // keep calling `list` with the last `continuationToken` until you
+  // get a result without a `continuationToken`.
+  // If you are not interested in listing all the members at once, you may
+  // use the query-string option `limit` to return fewer.
+  /* eslint-enable max-len */
+  list(...args) {
+    this.validate(this.list.entry, args);
+
+    return this.request(this.list.entry, args);
   }
 }
