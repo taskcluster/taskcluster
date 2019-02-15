@@ -2,13 +2,13 @@ const assert = require('assert');
 const helper = require('./helper');
 
 helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], function(mock, skipping) {
-  helper.withBlacklist(mock, skipping);
+  helper.withDenylist(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withSQS(mock, skipping);
   helper.withServer(mock, skipping);
 
-  // Dummy address for blacklist tests
+  // Dummy address for denylist tests
   let dummyAddress1 = {
     notificationType: "email",
     notificationAddress: "name1@name.com",
@@ -30,9 +30,9 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
     });
   });
 
-  test('does not send notifications to blacklisted pulse address', async function() {
-    // Add an address to the blacklist
-    await helper.apiClient.addBlacklistAddress({
+  test('does not send notifications to denylisted pulse address', async function() {
+    // Add an address to the denylist
+    await helper.apiClient.addDenylistAddress({
       notificationType: 'pulse',
       notificationAddress: 'notify-test',
     });
@@ -40,7 +40,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
     try {
       await helper.apiClient.pulse({routingKey: 'notify-test', message: {test: 123}});
     } catch(e) {
-      assert(e.code, 'BlacklistedAddress');
+      assert(e.code, 'DenylistedAddress');
     }
   });
 
@@ -56,9 +56,9 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
     });
   });
 
-  test('does not send notifications to blacklisted email address', async function() {
-    // Add an address to the blacklist
-    await helper.apiClient.addBlacklistAddress({
+  test('does not send notifications to denylisted email address', async function() {
+    // Add an address to the denylist
+    await helper.apiClient.addDenylistAddress({
       notificationType: 'email',
       notificationAddress: 'success@simulator.amazonses.com',
     });
@@ -71,7 +71,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
         link: {text: 'Inspect Task', href: 'https://tools.taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ'},
       });
     } catch(e) {
-      assert.equal(e.code, "BlacklistedAddress");
+      assert.equal(e.code, "DenylistedAddress");
     }
   });
 
@@ -106,9 +106,9 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
     });
   });
 
-  test('does not send notifications to blacklisted irc channel', async function() {
-    // Add an irc-channel address to the blacklist
-    await helper.apiClient.addBlacklistAddress({
+  test('does not send notifications to denylisted irc channel', async function() {
+    // Add an irc-channel address to the denylist
+    await helper.apiClient.addDenylistAddress({
       notificationType: 'irc-channel',
       notificationAddress: '#taskcluster-test',
     });
@@ -116,45 +116,45 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
     try {
       await helper.apiClient.irc({message: 'Does this work?', channel: '#taskcluster-test'});
     } catch(e) {
-      assert(e.code, 'BlacklistedAddress');
+      assert(e.code, 'DenylistedAddress');
     }
   });
 
-  test('does not send notifications to blacklisted irc user', async function() {
-    await helper.apiClient.addBlacklistAddress({notificationType: 'irc-user', notificationAddress: 'notify-me'});
+  test('does not send notifications to denylisted irc user', async function() {
+    await helper.apiClient.addDenylistAddress({notificationType: 'irc-user', notificationAddress: 'notify-me'});
     try {
       await helper.apiClient.irc({message: 'Does this work?', user: 'notify-me'});
     } catch(e) {
-      assert(e.code, 'BlacklistedAddress');
+      assert(e.code, 'DenylistedAddress');
     }
   });
 
-  test('Blacklist: addBlacklistAddress()', async function() {
-    // Try adding an address to the blacklist
-    await helper.apiClient.addBlacklistAddress(dummyAddress1);
+  test('Denylist: addDenylistAddress()', async function() {
+    // Try adding an address to the denylist
+    await helper.apiClient.addDenylistAddress(dummyAddress1);
 
     // Check that the address was successfully added
-    let item = await helper.BlacklistedNotification.load(dummyAddress1);
+    let item = await helper.DenylistedNotification.load(dummyAddress1);
     item = item._properties;
     assert.deepEqual(item, dummyAddress1);
 
     // Duplicate addresses should not throw an exception
-    await helper.apiClient.addBlacklistAddress(dummyAddress1);
+    await helper.apiClient.addDenylistAddress(dummyAddress1);
   });
 
-  test('Blacklist: deleteBlacklistAddress()', async function() {
+  test('Denylist: deleteDenylistAddress()', async function() {
     // Add some items
-    await helper.apiClient.addBlacklistAddress(dummyAddress1);
-    await helper.apiClient.addBlacklistAddress(dummyAddress2);
+    await helper.apiClient.addDenylistAddress(dummyAddress1);
+    await helper.apiClient.addDenylistAddress(dummyAddress2);
 
     // Make sure they are added
-    let items = await helper.BlacklistedNotification.scan({});
+    let items = await helper.DenylistedNotification.scan({});
     items = items.entries;
     assert(items.length, 2);
 
     // Remove an item and check for success
-    await helper.apiClient.deleteBlacklistAddress(dummyAddress1);
-    items = await helper.BlacklistedNotification.scan({});
+    await helper.apiClient.deleteDenylistAddress(dummyAddress1);
+    items = await helper.DenylistedNotification.scan({});
     items = items.entries;
     assert(items.length, 1);
 
@@ -163,17 +163,17 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
     assert.deepEqual(item, dummyAddress2);
 
     // Removing non-existant addresses should not throw an exception
-    await helper.apiClient.deleteBlacklistAddress(dummyAddress1);
+    await helper.apiClient.deleteDenylistAddress(dummyAddress1);
   });
 
-  test('Blacklist: list()', async function() {
+  test('Denylist: list()', async function() {
     // Call list() on an empty table
     let addressList = await helper.apiClient.list();
     assert(addressList.addresses, []);
 
     // Add some items
-    await helper.BlacklistedNotification.create(dummyAddress1);
-    await helper.BlacklistedNotification.create(dummyAddress2);
+    await helper.DenylistedNotification.create(dummyAddress1);
+    await helper.DenylistedNotification.create(dummyAddress2);
 
     // check the result of list()
     addressList = await helper.apiClient.list();
