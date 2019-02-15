@@ -446,6 +446,139 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v13.0.2 since v12.0.0
+========================
+
+The backwardly incompatible change for version 13 is that AWS provisioner worker type definitions no longer
+store generic-worker secrets. Instead, the secrets should be placed in a taskcluster secrets secret called
+`worker-type:aws-provisioner-v1/<workerType>`. The secret could look _something like this_:
+
+```
+config:
+  livelogSecret: <secret key>
+files:
+  - content: >-
+      <base64>
+    description: SSL certificate for livelog
+    encoding: base64
+    format: file
+    path: 'C:\generic-worker\livelog.crt'
+  - content: >-
+      <base64>
+    description: SSL key for livelog
+    encoding: base64
+    format: file
+    path: 'C:\generic-worker\livelog.key'
+```
+
+The `secrets` section of the AWS provisioner worker type definition should be an empty json object:
+
+```json
+  "secrets": {}
+```
+
+Now the `userdata` section of the worker type definition should contain the remaining (non-secret) configuration, e.g.
+
+```json
+  "userData": {
+    "genericWorker": {
+      "config": {
+        "deploymentId": "axlvK6p9SNa-HJgPCVXKEA",
+        "ed25519SigningKeyLocation": "C:\\generic-worker\\generic-worker-ed25519-signing-key.key",
+        "idleTimeoutSecs": 60,
+        "livelogCertificate": "C:\\generic-worker\\livelog.crt",
+        "livelogExecutable": "C:\\generic-worker\\livelog.exe",
+        "livelogKey": "C:\\generic-worker\\livelog.key",
+        "openpgpSigningKeyLocation": "C:\\generic-worker\\generic-worker-gpg-signing-key.key",
+        "shutdownMachineOnInternalError": false,
+        "subdomain": "taskcluster-worker.net",
+        "taskclusterProxyExecutable": "C:\\generic-worker\\taskcluster-proxy.exe",
+        "workerTypeMetadata": {
+          "machine-setup": {
+            "maintainer": "pmoore@mozilla.com",
+            "script": "https://raw.githubusercontent.com/taskcluster/generic-worker/53f1d934688f9e9c6ba60db6cc9185e5c9e9c0ce/worker_types/nss-win2012r2/userdata"
+          }
+        }
+      }
+    }
+  },
+
+```
+
+* [Bug 1375200 - [generic-worker] Remove support for reading secrets from AWS worker type definition](https://bugzil.la/1375200)
+* [Bug 1524630 - `generic-worker --help` should state that xxxBaseURL settings are optional overrides for the global rootURL setting](https://bugzil.la/1524630)
+* [Bug 1524792 - Bring GCP integration up-to-date with recent changes](https://bugzil.la/1524792)
+
+v13.0.1
+=======
+
+Please do not use this release! It is broken.
+
+v13.0.0
+=======
+
+Please do not use this release! It is broken.
+
+In v12.0.0 since v11.1.1
+========================
+
+The backwardly incompatible change for version 12 is that you need to create both a openpgp signing key
+_and_ an ed25519 signing key before running the worker.
+
+```
+    generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
+    generic-worker new-openpgp-keypair      --file OPENPGP-PRIVATE-KEY-FILE
+```
+
+Note, *both* are required.
+
+The config property `signingKeyLocation` has been renamed to `openpgpSigningKeyLocation` and the new config property
+`ed25519SigningKeyLocation` is needed. For _example_, could changes could look like this:
+
+```diff
+-        "signingKeyLocation": "C:\\generic-worker\\generic-worker-gpg-signing-key.key",
++        "openpgpSigningKeyLocation": "C:\\generic-worker\\generic-worker-gpg-signing-key.key",
++        "ed25519SigningKeyLocation": "C:\\generic-worker\\generic-worker-ed25519-signing-key.key",
+```
+
+* [Bug 1518913 - generic-worker: add ed25519 cot signature support; deprecate gpg](https://bugzil.la/1518913)
+
+In v11.1.1 since v11.1.0
+========================
+
+* [Bug 1428422 - Update go client for r14y](https://bugzil.la/1428422)
+* [Bug 1469614 - Upgrade generic-worker to use rootUrl](https://bugzil.la/1469614)
+
+In v11.1.0 since v11.0.1
+========================
+
+* [Bug 1495732 - Inline source for mounts](https://bugzil.la/1495732)
+* [Bug 1479415 - Executing non-executable file is task failure not worker panic](https://bugzil.la/1479415)
+* [Bug 1493688 - Avoid panic on Windows 10 Build 1803 if task directory not on default drive](https://bugzil.la/1493688)
+* [Bug 1506621 - Use new archiver library](https://bugzil.la/1506621)
+* [Bug 1516458 - Provide taskcluster-proxy with rootURL](https://bugzil.la/1516458)
+
+In v11.0.1 since v11.0.0
+========================
+
+* [Bug 1486800 - Don't start task timer until Purge Cache service interaction has completed](https://bugzil.la/1486800)
+
+In v11.0.0 since v10.11.3
+=========================
+
+The backwardly incompatible change for version 11 is that you need to specify `--configure-for-aws`
+at installation time, if the workers will run in AWS. Previously, this was assumed to always be
+the case.
+
+```
+    generic-worker install service          [--nssm           NSSM-EXE]
+                                            [--service-name   SERVICE-NAME]
+                                            [--config         CONFIG-FILE]
+                                            [--configure-for-aws]
+```
+
+* [Bug 1495435 - Require --configure-for-aws at installation time, if needed at runtime](https://bugzil.la/1495435)
+
 ### In v10.11.3 since v10.11.2
 
 * [Bug 1480412 - allow empty osGroups list on non-Windows platforms](https://bugzil.la/1480412#c10)
