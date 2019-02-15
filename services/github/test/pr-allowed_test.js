@@ -1,7 +1,6 @@
 const debug = require('debug')('test');
 const helper = require('./helper');
 const assert = require('assert');
-const prAllowed = require('../src/pr-allowed');
 
 suite('allowPullRequests', function() {
   helper.withFakeGithub(false, () => false);

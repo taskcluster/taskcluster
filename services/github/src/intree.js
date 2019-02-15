@@ -1,5 +1,4 @@
 const debug = require('debug')('taskcluster-github:intree');
-const yaml = require('js-yaml');
 const TcYaml = require('./tc-yaml');
 
 module.exports = {};
@@ -17,7 +16,6 @@ module.exports.setup = async function({cfg, schemaset}) {
   const validate = await schemaset.validator(cfg.taskcluster.rootUrl);
 
   return function({config, payload, schema}) {
-    config = yaml.safeLoad(config);
     const version = config.version;
 
     const errors = validate(config, schema[version]);
