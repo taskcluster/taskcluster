@@ -6,6 +6,7 @@ import { lowerCase } from 'change-case';
 import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
 import { FixedSizeList as List } from 'react-window';
+import { WindowScroller } from 'react-virtualized';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography';
@@ -123,6 +124,9 @@ const createSortedTasks = memoize(
   noTasksText: {
     marginTop: theme.spacing.double,
   },
+  windowScrollerOverride: {
+    height: '100% !important',
+  },
 }))
 export default class TaskGroupTable extends Component {
   static defaultProps = {
@@ -167,12 +171,20 @@ export default class TaskGroupTable extends Component {
     this.setState({ sortBy, sortDirection });
   };
 
+  handleScroll = ({ scrollTop }) => {
+    if (this.list) {
+      this.list.scrollTo(scrollTop - 100);
+    }
+  };
+
+  handleListRef = component => {
+    this.list = component;
+  };
+
   render() {
     const { sortBy, sortDirection, tasks } = this.state;
     const { classes, filter } = this.props;
     const iconSize = 16;
-    const windowHeight = window.innerHeight;
-    const tableHeight = windowHeight > 400 ? 0.6 * windowHeight : 400;
     const items = createSortedTasks(tasks, sortBy, sortDirection, filter);
     const itemCount = items.length;
     const ItemRenderer = ({ index, style }) => {
@@ -226,9 +238,20 @@ export default class TaskGroupTable extends Component {
           </TableHead>
         </Table>
         {itemCount ? (
-          <List height={tableHeight} itemCount={itemCount} itemSize={48}>
-            {ItemRenderer}
-          </List>
+          <Fragment>
+            <WindowScroller onScroll={this.handleScroll}>
+              {() => null}
+            </WindowScroller>
+            <List
+              ref={this.handleListRef}
+              height={window.innerHeight}
+              itemCount={itemCount}
+              itemSize={48}
+              className={classes.windowScrollerOverride}
+              overscanCount={50}>
+              {ItemRenderer}
+            </List>
+          </Fragment>
         ) : (
           <Typography className={classes.noTasksText}>
             No

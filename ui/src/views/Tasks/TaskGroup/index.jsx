@@ -66,6 +66,9 @@ let previousCursor;
   warningPanel: {
     ...theme.mixins.warningPanel,
   },
+  dashboard: {
+    overflow: 'hidden',
+  },
 }))
 export default class TaskGroup extends Component {
   static getDerivedStateFromProps(props, state) {
@@ -317,6 +320,7 @@ export default class TaskGroup extends Component {
     return (
       <Dashboard
         title="Task Group"
+        className={classes.dashboard}
         helpView={<HelpView description={description} />}
         search={<Search onSubmit={this.handleTaskGroupSearchSubmit} />}>
         <ErrorPanel
