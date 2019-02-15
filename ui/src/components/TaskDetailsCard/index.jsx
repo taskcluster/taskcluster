@@ -413,12 +413,13 @@ export default class TaskDetailsCard extends Component {
                       task.scopes.length ? (
                         <ul className={classes.unorderedList}>
                           {task.scopes.map(scope => (
-                            <Typography
-                              component="span"
-                              color="textSecondary"
-                              key={scope}>
-                              <li>{scope}</li>
-                            </Typography>
+                            <li key={scope}>
+                              <Typography
+                                component="span"
+                                color="textSecondary">
+                                {scope}
+                              </Typography>
+                            </li>
                           ))}
                         </ul>
                       ) : (
@@ -437,12 +438,13 @@ export default class TaskDetailsCard extends Component {
                       task.routes.length ? (
                         <ul className={classes.unorderedList}>
                           {task.routes.map(route => (
-                            <Typography
-                              component="span"
-                              color="textSecondary"
-                              key={route}>
-                              <li>{route}</li>
-                            </Typography>
+                            <li key={route}>
+                              <Typography
+                                component="span"
+                                color="textSecondary">
+                                {route}
+                              </Typography>
+                            </li>
                           ))}
                         </ul>
                       ) : (
