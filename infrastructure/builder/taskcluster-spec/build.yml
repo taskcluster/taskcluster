@@ -29,7 +29,7 @@ repositories:
     projectName: taskcluster-ui
   service:
     buildtype: web-ui
-    node: 10.14.0-jessie
+    node: 10.15.1-jessie
   source: https://github.com/taskcluster/taskcluster#master
 
 # workers
