@@ -147,8 +147,51 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
     },
   });
 
-  // TODO: add hooks push for web-ui
-  // TODO: add entry point for docker run for web-ui
+  hooks.push({
+    name: 'web-ui',
+    build: async (requirements, utils, procs) => {
+
+      utils.step({title: 'Run Yarn Install'});
+
+      await dockerRun({
+        image: nodeImage,
+        workingDir: '/app/ui',
+        env: ['YARN_CACHE_FOLDER=/cache'],
+        command: ['yarn'],
+        logfile: `${workDir}/yarn.log`,
+        utils,
+        binds: [
+          `${appDir}:/app/ui`,
+          `${cacheDir}:/cache`,
+        ],
+        baseDir,
+      });
+
+      utils.step({title: 'Run Yarn Build'});
+
+      await dockerRun({
+        image: nodeImage,
+        workingDir: '/app/ui',
+        command: ['yarn', 'build'],
+        logfile: `${workDir}/yarn.log`,
+        utils,
+        binds: [
+          `${appDir}:/app/ui`,
+          `${cacheDir}:/cache`,
+        ],
+        baseDir,
+      });
+    },
+    entrypoints: async (requirements, utils, procs) => {
+      // since we ran `yarn build` already, there's no need to run it again
+      // on startup, so remove it from the entrypoint commands
+      Object.keys(procs).forEach(process => {
+        if (process.startsWith('web-ui/')) {
+          procs[process] = procs[process].replace('yarn build && ', '');
+        }
+      });
+    },
+  });
 
   ensureTask(tasks, {
     title: 'Clone Monorepo from Working Copy',
