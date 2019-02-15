@@ -48,7 +48,13 @@
     },
     {
       "type":           "shell",
-      "inline":         ["/tmp/gen-ed25519-key.js"],
+      "inline": [
+        "cd /tmp",
+        "npm init --yes -f",
+        "npm install tweetnacl",
+        "./gen-ed25519-key.js",
+        "rm -rf node_modules package.json"
+      ],
       "only":           ["hvm-builder"]
     },
     {
@@ -60,7 +66,7 @@
     {
       "type":           "file",
       "source":         "{{user `cotEd25519SigningKey`}}",
-      "destination":    "docker-worker-ed25519-signing-key.key",
+      "destination":    "/tmp/docker-worker-ed25519-cot-signing-key.key",
       "only":           ["hvm-builder-trusted"]
     },
     {
@@ -69,7 +75,7 @@
     },
     {
       "type":           "shell",
-      "inline":         ["sudo mv docker-worker-ed25519-signing-key.key /etc"]
+      "inline":         ["sudo mv /tmp/docker-worker-ed25519-cot-signing-key.key /etc"]
     },
     {
       "type":           "shell",
