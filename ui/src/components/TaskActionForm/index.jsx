@@ -3,11 +3,11 @@ import { string, object, func } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import Markdown from '@mozilla-frontend-infra/components/Markdown';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import Code from '@mozilla-frontend-infra/components/Code';
 import { safeDump } from 'js-yaml';
 import ErrorPanel from '../ErrorPanel';
+import Markdown from '../Markdown';
 
 @withStyles(theme => ({
   code: {

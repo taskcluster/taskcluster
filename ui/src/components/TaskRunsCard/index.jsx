@@ -28,7 +28,7 @@ import LockIcon from 'mdi-react/LockIcon';
 import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import Button from '../Button';
-import AnchorOrLink from '../Markdown/AnchorOrLink';
+import AnchorOrLink from '../AnchorOrLink';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
