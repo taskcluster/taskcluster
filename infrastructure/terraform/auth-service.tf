@@ -122,7 +122,9 @@ locals {
       accessToken = "${random_string.notify_access_token.result}"
       description = "..."
 
-      scopes = []
+      scopes = [
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/DenylistedNotification",
+      ]
     },
     {
       clientId    = "static/taskcluster/gce-provider"
