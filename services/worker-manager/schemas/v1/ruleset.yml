@@ -9,15 +9,10 @@ items:
     id:
       type: string
     conditions:
-      type: object
-      properties:
-        workerType:
-          type: string
-          minLength:    {$const: identifier-min-length}
-          maxLength:    {$const: identifier-max-length}
-          pattern:      {$const: identifier-pattern}
+      type: ['object', 'null']
       additionalProperties:
         type: string
+      required: []
     values:
       type: object
     description:
@@ -25,5 +20,6 @@ items:
   additionalProperties: false
   required:
     - id
+    - conditions
     - values
     - description

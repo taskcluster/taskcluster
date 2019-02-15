@@ -10,18 +10,14 @@
         "type": "string"
       },
       "conditions": {
-        "type": "object",
-        "properties": {
-          "workerType": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 38,
-            "pattern": "^([a-zA-Z0-9-_]*)$"
-          }
-        },
+        "type": [
+          "object",
+          "null"
+        ],
         "additionalProperties": {
           "type": "string"
-        }
+        },
+        "required": []
       },
       "values": {
         "type": "object"
@@ -33,6 +29,7 @@
     "additionalProperties": false,
     "required": [
       "id",
+      "conditions",
       "values",
       "description"
     ]

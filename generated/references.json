@@ -24,6 +24,9 @@
         "workerTypes": {
           "items": {
             "additionalProperties": false,
+            "maxLength": 38,
+            "minLength": 1,
+            "pattern": "^([a-zA-Z0-9-_]*)$",
             "properties": {
               "biddingStrategyId": {
                 "type": "string"
@@ -143,6 +146,8 @@
             "additionalProperties": {
               "type": "string"
             },
+            "required": [
+            ],
             "type": [
               "object",
               "null"

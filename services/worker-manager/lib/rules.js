@@ -37,8 +37,6 @@ class Conditions extends WMObject {
           } else {
             this._throw(errors.InvalidConditions, `condition ${condition} must be a string or list of strings`);
           }
-        } else if(conditions[condition] === 'workerType' && conditions[condition].length > 38) {
-          this._throw(errors.InvalidConditions, `condition ${condition} ${conditions[condition]} must not be greater than 38`);
         }
       }
     }
