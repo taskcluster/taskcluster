@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { bool } from 'prop-types';
-import Markdown from '@mozilla-frontend-infra/components/Markdown';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -14,6 +13,7 @@ import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import DateDistance from '../DateDistance';
+import Markdown from '../Markdown';
 import Button from '../Button';
 import StatusLabel from '../StatusLabel';
 import DialogAction from '../DialogAction';

@@ -4,7 +4,6 @@ import { graphql, withApollo } from 'react-apollo';
 import { omit, pathOr } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
-import Markdown from '@mozilla-frontend-infra/components/Markdown';
 import { withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
 import Divider from '@material-ui/core/Divider';
@@ -36,6 +35,7 @@ import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import DialogAction from '../../../components/DialogAction';
 import TaskActionForm from '../../../components/TaskActionForm';
+import Markdown from '../../../components/Markdown';
 import {
   ACTIONS_JSON_KNOWN_KINDS,
   ARTIFACTS_PAGE_SIZE,

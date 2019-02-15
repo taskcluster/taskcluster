@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import Markdown from '@mozilla-frontend-infra/components/Markdown';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
@@ -22,6 +21,7 @@ import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
 import TableCellListItem from '../TableCellListItem';
 import ConnectionDataTable from '../ConnectionDataTable';
+import Markdown from '../Markdown';
 import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
 import normalizeWorkerTypes from '../../utils/normalizeWorkerTypes';

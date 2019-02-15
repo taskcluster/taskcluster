@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { isEmpty } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
-import AnchorOrLink from '../../components/Markdown/AnchorOrLink';
+import AnchorOrLink from '../../components/AnchorOrLink';
 import PageNavigation from '../../components/PageNavigation';
 import { docsPageInfo } from '../../utils/prop-types';
 
