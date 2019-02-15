@@ -54,17 +54,17 @@ const load = loader({
     }),
   },
 
-  BlacklistedNotification: {
+  DenylistedNotification: {
     requires: ['cfg', 'monitor', 'process'],
-    setup: ({cfg, monitor, process}) => data.BlacklistedNotification.setup({
-      tableName: cfg.app.blacklistedNotificationTableName,
+    setup: ({cfg, monitor, process}) => data.DenylistedNotification.setup({
+      tableName: cfg.app.denylistedNotificationTableName,
       credentials: sasCredentials({
         accountId: cfg.azure.accountId,
-        tableName: cfg.app.blacklistedNotificationTableName,
+        tableName: cfg.app.denylistedNotificationTableName,
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.prefix('table.blacklist'),
+      monitor: monitor.prefix('table.denylist'),
     }),
   },
 
@@ -200,10 +200,10 @@ const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'monitor', 'schemaset', 'notifier', 'BlacklistedNotification'],
-    setup: ({cfg, monitor, schemaset, notifier, BlacklistedNotification}) => builder.build({
+    requires: ['cfg', 'monitor', 'schemaset', 'notifier', 'DenylistedNotification'],
+    setup: ({cfg, monitor, schemaset, notifier, DenylistedNotification}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {notifier, BlacklistedNotification},
+      context: {notifier, DenylistedNotification},
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
       monitor: monitor.prefix('api'),

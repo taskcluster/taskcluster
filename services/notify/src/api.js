@@ -12,10 +12,10 @@ const builder = new APIBuilder({
   apiVersion: 'v1',
   context: [
     'notifier',
-    'BlacklistedNotification',
+    'DenylistedNotification',
   ],
   errorCodes: {
-    BlacklistedAddress: 400,
+    DenylistedAddress: 400,
   },
 });
 
@@ -42,10 +42,10 @@ builder.declare({
     notificationType: "email",
     notificationAddress: req.body.address,
   };
-  // Ensure that the address is not in the blacklist
-  let response = await this.BlacklistedNotification.load(address, true);
+  // Ensure that the address is not in the denylist
+  let response = await this.DenylistedNotification.load(address, true);
   if(response) {
-    return res.reportError('BlacklistedAddress', `${req.body.address} is blacklisted`, {});
+    return res.reportError('DenylistedAddress', `${req.body.address} is denylisted`, {});
   } else {
     await this.notifier.email(req.body);
     res.sendStatus(200);
@@ -71,10 +71,10 @@ builder.declare({
     notificationType: "pulse",
     notificationAddress: req.body.routingKey,
   };
-  // Ensure that the address is not in the blacklist
-  let response = await this.BlacklistedNotification.load(notificationAddress, true);
+  // Ensure that the address is not in the denylist
+  let response = await this.DenylistedNotification.load(notificationAddress, true);
   if(response) {
-    return res.reportError('BlacklistedAddress', `${req.body.address} is blacklisted`, {});
+    return res.reportError('DenylistedAddress', `${req.body.address} is denylisted`, {});
   } else {
     await this.notifier.pulse(req.body);
     res.sendStatus(200);
@@ -119,10 +119,10 @@ builder.declare({
     notificationType: input.user ? "irc-user" : "irc-channel",
     notificationAddress: input.user ? input.user : input.channel,
   };
-  // Ensure that the address is not in the blacklist
-  let response = await this.BlacklistedNotification.load(notificationAddress, true);
+  // Ensure that the address is not in the denylist
+  let response = await this.DenylistedNotification.load(notificationAddress, true);
   if(response) {
-    return res.reportError('BlacklistedAddress', `${input.channel || input.user} is blacklisted`, {});
+    return res.reportError('DenylistedAddress', `${input.channel || input.user} is denylisted`, {});
   } else {
     await this.notifier.irc(input);
     res.sendStatus(200);
@@ -131,19 +131,19 @@ builder.declare({
 
 builder.declare({
   method: 'post',
-  route: '/blacklist/add',
-  name: 'addBlacklistAddress',
-  scopes: 'notify:manage-blacklist:<notificationType>/<notificationAddress>',
+  route: '/denylist/add',
+  name: 'addDenylistAddress',
+  scopes: 'notify:manage-denylist:<notificationType>/<notificationAddress>',
   input: 'notification-address.yml',
-  title: 'Blacklist Given Address',
+  title: 'Denylist Given Address',
   description: [
-    'Add the given address to the notification blacklist. The address',
+    'Add the given address to the notification denylist. The address',
     'can be of either of the three supported address type namely pulse, email',
-    'or IRC(user or channel). Addresses in the blacklist will be ignored',
+    'or IRC(user or channel). Addresses in the denylist will be ignored',
     'by the notification service.',
   ].join('\n'),
 }, async function(req, res) {
-  // The address to blacklist
+  // The address to denylist
   let address = {
     notificationType: req.body.notificationType,
     notificationAddress: req.body.notificationAddress,
@@ -151,7 +151,7 @@ builder.declare({
 
   await req.authorize(req.body);
   try {
-    await this.BlacklistedNotification.create(address);
+    await this.DenylistedNotification.create(address);
   } catch (e) {
     if (e.name !== 'EntityAlreadyExistsError') {
       throw e;
@@ -162,16 +162,16 @@ builder.declare({
 
 builder.declare({
   method: 'delete',
-  route: '/blacklist/delete',
-  name: 'deleteBlacklistAddress',
-  scopes: 'notify:manage-blacklist:<notificationType>/<notificationAddress>',
+  route: '/denylist/delete',
+  name: 'deleteDenylistAddress',
+  scopes: 'notify:manage-denylist:<notificationType>/<notificationAddress>',
   input: 'notification-address.yml',
-  title: 'Delete Blacklisted Address',
+  title: 'Delete Denylisted Address',
   description: [
-    'Delete the specified address from the notification blacklist.',
+    'Delete the specified address from the notification denylist.',
   ].join('\n'),
 }, async function(req, res) {
-  // The address to remove from the blacklist
+  // The address to remove from the denylist
   let address = {
     notificationType: req.body.notificationType,
     notificationAddress: req.body.notificationAddress,
@@ -179,7 +179,7 @@ builder.declare({
 
   await req.authorize(req.body);
   try {
-    await this.BlacklistedNotification.remove(address);
+    await this.DenylistedNotification.remove(address);
   } catch (e) {
     if (e.name !== 'ResourceNotFoundError') {
       throw e;
@@ -190,16 +190,16 @@ builder.declare({
 
 builder.declare({
   method: 'get',
-  route: '/blacklist/list',
+  route: '/denylist/list',
   name: 'list',
   output: 'notification-address-list.yml',
-  title: 'List Blacklisted Notifications',
+  title: 'List Denylisted Notifications',
   query: {
     continuationToken: Entity.continuationTokenPattern,
     limit: /^[0-9]+$/,
   },
   description: [
-    'Lists all the blacklisted addresses.',
+    'Lists all the denylisted addresses.',
     '',
     'By default this end-point will try to return up to 1000 addresses in one',
     'request. But it **may return less**, even if more tasks are available.',
@@ -214,7 +214,7 @@ builder.declare({
 }, async function(req, res) {
   const continuation = req.query.continuationToken || null;
   const limit = Math.min(parseInt(req.query.limit || 1000, 10), 1000);
-  const query = await this.BlacklistedNotification.scan({}, {continuation, limit});
+  const query = await this.DenylistedNotification.scan({}, {continuation, limit});
 
   return res.reply({
     addresses: query.entries.map(address => {

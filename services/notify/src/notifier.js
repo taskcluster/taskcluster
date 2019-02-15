@@ -70,9 +70,9 @@ class Notifier {
       return;
     }
 
-    // Don't notify emails on the blacklist
+    // Don't notify emails on the denylist
     if (this.options.emailBlacklist.includes(address)) {
-      debug('Blacklist email: %s send detected, discarding the notification', address);
+      debug('Denylist email: %s send detected, discarding the notification', address);
       return;
     }
 

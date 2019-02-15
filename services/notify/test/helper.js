@@ -399,7 +399,7 @@ exports.withServer = (mock, skipping) => {
   });
 };
 
-exports.withBlacklist = (mock, skipping) => {
+exports.withDenylist = (mock, skipping) => {
   suiteSetup(async function() {
     if (skipping()) {
       return;
@@ -407,26 +407,26 @@ exports.withBlacklist = (mock, skipping) => {
 
     if (mock) {
       const cfg = await exports.load('cfg');
-      exports.load.inject('BlacklistedNotification', data.BlacklistedNotification.setup({
-        tableName: 'BlacklistedNotification',
+      exports.load.inject('DenylistedNotification', data.DenylistedNotification.setup({
+        tableName: 'DenylistedNotification',
         credentials: 'inMemory',
       }));
     } else {
       // suffix the table name config with a short suffix so that parallel
       // test runs have a good chance of not stepping on each others' feet
       const cfg = await exports.load('cfg');
-      exports.load.cfg('app.blacklistedNotificationTableName',
-        cfg.app.blacklistedNotificationTableName + TABLE_SUFFIX);
+      exports.load.cfg('app.denylistedNotificationTableName',
+        cfg.app.denylistedNotificationTableName + TABLE_SUFFIX);
     }
 
-    exports.BlacklistedNotification = await exports.load('BlacklistedNotification');
-    await exports.BlacklistedNotification.ensureTable();
+    exports.DenylistedNotification = await exports.load('DenylistedNotification');
+    await exports.DenylistedNotification.ensureTable();
   });
 
   // Clear the table entries before each test
   const cleanup = async () => {
     if (!skipping()) {
-      await exports.BlacklistedNotification.scan({}, {handler: address => address.remove()});
+      await exports.DenylistedNotification.scan({}, {handler: address => address.remove()});
     }
   };
   setup(cleanup);
