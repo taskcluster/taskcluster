@@ -145,6 +145,18 @@ locals {
       scopes = []
     },
     {
+      clientId    = "static/taskcluster/built-in-workers"
+      accessToken = "${random_string.built_in_workers_access_token.result}"
+      description = "..."
+
+      scopes = [
+        "queue:claim-work:built-in/*",
+        "assume:worker-id:built-in/*",
+        "queue:worker-id:built-in/*",
+        "queue:resolve-task",
+      ]
+    },
+    {
       clientId    = "static/taskcluster/queue"
       accessToken = "${random_string.queue_access_token.result}"
       description = "..."
