@@ -44,11 +44,11 @@ builder.declare({
   };
   // Ensure that the address is not in the blacklist
   let response = await this.BlacklistedNotification.load(address, true);
-  if(!response) {
+  if(response) {
+    return res.reportError('BlacklistedAddress', `${req.body.address} is blacklisted`, {});
+  } else {
     await this.notifier.email(req.body);
     res.sendStatus(200);
-  } else {
-    return res.reportError('BlacklistedAddress', `${req.body.address} is blacklisted`, {});
   }
 });
 
@@ -73,11 +73,11 @@ builder.declare({
   };
   // Ensure that the address is not in the blacklist
   let response = await this.BlacklistedNotification.load(notificationAddress, true);
-  if(!response) {
+  if(response) {
+    return res.reportError('BlacklistedAddress', `${req.body.address} is blacklisted`, {});
+  } else {
     await this.notifier.pulse(req.body);
     res.sendStatus(200);
-  } else {
-    return res.reportError('BlacklistedAddress', `${req.body.address} is blacklisted`, {});
   }
 });
 
@@ -121,11 +121,11 @@ builder.declare({
   };
   // Ensure that the address is not in the blacklist
   let response = await this.BlacklistedNotification.load(notificationAddress, true);
-  if(!response) {
+  if(response) {
+    return res.reportError('BlacklistedAddress', `${input.channel || input.user} is blacklisted`, {});
+  } else {
     await this.notifier.irc(input);
     res.sendStatus(200);
-  } else {
-    return res.reportError('BlacklistedAddress', `${input.channel || input.user} is blacklisted`, {});
   }
 });
 
@@ -144,10 +144,10 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   // The address to blacklist
-  let address = Object.assign({}, {
+  let address = {
     notificationType: req.body.notificationType,
     notificationAddress: req.body.notificationAddress,
-  });
+  };
 
   await req.authorize(req.body);
   try {
@@ -217,7 +217,12 @@ builder.declare({
   const query = await this.BlacklistedNotification.scan({}, {continuation, limit});
 
   return res.reply({
-    addresses: query.entries.map(address => address._properties),
+    addresses: query.entries.map(address => {
+      return {
+        notificationType: address.notificationType,
+        notificationAddress: address.notificationAddress,
+      };
+    }),
     continuationToken: query.continuation || undefined,
   });
 });

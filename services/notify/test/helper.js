@@ -410,8 +410,6 @@ exports.withBlacklist = (mock, skipping) => {
       exports.load.inject('BlacklistedNotification', data.BlacklistedNotification.setup({
         tableName: 'BlacklistedNotification',
         credentials: 'inMemory',
-        cryptoKey: cfg.azure.cryptoKey,
-        signingKey: cfg.azure.signingKey,
       }));
     } else {
       // suffix the table name config with a short suffix so that parallel

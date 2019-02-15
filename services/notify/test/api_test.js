@@ -28,6 +28,9 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
       assert.deepEqual(m.payload.message, {test: 123});
       assert.deepEqual(m.CCs, ['route.notify-test']);
     });
+  });
+
+  test('does not send notifications to blacklisted pulse address', async function() {
     // Add an address to the blacklist
     await helper.apiClient.addBlacklistAddress({
       notificationType: 'pulse',
@@ -51,6 +54,9 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
     helper.checkEmails(email => {
       assert.deepEqual(email.delivery.recipients, ['success@simulator.amazonses.com']);
     });
+  });
+
+  test('does not send notifications to blacklisted email address', async function() {
     // Add an address to the blacklist
     await helper.apiClient.addBlacklistAddress({
       notificationType: 'email',
@@ -98,6 +104,9 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
       assert.equal(body.channel, '#taskcluster-test');
       assert.equal(body.message, 'Does this work?');
     });
+  });
+
+  test('does not send notifications to blacklisted irc channel', async function() {
     // Add an irc-channel address to the blacklist
     await helper.apiClient.addBlacklistAddress({
       notificationType: 'irc-channel',
@@ -109,7 +118,9 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], f
     } catch(e) {
       assert(e.code, 'BlacklistedAddress');
     }
-    // Repeat for a blacklisted user
+  });
+
+  test('does not send notifications to blacklisted irc user', async function() {
     await helper.apiClient.addBlacklistAddress({notificationType: 'irc-user', notificationAddress: 'notify-me'});
     try {
       await helper.apiClient.irc({message: 'Does this work?', user: 'notify-me'});
