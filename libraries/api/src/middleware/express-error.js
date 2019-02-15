@@ -25,17 +25,15 @@ const expressError = ({errorCodes, entry, monitor}) => {
         'Error occurred handling: %s, err: %s, as JSON: %j, incidentId: %s',
         req.url, err, err, incidentId, err.stack
       );
-      if (monitor) {
-        err.incidentId = incidentId;
-        err.method = method;
-        err.params = req.params;
-        let payload = req.body;
-        if (cleanPayload) {
-          payload = cleanPayload(payload);
-        }
-        err.payload = req.payload;
-        monitor.reportError(err, {method});
+      err.incidentId = incidentId;
+      err.method = method;
+      err.params = req.params;
+      let payload = req.body;
+      if (cleanPayload) {
+        payload = cleanPayload(payload);
       }
+      err.payload = req.payload;
+      monitor.reportError(err, {method});
 
       // then formulate a generic error to send to the HTTP client
       const details = {incidentId};
@@ -69,13 +67,11 @@ const expressError = ({errorCodes, entry, monitor}) => {
         (message || 'Missing message!');
       code = 'InternalServerError';
       status = 500;
-      if (monitor) {
-        const err = new Error(newMessage);
-        err.badMessage = message;
-        err.badCode = code;
-        err.details = details;
-        monitor.reportError(err);
-      }
+      const err = new Error(newMessage);
+      err.badMessage = message;
+      err.badCode = code;
+      err.details = details;
+      monitor.reportError(err);
       message = newMessage;
     }
 

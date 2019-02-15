@@ -123,9 +123,7 @@ class API {
       // Route pattern
       const middleware = [entry.route];
 
-      if (monitor) {
-        middleware.push(monitor.expressMiddleware(entry.name));
-      }
+      middleware.push(monitor.expressMiddleware(entry.name));
 
       middleware.push(
         buildReportErrorMethod(),

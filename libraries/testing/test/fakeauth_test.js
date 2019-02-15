@@ -1,18 +1,19 @@
-var debug = require('debug')('test');
-var _ = require('lodash');
-var nock = require('nock');
-var hawk = require('hawk');
-var request = require('superagent');
-var SchemaSet = require('taskcluster-lib-validate');
-var APIBuilder = require('taskcluster-lib-api');
-var App = require('taskcluster-lib-app');
-var assert = require('assert');
-var taskcluster = require('taskcluster-client');
-var Promise = require('promise');
-var path = require('path');
-var libUrls = require('taskcluster-lib-urls');
+const debug = require('debug')('test');
+const _ = require('lodash');
+const nock = require('nock');
+const hawk = require('hawk');
+const request = require('superagent');
+const SchemaSet = require('taskcluster-lib-validate');
+const APIBuilder = require('taskcluster-lib-api');
+const MonitorBuilder = require('taskcluster-lib-monitor');
+const App = require('taskcluster-lib-app');
+const assert = require('assert');
+const taskcluster = require('taskcluster-client');
+const Promise = require('promise');
+const path = require('path');
+const libUrls = require('taskcluster-lib-urls');
 
-var builder = new APIBuilder({
+const builder = new APIBuilder({
   title: 'Test Server',
   description: 'for testing',
   serviceName: 'test',
@@ -50,10 +51,16 @@ suite('fakeauth', function() {
       folder: path.join(__dirname, 'schemas'),
     });
 
+    const monitorBuilder = new MonitorBuilder({
+      projectName: 'whatever',
+    });
+    monitorBuilder.setup({enable: false});
+
     // Create router for the API
     const api = await builder.build({
       schemaset,
       rootUrl,
+      monitor: monitorBuilder.monitor('api'),
     });
 
     // Create application

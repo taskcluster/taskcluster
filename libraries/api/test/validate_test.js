@@ -5,7 +5,7 @@ const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
 const path = require('path');
 const SchemaSet = require('taskcluster-lib-validate');
-const Monitor = require('taskcluster-lib-monitor');
+const MonitorBuilder = require('taskcluster-lib-monitor');
 
 suite('api/validate', function() {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
@@ -115,16 +115,18 @@ suite('api/validate', function() {
   });
 
   // Create a mock authentication server
-  let monitor;
+  let monitorBuilder;
   setup(async () => {
-    monitor = new Monitor({
+    monitorBuilder = new MonitorBuilder({
       projectName: 'tc-lib-api-test',
+    });
+    monitorBuilder.setup({
       mock: true,
     });
-    helper.setupServer({builder, monitor});
+    helper.setupServer({builder, monitor: monitorBuilder.monitor()});
   });
   teardown(() => {
-    monitor.terminate();
+    monitorBuilder.terminate();
     helper.teardownServer();
   });
 
@@ -173,8 +175,8 @@ suite('api/validate', function() {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
         assert(!err.toString().match(/data.value should be/));
-        assert.equal(monitor.events.length, 2);
-        assert(monitor.events[0].Fields.message.match(/data.value should be <= 10/));
+        assert.equal(monitorBuilder.messages.length, 2);
+        assert(monitorBuilder.messages[0].Fields.message.match(/data.value should be <= 10/));
       });
   });
 
@@ -256,8 +258,8 @@ suite('api/validate', function() {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
         assert(!err.toString().match(/data should be object/));
-        assert.equal(monitor.events.length, 2);
-        assert(monitor.events[0].Fields.message.match(/data should be object/));
+        assert.equal(monitorBuilder.messages.length, 2);
+        assert(monitorBuilder.messages[0].Fields.message.match(/data should be object/));
       });
   });
 
@@ -283,7 +285,7 @@ suite('api/validate', function() {
       folder: path.join(__dirname, 'schemas'),
     });
 
-    const api = await builder.build({rootUrl: libUrls.testRootUrl(), schemaset});
+    const api = await builder.build({rootUrl: libUrls.testRootUrl(), schemaset, monitor: helper.monitor()});
     try {
       api.router();
     } catch (err) {

@@ -1,5 +1,6 @@
 const testing = require('taskcluster-lib-testing');
 const SchemaSet = require('taskcluster-lib-validate');
+const MonitorBuilder = require('taskcluster-lib-monitor');
 const assert = require('assert');
 const path = require('path');
 const express = require('express');
@@ -22,6 +23,10 @@ exports.setupServer = async ({builder, monitor, context}) => {
     folder: path.join(__dirname, 'schemas'),
   });
 
+  if (!monitor) {
+    monitor = exports.monitor();
+  }
+
   const api = await builder.build({
     rootUrl,
     schemaset,
@@ -41,6 +46,16 @@ exports.setupServer = async ({builder, monitor, context}) => {
     });
     server.once('error', reject);
   });
+};
+
+exports.monitor = () => {
+  const monitorBuilder = new MonitorBuilder({
+    projectName: 'foo',
+  });
+  monitorBuilder.setup({
+    enable: false,
+  });
+  return monitorBuilder.monitor();
 };
 
 exports.teardownServer = async () => {

@@ -5,6 +5,7 @@ const assert = require('assert');
 const request = require('superagent');
 const slugid = require('slugid');
 const path = require('path');
+const helper = require('./helper');
 
 suite('API (context)', function() {
   const rootUrl = 'http://localhost:4321';
@@ -35,6 +36,7 @@ suite('API (context)', function() {
     });
     const api = await builder.build({
       rootUrl,
+      monitor: helper.monitor(),
       schemaset,
       context: {
         myProp: value,
@@ -80,6 +82,7 @@ suite('API (context)', function() {
     try {
       await builder.build({
         rootUrl,
+        monitor: helper.monitor(),
         schemaset,
         context: {
           prop1: 'value1',
@@ -111,6 +114,7 @@ suite('API (context)', function() {
     });
     await builder.build({
       rootUrl,
+      monitor: helper.monitor(),
       schemaset,
       context: {
         prop1: 'value1',
@@ -137,6 +141,7 @@ suite('API (context)', function() {
     try {
       await builder.build({
         rootUrl,
+        monitor: helper.monitor(),
         schemaset,
         context: {
           prop3: 'value3',
