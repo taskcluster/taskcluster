@@ -35,9 +35,8 @@ const initialYaml = {
   tasks: {
     $match: {
       taskId: { $eval: 'as_slugid("pr_task")' },
-      provisionerId: `{{ taskcluster.docker.provisionerId }}`,
-      workerType: `{{ taskcluster.docker.workerType }}`,
-      scopes: ['secrets:get:project/taskcluster/testing/taskcluster-github'],
+      provisionerId: '${taskcluster.docker.provisionerId}', // eslint-disable-line no-template-curly-in-string
+      workerType: '${taskcluster.docker.workerType}', // eslint-disable-line no-template-curly-in-string
       payload: {
         maxRunTime: 3600,
         image: 'node',
@@ -46,8 +45,8 @@ const initialYaml = {
       metadata: {
         name: '',
         description: '',
-        owner: `{{ event.sender.login }}@users.noreply.github.com`,
-        source: `{{ event.repository.url }}`,
+        owner: '${event.sender.login}@users.noreply.github.com', // eslint-disable-line no-template-curly-in-string
+        source: '${event.repository.url}', // eslint-disable-line no-template-curly-in-string
       },
     },
   },
