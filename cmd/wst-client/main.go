@@ -17,8 +17,7 @@ import (
 	"github.com/taskcluster/websocktunnel/client"
 )
 
-const usage = `Websocketunnel Client
-Websocketunnel Client is a command line utility which establishes a connection
+const usage = `Websocketunnel Client is a command line utility which establishes a connection
 to the websocktunnel service and allows serving http without exposing ports to 
 the internet.
 
