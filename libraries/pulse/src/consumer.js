@@ -77,17 +77,20 @@ class PulseConsumer {
     }
     this.running = false;
 
-    return this._shutdown();
+    // stop listening for new Connections
+    this.stopHandlingConnections();
+
+    // and drain the channel..
+    return this._drainChannel();
   }
 
   /**
-   * Shut down this listener and channel, without setting this.running to false
+   * Stop listening on this channel, but don't actually stop the consumer. This is
+   * done when the connection is recycling, when hopefully at the same time a new
+   * connection is coming up.
    */
-  async _shutdown() {
+  async _drainChannel() {
     const {channel, consumerTag} = this;
-
-    // reverse the effect of onConnected
-    this.stopHandlingConnections();
 
     if (channel && consumerTag) {
       this.consumerTag = null;
@@ -200,7 +203,7 @@ class PulseConsumer {
 
       // when retirement of this connection begins, stop consuming on this
       // channel and close the channel as soon sa all messages are handled.
-      conn.on('retiring', () => this._shutdown());
+      conn.on('retiring', () => this._drainChannel());
     } catch (err) {
       this.client.monitor.reportError(err);
       conn.failed();
