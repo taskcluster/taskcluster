@@ -2,10 +2,12 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import RefParser from 'json-schema-ref-parser';
 import { string, object, oneOf } from 'prop-types';
+import { join } from 'path';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Table from 'react-schema-viewer/lib/SchemaTable';
 import { THEME } from '../../utils/constants';
+import urls from '../../utils/urls';
 import references from '../../../docs/references.json';
 
 @withRouter
@@ -102,17 +104,11 @@ export default class SchemaTable extends Component {
 
   buildSchemaId(schemaId) {
     if (schemaId.startsWith('/')) {
-      if (
-        process.env.TASKCLUSTER_ROOT_URL &&
-        process.env.TASKCLUSTER_ROOT_URL !== 'https://taskcluster.net'
-      ) {
-        return process.env.TASKCLUSTER_ROOT_URL + schemaId;
-      }
+      const [service, version, filename] = schemaId
+        .replace(/^\/schemas\//, '')
+        .split('/');
 
-      return `https://schemas.taskcluster.net/${schemaId.replace(
-        /^\/schemas\//,
-        ''
-      )}`;
+      return urls.schema(service, join(version, filename));
     }
 
     return schemaId;
