@@ -316,6 +316,7 @@ export default class TaskGroup extends Component {
 
     return (
       <Dashboard
+        title="Task Group"
         helpView={<HelpView description={description} />}
         search={<Search onSubmit={this.handleTaskGroupSearchSubmit} />}>
         <ErrorPanel

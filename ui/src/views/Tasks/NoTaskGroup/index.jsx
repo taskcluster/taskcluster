@@ -46,6 +46,7 @@ export default class NoTaskGroup extends Component {
 
     return (
       <Dashboard
+        title="Task Groups"
         helpView={<HelpView description={description} />}
         search={<Search onSubmit={this.handleTaskGroupSearchSubmit} />}>
         <Typography className={classes.infoText}>
