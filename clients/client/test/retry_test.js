@@ -6,7 +6,7 @@ suite('retry-test', function() {
   const Promise = require('promise');
   const _ = require('lodash');
   const SchemaSet = require('taskcluster-lib-validate');
-  const Monitor = require('taskcluster-lib-monitor');
+  const MonitorBuilder = require('taskcluster-lib-monitor');
   const APIBuilder = require('taskcluster-lib-api');
   const testing = require('taskcluster-lib-testing');
   const App = require('taskcluster-lib-app');
@@ -101,7 +101,7 @@ suite('retry-test', function() {
   // Reference for test api server
   var _apiServer = null;
 
-  var monitor = null;
+  var monitorBuilder = null;
   var Server = null;
   var server = null;
 
@@ -111,8 +111,10 @@ suite('retry-test', function() {
       'test-client': ['auth:credentials', 'test:internal-error'],
     }, {rootUrl});
 
-    monitor = new Monitor({
+    monitorBuilder = new MonitorBuilder({
       projectName: 'tc-client',
+    });
+    monitorBuilder.setup({
       mock: true,
     });
 
@@ -125,6 +127,7 @@ suite('retry-test', function() {
     const api = await builder.build({
       rootUrl,
       schemaset,
+      monitor: monitorBuilder.monitor('api'),
     });
 
     Server = taskcluster.createClient(builder.reference());
@@ -134,7 +137,7 @@ suite('retry-test', function() {
         accessToken: 'test-token',
       },
       rootUrl,
-      monitor,
+      monitor: monitorBuilder.monitor(),
     });
 
     // Create application
@@ -167,7 +170,7 @@ suite('retry-test', function() {
 
   // Close server
   teardown(function() {
-    monitor.reset();
+    monitorBuilder.reset();
     testing.fakeauth.stop();
     assert(_apiServer, '_apiServer doesn\'t exist');
     if (proxier) {
@@ -205,8 +208,10 @@ suite('retry-test', function() {
   });
 
   test('Can succeed after 3 attempts (record stats)', async function() {
-    let m = new Monitor({
+    let mb = new MonitorBuilder({
       projectName: 'tc-client',
+    });
+    mb.setup({
       mock: true,
     });
     getOccasionalInternalErrorCount = 0;
@@ -216,11 +221,11 @@ suite('retry-test', function() {
         accessToken: 'test-token',
       },
       rootUrl: 'http://localhost:60526',
-      monitor: m,
+      monitor: mb.monitor(),
     });
     return server2.getOccasionalInternalError().then(function() {
       assert(getOccasionalInternalErrorCount === 4, 'expected 4 attempts');
-      assert(m.events.length > 0);
+      assert(mb.messages.length > 0);
     });
   });
 
@@ -281,7 +286,7 @@ suite('retry-test', function() {
     }, function(err) {
       assert(err.code === 'ECONNRESET', 'Expect ECONNRESET error');
       assert(getConnectionErrorCount === 6, 'expected 6 retries');
-      assert(monitor.events.length > 0);
+      assert(monitorBuilder.messages.length > 0);
     });
   });
 });

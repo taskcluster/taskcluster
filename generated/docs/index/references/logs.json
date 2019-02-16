@@ -1,0 +1,15 @@
+{
+  "projectName": "taskcluster-index",
+  "$schema": "/schemas/common/logs-reference-v0.json#",
+  "types": [
+    {
+      "type": "monitor.timer",
+      "version": 1,
+      "description": "The most basic timer.",
+      "fields": {
+        "key": "A key that should be unique to the logger prefix.",
+        "duration": "The duration in ms of whatever was timed."
+      }
+    }
+  ]
+}

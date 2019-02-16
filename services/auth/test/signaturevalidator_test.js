@@ -8,7 +8,7 @@ const slugid = require('slugid');
 const crypto = require('crypto');
 const taskcluster = require('taskcluster-client');
 const sigvalidator = require('../src/signaturevalidator');
-const Monitor = require('taskcluster-lib-monitor');
+const MonitorBuilder = require('taskcluster-lib-monitor');
 
 suite(helper.suiteName(__filename), function() {
   let one_hour = taskcluster.fromNow('1 hour');
@@ -40,7 +40,7 @@ suite(helper.suiteName(__filename), function() {
         return clients[clientId];
       },
       expandScopes: scopes => scopes,
-      monitor: new Monitor({projectName: 'foo', mock: true}),
+      monitor: (new MonitorBuilder({projectName: 'foo'})).setup({mock: true}).monitor(),
     });
   });
 

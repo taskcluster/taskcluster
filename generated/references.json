@@ -7846,6 +7846,150 @@
   {
     "content": {
       "$schema": "/schemas/common/logs-reference-v0.json#",
+      "projectName": "taskcluster-worker-manager",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/undefined/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "projectName": "taskcluster-treeherder",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/undefined/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "projectName": "taskcluster-auth",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/undefined/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "projectName": "taskcluster-built-in-workers",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/undefined/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "projectName": "taskcluster-secrets",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/undefined/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "projectName": "taskcluster-queue",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/undefined/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "projectName": "taskcluster-github",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/undefined/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "projectName": "taskcluster-purge-cache",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/undefined/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
       "projectName": "taskcluster-notify",
       "types": [
         {
@@ -7880,6 +8024,60 @@
             "user": "A user, if this is a request to direct message a user"
           },
           "type": "irc",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/undefined/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "projectName": "taskcluster-hooks",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/undefined/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "projectName": "taskcluster-login",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/undefined/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "projectName": "taskcluster-index",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
           "version": 1
         }
       ]
@@ -9628,6 +9826,17 @@
         "/references/queue/v1/exchanges.json",
         "/references/secrets/v1/api.json",
         "/references/treeherder/v1/exchanges.json",
+        "/references/undefined/v1/logs.json",
+        "/references/undefined/v1/logs.json",
+        "/references/undefined/v1/logs.json",
+        "/references/undefined/v1/logs.json",
+        "/references/undefined/v1/logs.json",
+        "/references/undefined/v1/logs.json",
+        "/references/undefined/v1/logs.json",
+        "/references/undefined/v1/logs.json",
+        "/references/undefined/v1/logs.json",
+        "/references/undefined/v1/logs.json",
+        "/references/undefined/v1/logs.json",
         "/references/undefined/v1/logs.json",
         "/references/worker-manager/v1/api.json"
       ]

@@ -154,9 +154,6 @@ const builder = new APIBuilder({
     // Statsum configuration {secret, baseUrl}
     'statsum',
 
-    // A tc-lib-monitor for use beyond the lib-api level
-    'monitor',
-
     // The websocktunnel config (with properties `secret` and `proxyUrl`)
     'websocktunnel',
   ],

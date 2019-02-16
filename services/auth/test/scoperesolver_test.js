@@ -2,20 +2,24 @@ const helper = require('./helper');
 const ScopeResolver = require('../src/scoperesolver');
 const exchanges = require('../src/exchanges');
 const {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
-const Monitor = require('taskcluster-lib-monitor');
+const MonitorBuilder = require('taskcluster-lib-monitor');
 const assert = require('assert');
 const _ = require('lodash');
 const fs = require('fs');
 const assume = require('assume');
 
 suite(helper.suiteName(__filename), () => {
-  let monitor, scopeResolver;
+  let monitor, monitorBuilder, scopeResolver;
   setup(async () => {
-    monitor = new Monitor({projectName: 'mock-auth', mock: true});
+    monitorBuilder = new MonitorBuilder({projectName: 'mock-auth'});
+    monitorBuilder.setup({
+      mock: true,
+    });
+    monitor = monitorBuilder.monitor();
     scopeResolver = new ScopeResolver({monitor, disableCache: true});
   });
   teardown(() => {
-    monitor.terminate();
+    monitorBuilder.terminate();
   });
 
   helper.secrets.mockSuite('setup and listening', ['app', 'azure'], function(mock, skipping) {

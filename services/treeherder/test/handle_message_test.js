@@ -116,9 +116,8 @@ suite('handle message', function() {
     });
 
     assert.deepEqual(helper.handler.taskCalls, ['abc'], 'Task was retrieved by the queue');
-    console.log(helper.monitor.events);
-    assert.equal(helper.monitor.events[0].Fields.key, 'handle-message');
-    assert.equal(helper.monitor.events[1].Fields.key, 'bar.handle-message');
-    assert.equal(helper.monitor.events[2].Fields.key, 'validateTask.invalid-config');
+    assert.equal(helper.monitorBuilder.messages[0].Fields.key, 'handle-message');
+    assert.equal(helper.monitorBuilder.messages[1].Fields.key, 'bar.handle-message');
+    assert.equal(helper.monitorBuilder.messages[2].Fields.key, 'validateTask.invalid-config');
   });
 });

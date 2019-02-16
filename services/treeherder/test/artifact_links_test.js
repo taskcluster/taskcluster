@@ -10,7 +10,7 @@ suite('artifact link transform', () => {
   helper.withLoader();
 
   suiteSetup(async () => {
-    monitor = await helper.load('monitor');
+    monitor = (await helper.load('monitor')).monitor();
   });
 
   setup(async function() {
