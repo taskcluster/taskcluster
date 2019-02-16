@@ -21,7 +21,7 @@ documentation](/docs/reference/platform/taskcluster-queue/references/api) for th
 Queue service specifies a JSON schema for the `queue.createTask` method.  The
 payload for that method is:
 
-<SchemaTable schema="taskcluster:/schemas/queue/v1/create-task-request.json#" />
+<SchemaTable schema="/schemas/queue/v1/create-task-request.json#" />
 
 As evident from the schema there are a few _required_ properties, such as:
 `provisionerId`, `workerType`, `created`, `deadline`, `payload` and `metadata`.
@@ -97,7 +97,7 @@ command to run and a maximum allowed runtime. You can find detailed
 documentation in the [reference
 section](/docs/reference/workers/docker-worker/payload).
 
-<SchemaTable schema="taskcluster:/schemas/docker-worker/v1/payload.json" />
+<SchemaTable schema="/schemas/docker-worker/v1/payload.json" />
 
 For the `image` property, we can pick any docker image, either a pre-defined
 image or one you have created yourself. There are many benefits to using custom

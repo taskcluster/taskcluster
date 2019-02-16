@@ -15,4 +15,4 @@ import SchemaTable from '../../../../src/components/SchemaTable'
 
 The following is the JSON schema for a task definition:
 
-<SchemaTable schema="http://schemas.taskcluster.net/queue/v1/create-task-request.json" />
+<SchemaTable schema="/schemas/queue/v1/create-task-request.json" />
