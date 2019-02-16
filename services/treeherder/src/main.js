@@ -5,7 +5,7 @@ const exchanges = require('./exchanges');
 const loader = require('taskcluster-lib-loader');
 const docs = require('taskcluster-lib-docs');
 const config = require('typed-env-config');
-const Monitor = require('taskcluster-lib-monitor');
+const monitorBuilder = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 
@@ -28,8 +28,7 @@ let load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => new Monitor({
-      projectName: 'taskcluster-treeherder',
+    setup: ({process, profile, cfg}) => monitorBuilder.setup({
       level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: profile !== 'production',
@@ -47,7 +46,7 @@ let load = loader({
     setup: ({cfg, monitor}) => {
       return new Client({
         namespace: cfg.pulse.namespace,
-        monitor,
+        monitor: monitor.monitor('pulse-client'),
         credentials: pulseCredentials(cfg.pulse.credentials),
       });
     },
@@ -80,6 +79,9 @@ let load = loader({
             rootUrl: cfg.taskcluster.rootUrl,
             credentials: cfg.pulse.credentials,
           }),
+        }, {
+          name: 'logs',
+          reference: monitorBuilder.reference(),
         },
       ],
     }),
@@ -109,7 +111,7 @@ let load = loader({
         prefix,
         publisher,
         validator,
-        monitor,
+        monitor: monitor.monitor('handler'),
       });
       await handler.start();
     },

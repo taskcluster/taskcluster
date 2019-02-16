@@ -100,7 +100,7 @@ const load = loader({
     setup: ({cfg, monitor}) => {
       return new Client({
         namespace: cfg.pulse.namespace,
-        monitor,
+        monitor: monitor.monitor('pulse-client'),
         credentials: pulseCredentials(cfg.pulse),
       });
     },

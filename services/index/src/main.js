@@ -6,7 +6,7 @@ const Handlers = require('./handlers');
 const builder = require('./api');
 const Config = require('typed-env-config');
 const loader = require('taskcluster-lib-loader');
-const Monitor = require('taskcluster-lib-monitor');
+const monitorBuilder = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
@@ -74,8 +74,7 @@ var load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => new Monitor({
-      projectName: cfg.monitoring.project || 'taskcluster-index',
+    setup: ({process, profile, cfg}) => monitorBuilder.setup({
       level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: profile === 'test',
@@ -96,6 +95,9 @@ var load = loader({
         {
           name: 'api',
           reference: builder.reference(),
+        }, {
+          name: 'logs',
+          reference: monitorBuilder.reference(),
         },
       ],
     }),
@@ -118,7 +120,7 @@ var load = loader({
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
       schemaset,
-      monitor: monitor.prefix('api'),
+      monitor: monitor.monitor('api'),
     }),
   },
 
@@ -138,7 +140,7 @@ var load = loader({
     setup: ({cfg, monitor}) => {
       return new Client({
         namespace: cfg.pulse.namespace,
-        monitor,
+        monitor: monitor.monitor('pulse-client'),
         credentials: pulseCredentials(cfg.pulse),
       });
     },
@@ -155,7 +157,7 @@ var load = loader({
         credentials: cfg.pulse,
         queueName: cfg.app.listenerQueueName,
         routePrefix: cfg.app.routePrefix,
-        monitor: monitor.prefix('handlers'),
+        monitor: monitor.monitor('handlers'),
         pulseClient: pulseClient,
       });
 
@@ -169,7 +171,7 @@ var load = loader({
   expire: {
     requires: ['cfg', 'monitor', 'IndexedTask', 'Namespace'],
     setup: ({cfg, monitor, IndexedTask, Namespace}) => {
-      return monitor.oneShot('expire', async () => {
+      return monitor.monitor().oneShot('expire', async () => {
         const now = taskcluster.fromNow(cfg.app.expirationDelay);
 
         debug('Expiring namespaces');

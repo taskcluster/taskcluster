@@ -1,6 +1,6 @@
 const loader = require('taskcluster-lib-loader');
 const App = require('taskcluster-lib-app');
-const Monitor = require('taskcluster-lib-monitor');
+const monitorBuilder = require('./monitor');
 const config = require('typed-env-config');
 const SchemaSet = require('taskcluster-lib-validate');
 const docs = require('taskcluster-lib-docs');
@@ -19,8 +19,7 @@ let load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => new Monitor({
-      projectName: 'taskcluster-worker-manager',
+    setup: ({process, profile, cfg}) => monitorBuilder.setup({
       level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: profile !== 'production',
@@ -54,7 +53,7 @@ let load = loader({
       },
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
-      monitor: monitor.prefix('api'),
+      monitor: monitor.monitor('api'),
       schemaset,
     }),
   },
@@ -72,6 +71,9 @@ let load = loader({
         {
           name: 'api',
           reference: builder.reference(),
+        }, {
+          name: 'logs',
+          reference: monitorBuilder.reference(),
         },
       ],
     }),

@@ -1,7 +1,7 @@
 const Loader = require('taskcluster-lib-loader');
 const Docs = require('taskcluster-lib-docs');
 const SchemaSet = require('taskcluster-lib-validate');
-const Monitor = require('taskcluster-lib-monitor');
+const monitorBuilder = require('./monitor');
 const App = require('taskcluster-lib-app');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const Config = require('typed-env-config');
@@ -48,8 +48,7 @@ const load = Loader({
   monitor: {
     requires: ['cfg', 'sentryManager', 'profile', 'process'],
     setup: ({cfg, sentryManager, profile, process}) => {
-      return new Monitor({
-        projectName: cfg.monitoring.project || 'taskcluster-auth',
+      return monitorBuilder.setup({
         level: cfg.app.level,
         enable: cfg.monitoring.enable,
         processName: process,
@@ -62,7 +61,7 @@ const load = Loader({
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => new ScopeResolver({
       maxLastUsedDelay: cfg.app.maxLastUsedDelay,
-      monitor: monitor.prefix('scope-resolver'),
+      monitor: monitor.monitor('scope-resolver'),
     }),
   },
 
@@ -74,7 +73,7 @@ const load = Loader({
         credentials: cfg.azure || {},
         signingKey: cfg.azure.signingKey,
         cryptoKey: cfg.azure.cryptoKey,
-        monitor: monitor.prefix('table.clients'),
+        monitor: monitor.monitor('table.clients'),
       }),
   },
 
@@ -117,6 +116,9 @@ const load = Loader({
         }, {
           name: 'events',
           reference: exchanges.reference(),
+        }, {
+          name: 'logs',
+          reference: monitorBuilder.reference(),
         },
       ],
     }),
@@ -132,7 +134,7 @@ const load = Loader({
     setup: ({cfg, monitor}) => {
       return new libPulse.Client({
         namespace: 'taskcluster-auth',
-        monitor,
+        monitor: monitor.monitor('pulse-client'),
         credentials: libPulse.pulseCredentials(cfg.pulse),
       });
     },
@@ -177,7 +179,7 @@ const load = Loader({
       let signatureValidator = signaturevalidator.createSignatureValidator({
         expandScopes: (scopes) => resolver.resolve(scopes),
         clientLoader: (clientId) => resolver.loadClient(clientId),
-        monitor,
+        monitor: monitor.monitor('signature-validator'),
       });
 
       return builder.build({
@@ -192,14 +194,13 @@ const load = Loader({
           sentryManager,
           statsum: cfg.app.statsum,
           websocktunnel: cfg.app.websocktunnel,
-          monitor,
         },
         schemaset,
         signatureValidator,
         publish: cfg.app.publishMetaData,
         aws: cfg.aws,
         referenceBucket: cfg.app.buckets.references,
-        monitor: monitor.prefix('api'),
+        monitor: monitor.monitor('api'),
       });
     },
   },
@@ -215,7 +216,7 @@ const load = Loader({
   'expire-sentry': {
     requires: ['cfg', 'sentryManager', 'monitor'],
     setup: async ({cfg, sentryManager, monitor}) => {
-      return monitor.oneShot('expire-sentry', async () => {
+      return monitor.monitor().oneShot('expire-sentry', async () => {
         const now = taskcluster.fromNow(cfg.app.sentryExpirationDelay);
         debug('Expiring sentry keys');
         await sentryManager.purgeExpiredKeys(now);
@@ -227,11 +228,11 @@ const load = Loader({
   'purge-expired-clients': {
     requires: ['cfg', 'Client', 'monitor'],
     setup: ({cfg, Client, monitor}) => {
-      return monitor.oneShot('purge-expired-clients', async () => {
+      return monitor.monitor().oneShot('purge-expired-clients', async () => {
         const now = taskcluster.fromNow(cfg.app.clientExpirationDelay);
         debug('Purging expired clients');
         await Client.purgeExpired(now);
-        debug('PUrged expired clients');
+        debug('Purged expired clients');
       });
     },
   },

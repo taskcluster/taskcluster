@@ -4,7 +4,7 @@ const path = require('path');
 const _ = require('lodash');
 const config = require('typed-env-config');
 const loader = require('taskcluster-lib-loader');
-const Monitor = require('taskcluster-lib-monitor');
+const monitorBuilder = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const App = require('taskcluster-lib-app');
@@ -30,8 +30,7 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => new Monitor({
-      projectName: cfg.monitoring.project,
+    setup: ({process, profile, cfg}) => monitorBuilder.setup({
       level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: profile === 'test',
@@ -43,7 +42,7 @@ const load = loader({
     requires: ['cfg', 'monitor'],
     setup: async ({cfg, monitor}) => data.CachePurge.setup({
       tableName: cfg.app.cachePurgeTableName,
-      monitor: monitor.prefix('table.purgecaches'),
+      monitor: monitor.monitor('table.purgecaches'),
       credentials: sasCredentials({
         tableName: cfg.app.cachePurgeTableName,
         accountId: cfg.azure.accountId,
@@ -56,7 +55,7 @@ const load = loader({
   'expire-cache-purges': {
     requires: ['cfg', 'CachePurge', 'monitor'],
     setup: ({cfg, CachePurge, monitor}) => {
-      return monitor.oneShot('expire-purge-caches', async () => {
+      return monitor.monitor().oneShot('expire-purge-caches', async () => {
         const now = taskcluster.fromNow(cfg.app.cachePurgeExpirationDelay);
         debug('Expiring cache-purges at: %s, from before %s', new Date(), now);
         const count = await CachePurge.expire(now);
@@ -73,7 +72,7 @@ const load = loader({
       schemaset,
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
-      monitor: monitor.prefix('api'),
+      monitor: monitor.monitor('api'),
     }),
   },
 
@@ -90,6 +89,9 @@ const load = loader({
         {
           name: 'api',
           reference: builder.reference(),
+        }, {
+          name: 'logs',
+          reference: monitorBuilder.reference(),
         },
       ],
     }),

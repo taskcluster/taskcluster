@@ -7,7 +7,7 @@ const path = require('path');
 const _ = require('lodash');
 const loader = require('taskcluster-lib-loader');
 const SchemaSet = require('taskcluster-lib-validate');
-const Monitor = require('taskcluster-lib-monitor');
+const monitorBuilder = require('./monitor');
 const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
@@ -24,8 +24,7 @@ var load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => new Monitor({
-      projectName: 'taskcluster-secrets',
+    setup: ({process, profile, cfg}) => monitorBuilder.setup({
       level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: profile !== 'production',
@@ -54,7 +53,7 @@ var load = loader({
       }),
       cryptoKey: cfg.azure.cryptoKey,
       signingKey: cfg.azure.signingKey,
-      monitor: monitor.prefix('table.secrets'),
+      monitor: monitor.monitor('table.secrets'),
     }),
   },
 
@@ -65,7 +64,7 @@ var load = loader({
       context: {cfg, Secret},
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
-      monitor: monitor.prefix('api'),
+      monitor: monitor.monitor('api'),
       schemaset,
     }),
   },
@@ -83,6 +82,9 @@ var load = loader({
         {
           name: 'api',
           reference: builder.reference(),
+        }, {
+          name: 'logs',
+          reference: monitorBuilder.reference(),
         },
       ],
     }),
@@ -107,7 +109,7 @@ var load = loader({
   expire: {
     requires: ['cfg', 'Secret', 'monitor'],
     setup: ({cfg, Secret, monitor}) => {
-      return monitor.oneShot('expire', async () => {
+      return monitor.monitor().oneShot('expire', async () => {
         const delay = cfg.app.secretExpirationDelay;
         const now = taskcluster.fromNow(delay);
 
