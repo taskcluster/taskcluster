@@ -57,7 +57,6 @@ class API {
     });
 
     // Always make monitor available in context
-    // TODO: document this
     options.context.monitor = options.monitor;
 
     this.entries = this.builder.entries.map(_.clone);

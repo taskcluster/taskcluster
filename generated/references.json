@@ -6025,7 +6025,7 @@
               },
               "fields": {
                 "additionalProperties": true,
-                "description": "TODO",
+                "description": "The set of fields that will be in every instance of this message type.",
                 "type": "object"
               },
               "type": {
