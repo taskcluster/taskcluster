@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import { dropLast } from 'ramda';
+import RefParser from 'json-schema-ref-parser';
 import { string, object, oneOf } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
+import { withStyles } from '@material-ui/core/styles';
 import Table from 'react-schema-viewer/lib/SchemaTable';
-import path from 'path';
 import { THEME } from '../../utils/constants';
-import readDocFile from '../../utils/readDocFile';
+import references from '../../../docs/references.json';
 
 @withRouter
 @withStyles(
@@ -78,7 +77,7 @@ import readDocFile from '../../utils/readDocFile';
   { withTheme: true }
 )
 /**
- * Display a SchemaTable asynchronously
+ * Display a SchemaTable
  */
 export default class SchemaTable extends Component {
   static defaultProps = {
@@ -90,26 +89,77 @@ export default class SchemaTable extends Component {
   };
 
   async componentDidMount() {
-    const {
-      schema,
-      match: { params },
-    } = this.props;
+    const { schema } = this.props;
 
     if (!this.state.schema && schema) {
-      if (typeof schema !== 'string') {
-        return this.setState({ schema });
-      }
-
-      if (schema.startsWith('http')) {
-        return this.setState({ schema: await (await fetch(schema)).json() });
-      }
-
-      const pathDir = dropLast(1, params.path.split('/')).join('/');
+      const schemaContent = await this.getSchemaContent(schema);
 
       this.setState({
-        schema: await readDocFile(path.join(pathDir, schema)).loader,
+        schema: schemaContent,
       });
     }
+  }
+
+  buildSchemaId(schemaId) {
+    if (schemaId.startsWith('/')) {
+      if (
+        process.env.TASKCLUSTER_ROOT_URL &&
+        process.env.TASKCLUSTER_ROOT_URL !== 'https://taskcluster.net'
+      ) {
+        return process.env.TASKCLUSTER_ROOT_URL + schemaId;
+      }
+
+      return `https://schemas.taskcluster.net/${schemaId.replace(
+        /^\/schemas\//,
+        ''
+      )}`;
+    }
+
+    return schemaId;
+  }
+
+  sanitizeSchema(schema) {
+    if (schema.$id) {
+      return {
+        ...schema,
+        $id: this.buildSchemaId(schema.$id),
+      };
+    }
+
+    return schema;
+  }
+
+  readReference(schemaPath) {
+    return references.find(({ filename }) =>
+      filename.endsWith(schemaPath.replace(/^\//, '').replace(/#$/, ''))
+    );
+  }
+
+  async getSchemaContent(schemaPath) {
+    const schemaRef = this.readReference(schemaPath);
+    const schema = this.sanitizeSchema(schemaRef.content);
+
+    await RefParser.dereference(schema.$id, schema, {
+      resolve: {
+        http: false,
+        file: false,
+        any: {
+          order: 1,
+          canRead: true,
+          read: file => {
+            const { pathname } = new URL(file.url);
+            const schema = this.readReference(pathname);
+
+            return schema.content;
+          },
+        },
+      },
+      dereference: {
+        circular: 'ignore',
+      },
+    });
+
+    return schema;
   }
 
   render() {

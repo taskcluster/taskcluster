@@ -5,7 +5,6 @@ import { withStyles } from '@material-ui/core/styles';
 import { lowerCase } from 'change-case';
 import path from 'path';
 import resolve from 'resolve-pathname';
-import RefParser from 'json-schema-ref-parser';
 import catchLinks from 'catch-links';
 import 'prismjs';
 import 'prismjs/themes/prism.css';
@@ -175,35 +174,6 @@ export default class Documentation extends Component {
     return this.findChildFromRootNode(rootNode) || rootNode;
   }
 
-  buildSchemaId(schemaId) {
-    if (schemaId.startsWith('/')) {
-      if (
-        process.env.TASKCLUSTER_ROOT_URL &&
-        process.env.TASKCLUSTER_ROOT_URL !== 'https://taskcluster.net'
-      ) {
-        return process.env.TASKCLUSTER_ROOT_URL + schemaId;
-      }
-
-      return `https://schemas.taskcluster.net/${schemaId.replace(
-        /^\/schemas\//,
-        ''
-      )}`;
-    }
-
-    return schemaId;
-  }
-
-  sanitizeSchema(schema) {
-    if (schema.$id) {
-      return {
-        ...schema,
-        $id: this.buildSchemaId(schema.$id),
-      };
-    }
-
-    return schema;
-  }
-
   // Returns a mapping between the HTML element and the desired component
   components() {
     return {
@@ -234,13 +204,11 @@ export default class Documentation extends Component {
 
       // use `isMDXComponent` once https://github.com/mdx-js/mdx/pull/369 is merged
       if (!Page.prototype) {
-        const entries = await this.getReferenceEntries(Page.entries);
-
         return this.setState({
           Page: null,
           pageInfo: null,
           error: null,
-          referenceJson: Object.assign({}, Page, { entries }),
+          referenceJson: Page,
         });
       }
 
@@ -251,73 +219,6 @@ export default class Documentation extends Component {
       this.setState({ error });
     }
   }
-
-  getReferenceEntries = entries => {
-    const projectName = this.props.match.params.path.split('/')[2];
-
-    return Promise.all(
-      entries.map(entry =>
-        ['input', 'output', 'schema'].reduce(async (acc, prop) => {
-          const accumulator = await acc;
-
-          if (!(prop in entry)) {
-            return acc;
-          }
-
-          const schemaName = entry[prop].replace(/#$/, '');
-          let {
-            default: schema,
-          } = await import(/* webpackChunkName: 'Documentation.Schema' */ `../../../docs/generated/${projectName}/schemas/${schemaName}`);
-
-          schema = this.sanitizeSchema(schema);
-
-          // `dereference` maintains object reference equality
-          const deref = await RefParser.dereference(
-            schema.$id || schema.id,
-            schema,
-            {
-              resolve: {
-                http: false,
-                file: false,
-                any: {
-                  order: 1,
-                  canRead: /^http*|^\/schemas|^taskcluster:\/schemas/,
-                  read: async (file, callback) => {
-                    const url = new URL(file.url);
-                    // e.g.,
-                    // https://taskcluster.example.com/schemas/hooks/v1/hook-definition.json
-                    // or
-                    // taskcluster:/schemas/hooks/v1/hook-definition.json
-                    // or
-                    // /schemas/hooks/v1/hook-definition.json
-                    // -> strip /schemas/hooks/ from the pathname
-                    const schemaName = url.pathname.replace(
-                      // eslint-disable-next-line no-useless-escape
-                      /^\/schemas\/[^\/]*\//,
-                      ''
-                    );
-                    const {
-                      default: schema,
-                    } = await import(/* webpackChunkName: 'Documentation.Schema' */ `../../../docs/generated/${projectName}/schemas/${schemaName}`);
-
-                    callback(null, schema);
-                  },
-                },
-              },
-              dereference: {
-                circular: 'ignore',
-              },
-            }
-          );
-
-          return Promise.resolve({
-            ...accumulator,
-            [prop]: deref,
-          });
-        }, Promise.resolve(entry))
-      )
-    );
-  };
 
   render() {
     const { classes, history } = this.props;
