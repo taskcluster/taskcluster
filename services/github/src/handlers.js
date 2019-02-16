@@ -274,7 +274,7 @@ class Handlers {
    * Get the repo's "policy" on pull requests, by fetching .taskcluster.yml from the default
    * branch, parsing it, and looking at its `allowPullRequests`.
    */
-  async getRepoPolicy(taskclusterYml) {
+  getRepoPolicy(taskclusterYml) {
     const DEFAULT_POLICY = 'collaborators';
 
     if (!taskclusterYml.version || taskclusterYml.version === 0) {
@@ -302,25 +302,27 @@ class Handlers {
    * or throws an error in other cases
    */
   async getYml({instGithub, owner, repo, ref}) {
-    let response = await instGithub.repos.getContents({owner, repo, path: '.taskcluster.yml', ref})
-      .catch(e => {
-        if (e.code === 404) {
-          debug(`${organization}/${repository} has no '.taskcluster.yml' at ${ref}. Skipping.`);
-          return null;
-        }
+    let response;
+    try {
+      response = await instGithub.repos.getContents({owner, repo, path: '.taskcluster.yml', ref});
+    } catch (e) {
+      if (e.code === 404) {
+        debug(`${owner}/${repo} has no '.taskcluster.yml' at ${ref}. Skipping.`);
+        return null;
+      }
 
-        if (e.message.endsWith('</body>\n</html>\n') && e.message.length > 10000) {
-          // We kept getting full html 500/400 pages from github in the logs.
-          // I consider this to be a hard-to-fix bug in octokat, so let's make
-          // the logs usable for now and try to fix this later. It's a relatively
-          // rare occurence.
-          debug('Detected an extremely long error. Truncating!');
-          e.message = e.message.slice(0, 100).concat('...');
-          e.stack = e.stack.split('</body>\n</html>\n')[1] || e.stack;
-        }
-        debug(`Error fetching yaml for ${organization}/${repository}@${ref}: ${e.message} \n ${e.stack}`);
-        throw e;
-      });
+      if (e.message.endsWith('</body>\n</html>\n') && e.message.length > 10000) {
+        // We kept getting full html 500/400 pages from github in the logs.
+        // I consider this to be a hard-to-fix bug in octokat, so let's make
+        // the logs usable for now and try to fix this later. It's a relatively
+        // rare occurence.
+        debug('Detected an extremely long error. Truncating!');
+        e.message = e.message.slice(0, 100).concat('...');
+        e.stack = e.stack.split('</body>\n</html>\n')[1] || e.stack;
+      }
+      debug(`Error fetching yaml for ${owner}/${repo}@${ref}: ${e.message} \n ${e.stack}`);
+      throw e;
+    }
 
     return yaml.safeLoad(Buffer.from(response.data.content, 'base64').toString());
   }
@@ -542,7 +544,7 @@ async function jobHandler(message) {
   if (message.payload.details['event.type'].startsWith('pull_request.')) {
     debug(`Checking pull request permission for ${organization}/${repository}@${sha}...`);
 
-    debug(`Retreiving  ${organization}/${repository}@${sha}...`);
+    debug(`Retrieving  ${organization}/${repository}@${sha}...`);
     let defaultBranch = (await instGithub.repos.get({owner: organization, repo: repository}))
       .data
       .default_branch;
@@ -559,7 +561,7 @@ async function jobHandler(message) {
         repo: repository,
         username: login,
       }).catch(e => {
-        if (e.status !== 404) {
+        if (e.code !== 404) {
           throw e;
         }
       });
@@ -583,6 +585,7 @@ async function jobHandler(message) {
           });
         }
 
+        debug(`This user is not collaborator on ${organization}/${repository} and can't make PR@${sha}. Exiting...`);
         return;
       }
     }

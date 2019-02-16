@@ -3,6 +3,7 @@ const assert = require('assert');
 const _ = require('lodash');
 const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
+const yaml = require('js-yaml');
 
 suite('intree config', function() {
   let intree;
@@ -60,7 +61,7 @@ suite('intree config', function() {
    **/
   let buildConfigTest = function(testName, configPath, params, expected, count=-1, shouldError=false) {
     test(testName, async function() {
-      params.config = fs.readFileSync(configPath);
+      params.config = yaml.safeLoad(fs.readFileSync(configPath));
       params.schema = {
         0: libUrls.schema(libUrls.testRootUrl(), 'github', 'v1/taskcluster-github-config.yml'),
         1: libUrls.schema(libUrls.testRootUrl(), 'github', 'v1/taskcluster-github-config.v1.yml'),
