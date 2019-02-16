@@ -690,6 +690,7 @@ export default class ViewTask extends Component {
 
     return (
       <Dashboard
+        title="Task"
         helpView={<HelpView description={description} />}
         search={
           <Search

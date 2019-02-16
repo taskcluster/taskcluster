@@ -43,6 +43,7 @@ export default class NoTask extends Component {
 
     return (
       <Dashboard
+        title="View Tasks"
         helpView={<HelpView description={description} />}
         search={<Search onSubmit={this.handleTaskSearchSubmit} />}>
         <Typography className={classes.infoText}>
