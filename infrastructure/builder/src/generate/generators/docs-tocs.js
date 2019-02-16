@@ -148,7 +148,7 @@ function makeToc({ files, rootPath }) {
               name,
               children: [],
               data: Object.assign(item.data, {
-                order: name === 'index' ? 0 : item.data.order || 1000,
+                order: item.data.order || 1000,
               }),
               path: `${rootPath}${path.join('/')}`,
             };
@@ -196,7 +196,7 @@ exports.tasks = [{
         children: [],
         content: undefined,
         data: Object.assign(files[fileName].data, {
-          order: files[fileName].data.order || 0,
+          order: files[fileName].data.order || 1000,
         }),
       })
     );
