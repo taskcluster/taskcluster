@@ -62,7 +62,7 @@ const load = loader({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.prefix('table.denylist'),
+      monitor: monitor.monitor('table.denylist'),
     }),
   },
 
