@@ -1,15 +1,13 @@
-const _ = require('lodash');
 const util = require('util');
-const fs = require('fs');
 const path = require('path');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const libDocs = require('taskcluster-lib-docs');
 const Stamp = require('./stamp');
-const {gitClone, gitId, ensureTask} = require('./utils');
+const {gitClone, ensureTask} = require('./utils');
 
 const generateRepoTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
-  const repository = _.find(spec.build.repositories, {name});
+  const repository = spec.build.repositories.find(r => r.name === name);
 
   ensureTask(tasks, {
     title: `Repo ${name} - Clone`,

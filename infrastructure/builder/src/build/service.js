@@ -1,17 +1,12 @@
-const _ = require('lodash');
-const util = require('util');
 const fs = require('fs');
 const assert = require('assert');
 const path = require('path');
-const split = require('split');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = util.promisify(require('mkdirp'));
 const {dockerPush} = require('./utils');
 const {herokuBuildpackTasks} = require('./service/heroku-buildpack');
 const {webUiTasks} = require('./service/web-ui');
 
 const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
-  const repository = _.find(spec.build.repositories, {name});
+  const repository = spec.build.repositories.find(r => r.name === name);
   const isMonorepo = repository.source === 'monorepo';
   const workDir = path.join(baseDir, `service-${name}`);
   if (!fs.existsSync(workDir)) {

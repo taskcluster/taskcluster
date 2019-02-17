@@ -3,15 +3,24 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const rimraf = util.promisify(require('rimraf'));
-const mkdirp = util.promisify(require('mkdirp'));
 const {quote} = require('shell-quote');
 const tar = require('tar-fs');
 const copy = require('recursive-copy');
 const Stamp = require('./stamp');
 const appRootDir = require('app-root-dir');
-const {gitClone, gitIsDirty, dockerRun, dockerPull, dockerImages, dockerBuild,
-  dockerRegistryCheck, serviceDockerImageTask, ensureDockerImage, ensureTask,
-  listServices, dockerPush} = require('./utils');
+const {
+  gitClone,
+  gitIsDirty,
+  dockerRun,
+  dockerPull,
+  dockerImages,
+  dockerBuild,
+  dockerRegistryCheck,
+  ensureDockerImage,
+  ensureTask,
+  listServices,
+  dockerPush,
+} = require('./utils');
 
 /**
  * The "monoimage" is a single docker image containing all tasks.  This build process goes

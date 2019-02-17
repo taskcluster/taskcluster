@@ -1,5 +1,4 @@
 const path = require('path');
-const fs = require('fs');
 const {gitLsFiles, readFile, writeFile} = require('../util');
 
 exports.tasks = [{

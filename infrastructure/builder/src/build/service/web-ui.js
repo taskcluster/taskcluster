@@ -8,8 +8,11 @@ const doT = require('dot');
 const tar = require('tar-fs');
 const copy = require('recursive-copy');
 const Stamp = require('../stamp');
-const {dockerRun, dockerPull, dockerImages, dockerBuild, dockerRegistryCheck,
-  ensureDockerImage, serviceDockerImageTask} = require('../utils');
+const {
+  dockerRun,
+  ensureDockerImage,
+  serviceDockerImageTask,
+} = require('../utils');
 
 doT.templateSettings.strip = false;
 const TOOLS_UI_DOCKERFILE_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'web-ui-dockerfile.dot')));
