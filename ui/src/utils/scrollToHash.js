@@ -14,9 +14,10 @@ export default (offset = 0) => {
     setTimeout(() => {
       const id = hash.replace('#', '');
       const element = document.getElementById(id);
-      const { top } = element.getBoundingClientRect();
 
       if (element) {
+        const { top } = element.getBoundingClientRect();
+
         window.scrollBy({
           behavior: 'smooth',
           top: top - appBarHeight - offset,
