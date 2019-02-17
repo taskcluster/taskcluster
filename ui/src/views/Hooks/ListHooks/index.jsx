@@ -90,6 +90,7 @@ export default class ListHooks extends Component {
             defaultExpanded={Boolean(hookSearch)}
             listItemProps={{ color: classes.listItemProps }}
             searchTerm={hookSearch || null}
+            softSearch
             tree={tree}
           />
         )}
