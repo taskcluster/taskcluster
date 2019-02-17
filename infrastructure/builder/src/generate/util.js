@@ -79,4 +79,4 @@ exports.gitLsFiles = async () => {
 /**
  * Remove extension from `filename`
  */
-exports.removeExtension = filename => filename.replace(/\.[^/.]+$/, '');
+exports.removeExtension = filename => filename.replace(path.extname(filename), '');
