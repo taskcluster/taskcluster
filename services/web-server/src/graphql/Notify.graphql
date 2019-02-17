@@ -1,0 +1,28 @@
+type NotificationAddress {
+  notificationType: String!
+  notificationAddress: String!
+}
+
+input NotificationAddressInput {
+  notificationType: String!
+  notificationAddress: String!
+}
+
+type NotificationAddressEdge implements Edge {
+  cursor: String
+  node: NotificationAddress
+}
+
+type NotificationAddressConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [NotificationAddressEdge]
+}
+
+extend type Query {
+  listDenylistAddresses(filter: JSON, connection: PageConnection): NotificationAddressConnection
+}
+
+extend type Mutation {
+  addDenylistAddress(address: NotificationAddressInput!): NotificationAddress
+  deleteDenylistAddress(address: NotificationAddressInput!): NotificationAddress
+}
