@@ -1,7 +1,6 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
-import { prop, map } from 'ramda';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import MuiTreeView from 'material-ui-treeview';
@@ -52,12 +51,6 @@ export default class ListHooks extends Component {
     );
   };
 
-  handleLeafClick = ({ value, parent }) => {
-    this.props.history.push(
-      `/hooks/${parent.value}/${encodeURIComponent(value)}`
-    );
-  };
-
   render() {
     const {
       classes,
@@ -68,7 +61,12 @@ export default class ListHooks extends Component {
     const tree = hookGroups
       ? hookGroups.map(group => ({
           value: group.hookGroupId,
-          nodes: map(prop('hookId'), group.hooks),
+          nodes: group.hooks.map(hook => ({
+            value: hook.hookId,
+            href: `/hooks/${group.hookGroupId}/${encodeURIComponent(
+              hook.hookId
+            )}`,
+          })),
         }))
       : [];
 
@@ -93,7 +91,6 @@ export default class ListHooks extends Component {
             listItemProps={{ color: classes.listItemProps }}
             searchTerm={hookSearch || null}
             tree={tree}
-            onLeafClick={this.handleLeafClick}
           />
         )}
         <Button
