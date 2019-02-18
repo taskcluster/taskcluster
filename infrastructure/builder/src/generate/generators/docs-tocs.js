@@ -17,6 +17,12 @@ function sort(a, b) {
   const first = a.data.order;
   const second = b.data.order;
 
+  // Ensure the sort returns the same list when there are files with the same `order` value.
+  // Otherwise we might have a different ordering of the TOC.
+  if (first === second) {
+    return JSON.stringify(a).localeCompare(JSON.stringify(b));
+  }
+
   if (typeof first !== 'number') {
     return 1;
   }

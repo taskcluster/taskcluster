@@ -1270,8 +1270,8 @@
                 },
                 "name": "libraries",
                 "next": {
-                  "path": "manual/using/handling-high-load",
-                  "title": "Handling High Load"
+                  "path": "manual/using/actions",
+                  "title": "Defining User Actions on Existing Tasks"
                 },
                 "path": "manual/using/integration/libraries",
                 "prev": {
@@ -1298,28 +1298,6 @@
             "prev": {
               "path": "manual/using/administration",
               "title": "Project Administration"
-            },
-            "up": {
-              "path": "manual/using",
-              "title": "Using Taskcluster"
-            }
-          },
-          {
-            "children": [
-            ],
-            "data": {
-              "order": 1000,
-              "title": "Handling High Load"
-            },
-            "name": "handling-high-load",
-            "next": {
-              "path": "manual/using/actions",
-              "title": "Defining User Actions on Existing Tasks"
-            },
-            "path": "manual/using/handling-high-load",
-            "prev": {
-              "path": "manual/using/integration/libraries",
-              "title": "Client Libraries"
             },
             "up": {
               "path": "manual/using",
@@ -1381,7 +1359,8 @@
                 },
                 "name": "ui",
                 "next": {
-                  "title": "Taskcluster Reference"
+                  "path": "manual/using/handling-high-load",
+                  "title": "Handling High Load"
                 },
                 "path": "manual/using/actions/ui",
                 "prev": {
@@ -1405,8 +1384,29 @@
             },
             "path": "manual/using/actions",
             "prev": {
-              "path": "manual/using/handling-high-load",
+              "path": "manual/using/integration/libraries",
+              "title": "Client Libraries"
+            },
+            "up": {
+              "path": "manual/using",
+              "title": "Using Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000,
               "title": "Handling High Load"
+            },
+            "name": "handling-high-load",
+            "next": {
+              "title": "Taskcluster Reference"
+            },
+            "path": "manual/using/handling-high-load",
+            "prev": {
+              "path": "manual/using/actions/ui",
+              "title": "User Interface Considerations"
             },
             "up": {
               "path": "manual/using",
@@ -1624,8 +1624,8 @@
                 },
                 "name": "events",
                 "next": {
-                  "path": "reference/core/notify/docs/usage",
-                  "title": "Enable Notifications"
+                  "path": "reference/core/notify/README",
+                  "title": "README"
                 },
                 "path": "reference/core/notify/references/events",
                 "prev": {
@@ -1641,15 +1641,14 @@
                 "children": [
                 ],
                 "data": {
-                  "order": 1000,
+                  "order": 1000
+                },
+                "name": "README",
+                "next": {
+                  "path": "reference/core/notify/docs/usage",
                   "title": "Enable Notifications"
                 },
-                "name": "usage",
-                "next": {
-                  "path": "reference/core/notify/README",
-                  "title": "README"
-                },
-                "path": "reference/core/notify/docs/usage",
+                "path": "reference/core/notify/README",
                 "prev": {
                   "path": "reference/core/notify/references/events",
                   "title": "events"
@@ -1663,17 +1662,18 @@
                 "children": [
                 ],
                 "data": {
-                  "order": 1000
+                  "order": 1000,
+                  "title": "Enable Notifications"
                 },
-                "name": "README",
+                "name": "usage",
                 "next": {
                   "path": "reference/core/purge-cache/README",
                   "title": "purge-cache"
                 },
-                "path": "reference/core/notify/README",
+                "path": "reference/core/notify/docs/usage",
                 "prev": {
-                  "path": "reference/core/notify/docs/usage",
-                  "title": "Enable Notifications"
+                  "path": "reference/core/notify/README",
+                  "title": "README"
                 },
                 "up": {
                   "path": "reference/core/notify/README",
@@ -1755,8 +1755,8 @@
             },
             "path": "reference/core/purge-cache/README",
             "prev": {
-              "path": "reference/core/notify/README",
-              "title": "README"
+              "path": "reference/core/notify/docs/usage",
+              "title": "Enable Notifications"
             },
             "up": {
               "path": "reference/core",
@@ -2592,13 +2592,34 @@
                 },
                 "name": "events",
                 "next": {
-                  "path": "reference/integrations/treeherder/docs/task-treeherder-config",
-                  "title": "Task Schema"
+                  "path": "reference/integrations/treeherder/README",
+                  "title": "README"
                 },
                 "path": "reference/integrations/treeherder/references/events",
                 "prev": {
                   "path": "reference/integrations/treeherder/README",
                   "title": "treeherder"
+                },
+                "up": {
+                  "path": "reference/integrations/treeherder/README",
+                  "title": "treeherder"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000
+                },
+                "name": "README",
+                "next": {
+                  "path": "reference/integrations/treeherder/docs/task-treeherder-config",
+                  "title": "Task Schema"
+                },
+                "path": "reference/integrations/treeherder/README",
+                "prev": {
+                  "path": "reference/integrations/treeherder/references/events",
+                  "title": "events"
                 },
                 "up": {
                   "path": "reference/integrations/treeherder/README",
@@ -2621,34 +2642,13 @@
                 },
                 "name": "task-treeherder-config",
                 "next": {
-                  "path": "reference/integrations/treeherder/README",
-                  "title": "README"
-                },
-                "path": "reference/integrations/treeherder/docs/task-treeherder-config",
-                "prev": {
-                  "path": "reference/integrations/treeherder/references/events",
-                  "title": "events"
-                },
-                "up": {
-                  "path": "reference/integrations/treeherder/README",
-                  "title": "treeherder"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000
-                },
-                "name": "README",
-                "next": {
                   "path": "reference/operations",
                   "title": "Operations"
                 },
-                "path": "reference/integrations/treeherder/README",
+                "path": "reference/integrations/treeherder/docs/task-treeherder-config",
                 "prev": {
-                  "path": "reference/integrations/treeherder/docs/task-treeherder-config",
-                  "title": "Task Schema"
+                  "path": "reference/integrations/treeherder/README",
+                  "title": "README"
                 },
                 "up": {
                   "path": "reference/integrations/treeherder/README",
@@ -2704,8 +2704,8 @@
         },
         "path": "reference/operations",
         "prev": {
-          "path": "reference/integrations/treeherder/README",
-          "title": "README"
+          "path": "reference/integrations/treeherder/docs/task-treeherder-config",
+          "title": "Task Schema"
         }
       },
       {
@@ -2748,8 +2748,8 @@
       "title": "Taskcluster Reference"
     },
     "prev": {
-      "path": "manual/using/actions/ui",
-      "title": "User Interface Considerations"
+      "path": "manual/using/handling-high-load",
+      "title": "Handling High Load"
     }
   },
   "resources": {
@@ -2769,15 +2769,22 @@
         "children": [
         ],
         "data": {
+          "class": "markdown",
+          "followup": {
+            "links": {
+              "authenticate": "Authenticate to the API"
+            }
+          },
+          "layout": "default",
           "order": 1000,
-          "title": "Changing the Task Graph"
+          "title": "API Tutorial"
         },
-        "name": "gecko-task-graph-howto",
+        "name": "apis",
         "next": {
           "path": "tutorial/authenticate",
           "title": "Authenticating to Taskcluster"
         },
-        "path": "tutorial/gecko-task-graph-howto"
+        "path": "tutorial/apis"
       },
       {
         "children": [
@@ -2795,13 +2802,37 @@
         },
         "name": "authenticate",
         "next": {
-          "path": "tutorial/debug-task",
-          "title": "Debugging a Task"
+          "path": "tutorial/create-task-via-api",
+          "title": "Creating a task via API"
         },
         "path": "tutorial/authenticate",
         "prev": {
-          "path": "tutorial/gecko-task-graph-howto",
-          "title": "Changing the Task Graph"
+          "path": "tutorial/apis",
+          "title": "API Tutorial"
+        }
+      },
+      {
+        "children": [
+        ],
+        "data": {
+          "followup": {
+            "links": {
+              "monitor-task-status": "Monitor a Task's Status"
+            }
+          },
+          "layout": "default",
+          "order": 1000,
+          "title": "Creating a task via API"
+        },
+        "name": "create-task-via-api",
+        "next": {
+          "path": "tutorial/debug-task",
+          "title": "Debugging a Task"
+        },
+        "path": "tutorial/create-task-via-api",
+        "prev": {
+          "path": "tutorial/authenticate",
+          "title": "Authenticating to Taskcluster"
         }
       },
       {
@@ -2818,8 +2849,8 @@
         },
         "path": "tutorial/debug-task",
         "prev": {
-          "path": "tutorial/authenticate",
-          "title": "Authenticating to Taskcluster"
+          "path": "tutorial/create-task-via-api",
+          "title": "Creating a task via API"
         }
       },
       {
@@ -2879,33 +2910,13 @@
         },
         "name": "gecko-decision-task",
         "next": {
-          "path": "tutorial/gecko-new-job",
-          "title": "Adding a new job"
+          "path": "tutorial/gecko-docker-images",
+          "title": "Docker Image Generation"
         },
         "path": "tutorial/gecko-decision-task",
         "prev": {
           "path": "tutorial/finding-tasks",
           "title": "Finding Tasks"
-        }
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "ejs": true,
-          "marked": true,
-          "order": 1000,
-          "title": "Adding a new job"
-        },
-        "name": "gecko-new-job",
-        "next": {
-          "path": "tutorial/gecko-docker-images",
-          "title": "Docker Image Generation"
-        },
-        "path": "tutorial/gecko-new-job",
-        "prev": {
-          "path": "tutorial/gecko-decision-task",
-          "title": "Gecko Decision Task"
         }
       },
       {
@@ -2923,38 +2934,51 @@
         },
         "name": "gecko-docker-images",
         "next": {
-          "path": "tutorial/apis",
-          "title": "API Tutorial"
+          "path": "tutorial/gecko-new-job",
+          "title": "Adding a new job"
         },
         "path": "tutorial/gecko-docker-images",
         "prev": {
-          "path": "tutorial/gecko-new-job",
-          "title": "Adding a new job"
+          "path": "tutorial/gecko-decision-task",
+          "title": "Gecko Decision Task"
         }
       },
       {
         "children": [
         ],
         "data": {
-          "class": "markdown",
-          "followup": {
-            "links": {
-              "authenticate": "Authenticate to the API"
-            }
-          },
-          "layout": "default",
+          "ejs": true,
+          "marked": true,
           "order": 1000,
-          "title": "API Tutorial"
+          "title": "Adding a new job"
         },
-        "name": "apis",
+        "name": "gecko-new-job",
+        "next": {
+          "path": "tutorial/gecko-task-graph-howto",
+          "title": "Changing the Task Graph"
+        },
+        "path": "tutorial/gecko-new-job",
+        "prev": {
+          "path": "tutorial/gecko-docker-images",
+          "title": "Docker Image Generation"
+        }
+      },
+      {
+        "children": [
+        ],
+        "data": {
+          "order": 1000,
+          "title": "Changing the Task Graph"
+        },
+        "name": "gecko-task-graph-howto",
         "next": {
           "path": "tutorial/gecko-task-graph",
           "title": "Gecko Task Graph Creation"
         },
-        "path": "tutorial/apis",
+        "path": "tutorial/gecko-task-graph-howto",
         "prev": {
-          "path": "tutorial/gecko-docker-images",
-          "title": "Docker Image Generation"
+          "path": "tutorial/gecko-new-job",
+          "title": "Adding a new job"
         }
       },
       {
@@ -2977,8 +3001,8 @@
         },
         "path": "tutorial/gecko-task-graph",
         "prev": {
-          "path": "tutorial/apis",
-          "title": "API Tutorial"
+          "path": "tutorial/gecko-task-graph-howto",
+          "title": "Changing the Task Graph"
         }
       },
       {
@@ -3111,34 +3135,10 @@
           "title": "What is Taskcluster?"
         },
         "name": "what-is-tc",
-        "next": {
-          "path": "tutorial/create-task-via-api",
-          "title": "Creating a task via API"
-        },
         "path": "tutorial/what-is-tc",
         "prev": {
           "path": "tutorial/reviews",
           "title": "Taskcluster Reviews"
-        }
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "followup": {
-            "links": {
-              "monitor-task-status": "Monitor a Task's Status"
-            }
-          },
-          "layout": "default",
-          "order": 1000,
-          "title": "Creating a task via API"
-        },
-        "name": "create-task-via-api",
-        "path": "tutorial/create-task-via-api",
-        "prev": {
-          "path": "tutorial/what-is-tc",
-          "title": "What is Taskcluster?"
         }
       }
     ],
