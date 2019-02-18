@@ -1,7 +1,5 @@
 repositories:
 
-# services
-
 # microservices
 - name: gce-provider
   kind: service

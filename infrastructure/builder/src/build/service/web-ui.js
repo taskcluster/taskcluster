@@ -15,7 +15,6 @@ const {
 } = require('../utils');
 
 doT.templateSettings.strip = false;
-const TOOLS_UI_DOCKERFILE_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'web-ui-dockerfile.dot')));
 
 exports.webUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir}) => {
   const nodeImage = `node:${repository.service.node}`;
@@ -73,10 +72,6 @@ exports.webUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, 
         baseDir,
       });
 
-      // Note that we do not run `neutrino build`, as that requires runtime
-      // configuration.  Instead, the Dockerfile is set up to run this at
-      // deployment time.
-
       stamp.stampDir(appDir);
       return provides;
     },
@@ -90,7 +85,6 @@ exports.webUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, 
     ],
     makeTarball: (requirements, utils) => {
       const appDir = requirements[`service-${name}-installed-app-dir`];
-      const dockerfile = TOOLS_UI_DOCKERFILE_TEMPLATE({nodeImage});
       const nginxConf = fs.readFileSync(path.join(__dirname, 'web-ui-nginx-site.conf'));
 
       return tar.pack(appDir, {
@@ -100,7 +94,6 @@ exports.webUiTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions, repository, 
           return header;
         },
         finish: pack => {
-          pack.entry({name: 'Dockerfile'}, dockerfile);
           pack.entry({name: 'nginx-site.conf'}, nginxConf);
           pack.finalize();
         },
