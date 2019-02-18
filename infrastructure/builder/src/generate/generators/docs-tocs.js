@@ -5,22 +5,12 @@ const { join } = require('path');
 const { removeExtension, readJSON, writeJSON } = require('../util');
 
 const mdParseDir = promisify(md.parseDir);
-const readDirectory = promisify(require('read-directory'));
 const readdir = promisify(fs.readdir);
 
 const DOCS_LOCATIONS = {
   GENERATED: join('ui', 'docs', 'generated'),
   STATIC: join('ui', 'docs', 'static'),
 };
-
-const projectMetadata = {};
-async function readProjectMetadata(name) {
-  if (!projectMetadata[name]) {
-    projectMetadata[name] = await readJSON(join(DOCS_LOCATIONS.GENERATED, name, 'metadata.json'));
-  }
-
-  return projectMetadata[name];
-}
 
 // Sort doc files by the order property
 function sort(a, b) {
@@ -50,36 +40,35 @@ function sortChildren(children) {
 async function readGeneratedDocs() {
   const projects = await readdir(DOCS_LOCATIONS.GENERATED);
   const generatedDocs = {};
+  const projectMetadata = {};
+
+  async function readProjectMetadata(name) {
+    if (!projectMetadata[name]) {
+      projectMetadata[name] = await readJSON(join(DOCS_LOCATIONS.GENERATED, name, 'metadata.json'));
+    }
+
+    return projectMetadata[name];
+  }
 
   for (const projectName of projects) {
-    const [metadata, mdFiles, jsonFiles] = await Promise.all([
+    const [metadata, mdFiles] = await Promise.all([
       readProjectMetadata(projectName),
       mdParseDir(join(DOCS_LOCATIONS.GENERATED, projectName), {
         dirnames: true,
       }),
-      readDirectory(
-        join(DOCS_LOCATIONS.GENERATED, projectName),
-        {
-          filter: 'references/*.json',
-          transform: content => ({
-            content: JSON.parse(content),
-            data: { inline: true },
-          }),
-        }
-      ),
     ]);
-    const files = { ...mdFiles, ...jsonFiles };
 
-    // Rename key
-    Object.keys(files).forEach(oldKey => {
+    // Rename keys to include the section, tier and service name
+    // e.g., docs/intro -> reference/integrations/github/docs/intro
+    Object.keys(mdFiles).forEach(oldKey => {
       const path = `reference/${metadata.tier}/${projectName}/${oldKey}`;
 
-      delete Object.assign(files, {
-        [removeExtension(path)]: Object.assign(files[oldKey]),
+      delete Object.assign(mdFiles, {
+        [removeExtension(path)]: Object.assign(mdFiles[oldKey]),
       })[oldKey];
     });
 
-    Object.assign(generatedDocs, files);
+    Object.assign(generatedDocs, mdFiles);
   }
 
   return generatedDocs;
