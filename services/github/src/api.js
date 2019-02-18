@@ -268,6 +268,28 @@ builder.declare({
         }, true);
         return resolve(res, 200, 'Created table row!');
 
+      case 'check_run':
+        msg.organization = sanitizeGitHubField(body.repository.owner.login);
+        msg.action = body.action;
+        msg.details = Object.create({}, body);
+        msg.installationId = body.installation.id;
+        publisherKey = 'checkRun';
+        msg.tasks_for = 'github-check-run';
+        msg.branch = body.check_run.check_suite.head_branch;
+        msg.ref = body.check_run.head_sha;
+        break;
+
+      case 'check_suite':
+        msg.organization = sanitizeGitHubField(body.repository.owner.login);
+        msg.action = body.action;
+        msg.details = Object.create({}, body);
+        msg.installationId = body.installation.id;
+        publisherKey = 'checkSuite';
+        msg.tasks_for = 'github-check-suite';
+        msg.branch = body.check_suite.head_branch;
+        msg.ref = body.check_suite.head_sha;
+        break;
+
       default:
         return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
     }
