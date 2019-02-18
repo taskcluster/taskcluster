@@ -1443,44 +1443,23 @@
         "children": [
           {
             "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000
-                },
-                "name": "README",
-                "next": {
-                  "path": "reference/core/hooks/README",
-                  "title": "hooks"
-                },
-                "path": "reference/core/built-in-workers/README",
-                "prev": {
-                  "path": "reference/core/built-in-workers/README",
-                  "title": "built-in-workers"
-                },
-                "up": {
-                  "path": "reference/core/built-in-workers/README",
-                  "title": "built-in-workers"
-                }
-              }
             ],
             "data": {
               "order": 1000
             },
             "name": "built-in-workers",
             "next": {
-              "path": "reference/core/built-in-workers/README",
-              "title": "README"
+              "path": "reference/core/hooks/README",
+              "title": "hooks"
             },
             "path": "reference/core/built-in-workers/README",
             "prev": {
               "path": "reference/core",
-              "title": "core"
+              "title": "api"
             },
             "up": {
               "path": "reference/core",
-              "title": "core"
+              "title": "api"
             }
           },
           {
@@ -1490,7 +1469,8 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 1
+                  "order": 1,
+                  "title": "api"
                 },
                 "name": "api",
                 "next": {
@@ -1512,7 +1492,8 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 2
+                  "order": 2,
+                  "title": "events"
                 },
                 "name": "events",
                 "next": {
@@ -1538,34 +1519,13 @@
                 },
                 "name": "firing-hooks",
                 "next": {
-                  "path": "reference/core/hooks/README",
-                  "title": "README"
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
                 },
                 "path": "reference/core/hooks/docs/firing-hooks",
                 "prev": {
                   "path": "reference/core/hooks/references/events",
                   "title": "events"
-                },
-                "up": {
-                  "path": "reference/core/hooks/README",
-                  "title": "hooks"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000
-                },
-                "name": "README",
-                "next": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
-                },
-                "path": "reference/core/hooks/README",
-                "prev": {
-                  "path": "reference/core/hooks/docs/firing-hooks",
-                  "title": "Firing Hooks"
                 },
                 "up": {
                   "path": "reference/core/hooks/README",
@@ -1584,11 +1544,11 @@
             "path": "reference/core/hooks/README",
             "prev": {
               "path": "reference/core/built-in-workers/README",
-              "title": "README"
+              "title": "built-in-workers"
             },
             "up": {
               "path": "reference/core",
-              "title": "core"
+              "title": "api"
             }
           },
           {
@@ -1598,7 +1558,8 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 1
+                  "order": 1,
+                  "title": "api"
                 },
                 "name": "api",
                 "next": {
@@ -1620,38 +1581,18 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 2
+                  "order": 2,
+                  "title": "events"
                 },
                 "name": "events",
                 "next": {
-                  "path": "reference/core/notify/README",
-                  "title": "README"
+                  "path": "reference/core/notify/docs/usage",
+                  "title": "Enable Notifications"
                 },
                 "path": "reference/core/notify/references/events",
                 "prev": {
                   "path": "reference/core/notify/references/api",
                   "title": "api"
-                },
-                "up": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000
-                },
-                "name": "README",
-                "next": {
-                  "path": "reference/core/notify/docs/usage",
-                  "title": "Enable Notifications"
-                },
-                "path": "reference/core/notify/README",
-                "prev": {
-                  "path": "reference/core/notify/references/events",
-                  "title": "events"
                 },
                 "up": {
                   "path": "reference/core/notify/README",
@@ -1672,8 +1613,8 @@
                 },
                 "path": "reference/core/notify/docs/usage",
                 "prev": {
-                  "path": "reference/core/notify/README",
-                  "title": "README"
+                  "path": "reference/core/notify/references/events",
+                  "title": "events"
                 },
                 "up": {
                   "path": "reference/core/notify/README",
@@ -1691,12 +1632,12 @@
             },
             "path": "reference/core/notify/README",
             "prev": {
-              "path": "reference/core/hooks/README",
-              "title": "README"
+              "path": "reference/core/hooks/docs/firing-hooks",
+              "title": "Firing Hooks"
             },
             "up": {
               "path": "reference/core",
-              "title": "core"
+              "title": "api"
             }
           },
           {
@@ -1706,38 +1647,18 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 1
+                  "order": 1,
+                  "title": "api"
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/core/purge-cache/README",
-                  "title": "README"
+                  "path": "reference/core/secrets/README",
+                  "title": "secrets"
                 },
                 "path": "reference/core/purge-cache/references/api",
                 "prev": {
                   "path": "reference/core/purge-cache/README",
                   "title": "purge-cache"
-                },
-                "up": {
-                  "path": "reference/core/purge-cache/README",
-                  "title": "purge-cache"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000
-                },
-                "name": "README",
-                "next": {
-                  "path": "reference/core/secrets/README",
-                  "title": "secrets"
-                },
-                "path": "reference/core/purge-cache/README",
-                "prev": {
-                  "path": "reference/core/purge-cache/references/api",
-                  "title": "api"
                 },
                 "up": {
                   "path": "reference/core/purge-cache/README",
@@ -1760,7 +1681,7 @@
             },
             "up": {
               "path": "reference/core",
-              "title": "core"
+              "title": "api"
             }
           },
           {
@@ -1770,38 +1691,18 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 1
+                  "order": 1,
+                  "title": "api"
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/core/secrets/README",
-                  "title": "README"
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
                 },
                 "path": "reference/core/secrets/references/api",
                 "prev": {
                   "path": "reference/core/secrets/README",
                   "title": "secrets"
-                },
-                "up": {
-                  "path": "reference/core/secrets/README",
-                  "title": "secrets"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000
-                },
-                "name": "README",
-                "next": {
-                  "path": "reference/core/worker-manager/README",
-                  "title": "worker-manager"
-                },
-                "path": "reference/core/secrets/README",
-                "prev": {
-                  "path": "reference/core/secrets/references/api",
-                  "title": "api"
                 },
                 "up": {
                   "path": "reference/core/secrets/README",
@@ -1819,12 +1720,12 @@
             },
             "path": "reference/core/secrets/README",
             "prev": {
-              "path": "reference/core/purge-cache/README",
-              "title": "README"
+              "path": "reference/core/purge-cache/references/api",
+              "title": "api"
             },
             "up": {
               "path": "reference/core",
-              "title": "core"
+              "title": "api"
             }
           },
           {
@@ -1834,38 +1735,18 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 1
+                  "order": 1,
+                  "title": "api"
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/core/worker-manager/README",
-                  "title": "README"
+                  "path": "reference/guide",
+                  "title": "Guide to The Microservices"
                 },
                 "path": "reference/core/worker-manager/references/api",
                 "prev": {
                   "path": "reference/core/worker-manager/README",
                   "title": "worker-manager"
-                },
-                "up": {
-                  "path": "reference/core/worker-manager/README",
-                  "title": "worker-manager"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000
-                },
-                "name": "README",
-                "next": {
-                  "path": "reference/guide",
-                  "title": "Guide to The Microservices"
-                },
-                "path": "reference/core/worker-manager/README",
-                "prev": {
-                  "path": "reference/core/worker-manager/references/api",
-                  "title": "api"
                 },
                 "up": {
                   "path": "reference/core/worker-manager/README",
@@ -1883,18 +1764,19 @@
             },
             "path": "reference/core/worker-manager/README",
             "prev": {
-              "path": "reference/core/secrets/README",
-              "title": "README"
+              "path": "reference/core/secrets/references/api",
+              "title": "api"
             },
             "up": {
               "path": "reference/core",
-              "title": "core"
+              "title": "api"
             }
           }
         ],
         "data": {
           "inline": true,
-          "order": 1
+          "order": 1,
+          "title": "api"
         },
         "name": "core",
         "next": {
@@ -1917,8 +1799,8 @@
         },
         "path": "reference/guide",
         "prev": {
-          "path": "reference/core/worker-manager/README",
-          "title": "README"
+          "path": "reference/core/worker-manager/references/api",
+          "title": "api"
         }
       },
       {
@@ -1930,7 +1812,8 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 1
+                  "order": 1,
+                  "title": "api"
                 },
                 "name": "api",
                 "next": {
@@ -1952,7 +1835,8 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 2
+                  "order": 2,
+                  "title": "events"
                 },
                 "name": "events",
                 "next": {
@@ -2022,34 +1906,13 @@
                 },
                 "name": "roles",
                 "next": {
-                  "path": "reference/platform/auth/README",
-                  "title": "README"
+                  "path": "reference/platform/queue/README",
+                  "title": "queue"
                 },
                 "path": "reference/platform/auth/docs/roles",
                 "prev": {
                   "path": "reference/platform/auth/docs/clients",
                   "title": "Clients"
-                },
-                "up": {
-                  "path": "reference/platform/auth/README",
-                  "title": "auth"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000
-                },
-                "name": "README",
-                "next": {
-                  "path": "reference/platform/queue/README",
-                  "title": "queue"
-                },
-                "path": "reference/platform/auth/README",
-                "prev": {
-                  "path": "reference/platform/auth/docs/roles",
-                  "title": "Roles and Role Expansion"
                 },
                 "up": {
                   "path": "reference/platform/auth/README",
@@ -2082,7 +1945,8 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 1
+                  "order": 1,
+                  "title": "api"
                 },
                 "name": "api",
                 "next": {
@@ -2104,7 +1968,8 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 2
+                  "order": 2,
+                  "title": "events"
                 },
                 "name": "events",
                 "next": {
@@ -2250,34 +2115,13 @@
                 },
                 "name": "task-schema",
                 "next": {
-                  "path": "reference/platform/queue/README",
-                  "title": "README"
+                  "path": "reference/integrations",
+                  "title": "Integrations"
                 },
                 "path": "reference/platform/queue/docs/task-schema",
                 "prev": {
                   "path": "reference/platform/queue/docs/worker-interaction",
                   "title": "Queue-Worker Interaction"
-                },
-                "up": {
-                  "path": "reference/platform/queue/README",
-                  "title": "queue"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000
-                },
-                "name": "README",
-                "next": {
-                  "path": "reference/integrations",
-                  "title": "Integrations"
-                },
-                "path": "reference/platform/queue/README",
-                "prev": {
-                  "path": "reference/platform/queue/docs/task-schema",
-                  "title": "Task Schema"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",
@@ -2295,8 +2139,8 @@
             },
             "path": "reference/platform/queue/README",
             "prev": {
-              "path": "reference/platform/auth/README",
-              "title": "README"
+              "path": "reference/platform/auth/docs/roles",
+              "title": "Roles and Role Expansion"
             },
             "up": {
               "path": "reference/platform",
@@ -2328,7 +2172,8 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 1
+                  "order": 1,
+                  "title": "api"
                 },
                 "name": "api",
                 "next": {
@@ -2350,7 +2195,8 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 2
+                  "order": 2,
+                  "title": "events"
                 },
                 "name": "events",
                 "next": {
@@ -2420,34 +2266,13 @@
                 },
                 "name": "taskcluster-yml-v0",
                 "next": {
-                  "path": "reference/integrations/github/README",
-                  "title": "README"
+                  "path": "reference/integrations/login/README",
+                  "title": "login"
                 },
                 "path": "reference/integrations/github/docs/taskcluster-yml-v0",
                 "prev": {
                   "path": "reference/integrations/github/docs/taskcluster-yml-v1",
                   "title": ".taskcluster.yml version 1"
-                },
-                "up": {
-                  "path": "reference/integrations/github/README",
-                  "title": "github"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000
-                },
-                "name": "README",
-                "next": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                },
-                "path": "reference/integrations/github/README",
-                "prev": {
-                  "path": "reference/integrations/github/docs/taskcluster-yml-v0",
-                  "title": ".taskcluster.yml version 0"
                 },
                 "up": {
                   "path": "reference/integrations/github/README",
@@ -2480,7 +2305,8 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 1
+                  "order": 1,
+                  "title": "api"
                 },
                 "name": "api",
                 "next": {
@@ -2528,34 +2354,13 @@
                 },
                 "name": "mozilla-auth0",
                 "next": {
-                  "path": "reference/integrations/login/README",
-                  "title": "README"
+                  "path": "reference/integrations/treeherder/README",
+                  "title": "treeherder"
                 },
                 "path": "reference/integrations/login/docs/mozilla-auth0",
                 "prev": {
                   "path": "reference/integrations/login/docs/getting-user-creds",
                   "title": "Getting User Credentials"
-                },
-                "up": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000
-                },
-                "name": "README",
-                "next": {
-                  "path": "reference/integrations/treeherder/README",
-                  "title": "treeherder"
-                },
-                "path": "reference/integrations/login/README",
-                "prev": {
-                  "path": "reference/integrations/login/docs/mozilla-auth0",
-                  "title": "Mozilla-Auth0 logins"
                 },
                 "up": {
                   "path": "reference/integrations/login/README",
@@ -2573,8 +2378,8 @@
             },
             "path": "reference/integrations/login/README",
             "prev": {
-              "path": "reference/integrations/github/README",
-              "title": "README"
+              "path": "reference/integrations/github/docs/taskcluster-yml-v0",
+              "title": ".taskcluster.yml version 0"
             },
             "up": {
               "path": "reference/integrations",
@@ -2588,38 +2393,18 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 2
+                  "order": 2,
+                  "title": "events"
                 },
                 "name": "events",
                 "next": {
-                  "path": "reference/integrations/treeherder/README",
-                  "title": "README"
+                  "path": "reference/integrations/treeherder/docs/task-treeherder-config",
+                  "title": "Task Schema"
                 },
                 "path": "reference/integrations/treeherder/references/events",
                 "prev": {
                   "path": "reference/integrations/treeherder/README",
                   "title": "treeherder"
-                },
-                "up": {
-                  "path": "reference/integrations/treeherder/README",
-                  "title": "treeherder"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000
-                },
-                "name": "README",
-                "next": {
-                  "path": "reference/integrations/treeherder/docs/task-treeherder-config",
-                  "title": "Task Schema"
-                },
-                "path": "reference/integrations/treeherder/README",
-                "prev": {
-                  "path": "reference/integrations/treeherder/references/events",
-                  "title": "events"
                 },
                 "up": {
                   "path": "reference/integrations/treeherder/README",
@@ -2647,8 +2432,8 @@
                 },
                 "path": "reference/integrations/treeherder/docs/task-treeherder-config",
                 "prev": {
-                  "path": "reference/integrations/treeherder/README",
-                  "title": "README"
+                  "path": "reference/integrations/treeherder/references/events",
+                  "title": "events"
                 },
                 "up": {
                   "path": "reference/integrations/treeherder/README",
@@ -2666,8 +2451,8 @@
             },
             "path": "reference/integrations/treeherder/README",
             "prev": {
-              "path": "reference/integrations/login/README",
-              "title": "README"
+              "path": "reference/integrations/login/docs/mozilla-auth0",
+              "title": "Mozilla-Auth0 logins"
             },
             "up": {
               "path": "reference/integrations",
@@ -2686,8 +2471,8 @@
         },
         "path": "reference/integrations",
         "prev": {
-          "path": "reference/platform/queue/README",
-          "title": "README"
+          "path": "reference/platform/queue/docs/task-schema",
+          "title": "Task Schema"
         }
       },
       {

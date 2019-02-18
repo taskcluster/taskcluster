@@ -1,6 +1,7 @@
 ---
 order: 2
 inline: true
+title: events
 ---
 
 import Reference from '../../../../src/views/Documentation/Reference'

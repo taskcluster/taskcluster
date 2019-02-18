@@ -156,7 +156,9 @@ function makeToc({ files, rootPath }) {
                 ptr.path = `${rootPath}${path.join('/')}`;
               }
 
-              ptr.children.push(child);
+              if (ptr.path !== child.path) {
+                ptr.children.push(child);
+              }
             }
           }
 
