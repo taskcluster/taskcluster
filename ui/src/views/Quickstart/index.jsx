@@ -35,8 +35,8 @@ const initialYaml = {
   tasks: {
     $match: {
       taskId: { $eval: 'as_slugid("pr_task")' },
-      provisionerId: '${taskcluster.docker.provisionerId}', // eslint-disable-line no-template-curly-in-string
-      workerType: '${taskcluster.docker.workerType}', // eslint-disable-line no-template-curly-in-string
+      provisionerId: 'aws-provisioner-v1',
+      workerType: 'github-worker',
       payload: {
         maxRunTime: 3600,
         image: 'node',
