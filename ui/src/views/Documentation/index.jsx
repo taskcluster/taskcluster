@@ -16,7 +16,6 @@ import 'prismjs/components/prism-markup';
 import Dashboard from '../../components/Dashboard';
 import HeaderWithAnchor from '../../components/HeaderWithAnchor';
 import NotFound from '../../components/NotFound';
-import ErrorPanel from '../../components/ErrorPanel';
 import ScrollToTop from '../../utils/ScrollToTop';
 import { DOCS_PATH_PREFIX, DOCS_MENU_ITEMS } from '../../utils/constants';
 import scrollToHash from '../../utils/scrollToHash';
@@ -217,11 +216,6 @@ export default class Documentation extends Component {
             : 'Documentation'
         }>
         <ScrollToTop>
-          <ErrorPanel
-            warning
-            error="Please refer to [https://docs.taskcluster.net/docs](https://docs.taskcluster.net/docs)
-          for the documentation. The following is work in progress."
-          />
           {error ? (
             <NotFound isDocs />
           ) : (
