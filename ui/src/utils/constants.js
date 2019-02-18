@@ -200,4 +200,3 @@ export const DOCS_MENU_ITEMS = [
     icon: OpenInNewIcon,
   },
 ];
-export const DOCS_SCHEMA_REGEX = /<div data-render-schema="([^"]*)"><\/div>/;
