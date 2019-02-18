@@ -1531,8 +1531,8 @@
                 },
                 "name": "README",
                 "next": {
-                  "path": "reference/platform/auth/references/events",
-                  "title": "events"
+                  "path": "reference/platform/auth/references/api",
+                  "title": "api"
                 },
                 "path": "reference/platform/auth/README",
                 "prev": {
@@ -1551,12 +1551,12 @@
                   "inline": true,
                   "order": 1000
                 },
-                "name": "events",
+                "name": "api",
                 "next": {
-                  "path": "reference/platform/auth/references/api",
-                  "title": "api"
+                  "path": "reference/platform/auth/references/events",
+                  "title": "events"
                 },
-                "path": "reference/platform/auth/references/events",
+                "path": "reference/platform/auth/references/api",
                 "prev": {
                   "path": "reference/platform/auth/README",
                   "title": "README"
@@ -1573,15 +1573,15 @@
                   "inline": true,
                   "order": 1000
                 },
-                "name": "api",
+                "name": "events",
                 "next": {
                   "path": "reference/platform/queue/README",
                   "title": "queue"
                 },
-                "path": "reference/platform/auth/references/api",
+                "path": "reference/platform/auth/references/events",
                 "prev": {
-                  "path": "reference/platform/auth/references/events",
-                  "title": "events"
+                  "path": "reference/platform/auth/references/api",
+                  "title": "api"
                 },
                 "up": {
                   "path": "reference/platform/auth/README",
@@ -1759,8 +1759,8 @@
                 },
                 "name": "README",
                 "next": {
-                  "path": "reference/platform/queue/references/events",
-                  "title": "events"
+                  "path": "reference/platform/queue/references/api",
+                  "title": "api"
                 },
                 "path": "reference/platform/queue/README",
                 "prev": {
@@ -1779,12 +1779,12 @@
                   "inline": true,
                   "order": 1000
                 },
-                "name": "events",
+                "name": "api",
                 "next": {
-                  "path": "reference/platform/queue/references/api",
-                  "title": "api"
+                  "path": "reference/platform/queue/references/events",
+                  "title": "events"
                 },
-                "path": "reference/platform/queue/references/events",
+                "path": "reference/platform/queue/references/api",
                 "prev": {
                   "path": "reference/platform/queue/README",
                   "title": "README"
@@ -1801,15 +1801,15 @@
                   "inline": true,
                   "order": 1000
                 },
-                "name": "api",
+                "name": "events",
                 "next": {
                   "path": "reference/integrations",
                   "title": "Integrations"
                 },
-                "path": "reference/platform/queue/references/api",
+                "path": "reference/platform/queue/references/events",
                 "prev": {
-                  "path": "reference/platform/queue/references/events",
-                  "title": "events"
+                  "path": "reference/platform/queue/references/api",
+                  "title": "api"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",
@@ -1827,8 +1827,8 @@
             },
             "path": "reference/platform/queue/README",
             "prev": {
-              "path": "reference/platform/auth/references/api",
-              "title": "api"
+              "path": "reference/platform/auth/references/events",
+              "title": "events"
             },
             "up": {
               "path": "reference/platform",
@@ -1929,8 +1929,8 @@
                 },
                 "name": "README",
                 "next": {
-                  "path": "reference/integrations/github/references/events",
-                  "title": "events"
+                  "path": "reference/integrations/github/references/api",
+                  "title": "api"
                 },
                 "path": "reference/integrations/github/README",
                 "prev": {
@@ -1949,12 +1949,12 @@
                   "inline": true,
                   "order": 1000
                 },
-                "name": "events",
+                "name": "api",
                 "next": {
-                  "path": "reference/integrations/github/references/api",
-                  "title": "api"
+                  "path": "reference/integrations/github/references/events",
+                  "title": "events"
                 },
-                "path": "reference/integrations/github/references/events",
+                "path": "reference/integrations/github/references/api",
                 "prev": {
                   "path": "reference/integrations/github/README",
                   "title": "README"
@@ -1971,15 +1971,15 @@
                   "inline": true,
                   "order": 1000
                 },
-                "name": "api",
+                "name": "events",
                 "next": {
                   "path": "reference/integrations/login/README",
                   "title": "login"
                 },
-                "path": "reference/integrations/github/references/api",
+                "path": "reference/integrations/github/references/events",
                 "prev": {
-                  "path": "reference/integrations/github/references/events",
-                  "title": "events"
+                  "path": "reference/integrations/github/references/api",
+                  "title": "api"
                 },
                 "up": {
                   "path": "reference/integrations/github/README",
@@ -2105,8 +2105,8 @@
             },
             "path": "reference/integrations/login/README",
             "prev": {
-              "path": "reference/integrations/github/references/api",
-              "title": "api"
+              "path": "reference/integrations/github/references/events",
+              "title": "events"
             },
             "up": {
               "path": "reference/integrations",
@@ -2218,8 +2218,8 @@
         },
         "path": "reference/integrations",
         "prev": {
-          "path": "reference/platform/queue/references/api",
-          "title": "api"
+          "path": "reference/platform/queue/references/events",
+          "title": "events"
         }
       },
       {
@@ -2352,8 +2352,8 @@
                 },
                 "name": "README",
                 "next": {
-                  "path": "reference/core/hooks/references/events",
-                  "title": "events"
+                  "path": "reference/core/hooks/references/api",
+                  "title": "api"
                 },
                 "path": "reference/core/hooks/README",
                 "prev": {
@@ -2372,12 +2372,12 @@
                   "inline": true,
                   "order": 1000
                 },
-                "name": "events",
+                "name": "api",
                 "next": {
-                  "path": "reference/core/hooks/references/api",
-                  "title": "api"
+                  "path": "reference/core/hooks/references/events",
+                  "title": "events"
                 },
-                "path": "reference/core/hooks/references/events",
+                "path": "reference/core/hooks/references/api",
                 "prev": {
                   "path": "reference/core/hooks/README",
                   "title": "README"
@@ -2394,15 +2394,15 @@
                   "inline": true,
                   "order": 1000
                 },
-                "name": "api",
+                "name": "events",
                 "next": {
                   "path": "reference/core/notify/README",
                   "title": "notify"
                 },
-                "path": "reference/core/hooks/references/api",
+                "path": "reference/core/hooks/references/events",
                 "prev": {
-                  "path": "reference/core/hooks/references/events",
-                  "title": "events"
+                  "path": "reference/core/hooks/references/api",
+                  "title": "api"
                 },
                 "up": {
                   "path": "reference/core/hooks/README",
@@ -2528,8 +2528,8 @@
             },
             "path": "reference/core/notify/README",
             "prev": {
-              "path": "reference/core/hooks/references/api",
-              "title": "api"
+              "path": "reference/core/hooks/references/events",
+              "title": "events"
             },
             "up": {
               "path": "reference/core",
@@ -2769,17 +2769,21 @@
         "children": [
         ],
         "data": {
-          "ejs": true,
-          "marked": true,
+          "followup": {
+            "links": {
+              "gecko-decision-task": "How is the decision task defined?",
+              "gecko-task-graph": "How is the task-graph generated?"
+            }
+          },
           "order": 1000,
-          "title": "Adding a new job"
+          "title": "Docker Image Generation"
         },
-        "name": "gecko-new-job",
+        "name": "gecko-docker-images",
         "next": {
           "path": "tutorial/apis",
           "title": "API Tutorial"
         },
-        "path": "tutorial/gecko-new-job"
+        "path": "tutorial/gecko-docker-images"
       },
       {
         "children": [
@@ -2802,8 +2806,8 @@
         },
         "path": "tutorial/apis",
         "prev": {
-          "path": "tutorial/gecko-new-job",
-          "title": "Adding a new job"
+          "path": "tutorial/gecko-docker-images",
+          "title": "Docker Image Generation"
         }
       },
       {
@@ -2815,55 +2819,13 @@
         },
         "name": "debug-task",
         "next": {
-          "path": "tutorial/finding-tasks",
-          "title": "Finding Tasks"
+          "path": "tutorial/download-task-artifacts",
+          "title": "Download task artifacts via API"
         },
         "path": "tutorial/debug-task",
         "prev": {
           "path": "tutorial/apis",
           "title": "API Tutorial"
-        }
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "order": 1000,
-          "title": "Finding Tasks"
-        },
-        "name": "finding-tasks",
-        "next": {
-          "path": "tutorial/gecko-docker-images",
-          "title": "Docker Image Generation"
-        },
-        "path": "tutorial/finding-tasks",
-        "prev": {
-          "path": "tutorial/debug-task",
-          "title": "Debugging a Task"
-        }
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "followup": {
-            "links": {
-              "gecko-decision-task": "How is the decision task defined?",
-              "gecko-task-graph": "How is the task-graph generated?"
-            }
-          },
-          "order": 1000,
-          "title": "Docker Image Generation"
-        },
-        "name": "gecko-docker-images",
-        "next": {
-          "path": "tutorial/download-task-artifacts",
-          "title": "Download task artifacts via API"
-        },
-        "path": "tutorial/gecko-docker-images",
-        "prev": {
-          "path": "tutorial/finding-tasks",
-          "title": "Finding Tasks"
         }
       },
       {
@@ -2882,13 +2844,31 @@
         },
         "name": "download-task-artifacts",
         "next": {
-          "path": "tutorial/gecko-decision-task",
-          "title": "Gecko Decision Task"
+          "path": "tutorial/finding-tasks",
+          "title": "Finding Tasks"
         },
         "path": "tutorial/download-task-artifacts",
         "prev": {
-          "path": "tutorial/gecko-docker-images",
-          "title": "Docker Image Generation"
+          "path": "tutorial/debug-task",
+          "title": "Debugging a Task"
+        }
+      },
+      {
+        "children": [
+        ],
+        "data": {
+          "order": 1000,
+          "title": "Finding Tasks"
+        },
+        "name": "finding-tasks",
+        "next": {
+          "path": "tutorial/gecko-decision-task",
+          "title": "Gecko Decision Task"
+        },
+        "path": "tutorial/finding-tasks",
+        "prev": {
+          "path": "tutorial/download-task-artifacts",
+          "title": "Download task artifacts via API"
         }
       },
       {
@@ -2905,38 +2885,51 @@
         },
         "name": "gecko-decision-task",
         "next": {
-          "path": "tutorial/gecko-tasks",
-          "title": "Gecko and Taskcluster"
+          "path": "tutorial/gecko-new-job",
+          "title": "Adding a new job"
         },
         "path": "tutorial/gecko-decision-task",
         "prev": {
-          "path": "tutorial/download-task-artifacts",
-          "title": "Download task artifacts via API"
+          "path": "tutorial/finding-tasks",
+          "title": "Finding Tasks"
         }
       },
       {
         "children": [
         ],
         "data": {
-          "followup": {
-            "links": {
-              "gecko-decision-task": "How is the decision task defined?",
-              "gecko-docker-images": "How are the docker images created?",
-              "gecko-task-graph": "How is the task-graph generated?"
-            }
-          },
+          "ejs": true,
+          "marked": true,
           "order": 1000,
-          "title": "Gecko and Taskcluster"
+          "title": "Adding a new job"
         },
-        "name": "gecko-tasks",
+        "name": "gecko-new-job",
+        "next": {
+          "path": "tutorial/gecko-task-graph-howto",
+          "title": "Changing the Task Graph"
+        },
+        "path": "tutorial/gecko-new-job",
+        "prev": {
+          "path": "tutorial/gecko-decision-task",
+          "title": "Gecko Decision Task"
+        }
+      },
+      {
+        "children": [
+        ],
+        "data": {
+          "order": 1000,
+          "title": "Changing the Task Graph"
+        },
+        "name": "gecko-task-graph-howto",
         "next": {
           "path": "tutorial/authenticate",
           "title": "Authenticating to Taskcluster"
         },
-        "path": "tutorial/gecko-tasks",
+        "path": "tutorial/gecko-task-graph-howto",
         "prev": {
-          "path": "tutorial/gecko-decision-task",
-          "title": "Gecko Decision Task"
+          "path": "tutorial/gecko-new-job",
+          "title": "Adding a new job"
         }
       },
       {
@@ -2955,31 +2948,13 @@
         },
         "name": "authenticate",
         "next": {
-          "path": "tutorial/gecko-task-graph-howto",
-          "title": "Changing the Task Graph"
-        },
-        "path": "tutorial/authenticate",
-        "prev": {
-          "path": "tutorial/gecko-tasks",
-          "title": "Gecko and Taskcluster"
-        }
-      },
-      {
-        "children": [
-        ],
-        "data": {
-          "order": 1000,
-          "title": "Changing the Task Graph"
-        },
-        "name": "gecko-task-graph-howto",
-        "next": {
           "path": "tutorial/gecko-task-graph",
           "title": "Gecko Task Graph Creation"
         },
-        "path": "tutorial/gecko-task-graph-howto",
+        "path": "tutorial/authenticate",
         "prev": {
-          "path": "tutorial/authenticate",
-          "title": "Authenticating to Taskcluster"
+          "path": "tutorial/gecko-task-graph-howto",
+          "title": "Changing the Task Graph"
         }
       },
       {
@@ -2997,13 +2972,13 @@
         },
         "name": "gecko-task-graph",
         "next": {
-          "path": "tutorial/hello-world",
-          "title": "Hello, World"
+          "path": "tutorial/gecko-tasks",
+          "title": "Gecko and Taskcluster"
         },
         "path": "tutorial/gecko-task-graph",
         "prev": {
-          "path": "tutorial/gecko-task-graph-howto",
-          "title": "Changing the Task Graph"
+          "path": "tutorial/authenticate",
+          "title": "Authenticating to Taskcluster"
         }
       },
       {
@@ -3012,21 +2987,20 @@
         "data": {
           "followup": {
             "links": {
-              "apis": "I want to know how to call Taskcluster APIs",
-              "finding-tasks": "I want to look at some real tasks",
-              "gecko-tasks": "I'm a Firefox/Gecko developer - How do my commits get built?"
-            },
-            "subtext": "Digging Deeper"
+              "gecko-decision-task": "How is the decision task defined?",
+              "gecko-docker-images": "How are the docker images created?",
+              "gecko-task-graph": "How is the task-graph generated?"
+            }
           },
           "order": 1000,
-          "title": "Hello, World"
+          "title": "Gecko and Taskcluster"
         },
-        "name": "hello-world",
+        "name": "gecko-tasks",
         "next": {
           "path": "tutorial/hack-tc",
           "title": "Hacking on Taskcluster"
         },
-        "path": "tutorial/hello-world",
+        "path": "tutorial/gecko-tasks",
         "prev": {
           "path": "tutorial/gecko-task-graph",
           "title": "Gecko Task Graph Creation"
@@ -3046,13 +3020,39 @@
         },
         "name": "hack-tc",
         "next": {
-          "path": "tutorial/monitor-task-status",
-          "title": "Monitor task status via API"
+          "path": "tutorial/hello-world",
+          "title": "Hello, World"
         },
         "path": "tutorial/hack-tc",
         "prev": {
-          "path": "tutorial/hello-world",
+          "path": "tutorial/gecko-tasks",
+          "title": "Gecko and Taskcluster"
+        }
+      },
+      {
+        "children": [
+        ],
+        "data": {
+          "followup": {
+            "links": {
+              "apis": "I want to know how to call Taskcluster APIs",
+              "finding-tasks": "I want to look at some real tasks",
+              "gecko-tasks": "I'm a Firefox/Gecko developer - How do my commits get built?"
+            },
+            "subtext": "Digging Deeper"
+          },
+          "order": 1000,
           "title": "Hello, World"
+        },
+        "name": "hello-world",
+        "next": {
+          "path": "tutorial/monitor-task-status",
+          "title": "Monitor task status via API"
+        },
+        "path": "tutorial/hello-world",
+        "prev": {
+          "path": "tutorial/hack-tc",
+          "title": "Hacking on Taskcluster"
         }
       },
       {
@@ -3076,8 +3076,8 @@
         },
         "path": "tutorial/monitor-task-status",
         "prev": {
-          "path": "tutorial/hack-tc",
-          "title": "Hacking on Taskcluster"
+          "path": "tutorial/hello-world",
+          "title": "Hello, World"
         }
       },
       {

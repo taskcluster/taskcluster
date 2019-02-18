@@ -6,9 +6,10 @@ const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const References = require('taskcluster-lib-references');
 const exec = util.promisify(require('child_process').execFile);
-const {REPO_ROOT, readFile, readJSON, writeJSON, modifyFile, modifyJSON} = require('../util');
+const {REPO_ROOT, readFile, readJSON, writeJSON, writeFile, modifyFile, modifyJSON, removeExtension} = require('../util');
 
 const rename = util.promisify(fs.rename);
+const readdir = util.promisify(fs.readdir);
 
 /**
  * This file defines a few tasks that generate all of the documentation and
@@ -36,6 +37,39 @@ exports.tasks.push({
   },
 });
 
+function createReferenceMarkupContent(reference) {
+  const order = reference.startsWith('api') ? 1 : 2;
+  const name = removeExtension(reference);
+
+  return [
+    `---\norder: ${order}\ninline: true\n---`,
+    '',
+    // path is relative to <generated-dir>/<service-name>/references
+    'import Reference from \'../../../../src/views/Documentation/Reference\'',
+    `import ${name} from './${reference}'`,
+    '',
+    `<Reference json={${name}} />`,
+    '',
+  ].join('\n');
+}
+
+async function createReferencesMarkup(svcDir) {
+  const referencesDir = path.join(svcDir, 'references');
+
+  try {
+    const references = await readdir(referencesDir);
+
+    return Promise.all(references.map(reference => {
+      const file = `${removeExtension(reference)}.md`;
+      const content = createReferenceMarkupContent(reference);
+
+      return writeFile(path.join(referencesDir, file), content);
+    }));
+  } catch(e) {
+    // do nothing
+  }
+}
+
 /**
  * Extract the docs/refs information from each service
  */
@@ -60,6 +94,8 @@ SERVICES.forEach(name => {
           DOCS_OUTPUT_DIR: svcDir,
         }),
       });
+
+      await createReferencesMarkup(svcDir);
 
       return {
         [`docs-tarball-${name}`]: svcDir,
