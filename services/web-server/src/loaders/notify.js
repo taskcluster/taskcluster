@@ -10,7 +10,7 @@ export default ({ notify }) => {
         notificationType: address.notificationType,
         notificationAddress: address.notificationAddress,
       };
-     });
+    });
 
     return {
       ...raw,
@@ -19,6 +19,6 @@ export default ({ notify }) => {
   });
 
   return {
-    denylist
+    denylist,
   };
 };
