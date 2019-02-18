@@ -160,7 +160,8 @@ export default class Entry extends Component {
       <ListItem>
         <ListItemText
           primaryTypographyProps={primaryTypographyProps}
-          primary={headerTitle}
+          disableTypography
+          primary={<Typography variant="body1">{headerTitle}</Typography>}
           secondary={
             <Fragment>
               <br />

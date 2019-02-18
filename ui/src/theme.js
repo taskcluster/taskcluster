@@ -161,7 +161,7 @@ const createTheme = isDarkTheme => {
           '@media (hover: none)': {
             backgroundColor: 'transparent',
           },
-          '&$disabled': {
+          '&:disabled': {
             backgroundColor: 'transparent',
           },
         },
