@@ -26,7 +26,7 @@
     "promisepipe": "^3.0.0",
     "recursive-readdir-sync": "^1.0.6",
     "s3-upload-stream": "^1.0.7",
-    "tar-stream": "^1.5.4"
+    "tar-stream": "^2.0.0"
   },
   "main": "./src/index.js"
 }

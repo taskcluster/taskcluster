@@ -8534,7 +8534,7 @@ tar-fs@~1.16.3:
     pump "^1.0.0"
     tar-stream "^1.1.2"
 
-tar-stream@^1.1.2, tar-stream@^1.5.4, tar-stream@^1.6.2:
+tar-stream@^1.1.2:
   version "1.6.2"
   resolved "https://registry.yarnpkg.com/tar-stream/-/tar-stream-1.6.2.tgz#8ea55dab37972253d9a9af90fdcd559ae435c555"
   integrity sha512-rzS0heiNf8Xn7/mpdSVVSMAWAoy9bfb1WOTYC78Z0UQKeKa/CWS8FOq0lKGNa8DWKAn9gxjCvMLYc5PGXYlK2A==
@@ -8625,7 +8625,7 @@ tar@^4:
     promisepipe "^3.0.0"
     recursive-readdir-sync "^1.0.6"
     s3-upload-stream "^1.0.7"
-    tar-stream "^1.5.4"
+    tar-stream "^2.0.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
   version "11.0.0"
