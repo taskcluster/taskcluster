@@ -43,9 +43,6 @@ import DocsSidebarList from './DocsSidebarList';
       position: 'fixed',
       backgroundColor: theme.palette.secondary.dark,
       zIndex: theme.zIndex.drawer + 1,
-      [theme.breakpoints.up('md')]: {
-        width: `calc(100% - ${theme.drawerWidth}px)`,
-      },
     },
     docsAppBar: {
       [theme.breakpoints.up('md')]: {
@@ -117,10 +114,6 @@ import DocsSidebarList from './DocsSidebarList';
         minHeight: 'calc(100vh - 64px)',
         marginTop: 64,
       },
-      [theme.breakpoints.up('md')]: {
-        marginLeft: theme.drawerWidth,
-        width: `calc(100% - ${theme.drawerWidth}px)`,
-      },
     },
     docsContent: {
       [theme.breakpoints.up('md')]: {
@@ -190,14 +183,14 @@ export default class Dashboard extends Component {
   }
 
   state = {
-    mobileOpen: false,
+    drawerOpen: false,
     showHelpView: false,
     error: null,
     showLogo: false,
   };
 
   handleDrawerToggle = () => {
-    this.setState({ mobileOpen: !this.state.mobileOpen });
+    this.setState({ drawerOpen: !this.state.drawerOpen });
   };
 
   handleHelpViewToggle = () => {
@@ -224,15 +217,14 @@ export default class Dashboard extends Component {
       staticContext: _,
       ...props
     } = this.props;
-    const { error, mobileOpen, showHelpView, showLogo } = this.state;
+    const { error, drawerOpen, showHelpView, showLogo } = this.state;
     const drawer = (
       <div>
         <div className={classes.toolbar}>
           <IconButton
             color="inherit"
             aria-label="close drawer"
-            onClick={this.handleDrawerToggle}
-            className={classes.navIconHide}>
+            onClick={this.handleDrawerToggle}>
             <MenuIcon />
           </IconButton>
           <Typography
@@ -275,8 +267,7 @@ export default class Dashboard extends Component {
             <IconButton
               color="inherit"
               aria-label="open drawer"
-              onClick={this.handleDrawerToggle}
-              className={classes.navIconHide}>
+              onClick={this.handleDrawerToggle}>
               <MenuIcon className={classes.appIcon} />
             </IconButton>
             <Typography variant="h6" noWrap className={classes.appBarTitle}>
@@ -317,7 +308,7 @@ export default class Dashboard extends Component {
           <Drawer
             variant="temporary"
             anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-            open={mobileOpen}
+            open={drawerOpen}
             onClose={this.handleDrawerToggle}
             classes={{
               paper: classNames(classes.drawerPaper, {
@@ -332,8 +323,8 @@ export default class Dashboard extends Component {
         </Hidden>
         <Hidden smDown implementation="css">
           <Drawer
-            variant="permanent"
-            open
+            variant="temporary"
+            open={drawerOpen}
             PaperProps={{
               elevation: 2,
             }}
