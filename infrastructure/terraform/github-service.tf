@@ -18,7 +18,6 @@ module "github_secrets" {
   secrets = {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/github"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.github_access_token.result}"
-    DEBUG                    = "*"
     NODE_ENV                 = "production"
     MONITORING_ENABLE        = "false"
     PUBLISH_METADATA         = "false"

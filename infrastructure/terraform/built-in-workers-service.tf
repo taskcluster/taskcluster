@@ -11,7 +11,6 @@ module "built_in_workers_secrets" {
   secrets = {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/built-in-workers"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.built_in_workers_access_token.result}"
-    DEBUG                    = "*"
     NODE_ENV                 = "production"
     MONITORING_ENABLE        = "false"
     PUBLISH_METADATA         = "false"

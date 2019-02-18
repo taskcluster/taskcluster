@@ -214,7 +214,6 @@ module "auth_secrets" {
     STATSUM_BASE_URL        = "TODO"
     WEBHOOKTUNNEL_PROXY_URL = "TODO"
     WEBHOOKTUNNEL_SECRET    = "TODO"
-    DEBUG                   = "*"
   }
 }
 

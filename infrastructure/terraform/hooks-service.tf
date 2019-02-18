@@ -26,7 +26,6 @@ module "hooks_secrets" {
   secrets = {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/hooks"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.hooks_access_token.result}"
-    DEBUG                    = "*"
     FORCE_SSL                = "false"
     TRUST_PROXY              = "true"
     NODE_ENV                 = "production"

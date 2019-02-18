@@ -68,7 +68,6 @@ module "notify_secrets" {
     AWS_REGION                         = "us-east-1"                                   // TODO: Make this come from tf
     TASKCLUSTER_CLIENT_ID              = "static/taskcluster/notify"
     TASKCLUSTER_ACCESS_TOKEN           = "${random_string.notify_access_token.result}"
-    DEBUG                              = "*"
     FORCE_SSL                          = "false"
     TRUST_PROXY                        = "true"
     NODE_ENV                           = "production"
