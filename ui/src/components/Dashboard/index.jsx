@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { bool, node, string } from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
+import { upperCaseFirst } from 'change-case';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
@@ -247,11 +248,12 @@ export default class Dashboard extends Component {
     );
     const isDocs = history.location.pathname.startsWith(DOCS_PATH_PREFIX);
     const isMobileView = width === 'sm' || width === 'xs';
+    const pageTitle = upperCaseFirst(title);
 
     return (
       <div className={classes.root}>
         <Helmet />
-        <PageTitle>{title}</PageTitle>
+        <PageTitle>{pageTitle}</PageTitle>
         <AppBar
           className={classNames(classes.appBar, {
             [classes.docsAppBar]: isDocs,
@@ -267,7 +269,7 @@ export default class Dashboard extends Component {
               </IconButton>
             )}
             <Typography variant="h6" noWrap className={classes.appBarTitle}>
-              {title}
+              {pageTitle}
             </Typography>
             {search}
             <Tooltip placement="bottom" title="Toggle light/dark theme">
