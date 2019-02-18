@@ -9,7 +9,7 @@
     "checkStaging": "node test/checkStaging.js"
   },
   "dependencies": {
-    "@octokit/rest": "^16.0.5",
+    "@octokit/rest": "^16.15.0",
     "ajv": "^6.5.0",
     "azure-entities": "^5.1.0",
     "debug": "^4.0.0",
