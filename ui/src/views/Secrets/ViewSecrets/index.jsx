@@ -6,6 +6,7 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import Dashboard from '../../../components/Dashboard';
+import Search from '../../../components/Search';
 import SecretsTable from '../../../components/SecretsTable';
 import HelpView from '../../../components/HelpView';
 import Button from '../../../components/Button';
@@ -20,6 +21,9 @@ import secretsQuery from './secrets.graphql';
       secretsConnection: {
         limit: VIEW_SECRETS_PAGE_SIZE,
       },
+      filter: {
+        name: { $regex: '' },
+      },
     },
   }),
 })
@@ -29,6 +33,28 @@ import secretsQuery from './secrets.graphql';
   },
 }))
 export default class ViewSecrets extends Component {
+  state = {
+    secretSearch: '',
+    value: null,
+  };
+
+  handleSecretSearchSubmit = secretSearch => {
+    const {
+      data: { refetch },
+    } = this.props;
+
+    this.setState({ secretSearch });
+
+    refetch({
+      secretsConnection: {
+        limit: VIEW_SECRETS_PAGE_SIZE,
+      },
+      filter: {
+        ...(secretSearch ? { $regex: secretSearch } : null),
+      },
+    });
+  };
+
   handleCreate = () => {
     this.props.history.push('/secrets/create');
   };
@@ -46,6 +72,13 @@ export default class ViewSecrets extends Component {
           cursor,
           previousCursor,
         },
+        ...(this.state.secretSearch
+          ? {
+              filter: {
+                $regex: this.state.secretSearch,
+              },
+            }
+          : null),
       },
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } = fetchMoreResult.secrets;
@@ -65,19 +98,33 @@ export default class ViewSecrets extends Component {
     });
   };
 
+  handleSecretSearchChange = ({ target: { value } }) => {
+    this.setState({ value });
+  };
+
   render() {
     const {
       classes,
       description,
       data: { loading, error, secrets },
     } = this.props;
+    const { value } = this.state;
 
     return (
       <Dashboard
         title="Secrets"
-        helpView={<HelpView description={description} />}>
+        helpView={<HelpView description={description} />}
+        search={
+          <Search
+            disabled={loading}
+            onSubmit={this.handleSecretSearchSubmit}
+            onChange={this.handleSecretSearchChange}
+            value={value}
+            placeholder="Secret contains"
+          />
+        }>
         <Fragment>
-          {!secrets && loading && <Spinner loading />}
+          {loading && <Spinner loading />}
           <ErrorPanel error={error} />
           {secrets && (
             <SecretsTable
