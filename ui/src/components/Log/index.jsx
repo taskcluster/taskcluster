@@ -219,28 +219,50 @@ export default class Log extends Component {
 
     if (!stream) {
       return (
-        <Fragment>
-          <LazyLog
-            containerStyle={containerStyle}
-            url={url}
-            selectableLines
-            highlight={highlight}
-            onHighlight={this.handleHighlight}
-            scrollToLine={scrollToLine}
-            scrollToAlignment="start"
-            lineClassName={classes.line}
-            highlightLineClassName={classes.highlight}
-            loadingComponent={Loading}
-            extraLines={5}
-            {...props}
-          />
-          {rawLogButton}
-          <GoToLineButton
-            onLineNumberChange={this.handleLineNumberChange}
-            {...GoToLineButtonProps}
-          />
-          {actions}
-        </Fragment>
+        <ScrollFollow
+          startFollowing={this.state.follow}
+          render={({ follow }) => (
+            <Fragment>
+              <LazyLog
+                containerStyle={containerStyle}
+                url={url}
+                onScroll={this.handleScroll}
+                selectableLines
+                follow={follow}
+                highlight={highlight}
+                onHighlight={this.handleHighlight}
+                scrollToLine={scrollToLine}
+                scrollToAlignment="start"
+                lineClassName={classes.line}
+                highlightLineClassName={classes.highlight}
+                loadingComponent={Loading}
+                extraLines={5}
+                {...props}
+              />
+              {rawLogButton}
+              <GoToLineButton
+                onLineNumberChange={this.handleLineNumberChange}
+                {...GoToLineButtonProps}
+              />
+              <Button
+                spanProps={{
+                  className:
+                    FollowLogButtonProps && FollowLogButtonProps.className,
+                }}
+                tooltipProps={{ title: follow ? 'Unfollow Log' : 'Follow Log' }}
+                variant="round"
+                className={classNames({
+                  [classes.followButtonFollowing]: follow,
+                })}
+                color={follow ? 'inherit' : 'secondary'}
+                onClick={this.handleFollowClick}
+                {...FollowLogButtonRest}>
+                <ArrowDownBoldCircleOutlineIcon />
+              </Button>
+              {actions}
+            </Fragment>
+          )}
+        />
       );
     }
 

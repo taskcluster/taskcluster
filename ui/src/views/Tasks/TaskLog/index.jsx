@@ -42,7 +42,7 @@ export default class TaskLog extends Component {
       <Dashboard disablePadding>
         <Log
           url={url}
-          stream
+          stream={false}
           GoToLineButtonProps={{ className: classes.miniFab }}
           FollowLogButtonProps={{ className: classes.followButton }}
           RawLogButtonProps={{ className: classes.rawLogButton }}
