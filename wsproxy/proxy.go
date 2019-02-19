@@ -404,7 +404,7 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 		return ErrAuthFailed
 	}
 
-	if claims.VerifyAudience(p.audience, false) {
+	if !claims.VerifyAudience(p.audience, false) {
 		p.logerrorf(id, "", "%v", err)
 		return ErrAuthFailed
 	}
