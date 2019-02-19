@@ -28,6 +28,7 @@ Environment:
  TASKCLUSTER_PROXY_SECRET_A                  JWT secret
  TASKCLUSTER_PROXY_SECRET_B                  alternate JWT secret
  SYSLOG_ADDR                                 address to which to send syslog output
+ AUDIENCE(optional;default to "wst-servers") JWT 'audience' claim 
 
 Options:
 -h --help       Show help`
@@ -85,6 +86,11 @@ func main() {
 			port = "80"
 		}
 	}
+	// load audience value
+	audience := os.Getenv("AUDIENCE")
+	if audience == "" {
+		audience = "wst-servers"
+	}
 	portNum, err := strconv.Atoi(port)
 	if err != nil {
 		panic(err)
@@ -105,6 +111,7 @@ func main() {
 		Domain:     hostname,
 		Port:       portNum,
 		TLS:        useTLS,
+		Audience:   audience,
 	})
 
 	server := &http.Server{Addr: ":" + port, Handler: proxy}

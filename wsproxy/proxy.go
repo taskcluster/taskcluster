@@ -47,6 +47,9 @@ type Config struct {
 
 	// set to true if serving with TLS
 	TLS bool
+
+	// Audience value for aud claim
+	Audience string
 }
 
 // proxy is used to send http and ws requests to a registered client.
@@ -62,6 +65,7 @@ type proxy struct {
 	domain          string
 	port            int
 	tls             bool
+	audience        string
 }
 
 // New creates a new proxy instance and wraps it as an http.Handler.
@@ -108,6 +112,7 @@ func newProxy(conf Config) (*proxy, error) {
 		domain:     conf.Domain,
 		port:       conf.Port,
 		tls:        conf.TLS,
+		audience:   conf.Audience,
 	}
 
 	if conf.Port == 0 {
@@ -396,6 +401,11 @@ func (p *proxy) validateJWT(id string, tokenString string) error {
 
 	if claims["exp"].(float64)-claims["nbf"].(float64) > float64(monthUnix) {
 		p.logerrorf(id, "", "jwt should not be valid for more than 31 days")
+		return ErrAuthFailed
+	}
+
+	if claims.VerifyAudience(p.audience, false) {
+		p.logerrorf(id, "", "%v", err)
 		return ErrAuthFailed
 	}
 
