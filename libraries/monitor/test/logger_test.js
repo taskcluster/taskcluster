@@ -1,31 +1,31 @@
 const assert = require('assert');
 const stream = require('stream');
 const Ajv = require('ajv');
-const MonitorBuilder = require('../src');
+const MonitorManager = require('../src');
 
 suite('Logging', function() {
-  let builder;
+  let manager;
   let monitor;
 
   setup(function() {
-    builder = new MonitorBuilder({
+    manager = new MonitorManager({
       serviceName: 'testing-service',
     });
-    builder.setup({
+    manager.setup({
       level: 'debug',
       mock: true,
     });
-    monitor = builder.monitor();
+    monitor = manager.monitor();
   });
 
   teardown(function() {
-    builder.terminate();
+    manager.terminate();
   });
 
   test('logger conforms to schema', function() {
     const schema = require('./mozlog_schema.json');
     monitor.info('something', {test: 123});
-    const event = builder.messages[0];
+    const event = manager.messages[0];
 
     const ajv = new Ajv();
     assert(ajv.validate(schema, event), ajv.errorsText());
@@ -40,7 +40,7 @@ suite('Logging', function() {
       },
     });
 
-    const b = new MonitorBuilder({
+    const b = new MonitorManager({
       serviceName: 'testing-service',
     });
     b.setup({
@@ -61,41 +61,41 @@ suite('Logging', function() {
 
   test('empty data still logs', function() {
     monitor.info({whatever: 5});
-    assert.equal(builder.messages[0].Type, 'generic');
-    assert.equal(builder.messages[0].Fields.whatever, 5);
+    assert.equal(manager.messages[0].Type, 'generic');
+    assert.equal(manager.messages[0].Fields.whatever, 5);
   });
 
   test('string data still logs', function() {
     monitor.info('baz', 'hello');
-    assert.equal(builder.messages[0].Type, 'baz');
-    assert.equal(builder.messages[0].Fields.msg, 'hello');
+    assert.equal(manager.messages[0].Type, 'baz');
+    assert.equal(manager.messages[0].Fields.msg, 'hello');
   });
 
   test('number data still logs', function() {
     monitor.info('foobar', 5.0);
-    assert.equal(builder.messages[0].Type, 'foobar');
-    assert.equal(builder.messages[0].Fields.val, 5.0);
+    assert.equal(manager.messages[0].Type, 'foobar');
+    assert.equal(manager.messages[0].Fields.val, 5.0);
   });
 
   test('null data still logs', function() {
     monitor.info('something', null);
-    assert.equal(builder.messages[0].Type, 'something');
-    assert.equal(builder.messages[0].Fields.error, 'Invalid field to be logged.');
-    assert.equal(builder.messages[0].Fields.orig, null);
+    assert.equal(manager.messages[0].Type, 'something');
+    assert.equal(manager.messages[0].Fields.error, 'Invalid field to be logged.');
+    assert.equal(manager.messages[0].Fields.orig, null);
   });
 
   test('boolean data still logs', function() {
     monitor.info('something', true);
-    assert.equal(builder.messages[0].Type, 'something');
-    assert.equal(builder.messages[0].Fields.error, 'Invalid field to be logged.');
-    assert.equal(builder.messages[0].Fields.orig, true);
+    assert.equal(manager.messages[0].Type, 'something');
+    assert.equal(manager.messages[0].Fields.error, 'Invalid field to be logged.');
+    assert.equal(manager.messages[0].Fields.orig, true);
   });
 
   test('metadata still logs but alerts', function() {
     monitor.info('something', true);
-    assert.equal(builder.messages[0].Type, 'something');
-    assert.equal(builder.messages[0].Fields.error, 'Invalid field to be logged.');
-    assert.equal(builder.messages[0].Fields.orig, true);
+    assert.equal(manager.messages[0].Type, 'something');
+    assert.equal(manager.messages[0].Fields.error, 'Invalid field to be logged.');
+    assert.equal(manager.messages[0].Fields.orig, true);
   });
 
   test('all logging levels represented', function() {
@@ -113,16 +113,16 @@ suite('Logging', function() {
       monitor[level](`something.${level}`, {bar: i});
     });
 
-    assert.equal(builder.messages.length, 8);
+    assert.equal(manager.messages.length, 8);
     levels.forEach((level, i) => {
-      assert.equal(builder.messages[i].Logger, `taskcluster.testing-service.root`);
-      assert.equal(builder.messages[i].Type, `something.${level}`);
-      assert.equal(builder.messages[i].Fields.bar, i);
+      assert.equal(manager.messages[i].Logger, `taskcluster.testing-service.root`);
+      assert.equal(manager.messages[i].Type, `something.${level}`);
+      assert.equal(manager.messages[i].Fields.bar, i);
     });
   });
 
   test('levels work', function() {
-    const b = new MonitorBuilder({
+    const b = new MonitorManager({
       serviceName: 'taskcluster-level',
     });
     b.setup({
@@ -137,7 +137,7 @@ suite('Logging', function() {
   });
 
   test('pretty', function() {
-    const b = new MonitorBuilder({
+    const b = new MonitorManager({
       serviceName: 'taskcluster-level',
     });
     b.setup({
@@ -154,7 +154,7 @@ suite('Logging', function() {
   });
 
   test('pretty with newline', function() {
-    const b = new MonitorBuilder({
+    const b = new MonitorManager({
       serviceName: 'taskcluster-level',
     });
     b.setup({
@@ -171,7 +171,7 @@ suite('Logging', function() {
   });
 
   test('disabling works', function() {
-    const b = new MonitorBuilder({
+    const b = new MonitorManager({
       serviceName: 'taskcluster-level',
     });
     b.setup({

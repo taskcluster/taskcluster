@@ -14,21 +14,21 @@ Usage
 -----
 
 ```js
-const MonitorBuilder = require('taskcluster-lib-monitor');
+const MonitorManager = require('taskcluster-lib-monitor');
 
-const builder = new MonitorBuilder({
+const manager = new MonitorManager({
   serviceName: 'foo',
 });
-builder.setup({
+manager.setup({
   mock: cfg.monitor.mock,  // false in production, true in testing
   processName: 'server',       // or otherwise for e.g., periodic tasks
 });
-const monitor = builder.monitor(); // To get a root monitor
-const monitor = builder.monitor('prefix'); // To get a child monitor
-const monitor = builder.monitor('prefix', {meta: 5}); // To get a child monitor with extra metadata
+const monitor = manager.monitor(); // To get a root monitor
+const monitor = manager.monitor('prefix'); // To get a child monitor
+const monitor = manager.monitor('prefix', {meta: 5}); // To get a child monitor with extra metadata
 ```
 
-The available options to the builder's constructor are:
+The available options to the manager's constructor are:
 
  * `serviceName` - The short name of this service.
 

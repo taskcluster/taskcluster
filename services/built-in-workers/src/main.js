@@ -1,5 +1,5 @@
 const loader = require('taskcluster-lib-loader');
-const monitorBuilder = require('./monitor');
+const monitorManager = require('./monitor');
 const docs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
 const config = require('typed-env-config');
@@ -13,7 +13,7 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorBuilder.setup({
+    setup: ({process, profile, cfg}) => monitorManager.setup({
       level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: profile !== 'production',
@@ -38,7 +38,7 @@ const load = loader({
       publish: cfg.app.publishMetaData,
       references: [{
         name: 'logs',
-        reference: monitorBuilder.reference(),
+        reference: monitorManager.reference(),
       }],
     }),
   },

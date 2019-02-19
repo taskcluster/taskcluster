@@ -5,7 +5,7 @@ const Intree = require('./intree');
 const data = require('./data');
 const Ajv = require('ajv');
 const config = require('typed-env-config');
-const monitorBuilder = require('./monitor');
+const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const loader = require('taskcluster-lib-loader');
 const docs = require('taskcluster-lib-docs');
@@ -22,7 +22,7 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorBuilder.setup({
+    setup: ({process, profile, cfg}) => monitorManager.setup({
       level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: profile === 'test',
@@ -61,7 +61,7 @@ const load = loader({
       references: [
         {name: 'api', reference: builder.reference()},
         {name: 'events', reference: reference},
-        {name: 'logs', reference: monitorBuilder.reference()},
+        {name: 'logs', reference: monitorManager.reference()},
       ],
     }),
   },

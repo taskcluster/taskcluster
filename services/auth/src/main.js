@@ -1,7 +1,7 @@
 const Loader = require('taskcluster-lib-loader');
 const Docs = require('taskcluster-lib-docs');
 const SchemaSet = require('taskcluster-lib-validate');
-const monitorBuilder = require('./monitor');
+const monitorManager = require('./monitor');
 const App = require('taskcluster-lib-app');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const Config = require('typed-env-config');
@@ -48,7 +48,7 @@ const load = Loader({
   monitor: {
     requires: ['cfg', 'sentryManager', 'profile', 'process'],
     setup: ({cfg, sentryManager, profile, process}) => {
-      return monitorBuilder.setup({
+      return monitorManager.setup({
         level: cfg.app.level,
         enable: cfg.monitoring.enable,
         processName: process,
@@ -118,7 +118,7 @@ const load = Loader({
           reference: exchanges.reference(),
         }, {
           name: 'logs',
-          reference: monitorBuilder.reference(),
+          reference: monitorManager.reference(),
         },
       ],
     }),

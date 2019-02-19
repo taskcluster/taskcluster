@@ -6,7 +6,7 @@ suite('retry-test', function() {
   const Promise = require('promise');
   const _ = require('lodash');
   const SchemaSet = require('taskcluster-lib-validate');
-  const MonitorBuilder = require('taskcluster-lib-monitor');
+  const MonitorManager = require('taskcluster-lib-monitor');
   const APIBuilder = require('taskcluster-lib-api');
   const testing = require('taskcluster-lib-testing');
   const App = require('taskcluster-lib-app');
@@ -101,7 +101,7 @@ suite('retry-test', function() {
   // Reference for test api server
   var _apiServer = null;
 
-  var monitorBuilder = null;
+  var monitorManager = null;
   var Server = null;
   var server = null;
 
@@ -111,10 +111,10 @@ suite('retry-test', function() {
       'test-client': ['auth:credentials', 'test:internal-error'],
     }, {rootUrl});
 
-    monitorBuilder = new MonitorBuilder({
+    monitorManager = new MonitorManager({
       serviceName: 'tc-client',
     });
-    monitorBuilder.setup({
+    monitorManager.setup({
       mock: true,
     });
 
@@ -127,7 +127,7 @@ suite('retry-test', function() {
     const api = await builder.build({
       rootUrl,
       schemaset,
-      monitor: monitorBuilder.monitor('api'),
+      monitor: monitorManager.monitor('api'),
     });
 
     Server = taskcluster.createClient(builder.reference());
@@ -137,7 +137,7 @@ suite('retry-test', function() {
         accessToken: 'test-token',
       },
       rootUrl,
-      monitor: monitorBuilder.monitor(),
+      monitor: monitorManager.monitor(),
     });
 
     // Create application
@@ -170,7 +170,7 @@ suite('retry-test', function() {
 
   // Close server
   teardown(function() {
-    monitorBuilder.reset();
+    monitorManager.reset();
     testing.fakeauth.stop();
     assert(_apiServer, '_apiServer doesn\'t exist');
     if (proxier) {
@@ -208,7 +208,7 @@ suite('retry-test', function() {
   });
 
   test('Can succeed after 3 attempts (record stats)', async function() {
-    let mb = new MonitorBuilder({
+    let mb = new MonitorManager({
       serviceName: 'tc-client',
     });
     mb.setup({
@@ -286,7 +286,7 @@ suite('retry-test', function() {
     }, function(err) {
       assert(err.code === 'ECONNRESET', 'Expect ECONNRESET error');
       assert(getConnectionErrorCount === 6, 'expected 6 retries');
-      assert(monitorBuilder.messages.length > 0);
+      assert(monitorManager.messages.length > 0);
     });
   });
 });

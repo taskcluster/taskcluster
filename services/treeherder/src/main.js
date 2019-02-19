@@ -5,7 +5,7 @@ const exchanges = require('./exchanges');
 const loader = require('taskcluster-lib-loader');
 const docs = require('taskcluster-lib-docs');
 const config = require('typed-env-config');
-const monitorBuilder = require('./monitor');
+const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 
@@ -28,7 +28,7 @@ let load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorBuilder.setup({
+    setup: ({process, profile, cfg}) => monitorManager.setup({
       level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: profile !== 'production',
@@ -81,7 +81,7 @@ let load = loader({
           }),
         }, {
           name: 'logs',
-          reference: monitorBuilder.reference(),
+          reference: monitorManager.reference(),
         },
       ],
     }),

@@ -2,7 +2,7 @@ let subject = require('../');
 let sandbox = require('sinon').createSandbox();
 let assume = require('assume');
 let debug = require('debug')('iterate-test');
-let MonitorBuilder = require('taskcluster-lib-monitor');
+let MonitorManager = require('taskcluster-lib-monitor');
 
 let possibleEvents = [
   'started',
@@ -51,18 +51,18 @@ class IterateEvents {
 
 describe('Iterate', () => {
   let clock;
-  let builder;
+  let manager;
   let monitor;
 
   beforeEach(async () => {
-    builder = new MonitorBuilder({serviceName: 'iterate'});
-    builder.setup({mock: true});
-    monitor = builder.monitor();
+    manager = new MonitorManager({serviceName: 'iterate'});
+    manager.setup({mock: true});
+    monitor = manager.monitor();
   });
 
   afterEach(() => {
     sandbox.restore();
-    builder.terminate();
+    manager.terminate();
   });
 
   it('should be able to start and stop', done => {
@@ -103,8 +103,8 @@ describe('Iterate', () => {
       assume(i.keepGoing).is.ok();
       i.stop();
       assume(i.keepGoing).is.not.ok();
-      assume(builder.messages.length).equals(5);
-      builder.messages.forEach(message => {
+      assume(manager.messages.length).equals(5);
+      manager.messages.forEach(message => {
         assume(message.Fields.status).equals('success');
       });
     }, 5000);

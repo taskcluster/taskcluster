@@ -7,7 +7,7 @@ import config from 'typed-env-config';
 import { createServer } from 'http';
 import { FakeClient, Client, pulseCredentials } from 'taskcluster-lib-pulse';
 import { ApolloServer } from 'apollo-server-express';
-import monitorBuilder from './monitor';
+import monitorManager from './monitor';
 import createApp from './servers/createApp';
 import formatError from './servers/formatError';
 import createContext from './createContext';
@@ -27,7 +27,7 @@ const load = loader(
     monitor: {
       requires: ['cfg'],
       setup: ({ cfg }) =>
-        monitorBuilder.setup({
+        monitorManager.setup({
           projectName: cfg.monitoring.project,
           credentials: cfg.taskcluster.credentials,
           mock: cfg.monitoring.mock,
@@ -46,7 +46,7 @@ const load = loader(
         publish: false,
         references: [{
           name: 'logs',
-          reference: monitorBuilder.reference(),
+          reference: monitorManager.reference(),
         }],
       }),
     },

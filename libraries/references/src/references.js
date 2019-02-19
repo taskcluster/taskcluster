@@ -82,7 +82,7 @@ class References {
    * within services' tests to validate that their references and schemas are
    * valid.  It returns an abstract References instance.
    */
-  static fromService({schemaset, exchanges, builder, monitorBuilder}) {
+  static fromService({schemaset, exchanges, builder, monitorManager}) {
     const references = [];
     if (builder) {
       references.push({filename: 'api-reference.json', content: builder.reference()});
@@ -90,8 +90,8 @@ class References {
     if (exchanges) {
       references.push({filename: 'exchanges-reference.json', content: exchanges.reference()});
     }
-    if (monitorBuilder) {
-      references.push({filename: 'logs-reference.json', content: monitorBuilder.reference()});
+    if (monitorManager) {
+      references.push({filename: 'logs-reference.json', content: monitorManager.reference()});
     }
 
     const schemas = Array.from(getCommonSchemas());

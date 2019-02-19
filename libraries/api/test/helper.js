@@ -1,6 +1,6 @@
 const testing = require('taskcluster-lib-testing');
 const SchemaSet = require('taskcluster-lib-validate');
-const MonitorBuilder = require('taskcluster-lib-monitor');
+const MonitorManager = require('taskcluster-lib-monitor');
 const assert = require('assert');
 const path = require('path');
 const express = require('express');
@@ -49,13 +49,13 @@ exports.setupServer = async ({builder, monitor, context}) => {
 };
 
 exports.monitor = () => {
-  const monitorBuilder = new MonitorBuilder({
+  const monitorManager = new MonitorManager({
     serviceName: 'foo',
   });
-  monitorBuilder.setup({
+  monitorManager.setup({
     enable: false,
   });
-  return monitorBuilder.monitor();
+  return monitorManager.monitor();
 };
 
 exports.teardownServer = async () => {

@@ -19,7 +19,7 @@ let WorkClaimer = require('./workclaimer');
 let WorkerInfo = require('./workerinfo');
 let loader = require('taskcluster-lib-loader');
 let config = require('typed-env-config');
-let monitorBuilder = require('./monitor');
+let monitorManager = require('./monitor');
 let SchemaSet = require('taskcluster-lib-validate');
 let docs = require('taskcluster-lib-docs');
 let App = require('taskcluster-lib-app');
@@ -36,7 +36,7 @@ let load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorBuilder.setup({
+    setup: ({process, profile, cfg}) => monitorManager.setup({
       level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: cfg.monitor.mock,
@@ -87,7 +87,7 @@ let load = loader({
       publish: cfg.app.publishMetaData,
       references: [
         {name: 'api', reference: builder.reference()},
-        {name: 'logs', reference: monitorBuilder.reference()},
+        {name: 'logs', reference: monitorManager.reference()},
         {name: 'events', reference: exchanges.reference({
           rootUrl: cfg.taskcluster.rootUrl,
           credentials: cfg.pulse,

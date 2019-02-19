@@ -1,4 +1,4 @@
-const MonitorBuilder = require('../');
+const MonitorManager = require('../');
 
 const options = {
   shouldError: false,
@@ -11,10 +11,10 @@ process.argv.slice(2).forEach(arg => {
   options[arg.slice(2)] = true;
 });
 
-const builder = new MonitorBuilder({
+const manager = new MonitorManager({
   serviceName: 'foo-testing',
 });
-builder.setup(options);
+manager.setup(options);
 
 if (options.shouldError) {
   throw new Error('hello there');

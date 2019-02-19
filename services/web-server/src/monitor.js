@@ -1,7 +1,7 @@
-const MonitorBuilder = require('taskcluster-lib-monitor');
+const MonitorManager = require('taskcluster-lib-monitor');
 
-const builder = new MonitorBuilder({
+const manager = new MonitorManager({
   serviceName: 'web-server',
 });
 
-module.exports = builder;
+module.exports = manager;

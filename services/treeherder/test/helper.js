@@ -50,8 +50,8 @@ exports.withHandler = () => {
     const cfg = await exports.load('cfg');
     const validator = await exports.load('validator');
     const pulseClient = new FakeClient();
-    exports.monitorBuilder = await exports.load('monitor');
-    exports.monitor = exports.monitorBuilder.monitor();
+    exports.monitorManager = await exports.load('monitor');
+    exports.monitor = exports.monitorManager.monitor();
     exports.handler = new Handler({
       cfg,
       prefix: 'foo',
@@ -91,7 +91,7 @@ exports.withHandler = () => {
   });
 
   teardown(() => {
-    exports.monitorBuilder.reset();
+    exports.monitorManager.reset();
   });
 
 };

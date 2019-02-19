@@ -2,7 +2,7 @@ const request = require('superagent');
 const assert = require('assert');
 const Promise = require('promise');
 const APIBuilder = require('../');
-const MonitorBuilder = require('taskcluster-lib-monitor');
+const MonitorManager = require('taskcluster-lib-monitor');
 const helper = require('./helper');
 const libUrls = require('taskcluster-lib-urls');
 
@@ -47,21 +47,21 @@ suite('api/responsetimer', function() {
 
   // Reference for test api server
   let _apiServer = null;
-  let monitorBuilder = null;
+  let monitorManager = null;
 
   // Create a mock authentication server
   setup(async () => {
-    monitorBuilder = new MonitorBuilder({
+    monitorManager = new MonitorManager({
       serviceName: 'lib-api-test',
     });
-    monitorBuilder.setup({
+    monitorManager.setup({
       mock: true,
     });
 
-    await helper.setupServer({builder, monitor: monitorBuilder.monitor('api')});
+    await helper.setupServer({builder, monitor: monitorManager.monitor('api')});
   });
   teardown(() => {
-    monitorBuilder.terminate();
+    monitorManager.terminate();
     helper.teardownServer();
   });
 
@@ -71,18 +71,18 @@ suite('api/responsetimer', function() {
     await request.get(u('/single-param/Goodbye')),
     await request.get(u('/slash-param/Slash')).catch(err => {}),
     await request.get(u('/another-param/Another')).catch(err => {}),
-    assert.equal(monitorBuilder.messages.length, 4);
-    monitorBuilder.messages.forEach(event => {
+    assert.equal(monitorManager.messages.length, 4);
+    monitorManager.messages.forEach(event => {
       assert.equal(event.Type, 'monitor.express');
       assert.equal(event.Logger, 'taskcluster.lib-api-test.root.api');
     });
-    assert.equal(monitorBuilder.messages[0].Fields.name, 'testParam');
-    assert.equal(monitorBuilder.messages[0].Fields.statusCode, 200);
-    assert.equal(monitorBuilder.messages[1].Fields.name, 'testParam');
-    assert.equal(monitorBuilder.messages[1].Fields.statusCode, 200);
-    assert.equal(monitorBuilder.messages[2].Fields.name, 'testSlashParam');
-    assert.equal(monitorBuilder.messages[2].Fields.statusCode, 404);
-    assert.equal(monitorBuilder.messages[3].Fields.name, 'testAnotherParam');
-    assert.equal(monitorBuilder.messages[3].Fields.statusCode, 500);
+    assert.equal(monitorManager.messages[0].Fields.name, 'testParam');
+    assert.equal(monitorManager.messages[0].Fields.statusCode, 200);
+    assert.equal(monitorManager.messages[1].Fields.name, 'testParam');
+    assert.equal(monitorManager.messages[1].Fields.statusCode, 200);
+    assert.equal(monitorManager.messages[2].Fields.name, 'testSlashParam');
+    assert.equal(monitorManager.messages[2].Fields.statusCode, 404);
+    assert.equal(monitorManager.messages[3].Fields.name, 'testAnotherParam');
+    assert.equal(monitorManager.messages[3].Fields.statusCode, 500);
   });
 });

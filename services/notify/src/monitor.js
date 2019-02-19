@@ -1,10 +1,10 @@
-const MonitorBuilder = require('taskcluster-lib-monitor');
+const MonitorManager = require('taskcluster-lib-monitor');
 
-const builder = new MonitorBuilder({
+const manager = new MonitorManager({
   serviceName: 'notify',
 });
 
-builder.register({
+manager.register({
   name: 'email',
   type: 'email',
   version: 1,
@@ -15,7 +15,7 @@ builder.register({
   },
 });
 
-builder.register({
+manager.register({
   name: 'pulse',
   type: 'pulse',
   version: 1,
@@ -26,7 +26,7 @@ builder.register({
   },
 });
 
-builder.register({
+manager.register({
   name: 'irc',
   type: 'irc',
   version: 1,
@@ -38,4 +38,4 @@ builder.register({
   },
 });
 
-module.exports = builder;
+module.exports = manager;

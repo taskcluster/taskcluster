@@ -7,11 +7,11 @@ const Logger = require('./logger');
 const Monitor = require('./monitor');
 const builtins = require('./builtins');
 
-class MonitorBuilder {
+class MonitorManager {
   constructor({
     serviceName,
   }) {
-    assert(serviceName, 'Must provide a serviceName to MonitorBuilder');
+    assert(serviceName, 'Must provide a serviceName to MonitorManager');
     this.serviceName = serviceName;
     this.types = {};
     builtins.forEach(builtin => this.register(builtin));
@@ -182,7 +182,7 @@ class MonitorBuilder {
    * Get a prefixed monitor
    */
   monitor(prefix, metadata = {}) {
-    assert(this.alreadySetup, 'Must setup() MonitorBuilder before getting monitors.');
+    assert(this.alreadySetup, 'Must setup() MonitorManager before getting monitors.');
     if (!prefix) {
       return this.rootMonitor;
     }
@@ -220,4 +220,4 @@ class MonitorBuilder {
   }
 }
 
-module.exports = MonitorBuilder;
+module.exports = MonitorManager;

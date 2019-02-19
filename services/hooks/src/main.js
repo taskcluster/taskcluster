@@ -12,7 +12,7 @@ const config = require('typed-env-config');
 const loader = require('taskcluster-lib-loader');
 const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
-const monitorBuilder = require('./monitor');
+const monitorManager = require('./monitor');
 const taskcluster = require('taskcluster-client');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const exchanges = require('./exchanges');
@@ -28,7 +28,7 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorBuilder.setup({
+    setup: ({process, profile, cfg}) => monitorManager.setup({
       level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: profile !== 'production',
@@ -188,7 +188,7 @@ const load = loader({
           reference: exchanges.reference(),
         }, {
           name: 'logs',
-          reference: monitorBuilder.reference(),
+          reference: monitorManager.reference(),
         },
       ],
     }),

@@ -6,7 +6,7 @@ const Handlers = require('./handlers');
 const builder = require('./api');
 const Config = require('typed-env-config');
 const loader = require('taskcluster-lib-loader');
-const monitorBuilder = require('./monitor');
+const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
@@ -74,7 +74,7 @@ var load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitorBuilder.setup({
+    setup: ({process, profile, cfg}) => monitorManager.setup({
       level: cfg.app.level,
       enable: cfg.monitoring.enable,
       mock: profile === 'test',
@@ -97,7 +97,7 @@ var load = loader({
           reference: builder.reference(),
         }, {
           name: 'logs',
-          reference: monitorBuilder.reference(),
+          reference: monitorManager.reference(),
         },
       ],
     }),

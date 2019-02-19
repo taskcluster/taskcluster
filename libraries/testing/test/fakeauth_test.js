@@ -5,7 +5,7 @@ const hawk = require('hawk');
 const request = require('superagent');
 const SchemaSet = require('taskcluster-lib-validate');
 const APIBuilder = require('taskcluster-lib-api');
-const MonitorBuilder = require('taskcluster-lib-monitor');
+const MonitorManager = require('taskcluster-lib-monitor');
 const App = require('taskcluster-lib-app');
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
@@ -51,16 +51,16 @@ suite('fakeauth', function() {
       folder: path.join(__dirname, 'schemas'),
     });
 
-    const monitorBuilder = new MonitorBuilder({
+    const monitorManager = new MonitorManager({
       serviceName: 'whatever',
     });
-    monitorBuilder.setup({enable: false});
+    monitorManager.setup({enable: false});
 
     // Create router for the API
     const api = await builder.build({
       schemaset,
       rootUrl,
-      monitor: monitorBuilder.monitor('api'),
+      monitor: monitorManager.monitor('api'),
     });
 
     // Create application
