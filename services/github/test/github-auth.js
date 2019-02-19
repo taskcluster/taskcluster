@@ -83,9 +83,7 @@ class FakeGithub {
             JSON.stringify(this._taskcluster_yml_files[key])
           ).toString('base64')}};
         } else {
-          let err = new Error();
-          err.code = 404;
-          throw err;
+          throwError(404);
         }
       },
       'users.getByUsername': async ({username}) => {

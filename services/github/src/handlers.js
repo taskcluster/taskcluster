@@ -3,7 +3,6 @@ const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
 const yaml = require('js-yaml');
 const assert = require('assert');
-const prAllowed = require('./pr-allowed');
 const {consume} = require('taskcluster-lib-pulse');
 
 const debugPrefix = 'taskcluster-github:handlers';
@@ -270,6 +269,66 @@ class Handlers {
       body,
     });
   }
+
+  /**
+   * Function that examines the yml and decides which policy we're using. Defining policy in the yml is not required
+   * by the schema, so if it's not defined, the function returns default policy.
+   *
+   * @param taskclusterYml - parsed YML (JSON object, see docs on `.taskcluster.yml`)
+   * @returns policy, a string (either "collaborator" or "public" - available values at the moment)
+   */
+  getRepoPolicy(taskclusterYml) {
+    const DEFAULT_POLICY = 'collaborators';
+
+    if (taskclusterYml.version === 0) {
+      // consult its `allowPullRequests` field
+      return taskclusterYml.allowPullRequests || DEFAULT_POLICY;
+    } else if (taskclusterYml.version === 1) {
+      if (taskclusterYml.policy) {
+        return taskclusterYml.policy.pullRequests || DEFAULT_POLICY;
+      }
+    }
+
+    return DEFAULT_POLICY;
+  }
+
+  /**
+   * Try to get `.taskcluster.yml` from a certain ref.
+   *
+   * @param instGithub - authenticated installation object
+   * @param owner - org or a user, a string
+   * @param repo - repository, a string
+   * @param ref - SHA or branch/tag name, a string
+   *
+   * @returns either parsed YML if there's a YML and it was parsed successfully,
+   * or null if there's no YML,
+   * or throws an error in other cases
+   */
+  async getYml({instGithub, owner, repo, ref}) {
+    let response;
+    try {
+      response = await instGithub.repos.getContents({owner, repo, path: '.taskcluster.yml', ref});
+    } catch (e) {
+      if (e.code === 404) {
+        debug(`${owner}/${repo} has no '.taskcluster.yml' at ${ref}. Skipping.`);
+        return null;
+      }
+
+      if (e.message.endsWith('</body>\n</html>\n') && e.message.length > 10000) {
+        // We kept getting full html 500/400 pages from github in the logs.
+        // I consider this to be a hard-to-fix bug in octokat, so let's make
+        // the logs usable for now and try to fix this later. It's a relatively
+        // rare occurence.
+        debug('Detected an extremely long error. Truncating!');
+        e.message = e.message.slice(0, 100).concat('...');
+        e.stack = e.stack.split('</body>\n</html>\n')[1] || e.stack;
+      }
+      debug(`Error fetching yaml for ${owner}/${repo}@${ref}: ${e.message} \n ${e.stack}`);
+      throw e;
+    }
+
+    return yaml.safeLoad(Buffer.from(response.data.content, 'base64').toString());
+  }
 }
 module.exports = Handlers;
 
@@ -483,101 +542,27 @@ async function jobHandler(message) {
   }
 
   debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${sha}`);
-  let repoconf = undefined;
-
-  // Checking pull request permission.
-  if (message.payload.details['event.type'].startsWith('pull_request.')){
-    debug(`Checking pull request permission for ${organization}/${repository}@${sha}...`);
-
-    // Decide if a user has permissions to run tasks.
-    let login = message.payload.details['event.head.user.login'];
-    try {
-      if (!await prAllowed({login, organization, repository, instGithub, debug, message})) {
-        if(message.payload.details['event.type'].startsWith('pull_request.opened')){
-          let body = [
-            '<details>\n',
-            '<summary>No Taskcluster jobs started for this pull request</summary>\n\n',
-            '```js\n',
-            'The `allowPullRequests` configuration for this repository (in `.taskcluster.yml` on the',
-            'default branch) does not allow starting tasks for this pull request.',
-            '```\n',
-            '</details>',
-          ].join('\n');
-          await instGithub.issues.createComment({
-            owner: organization,
-            repo: repository,
-            number: pullNumber,
-            body,
-          });
-        }
-        return;
-      }
-    } catch (e) {
-      if (e.name === 'YAMLException') {
-        let docsLink = 'https://docs.taskcluster.net/reference/integrations/github/docs/usage#who-can-trigger-jobs';
-        await instGithub.issues.createComment({
-          owner: organization,
-          repo: repository,
-          number: pullNumber,
-          body: [
-            '<details>\n',
-            '<summary>Error in `.taskcluster.yml` while checking',
-            'for permissions **on default branch ' + branch + '**.',
-            'Read more about this in',
-            '[the taskcluster docs](' + docsLink + ').',
-            'Details:</summary>\n\n',
-            '```js\n',
-            e.message,
-            '```\n',
-            '</details>',
-          ].join('\n'),
-        });
-        return;
-      }
-      debug(`Error checking PR permissions for ${organization}/${repository}@${sha}`);
-      throw e;
-    }
-  }
 
   // Try to fetch a .taskcluster.yml file for every request
+  debug(`Trying to fetch the YML for ${organization}/${repository}@${sha}`);
+  let repoconf;
   try {
-    debug(`Trying to fetch the YML for ${organization}/${repository}@${sha}`);
-    let tcyml = await instGithub.repos.getContents({
-      owner: organization,
-      repo: repository,
-      path: '.taskcluster.yml',
-      ref: sha,
-    });
-    repoconf = Buffer.from(tcyml.data.content, 'base64').toString();
-  } catch (e) {
-    if (e.code === 404) {
-      debug(`${organization}/${repository}@${sha} has no '.taskcluster.yml'. Skipping.`);
-      return;
-    }
-    if (e.message.endsWith('</body>\n</html>\n') && e.message.length > 10000) {
-      // We kept getting full html 500/400 pages from github in the logs.
-      // I consider this to be a hard-to-fix bug in octokat, so let's make
-      // the logs usable for now and try to fix this later. It's a relatively
-      // rare occurence.
-      debug('Detected an extremely long error. Truncating!');
-      e.message = e.message.slice(0, 100).concat('...');
-      e.stack = e.stack.split('</body>\n</html>\n')[1] || e.stack;
-    }
-    debug(`Error fetching yaml for ${organization}/${repository}@${sha}: ${e.message} \n ${e.stack}`);
-    throw e;
-  }
-
-  // Check if this is meant to be built by tc-github at all.
-  // This is a bit of a hack, but is needed for bug 1274077 for now
-  try {
-    let c = yaml.safeLoad(repoconf);
+    repoconf = await this.getYml({instGithub, owner: organization, repo: repository, ref: sha});
   } catch (e) {
     if (e.name === 'YAMLException') {
-      return await this.createExceptionComment({instGithub, organization, repository, sha, error: e, pullNumber});
+      return await this.createExceptionComment({
+        instGithub,
+        organization: owner,
+        repository: repo,
+        sha: ref,
+        error: e,
+        pullNumber,
+      });
     }
     debug(`Error checking yaml for ${organization}/${repository}@${sha}: ${e}`);
     throw e;
   }
+  if (!repoconf) { return; }
 
   let groupState = 'pending';
   let taskGroupId = 'nonexistent';
@@ -603,6 +588,57 @@ async function jobHandler(message) {
       Leaving comment on Github.`);
     await this.createExceptionComment({instGithub, organization, repository, sha, error: e, pullNumber});
     return;
+  }
+
+  // Checking pull request permission.
+  if (message.payload.details['event.type'].startsWith('pull_request.')) {
+    debug(`Checking pull request permission for ${organization}/${repository}@${sha}...`);
+
+    debug(`Retrieving  ${organization}/${repository}@${sha}...`);
+    let defaultBranch = (await instGithub.repos.get({owner: organization, repo: repository}))
+      .data
+      .default_branch;
+
+    let defaultBranchYml = await this.getYml({instGithub, owner: organization, repo: repository, ref: defaultBranch});
+
+    if (!defaultBranchYml) { return; }
+
+    if (this.getRepoPolicy(defaultBranchYml) === 'collaborators') {
+      let login = message.payload.details['event.head.user.login'];
+
+      let isCollaborator = await instGithub.repos.checkCollaborator({
+        owner: organization,
+        repo: repository,
+        username: login,
+      }).catch(e => {
+        if (e.code !== 404) {
+          throw e;
+        }
+      });
+
+      if (!isCollaborator) {
+        if (message.payload.details['event.type'].startsWith('pull_request.opened')) {
+          let body = [
+            '<details>\n',
+            '<summary>No Taskcluster jobs started for this pull request</summary>\n\n',
+            '```js\n',
+            'The `allowPullRequests` configuration for this repository (in `.taskcluster.yml` on the',
+            'default branch) does not allow starting tasks for this pull request.',
+            '```\n',
+            '</details>',
+          ].join('\n');
+          await instGithub.issues.createComment({
+            owner: organization,
+            repo: repository,
+            number: pullNumber,
+            body,
+          });
+        }
+
+        debug(`This user is not collaborator on ${organization}/${repository} and can't make PR@${sha}. Exiting...`);
+        return;
+      }
+    }
   }
 
   taskGroupId = graphConfig.tasks[0].task.taskGroupId;

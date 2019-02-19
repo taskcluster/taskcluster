@@ -163,7 +163,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        content: require('./valid-yaml.json'),
+        content: require('./data/yml/valid-yaml.json'),
       });
       await simulateJobMessage({user: 'TaskclusterRobot'});
 
@@ -186,9 +186,16 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
-        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        content: require('./valid-yaml.json'),
+        ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf', // HEAD
+        content: require('./data/yml/valid-yaml.json'),
       });
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development', // default branch
+        content: require('./data/yml/valid-yaml.json'),
+      });
+
       await simulateJobMessage({user: 'goodBuddy', eventType: 'pull_request.opened'});
 
       assert(handlers.createTasks.calledWith({scopes: sinon.match.array, tasks: sinon.match.array}));
@@ -206,7 +213,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        content: require('./valid-yaml.json'),
+        content: require('./data/yml/valid-yaml.json'),
       });
       await simulateJobMessage({user: 'TaskclusterCollaborator', eventType: 'push'});
 
@@ -224,7 +231,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        content: require('./valid-yaml.json'),
+        content: require('./data/yml/valid-yaml.json'),
       });
       await simulateJobMessage({
         user: 'TaskclusterRobotCollaborator',
@@ -247,7 +254,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        content: require('./invalid-yaml.json'),
+        content: require('./data/yml/invalid-yaml.json'),
       });
       await simulateJobMessage({user: 'TaskclusterRobot'});
 
@@ -265,7 +272,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        content: require('./valid-yaml.json'),
+        content: require('./data/yml/valid-yaml.json'),
       });
       handlers.createTasks.returns(Promise.reject({body: {error: 'oh noes'}}));
       await simulateJobMessage({user: 'TaskclusterRobot'});
@@ -283,8 +290,15 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        content: require('./valid-yaml.json'),
+        content: require('./data/yml/valid-yaml.json'),
       });
+      github.inst(5828).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development',
+        content: {version: 0, allowPullRequests: 'collaborators'},
+      });
+
       await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
 
       assert(github.inst(5828).issues.createComment.calledOnce);
@@ -300,13 +314,13 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        content: require('./valid-yaml.json'),
+        content: require('./data/yml/valid-yaml.json'),
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
-        content: {allowPullRequests: 'public'},
+        content: {version: 0, allowPullRequests: 'public'},
       });
       await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
 
@@ -318,13 +332,13 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        content: require('./valid-yaml.json'),
+        content: require('./data/yml/valid-yaml.json'),
       });
       github.inst(5828).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
-        content: {allowPullRequests: 'collaborators'},
+        content: {version: 1, policy: {pullRequests: 'collaborators'}},
       });
       await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
 
@@ -337,7 +351,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf',
-        content: require('./valid-yaml.json'),
+        content: require('./data/yml/valid-yaml.json'),
       });
       await simulateJobMessage({user: 'imbstack', eventType: 'push'});
 
