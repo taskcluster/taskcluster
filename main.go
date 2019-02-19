@@ -73,6 +73,7 @@ const (
 	CANT_GRANT_CONTROL_OF_WINSTA_AND_DESKTOP ExitCode = 74
 	CANT_CREATE_ED25519_KEYPAIR              ExitCode = 75
 	CANT_SAVE_CONFIG                         ExitCode = 76
+	CANT_SECURE_CONFIG                       ExitCode = 77
 )
 
 func usage(versionName string) string {
@@ -462,7 +463,7 @@ func main() {
 			}
 			err = fileutil.SecureFiles([]string{configFile})
 			if err != nil {
-				os.Exit(int(CANT_SAVE_CONFIG))
+				os.Exit(int(CANT_SECURE_CONFIG))
 			}
 		}
 		if err != nil {
