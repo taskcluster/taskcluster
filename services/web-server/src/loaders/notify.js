@@ -1,9 +1,8 @@
-import DataLoader from 'dataloader';
 import sift from 'sift';
 import ConnectionLoader from '../ConnectionLoader';
 
 export default ({ notify }) => {
-  const denylist = new ConnectionLoader(async ({ filter, options }) => {
+  const listDenylistAddresses = new ConnectionLoader(async ({ filter, options }) => {
     const raw = await notify.list(options);
     const addresses = raw.addresses.map(address => {
       return {
@@ -19,6 +18,6 @@ export default ({ notify }) => {
   });
 
   return {
-    denylist,
+    listDenylistAddresses,
   };
 };

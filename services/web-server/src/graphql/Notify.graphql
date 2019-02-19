@@ -1,10 +1,17 @@
 type NotificationAddress {
-  notificationType: String!
+  notificationType: NotificationType!
   notificationAddress: String!
 }
 
+enum NotificationType {
+  email
+  pulse
+  ircUser
+  ircChannel
+}
+
 input NotificationAddressInput {
-  notificationType: String!
+  notificationType: NotificationType!
   notificationAddress: String!
 }
 

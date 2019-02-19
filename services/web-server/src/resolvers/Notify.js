@@ -1,7 +1,7 @@
 export default {
   Query: {
     listDenylistAddresses(parent, { connection, filter }, { loaders }) {
-      return loaders.notify.load({ connection, filter });
+      return loaders.listDenylistAddresses.load({ connection, filter });
     },
   },
   Mutation: {
