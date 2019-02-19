@@ -271,15 +271,18 @@ class Handlers {
   }
 
   /**
-   * Get the repo's "policy" on pull requests, by fetching .taskcluster.yml from the default
-   * branch, parsing it, and looking at its `allowPullRequests`.
+   * Function that examines the yml and decides which policy we're using. Defining policy in the yml is not required
+   * by the schema, so if it's not defined, the function returns default policy.
+   *
+   * @param taskclusterYml - parsed YML (JSON object, see docs on `.taskcluster.yml`)
+   * @returns policy, a string (either "collaborator" or "public" - available values at the moment)
    */
   getRepoPolicy(taskclusterYml) {
     const DEFAULT_POLICY = 'collaborators';
 
-    if (!taskclusterYml.version || taskclusterYml.version === 0) {
+    if (taskclusterYml.version === 0) {
       // consult its `allowPullRequests` field
-      return taskclusterYml['allowPullRequests'] || DEFAULT_POLICY;
+      return taskclusterYml.allowPullRequests || DEFAULT_POLICY;
     } else if (taskclusterYml.version === 1) {
       if (taskclusterYml.policy) {
         return taskclusterYml.policy.pullRequests || DEFAULT_POLICY;

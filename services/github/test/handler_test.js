@@ -296,7 +296,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development',
-        content: {allowPullRequests: 'collaborators'},
+        content: {version: 0, allowPullRequests: 'collaborators'},
       });
 
       await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
@@ -320,7 +320,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
-        content: {allowPullRequests: 'public'},
+        content: {version: 0, allowPullRequests: 'public'},
       });
       await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
 
@@ -338,7 +338,7 @@ helper.secrets.mockSuite('handlers', ['taskcluster'], function(mock, skipping) {
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
-        content: {allowPullRequests: 'collaborators'},
+        content: {version: 1, policy: {pullRequests: 'collaborators'}},
       });
       await simulateJobMessage({user: 'imbstack', eventType: 'pull_request.opened'});
 
