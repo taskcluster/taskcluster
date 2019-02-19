@@ -9,7 +9,7 @@ suite('Logging', function() {
 
   setup(function() {
     builder = new MonitorBuilder({
-      projectName: 'taskcluster-testing-service',
+      serviceName: 'testing-service',
     });
     builder.setup({
       level: 'debug',
@@ -41,7 +41,7 @@ suite('Logging', function() {
     });
 
     const b = new MonitorBuilder({
-      projectName: 'taskcluster-testing-service',
+      serviceName: 'testing-service',
     });
     b.setup({
       level: 'debug',
@@ -115,7 +115,7 @@ suite('Logging', function() {
 
     assert.equal(builder.messages.length, 8);
     levels.forEach((level, i) => {
-      assert.equal(builder.messages[i].Logger, `taskcluster-testing-service.root`);
+      assert.equal(builder.messages[i].Logger, `taskcluster.testing-service.root`);
       assert.equal(builder.messages[i].Type, `something.${level}`);
       assert.equal(builder.messages[i].Fields.bar, i);
     });
@@ -123,7 +123,7 @@ suite('Logging', function() {
 
   test('levels work', function() {
     const b = new MonitorBuilder({
-      projectName: 'taskcluster-level',
+      serviceName: 'taskcluster-level',
     });
     b.setup({
       level: 'alert',
@@ -138,7 +138,7 @@ suite('Logging', function() {
 
   test('pretty', function() {
     const b = new MonitorBuilder({
-      projectName: 'taskcluster-level',
+      serviceName: 'taskcluster-level',
     });
     b.setup({
       level: 'debug',
@@ -155,7 +155,7 @@ suite('Logging', function() {
 
   test('pretty with newline', function() {
     const b = new MonitorBuilder({
-      projectName: 'taskcluster-level',
+      serviceName: 'taskcluster-level',
     });
     b.setup({
       level: 'debug',
@@ -172,7 +172,7 @@ suite('Logging', function() {
 
   test('disabling works', function() {
     const b = new MonitorBuilder({
-      projectName: 'taskcluster-level',
+      serviceName: 'taskcluster-level',
     });
     b.setup({
       level: 'debug',

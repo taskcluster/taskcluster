@@ -12,7 +12,7 @@ process.argv.slice(2).forEach(arg => {
 });
 
 const builder = new MonitorBuilder({
-  projectName: 'foo-testing',
+  serviceName: 'foo-testing',
 });
 builder.setup(options);
 

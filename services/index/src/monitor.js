@@ -1,7 +1,7 @@
 const MonitorBuilder = require('taskcluster-lib-monitor');
 
 const builder = new MonitorBuilder({
-  projectName: 'taskcluster-index',
+  serviceName: 'index',
 });
 
 module.exports = builder;

@@ -17,7 +17,7 @@ Usage
 const MonitorBuilder = require('taskcluster-lib-monitor');
 
 const builder = new MonitorBuilder({
-  projectName: 'taskcluster-foo',
+  serviceName: 'foo',
 });
 builder.setup({
   mock: cfg.monitor.mock,  // false in production, true in testing
@@ -30,7 +30,7 @@ const monitor = builder.monitor('prefix', {meta: 5}); // To get a child monitor 
 
 The available options to the builder's constructor are:
 
- * `projectName` - The name of this service.
+ * `serviceName` - The short name of this service.
 
 The available options to the setup function are:
 
@@ -178,7 +178,7 @@ can be timed (in milliseconds) by wrapping them with `taskcluster-lib-monitor`:
 
 ```js
 const monitor = new Monitor({
-  projectName: 'tc-stats-collector',
+  serviceName: 'tc-stats-collector',
 });
 
 const listener = new taskcluster.PulseListener({
@@ -202,7 +202,7 @@ as middleware:
 
 ```js
 const monitor = new Monitor({
-  projectName: 'tc-stats-collector',
+  serviceName: 'tc-stats-collector',
   credentials: {clientId: 'test-client', accessToken: 'test'},
 });
 

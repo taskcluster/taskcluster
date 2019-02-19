@@ -55,7 +55,7 @@ describe('Iterate', () => {
   let monitor;
 
   beforeEach(async () => {
-    builder = new MonitorBuilder({projectName: 'iterate'});
+    builder = new MonitorBuilder({serviceName: 'iterate'});
     builder.setup({mock: true});
     monitor = builder.monitor();
   });

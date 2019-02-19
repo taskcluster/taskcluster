@@ -9,7 +9,7 @@ suite('BaseMonitor', function() {
 
   setup(function() {
     builder = new MonitorBuilder({
-      projectName: 'taskcluster-testing-service',
+      serviceName: 'testing-service',
     });
     builder.setup({
       level: 'debug',
@@ -32,7 +32,7 @@ suite('BaseMonitor', function() {
       return new Promise(resolve => setTimeout(resolve, 10)).then(() => {
         assert.equal(builder.messages.length, len);
         builder.messages.forEach(m => {
-          assert.equal(m.Logger, 'taskcluster-testing-service.root');
+          assert.equal(m.Logger, 'taskcluster.testing-service.root');
           assert.equal(m.Type, 'monitor.timer');
           assert.equal(m.Fields.key, 'pfx');
         });
@@ -106,7 +106,7 @@ suite('BaseMonitor', function() {
       await monitor.oneShot('expire', async () => {});
       assert.equal(exitStatus, 0);
       assert.equal(builder.messages.length, 1);
-      assert.equal(builder.messages[0].Logger, 'taskcluster-testing-service.root');
+      assert.equal(builder.messages[0].Logger, 'taskcluster.testing-service.root');
       assert(builder.messages[0].Fields.key);
       assert(builder.messages[0].Fields.duration);
     });
@@ -136,8 +136,8 @@ suite('BaseMonitor', function() {
       child.count('foobar', 6);
 
       assert.equal(builder.messages.length, 2);
-      assert.equal(builder.messages[0].Logger, 'taskcluster-testing-service.root');
-      assert.equal(builder.messages[1].Logger, 'taskcluster-testing-service.root.api');
+      assert.equal(builder.messages[0].Logger, 'taskcluster.testing-service.root');
+      assert.equal(builder.messages[1].Logger, 'taskcluster.testing-service.root.api');
       assert.equal(builder.messages[0].Fields.val, 5);
       assert.equal(builder.messages[1].Fields.val, 6);
     });
@@ -150,9 +150,9 @@ suite('BaseMonitor', function() {
       grandchild.count('foobar', 7);
 
       assert.equal(builder.messages.length, 3);
-      assert.equal(builder.messages[0].Logger, 'taskcluster-testing-service.root');
-      assert.equal(builder.messages[1].Logger, 'taskcluster-testing-service.root.api');
-      assert.equal(builder.messages[2].Logger, 'taskcluster-testing-service.root.api.something');
+      assert.equal(builder.messages[0].Logger, 'taskcluster.testing-service.root');
+      assert.equal(builder.messages[1].Logger, 'taskcluster.testing-service.root.api');
+      assert.equal(builder.messages[2].Logger, 'taskcluster.testing-service.root.api.something');
       assert.equal(builder.messages[0].Fields.val, 5);
       assert.equal(builder.messages[1].Fields.val, 6);
       assert.equal(builder.messages[2].Fields.val, 7);
@@ -164,15 +164,15 @@ suite('BaseMonitor', function() {
       child.measure('bazbing', 6);
 
       assert.equal(builder.messages.length, 2);
-      assert.equal(builder.messages[0].Logger, 'taskcluster-testing-service.root');
-      assert.equal(builder.messages[1].Logger, 'taskcluster-testing-service.root.api');
+      assert.equal(builder.messages[0].Logger, 'taskcluster.testing-service.root');
+      assert.equal(builder.messages[1].Logger, 'taskcluster.testing-service.root.api');
       assert.equal(builder.messages[0].Fields.meta, undefined);
       assert.equal(builder.messages[1].Fields.meta.addition, 1000);
     });
 
     test('can configure child loggers with specific levels and default to root', function() {
       const b = new MonitorBuilder({
-        projectName: 'taskcluster-testing-service',
+        serviceName: 'testing-service',
       });
       b.setup({
         level: 'root:info root.api:debug',
@@ -187,15 +187,14 @@ suite('BaseMonitor', function() {
       child2.debug('what', 3);
 
       assert.equal(b.messages.length, 1);
-      assert.equal(b.messages[0].Logger, 'taskcluster-testing-service.root.api');
+      assert.equal(b.messages[0].Logger, 'taskcluster.testing-service.root.api');
     });
 
     test('if using child logger levels, must specify root', function() {
       const b = new MonitorBuilder({
-        projectName: 'taskcluster-testing-service',
+        serviceName: 'testing-service',
       });
       assert.throws(() => b.setup({
-        projectName: 'taskcluster-testing-service',
         level: 'root.api:debug',
         mock: true,
       }));
@@ -407,7 +406,7 @@ suite('BaseMonitor', function() {
         // Ignored ec2 error, we measure duration, not success
       });
       assert.equal(builder.messages.length, 1);
-      assert.equal(builder.messages[0].Logger, 'taskcluster-testing-service.root');
+      assert.equal(builder.messages[0].Logger, 'taskcluster.testing-service.root');
       assert.equal(builder.messages[0].Fields.operation, 'describeAvailabilityZones');
       assert.equal(builder.messages[0].Fields.service, 'ec2');
       assert.equal(builder.messages[0].Fields.region, 'us-west-2');

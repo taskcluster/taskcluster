@@ -7,9 +7,9 @@ metadata:
   version: 0
 type: object
 properties:
-  projectName:
-    title: Project Name
-    description: Name of the taskcluster project
+  serviceName:
+    title: Service Name
+    description: Name of the taskcluster service
     type: string
     pattern: '^[a-z][a-z0-9_-]*$'
   $schema:
@@ -50,6 +50,6 @@ properties:
         - fields
 additionalProperties: false
 required:
-  - projectName
+  - serviceName
   - $schema
   - types

@@ -1,5 +1,5 @@
 {
-  "projectName": "taskcluster-hooks",
+  "serviceName": "hooks",
   "$schema": "/schemas/common/logs-reference-v0.json#",
   "types": [
     {

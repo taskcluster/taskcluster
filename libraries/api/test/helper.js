@@ -50,7 +50,7 @@ exports.setupServer = async ({builder, monitor, context}) => {
 
 exports.monitor = () => {
   const monitorBuilder = new MonitorBuilder({
-    projectName: 'foo',
+    serviceName: 'foo',
   });
   monitorBuilder.setup({
     enable: false,

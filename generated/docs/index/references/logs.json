@@ -1,5 +1,5 @@
 {
-  "projectName": "taskcluster-index",
+  "serviceName": "index",
   "$schema": "/schemas/common/logs-reference-v0.json#",
   "types": [
     {

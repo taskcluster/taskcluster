@@ -1,5 +1,5 @@
 {
-  "projectName": "taskcluster-treeherder",
+  "serviceName": "treeherder",
   "$schema": "/schemas/common/logs-reference-v0.json#",
   "types": [
     {

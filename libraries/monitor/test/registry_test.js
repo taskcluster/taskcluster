@@ -5,7 +5,7 @@ suite('Registry', function() {
 
   test('can add custom message types', function() {
     builder = new MonitorBuilder({
-      projectName: 'taskcluster-testing-service',
+      serviceName: 'taskcluster-testing-service',
     });
     builder.register({
       name: 'auditLog',
@@ -29,7 +29,7 @@ suite('Registry', function() {
 
   test('can publish types', function() {
     builder = new MonitorBuilder({
-      projectName: 'taskcluster-testing-service',
+      serviceName: 'taskcluster-testing-service',
     });
     builder.register({
       name: 'auditLog',
@@ -42,7 +42,7 @@ suite('Registry', function() {
         bar: 'A bar field. This will be a string',
       },
     });
-    assert.equal(builder.reference().projectName, 'taskcluster-testing-service');
+    assert.equal(builder.reference().serviceName, 'taskcluster-testing-service');
     assert.deepEqual(builder.reference().types[0].type, 'monitor.timer');
     assert.deepEqual(builder.reference().types[0].version, 1);
     assert.deepEqual(builder.reference().types[builder.reference().types.length-1].type, 'audit');

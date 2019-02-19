@@ -52,7 +52,7 @@ suite('api/responsetimer', function() {
   // Create a mock authentication server
   setup(async () => {
     monitorBuilder = new MonitorBuilder({
-      projectName: 'tc-lib-api-test',
+      serviceName: 'lib-api-test',
     });
     monitorBuilder.setup({
       mock: true,
@@ -74,7 +74,7 @@ suite('api/responsetimer', function() {
     assert.equal(monitorBuilder.messages.length, 4);
     monitorBuilder.messages.forEach(event => {
       assert.equal(event.Type, 'monitor.express');
-      assert.equal(event.Logger, 'tc-lib-api-test.root.api');
+      assert.equal(event.Logger, 'taskcluster.lib-api-test.root.api');
     });
     assert.equal(monitorBuilder.messages[0].Fields.name, 'testParam');
     assert.equal(monitorBuilder.messages[0].Fields.statusCode, 200);

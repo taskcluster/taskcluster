@@ -1,5 +1,5 @@
 {
-  "projectName": "taskcluster-login",
+  "serviceName": "login",
   "$schema": "/schemas/common/logs-reference-v0.json#",
   "types": [
     {

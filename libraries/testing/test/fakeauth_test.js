@@ -52,7 +52,7 @@ suite('fakeauth', function() {
     });
 
     const monitorBuilder = new MonitorBuilder({
-      projectName: 'whatever',
+      serviceName: 'whatever',
     });
     monitorBuilder.setup({enable: false});
 

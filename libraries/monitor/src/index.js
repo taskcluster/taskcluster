@@ -9,10 +9,10 @@ const builtins = require('./builtins');
 
 class MonitorBuilder {
   constructor({
-    projectName,
+    serviceName,
   }) {
-    assert(projectName, 'Must provide a project name to MonitorBuilder');
-    this.projectName = projectName;
+    assert(serviceName, 'Must provide a serviceName to MonitorBuilder');
+    this.serviceName = serviceName;
     this.types = {};
     builtins.forEach(builtin => this.register(builtin));
   }
@@ -117,7 +117,7 @@ class MonitorBuilder {
     }
 
     const logger = new Logger({
-      name: `${this.projectName}.${this.subject}`,
+      name: `taskcluster.${this.serviceName}.${this.subject}`,
       level: this.levels ? this.levels.root : this.level,
       enable,
       pretty,
@@ -191,7 +191,7 @@ class MonitorBuilder {
     return new Monitor({
       types: this.types,
       logger: new Logger({
-        name: `${this.projectName}.${prefix}`,
+        name: `taskcluster.${this.serviceName}.${prefix}`,
         level: this.levels ? this.levels[prefix] || this.levels.root : this.level,
         enable: this.enable,
         pretty: this.pretty,
@@ -206,7 +206,7 @@ class MonitorBuilder {
    */
   reference() {
     return {
-      projectName: this.projectName,
+      serviceName: this.serviceName,
       $schema: '/schemas/common/logs-reference-v0.json#',
       types: Object.values(this.types).map(type => {
         return {

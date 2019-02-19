@@ -414,7 +414,7 @@ suite('client requests/responses', function() {
 
       test('Report stats', async () => {
         let monitorBuilder = new MonitorBuilder({
-          projectName: 'tc-client',
+          serviceName: 'tc-client',
         });
         monitorBuilder.setup({
           mock: true,
@@ -436,7 +436,7 @@ suite('client requests/responses', function() {
 
       test('Report stats (unauthorized)', async () => {
         let monitorBuilder = new MonitorBuilder({
-          projectName: 'tc-client',
+          serviceName: 'tc-client',
         });
         monitorBuilder.setup({
           mock: true,

@@ -1,5 +1,5 @@
 {
-  "projectName": "taskcluster-github",
+  "serviceName": "github",
   "$schema": "/schemas/common/logs-reference-v0.json#",
   "types": [
     {

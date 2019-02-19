@@ -40,7 +40,7 @@ suite(helper.suiteName(__filename), function() {
         return clients[clientId];
       },
       expandScopes: scopes => scopes,
-      monitor: (new MonitorBuilder({projectName: 'foo'})).setup({mock: true}).monitor(),
+      monitor: (new MonitorBuilder({serviceName: 'foo'})).setup({mock: true}).monitor(),
     });
   });
 

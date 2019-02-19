@@ -1,5 +1,5 @@
 {
-  "projectName": "taskcluster-worker-manager",
+  "serviceName": "worker-manager",
   "$schema": "/schemas/common/logs-reference-v0.json#",
   "types": [
     {

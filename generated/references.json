@@ -6008,10 +6008,10 @@
           "title": "Schema Reference",
           "type": "string"
         },
-        "projectName": {
-          "description": "Name of the taskcluster project",
+        "serviceName": {
+          "description": "Name of the taskcluster service",
           "pattern": "^[a-z][a-z0-9_-]*$",
-          "title": "Project Name",
+          "title": "Service Name",
           "type": "string"
         },
         "types": {
@@ -6053,7 +6053,7 @@
         }
       },
       "required": [
-        "projectName",
+        "serviceName",
         "$schema",
         "types"
       ],
@@ -7715,6 +7715,24 @@
   },
   {
     "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "worker-manager",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/worker-manager/v1/logs.json"
+  },
+  {
+    "content": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "This service manages workers, including provisioning",
@@ -7846,7 +7864,7 @@
   {
     "content": {
       "$schema": "/schemas/common/logs-reference-v0.json#",
-      "projectName": "taskcluster-worker-manager",
+      "serviceName": "treeherder",
       "types": [
         {
           "description": "The most basic timer.",
@@ -7859,230 +7877,7 @@
         }
       ]
     },
-    "filename": "references/undefined/v1/logs.json"
-  },
-  {
-    "content": {
-      "$schema": "/schemas/common/logs-reference-v0.json#",
-      "projectName": "taskcluster-treeherder",
-      "types": [
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "type": "monitor.timer",
-          "version": 1
-        }
-      ]
-    },
-    "filename": "references/undefined/v1/logs.json"
-  },
-  {
-    "content": {
-      "$schema": "/schemas/common/logs-reference-v0.json#",
-      "projectName": "taskcluster-auth",
-      "types": [
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "type": "monitor.timer",
-          "version": 1
-        }
-      ]
-    },
-    "filename": "references/undefined/v1/logs.json"
-  },
-  {
-    "content": {
-      "$schema": "/schemas/common/logs-reference-v0.json#",
-      "projectName": "taskcluster-built-in-workers",
-      "types": [
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "type": "monitor.timer",
-          "version": 1
-        }
-      ]
-    },
-    "filename": "references/undefined/v1/logs.json"
-  },
-  {
-    "content": {
-      "$schema": "/schemas/common/logs-reference-v0.json#",
-      "projectName": "taskcluster-secrets",
-      "types": [
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "type": "monitor.timer",
-          "version": 1
-        }
-      ]
-    },
-    "filename": "references/undefined/v1/logs.json"
-  },
-  {
-    "content": {
-      "$schema": "/schemas/common/logs-reference-v0.json#",
-      "projectName": "taskcluster-queue",
-      "types": [
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "type": "monitor.timer",
-          "version": 1
-        }
-      ]
-    },
-    "filename": "references/undefined/v1/logs.json"
-  },
-  {
-    "content": {
-      "$schema": "/schemas/common/logs-reference-v0.json#",
-      "projectName": "taskcluster-github",
-      "types": [
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "type": "monitor.timer",
-          "version": 1
-        }
-      ]
-    },
-    "filename": "references/undefined/v1/logs.json"
-  },
-  {
-    "content": {
-      "$schema": "/schemas/common/logs-reference-v0.json#",
-      "projectName": "taskcluster-purge-cache",
-      "types": [
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "type": "monitor.timer",
-          "version": 1
-        }
-      ]
-    },
-    "filename": "references/undefined/v1/logs.json"
-  },
-  {
-    "content": {
-      "$schema": "/schemas/common/logs-reference-v0.json#",
-      "projectName": "taskcluster-notify",
-      "types": [
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "type": "monitor.timer",
-          "version": 1
-        },
-        {
-          "description": "A request to send an email.",
-          "fields": {
-            "address": "The requested recepient of the email."
-          },
-          "type": "email",
-          "version": 1
-        },
-        {
-          "description": "A request to send a pulse message.",
-          "fields": {
-            "routingKey": "The requested routingKey of the message."
-          },
-          "type": "pulse",
-          "version": 1
-        },
-        {
-          "description": "A request to send an irc message.",
-          "fields": {
-            "channel": "A channel (including #), if this is a request to post a message to a channel",
-            "user": "A user, if this is a request to direct message a user"
-          },
-          "type": "irc",
-          "version": 1
-        }
-      ]
-    },
-    "filename": "references/undefined/v1/logs.json"
-  },
-  {
-    "content": {
-      "$schema": "/schemas/common/logs-reference-v0.json#",
-      "projectName": "taskcluster-hooks",
-      "types": [
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "type": "monitor.timer",
-          "version": 1
-        }
-      ]
-    },
-    "filename": "references/undefined/v1/logs.json"
-  },
-  {
-    "content": {
-      "$schema": "/schemas/common/logs-reference-v0.json#",
-      "projectName": "taskcluster-login",
-      "types": [
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "type": "monitor.timer",
-          "version": 1
-        }
-      ]
-    },
-    "filename": "references/undefined/v1/logs.json"
-  },
-  {
-    "content": {
-      "$schema": "/schemas/common/logs-reference-v0.json#",
-      "projectName": "taskcluster-index",
-      "types": [
-        {
-          "description": "The most basic timer.",
-          "fields": {
-            "duration": "The duration in ms of whatever was timed.",
-            "key": "A key that should be unique to the logger prefix."
-          },
-          "type": "monitor.timer",
-          "version": 1
-        }
-      ]
-    },
-    "filename": "references/undefined/v1/logs.json"
+    "filename": "references/treeherder/v1/logs.json"
   },
   {
     "content": {
@@ -8124,6 +7919,24 @@
       "title": "Taskcluster-treeherder Pulse Exchange"
     },
     "filename": "references/treeherder/v1/exchanges.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "secrets",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/secrets/v1/logs.json"
   },
   {
     "content": {
@@ -8212,6 +8025,24 @@
       "title": "Taskcluster Secrets API Documentation"
     },
     "filename": "references/secrets/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "queue",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/queue/v1/logs.json"
   },
   {
     "content": {
@@ -9578,6 +9409,24 @@
   },
   {
     "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "purge-cache",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/purge-cache/v1/logs.json"
+  },
+  {
+    "content": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The purge-cache service is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the API end-point for publishing the pulse\nmessage. This is mainly intended to be used by tools.",
@@ -9650,6 +9499,49 @@
       "title": "Purge Cache API"
     },
     "filename": "references/purge-cache/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "notify",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A request to send an email.",
+          "fields": {
+            "address": "The requested recepient of the email."
+          },
+          "type": "email",
+          "version": 1
+        },
+        {
+          "description": "A request to send a pulse message.",
+          "fields": {
+            "routingKey": "The requested routingKey of the message."
+          },
+          "type": "pulse",
+          "version": 1
+        },
+        {
+          "description": "A request to send an irc message.",
+          "fields": {
+            "channel": "A channel (including #), if this is a request to post a message to a channel",
+            "user": "A user, if this is a request to direct message a user"
+          },
+          "type": "irc",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/notify/v1/logs.json"
   },
   {
     "content": {
@@ -9813,35 +9705,53 @@
       "references": [
         "/references/auth/v1/api.json",
         "/references/auth/v1/exchanges.json",
+        "/references/auth/v1/logs.json",
+        "/references/built-in-workers/v1/logs.json",
         "/references/github/v1/api.json",
         "/references/github/v1/exchanges.json",
+        "/references/github/v1/logs.json",
         "/references/hooks/v1/api.json",
         "/references/hooks/v1/exchanges.json",
+        "/references/hooks/v1/logs.json",
         "/references/index/v1/api.json",
+        "/references/index/v1/logs.json",
         "/references/login/v1/api.json",
+        "/references/login/v1/logs.json",
         "/references/notify/v1/api.json",
         "/references/notify/v1/exchanges.json",
+        "/references/notify/v1/logs.json",
         "/references/purge-cache/v1/api.json",
+        "/references/purge-cache/v1/logs.json",
         "/references/queue/v1/api.json",
         "/references/queue/v1/exchanges.json",
+        "/references/queue/v1/logs.json",
         "/references/secrets/v1/api.json",
+        "/references/secrets/v1/logs.json",
         "/references/treeherder/v1/exchanges.json",
-        "/references/undefined/v1/logs.json",
-        "/references/undefined/v1/logs.json",
-        "/references/undefined/v1/logs.json",
-        "/references/undefined/v1/logs.json",
-        "/references/undefined/v1/logs.json",
-        "/references/undefined/v1/logs.json",
-        "/references/undefined/v1/logs.json",
-        "/references/undefined/v1/logs.json",
-        "/references/undefined/v1/logs.json",
-        "/references/undefined/v1/logs.json",
-        "/references/undefined/v1/logs.json",
-        "/references/undefined/v1/logs.json",
-        "/references/worker-manager/v1/api.json"
+        "/references/treeherder/v1/logs.json",
+        "/references/worker-manager/v1/api.json",
+        "/references/worker-manager/v1/logs.json"
       ]
     },
     "filename": "references/manifest.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "login",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/login/v1/logs.json"
   },
   {
     "content": {
@@ -9882,6 +9792,24 @@
       "title": "Login API"
     },
     "filename": "references/login/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "index",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/index/v1/logs.json"
   },
   {
     "content": {
@@ -9992,6 +9920,24 @@
       "title": "Task Index API Documentation"
     },
     "filename": "references/index/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "hooks",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/hooks/v1/logs.json"
   },
   {
     "content": {
@@ -10290,6 +10236,24 @@
   },
   {
     "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "github",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/github/v1/logs.json"
+  },
+  {
+    "content": {
       "$schema": "/schemas/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The github service publishes a pulse\nmessage for supported github events, translating Github webhook\nevents into pulse messages.\n\nThis document describes the exchange offered by the taskcluster\ngithub service",
@@ -10563,6 +10527,42 @@
       "title": "Taskcluster GitHub API Documentation"
     },
     "filename": "references/github/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "built-in-workers",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/built-in-workers/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "auth",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/auth/v1/logs.json"
   },
   {
     "content": {

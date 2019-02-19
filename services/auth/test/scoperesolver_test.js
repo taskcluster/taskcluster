@@ -11,7 +11,7 @@ const assume = require('assume');
 suite(helper.suiteName(__filename), () => {
   let monitor, monitorBuilder, scopeResolver;
   setup(async () => {
-    monitorBuilder = new MonitorBuilder({projectName: 'mock-auth'});
+    monitorBuilder = new MonitorBuilder({serviceName: 'mock-auth'});
     monitorBuilder.setup({
       mock: true,
     });

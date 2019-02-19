@@ -112,7 +112,7 @@ suite('retry-test', function() {
     }, {rootUrl});
 
     monitorBuilder = new MonitorBuilder({
-      projectName: 'tc-client',
+      serviceName: 'tc-client',
     });
     monitorBuilder.setup({
       mock: true,
@@ -209,7 +209,7 @@ suite('retry-test', function() {
 
   test('Can succeed after 3 attempts (record stats)', async function() {
     let mb = new MonitorBuilder({
-      projectName: 'tc-client',
+      serviceName: 'tc-client',
     });
     mb.setup({
       mock: true,

@@ -1,7 +1,7 @@
 const MonitorBuilder = require('taskcluster-lib-monitor');
 
 const builder = new MonitorBuilder({
-  projectName: 'taskcluster-queue',
+  serviceName: 'queue',
 });
 
 module.exports = builder;

@@ -118,7 +118,7 @@ suite('api/validate', function() {
   let monitorBuilder;
   setup(async () => {
     monitorBuilder = new MonitorBuilder({
-      projectName: 'tc-lib-api-test',
+      serviceName: 'tc-lib-api-test',
     });
     monitorBuilder.setup({
       mock: true,
