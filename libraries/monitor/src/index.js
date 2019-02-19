@@ -3,7 +3,7 @@ const rootdir = require('app-root-dir');
 const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
-const Logger = require('./logger');
+const {Logger, LEVELS} = require('./logger');
 const Monitor = require('./monitor');
 const builtins = require('./builtins');
 
@@ -31,6 +31,7 @@ class MonitorManager {
     assert(/^[a-z][a-zA-Z0-9]*$/.test(name), `Invalid name type ${name}`);
     assert(/^[a-z][a-z0-9.-_]*$/.test(type), `Invalid event type ${type}`);
     assert(!this.types[name], `Cannot register event ${name} twice`);
+    assert(LEVELS[level] !== undefined, `${level} is not a valid level.`);
     assert(Number.isInteger(version), 'Version must be an integer');
     Object.entries(fields).forEach((field, desc) => {
       assert(/^[a-zA-Z0-9_]+$/.test(name), `Invalid field name ${name}.${field}`);
@@ -60,11 +61,17 @@ class MonitorManager {
     metadata = {},
     pretty = false,
     destination = null,
+    verify = false,
   }) {
     if (this.alreadySetup) {
       return this;
     }
     this.alreadySetup = true;
+
+    if (!enable) {
+      patchGlobal = false;
+      processName = null;
+    }
 
     this.mock = mock;
     this.enable = enable;
@@ -72,6 +79,7 @@ class MonitorManager {
     this.subject = 'root';
     this.metadata = metadata;
     this.bailOnUnhandledRejection = bailOnUnhandledRejection;
+    this.verify = verify;
 
     if (level.includes(':')) {
       this.levels = level.split(' ').reduce((o, conf) => {
@@ -127,6 +135,8 @@ class MonitorManager {
 
     this.rootMonitor = new Monitor({
       logger,
+      verify,
+      enable,
       types: this.types,
     });
 
@@ -190,6 +200,8 @@ class MonitorManager {
     metadata = Object.assign({}, this.metadata, metadata);
     return new Monitor({
       types: this.types,
+      verify: this.verify,
+      enable: this.enable,
       logger: new Logger({
         name: `taskcluster.${this.serviceName}.${prefix}`,
         level: this.levels ? this.levels[prefix] || this.levels.root : this.level,

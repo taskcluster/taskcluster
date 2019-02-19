@@ -3,8 +3,10 @@ const serializeError = require('serialize-error');
 const TimeKeeper = require('./timekeeper');
 
 class Monitor {
-  constructor({logger, types = {}}) {
+  constructor({logger, verify = false, enable = true, types = {}}) {
     this._log = logger;
+    this.verify = verify;
+    this.enable = enable;
     this.log = {};
     Object.entries(types).forEach(([name, meta]) => {
       this.register({name, ...meta});
@@ -48,8 +50,12 @@ class Monitor {
    */
   register({name, type, version, level, fields}) {
     assert(!this[name], `Cannot override "${name}" as custom message type.`);
+    const requiredFields = Object.keys(fields);
     this.log[name] = fields => {
-      // TODO: In development (or perhaps on a flag), make assertions about input here
+      if (this.verify) {
+        const providedFields = Object.keys(fields);
+        requiredFields.forEach(f => assert(providedFields.includes(f), `Log message "${name}" must include field "${f}".`));
+      }
       this._log[level](type, {v: version, ...fields});
     };
   }
@@ -129,7 +135,7 @@ class Monitor {
             statusCode: res.statusCode,
             duration: d[0] * 1000 + d[1] / 1000000,
           });
-        } catch (e) {
+        } catch (err) {
           this.reportError(err);
         }
       };
@@ -263,6 +269,9 @@ class Monitor {
   reportError(err, level, extra = {}) {
     if (!(err instanceof Error)) {
       err = new Error(err);
+    }
+    if (!this.enable) {
+      throw err;
     }
     if (level) {
       if (typeof level === 'string') {

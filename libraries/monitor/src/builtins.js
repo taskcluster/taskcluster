@@ -29,7 +29,7 @@ module.exports = [
     description: 'A timer for express endpoints.',
     fields: {
       name: 'The name of the endpoint.',
-      status: 'The http status code that the endpoint resolved with.',
+      statusCode: 'The http status code that the endpoint resolved with.',
       duration: 'The duration in ms of the endpoint.',
     },
   },

@@ -27,6 +27,31 @@ suite('Registry', function() {
     assert.equal(manager.messages.length, 1);
   });
 
+  test('can verify custom types', function() {
+    manager = new MonitorManager({
+      serviceName: 'taskcluster-testing-service',
+    });
+    manager.register({
+      name: 'auditLog',
+      type: 'audit',
+      level: 'info',
+      version: 1,
+      description: 'An example of a custom message type',
+      fields: {
+        foo: 'A foo field. This will be an object with ...',
+        bar: 'A bar field. This will be a string',
+      },
+    });
+    manager.setup({
+      level: 'debug',
+      mock: true,
+      verify: true,
+    });
+    monitor = manager.monitor();
+    monitor.log.auditLog({foo: {}, bar: 'hi'});
+    assert.throws(() => monitor.log.auditLog({foo: null}), /"auditLog" must include field "bar"/);
+  });
+
   test('can publish types', function() {
     manager = new MonitorManager({
       serviceName: 'taskcluster-testing-service',

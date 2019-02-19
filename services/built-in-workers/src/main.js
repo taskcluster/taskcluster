@@ -16,8 +16,8 @@ const load = loader({
     setup: ({process, profile, cfg}) => monitorManager.setup({
       level: cfg.app.level,
       enable: cfg.monitoring.enable,
-      mock: profile !== 'production',
       processName: process,
+      verify: profile !== 'production',
     }),
   },
 

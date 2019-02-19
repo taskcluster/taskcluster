@@ -52,7 +52,7 @@ const load = Loader({
         level: cfg.app.level,
         enable: cfg.monitoring.enable,
         processName: process,
-        mock: profile === 'test',
+        verify: profile !== 'production',
       });
     },
   },

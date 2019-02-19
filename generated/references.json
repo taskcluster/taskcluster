@@ -7741,7 +7741,7 @@
           "fields": {
             "duration": "The duration in ms of the endpoint.",
             "name": "The name of the endpoint.",
-            "status": "The http status code that the endpoint resolved with."
+            "statusCode": "The http status code that the endpoint resolved with."
           },
           "type": "monitor.express",
           "version": 1
@@ -7965,7 +7965,7 @@
           "fields": {
             "duration": "The duration in ms of the endpoint.",
             "name": "The name of the endpoint.",
-            "status": "The http status code that the endpoint resolved with."
+            "statusCode": "The http status code that the endpoint resolved with."
           },
           "type": "monitor.express",
           "version": 1
@@ -8100,7 +8100,7 @@
           "fields": {
             "duration": "The duration in ms of the endpoint.",
             "name": "The name of the endpoint.",
-            "status": "The http status code that the endpoint resolved with."
+            "statusCode": "The http status code that the endpoint resolved with."
           },
           "type": "monitor.express",
           "version": 1
@@ -8282,7 +8282,7 @@
           "fields": {
             "duration": "The duration in ms of the endpoint.",
             "name": "The name of the endpoint.",
-            "status": "The http status code that the endpoint resolved with."
+            "statusCode": "The http status code that the endpoint resolved with."
           },
           "type": "monitor.express",
           "version": 1
@@ -9739,7 +9739,7 @@
           "fields": {
             "duration": "The duration in ms of the endpoint.",
             "name": "The name of the endpoint.",
-            "status": "The http status code that the endpoint resolved with."
+            "statusCode": "The http status code that the endpoint resolved with."
           },
           "type": "monitor.express",
           "version": 1
@@ -9908,7 +9908,7 @@
           "fields": {
             "duration": "The duration in ms of the endpoint.",
             "name": "The name of the endpoint.",
-            "status": "The http status code that the endpoint resolved with."
+            "statusCode": "The http status code that the endpoint resolved with."
           },
           "type": "monitor.express",
           "version": 1
@@ -10219,7 +10219,7 @@
           "fields": {
             "duration": "The duration in ms of the endpoint.",
             "name": "The name of the endpoint.",
-            "status": "The http status code that the endpoint resolved with."
+            "statusCode": "The http status code that the endpoint resolved with."
           },
           "type": "monitor.express",
           "version": 1
@@ -10353,7 +10353,7 @@
           "fields": {
             "duration": "The duration in ms of the endpoint.",
             "name": "The name of the endpoint.",
-            "status": "The http status code that the endpoint resolved with."
+            "statusCode": "The http status code that the endpoint resolved with."
           },
           "type": "monitor.express",
           "version": 1
@@ -10557,7 +10557,7 @@
           "fields": {
             "duration": "The duration in ms of the endpoint.",
             "name": "The name of the endpoint.",
-            "status": "The http status code that the endpoint resolved with."
+            "statusCode": "The http status code that the endpoint resolved with."
           },
           "type": "monitor.express",
           "version": 1
@@ -10946,7 +10946,7 @@
           "fields": {
             "duration": "The duration in ms of the endpoint.",
             "name": "The name of the endpoint.",
-            "status": "The http status code that the endpoint resolved with."
+            "statusCode": "The http status code that the endpoint resolved with."
           },
           "type": "monitor.express",
           "version": 1
@@ -11316,7 +11316,7 @@
           "fields": {
             "duration": "The duration in ms of the endpoint.",
             "name": "The name of the endpoint.",
-            "status": "The http status code that the endpoint resolved with."
+            "statusCode": "The http status code that the endpoint resolved with."
           },
           "type": "monitor.express",
           "version": 1
@@ -11410,7 +11410,7 @@
           "fields": {
             "duration": "The duration in ms of the endpoint.",
             "name": "The name of the endpoint.",
-            "status": "The http status code that the endpoint resolved with."
+            "statusCode": "The http status code that the endpoint resolved with."
           },
           "type": "monitor.express",
           "version": 1

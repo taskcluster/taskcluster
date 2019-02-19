@@ -30,6 +30,10 @@ defaults:
     project: !env MONITORING_PROJECT
     enable: !env:bool MONITORING_ENABLE
 
+test:
+  monitoring:
+    enable: false
+
 staging:
   pulse:
     queueName: taskcluster-treeherder-staging

@@ -53,7 +53,7 @@ exports.monitor = () => {
     serviceName: 'foo',
   });
   monitorManager.setup({
-    enable: false,
+    mock: true,
   });
   return monitorManager.monitor();
 };

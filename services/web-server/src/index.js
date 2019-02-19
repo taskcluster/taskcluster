@@ -30,8 +30,8 @@ const load = loader(
         monitorManager.setup({
           projectName: cfg.monitoring.project,
           credentials: cfg.taskcluster.credentials,
-          mock: cfg.monitoring.mock,
           enable: cfg.monitoring.enable,
+          verify: profile !== 'production',
         }),
     },
 
