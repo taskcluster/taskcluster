@@ -21,9 +21,6 @@ import secretsQuery from './secrets.graphql';
       secretsConnection: {
         limit: VIEW_SECRETS_PAGE_SIZE,
       },
-      filter: {
-        name: { $regex: '' },
-      },
     },
   }),
 })
@@ -35,7 +32,6 @@ import secretsQuery from './secrets.graphql';
 export default class ViewSecrets extends Component {
   state = {
     secretSearch: '',
-    value: null,
   };
 
   handleSecretSearchSubmit = secretSearch => {
@@ -49,9 +45,7 @@ export default class ViewSecrets extends Component {
       secretsConnection: {
         limit: VIEW_SECRETS_PAGE_SIZE,
       },
-      filter: {
-        ...(secretSearch ? { $regex: secretSearch } : null),
-      },
+      filter: secretSearch ? { name: { $regex: secretSearch } } : null,
     });
   };
 
@@ -72,13 +66,9 @@ export default class ViewSecrets extends Component {
           cursor,
           previousCursor,
         },
-        ...(this.state.secretSearch
-          ? {
-              filter: {
-                $regex: this.state.secretSearch,
-              },
-            }
-          : null),
+        filter: this.state.secretSearch
+          ? { name: { $regex: this.state.secretSearch } }
+          : null,
       },
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } = fetchMoreResult.secrets;
@@ -98,17 +88,12 @@ export default class ViewSecrets extends Component {
     });
   };
 
-  handleSecretSearchChange = ({ target: { value } }) => {
-    this.setState({ value });
-  };
-
   render() {
     const {
       classes,
       description,
       data: { loading, error, secrets },
     } = this.props;
-    const { value } = this.state;
 
     return (
       <Dashboard
@@ -118,8 +103,6 @@ export default class ViewSecrets extends Component {
           <Search
             disabled={loading}
             onSubmit={this.handleSecretSearchSubmit}
-            onChange={this.handleSecretSearchChange}
-            value={value}
             placeholder="Secret contains"
           />
         }>
