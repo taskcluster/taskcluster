@@ -97,7 +97,7 @@ class Monitor {
         const d = process.hrtime(start);
         for (let stat of [success, 'all']) {
           const k = [name, stat].join('.');
-          this._log.info('monitor.timedHandler', {
+          this.log.handlerTimer({
             key: k,
             duration: d[0] * 1000 + d[1] / 1000000,
           });
@@ -124,7 +124,7 @@ class Monitor {
 
           const d = process.hrtime(start);
 
-          this._log.info('monitor.express', {
+          this.log.expressTimer({
             name,
             statusCode: res.statusCode,
             duration: d[0] * 1000 + d[1] / 1000000,
@@ -156,7 +156,7 @@ class Monitor {
       const r = makeRequest.call(this, operation, params, callback);
       r.on('complete', () => {
         const requestTime = (new Date()).getTime() - r.startTime.getTime();
-        monitor.info('monitor.aws', {
+        monitor.log.awsTimer({
           service: service.serviceIdentifier,
           operation,
           duration: requestTime,
@@ -208,7 +208,7 @@ class Monitor {
     this._resourceInterval = setInterval(() => {
       lastCpuUsage = process.cpuUsage(lastCpuUsage);
       lastMemoryUsage = process.memoryUsage(lastMemoryUsage);
-      this._log.info('monitor.resources', {lastCpuUsage, lastMemoryUsage});
+      this.log.resourceMetrics({lastCpuUsage, lastMemoryUsage});
     }, interval * 1000);
 
     return () => this.stopResourceMonitoring();
@@ -234,7 +234,7 @@ class Monitor {
       this.reportError(err, {key, val});
       return;
     }
-    this._log.info('monitor.count', {key, val});
+    this.log.countMetric({key, val});
   }
 
   /*
@@ -249,7 +249,7 @@ class Monitor {
       this.reportError(err, {key, val});
       return;
     }
-    this._log.info('monitor.measure', {key, val});
+    this.log.measureMetric({key, val});
   }
 
   /**
@@ -271,7 +271,7 @@ class Monitor {
         extra = level;
       }
     }
-    this.err('monitor.error', Object.assign({}, serializeError(err), extra));
+    this.log.errorReport(Object.assign({}, serializeError(err), extra));
   }
 }
 

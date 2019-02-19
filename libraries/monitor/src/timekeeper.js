@@ -27,7 +27,7 @@ class TimeKeeper {
     }
     this.submitted = true;
     const d = process.hrtime(this.start);
-    this.monitor.info('timekeeper', Object.assign({
+    this.monitor.log.timekeeper(Object.assign({
       key: this.name,
       duration: d[0] * 1000 + d[1] / 1000000,
     }, extra));

@@ -7726,6 +7726,82 @@
           },
           "type": "monitor.timer",
           "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "status": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
         }
       ]
     },
@@ -7874,6 +7950,82 @@
           },
           "type": "monitor.timer",
           "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "status": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
         }
       ]
     },
@@ -7932,6 +8084,82 @@
             "key": "A key that should be unique to the logger prefix."
           },
           "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "status": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
           "version": 1
         }
       ]
@@ -8038,6 +8266,82 @@
             "key": "A key that should be unique to the logger prefix."
           },
           "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "status": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
           "version": 1
         }
       ]
@@ -9420,6 +9724,82 @@
           },
           "type": "monitor.timer",
           "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "status": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
         }
       ]
     },
@@ -9512,6 +9892,82 @@
             "key": "A key that should be unique to the logger prefix."
           },
           "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "status": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
           "version": 1
         },
         {
@@ -9748,6 +10204,82 @@
           },
           "type": "monitor.timer",
           "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "status": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
         }
       ]
     },
@@ -9805,6 +10337,82 @@
             "key": "A key that should be unique to the logger prefix."
           },
           "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "status": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
           "version": 1
         }
       ]
@@ -9933,6 +10541,82 @@
             "key": "A key that should be unique to the logger prefix."
           },
           "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "status": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
           "version": 1
         }
       ]
@@ -10247,6 +10931,82 @@
           },
           "type": "monitor.timer",
           "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "status": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
         }
       ]
     },
@@ -10541,6 +11301,82 @@
           },
           "type": "monitor.timer",
           "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "status": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
         }
       ]
     },
@@ -10558,6 +11394,82 @@
             "key": "A key that should be unique to the logger prefix."
           },
           "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "status": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
           "version": 1
         }
       ]
