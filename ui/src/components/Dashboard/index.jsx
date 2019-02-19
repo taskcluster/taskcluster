@@ -7,7 +7,7 @@ import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
-import Hidden from '@material-ui/core/Hidden';
+import withWidth from '@material-ui/core/withWidth';
 import Divider from '@material-ui/core/Divider';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
@@ -28,6 +28,7 @@ import ErrorPanel from '../ErrorPanel';
 import DocsSidebarList from './DocsSidebarList';
 
 @withRouter
+@withWidth()
 @withStyles(
   theme => ({
     root: {
@@ -43,9 +44,6 @@ import DocsSidebarList from './DocsSidebarList';
       position: 'fixed',
       backgroundColor: theme.palette.secondary.dark,
       zIndex: theme.zIndex.drawer + 1,
-      [theme.breakpoints.up('md')]: {
-        width: `calc(100% - ${theme.drawerWidth}px)`,
-      },
     },
     docsAppBar: {
       [theme.breakpoints.up('md')]: {
@@ -56,14 +54,10 @@ import DocsSidebarList from './DocsSidebarList';
       width: `calc(100% - ${theme.docsDrawerWidth}px)`,
     },
     appBarTitle: {
+      marginLeft: theme.spacing.unit,
       fontFamily: 'Roboto300',
       flex: 1,
       color: THEME.PRIMARY_TEXT_DARK,
-    },
-    navIconHide: {
-      [theme.breakpoints.up('md')]: {
-        display: 'none',
-      },
     },
     toolbar: {
       ...theme.mixins.toolbar,
@@ -116,10 +110,6 @@ import DocsSidebarList from './DocsSidebarList';
       [theme.breakpoints.up('sm')]: {
         minHeight: 'calc(100vh - 64px)',
         marginTop: 64,
-      },
-      [theme.breakpoints.up('md')]: {
-        marginLeft: theme.drawerWidth,
-        width: `calc(100% - ${theme.drawerWidth}px)`,
       },
     },
     docsContent: {
@@ -190,14 +180,14 @@ export default class Dashboard extends Component {
   }
 
   state = {
-    mobileOpen: false,
+    navOpen: false,
     showHelpView: false,
     error: null,
     showLogo: false,
   };
 
   handleDrawerToggle = () => {
-    this.setState({ mobileOpen: !this.state.mobileOpen });
+    this.setState({ navOpen: !this.state.navOpen });
   };
 
   handleHelpViewToggle = () => {
@@ -221,20 +211,14 @@ export default class Dashboard extends Component {
       onToggleTheme,
       docs,
       history,
+      width,
       staticContext: _,
       ...props
     } = this.props;
-    const { error, mobileOpen, showHelpView, showLogo } = this.state;
+    const { error, navOpen, showHelpView, showLogo } = this.state;
     const drawer = (
       <div>
         <div className={classes.toolbar}>
-          <IconButton
-            color="inherit"
-            aria-label="close drawer"
-            onClick={this.handleDrawerToggle}
-            className={classes.navIconHide}>
-            <MenuIcon />
-          </IconButton>
           <Typography
             onMouseEnter={this.handleTitleToggle}
             onMouseLeave={this.handleTitleToggle}
@@ -262,6 +246,7 @@ export default class Dashboard extends Component {
       </div>
     );
     const isDocs = history.location.pathname.startsWith(DOCS_PATH_PREFIX);
+    const isMobileView = width === 'sm' || width === 'xs';
 
     return (
       <div className={classes.root}>
@@ -272,13 +257,15 @@ export default class Dashboard extends Component {
             [classes.docsAppBar]: isDocs,
           })}>
           <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={this.handleDrawerToggle}
-              className={classes.navIconHide}>
-              <MenuIcon className={classes.appIcon} />
-            </IconButton>
+            {(!isDocs || (isDocs && isMobileView)) && (
+              <IconButton
+                color="inherit"
+                aria-label="toggle drawer"
+                onClick={this.handleDrawerToggle}
+                className={classes.navIconHide}>
+                <MenuIcon className={classes.appIcon} />
+              </IconButton>
+            )}
             <Typography variant="h6" noWrap className={classes.appBarTitle}>
               {title}
             </Typography>
@@ -313,38 +300,30 @@ export default class Dashboard extends Component {
             )}
           </Toolbar>
         </AppBar>
-        <Hidden mdUp>
-          <Drawer
-            variant="temporary"
-            anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-            open={mobileOpen}
-            onClose={this.handleDrawerToggle}
-            classes={{
-              paper: classNames(classes.drawerPaper, {
-                [classes.docsDrawerPaper]: isDocs,
-              }),
-            }}
-            ModalProps={{
-              keepMounted: true,
-            }}>
-            {drawer}
-          </Drawer>
-        </Hidden>
-        <Hidden smDown implementation="css">
-          <Drawer
-            variant="permanent"
-            open
-            PaperProps={{
-              elevation: 2,
-            }}
-            classes={{
-              paper: classNames(classes.drawerPaper, {
-                [classes.docsDrawerPaper]: isDocs,
-              }),
-            }}>
-            {drawer}
-          </Drawer>
-        </Hidden>
+        <Drawer
+          {...(isDocs && !isMobileView
+            ? {
+                variant: 'permanent',
+              }
+            : {
+                variant: 'temporary',
+                open: navOpen,
+                onClose: this.handleDrawerToggle,
+              })}
+          anchor={theme.direction === 'rtl' ? 'right' : 'left'}
+          PaperProps={{
+            elevation: 2,
+          }}
+          ModalProps={{
+            keepMounted: true,
+          }}
+          classes={{
+            paper: classNames(classes.drawerPaper, {
+              [classes.docsDrawerPaper]: isDocs,
+            }),
+          }}>
+          {drawer}
+        </Drawer>
         <Drawer
           variant="temporary"
           anchor={theme.direction === 'rtl' ? 'left' : 'right'}

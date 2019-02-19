@@ -15,9 +15,6 @@ import Emoticon from './Emoticon';
       height: '50%',
       right: 0,
       width: '100%',
-      [theme.breakpoints.up('md')]: {
-        width: `calc(100% - ${theme.drawerWidth}px)`,
-      },
     },
     docsEmoticonWidth: {
       [theme.breakpoints.up('md')]: {
