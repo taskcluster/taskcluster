@@ -387,6 +387,7 @@ and reports back results to the queue.
     75     Not able to create an ed25519 key pair.
     76     Not able to save generic-worker config file after applying defaults and reading
            config in from external sources, such as AWS/GCP metadata and taskcluster secrets.
+    77     Not able to secure the config file.
 `
 }
 
