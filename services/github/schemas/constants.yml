@@ -11,7 +11,7 @@ github-guid-pattern: "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{
 
 identifier-pattern:     "^([a-zA-Z0-9-_]*)$"
 identifier-min-length:  1
-identifier-max-length:  22
+identifier-max-length:  38
 
 github-installation-minimum: 0
 github-installation-maximum: 10000000000

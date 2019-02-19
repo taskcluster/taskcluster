@@ -3,7 +3,7 @@ title: "Ruleset"
 description: |
   Ruleset
 type: array
-items: 
+items:
   type: object
   properties:
     id:
@@ -12,6 +12,7 @@ items:
       type: ['object', 'null']
       additionalProperties:
         type: string
+      required: []
     values:
       type: object
     description:

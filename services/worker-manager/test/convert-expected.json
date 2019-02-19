@@ -1,18 +1,18 @@
 {
-  "id": "legacy_gecko-3-b-linux",
+  "id": "legacy_gecko-3-b-linux-extended-extended",
   "providerIds": [
     "aws-ec2-spot"
   ],
   "biddingStrategyId": "queue-pending-ratio",
   "workerTypes": [
-    "gecko-3-b-linux"
+    "gecko-3-b-linux-extended-extended"
   ],
   "rules": [
     {
       "id": "rule_queue-pending-ratio",
-      "description": "gecko-3-b-linux Bidding Strategy Rules",
+      "description": "gecko-3-b-linux-extended-extended Bidding Strategy Rules",
       "conditions": {
-        "workerType": "gecko-3-b-linux",
+        "workerType": "gecko-3-b-linux-extended-extended",
         "biddingStrategyId": "queue-pending-ratio"
       },
       "values": {
@@ -26,10 +26,10 @@
       }
     },
     {
-      "id": "rule_gecko-3-b-linux_metadata",
-      "description": "gecko-3-b-linux metadata",
+      "id": "rule_gecko-3-b-linux-extended-extended_metadata",
+      "description": "gecko-3-b-linux-extended-extended metadata",
       "conditions": {
-        "workerType": "gecko-3-b-linux"
+        "workerType": "gecko-3-b-linux-extended-extended"
       },
       "values": {
         "documentationData": {},
@@ -38,7 +38,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-east-1",
-      "description": "gecko-3-b-linux aws-ec2-spot us-east-1 specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-east-1 specialisations",
       "conditions": {
         "region": "us-east-1"
       },
@@ -57,7 +57,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-west-1",
-      "description": "gecko-3-b-linux aws-ec2-spot us-west-1 specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-west-1 specialisations",
       "conditions": {
         "region": "us-west-1"
       },
@@ -76,7 +76,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-west-2",
-      "description": "gecko-3-b-linux aws-ec2-spot us-west-2 specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-west-2 specialisations",
       "conditions": {
         "region": "us-west-2"
       },
@@ -95,7 +95,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_c5d.4xlarge",
-      "description": "gecko-3-b-linux aws-ec2-spot c5d.4xlarge specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot c5d.4xlarge specialisations",
       "conditions": {
         "instanceType": "c5d.4xlarge"
       },
@@ -114,7 +114,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_m5d.4xlarge",
-      "description": "gecko-3-b-linux aws-ec2-spot m5d.4xlarge specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot m5d.4xlarge specialisations",
       "conditions": {
         "instanceType": "m5d.4xlarge"
       },
@@ -133,7 +133,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_c5.4xlarge",
-      "description": "gecko-3-b-linux aws-ec2-spot c5.4xlarge specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot c5.4xlarge specialisations",
       "conditions": {
         "instanceType": "c5.4xlarge"
       },
@@ -162,7 +162,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_m5.4xlarge",
-      "description": "gecko-3-b-linux aws-ec2-spot m5.4xlarge specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot m5.4xlarge specialisations",
       "conditions": {
         "instanceType": "m5.4xlarge"
       },
@@ -191,7 +191,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_c4.4xlarge",
-      "description": "gecko-3-b-linux aws-ec2-spot c4.4xlarge specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot c4.4xlarge specialisations",
       "conditions": {
         "instanceType": "c4.4xlarge"
       },
@@ -220,7 +220,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_m4.4xlarge",
-      "description": "gecko-3-b-linux aws-ec2-spot m4.4xlarge specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot m4.4xlarge specialisations",
       "conditions": {
         "instanceType": "m4.4xlarge"
       },
@@ -249,7 +249,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-east-1a",
-      "description": "gecko-3-b-linux aws-ec2-spot us-east-1a specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-east-1a specialisations",
       "conditions": {
         "availabilityZone": "us-east-1a"
       },
@@ -267,7 +267,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-east-1b",
-      "description": "gecko-3-b-linux aws-ec2-spot us-east-1b specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-east-1b specialisations",
       "conditions": {
         "availabilityZone": "us-east-1b"
       },
@@ -285,7 +285,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-east-1c",
-      "description": "gecko-3-b-linux aws-ec2-spot us-east-1c specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-east-1c specialisations",
       "conditions": {
         "availabilityZone": "us-east-1c"
       },
@@ -303,7 +303,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-east-1d",
-      "description": "gecko-3-b-linux aws-ec2-spot us-east-1d specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-east-1d specialisations",
       "conditions": {
         "availabilityZone": "us-east-1d"
       },
@@ -321,7 +321,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-east-1e",
-      "description": "gecko-3-b-linux aws-ec2-spot us-east-1e specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-east-1e specialisations",
       "conditions": {
         "availabilityZone": "us-east-1e"
       },
@@ -339,7 +339,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-east-1f",
-      "description": "gecko-3-b-linux aws-ec2-spot us-east-1f specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-east-1f specialisations",
       "conditions": {
         "availabilityZone": "us-east-1f"
       },
@@ -357,7 +357,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-west-1b",
-      "description": "gecko-3-b-linux aws-ec2-spot us-west-1b specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-west-1b specialisations",
       "conditions": {
         "availabilityZone": "us-west-1b"
       },
@@ -375,7 +375,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-west-1c",
-      "description": "gecko-3-b-linux aws-ec2-spot us-west-1c specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-west-1c specialisations",
       "conditions": {
         "availabilityZone": "us-west-1c"
       },
@@ -393,7 +393,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-west-2a",
-      "description": "gecko-3-b-linux aws-ec2-spot us-west-2a specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-west-2a specialisations",
       "conditions": {
         "availabilityZone": "us-west-2a"
       },
@@ -411,7 +411,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-west-2b",
-      "description": "gecko-3-b-linux aws-ec2-spot us-west-2b specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-west-2b specialisations",
       "conditions": {
         "availabilityZone": "us-west-2b"
       },
@@ -429,7 +429,7 @@
     },
     {
       "id": "rule_aws-ec2-spot_us-west-2c",
-      "description": "gecko-3-b-linux aws-ec2-spot us-west-2c specialisations",
+      "description": "gecko-3-b-linux-extended-extended aws-ec2-spot us-west-2c specialisations",
       "conditions": {
         "availabilityZone": "us-west-2c"
       },

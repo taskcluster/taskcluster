@@ -12,9 +12,15 @@ items:
     provisionerId:
       type: string
       description: ProvisionerId associated with the workerType.
+      minLength:    {$const: identifier-min-length}
+      maxLength:    {$const: identifier-max-length}
+      pattern:      {$const: identifier-pattern}
     workerType:
       type: string
       description: Workertype cache exists on.
+      minLength:    {$const: identifier-min-length}
+      maxLength:    {$const: identifier-max-length}
+      pattern:      {$const: identifier-pattern}
     cacheName:
       type: string
       description: Name of cache to purge.

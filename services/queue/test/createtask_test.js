@@ -17,9 +17,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   // Use the same task definition for everything
   const taskDef = {
-    provisionerId: 'no-provisioner',
-    workerType: 'test-worker',
-    schedulerId: 'my-scheduler',
+    provisionerId: 'no-provisioner-extended-extended',
+    workerType: 'test-worker-extended-extended',
+    schedulerId: 'my-scheduler-extended-extended',
     taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
     // let's just test a large routing key too, 90 chars please :)
     routes: ['--- long routing key ---.--- long routing key ---.' +
@@ -53,7 +53,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     const taskId = slugid.v4();
 
     helper.scopes(
-      'queue:create-task:no-provisioner/test-worker',
+      'queue:create-task:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:route:*',
     );
 
@@ -128,7 +128,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     const taskId = slugid.v4();
 
     helper.scopes(
-      'queue:define-task:no-provisioner/test-worker',
+      'queue:define-task:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:route:---*',
     );
 
@@ -148,7 +148,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     helper.scopes(
       'queue:schedule-task',
-      'assume:scheduler-id:my-scheduler/dSlITZ4yQgmvxxAi4A8fHQ',
+      'assume:scheduler-id:my-scheduler-extended-extended/dSlITZ4yQgmvxxAi4A8fHQ',
     );
     const r1 = await helper.queue.scheduleTask(taskId);
     helper.checkNextMessage('task-pending', m =>
@@ -241,8 +241,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('Minimum task definition with all possible defaults', async () => {
     const taskDef = {
-      provisionerId: 'no-provisioner',
-      workerType: 'test-worker',
+      provisionerId: 'no-provisioner-extended-extended',
+      workerType: 'test-worker-extended-extended',
       created: taskcluster.fromNowJSON(),
       deadline: taskcluster.fromNowJSON('3 days'),
       payload: {},
@@ -256,7 +256,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     const taskId = slugid.v4();
 
     helper.scopes(
-      'queue:create-task:no-provisioner/test-worker',
+      'queue:create-task:no-provisioner-extended-extended/test-worker-extended-extended',
     );
 
     debug('### Creating task');
@@ -272,8 +272,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   const makePriorityTask = (priority) => {
     return {
-      provisionerId: 'no-provisioner',
-      workerType: 'test-worker',
+      provisionerId: 'no-provisioner-extended-extended',
+      workerType: 'test-worker-extended-extended',
       priority: priority,
       schedulerId: 'test-run',
       created: taskcluster.fromNowJSON(),
@@ -290,7 +290,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('Can create "high" w. queue:create-task:high:<provisionerId>/<workerType>', async () => {
     helper.scopes(
-      'queue:create-task:high:no-provisioner/test-worker',
+      'queue:create-task:high:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:scheduler-id:test-run',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('high'));
@@ -298,7 +298,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('Can create "high" w. queue:create-task:highest:<provisionerId>/<workerType>', async () => {
     helper.scopes(
-      'queue:create-task:highest:no-provisioner/test-worker',
+      'queue:create-task:highest:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:scheduler-id:test-run',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('high'));
@@ -306,7 +306,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('Can\'t create "high" with queue:create-task:low:<provisionerId>/<workerType>', async () => {
     helper.scopes(
-      'queue:create-task:low:no-provisioner/test-worker',
+      'queue:create-task:low:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:scheduler-id:test-run',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('high')).then(() => {
@@ -318,7 +318,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('Can create "normal" priority task with ..:lowest:.. scope', async () => {
     helper.scopes(
-      'queue:create-task:lowest:no-provisioner/test-worker',
+      'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:scheduler-id:test-run',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('normal'));
@@ -326,14 +326,14 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('Can create "normal" priority task with legacy scope', async () => {
     helper.scopes(
-      'queue:create-task:no-provisioner/test-worker',
+      'queue:create-task:no-provisioner-extended-extended/test-worker-extended-extended',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('normal'));
   });
 
   test('Can create "lowest" priority task with ..:lowest:.. scope', async () => {
     helper.scopes(
-      'queue:create-task:lowest:no-provisioner/test-worker',
+      'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:scheduler-id:test-run',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('lowest'));
@@ -343,7 +343,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     // This is perhaps not intended, but since lowest is treated the same
     // as normal, the legacy scope works for lowest, too.
     helper.scopes(
-      'queue:create-task:no-provisioner/test-worker',
+      'queue:create-task:no-provisioner-extended-extended/test-worker-extended-extended',
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('lowest'));
   });

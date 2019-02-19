@@ -16,7 +16,8 @@
         ],
         "additionalProperties": {
           "type": "string"
-        }
+        },
+        "required": []
       },
       "values": {
         "type": "object"

@@ -1,5 +1,5 @@
 {
-  "workerType": "gecko-3-b-linux",
+  "workerType": "gecko-3-b-linux-extended-extended",
   "minCapacity": 0,
   "maxCapacity": 300,
   "scalingRatio": 0,

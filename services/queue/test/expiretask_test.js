@@ -18,8 +18,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   // Use the same task definition for everything
   const makeTask = (expiration) => {
     const task = {
-      provisionerId: 'no-provisioner',
-      workerType: 'test-worker',
+      provisionerId: 'no-provisioner-extended-extended',
+      workerType: 'test-worker-extended-extended',
       created: taskcluster.fromNowJSON(),
       deadline: taskcluster.fromNowJSON('1 day'),
       // Notice that in config/test.js we've configured
@@ -47,8 +47,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim task');
     const r2 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
 
     debug('### Report task completed');
@@ -80,8 +80,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim task');
     const r2 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
 
     debug('### Report task completed');

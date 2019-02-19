@@ -5,7 +5,7 @@ suite('Bid', () => {
   test('should be able to create a Bid', () => {
     new Bid({
       providerId: 'provider-1',
-      workerType: 'worker-type-1',
+      workerType: 'worker-type-1-extended-extended',
       workerConfigurationId: 'worker-configuration-1',
       expires: new Date(),
       price: 1,
@@ -21,7 +21,7 @@ suite('Bid', () => {
   test('should calculate bid internal value correctly', () => {
     assume(new Bid({
       providerId: 'provider-1',
-      workerType: 'worker-type-1',
+      workerType: 'worker-type-1-extended-extended',
       workerConfigurationId: 'worker-configuration-1',
       expires: new Date(),
       price: 10,

@@ -21,7 +21,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   const makeTask = (priority, workerType) => {
     return {
-      provisionerId: 'no-provisioner',
+      provisionerId: 'no-provisioner-extended-extended',
       workerType: workerType,
       priority: priority,
       created: taskcluster.fromNowJSON(),
@@ -38,14 +38,14 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('claimWork from empty queue', helper.runWithFakeTime(async function() {
     helper.scopes(
-      'queue:claim-work:no-provisioner/' + workerType,
-      'queue:worker-id:my-worker-group/my-worker',
+      'queue:claim-work:no-provisioner-extended-extended/' + workerType,
+      'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
 
     let started = new Date();
-    let result = await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+    let result = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
       tasks: 2,
     });
     assert(result.tasks.length === 0, 'Did not expect any claims');
@@ -56,11 +56,11 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     // wrong provisionerId scope
     helper.scopes(
       'queue:claim-work:wrong-provisioner/' + workerType,
-      'queue:worker-id:my-worker-group/my-worker',
+      'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
-    await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+    await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     }).then(
       () => assert(false, 'Expected error'),
       err => assert(err.code, err.code),
@@ -68,12 +68,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     // wrong workerId scope
     helper.scopes(
-      'queue:claim-work:no-provisioner/' + workerType,
+      'queue:claim-work:no-provisioner-extended-extended/' + workerType,
       'queue:worker-id:my-worker-group/other-worker',
     );
-    await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+    await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     }).then(
       () => assert(false, 'Expected error'),
       err => {
@@ -95,13 +95,13 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claim task');
     // Reduce scopes available to test minimum set of scopes required
     helper.scopes(
-      'queue:claim-work:no-provisioner/' + workerType,
-      'queue:worker-id:my-worker-group/my-worker',
+      'queue:claim-work:no-provisioner-extended-extended/' + workerType,
+      'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     let before = new Date();
-    let r1 = await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+    let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     assert(r1.tasks.length === 1, 'Expected a single task');
     assert(r1.tasks[0].status.taskId === taskId, 'Expected specific taskId');
@@ -141,13 +141,13 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug('### Claim task');
     // Reduce scopes available to test minimum set of scopes required
     helper.scopes(
-      'queue:claim-work:no-provisioner/' + workerType,
-      'queue:worker-id:my-worker-group/my-worker',
+      'queue:claim-work:no-provisioner-extended-extended/' + workerType,
+      'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     let before = new Date();
-    let r1 = await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+    let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     assert(r1.tasks.length === 1, 'Expected a single task');
     assert(r1.tasks[0].status.taskId === taskId, 'Expected specific taskId');
@@ -196,9 +196,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdA));
 
     debug('### ClaimWork');
-    let r1 = await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+    let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
       tasks: 1,
     });
     assert(r1.tasks.length === 1, 'Expected a task');
@@ -206,9 +206,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-running', m => assert.equal(m.payload.status.taskId, taskIdA));
 
     debug('### ClaimWork');
-    let r2 = await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+    let r2 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
       tasks: 1,
     });
     assert(r2.tasks.length === 1, 'Expected a task');
@@ -242,9 +242,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     debug('### Claim task');
     let before = new Date();
-    let r1 = await helper.queue.claimWork('no-provisioner', workerType, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+    let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
       tasks: 2,
     });
     assert(r1.tasks.length === 1, 'Expected a single task');

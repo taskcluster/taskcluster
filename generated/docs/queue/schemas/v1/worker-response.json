@@ -8,7 +8,7 @@
       "title": "Provisioner ID",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "workerType": {
@@ -16,7 +16,7 @@
       "title": "WorkerType name",
       "description": "WorkerType name.\n",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "workerGroup": {
@@ -24,7 +24,7 @@
       "description": "Identifier for group that worker who executes this run is a part of,\nthis identifier is mainly used for efficient routing.\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "workerId": {
@@ -32,7 +32,7 @@
       "description": "Identifier for worker evaluating this run within given\n`workerGroup`.\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "recentTasks": {

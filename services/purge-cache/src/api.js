@@ -5,7 +5,7 @@ const taskcluster = require('taskcluster-client');
 const Entity = require('azure-entities');
 
 // Common patterns URL parameters
-const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,22}$/;
+const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
 
 /** API end-point for version v1/ */
 const builder = new APIBuilder({

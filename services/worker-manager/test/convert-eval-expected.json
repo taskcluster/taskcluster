@@ -26,6 +26,6 @@
       }
     }
   },
-  "workerType": "gecko-3-b-linux",
+  "workerType": "gecko-3-b-linux-extended-extended",
   "schemaData": {}
 }

@@ -24,14 +24,14 @@
       "description": "Identifier for the worker-group within which the last attempt of the task\nran. Not provided, if `deadline` was exceeded before a run was started.\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
     "workerId": {
       "description": "Identifier for the last worker that failed to report, causing the task\nto fail. Not provided, if `deadline` was exceeded before a run\nwas started.\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     }
   },

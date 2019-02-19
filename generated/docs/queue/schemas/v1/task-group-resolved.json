@@ -22,7 +22,7 @@
       "description": "Identifier for the scheduler that created this task-group.\n",
       "type": "string",
       "minLength": 1,
-      "maxLength": 22,
+      "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     }
   },

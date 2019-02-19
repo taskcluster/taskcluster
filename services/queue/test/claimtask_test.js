@@ -18,9 +18,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   // Use the same task definition for everything
   const taskDef = () => ({
-    provisionerId: 'no-provisioner',
-    workerType: 'test-worker',
-    schedulerId: 'my-scheduler',
+    provisionerId: 'no-provisioner-extended-extended',
+    workerType: 'test-worker-extended-extended',
+    schedulerId: 'my-scheduler-extended-extended',
     taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
     routes: [],
     retries: 5,
@@ -51,14 +51,14 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     // Reduce scopes available to test minimum set of scopes required
     helper.scopes(
       'queue:claim-task',
-      'assume:worker-type:no-provisioner/test-worker',
-      'assume:worker-id:my-worker-group/my-worker',
+      'assume:worker-type:no-provisioner-extended-extended/test-worker-extended-extended',
+      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     // First runId is always 0, so we should be able to claim it here
     const before = new Date();
     const r1 = await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
     helper.checkNextMessage('task-running');
 
@@ -107,18 +107,18 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     await helper.queue.createTask(taskId, taskDef());
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
 
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     });
 
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker2',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker2-extended-extended',
     }).then(() => {
       throw new Error('This request should have failed');
     }, (err) => {
@@ -135,13 +135,13 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     // leave out a required scope
     helper.scopes(
-      'assume:worker-type:no-provisioner/test-worker',
+      'assume:worker-type:no-provisioner-extended-extended/test-worker-extended-extended',
       'assume:worker-id:my-worker-group/my-worker',
     );
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     }).then(() => {
       throw new Error('Expected an authentication error');
     }, (err) => {
@@ -157,8 +157,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     );
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     }).then(() => {
       throw new Error('Expected an authentication error');
     }, (err) => {
@@ -170,12 +170,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     // leave out a required scope
     helper.scopes(
       'queue:claim-task',
-      'assume:worker-type:no-provisioner/test-worker',
+      'assume:worker-type:no-provisioner-extended-extended/test-worker-extended-extended',
     );
     // First runId is always 0, so we should be able to claim it here
     await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group',
-      workerId: 'my-worker',
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
     }).then(() => {
       throw new Error('Expected an authentication error');
     }, (err) => {

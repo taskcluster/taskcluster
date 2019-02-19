@@ -1,5 +1,5 @@
 # Things like clientId
-identifier-pattern:       "^[a-zA-Z0-9_-]{1,22}$"
+identifier-pattern:       "^[a-zA-Z0-9_-]{1,38}$"
 access-token-pattern:     "^[a-zA-Z0-9_-]{22,66}$"
 
 # Printable ascii string for roleId
