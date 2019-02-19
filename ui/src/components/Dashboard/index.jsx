@@ -183,7 +183,7 @@ export default class Dashboard extends Component {
   }
 
   state = {
-    drawerOpen: false,
+    drawerOpen: true,
     showHelpView: false,
     error: null,
     showLogo: false,
@@ -304,7 +304,7 @@ export default class Dashboard extends Component {
             )}
           </Toolbar>
         </AppBar>
-        <Hidden mdUp>
+        <Hidden xlUp>
           <Drawer
             variant="temporary"
             anchor={theme.direction === 'rtl' ? 'right' : 'left'}
@@ -317,21 +317,6 @@ export default class Dashboard extends Component {
             }}
             ModalProps={{
               keepMounted: true,
-            }}>
-            {drawer}
-          </Drawer>
-        </Hidden>
-        <Hidden smDown implementation="css">
-          <Drawer
-            variant="temporary"
-            open={drawerOpen}
-            PaperProps={{
-              elevation: 2,
-            }}
-            classes={{
-              paper: classNames(classes.drawerPaper, {
-                [classes.docsDrawerPaper]: isDocs,
-              }),
             }}>
             {drawer}
           </Drawer>
