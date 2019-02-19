@@ -1,14 +1,8 @@
 import { hot } from 'react-hot-loader';
-import React, { lazy, Component } from 'react';
+import React, { Component } from 'react';
 import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
-
-const ViewRoles = lazy(() =>
-  import(/* webpackChunkName: 'Roles.ViewRoles' */ './ViewRoles')
-);
-const ViewRole = lazy(() =>
-  import(/* webpackChunkName: 'Roles.ViewRole' */ './ViewRole')
-);
+import views from './views';
 
 @hot(module)
 export default class Roles extends Component {
@@ -24,17 +18,17 @@ export default class Roles extends Component {
           path={`${path}/create`}
           isNewRole
           {...props}
-          component={ViewRole}
+          component={views.ViewRole}
         />
         <RouteWithProps
           path={`${path}/:roleId`}
           {...props}
-          component={ViewRole}
+          component={views.ViewRole}
         />
         <RouteWithProps
           path={path}
           {...props}
-          component={ViewRoles}
+          component={views.ViewRoles}
           description="Manage roles on Auth service. This tool allows you to create, modify,
       and delete roles. You can also manage scopes and explore indirect scopes."
         />

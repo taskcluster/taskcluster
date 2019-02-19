@@ -1,14 +1,8 @@
 import { hot } from 'react-hot-loader';
-import React, { lazy, Component } from 'react';
+import React, { Component } from 'react';
 import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
-
-const ListHooks = lazy(() =>
-  import(/* webpackChunkName: 'Hooks.ListHooks' */ './ListHooks')
-);
-const ViewHook = lazy(() =>
-  import(/* webpackChunkName: 'Hooks.ViewHook' */ './ViewHook')
-);
+import views from './views';
 
 @hot(module)
 export default class Hooks extends Component {
@@ -24,17 +18,17 @@ export default class Hooks extends Component {
           path={`${path}/create`}
           isNewHook
           {...props}
-          component={ViewHook}
+          component={views.ViewHook}
         />
         <RouteWithProps
           path={`${path}/:hookGroupId/:hookId`}
           {...props}
-          component={ViewHook}
+          component={views.ViewHook}
         />
         <RouteWithProps
           path={path}
           {...props}
-          component={ListHooks}
+          component={views.ListHooks}
           description="Manage hooks: tasks that are created in response to events within CI."
         />
       </Switch>

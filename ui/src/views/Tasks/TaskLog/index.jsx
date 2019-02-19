@@ -39,7 +39,7 @@ export default class TaskLog extends Component {
     const url = decodeURIComponent(match.params.logUrl);
 
     return (
-      <Dashboard disablePadding>
+      <Dashboard title="Log" disablePadding>
         <Log
           url={url}
           stream={stream}

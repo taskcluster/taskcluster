@@ -1,35 +1,8 @@
 import { hot } from 'react-hot-loader';
-import React, { lazy, Component } from 'react';
+import React, { Component } from 'react';
 import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
-
-const NoTask = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.NoTask' */ './NoTask')
-);
-const NoTaskGroup = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.NoTaskGroup' */ './NoTaskGroup')
-);
-const ViewTask = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.ViewTask' */ './ViewTask')
-);
-const TaskLog = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.TaskLog' */ './TaskLog')
-);
-const CreateTask = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.CreateTask' */ './CreateTask')
-);
-const TaskGroup = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.TaskGroup' */ './TaskGroup')
-);
-const TaskIndex = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.TaskIndex' */ './TaskIndex')
-);
-const TaskRedirect = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.TaskRedirect' */ './TaskRedirect')
-);
-const InteractiveConnect = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.InteractiveConnect' */ './InteractiveConnect')
-);
+import views from './views';
 
 @hot(module)
 export default class Task extends Component {
@@ -51,25 +24,25 @@ export default class Task extends Component {
         <RouteWithProps
           path={`${path}/groups/:taskGroupId`}
           {...props}
-          component={TaskGroup}
+          component={views.TaskGroup}
           description={taskGroupDescription}
         />
         <RouteWithProps
           path={`${path}/groups`}
           {...props}
-          component={NoTaskGroup}
+          component={views.NoTaskGroup}
           description={taskGroupDescription}
         />
         <RouteWithProps
           path={`${path}/index`}
           {...props}
-          component={TaskIndex}
+          component={views.TaskIndex}
           description="The generic index browser lets you browse through the hierarchy of namespaces in
       the index, and discover indexed tasks."
         />
         <RouteWithProps
           path={`${path}/create/interactive`}
-          component={CreateTask}
+          component={views.CreateTask}
           description={createTaskDescription}
           interactive
         />
@@ -77,43 +50,43 @@ export default class Task extends Component {
           path={`${path}/create`}
           {...props}
           description={createTaskDescription}
-          component={CreateTask}
+          component={views.CreateTask}
         />
         <RouteWithProps
           path={`${path}/:taskId/runs/:runId/logs/live/:logUrl`}
           stream
           {...props}
-          component={TaskLog}
+          component={views.TaskLog}
         />
         <RouteWithProps
           path={`${path}/:taskId/runs/:runId/logs/:logUrl`}
           {...props}
-          component={TaskLog}
+          component={views.TaskLog}
         />
         <RouteWithProps
           path={`${path}/:taskId/runs/:runId`}
           {...props}
-          component={ViewTask}
+          component={views.ViewTask}
           description={taskDescription}
         />
         <RouteWithProps
           path={`${path}/:taskId/connect`}
-          component={InteractiveConnect}
+          component={views.InteractiveConnect}
         />
         <RouteWithProps
           path={`${path}/:taskId/:action`}
-          component={TaskRedirect}
+          component={views.TaskRedirect}
         />
         <RouteWithProps
           path={`${path}/:taskId`}
           {...props}
-          component={ViewTask}
+          component={views.ViewTask}
           description={taskDescription}
         />
         <RouteWithProps
           path={path}
           {...props}
-          component={NoTask}
+          component={views.NoTask}
           description={taskDescription}
         />
       </Switch>

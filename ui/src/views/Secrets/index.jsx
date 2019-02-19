@@ -1,14 +1,8 @@
 import { hot } from 'react-hot-loader';
-import React, { lazy, Component } from 'react';
+import React, { Component } from 'react';
 import { Switch } from 'react-router-dom';
 import RouteWithProps from '../../components/RouteWithProps';
-
-const ViewSecrets = lazy(() =>
-  import(/* webpackChunkName: 'Secrets.ViewSecrets' */ './ViewSecrets')
-);
-const ViewSecret = lazy(() =>
-  import(/* webpackChunkName: 'Secrets.ViewSecret' */ './ViewSecret')
-);
+import views from './views';
 
 @hot(module)
 export default class Secrets extends Component {
@@ -26,19 +20,19 @@ export default class Secrets extends Component {
           path={`${path}/create`}
           {...props}
           isNewSecret
-          component={ViewSecret}
+          component={views.ViewSecret}
           description={description}
         />
         <RouteWithProps
           path={`${path}/:secret`}
           {...props}
-          component={ViewSecret}
+          component={views.ViewSecret}
           description={description}
         />
         <RouteWithProps
           path={path}
           {...props}
-          component={ViewSecrets}
+          component={views.ViewSecrets}
           description={description}
         />
       </Switch>

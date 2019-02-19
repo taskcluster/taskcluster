@@ -1,6 +1,5 @@
 import React, { Fragment, Component } from 'react';
 import { arrayOf, oneOf, shape } from 'prop-types';
-import { Link } from 'react-router-dom';
 import { pipe, map, sort as rSort } from 'ramda';
 import { lowerCase } from 'change-case';
 import memoize from 'fast-memoize';
@@ -15,6 +14,7 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import TableHead from '@material-ui/core/TableHead';
 import LinkIcon from 'mdi-react/LinkIcon';
 import StatusLabel from '../StatusLabel';
+import Link from '../../utils/Link';
 import sort from '../../utils/sort';
 import { TASK_STATE } from '../../utils/constants';
 import { pageInfo, client } from '../../utils/prop-types';
@@ -194,6 +194,7 @@ export default class TaskGroupTable extends Component {
         <TableRow style={style} className={classes.tableRow}>
           <TableCell padding="dense" className={classes.tableFirstCell}>
             <Link
+              viewName="ViewTask"
               className={classes.tableCell}
               to={`/tasks/${taskGroup.status.taskId}`}>
               <div className={classes.listItemCell}>

@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
 import { arrayOf, shape, string } from 'prop-types';
-import { Link } from 'react-router-dom';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import deepSortObject from 'deep-sort-object';
 import Code from '@mozilla-frontend-infra/components/Code';
@@ -24,6 +23,7 @@ import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
 import { task } from '../../utils/prop-types';
 import urls from '../../utils/urls';
+import Link from '../../utils/Link';
 
 @withStyles(theme => ({
   headline: {
@@ -131,11 +131,10 @@ export default class TaskDetailsCard extends Component {
               <ListItem
                 button
                 className={classes.listItemButton}
-                component={isExternal ? 'a' : Link}
-                to={isExternal ? null : task.metadata.source}
-                href={isExternal ? task.metadata.source : null}
-                target={isExternal ? '_blank' : null}
-                rel={isExternal ? 'noopener noreferrer' : null}>
+                component="a"
+                href={task.metadata.source}
+                target="_blank"
+                rel="noopener noreferrer">
                 <ListItemText
                   className={classes.sourceHeadlineText}
                   classes={{ secondary: classes.sourceHeadline }}
@@ -170,6 +169,7 @@ export default class TaskDetailsCard extends Component {
                   </CopyToClipboard>
                   <IconButton
                     title="View Task Group"
+                    viewName="TaskGroup"
                     component={Link}
                     to={`/tasks/groups/${task.taskGroupId}`}>
                     <LinkIcon />
@@ -223,6 +223,7 @@ export default class TaskDetailsCard extends Component {
                   </CopyToClipboard>
                   <IconButton
                     component={Link}
+                    viewName="ViewWorkers"
                     title="View Workers"
                     to={`/provisioners/${task.provisionerId}/worker-types/${
                       task.workerType
@@ -278,6 +279,7 @@ export default class TaskDetailsCard extends Component {
                           </CopyToClipboard>
                           <IconButton
                             title="View Task"
+                            viewName="ViewTask"
                             component={Link}
                             to={`/tasks/${task.taskId}`}>
                             <LinkIcon />

@@ -1,16 +1,14 @@
 import { hot } from 'react-hot-loader';
-import React, { lazy, Component } from 'react';
+import React, { Component } from 'react';
 import { withAuth } from '../../utils/Auth';
-
-const Home = lazy(() => import(/* webpackChunkName: 'Home' */ '../Home'));
-const Dashboard = lazy(() =>
-  import(/* webpackChunkName: 'Dashboard' */ '../Dashboard')
-);
+import views from './views';
 
 @hot(module)
 @withAuth
 export default class HomeOrDashboard extends Component {
   render() {
+    const { Home, Dashboard } = views;
+
     return this.props.user ? (
       <Dashboard {...this.props} />
     ) : (

@@ -1,84 +1,59 @@
 import { lazy } from 'react';
 import { join } from 'path';
 import { DOCS_PATH_PREFIX } from '../utils/constants';
+import views from './views';
 
 export default [
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'SwitchEntryPoint' */ '../views/SwitchEntryPoint')
-    ),
+    component: views.SwitchEntryPoint,
     path: join(DOCS_PATH_PREFIX, ':path*'),
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'Tasks' */ '../views/Tasks')
-    ),
+    component: views.Tasks,
     path: '/tasks',
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'Provisioners' */ '../views/Provisioners')
-    ),
+    component: views.Provisioners,
     path: '/provisioners',
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'Clients' */ '../views/Clients')
-    ),
+    component: views.Clients,
     path: '/auth/clients',
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'Roles' */ '../views/Roles')
-    ),
+    component: views.Roles,
     path: '/auth/roles',
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'Scopes' */ '../views/Scopes')
-    ),
+    component: views.Scopes,
     path: '/auth/scopes',
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'Hooks' */ '../views/Hooks')
-    ),
+    component: views.Hooks,
     path: '/hooks',
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'AWS Provisioner' */ '../views/AwsProvisioner')
-    ),
+    component: views.AwsProvisioner,
     path: '/aws-provisioner',
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'Secrets' */ '../views/Secrets')
-    ),
+    component: views.Secrets,
     path: '/secrets',
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'CachePurges' */ '../views/CachePurges')
-    ),
+    component: views.CachePurges,
     path: '/purge-caches',
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'PulseMessages' */ '../views/PulseMessages')
-    ),
+    component: views.PulseMessages,
     path: '/pulse-messages',
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'Quickstart' */ '../views/Quickstart')
-    ),
+    component: views.Quickstart,
     path: '/quickstart',
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'Profile' */ '../views/Profile')
-    ),
+    component: views.Profile,
     path: '/profile',
   },
   {
@@ -88,21 +63,15 @@ export default [
     path: '/shell',
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'Displays' */ '../views/Display')
-    ),
+    component: views.Display,
     path: '/display',
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'HomeOrDashboard' */ '../views/HomeOrDashboard')
-    ),
+    component: views.HomeOrDashboard,
     path: '/',
     exact: true,
   },
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'NotFound' */ '../views/NotFound')
-    ),
+    component: views.NotFound,
   },
 ];
