@@ -540,6 +540,53 @@ async function jobHandler(message) {
 
   debug(`handling ${message.payload.details['event.type']} webhook for: ${organization}/${repository}@${sha}`);
 
+  // Try to fetch a .taskcluster.yml file for every request
+  debug(`Trying to fetch the YML for ${organization}/${repository}@${sha}`);
+  let repoconf;
+  try {
+    repoconf = await this.getYml({instGithub, owner: organization, repo: repository, ref: sha});
+  } catch (e) {
+    if (e.name === 'YAMLException') {
+      return await this.createExceptionComment({
+        instGithub,
+        organization: owner,
+        repository: repo,
+        sha: ref,
+        error: e,
+        pullNumber,
+      });
+    }
+    debug(`Error checking yaml for ${organization}/${repository}@${sha}: ${e}`);
+    throw e;
+  }
+  if (!repoconf) { return; }
+
+  let groupState = 'pending';
+  let taskGroupId = 'nonexistent';
+  let graphConfig;
+
+  // Now we can try processing the config and kicking off a task.
+  try {
+    graphConfig = this.intree({
+      config: repoconf,
+      payload: message.payload,
+      validator: context.validator,
+      schema: {
+        0: libUrls.schema(this.rootUrl, 'github', 'v1/taskcluster-github-config.yml'),
+        1: libUrls.schema(this.rootUrl, 'github', 'v1/taskcluster-github-config.v1.yml'),
+      },
+    });
+    if (graphConfig.tasks.length === 0) {
+      debug(`intree config for ${organization}/${repository}@${sha} compiled with zero tasks. Skipping.`);
+      return;
+    }
+  } catch (e) {
+    debug(`.taskcluster.yml for ${organization}/${repository}@${sha} was not formatted correctly. 
+      Leaving comment on Github.`);
+    await this.createExceptionComment({instGithub, organization, repository, sha, error: e, pullNumber});
+    return;
+  }
+
   // Checking pull request permission.
   if (message.payload.details['event.type'].startsWith('pull_request.')) {
     debug(`Checking pull request permission for ${organization}/${repository}@${sha}...`);
@@ -589,53 +636,6 @@ async function jobHandler(message) {
         return;
       }
     }
-  }
-
-  // Try to fetch a .taskcluster.yml file for every request
-  debug(`Trying to fetch the YML for ${organization}/${repository}@${sha}`);
-  let repoconf;
-  try {
-    repoconf = await this.getYml({instGithub, owner: organization, repo: repository, ref: sha});
-  } catch (e) {
-    if (e.name === 'YAMLException') {
-      return await this.createExceptionComment({
-        instGithub,
-        organization: owner,
-        repository: repo,
-        sha: ref,
-        error: e,
-        pullNumber,
-      });
-    }
-    debug(`Error checking yaml for ${organization}/${repository}@${sha}: ${e}`);
-    throw e;
-  }
-  if (!repoconf) { return; }
-
-  let groupState = 'pending';
-  let taskGroupId = 'nonexistent';
-  let graphConfig;
-
-  // Now we can try processing the config and kicking off a task.
-  try {
-    graphConfig = this.intree({
-      config: repoconf,
-      payload: message.payload,
-      validator: context.validator,
-      schema: {
-        0: libUrls.schema(this.rootUrl, 'github', 'v1/taskcluster-github-config.yml'),
-        1: libUrls.schema(this.rootUrl, 'github', 'v1/taskcluster-github-config.v1.yml'),
-      },
-    });
-    if (graphConfig.tasks.length === 0) {
-      debug(`intree config for ${organization}/${repository}@${sha} compiled with zero tasks. Skipping.`);
-      return;
-    }
-  } catch (e) {
-    debug(`.taskcluster.yml for ${organization}/${repository}@${sha} was not formatted correctly. 
-      Leaving comment on Github.`);
-    await this.createExceptionComment({instGithub, organization, repository, sha, error: e, pullNumber});
-    return;
   }
 
   taskGroupId = graphConfig.tasks[0].task.taskGroupId;
