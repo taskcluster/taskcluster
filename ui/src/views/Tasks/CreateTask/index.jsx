@@ -16,6 +16,11 @@ import { withStyles } from '@material-ui/core/styles';
 import Switch from '@material-ui/core/Switch';
 import Typography from '@material-ui/core/Typography';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import LinkIcon from 'mdi-react/LinkIcon';
 import PlusIcon from 'mdi-react/PlusIcon';
 import RotateLeftIcon from 'mdi-react/RotateLeftIcon';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
@@ -32,6 +37,7 @@ import {
 import urls from '../../../utils/urls';
 import createTaskQuery from '../createTask.graphql';
 import Button from '../../../components/Button';
+import db from '../../../utils/db';
 
 const defaultTask = {
   provisionerId: 'aws-provisioner-v1',
@@ -67,6 +73,9 @@ const defaultTask = {
     ...theme.mixins.actionButton,
     right: theme.spacing.unit * 11,
   },
+  listItemButton: {
+    ...theme.mixins.listItemButton,
+  },
 }))
 export default class CreateTask extends Component {
   static defaultProps = {
@@ -85,13 +94,19 @@ export default class CreateTask extends Component {
     createdTaskError: null,
     interactive: false,
     loading: false,
+    recentTaskDefinitions: [],
   };
 
   async componentDidMount() {
     const task = await this.getTask();
+    const recentTaskDefinitions = await db.taskDefinitions
+      .limit(5)
+      .reverse()
+      .toArray();
 
     try {
       this.setState({
+        recentTaskDefinitions,
         interactive: this.props.interactive,
         task: this.parameterizeTask(task),
         error: null,
@@ -132,6 +147,8 @@ export default class CreateTask extends Component {
       const taskId = nice();
       const payload = safeLoad(task);
 
+      db.taskDefinitions.put(payload);
+
       this.setState({ loading: true });
 
       try {
@@ -169,6 +186,12 @@ export default class CreateTask extends Component {
       task: this.parameterizeTask(defaultTask),
       invalid: false,
     });
+
+  handleRecentTaskDefinitionClick = task => {
+    this.setState({
+      task: this.parameterizeTask(task),
+    });
+  };
 
   handleTaskChange = value => {
     try {
@@ -225,6 +248,7 @@ export default class CreateTask extends Component {
       interactive,
       createdTaskId,
       loading,
+      recentTaskDefinitions,
     } = this.state;
 
     if (createdTaskId && interactive) {
@@ -281,6 +305,32 @@ export default class CreateTask extends Component {
                 value={task || ''}
                 onChange={this.handleTaskChange}
               />
+              <br />
+              {Boolean(recentTaskDefinitions.length) && (
+                <List
+                  dense
+                  subheader={
+                    <ListSubheader component="div">
+                      Recent Task Definitions
+                    </ListSubheader>
+                  }>
+                  {this.state.recentTaskDefinitions.map(task => (
+                    <ListItem
+                      className={classes.listItemButton}
+                      button
+                      onClick={() => {
+                        this.handleRecentTaskDefinitionClick(task);
+                      }}
+                      key={task.metadata.name}>
+                      <ListItemText
+                        disableTypography
+                        primary={<Typography>{task.metadata.name}</Typography>}
+                      />
+                      <LinkIcon />
+                    </ListItem>
+                  ))}
+                </List>
+              )}
               <Button
                 spanProps={{ className: classes.createIconSpan }}
                 tooltipProps={{ title: 'Create Task' }}
