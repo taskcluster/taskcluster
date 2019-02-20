@@ -170,38 +170,20 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
         image: nodeImage,
         workingDir: '/app/ui',
         env: ['YARN_CACHE_FOLDER=/cache'],
-        command: ['yarn', 'install'],
-        logfile: `${workDir}/yarn-ui.log`,
+        command: ['bash', '-c', 'yarn install && yarn build'],
+        logfile: `${workDir}/yarn-ui-install.log`,
         utils,
         binds: [
-          `${appDir}:/app/ui`,
+          `${appDir}:/app`,
           `${cacheDir}:/cache`,
         ],
         baseDir,
       });
 
-      utils.step({title: 'Run Yarn Build'});
-
-      await dockerRun({
-        image: nodeImage,
-        workingDir: '/app/ui',
-        command: ['yarn', 'build'],
-        logfile: `${workDir}/yarn.log`,
-        utils,
-        binds: [
-          `${appDir}:/app/ui`,
-        ],
-        baseDir,
-      });
     },
     entrypoints: async (requirements, utils, procs) => {
-      // since we ran `yarn build` already, there's no need to run it again
-      // on startup, so remove it from the entrypoint commands
-      Object.keys(procs).forEach(process => {
-        if (process.startsWith('web-ui/')) {
-          procs[process] = procs[process].replace('yarn build && ', '');
-        }
-      });
+      console.log('👕', JSON.stringify(procs, null, 2));
+      procs['taskcluster-ui'] = 'exec sh nginx -g \'daemon off;\'';
     },
   });
 
