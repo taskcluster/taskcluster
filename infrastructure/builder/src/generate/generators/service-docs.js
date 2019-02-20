@@ -42,7 +42,11 @@ function createReferenceMarkupContent(reference) {
   const name = removeExtension(reference);
 
   return [
-    `---\norder: ${order}\ninline: true\ntitle: ${name}\n---`,
+    '---',
+    `order: ${order}`,
+    'inline: true',
+    `title: ${name}`,
+    '---',
     '',
     // path is relative to <generated-dir>/<service-name>/references
     'import Reference from \'../../../../src/views/Documentation/Reference\'',
