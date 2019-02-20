@@ -261,9 +261,9 @@ exports.dockerPull = async ({baseDir, image, utils}) => {
           // calculate overall progress by assuming that every image must be
           // downloaded and extracted, and that those both take the same amount
           // of time per byte.
-          let total = Object.values(totals).reduce((a, b) => a + b) * 2;
-          let current = Object.values(downloading).reduce((a, b) => a + b) +
-            Object.values(extracting).reduce((a, b) => a + b);
+          let total = Object.values(totals).reduce((a, b) => a + b, 0) * 2;
+          let current = Object.values(downloading).reduce((a, b) => a + b, 0) +
+            Object.values(extracting).reduce((a, b) => a + b, 0);
           utils.status({progress: current * 100 / total});
         }
       });

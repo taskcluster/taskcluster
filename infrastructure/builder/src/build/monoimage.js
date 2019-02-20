@@ -159,6 +159,10 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
   hooks.push({
     name: 'web-ui',
     build: async (requirements, utils, procs) => {
+      const cacheDir = path.join(workDir, 'cache');
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir);
+      }
 
       utils.step({title: 'Run Yarn Install'});
 
@@ -166,8 +170,8 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
         image: nodeImage,
         workingDir: '/app/ui',
         env: ['YARN_CACHE_FOLDER=/cache'],
-        command: ['yarn'],
-        logfile: `${workDir}/yarn.log`,
+        command: ['yarn', 'install'],
+        logfile: `${workDir}/yarn-ui.log`,
         utils,
         binds: [
           `${appDir}:/app/ui`,
@@ -186,7 +190,6 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
         utils,
         binds: [
           `${appDir}:/app/ui`,
-          `${cacheDir}:/cache`,
         ],
         baseDir,
       });
