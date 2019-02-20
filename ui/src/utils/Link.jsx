@@ -1,62 +1,61 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { oneOf } from 'prop-types';
 import { Link as LinkNavigation } from 'react-router-dom';
 import views from '../App/views';
 
-export default class Link extends Component {
-  constructor(props) {
-    super(props);
-    this.fetched = false;
-  }
-
-  static propTypes = {
-    viewName: oneOf(Object.keys(views)),
-  };
-
-  static defaultProps = {
-    viewName: null,
-  };
-
-  prefetch = () => {
-    const { viewName } = this.props;
-
-    if (viewName && !this.fetched) {
+/**
+ * A react hook which augments `react-router-dom`'s `Link` component
+ * with pre-fetching capabilities.
+ */
+export default function Link({ viewName, ...props }) {
+  const [prefetchFlag, setPrefetchFlag] = useState(false);
+  const prefetch = () => {
+    if (viewName && !prefetchFlag) {
       const view = views[viewName];
 
-      this.fetched = true;
+      setPrefetchFlag(true);
       view.preload();
     }
   };
 
-  handleFocus = e => {
-    const { onFocus } = this.props;
+  const handleFocus = e => {
+    const { onFocus } = props;
 
-    this.prefetch();
+    prefetch();
 
     if (onFocus) {
       onFocus(e);
     }
   };
 
-  handleMouseOver = e => {
-    const { onMouseOver } = this.props;
+  const handleMouseOver = e => {
+    const { onMouseOver } = props;
 
-    this.prefetch();
+    prefetch();
 
     if (onMouseOver) {
       onMouseOver(e);
     }
   };
 
-  render() {
-    const { viewName: _, ...props } = this.props;
-
-    return (
-      <LinkNavigation
-        {...props}
-        onFocus={this.handleFocus}
-        onMouseOver={this.handleMouseOver}
-      />
-    );
-  }
+  return (
+    <LinkNavigation
+      {...props}
+      {...(viewName
+        ? {
+            onFocus: handleFocus,
+            onMouseOver: handleMouseOver,
+          }
+        : null)}
+    />
+  );
 }
+
+Link.propTypes = {
+  // The view name
+  viewName: oneOf(Object.keys(views)),
+};
+
+Link.defaultProps = {
+  viewName: null,
+};
