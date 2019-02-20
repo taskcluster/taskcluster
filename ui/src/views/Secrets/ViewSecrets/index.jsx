@@ -73,10 +73,6 @@ export default class ViewSecrets extends Component {
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } = fetchMoreResult.secrets;
 
-        if (!edges.length) {
-          return previousResult;
-        }
-
         return dotProp.set(previousResult, 'secrets', secrets =>
           dotProp.set(
             dotProp.set(secrets, 'edges', edges),
