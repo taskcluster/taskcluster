@@ -159,10 +159,6 @@ export default class Log extends Component {
   };
 
   shouldStartFollowing() {
-    if (!this.props.stream) {
-      return false;
-    }
-
     if (typeof this.state.follow === 'boolean') {
       return this.state.follow;
     }
@@ -217,55 +213,6 @@ export default class Log extends Component {
     );
     const FollowLogButtonRest = omit(['className'], FollowLogButtonProps);
 
-    if (!stream) {
-      return (
-        <ScrollFollow
-          startFollowing={this.state.follow}
-          render={({ follow }) => (
-            <Fragment>
-              <LazyLog
-                containerStyle={containerStyle}
-                url={url}
-                onScroll={this.handleScroll}
-                selectableLines
-                follow={follow}
-                highlight={highlight}
-                onHighlight={this.handleHighlight}
-                scrollToLine={scrollToLine}
-                scrollToAlignment="start"
-                lineClassName={classes.line}
-                highlightLineClassName={classes.highlight}
-                loadingComponent={Loading}
-                extraLines={5}
-                {...props}
-              />
-              {rawLogButton}
-              <GoToLineButton
-                onLineNumberChange={this.handleLineNumberChange}
-                {...GoToLineButtonProps}
-              />
-              <Button
-                spanProps={{
-                  className:
-                    FollowLogButtonProps && FollowLogButtonProps.className,
-                }}
-                tooltipProps={{ title: follow ? 'Unfollow Log' : 'Follow Log' }}
-                variant="round"
-                className={classNames({
-                  [classes.followButtonFollowing]: follow,
-                })}
-                color={follow ? 'inherit' : 'secondary'}
-                onClick={this.handleFollowClick}
-                {...FollowLogButtonRest}>
-                <ArrowDownBoldCircleOutlineIcon />
-              </Button>
-              {actions}
-            </Fragment>
-          )}
-        />
-      );
-    }
-
     return (
       <ScrollFollow
         startFollowing={this.shouldStartFollowing()}
@@ -275,7 +222,7 @@ export default class Log extends Component {
               containerStyle={containerStyle}
               url={url}
               onScroll={this.handleScroll}
-              stream
+              stream={stream}
               selectableLines
               follow={follow}
               highlight={highlight}
@@ -298,12 +245,14 @@ export default class Log extends Component {
                 className:
                   FollowLogButtonProps && FollowLogButtonProps.className,
               }}
-              tooltipProps={{ title: follow ? 'Unfollow Log' : 'Follow Log' }}
+              tooltipProps={{
+                title: follow && stream ? 'Unfollow Log' : 'Follow Log',
+              }}
               variant="round"
               className={classNames({
-                [classes.followButtonFollowing]: follow,
+                [classes.followButtonFollowing]: follow && stream,
               })}
-              color={follow ? 'inherit' : 'secondary'}
+              color={follow && stream ? 'inherit' : 'secondary'}
               onClick={this.handleFollowClick}
               {...FollowLogButtonRest}>
               <ArrowDownBoldCircleOutlineIcon />
