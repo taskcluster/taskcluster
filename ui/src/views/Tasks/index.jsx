@@ -87,7 +87,6 @@ export default class Task extends Component {
         />
         <RouteWithProps
           path={`${path}/:taskId/runs/:runId/logs/:logUrl`}
-          stream={false}
           {...props}
           component={TaskLog}
         />
