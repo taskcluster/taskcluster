@@ -19,17 +19,6 @@ repositories:
     stack: heroku-16
     buildpack: https://github.com/heroku/heroku-buildpack-nodejs
 
-# tc-web ui
-- name: ui
-  kind: service
-  docs:
-    tier: integrations
-    projectName: taskcluster-ui
-  service:
-    buildtype: web-ui
-    node: 10.15.1-jessie
-  source: https://github.com/taskcluster/taskcluster#master
-
 # workers
 - name: docker-worker
   kind: other
