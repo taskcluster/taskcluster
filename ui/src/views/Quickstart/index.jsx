@@ -30,7 +30,7 @@ import githubQuery from './github.graphql';
 const initialYaml = {
   version: 1,
   policy: {
-    pullRequests: '',
+    pullRequests: 'collaborators',
   },
   tasks: {
     $match: {
@@ -66,6 +66,35 @@ const baseCmd = [
   'git config advice.detachedHead false',
   'git checkout {{event.head.sha}}',
 ];
+const getMatchCondition = events => {
+  let condition = '';
+  const eventsJoin = Array.from(events).join(' ');
+
+  if (eventsJoin.includes('pull_request')) {
+    condition = `${condition}(tasks_for == "github-pull-request" && event["action"] in [${[
+      ...events,
+    ].sort()}])`;
+  }
+
+  if (eventsJoin.includes('push')) {
+    if (condition.length > 0) {
+      condition = `${condition} || `;
+    }
+
+    condition = `${condition}(tasks_for == "github-push")`;
+  }
+
+  if (eventsJoin.includes('release')) {
+    if (condition.length > 0) {
+      condition = `${condition} || `;
+    }
+
+    condition = `${condition}(tasks_for == "github-release")`;
+  }
+
+  return condition;
+};
+
 const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
   ({
     node: [
@@ -135,6 +164,7 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
 export default class QuickStart extends Component {
   state = {
     ...initialState,
+    condition: getMatchCondition(initialState.events),
     owner: '',
     repo: '',
     access: 'collaborators',
@@ -177,8 +207,12 @@ export default class QuickStart extends Component {
 
     events.has(value) ? events.delete(value) : events.add(value);
 
+    // This should be called after events has been modified in above line
+    const condition = getMatchCondition(events);
+
     this.setState({
       events,
+      condition,
       editorValue: null,
     });
   };
@@ -202,43 +236,17 @@ export default class QuickStart extends Component {
   };
 
   handleReset = () => {
-    this.setState(initialState);
-  };
-
-  getMatchCondition = events => {
-    let condition = '';
-    const eventsJoin = Array.from(events).join(' ');
-
-    if (eventsJoin.includes('pull_request')) {
-      condition = `${condition}(tasks_for == "github-pull-request" && event["action"] in [${[
-        ...events,
-      ].sort()}])`;
-    }
-
-    if (eventsJoin.includes('push')) {
-      if (condition.length > 0) {
-        condition = `${condition} || `;
-      }
-
-      condition = `${condition}(tasks_for == "github-push")`;
-    }
-
-    if (eventsJoin.includes('release')) {
-      if (condition.length > 0) {
-        condition = `${condition} || `;
-      }
-
-      condition = `${condition}(tasks_for == "github-relase")`;
-    }
-
-    return condition;
+    this.setState({
+      ...initialState,
+      condition: getMatchCondition(initialState.events),
+    });
   };
 
   renderEditor() {
     const {
       access,
       commands,
-      events,
+      condition,
       image,
       taskName,
       taskDescription,
@@ -250,7 +258,7 @@ export default class QuickStart extends Component {
       },
       tasks: {
         $match: {
-          [`${this.getMatchCondition(events)}`]: {
+          [condition]: {
             ...initialYaml.tasks.$match,
             ...{
               metadata: {
