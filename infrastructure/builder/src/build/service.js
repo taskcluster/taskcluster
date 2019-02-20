@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const {dockerPush} = require('./utils');
 const {herokuBuildpackTasks} = require('./service/heroku-buildpack');
-const {webUiTasks} = require('./service/web-ui');
 
 const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
   const repository = spec.build.repositories.find(r => r.name === name);
@@ -14,10 +13,6 @@ const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => 
   switch (repository.service.buildtype) {
   case 'heroku-buildpack':
     herokuBuildpackTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
-    break;
-
-  case 'web-ui':
-    webUiTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
     break;
 
   default:
