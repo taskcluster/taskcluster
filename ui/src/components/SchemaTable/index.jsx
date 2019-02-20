@@ -6,6 +6,7 @@ import { join } from 'path';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Table from 'react-schema-viewer/lib/SchemaTable';
+import ErrorPanel from '../ErrorPanel';
 import { THEME } from '../../utils/constants';
 import urls from '../../utils/urls';
 import references from '../../../docs/references.json';
@@ -88,17 +89,22 @@ export default class SchemaTable extends Component {
 
   state = {
     schema: null,
+    error: null,
   };
 
   async componentDidMount() {
     const { schema } = this.props;
 
     if (!this.state.schema && schema) {
-      const schemaContent = await this.getSchemaContent(schema);
+      try {
+        const schemaContent = await this.getSchemaContent(schema);
 
-      this.setState({
-        schema: schemaContent,
-      });
+        this.setState({
+          schema: schemaContent,
+        });
+      } catch (error) {
+        this.setState({ error });
+      }
     }
   }
 
@@ -133,6 +139,11 @@ export default class SchemaTable extends Component {
 
   async getSchemaContent(schemaPath) {
     const schemaRef = this.readReference(schemaPath);
+
+    if (!schemaRef) {
+      throw new Error(`Cannot find ${schemaPath}.`);
+    }
+
     const schema = this.sanitizeSchema(schemaRef.content);
 
     await RefParser.dereference(schema.$id, schema, {
@@ -160,9 +171,13 @@ export default class SchemaTable extends Component {
 
   render() {
     const { classes, theme } = this.props;
-    const { schema } = this.state;
+    const { error, schema } = this.state;
     const headerBackground =
       theme.palette.type === 'light' ? 'rgb(240,240,240)' : 'rgb(43,57,69)';
+
+    if (error) {
+      return <ErrorPanel error={error} />;
+    }
 
     return schema ? (
       <div className={classes.bootstrapTable}>
