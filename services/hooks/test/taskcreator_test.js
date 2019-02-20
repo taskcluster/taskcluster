@@ -183,7 +183,7 @@ suite('taskcreator_test.js', function() {
       hook.task.then.expires = {$fromNow: '2 minutes'};
       await helper.Hook.create(hook);
       let taskId = taskcluster.slugid();
-      let resp = await creator.fire(hook, {}, {taskId});
+      let resp = await creator.fire(hook, {firedBy: 'foo'}, {taskId});
 
       const task = await fetchFiredTask(taskId);
       assume(new Date(task.deadline) - new Date(task.created)).to.equal(60000);
@@ -195,7 +195,7 @@ suite('taskcreator_test.js', function() {
       hook.task.then.taskGroupId = taskcluster.slugid();
       await helper.Hook.create(hook);
       let taskId = taskcluster.slugid();
-      let resp = await creator.fire(hook, {}, {taskId});
+      let resp = await creator.fire(hook, {firedBy: 'foo'}, {taskId});
 
       const task = await fetchFiredTask(taskId);
       assume(task.taskGroupId).equals(hook.task.then.taskGroupId);
@@ -222,7 +222,7 @@ suite('taskcreator_test.js', function() {
     test('adds a taskId if one is not specified', async function() {
       let hook = await createTestHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1'],
         {context: '${context}'});
-      let resp = await creator.fire(hook, {context: true});
+      let resp = await creator.fire(hook, {context: true, firedBy: 'foo'});
       const task = await fetchFiredTask(resp.status.taskId);
       assume(task.workerType).equals(hook.task.then.workerType);
     });

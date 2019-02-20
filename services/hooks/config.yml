@@ -72,7 +72,6 @@ test:
     signingKey:       'not a secret'
     cryptoKey:        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
   monitoring:
-    project: taskcluster-hooks
     enable: false
   server:
     port:             60401
