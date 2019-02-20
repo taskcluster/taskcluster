@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { oneOf, object, string } from 'prop-types';
 import { upperCase } from 'change-case';
@@ -22,6 +23,7 @@ import SchemaTable from '../../../components/SchemaTable';
 
 const primaryTypographyProps = { variant: 'body1' };
 
+@withRouter
 @withStyles(
   theme => ({
     expansionPanelSummaryContent: {
