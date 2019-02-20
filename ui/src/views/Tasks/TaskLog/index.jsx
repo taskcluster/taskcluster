@@ -35,14 +35,14 @@ import Log from '../../../components/Log';
 }))
 export default class TaskLog extends Component {
   render() {
-    const { classes, match } = this.props;
+    const { classes, match, stream } = this.props;
     const url = decodeURIComponent(match.params.logUrl);
 
     return (
       <Dashboard disablePadding>
         <Log
           url={url}
-          stream={false}
+          stream={stream}
           GoToLineButtonProps={{ className: classes.miniFab }}
           FollowLogButtonProps={{ className: classes.followButton }}
           RawLogButtonProps={{ className: classes.rawLogButton }}
