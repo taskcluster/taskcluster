@@ -44,7 +44,10 @@ function sortChildren(children) {
 }
 
 async function readGeneratedDocs() {
-  const projects = await readdir(DOCS_LOCATIONS.GENERATED);
+  const projects = (await readdir(DOCS_LOCATIONS.GENERATED, { withFileTypes: true }))
+    .filter(dirent => dirent.isDirectory())
+    .map(({ name }) => name);
+
   const generatedDocs = {};
   const projectMetadata = {};
 

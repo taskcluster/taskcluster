@@ -128,7 +128,7 @@ exports.tasks.push({
       }
     });
 
-    await writeJSON('ui/docs/references.json', serializable);
+    await writeJSON('ui/docs/generated/references.json', serializable);
 
     return {
       'target-references': true,

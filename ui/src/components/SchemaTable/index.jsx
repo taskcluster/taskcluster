@@ -2,14 +2,12 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import RefParser from 'json-schema-ref-parser';
 import { string, object, oneOf } from 'prop-types';
-import { join } from 'path';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Table from 'react-schema-viewer/lib/SchemaTable';
 import ErrorPanel from '../ErrorPanel';
 import { THEME } from '../../utils/constants';
-import urls from '../../utils/urls';
-import references from '../../../docs/references.json';
+import references from '../../../docs/generated/references.json';
 
 @withRouter
 @withStyles(
@@ -108,29 +106,6 @@ export default class SchemaTable extends Component {
     }
   }
 
-  buildSchemaId(schemaId) {
-    if (schemaId.startsWith('/')) {
-      const [service, version, filename] = schemaId
-        .replace(/^\/schemas\//, '')
-        .split('/');
-
-      return urls.schema(service, join(version, filename));
-    }
-
-    return schemaId;
-  }
-
-  sanitizeSchema(schema) {
-    if (schema.$id) {
-      return {
-        ...schema,
-        $id: this.buildSchemaId(schema.$id),
-      };
-    }
-
-    return schema;
-  }
-
   readReference(schemaPath) {
     return references.find(({ filename }) =>
       filename.endsWith(schemaPath.replace(/^\//, '').replace(/#$/, ''))
@@ -144,7 +119,7 @@ export default class SchemaTable extends Component {
       throw new Error(`Cannot find ${schemaPath}.`);
     }
 
-    const schema = this.sanitizeSchema(schemaRef.content);
+    const schema = schemaRef.content;
 
     await RefParser.dereference(schema.$id, schema, {
       resolve: {
