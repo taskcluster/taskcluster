@@ -15,7 +15,7 @@ export default class Reference extends Component {
 
   render() {
     const {
-      json: { entries, title, description, exchangePrefix },
+      json: { entries, title, description, exchangePrefix, serviceName },
     } = this.props;
     const functionEntries =
       entries && entries.filter(({ type }) => type === 'function');
@@ -37,6 +37,7 @@ export default class Reference extends Component {
                 type="topic-exchange"
                 entry={entry}
                 exchangePrefix={exchangePrefix}
+                serviceName={serviceName}
               />
             ))}
           </Fragment>
@@ -57,6 +58,7 @@ export default class Reference extends Component {
                 key={`${entry.name}-${entry.query}`}
                 type="function"
                 entry={entry}
+                serviceName={serviceName}
               />
             ))}
           </Fragment>

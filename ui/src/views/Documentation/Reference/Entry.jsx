@@ -87,6 +87,8 @@ export default class Entry extends Component {
     entry: object.isRequired,
     /** Required when `type` is `topic-exchange`. */
     exchangePrefix: string,
+    /** The service name in which the entry belongs to. */
+    serviceName: string.isRequired,
   };
 
   static defaultProps = {
@@ -155,7 +157,9 @@ export default class Entry extends Component {
     );
   };
 
-  renderSchemaTable(schema, headerTitle) {
+  renderSchemaTable = (schema, headerTitle) => {
+    const { serviceName } = this.props;
+
     return (
       <ListItem>
         <ListItemText
@@ -165,13 +169,13 @@ export default class Entry extends Component {
           secondary={
             <Fragment>
               <br />
-              <SchemaTable schema={schema} />
+              <SchemaTable schema={schema} serviceName={serviceName} />
             </Fragment>
           }
         />
       </ListItem>
     );
-  }
+  };
 
   renderScopeExpression(scopes) {
     const { classes } = this.props;

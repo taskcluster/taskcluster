@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
+import { join } from 'path';
 import RefParser from 'json-schema-ref-parser';
 import { string, object, oneOf } from 'prop-types';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -81,8 +82,20 @@ import references from '../../../docs/generated/references.json';
  * Display a SchemaTable
  */
 export default class SchemaTable extends Component {
-  static defaultProps = {
+  static propTypes = {
     schema: oneOf([string, object]).isRequired,
+    /**
+     * The service name in which the entry belongs to.
+     * Required for a reference document (api or exchanges) because
+     * the `input` and `output` property values of the schema are relative URIs.
+     * The service name helps us find the referenced schema given
+     * the relative path.
+     * */
+    serviceName: string,
+  };
+
+  static defaultProps = {
+    serviceName: null,
   };
 
   state = {
@@ -107,9 +120,13 @@ export default class SchemaTable extends Component {
   }
 
   readReference(schemaPath) {
-    return references.find(({ filename }) =>
-      filename.endsWith(schemaPath.replace(/^\//, '').replace(/#$/, ''))
-    );
+    const { serviceName } = this.props;
+    const id = schemaPath.startsWith('/')
+      ? schemaPath
+      : join('/', 'schemas', serviceName, schemaPath);
+    const schemaId = id.endsWith('#') ? id : `${id}#`;
+
+    return references.find(({ content }) => content.$id === schemaId);
   }
 
   async getSchemaContent(schemaPath) {
