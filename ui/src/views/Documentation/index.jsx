@@ -118,7 +118,10 @@ export default class Documentation extends Component {
     const startsWithHttp = src.startsWith('http');
     const imgSrc = startsWithHttp
       ? src
-      : path.join(absolutePath.replace(`/${currentFileName}`, ''), src);
+      : path.join(
+          absolutePath.replace(/^\/ui/, '').replace(`/${currentFileName}`, ''),
+          src
+        );
 
     // Some local images have black text making it hard to see
     // when viewing the page with the dark theme
