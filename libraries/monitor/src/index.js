@@ -80,16 +80,17 @@ class MonitorManager {
     this.metadata = metadata;
     this.bailOnUnhandledRejection = bailOnUnhandledRejection;
     this.verify = verify;
+    this.levels = {};
 
     if (level.includes(':')) {
-      this.levels = level.split(' ').reduce((o, conf) => {
+      level.split(' ').reduce((o, conf) => {
         const c = conf.split(':');
         o[c[0]] = c[1];
         return o;
-      }, {});
+      }, this.levels);
       assert(this.levels['root'], 'Must specify `root:` level if using child-specific levels.');
     } else {
-      this.level = level;
+      this.levels['root'] = level;
     }
 
     if (destination) {
@@ -126,7 +127,7 @@ class MonitorManager {
 
     const logger = new Logger({
       name: `taskcluster.${this.serviceName}.${this.subject}`,
-      level: this.levels ? this.levels.root : this.level,
+      level: this.levels['root'],
       enable,
       pretty,
       destination: this.destination,
@@ -204,7 +205,7 @@ class MonitorManager {
       enable: this.enable,
       logger: new Logger({
         name: `taskcluster.${this.serviceName}.${prefix}`,
-        level: this.levels ? this.levels[prefix] || this.levels.root : this.level,
+        level: this.levels[prefix] || this.levels.root,
         enable: this.enable,
         pretty: this.pretty,
         destination: this.destination,
@@ -222,6 +223,7 @@ class MonitorManager {
       $schema: '/schemas/common/logs-reference-v0.json#',
       types: Object.values(this.types).map(type => {
         return {
+          name: type.name,
           type: type.type,
           version: type.version,
           description: type.description,

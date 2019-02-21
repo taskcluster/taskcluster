@@ -88,6 +88,18 @@
       }
     },
     {
+      "type": "monitor.generic",
+      "version": 1,
+      "description": "An internal type for logging simple messages. No required fields.",
+      "fields": {}
+    },
+    {
+      "type": "monitor.loggingError",
+      "version": 1,
+      "description": "An internal type for reporting malformed logging calls.",
+      "fields": {}
+    },
+    {
       "type": "email",
       "version": 1,
       "description": "A request to send an email.",
@@ -108,8 +120,7 @@
       "version": 1,
       "description": "A request to send an irc message.",
       "fields": {
-        "user": "A user, if this is a request to direct message a user",
-        "channel": "A channel (including #), if this is a request to post a message to a channel"
+        "dest": "A user or channel. Will begin with \"#\" if a channel."
       }
     }
   ]

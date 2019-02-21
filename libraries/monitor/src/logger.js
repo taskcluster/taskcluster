@@ -56,26 +56,29 @@ class Logger {
 
     if (fields === undefined) {
       fields = type;
-      type = 'generic';
+      type = 'monitor.generic';
     }
-    if (typeof fields === 'number') {
-      fields = {val: fields};
-    }
-    if (typeof fields === 'string') {
-      fields = {msg: fields};
+    if (typeof fields === 'string' || typeof fields === 'number') {
+      fields = {message: fields};
     }
 
     if (fields === null || typeof fields === 'boolean') {
-      level = LEVELS['alert'];
+      level = LEVELS['err'];
+      const origType = type;
+      type = 'monitor.loggingError',
       fields = {
         error: 'Invalid field to be logged.',
+        origType,
         orig: fields,
       };
     }
     if (fields.meta !== undefined) {
-      level = LEVELS['alert'];
+      level = LEVELS['err'];
+      const origType = type;
+      type = 'monitor.loggingError',
       fields = {
         error: 'You may not set meta fields on logs directly.',
+        origType,
         orig: fields,
       };
     }
@@ -92,7 +95,7 @@ class Logger {
         }
         return s;
       }, '');
-      const line = chalk`${(new Date()).toJSON()} ${LEVELS_REVERSE[level]} (${this.pid} on ${this.hostname}): {blue ${msg}}{gray ${extra}}\n`;
+      const line = chalk`${(new Date()).toJSON()} ${LEVELS_REVERSE[level]} (${type}): {blue ${msg}}{gray ${extra}}\n`;
       this.destination.write(line);
     } else {
       this.destination.write(stringify({

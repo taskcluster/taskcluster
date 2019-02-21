@@ -33,7 +33,7 @@ manager.register({
   level: 'info',
   description: 'A request to send an irc message.',
   fields: {
-    destination: 'A user or channel. Will begin with "#" if a channel.',
+    dest: 'A user or channel. Will begin with "#" if a channel.',
   },
 });
 

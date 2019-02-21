@@ -13,6 +13,7 @@ suite('BaseMonitor', function() {
     });
     manager.setup({
       level: 'debug',
+      verify: true,
       mock: {
         allowExit: true,
       },

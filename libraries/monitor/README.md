@@ -81,6 +81,8 @@ It provides the following functions:
 The `type` will be set in the event object as the `Type` field in the mozlog format. Everything in `fields` will be set in the `Fields`.
 We default to `info` logging level so normally `debug` logs will not be logged.
 
+If you leave out `type`, the first argument will be used for `fields`. If fields is a string or number, we will log it in a generic message.
+
 ### Registering message types
 
 This library allows creating custom message types. We add these registered types to our published references much the same as

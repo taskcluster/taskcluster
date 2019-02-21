@@ -14,6 +14,7 @@ suite('Logging', function() {
     manager.setup({
       level: 'debug',
       mock: true,
+      verify: true,
     });
     monitor = manager.monitor();
   });
@@ -61,41 +62,44 @@ suite('Logging', function() {
 
   test('empty data still logs', function() {
     monitor.info({whatever: 5});
-    assert.equal(manager.messages[0].Type, 'generic');
+    assert.equal(manager.messages[0].Type, 'monitor.generic');
     assert.equal(manager.messages[0].Fields.whatever, 5);
   });
 
   test('string data still logs', function() {
     monitor.info('baz', 'hello');
     assert.equal(manager.messages[0].Type, 'baz');
-    assert.equal(manager.messages[0].Fields.msg, 'hello');
+    assert.equal(manager.messages[0].Fields.message, 'hello');
   });
 
   test('number data still logs', function() {
     monitor.info('foobar', 5.0);
     assert.equal(manager.messages[0].Type, 'foobar');
-    assert.equal(manager.messages[0].Fields.val, 5.0);
+    assert.equal(manager.messages[0].Fields.message, 5.0);
   });
 
   test('null data still logs', function() {
     monitor.info('something', null);
-    assert.equal(manager.messages[0].Type, 'something');
+    assert.equal(manager.messages[0].Type, 'monitor.loggingError');
     assert.equal(manager.messages[0].Fields.error, 'Invalid field to be logged.');
+    assert.equal(manager.messages[0].Fields.origType, 'something');
     assert.equal(manager.messages[0].Fields.orig, null);
   });
 
   test('boolean data still logs', function() {
     monitor.info('something', true);
-    assert.equal(manager.messages[0].Type, 'something');
+    assert.equal(manager.messages[0].Type, 'monitor.loggingError');
     assert.equal(manager.messages[0].Fields.error, 'Invalid field to be logged.');
+    assert.equal(manager.messages[0].Fields.origType, 'something');
     assert.equal(manager.messages[0].Fields.orig, true);
   });
 
   test('metadata still logs but alerts', function() {
-    monitor.info('something', true);
-    assert.equal(manager.messages[0].Type, 'something');
-    assert.equal(manager.messages[0].Fields.error, 'Invalid field to be logged.');
-    assert.equal(manager.messages[0].Fields.orig, true);
+    monitor.info('something', {meta: 'foo'});
+    assert.equal(manager.messages[0].Type, 'monitor.loggingError');
+    assert.equal(manager.messages[0].Fields.error, 'You may not set meta fields on logs directly.');
+    assert.equal(manager.messages[0].Fields.origType, 'something');
+    assert.equal(manager.messages[0].Fields.orig.meta, 'foo');
   });
 
   test('all logging levels represented', function() {

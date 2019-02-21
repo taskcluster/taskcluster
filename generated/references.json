@@ -6005,7 +6005,7 @@
         "$schema": {
           "description": "Link to schema for this reference. That is a link to this very document. Typically used to identify what kind of reference this file is.",
           "format": "uri",
-          "title": "Schema Reference",
+          "title": "Log Message Reference",
           "type": "string"
         },
         "serviceName": {
@@ -6015,7 +6015,7 @@
           "type": "string"
         },
         "types": {
-          "description": "Array of logs message types",
+          "description": "Array of log message types",
           "items": {
             "additionalProperties": false,
             "properties": {
@@ -6027,6 +6027,11 @@
                 "additionalProperties": true,
                 "description": "The set of fields that will be in every instance of this message type.",
                 "type": "object"
+              },
+              "name": {
+                "description": "The service-specific name of this message type.",
+                "pattern": "^[a-z][a-zA-Z0-9_]*",
+                "type": "string"
               },
               "type": {
                 "description": "The \"type\" of the message will be in the top-level keys of a message under the name \"Type\".",
@@ -7802,6 +7807,20 @@
           },
           "type": "monitor.timekeeper",
           "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
         }
       ]
     },
@@ -8026,6 +8045,20 @@
           },
           "type": "monitor.timekeeper",
           "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
         }
       ]
     },
@@ -8160,6 +8193,20 @@
             "key": "A key that should be unique to the logger prefix."
           },
           "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
           "version": 1
         }
       ]
@@ -8342,6 +8389,20 @@
             "key": "A key that should be unique to the logger prefix."
           },
           "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
           "version": 1
         }
       ]
@@ -9800,6 +9861,20 @@
           },
           "type": "monitor.timekeeper",
           "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
         }
       ]
     },
@@ -9971,6 +10046,20 @@
           "version": 1
         },
         {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
           "description": "A request to send an email.",
           "fields": {
             "address": "The requested recepient of the email."
@@ -9989,8 +10078,7 @@
         {
           "description": "A request to send an irc message.",
           "fields": {
-            "channel": "A channel (including #), if this is a request to post a message to a channel",
-            "user": "A user, if this is a request to direct message a user"
+            "dest": "A user or channel. Will begin with \"#\" if a channel."
           },
           "type": "irc",
           "version": 1
@@ -10280,6 +10368,20 @@
           },
           "type": "monitor.timekeeper",
           "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
         }
       ]
     },
@@ -10413,6 +10515,20 @@
             "key": "A key that should be unique to the logger prefix."
           },
           "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
           "version": 1
         }
       ]
@@ -10617,6 +10733,20 @@
             "key": "A key that should be unique to the logger prefix."
           },
           "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
           "version": 1
         }
       ]
@@ -11007,6 +11137,20 @@
           },
           "type": "monitor.timekeeper",
           "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
         }
       ]
     },
@@ -11377,6 +11521,20 @@
           },
           "type": "monitor.timekeeper",
           "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
         }
       ]
     },
@@ -11470,6 +11628,20 @@
             "key": "A key that should be unique to the logger prefix."
           },
           "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
           "version": 1
         }
       ]

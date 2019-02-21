@@ -16,17 +16,21 @@ properties:
     description: >-
       Link to schema for this reference. That is a link to this very document.
       Typically used to identify what kind of reference this file is.
-    title: Schema Reference
+    title: Log Message Reference
     type: string
     format: uri
   types:
     type: array
     title: Types
-    description: Array of logs message types
+    description: Array of log message types
     items:
       type: object
       title: Message Type
       properties:
+        name:
+          description: 'The service-specific name of this message type.'
+          type: string
+          pattern: '^[a-z][a-zA-Z0-9_]*'
         type:
           description: 'The "type" of the message will be in the top-level keys of a message under the name "Type".'
           type: string

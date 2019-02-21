@@ -102,4 +102,20 @@ module.exports = [
       duration: 'The duration in ms of whatever was timed.',
     },
   },
+  {
+    name: 'generic',
+    type: 'monitor.generic',
+    level: 'info',
+    version: 1,
+    description: 'An internal type for logging simple messages. No required fields.',
+    fields: {},
+  },
+  {
+    name: 'loggingError',
+    type: 'monitor.loggingError',
+    level: 'err',
+    version: 1,
+    description: 'An internal type for reporting malformed logging calls.',
+    fields: {},
+  },
 ];
