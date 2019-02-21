@@ -108,7 +108,7 @@ builder.declare({
 }, async function(req, res) {
   let input = req.body;
   let required = [];
-  this.monitor.log.irc({user: input.user, channel: input.channel});
+  this.monitor.log.irc({dest: input.user || input.channel});
   await req.authorize({
     channelRequest: input.channel !== undefined,
     channel: input.channel,
