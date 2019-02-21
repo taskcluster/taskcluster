@@ -13,6 +13,11 @@ cases and shows how to use this package to measure them.
 Usage
 -----
 
+First set up a `monitorManager` and register types on it (described later) before you set things up at runtime and finally
+get prefixed monitors to use elswehere.
+
+You must first set up a `monitorManager` and then configure it with `setup()` before you can get and use monitors. See the example below.
+
 ```js
 const MonitorManager = require('taskcluster-lib-monitor');
 
