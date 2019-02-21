@@ -87,15 +87,17 @@ class Logger {
       fields.meta = this.metadata;
     }
 
+    let message = fields.stack || fields.message;
+
     if (this.pretty) {
-      const msg = fields.msg ? fields.msg.toString().replace(/\n/g, '\\n') : '';
+      message = message ? message.toString().replace(/\n/g, '\\n') : '';
       const extra = Object.keys(fields).reduce((s, f) => {
         if (f !== 'msg') {
           s = s + `\n\t${f}: ${fields[f].toString().replace(/\n/g, '\\n')}`;
         }
         return s;
       }, '');
-      const line = chalk`${(new Date()).toJSON()} ${LEVELS_REVERSE[level]} (${type}): {blue ${msg}}{gray ${extra}}\n`;
+      const line = chalk`${(new Date()).toJSON()} ${LEVELS_REVERSE[level]} (${type}): {blue ${message}}{gray ${extra}}\n`;
       this.destination.write(line);
     } else {
       this.destination.write(stringify({
@@ -104,6 +106,7 @@ class Logger {
         Logger: this.name,
         Hostname: this.hostname,
         EnvVersion: '2.0',
+        Message: message, // will be omitted if undefined
         Severity: level,
         Pid: this.pid,
         Fields: fields,
