@@ -37,6 +37,7 @@ const load = Loader({
     }),
   },
 
+  // TODO: Remove me when nothing relies on sentry bug #1529461
   sentryManager: {
     requires: ['cfg', 'sentryClient'],
     setup: ({cfg, sentryClient}) => new SentryManager({
@@ -46,15 +47,12 @@ const load = Loader({
   },
 
   monitor: {
-    requires: ['cfg', 'sentryManager', 'profile', 'process'],
-    setup: ({cfg, sentryManager, profile, process}) => {
-      return monitorManager.setup({
-        level: cfg.app.level,
-        enable: cfg.monitoring.enable,
-        processName: process,
-        verify: profile !== 'production',
-      });
-    },
+    requires: ['cfg', 'profile', 'process'],
+    setup: ({cfg, profile, process}) => monitorManager.setup({
+      processName: process,
+      verify: profile !== 'production',
+      ...cfg.monitoring,
+    }),
   },
 
   resolver: {

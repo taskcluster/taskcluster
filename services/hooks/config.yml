@@ -1,7 +1,6 @@
 defaults:
   # defaults outlining all configuration options and some sane defaults
   app:
-    level: !env LEVEL
     component:        hooks
     hookTableName:     !env HOOK_TABLE_NAME
     lastFireTableName: !env LASTFIRE_TABLE_NAME
@@ -24,8 +23,9 @@ defaults:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
   monitoring:
-    project:                    !env MONITORING_PROJECT
+    level:                      !env LEVEL
     enable:                     !env:bool MONITORING_ENABLE
+    pretty:                     !env:bool PRETTY_LOGGING
   server:
     port:             !env:number PORT
     env:              !env NODE_ENV

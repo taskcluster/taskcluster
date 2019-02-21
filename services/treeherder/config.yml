@@ -1,6 +1,5 @@
 defaults:
   app:
-    level: !env LEVEL
     # Publish references and schemas
     publishMetaData:  !env:bool PUBLISH_METADATA
   pulse:
@@ -27,8 +26,9 @@ defaults:
     region:           'us-west-2'
     apiVersion:       '2014-01-01'
   monitoring:
-    project: !env MONITORING_PROJECT
     enable: !env:bool MONITORING_ENABLE
+    pretty: !env:bool PRETTY_LOGGING
+    level: !env LEVEL
 
 test:
   monitoring:

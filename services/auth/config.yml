@@ -2,8 +2,6 @@ defaults:
   taskcluster:
     rootUrl:                  !env TASKCLUSTER_ROOT_URL
   app:
-    level:                    !env LEVEL
-
     # Azure table for the client table
     clientTableName:          !env CLIENT_TABLE_NAME
 
@@ -66,8 +64,9 @@ defaults:
     auditLog:                   !env AUDIT_LOG
 
   monitoring:
-    project:                    !env MONITORING_PROJECT
     enable:                     !env:bool MONITORING_ENABLE
+    level:                      !env LEVEL
+    pretty:                     !env:bool PRETTY_LOGGING
 
   server:
 

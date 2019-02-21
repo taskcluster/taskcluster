@@ -1,7 +1,6 @@
 ---
 defaults:
   app:
-    level: !env LEVEL
     jobQueue: null
     deprecatedResultStatusQueue: null
     deprecatedInitialStatusQueue: null
@@ -38,8 +37,9 @@ defaults:
     accountId: !env AZURE_ACCOUNT_NAME
 
   monitoring:
-    project: !env MONITORING_PROJECT
+    level: !env LEVEL
     enable: !env:bool MONITORING_ENABLE
+    pretty: !env:bool PRETTY_LOGGING
 
   server:
     port: !env:number PORT

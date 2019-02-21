@@ -25,13 +25,12 @@ const load = loader(
     },
 
     monitor: {
-      requires: ['cfg'],
-      setup: ({ cfg }) =>
+      requires: ['cfg', 'profile', 'process'],
+      setup: ({ cfg, profile, process }) =>
         monitorManager.setup({
-          projectName: cfg.monitoring.project,
-          credentials: cfg.taskcluster.credentials,
-          enable: cfg.monitoring.enable,
+          processName: process,
           verify: profile !== 'production',
+          ...cfg.monitoring,
         }),
     },
 

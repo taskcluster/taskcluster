@@ -25,10 +25,9 @@ var load = loader({
   monitor: {
     requires: ['process', 'profile', 'cfg'],
     setup: ({process, profile, cfg}) => monitorManager.setup({
-      level: cfg.app.level,
-      enable: cfg.monitoring.enable,
       processName: process,
       verify: profile !== 'production',
+      ...cfg.monitoring,
     }),
   },
 

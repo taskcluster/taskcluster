@@ -1,10 +1,11 @@
 defaults:
   app:
-    level: !env LEVEL
     publishMetaData: !env:bool PUBLISH_METADATA
     statsComponent: 'worker-manager'
   monitoring:
     enable: !env:bool MONITORING_ENABLE
+    pretty: !env:bool PRETTY_LOGGING
+    level: !env LEVEL
   taskcluster:
     rootUrl: !env TASKCLUSTER_ROOT_URL
     credentials:

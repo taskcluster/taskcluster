@@ -1,7 +1,5 @@
 defaults:
   app:
-    level: !env LEVEL
-
     # Route prefix used to form custom routes on the form
     #  'route.<routePrefix>.<namespace>'
     routePrefix: 'index'
@@ -25,8 +23,10 @@ defaults:
     accountId: !env AZURE_ACCOUNT
 
   monitoring:
-    project: !env MONITORING_PROJECT
     enable: !env:bool MONITORING_ENABLE
+    pretty: !env:bool PRETTY_LOGGING
+    level: !env LEVEL
+
 
   # Server configuration
   server:

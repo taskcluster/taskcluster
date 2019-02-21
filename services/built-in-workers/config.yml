@@ -1,6 +1,5 @@
 defaults:
   app:
-    level: !env LEVEL
     publishMetaData: !env:bool PUBLISH_METADATA
 
   # Taskcluster credentials
@@ -12,6 +11,8 @@ defaults:
 
   monitoring:
     enable: !env:bool MONITORING_ENABLE
+    level: !env LEVEL
+    pretty: !env:bool PRETTY_LOGGING
 
   worker:
     provisionerId: "built-in"

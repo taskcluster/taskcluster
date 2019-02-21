@@ -1,7 +1,5 @@
 defaults:
   app:
-    level: !env LEVEL
-
     publishMetaData:              !env:bool PUBLISH_METADATA
     exchangePrefix:               v1/
 
@@ -111,8 +109,9 @@ defaults:
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
 
   monitoring:
-    project: !env MONITORING_PROJECT
     enable: !env:bool MONITORING_ENABLE
+    pretty: !env:bool PRETTY_LOGGING
+    level: !env LEVEL
 
   server:
     port:             !env:number PORT
