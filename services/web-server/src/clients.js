@@ -9,6 +9,7 @@ import {
   Queue,
   QueueEvents,
   Secrets,
+  Notify,
 } from 'taskcluster-client';
 
 export default options => ({
@@ -22,4 +23,5 @@ export default options => ({
   queue: new Queue(options),
   secrets: new Secrets(options),
   queueEvents: new QueueEvents(options),
+  notify: new Notify(options),
 });

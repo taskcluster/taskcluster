@@ -30,7 +30,8 @@ union Node =
   CachePurge |
   SecretListItem |
   Client |
-  RoleCompact
+  RoleCompact |
+  NotificationAddress
 
 interface Edge {
   cursor: String
