@@ -1,5 +1,5 @@
 ---
-filename: design/apis/hawk/index.md
+filename: design/apis/hawk/README.md
 title: API Authentication and Authorization
 order: 10
 ---

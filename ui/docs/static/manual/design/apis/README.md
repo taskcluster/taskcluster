@@ -1,5 +1,5 @@
 ---
-filename: design/apis/index.md
+filename: design/apis/README.md
 title: Microservice APIs
 order: 10
 ---

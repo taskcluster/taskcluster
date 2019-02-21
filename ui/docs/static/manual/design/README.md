@@ -1,5 +1,5 @@
 ---
-filename: design/index.md
+filename: design/README.md
 title: System Design
 order: 30
 ---

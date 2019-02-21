@@ -1,5 +1,5 @@
 ---
-filename: using/index.md
+filename: using/README.md
 title: Using Taskcluster
 order: 50
 ---

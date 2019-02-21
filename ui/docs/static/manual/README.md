@@ -1,5 +1,5 @@
 ---
-filename: index.md
+filename: README.md
 title: Taskcluster Manual
 ---
 

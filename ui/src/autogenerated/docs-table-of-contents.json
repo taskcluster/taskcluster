@@ -6,8 +6,8 @@
       "noAnchors": true,
       "order": 1000
     },
-    "name": "index",
-    "path": "index"
+    "name": "README",
+    "path": "README"
   },
   "manual": {
     "children": [
@@ -245,7 +245,7 @@
           }
         ],
         "data": {
-          "filename": "tasks/index.md",
+          "filename": "tasks/README.md",
           "order": 10,
           "title": "Tasks"
         },
@@ -352,7 +352,7 @@
           }
         ],
         "data": {
-          "filename": "task-execution/index.md",
+          "filename": "task-execution/README.md",
           "order": 20,
           "title": "Task Execution"
         },
@@ -373,6 +373,52 @@
             "children": [
               {
                 "children": [
+                ],
+                "data": {
+                  "filename": "design/apis/errors.md",
+                  "order": 20,
+                  "title": "API Errors"
+                },
+                "name": "errors",
+                "next": {
+                  "path": "manual/design/apis/hawk",
+                  "title": "Authentication"
+                },
+                "path": "manual/design/apis/errors",
+                "prev": {
+                  "path": "manual/design/apis",
+                  "title": "Microservice APIs"
+                },
+                "up": {
+                  "path": "manual/design/apis",
+                  "title": "Microservice APIs"
+                }
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                    ],
+                    "data": {
+                      "filename": "design/apis/hawk/README.md",
+                      "order": 10,
+                      "title": "API Authentication and Authorization"
+                    },
+                    "name": "index",
+                    "next": {
+                      "path": "manual/design/apis/hawk/authn",
+                      "title": "Authentication"
+                    },
+                    "path": "manual/design/apis/hawk/index",
+                    "prev": {
+                      "path": "manual/design/apis/hawk",
+                      "title": "Authentication"
+                    },
+                    "up": {
+                      "path": "manual/design/apis/hawk",
+                      "title": "Authentication"
+                    }
+                  },
                   {
                     "children": [
                     ],
@@ -388,12 +434,12 @@
                     },
                     "path": "manual/design/apis/hawk/authn",
                     "prev": {
-                      "path": "manual/design/apis/hawk",
+                      "path": "manual/design/apis/hawk/index",
                       "title": "API Authentication and Authorization"
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "API Authentication and Authorization"
+                      "title": "Authentication"
                     }
                   },
                   {
@@ -416,7 +462,7 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "API Authentication and Authorization"
+                      "title": "Authentication"
                     }
                   },
                   {
@@ -439,7 +485,7 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "API Authentication and Authorization"
+                      "title": "Authentication"
                     }
                   },
                   {
@@ -462,7 +508,7 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "API Authentication and Authorization"
+                      "title": "Authentication"
                     }
                   },
                   {
@@ -485,7 +531,7 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "API Authentication and Authorization"
+                      "title": "Authentication"
                     }
                   },
                   {
@@ -508,7 +554,7 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "API Authentication and Authorization"
+                      "title": "Authentication"
                     }
                   },
                   {
@@ -531,7 +577,7 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "API Authentication and Authorization"
+                      "title": "Authentication"
                     }
                   },
                   {
@@ -544,8 +590,8 @@
                     },
                     "name": "troubleshooting",
                     "next": {
-                      "path": "manual/design/apis/errors",
-                      "title": "API Errors"
+                      "path": "manual/design/apis/pulse",
+                      "title": "Pulse"
                     },
                     "path": "manual/design/apis/hawk/troubleshooting",
                     "prev": {
@@ -554,47 +600,24 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "API Authentication and Authorization"
+                      "title": "Authentication"
                     }
                   }
                 ],
                 "data": {
-                  "filename": "design/apis/hawk/index.md",
-                  "order": 10,
-                  "title": "API Authentication and Authorization"
+                  "filename": "design/apis/hawk/authn.md",
+                  "order": 21,
+                  "title": "Authentication"
                 },
                 "name": "hawk",
                 "next": {
-                  "path": "manual/design/apis/hawk/authn",
-                  "title": "Authentication"
+                  "path": "manual/design/apis/hawk/index",
+                  "title": "API Authentication and Authorization"
                 },
                 "path": "manual/design/apis/hawk",
                 "prev": {
-                  "path": "manual/design/apis",
-                  "title": "Microservice APIs"
-                },
-                "up": {
-                  "path": "manual/design/apis",
-                  "title": "Microservice APIs"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "filename": "design/apis/errors.md",
-                  "order": 20,
+                  "path": "manual/design/apis/errors",
                   "title": "API Errors"
-                },
-                "name": "errors",
-                "next": {
-                  "path": "manual/design/apis/pulse",
-                  "title": "Pulse"
-                },
-                "path": "manual/design/apis/errors",
-                "prev": {
-                  "path": "manual/design/apis/hawk/troubleshooting",
-                  "title": "Troubleshooting"
                 },
                 "up": {
                   "path": "manual/design/apis",
@@ -616,8 +639,8 @@
                 },
                 "path": "manual/design/apis/pulse",
                 "prev": {
-                  "path": "manual/design/apis/errors",
-                  "title": "API Errors"
+                  "path": "manual/design/apis/hawk/troubleshooting",
+                  "title": "Troubleshooting"
                 },
                 "up": {
                   "path": "manual/design/apis",
@@ -649,14 +672,14 @@
               }
             ],
             "data": {
-              "filename": "design/apis/index.md",
+              "filename": "design/apis/README.md",
               "order": 10,
               "title": "Microservice APIs"
             },
             "name": "apis",
             "next": {
-              "path": "manual/design/apis/hawk",
-              "title": "API Authentication and Authorization"
+              "path": "manual/design/apis/errors",
+              "title": "API Errors"
             },
             "path": "manual/design/apis",
             "prev": {
@@ -857,7 +880,7 @@
                   }
                 ],
                 "data": {
-                  "filename": "design/devel/best-practices/index.md",
+                  "filename": "design/devel/best-practices/README.md",
                   "order": 40,
                   "title": "Best Practices"
                 },
@@ -878,7 +901,7 @@
               }
             ],
             "data": {
-              "filename": "design/devel/index.md",
+              "filename": "design/devel/README.md",
               "order": 20,
               "title": "Development"
             },
@@ -922,7 +945,7 @@
           }
         ],
         "data": {
-          "filename": "design/index.md",
+          "filename": "design/README.md",
           "order": 30,
           "title": "System Design"
         },
@@ -1285,7 +1308,7 @@
               }
             ],
             "data": {
-              "filename": "using/integration/index.md",
+              "filename": "using/integration/README.md",
               "order": 200,
               "title": "Integration with Other Applications"
             },
@@ -1401,6 +1424,7 @@
             },
             "name": "handling-high-load",
             "next": {
+              "path": "reference/README",
               "title": "Taskcluster Reference"
             },
             "path": "manual/using/handling-high-load",
@@ -1415,7 +1439,7 @@
           }
         ],
         "data": {
-          "filename": "using/index.md",
+          "filename": "using/README.md",
           "order": 50,
           "title": "Using Taskcluster"
         },
@@ -1432,7 +1456,7 @@
       }
     ],
     "data": {
-      "filename": "index.md",
+      "filename": "README.md",
       "order": 1000,
       "title": "Taskcluster Manual"
     }
@@ -1448,10 +1472,18 @@
         },
         "name": "guide",
         "next": {
-          "path": "reference/platform",
+          "path": "reference/platform/README",
           "title": "Taskcluster Platform"
         },
-        "path": "reference/guide"
+        "path": "reference/guide",
+        "prev": {
+          "path": "reference/README",
+          "title": "Taskcluster Reference"
+        },
+        "up": {
+          "path": "reference/README",
+          "title": "Taskcluster Reference"
+        }
       },
       {
         "children": [
@@ -1580,11 +1612,11 @@
             },
             "path": "reference/platform/auth/README",
             "prev": {
-              "path": "reference/platform",
+              "path": "reference/platform/README",
               "title": "Taskcluster Platform"
             },
             "up": {
-              "path": "reference/platform",
+              "path": "reference/platform/README",
               "title": "Taskcluster Platform"
             }
           },
@@ -1765,8 +1797,8 @@
                 },
                 "name": "events",
                 "next": {
-                  "path": "reference/integrations",
-                  "title": "Integrations"
+                  "path": "reference/core/README",
+                  "title": "Core Services"
                 },
                 "path": "reference/platform/queue/references/events",
                 "prev": {
@@ -1793,7 +1825,7 @@
               "title": "events"
             },
             "up": {
-              "path": "reference/platform",
+              "path": "reference/platform/README",
               "title": "Taskcluster Platform"
             }
           }
@@ -1807,10 +1839,411 @@
           "path": "reference/platform/auth/README",
           "title": "auth"
         },
-        "path": "reference/platform",
+        "path": "reference/platform/README",
         "prev": {
           "path": "reference/guide",
           "title": "Guide to The Microservices"
+        },
+        "up": {
+          "path": "reference/README",
+          "title": "Taskcluster Reference"
+        }
+      },
+      {
+        "children": [
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "built-in-workers",
+            "next": {
+              "path": "reference/core/hooks/README",
+              "title": "hooks"
+            },
+            "path": "reference/core/built-in-workers/README",
+            "prev": {
+              "path": "reference/core/README",
+              "title": "Core Services"
+            },
+            "up": {
+              "path": "reference/core/README",
+              "title": "Core Services"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 10,
+                  "title": "Firing Hooks"
+                },
+                "name": "firing-hooks",
+                "next": {
+                  "path": "reference/core/hooks/references/api",
+                  "title": "api"
+                },
+                "path": "reference/core/hooks/docs/firing-hooks",
+                "prev": {
+                  "path": "reference/core/hooks/README",
+                  "title": "hooks"
+                },
+                "up": {
+                  "path": "reference/core/hooks/README",
+                  "title": "hooks"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/core/hooks/references/events",
+                  "title": "events"
+                },
+                "path": "reference/core/hooks/references/api",
+                "prev": {
+                  "path": "reference/core/hooks/docs/firing-hooks",
+                  "title": "Firing Hooks"
+                },
+                "up": {
+                  "path": "reference/core/hooks/README",
+                  "title": "hooks"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1001,
+                  "title": "events"
+                },
+                "name": "events",
+                "next": {
+                  "path": "reference/core/index/README",
+                  "title": "index"
+                },
+                "path": "reference/core/hooks/references/events",
+                "prev": {
+                  "path": "reference/core/hooks/references/api",
+                  "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/hooks/README",
+                  "title": "hooks"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "hooks",
+            "next": {
+              "path": "reference/core/hooks/docs/firing-hooks",
+              "title": "Firing Hooks"
+            },
+            "path": "reference/core/hooks/README",
+            "prev": {
+              "path": "reference/core/built-in-workers/README",
+              "title": "built-in-workers"
+            },
+            "up": {
+              "path": "reference/core/README",
+              "title": "Core Services"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                },
+                "path": "reference/core/index/references/api",
+                "prev": {
+                  "path": "reference/core/index/README",
+                  "title": "index"
+                },
+                "up": {
+                  "path": "reference/core/index/README",
+                  "title": "index"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "index",
+            "next": {
+              "path": "reference/core/index/references/api",
+              "title": "api"
+            },
+            "path": "reference/core/index/README",
+            "prev": {
+              "path": "reference/core/hooks/references/events",
+              "title": "events"
+            },
+            "up": {
+              "path": "reference/core/README",
+              "title": "Core Services"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/core/notify/docs/usage",
+                  "title": "Enable Notifications"
+                },
+                "path": "reference/core/notify/references/api",
+                "prev": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                },
+                "up": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Enable Notifications"
+                },
+                "name": "usage",
+                "next": {
+                  "path": "reference/core/notify/references/events",
+                  "title": "events"
+                },
+                "path": "reference/core/notify/docs/usage",
+                "prev": {
+                  "path": "reference/core/notify/references/api",
+                  "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1001,
+                  "title": "events"
+                },
+                "name": "events",
+                "next": {
+                  "path": "reference/core/purge-cache/README",
+                  "title": "purge-cache"
+                },
+                "path": "reference/core/notify/references/events",
+                "prev": {
+                  "path": "reference/core/notify/docs/usage",
+                  "title": "Enable Notifications"
+                },
+                "up": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "notify",
+            "next": {
+              "path": "reference/core/notify/references/api",
+              "title": "api"
+            },
+            "path": "reference/core/notify/README",
+            "prev": {
+              "path": "reference/core/index/references/api",
+              "title": "api"
+            },
+            "up": {
+              "path": "reference/core/README",
+              "title": "Core Services"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/core/secrets/README",
+                  "title": "secrets"
+                },
+                "path": "reference/core/purge-cache/references/api",
+                "prev": {
+                  "path": "reference/core/purge-cache/README",
+                  "title": "purge-cache"
+                },
+                "up": {
+                  "path": "reference/core/purge-cache/README",
+                  "title": "purge-cache"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "purge-cache",
+            "next": {
+              "path": "reference/core/purge-cache/references/api",
+              "title": "api"
+            },
+            "path": "reference/core/purge-cache/README",
+            "prev": {
+              "path": "reference/core/notify/references/events",
+              "title": "events"
+            },
+            "up": {
+              "path": "reference/core/README",
+              "title": "Core Services"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                },
+                "path": "reference/core/secrets/references/api",
+                "prev": {
+                  "path": "reference/core/secrets/README",
+                  "title": "secrets"
+                },
+                "up": {
+                  "path": "reference/core/secrets/README",
+                  "title": "secrets"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "secrets",
+            "next": {
+              "path": "reference/core/secrets/references/api",
+              "title": "api"
+            },
+            "path": "reference/core/secrets/README",
+            "prev": {
+              "path": "reference/core/purge-cache/references/api",
+              "title": "api"
+            },
+            "up": {
+              "path": "reference/core/README",
+              "title": "Core Services"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/integrations/README",
+                  "title": "Integrations"
+                },
+                "path": "reference/core/worker-manager/references/api",
+                "prev": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "worker-manager",
+            "next": {
+              "path": "reference/core/worker-manager/references/api",
+              "title": "api"
+            },
+            "path": "reference/core/worker-manager/README",
+            "prev": {
+              "path": "reference/core/secrets/references/api",
+              "title": "api"
+            },
+            "up": {
+              "path": "reference/core/README",
+              "title": "Core Services"
+            }
+          }
+        ],
+        "data": {
+          "order": 3,
+          "title": "Core Services"
+        },
+        "name": "core",
+        "next": {
+          "path": "reference/core/built-in-workers/README",
+          "title": "built-in-workers"
+        },
+        "path": "reference/core/README",
+        "prev": {
+          "path": "reference/platform/queue/references/events",
+          "title": "events"
+        },
+        "up": {
+          "path": "reference/README",
+          "title": "Taskcluster Reference"
         }
       },
       {
@@ -1940,11 +2373,11 @@
             },
             "path": "reference/integrations/github/README",
             "prev": {
-              "path": "reference/integrations",
+              "path": "reference/integrations/README",
               "title": "Integrations"
             },
             "up": {
-              "path": "reference/integrations",
+              "path": "reference/integrations/README",
               "title": "Integrations"
             }
           },
@@ -2032,7 +2465,7 @@
               "title": "events"
             },
             "up": {
-              "path": "reference/integrations",
+              "path": "reference/integrations/README",
               "title": "Integrations"
             }
           },
@@ -2077,7 +2510,7 @@
                 },
                 "name": "events",
                 "next": {
-                  "path": "reference/operations",
+                  "path": "reference/operations/README",
                   "title": "Operations"
                 },
                 "path": "reference/integrations/treeherder/references/events",
@@ -2105,7 +2538,7 @@
               "title": "Mozilla-Auth0 logins"
             },
             "up": {
-              "path": "reference/integrations",
+              "path": "reference/integrations/README",
               "title": "Integrations"
             }
           }
@@ -2119,10 +2552,14 @@
           "path": "reference/integrations/github/README",
           "title": "github"
         },
-        "path": "reference/integrations",
+        "path": "reference/integrations/README",
         "prev": {
-          "path": "reference/platform/queue/references/events",
-          "title": "events"
+          "path": "reference/core/worker-manager/references/api",
+          "title": "api"
+        },
+        "up": {
+          "path": "reference/README",
+          "title": "Taskcluster Reference"
         }
       },
       {
@@ -2134,13 +2571,17 @@
         },
         "name": "operations",
         "next": {
-          "path": "reference/workers",
+          "path": "reference/workers/README",
           "title": "Workers"
         },
-        "path": "reference/operations",
+        "path": "reference/operations/README",
         "prev": {
           "path": "reference/integrations/treeherder/references/events",
           "title": "events"
+        },
+        "up": {
+          "path": "reference/README",
+          "title": "Taskcluster Reference"
         }
       },
       {
@@ -2152,13 +2593,17 @@
         },
         "name": "workers",
         "next": {
-          "path": "reference/libraries",
+          "path": "reference/libraries/README",
           "title": "Libraries"
         },
-        "path": "reference/workers",
+        "path": "reference/workers/README",
         "prev": {
-          "path": "reference/operations",
+          "path": "reference/operations/README",
           "title": "Operations"
+        },
+        "up": {
+          "path": "reference/README",
+          "title": "Taskcluster Reference"
         }
       },
       {
@@ -2170,361 +2615,15 @@
         },
         "name": "libraries",
         "next": {
-          "path": "reference/core",
-          "title": "api"
         },
-        "path": "reference/libraries",
+        "path": "reference/libraries/README",
         "prev": {
-          "path": "reference/workers",
+          "path": "reference/workers/README",
           "title": "Workers"
-        }
-      },
-      {
-        "children": [
-          {
-            "children": [
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "built-in-workers",
-            "next": {
-              "path": "reference/core/hooks/README",
-              "title": "hooks"
-            },
-            "path": "reference/core/built-in-workers/README",
-            "prev": {
-              "path": "reference/core",
-              "title": "api"
-            },
-            "up": {
-              "path": "reference/core",
-              "title": "api"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 10,
-                  "title": "Firing Hooks"
-                },
-                "name": "firing-hooks",
-                "next": {
-                  "path": "reference/core/hooks/references/api",
-                  "title": "api"
-                },
-                "path": "reference/core/hooks/docs/firing-hooks",
-                "prev": {
-                  "path": "reference/core/hooks/README",
-                  "title": "hooks"
-                },
-                "up": {
-                  "path": "reference/core/hooks/README",
-                  "title": "hooks"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1000,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/core/hooks/references/events",
-                  "title": "events"
-                },
-                "path": "reference/core/hooks/references/api",
-                "prev": {
-                  "path": "reference/core/hooks/docs/firing-hooks",
-                  "title": "Firing Hooks"
-                },
-                "up": {
-                  "path": "reference/core/hooks/README",
-                  "title": "hooks"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1001,
-                  "title": "events"
-                },
-                "name": "events",
-                "next": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
-                },
-                "path": "reference/core/hooks/references/events",
-                "prev": {
-                  "path": "reference/core/hooks/references/api",
-                  "title": "api"
-                },
-                "up": {
-                  "path": "reference/core/hooks/README",
-                  "title": "hooks"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "hooks",
-            "next": {
-              "path": "reference/core/hooks/docs/firing-hooks",
-              "title": "Firing Hooks"
-            },
-            "path": "reference/core/hooks/README",
-            "prev": {
-              "path": "reference/core/built-in-workers/README",
-              "title": "built-in-workers"
-            },
-            "up": {
-              "path": "reference/core",
-              "title": "api"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1000,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/core/notify/docs/usage",
-                  "title": "Enable Notifications"
-                },
-                "path": "reference/core/notify/references/api",
-                "prev": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
-                },
-                "up": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000,
-                  "title": "Enable Notifications"
-                },
-                "name": "usage",
-                "next": {
-                  "path": "reference/core/notify/references/events",
-                  "title": "events"
-                },
-                "path": "reference/core/notify/docs/usage",
-                "prev": {
-                  "path": "reference/core/notify/references/api",
-                  "title": "api"
-                },
-                "up": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1001,
-                  "title": "events"
-                },
-                "name": "events",
-                "next": {
-                  "path": "reference/core/purge-cache/README",
-                  "title": "purge-cache"
-                },
-                "path": "reference/core/notify/references/events",
-                "prev": {
-                  "path": "reference/core/notify/docs/usage",
-                  "title": "Enable Notifications"
-                },
-                "up": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "notify",
-            "next": {
-              "path": "reference/core/notify/references/api",
-              "title": "api"
-            },
-            "path": "reference/core/notify/README",
-            "prev": {
-              "path": "reference/core/hooks/references/events",
-              "title": "events"
-            },
-            "up": {
-              "path": "reference/core",
-              "title": "api"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1000,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/core/secrets/README",
-                  "title": "secrets"
-                },
-                "path": "reference/core/purge-cache/references/api",
-                "prev": {
-                  "path": "reference/core/purge-cache/README",
-                  "title": "purge-cache"
-                },
-                "up": {
-                  "path": "reference/core/purge-cache/README",
-                  "title": "purge-cache"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "purge-cache",
-            "next": {
-              "path": "reference/core/purge-cache/references/api",
-              "title": "api"
-            },
-            "path": "reference/core/purge-cache/README",
-            "prev": {
-              "path": "reference/core/notify/references/events",
-              "title": "events"
-            },
-            "up": {
-              "path": "reference/core",
-              "title": "api"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1000,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/core/worker-manager/README",
-                  "title": "worker-manager"
-                },
-                "path": "reference/core/secrets/references/api",
-                "prev": {
-                  "path": "reference/core/secrets/README",
-                  "title": "secrets"
-                },
-                "up": {
-                  "path": "reference/core/secrets/README",
-                  "title": "secrets"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "secrets",
-            "next": {
-              "path": "reference/core/secrets/references/api",
-              "title": "api"
-            },
-            "path": "reference/core/secrets/README",
-            "prev": {
-              "path": "reference/core/purge-cache/references/api",
-              "title": "api"
-            },
-            "up": {
-              "path": "reference/core",
-              "title": "api"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1000,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                },
-                "path": "reference/core/worker-manager/references/api",
-                "prev": {
-                  "path": "reference/core/worker-manager/README",
-                  "title": "worker-manager"
-                },
-                "up": {
-                  "path": "reference/core/worker-manager/README",
-                  "title": "worker-manager"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "worker-manager",
-            "next": {
-              "path": "reference/core/worker-manager/references/api",
-              "title": "api"
-            },
-            "path": "reference/core/worker-manager/README",
-            "prev": {
-              "path": "reference/core/secrets/references/api",
-              "title": "api"
-            },
-            "up": {
-              "path": "reference/core",
-              "title": "api"
-            }
-          }
-        ],
-        "data": {
-          "inline": true,
-          "order": 1000,
-          "title": "api"
         },
-        "name": "core",
-        "next": {
-          "path": "reference/core/built-in-workers/README",
-          "title": "built-in-workers"
-        },
-        "path": "reference/core",
-        "prev": {
-          "path": "reference/libraries",
-          "title": "Libraries"
+        "up": {
+          "path": "reference/README",
+          "title": "Taskcluster Reference"
         }
       }
     ],
@@ -2532,6 +2631,11 @@
       "order": 1000,
       "title": "Taskcluster Reference"
     },
+    "next": {
+      "path": "reference/guide",
+      "title": "Guide to The Microservices"
+    },
+    "path": "reference/README",
     "prev": {
       "path": "manual/using/handling-high-load",
       "title": "Handling High Load"
@@ -2942,8 +3046,8 @@
       "order": 1000
     },
     "prev": {
-      "path": "reference/core/worker-manager/references/api",
-      "title": "api"
+      "path": "reference/libraries/README",
+      "title": "Libraries"
     }
   }
 }

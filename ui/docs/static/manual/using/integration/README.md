@@ -1,5 +1,5 @@
 ---
-filename: using/integration/index.md
+filename: using/integration/README.md
 title: Integration with Other Applications
 order: 200
 ---

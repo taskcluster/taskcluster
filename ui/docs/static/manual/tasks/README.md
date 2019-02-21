@@ -1,5 +1,5 @@
 ---
-filename: tasks/index.md
+filename: tasks/README.md
 title: Tasks
 order: 10
 ---

@@ -1,5 +1,5 @@
 ---
-filename: design/devel/index.md
+filename: design/devel/README.md
 title: Development
 order: 20
 ---
