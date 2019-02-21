@@ -302,6 +302,7 @@ export default class Dashboard extends Component {
                 </IconButton>
               </Tooltip>
             )}
+            <UserMenu />
           </Toolbar>
         </AppBar>
         <Drawer
