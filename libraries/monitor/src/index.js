@@ -54,7 +54,7 @@ class MonitorManager {
     level = 'info',
     patchGlobal = true,
     bailOnUnhandledRejection = false,
-    resourceInterval = 10,
+    resourceInterval = 60,
     mock = false,
     enable = true,
     gitVersionFile = '.git-version',

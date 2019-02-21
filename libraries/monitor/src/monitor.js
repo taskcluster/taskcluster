@@ -203,7 +203,7 @@ class Monitor {
    *
    * Returns a function that can be used to stop monitoring.
    */
-  resources(procName, interval = 10) {
+  resources(procName, interval = 60) {
     if (this._resourceInterval) {
       clearInterval(this._resourceInterval);
     }
