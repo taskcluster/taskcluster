@@ -7,6 +7,7 @@ import Divider from '@material-ui/core/Divider';
 import AnchorOrLink from '../../components/AnchorOrLink';
 import PageNavigation from '../../components/PageNavigation';
 import { docsPageInfo } from '../../utils/prop-types';
+import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import { DOCS_PATH_PREFIX } from '../../utils/constants';
 
 @withStyles(theme => ({
@@ -56,7 +57,7 @@ export default class PageMeta extends Component {
         <ul>
           {items.map(([link, text]) => (
             <li key={text}>
-              <AnchorOrLink href={link}>{text}</AnchorOrLink>
+              <AnchorOrLink href={removeReadmeFromPath(link)}>{text}</AnchorOrLink>
             </li>
           ))}
         </ul>
@@ -96,7 +97,7 @@ export default class PageMeta extends Component {
             })}>
             {hasPreviousPage && (
               <PageNavigation
-                to={join(DOCS_PATH_PREFIX, pageInfo.prev.path)}
+                to={removeReadmeFromPath(join(DOCS_PATH_PREFIX, pageInfo.prev.path))}
                 variant="prev"
                 aria-label="Previous Page">
                 {pageInfo.prev.title}
@@ -104,7 +105,7 @@ export default class PageMeta extends Component {
             )}
             {hasNextPage && (
               <PageNavigation
-                to={join(DOCS_PATH_PREFIX, pageInfo.next.path)}
+                to={removeReadmeFromPath(join(DOCS_PATH_PREFIX, pageInfo.next.path))}
                 variant="next"
                 aria-label="Next Page">
                 {pageInfo.next.title}
