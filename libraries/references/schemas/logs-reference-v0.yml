@@ -43,7 +43,7 @@ properties:
           description: 'A description of this message type'
           type: string
         fields:
-          description: 'The set of fields that will be in every instance of this message type.'
+          description: 'The set of fields that will be in every instance of this message type. Mapping field name to description.'
           type: object
           additionalProperties: true
       additionalProperties: false

@@ -354,7 +354,6 @@ const createSignatureValidator = function(options) {
     }
     options.monitor.notice('signature-validation', { // Let's do this at notice since they are more important than info
       time: new Date(),
-      version: 3,
       expires: credentials? credentials.expires : '',
       scopes: credentials? credentials.scopes : [],
       clientId: credentials? credentials.clientId : '',
