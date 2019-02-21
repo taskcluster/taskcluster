@@ -221,7 +221,7 @@ export default class Log extends Component {
             <LazyLog
               containerStyle={containerStyle}
               url={url}
-              onScroll={stream ? this.handleScroll : undefined}
+              onScroll={this.handleScroll}
               stream={stream}
               selectableLines
               follow={follow}
