@@ -3,8 +3,9 @@ defaults:
     publishMetaData: !env:bool PUBLISH_METADATA
     statsComponent: 'worker-manager'
   monitoring:
-    enable: false
-    mock: true
+    enable: !env:bool MONITORING_ENABLE
+    pretty: !env:bool PRETTY_LOGGING
+    level: !env LEVEL
   taskcluster:
     rootUrl: !env TASKCLUSTER_ROOT_URL
     credentials:
@@ -32,6 +33,8 @@ defaults:
 test:
   taskcluster:
     rootUrl: 'http://localhost:5555'
+  monitoring:
+    enable: false
   server:
     port: 5555
     env: 'development'

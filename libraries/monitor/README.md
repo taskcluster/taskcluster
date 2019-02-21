@@ -1,6 +1,6 @@
 # Monitor Library
 
-A convenient library to wrap up all of the pieces needed for a Taskcluster service to record metrics with Statsum and report errors with Sentry.
+A convenient library to wrap up all of the pieces needed for a Taskcluster service to record metrics and write structured logs.
 By default it will report any errors that cause the process to exit, and report as warnings any errors that cause stats writing to not work. To
 disable any of these, you can see the Options and Defaults section below.
 
@@ -10,60 +10,149 @@ being something like `web` or `worker`.
 Taskcluster has some generic concepts that are able to be monitored easily using utility functions in this package. The Usage section lists these
 cases and shows how to use this package to measure them.
 
-Changelog
----------
-View the changelog on the [releases page](https://github.com/taskcluster/taskcluster-lib-monitor/releases).
-
-Requirements
-------------
-
-This is tested on and should run on any of node `{8, 9, 10}`.
-
 Usage
 -----
-This library must be provided with Taskcluster credentials that have the following scopes:
 
-* `auth:sentry:<name of project>`
-* `auth:statsum:<name of project>`
+First set up a `monitorManager` and register types on it (described later) before you set things up at runtime and finally
+get prefixed monitors to use elsewhere.
 
-First, create a monitor by calling this module asynchronously.  This is typically
-done in a [taskcluster-lib-loader](https://github.com/taskcluster/taskcluster-lib-loader)
-component, but otherwise would look like:
+You must first set up a `monitorManager` and then configure it with `setup()` before you can get and use monitors. See the example below.
 
 ```js
-const mon = await monitor({
-  rootUrl: 'https://taskcluster.example.com',
-  credentials: cfg.taskcluster.credentials,
-  projectName: 'taskcluster-foo',
-  mock: cfg.monitor.mock,  // false in production, true in testing
-  process: 'server',       // or otherwise for e.g., periodic tasks
+const MonitorManager = require('taskcluster-lib-monitor');
+
+const manager = new MonitorManager({
+  serviceName: 'foo',
 });
+manager.setup({
+  mock: cfg.monitor.mock,  // false in production, true in testing
+  processName: 'server',       // or otherwise for e.g., periodic tasks
+});
+const monitor = manager.monitor(); // To get a root monitor
+const monitor = manager.monitor('prefix'); // To get a child monitor
+const monitor = manager.monitor('prefix', {meta: 5}); // To get a child monitor with extra metadata
 ```
 
-The available options are:
+The available options to the manager's constructor are:
 
- * `rootUrl` - the rootUrl for this Taskcluster instance; used with `credentials` to fetch statsum and sentry keys
- * `credentials`: `{clientId: '...', accessToken: '...'}` - Taskcluster credentials (no default - must be provided)
- * `projectName` - The project that will be written under to Statsum and Sentry.
- * `patchGlobal` - If true (the default), any uncaught errors in the service will be reported to Sentry.
- * `reportStatsumErrors` - If true (the default), any errors reporting to Statsum will be reported to Sentry.
- * `process` - If set to a string that identifies this process, cpu and memory
+ * `serviceName` - The short name of this service.
+
+The available options to the setup function are:
+
+ * `level` - A syslog logging level. Any messages with less severity than this level will not be logged.
+ * `pretty` - Only for development use. Pretty prints logs rather than using a structured form.
+ * `patchGlobal` - If true (the default), any uncaught errors in the service will be reported.
+ * `processName` - If set to a string that identifies this process, cpu and memory
     usage of the process will be reported on an interval. Note: This can also be
     turned on by monitor.resources(...) later if wanted.  That allows for
     gracefully stopping as well.
- * `statsumToken` - a function that will return a Statsum token (`async (projectName) => {token, expires, baseUrl}`); the default value uses `credentials` to fetch a token from the Auth service.
- * `sentryDSN` - a function that will return a Sentry DSN (`async (projectName) => {dsn: {secret: '...'}, expires}`); the default value uses `credentials` to fetch a DSN from the Auth service.
- * `sentryOptions`:options given to the [raven.Client constructor](https://docs.sentry.io/clients/node/config/)
  * `mock` - If true, the monitoring object will be a fake that stores data for testing but does not report it (for testing).
- * `enable` - If false, the monitoring object will only report to the console (but not store data; for deployments without monitoring)
- * `aws` - If provided, these should be of the form `{credentials: {accessKeyId: '...', secretAccessKey: '...'}, region: '...'}`
- * `logName` - If provided, this should be the name of a AWS Kinesis stream that can be written to with the aws creds
- * `gitVersion` -  git version (for correlating errors); or..
+ * `enable` - If false, the monitoring object will only report to the console (but not store data; for deployments without monitoring).
+ * `metadata` - an object of extra fields to attach to any logs generated by this object.
+ * `metadata.gitVersion` -  git version (for correlating errors); or...
  * `gitVersionFile` -  file containing git version (relative to app root)
+ * `verify` - If this is true, log messages that have been registered will be verified to define all of the required fields.
+
+### Logging
+
+This library allows writing logs to stdout in the [mozlog](https://wiki.mozilla.org/Firefox/Services/Logging) format.
+
+We add an extra `message` field to the top level if any of the contents of `Fields` are `message` or `stack`.
+This is for compatibility with the logging tools we use. We will add configurable output formats later if wanted.
+
+We have both a `Severity and `severity` field to support both our logging tooling requiremtents and mozlog's. The lowercase
+reports in a string version of severity and uppercase is the syslog number for each level.
+
+We also add a `serviceContext` which is used in our tooling. This contains a single field with the name of the service.
+
+```json
+{
+  "Timestamp": <time since unix epoch in nanoseconds>,
+  "Type": "...",
+  "Logger": "...",
+  "message": "...",
+  "serviceContext": {"service": "..."},
+  "Hostname": "...",
+  "EnvVersion": "2.0",
+  "Severity": ...,
+  "severity": ...,
+  "Pid": ...,
+  "Fields": {...}
+}
+```
+
+It provides the following functions:
+
+```js
+  emerg(type, fields) // Not recommended for use
+  alert(type, fields)
+  crit(type, fields)
+  err(type, fields)
+  warning(type, fields)
+  notice(type, fields)
+  info(type, fields)
+  debug(type, fields)
+```
+
+The `type` will be set in the event object as the `Type` field in the mozlog format. Everything in `fields` will be set in the `Fields`.
+We default to `info` logging level so normally `debug` logs will not be logged.
+
+If you leave out `type`, the first argument will be used for `fields`. If fields is a string or number, we will log it in a generic message.
+
+### Registering message types
+
+This library allows creating custom message types. We add these registered types to our published references much the same as
+our api and pulse documentation. To add a message type, do the following:
+
+```js
+const manager = new MonitorManager({
+  serviceName: 'notify',
+});
+
+manager.register({
+  name: 'email',
+  type: 'email',
+  version: 1,
+  level: 'info',
+  description: 'A request to send an email.',
+  fields: {
+    address: 'The requested recepient of the email.',
+  },
+});
+
+// And now after getting a monitor post-setup:
+monitor.log.email({address: req.body.address});
+```
+
+Each part is:
+
+ * `name` - This will be made available on your monitor under a `.log` prefix.
+ * `type` - This will be the `Type` field of the logged message.
+ * `version` - This will end up in a `v` field of the `Fields` part of a logged message. Bump this if making a backwards-incompatible change
+ * `level` - This will be the level that this message logs at.
+ * `description` - A description of what this logging message means
+ * `fields`: An object where every key is the name of a required field to be logged. Corresponding values are documentation of the meaning of that field.
+
+If the `verify` option is set to true during manager setup, this library will verify that at least the required fields have been passed into the logger
+upon invoking it.
+
+When using this feature, pass in `monitorManager.references()` to an instance of taskcluster-lib-docs to publish.
+
+### Per-child Levels
+
+If you set the level during setup to a single valid syslog level, it will be propagated to all child loggers. If you would like more control,
+you can use a specifically formatted string:
+
+```
+level: 'root:info root.api:debug root.handler:warning'
+```
+
+When you use this format, you specify a prefix with `root` included and after a `:` you specify a valid syslog level. You _must_ set a value for
+`root` in these cases and any unspecified prefixes will default to that.
 
 ### Measuring and Counting Things
 
-More details on the usage of measure and count can be found at [the Statsum client](https://github.com/taskcluster/node-statsum#statsum-client-for-nodejs).
+**Note: You should prefer logging specific types rather than these generic counts and measures. They exist mostly for backwards compatibility.**
 
 To record a current measurement of a named value:
 
@@ -78,41 +167,21 @@ monitor.count('bar');
 monitor.count('bar', 4); // increment by 4
 ```
 
-To construct an object capable of measuring and counting, but which adds a
-prefix to the measured and counted names, use
-
-```js
-const thingMonitor = monitor.prefix('thing');
-thing.measure('foo', 11);
-thing.count('bar');
-```
-
-The monitor will automatically flush its statistics to statsum periodically, but you can force a flush with
-
-```js
-await monitor.flush();
-```
+These events will have types of `monitor.measure` and `monitor.count` respectively. The fields will have `key` and `val`.
 
 ### Reporting Errors
 
 There are lots of options for reporting errors:
 
 ```js
-// Report error as a string, without a stacktrace
+// Report error as a string
 monitor.reportError('Something went wrong!');
 // Report error (from catch-block or something like that)
 monitor.reportError(new Error("..."));
-// Report error as a warning
-monitor.reportError(new Error("..."), 'warning');
-// Report error as info
-monitor.reportError(new Error("..."), 'info');
-// Report error as debug
-monitor.reportError(new Error("..."), 'debug');
-// Report an error with tags
+// Report an error with extra info
 monitor.reportError(new Error("..."), {foo: 'bar'});
-// Report a warningr with tags
-monitor.reportError(new Error("..."), 'warning', {foo: 'bar'});
-
+// (DEPRECATED) Report error as a warning. This will simply append 'warning' to fields
+monitor.reportError(new Error("..."), 'warning');
 ```
 
 ### Monitoring CPU & Memory
@@ -168,11 +237,6 @@ A common pattern in Taskcluster projects is to have handler functions in a worke
 can be timed (in milliseconds) by wrapping them with `taskcluster-lib-monitor`:
 
 ```js
-const monitor = await monitoring({
-  projectName: 'tc-stats-collector',
-  credentials: {clientId: 'test-client', accessToken: 'test'},
-});
-
 const listener = new taskcluster.PulseListener({
   credentials: {clientId: 'test-client', accessToken: 'test'},
   queueName: 'a-queue-name',
@@ -193,13 +257,6 @@ Most Taskcluster services are Express services. We can easily time how long endp
 as middleware:
 
 ```js
-const monitor = await monitoring({
-  projectName: 'tc-stats-collector',
-  credentials: {clientId: 'test-client', accessToken: 'test'},
-});
-
-// Express setup, etc.
-
 middleware.push(monitor.expressMiddleware('name_of_function'));
 ```
 This is already integrated in `taskcluster-lib-api` and probably doesn't need to be implemented in your service on its own.
@@ -224,7 +281,7 @@ If none of the above options are convenient for you, you can also just start and
 only be started and measured once. Any attempts over that will cause it to throw an Error.
 
 ```js
-const doodad = monitor.timeKeeper('metricName');
+const doodad = monitor.timeKeeper('metricName', {optional: 'extra data'});
 // Do some stuff here that takes some amount of time
 // ...
 // Keep doing stuff here however long you like
@@ -256,35 +313,3 @@ This function will:
  * shut down and flush monitoring
  * call `process.exit` on success or failure
 Note, then, that the function **does not return**.
-
-###  Audit Logs
-For the time being, this is restricted to services that have use AWS credentials directly rather than via accessing via the
-auth service. Given a set of credentials that allow writing to a Kinesis stream and the name of that Kinesis stream, this will
-allow writing arbitrary JSON blobs to that endpoint. The blobs will end up in S3 for permanent storage. We use this for things
-like audit logs that we want to keep for a long time. Records must be less than 1MB when stringified.
-
-```js
-    const monitor = await monitoring({
-      ...,
-      aws: {credentials: {accessKeyId: 'foo', secretAccessKey: 'bar'}, region: 'us-east-1'},
-      logName: 'audit-log-stream',
-    });
-    monitor.log({foo: 'bar', baz: 233}); // This will be submitted on a timed interval
-    await monitor.flush(); // This will await all records being submitted
-```
-
-Testing
--------
-
-`yarn install` and `yarn test`. You can set `DEBUG=taskcluster-lib-monitor,test` if you want to see what's going on. There are no keys required to test this library.
-
-Hacking
--------
-
-New releases should be tested on Travis to allow for all supported versions of Node to be tested. Once satisfied that it works, new versions should be created with
-`yarn version` rather than by manually editing `package.json` and tags should be pushed to Github. Make sure to update [the changelog](https://github.com/taskcluster/taskcluster-lib-monitor/releases)!
-
-License
--------
-
-[Mozilla Public License Version 2.0](https://github.com/taskcluster/taskcluster-lib-monitor/blob/master/LICENSE)

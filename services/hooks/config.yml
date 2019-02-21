@@ -23,8 +23,9 @@ defaults:
       clientId:       !env TASKCLUSTER_CLIENT_ID
       accessToken:    !env TASKCLUSTER_ACCESS_TOKEN
   monitoring:
-    project:                    !env MONITORING_PROJECT
+    level:                      !env LEVEL
     enable:                     !env:bool MONITORING_ENABLE
+    pretty:                     !env:bool PRETTY_LOGGING
   server:
     port:             !env:number PORT
     env:              !env NODE_ENV
@@ -71,7 +72,6 @@ test:
     signingKey:       'not a secret'
     cryptoKey:        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
   monitoring:
-    project: taskcluster-hooks
     enable: false
   server:
     port:             60401

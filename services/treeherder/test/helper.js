@@ -3,6 +3,7 @@ const assert = require('assert');
 const Handler = require('../src/handler');
 const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
+const MonitorManager = require('taskcluster-lib-monitor');
 const {fakeauth, stickyLoader} = require('taskcluster-lib-testing');
 const {FakeClient} = require('taskcluster-lib-pulse');
 
@@ -50,7 +51,16 @@ exports.withHandler = () => {
     const cfg = await exports.load('cfg');
     const validator = await exports.load('validator');
     const pulseClient = new FakeClient();
-    exports.monitor = await exports.load('monitor');
+
+    exports.monitorManager = new MonitorManager({
+      serviceName: 'foo',
+    });
+    exports.monitorManager.setup({
+      mock: true,
+      enable: true,
+    });
+    exports.monitor = exports.monitorManager.monitor();
+
     exports.handler = new Handler({
       cfg,
       prefix: 'foo',
@@ -87,6 +97,10 @@ exports.withHandler = () => {
     exports.handler.taskCalls = [];
     exports.handler.fakeArtifacts = {};
     exports.handler.publishedMessages = [];
+  });
+
+  teardown(() => {
+    exports.monitorManager.reset();
   });
 
 };

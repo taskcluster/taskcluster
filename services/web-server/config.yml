@@ -5,9 +5,9 @@ defaults:
     loginStrategies: !env:list LOGIN_STRATEGIES
 
   monitoring:
-    project: !env MONITORING_PROJECT
     enable: !env:bool MONITORING_ENABLE
-    mock: false
+    pretty: !env:bool PRETTY_LOGGING
+    level: !env LEVEL
 
   # Server configuration
   server:
@@ -45,7 +45,7 @@ development:
     port: 3050
   monitoring:
     project: taskcluster-web-server
-    mock: true
+    enable: false
 
 production:
   pulse:

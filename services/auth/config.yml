@@ -64,8 +64,9 @@ defaults:
     auditLog:                   !env AUDIT_LOG
 
   monitoring:
-    project:                    !env MONITORING_PROJECT
     enable:                     !env:bool MONITORING_ENABLE
+    level:                      !env LEVEL
+    pretty:                     !env:bool PRETTY_LOGGING
 
   server:
 

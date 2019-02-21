@@ -78,7 +78,6 @@ module "gce_provider_secrets" {
   secrets = {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/gce-provider"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.gce_provider_access_token.result}"
-    DEBUG                    = "*"
     NODE_ENV                 = "production"
     MONITORING_ENABLE        = "false"
     PUBLISH_METADATA         = "false"

@@ -128,7 +128,7 @@ tasks:
             provisionerId: aws-provisioner-v1
             workerType: github-worker
             created: {$fromNow: ''}
-            deadline: {$fromNow: '60 minutes'}
+            deadline: {$fromNow: '20 minutes'}
             scopes:
               - assume:project:taskcluster:tests:taskcluster
             payload:
@@ -140,7 +140,7 @@ tasks:
                   $if: 'job.name != "taskcluster-lib-testing"'
                   then: true
                 TEST_BUCKET: 'test-bucket-for-any-garbage' # TODO: Allow each project to specify its own env
-              maxRunTime: 3600
+              maxRunTime: 1200
               image: ${job.image}
               command:
                 - "/bin/bash"

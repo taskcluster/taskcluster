@@ -12,7 +12,7 @@ const config = require('typed-env-config');
 const loader = require('taskcluster-lib-loader');
 const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
-const monitor = require('taskcluster-lib-monitor');
+const monitorManager = require('./monitor');
 const taskcluster = require('taskcluster-client');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const exchanges = require('./exchanges');
@@ -28,13 +28,10 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitor({
-      rootUrl: cfg.taskcluster.rootUrl,
-      projectName: 'taskcluster-hooks',
-      enable: cfg.monitoring.enable,
-      credentials: cfg.taskcluster.credentials,
-      mock: profile !== 'production',
-      process,
+    setup: ({process, profile, cfg}) => monitorManager.setup({
+      processName: process,
+      verify: profile !== 'production',
+      ...cfg.monitoring,
     }),
   },
 
@@ -43,7 +40,7 @@ const load = loader({
     setup: ({cfg, process, monitor}) => {
       return data.Hook.setup({
         tableName: cfg.app.hookTableName,
-        monitor: monitor.prefix('table.hooks'),
+        monitor: monitor.monitor('table.hooks'),
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.hookTableName,
@@ -61,7 +58,7 @@ const load = loader({
     setup: ({cfg, monitor}) => {
       return data.LastFire.setup({
         tableName: cfg.app.lastFireTableName,
-        monitor: monitor.prefix('table.lastFireTable'),
+        monitor: monitor.monitor('table.lastFireTable'),
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.lastFireTableName,
@@ -89,7 +86,7 @@ const load = loader({
     setup: ({cfg, monitor}) => {
       return new libPulse.Client({
         namespace: 'taskcluster-hooks',
-        monitor,
+        monitor: monitor.monitor('pulse-client'),
         credentials: libPulse.pulseCredentials(cfg.pulse),
       });
     },
@@ -106,7 +103,7 @@ const load = loader({
       publish: cfg.app.publishMetaData,
       validator: await schemaset.validator(cfg.taskcluster.rootUrl),
       aws: cfg.aws.validator,
-      monitor: monitor.prefix('publisher'),
+      monitor: monitor.monitor('publisher'),
     }),
   },
 
@@ -115,7 +112,7 @@ const load = loader({
     setup: ({cfg, LastFire, monitor}) => new taskcreator.TaskCreator({
       ...cfg.taskcluster,
       LastFire,
-      monitor: monitor.prefix('taskcreator'),
+      monitor: monitor.monitor('taskcreator'),
     }),
   },
 
@@ -136,7 +133,7 @@ const load = loader({
       schemaset,
       publish: cfg.app.publishMetaData,
       aws: cfg.aws.validator,
-      monitor,
+      monitor: monitor.monitor('api'),
     }),
   },
 
@@ -145,7 +142,7 @@ const load = loader({
     setup: ({cfg, process, monitor}) => {
       return data.Queues.setup({
         tableName: cfg.app.queuesTableName,
-        monitor: monitor.prefix('table.queues'),
+        monitor: monitor.monitor('table.queues'),
         credentials: sasCredentials({
           accountId: cfg.azure.accountId,
           tableName: cfg.app.queuesTableName,
@@ -165,7 +162,7 @@ const load = loader({
         Queues,
         taskcreator,
         client: pulseClient,
-        monitor,
+        monitor: monitor.monitor('listeners'),
       });
       await listeners.setup();
       return listeners;
@@ -188,6 +185,9 @@ const load = loader({
         }, {
           name: 'events',
           reference: exchanges.reference(),
+        }, {
+          name: 'logs',
+          reference: monitorManager.reference(),
         },
       ],
     }),
@@ -216,7 +216,7 @@ const load = loader({
         Hook,
         taskcreator,
         notify,
-        monitor: monitor.prefix('scheduler'),
+        monitor: monitor.monitor('scheduler'),
         pollingDelay: cfg.app.scheduler.pollingDelay,
       });
     },
@@ -230,7 +230,7 @@ const load = loader({
   expires: {
     requires: ['cfg', 'Hook', 'LastFire', 'monitor'],
     setup: ({cfg, Hook, LastFire, monitor}) => {
-      return monitor.oneShot('expire LastFires', async () => {
+      return monitor.monitor().oneShot('expire LastFires', async () => {
         const expirationTime = taskcluster.fromNow(cfg.app.lastFiresExpirationDelay);
         debug('Expiring lastFires rows');
         const count = await LastFire.expires(Hook, expirationTime);

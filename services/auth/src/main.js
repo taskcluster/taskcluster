@@ -1,7 +1,7 @@
 const Loader = require('taskcluster-lib-loader');
 const Docs = require('taskcluster-lib-docs');
 const SchemaSet = require('taskcluster-lib-validate');
-const Monitor = require('taskcluster-lib-monitor');
+const monitorManager = require('./monitor');
 const App = require('taskcluster-lib-app');
 const {sasCredentials} = require('taskcluster-lib-azure');
 const Config = require('typed-env-config');
@@ -37,6 +37,7 @@ const load = Loader({
     }),
   },
 
+  // TODO: Remove me when nothing relies on sentry bug #1529461
   sentryManager: {
     requires: ['cfg', 'sentryClient'],
     setup: ({cfg, sentryClient}) => new SentryManager({
@@ -46,42 +47,19 @@ const load = Loader({
   },
 
   monitor: {
-    requires: ['cfg', 'sentryManager', 'profile', 'process'],
-    setup: ({cfg, sentryManager, profile, process}) => {
-      return Monitor({
-        projectName: cfg.monitoring.project || 'taskcluster-auth',
-        rootUrl: cfg.taskcluster.rootUrl,
-        enable: cfg.monitoring.enable,
-        process,
-        mock: profile === 'test',
-        aws: {credentials: _.pick(cfg.aws, ['accessKeyId', 'secretAccessKey']), region: cfg.aws.region},
-        logName: cfg.app.auditLog, // Audit logs will be noop if this is null
-        statsumToken: async (project) => {
-          return {
-            project,
-            token: Statsum.createToken(project, cfg.app.statsum.secret, '25h'),
-            baseUrl: cfg.app.statsum.baseUrl,
-            expires: taskcluster.fromNowJSON('24 hours'),
-          };
-
-        },
-        sentryDSN: async (project) => {
-          let key = await sentryManager.projectDSN(project);
-          return {
-            project,
-            dsn: _.pick(key.dsn, ['secret', 'public']),
-            expires: key.expires.toJSON(),
-          };
-        },
-      });
-    },
+    requires: ['cfg', 'profile', 'process'],
+    setup: ({cfg, profile, process}) => monitorManager.setup({
+      processName: process,
+      verify: profile !== 'production',
+      ...cfg.monitoring,
+    }),
   },
 
   resolver: {
     requires: ['cfg', 'monitor'],
     setup: ({cfg, monitor}) => new ScopeResolver({
       maxLastUsedDelay: cfg.app.maxLastUsedDelay,
-      monitor: monitor.prefix('scope-resolver'),
+      monitor: monitor.monitor('scope-resolver'),
     }),
   },
 
@@ -93,7 +71,7 @@ const load = Loader({
         credentials: cfg.azure || {},
         signingKey: cfg.azure.signingKey,
         cryptoKey: cfg.azure.cryptoKey,
-        monitor: monitor.prefix('table.clients'),
+        monitor: monitor.monitor('table.clients'),
       }),
   },
 
@@ -136,6 +114,9 @@ const load = Loader({
         }, {
           name: 'events',
           reference: exchanges.reference(),
+        }, {
+          name: 'logs',
+          reference: monitorManager.reference(),
         },
       ],
     }),
@@ -151,7 +132,7 @@ const load = Loader({
     setup: ({cfg, monitor}) => {
       return new libPulse.Client({
         namespace: 'taskcluster-auth',
-        monitor,
+        monitor: monitor.monitor('pulse-client'),
         credentials: libPulse.pulseCredentials(cfg.pulse),
       });
     },
@@ -196,7 +177,7 @@ const load = Loader({
       let signatureValidator = signaturevalidator.createSignatureValidator({
         expandScopes: (scopes) => resolver.resolve(scopes),
         clientLoader: (clientId) => resolver.loadClient(clientId),
-        monitor,
+        monitor: monitor.monitor('signature-validator'),
       });
 
       return builder.build({
@@ -211,14 +192,13 @@ const load = Loader({
           sentryManager,
           statsum: cfg.app.statsum,
           websocktunnel: cfg.app.websocktunnel,
-          monitor,
         },
         schemaset,
         signatureValidator,
         publish: cfg.app.publishMetaData,
         aws: cfg.aws,
         referenceBucket: cfg.app.buckets.references,
-        monitor: monitor.prefix('api'),
+        monitor: monitor.monitor('api'),
       });
     },
   },
@@ -234,7 +214,7 @@ const load = Loader({
   'expire-sentry': {
     requires: ['cfg', 'sentryManager', 'monitor'],
     setup: async ({cfg, sentryManager, monitor}) => {
-      return monitor.oneShot('expire-sentry', async () => {
+      return monitor.monitor().oneShot('expire-sentry', async () => {
         const now = taskcluster.fromNow(cfg.app.sentryExpirationDelay);
         debug('Expiring sentry keys');
         await sentryManager.purgeExpiredKeys(now);
@@ -246,11 +226,11 @@ const load = Loader({
   'purge-expired-clients': {
     requires: ['cfg', 'Client', 'monitor'],
     setup: ({cfg, Client, monitor}) => {
-      return monitor.oneShot('purge-expired-clients', async () => {
+      return monitor.monitor().oneShot('purge-expired-clients', async () => {
         const now = taskcluster.fromNow(cfg.app.clientExpirationDelay);
         debug('Purging expired clients');
         await Client.purgeExpired(now);
-        debug('PUrged expired clients');
+        debug('Purged expired clients');
       });
     },
   },

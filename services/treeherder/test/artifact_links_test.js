@@ -1,9 +1,9 @@
 const assert = require('assert');
 const taskDefinition = require('./fixtures/task');
-const Monitor = require('taskcluster-lib-monitor');
 const artifactLinkTransform = require('../src/transform/artifact_links');
 const helper = require('./helper');
 const taskcluster = require('taskcluster-client');
+const MonitorManager = require('taskcluster-lib-monitor');
 
 let monitor, queue, fakeArtifacts;
 
@@ -11,7 +11,13 @@ suite('artifact link transform', () => {
   helper.withLoader();
 
   suiteSetup(async () => {
-    monitor = await helper.load('monitor');
+    const monitorManager = new MonitorManager({
+      serviceName: 'foo',
+    });
+    monitorManager.setup({
+      mock: true,
+    });
+    monitor = monitorManager.monitor();
   });
 
   setup(async function() {

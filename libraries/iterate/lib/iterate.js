@@ -172,8 +172,10 @@ class Iterate extends events.EventEmitter {
       this.emit('iteration-success', value);
       debug(`ran handler in ${diff} seconds`);
       if (this.monitor) {
-        this.monitor.measure('iteration-time', diff * 1000);
-        this.monitor.count('successful-iteration', 1);
+        this.monitor.info('iteration', {
+          status: 'success',
+          duration: diff * 1000,
+        });
       }
 
       // We could probably safely just create a new Array every time since if
@@ -185,7 +187,9 @@ class Iterate extends events.EventEmitter {
     } catch (err) {
       this.emit('iteration-failure', err);
       if (this.monitor) {
-        this.monitor.count('failed-iteration', 1);
+        this.monitor.info('iteration', {
+          status: 'failed',
+        });
         this.monitor.reportError(err, 'warning', {
           consecutiveErrors: this.failures.length,
         });

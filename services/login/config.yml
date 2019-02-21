@@ -28,6 +28,9 @@ defaults:
     apiVersion:       2014-01-01
   monitoring:
     enable: !env:bool MONITORING_ENABLE
+    pretty: !env:bool PRETTY_LOGGING
+    level: !env LEVEL
+
   server:
     port:       !env:number PORT
     forceSSL:   !env:flag FORCE_SSL

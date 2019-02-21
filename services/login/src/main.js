@@ -3,7 +3,7 @@ const loader = require('taskcluster-lib-loader');
 const scanner = require('./scanner');
 const App = require('taskcluster-lib-app');
 const SchemaSet = require('taskcluster-lib-validate');
-const monitor = require('taskcluster-lib-monitor');
+const monitorManager = require('./monitor');
 const docs = require('taskcluster-lib-docs');
 const builder = require('./v1');
 
@@ -29,13 +29,10 @@ let load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitor({
-      rootUrl: cfg.taskcluster.rootUrl,
-      projectName: 'taskcluster-login',
-      enable: cfg.monitoring.enable,
-      credentials: cfg.app.credentials,
-      mock: profile !== 'production',
-      process,
+    setup: ({process, profile, cfg}) => monitorManager.setup({
+      processName: process,
+      verify: profile !== 'production',
+      ...cfg.monitoring,
     }),
   },
 
@@ -61,6 +58,9 @@ let load = loader({
         {
           name: 'api',
           reference: builder.reference(),
+        }, {
+          name: 'logs',
+          reference: monitorManager.reference(),
         },
       ],
     }),
@@ -79,7 +79,7 @@ let load = loader({
       rootUrl: cfg.taskcluster.rootUrl,
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
-      monitor: monitor.prefix('api'),
+      monitor: monitor.monitor('api'),
     }),
   },
 
@@ -97,7 +97,7 @@ let load = loader({
   scanner: {
     requires: ['cfg', 'handlers', 'monitor'],
     setup: ({cfg, handlers, monitor}) => {
-      return monitor.oneShot('scanner', () => scanner(cfg, handlers));
+      return monitor.monitor().oneShot('scanner', () => scanner(cfg, handlers));
     },
   },
 }, {

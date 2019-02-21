@@ -6,6 +6,7 @@ const Promise = require('promise');
 const SchemaSet = require('taskcluster-lib-validate');
 const makeApp = require('taskcluster-lib-app');
 const APIBuilder = require('../');
+const helper = require('./helper');
 const testing = require('taskcluster-lib-testing');
 const path = require('path');
 const debug = require('debug')('auth_test');
@@ -38,6 +39,7 @@ suite('api/auth', function() {
     // Create API
     const api = await builder.build({
       rootUrl,
+      monitor: helper.monitor(),
       schemaset: new SchemaSet({
         serviceName: 'test',
         folder: path.join(__dirname, 'schemas'),

@@ -65,7 +65,6 @@ module "queue_secrets" {
   disabled_services = "${var.disabled_services}"
 
   secrets = {
-    DEBUG                            = "*"
     NODE_ENV                         = "production"
     MONITORING_ENABLE                = "false"
     PUBLISH_METADATA                 = "false"

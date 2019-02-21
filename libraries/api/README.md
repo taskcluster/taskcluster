@@ -87,7 +87,7 @@ The available options are:
  * `params` - patterns for URL parameters that apply to all methods (see below)
  * `context` - a list of context entries that must be passed to `builder.build`.  Each
    will be available as properties of `this` within the implementation of each API
-   method.
+   method. An instance of taskcluster-lib-monitor is _always_ available in the context.
  * `errorCodes` - a mapping from error names to HTTP statuses, e.g., `{MyError: 400}`
 
 ## Declaring methods
@@ -417,7 +417,7 @@ options to `builder.build` are:
    specified in `context` when the API was declared.  The purpose of this parameter is to
    provide uesful application-specific objects such as Azure table objects or
    other API clients to the API methods.
- * `monitor` - an instance of [taskcluster-lib-monitor](https://github.com/taskcluster/taskcluster-lib-monitor)
+ * `monitor` (required) - an instance of [taskcluster-lib-monitor](https://github.com/taskcluster/taskcluster-lib-monitor)
  * `schemaset` (required) - a schemaset; this is from
    [taskcluster-lib-validate](https://github.com/taskcluster/taskcluster-lib-validate).
  * `signatureValidator` - a validator for Hawk signatures; this is only required for

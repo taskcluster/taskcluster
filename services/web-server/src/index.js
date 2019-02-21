@@ -4,10 +4,10 @@ import { createComplexityLimitRule } from 'graphql-validation-complexity';
 import loader from 'taskcluster-lib-loader';
 import docs from 'taskcluster-lib-docs';
 import config from 'typed-env-config';
-import monitor from 'taskcluster-lib-monitor';
 import { createServer } from 'http';
 import { FakeClient, Client, pulseCredentials } from 'taskcluster-lib-pulse';
 import { ApolloServer } from 'apollo-server-express';
+import monitorManager from './monitor';
 import createApp from './servers/createApp';
 import formatError from './servers/formatError';
 import createContext from './createContext';
@@ -25,14 +25,12 @@ const load = loader(
     },
 
     monitor: {
-      requires: ['cfg'],
-      setup: ({ cfg }) =>
-        monitor({
-          rootUrl: cfg.taskcluster.rootUrl,
-          projectName: cfg.monitoring.project,
-          credentials: cfg.taskcluster.credentials,
-          mock: cfg.monitoring.mock,
-          enable: cfg.monitoring.enable,
+      requires: ['cfg', 'profile', 'process'],
+      setup: ({ cfg, profile, process }) =>
+        monitorManager.setup({
+          processName: process,
+          verify: profile !== 'production',
+          ...cfg.monitoring,
         }),
     },
 
@@ -45,7 +43,10 @@ const load = loader(
         tier: 'platform',
         schemaset,
         publish: false,
-        references: [],
+        references: [{
+          name: 'logs',
+          reference: monitorManager.reference(),
+        }],
       }),
     },
 
@@ -71,7 +72,7 @@ const load = loader(
         }
 
         return new Client({
-          monitor,
+          monitor: monitor.monitor('pulse-client'),
           namespace: cfg.pulse.namespace,
           credentials: pulseCredentials(cfg.pulse),
         });
@@ -83,7 +84,7 @@ const load = loader(
       setup: ({ pulseClient, monitor }) =>
         new PulseEngine({
           pulseClient,
-          monitor,
+          monitor: monitor.monitor('pulse-engine'),
         }),
     },
 

@@ -1,0 +1,59 @@
+$schema: "/schemas/common/metadata-metaschema.json#"
+$id: "/schemas/common/logs-reference-v0.json#"
+title: Log Messages Reference File
+description: Reference of messages output by structured logging
+metadata:
+  name: logs
+  version: 0
+type: object
+properties:
+  serviceName:
+    title: Service Name
+    description: Name of the taskcluster service
+    type: string
+    pattern: '^[a-z][a-z0-9_-]*$'
+  $schema:
+    description: >-
+      Link to schema for this reference. That is a link to this very document.
+      Typically used to identify what kind of reference this file is.
+    title: Log Message Reference
+    type: string
+    format: uri
+  types:
+    type: array
+    title: Types
+    description: Array of log message types
+    items:
+      type: object
+      title: Message Type
+      properties:
+        name:
+          description: 'The service-specific name of this message type.'
+          type: string
+          pattern: '^[a-z][a-zA-Z0-9_]*'
+        type:
+          description: 'The "type" of the message will be in the top-level keys of a message under the name "Type".'
+          type: string
+          pattern: '^[a-z][a-z0-9.-_]*'
+        version:
+          description: 'The version of the fields for this log type. Will increment for breaking changes.'
+          type: integer
+          minimum: 1
+        description:
+          description: 'A description of this message type'
+          type: string
+        fields:
+          description: 'The set of fields that will be in every instance of this message type. Mapping field name to description.'
+          type: object
+          additionalProperties: true
+      additionalProperties: false
+      required:
+        - type
+        - version
+        - description
+        - fields
+additionalProperties: false
+required:
+  - serviceName
+  - $schema
+  - types

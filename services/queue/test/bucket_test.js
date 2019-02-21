@@ -6,7 +6,6 @@ const _ = require('lodash');
 const debug = require('debug')('test:bucket_test');
 const request = require('superagent');
 const helper = require('./helper');
-const Monitor = require('taskcluster-lib-monitor');
 
 helper.secrets.mockSuite(__filename, ['aws'], function(mock, skipping) {
   helper.withS3(mock, skipping);

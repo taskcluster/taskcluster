@@ -4,11 +4,11 @@ const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 const App = require('taskcluster-lib-app');
 const loader = require('taskcluster-lib-loader');
 const config = require('typed-env-config');
-const monitor = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const docs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
 const _ = require('lodash');
+const monitorManager = require('./monitor');
 const builder = require('./api');
 const Notifier = require('./notifier');
 const RateLimit = require('./ratelimit');
@@ -27,13 +27,10 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitor({
-      rootUrl: cfg.taskcluster.rootUrl,
-      projectName: cfg.monitoring.project || 'taskcluster-notify',
-      enable: cfg.monitoring.enable,
-      credentials: cfg.taskcluster.credentials,
-      mock: profile === 'test',
-      process,
+    setup: ({process, profile, cfg}) => monitorManager.setup({
+      processName: process,
+      verify: profile !== 'production',
+      ...cfg.monitoring,
     }),
   },
 
@@ -64,7 +61,7 @@ const load = loader({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.prefix('table.denylist'),
+      monitor: monitor.monitor('table.denylist'),
     }),
   },
 
@@ -84,6 +81,9 @@ const load = loader({
         }, {
           name: 'events',
           reference: reference,
+        }, {
+          name: 'logs',
+          reference: monitorManager.reference(),
         },
       ],
     }),
@@ -99,7 +99,7 @@ const load = loader({
     setup: ({cfg, monitor}) => {
       return new Client({
         namespace: cfg.pulse.namespace,
-        monitor,
+        monitor: monitor.monitor('pulse-client'),
         credentials: pulseCredentials(cfg.pulse),
       });
     },
@@ -171,7 +171,7 @@ const load = loader({
   irc: {
     requires: ['cfg', 'monitor'],
     setup: async ({cfg, monitor}) => {
-      monitor = monitor.prefix('irc');
+      monitor = monitor.monitor('irc');
       let client = new IRC(_.merge(cfg.irc, {
         aws: cfg.aws,
         queueName: cfg.app.sqsQueueName,
@@ -187,7 +187,7 @@ const load = loader({
       let handler = new Handler({
         rootUrl: cfg.taskcluster.rootUrl,
         notifier,
-        monitor: monitor.prefix('handler'),
+        monitor: monitor.monitor('handler'),
         routePrefix: cfg.app.routePrefix,
         ignoreTaskReasonResolved: cfg.app.ignoreTaskReasonResolved,
         queue,
@@ -206,7 +206,7 @@ const load = loader({
       context: {notifier, DenylistedNotification},
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
-      monitor: monitor.prefix('api'),
+      monitor: monitor.monitor('api'),
       schemaset,
     }),
   },

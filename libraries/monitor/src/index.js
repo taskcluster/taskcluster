@@ -1,205 +1,240 @@
-const debug = require('debug')('taskcluster-lib-monitor');
-const _ = require('lodash');
 const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const Statsum = require('statsum');
-const MockMonitor = require('./mockmonitor');
-const Monitor = require('./monitor');
-const auditlogs = require('./auditlogs');
 const rootdir = require('app-root-dir');
 const fs = require('fs');
 const path = require('path');
+const stream = require('stream');
+const {Logger, LEVELS} = require('./logger');
+const Monitor = require('./monitor');
+const builtins = require('./builtins');
 
-/**
- * Create a new monitor, given options:
- * {
- *   projectName: '...',
- *   patchGlobal:  true,
- *   bailOnUnhandledRejection: false,
- *   reportStatsumErrors: true,
- *   resourceInterval: 10, // seconds
- *   crashTimeout: 5 * 1000, //milliseconds
- *   mock: false,
- *   enable: true,
- *   credentials: {
- *     clientId:       '...',
- *     accessToken:    '...',
- *   },
- *   // If credentials aren't given, you must supply:
- *   statsumToken: async (projectName) => {token, expires, baseUrl}
- *
- *   sentryDSN: async (projectName) => {dsn: {secret: '...'}, expires}
- *   sentryOptions: {}, // options given to raven.Client constructor
- *   // see https://docs.sentry.io/clients/node/config/
- *
- *   // If you'd like to use the logging bits, you'll need to provide
- *   // s3 creds directly for now
- *   aws: {credentials: {accessKeyId, secretAccessKey}},
- *   logName: '', // name of audit log
- *   gitVersion: undefined, // git version (for correlating errors); or..
- *   gitVersionFile: '.git-version', // file containing git version (relative to app root)
- * }
- */
-async function monitor(options) {
-  options = _.defaults({}, options, {
-    patchGlobal: true,
-    bailOnUnhandledRejection: false,
-    reportStatsumErrors: true,
-    reportAuditLogErrors: true,
-    resourceInterval: 10,
-    crashTimeout: 5 * 1000,
-    mock: false,
-    enable: true,
-    logName: null,
-    aws: null,
-    sentryOptions: {},
-    gitVersionFile: '.git-version',
-  });
-  assert(options.rootUrl || options.mock, 'Must provide a rootUrl to taskcluster-lib-monitor');
-  assert(options.projectName, 'Must provide a project name (this is now `projectName` instead of `project`)');
-  assert(!options.authBaseUrl, 'authBaseUrl is deprecated.');
-  assert(options.credentials || options.statsumToken && options.sentryDSN ||
-         options.mock || !options.enable,
-  'Must provide taskcluster credentials or authBaseUrl or sentryDSN and statsumToken');
-
-  // Return mock monitor, if mocking
-  if (options.mock) {
-    return new MockMonitor(options);
+class MonitorManager {
+  constructor({
+    serviceName,
+  }) {
+    assert(serviceName, 'Must provide a serviceName to MonitorManager');
+    this.serviceName = serviceName;
+    this.types = {};
+    builtins.forEach(builtin => this.register(builtin));
   }
 
-  // Find functions for statsum and sentry
-  let statsumToken = options.statsumToken;
-  let sentryDSN = options.sentryDSN;
-  // Wrap statsumToken in function if it's not a function
-  if (statsumToken && !(statsumToken instanceof Function)) {
-    statsumToken = () => options.statsumToken;
-  }
-  // Wrap sentryDSN in function if it's not a function
-  if (sentryDSN && !(sentryDSN instanceof Function)) {
-    sentryDSN = () => options.sentryDSN;
-  }
-  // Use taskcluster credentials for statsumToken and sentryDSN, if given
-  if (options.credentials) {
-    const auth = new taskcluster.Auth(options);
-    if (!statsumToken) {
-      statsumToken = projectName => auth.statsumToken(projectName);
-    }
-    if (!sentryDSN) {
-      sentryDSN = projectName => auth.sentryDSN(projectName);
-    }
-  }
-
-  let statsum;
-  if (options.enable) {
-    statsum = new Statsum(statsumToken, {
-      project: options.projectName,
-      emitErrors: options.reportStatsumErrors,
+  /*
+   * Register a new log message type
+   */
+  register({
+    name,
+    type,
+    level,
+    version,
+    description,
+    fields = {}, // TODO: Consider making these defined with json-schema and validate only in dev or something
+  }) {
+    assert(/^[a-z][a-zA-Z0-9]*$/.test(name), `Invalid name type ${name}`);
+    assert(/^[a-z][a-z0-9.-_]*$/.test(type), `Invalid event type ${type}`);
+    assert(!this.types[name], `Cannot register event ${name} twice`);
+    assert(LEVELS[level] !== undefined, `${level} is not a valid level.`);
+    assert(Number.isInteger(version), 'Version must be an integer');
+    assert(!fields['v'], '"v" is a reserved field for messages');
+    Object.entries(fields).forEach((field, desc) => {
+      assert(/^[a-zA-Z0-9_]+$/.test(name), `Invalid field name ${name}.${field}`);
     });
+    this.types[name] = {
+      type,
+      level,
+      version,
+      description,
+      fields,
+    };
   }
 
-  let auditlog;
-  if (options.enable && options.aws && options.logName) {
-    auditlog = new auditlogs.KinesisLog(Object.assign({}, options, {statsum}));
-  } else {
-    auditlog = new auditlogs.NoopLog();
-  }
-  await auditlog.setup();
-
-  // read gitVersionFile, if gitVersion is not set
-  if (!options.gitVersion) {
-    const gitVersionFile = path.resolve(rootdir.get(), options.gitVersionFile);
-    try {
-      options.gitVersion = fs.readFileSync(gitVersionFile).toString().trim();
-    } catch (err) {
-      // ignore error - we just get no gitVersion
+  /*
+   * Initialize runtime dependencies that can't be preconfigured
+   * and set up process-level monitoring.
+   */
+  setup({
+    level = 'info',
+    patchGlobal = true,
+    bailOnUnhandledRejection = false,
+    resourceInterval = 60,
+    mock = false,
+    enable = true,
+    gitVersionFile = '.git-version',
+    processName = null,
+    metadata = {},
+    pretty = false,
+    destination = null,
+    verify = false,
+  }) {
+    if (this.alreadySetup) {
+      return this;
     }
-  }
-  delete options.gitVersionFile;
+    this.alreadySetup = true;
 
-  const m = new Monitor(sentryDSN, null, statsum, auditlog, options);
-
-  if (statsum && options.reportStatsumErrors) {
-    statsum.on('error', err => m.reportError(err, 'warning'));
-  }
-  if (options.reportAuditLogErrors) {
-    auditlog.on('error', err => m.reportError(err, 'warning'));
-  }
-
-  registerSigtermHandler(async () => {
-    setTimeout(() => {
-      console.log('Failed to flush after timeout!');
-      process.exit(1);
-    }, options.crashTimeout);
-    try {
-      await m.flush();
-    } catch (e) {
-      console.log('Failed to flush  with error:');
-      console.log(e);
+    if (!enable) {
+      patchGlobal = false;
+      processName = null;
     }
-    process.exit(143); // Node docs specify that SIGTERM should exit with 128 + number of signal (SIGTERM is 15)
-  });
 
-  if (options.patchGlobal) {
-    process.on('uncaughtException', async (err) => {
-      console.log('Uncaught Exception! Attempting to report to Sentry and crash.');
-      console.log(err.stack);
-      setTimeout(() => {
-        console.log('Failed to report error to Sentry after timeout!');
-        process.exit(1);
-      }, options.crashTimeout);
+    this.mock = mock;
+    this.enable = enable;
+    this.pretty = pretty;
+    this.subject = 'root';
+    this.metadata = metadata;
+    this.bailOnUnhandledRejection = bailOnUnhandledRejection;
+    this.verify = verify;
+    this.levels = {};
+
+    if (level.includes(':')) {
+      level.split(' ').reduce((o, conf) => {
+        const c = conf.split(':');
+        o[c[0]] = c[1];
+        return o;
+      }, this.levels);
+      assert(this.levels['root'], 'Must specify `root:` level if using child-specific levels.');
+    } else {
+      this.levels['root'] = level;
+    }
+
+    if (destination) {
+      assert(destination.write, 'Must provide writeable stream as destination');
+      this.destination = destination;
+    } else if (mock) {
+      this.messages = [];
+      this.destination = new stream.Writable({
+        write: (chunk, encoding, next) => {
+          try {
+            chunk = JSON.parse(chunk);
+          } catch (err) {
+            if (err.name !== 'SyntaxError') {
+              throw err;
+            }
+          }
+          this.messages.push(chunk);
+          next();
+        },
+      });
+    } else {
+      this.destination = process.stdout;
+    }
+
+    // read gitVersionFile, if gitVersion is not set
+    if (!metadata.gitVersion) {
+      gitVersionFile = path.resolve(rootdir.get(), gitVersionFile);
       try {
-        await m.reportError(err, 'fatal', {});
-        console.log('Succesfully reported error to Sentry.');
-      } catch (e) {
-        console.log('Failed to report to Sentry with error:');
-        console.log(e);
-      } finally {
-        process.exit(1);
+        metadata.gitVersion = fs.readFileSync(gitVersionFile).toString().trim();
+      } catch (err) {
+        delete metadata.gitVersion;
       }
+    }
+
+    const logger = new Logger({
+      name: `taskcluster.${this.serviceName}.${this.subject}`,
+      service: this.serviceName,
+      level: this.levels['root'],
+      enable,
+      pretty,
+      destination: this.destination,
+      metadata,
     });
-    process.on('unhandledRejection', async (reason, p) => {
-      const err = 'Unhandled Rejection at: Promise ' + p + ' reason: ' + reason;
-      console.log(err);
-      if (!options.bailOnUnhandledRejection) {
-        await m.reportError(err, 'error', {sort: 'unhandledRejection'});
-        return;
-      }
-      setTimeout(() => {
-        console.log('Failed to report error to Sentry after timeout!');
-        process.exit(1);
-      }, options.crashTimeout);
-      try {
-        await m.reportError(err, 'fatal', {});
-        console.log('Succesfully reported error to Sentry.');
-      } catch (e) {
-        console.log('Failed to report to Sentry with error:');
-        console.log(e);
-      } finally {
-        process.exit(1);
-      }
+
+    this.rootMonitor = new Monitor({
+      logger,
+      verify,
+      enable,
+      types: this.types,
+    });
+
+    if (patchGlobal && enable) {
+      this.uncaughtExceptionHandler = this._uncaughtExceptionHandler.bind(this);
+      process.on('uncaughtException', this.uncaughtExceptionHandler);
+
+      this.unhandledRejectionHandler = this._unhandledRejectionHandler.bind(this);
+      process.on('unhandledRejection', this.unhandledRejectionHandler);
+    }
+
+    if (processName && !mock && enable) {
+      this.rootMonitor.resources(processName, resourceInterval);
+    }
+
+    return this;
+  }
+
+  _uncaughtExceptionHandler(err) {
+    this.rootMonitor.reportError(err);
+    process.exit(1);
+  }
+
+  _unhandledRejectionHandler(reason, p) {
+    const err = 'Unhandled Rejection at: Promise ' + p + ' reason: ' + reason;
+    this.rootMonitor.reportError(err);
+    if (!this.bailOnUnhandledRejection) {
+      return;
+    }
+    process.exit(1);
+  }
+
+  /*
+   * Clear event listeners and timers from the monitor
+   */
+  terminate() {
+    this.rootMonitor.stopResourceMonitoring();
+    process.removeListener('uncaughtException', this.uncaughtExceptionHandler);
+    process.removeListener('unhandledRejection', this.unhandledRejectionHandler);
+    if (this.mock) {
+      this.destination.end();
+    }
+  }
+
+  /*
+   * For use in testing only. Clears the events so this can be used again.
+   */
+  reset() {
+    this.messages = [];
+  }
+
+  /*
+   * Get a prefixed monitor
+   */
+  monitor(prefix, metadata = {}) {
+    assert(this.alreadySetup, 'Must setup() MonitorManager before getting monitors.');
+    if (!prefix) {
+      return this.rootMonitor;
+    }
+    prefix = `${this.subject}.${prefix}`;
+    metadata = Object.assign({}, this.metadata, metadata);
+    return new Monitor({
+      types: this.types,
+      verify: this.verify,
+      enable: this.enable,
+      logger: new Logger({
+        name: `taskcluster.${this.serviceName}.${prefix}`,
+        service: this.serviceName,
+        level: this.levels[prefix] || this.levels.root,
+        enable: this.enable,
+        pretty: this.pretty,
+        destination: this.destination,
+        metadata,
+      }),
     });
   }
 
-  if (options.process) {
-    m.resources(options.process, options.resourceInterval);
+  /*
+   * Generate log message documentation
+   */
+  reference() {
+    return {
+      serviceName: this.serviceName,
+      $schema: '/schemas/common/logs-reference-v0.json#',
+      types: Object.values(this.types).map(type => {
+        return {
+          name: type.name,
+          type: type.type,
+          version: type.version,
+          description: type.description,
+          fields: type.fields,
+        };
+      }),
+    };
   }
-
-  return m;
 }
 
-// ensure that only one SIGTERM handler is registered at any time
-let _sigtermHandler = null;
-const registerSigtermHandler = sigtermHandler => {
-  unregisterSigtermHandler();
-  _sigtermHandler = sigtermHandler;
-  process.on('SIGTERM', sigtermHandler);
-};
-
-const unregisterSigtermHandler = () => {
-  if (_sigtermHandler) {
-    process.removeListener('SIGTERM', _sigtermHandler);
-    _sigtermHandler = null;
-  }
-};
-
-module.exports = monitor;
+module.exports = MonitorManager;

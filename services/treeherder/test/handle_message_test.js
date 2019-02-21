@@ -1,7 +1,6 @@
 const assert = require('assert');
 const path = require('path');
 const Handler = require('../src/handler');
-const Monitor = require('taskcluster-lib-monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
@@ -91,7 +90,9 @@ suite('handle message', function() {
     });
 
     assert.deepEqual(helper.handler.taskCalls, ['abc'], 'Task was retrieved by the queue');
-    assert.equal(helper.monitor.counts['taskcluster-treeherder.validateTask.no-config'], 1);
+    assert.equal(helper.monitorManager.messages[0].Fields.key, 'handle-message');
+    assert.equal(helper.monitorManager.messages[1].Fields.key, 'bar.handle-message');
+    assert.equal(helper.monitorManager.messages[2].Fields.key, 'validateTask.no-config');
   });
 
   test('invalid message - invalid treeherder config', async () => {
@@ -117,6 +118,8 @@ suite('handle message', function() {
     });
 
     assert.deepEqual(helper.handler.taskCalls, ['abc'], 'Task was retrieved by the queue');
-    assert.equal(helper.monitor.counts['taskcluster-treeherder.validateTask.invalid-config'], 1);
+    assert.equal(helper.monitorManager.messages[0].Fields.key, 'handle-message');
+    assert.equal(helper.monitorManager.messages[1].Fields.key, 'bar.handle-message');
+    assert.equal(helper.monitorManager.messages[2].Fields.key, 'validateTask.invalid-config');
   });
 });

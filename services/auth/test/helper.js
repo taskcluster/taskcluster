@@ -371,6 +371,7 @@ exports.withServers = (mock, skipping) => {
 
     const testServiceName = 'authtest';
     const testServiceApi = await testServiceBuilder.build({
+      monitor: (await exports.load('monitor')).monitor(),
       rootUrl: exports.rootUrl,
       schemaset: new SchemaSet({
         serviceName: testServiceName,

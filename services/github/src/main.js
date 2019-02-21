@@ -5,7 +5,7 @@ const Intree = require('./intree');
 const data = require('./data');
 const Ajv = require('ajv');
 const config = require('typed-env-config');
-const monitor = require('taskcluster-lib-monitor');
+const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const loader = require('taskcluster-lib-loader');
 const docs = require('taskcluster-lib-docs');
@@ -22,13 +22,10 @@ const load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitor({
-      rootUrl: cfg.taskcluster.rootUrl,
-      projectName: cfg.monitoring.project || 'taskcluster-github',
-      enable: cfg.monitoring.enable,
-      credentials: cfg.taskcluster.credentials,
-      mock: profile === 'test',
-      process,
+    setup: ({process, profile, cfg}) => monitorManager.setup({
+      processName: process,
+      verify: profile !== 'production',
+      ...cfg.monitoring,
     }),
   },
 
@@ -63,6 +60,7 @@ const load = loader({
       references: [
         {name: 'api', reference: builder.reference()},
         {name: 'events', reference: reference},
+        {name: 'logs', reference: monitorManager.reference()},
       ],
     }),
   },
@@ -77,7 +75,7 @@ const load = loader({
     setup: ({cfg, monitor}) => {
       return new Client({
         namespace: cfg.pulse.namespace,
-        monitor,
+        monitor: monitor.monitor('pulse-client'),
         credentials: pulseCredentials(cfg.pulse),
       });
     },
@@ -114,7 +112,7 @@ const load = loader({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.prefix('table.builds'),
+      monitor: monitor.monitor('table.builds'),
     }),
   },
 
@@ -128,7 +126,7 @@ const load = loader({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.prefix('table.ownersdirectory'),
+      monitor: monitor.monitor('table.ownersdirectory'),
     }),
   },
 
@@ -142,7 +140,7 @@ const load = loader({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.taskcluster.credentials,
       }),
-      monitor: monitor.prefix('table.checkruns'),
+      monitor: monitor.monitor('table.checkruns'),
     }),
   },
 
@@ -160,11 +158,11 @@ const load = loader({
         Builds,
         OwnersDirectory,
         ajv,
-        monitor: monitor.prefix('api-context'),
+        monitor: monitor.monitor('api-context'),
       },
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
-      monitor: monitor.prefix('api'),
+      monitor: monitor.monitor('api'),
       schemaset,
     }),
   },
@@ -183,7 +181,7 @@ const load = loader({
   syncInstallations: {
     requires: ['github', 'OwnersDirectory', 'monitor'],
     setup: ({github, OwnersDirectory, monitor}) => {
-      return monitor.oneShot('syncInstallations', async () => {
+      return monitor.monitor().oneShot('syncInstallations', async () => {
         const gh = await github.getIntegrationGithub();
         const installations = (await gh.apps.getInstallations({})).data;
         await Promise.all(installations.map(inst => {
@@ -213,7 +211,7 @@ const load = loader({
       new Handlers({
         rootUrl: cfg.taskcluster.rootUrl,
         credentials: cfg.pulse,
-        monitor: monitor.prefix('handlers'),
+        monitor: monitor.monitor('handlers'),
         intree,
         reference,
         jobQueueName: cfg.app.jobQueue,

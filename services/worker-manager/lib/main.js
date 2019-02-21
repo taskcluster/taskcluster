@@ -1,6 +1,6 @@
 const loader = require('taskcluster-lib-loader');
 const App = require('taskcluster-lib-app');
-const monitor = require('taskcluster-lib-monitor');
+const monitorManager = require('./monitor');
 const config = require('typed-env-config');
 const SchemaSet = require('taskcluster-lib-validate');
 const docs = require('taskcluster-lib-docs');
@@ -19,13 +19,10 @@ let load = loader({
 
   monitor: {
     requires: ['process', 'profile', 'cfg'],
-    setup: ({process, profile, cfg}) => monitor({
-      rootUrl: cfg.taskcluster.rootUrl,
-      projectName: 'taskcluster-worker-manager',
-      enable: cfg.monitoring.enable,
-      credentials: cfg.taskcluster.credentials,
-      mock: profile !== 'production',
-      process,
+    setup: ({process, profile, cfg}) => monitorManager.setup({
+      processName: process,
+      verify: profile !== 'production',
+      ...cfg.monitoring,
     }),
   },
 
@@ -55,7 +52,7 @@ let load = loader({
       },
       publish: cfg.app.publishMetaData,
       aws: cfg.aws,
-      monitor: monitor.prefix('api'),
+      monitor: monitor.monitor('api'),
       schemaset,
     }),
   },
@@ -73,6 +70,9 @@ let load = loader({
         {
           name: 'api',
           reference: builder.reference(),
+        }, {
+          name: 'logs',
+          reference: monitorManager.reference(),
         },
       ],
     }),

@@ -1,0 +1,103 @@
+{
+  "type": "object",
+  "required": [
+    "Timestamp"
+  ],
+  "properties": {
+    "Timestamp": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "Type": {
+      "type": "string"
+    },
+    "Logger": {
+      "type": "string"
+    },
+    "Hostname": {
+      "type": "string",
+      "format": "hostname"
+    },
+    "EnvVersion": {
+      "type": "string",
+      "pattern": "^\\d+(?:\\.\\d+){0,2}$"
+    },
+    "Severity": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 7
+    },
+    "Pid": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "Fields": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/field_value"
+          },
+          {
+            "$ref": "#/definitions/field_array"
+          },
+          {
+            "$ref": "#/definitions/field_object"
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "field_value": {
+      "type": [
+        "string",
+        "number",
+        "boolean"
+      ]
+    },
+    "field_array": {
+      "type": "array",
+      "minItems": 1,
+      "oneOf": [
+        {
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "items": {
+            "type": "number"
+          }
+        },
+        {
+          "items": {
+            "type": "boolean"
+          }
+        }
+      ]
+    },
+    "field_object": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "properties": {
+        "value": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/field_value"
+            },
+            {
+              "$ref": "#/definitions/field_array"
+            }
+          ]
+        },
+        "representation": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

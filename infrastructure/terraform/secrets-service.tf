@@ -26,7 +26,6 @@ module "secrets_secrets" {
   secrets = {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/secrets"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.secrets_access_token.result}"
-    DEBUG                    = "*"
     NODE_ENV                 = "production"
     MONITORING_ENABLE        = "false"
     PUBLISH_METADATA         = "false"

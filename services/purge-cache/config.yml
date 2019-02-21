@@ -10,8 +10,9 @@ defaults:
     publishMetaData:          !env:bool PUBLISH_METADATA
 
   monitoring:
-    project: !env MONITORING_PROJECT
     enable: !env:bool MONITORING_ENABLE
+    pretty: !env:bool PRETTY_LOGGING
+    level: !env LEVEL
 
   server:
     # Port to listen for requests on

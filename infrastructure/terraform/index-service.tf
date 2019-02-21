@@ -18,7 +18,6 @@ module "index_secrets" {
   secrets = {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/index"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.index_access_token.result}"
-    DEBUG                    = "*"
     NODE_ENV                 = "production"
     MONITORING_ENABLE        = "false"
     PUBLISH_METADATA         = "false"

@@ -28,6 +28,7 @@ class API {
     assert(!options.baseUrl, 'baseUrl option is no longer allowed');
     assert(options.builder, 'builder option is required');
     assert(options.rootUrl, 'rootUrl option is required');
+    assert(options.monitor, 'monitor option is required');
     assert(!options.referencePrefix, 'referencePrefix is now deprecated!');
 
     options = _.defaults({}, options, {
@@ -54,6 +55,9 @@ class API {
       assert(this.builder.context.indexOf(property) !== -1,
         `Context has unexpected property: ${property}`);
     });
+
+    // Always make monitor available in context
+    options.context.monitor = options.monitor;
 
     this.entries = this.builder.entries.map(_.clone);
 
@@ -118,9 +122,7 @@ class API {
       // Route pattern
       const middleware = [entry.route];
 
-      if (monitor) {
-        middleware.push(monitor.expressMiddleware(entry.name));
-      }
+      middleware.push(monitor.expressMiddleware(entry.name));
 
       middleware.push(
         buildReportErrorMethod(),
