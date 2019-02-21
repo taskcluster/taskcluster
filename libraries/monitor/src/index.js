@@ -141,7 +141,7 @@ class MonitorManager {
       types: this.types,
     });
 
-    if (patchGlobal) {
+    if (patchGlobal && enable) {
       this.uncaughtExceptionHandler = this._uncaughtExceptionHandler.bind(this);
       process.on('uncaughtException', this.uncaughtExceptionHandler);
 
@@ -149,7 +149,7 @@ class MonitorManager {
       process.on('unhandledRejection', this.unhandledRejectionHandler);
     }
 
-    if (processName && !mock) {
+    if (processName && !mock && enable) {
       this.rootMonitor.resources(processName, resourceInterval);
     }
 
