@@ -1441,352 +1441,6 @@
     "children": [
       {
         "children": [
-          {
-            "children": [
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "built-in-workers",
-            "next": {
-              "path": "reference/core/hooks/README",
-              "title": "hooks"
-            },
-            "path": "reference/core/built-in-workers/README",
-            "prev": {
-              "path": "reference/core",
-              "title": "api"
-            },
-            "up": {
-              "path": "reference/core",
-              "title": "api"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/core/hooks/references/events",
-                  "title": "events"
-                },
-                "path": "reference/core/hooks/references/api",
-                "prev": {
-                  "path": "reference/core/hooks/README",
-                  "title": "hooks"
-                },
-                "up": {
-                  "path": "reference/core/hooks/README",
-                  "title": "hooks"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 2,
-                  "title": "events"
-                },
-                "name": "events",
-                "next": {
-                  "path": "reference/core/hooks/docs/firing-hooks",
-                  "title": "Firing Hooks"
-                },
-                "path": "reference/core/hooks/references/events",
-                "prev": {
-                  "path": "reference/core/hooks/references/api",
-                  "title": "api"
-                },
-                "up": {
-                  "path": "reference/core/hooks/README",
-                  "title": "hooks"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 10,
-                  "title": "Firing Hooks"
-                },
-                "name": "firing-hooks",
-                "next": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
-                },
-                "path": "reference/core/hooks/docs/firing-hooks",
-                "prev": {
-                  "path": "reference/core/hooks/references/events",
-                  "title": "events"
-                },
-                "up": {
-                  "path": "reference/core/hooks/README",
-                  "title": "hooks"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "hooks",
-            "next": {
-              "path": "reference/core/hooks/references/api",
-              "title": "api"
-            },
-            "path": "reference/core/hooks/README",
-            "prev": {
-              "path": "reference/core/built-in-workers/README",
-              "title": "built-in-workers"
-            },
-            "up": {
-              "path": "reference/core",
-              "title": "api"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/core/notify/references/events",
-                  "title": "events"
-                },
-                "path": "reference/core/notify/references/api",
-                "prev": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
-                },
-                "up": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 2,
-                  "title": "events"
-                },
-                "name": "events",
-                "next": {
-                  "path": "reference/core/notify/docs/usage",
-                  "title": "Enable Notifications"
-                },
-                "path": "reference/core/notify/references/events",
-                "prev": {
-                  "path": "reference/core/notify/references/api",
-                  "title": "api"
-                },
-                "up": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000,
-                  "title": "Enable Notifications"
-                },
-                "name": "usage",
-                "next": {
-                  "path": "reference/core/purge-cache/README",
-                  "title": "purge-cache"
-                },
-                "path": "reference/core/notify/docs/usage",
-                "prev": {
-                  "path": "reference/core/notify/references/events",
-                  "title": "events"
-                },
-                "up": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "notify",
-            "next": {
-              "path": "reference/core/notify/references/api",
-              "title": "api"
-            },
-            "path": "reference/core/notify/README",
-            "prev": {
-              "path": "reference/core/hooks/docs/firing-hooks",
-              "title": "Firing Hooks"
-            },
-            "up": {
-              "path": "reference/core",
-              "title": "api"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/core/secrets/README",
-                  "title": "secrets"
-                },
-                "path": "reference/core/purge-cache/references/api",
-                "prev": {
-                  "path": "reference/core/purge-cache/README",
-                  "title": "purge-cache"
-                },
-                "up": {
-                  "path": "reference/core/purge-cache/README",
-                  "title": "purge-cache"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "purge-cache",
-            "next": {
-              "path": "reference/core/purge-cache/references/api",
-              "title": "api"
-            },
-            "path": "reference/core/purge-cache/README",
-            "prev": {
-              "path": "reference/core/notify/docs/usage",
-              "title": "Enable Notifications"
-            },
-            "up": {
-              "path": "reference/core",
-              "title": "api"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/core/worker-manager/README",
-                  "title": "worker-manager"
-                },
-                "path": "reference/core/secrets/references/api",
-                "prev": {
-                  "path": "reference/core/secrets/README",
-                  "title": "secrets"
-                },
-                "up": {
-                  "path": "reference/core/secrets/README",
-                  "title": "secrets"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "secrets",
-            "next": {
-              "path": "reference/core/secrets/references/api",
-              "title": "api"
-            },
-            "path": "reference/core/secrets/README",
-            "prev": {
-              "path": "reference/core/purge-cache/references/api",
-              "title": "api"
-            },
-            "up": {
-              "path": "reference/core",
-              "title": "api"
-            }
-          },
-          {
-            "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/guide",
-                  "title": "Guide to The Microservices"
-                },
-                "path": "reference/core/worker-manager/references/api",
-                "prev": {
-                  "path": "reference/core/worker-manager/README",
-                  "title": "worker-manager"
-                },
-                "up": {
-                  "path": "reference/core/worker-manager/README",
-                  "title": "worker-manager"
-                }
-              }
-            ],
-            "data": {
-              "order": 1000
-            },
-            "name": "worker-manager",
-            "next": {
-              "path": "reference/core/worker-manager/references/api",
-              "title": "api"
-            },
-            "path": "reference/core/worker-manager/README",
-            "prev": {
-              "path": "reference/core/secrets/references/api",
-              "title": "api"
-            },
-            "up": {
-              "path": "reference/core",
-              "title": "api"
-            }
-          }
-        ],
-        "data": {
-          "inline": true,
-          "order": 1,
-          "title": "api"
-        },
-        "name": "core",
-        "next": {
-          "path": "reference/core/built-in-workers/README",
-          "title": "built-in-workers"
-        },
-        "path": "reference/core"
-      },
-      {
-        "children": [
         ],
         "data": {
           "order": 1,
@@ -1797,62 +1451,12 @@
           "path": "reference/platform",
           "title": "Taskcluster Platform"
         },
-        "path": "reference/guide",
-        "prev": {
-          "path": "reference/core/worker-manager/references/api",
-          "title": "api"
-        }
+        "path": "reference/guide"
       },
       {
         "children": [
           {
             "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 1,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/platform/auth/references/events",
-                  "title": "events"
-                },
-                "path": "reference/platform/auth/references/api",
-                "prev": {
-                  "path": "reference/platform/auth/README",
-                  "title": "auth"
-                },
-                "up": {
-                  "path": "reference/platform/auth/README",
-                  "title": "auth"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 2,
-                  "title": "events"
-                },
-                "name": "events",
-                "next": {
-                  "path": "reference/platform/auth/docs/scopes",
-                  "title": "Scopes and Satisfaction"
-                },
-                "path": "reference/platform/auth/references/events",
-                "prev": {
-                  "path": "reference/platform/auth/references/api",
-                  "title": "api"
-                },
-                "up": {
-                  "path": "reference/platform/auth/README",
-                  "title": "auth"
-                }
-              },
               {
                 "children": [
                 ],
@@ -1867,8 +1471,8 @@
                 },
                 "path": "reference/platform/auth/docs/scopes",
                 "prev": {
-                  "path": "reference/platform/auth/references/events",
-                  "title": "events"
+                  "path": "reference/platform/auth/README",
+                  "title": "auth"
                 },
                 "up": {
                   "path": "reference/platform/auth/README",
@@ -1906,13 +1510,59 @@
                 },
                 "name": "roles",
                 "next": {
-                  "path": "reference/platform/queue/README",
-                  "title": "queue"
+                  "path": "reference/platform/auth/references/api",
+                  "title": "api"
                 },
                 "path": "reference/platform/auth/docs/roles",
                 "prev": {
                   "path": "reference/platform/auth/docs/clients",
                   "title": "Clients"
+                },
+                "up": {
+                  "path": "reference/platform/auth/README",
+                  "title": "auth"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/platform/auth/references/events",
+                  "title": "events"
+                },
+                "path": "reference/platform/auth/references/api",
+                "prev": {
+                  "path": "reference/platform/auth/docs/roles",
+                  "title": "Roles and Role Expansion"
+                },
+                "up": {
+                  "path": "reference/platform/auth/README",
+                  "title": "auth"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1001,
+                  "title": "events"
+                },
+                "name": "events",
+                "next": {
+                  "path": "reference/platform/queue/README",
+                  "title": "queue"
+                },
+                "path": "reference/platform/auth/references/events",
+                "prev": {
+                  "path": "reference/platform/auth/references/api",
+                  "title": "api"
                 },
                 "up": {
                   "path": "reference/platform/auth/README",
@@ -1925,8 +1575,8 @@
             },
             "name": "auth",
             "next": {
-              "path": "reference/platform/auth/references/api",
-              "title": "api"
+              "path": "reference/platform/auth/docs/scopes",
+              "title": "Scopes and Satisfaction"
             },
             "path": "reference/platform/auth/README",
             "prev": {
@@ -1944,52 +1594,6 @@
                 "children": [
                 ],
                 "data": {
-                  "inline": true,
-                  "order": 1,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/platform/queue/references/events",
-                  "title": "events"
-                },
-                "path": "reference/platform/queue/references/api",
-                "prev": {
-                  "path": "reference/platform/queue/README",
-                  "title": "queue"
-                },
-                "up": {
-                  "path": "reference/platform/queue/README",
-                  "title": "queue"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 2,
-                  "title": "events"
-                },
-                "name": "events",
-                "next": {
-                  "path": "reference/platform/queue/docs/worker-hierarchy",
-                  "title": "Worker Hierarchy"
-                },
-                "path": "reference/platform/queue/references/events",
-                "prev": {
-                  "path": "reference/platform/queue/references/api",
-                  "title": "api"
-                },
-                "up": {
-                  "path": "reference/platform/queue/README",
-                  "title": "queue"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
                   "order": 30,
                   "title": "Worker Hierarchy"
                 },
@@ -2000,8 +1604,8 @@
                 },
                 "path": "reference/platform/queue/docs/worker-hierarchy",
                 "prev": {
-                  "path": "reference/platform/queue/references/events",
-                  "title": "events"
+                  "path": "reference/platform/queue/README",
+                  "title": "queue"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",
@@ -2115,13 +1719,59 @@
                 },
                 "name": "task-schema",
                 "next": {
-                  "path": "reference/integrations",
-                  "title": "Integrations"
+                  "path": "reference/platform/queue/references/api",
+                  "title": "api"
                 },
                 "path": "reference/platform/queue/docs/task-schema",
                 "prev": {
                   "path": "reference/platform/queue/docs/worker-interaction",
                   "title": "Queue-Worker Interaction"
+                },
+                "up": {
+                  "path": "reference/platform/queue/README",
+                  "title": "queue"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/platform/queue/references/events",
+                  "title": "events"
+                },
+                "path": "reference/platform/queue/references/api",
+                "prev": {
+                  "path": "reference/platform/queue/docs/task-schema",
+                  "title": "Task Schema"
+                },
+                "up": {
+                  "path": "reference/platform/queue/README",
+                  "title": "queue"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1001,
+                  "title": "events"
+                },
+                "name": "events",
+                "next": {
+                  "path": "reference/integrations",
+                  "title": "Integrations"
+                },
+                "path": "reference/platform/queue/references/events",
+                "prev": {
+                  "path": "reference/platform/queue/references/api",
+                  "title": "api"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",
@@ -2134,13 +1784,13 @@
             },
             "name": "queue",
             "next": {
-              "path": "reference/platform/queue/references/api",
-              "title": "api"
+              "path": "reference/platform/queue/docs/worker-hierarchy",
+              "title": "Worker Hierarchy"
             },
             "path": "reference/platform/queue/README",
             "prev": {
-              "path": "reference/platform/auth/docs/roles",
-              "title": "Roles and Role Expansion"
+              "path": "reference/platform/auth/references/events",
+              "title": "events"
             },
             "up": {
               "path": "reference/platform",
@@ -2171,52 +1821,6 @@
                 "children": [
                 ],
                 "data": {
-                  "inline": true,
-                  "order": 1,
-                  "title": "api"
-                },
-                "name": "api",
-                "next": {
-                  "path": "reference/integrations/github/references/events",
-                  "title": "events"
-                },
-                "path": "reference/integrations/github/references/api",
-                "prev": {
-                  "path": "reference/integrations/github/README",
-                  "title": "github"
-                },
-                "up": {
-                  "path": "reference/integrations/github/README",
-                  "title": "github"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 2,
-                  "title": "events"
-                },
-                "name": "events",
-                "next": {
-                  "path": "reference/integrations/github/docs/intro",
-                  "title": "Using Taskcluster for Github Projects"
-                },
-                "path": "reference/integrations/github/references/events",
-                "prev": {
-                  "path": "reference/integrations/github/references/api",
-                  "title": "api"
-                },
-                "up": {
-                  "path": "reference/integrations/github/README",
-                  "title": "github"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
                   "order": 10,
                   "title": "Using Taskcluster for Github Projects"
                 },
@@ -2227,8 +1831,8 @@
                 },
                 "path": "reference/integrations/github/docs/intro",
                 "prev": {
-                  "path": "reference/integrations/github/references/events",
-                  "title": "events"
+                  "path": "reference/integrations/github/README",
+                  "title": "github"
                 },
                 "up": {
                   "path": "reference/integrations/github/README",
@@ -2266,13 +1870,59 @@
                 },
                 "name": "taskcluster-yml-v0",
                 "next": {
-                  "path": "reference/integrations/login/README",
-                  "title": "login"
+                  "path": "reference/integrations/github/references/api",
+                  "title": "api"
                 },
                 "path": "reference/integrations/github/docs/taskcluster-yml-v0",
                 "prev": {
                   "path": "reference/integrations/github/docs/taskcluster-yml-v1",
                   "title": ".taskcluster.yml version 1"
+                },
+                "up": {
+                  "path": "reference/integrations/github/README",
+                  "title": "github"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/integrations/github/references/events",
+                  "title": "events"
+                },
+                "path": "reference/integrations/github/references/api",
+                "prev": {
+                  "path": "reference/integrations/github/docs/taskcluster-yml-v0",
+                  "title": ".taskcluster.yml version 0"
+                },
+                "up": {
+                  "path": "reference/integrations/github/README",
+                  "title": "github"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1001,
+                  "title": "events"
+                },
+                "name": "events",
+                "next": {
+                  "path": "reference/integrations/login/README",
+                  "title": "login"
+                },
+                "path": "reference/integrations/github/references/events",
+                "prev": {
+                  "path": "reference/integrations/github/references/api",
+                  "title": "api"
                 },
                 "up": {
                   "path": "reference/integrations/github/README",
@@ -2285,8 +1935,8 @@
             },
             "name": "github",
             "next": {
-              "path": "reference/integrations/github/references/api",
-              "title": "api"
+              "path": "reference/integrations/github/docs/intro",
+              "title": "Using Taskcluster for Github Projects"
             },
             "path": "reference/integrations/github/README",
             "prev": {
@@ -2305,7 +1955,7 @@
                 ],
                 "data": {
                   "inline": true,
-                  "order": 1,
+                  "order": 1000,
                   "title": "api"
                 },
                 "name": "api",
@@ -2378,8 +2028,8 @@
             },
             "path": "reference/integrations/login/README",
             "prev": {
-              "path": "reference/integrations/github/docs/taskcluster-yml-v0",
-              "title": ".taskcluster.yml version 0"
+              "path": "reference/integrations/github/references/events",
+              "title": "events"
             },
             "up": {
               "path": "reference/integrations",
@@ -2388,29 +2038,6 @@
           },
           {
             "children": [
-              {
-                "children": [
-                ],
-                "data": {
-                  "inline": true,
-                  "order": 2,
-                  "title": "events"
-                },
-                "name": "events",
-                "next": {
-                  "path": "reference/integrations/treeherder/docs/task-treeherder-config",
-                  "title": "Task Schema"
-                },
-                "path": "reference/integrations/treeherder/references/events",
-                "prev": {
-                  "path": "reference/integrations/treeherder/README",
-                  "title": "treeherder"
-                },
-                "up": {
-                  "path": "reference/integrations/treeherder/README",
-                  "title": "treeherder"
-                }
-              },
               {
                 "children": [
                 ],
@@ -2427,13 +2054,36 @@
                 },
                 "name": "task-treeherder-config",
                 "next": {
-                  "path": "reference/operations",
-                  "title": "Operations"
+                  "path": "reference/integrations/treeherder/references/events",
+                  "title": "events"
                 },
                 "path": "reference/integrations/treeherder/docs/task-treeherder-config",
                 "prev": {
-                  "path": "reference/integrations/treeherder/references/events",
+                  "path": "reference/integrations/treeherder/README",
+                  "title": "treeherder"
+                },
+                "up": {
+                  "path": "reference/integrations/treeherder/README",
+                  "title": "treeherder"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1001,
                   "title": "events"
+                },
+                "name": "events",
+                "next": {
+                  "path": "reference/operations",
+                  "title": "Operations"
+                },
+                "path": "reference/integrations/treeherder/references/events",
+                "prev": {
+                  "path": "reference/integrations/treeherder/docs/task-treeherder-config",
+                  "title": "Task Schema"
                 },
                 "up": {
                   "path": "reference/integrations/treeherder/README",
@@ -2446,8 +2096,8 @@
             },
             "name": "treeherder",
             "next": {
-              "path": "reference/integrations/treeherder/references/events",
-              "title": "events"
+              "path": "reference/integrations/treeherder/docs/task-treeherder-config",
+              "title": "Task Schema"
             },
             "path": "reference/integrations/treeherder/README",
             "prev": {
@@ -2471,8 +2121,8 @@
         },
         "path": "reference/integrations",
         "prev": {
-          "path": "reference/platform/queue/docs/task-schema",
-          "title": "Task Schema"
+          "path": "reference/platform/queue/references/events",
+          "title": "events"
         }
       },
       {
@@ -2489,8 +2139,8 @@
         },
         "path": "reference/operations",
         "prev": {
-          "path": "reference/integrations/treeherder/docs/task-treeherder-config",
-          "title": "Task Schema"
+          "path": "reference/integrations/treeherder/references/events",
+          "title": "events"
         }
       },
       {
@@ -2520,11 +2170,361 @@
         },
         "name": "libraries",
         "next": {
+          "path": "reference/core",
+          "title": "api"
         },
         "path": "reference/libraries",
         "prev": {
           "path": "reference/workers",
           "title": "Workers"
+        }
+      },
+      {
+        "children": [
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "built-in-workers",
+            "next": {
+              "path": "reference/core/hooks/README",
+              "title": "hooks"
+            },
+            "path": "reference/core/built-in-workers/README",
+            "prev": {
+              "path": "reference/core",
+              "title": "api"
+            },
+            "up": {
+              "path": "reference/core",
+              "title": "api"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 10,
+                  "title": "Firing Hooks"
+                },
+                "name": "firing-hooks",
+                "next": {
+                  "path": "reference/core/hooks/references/api",
+                  "title": "api"
+                },
+                "path": "reference/core/hooks/docs/firing-hooks",
+                "prev": {
+                  "path": "reference/core/hooks/README",
+                  "title": "hooks"
+                },
+                "up": {
+                  "path": "reference/core/hooks/README",
+                  "title": "hooks"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/core/hooks/references/events",
+                  "title": "events"
+                },
+                "path": "reference/core/hooks/references/api",
+                "prev": {
+                  "path": "reference/core/hooks/docs/firing-hooks",
+                  "title": "Firing Hooks"
+                },
+                "up": {
+                  "path": "reference/core/hooks/README",
+                  "title": "hooks"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1001,
+                  "title": "events"
+                },
+                "name": "events",
+                "next": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                },
+                "path": "reference/core/hooks/references/events",
+                "prev": {
+                  "path": "reference/core/hooks/references/api",
+                  "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/hooks/README",
+                  "title": "hooks"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "hooks",
+            "next": {
+              "path": "reference/core/hooks/docs/firing-hooks",
+              "title": "Firing Hooks"
+            },
+            "path": "reference/core/hooks/README",
+            "prev": {
+              "path": "reference/core/built-in-workers/README",
+              "title": "built-in-workers"
+            },
+            "up": {
+              "path": "reference/core",
+              "title": "api"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/core/notify/docs/usage",
+                  "title": "Enable Notifications"
+                },
+                "path": "reference/core/notify/references/api",
+                "prev": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                },
+                "up": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "order": 1000,
+                  "title": "Enable Notifications"
+                },
+                "name": "usage",
+                "next": {
+                  "path": "reference/core/notify/references/events",
+                  "title": "events"
+                },
+                "path": "reference/core/notify/docs/usage",
+                "prev": {
+                  "path": "reference/core/notify/references/api",
+                  "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1001,
+                  "title": "events"
+                },
+                "name": "events",
+                "next": {
+                  "path": "reference/core/purge-cache/README",
+                  "title": "purge-cache"
+                },
+                "path": "reference/core/notify/references/events",
+                "prev": {
+                  "path": "reference/core/notify/docs/usage",
+                  "title": "Enable Notifications"
+                },
+                "up": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "notify",
+            "next": {
+              "path": "reference/core/notify/references/api",
+              "title": "api"
+            },
+            "path": "reference/core/notify/README",
+            "prev": {
+              "path": "reference/core/hooks/references/events",
+              "title": "events"
+            },
+            "up": {
+              "path": "reference/core",
+              "title": "api"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/core/secrets/README",
+                  "title": "secrets"
+                },
+                "path": "reference/core/purge-cache/references/api",
+                "prev": {
+                  "path": "reference/core/purge-cache/README",
+                  "title": "purge-cache"
+                },
+                "up": {
+                  "path": "reference/core/purge-cache/README",
+                  "title": "purge-cache"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "purge-cache",
+            "next": {
+              "path": "reference/core/purge-cache/references/api",
+              "title": "api"
+            },
+            "path": "reference/core/purge-cache/README",
+            "prev": {
+              "path": "reference/core/notify/references/events",
+              "title": "events"
+            },
+            "up": {
+              "path": "reference/core",
+              "title": "api"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                },
+                "path": "reference/core/secrets/references/api",
+                "prev": {
+                  "path": "reference/core/secrets/README",
+                  "title": "secrets"
+                },
+                "up": {
+                  "path": "reference/core/secrets/README",
+                  "title": "secrets"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "secrets",
+            "next": {
+              "path": "reference/core/secrets/references/api",
+              "title": "api"
+            },
+            "path": "reference/core/secrets/README",
+            "prev": {
+              "path": "reference/core/purge-cache/references/api",
+              "title": "api"
+            },
+            "up": {
+              "path": "reference/core",
+              "title": "api"
+            }
+          },
+          {
+            "children": [
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 1000,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                },
+                "path": "reference/core/worker-manager/references/api",
+                "prev": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                },
+                "up": {
+                  "path": "reference/core/worker-manager/README",
+                  "title": "worker-manager"
+                }
+              }
+            ],
+            "data": {
+              "order": 1000
+            },
+            "name": "worker-manager",
+            "next": {
+              "path": "reference/core/worker-manager/references/api",
+              "title": "api"
+            },
+            "path": "reference/core/worker-manager/README",
+            "prev": {
+              "path": "reference/core/secrets/references/api",
+              "title": "api"
+            },
+            "up": {
+              "path": "reference/core",
+              "title": "api"
+            }
+          }
+        ],
+        "data": {
+          "inline": true,
+          "order": 1000,
+          "title": "api"
+        },
+        "name": "core",
+        "next": {
+          "path": "reference/core/built-in-workers/README",
+          "title": "built-in-workers"
+        },
+        "path": "reference/core",
+        "prev": {
+          "path": "reference/libraries",
+          "title": "Libraries"
         }
       }
     ],
@@ -2942,8 +2942,8 @@
       "order": 1000
     },
     "prev": {
-      "path": "reference/libraries",
-      "title": "Libraries"
+      "path": "reference/core/worker-manager/references/api",
+      "title": "api"
     }
   }
 }
