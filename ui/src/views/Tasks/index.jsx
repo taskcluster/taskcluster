@@ -15,9 +15,6 @@ const ViewTask = lazy(() =>
 const TaskLog = lazy(() =>
   import(/* webpackChunkName: 'Tasks.TaskLog' */ './TaskLog')
 );
-const LiveTaskLog = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.LiveTaskLog' */ './LiveTaskLog')
-);
 const CreateTask = lazy(() =>
   import(/* webpackChunkName: 'Tasks.CreateTask' */ './CreateTask')
 );
@@ -84,8 +81,9 @@ export default class Task extends Component {
         />
         <RouteWithProps
           path={`${path}/:taskId/runs/:runId/logs/live/:logUrl`}
+          stream
           {...props}
-          component={LiveTaskLog}
+          component={TaskLog}
         />
         <RouteWithProps
           path={`${path}/:taskId/runs/:runId/logs/:logUrl`}
