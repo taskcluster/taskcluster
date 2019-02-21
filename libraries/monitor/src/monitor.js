@@ -54,6 +54,7 @@ class Monitor {
     this.log[name] = fields => {
       if (this.verify) {
         const providedFields = Object.keys(fields);
+        assert(!providedFields.includes('v'), '"v" is a reserved field for logging messages.');
         requiredFields.forEach(f => assert(providedFields.includes(f), `Log message "${name}" must include field "${f}".`));
       }
       this._log[level](type, {v: version, ...fields});
@@ -101,13 +102,11 @@ class Monitor {
         throw e;
       } finally {
         const d = process.hrtime(start);
-        for (let stat of [success, 'all']) {
-          const k = [name, stat].join('.');
-          this.log.handlerTimer({
-            key: k,
-            duration: d[0] * 1000 + d[1] / 1000000,
-          });
-        }
+        this.log.handlerTimer({
+          name,
+          status: success,
+          duration: d[0] * 1000 + d[1] / 1000000,
+        });
       }
     };
   }

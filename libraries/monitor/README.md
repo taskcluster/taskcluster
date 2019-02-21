@@ -14,7 +14,7 @@ Usage
 -----
 
 First set up a `monitorManager` and register types on it (described later) before you set things up at runtime and finally
-get prefixed monitors to use elswehere.
+get prefixed monitors to use elsewhere.
 
 You must first set up a `monitorManager` and then configure it with `setup()` before you can get and use monitors. See the example below.
 
@@ -140,6 +140,8 @@ When you use this format, you specify a prefix with `root` included and after a 
 `root` in these cases and any unspecified prefixes will default to that.
 
 ### Measuring and Counting Things
+
+**Note: You should prefer logging specific types rather than these generic counts and measures. They exist mostly for backwards compatibility.**
 
 To record a current measurement of a named value:
 

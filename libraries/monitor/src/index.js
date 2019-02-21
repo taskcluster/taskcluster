@@ -33,6 +33,7 @@ class MonitorManager {
     assert(!this.types[name], `Cannot register event ${name} twice`);
     assert(LEVELS[level] !== undefined, `${level} is not a valid level.`);
     assert(Number.isInteger(version), 'Version must be an integer');
+    assert(!fields['v'], '"v" is a reserved field for messages');
     Object.entries(fields).forEach((field, desc) => {
       assert(/^[a-zA-Z0-9_]+$/.test(name), `Invalid field name ${name}.${field}`);
     });
