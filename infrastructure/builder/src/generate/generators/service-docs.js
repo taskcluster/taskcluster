@@ -134,6 +134,7 @@ exports.tasks.push({
       }
     });
 
+    await writeJSON('generated/references.json', serializable);
     await writeJSON('ui/docs/generated/references.json', serializable);
 
     return {
