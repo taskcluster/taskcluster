@@ -16,7 +16,8 @@
       "version": 1,
       "description": "A basic timer applied to a function.",
       "fields": {
-        "key": "A key that should be unique to the logger prefix.",
+        "name": "The name of the handler.",
+        "status": "Whether or not the handler resolved succesfully.",
         "duration": "The duration in ms of the function."
       }
     },

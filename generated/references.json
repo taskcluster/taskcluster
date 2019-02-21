@@ -6025,7 +6025,7 @@
               },
               "fields": {
                 "additionalProperties": true,
-                "description": "The set of fields that will be in every instance of this message type.",
+                "description": "The set of fields that will be in every instance of this message type. Mapping field name to description.",
                 "type": "object"
               },
               "name": {
@@ -7736,7 +7736,8 @@
           "description": "A basic timer applied to a function.",
           "fields": {
             "duration": "The duration in ms of the function.",
-            "key": "A key that should be unique to the logger prefix."
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
           },
           "type": "monitor.timedHandler",
           "version": 1
@@ -7974,7 +7975,8 @@
           "description": "A basic timer applied to a function.",
           "fields": {
             "duration": "The duration in ms of the function.",
-            "key": "A key that should be unique to the logger prefix."
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
           },
           "type": "monitor.timedHandler",
           "version": 1
@@ -8123,7 +8125,8 @@
           "description": "A basic timer applied to a function.",
           "fields": {
             "duration": "The duration in ms of the function.",
-            "key": "A key that should be unique to the logger prefix."
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
           },
           "type": "monitor.timedHandler",
           "version": 1
@@ -8319,7 +8322,8 @@
           "description": "A basic timer applied to a function.",
           "fields": {
             "duration": "The duration in ms of the function.",
-            "key": "A key that should be unique to the logger prefix."
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
           },
           "type": "monitor.timedHandler",
           "version": 1
@@ -9790,7 +9794,8 @@
           "description": "A basic timer applied to a function.",
           "fields": {
             "duration": "The duration in ms of the function.",
-            "key": "A key that should be unique to the logger prefix."
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
           },
           "type": "monitor.timedHandler",
           "version": 1
@@ -9973,7 +9978,8 @@
           "description": "A basic timer applied to a function.",
           "fields": {
             "duration": "The duration in ms of the function.",
-            "key": "A key that should be unique to the logger prefix."
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
           },
           "type": "monitor.timedHandler",
           "version": 1
@@ -10297,7 +10303,8 @@
           "description": "A basic timer applied to a function.",
           "fields": {
             "duration": "The duration in ms of the function.",
-            "key": "A key that should be unique to the logger prefix."
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
           },
           "type": "monitor.timedHandler",
           "version": 1
@@ -10445,7 +10452,8 @@
           "description": "A basic timer applied to a function.",
           "fields": {
             "duration": "The duration in ms of the function.",
-            "key": "A key that should be unique to the logger prefix."
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
           },
           "type": "monitor.timedHandler",
           "version": 1
@@ -10663,7 +10671,8 @@
           "description": "A basic timer applied to a function.",
           "fields": {
             "duration": "The duration in ms of the function.",
-            "key": "A key that should be unique to the logger prefix."
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
           },
           "type": "monitor.timedHandler",
           "version": 1
@@ -11066,7 +11075,8 @@
           "description": "A basic timer applied to a function.",
           "fields": {
             "duration": "The duration in ms of the function.",
-            "key": "A key that should be unique to the logger prefix."
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
           },
           "type": "monitor.timedHandler",
           "version": 1
@@ -11450,7 +11460,8 @@
           "description": "A basic timer applied to a function.",
           "fields": {
             "duration": "The duration in ms of the function.",
-            "key": "A key that should be unique to the logger prefix."
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
           },
           "type": "monitor.timedHandler",
           "version": 1
@@ -11558,7 +11569,8 @@
           "description": "A basic timer applied to a function.",
           "fields": {
             "duration": "The duration in ms of the function.",
-            "key": "A key that should be unique to the logger prefix."
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
           },
           "type": "monitor.timedHandler",
           "version": 1
