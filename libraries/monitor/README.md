@@ -81,6 +81,45 @@ It provides the following functions:
 The `type` will be set in the event object as the `Type` field in the mozlog format. Everything in `fields` will be set in the `Fields`.
 We default to `info` logging level so normally `debug` logs will not be logged.
 
+### Registering message types
+
+This library allows creating custom message types. We add these registered types to our published references much the same as
+our api and pulse documentation. To add a message type, do the following:
+
+```js
+const manager = new MonitorManager({
+  serviceName: 'notify',
+});
+
+manager.register({
+  name: 'email',
+  type: 'email',
+  version: 1,
+  level: 'info',
+  description: 'A request to send an email.',
+  fields: {
+    address: 'The requested recepient of the email.',
+  },
+});
+
+// And now after getting a monitor post-setup:
+monitor.log.email({address: req.body.address});
+```
+
+Each part is:
+
+ * `name` - This will be made available on your monitor under a `.log` prefix.
+ * `type` - This will be the `Type` field of the logged message.
+ * `version` - This will end up in a `v` field of the `Fields` part of a logged message. Bump this if making a backwards-incompatible change
+ * `level` - This will be the level that this message logs at.
+ * `description` - A description of what this logging message means
+ * `fields`: An object where every key is the name of a required field to be logged. Corresponding values are documentation of the meaning of that field.
+
+If the `verify` option is set to true during manager setup, this library will verify that at least the required fields have been passed into the logger
+upon invoking it.
+
+When using this feature, pass in `monitorManager.references()` to an instance of taskcluster-lib-docs to publish.
+
 ### Per-child Levels
 
 If you set the level during setup to a single valid syslog level, it will be propagated to all child loggers. If you would like more control,
@@ -178,10 +217,6 @@ A common pattern in Taskcluster projects is to have handler functions in a worke
 can be timed (in milliseconds) by wrapping them with `taskcluster-lib-monitor`:
 
 ```js
-const monitor = new Monitor({
-  serviceName: 'tc-stats-collector',
-});
-
 const listener = new taskcluster.PulseListener({
   credentials: {clientId: 'test-client', accessToken: 'test'},
   queueName: 'a-queue-name',
@@ -202,13 +237,6 @@ Most Taskcluster services are Express services. We can easily time how long endp
 as middleware:
 
 ```js
-const monitor = new Monitor({
-  serviceName: 'tc-stats-collector',
-  credentials: {clientId: 'test-client', accessToken: 'test'},
-});
-
-// Express setup, etc.
-
 middleware.push(monitor.expressMiddleware('name_of_function'));
 ```
 This is already integrated in `taskcluster-lib-api` and probably doesn't need to be implemented in your service on its own.
