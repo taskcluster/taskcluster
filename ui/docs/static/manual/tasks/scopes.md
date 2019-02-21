@@ -21,6 +21,6 @@ scopes its creator has.
 
 In fact, several scope sets must be satisfieid to create a task:
  * Scopes to create a task for the given worker type
- * Scopes corresponding to some some components of the task definition, such as
+ * Scopes corresponding to some components of the task definition, such as
    routes, priorities, and `schedulerId`.
  * The task's `scopes` property

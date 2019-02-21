@@ -33,3 +33,6 @@ _(Go checks out libraries directly from source control, so no need for a package
 
 * Package and Documentation on [npm](https://www.npmjs.com/package/taskcluster-cli)
 * Source and Documentation on [github](https://github.com/taskcluster/taskcluster-cli)
+
+This tool has a `taskcluster signin` which can helpfully set the [standard environment variables](/docs/manual/design/env-vars) after authenticating you with a browser.
+All of the other client libraries have utility functions to use those standard variables.

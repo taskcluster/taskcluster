@@ -373,52 +373,6 @@
             "children": [
               {
                 "children": [
-                ],
-                "data": {
-                  "filename": "design/apis/errors.md",
-                  "order": 20,
-                  "title": "API Errors"
-                },
-                "name": "errors",
-                "next": {
-                  "path": "manual/design/apis/hawk",
-                  "title": "Authentication"
-                },
-                "path": "manual/design/apis/errors",
-                "prev": {
-                  "path": "manual/design/apis",
-                  "title": "Microservice APIs"
-                },
-                "up": {
-                  "path": "manual/design/apis",
-                  "title": "Microservice APIs"
-                }
-              },
-              {
-                "children": [
-                  {
-                    "children": [
-                    ],
-                    "data": {
-                      "filename": "design/apis/hawk/README.md",
-                      "order": 10,
-                      "title": "API Authentication and Authorization"
-                    },
-                    "name": "index",
-                    "next": {
-                      "path": "manual/design/apis/hawk/authn",
-                      "title": "Authentication"
-                    },
-                    "path": "manual/design/apis/hawk/index",
-                    "prev": {
-                      "path": "manual/design/apis/hawk",
-                      "title": "Authentication"
-                    },
-                    "up": {
-                      "path": "manual/design/apis/hawk",
-                      "title": "Authentication"
-                    }
-                  },
                   {
                     "children": [
                     ],
@@ -434,12 +388,12 @@
                     },
                     "path": "manual/design/apis/hawk/authn",
                     "prev": {
-                      "path": "manual/design/apis/hawk/index",
+                      "path": "manual/design/apis/hawk",
                       "title": "API Authentication and Authorization"
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "Authentication"
+                      "title": "API Authentication and Authorization"
                     }
                   },
                   {
@@ -462,7 +416,7 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "Authentication"
+                      "title": "API Authentication and Authorization"
                     }
                   },
                   {
@@ -485,7 +439,7 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "Authentication"
+                      "title": "API Authentication and Authorization"
                     }
                   },
                   {
@@ -508,7 +462,7 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "Authentication"
+                      "title": "API Authentication and Authorization"
                     }
                   },
                   {
@@ -531,7 +485,7 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "Authentication"
+                      "title": "API Authentication and Authorization"
                     }
                   },
                   {
@@ -554,7 +508,7 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "Authentication"
+                      "title": "API Authentication and Authorization"
                     }
                   },
                   {
@@ -577,7 +531,7 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "Authentication"
+                      "title": "API Authentication and Authorization"
                     }
                   },
                   {
@@ -590,8 +544,8 @@
                     },
                     "name": "troubleshooting",
                     "next": {
-                      "path": "manual/design/apis/pulse",
-                      "title": "Pulse"
+                      "path": "manual/design/apis/errors",
+                      "title": "API Errors"
                     },
                     "path": "manual/design/apis/hawk/troubleshooting",
                     "prev": {
@@ -600,24 +554,47 @@
                     },
                     "up": {
                       "path": "manual/design/apis/hawk",
-                      "title": "Authentication"
+                      "title": "API Authentication and Authorization"
                     }
                   }
                 ],
                 "data": {
-                  "filename": "design/apis/hawk/authn.md",
-                  "order": 21,
-                  "title": "Authentication"
+                  "filename": "design/apis/hawk/README.md",
+                  "order": 10,
+                  "title": "API Authentication and Authorization"
                 },
                 "name": "hawk",
                 "next": {
-                  "path": "manual/design/apis/hawk/index",
-                  "title": "API Authentication and Authorization"
+                  "path": "manual/design/apis/hawk/authn",
+                  "title": "Authentication"
                 },
                 "path": "manual/design/apis/hawk",
                 "prev": {
-                  "path": "manual/design/apis/errors",
+                  "path": "manual/design/apis",
+                  "title": "Microservice APIs"
+                },
+                "up": {
+                  "path": "manual/design/apis",
+                  "title": "Microservice APIs"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "filename": "design/apis/errors.md",
+                  "order": 20,
                   "title": "API Errors"
+                },
+                "name": "errors",
+                "next": {
+                  "path": "manual/design/apis/pulse",
+                  "title": "Pulse"
+                },
+                "path": "manual/design/apis/errors",
+                "prev": {
+                  "path": "manual/design/apis/hawk/troubleshooting",
+                  "title": "Troubleshooting"
                 },
                 "up": {
                   "path": "manual/design/apis",
@@ -639,8 +616,8 @@
                 },
                 "path": "manual/design/apis/pulse",
                 "prev": {
-                  "path": "manual/design/apis/hawk/troubleshooting",
-                  "title": "Troubleshooting"
+                  "path": "manual/design/apis/errors",
+                  "title": "API Errors"
                 },
                 "up": {
                   "path": "manual/design/apis",
@@ -678,8 +655,8 @@
             },
             "name": "apis",
             "next": {
-              "path": "manual/design/apis/errors",
-              "title": "API Errors"
+              "path": "manual/design/apis/hawk",
+              "title": "API Authentication and Authorization"
             },
             "path": "manual/design/apis",
             "prev": {
@@ -865,8 +842,8 @@
                     },
                     "name": "commits",
                     "next": {
-                      "path": "manual/design/namespaces",
-                      "title": "Namespaces"
+                      "path": "manual/design/env-vars",
+                      "title": "Standard Environment Variables"
                     },
                     "path": "manual/design/devel/best-practices/commits",
                     "prev": {
@@ -924,6 +901,28 @@
             "children": [
             ],
             "data": {
+              "order": 29,
+              "title": "Standard Environment Variables"
+            },
+            "name": "env-vars",
+            "next": {
+              "path": "manual/design/namespaces",
+              "title": "Namespaces"
+            },
+            "path": "manual/design/env-vars",
+            "prev": {
+              "path": "manual/design/devel/best-practices/commits",
+              "title": "Creating Good Commit Messages"
+            },
+            "up": {
+              "path": "manual/design",
+              "title": "System Design"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
               "filename": "design/namespaces.md",
               "order": 30,
               "title": "Namespaces"
@@ -935,8 +934,8 @@
             },
             "path": "manual/design/namespaces",
             "prev": {
-              "path": "manual/design/devel/best-practices/commits",
-              "title": "Creating Good Commit Messages"
+              "path": "manual/design/env-vars",
+              "title": "Standard Environment Variables"
             },
             "up": {
               "path": "manual/design",
