@@ -216,6 +216,7 @@ const createTheme = isDarkTheme => {
         },
       },
       unorderedList: {
+        wordWrap: 'break-word',
         listStyleType: 'square',
         paddingLeft: 32,
       },
