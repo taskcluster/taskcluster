@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { join } from 'path';
 import RefParser from 'json-schema-ref-parser';
-import { string, object, oneOf } from 'prop-types';
+import { string } from 'prop-types';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import { withStyles } from '@material-ui/core/styles';
 import Table from 'react-schema-viewer/lib/SchemaTable';
@@ -83,7 +83,7 @@ import references from '../../../docs/generated/references.json';
  */
 export default class SchemaTable extends Component {
   static propTypes = {
-    schema: oneOf([string, object]).isRequired,
+    schema: string.isRequired,
     /**
      * The service name in which the entry belongs to.
      * Required for a reference document (api or exchanges) because
