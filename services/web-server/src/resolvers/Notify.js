@@ -1,4 +1,10 @@
 export default {
+  NotificationType: {
+    EMAIL: 'email',
+    PULSE: 'pulse',
+    IRC_USER: 'irc-user',
+    IRC_CHANNEL: 'irc-channel',
+  },
   Query: {
     listDenylistAddresses(parent, { connection, filter }, { loaders }) {
       return loaders.listDenylistAddresses.load({ connection, filter });
