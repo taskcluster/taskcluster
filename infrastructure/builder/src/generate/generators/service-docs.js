@@ -38,7 +38,7 @@ exports.tasks.push({
 });
 
 function createReferenceMarkupContent(reference) {
-  const order = reference.startsWith('api') ? 1000 : 1001;
+  const order = reference.startsWith('api') ? 1 : 2;
   const name = removeExtension(reference);
 
   return [

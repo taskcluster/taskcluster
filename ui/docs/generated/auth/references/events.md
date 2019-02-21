@@ -1,5 +1,5 @@
 ---
-order: 1001
+order: 2
 inline: true
 title: events
 ---
