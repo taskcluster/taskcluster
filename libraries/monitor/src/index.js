@@ -128,6 +128,7 @@ class MonitorManager {
 
     const logger = new Logger({
       name: `taskcluster.${this.serviceName}.${this.subject}`,
+      service: this.serviceName,
       level: this.levels['root'],
       enable,
       pretty,
@@ -206,6 +207,7 @@ class MonitorManager {
       enable: this.enable,
       logger: new Logger({
         name: `taskcluster.${this.serviceName}.${prefix}`,
+        service: this.serviceName,
         level: this.levels[prefix] || this.levels.root,
         enable: this.enable,
         pretty: this.pretty,

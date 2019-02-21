@@ -33,10 +33,11 @@ const LEVELS_REVERSE = [
  * later if we want.
  */
 class Logger {
-  constructor({name, level, pretty=false, enable=true, destination=process.stdout, metadata=null}) {
+  constructor({name, service, level, pretty=false, enable=true, destination=process.stdout, metadata=null}) {
     assert(name, 'Must specify Logger name.');
 
     this.name = name;
+    this.service = service;
     this.destination = destination;
     this.pretty = pretty;
     this.enable = enable;
@@ -106,10 +107,14 @@ class Logger {
         Logger: this.name,
         Hostname: this.hostname,
         EnvVersion: '2.0',
-        Message: message, // will be omitted if undefined
         Severity: level,
         Pid: this.pid,
         Fields: fields,
+        message, // will be omitted if undefined
+        severity: LEVELS_REVERSE[level], // for stackdriver
+        serviceContext: { // for stackdriver
+          service: this.service,
+        },
       }) + '\n');
     }
   }

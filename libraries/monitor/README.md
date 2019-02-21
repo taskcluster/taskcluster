@@ -55,19 +55,27 @@ The available options to the setup function are:
 
 ### Logging
 
-This library allows writing logs to stdout in the [mozlog](https://wiki.mozilla.org/Firefox/Services/Logging) format. We add an extra `Message`
-field to the top level if any of the contents of `Fields` are `message` or `stack`. This is for compatibility with the logging tools we use. We
-will add configurable output formats later if wanted.
+This library allows writing logs to stdout in the [mozlog](https://wiki.mozilla.org/Firefox/Services/Logging) format.
+
+We add an extra `message` field to the top level if any of the contents of `Fields` are `message` or `stack`.
+This is for compatibility with the logging tools we use. We will add configurable output formats later if wanted.
+
+We have both a `Severity and `severity` field to support both our logging tooling requiremtents and mozlog's. The lowercase
+reports in a string version of severity and uppercase is the syslog number for each level.
+
+We also add a `serviceContext` which is used in our tooling. This contains a single field with the name of the service.
 
 ```json
 {
   "Timestamp": <time since unix epoch in nanoseconds>,
   "Type": "...",
   "Logger": "...",
-  "Message": "...",
+  "message": "...",
+  "serviceContext": {"service": "..."},
   "Hostname": "...",
   "EnvVersion": "2.0",
   "Severity": ...,
+  "severity": ...,
   "Pid": ...,
   "Fields": {...}
 }
