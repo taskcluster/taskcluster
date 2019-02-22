@@ -369,6 +369,9 @@ const createTheme = isDarkTheme => {
           // Style taken from the Link component
           color: THEME.SECONDARY,
           textDecoration: 'none',
+          '&:hover': {
+            textDecoration: 'underline',
+          },
         },
         '& img': {
           maxWidth: '100%',
