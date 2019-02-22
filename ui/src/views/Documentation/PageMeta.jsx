@@ -57,7 +57,9 @@ export default class PageMeta extends Component {
         <ul>
           {items.map(([link, text]) => (
             <li key={text}>
-              <AnchorOrLink href={removeReadmeFromPath(link)}>{text}</AnchorOrLink>
+              <AnchorOrLink href={removeReadmeFromPath(link)}>
+                {text}
+              </AnchorOrLink>
             </li>
           ))}
         </ul>
@@ -97,7 +99,9 @@ export default class PageMeta extends Component {
             })}>
             {hasPreviousPage && (
               <PageNavigation
-                to={removeReadmeFromPath(join(DOCS_PATH_PREFIX, pageInfo.prev.path))}
+                to={removeReadmeFromPath(
+                  join(DOCS_PATH_PREFIX, pageInfo.prev.path)
+                )}
                 variant="prev"
                 aria-label="Previous Page">
                 {pageInfo.prev.title}
@@ -105,7 +109,9 @@ export default class PageMeta extends Component {
             )}
             {hasNextPage && (
               <PageNavigation
-                to={removeReadmeFromPath(join(DOCS_PATH_PREFIX, pageInfo.next.path))}
+                to={removeReadmeFromPath(
+                  join(DOCS_PATH_PREFIX, pageInfo.next.path)
+                )}
                 variant="next"
                 aria-label="Next Page">
                 {pageInfo.next.title}
