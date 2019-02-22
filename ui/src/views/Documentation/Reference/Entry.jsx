@@ -287,7 +287,10 @@ export default class Entry extends Component {
           <ListItem>
             <ListItemText
               primaryTypographyProps={primaryTypographyProps}
-              secondaryTypographyProps={{ className: classes.scopesWrapper, component: 'div' }}
+              secondaryTypographyProps={{
+                className: classes.scopesWrapper,
+                component: 'div',
+              }}
               primary="Scopes"
               secondary={this.renderScopeExpression(entry.scopes)}
             />
