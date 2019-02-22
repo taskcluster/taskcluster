@@ -3,11 +3,14 @@ title: Task Life-Cycle
 description: Phases of a task life-cycle.
 order: 50
 ---
+import Image from '../../../../src/views/Documentation/Image'
+import taskLifeCycle from './task-life-cycle.svg'
+
 The diagram below outlines the task life-cycle. Transitions drawn by solid
 black lines are initiated by workers. While dashes transitions are initiated
 at the initiative of the queue, or its consumers.
 
-![Task Life Cycle](./task-life-cycle.svg)
+<Image src={taskLifeCycle} />
 
 ## Unscheduled Tasks
 When a task is created it is _unscheduled_ until (i) it is scheduled by

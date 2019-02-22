@@ -3,6 +3,9 @@ title: Queue-Worker Interaction
 description: How workers interacts with the queue to process tasks.
 order: 60
 ---
+import Image from '../../../../src/views/Documentation/Image'
+import queueWorkerInteraction from './queue-worker-interaction.svg'
+
 _This document outlines how workers interact with the queue in-order to process
 tasks. This is intended as required reading for any worker-implementor._
 
@@ -11,8 +14,7 @@ successfully claimed, executed and resolved. Obviously, there is a few corner
 cases when dealing with internal errors, invalid payloads and early worker
 termination, sections here outline how to handle all these cases.
 
-![Common queue-worker interaction](./queue-worker-interaction.svg)
-
+<Image src={queueWorkerInteraction} />
 
 ## Claiming Pending Tasks
 A worker must at a minimum have the following configuration to claim tasks:
