@@ -34,6 +34,7 @@ import DocsSidebarList from './DocsSidebarList';
   theme => ({
     root: {
       flexGrow: 1,
+      justifyContent: 'center',
       minHeight: '100vh',
       zIndex: 1,
       overflow: 'hidden',
@@ -103,6 +104,7 @@ import DocsSidebarList from './DocsSidebarList';
       marginTop: theme.spacing.unit,
     },
     content: {
+      maxWidth: 1592,
       flexGrow: 1,
       backgroundColor: theme.palette.background,
       overflowY: 'auto',

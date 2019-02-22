@@ -461,6 +461,11 @@ const createTheme = isDarkTheme => {
           },
         },
       },
+      MuiDrawer: {
+        paper: {
+          maxWidth: 500,
+        },
+      },
     },
   };
 };
