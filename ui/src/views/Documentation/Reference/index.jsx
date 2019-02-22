@@ -14,18 +14,17 @@ export default class Reference extends Component {
   };
 
   render() {
-    const {
-      json: { entries, title, description, exchangePrefix, serviceName },
-    } = this.props;
+    const { json } = this.props;
     const functionEntries =
-      entries && entries.filter(({ type }) => type === 'function');
+      json.entries && json.entries.filter(({ type }) => type === 'function');
     const topicExchangeEntries =
-      entries && entries.filter(({ type }) => type === 'topic-exchange');
+      json.entries &&
+      json.entries.filter(({ type }) => type === 'topic-exchange');
 
     return (
       <div>
-        <HeaderWithAnchor>{title}</HeaderWithAnchor>
-        <Markdown>{description}</Markdown>
+        {json.title && <HeaderWithAnchor>{json.title}</HeaderWithAnchor>}
+        {json.description && <Markdown>{json.description}</Markdown>}
         {topicExchangeEntries && Boolean(topicExchangeEntries.length) && (
           <Fragment>
             <Typography gutterBottom component="h2" variant="h5">
@@ -36,8 +35,8 @@ export default class Reference extends Component {
                 key={entry.name}
                 type="topic-exchange"
                 entry={entry}
-                exchangePrefix={exchangePrefix}
-                serviceName={serviceName}
+                exchangePrefix={json.exchangePrefix}
+                serviceName={json.serviceName}
               />
             ))}
           </Fragment>
@@ -58,7 +57,7 @@ export default class Reference extends Component {
                 key={`${entry.name}-${entry.query}`}
                 type="function"
                 entry={entry}
-                serviceName={serviceName}
+                serviceName={json.serviceName}
               />
             ))}
           </Fragment>

@@ -5993,6 +5993,82 @@
   },
   {
     "content": {
+      "$id": "/schemas/common/logs-reference-v0.json#",
+      "$schema": "/schemas/common/metadata-metaschema.json#",
+      "additionalProperties": false,
+      "description": "Reference of messages output by structured logging",
+      "metadata": {
+        "name": "logs",
+        "version": 0
+      },
+      "properties": {
+        "$schema": {
+          "description": "Link to schema for this reference. That is a link to this very document. Typically used to identify what kind of reference this file is.",
+          "format": "uri",
+          "title": "Log Message Reference",
+          "type": "string"
+        },
+        "serviceName": {
+          "description": "Name of the taskcluster service",
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Service Name",
+          "type": "string"
+        },
+        "types": {
+          "description": "Array of log message types",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "description": "A description of this message type",
+                "type": "string"
+              },
+              "fields": {
+                "additionalProperties": true,
+                "description": "The set of fields that will be in every instance of this message type. Mapping field name to description.",
+                "type": "object"
+              },
+              "name": {
+                "description": "The service-specific name of this message type.",
+                "pattern": "^[a-z][a-zA-Z0-9_]*",
+                "type": "string"
+              },
+              "type": {
+                "description": "The \"type\" of the message will be in the top-level keys of a message under the name \"Type\".",
+                "pattern": "^[a-z][a-z0-9.-_]*",
+                "type": "string"
+              },
+              "version": {
+                "description": "The version of the fields for this log type. Will increment for breaking changes.",
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "type",
+              "version",
+              "description",
+              "fields"
+            ],
+            "title": "Message Type",
+            "type": "object"
+          },
+          "title": "Types",
+          "type": "array"
+        }
+      },
+      "required": [
+        "serviceName",
+        "$schema",
+        "types"
+      ],
+      "title": "Log Messages Reference File",
+      "type": "object"
+    },
+    "filename": "schemas/common/logs-reference-v0.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/common/exchanges-reference-v0.json#",
       "$schema": "/schemas/common/metadata-metaschema.json#",
       "additionalProperties": false,
@@ -7644,6 +7720,115 @@
   },
   {
     "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "worker-manager",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/worker-manager/v1/logs.json"
+  },
+  {
+    "content": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "This service manages workers, including provisioning",
@@ -7774,6 +7959,115 @@
   },
   {
     "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "treeherder",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/treeherder/v1/logs.json"
+  },
+  {
+    "content": {
       "$schema": "/schemas/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The taskcluster-treeherder service is responsible for processing\ntask events published by Taskcluster Queue and producing job messages\nthat are consumable by Treeherder.\n\nThis exchange provides that job messages to be consumed by any queue that\nattached to the exchange.  This could be a production Treeheder instance,\na local development environment, or a custom dashboard.",
@@ -7812,6 +8106,115 @@
       "title": "Taskcluster-treeherder Pulse Exchange"
     },
     "filename": "references/treeherder/v1/exchanges.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "secrets",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/secrets/v1/logs.json"
   },
   {
     "content": {
@@ -7900,6 +8303,115 @@
       "title": "Taskcluster Secrets API Documentation"
     },
     "filename": "references/secrets/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "queue",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/queue/v1/logs.json"
   },
   {
     "content": {
@@ -9266,6 +9778,115 @@
   },
   {
     "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "purge-cache",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/purge-cache/v1/logs.json"
+  },
+  {
+    "content": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The purge-cache service is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the API end-point for publishing the pulse\nmessage. This is mainly intended to be used by tools.",
@@ -9338,6 +9959,139 @@
       "title": "Purge Cache API"
     },
     "filename": "references/purge-cache/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "notify",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "A request to send an email.",
+          "fields": {
+            "address": "The requested recepient of the email."
+          },
+          "type": "email",
+          "version": 1
+        },
+        {
+          "description": "A request to send a pulse message.",
+          "fields": {
+            "routingKey": "The requested routingKey of the message."
+          },
+          "type": "pulse",
+          "version": 1
+        },
+        {
+          "description": "A request to send an irc message.",
+          "fields": {
+            "dest": "A user or channel. Will begin with \"#\" if a channel."
+          },
+          "type": "irc",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/notify/v1/logs.json"
   },
   {
     "content": {
@@ -9501,23 +10255,144 @@
       "references": [
         "/references/auth/v1/api.json",
         "/references/auth/v1/exchanges.json",
+        "/references/auth/v1/logs.json",
+        "/references/built-in-workers/v1/logs.json",
         "/references/github/v1/api.json",
         "/references/github/v1/exchanges.json",
+        "/references/github/v1/logs.json",
         "/references/hooks/v1/api.json",
         "/references/hooks/v1/exchanges.json",
+        "/references/hooks/v1/logs.json",
         "/references/index/v1/api.json",
+        "/references/index/v1/logs.json",
         "/references/login/v1/api.json",
+        "/references/login/v1/logs.json",
         "/references/notify/v1/api.json",
         "/references/notify/v1/exchanges.json",
+        "/references/notify/v1/logs.json",
         "/references/purge-cache/v1/api.json",
+        "/references/purge-cache/v1/logs.json",
         "/references/queue/v1/api.json",
         "/references/queue/v1/exchanges.json",
+        "/references/queue/v1/logs.json",
         "/references/secrets/v1/api.json",
+        "/references/secrets/v1/logs.json",
         "/references/treeherder/v1/exchanges.json",
-        "/references/worker-manager/v1/api.json"
+        "/references/treeherder/v1/logs.json",
+        "/references/worker-manager/v1/api.json",
+        "/references/worker-manager/v1/logs.json"
       ]
     },
     "filename": "references/manifest.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "login",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/login/v1/logs.json"
   },
   {
     "content": {
@@ -9558,6 +10433,115 @@
       "title": "Login API"
     },
     "filename": "references/login/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "index",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/index/v1/logs.json"
   },
   {
     "content": {
@@ -9668,6 +10652,115 @@
       "title": "Task Index API Documentation"
     },
     "filename": "references/index/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "hooks",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/hooks/v1/logs.json"
   },
   {
     "content": {
@@ -9966,6 +11059,115 @@
   },
   {
     "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "github",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/github/v1/logs.json"
+  },
+  {
+    "content": {
       "$schema": "/schemas/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The github service publishes a pulse\nmessage for supported github events, translating Github webhook\nevents into pulse messages.\n\nThis document describes the exchange offered by the taskcluster\ngithub service",
@@ -10239,6 +11441,224 @@
       "title": "Taskcluster GitHub API Documentation"
     },
     "filename": "references/github/v1/api.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "built-in-workers",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/built-in-workers/v1/logs.json"
+  },
+  {
+    "content": {
+      "$schema": "/schemas/common/logs-reference-v0.json#",
+      "serviceName": "auth",
+      "types": [
+        {
+          "description": "The most basic timer.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timer",
+          "version": 1
+        },
+        {
+          "description": "A basic timer applied to a function.",
+          "fields": {
+            "duration": "The duration in ms of the function.",
+            "name": "The name of the handler.",
+            "status": "Whether or not the handler resolved succesfully."
+          },
+          "type": "monitor.timedHandler",
+          "version": 1
+        },
+        {
+          "description": "A timer for express endpoints.",
+          "fields": {
+            "duration": "The duration in ms of the endpoint.",
+            "name": "The name of the endpoint.",
+            "statusCode": "The http status code that the endpoint resolved with."
+          },
+          "type": "monitor.express",
+          "version": 1
+        },
+        {
+          "description": "A timer for calls to aws services.",
+          "fields": {
+            "duration": "How long it took to resolve the request in ms.",
+            "operation": "The specific operation of this call.",
+            "region": "The AWS region this service is in.",
+            "service": "The name of the aws service being accessed."
+          },
+          "type": "monitor.aws",
+          "version": 1
+        },
+        {
+          "description": "Metrics of a node process.",
+          "fields": {
+            "lastCpuUsage": "The output of node's process.cpuUsage",
+            "lastMemoryUsage": "The output of node's process.memoryUsage"
+          },
+          "type": "monitor.resources",
+          "version": 1
+        },
+        {
+          "description": "A simple measurement. The reported values are expected to have statistics calculated over them.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be calculated over in a time span."
+          },
+          "type": "monitor.measure",
+          "version": 1
+        },
+        {
+          "description": "A simple count. The reported values should be summed up in a time span.",
+          "fields": {
+            "key": "An arbitrary key.",
+            "val": "A number that should be summed over a time span."
+          },
+          "type": "monitor.count",
+          "version": 1
+        },
+        {
+          "description": "A specifically formatted error report. Will have at least the following but can contain more.",
+          "fields": {
+            "message": "Whatever message the error contained.",
+            "name": "The name of the error.",
+            "stack": "A nodejs stack trace."
+          },
+          "type": "monitor.error",
+          "version": 1
+        },
+        {
+          "description": "A simple timekeeper for measuring arbitrary time spans.",
+          "fields": {
+            "duration": "The duration in ms of whatever was timed.",
+            "key": "A key that should be unique to the logger prefix."
+          },
+          "type": "monitor.timekeeper",
+          "version": 1
+        },
+        {
+          "description": "An internal type for logging simple messages. No required fields.",
+          "fields": {
+          },
+          "type": "monitor.generic",
+          "version": 1
+        },
+        {
+          "description": "An internal type for reporting malformed logging calls.",
+          "fields": {
+          },
+          "type": "monitor.loggingError",
+          "version": 1
+        }
+      ]
+    },
+    "filename": "references/auth/v1/logs.json"
   },
   {
     "content": {
