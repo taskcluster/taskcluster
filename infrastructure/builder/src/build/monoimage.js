@@ -170,7 +170,7 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
         image: nodeImage,
         workingDir: '/app/ui',
         env: ['YARN_CACHE_FOLDER=/cache'],
-        command: ['bash', '-c', 'yarn install && yarn build'],
+        command: ['bash', '-c', 'yarn install'],
         logfile: `${workDir}/yarn-ui-install.log`,
         utils,
         binds: [
@@ -182,9 +182,8 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
 
     },
     entrypoints: async (requirements, utils, procs) => {
-      procs['ui/web'] = 'cd /app/ui && ' +
-        ' cp web-ui-nginx-site.conf /etc/nginx/conf.d/ui.conf &&' +
-        ' nginx -c /etc/nginx/conf.d/ui.conf -g \'daemon off;\'';
+      procs['ui/web'] = 'cd /app/ui && yarn build && ' +
+        ' nginx -c /app/ui/web-ui-nginx-site.conf -g \'daemon off;\'';
     },
   });
 
