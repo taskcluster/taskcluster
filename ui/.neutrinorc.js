@@ -1,4 +1,5 @@
 const merge = require('deepmerge');
+const babelMerge = require('babel-merge');
 const { join } = require('path');
 
 require('@babel/register')({
@@ -7,6 +8,9 @@ require('@babel/register')({
 });
 
 const theme = require('./src/theme').default;
+
+const env = process.env.NODE_ENV;
+const isEnvProduction = env === 'production';
 
 module.exports = {
   options: {
@@ -25,6 +29,7 @@ module.exports = {
       rules: {
         'react/no-access-state-in-setstate': 'off',
         'babel/no-unused-expressions': 'off',
+        'linebreak-style': 'off',
       },
     }],
     ['@neutrinojs/react', {
@@ -63,12 +68,6 @@ module.exports = {
         GA_TRACKING_ID: '',
         SENTRY_DSN: '',
       },
-      babel: {
-        plugins: [
-          [require.resolve('@babel/plugin-proposal-decorators'), { legacy: true }],
-          [require.resolve('@babel/plugin-proposal-class-properties'), { loose: true }],
-        ],
-      },
     }],
     (neutrino) => {
       neutrino.register('styleguide', () => ({
@@ -103,6 +102,20 @@ module.exports = {
         }));
 
       neutrino.config.module
+        .rule('compile')
+          .use('babel')
+            .tap(options => ({
+              ...options,
+              plugins: options.plugins
+                // @babel/plugin-proposal-decorators needs to come before @babel/plugin-proposal-class-properties
+                .filter(plugin => !plugin[0].includes('plugin-proposal-class-properties')).concat([
+                  [require.resolve('@babel/plugin-proposal-decorators'), { legacy: true }],
+                  [require.resolve('@babel/plugin-proposal-class-properties'), { loose: true }],
+                  isEnvProduction ? require.resolve('babel-plugin-transform-react-remove-prop-types') : null
+                ]).filter(Boolean)
+            }));
+
+      neutrino.config.module
         .rule('graphql')
           .test(/\.graphql$/)
           .include
@@ -124,6 +137,9 @@ module.exports = {
           .test(/\.mdx?$/)
           .use('babel-loader')
             .loader('babel-loader')
+            .options({
+              presets: [require.resolve('@babel/preset-react')],
+            })
             .end()
           .use('mdx-loader')
             .loader('mdx-loader');

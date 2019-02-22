@@ -1,23 +1,51 @@
 import React, { Component } from 'react';
-import MuiMarkdown from '@mozilla-frontend-infra/components/Markdown';
+import { string } from 'prop-types';
+import classNames from 'classnames';
+import parser from 'markdown-it';
+import linkAttributes from 'markdown-it-link-attributes';
+import highlighter from 'markdown-it-highlightjs';
 import { withStyles } from '@material-ui/core/styles';
+import 'highlight.js/styles/atom-one-dark.css';
+
+const markdown = parser({ linkify: true });
+
+markdown.use(highlighter);
+markdown.use(linkAttributes, {
+  attrs: {
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  },
+});
 
 @withStyles(theme => ({
-  markdown: {
-    '& a, & a code': {
-      // Style taken from the Link component
-      color: theme.palette.secondary.main,
-      textDecoration: 'none',
-      '&:hover': {
-        textDecoration: 'underline',
-      },
-    },
+  root: {
+    ...theme.mixins.markdown,
   },
 }))
+/**
+ * Render children as syntax-highlighted monospace code.
+ */
 export default class Markdown extends Component {
-  render() {
-    const { classes, children } = this.props;
+  static propTypes = {
+    /**
+     * The content to render as Markdown.
+     */
+    children: string.isRequired,
+  };
 
-    return <MuiMarkdown className={classes.markdown}>{children}</MuiMarkdown>;
+  render() {
+    const { classes, children, className, ...props } = this.props;
+
+    /* eslint-disable react/no-danger */
+    return (
+      <span
+        className={classNames(classes.root, className)}
+        dangerouslySetInnerHTML={{
+          __html: markdown.render(children),
+        }}
+        {...props}
+      />
+    );
+    /* eslint-enable react/no-danger */
   }
 }

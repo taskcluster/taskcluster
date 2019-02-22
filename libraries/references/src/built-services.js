@@ -13,7 +13,9 @@ const loadReferences = (serviceDirectory, references) => {
   if (!fs.existsSync(referencesDir)) {
     return;
   }
-  for (let filename of fs.readdirSync(referencesDir)) {
+  for (let filename of fs
+    .readdirSync(referencesDir)
+    .filter(filename => path.extname(filename) === '.json')) {
     filename = path.join(referencesDir, filename);
     const data = fs.readFileSync(filename);
     const content = JSON.parse(data);

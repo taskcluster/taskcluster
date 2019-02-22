@@ -59,6 +59,7 @@
     "json-stable-stringify": "^1.0.1",
     "listr": "^0.14.3",
     "lodash": "^4.17.11",
+    "md-directory": "^0.1.2",
     "memory-streams": "^0.1.3",
     "mkdirp": "^0.5.1",
     "mocha": "^5.2.0",

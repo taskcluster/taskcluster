@@ -10,7 +10,7 @@ exports.tasks = [{
     let readmes = (await gitLsFiles())
       .filter(file => file.endsWith('README.md'))
       // ignore generated output
-      .filter(file => !file.startsWith('generated/'))
+      .filter(file => !file.startsWith('ui/docs/'))
       // some test directories have READMEs
       .filter(file => !file.match(/\/test\//))
       .map(file => ({dir: path.dirname(file).replace(/^.$/, ''), children: []}));

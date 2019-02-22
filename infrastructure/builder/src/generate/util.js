@@ -11,7 +11,7 @@ const REPO_ROOT = path.join(__dirname, '../../../../');
 exports.REPO_ROOT = REPO_ROOT;
 
 /**
- * Read a file (relative to REPO_ROOT) and return its contents as a utf8 string
+ * Asynchronously read a file (relative to REPO_ROOT) and return its contents as a utf8 string
  */
 exports.readFile = async filename => {
   return await readFile(
@@ -20,7 +20,7 @@ exports.readFile = async filename => {
 };
 
 /**
- * Read a JSON file
+ * Asynchronously read a JSON file
  */
 exports.readJSON = async filename => {
   return JSON.parse(await exports.readFile(filename));
@@ -75,3 +75,8 @@ exports.gitLsFiles = async () => {
     .stdout.split(/\0/);
   return files;
 };
+
+/**
+ * Remove extension from `filename`
+ */
+exports.removeExtension = filename => filename.replace(path.extname(filename), '');
