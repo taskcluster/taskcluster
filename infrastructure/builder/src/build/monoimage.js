@@ -182,9 +182,9 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
 
     },
     entrypoints: async (requirements, utils, procs) => {
-      procs['taskcluster-ui'] = 'cd /app && ' +
-        ' cp infrastructure/builder/build/service/web-ui-nginx-site.conf /etc/nginx/conf.d/default.conf &&' +
-        ' nginx -g \'daemon off;\'';
+      procs['ui/web'] = 'cd /app/ui && ' +
+        ' cp web-ui-nginx-site.conf /etc/nginx/conf.d/ui.conf &&' +
+        ' nginx -c /etc/nginx/conf.d/ui.conf -g \'daemon off;\'';
     },
   });
 
