@@ -159,8 +159,7 @@ export default class Documentation extends Component {
     try {
       const { params } = this.props.match;
       const pathname = params.path || 'README';
-      const { loader } = readDocFile(`${pathname}.md`);
-      const { default: Page } = await loader;
+      const { default: Page } = await readDocFile(`${pathname}.md`);
       const pageInfo = this.getPageInfo();
 
       this.setState({ Page, pageInfo, error: null });

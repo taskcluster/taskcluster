@@ -33,24 +33,13 @@ export default path => {
         import(/* webpackChunkName: 'Documentation.page' */ `../../docs/generated/${docPath}/README.md`)
     );
 
-    return {
-      path: `/ui/docs/generated/${docPath}.md`,
-      loader: mdFile,
-    };
+    return mdFile;
   }
 
   const mdFile = import(/* webpackChunkName: 'Documentation.page' */ `../../docs/static/${doc}.md`).catch(
     () =>
       import(/* webpackChunkName: 'Documentation.page' */ `../../docs/static/${doc}/README.md`)
   );
-  const generatedDocsKeys = require
-    .context('../../docs/generated', true, /.*.md$/)
-    .keys();
 
-  return {
-    path: generatedDocsKeys.includes(`${docPath}.md`)
-      ? `/docs/static/${doc}.md`
-      : `/docs/static/${doc}/README.md`,
-    loader: mdFile,
-  };
+  return mdFile;
 };
