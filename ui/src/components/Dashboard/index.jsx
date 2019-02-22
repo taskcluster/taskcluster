@@ -21,6 +21,7 @@ import LightBulbOnOutline from 'mdi-react/LightbulbOnOutlineIcon';
 import PageTitle from '../PageTitle';
 import Helmet from '../Helmet';
 import UserMenu from './UserMenu';
+import UserMenuAppBar from './UserMenuAppBar';
 import SidebarList from './SidebarList';
 import { THEME, DOCS_PATH_PREFIX } from '../../utils/constants';
 import { withThemeToggler } from '../../utils/ToggleTheme';
@@ -302,7 +303,7 @@ export default class Dashboard extends Component {
                 </IconButton>
               </Tooltip>
             )}
-            <UserMenu />
+            <UserMenuAppBar />
           </Toolbar>
         </AppBar>
         <Drawer
