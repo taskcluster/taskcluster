@@ -1,5 +1,6 @@
 const loader = require('taskcluster-lib-loader');
 const monitorManager = require('./monitor');
+const monitor = require('taskcluster-lib-monitor');
 const docs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
 const config = require('typed-env-config');
@@ -73,10 +74,7 @@ const load = loader({
 
 // If this file is executed launch component from first argument
 if (!module.parent) {
-  load(process.argv[2]).catch(err => {
-    console.log(err.stack);
-    process.exit(1);
-  });
+  load.crashOnError(process.argv[2]);
 }
 
 module.exports = load;
