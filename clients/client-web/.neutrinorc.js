@@ -16,6 +16,7 @@ module.exports = {
         neutrino.config.devtool('source-map');
         neutrino.config.externals({
           hawk: 'hawk',
+          'crypto-js': 'crypto-js',
           'query-string': {
             commonjs: 'query-string',
             commonjs2: 'query-string',
