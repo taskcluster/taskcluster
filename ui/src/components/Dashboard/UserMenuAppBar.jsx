@@ -6,7 +6,7 @@ import Avatar from '@material-ui/core/Avatar';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
+import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import AccountIcon from 'mdi-react/AccountIcon';
@@ -18,11 +18,6 @@ import SignInDialog from '../SignInDialog';
   avatar: {
     backgroundColor: theme.palette.secondary.main,
   },
-  userMenu: {
-    [theme.breakpoints.up('sm')]: {
-      padding: `${theme.spacing.unit / 2}px ${theme.spacing.double}px`,
-    },
-  },
   text: {
     color: theme.palette.text.primary,
     fontFamily: 'Roboto500',
@@ -33,11 +28,6 @@ import SignInDialog from '../SignInDialog';
   },
   leftIcon: {
     marginRight: theme.spacing.unit,
-  },
-  username: {
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    textOverflow: 'ellipsis',
   },
 }))
 @withAuth
@@ -81,7 +71,7 @@ export default class UserMenuAppBar extends Component {
         <List component="nav">
           <Button
             variant="contained"
-            color="secondary"
+            color="primary"
             onClick={this.handleSignInDialogOpen}>
             <AccountCircleIcon className={classes.icon} />
             Sign in
@@ -99,8 +89,7 @@ export default class UserMenuAppBar extends Component {
     return (
       <Fragment>
         <List component="nav">
-          <ListItem
-            className={classes.userMenu}
+          <IconButton
             button
             aria-haspopup="true"
             aria-controls="user-menu"
@@ -113,7 +102,7 @@ export default class UserMenuAppBar extends Component {
                 {profile.displayName[0]}
               </Avatar>
             )}
-          </ListItem>
+          </IconButton>
         </List>
         <Menu
           id="user-menu"
