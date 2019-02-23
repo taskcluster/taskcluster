@@ -1,5 +1,4 @@
 const util = require('util');
-const _ = require('lodash');
 const split = require('split');
 const exec = util.promisify(require('child_process').execFile);
 const fs = require('fs');
@@ -262,8 +261,9 @@ exports.dockerPull = async ({baseDir, image, utils}) => {
           // calculate overall progress by assuming that every image must be
           // downloaded and extracted, and that those both take the same amount
           // of time per byte.
-          total = _.sum(Object.values(totals)) * 2;
-          current = _.sum(Object.values(downloading)) + _.sum(Object.values(extracting));
+          const total = Object.values(totals).reduce((a, b) => a + b, 0) * 2;
+          const current = Object.values(downloading).reduce((a, b) => a + b, 0) +
+            Object.values(extracting).reduce((a, b) => a + b, 0);
           utils.status({progress: current * 100 / total});
         }
       });
@@ -326,7 +326,7 @@ exports.dockerRegistryCheck = async ({tag}) => {
     // Acces the registry API directly to see if this tag already exists, and do not push if so.
     // TODO: this won't work with custom registries!
     const res = await got(`https://index.docker.io/v1/repositories/${repo}/tags`, {json: true});
-    if (res.body && _.includes(res.body.map(l => l.name), imagetag)) {
+    if (res.body && res.body.map(l => l.name).includes(imagetag)) {
       return true;
     }
   } catch (err) {
@@ -371,7 +371,7 @@ exports.dockerPush = async ({baseDir, tag, logfile, utils}) => {
 
 // add a task to tasks only if it isn't already there
 exports.ensureTask = (tasks, task) => {
-  if (!_.find(tasks, {title: task.title})) {
+  if (!tasks.find(t => t.title === task.title)) {
     tasks.push(task);
   }
 };
@@ -425,7 +425,7 @@ exports.serviceDockerImageTask = ({tasks, baseDir, workDir, cfg, name, requires,
     run: async (requirements, utils) => {
 
       // find the requirements ending in '-stamp' that we should depend on
-      const requiredStamps = _.keys(requirements)
+      const requiredStamps = Object.keys(requirements)
         .filter(r => r.endsWith('-stamp'))
         .sort()
         .map(r => requirements[r]);

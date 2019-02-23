@@ -1,7 +1,5 @@
-const _ = require('lodash');
 const os = require('os');
 const util = require('util');
-const fs = require('fs');
 const path = require('path');
 const config = require('typed-env-config');
 const rimraf = util.promisify(require('rimraf'));
@@ -9,13 +7,12 @@ const mkdirp = util.promisify(require('mkdirp'));
 const {ClusterSpec} = require('../formats/cluster-spec');
 const {TerraformJson} = require('../formats/tf-json');
 const {TaskGraph, Lock, ConsoleRenderer, LogRenderer} = require('console-taskgraph');
-const {gitClone} = require('./utils');
 const generateRepoTasks = require('./repo');
 const generateMonoimageTasks = require('./monoimage');
 
-const _kindTaskGenerators = {
+const kindTaskGenerators = {
   service: require('./service'),
-  other: require('./other'),
+  other: () => [],
 };
 
 class Build {
@@ -56,12 +53,11 @@ class Build {
         cmdOptions: this.cmdOptions,
       });
 
-      const kindTaskGenerator = _kindTaskGenerators[repo.kind];
-      if (!kindTaskGenerator) {
+      if (!kindTaskGenerators[repo.kind]) {
         throw new Error(`Unknown kind ${repo.kind} for repository ${repo.name}`);
       }
 
-      kindTaskGenerator({
+      kindTaskGenerators[repo.kind]({
         tasks,
         baseDir: this.baseDir,
         spec: this.spec,

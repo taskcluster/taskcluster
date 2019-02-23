@@ -8,8 +8,13 @@ const {quote} = require('shell-quote');
 const tar = require('tar-fs');
 const copy = require('recursive-copy');
 const Stamp = require('../stamp');
-const {gitClone, dockerRun, dockerPull, dockerImages, dockerBuild, dockerRegistryCheck,
-  serviceDockerImageTask, ensureDockerImage, ensureTask} = require('../utils');
+const {
+  gitClone,
+  dockerRun,
+  serviceDockerImageTask,
+  ensureDockerImage,
+  ensureTask,
+} = require('../utils');
 
 doT.templateSettings.strip = false;
 const ENTRYPOINT_TEMPLATE = doT.template(fs.readFileSync(path.join(__dirname, 'entrypoint.dot')));

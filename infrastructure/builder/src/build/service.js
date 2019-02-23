@@ -1,18 +1,10 @@
-const _ = require('lodash');
-const util = require('util');
 const fs = require('fs');
-const assert = require('assert');
 const path = require('path');
-const split = require('split');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = util.promisify(require('mkdirp'));
 const {dockerPush} = require('./utils');
 const {herokuBuildpackTasks} = require('./service/heroku-buildpack');
-const {webUiTasks} = require('./service/web-ui');
 
 const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => {
-  const repository = _.find(spec.build.repositories, {name});
-  const isMonorepo = repository.source === 'monorepo';
+  const repository = spec.build.repositories.find(r => r.name === name);
   const workDir = path.join(baseDir, `service-${name}`);
   if (!fs.existsSync(workDir)) {
     fs.mkdirSync(workDir);
@@ -21,11 +13,6 @@ const generateServiceTasks = ({tasks, baseDir, spec, cfg, name, cmdOptions}) => 
   switch (repository.service.buildtype) {
   case 'heroku-buildpack':
     herokuBuildpackTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
-    break;
-
-  case 'web-ui':
-    assert(!isMonorepo, 'monorepo not supported for this buildtype'); // TODO build from monorepo
-    webUiTasks({tasks, baseDir, spec, cfg, name, cmdOptions, repository, workDir});
     break;
 
   default:

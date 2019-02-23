@@ -3,15 +3,24 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const rimraf = util.promisify(require('rimraf'));
-const mkdirp = util.promisify(require('mkdirp'));
 const {quote} = require('shell-quote');
 const tar = require('tar-fs');
 const copy = require('recursive-copy');
 const Stamp = require('./stamp');
 const appRootDir = require('app-root-dir');
-const {gitClone, gitIsDirty, dockerRun, dockerPull, dockerImages, dockerBuild,
-  dockerRegistryCheck, serviceDockerImageTask, ensureDockerImage, ensureTask,
-  listServices, dockerPush} = require('./utils');
+const {
+  gitClone,
+  gitIsDirty,
+  dockerRun,
+  dockerPull,
+  dockerImages,
+  dockerBuild,
+  dockerRegistryCheck,
+  ensureDockerImage,
+  ensureTask,
+  listServices,
+  dockerPush,
+} = require('./utils');
 
 /**
  * The "monoimage" is a single docker image containing all tasks.  This build process goes
@@ -147,8 +156,36 @@ const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
     },
   });
 
-  // TODO: add hooks push for web-ui
-  // TODO: add entry point for docker run for web-ui
+  hooks.push({
+    name: 'web-ui',
+    build: async (requirements, utils, procs) => {
+      const cacheDir = path.join(workDir, 'cache');
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir);
+      }
+
+      utils.step({title: 'Run Yarn Install'});
+
+      await dockerRun({
+        image: nodeImage,
+        workingDir: '/app/ui',
+        env: ['YARN_CACHE_FOLDER=/cache'],
+        command: ['bash', '-c', 'yarn install'],
+        logfile: `${workDir}/yarn-ui-install.log`,
+        utils,
+        binds: [
+          `${appDir}:/app`,
+          `${cacheDir}:/cache`,
+        ],
+        baseDir,
+      });
+
+    },
+    entrypoints: async (requirements, utils, procs) => {
+      procs['ui/web'] = 'cd /app/ui && yarn build && ' +
+        ' nginx -c /app/ui/web-ui-nginx-site.conf -g \'daemon off;\'';
+    },
+  });
 
   ensureTask(tasks, {
     title: 'Clone Monorepo from Working Copy',

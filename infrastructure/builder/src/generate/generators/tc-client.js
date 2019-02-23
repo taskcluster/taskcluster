@@ -1,5 +1,4 @@
 const stringify = require('json-stable-stringify');
-const References = require('taskcluster-lib-references');
 const {writeFile} = require('../util');
 
 exports.tasks = [{
