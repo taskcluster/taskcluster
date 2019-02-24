@@ -1,24 +1,33 @@
 import React, { useState } from 'react';
-import { oneOf } from 'prop-types';
-import { Link as LinkNavigation } from 'react-router-dom';
-import views from '../App/views';
+import { bool } from 'prop-types';
+import { Link as RouterLink, NavLink } from 'react-router-dom';
+import routes from '../App/routes';
+import matchRoutes from './matchRoutes';
 
 /**
  * A react hook which augments `react-router-dom`'s `Link` component
  * with pre-fetching capabilities.
  */
-export default function Link({ viewName, ...props }) {
+export default function Link({ viewName, nav, ...props }) {
+  const Component = nav ? NavLink : RouterLink;
   const [prefetchFlag, setPrefetchFlag] = useState(false);
-  const prefetch = () => {
-    if (viewName && !prefetchFlag) {
-      const view = views[viewName];
 
-      setPrefetchFlag(true);
-      view.preload();
+  function prefetch() {
+    const { to } = props;
+    const path = typeof to === 'string' ? to : to.pathname;
+
+    if (prefetchFlag) {
+      return;
     }
-  };
 
-  const handleFocus = e => {
+    const matchingRoutes = matchRoutes(path, routes);
+
+    matchingRoutes.forEach(({ component }) => component.preload());
+
+    setPrefetchFlag(true);
+  }
+
+  function handleFocus(e) {
     const { onFocus } = props;
 
     prefetch();
@@ -26,9 +35,9 @@ export default function Link({ viewName, ...props }) {
     if (onFocus) {
       onFocus(e);
     }
-  };
+  }
 
-  const handleMouseOver = e => {
+  function handleMouseOver(e) {
     const { onMouseOver } = props;
 
     prefetch();
@@ -36,26 +45,21 @@ export default function Link({ viewName, ...props }) {
     if (onMouseOver) {
       onMouseOver(e);
     }
-  };
+  }
 
   return (
-    <LinkNavigation
-      {...props}
-      {...(viewName
-        ? {
-            onFocus: handleFocus,
-            onMouseOver: handleMouseOver,
-          }
-        : null)}
-    />
+    <Component {...props} onFocus={handleFocus} onMouseOver={handleMouseOver} />
   );
 }
 
 Link.propTypes = {
-  // The view name
-  viewName: oneOf(Object.keys(views)),
+  /**
+   * If true, the `NavLink` component of `react-router-dom` will be used
+   * as the main link component.
+   */
+  nav: bool,
 };
 
 Link.defaultProps = {
-  viewName: null,
+  nav: false,
 };

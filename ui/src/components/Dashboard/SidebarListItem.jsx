@@ -1,12 +1,13 @@
 import React, { Component, cloneElement } from 'react';
 import { node, string } from 'prop-types';
 import classNames from 'classnames';
-import { withRouter, NavLink } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Link from '../../utils/Link';
 
 @withRouter
 @withStyles(theme => ({
@@ -138,7 +139,8 @@ export default class SidebarListItem extends Component {
         button
         disableGutters
         className={classes.listItem}
-        component={NavLink}
+        component={Link}
+        nav
         isActive={this.isItemActive}
         activeClassName={classes.active}
         {...props}>

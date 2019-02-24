@@ -38,7 +38,7 @@ import terminateWorkerTypeQuery from './terminateWorkerType.graphql';
     ...theme.mixins.errorIcon,
   },
 }))
-export default class ViewWorkerType extends Component {
+export default class ViewAwsWorkerType extends Component {
   state = {
     currentTab: 0,
     actionLoading: false,

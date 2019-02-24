@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { arrayOf, func, shape, string } from 'prop-types';
-import { Link } from 'react-router-dom';
 import {
   uniq,
   flatten,
@@ -20,6 +19,7 @@ import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
 import ConnectionDataTable from '../ConnectionDataTable';
 import sort from '../../utils/sort';
+import Link from '../../utils/Link';
 import { VIEW_CLIENT_SCOPES_INSPECT_SIZE } from '../../utils/constants';
 import { pageInfo, client, scopeExpansionLevel } from '../../utils/prop-types';
 

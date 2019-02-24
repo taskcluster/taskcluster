@@ -18,6 +18,9 @@ import db from '../../../utils/db';
   infoText: {
     marginBottom: theme.spacing.unit,
   },
+  listItemButton: {
+    ...theme.mixins.listItemButton,
+  },
 }))
 export default class NoTask extends Component {
   state = {

@@ -169,7 +169,6 @@ export default class TaskDetailsCard extends Component {
                   </CopyToClipboard>
                   <IconButton
                     title="View Task Group"
-                    viewName="TaskGroup"
                     component={Link}
                     to={`/tasks/groups/${task.taskGroupId}`}>
                     <LinkIcon />
@@ -223,7 +222,6 @@ export default class TaskDetailsCard extends Component {
                   </CopyToClipboard>
                   <IconButton
                     component={Link}
-                    viewName="ViewWorkers"
                     title="View Workers"
                     to={`/provisioners/${task.provisionerId}/worker-types/${
                       task.workerType
@@ -279,7 +277,6 @@ export default class TaskDetailsCard extends Component {
                           </CopyToClipboard>
                           <IconButton
                             title="View Task"
-                            viewName="ViewTask"
                             component={Link}
                             to={`/tasks/${task.taskId}`}>
                             <LinkIcon />

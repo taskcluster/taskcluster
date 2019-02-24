@@ -143,7 +143,7 @@ export default class Main extends Component {
         <ErrorPanel error={error} />
         <BrowserRouter>
           <Switch>
-            {routes.map(props => (
+            {routes.map(({ routes, ...props }) => (
               <RouteWithProps key={props.path || 'not-found'} {...props} />
             ))}
           </Switch>

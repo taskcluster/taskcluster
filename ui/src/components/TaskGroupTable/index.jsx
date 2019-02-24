@@ -194,7 +194,6 @@ export default class TaskGroupTable extends Component {
         <TableRow style={style} className={classes.tableRow}>
           <TableCell padding="dense" className={classes.tableFirstCell}>
             <Link
-              viewName="ViewTask"
               className={classes.tableCell}
               to={`/tasks/${taskGroup.status.taskId}`}>
               <div className={classes.listItemCell}>

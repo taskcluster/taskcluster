@@ -1,6 +1,5 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
@@ -11,6 +10,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
+import Link from '../../../utils/Link';
 import db from '../../../utils/db';
 
 @hot(module)

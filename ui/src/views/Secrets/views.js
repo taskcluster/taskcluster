@@ -5,6 +5,6 @@ export default {
     import(/* webpackChunkName: 'Secrets.ViewSecrets' */ './ViewSecrets')
   ),
   ViewSecret: lazy(() =>
-    import(/* webpackChunkName: 'Secrets.ViewSecrets' */ './ViewSecrets')
+    import(/* webpackChunkName: 'Secrets.ViewSecret' */ './ViewSecret')
   ),
 };

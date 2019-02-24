@@ -34,7 +34,7 @@ import Button from '../../../components/Button';
     right: theme.spacing.unit * 11,
   },
 }))
-export default class ViewWorkerTypes extends Component {
+export default class ViewAwsWorkerTypes extends Component {
   state = {
     workerTypeSearch: '',
   };

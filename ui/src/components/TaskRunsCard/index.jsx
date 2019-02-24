@@ -394,7 +394,6 @@ export default class TaskRunsCard extends Component {
                     </CopyToClipboard>
                     <IconButton
                       title="View Worker"
-                      viewName="ViewWorker"
                       component={Link}
                       to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${
                         run.workerId
@@ -425,7 +424,6 @@ export default class TaskRunsCard extends Component {
                     button
                     className={classes.listItemButton}
                     component={Link}
-                    viewName="TaskLog"
                     to={this.getArtifactUrl(liveLogArtifact)}>
                     <ListItemText
                       primary="View Live Log"
