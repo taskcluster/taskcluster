@@ -119,7 +119,6 @@ const getCachesFromTask = task =>
 })
 export default class ViewTask extends Component {
   static getDerivedStateFromProps(props, state) {
-    console.log('getDerivedStateFromProps: ', props);
     const taskId = props.match.params.taskId || '';
     const {
       data: { task },

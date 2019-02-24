@@ -1,6 +1,33 @@
-import views from './views';
 import indexedTaskRoutes from './TaskIndex/routes';
+import lazy from '../../utils/lazy';
 
+const NoTask = lazy(() =>
+  import(/* webpackChunkName: 'Tasks.NoTask' */ './NoTask')
+);
+const NoTaskGroup = lazy(() =>
+  import(/* webpackChunkName: 'Tasks.NoTaskGroup' */ './NoTaskGroup')
+);
+const ViewTask = lazy(() =>
+  import(/* webpackChunkName: 'Tasks.ViewTask' */ './ViewTask')
+);
+const TaskLog = lazy(() =>
+  import(/* webpackChunkName: 'Tasks.TaskLog' */ './TaskLog')
+);
+const CreateTask = lazy(() =>
+  import(/* webpackChunkName: 'Tasks.CreateTask' */ './CreateTask')
+);
+const TaskGroup = lazy(() =>
+  import(/* webpackChunkName: 'Tasks.TaskGroup' */ './TaskGroup')
+);
+const TaskIndex = lazy(() =>
+  import(/* webpackChunkName: 'Tasks.TaskIndex' */ './TaskIndex')
+);
+const TaskRedirect = lazy(() =>
+  import(/* webpackChunkName: 'Tasks.TaskRedirect' */ './TaskRedirect')
+);
+const InteractiveConnect = lazy(() =>
+  import(/* webpackChunkName: 'Tasks.InteractiveConnect' */ './InteractiveConnect')
+);
 const taskGroupDescription =
   'Inspect task groups, monitor progress, view dependencies and states, and inspect the individual tasks that make up a task group.';
 const taskDescription =
@@ -11,64 +38,63 @@ const createTaskDescription = `Write and submit a task to ${
 const taskIndexDescription =
   'The generic index browser lets you browse through the hierarchy of namespaces in the index, and discover indexed tasks.';
 
-export default path =>
-  console.log('path: ', path) || [
-    {
-      component: views.TaskGroup,
-      path: `${path}/groups/:taskGroupId`,
-      description: taskGroupDescription,
-    },
-    {
-      component: views.NoTaskGroup,
-      path: `${path}/groups`,
-      description: taskGroupDescription,
-    },
-    {
-      component: views.TaskIndex,
-      path: `${path}/index`,
-      description: taskIndexDescription,
-      routes: indexedTaskRoutes,
-    },
-    {
-      component: views.CreateTask,
-      path: `${path}/create/interactive`,
-      description: createTaskDescription,
-    },
-    {
-      component: views.CreateTask,
-      path: `${path}/create`,
-      description: createTaskDescription,
-    },
-    {
-      component: views.TaskLog,
-      path: `${path}/:taskId/runs/:runId/logs/live/:logUrl`,
-      stream: true,
-    },
-    {
-      component: views.TaskLog,
-      path: `${path}/:taskId/runs/:runId/logs/:logUrl`,
-    },
-    {
-      component: views.ViewTask,
-      path: `${path}/:taskId/runs/:runId`,
-      description: taskDescription,
-    },
-    {
-      component: views.InteractiveConnect,
-      path: `${path}/:taskId/connect`,
-    },
-    {
-      component: views.TaskRedirect,
-      path: `${path}/:taskId/:action`,
-    },
-    {
-      component: views.ViewTask,
-      path: `${path}/:taskId`,
-      description: taskDescription,
-    },
-    {
-      component: views.NoTask,
-      path,
-      description: taskDescription,
-    },
-  ];
+export default path => [
+  {
+    component: TaskGroup,
+    path: `${path}/groups/:taskGroupId`,
+    description: taskGroupDescription,
+  },
+  {
+    component: NoTaskGroup,
+    path: `${path}/groups`,
+    description: taskGroupDescription,
+  },
+  {
+    component: TaskIndex,
+    path: `${path}/index`,
+    description: taskIndexDescription,
+    routes: indexedTaskRoutes(`${path}/index`),
+  },
+  {
+    component: CreateTask,
+    path: `${path}/create/interactive`,
+    description: createTaskDescription,
+  },
+  {
+    component: CreateTask,
+    path: `${path}/create`,
+    description: createTaskDescription,
+  },
+  {
+    component: TaskLog,
+    path: `${path}/:taskId/runs/:runId/logs/live/:logUrl`,
+    stream: true,
+  },
+  {
+    component: TaskLog,
+    path: `${path}/:taskId/runs/:runId/logs/:logUrl`,
+  },
+  {
+    component: ViewTask,
+    path: `${path}/:taskId/runs/:runId`,
+    description: taskDescription,
+  },
+  {
+    component: InteractiveConnect,
+    path: `${path}/:taskId/connect`,
+  },
+  {
+    component: TaskRedirect,
+    path: `${path}/:taskId/:action`,
+  },
+  {
+    component: ViewTask,
+    path: `${path}/:taskId`,
+    description: taskDescription,
+  },
+  {
+    component: NoTask,
+    path,
+    description: taskDescription,
+  },
+];

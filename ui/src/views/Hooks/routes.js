@@ -1,17 +1,24 @@
-import views from './views';
+import lazy from '../../utils/lazy';
+
+const ListHooks = lazy(() =>
+  import(/* webpackChunkName: 'Hooks.ListHooks' */ './ListHooks')
+);
+const ViewHook = lazy(() =>
+  import(/* webpackChunkName: 'Hooks.ViewHook' */ './ViewHook')
+);
 
 export default path => [
   {
-    component: views.ViewHook,
+    component: ViewHook,
     path: `${path}/create`,
     isNewHook: true,
   },
   {
-    component: views.ViewHook,
+    component: ViewHook,
     path: `${path}/:hookGroupId/:hookId`,
   },
   {
-    component: views.ListHooks,
+    component: ListHooks,
     path,
     description:
       'Manage hooks: tasks that are created in response to events within CI.',
