@@ -74,45 +74,58 @@ export default class SignInDialog extends Component {
   render() {
     const { onClose, open } = this.props;
     const { credentialsDialogOpen } = this.state;
+    let dialog;
 
-    return (
-      <Dialog
-        open={open}
-        onClose={onClose}
-        aria-labelledby="sign-in-dialog-title">
-        <DialogTitle id="sign-in-dialog-title">Sign In</DialogTitle>
-        <DialogContent>
-          <List>
-            {process.env.LOGIN_STRATEGIES.includes('github') && (
-              <ListItem
-                button
-                component="a"
-                href="/login/github"
-                target="_blank">
+    if (process.env.LOGIN_STRATEGIES) {
+      dialog = (
+        <Dialog
+          open={open}
+          onClose={onClose}
+          aria-labelledby="sign-in-dialog-title">
+          <DialogTitle id="sign-in-dialog-title">Sign In</DialogTitle>
+          <DialogContent>
+            <List>
+              {process.env.LOGIN_STRATEGIES.includes('github') && (
+                <ListItem
+                  button
+                  component="a"
+                  href="/login/github"
+                  target="_blank">
+                  <ListItemAvatar>
+                    <Avatar>
+                      <GithubCircleIcon />
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText primary="Sign in with GitHub" />
+                </ListItem>
+              )}
+              <ListItem button onClick={this.handleCredentialsDialogOpen}>
                 <ListItemAvatar>
                   <Avatar>
-                    <GithubCircleIcon />
+                    <LoginVariantIcon />
                   </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary="Sign in with GitHub" />
+                <ListItemText primary="Sign in with credentials" />
               </ListItem>
-            )}
-            <ListItem button onClick={this.handleCredentialsDialogOpen}>
-              <ListItemAvatar>
-                <Avatar>
-                  <LoginVariantIcon />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary="Sign in with credentials" />
-            </ListItem>
-          </List>
-          <CredentialsDialog
-            onSignIn={this.handleCredentialsSignIn}
-            open={credentialsDialogOpen}
-            onClose={this.handleCredentialsDialogClose}
-          />
-        </DialogContent>
-      </Dialog>
-    );
+            </List>
+            <CredentialsDialog
+              onSignIn={this.handleCredentialsSignIn}
+              open={credentialsDialogOpen}
+              onClose={this.handleCredentialsDialogClose}
+            />
+          </DialogContent>
+        </Dialog>
+      );
+    } else {
+      dialog = (
+        <CredentialsDialog
+          onSignIn={this.handleCredentialsSignIn}
+          open={open}
+          onClose={onClose}
+        />
+      );
+    }
+
+    return dialog;
   }
 }
