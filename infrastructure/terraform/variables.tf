@@ -84,9 +84,9 @@ variable "irc_password" {
   description = "password for irc bot."
 }
 
-variable "github_integration_id" {
+variable "github_app_id" {
   type        = "string"
-  description = "taskcluster-github app integration id."
+  description = "taskcluster-github app id."
 }
 
 variable "github_oauth_token" {

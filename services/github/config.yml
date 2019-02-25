@@ -24,7 +24,7 @@ defaults:
   github:
     credentials:
       privatePEM: !env GITHUB_PRIVATE_PEM
-      integrationId: !env GITHUB_INTEGRATION_ID
+      appId: !env GITHUB_APP_ID
 
   webhook:
     secret: !env:list WEBHOOK_SECRET

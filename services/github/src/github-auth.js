@@ -25,9 +25,9 @@ const retryPlugin = (octokit, options) => {
 const Octokit = require('@octokit/rest').plugin([retryPlugin]);
 
 module.exports = async ({cfg}) => {
-  const getIntegrationGithub = async () => {
+  const getAppGithub = async () => {
     const inteToken = jwt.sign(
-      {iss: cfg.github.credentials.integrationId},
+      {iss: cfg.github.credentials.appId},
       cfg.github.credentials.privatePEM,
       {algorithm: 'RS256', expiresIn: '1m'},
     );
@@ -36,7 +36,7 @@ module.exports = async ({cfg}) => {
   };
 
   const getInstallationGithub = async (inst_id) => {
-    const inteGithub = await getIntegrationGithub();
+    const inteGithub = await getAppGithub();
     // Authenticating as installation
     const instaToken = (await inteGithub.apps.createInstallationToken({
       installation_id: inst_id,
@@ -48,5 +48,5 @@ module.exports = async ({cfg}) => {
 
   // This object insures that the authentication is delayed until we need it.
   // Also, the authentication happens not just once in the beginning, but for each request.
-  return {getIntegrationGithub, getInstallationGithub};
+  return {getAppGithub, getInstallationGithub};
 };
