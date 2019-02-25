@@ -207,7 +207,8 @@ export default class QuickStart extends Component {
 
     events.has(value) ? events.delete(value) : events.add(value);
 
-    // This should be called after events has been modified in above line
+    // Note: this should be called after `events` has been modified
+    // in the above line
     const condition = getMatchCondition(events);
 
     this.setState({
