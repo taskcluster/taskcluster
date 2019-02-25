@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react';
-import { Link } from 'react-router-dom';
 import { bool, func } from 'prop-types';
 import { addYears } from 'date-fns';
 import { withStyles } from '@material-ui/core/styles';
@@ -24,6 +23,7 @@ import DatePicker from '../DatePicker';
 import Button from '../Button';
 import { client } from '../../utils/prop-types';
 import splitLines from '../../utils/splitLines';
+import Link from '../../utils/Link';
 
 @withStyles(theme => ({
   fab: {

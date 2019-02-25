@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react';
-import { Link } from 'react-router-dom';
 import { bool, func } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -13,6 +12,7 @@ import Button from '../Button';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
 import { role } from '../../utils/prop-types';
+import Link from '../../utils/Link';
 import splitLines from '../../utils/splitLines';
 
 @withStyles(theme => ({

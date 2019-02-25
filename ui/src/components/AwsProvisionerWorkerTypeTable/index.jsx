@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react';
-import { Link } from 'react-router-dom';
 import { string, arrayOf } from 'prop-types';
 import { pipe, map, isEmpty, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
@@ -12,6 +11,7 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import TableCellListItem from '../TableCellListItem';
 import { awsProvisionerWorkerTypeSummary } from '../../utils/prop-types';
 import sort from '../../utils/sort';
+import Link from '../../utils/Link';
 import DataTable from '../DataTable';
 
 const sorted = pipe(

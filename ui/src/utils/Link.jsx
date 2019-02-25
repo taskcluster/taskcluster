@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { bool } from 'prop-types';
 import { Link as RouterLink, NavLink } from 'react-router-dom';
+import isAbsolute from 'is-absolute-url';
 import routes from '../App/routes';
 import matchRoutes from './matchRoutes';
 
@@ -20,9 +21,11 @@ export default function Link({ viewName, nav, ...props }) {
       return;
     }
 
-    const matchingRoutes = matchRoutes(path, routes);
+    if (!isAbsolute(path)) {
+      const matchingRoutes = matchRoutes(path, routes);
 
-    matchingRoutes.forEach(({ component }) => component.preload());
+      matchingRoutes.forEach(({ component }) => component.preload());
+    }
 
     setPrefetchFlag(true);
   }

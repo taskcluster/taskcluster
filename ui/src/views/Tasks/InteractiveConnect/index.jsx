@@ -1,6 +1,5 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
-import { Link } from 'react-router-dom';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import classNames from 'classnames';
@@ -23,6 +22,7 @@ import StatusLabel from '../../../components/StatusLabel';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { withAuth } from '../../../utils/Auth';
 import notify from '../../../utils/notify';
+import Link from '../../../utils/Link';
 import taskQuery from './task.graphql';
 import {
   INITIAL_CURSOR,

@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react';
-import { Link } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
 import Avatar from '@material-ui/core/Avatar';
@@ -13,6 +12,7 @@ import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import AccountIcon from 'mdi-react/AccountIcon';
 import HandPeaceIcon from 'mdi-react/HandPeaceIcon';
 import { withAuth } from '../../utils/Auth';
+import Link from '../../utils/Link';
 import SignInDialog from '../SignInDialog';
 
 @withStyles(theme => ({

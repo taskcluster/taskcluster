@@ -1,6 +1,5 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
-import { Link } from 'react-router-dom';
 import { Query } from 'react-apollo';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
@@ -15,6 +14,7 @@ import Dashboard from '../../../components/Dashboard/index';
 import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
 import splitLines from '../../../utils/splitLines';
+import Link from '../../../utils/Link';
 import scopesetQuery from './scopeset.graphql';
 
 @hot(module)
