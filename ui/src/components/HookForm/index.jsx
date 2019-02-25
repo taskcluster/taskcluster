@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react';
-import { Link } from 'react-router-dom';
 import { string, bool, func, oneOfType, object } from 'prop-types';
 import classNames from 'classnames';
 import { equals, assocPath } from 'ramda';
@@ -31,6 +30,7 @@ import DialogAction from '../DialogAction';
 import DateDistance from '../DateDistance';
 import { HOOKS_LAST_FIRE_TYPE } from '../../utils/constants';
 import { hook } from '../../utils/prop-types';
+import Link from '../../utils/Link';
 import removeKeys from '../../utils/removeKeys';
 
 const initialHook = {

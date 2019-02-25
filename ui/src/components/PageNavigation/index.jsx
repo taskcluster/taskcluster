@@ -1,10 +1,10 @@
 import React, { Fragment, Component } from 'react';
-import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import ArrowRightIcon from 'mdi-react/ArrowRightIcon';
 import ArrowLeftIcon from 'mdi-react/ArrowLeftIcon';
 import { string, oneOf } from 'prop-types';
+import Link from '../../utils/Link';
 import Button from '../Button';
 
 @withStyles(theme => ({

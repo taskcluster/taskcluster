@@ -1,19 +1,22 @@
-import { lazy } from 'react';
 import { join } from 'path';
 import { DOCS_PATH_PREFIX } from '../utils/constants';
+import lazy from '../utils/lazy';
+
+const Documentation = lazy(() =>
+  import(/* webpackChunkName: 'Documentation' */ '../views/Documentation')
+);
+const SwitchEntryPoint = lazy(() =>
+  import(/* webpackChunkName: 'SwitchEntryPoint' */ '../views/SwitchEntryPoint')
+);
 
 export default [
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'Documentation' */ '../views/Documentation')
-    ),
+    component: Documentation,
     path: join(DOCS_PATH_PREFIX, ':path*'),
   },
   // Clicking on the logo for example should switch entry points
   {
-    component: lazy(() =>
-      import(/* webpackChunkName: 'SwitchEntryPoint' */ '../views/SwitchEntryPoint')
-    ),
+    component: SwitchEntryPoint,
     path: '/',
   },
 ];

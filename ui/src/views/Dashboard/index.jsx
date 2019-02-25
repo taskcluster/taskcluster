@@ -1,6 +1,5 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import HexagonMultipleIcon from 'mdi-react/HexagonMultipleIcon';
@@ -10,6 +9,7 @@ import Dashboard from '../../components/Dashboard';
 import Button from '../../components/Button';
 import { withAuth } from '../../utils/Auth';
 import { DOCS_PATH_PREFIX } from '../../utils/constants';
+import Link from '../../utils/Link';
 
 @hot(module)
 @withStyles(theme => ({

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link, withRouter } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { func, number, string } from 'prop-types';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -35,6 +35,7 @@ import StatusLabel from '../StatusLabel';
 import NoRunsIcon from './NoRunsIcon';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
 import { runs } from '../../utils/prop-types';
+import Link from '../../utils/Link';
 
 const DOTS_VARIANT_LIMIT = 5;
 
@@ -152,18 +153,23 @@ export default class TaskRunsCard extends Component {
     return this.props.runs[this.props.selectedRunId];
   }
 
+  isLiveLog = () => {
+    const { state } = this.getCurrentRun();
+
+    return state === 'PENDING' || state === 'RUNNING';
+  };
+
   getArtifactUrl = ({ url, isLog }) => {
     if (!url) {
       return '';
     }
 
-    const { taskId, runId, state } = this.getCurrentRun();
+    const { taskId, runId } = this.getCurrentRun();
 
     if (isLog) {
-      const live = state === 'PENDING' || state === 'RUNNING';
       const encoded = encodeURIComponent(url);
 
-      return live
+      return this.isLiveLog()
         ? `/tasks/${taskId}/runs/${runId}/logs/live/${encoded}`
         : `/tasks/${taskId}/runs/${runId}/logs/${encoded}`;
     }

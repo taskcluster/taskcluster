@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { shape, func, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
@@ -14,6 +13,7 @@ import DateDistance from '../DateDistance';
 import { VIEW_CLIENTS_PAGE_SIZE } from '../../utils/constants';
 import { pageInfo, client } from '../../utils/prop-types';
 import sort from '../../utils/sort';
+import Link from '../../utils/Link';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.clientId, b.node.clientId)),

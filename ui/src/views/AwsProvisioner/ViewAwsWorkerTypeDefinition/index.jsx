@@ -57,7 +57,7 @@ const encodeUserData = obj => {
     ...theme.mixins.actionButton,
   },
 }))
-export default class ViewWorkerTypeDefinition extends Component {
+export default class ViewAwsWorkerTypeDefinition extends Component {
   static defaultProps = {
     isNewWorkerType: false,
   };

@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { bool, node, string } from 'prop-types';
-import { Link, withRouter } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { title as makeTitle } from 'change-case';
 import { withStyles } from '@material-ui/core/styles';
@@ -24,6 +24,7 @@ import UserMenu from './UserMenu';
 import SidebarList from './SidebarList';
 import { THEME, DOCS_PATH_PREFIX } from '../../utils/constants';
 import { withThemeToggler } from '../../utils/ToggleTheme';
+import Link from '../../utils/Link';
 import Logo from '../../images/logo.png';
 import ErrorPanel from '../ErrorPanel';
 import DocsSidebarList from './DocsSidebarList';

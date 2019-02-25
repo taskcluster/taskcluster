@@ -9,7 +9,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 
 @hot(module)
 @graphql(recentErrors)
-export default class ViewRecentErrors extends Component {
+export default class ViewAwsRecentErrors extends Component {
   render() {
     const {
       data: { loading, error, awsProvisionerRecentErrors },

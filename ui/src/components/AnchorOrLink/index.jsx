@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import isAbsolute from 'is-absolute-url';
+import Link from '../../utils/Link';
 
 export default class AnchorOrLink extends Component {
   render() {

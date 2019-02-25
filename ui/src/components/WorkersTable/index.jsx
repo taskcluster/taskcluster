@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { func, string } from 'prop-types';
 import { formatDistanceStrict } from 'date-fns';
 import { pipe, filter, map, sort as rSort } from 'ramda';
@@ -17,6 +16,7 @@ import TableCellListItem from '../TableCellListItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_WORKERS_PAGE_SIZE } from '../../utils/constants';
 import { workers } from '../../utils/prop-types';
+import Link from '../../utils/Link';
 import sort from '../../utils/sort';
 
 const sorted = pipe(

@@ -1,11 +1,11 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import ArrowRightIcon from 'mdi-react/ArrowRightIcon';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 import Log from '../../../components/Log';
+import Link from '../../../utils/Link';
 
 @hot(module)
 @withStyles(theme => ({
@@ -39,7 +39,7 @@ export default class TaskLog extends Component {
     const url = decodeURIComponent(match.params.logUrl);
 
     return (
-      <Dashboard disablePadding>
+      <Dashboard title="Log" disablePadding>
         <Log
           url={url}
           stream={stream}

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { string, shape, func, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
@@ -13,6 +12,7 @@ import sort from '../../utils/sort';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_ROLES_PAGE_SIZE } from '../../utils/constants';
 import { pageInfo, role } from '../../utils/prop-types';
+import Link from '../../utils/Link';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.roleId, b.node.roleId)),

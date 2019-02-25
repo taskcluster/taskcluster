@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { func, shape } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
@@ -13,6 +12,7 @@ import TableCellListItem from '../TableCellListItem';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_SECRETS_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
+import Link from '../../utils/Link';
 import { pageInfo, secrets } from '../../utils/prop-types';
 
 const sorted = pipe(

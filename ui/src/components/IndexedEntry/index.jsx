@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { arrayOf, func, shape } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
@@ -18,6 +17,7 @@ import DateDistance from '../DateDistance';
 import JsonInspector from '../JsonInspector';
 import { artifact, indexedTask, date, pageInfo } from '../../utils/prop-types';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
+import Link from '../../utils/Link';
 import buildArtifactUrl from '../../utils/buildArtifactUrl';
 
 @withStyles(theme => ({

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
@@ -16,6 +15,7 @@ import DataTable from '../DataTable';
 import StatusLabel from '../StatusLabel';
 import { worker } from '../../utils/prop-types';
 import sort from '../../utils/sort';
+import Link from '../../utils/Link';
 
 @withStyles(theme => ({
   dateListItem: {

@@ -1,6 +1,7 @@
 import { hot } from 'react-hot-loader';
-import React, { lazy, Component } from 'react';
+import React, { Component } from 'react';
 import { withAuth } from '../../utils/Auth';
+import lazy from '../../utils/lazy';
 
 const Home = lazy(() => import(/* webpackChunkName: 'Home' */ '../Home'));
 const Dashboard = lazy(() =>

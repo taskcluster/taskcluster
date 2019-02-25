@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import { arrayOf, string } from 'prop-types';
-import { Link, withRouter } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import {
   uniq,
   flatten,
@@ -22,6 +22,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import LinkIcon from 'mdi-react/LinkIcon';
 import sort from '../../utils/sort';
+import Link from '../../utils/Link';
 import { role, scopeExpansionLevel } from '../../utils/prop-types';
 
 const sorted = pipe(

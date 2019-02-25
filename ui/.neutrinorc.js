@@ -26,10 +26,12 @@ module.exports = {
           legacyDecorators: true
         },
       },
+      plugins: ['react-hooks'],
       rules: {
         'react/no-access-state-in-setstate': 'off',
         'babel/no-unused-expressions': 'off',
         'linebreak-style': 'off',
+        'react-hooks/rules-of-hooks': 'error',
       },
     }],
     ['@neutrinojs/react', {
