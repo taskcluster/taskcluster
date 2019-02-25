@@ -52,9 +52,6 @@ import DocsSidebarList from './DocsSidebarList';
         width: `calc(100% - ${theme.docsDrawerWidth}px)`,
       },
     },
-    docsContentWidth: {
-      width: `calc(100% - ${theme.docsDrawerWidth}px)`,
-    },
     appBarTitle: {
       marginLeft: theme.spacing.unit,
       fontFamily: 'Roboto300',
@@ -116,10 +113,12 @@ import DocsSidebarList from './DocsSidebarList';
       },
     },
     docsContent: {
+      position: 'relative',
       [theme.breakpoints.up('md')]: {
         marginLeft: theme.docsDrawerWidth,
         width: `calc(100% - ${theme.docsDrawerWidth}px)`,
       },
+      maxWidth: '60em',
     },
     appBarButton: {
       marginLeft: theme.spacing.unit,
