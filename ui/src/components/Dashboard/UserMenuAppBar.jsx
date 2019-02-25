@@ -7,6 +7,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import List from '@material-ui/core/List';
 import IconButton from '@material-ui/core/IconButton';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Button from '@material-ui/core/Button';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import AccountIcon from 'mdi-react/AccountIcon';
@@ -25,6 +26,7 @@ import SignInDialog from '../SignInDialog';
   icon: {
     fill: theme.palette.common.white,
     marginRight: theme.spacing.unit,
+    marginLeft: theme.spacing.unit,
   },
   leftIcon: {
     marginRight: theme.spacing.unit,
@@ -73,7 +75,9 @@ export default class UserMenuAppBar extends Component {
             variant="contained"
             color="primary"
             onClick={this.handleSignInDialogOpen}>
-            <AccountCircleIcon className={classes.icon} />
+            <ListItemIcon className={classes.icon}>
+              <AccountCircleIcon />
+            </ListItemIcon>
             Sign in
           </Button>
           <SignInDialog
