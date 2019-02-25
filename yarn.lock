@@ -1775,27 +1775,12 @@ azure-blob-storage@^3.0.0:
     source-map-support "^0.5.0"
     uuid "^3.1.0"
 
-azure-entities@^5.1.0:
-  version "5.1.3"
-  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-5.1.3.tgz#c1a72896b7d0380efc9c8b6baf66b5b3b8f90477"
-  integrity sha512-F6uEh4Gb/AEIKYeHaqnGnfgo0fEomvK/B4Cj/vIkt2AADjWZ5493ckWCSiQK6H4n4RluwxKMxOgCL+NCEwXdyQ==
+azure-entities@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-5.2.0.tgz#07efcfc05920b9855498f3c8d2d4544a606fdb4c"
+  integrity sha512-OmmqgdHYkqMlZQFwV0UB+XAWmSpH3vsRh/zpzohQ8iJYkptBVFp+LlWxIL/MwVoZBB8D86ATvzgLpZvAKTRm4A==
   dependencies:
     ajv "^5.3.0"
-    buffertools "^2.1.3"
-    debug "^3.1.0"
-    fast-azure-storage "^2.3.0"
-    json-stable-stringify "^1.0.0"
-    lodash "^4.17.4"
-    promise "^8.0.1"
-    slugid "^1.0.3"
-
-azure-entities@^5.1.3:
-  version "5.1.4"
-  resolved "https://registry.yarnpkg.com/azure-entities/-/azure-entities-5.1.4.tgz#749465b31d9cdd1cc8235e02eec29fa8befe53bc"
-  integrity sha512-74qhFkblPTjWkkeGFnSrgB6u3O16ciUvUHwHHDpX8sVWKBNZTF7YnFjsLWpYHdaXPkP7hKqL1aKJ6K+5TsBdOA==
-  dependencies:
-    ajv "^5.3.0"
-    buffertools "^2.1.3"
     debug "^3.1.0"
     fast-azure-storage "^2.3.0"
     json-stable-stringify "^1.0.0"
@@ -2177,11 +2162,6 @@ buffer@4.9.1, buffer@^4.3.0:
     base64-js "^1.0.2"
     ieee754 "^1.1.4"
     isarray "^1.0.0"
-
-buffertools@^2.1.3:
-  version "2.1.6"
-  resolved "https://registry.yarnpkg.com/buffertools/-/buffertools-2.1.6.tgz#30c19b085636b88df692aeefeea0ff156780e916"
-  integrity sha1-MMGbCFY2uI32kq7v7qD/FWeA6RY=
 
 builtin-modules@^3.0.0:
   version "3.0.0"
@@ -6643,14 +6623,14 @@ normalize-url@^3.1.0:
   integrity sha512-U+JJi7duF1o+u2pynbp2zXDW2/PADgC30f0GsHZtRh+HOcXHnw137TrNlyxxRvWW5fjKd3bcLHPxofWuCjaeZg==
 
 npm-bundled@^1.0.1:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/npm-bundled/-/npm-bundled-1.0.5.tgz#3c1732b7ba936b3a10325aef616467c0ccbcc979"
-  integrity sha512-m/e6jgWu8/v5niCUKQi9qQl8QdeEduFA96xHDDzFGqly0OOjI7c+60KM/2sppfnUU9JJagf+zs+yGhqSOFj71g==
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/npm-bundled/-/npm-bundled-1.0.6.tgz#e7ba9aadcef962bb61248f91721cd932b3fe6bdd"
+  integrity sha512-8/JCaftHwbd//k6y2rEWp6k1wxVfpFzB6t1p825+cUb7Ym2XQfhwIC5KwhrvzZRJu+LtDE585zVaS32+CGtf0g==
 
 npm-packlist@^1.1.6:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/npm-packlist/-/npm-packlist-1.2.0.tgz#55a60e793e272f00862c7089274439a4cc31fc7f"
-  integrity sha512-7Mni4Z8Xkx0/oegoqlcao/JpPCPEMtUvsmB0q7mgvlMinykJLSRTYuFqoQLYgGY8biuxIeiHO+QNJKbCfljewQ==
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/npm-packlist/-/npm-packlist-1.4.1.tgz#19064cdf988da80ea3cee45533879d90192bbfbc"
+  integrity sha512-+TcdO7HJJ8peiiYhvPxsEDhF3PJFGUGRcFsGve3vxvxdcpO2Z4Z7rkosRM0kWj6LfbK/P0gu3dzk5RU1ffvFcw==
   dependencies:
     ignore-walk "^3.0.1"
     npm-bundled "^1.0.1"

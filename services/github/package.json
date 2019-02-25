@@ -11,7 +11,7 @@
   "dependencies": {
     "@octokit/rest": "^16.0.5",
     "ajv": "^6.5.0",
-    "azure-entities": "^5.1.0",
+    "azure-entities": "^5.2.0",
     "debug": "^4.0.0",
     "js-yaml": "^3.10.0",
     "json-e": "^2.5.0",
