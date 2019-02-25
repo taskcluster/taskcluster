@@ -29,7 +29,6 @@ module "github_secrets" {
     FORCE_SSL                = "false"
     TRUST_PROXY              = "true"
     GITHUB_APP_ID            = "${var.github_app_id}"
-    GITHUB_OAUTH_TOKEN       = "${var.github_oauth_token}"
     GITHUB_PRIVATE_PEM       = "${var.github_private_pem}"
     WEBHOOK_SECRET           = "${var.github_webhook_secret}"
   }

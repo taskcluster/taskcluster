@@ -89,11 +89,6 @@ variable "github_app_id" {
   description = "taskcluster-github app id."
 }
 
-variable "github_oauth_token" {
-  type        = "string"
-  description = "taskcluster-github app oauth token."
-}
-
 variable "github_private_pem" {
   type        = "string"
   description = "taskcluster-github private pem."
