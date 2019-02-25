@@ -74,6 +74,7 @@ export default class UserMenuAppBar extends Component {
           <Button
             variant="contained"
             color="primary"
+            className={classes.icon}
             onClick={this.handleSignInDialogOpen}>
             <ListItemIcon className={classes.icon}>
               <AccountCircleIcon />
