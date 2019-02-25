@@ -18,28 +18,28 @@ var PulseTestReceiver = function(credentials, mocha) {
   this._listeners = null;
   this._promisedMessages = null;
 
-  // **Note**, the before(), beforeEach(9, afterEach() and after() functions
-  // below are mocha hooks. Ie. they are called by mocha, that is also the
-  // reason that `PulseTestReceiver` only works in the context of a mocha test.
+  // **Note**, the functions below are mocha hooks. Ie. they are called by
+  // mocha, that is also the reason that `PulseTestReceiver` only works in the
+  // context of a mocha test.  Note that we assume mocha is in "tdd" mode.
   if (!mocha) {
     mocha = require('mocha');
   }
 
   // Before all tests we ask the pulseConnection to connect, why not it offers
   // slightly better performance, and we want tests to run fast
-  mocha.before(function() {
+  mocha.suiteSetup(function() {
     return that._connection.connect();
   });
 
   // Before each test we create list of listeners and mapping from "name" to
   // promised messages
-  mocha.beforeEach(function() {
+  mocha.setup(function() {
     that._listeners = [];
     that._promisedMessages = {};
   });
 
   // After each test we clean-up all the listeners created
-  mocha.afterEach(function() {
+  mocha.teardown(function() {
     // Because listener is created with a PulseConnection they only have an
     // AMQP channel each, and not a full TCP connection, hence, .close()
     // should be pretty fast too. Also unnecessary as they get clean-up when
@@ -55,8 +55,8 @@ var PulseTestReceiver = function(credentials, mocha) {
 
   // After all tests we close the PulseConnection, as we haven't named any of
   // the queues, they are all auto-delete queues and will be deleted if they
-  // weren't cleaned up in `afterEach()`
-  mocha.after(function() {
+  // weren't cleaned up in `teardown()`
+  mocha.suiteTeardown(function() {
     return that._connection.close().then(function() {
       that._connection = null;
     });
@@ -65,7 +65,7 @@ var PulseTestReceiver = function(credentials, mocha) {
 
 PulseTestReceiver.prototype.listenFor = function(name, binding) {
   // Check that the `name` haven't be used before in this test. Remember
-  // that we reset this._promisedMessages beforeEach() test in mocha.
+  // that we reset this._promisedMessages before each test (via setup) in mocha.
   if (this._promisedMessages[name] !== undefined) {
     throw new Error('name: \'' + name + '\' have already been used in this test');
   }

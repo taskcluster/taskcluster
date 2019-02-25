@@ -49,23 +49,23 @@ class IterateEvents {
 
 }
 
-describe('Iterate', () => {
+suite('Iterate', () => {
   let clock;
   let manager;
   let monitor;
 
-  beforeEach(async () => {
+  setup(async () => {
     manager = new MonitorManager({serviceName: 'iterate'});
     manager.setup({mock: true});
     monitor = manager.monitor();
   });
 
-  afterEach(() => {
+  teardown(() => {
     sandbox.restore();
     manager.terminate();
   });
 
-  it('should be able to start and stop', done => {
+  test('should be able to start and stop', done => {
     let iterations = 0;
 
     let i = new subject({
@@ -111,7 +111,7 @@ describe('Iterate', () => {
 
   });
 
-  it('should stop after correct number of iterations', done => {
+  test('should stop after correct number of iterations', done => {
     let iterations = 0;
 
     let i = new subject({
@@ -144,7 +144,7 @@ describe('Iterate', () => {
     });
   });
 
-  it('should emit error when iteration watchdog expires', done => {
+  test('should emit error when iteration watchdog expires', done => {
     let iterations = 0;
 
     let i = new subject({
@@ -173,7 +173,7 @@ describe('Iterate', () => {
     i.start();
   });
 
-  it('should emit error when overall iteration limit is hit', done => {
+  test('should emit error when overall iteration limit is hit', done => {
     let iterations = 0;
 
     let i = new subject({
@@ -200,7 +200,7 @@ describe('Iterate', () => {
     i.start();
   });
 
-  it('should emit error when iteration is too quick', done => {
+  test('should emit error when iteration is too quick', done => {
     let iterations = 0;
 
     let i = new subject({
@@ -224,7 +224,7 @@ describe('Iterate', () => {
     });
   });
 
-  it('should emit error after too many failures', done => {
+  test('should emit error after too many failures', done => {
     let iterations = 0;
 
     let i = new subject({
@@ -249,7 +249,7 @@ describe('Iterate', () => {
 
   });
 
-  it('should cause uncaughtException when error event is unhandled', done => {
+  test('should cause uncaughtException when error event is unhandled', done => {
     let iterations = 0;
 
     // NOTE: Mocha has it's own uncaught exception listener.  If we were to
@@ -289,7 +289,7 @@ describe('Iterate', () => {
 
   });
 
-  it('should share state between iterations', done => {
+  test('should share state between iterations', done => {
     let iterations = 0;
     let v = {a: 1};
 
@@ -339,7 +339,7 @@ describe('Iterate', () => {
     });
   });
 
-  it('should emit correct events for single iteration', done => {
+  test('should emit correct events for single iteration', done => {
     let iterations = 0;
 
     let i = new subject({
@@ -376,7 +376,7 @@ describe('Iterate', () => {
     i.start();
   });
 
-  it('should emit correct events with maxIterations', done => {
+  test('should emit correct events with maxIterations', done => {
     let iterations = 0;
 
     let i = new subject({
@@ -419,9 +419,9 @@ describe('Iterate', () => {
     i.start();
   });
 
-  describe('event emission ordering', () => {
+  suite('event emission ordering', () => {
 
-    it('should be correct with maxFailures and maxIterations', done => {
+    test('should be correct with maxFailures and maxIterations', done => {
       let iterations = 0;
 
       let i = new subject({
@@ -458,7 +458,7 @@ describe('Iterate', () => {
       i.start();
     });
 
-    it('should be correct with maxFailures only', done => {
+    test('should be correct with maxFailures only', done => {
       let iterations = 0;
 
       let i = new subject({
@@ -493,7 +493,7 @@ describe('Iterate', () => {
       i.start();
     });
 
-    it('should be correct when handler takes too little time', done => {
+    test('should be correct when handler takes too little time', done => {
       let iterations = 0;
 
       let i = new subject({
@@ -527,7 +527,7 @@ describe('Iterate', () => {
       i.start();
     });
 
-    it('should be correct when handler takes too long (incremental watchdog)', done => {
+    test('should be correct when handler takes too long (incremental watchdog)', done => {
       let iterations = 0;
 
       let i = new subject({
@@ -562,7 +562,7 @@ describe('Iterate', () => {
       i.start();
     });
 
-    it('should be correct when handler takes too long (overall time)', done => {
+    test('should be correct when handler takes too long (overall time)', done => {
       let iterations = 0;
 
       let i = new subject({
@@ -598,7 +598,7 @@ describe('Iterate', () => {
       i.start();
     });
 
-    it('should be correct with mixed results', done => {
+    test('should be correct with mixed results', done => {
       let iterations = 0;
 
       let i = new subject({
