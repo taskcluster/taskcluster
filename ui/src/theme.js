@@ -220,6 +220,12 @@ const createTheme = isDarkTheme => {
         listStyleType: 'square',
         paddingLeft: 32,
       },
+      // An action button is usually located bottom right
+      // of the screen. The class should be used on the Button component
+      // to ensure other components (e.g., code editors) are not sitting on top.
+      actionButton: {
+        zIndex: 1050,
+      },
       markdown: {
         fontFamily: Roboto400.fontFamily,
         color: textPrimary,

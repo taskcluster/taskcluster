@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { string } from 'prop-types';
 import { Helmet as ReactHelmet } from 'react-helmet';
-import { taskFaviconState } from '../../utils/prop-types';
+import { taskState } from '../../utils/prop-types';
 import { TASK_STATE } from '../../utils/constants';
 import Logo from '../../images/logo.png';
 import LogoCompleted from '../../images/logoCompleted.png';
@@ -14,7 +14,7 @@ export default class Helmet extends Component {
      * The state of the task or task group.
      * Leave this value undefined outside the Task and Task Group view.
      */
-    state: taskFaviconState,
+    state: taskState,
     /** The document title */
     title: string,
   };

@@ -10,6 +10,7 @@ import triggerHookQuery from './triggerHook.graphql';
 import createTaskQuery from './createTask.graphql';
 import validateActionsJson from '../../utils/validateActionsJson';
 import ajv from '../../utils/ajv';
+import formatTaskMutation from '../../utils/formatTaskMutation';
 
 export default async ({ task, form, action, apolloClient, taskActions }) => {
   const actions = removeKeys(cloneDeep(taskActions), ['__typename']);
@@ -50,7 +51,7 @@ export default async ({ task, form, action, apolloClient, taskActions }) => {
       variables: {
         taskId: ownTaskId,
         task: {
-          ...newTask,
+          ...formatTaskMutation(newTask),
           // Call the queue with the decision task's scopes,
           // as directed by the action spec
           options: {

@@ -49,6 +49,7 @@ import formatError from '../../../utils/formatError';
 import removeKeys from '../../../utils/removeKeys';
 import parameterizeTask from '../../../utils/parameterizeTask';
 import { nice } from '../../../utils/slugid';
+import formatTaskMutation from '../../../utils/formatTaskMutation';
 import submitTaskAction from '../submitTaskAction';
 import taskQuery from './task.graphql';
 import scheduleTaskQuery from './scheduleTask.graphql';
@@ -381,7 +382,7 @@ export default class ViewTask extends Component {
           mutation: createTaskQuery,
           variables: {
             taskId,
-            task,
+            task: formatTaskMutation(task),
           },
         });
         resolve(taskId);
