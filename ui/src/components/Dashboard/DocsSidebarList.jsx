@@ -58,6 +58,8 @@ const getDocsSectionFromPathname = pathname => {
   header: {
     textTransform: 'uppercase',
     fontWeight: 'bold',
+    letterSpacing: 1.3,
+    fontSize: theme.typography.fontSize - 1,
   },
   section: {
     marginBottom: theme.spacing.unit,
@@ -76,7 +78,7 @@ const getDocsSectionFromPathname = pathname => {
     listStyle: 'none',
   },
   divider: {
-    margin: `${theme.spacing.double}px 0`,
+    margin: `${theme.spacing.unit}px 0`,
   },
   inlineLink: {
     display: 'inline-block',
@@ -91,8 +93,9 @@ const getDocsSectionFromPathname = pathname => {
   childWithInlineNodes: {
     display: 'inline-block',
   },
-  verticalBar: {
+  slashBar: {
     display: 'inline-block',
+    padding: '0 2px',
   },
 }))
 export default class DocsSidebarList extends Component {
@@ -139,7 +142,7 @@ export default class DocsSidebarList extends Component {
           return (
             <Fragment key={node.name}>
               {idx !== 0 && (
-                <Typography className={classes.verticalBar}>|</Typography>
+                <Typography className={classes.slashBar}>/</Typography>
               )}
               <Link
                 className={classNames(classes.inlineLink, classes.hover)}
