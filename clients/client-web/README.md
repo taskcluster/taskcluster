@@ -34,7 +34,7 @@ npm install --save taskcluster-client-web
 <script src="https://cdn.jsdelivr.net/npm/taskcluster-client-web/lib/index.js"></script>
 ```
 
-_Note: taskcluster-client-web depends on 2 external packages: hawk and query-string.
+_Note: taskcluster-client-web depends on 3 external packages: hawk, query-string, and crypto-js.
 You must manually include these if you choose to use the script installation:_
 
 ```html
@@ -46,6 +46,7 @@ You must manually include these if you choose to use the script installation:_
 window.hawk = hawk;
 </script>
 <script src="https://wzrd.in/standalone/query-string"></script>
+<script src="https://unpkg.com/crypto-js"></script>
 
 <script src="https://unpkg.com/taskcluster-client-web"></script>
 <!-- or from the jsDelivr CDN -->
