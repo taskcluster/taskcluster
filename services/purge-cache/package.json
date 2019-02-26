@@ -9,7 +9,7 @@
     "verify": "node bin/verify-prod"
   },
   "dependencies": {
-    "azure-entities": "^5.1.0",
+    "azure-entities": "^5.2.0",
     "debug": "^4.0.0",
     "lodash": "^4.15.0"
   }

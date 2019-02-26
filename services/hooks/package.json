@@ -12,7 +12,7 @@
   "dependencies": {
     "ajv": "6.9.2",
     "aws-sdk": "^2.164.0",
-    "azure-entities": "^5.1.0",
+    "azure-entities": "^5.2.0",
     "cron-parser": "2.7.3",
     "debug": "^4.0.0",
     "json-e": "^2.3.5",
