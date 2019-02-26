@@ -93,8 +93,6 @@ export const taskState = oneOf([
   'EXCEPTION',
 ]);
 
-export const taskFaviconState = oneOf(['FAILED', 'COMPLETED', 'RUNNING']);
-
 export const status = shape({
   state: taskState,
   retriesLeft: number,
