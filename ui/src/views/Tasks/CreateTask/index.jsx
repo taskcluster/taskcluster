@@ -100,6 +100,7 @@ export default class CreateTask extends Component {
   async componentDidMount() {
     const task = await this.getTask();
     const recentTaskDefinitions = await db.taskDefinitions
+      .orderBy('created')
       .limit(5)
       .reverse()
       .toArray();
