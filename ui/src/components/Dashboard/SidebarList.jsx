@@ -13,6 +13,7 @@ import ScaleBalanceIcon from 'mdi-react/ScaleBalanceIcon';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import AccountSettingsIcon from 'mdi-react/AccountSettingsIcon';
 import GithubBoxIcon from 'mdi-react/GithubBoxIcon';
+import BellOffIcon from 'mdi-react/BellOffIcon';
 import FileTreeIcon from 'mdi-react/FileTreeIcon';
 import WebhookIcon from 'mdi-react/WebhookIcon';
 import KeyIcon from 'mdi-react/KeyIcon';
@@ -59,6 +60,9 @@ export default class SidebarList extends Component {
             to="/auth/scopes/expansions"
             icon={<ArrowExpandVerticalIcon />}>
             Expand Scopes
+          </SidebarListItem>
+          <SidebarListItem to="/denylist" icon={<BellOffIcon />}>
+            Denylist
           </SidebarListItem>
         </SidebarListGroup>
 

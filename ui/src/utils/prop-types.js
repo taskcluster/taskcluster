@@ -359,6 +359,11 @@ export const secrets = arrayOf(
   })
 );
 
+export const notificationAddress = shape({
+  notificationType: oneOf(['EMAIL', 'PULSE', 'IRC_CHANNEL', 'IRC_USER']),
+  notificationAddress: string,
+});
+
 export const namespace = shape({
   name: string,
   namespace: string,

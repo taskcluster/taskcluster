@@ -59,6 +59,9 @@ const Display = lazy(() =>
 const HomeOrDashboard = lazy(() =>
   import(/* webpackChunkName: 'HomeOrDashboard' */ '../views/HomeOrDashboard')
 );
+const Denylist = lazy(() =>
+  import(/* webpackChunkName: 'Denylist' */ '../views/Denylist')
+);
 const NotFound = lazy(() =>
   import(/* webpackChunkName: 'NotFound' */ '../views/NotFound')
 );
@@ -125,6 +128,10 @@ export default [
     component: Profile,
     path: '/profile',
   },
+  {
+    component: Denylist,
+    path: '/denylist',
+  }
   {
     component: Shell,
     path: '/shell',
