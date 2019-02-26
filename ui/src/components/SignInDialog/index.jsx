@@ -75,7 +75,7 @@ export default class SignInDialog extends Component {
     const { onClose, open } = this.props;
     const { credentialsDialogOpen } = this.state;
 
-    return (
+    return process.env.LOGIN_STRATEGIES ? (
       <Dialog
         open={open}
         onClose={onClose}
@@ -113,6 +113,12 @@ export default class SignInDialog extends Component {
           />
         </DialogContent>
       </Dialog>
+    ) : (
+      <CredentialsDialog
+        onSignIn={this.handleCredentialsSignIn}
+        open={open}
+        onClose={onClose}
+      />
     );
   }
 }
