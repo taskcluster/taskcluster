@@ -14,6 +14,7 @@ const streamClosed = require('../stream_closed');
 const temporary = require('temporary');
 const uploadToS3 = require('../upload_to_s3');
 const zlib = require('zlib');
+const {fmtLog, fmtErrorLog} = require('../log');
 
 let debug = Debug('taskcluster-docker-worker:features:cot');
 
@@ -65,7 +66,7 @@ class ChainOfTrust {
         });
       await fs.unlink(this.file.path);
     } catch (err) {
-      debug(err);
+      task.stream.write(fmtErrorLog(err));
       await fs.unlink(this.file.path);
       throw err;
     }
@@ -118,23 +119,22 @@ class ChainOfTrust {
           'content-type': 'text/plain',
           'content-length': signedChainOfTrust.data.length
         });
+
+      await uploadToS3(task.queue, task.status.taskId, task.runId,
+        cotBufferStream, 'public/chain-of-trust.json', expiration, {
+          'content-type': 'text/plain',
+          'content-length': chainOfTrust.length
+        });
+
+      await uploadToS3(task.queue, task.status.taskId, task.runId,
+        sigBufferStream, 'public/chain-of-trust.json.sig', expiration, {
+          'content-type': 'application/octet-stream',
+          'content-length': chainOfTrustSig.length
+        });
     } catch (err) {
-      debug(err);
+      task.stream.write(fmtErrorLog(err));
       throw err;
     }
-
-    await uploadToS3(task.queue, task.status.taskId, task.runId,
-      cotBufferStream, 'public/chain-of-trust.json', expiration, {
-        'content-type': 'text/plain',
-        'content-length': chainOfTrust.length
-      });
-
-    await uploadToS3(task.queue, task.status.taskId, task.runId,
-      sigBufferStream, 'public/chain-of-trust.json.sig', expiration, {
-        'content-type': 'application/octet-stream',
-        'content-length': chainOfTrustSig.length
-      });
-
   }
 
 }
