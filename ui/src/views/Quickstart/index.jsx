@@ -51,15 +51,6 @@ const initialYaml = {
     },
   },
 };
-const initialState = {
-  events: new Set([
-    'pull_request.opened',
-    'pull_request.reopened',
-    'pull_request.synchronize',
-  ]),
-  taskName: '',
-  taskDescription: '',
-};
 const baseCmd = [
   'git clone {{event.head.repo.url}} repo',
   'cd repo',
@@ -93,6 +84,43 @@ const getMatchCondition = events => {
   }
 
   return condition;
+};
+
+const getNewYaml = state => {
+  const {
+    access,
+    commands,
+    condition,
+    image,
+    taskName,
+    taskDescription,
+  } = state;
+
+  return safeDump({
+    ...initialYaml,
+    policy: {
+      pullRequests: access,
+    },
+    tasks: {
+      $match: {
+        [condition]: {
+          ...initialYaml.tasks.$match,
+          ...{
+            metadata: {
+              ...initialYaml.tasks.$match.metadata,
+              name: taskName,
+              description: taskDescription,
+            },
+            payload: {
+              ...initialYaml.tasks.$match.payload,
+              image,
+              command: commands,
+            },
+          },
+        },
+      },
+    },
+  });
 };
 
 const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
@@ -130,6 +158,22 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
       ].join(' && '),
     ],
   }[type]);
+const initialState = {
+  events: new Set([
+    'pull_request.opened',
+    'pull_request.reopened',
+    'pull_request.synchronize',
+  ]),
+  owner: '',
+  repo: '',
+  access: 'collaborators',
+  image: 'node',
+  commands: cmdDirectory('node'),
+  commandSelection: 'standard',
+  installedState: null,
+  taskName: '',
+  taskDescription: '',
+};
 
 @hot(module)
 @withApollo
@@ -165,13 +209,6 @@ export default class QuickStart extends Component {
   state = {
     ...initialState,
     condition: getMatchCondition(initialState.events),
-    owner: '',
-    repo: '',
-    access: 'collaborators',
-    image: 'node',
-    commands: cmdDirectory('node'),
-    commandSelection: 'standard',
-    installedState: null,
   };
 
   getInstalledState = debounce(async (owner, repo) => {
@@ -240,43 +277,12 @@ export default class QuickStart extends Component {
     this.setState({
       ...initialState,
       condition: getMatchCondition(initialState.events),
+      editorValue: getNewYaml(initialState),
     });
   };
 
   renderEditor() {
-    const {
-      access,
-      commands,
-      condition,
-      image,
-      taskName,
-      taskDescription,
-    } = this.state;
-    const newYaml = safeDump({
-      ...initialYaml,
-      policy: {
-        pullRequests: access,
-      },
-      tasks: {
-        $match: {
-          [condition]: {
-            ...initialYaml.tasks.$match,
-            ...{
-              metadata: {
-                ...initialYaml.tasks.$match.metadata,
-                name: taskName,
-                description: taskDescription,
-              },
-              payload: {
-                ...initialYaml.tasks.$match.payload,
-                image,
-                command: commands,
-              },
-            },
-          },
-        },
-      },
-    });
+    const newYaml = getNewYaml(this.state);
 
     return (
       <CodeEditor
