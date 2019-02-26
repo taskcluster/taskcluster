@@ -18,10 +18,9 @@ import { DOCS_PATH_PREFIX } from '../../utils/constants';
     display: 'flex',
     justifyContent: 'space-between',
     bottom: theme.spacing.unit,
-    left: theme.docsDrawerWidth + theme.spacing.triple,
+    left: 0,
+    right: 0,
     position: 'absolute',
-    width: `calc(100% - ${theme.docsDrawerWidth}px - ${theme.spacing.unit *
-      6}px)`,
     [theme.breakpoints.down('sm')]: {
       width: `calc(100% - ${theme.spacing.unit * 6}px)`,
       left: theme.spacing.triple,
