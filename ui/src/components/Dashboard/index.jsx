@@ -20,8 +20,7 @@ import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 import LightBulbOnOutline from 'mdi-react/LightbulbOnOutlineIcon';
 import PageTitle from '../PageTitle';
 import Helmet from '../Helmet';
-import UserMenu from './UserMenu';
-import UserMenuAppBar from './UserMenuAppBar';
+import UserMenu from '../UserMenu/index';
 import SidebarList from './SidebarList';
 import { THEME, DOCS_PATH_PREFIX } from '../../utils/constants';
 import { withThemeToggler } from '../../utils/ToggleTheme';
@@ -244,7 +243,7 @@ export default class Dashboard extends Component {
           </Typography>
         </div>
         <Divider />
-        <UserMenu />
+        <UserMenu navOpen={navOpen} />
         <Divider />
         {docs ? <DocsSidebarList /> : <SidebarList />}
       </div>
@@ -303,7 +302,7 @@ export default class Dashboard extends Component {
                 </IconButton>
               </Tooltip>
             )}
-            <UserMenuAppBar />
+            <UserMenu navOpen={navOpen} />
           </Toolbar>
         </AppBar>
         <Drawer

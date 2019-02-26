@@ -1,19 +1,14 @@
 import React, { Component, Fragment } from 'react';
-import { Link } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
-import { withStyles } from '@material-ui/core/styles';
 import Avatar from '@material-ui/core/Avatar';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
+import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import IconButton from '@material-ui/core/IconButton';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Button from '@material-ui/core/Button';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
-import AccountIcon from 'mdi-react/AccountIcon';
-import HandPeaceIcon from 'mdi-react/HandPeaceIcon';
-import { withAuth } from '../../utils/Auth';
 import SignInDialog from '../SignInDialog';
+import { withAuth } from '../../utils/Auth';
 
 @withStyles(theme => ({
   avatar: {
@@ -34,39 +29,16 @@ import SignInDialog from '../SignInDialog';
 }))
 @withAuth
 @withApollo
-export default class UserMenuAppBar extends Component {
-  state = {
-    anchorEl: null,
-    signInDialogOpen: false,
-  };
-
-  handleClickSignOut = () => {
-    this.handleMenuClose();
-    this.props.onUnauthorize();
-    // Since Apollo caches query results, it’s important to get rid of them
-    // when the login state changes.
-    this.props.client.clearStore();
-  };
-
-  handleMenuClick = e => {
-    this.setState({ anchorEl: e.currentTarget });
-  };
-
-  handleMenuClose = () => {
-    this.setState({ anchorEl: null });
-  };
-
-  handleSignInDialogClose = () => {
-    this.setState({ signInDialogOpen: false });
-  };
-
-  handleSignInDialogOpen = () => {
-    this.setState({ signInDialogOpen: true });
-  };
-
+export default class UserMenuButton extends Component {
   render() {
-    const { classes, user } = this.props;
-    const { anchorEl, signInDialogOpen } = this.state;
+    const {
+      classes,
+      user,
+      signInDialogOpen,
+      SignInDialogOpenhandler,
+      SignInDialogClosehandler,
+      menuClickhandler,
+    } = this.props;
 
     if (!user) {
       return (
@@ -75,7 +47,7 @@ export default class UserMenuAppBar extends Component {
             variant="contained"
             color="primary"
             className={classes.icon}
-            onClick={this.handleSignInDialogOpen}>
+            onClick={SignInDialogOpenhandler}>
             <ListItemIcon className={classes.icon}>
               <AccountCircleIcon />
             </ListItemIcon>
@@ -83,7 +55,7 @@ export default class UserMenuAppBar extends Component {
           </Button>
           <SignInDialog
             open={signInDialogOpen}
-            onClose={this.handleSignInDialogClose}
+            onClose={SignInDialogClosehandler}
           />
         </List>
       );
@@ -99,7 +71,7 @@ export default class UserMenuAppBar extends Component {
             aria-haspopup="true"
             aria-controls="user-menu"
             aria-label="user menu"
-            onClick={this.handleMenuClick}>
+            onClick={menuClickhandler}>
             {profile.photos && profile.photos.length ? (
               <Avatar alt={profile.displayName} src={profile.photos[0].value} />
             ) : (
@@ -109,22 +81,6 @@ export default class UserMenuAppBar extends Component {
             )}
           </IconButton>
         </List>
-        <Menu
-          id="user-menu"
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={this.handleMenuClose}>
-          <MenuItem title="Your Profile" component={Link} to="/profile">
-            <AccountIcon className={classes.leftIcon} />
-            Account
-          </MenuItem>
-          <MenuItem
-            title={`Sign Out of ${process.env.APPLICATION_NAME}`}
-            onClick={this.handleClickSignOut}>
-            <HandPeaceIcon className={classes.leftIcon} />
-            Sign Out
-          </MenuItem>
-        </Menu>
       </Fragment>
     );
   }

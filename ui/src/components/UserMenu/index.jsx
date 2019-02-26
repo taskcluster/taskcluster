@@ -1,19 +1,14 @@
 import React, { Component, Fragment } from 'react';
+import { Link } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
-import Avatar from '@material-ui/core/Avatar';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import AccountIcon from 'mdi-react/AccountIcon';
 import HandPeaceIcon from 'mdi-react/HandPeaceIcon';
 import { withAuth } from '../../utils/Auth';
-import Link from '../../utils/Link';
-import SignInDialog from '../SignInDialog';
+import UserMenuList from './UserMenuList';
+import UserMenuButton from './UserMenuButton';
 
 @withStyles(theme => ({
   avatar: {
@@ -56,7 +51,7 @@ export default class UserMenu extends Component {
     this.props.client.clearStore();
   };
 
-  handleMenuClick = e => {
+  MenuClick = e => {
     this.setState({ anchorEl: e.currentTarget });
   };
 
@@ -64,71 +59,37 @@ export default class UserMenu extends Component {
     this.setState({ anchorEl: null });
   };
 
-  handleSignInDialogClose = () => {
+  SignInDialogClose = () => {
     this.setState({ signInDialogOpen: false });
   };
 
-  handleSignInDialogOpen = () => {
+  SignInDialogOpen = () => {
     this.setState({ signInDialogOpen: true });
   };
 
   render() {
-    const { classes, user } = this.props;
+    const { classes, user, navOpen } = this.props;
     const { anchorEl, signInDialogOpen } = this.state;
-
-    if (!user) {
-      return (
-        <List component="nav">
-          <ListItem
-            button
-            aria-haspopup="true"
-            aria-controls="user-menu"
-            aria-label="user menu"
-            onClick={this.handleSignInDialogOpen}>
-            <ListItemIcon className={classes.icon}>
-              <AccountCircleIcon />
-            </ListItemIcon>
-            <ListItemText
-              disableTypography
-              className={classes.text}
-              inset
-              primary="Sign In"
-            />
-            <SignInDialog
-              open={signInDialogOpen}
-              onClose={this.handleSignInDialogClose}
-            />
-          </ListItem>
-        </List>
-      );
-    }
-
-    const { profile } = user;
 
     return (
       <Fragment>
-        <List component="nav">
-          <ListItem
-            className={classes.userMenu}
-            button
-            aria-haspopup="true"
-            aria-controls="user-menu"
-            aria-label="user menu"
-            onClick={this.handleMenuClick}>
-            {profile.photos && profile.photos.length ? (
-              <Avatar alt={profile.displayName} src={profile.photos[0].value} />
-            ) : (
-              <Avatar alt={profile.displayName}>
-                {profile.displayName[0]}
-              </Avatar>
-            )}
-            <ListItemText
-              primary={profile.displayName}
-              primaryTypographyProps={{ className: classes.username }}
-              title={profile.displayName}
-            />
-          </ListItem>
-        </List>
+        {navOpen ? (
+          <UserMenuList
+            user={user}
+            signInDialogOpen={signInDialogOpen}
+            SignInDialogClosehandler={this.SignInDialogClose}
+            SignInDialogOpenhandler={this.SignInDialogOpen}
+            menuClickhandler={this.MenuClick}
+          />
+        ) : (
+          <UserMenuButton
+            user={user}
+            signInDialogOpen={signInDialogOpen}
+            SignInDialogClosehandler={this.SignInDialogClose}
+            SignInDialogOpenhandler={this.SignInDialogOpen}
+            menuClickhandler={this.MenuClick}
+          />
+        )}
         <Menu
           id="user-menu"
           anchorEl={anchorEl}
