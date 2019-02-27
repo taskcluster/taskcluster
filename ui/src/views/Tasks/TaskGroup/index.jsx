@@ -322,7 +322,12 @@ export default class TaskGroup extends Component {
         title="Task Group"
         className={classes.dashboard}
         helpView={<HelpView description={description} />}
-        search={<Search onSubmit={this.handleTaskGroupSearchSubmit} />}>
+        search={
+          <Search
+            onSubmit={this.handleTaskGroupSearchSubmit}
+            defaultValue={taskGroupId}
+          />
+        }>
         <ErrorPanel
           error={error}
           warning={Boolean(taskGroup)}
