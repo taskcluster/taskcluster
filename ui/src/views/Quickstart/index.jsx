@@ -274,10 +274,14 @@ export default class QuickStart extends Component {
   };
 
   handleReset = () => {
-    this.setState({
+    const resetState = {
       ...initialState,
       condition: getMatchCondition(initialState.events),
-      editorValue: getNewYaml(initialState),
+    };
+
+    this.setState({
+      ...resetState,
+      editorValue: getNewYaml(resetState),
     });
   };
 
