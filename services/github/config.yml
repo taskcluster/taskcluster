@@ -127,7 +127,7 @@ test:
     accountId: 'jungle'
 
   monitoring:
-    enable: false
+    mock: true
 
   server:
     port: 60415

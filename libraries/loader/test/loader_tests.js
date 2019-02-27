@@ -3,8 +3,8 @@ let subject = require('../src/loader');
 let debug = require('debug')('test:loader');
 let assert = require('assert');
 
-describe('component loader', () => {
-  it('should load a single component with a static value', async () => {
+suite('component loader', () => {
+  test('should load a single component with a static value', async () => {
     let a = {a: 1};
 
     let load = subject({
@@ -14,7 +14,7 @@ describe('component loader', () => {
     assume(await load('test')).equals(a);
   });
 
-  it('should load a single component with setup function', async () => {
+  test('should load a single component with setup function', async () => {
     let a = {a: 1};
 
     let load = subject({
@@ -28,7 +28,7 @@ describe('component loader', () => {
     assume(await load('test')).equals(a);
   });
 
-  it('should accept a virtual component', async () => {
+  test('should accept a virtual component', async () => {
     let a = {a: 1};
 
     let load = subject({
@@ -47,7 +47,7 @@ describe('component loader', () => {
     })).equals(a);
   });
 
-  it('should accept a virtual component as array', async () => {
+  test('should accept a virtual component as array', async () => {
     let a = {a: 1};
 
     let load = subject({
@@ -66,7 +66,7 @@ describe('component loader', () => {
     })).equals(a);
   });
 
-  it('should allow setting defaults for virtual components', async () => {
+  test('should allow setting defaults for virtual components', async () => {
     let load = subject({
       test: {
         requires: ['dep'],
@@ -82,7 +82,7 @@ describe('component loader', () => {
     assume(await load('test')).equals(5);
   });
 
-  it('should allow overwrites', async () => {
+  test('should allow overwrites', async () => {
     let load = subject({
       test: {
         requires: [],
@@ -97,7 +97,7 @@ describe('component loader', () => {
     })).equals('Mocking Hello World');
   });
 
-  it('should forbid undefined components', async () => {
+  test('should forbid undefined components', async () => {
     try {
       let load = subject({
         test: {
@@ -113,7 +113,7 @@ describe('component loader', () => {
     assert(false, 'Expected an error');
   });
 
-  it('different loaders should have independent components', async () => {
+  test('different loaders should have independent components', async () => {
     let components = {
       test: {
         setup: () => {
@@ -131,7 +131,7 @@ describe('component loader', () => {
     assume(valA).does.not.equal(valB);
   });
 
-  it('should reinitialize components', async () => {
+  test('should reinitialize components', async () => {
     let load = subject({
       test: {
         setup: () => {
@@ -143,7 +143,7 @@ describe('component loader', () => {
     assume(await load('test')).does.not.equal(await load('test'));
   });
 
-  it('should load a simple dependency', async () => {
+  test('should load a simple dependency', async () => {
     let a = {a: 1};
     let called = false;
 
@@ -168,7 +168,7 @@ describe('component loader', () => {
     assume(called).is.true();
   });
 
-  it('should fail loading a nonexistent component', async () => {
+  test('should fail loading a nonexistent component', async () => {
     let load = subject({
       base: {
         requires: [],
@@ -187,7 +187,7 @@ describe('component loader', () => {
     assert(false, 'Expected an exception');
   });
 
-  it('should fail when a sync setup function fails', async () => {
+  test('should fail when a sync setup function fails', async () => {
     let load = subject({
       fail: {
         requires: [],
@@ -208,7 +208,7 @@ describe('component loader', () => {
     assert(false, 'Expected an exception');
   });
 
-  it('should fail when a setup function returns a rejected promise', async () => {
+  test('should fail when a setup function returns a rejected promise', async () => {
     let load = subject({
       fail: {
         requires: [],
@@ -227,7 +227,7 @@ describe('component loader', () => {
     assert(false, 'Expected an exception');
   });
 
-  it('should fail when an async setup function fails', async () => {
+  test('should fail when an async setup function fails', async () => {
     let load = subject({
       fail: {
         requires: [],
@@ -248,7 +248,7 @@ describe('component loader', () => {
     assert(false, 'Expected an exception');
   });
 
-  it('should detect and bail on cyclic dependency', async () => {
+  test('should detect and bail on cyclic dependency', async () => {
     try {
       let load = subject({
         dep1: {
@@ -277,7 +277,7 @@ describe('component loader', () => {
     assert(false, 'Expected an exception');
   });
 
-  it('should load different types of static dependencies', async () => {
+  test('should load different types of static dependencies', async () => {
     let a = {a: 1};
     let b = {b: 2};
     let c = {c: 2};
@@ -302,7 +302,7 @@ describe('component loader', () => {
     await load('base');
   });
 
-  it('should work with a complex dependency graph', async () => {
+  test('should work with a complex dependency graph', async () => {
     let load = subject({
       dep1: {
         requires: ['dep2', 'dep3'],
@@ -335,7 +335,7 @@ describe('component loader', () => {
     await load('base');
   });
 
-  it('should be able to build a graphviz file', async () => {
+  test('should be able to build a graphviz file', async () => {
     let load = subject({
       dep1: {
         requires: ['dep2', 'dep3'],
@@ -399,7 +399,7 @@ describe('component loader', () => {
     assume(expected).equal(graph);
   });
 
-  it('should support graphviz with virtual components', async () => {
+  test('should support graphviz with virtual components', async () => {
     let a = {a: 1};
 
     let load = subject({
@@ -418,7 +418,7 @@ describe('component loader', () => {
     });
   });
 
-  it('should fail when a virtual component is a dupe of a real one', () => {
+  test('should fail when a virtual component is a dupe of a real one', () => {
     try {
       let load = subject({
         dep1: 'string',
@@ -451,7 +451,7 @@ describe('component loader', () => {
     }],
   ];
   for (let x of badDef) {
-    it('should fail on a ' + x[0], () => {
+    test('should fail on a ' + x[0], () => {
       try {
         subject({a: x[1]});
         throw new Error();
@@ -464,7 +464,7 @@ describe('component loader', () => {
     });
   }
 
-  it('should handle sync vs async properly', async () => {
+  test('should handle sync vs async properly', async () => {
     let rv = {a: 1};
     let orderCalled = [];
     let load = subject({

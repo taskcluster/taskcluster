@@ -11,7 +11,7 @@ suite('Publish Tests', () => {
   let s3 = null;
   let mockdir = path.join(os.tmpdir(), 'tc-lib-validate', 'buckets');
 
-  before(async () => {
+  suiteSetup(async () => {
     debug('Using tmpdir: ' + mockdir);
     awsMock.config.basePath = mockdir;
     rimraf.sync(mockdir);
@@ -34,7 +34,7 @@ suite('Publish Tests', () => {
     await schemaset.validator(libUrls.testRootUrl());
   });
 
-  after(() => {
+  suiteTeardown(() => {
     rimraf.sync(mockdir);
   });
 
