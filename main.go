@@ -73,6 +73,7 @@ const (
 	CANT_GRANT_CONTROL_OF_WINSTA_AND_DESKTOP ExitCode = 74
 	CANT_CREATE_ED25519_KEYPAIR              ExitCode = 75
 	CANT_SAVE_CONFIG                         ExitCode = 76
+	CANT_SECURE_CONFIG                       ExitCode = 77
 )
 
 func usage(versionName string) string {
@@ -386,6 +387,7 @@ and reports back results to the queue.
     75     Not able to create an ed25519 key pair.
     76     Not able to save generic-worker config file after applying defaults and reading
            config in from external sources, such as AWS/GCP metadata and taskcluster secrets.
+    77     Not able to secure the config file.
 `
 }
 
@@ -462,7 +464,7 @@ func main() {
 			}
 			err = fileutil.SecureFiles([]string{configFile})
 			if err != nil {
-				os.Exit(int(CANT_SAVE_CONFIG))
+				os.Exit(int(CANT_SECURE_CONFIG))
 			}
 		}
 		if err != nil {
