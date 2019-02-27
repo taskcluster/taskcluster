@@ -158,22 +158,6 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
       ].join(' && '),
     ],
   }[type]);
-const initialState = {
-  events: new Set([
-    'pull_request.opened',
-    'pull_request.reopened',
-    'pull_request.synchronize',
-  ]),
-  owner: '',
-  repo: '',
-  access: 'collaborators',
-  image: 'node',
-  commands: cmdDirectory('node'),
-  commandSelection: 'standard',
-  installedState: null,
-  taskName: '',
-  taskDescription: '',
-};
 
 @hot(module)
 @withApollo
@@ -210,9 +194,26 @@ const initialState = {
   },
 }))
 export default class QuickStart extends Component {
+  initialState = {
+    events: new Set([
+      'pull_request.opened',
+      'pull_request.reopened',
+      'pull_request.synchronize',
+    ]),
+    owner: '',
+    repo: '',
+    access: 'collaborators',
+    image: 'node',
+    commands: cmdDirectory('node'),
+    commandSelection: 'standard',
+    installedState: null,
+    taskName: '',
+    taskDescription: '',
+  };
+
   state = {
-    ...initialState,
-    condition: getMatchCondition(initialState.events),
+    ...this.initialState,
+    condition: getMatchCondition(this.initialState.events),
   };
 
   getInstalledState = debounce(async (owner, repo) => {
@@ -279,8 +280,8 @@ export default class QuickStart extends Component {
 
   handleReset = () => {
     const resetState = {
-      ...initialState,
-      condition: getMatchCondition(initialState.events),
+      ...this.initialState,
+      condition: getMatchCondition(this.initialState.events),
     };
 
     this.setState({
