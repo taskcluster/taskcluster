@@ -234,7 +234,7 @@ class FakeGithubAuth {
     this.installations[installation_id] = installation;
   }
 
-  async getIntegrationGithub() {
+  async getAppGithub() {
     return {
       apps: {
         getInstallations: async () => {

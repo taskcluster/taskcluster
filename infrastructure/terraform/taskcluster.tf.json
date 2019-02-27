@@ -2,6 +2,6 @@
   "locals": {
     "taskcluster_image_gce-provider": "taskcluster/taskcluster-gce-provider:SVC-6539ef08a8f6",
     "taskcluster_image_events": "taskcluster/taskcluster-events:SVC-43a5c6de328a",
-    "taskcluster_image_monoimage": "taskcluster/taskcluster-monoimage:SVC-0c0ca1512eca"
+    "taskcluster_image_monoimage": "taskcluster/taskcluster-monoimage:SVC-ec654c65f8bc"
   }
 }
