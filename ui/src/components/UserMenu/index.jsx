@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { bool, string } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
@@ -38,12 +39,22 @@ import UserMenuButton from './UserMenuButton';
 @withAuth
 @withApollo
 export default class UserMenu extends Component {
+  static defaultProps = {
+    user: '',
+    navOpen: null,
+  };
+
+  static propTypes = {
+    user: string,
+    navOpen: bool,
+  };
+
   state = {
     anchorEl: null,
     signInDialogOpen: false,
   };
 
-  handleClickSignOut = () => {
+  handleSignOutClick = () => {
     this.handleMenuClose();
     this.props.onUnauthorize();
     // Since Apollo caches query results, it’s important to get rid of them
@@ -51,7 +62,7 @@ export default class UserMenu extends Component {
     this.props.client.clearStore();
   };
 
-  MenuClick = e => {
+  handleMenuClick = e => {
     this.setState({ anchorEl: e.currentTarget });
   };
 
@@ -59,11 +70,11 @@ export default class UserMenu extends Component {
     this.setState({ anchorEl: null });
   };
 
-  SignInDialogClose = () => {
+  handleSignInDialogClose = () => {
     this.setState({ signInDialogOpen: false });
   };
 
-  SignInDialogOpen = () => {
+  handleSignInDialogOpen = () => {
     this.setState({ signInDialogOpen: true });
   };
 
@@ -77,17 +88,17 @@ export default class UserMenu extends Component {
           <UserMenuList
             user={user}
             signInDialogOpen={signInDialogOpen}
-            SignInDialogClosehandler={this.SignInDialogClose}
-            SignInDialogOpenhandler={this.SignInDialogOpen}
-            menuClickhandler={this.MenuClick}
+            onSignInDialogClose={this.handleSignInDialogClose}
+            onSignInDialogOpen={this.handleSignInDialogOpen}
+            onMenuClick={this.handleMenuClick}
           />
         ) : (
           <UserMenuButton
             user={user}
             signInDialogOpen={signInDialogOpen}
-            SignInDialogClosehandler={this.SignInDialogClose}
-            SignInDialogOpenhandler={this.SignInDialogOpen}
-            menuClickhandler={this.MenuClick}
+            onSignInDialogClose={this.handleSignInDialogClose}
+            onSignInDialogOpen={this.handleSignInDialogOpen}
+            onMenuClick={this.handleMenuClick}
           />
         )}
         <Menu
@@ -101,7 +112,7 @@ export default class UserMenu extends Component {
           </MenuItem>
           <MenuItem
             title={`Sign Out of ${process.env.APPLICATION_NAME}`}
-            onClick={this.handleClickSignOut}>
+            onClick={this.handleSignOutClick}>
             <HandPeaceIcon className={classes.leftIcon} />
             Sign Out
           </MenuItem>

@@ -35,9 +35,9 @@ export default class UserMenuButton extends Component {
       classes,
       user,
       signInDialogOpen,
-      SignInDialogOpenhandler,
-      SignInDialogClosehandler,
-      menuClickhandler,
+      onSignInDialogOpen,
+      onSignInDialogClose,
+      onMenuClick,
     } = this.props;
 
     if (!user) {
@@ -47,16 +47,13 @@ export default class UserMenuButton extends Component {
             variant="contained"
             color="primary"
             className={classes.icon}
-            onClick={SignInDialogOpenhandler}>
+            onClick={onSignInDialogOpen}>
             <ListItemIcon className={classes.icon}>
               <AccountCircleIcon />
             </ListItemIcon>
             Sign in
           </Button>
-          <SignInDialog
-            open={signInDialogOpen}
-            onClose={SignInDialogClosehandler}
-          />
+          <SignInDialog open={signInDialogOpen} onClose={onSignInDialogClose} />
         </List>
       );
     }
@@ -71,7 +68,7 @@ export default class UserMenuButton extends Component {
             aria-haspopup="true"
             aria-controls="user-menu"
             aria-label="user menu"
-            onClick={menuClickhandler}>
+            onClick={onMenuClick}>
             {profile.photos && profile.photos.length ? (
               <Avatar alt={profile.displayName} src={profile.photos[0].value} />
             ) : (
