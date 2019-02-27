@@ -181,11 +181,15 @@ const initialState = {
   orgRepo: {
     display: 'flex',
     alignItems: 'center',
+    marginBottom: 6 * theme.spacing.unit,
     ...theme.mixins.gutters(),
   },
   separator: {
     padding: theme.spacing.double,
     paddingBottom: 0,
+  },
+  editorListItem: {
+    paddingTop: 0,
   },
   checkIcon: {
     fill: theme.palette.success.main,
@@ -313,7 +317,7 @@ export default class QuickStart extends Component {
 
     return (
       <Dashboard
-        title="GitHub Quickstart"
+        title="Github Quickstart"
         helpView={
           <HelpView
             description="Create a configuration file and
@@ -406,8 +410,8 @@ export default class QuickStart extends Component {
               contact the organization owner to have it set up!"
             />
           )}
+          <Typography variant="title">Create Your Task Definition</Typography>
           <List>
-            <ListSubheader>Task Definiton Helper</ListSubheader>
             <ListItem>
               <TextField
                 label="Name"
@@ -542,7 +546,9 @@ export default class QuickStart extends Component {
               </TextField>
             </ListItem>
             <ListSubheader>Task Definiton</ListSubheader>
-            <ListItem>{this.renderEditor()}</ListItem>
+            <ListItem className={classes.editorListItem}>
+              {this.renderEditor()}
+            </ListItem>
           </List>
           <Button
             spanProps={{ className: classes.resetButtonSpan }}
