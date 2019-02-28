@@ -161,6 +161,33 @@ const Hook = Entity.configure({
     delete item.task.deadline;
     return item;
   },
+}).configure({
+  version: 6,
+  signEntities: true,
+  properties: {
+    hookGroupId: Entity.types.String,
+    hookId: Entity.types.String,
+    metadata: Entity.types.JSON,
+    // task template
+    task: Entity.types.JSON,
+    // pulse bindings (TODO; empty for now)
+    bindings: Entity.types.JSON,
+    // schedule for this task (see schemas/schedule.yml)
+    schedule: Entity.types.JSON,
+    // access token used to trigger this task via webhook
+    triggerToken: Entity.types.EncryptedText,
+    // the taskId that will be used next time this hook is scheduled;
+    // this allows scheduling to be idempotent
+    nextTaskId: Entity.types.EncryptedText,
+    // next date at which this task is scheduled to run
+    nextScheduledDate: Entity.types.Date,
+    //triggerSchema define types allowed in a context
+    triggerSchema: Entity.types.JSON,
+  },
+  migrate: function(item) {
+    delete item.lastFire;
+    return item;
+  },
 });
 
 /** Return promise for hook definition */
