@@ -25,11 +25,13 @@ export default class UserMenu extends Component {
   static defaultProps = {
     user: '',
     navOpen: null,
+    appBar: null,
   };
 
   static propTypes = {
     user: string,
     navOpen: bool,
+    appBar: bool,
   };
 
   state = {
@@ -62,13 +64,14 @@ export default class UserMenu extends Component {
   };
 
   render() {
-    const { classes, user, navOpen } = this.props;
+    const { classes, user, navOpen, appBar } = this.props;
     const { anchorEl, signInDialogOpen } = this.state;
 
     return (
       <Fragment>
-        {navOpen ? (
-          <UserMenuList
+        {navOpen && appBar ? (
+          <UserMenuButton
+            className={classes.userMenuButton}
             user={user}
             signInDialogOpen={signInDialogOpen}
             onSignInDialogClose={this.handleSignInDialogClose}
@@ -76,8 +79,7 @@ export default class UserMenu extends Component {
             onMenuClick={this.handleMenuClick}
           />
         ) : (
-          <UserMenuButton
-            className={classes.userMenuButton}
+          <UserMenuList
             user={user}
             signInDialogOpen={signInDialogOpen}
             onSignInDialogClose={this.handleSignInDialogClose}

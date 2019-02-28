@@ -187,6 +187,7 @@ export default class Dashboard extends Component {
     showHelpView: false,
     error: null,
     showLogo: false,
+    appBar: true,
   };
 
   handleDrawerToggle = () => {
@@ -218,7 +219,7 @@ export default class Dashboard extends Component {
       staticContext: _,
       ...props
     } = this.props;
-    const { error, navOpen, showHelpView, showLogo } = this.state;
+    const { error, navOpen, showHelpView, showLogo, appBar } = this.state;
     const drawer = (
       <div>
         <div className={classes.toolbar}>
@@ -244,9 +245,9 @@ export default class Dashboard extends Component {
         </div>
         <Divider />
         {docs ? (
-          <UserMenu navOpen={!navOpen} />
+          <UserMenu navOpen={!navOpen} appBar={!appBar} />
         ) : (
-          <UserMenu navOpen={navOpen} />
+          <UserMenu navOpen={navOpen} appBar={!appBar} />
         )}
         <Divider />
         {docs ? <DocsSidebarList /> : <SidebarList />}
@@ -306,7 +307,7 @@ export default class Dashboard extends Component {
                 </IconButton>
               </Tooltip>
             )}
-            <UserMenu navOpen={navOpen} />
+            <UserMenu navOpen appBar={appBar} />
           </Toolbar>
         </AppBar>
         <Drawer
