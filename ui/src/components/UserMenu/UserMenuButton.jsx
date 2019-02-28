@@ -10,9 +10,6 @@ import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
 
 @withStyles(theme => ({
-  avatar: {
-    backgroundColor: theme.palette.secondary.main,
-  },
   icon: {
     fill: theme.palette.common.white,
   },
@@ -33,7 +30,7 @@ export default class UserMenuButton extends Component {
 
     if (!user) {
       return (
-        <Fragment component="nav">
+        <Fragment>
           <Button
             variant="contained"
             color="primary"
@@ -49,8 +46,6 @@ export default class UserMenuButton extends Component {
       );
     }
 
-    const { profile } = user;
-
     return (
       <IconButton
         button
@@ -58,10 +53,15 @@ export default class UserMenuButton extends Component {
         aria-controls="user-menu"
         aria-label="user menu"
         onClick={onMenuClick}>
-        {profile.photos && profile.photos.length ? (
-          <Avatar alt={profile.displayName} src={profile.photos[0].value} />
+        {user.profile.photos && user.profile.photos.length ? (
+          <Avatar
+            alt={user.profile.displayName}
+            src={user.profile.photos[0].value}
+          />
         ) : (
-          <Avatar alt={profile.displayName}>{profile.displayName[0]}</Avatar>
+          <Avatar alt={user.profile.displayName}>
+            {user.profile.displayName[0]}
+          </Avatar>
         )}
       </IconButton>
     );

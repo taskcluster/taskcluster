@@ -24,13 +24,11 @@ import UserMenuButton from './UserMenuButton';
 export default class UserMenu extends Component {
   static defaultProps = {
     user: '',
-    navOpen: null,
-    appBar: null,
+    appBar: false,
   };
 
   static propTypes = {
     user: string,
-    navOpen: bool,
     appBar: bool,
   };
 
@@ -64,12 +62,12 @@ export default class UserMenu extends Component {
   };
 
   render() {
-    const { classes, user, navOpen, appBar } = this.props;
+    const { classes, user, appBar } = this.props;
     const { anchorEl, signInDialogOpen } = this.state;
 
     return (
       <Fragment>
-        {navOpen && appBar ? (
+        {appBar ? (
           <UserMenuButton
             className={classes.userMenuButton}
             user={user}

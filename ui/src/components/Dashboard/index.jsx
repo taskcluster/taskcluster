@@ -20,7 +20,7 @@ import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 import LightBulbOnOutline from 'mdi-react/LightbulbOnOutlineIcon';
 import PageTitle from '../PageTitle';
 import Helmet from '../Helmet';
-import UserMenu from '../UserMenu/index';
+import UserMenu from '../UserMenu';
 import SidebarList from './SidebarList';
 import { THEME, DOCS_PATH_PREFIX } from '../../utils/constants';
 import { withThemeToggler } from '../../utils/ToggleTheme';
@@ -187,7 +187,6 @@ export default class Dashboard extends Component {
     showHelpView: false,
     error: null,
     showLogo: false,
-    appBar: true,
   };
 
   handleDrawerToggle = () => {
@@ -219,9 +218,9 @@ export default class Dashboard extends Component {
       staticContext: _,
       ...props
     } = this.props;
-    const { error, navOpen, showHelpView, showLogo, appBar } = this.state;
+    const { error, navOpen, showHelpView, showLogo } = this.state;
     const drawer = (
-      <div>
+      <nav>
         <div className={classes.toolbar}>
           <Typography
             onMouseEnter={this.handleTitleToggle}
@@ -244,14 +243,10 @@ export default class Dashboard extends Component {
           </Typography>
         </div>
         <Divider />
-        {docs ? (
-          <UserMenu navOpen={!navOpen} appBar={!appBar} />
-        ) : (
-          <UserMenu navOpen={navOpen} appBar={!appBar} />
-        )}
+        {docs ? <UserMenu /> : <UserMenu navOpen />}
         <Divider />
         {docs ? <DocsSidebarList /> : <SidebarList />}
-      </div>
+      </nav>
     );
     const isDocs = history.location.pathname.startsWith(DOCS_PATH_PREFIX);
     const isMobileView = width === 'sm' || width === 'xs';
@@ -307,7 +302,7 @@ export default class Dashboard extends Component {
                 </IconButton>
               </Tooltip>
             )}
-            <UserMenu navOpen appBar={appBar} />
+            <UserMenu navOpen appBar />
           </Toolbar>
         </AppBar>
         <Drawer
