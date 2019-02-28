@@ -603,7 +603,7 @@ async function jobHandler(message) {
 
     if (!defaultBranchYml) { return; }
 
-    if (this.getRepoPolicy(defaultBranchYml) === 'collaborators') {
+    if (this.getRepoPolicy(defaultBranchYml).startsWith('collaborators')) {
       let login = message.payload.details['event.head.user.login'];
 
       let isCollaborator = await instGithub.repos.checkCollaborator({
@@ -617,7 +617,7 @@ async function jobHandler(message) {
       });
 
       if (!isCollaborator) {
-        if (message.payload.details['event.type'].startsWith('pull_request.opened')) {
+        if (message.payload.details['event.type'].startsWith('pull_request.opened') && (this.getRepoPolicy(defaultBranchYml) === 'collaborators')) {
           let body = [
             '<details>\n',
             '<summary>No Taskcluster jobs started for this pull request</summary>\n\n',
