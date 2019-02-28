@@ -9,6 +9,7 @@
     },
     "workerTypes": {
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": [
           "string",
@@ -45,6 +46,7 @@
     },
     "providerIds": {
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "string"
       }

@@ -41,6 +41,7 @@ properties:
     description: |
       List of 20 most recent tasks claimed by the worker.
     type:         array
+    uniqueItems: false
     items:
       $ref:       "task-run.json#"
   expires:
@@ -68,6 +69,7 @@ properties:
   actions:
     title:        "Worker Actions"
     type:         array
+    uniqueItems: false
     items:
       type:       object
       title:      "Worker Action"

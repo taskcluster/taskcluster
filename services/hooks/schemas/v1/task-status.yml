@@ -89,6 +89,7 @@ properties:
         description: |
           List of runs, ordered so that index `i` has `runId == i`
         type:           array
+        uniqueItems: false
         items:
           title:              "Run Information"
           description: |

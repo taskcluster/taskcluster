@@ -6,6 +6,7 @@
   "properties": {
     "clients": {
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "$ref": "get-client-response.json#"
       }

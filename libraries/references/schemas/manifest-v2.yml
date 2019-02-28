@@ -12,6 +12,7 @@ properties:
       List of services that comprise a taskcluster build.
     type: array
     default: []
+    uniqueItems: true
     items:
       title: "Service"
       description: |-
@@ -30,6 +31,7 @@ properties:
           description: HTTP API exposed by this service.
           type: array
           default: []
+          uniqueItems: true
           items:
             title: "HTTP API Reference"
             description: |-
@@ -54,6 +56,7 @@ properties:
           description: Pulse exchanges exposed by this service.
           type: array
           default: []
+          uniqueItems: true
           items:
             title: "Pulse reference"
             description: |-

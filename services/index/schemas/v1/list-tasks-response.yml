@@ -9,6 +9,7 @@ properties:
     description: |
       List of tasks.
     type:           array
+    uniqueItems: true
     items:
       title:        "Task"
       description: |

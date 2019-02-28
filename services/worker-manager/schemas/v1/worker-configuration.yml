@@ -8,6 +8,7 @@ properties:
     type: string
   workerTypes:
     type: array
+    uniqueItems: true
     items:
       type:
         - string
@@ -33,6 +34,7 @@ properties:
     type: string
   providerIds:
     type: array
+    uniqueItems: true
     items:
       type: string
 additionalProperties: false

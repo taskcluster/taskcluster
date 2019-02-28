@@ -50,6 +50,7 @@ properties:
   actions:
     title:        "Worker-type Actions"
     type:         array
+    uniqueItems: false
     items:
       type:       object
       title:      "Worker-type Action"

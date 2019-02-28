@@ -23,6 +23,7 @@ properties:
     type: array
     title: Types
     description: Array of log message types
+    uniqueItems: true
     items:
       type: object
       title: Message Type

@@ -9,6 +9,7 @@ properties:
     description: |
       List of namespaces.
     type:           array
+    uniqueItems: true
     items:
       title:        "Namespace"
       description: |

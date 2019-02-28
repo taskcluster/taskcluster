@@ -3,6 +3,7 @@
   "title": "Actions",
   "description": "See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.\n",
   "type": "array",
+  "uniqueItems": true,
   "items": {
     "type": "object",
     "title": "Action",

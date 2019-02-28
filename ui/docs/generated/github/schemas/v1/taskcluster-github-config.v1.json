@@ -36,6 +36,7 @@
         {
           "type": "array",
           "description": "Each element of this should evaluate to a task definition via json-e",
+          "uniqueItems": false,
           "items": {
             "type": "object",
             "additionalProperties": true

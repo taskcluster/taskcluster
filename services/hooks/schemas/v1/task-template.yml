@@ -94,6 +94,7 @@ properties:
       authorized to use.
     type:           array
     default:        []
+    uniqueItems: false
     items:
       title:        "Scope"
       description: |

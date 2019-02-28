@@ -8,6 +8,7 @@
       "title": "Namespaces",
       "description": "List of namespaces.\n",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "title": "Namespace",
         "description": "Representation of a namespace that contains indexed tasks.\n",

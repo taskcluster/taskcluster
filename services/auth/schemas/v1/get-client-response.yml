@@ -65,6 +65,7 @@ properties:
       List of scopes granted to this client by matching roles.  Scopes must be
       composed of printable ASCII characters and spaces.
     type:                   array
+    uniqueItems: true
     items:
       description: |
         Scope that client is granted by a role

@@ -14,6 +14,7 @@
       "type": "array",
       "title": "Tasks from the Task-Group",
       "description": "List of tasks in this task-group.\n",
+      "uniqueItems": true,
       "items": {
         "$ref": "task-definition-and-status.json#"
       }

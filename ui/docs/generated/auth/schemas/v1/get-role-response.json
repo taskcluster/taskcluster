@@ -12,6 +12,7 @@
     "scopes": {
       "description": "List of scopes the role grants access to.  Scopes must be composed of\nprintable ASCII characters and spaces.\n",
       "type": "array",
+      "uniqueItems": false,
       "items": {
         "type": "string",
         "name": "Scope",
@@ -37,6 +38,7 @@
     "expandedScopes": {
       "description": "List of scopes granted anyone who assumes this role, including anything\ngranted by roles that can be assumed when you have this role.\nHence, this includes any scopes in-directly granted as well.\n",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "string",
         "name": "Scope",

@@ -14,6 +14,7 @@ properties:
       List of scopes the role grants access to.  Scopes must be composed of
       printable ASCII characters and spaces.
     type:                   array
+    uniqueItems: false
     items: {$const: scope}
   description:
     description: |
@@ -38,6 +39,7 @@ properties:
       granted by roles that can be assumed when you have this role.
       Hence, this includes any scopes in-directly granted as well.
     type:                   array
+    uniqueItems: true
     items: {$const: scope}
 additionalProperties:       false
 required:

@@ -15,6 +15,7 @@ properties:
     title:          "Tasks that depend on `taskId`"
     description: |
       List of tasks that have `taskId` in the `task.dependencies` property.
+    uniqueItems: true
     items:          {$ref: "task-definition-and-status.json#"}
   continuationToken:
     type:             string

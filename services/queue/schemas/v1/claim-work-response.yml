@@ -9,6 +9,7 @@ properties:
     description: |
       List of task claims, may be empty if no tasks was claimed, in which case
       the worker should sleep a tiny bit before polling again.
+    uniqueItems: true
     items:
       title:      "Task Claim"
       type:       object

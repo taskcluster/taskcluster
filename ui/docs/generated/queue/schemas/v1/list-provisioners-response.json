@@ -5,6 +5,7 @@
   "properties": {
     "provisioners": {
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "title": "Provisioner Information",
         "type": "object",

@@ -36,6 +36,7 @@ properties:
     description: |
       List of runs, ordered so that index `i` has `runId == i`
     type:           array
+    uniqueItems: true
     items:
       title:              "Run Information"
       description: |

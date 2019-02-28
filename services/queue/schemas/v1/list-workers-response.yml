@@ -9,6 +9,7 @@ properties:
     title:          "Workers from a WorkerType"
     description: |
       List of workers in this worker-type.
+    uniqueItems: true
     items:
       title:        "Worker"
       type:         object

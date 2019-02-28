@@ -25,6 +25,7 @@ oneOf:
           A list of generalized HTTP requests which must be run to upload the
           artifact.
         type: array
+        uniqueItems: true
         items:
           title: "HTTP Request"
           type: object

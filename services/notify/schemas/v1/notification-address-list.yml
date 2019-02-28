@@ -6,6 +6,7 @@ type: object
 properties:
   addresses:
     type: array
+    uniqueItems: true
     items:
       $ref: 'notification-address.json#'
   continuationToken:

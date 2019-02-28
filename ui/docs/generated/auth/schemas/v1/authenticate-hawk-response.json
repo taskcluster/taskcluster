@@ -17,6 +17,7 @@
         "scopes": {
           "description": "List of scopes the client is authorized to access.  Scopes must be\ncomposed of printable ASCII characters and spaces.\n",
           "type": "array",
+          "uniqueItems": true,
           "items": {
             "type": "string",
             "pattern": "^[ -~]*$"

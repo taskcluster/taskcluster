@@ -67,6 +67,7 @@ properties:
       List of scopes granted to this client by matching roles, including the
       client's scopes and the implicit role `client-id:<clientId>`.
     type:                   array
+    uniqueItems: true
     items: {$const: scope}
   disabled:
     description: |

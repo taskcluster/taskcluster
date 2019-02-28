@@ -90,6 +90,7 @@ properties:
         asan   Address Sanitizer
         tsan   Thread Sanitizer Build
     type: "array"
+    uniqueItems: false
     items:
       type: "string"
       minLength: 1

@@ -8,6 +8,7 @@ properties:
       A list of the etags given by the API of the blob storage provider.  This is an opaque
       string value provided by the API.
     type: array
+    uniqueItems: true
     items:
       type: string
 additionalProperties: false

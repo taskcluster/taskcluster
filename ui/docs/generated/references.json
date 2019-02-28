@@ -16,7 +16,8 @@
           "items": {
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
         "rules": {
           "$ref": "ruleset.json#"
@@ -49,7 +50,8 @@
               "object"
             ]
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -172,7 +174,8 @@
         "type": "object"
       },
       "title": "Ruleset",
-      "type": "array"
+      "type": "array",
+      "uniqueItems": true
     },
     "filename": "schemas/worker-manager/v1/ruleset.json"
   },
@@ -223,7 +226,8 @@
             "type": "string"
           },
           "title": "labels",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         },
         "machine": {
           "additionalProperties": false,
@@ -351,7 +355,8 @@
             "type": "string"
           },
           "title": "Coalesced job GUID",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         },
         "display": {
           "additionalProperties": false,
@@ -439,7 +444,8 @@
                 "title": "Link",
                 "type": "object"
               },
-              "type": "array"
+              "type": "array",
+              "uniqueItems": false
             },
             "summary": {
               "description": "Plain text description of the job and its state.  Submitted with\nthe final message about a task.\n",
@@ -471,7 +477,8 @@
             "type": "string"
           },
           "title": "Labels",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         },
         "logs": {
           "items": {
@@ -512,7 +519,8 @@
                         "title": "Error",
                         "type": "object"
                       },
-                      "type": "array"
+                      "type": "array",
+                      "uniqueItems": false
                     },
                     "lineFinished": {
                       "minimum": 0,
@@ -557,7 +565,8 @@
                   "title": "Step",
                   "type": "object"
                 },
-                "type": "array"
+                "type": "array",
+                "uniqueItems": false
               },
               "url": {
                 "format": "uri",
@@ -573,7 +582,8 @@
             "title": "Log",
             "type": "object"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         },
         "origin": {
           "oneOf": [
@@ -797,7 +807,8 @@
             "title": "Secret",
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -871,7 +882,8 @@
             "type": "object"
           },
           "title": "Worker-type Actions",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         },
         "description": {
           "description": "Description of the worker-type.\n",
@@ -993,7 +1005,8 @@
             "type": "object"
           },
           "title": "Worker Actions",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         },
         "expires": {
           "description": "Date and time after which the worker will be automatically\ndeleted by the queue.\n",
@@ -1026,7 +1039,8 @@
             "$ref": "task-run.json#"
           },
           "title": "Most Recent Tasks",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         },
         "workerGroup": {
           "description": "Identifier for group that worker who executes this run is a part of,\nthis identifier is mainly used for efficient routing.\n",
@@ -1295,7 +1309,8 @@
             "type": "string"
           },
           "title": "Scopes",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         },
         "tags": {
           "additionalProperties": {
@@ -1481,7 +1496,8 @@
             "type": "object"
           },
           "title": "List of Runs",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
         "schedulerId": {
           "$ref": "task.json#/properties/schedulerId",
@@ -2184,7 +2200,8 @@
           "items": {
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -2306,7 +2323,8 @@
                 "title": "HTTP Request",
                 "type": "object"
               },
-              "type": "array"
+              "type": "array",
+              "uniqueItems": true
             },
             "storageType": {
               "description": "Artifact storage type, in this case `'blob'`\n",
@@ -2498,7 +2516,8 @@
                 "type": "object"
               },
               "minItems": 1,
-              "type": "array"
+              "type": "array",
+              "uniqueItems": true
             },
             "storageType": {
               "description": "Artifact storage type, in this case `'blob'`",
@@ -2709,7 +2728,8 @@
             "type": "object"
           },
           "title": "Queues To Poll From",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         }
       },
       "required": [
@@ -2833,7 +2853,8 @@
             "type": "object"
           },
           "title": "WorkerTypes from the Provisioner",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -2902,7 +2923,8 @@
             "type": "object"
           },
           "title": "Workers from a WorkerType",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -2937,7 +2959,8 @@
             "$ref": "task-definition-and-status.json#"
           },
           "title": "Tasks from the Task-Group",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -3013,7 +3036,8 @@
             "title": "Provisioner Information",
             "type": "object"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -3048,7 +3072,8 @@
             "$ref": "task-definition-and-status.json#"
           },
           "title": "Tasks that depend on `taskId`",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -3114,7 +3139,8 @@
             "type": "object"
           },
           "title": "Artifact List",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
         "continuationToken": {
           "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of artifacts.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called with `continuationToken` until you get a\nresult without a `continuationToken`.\n",
@@ -3283,7 +3309,8 @@
             "title": "Task Claim",
             "type": "object"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -3488,7 +3515,8 @@
         "type": "object"
       },
       "title": "Actions",
-      "type": "array"
+      "type": "array",
+      "uniqueItems": true
     },
     "filename": "schemas/queue/v1/actions.json"
   },
@@ -3535,7 +3563,8 @@
         "type": "object"
       },
       "title": "Purge Cache Requests",
-      "type": "array"
+      "type": "array",
+      "uniqueItems": false
     },
     "filename": "schemas/purge-cache/v1/purge-cache-requests.json"
   },
@@ -3695,7 +3724,8 @@
           "items": {
             "$ref": "notification-address.json#"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
         "continuationToken": {
           "description": "A continuation token is returned if there are more results than listed\nhere. You can optionally provide the token in the request payload to\nload the additional results.\n",
@@ -3979,7 +4009,8 @@
             "type": "object"
           },
           "title": "Tasks",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -4063,7 +4094,8 @@
             "type": "object"
           },
           "title": "Namespaces",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -4373,7 +4405,8 @@
             "type": "string"
           },
           "title": "Scopes",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         },
         "tags": {
           "additionalProperties": {
@@ -4555,7 +4588,8 @@
                 "type": "object"
               },
               "title": "List of Runs",
-              "type": "array"
+              "type": "array",
+              "uniqueItems": false
             },
             "schedulerId": {
               "description": "Identifier for the scheduler that _defined_ this task.\n",
@@ -4727,7 +4761,8 @@
             "type": "object"
           },
           "title": "LastFires",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         }
       },
       "required": [
@@ -4750,7 +4785,8 @@
             "$ref": "hook-definition.json#"
           },
           "title": "Hooks",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -4773,7 +4809,8 @@
             "type": "string"
           },
           "title": "Groups",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -5084,7 +5121,7 @@
       },
       "title": "List of Bindings",
       "type": "array",
-      "unqiueItems": true
+      "uniqueItems": true
     },
     "filename": "schemas/hooks/v1/bindings.json"
   },
@@ -5123,7 +5160,8 @@
                 "additionalProperties": true,
                 "type": "object"
               },
-              "type": "array"
+              "type": "array",
+              "uniqueItems": false
             },
             {
               "additionalProperties": true,
@@ -5226,7 +5264,8 @@
             "title": "Task Definition",
             "type": "object"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         },
         "version": {
           "description": ".taskcluster.yml version",
@@ -5686,7 +5725,8 @@
             "title": "Build",
             "type": "object"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         },
         "continuationToken": {
           "description": "Passed back from Azure to allow us to page through long result sets.",
@@ -5781,7 +5821,7 @@
         },
         "requiredProperties": {
           "dependencies": {
-            "entries": [
+            "items": [
               "type",
               "uniqueItems"
             ],
@@ -5806,7 +5846,8 @@
           "items": {
             "$ref": "#/definitions/schema"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         }
       },
       "description": "This is a refinement of JSON-schema, with the following changes:\n\n  * if `properties` is present, `type` and `additionalProperties` must be present, too\n  * if `entries` is present, `type` and `uniqueItems` must be present, too\n\nNote that any schema that validates against this metaschema will also\nvalidate against the upstream draft-06 metaschema, and is usable by any\nJSON-schema tool.\n",
@@ -5880,7 +5921,8 @@
             "formt": "uri",
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -5934,7 +5976,8 @@
                   "type": "object"
                 },
                 "title": "HTTP APIs",
-                "type": "array"
+                "type": "array",
+                "uniqueItems": true
               },
               "pulse": {
                 "default": [
@@ -5964,7 +6007,8 @@
                   "type": "object"
                 },
                 "title": "Pulse references",
-                "type": "array"
+                "type": "array",
+                "uniqueItems": true
               },
               "serviceName": {
                 "description": "A short name for the service, such as `queue` / `purge-cache` / `ec2-manager`.\nThis matches the `serviceName` field in any references linked from here.\n",
@@ -5980,7 +6024,8 @@
             "type": "object"
           },
           "title": "List of taskcluster services",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -6054,7 +6099,8 @@
             "type": "object"
           },
           "title": "Types",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -6142,7 +6188,8 @@
                   ],
                   "type": "object"
                 },
-                "type": "array"
+                "type": "array",
+                "uniqueItems": true
               },
               "schema": {
                 "description": "JSON schema for messages on this exchange. The value must be a relative URI, based on the service's schema location; that is, based at `<rootUrl>/schemas/<serviceName>`.",
@@ -6169,7 +6216,8 @@
             ],
             "type": "object"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
         "exchangePrefix": {
           "description": "Prefix for all exchanges described in this document",
@@ -6256,7 +6304,8 @@
               "items": {
                 "$ref": "#/definitions/scopeExpressionTemplate"
               },
-              "type": "array"
+              "type": "array",
+              "uniqueItems": true
             }
           },
           "required": [
@@ -6273,7 +6322,8 @@
               "items": {
                 "$ref": "#/definitions/scopeExpressionTemplate"
               },
-              "type": "array"
+              "type": "array",
+              "uniqueItems": true
             }
           },
           "required": [
@@ -6343,7 +6393,8 @@
                   "description": "Argument that appears in `route` warpped in angle brackets. It must be replaced to call the function.",
                   "type": "string"
                 },
-                "type": "array"
+                "type": "array",
+                "uniqueItems": true
               },
               "description": {
                 "description": "Description (ie. documentation) for the API entry",
@@ -6412,7 +6463,8 @@
                   "description": "Optional query-string parameter",
                   "type": "string"
                 },
-                "type": "array"
+                "type": "array",
+                "uniqueItems": true
               },
               "route": {
                 "description": "Route for the call, note that arguments wrapped with brackets, like `/user/<userId>/` must be replaced.",
@@ -6471,7 +6523,8 @@
             "type": "object"
           },
           "title": "Entries",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
         "serviceName": {
           "description": "Name of service for automation. Will be consumed by client generators to produce URLs",
@@ -6517,7 +6570,8 @@
             "title": "tag-set",
             "type": "object"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
         "description": {
           "description": "Human readable description of the action in markdown. This\ncan be displayed in a tooltip, popup and/or dialog when triggering\nthe action.\n",
@@ -6643,7 +6697,8 @@
               }
             ]
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
         "variables": {
           "additionalProperties": true,
@@ -6936,7 +6991,8 @@
           "items": {
             "$ref": "get-role-response.json#"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -6956,7 +7012,8 @@
         "$ref": "get-role-response.json#"
       },
       "title": "Get All Roles (no pagination)",
-      "type": "array"
+      "type": "array",
+      "uniqueItems": true
     },
     "filename": "schemas/auth/v1/list-roles-response.json"
   },
@@ -6977,7 +7034,8 @@
           "items": {
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -6999,7 +7057,8 @@
           "items": {
             "$ref": "get-client-response.json#"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
         "continuationToken": {
           "description": "A continuation token is returned if there are more results than listed\nhere. You can optionally provide the token in the request payload to\nload the additional results.\n",
@@ -7040,7 +7099,8 @@
             "pattern": "^[ -~]*$",
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
         "lastModified": {
           "description": "Date and time of last modification\n",
@@ -7060,7 +7120,8 @@
             "pattern": "^[ -~]*$",
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": false
         }
       },
       "required": [
@@ -7113,7 +7174,8 @@
             "pattern": "^[ -~]*$",
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
         "expires": {
           "description": "Date and time where the clients access is set to expire\n",
@@ -7242,7 +7304,8 @@
             "pattern": "^[ -~]*$",
             "type": "string"
           },
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
         "expires": {
           "description": "Date and time where the clients access is set to expire\n",
@@ -7386,7 +7449,8 @@
             "type": "string"
           },
           "title": "Azure Tables",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -7462,7 +7526,8 @@
             "type": "string"
           },
           "title": "Azure Containers",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         },
         "continuationToken": {
           "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of containers.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called this method with `continuationToken`\nuntil you get a result without a `continuationToken`.\n",
@@ -7491,7 +7556,8 @@
             "type": "string"
           },
           "title": "Azure Accounts",
-          "type": "array"
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
@@ -7587,7 +7653,8 @@
                 "pattern": "^[ -~]*$",
                 "type": "string"
               },
-              "type": "array"
+              "type": "array",
+              "uniqueItems": true
             },
             "status": {
               "description": "The kind of response, `auth-failed` or `auth-success`.\n",

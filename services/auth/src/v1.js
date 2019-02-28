@@ -777,14 +777,15 @@ builder.declare({
           throw err;
         }
         role = existing;
+      } else {
+
+        // check that this new role does not introduce a cycle
+        // Errors from validateRoles will caught higher up
+        ScopeResolver.validateRoles([...roles, role]);
+
+        // add the role for real
+        roles.push(role);
       }
-
-      // check that this new role does not introduce a cycle
-      // Errors from validateRoles will caught higher up
-      ScopeResolver.validateRoles([...roles, role]);
-
-      // add the role for real
-      roles.push(role);
     });
   } catch (err) {
     switch (err.code) {

@@ -3,6 +3,7 @@ type:         array
 title: "Purge Cache Requests"
 description: |
   A list of Purge Cache requests that the Purge Cache service has previously received.
+uniqueItems: false
 items:
   title: "Purge Cache Requests Entry"
   description: |

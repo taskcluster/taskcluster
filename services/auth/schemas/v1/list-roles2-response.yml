@@ -10,6 +10,7 @@ properties:
     description: |
       A list of requested roles
     type:                       array
+    uniqueItems: true
     items:
       $ref: 'get-role-response.json#'
   continuationToken:

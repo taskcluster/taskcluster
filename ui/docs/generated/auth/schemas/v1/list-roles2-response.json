@@ -7,6 +7,7 @@
     "roles": {
       "description": "A list of requested roles\n",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "$ref": "get-role-response.json#"
       }

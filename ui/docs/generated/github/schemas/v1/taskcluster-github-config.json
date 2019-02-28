@@ -59,6 +59,7 @@
     "tasks": {
       "type": "array",
       "default": [],
+      "uniqueItems": false,
       "items": {
         "title": "Task Definition",
         "description": "Definition of a task that can be scheduled\n",

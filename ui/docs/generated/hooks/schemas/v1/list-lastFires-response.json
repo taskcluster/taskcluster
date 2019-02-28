@@ -7,6 +7,7 @@
     "lastFires": {
       "title": "LastFires",
       "type": "array",
+      "uniqueItems": false,
       "items": {
         "type": "object",
         "properties": {
