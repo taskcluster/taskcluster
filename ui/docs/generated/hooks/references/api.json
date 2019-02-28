@@ -67,10 +67,10 @@
         "hookId"
       ],
       "name": "getHookStatus",
-      "stability": "stable",
+      "stability": "deprecated",
       "title": "Get hook status",
       "output": "v1/hook-status.json#",
-      "description": "This endpoint will return the current status of the hook.  This represents a\nsnapshot in time and may vary from one call to the next."
+      "description": "This endpoint will return the current status of the hook.  This represents a\nsnapshot in time and may vary from one call to the next.\n\nThis method is deprecated in favor of listLastFires."
     },
     {
       "type": "function",
