@@ -118,6 +118,9 @@ export default class DocsSidebarList extends Component {
     if (currentMenu !== previousMenu) {
       Object.assign(newState, { menuOpen: true });
     }
+    if (currentMenu == previousMenu && state.previousPathname !== newState.previousPathname) {
+      Object.assign(newState, { menuOpen: true });
+    }
 
     return newState;
   }
