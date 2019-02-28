@@ -39,7 +39,8 @@ tar_docker_worker() {
       .npmignore \
       package.json \
       yarn.lock \
-      config.yml
+      config.yml \
+      bin-utils
   mv $docker_worker_tgz docker-worker.tgz
 }
 
