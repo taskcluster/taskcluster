@@ -82,6 +82,7 @@ test:
   azure:
     accountId:        'jungle'
   monitoring:
+    level: warning
     enable: false
   server:
     port:             60401

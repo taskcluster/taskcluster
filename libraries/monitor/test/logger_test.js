@@ -173,18 +173,4 @@ suite('Logging', function() {
     assert(message.includes('ERROR'));
     assert(message.includes('whatever: foo\\nbar'));
   });
-
-  test('disabling works', function() {
-    const b = new MonitorManager({
-      serviceName: 'taskcluster-level',
-    });
-    b.setup({
-      level: 'debug',
-      mock: true,
-      enable: false,
-    });
-    const m = b.monitor();
-    m.info('something', {whatever: 5}); // This should not get logged
-    assert.equal(b.messages.length, 0);
-  });
 });

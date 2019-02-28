@@ -155,6 +155,7 @@ test:
     signingKey:          not-a-secret-so-you-cant-guess-it
     cryptoKey:           AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
   monitoring:
+    level: warning
     enable: false
   # Test bucket for STS credentials
   test:

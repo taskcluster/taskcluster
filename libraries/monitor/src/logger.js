@@ -15,6 +15,17 @@ const LEVELS = {
 };
 
 const LEVELS_REVERSE = [
+  'EMERGENCY',
+  'ALERT',
+  'CRITICAL',
+  'ERROR',
+  'WARNING',
+  'NOTICE',
+  'INFO',
+  'DEBUG',
+];
+
+const LEVELS_REVERSE_COLOR = [
   chalk.red.bold('EMERGENCY'),
   chalk.red.bold('ALERT'),
   chalk.red.bold('CRITICAL'),
@@ -33,14 +44,13 @@ const LEVELS_REVERSE = [
  * later if we want.
  */
 class Logger {
-  constructor({name, service, level, pretty=false, enable=true, destination=process.stdout, metadata=null}) {
+  constructor({name, service, level, pretty=false, destination=process.stdout, metadata=null}) {
     assert(name, 'Must specify Logger name.');
 
     this.name = name;
     this.service = service;
     this.destination = destination;
     this.pretty = pretty;
-    this.enable = enable;
     this.metadata = Object.keys(metadata).length > 0 ? metadata : null;
     this.pid = process.pid;
     this.hostname = os.hostname();
@@ -51,7 +61,7 @@ class Logger {
   }
 
   _log(level, type, fields) {
-    if (!this.enable || level > this.level) {
+    if (level > this.level) {
       return;
     }
 
@@ -98,7 +108,7 @@ class Logger {
         }
         return s;
       }, '');
-      const line = chalk`${(new Date()).toJSON()} ${LEVELS_REVERSE[level]} (${type}): {blue ${message}}{gray ${extra}}\n`;
+      const line = chalk`${(new Date()).toJSON()} ${LEVELS_REVERSE_COLOR[level]} (${type}): {blue ${message}}{gray ${extra}}\n`;
       this.destination.write(line);
     } else {
       this.destination.write(stringify({

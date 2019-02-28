@@ -44,7 +44,7 @@ development:
     # taskcluster-web's dev server assumes port 3050
     port: 3050
   monitoring:
-    project: taskcluster-web-server
+    level: warning
     enable: false
 
 production:
