@@ -44,6 +44,8 @@ const commonRoutingKey = function(options = {}) {
 
 const commonMessageBuilder = function(msg) {
   msg.version = 1;
+  // TODO const {routingKey, ...rest} = msg;
+  // return rest;
   return msg;
 };
 
@@ -156,6 +158,7 @@ exchanges.declare({
   routingKeyBuilder: msg => _.pick(msg, 'organization', 'repository', 'action'),
   CCBuilder: () => [],
 });
+// TODO: let's have routing_key prop in msg - we don't need _.pick, really!
 
 /** check suite exchange */
 exchanges.declare({
