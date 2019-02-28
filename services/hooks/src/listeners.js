@@ -84,7 +84,12 @@ class HookListeners {
         hookId: hookId,
       }, true);
       if (latestHook) {
-        await this.taskcreator.fire(latestHook, {firedBy: 'pulseMessage', payload});
+        try {
+          await this.taskcreator.fire(latestHook, {firedBy: 'pulseMessage', payload});
+        } catch (err) {
+          // any errors were already reported via the LastFire table, so they
+          // can be safely ignored here
+        }
       }
     });
 

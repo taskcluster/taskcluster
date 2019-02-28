@@ -548,7 +548,6 @@ const triggerHookCommon = async function({req, res, hook, payload, clientId, fir
   if (clientId) {
     context.clientId = clientId;
   }
-  let lastFire;
   let resp;
   let error;
 
@@ -568,23 +567,9 @@ const triggerHookCommon = async function({req, res, hook, payload, clientId, fir
       // hook did not produce a response, so return an empty object
       return res.reply({});
     }
-    lastFire = {
-      result: 'success',
-      taskId: resp.status.taskId,
-      time: new Date(),
-    };
   } catch (err) {
     error = err;
-    lastFire = {
-      result: 'error',
-      error: err,
-      time: new Date(),
-    };
   }
-
-  await hook.modify((hook) => {
-    hook.lastFire = lastFire;
-  });
 
   if (resp) {
     return res.reply(resp);

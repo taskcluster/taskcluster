@@ -70,6 +70,10 @@ class TaskCreator {
   * it is used as the creation time for the task (to ensure idempotency).  If
   * options.retry is false, then the call will not be automatically retried on
   * 5xx errors.
+  *
+  * Returns a value matching `trigger-hook-response.yml`, or throws an
+  * exception if the task cannot be created.  Such an exception is also
+  * reported to the user via the LastFire table, so it is safe to ignore it.
   */
   async fire(hook, context, options) {
     options = _.defaults({}, options, {
@@ -79,81 +83,88 @@ class TaskCreator {
     });
     this.monitor.count(`fire.${context.firedBy}.all`);
 
-    // create a queue instance with its authorized scopes limited to those
-    // assigned to the hook.
-    let role = 'assume:hook-id:' + hook.hookGroupId + '/' + hook.hookId;
-    let queue = new taskcluster.Queue({
-      rootUrl: this.rootUrl,
-      credentials: this.credentials,
-      authorizedScopes: [role],
-      retries: options.retry ? 0 : 5,
-    });
-
-    const task = this.taskForHook(hook, context, options);
-    if (!task) {
-      this.monitor.count(`fire.${context.firedBy}.declined`);
-      debug(`hook ${hook.hookGroupId}/${hook.hookId} declined to produce a task`);
-      return;
-    }
-    this.monitor.count(`fire.${context.firedBy}.created`);
-
-    debug('firing hook %s/%s to create taskId: %s',
-      hook.hookGroupId, hook.hookId, options.taskId);
-    if (this.fakeCreate) {
-      // for testing, just record that we *would* hvae called this..
-      this.lastCreateTask = {taskId: options.taskId, task};
-      return {status: {taskId: options.taskId}};
-    }
-
-    let lastFire, taskCreateRes, fireError;
-    try {
-      taskCreateRes = await queue.createTask(options.taskId, task);
-      lastFire = {
-        result: 'success',
-        taskId: options.taskId,
-        time: new Date(),
-      };
-    } catch (err) {
-      let errModified;
-      fireError = err;
-
-      if (typeof err === 'object') {
-        errModified = JSON.stringify(err);
-      } else {
-        errModified = err.toString();
-      }
-      if (errModified.length > 256 * 1024/2) {
-        errModified = errModified.substring(0, 256 * 1024/2);
-      }
-
-      lastFire = {
-        result: 'error',
-        taskId: options.taskId,
-        error: errModified,
-        time: new Date(),
-      };
-    }
-
-    try {
-      await this.appendLastFire({
+    // Inner implementation, returning
+    // `lastFire` (entry to insert into lastFire row, if any)
+    // and exactly one of `error` (error to be thrown) or `response`
+    // (a response value from triggerHook).
+    const inner = async () => {
+      const lastFire = {
         hookGroupId: hook.hookGroupId,
-        taskCreateTime: lastFire.time,
         hookId: hook.hookId,
+        taskCreateTime: new Date(),
         firedBy: context.firedBy,
-        taskId: lastFire.taskId,
-        result: lastFire.result,
-        error: lastFire.error || '',
+        taskId: options.taskId,
+        result: 'error',
+        error: '',
+      };
+
+      // create a queue instance with its authorized scopes limited to those
+      // assigned to the hook.
+      const role = 'assume:hook-id:' + hook.hookGroupId + '/' + hook.hookId;
+      const queue = new taskcluster.Queue({
+        rootUrl: this.rootUrl,
+        credentials: this.credentials,
+        authorizedScopes: [role],
+        retries: options.retry ? 0 : 5,
       });
-    } catch (err) {
-      debug('Failed to append lastfire with err: %s', err);
-      this.monitor.reportError(err);
+
+      let task;
+      try {
+        task = this.taskForHook(hook, context, options);
+      } catch (err) {
+        lastFire.error = err.toString();
+        return {lastFire, error: err};
+      }
+
+      if (!task) {
+        this.monitor.count(`fire.${context.firedBy}.declined`);
+        debug(`hook ${hook.hookGroupId}/${hook.hookId} declined to produce a task`);
+        return {response: {}};
+      }
+      this.monitor.count(`fire.${context.firedBy}.created`);
+
+      debug('firing hook %s/%s to create taskId: %s',
+        hook.hookGroupId, hook.hookId, options.taskId);
+      if (this.fakeCreate) {
+        // for testing, just record that we *would* hvae called this..
+        this.lastCreateTask = {taskId: options.taskId, task};
+        return {response: {status: {taskId: options.taskId}}};
+      }
+
+      try {
+        const response = await queue.createTask(options.taskId, task);
+        lastFire.result = 'success';
+        return {lastFire, response};
+      } catch (err) {
+        // reformat the error to fit within the (string-formatted) 'error' field
+        // of the LastFire table
+        let lfError;
+
+        if (typeof err === 'object') {
+          lfError = JSON.stringify(err, null, 2);
+        } else {
+          lfError = err.toString();
+        }
+        if (lfError.length > 256 * 1024/2) {
+          lfError = lfError.substring(0, 256 * 1024/2);
+        }
+
+        lastFire.error = lfError;
+        return {lastFire, error: err};
+      }
+    };
+
+    const {lastFire, error, response} = await inner();
+
+    if (lastFire) {
+      await this.appendLastFire(lastFire);
     }
 
-    // throw the original Error instance if there was an error
-    if (fireError) {
-      return Promise.reject(fireError);
+    if (error) {
+      throw error;
+    } else {
+      return response;
     }
-    return taskCreateRes;
   }
 }
 
