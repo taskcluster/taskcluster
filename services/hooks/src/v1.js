@@ -127,23 +127,62 @@ builder.declare({
   name: 'getHookStatus',
   output: 'hook-status.yml',
   title: 'Get hook status',
-  stability: 'stable',
+  stability: 'deprecated',
   description: [
     'This endpoint will return the current status of the hook.  This represents a',
     'snapshot in time and may vary from one call to the next.',
+    '',
+    'This method is deprecated in favor of listLastFires.',
   ].join('\n'),
 }, async function(req, res) {
-  let hook = await this.Hook.load({
-    hookGroupId: req.params.hookGroupId,
-    hookId: req.params.hookId,
-  }, true);
+  const {hookGroupId, hookId} = req.params;
 
-  // Handle the case where the hook doesn't exist
+  const hook = await this.Hook.load({hookGroupId, hookId}, true);
   if (!hook) {
     return res.reportError('ResourceNotFound', 'No such hook', {});
   }
 
-  let reply = {lastFire: hook.lastFire};
+  // find the latest entry in the LastFire table for this hook
+  let latest = {taskCreateTime: new Date(1970, 1, 1)};
+  await this.LastFire.scan({
+    hookGroupId: req.params.hookGroupId,
+    hookId: req.params.hookId,
+  }, {
+    handler: item => {
+      if (item.taskCreateTime > latest.taskCreateTime) {
+        latest = item;
+      }
+    },
+  });
+
+  let reply;
+
+  if (!latest.hookId) {
+    reply = {lastFire: {result: 'no-fire'}};
+  } else if (latest.result === 'success') {
+    reply = {
+      lastFire: {
+        result: latest.result,
+        taskId: latest.taskId,
+        time: latest.taskCreateTime.toJSON(),
+      },
+    };
+  } else {
+    let error;
+    // sometimes the error is JSON, but sometimes it's not (e.g., too large)
+    try {
+      error = JSON.parse(latest.error);
+    } catch (_) {
+      error = {message: latest.error};
+    }
+    reply = {
+      lastFire: {
+        result: latest.result,
+        error,
+        time: latest.taskCreateTime.toJSON(),
+      },
+    };
+  }
 
   // Return a schedule only if a schedule is defined
   if (hook.schedule.length > 0) {
@@ -509,7 +548,6 @@ const triggerHookCommon = async function({req, res, hook, payload, clientId, fir
   if (clientId) {
     context.clientId = clientId;
   }
-  let lastFire;
   let resp;
   let error;
 
@@ -529,23 +567,9 @@ const triggerHookCommon = async function({req, res, hook, payload, clientId, fir
       // hook did not produce a response, so return an empty object
       return res.reply({});
     }
-    lastFire = {
-      result: 'success',
-      taskId: resp.status.taskId,
-      time: new Date(),
-    };
   } catch (err) {
     error = err;
-    lastFire = {
-      result: 'error',
-      error: err,
-      time: new Date(),
-    };
   }
-
-  await hook.modify((hook) => {
-    hook.lastFire = lastFire;
-  });
 
   if (resp) {
     return res.reply(resp);

@@ -14,7 +14,7 @@ export default class Hooks extends Client {
     this.listHookGroups.entry = {"args":[],"method":"get","name":"listHookGroups","output":true,"query":[],"route":"/hooks","stability":"stable","type":"function"}; // eslint-disable-line
     this.listHooks.entry = {"args":["hookGroupId"],"method":"get","name":"listHooks","output":true,"query":[],"route":"/hooks/<hookGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.hook.entry = {"args":["hookGroupId","hookId"],"method":"get","name":"hook","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.getHookStatus.entry = {"args":["hookGroupId","hookId"],"method":"get","name":"getHookStatus","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/status","stability":"stable","type":"function"}; // eslint-disable-line
+    this.getHookStatus.entry = {"args":["hookGroupId","hookId"],"method":"get","name":"getHookStatus","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/status","stability":"deprecated","type":"function"}; // eslint-disable-line
     this.createHook.entry = {"args":["hookGroupId","hookId"],"input":true,"method":"put","name":"createHook","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>","scopes":{"AllOf":["hooks:modify-hook:<hookGroupId>/<hookId>","assume:hook-id:<hookGroupId>/<hookId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.updateHook.entry = {"args":["hookGroupId","hookId"],"input":true,"method":"post","name":"updateHook","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>","scopes":{"AllOf":["hooks:modify-hook:<hookGroupId>/<hookId>","assume:hook-id:<hookGroupId>/<hookId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.removeHook.entry = {"args":["hookGroupId","hookId"],"method":"delete","name":"removeHook","query":[],"route":"/hooks/<hookGroupId>/<hookId>","scopes":"hooks:modify-hook:<hookGroupId>/<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -62,6 +62,7 @@ export default class Hooks extends Client {
   /* eslint-disable max-len */
   // This endpoint will return the current status of the hook.  This represents a
   // snapshot in time and may vary from one call to the next.
+  // This method is deprecated in favor of listLastFires.
   /* eslint-enable max-len */
   getHookStatus(...args) {
     this.validate(this.getHookStatus.entry, args);

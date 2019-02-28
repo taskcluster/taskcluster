@@ -4213,14 +4213,6 @@
   },
   {
     "content": {
-      "$id": "/schemas/hooks/v1/trigger-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "title": "Trigger Hook Response"
-    },
-    "filename": "schemas/hooks/v1/trigger-response.json"
-  },
-  {
-    "content": {
       "$id": "/schemas/hooks/v1/trigger-hook.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "description": "A request to trigger a hook.  The payload must be a JSON object, and is used as the context\nfor a JSON-e rendering of the hook's task template, as described in \"Firing Hooks\".\n",
@@ -10892,14 +10884,14 @@
             "hookGroupId",
             "hookId"
           ],
-          "description": "This endpoint will return the current status of the hook.  This represents a\nsnapshot in time and may vary from one call to the next.",
+          "description": "This endpoint will return the current status of the hook.  This represents a\nsnapshot in time and may vary from one call to the next.\n\nThis method is deprecated in favor of listLastFires.",
           "method": "get",
           "name": "getHookStatus",
           "output": "v1/hook-status.json#",
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/status",
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "Get hook status",
           "type": "function"
         },

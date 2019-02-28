@@ -176,6 +176,32 @@ suite('taskcreator_test.js', function() {
       await assertNoTask(taskId);
     });
 
+    test('firing a hook where the json-e fails to render fails', async function() {
+      const hook = _.cloneDeep(defaultHook);
+      hook.task = {$if: 'uhoh, this is invalid'};
+      await helper.Hook.create(hook);
+      const taskId = taskcluster.slugid();
+
+      try {
+        await creator.fire(hook, {firedBy: 'me'}, {taskId});
+      } catch (err) {
+        if (!err.toString().match(/unknown context value uhoh/)) {
+          throw err;
+        }
+
+        const lf = await helper.LastFire.load({
+          hookGroupId: hook.hookGroupId,
+          hookId: hook.hookId,
+          taskId: taskId,
+        });
+        assume(lf.result).to.equal('error');
+        assume(lf.error).to.match(/unknown context value uhoh/);
+        assume(lf.firedBy).to.equal('me');
+        return;
+      }
+      throw new Error('should have seen an error from .fire');
+    });
+
     test('firing a real task that sets its own task times works', async function() {
       let hook = _.cloneDeep(defaultHook);
       hook.task.then.created = {$fromNow: '0 seconds'};

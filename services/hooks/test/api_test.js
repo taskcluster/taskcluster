@@ -78,9 +78,16 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     bindings: [{exchange: `exchanges/test-new/${unique}`, routingKeyPattern: 'amongst.new.rockets.and.wizards'}],
   }, hookWithHookIds);
 
-  const setHookLastFire = async (hookGroupId, hookId, lastFire) => {
-    const hook = await helper.Hook.load({hookGroupId, hookId}, true);
-    await hook.modify((hook) => { hook.lastFire = lastFire; });
+  const appendLastFire = async ({hookGroupId, hookId, taskId, taskCreateTime, firedBy, result, error}) => {
+    await helper.LastFire.create({
+      hookGroupId,
+      hookId,
+      taskCreateTime,
+      taskId,
+      firedBy,
+      result,
+      error,
+    });
   };
 
   const lastFire = {
@@ -396,7 +403,15 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     test('returns the last run status for a hook that has fired', async () => {
       await helper.hooks.createHook('foo', 'bar', dailyHookDef);
       const now = new Date();
-      await setHookLastFire('foo', 'bar', {result: 'success', taskId: 'E5SBRfo-RfOIxh0V4187Qg', time: now});
+      await appendLastFire({
+        hookGroupId: 'foo',
+        hookId: 'bar',
+        taskId: 'E5SBRfo-RfOIxh0V4187Qg',
+        taskCreateTime: now,
+        firedBy: 'thing',
+        result: 'success',
+        error: '',
+      });
       const r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).contains('lastFire');
       assume(r1.lastFire.result).is.equal('success');
@@ -404,13 +419,40 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       assume(r1.lastFire.time).is.equal(now.toJSON());
     });
 
-    test('returns the last run status for triggerHook', async () => {
+    test('returns the last run status for a hook that failed with a JSON error', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
-      await helper.hooks.triggerHook('foo', 'bar', {location: 'Belo Horizonte, MG',
-        foo: 'triggerHook'});
+      const now = new Date();
+      await appendLastFire({
+        hookGroupId: 'foo',
+        hookId: 'bar',
+        taskId: 'E5SBRfo-RfOIxh0V4187Qg',
+        taskCreateTime: now,
+        firedBy: 'thing',
+        result: 'error',
+        error: '{"msg": "uhoh"}',
+      });
       const r1 = await helper.hooks.getHookStatus('foo', 'bar');
       assume(r1).contains('lastFire');
-      assume(r1.lastFire.result).is.equal('success');
+      assume(r1.lastFire.result).is.equal('error');
+      assume(r1.lastFire.error).is.deeply.equal({msg: "uhoh"});
+    });
+
+    test('returns the last run status for a hook that failed with a string error', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
+      const now = new Date();
+      await appendLastFire({
+        hookGroupId: 'foo',
+        hookId: 'bar',
+        taskId: 'E5SBRfo-RfOIxh0V4187Qg',
+        taskCreateTime: now,
+        firedBy: 'thing',
+        result: 'error',
+        error: 'uhoh',
+      });
+      const r1 = await helper.hooks.getHookStatus('foo', 'bar');
+      assume(r1).contains('lastFire');
+      assume(r1.lastFire.result).is.equal('error');
+      assume(r1.lastFire.error).is.deeply.equal({message: "uhoh"});
     });
 
     test('fails if no hook exists', async () => {
@@ -690,10 +732,10 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     test('lists lastfires for a given hookGroupId and hookId', async () => {
       const taskIds = [];
       taskIds.push(lastFire.taskId);
-      await creator.appendLastFire(lastFire);
+      await appendLastFire(lastFire);
       for (let i=1;i<=2;i++) {
         taskIds.push(taskcluster.slugid());
-        await creator.appendLastFire({...lastFire,
+        await appendLastFire({...lastFire,
           taskId: taskIds[i],
           taskCreateTime: new Date(),
         });

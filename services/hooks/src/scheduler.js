@@ -93,7 +93,6 @@ class Scheduler extends events.EventEmitter {
 
   /** Handle spawning a new task for a given hook that needs to be scheduled */
   async handleHook(hook) {
-    let lastFire;
     debug('firing hook %s/%s with taskId %s', hook.hookGroupId, hook.hookId, hook.nextTaskId);
     try {
       await this.taskcreator.fire(hook, {firedBy: 'schedule'}, {
@@ -105,13 +104,6 @@ class Scheduler extends events.EventEmitter {
         // createTask operation to time out
         retry: false,
       });
-
-      lastFire = {
-        result: 'success',
-        taskId: hook.nextTaskId,
-        time: new Date(),
-      };
-
     } catch (err) {
       debug('Failed to handle hook: %s/%s, with err: %s', hook.hookGroupId, hook.hookId, err);
 
@@ -123,11 +115,6 @@ class Scheduler extends events.EventEmitter {
       // In the case of a 4xx error, retrying on the next scheduler loop is a
       // waste of time, so consider the hook fired (and failed)
       await this.sendFailureEmail(hook, err);
-      lastFire = {
-        result: 'error',
-        error: err,
-        time: new Date(),
-      };
     }
 
     try {
@@ -137,9 +124,6 @@ class Scheduler extends events.EventEmitter {
         if (hook.nextTaskId === oldTaskId) {
           hook.nextTaskId = taskcluster.slugid();
           hook.nextScheduledDate = nextDate(hook.schedule);
-          if (lastFire) {
-            hook.lastFire = lastFire;
-          }
         }
       });
     } catch (err) {
