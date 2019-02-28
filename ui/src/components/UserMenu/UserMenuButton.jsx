@@ -2,7 +2,6 @@ import React, { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
 import IconButton from '@material-ui/core/IconButton';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Button from '@material-ui/core/Button';
@@ -14,17 +13,8 @@ import { withAuth } from '../../utils/Auth';
   avatar: {
     backgroundColor: theme.palette.secondary.main,
   },
-  text: {
-    color: theme.palette.text.primary,
-    fontFamily: 'Roboto500',
-  },
   icon: {
     fill: theme.palette.common.white,
-    marginRight: theme.spacing.unit,
-    marginLeft: theme.spacing.unit,
-  },
-  leftIcon: {
-    marginRight: theme.spacing.unit,
   },
 }))
 @withAuth
@@ -38,47 +28,42 @@ export default class UserMenuButton extends Component {
       onSignInDialogOpen,
       onSignInDialogClose,
       onMenuClick,
+      ...props
     } = this.props;
 
     if (!user) {
       return (
-        <List component="nav">
+        <Fragment component="nav">
           <Button
             variant="contained"
             color="primary"
-            className={classes.icon}
-            onClick={onSignInDialogOpen}>
+            onClick={onSignInDialogOpen}
+            {...props}>
             <ListItemIcon className={classes.icon}>
               <AccountCircleIcon />
             </ListItemIcon>
             Sign in
           </Button>
           <SignInDialog open={signInDialogOpen} onClose={onSignInDialogClose} />
-        </List>
+        </Fragment>
       );
     }
 
     const { profile } = user;
 
     return (
-      <Fragment>
-        <List component="nav">
-          <IconButton
-            button
-            aria-haspopup="true"
-            aria-controls="user-menu"
-            aria-label="user menu"
-            onClick={onMenuClick}>
-            {profile.photos && profile.photos.length ? (
-              <Avatar alt={profile.displayName} src={profile.photos[0].value} />
-            ) : (
-              <Avatar alt={profile.displayName}>
-                {profile.displayName[0]}
-              </Avatar>
-            )}
-          </IconButton>
-        </List>
-      </Fragment>
+      <IconButton
+        button
+        aria-haspopup="true"
+        aria-controls="user-menu"
+        aria-label="user menu"
+        onClick={onMenuClick}>
+        {profile.photos && profile.photos.length ? (
+          <Avatar alt={profile.displayName} src={profile.photos[0].value} />
+        ) : (
+          <Avatar alt={profile.displayName}>{profile.displayName[0]}</Avatar>
+        )}
+      </IconButton>
     );
   }
 }

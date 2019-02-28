@@ -243,7 +243,11 @@ export default class Dashboard extends Component {
           </Typography>
         </div>
         <Divider />
-        <UserMenu navOpen={navOpen} />
+        {docs ? (
+          <UserMenu navOpen={!navOpen} />
+        ) : (
+          <UserMenu navOpen={navOpen} />
+        )}
         <Divider />
         {docs ? <DocsSidebarList /> : <SidebarList />}
       </div>

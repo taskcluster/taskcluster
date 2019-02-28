@@ -12,28 +12,11 @@ import UserMenuList from './UserMenuList';
 import UserMenuButton from './UserMenuButton';
 
 @withStyles(theme => ({
-  avatar: {
-    backgroundColor: theme.palette.secondary.main,
-  },
-  userMenu: {
-    [theme.breakpoints.up('sm')]: {
-      padding: `${theme.spacing.unit / 2}px ${theme.spacing.double}px`,
-    },
-  },
-  text: {
-    color: theme.palette.text.primary,
-    fontFamily: 'Roboto500',
-  },
-  icon: {
-    fill: theme.palette.text.primary,
-  },
   leftIcon: {
     marginRight: theme.spacing.unit,
   },
-  username: {
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    textOverflow: 'ellipsis',
+  userMenuButton: {
+    marginLeft: theme.spacing.unit,
   },
 }))
 @withAuth
@@ -94,6 +77,7 @@ export default class UserMenu extends Component {
           />
         ) : (
           <UserMenuButton
+            className={classes.userMenuButton}
             user={user}
             signInDialogOpen={signInDialogOpen}
             onSignInDialogClose={this.handleSignInDialogClose}

@@ -26,9 +26,6 @@ import { withAuth } from '../../utils/Auth';
   icon: {
     fill: theme.palette.text.primary,
   },
-  leftIcon: {
-    marginRight: theme.spacing.unit,
-  },
   username: {
     overflow: 'hidden',
     whiteSpace: 'nowrap',
