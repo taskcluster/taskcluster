@@ -4245,14 +4245,6 @@
   },
   {
     "content": {
-      "$id": "/schemas/hooks/v1/trigger-response.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "title": "Trigger Hook Response"
-    },
-    "filename": "schemas/hooks/v1/trigger-response.json"
-  },
-  {
-    "content": {
       "$id": "/schemas/hooks/v1/trigger-hook.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "description": "A request to trigger a hook.  The payload must be a JSON object, and is used as the context\nfor a JSON-e rendering of the hook's task template, as described in \"Firing Hooks\".\n",
