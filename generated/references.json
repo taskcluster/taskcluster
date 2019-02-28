@@ -10892,14 +10892,14 @@
             "hookGroupId",
             "hookId"
           ],
-          "description": "This endpoint will return the current status of the hook.  This represents a\nsnapshot in time and may vary from one call to the next.",
+          "description": "This endpoint will return the current status of the hook.  This represents a\nsnapshot in time and may vary from one call to the next.\n\nThis method is deprecated in favor of listLastFires.",
           "method": "get",
           "name": "getHookStatus",
           "output": "v1/hook-status.json#",
           "query": [
           ],
           "route": "/hooks/<hookGroupId>/<hookId>/status",
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "Get hook status",
           "type": "function"
         },
