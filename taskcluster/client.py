@@ -667,7 +667,7 @@ def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes, nam
         scopes=scopes,
         start=calendar.timegm(start.utctimetuple()) * 1000,
         expiry=calendar.timegm(expiry.utctimetuple()) * 1000,
-        seed=utils.slugId() + utils.slugId(),
+        seed=utils.slugId().encode('ascii') + utils.slugId().encode('ascii'),
     )
 
     # if this is a named temporary credential, include the issuer in the certificate

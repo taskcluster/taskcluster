@@ -121,7 +121,7 @@ class TestSlugId(base.TCTest):
         with mock.patch('uuid.uuid4') as p:
             # first bit of uuid set, which should get unset
             p.return_value = uuid.UUID('bed97923-7616-4ec8-85ed-4b695f67ac2e')
-            expected = b'Ptl5I3YWTsiF7UtpX2esLg'
+            expected = 'Ptl5I3YWTsiF7UtpX2esLg'
             actual = subject.slugId()
             self.assertEqual(expected, actual)
 
@@ -129,7 +129,7 @@ class TestSlugId(base.TCTest):
         with mock.patch('uuid.uuid4') as p:
             # first bit of uuid unset, should remain unset
             p.return_value = uuid.UUID('3ed97923-7616-4ec8-85ed-4b695f67ac2e')
-            expected = b'Ptl5I3YWTsiF7UtpX2esLg'
+            expected = 'Ptl5I3YWTsiF7UtpX2esLg'
             actual = subject.slugId()
             self.assertEqual(expected, actual)
 

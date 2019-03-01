@@ -29,7 +29,7 @@ tests_require = [
 install_requires = [
     'requests>=2.4.3,<3',
     'mohawk>=0.3.4,<0.4',
-    'slugid>=1.0.7,<2',
+    'slugid>=2,<3',
     'taskcluster-urls>=10.1.0,<12',
     'six>=1.10.0,<2',
 ]
