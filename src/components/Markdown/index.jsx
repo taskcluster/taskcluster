@@ -31,7 +31,6 @@ markdown.use(linkAttributes, {
     '& pre, & pre[class*="language-"]': {
       margin: `${3 * theme.spacing.unit}px 0`,
       padding: '12px 18px',
-      backgroundColor: theme.palette.background.paper,
       borderRadius: 3,
       overflow: 'auto',
     },
@@ -40,8 +39,6 @@ markdown.use(linkAttributes, {
       lineHeight: 1.6,
       fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
       padding: '3px 6px',
-      color: theme.palette.text.primary,
-      backgroundColor: theme.palette.background.paper,
       fontSize: 14,
     },
     '& p code, & ul code, & pre code': {
@@ -171,7 +168,6 @@ markdown.use(linkAttributes, {
     },
     '& blockquote': {
       borderLeft: `5px solid ${theme.palette.text.hint}`,
-      backgroundColor: theme.palette.background.paper,
       padding: `${theme.spacing.unit / 2}px ${3 * theme.spacing.unit}px`,
       margin: `${3 * theme.spacing.unit}px 0`,
     },
