@@ -37,7 +37,7 @@ import { route } from '../utils/prop-types';
     pre: {
       overflowX: 'auto',
     },
-    'pre, :not(pre) > code': {
+    ':not(pre) > code': {
       ...theme.mixins.highlight,
     },
     '.json-inspector__leaf': {
