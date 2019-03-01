@@ -167,7 +167,7 @@ def createStaticClient(name, api, genAsync=False):
                 if entry.get('title'):
                     ds = entry.get('title') + '\n\n' + ds
                 if entry.get('schema'):
-                    ds = '%s\n\nThis exchange outputs: ``%s``' % (ds, entry['schema'])
+                    ds = '%s\n\nThis exchange has outputs' % ds, entry['schema']
                 if entry.get('stability'):
                     ds = '%s\n\nThis method is ``%s``' % (ds, entry['stability'])
 
