@@ -20,6 +20,10 @@ import { THEME } from '../../utils/constants';
   userMenuButton: {
     marginLeft: theme.spacing.unit,
   },
+  buttonAvatar: {
+    color: THEME.PRIMARY_TEXT_DARK,
+    backgroundColor: THEME.PRIMARY_DARK,
+  },
   buttonContainedPrimary: {
     color: THEME.PRIMARY_TEXT_DARK,
     backgroundColor: THEME.PRIMARY_DARK,
@@ -81,6 +85,9 @@ export default class UserMenu extends Component {
       <Fragment>
         {appBar ? (
           <UserMenuButton
+            avatarProps={{
+              className: classes.buttonAvatar,
+            }}
             buttonProps={{
               classes: { containedPrimary: classes.buttonContainedPrimary },
             }}
