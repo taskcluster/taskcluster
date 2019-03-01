@@ -51,8 +51,8 @@ export default class Reference extends Component {
             <HeaderWithAnchor type="h3">Functions</HeaderWithAnchor>
             <Typography>
               For more information on invoking the API methods described here,
-              see <Link to="/docs/manual/apis">Using the APIs</Link> in the
-              manual.
+              see <Link to="/docs/manual/design/apis">Using the APIs</Link> in
+              the manual.
             </Typography>
             <br />
             {functionEntries.map(entry => (
@@ -70,8 +70,9 @@ export default class Reference extends Component {
             <HeaderWithAnchor type="h3">Message Types</HeaderWithAnchor>
             <Typography>
               For more information on interpreting the log types described here,
-              see <Link to="/docs/manual/logs">Interpreting Log Types</Link> in
-              the manual.
+              see
+              <Link to="/docs/manual/design/logs">Interpreting Log Types</Link>
+              in the manual.
             </Typography>
             <br />
             {logTypes.map(entry => (
