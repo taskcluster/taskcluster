@@ -562,6 +562,36 @@ auth.listRoles() # -> result`
 await asyncAuth.listRoles() # -> result
 ```
 
+#### List Role IDs
+If no limit is given, the roleIds of all roles are returned. Since this
+list may become long, callers can use the `limit` and `continuationToken`
+query arguments to page through the responses.
+
+
+Required [output schema](v1/list-role-ids-response.json#)
+
+```python
+# Sync calls
+auth.listRoleIds() # -> result`
+# Async call
+await asyncAuth.listRoleIds() # -> result
+```
+
+#### List Roles
+If no limit is given, all roles are returned. Since this
+list may become long, callers can use the `limit` and `continuationToken`
+query arguments to page through the responses.
+
+
+Required [output schema](v1/list-roles2-response.json#)
+
+```python
+# Sync calls
+auth.listRoles2() # -> result`
+# Async call
+await asyncAuth.listRoles2() # -> result
+```
+
 #### Get Role
 Get information about a single role, including the set of scopes that the
 role expands to.
@@ -951,18 +981,18 @@ await asyncAuth.statsumToken(project) # -> result
 await asyncAuth.statsumToken(project='value') # -> result
 ```
 
-#### Get Token for Webhooktunnel Proxy
-Get temporary `token` and `id` for connecting to webhooktunnel
+#### Get Token for Websocktunnel Proxy
+Get temporary `token` and `id` for connecting to websocktunnel
 The token is valid for 96 hours, clients should refresh after expiration.
 
 
-Required [output schema](v1/webhooktunnel-token-response.json#)
+Required [output schema](v1/websocktunnel-token-response.json#)
 
 ```python
 # Sync calls
-auth.webhooktunnelToken() # -> result`
+auth.websocktunnelToken() # -> result`
 # Async call
-await asyncAuth.webhooktunnelToken() # -> result
+await asyncAuth.websocktunnelToken() # -> result
 ```
 
 #### Authenticate Hawk Request
@@ -2079,8 +2109,8 @@ github service
    * `organization` is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
    * `repository` is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
 
-#### GitHub release Event
- * `githubEvents.taskGroupDefined(routingKeyPattern) -> routingKey`
+#### tc-gh requested the Queue service to create all the tasks in a group
+ * `githubEvents.taskGroupCreationRequested(routingKeyPattern) -> routingKey`
    * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key.
    * `organization` is required  Description: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
    * `repository` is required  Description: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped.
@@ -2192,6 +2222,8 @@ await asyncHooks.hook(hookGroupId='value', hookId='value') # -> result
 This endpoint will return the current status of the hook.  This represents a
 snapshot in time and may vary from one call to the next.
 
+This method is deprecated in favor of listLastFires.
+
 
 
 Takes the following arguments:
@@ -2216,7 +2248,6 @@ This endpoint will create a new hook.
 The caller's credentials must include the role that will be used to
 create the task.  That role must satisfy task.scopes as well as the
 necessary scopes to add the task to the queue.
-
 
 
 
@@ -2297,7 +2328,7 @@ Takes the following arguments:
 
 Required [input schema](v1/trigger-hook.json#)
 
-Required [output schema](v1/task-status.json#)
+Required [output schema](v1/trigger-hook-response.json#)
 
 ```python
 # Sync calls
@@ -2369,7 +2400,7 @@ Takes the following arguments:
 
 Required [input schema](v1/trigger-hook.json#)
 
-Required [output schema](v1/task-status.json#)
+Required [output schema](v1/trigger-hook-response.json#)
 
 ```python
 # Sync calls
@@ -2378,6 +2409,28 @@ hooks.triggerHookWithToken(payload, hookGroupId='value', hookId='value', token='
 # Async call
 await asyncHooks.triggerHookWithToken(hookGroupId, hookId, token, payload) # -> result
 await asyncHooks.triggerHookWithToken(payload, hookGroupId='value', hookId='value', token='value') # -> result
+```
+
+#### Get information about recent hook fires
+This endpoint will return information about the the last few times this hook has been
+fired, including whether the hook was fired successfully or not
+
+
+
+Takes the following arguments:
+
+  * `hookGroupId`
+  * `hookId`
+
+Required [output schema](v1/list-lastFires-response.json#)
+
+```python
+# Sync calls
+hooks.listLastFires(hookGroupId, hookId) # -> result`
+hooks.listLastFires(hookGroupId='value', hookId='value') # -> result
+# Async call
+await asyncHooks.listLastFires(hookGroupId, hookId) # -> result
+await asyncHooks.listLastFires(hookGroupId='value', hookId='value') # -> result
 ```
 
 
@@ -2396,9 +2449,9 @@ loop = asyncio.get_event_loop()
 session = taskcluster.aio.createSession(loop=loop)
 asyncIndex = taskcluster.aio.Index(options, session=session)
 ```
-The task index, typically available at `index.taskcluster.net`, is
-responsible for indexing tasks. The service ensures that tasks can be
-located by recency and/or arbitrary strings. Common use-cases include:
+The task index is responsible for indexing tasks. The service ensures that
+tasks can be located by recency and/or arbitrary strings. Common
+use-cases include:
 
  * Locate tasks by git or mercurial `<revision>`, or
  * Locate latest task from given `<branch>`, such as a release.
@@ -2610,8 +2663,8 @@ Note that multiple calls to this endpoint may return artifacts from differen tas
 if a new task is inserted into the index between calls. Avoid using this method as
 a stable link to multiple, connected files if the index path does not contain a
 unique identifier.  For example, the following two links may return unrelated files:
-* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/installer.exe`
-* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`
+* https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/installer.exe`
+* https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`
 
 This problem be remedied by including the revision in the index path or by bundling both
 installer and debug symbols into a single artifact.
@@ -2720,9 +2773,8 @@ loop = asyncio.get_event_loop()
 session = taskcluster.aio.createSession(loop=loop)
 asyncNotify = taskcluster.aio.Notify(options, session=session)
 ```
-The notification service, typically available at `notify.taskcluster.net`
-listens for tasks with associated notifications and handles requests to
-send emails and post pulse messages.
+The notification service listens for tasks with associated notifications
+and handles requests to send emails and post pulse messages.
 #### Ping Server
 Respond without doing anything.
 This endpoint is used to check that the service is up.
@@ -2787,109 +2839,56 @@ notify.irc(payload) # -> None`
 await asyncNotify.irc(payload) # -> None
 ```
 
+#### Denylist Given Address
+Add the given address to the notification denylist. The address
+can be of either of the three supported address type namely pulse, email
+or IRC(user or channel). Addresses in the denylist will be ignored
+by the notification service.
 
 
-
-### Methods in `taskcluster.Pulse`
-```python
-import asyncio # Only for async 
-// Create Pulse client instance
-import taskcluster
-import taskcluster.aio
-
-pulse = taskcluster.Pulse(options)
-# Below only for async instances, assume already in coroutine
-loop = asyncio.get_event_loop()
-session = taskcluster.aio.createSession(loop=loop)
-asyncPulse = taskcluster.aio.Pulse(options, session=session)
-```
-The taskcluster-pulse service, typically available at `pulse.taskcluster.net`
-manages pulse credentials for taskcluster users.
-
-A service to manage Pulse credentials for anything using
-Taskcluster credentials. This allows for self-service pulse
-access and greater control within the Taskcluster project.
-#### Ping Server
-Respond without doing anything.
-This endpoint is used to check that the service is up.
-
+Required [input schema](v1/notification-address.json#)
 
 ```python
 # Sync calls
-pulse.ping() # -> None`
+notify.addDenylistAddress(payload) # -> None`
 # Async call
-await asyncPulse.ping() # -> None
+await asyncNotify.addDenylistAddress(payload) # -> None
 ```
 
-#### List Namespaces
-List the namespaces managed by this service.
-
-This will list up to 1000 namespaces. If more namespaces are present a
-`continuationToken` will be returned, which can be given in the next
-request. For the initial request, do not provide continuation token.
+#### Delete Denylisted Address
+Delete the specified address from the notification denylist.
 
 
-Required [output schema](v1/list-namespaces-response.json#)
+Required [input schema](v1/notification-address.json#)
 
 ```python
 # Sync calls
-pulse.listNamespaces() # -> result`
+notify.deleteDenylistAddress(payload) # -> None`
 # Async call
-await asyncPulse.listNamespaces() # -> result
+await asyncNotify.deleteDenylistAddress(payload) # -> None
 ```
 
-#### Get a namespace
-Get public information about a single namespace. This is the same information
-as returned by `listNamespaces`.
+#### List Denylisted Notifications
+Lists all the denylisted addresses.
+
+By default this end-point will try to return up to 1000 addresses in one
+request. But it **may return less**, even if more tasks are available.
+It may also return a `continuationToken` even though there are no more
+results. However, you can only be sure to have seen all results if you
+keep calling `list` with the last `continuationToken` until you
+get a result without a `continuationToken`.
+
+If you are not interested in listing all the members at once, you may
+use the query-string option `limit` to return fewer.
 
 
-
-Takes the following arguments:
-
-  * `namespace`
-
-Required [output schema](v1/namespace.json#)
+Required [output schema](v1/notification-address-list.json#)
 
 ```python
 # Sync calls
-pulse.namespace(namespace) # -> result`
-pulse.namespace(namespace='value') # -> result
+notify.list() # -> result`
 # Async call
-await asyncPulse.namespace(namespace) # -> result
-await asyncPulse.namespace(namespace='value') # -> result
-```
-
-#### Claim a namespace
-Claim a namespace, returning a connection string with access to that namespace
-good for use until the `reclaimAt` time in the response body. The connection
-string can be used as many times as desired during this period, but must not
-be used after `reclaimAt`.
-
-Connections made with this connection string may persist beyond `reclaimAt`,
-although it should not persist forever.  24 hours is a good maximum, and this
-service will terminate connections after 72 hours (although this value is
-configurable).
-
-The specified `expires` time updates any existing expiration times.  Connections
-for expired namespaces will be terminated.
-
-
-
-Takes the following arguments:
-
-  * `namespace`
-
-Required [input schema](v1/namespace-request.json#)
-
-Required [output schema](v1/namespace-response.json#)
-
-```python
-# Sync calls
-pulse.claimNamespace(namespace, payload) # -> result`
-pulse.claimNamespace(payload, namespace='value') # -> result
-# Async call
-await asyncPulse.claimNamespace(namespace, payload) # -> result
-await asyncPulse.claimNamespace(payload, namespace='value') # -> result
+await asyncNotify.list() # -> result
 ```
 
 
@@ -2991,27 +2990,6 @@ await asyncPurgeCache.purgeRequests(provisionerId='value', workerType='value') #
 
 
 
-### Exchanges in `taskcluster.PurgeCacheEvents`
-```python
-// Create PurgeCacheEvents client instance
-import taskcluster
-purgeCacheEvents = taskcluster.PurgeCacheEvents(options)
-```
-The purge-cache service, typically available at
-`purge-cache.taskcluster.net`, is responsible for publishing a pulse
-message for workers, so they can purge cache upon request.
-
-This document describes the exchange offered for workers by the
-cache-purge service.
-#### Purge Cache Messages
- * `purgeCacheEvents.purgeCache(routingKeyPattern) -> routingKey`
-   * `routingKeyKind` is constant of `primary`  is required  Description: Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key.
-   * `provisionerId` is required  Description: `provisionerId` under which to purge cache.
-   * `workerType` is required  Description: `workerType` for which to purge cache.
-
-
-
-
 ### Methods in `taskcluster.Queue`
 ```python
 import asyncio # Only for async 
@@ -3025,9 +3003,9 @@ loop = asyncio.get_event_loop()
 session = taskcluster.aio.createSession(loop=loop)
 asyncQueue = taskcluster.aio.Queue(options, session=session)
 ```
-The queue, typically available at `queue.taskcluster.net`, is responsible
-for accepting tasks and track their state as they are executed by
-workers. In order ensure they are eventually resolved.
+The queue service is responsible for accepting tasks and track their state
+as they are executed by workers. In order ensure they are eventually
+resolved.
 
 This document describes the API end-points offered by the queue. These 
 end-points targets the following audience:
@@ -3270,6 +3248,9 @@ This method _reruns_ a previously resolved task, even if it was
 _completed_. This is useful if your task completes unsuccessfully, and
 you just want to run it from scratch again. This will also reset the
 number of `retries` allowed.
+
+This method is deprecated in favour of creating a new task with the same
+task definition (but with a new taskId).
 
 Remember that `retries` in the task status counts the number of runs that
 the queue have started because the worker stopped responding, for example
@@ -4107,9 +4088,9 @@ await asyncQueue.declareWorker(payload, provisionerId='value', workerType='value
 import taskcluster
 queueEvents = taskcluster.QueueEvents(options)
 ```
-The queue, typically available at `queue.taskcluster.net`, is responsible
-for accepting tasks and track their state as they are executed by
-workers. In order ensure they are eventually resolved.
+The queue service is responsible for accepting tasks and track their state
+as they are executed by workers. In order ensure they are eventually
+resolved.
 
 This document describes AMQP exchanges offered by the queue, which allows
 third-party listeners to monitor tasks as they progress to resolution.
@@ -4382,7 +4363,7 @@ import taskcluster
 treeherderEvents = taskcluster.TreeherderEvents(options)
 ```
 The taskcluster-treeherder service is responsible for processing
-task events published by TaskCluster Queue and producing job messages
+task events published by Taskcluster Queue and producing job messages
 that are consumable by Treeherder.
 
 This exchange provides that job messages to be consumed by any queue that

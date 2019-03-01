@@ -13,9 +13,9 @@ _defaultConfig = config
 
 class Index(AsyncBaseClient):
     """
-    The task index, typically available at `index.taskcluster.net`, is
-    responsible for indexing tasks. The service ensures that tasks can be
-    located by recency and/or arbitrary strings. Common use-cases include:
+    The task index is responsible for indexing tasks. The service ensures that
+    tasks can be located by recency and/or arbitrary strings. Common
+    use-cases include:
 
      * Locate tasks by git or mercurial `<revision>`, or
      * Locate latest task from given `<branch>`, such as a release.
@@ -209,8 +209,8 @@ class Index(AsyncBaseClient):
         if a new task is inserted into the index between calls. Avoid using this method as
         a stable link to multiple, connected files if the index path does not contain a
         unique identifier.  For example, the following two links may return unrelated files:
-        * https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/installer.exe`
-        * https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`
+        * https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/installer.exe`
+        * https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`
 
         This problem be remedied by including the revision in the index path or by bundling both
         installer and debug symbols into a single artifact.

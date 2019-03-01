@@ -1198,6 +1198,17 @@ qEvt.taskCompleted(<span class="pl-v">taskId</span><span class="pl-k">=</span><s
 </li>
 </ul>
 <h2>
+<a id="user-content-generating-urls" class="anchor" href="#generating-urls" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Generating URLs</h2>
+<p>It is often necessary to generate the URL for an API method without actually calling the method.
+To do so, use <code>buildUrl</code> or, for an API method that requires authentication, <code>buildSignedUrl</code>.</p>
+<div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> taskcluster
+
+index <span class="pl-k">=</span> taskcluster.Index(taskcluster.optionsFromEnvironment())
+<span class="pl-c1">print</span>(index.buildUrl(<span class="pl-s"><span class="pl-pds">'</span>findTask<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>builds.v1.latest<span class="pl-pds">'</span></span>))
+secrets <span class="pl-k">=</span> taskcluster.Secrets(taskcluster.optionsFromEnvironment())
+<span class="pl-c1">print</span>(secret.buildSignedUrl(<span class="pl-s"><span class="pl-pds">'</span>get<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>my-secret<span class="pl-pds">'</span></span>))</pre></div>
+<p>Note that signed URLs are time-limited; the expiration can be set with the <code>signedUrlExpiration</code> option to the client constructor, or with the <code>expiration</code> keyword arguement to <code>buildSignedUrl</code>, both given in seconds.</p>
+<h2>
 <a id="user-content-root-url" class="anchor" href="#root-url" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Root URL</h2>
 <p>This client requires a <code>rootUrl</code> argument to identify the Taskcluster
 deployment to talk to.  As of this writing, the production cluster has rootUrl
@@ -1520,6 +1531,26 @@ auth.listRoles() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</s
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
 <span class="pl-k">await</span> asyncAuth.listRoles() <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
 <h4>
+<a id="user-content-list-role-ids" class="anchor" href="#list-role-ids" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List Role IDs</h4>
+<p>If no limit is given, the roleIds of all roles are returned. Since this
+list may become long, callers can use the <code>limit</code> and <code>continuationToken</code>
+query arguments to page through the responses.</p>
+<p>Required <a href="v1/list-role-ids-response.json#">output schema</a></p>
+<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
+auth.listRoleIds() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
+<span class="pl-c"><span class="pl-c">#</span> Async call</span>
+<span class="pl-k">await</span> asyncAuth.listRoleIds() <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
+<h4>
+<a id="user-content-list-roles-1" class="anchor" href="#list-roles-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List Roles</h4>
+<p>If no limit is given, all roles are returned. Since this
+list may become long, callers can use the <code>limit</code> and <code>continuationToken</code>
+query arguments to page through the responses.</p>
+<p>Required <a href="v1/list-roles2-response.json#">output schema</a></p>
+<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
+auth.listRoles2() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
+<span class="pl-c"><span class="pl-c">#</span> Async call</span>
+<span class="pl-k">await</span> asyncAuth.listRoles2() <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
+<h4>
 <a id="user-content-get-role" class="anchor" href="#get-role" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get Role</h4>
 <p>Get information about a single role, including the set of scopes that the
 role expands to.</p>
@@ -1801,14 +1832,14 @@ auth.statsumToken(<span class="pl-v">project</span><span class="pl-k">=</span><s
 <span class="pl-k">await</span> asyncAuth.statsumToken(project) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-k">await</span> asyncAuth.statsumToken(<span class="pl-v">project</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
 <h4>
-<a id="user-content-get-token-for-webhooktunnel-proxy" class="anchor" href="#get-token-for-webhooktunnel-proxy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get Token for Webhooktunnel Proxy</h4>
-<p>Get temporary <code>token</code> and <code>id</code> for connecting to webhooktunnel
+<a id="user-content-get-token-for-websocktunnel-proxy" class="anchor" href="#get-token-for-websocktunnel-proxy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get Token for Websocktunnel Proxy</h4>
+<p>Get temporary <code>token</code> and <code>id</code> for connecting to websocktunnel
 The token is valid for 96 hours, clients should refresh after expiration.</p>
-<p>Required <a href="v1/webhooktunnel-token-response.json#">output schema</a></p>
+<p>Required <a href="v1/websocktunnel-token-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-auth.webhooktunnelToken() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
+auth.websocktunnelToken() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncAuth.webhooktunnelToken() <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
+<span class="pl-k">await</span> asyncAuth.websocktunnelToken() <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
 <h4>
 <a id="user-content-authenticate-hawk-request" class="anchor" href="#authenticate-hawk-request" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authenticate Hawk Request</h4>
 <p>Validate the request signature given on input and return list of scopes
@@ -2729,10 +2760,10 @@ github service</p>
 </li>
 </ul>
 <h4>
-<a id="user-content-github-release-event-1" class="anchor" href="#github-release-event-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>GitHub release Event</h4>
+<a id="user-content-tc-gh-requested-the-queue-service-to-create-all-the-tasks-in-a-group" class="anchor" href="#tc-gh-requested-the-queue-service-to-create-all-the-tasks-in-a-group" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>tc-gh requested the Queue service to create all the tasks in a group</h4>
 <ul>
 <li>
-<code>githubEvents.taskGroupDefined(routingKeyPattern) -&gt; routingKey</code>
+<code>githubEvents.taskGroupCreationRequested(routingKeyPattern) -&gt; routingKey</code>
 <ul>
 <li>
 <code>routingKeyKind</code> is constant of <code>primary</code>  is required  Description: Identifier for the routing-key kind. This is always <code>"primary"</code> for the formalized routing key.</li>
@@ -2826,6 +2857,7 @@ hooks.hook(<span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span
 <a id="user-content-get-hook-status" class="anchor" href="#get-hook-status" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get hook status</h4>
 <p>This endpoint will return the current status of the hook.  This represents a
 snapshot in time and may vary from one call to the next.</p>
+<p>This method is deprecated in favor of listLastFires.</p>
 <p>Takes the following arguments:</p>
 <ul>
 <li><code>hookGroupId</code></li>
@@ -2900,7 +2932,7 @@ task template.</p>
 <li><code>hookId</code></li>
 </ul>
 <p>Required <a href="v1/trigger-hook.json#">input schema</a></p>
-<p>Required <a href="v1/task-status.json#">output schema</a></p>
+<p>Required <a href="v1/trigger-hook-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.triggerHook(hookGroupId, hookId, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 hooks.triggerHook(payload, <span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
@@ -2952,13 +2984,29 @@ task template.</p>
 <li><code>token</code></li>
 </ul>
 <p>Required <a href="v1/trigger-hook.json#">input schema</a></p>
-<p>Required <a href="v1/task-status.json#">output schema</a></p>
+<p>Required <a href="v1/trigger-hook-response.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
 hooks.triggerHookWithToken(hookGroupId, hookId, token, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 hooks.triggerHookWithToken(payload, <span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">token</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
 <span class="pl-k">await</span> asyncHooks.triggerHookWithToken(hookGroupId, hookId, token, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-k">await</span> asyncHooks.triggerHookWithToken(payload, <span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">token</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
+<h4>
+<a id="user-content-get-information-about-recent-hook-fires" class="anchor" href="#get-information-about-recent-hook-fires" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get information about recent hook fires</h4>
+<p>This endpoint will return information about the the last few times this hook has been
+fired, including whether the hook was fired successfully or not</p>
+<p>Takes the following arguments:</p>
+<ul>
+<li><code>hookGroupId</code></li>
+<li><code>hookId</code></li>
+</ul>
+<p>Required <a href="v1/list-lastFires-response.json#">output schema</a></p>
+<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
+hooks.listLastFires(hookGroupId, hookId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
+hooks.listLastFires(<span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
+<span class="pl-c"><span class="pl-c">#</span> Async call</span>
+<span class="pl-k">await</span> asyncHooks.listLastFires(hookGroupId, hookId) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
+<span class="pl-k">await</span> asyncHooks.listLastFires(<span class="pl-v">hookGroupId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">hookId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
 <h3>
 <a id="user-content-methods-in-taskclusterindex" class="anchor" href="#methods-in-taskclusterindex" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Methods in <code>taskcluster.Index</code>
 </h3>
@@ -2972,9 +3020,9 @@ index <span class="pl-k">=</span> taskcluster.Index(options)
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
 session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
 asyncIndex <span class="pl-k">=</span> taskcluster.aio.Index(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
-<p>The task index, typically available at <code>index.taskcluster.net</code>, is
-responsible for indexing tasks. The service ensures that tasks can be
-located by recency and/or arbitrary strings. Common use-cases include:</p>
+<p>The task index is responsible for indexing tasks. The service ensures that
+tasks can be located by recency and/or arbitrary strings. Common
+use-cases include:</p>
 <ul>
 <li>Locate tasks by git or mercurial <code>&lt;revision&gt;</code>, or</li>
 <li>Locate latest task from given <code>&lt;branch&gt;</code>, such as a release.</li>
@@ -3146,8 +3194,8 @@ if a new task is inserted into the index between calls. Avoid using this method 
 a stable link to multiple, connected files if the index path does not contain a
 unique identifier.  For example, the following two links may return unrelated files:</p>
 <ul>
-<li><a href="https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/installer.exe%60" rel="nofollow">https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/installer.exe`</a></li>
-<li><a href="https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip%60" rel="nofollow">https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`</a></li>
+<li><a href="https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/installer.exe%60" rel="nofollow">https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/installer.exe`</a></li>
+<li><a href="https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip%60" rel="nofollow">https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`</a></li>
 </ul>
 <p>This problem be remedied by including the revision in the index path or by bundling both
 installer and debug symbols into a single artifact.</p>
@@ -3230,9 +3278,8 @@ notify <span class="pl-k">=</span> taskcluster.Notify(options)
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
 session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
 asyncNotify <span class="pl-k">=</span> taskcluster.aio.Notify(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
-<p>The notification service, typically available at <code>notify.taskcluster.net</code>
-listens for tasks with associated notifications and handles requests to
-send emails and post pulse messages.</p>
+<p>The notification service listens for tasks with associated notifications
+and handles requests to send emails and post pulse messages.</p>
 <h4>
 <a id="user-content-ping-server-7" class="anchor" href="#ping-server-7" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
 <p>Respond without doing anything.
@@ -3276,82 +3323,41 @@ in mind that IRC is a best-effort service.</p>
 notify.irc(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
 <span class="pl-k">await</span> asyncNotify.irc(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
-<h3>
-<a id="user-content-methods-in-taskclusterpulse" class="anchor" href="#methods-in-taskclusterpulse" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Methods in <code>taskcluster.Pulse</code>
-</h3>
-<div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> asyncio <span class="pl-c"><span class="pl-c">#</span> Only for async </span>
-<span class="pl-k">//</span> Create Pulse client instance
-<span class="pl-k">import</span> taskcluster
-<span class="pl-k">import</span> taskcluster.aio
-
-pulse <span class="pl-k">=</span> taskcluster.Pulse(options)
-<span class="pl-c"><span class="pl-c">#</span> Below only for async instances, assume already in coroutine</span>
-loop <span class="pl-k">=</span> asyncio.get_event_loop()
-session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
-asyncPulse <span class="pl-k">=</span> taskcluster.aio.Pulse(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
-<p>The taskcluster-pulse service, typically available at <code>pulse.taskcluster.net</code>
-manages pulse credentials for taskcluster users.</p>
-<p>A service to manage Pulse credentials for anything using
-Taskcluster credentials. This allows for self-service pulse
-access and greater control within the Taskcluster project.</p>
 <h4>
-<a id="user-content-ping-server-8" class="anchor" href="#ping-server-8" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
-<p>Respond without doing anything.
-This endpoint is used to check that the service is up.</p>
+<a id="user-content-denylist-given-address" class="anchor" href="#denylist-given-address" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Denylist Given Address</h4>
+<p>Add the given address to the notification denylist. The address
+can be of either of the three supported address type namely pulse, email
+or IRC(user or channel). Addresses in the denylist will be ignored
+by the notification service.</p>
+<p>Required <a href="v1/notification-address.json#">input schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-pulse.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
+notify.addDenylistAddress(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncPulse.ping() <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
+<span class="pl-k">await</span> asyncNotify.addDenylistAddress(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
 <h4>
-<a id="user-content-list-namespaces-1" class="anchor" href="#list-namespaces-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List Namespaces</h4>
-<p>List the namespaces managed by this service.</p>
-<p>This will list up to 1000 namespaces. If more namespaces are present a
-<code>continuationToken</code> will be returned, which can be given in the next
-request. For the initial request, do not provide continuation token.</p>
-<p>Required <a href="v1/list-namespaces-response.json#">output schema</a></p>
+<a id="user-content-delete-denylisted-address" class="anchor" href="#delete-denylisted-address" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Delete Denylisted Address</h4>
+<p>Delete the specified address from the notification denylist.</p>
+<p>Required <a href="v1/notification-address.json#">input schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-pulse.listNamespaces() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
+notify.deleteDenylistAddress(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncPulse.listNamespaces() <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
+<span class="pl-k">await</span> asyncNotify.deleteDenylistAddress(payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; None</span></pre></div>
 <h4>
-<a id="user-content-get-a-namespace" class="anchor" href="#get-a-namespace" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get a namespace</h4>
-<p>Get public information about a single namespace. This is the same information
-as returned by <code>listNamespaces</code>.</p>
-<p>Takes the following arguments:</p>
-<ul>
-<li><code>namespace</code></li>
-</ul>
-<p>Required <a href="v1/namespace.json#">output schema</a></p>
+<a id="user-content-list-denylisted-notifications" class="anchor" href="#list-denylisted-notifications" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List Denylisted Notifications</h4>
+<p>Lists all the denylisted addresses.</p>
+<p>By default this end-point will try to return up to 1000 addresses in one
+request. But it <strong>may return less</strong>, even if more tasks are available.
+It may also return a <code>continuationToken</code> even though there are no more
+results. However, you can only be sure to have seen all results if you
+keep calling <code>list</code> with the last <code>continuationToken</code> until you
+get a result without a <code>continuationToken</code>.</p>
+<p>If you are not interested in listing all the members at once, you may
+use the query-string option <code>limit</code> to return fewer.</p>
+<p>Required <a href="v1/notification-address-list.json#">output schema</a></p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-pulse.namespace(namespace) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
-pulse.namespace(<span class="pl-v">namespace</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
+notify.list() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
 <span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncPulse.namespace(namespace) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
-<span class="pl-k">await</span> asyncPulse.namespace(<span class="pl-v">namespace</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
-<h4>
-<a id="user-content-claim-a-namespace" class="anchor" href="#claim-a-namespace" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Claim a namespace</h4>
-<p>Claim a namespace, returning a connection string with access to that namespace
-good for use until the <code>reclaimAt</code> time in the response body. The connection
-string can be used as many times as desired during this period, but must not
-be used after <code>reclaimAt</code>.</p>
-<p>Connections made with this connection string may persist beyond <code>reclaimAt</code>,
-although it should not persist forever.  24 hours is a good maximum, and this
-service will terminate connections after 72 hours (although this value is
-configurable).</p>
-<p>The specified <code>expires</code> time updates any existing expiration times.  Connections
-for expired namespaces will be terminated.</p>
-<p>Takes the following arguments:</p>
-<ul>
-<li><code>namespace</code></li>
-</ul>
-<p>Required <a href="v1/namespace-request.json#">input schema</a></p>
-<p>Required <a href="v1/namespace-response.json#">output schema</a></p>
-<div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
-pulse.claimNamespace(namespace, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</span>
-pulse.claimNamespace(payload, <span class="pl-v">namespace</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
-<span class="pl-c"><span class="pl-c">#</span> Async call</span>
-<span class="pl-k">await</span> asyncPulse.claimNamespace(namespace, payload) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
-<span class="pl-k">await</span> asyncPulse.claimNamespace(payload, <span class="pl-v">namespace</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
+<span class="pl-k">await</span> asyncNotify.list() <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
 <h3>
 <a id="user-content-methods-in-taskclusterpurgecache" class="anchor" href="#methods-in-taskclusterpurgecache" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Methods in <code>taskcluster.PurgeCache</code>
 </h3>
@@ -3370,7 +3376,7 @@ message for workers, so they can purge cache upon request.</p>
 <p>This document describes the API end-point for publishing the pulse
 message. This is mainly intended to be used by tools.</p>
 <h4>
-<a id="user-content-ping-server-9" class="anchor" href="#ping-server-9" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
+<a id="user-content-ping-server-8" class="anchor" href="#ping-server-8" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
 <p>Respond without doing anything.
 This endpoint is used to check that the service is up.</p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
@@ -3424,32 +3430,6 @@ purgeCache.purgeRequests(<span class="pl-v">provisionerId</span><span class="pl-
 <span class="pl-k">await</span> asyncPurgeCache.purgeRequests(provisionerId, workerType) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span>
 <span class="pl-k">await</span> asyncPurgeCache.purgeRequests(<span class="pl-v">provisionerId</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>, <span class="pl-v">workerType</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>) <span class="pl-c"><span class="pl-c">#</span> -&gt; result</span></pre></div>
 <h3>
-<a id="user-content-exchanges-in-taskclusterpurgecacheevents" class="anchor" href="#exchanges-in-taskclusterpurgecacheevents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Exchanges in <code>taskcluster.PurgeCacheEvents</code>
-</h3>
-<div class="highlight highlight-source-python"><pre><span class="pl-k">//</span> Create PurgeCacheEvents client instance
-<span class="pl-k">import</span> taskcluster
-purgeCacheEvents <span class="pl-k">=</span> taskcluster.PurgeCacheEvents(options)</pre></div>
-<p>The purge-cache service, typically available at
-<code>purge-cache.taskcluster.net</code>, is responsible for publishing a pulse
-message for workers, so they can purge cache upon request.</p>
-<p>This document describes the exchange offered for workers by the
-cache-purge service.</p>
-<h4>
-<a id="user-content-purge-cache-messages" class="anchor" href="#purge-cache-messages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Purge Cache Messages</h4>
-<ul>
-<li>
-<code>purgeCacheEvents.purgeCache(routingKeyPattern) -&gt; routingKey</code>
-<ul>
-<li>
-<code>routingKeyKind</code> is constant of <code>primary</code>  is required  Description: Identifier for the routing-key kind. This is always <code>'primary'</code> for the formalized routing key.</li>
-<li>
-<code>provisionerId</code> is required  Description: <code>provisionerId</code> under which to purge cache.</li>
-<li>
-<code>workerType</code> is required  Description: <code>workerType</code> for which to purge cache.</li>
-</ul>
-</li>
-</ul>
-<h3>
 <a id="user-content-methods-in-taskclusterqueue" class="anchor" href="#methods-in-taskclusterqueue" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Methods in <code>taskcluster.Queue</code>
 </h3>
 <div class="highlight highlight-source-python"><pre><span class="pl-k">import</span> asyncio <span class="pl-c"><span class="pl-c">#</span> Only for async </span>
@@ -3462,9 +3442,9 @@ queue <span class="pl-k">=</span> taskcluster.Queue(options)
 loop <span class="pl-k">=</span> asyncio.get_event_loop()
 session <span class="pl-k">=</span> taskcluster.aio.createSession(<span class="pl-v">loop</span><span class="pl-k">=</span>loop)
 asyncQueue <span class="pl-k">=</span> taskcluster.aio.Queue(options, <span class="pl-v">session</span><span class="pl-k">=</span>session)</pre></div>
-<p>The queue, typically available at <code>queue.taskcluster.net</code>, is responsible
-for accepting tasks and track their state as they are executed by
-workers. In order ensure they are eventually resolved.</p>
+<p>The queue service is responsible for accepting tasks and track their state
+as they are executed by workers. In order ensure they are eventually
+resolved.</p>
 <p>This document describes the API end-points offered by the queue. These
 end-points targets the following audience:</p>
 <ul>
@@ -3473,7 +3453,7 @@ end-points targets the following audience:</p>
 <li>Tools, that wants to inspect the state of a task.</li>
 </ul>
 <h4>
-<a id="user-content-ping-server-10" class="anchor" href="#ping-server-10" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
+<a id="user-content-ping-server-9" class="anchor" href="#ping-server-9" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
 <p>Respond without doing anything.
 This endpoint is used to check that the service is up.</p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
@@ -3646,6 +3626,8 @@ queue.scheduleTask(<span class="pl-v">taskId</span><span class="pl-k">=</span><s
 <em>completed</em>. This is useful if your task completes unsuccessfully, and
 you just want to run it from scratch again. This will also reset the
 number of <code>retries</code> allowed.</p>
+<p>This method is deprecated in favour of creating a new task with the same
+task definition (but with a new taskId).</p>
 <p>Remember that <code>retries</code> in the task status counts the number of runs that
 the queue have started because the worker stopped responding, for example
 because a spot node died.</p>
@@ -4287,9 +4269,9 @@ queue.declareWorker(payload, <span class="pl-v">provisionerId</span><span class=
 <div class="highlight highlight-source-python"><pre><span class="pl-k">//</span> Create QueueEvents client instance
 <span class="pl-k">import</span> taskcluster
 queueEvents <span class="pl-k">=</span> taskcluster.QueueEvents(options)</pre></div>
-<p>The queue, typically available at <code>queue.taskcluster.net</code>, is responsible
-for accepting tasks and track their state as they are executed by
-workers. In order ensure they are eventually resolved.</p>
+<p>The queue service is responsible for accepting tasks and track their state
+as they are executed by workers. In order ensure they are eventually
+resolved.</p>
 <p>This document describes AMQP exchanges offered by the queue, which allows
 third-party listeners to monitor tasks as they progress to resolution.
 These exchanges targets the following audience:</p>
@@ -4568,7 +4550,7 @@ those who do not have the relevant scopes.</p>
 longer be read.  This is useful for short-term secrets such as a temporary
 service credential or a one-time signing key.</p>
 <h4>
-<a id="user-content-ping-server-11" class="anchor" href="#ping-server-11" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
+<a id="user-content-ping-server-10" class="anchor" href="#ping-server-10" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ping Server</h4>
 <p>Respond without doing anything.
 This endpoint is used to check that the service is up.</p>
 <div class="highlight highlight-source-python"><pre><span class="pl-c"><span class="pl-c">#</span> Sync calls</span>
@@ -4643,7 +4625,7 @@ secrets.list() <span class="pl-c"><span class="pl-c">#</span> -&gt; result`</spa
 <span class="pl-k">import</span> taskcluster
 treeherderEvents <span class="pl-k">=</span> taskcluster.TreeherderEvents(options)</pre></div>
 <p>The taskcluster-treeherder service is responsible for processing
-task events published by TaskCluster Queue and producing job messages
+task events published by Taskcluster Queue and producing job messages
 that are consumable by Treeherder.</p>
 <p>This exchange provides that job messages to be consumed by any queue that
 attached to the exchange.  This could be a production Treeheder instance,
