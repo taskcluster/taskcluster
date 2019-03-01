@@ -15,6 +15,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import classNames from 'classnames';
 import dotProp from 'dot-prop-immutable';
 import jsonSchemaDefaults from 'json-schema-defaults';
+import Markdown from '@mozilla-frontend-infra/components/Markdown';
 import { safeDump } from 'js-yaml';
 import HammerIcon from 'mdi-react/HammerIcon';
 import CreationIcon from 'mdi-react/CreationIcon';
@@ -35,7 +36,6 @@ import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import DialogAction from '../../../components/DialogAction';
 import TaskActionForm from '../../../components/TaskActionForm';
-import Markdown from '../../../components/Markdown';
 import {
   ACTIONS_JSON_KNOWN_KINDS,
   ARTIFACTS_PAGE_SIZE,
