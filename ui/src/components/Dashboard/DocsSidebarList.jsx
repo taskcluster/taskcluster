@@ -115,7 +115,13 @@ export default class DocsSidebarList extends Component {
       previousPathname: pathname,
     };
 
-    if (currentMenu !== previousMenu) {
+    if (
+      currentMenu !== previousMenu ||
+      // When a section is collapsed but the user clicks on "next" or "previous"
+      (currentMenu === previousMenu &&
+        !state.menuOpen &&
+        state.previousPathname !== newState.previousPathname)
+    ) {
       Object.assign(newState, { menuOpen: true });
     }
 
