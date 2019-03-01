@@ -68,7 +68,6 @@ It is not possible to run a full Taskcluster deployment directly from this repos
     * [Worker Manager](services/worker-manager#readme)
 * [Taskcluster Web](ui#readme)
     * [ui/src/components/DateDistance](ui/src/components/DateDistance#readme)
-    * [ui/src/components/Markdown](ui/src/components/Markdown#readme)
     * [ui/src/components/Search](ui/src/components/Search#readme)
     * [ui/src/components/Snackbar](ui/src/components/Snackbar#readme)
     * [ui/src/components/SpeedDial](ui/src/components/SpeedDial#readme)
