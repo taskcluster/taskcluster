@@ -67,9 +67,7 @@ export default class Reference extends Component {
         )}
         {logTypes && Boolean(logTypes.length) && (
           <Fragment>
-            <Typography component="h2" variant="h5">
-              Message Types
-            </Typography>
+            <HeaderWithAnchor type="h3">Message Types</HeaderWithAnchor>
             <Typography>
               For more information on interpreting the log types described here,
               see <Link to="/docs/manual/logs">Interpreting Log Types</Link> in
