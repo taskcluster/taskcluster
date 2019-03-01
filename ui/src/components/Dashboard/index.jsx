@@ -121,7 +121,7 @@ import DocsSidebarList from './DocsSidebarList';
       },
       maxWidth: '60em',
     },
-    appBarButton: {
+    leftAppBarButton: {
       marginLeft: theme.spacing.unit,
     },
     appIcon: {
@@ -276,7 +276,7 @@ export default class Dashboard extends Component {
             {search}
             <Tooltip placement="bottom" title="Toggle light/dark theme">
               <IconButton
-                className={classes.appBarButton}
+                className={classes.leftAppBarButton}
                 onClick={onToggleTheme}>
                 {theme.palette.type === 'dark' ? (
                   <LightBulbOn className={classes.appIcon} />
@@ -286,18 +286,13 @@ export default class Dashboard extends Component {
               </IconButton>
             </Tooltip>
             <Tooltip placement="bottom" title="Documentation">
-              <IconButton
-                className={classes.appBarButton}
-                component={Link}
-                to={DOCS_PATH_PREFIX}>
+              <IconButton component={Link} to={DOCS_PATH_PREFIX}>
                 <BookOpenPageVariantIcon className={classes.appIcon} />
               </IconButton>
             </Tooltip>
             {helpView && (
               <Tooltip placement="bottom" title="Page Information">
-                <IconButton
-                  onClick={this.handleHelpViewToggle}
-                  className={classes.appBarButton}>
+                <IconButton onClick={this.handleHelpViewToggle}>
                   <HelpIcon className={classes.appIcon} />
                 </IconButton>
               </Tooltip>

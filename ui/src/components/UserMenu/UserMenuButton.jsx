@@ -1,11 +1,13 @@
 import React, { Component, Fragment } from 'react';
+import classNames from 'classnames';
+import { object } from 'prop-types';
 import { withApollo } from 'react-apollo';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import Button from '@material-ui/core/Button';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
+import Button from '../Button';
 import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
 
@@ -13,14 +15,31 @@ import { withAuth } from '../../utils/Auth';
   icon: {
     fill: theme.palette.common.white,
   },
+  avatarButton: {
+    height: 6 * theme.spacing.unit,
+    width: 6 * theme.spacing.unit,
+  },
 }))
 @withAuth
 @withApollo
 export default class UserMenuButton extends Component {
+  static propTypes = {
+    avatarProps: object,
+    buttonProps: object,
+  };
+
+  static defaultProps = {
+    avatarProps: null,
+    buttonProps: null,
+  };
+
   render() {
     const {
+      className,
       classes,
       user,
+      avatarProps,
+      buttonProps,
       signInDialogOpen,
       onSignInDialogOpen,
       onSignInDialogClose,
@@ -32,9 +51,11 @@ export default class UserMenuButton extends Component {
       return (
         <Fragment>
           <Button
+            className={className}
             variant="contained"
             color="primary"
             onClick={onSignInDialogOpen}
+            {...buttonProps}
             {...props}>
             <ListItemIcon className={classes.icon}>
               <AccountCircleIcon />
@@ -48,18 +69,20 @@ export default class UserMenuButton extends Component {
 
     return (
       <IconButton
-        button
+        className={classNames(classes.avatarButton, className)}
         aria-haspopup="true"
         aria-controls="user-menu"
         aria-label="user menu"
-        onClick={onMenuClick}>
+        onClick={onMenuClick}
+        {...props}>
         {user.profile.photos && user.profile.photos.length ? (
           <Avatar
             alt={user.profile.displayName}
             src={user.profile.photos[0].value}
+            {...avatarProps}
           />
         ) : (
-          <Avatar alt={user.profile.displayName}>
+          <Avatar alt={user.profile.displayName} {...avatarProps}>
             {user.profile.displayName[0]}
           </Avatar>
         )}

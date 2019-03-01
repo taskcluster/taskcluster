@@ -72,8 +72,6 @@ export default class UserMenuList extends Component {
       );
     }
 
-    const { profile } = user;
-
     return (
       <Fragment>
         <List component="nav">
@@ -84,17 +82,20 @@ export default class UserMenuList extends Component {
             aria-controls="user-menu"
             aria-label="user menu"
             onClick={onMenuClick}>
-            {profile.photos && profile.photos.length ? (
-              <Avatar alt={profile.displayName} src={profile.photos[0].value} />
+            {user.profile.photos && user.profile.photos.length ? (
+              <Avatar
+                alt={user.profile.displayName}
+                src={user.profile.photos[0].value}
+              />
             ) : (
-              <Avatar alt={profile.displayName}>
-                {profile.displayName[0]}
+              <Avatar alt={user.profile.displayName}>
+                {user.profile.displayName[0]}
               </Avatar>
             )}
             <ListItemText
-              primary={profile.displayName}
+              primary={user.profile.displayName}
               primaryTypographyProps={{ className: classes.username }}
-              title={profile.displayName}
+              title={user.profile.displayName}
             />
           </ListItem>
         </List>

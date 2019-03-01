@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { bool, string } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
+import { darken } from '@material-ui/core/styles/colorManipulator';
 import { withStyles } from '@material-ui/core/styles';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -10,6 +11,7 @@ import HandPeaceIcon from 'mdi-react/HandPeaceIcon';
 import { withAuth } from '../../utils/Auth';
 import UserMenuList from './UserMenuList';
 import UserMenuButton from './UserMenuButton';
+import { THEME } from '../../utils/constants';
 
 @withStyles(theme => ({
   leftIcon: {
@@ -17,6 +19,16 @@ import UserMenuButton from './UserMenuButton';
   },
   userMenuButton: {
     marginLeft: theme.spacing.unit,
+  },
+  buttonContainedPrimary: {
+    color: THEME.PRIMARY_TEXT_DARK,
+    backgroundColor: THEME.PRIMARY_DARK,
+    '& svg': {
+      fill: THEME.PRIMARY_TEXT_DARK,
+    },
+    '&:hover': {
+      backgroundColor: darken(THEME.PRIMARY_DARK, 0.5),
+    },
   },
 }))
 @withAuth
@@ -69,6 +81,9 @@ export default class UserMenu extends Component {
       <Fragment>
         {appBar ? (
           <UserMenuButton
+            buttonProps={{
+              classes: { containedPrimary: classes.buttonContainedPrimary },
+            }}
             className={classes.userMenuButton}
             user={user}
             signInDialogOpen={signInDialogOpen}
