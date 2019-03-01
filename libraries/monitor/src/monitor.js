@@ -1,12 +1,12 @@
+const debug = require('debug');
 const assert = require('assert');
 const serializeError = require('serialize-error');
 const TimeKeeper = require('./timekeeper');
 
 class Monitor {
-  constructor({logger, verify = false, enable = true, types = {}}) {
+  constructor({logger, verify = false, types = {}}) {
     this._log = logger;
     this.verify = verify;
-    this.enable = enable;
     this.log = {};
     Object.entries(types).forEach(([name, meta]) => {
       this.register({name, ...meta});
@@ -268,9 +268,6 @@ class Monitor {
   reportError(err, level, extra = {}) {
     if (!(err instanceof Error)) {
       err = new Error(err);
-    }
-    if (!this.enable) {
-      throw err;
     }
     if (level) {
       if (typeof level === 'string') {

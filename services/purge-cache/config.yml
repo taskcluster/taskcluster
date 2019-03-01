@@ -63,8 +63,8 @@ test:
     cachePurgeExpirationDelay:   '7 days'
 
   monitoring:
+    level: warning
     enable: false
-    project: 'taskcluster-purge-cache'
 
   azure:
     accountId:                    'jungle'

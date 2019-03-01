@@ -72,6 +72,7 @@ test:
     signingKey:       'not a secret'
     cryptoKey:        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
   monitoring:
+    level: warning
     enable: false
   server:
     port:             60401

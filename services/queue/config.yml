@@ -232,6 +232,7 @@ load-test:
     azureReportChance:            0.0
     azureReportThreshold:         1000000
   monitoring:
+    level: warning
     enable: false
   server:
     env:              development

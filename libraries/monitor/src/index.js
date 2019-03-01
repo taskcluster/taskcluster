@@ -53,7 +53,7 @@ class MonitorManager {
   setup({
     level = 'info',
     patchGlobal = true,
-    bailOnUnhandledRejection = false,
+    bailOnUnhandledRejection = true,
     resourceInterval = 60,
     mock = false,
     enable = true,
@@ -69,13 +69,12 @@ class MonitorManager {
     }
     this.alreadySetup = true;
 
-    if (!enable) {
+    if (!enable || mock) {
       patchGlobal = false;
       processName = null;
     }
 
     this.mock = mock;
-    this.enable = enable;
     this.pretty = pretty;
     this.subject = 'root';
     this.metadata = metadata;
@@ -130,7 +129,6 @@ class MonitorManager {
       name: `taskcluster.${this.serviceName}.${this.subject}`,
       service: this.serviceName,
       level: this.levels['root'],
-      enable,
       pretty,
       destination: this.destination,
       metadata,
@@ -139,11 +137,10 @@ class MonitorManager {
     this.rootMonitor = new Monitor({
       logger,
       verify,
-      enable,
       types: this.types,
     });
 
-    if (patchGlobal && enable) {
+    if (patchGlobal) {
       this.uncaughtExceptionHandler = this._uncaughtExceptionHandler.bind(this);
       process.on('uncaughtException', this.uncaughtExceptionHandler);
 
@@ -151,7 +148,7 @@ class MonitorManager {
       process.on('unhandledRejection', this.unhandledRejectionHandler);
     }
 
-    if (processName && !mock && enable) {
+    if (processName) {
       this.rootMonitor.resources(processName, resourceInterval);
     }
 
@@ -177,8 +174,12 @@ class MonitorManager {
    */
   terminate() {
     this.rootMonitor.stopResourceMonitoring();
-    process.removeListener('uncaughtException', this.uncaughtExceptionHandler);
-    process.removeListener('unhandledRejection', this.unhandledRejectionHandler);
+    if (this.uncaughtExceptionHandler) {
+      process.removeListener('uncaughtException', this.uncaughtExceptionHandler);
+    }
+    if (this.unhandledRejectionHandler) {
+      process.removeListener('unhandledRejection', this.unhandledRejectionHandler);
+    }
     if (this.mock) {
       this.destination.end();
     }
@@ -204,12 +205,10 @@ class MonitorManager {
     return new Monitor({
       types: this.types,
       verify: this.verify,
-      enable: this.enable,
       logger: new Logger({
         name: `taskcluster.${this.serviceName}.${prefix}`,
         service: this.serviceName,
         level: this.levels[prefix] || this.levels.root,
-        enable: this.enable,
         pretty: this.pretty,
         destination: this.destination,
         metadata,

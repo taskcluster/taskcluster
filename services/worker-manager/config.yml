@@ -34,6 +34,7 @@ test:
   taskcluster:
     rootUrl: 'http://localhost:5555'
   monitoring:
+    level: warning
     enable: false
   server:
     port: 5555

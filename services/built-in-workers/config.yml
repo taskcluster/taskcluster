@@ -23,4 +23,5 @@ test:
     publishMetaData: false
 
   monitoring:
+    level: warning
     enable: false

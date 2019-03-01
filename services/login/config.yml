@@ -71,6 +71,7 @@ ngrok:
       clientId:     !env TASKCLUSTER_CLIENT_ID
       accessToken:  !env TASKCLUSTER_ACCESS_TOKEN
   monitoring:
+    level: warning
     enable: false
   server:
     port: 60174
