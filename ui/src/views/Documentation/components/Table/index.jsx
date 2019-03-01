@@ -3,8 +3,8 @@ import { withStyles } from '@material-ui/core/styles';
 import { THEME } from '../../../../utils/constants';
 
 const useStyles = withStyles(theme => ({
-  // TODO: Finish this
   table: {
+    marginBottom: 4 * theme.spacing.unit,
     display: 'table',
     fontFamily: theme.typography.fontFamily,
     width: '100%',
