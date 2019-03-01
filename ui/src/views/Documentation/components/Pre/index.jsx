@@ -5,6 +5,7 @@ import { THEME } from '../../../../utils/constants';
 const useStyles = withStyles(theme => ({
   pre: {
     width: '100%',
+    fontSize: '0.875rem',
     '& code': {
       lineHeight: 1.4,
       '&[class*="language-"]': {
