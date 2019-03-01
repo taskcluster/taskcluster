@@ -814,3 +814,40 @@ async function taskDefinedHandler(message) {
 
   debug(`Status for task ${taskId}, task group ${taskGroupId} created`);
 }
+
+/**
+ * This handler restarts a task or a [sub]set of tasks whose status is reported with the checkrun
+ * that was re-requested.
+ *
+ * @param object - checkRun exchange message. Sent by tc-gh itself
+ * @returns {Promise<void>}
+ */
+async function reRequestCheckrunHandler(message) {
+  const { checkSuiteId, checkRunId } = message.payload.details;
+  const taskId = (await this.context.ChecksToTasks.load({checkSuiteId, checkRunId})).taskId; // todo an array??
+
+  const taskDef = await this.queueClient.task(taskId);
+  const newTaskId = slugid.nice();
+  this.queueClient.createTask(newTaskId, taskDef); // todo: scopes
+}
+
+/**
+ * This handler restarts a group of tasks whose status is reported with the check suite
+ * that was re-requested.
+ *
+ * @param object - checkSuite exchange message. Sent by tc-gh itself
+ * @returns {Promise<void>}
+ */
+async function reRequestChecksuiteHandler(message) {
+  const { checkSuiteId } = message.payload.details;
+  const taskIds = (await this.context.ChecksToTasks.query({checkSuiteId})).entries
+    .map(e => e.taskId);
+
+  let taskDefs = taskIds.map(async id => await this.queueClient.task(id)); // async iteration
+  taskDefs = taskDefs.map(td => {
+    td.id = slugid.nice();
+    return td;
+  });
+
+  this.createTasks({scopes, taskDefs}); // todo: scopes
+}
