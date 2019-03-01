@@ -271,7 +271,7 @@ export default class Dashboard extends Component {
                 <MenuIcon className={classes.appIcon} />
               </IconButton>
             )}
-            <SkipNavigation text="Skip to main content" href="#" />
+            <SkipNavigation text="Skip to main content" />
             <Typography variant="h6" noWrap className={classes.appBarTitle}>
               {pageTitle}
             </Typography>
