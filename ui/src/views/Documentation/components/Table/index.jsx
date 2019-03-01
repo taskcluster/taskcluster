@@ -3,8 +3,12 @@ import { withStyles } from '@material-ui/core/styles';
 import { THEME } from '../../../../utils/constants';
 
 const useStyles = withStyles(theme => ({
-  table: {
+  container: {
+    width: '100%',
+    overflow: 'auto',
     marginBottom: 4 * theme.spacing.unit,
+  },
+  table: {
     display: 'table',
     fontFamily: theme.typography.fontFamily,
     width: '100%',
@@ -64,7 +68,11 @@ const useStyles = withStyles(theme => ({
 }));
 
 function Table({ classes, ...props }) {
-  return <table className={classes.table} {...props} />;
+  return (
+    <div className={classes.container}>
+      <table className={classes.table} {...props} />
+    </div>
+  );
 }
 
 export default useStyles(Table);
