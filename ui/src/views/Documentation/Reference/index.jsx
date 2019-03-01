@@ -10,7 +10,10 @@ import HeaderWithAnchor from '../components/HeaderWithAnchor';
 @withRouter
 export default class Reference extends Component {
   static propTypes = {
-    /** The JSON object representation of api.json or events.json.  */
+    /**
+     * The JSON object representation of api.json,
+     * logs.json, or events.json.
+     */
     json: object.isRequired,
   };
 
@@ -21,6 +24,7 @@ export default class Reference extends Component {
     const topicExchangeEntries =
       json.entries &&
       json.entries.filter(({ type }) => type === 'topic-exchange');
+    const logTypes = json.types;
 
     return (
       <div>
@@ -47,14 +51,34 @@ export default class Reference extends Component {
             <HeaderWithAnchor type="h3">Functions</HeaderWithAnchor>
             <Typography>
               For more information on invoking the API methods described here,
-              see <Link to="/docs/manual/apis">Using the APIs</Link> in the
-              manual.
+              see <Link to="/docs/manual/design/apis">Using the APIs</Link> in
+              the manual.
             </Typography>
             <br />
             {functionEntries.map(entry => (
               <Entry
                 key={`${entry.name}-${entry.query}`}
                 type="function"
+                entry={entry}
+                serviceName={json.serviceName}
+              />
+            ))}
+          </Fragment>
+        )}
+        {logTypes && Boolean(logTypes.length) && (
+          <Fragment>
+            <HeaderWithAnchor type="h3">Message Types</HeaderWithAnchor>
+            <Typography>
+              For more information on interpreting the log types described here,
+              see
+              <Link to="/docs/manual/design/logs">Interpreting Log Types</Link>
+              in the manual.
+            </Typography>
+            <br />
+            {logTypes.map(entry => (
+              <Entry
+                key={`${entry.type}`}
+                type="logs"
                 entry={entry}
                 serviceName={json.serviceName}
               />

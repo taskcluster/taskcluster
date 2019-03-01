@@ -85,7 +85,7 @@ const primaryTypographyProps = { variant: 'body1' };
 export default class Entry extends Component {
   static propTypes = {
     /** Entry type. */
-    type: oneOf(['function', 'topic-exchange']).isRequired,
+    type: oneOf(['function', 'topic-exchange', 'logs']).isRequired,
     /** The reference entry. */
     entry: object.isRequired,
     /** Required when `type` is `topic-exchange`. */
@@ -154,6 +154,32 @@ export default class Entry extends Component {
         <Grid item xs={7}>
           <div>
             <Typography>{entry.title}</Typography>
+          </div>
+        </Grid>
+      </Grid>
+    );
+  };
+
+  renderLogsExpansionPanelSummary = () => {
+    const { entry, classes } = this.props;
+
+    return (
+      <Grid className={classes.gridContainer} container spacing={8}>
+        <Grid item xs={3}>
+          <div>
+            <Typography id={entry.type} component="h3">
+              {entry.type}
+            </Typography>
+          </div>
+        </Grid>
+        <Grid item xs={1}>
+          <div>
+            <Typography component="h3">v{entry.version}</Typography>
+          </div>
+        </Grid>
+        <Grid item xs={8}>
+          <div>
+            <Typography>{entry.description}</Typography>
           </div>
         </Grid>
       </Grid>
@@ -421,6 +447,39 @@ export default class Entry extends Component {
     );
   };
 
+  renderLogsExpansionDetails = () => {
+    const { classes, entry } = this.props;
+    const { expanded } = this.state;
+
+    return (
+      expanded && (
+        <List className={classes.list}>
+          <ListItem>
+            <ListItemText
+              primaryTypographyProps={primaryTypographyProps}
+              primary="Fields"
+              secondary={
+                <DataTable
+                  items={Object.keys(entry.fields)}
+                  renderRow={field => (
+                    <TableRow key={field}>
+                      <TableCell>
+                        <Typography>{field}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography>{entry.fields[field]}</Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                />
+              }
+            />
+          </ListItem>
+        </List>
+      )
+    );
+  };
+
   handlePanelChange = () => {
     const { entry, history } = this.props;
     const { expanded } = this.state;
@@ -440,6 +499,8 @@ export default class Entry extends Component {
     const { classes, type } = this.props;
     const { expanded } = this.state;
     const isEntryExchange = type === 'topic-exchange';
+    const isLogType = type === 'logs';
+    const isFunctionType = !isLogType && !isEntryExchange;
 
     return (
       <ExpansionPanel
@@ -453,14 +514,14 @@ export default class Entry extends Component {
             }),
           }}
           expandIcon={<ExpandMoreIcon />}>
-          {isEntryExchange
-            ? this.renderExchangeExpansionPanelSummary()
-            : this.renderFunctionExpansionPanelSummary()}
+          {isEntryExchange && this.renderExchangeExpansionPanelSummary()}
+          {isLogType && this.renderLogsExpansionPanelSummary()}
+          {isFunctionType && this.renderFunctionExpansionPanelSummary()}
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
-          {isEntryExchange
-            ? this.renderExchangeExpansionDetails()
-            : this.renderFunctionExpansionDetails()}
+          {isEntryExchange && this.renderExchangeExpansionDetails()}
+          {isLogType && this.renderLogsExpansionDetails()}
+          {isFunctionType && this.renderFunctionExpansionDetails()}
         </ExpansionPanelDetails>
       </ExpansionPanel>
     );
