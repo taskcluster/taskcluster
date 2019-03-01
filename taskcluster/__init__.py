@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import logging
 import os
 from .client import createSession  # NOQA
+from .client import createTemporaryCredentials  # NOQA
 from taskcluster.utils import *  # NOQA
 from taskcluster.exceptions import *  # NOQA
 from taskcluster._client_importer import *  # NOQA
