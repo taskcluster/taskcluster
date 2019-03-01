@@ -67,12 +67,18 @@ choco install -y netfx-4.6.2-devpack --version 4.6.01590.20170129
 # NuGet
 choco install -y nuget.commandline --version 4.9.3
 
+# Carbon for later
+choco install -y carbon --version 2.5.0
+
 # Create C:\builds and give full access to all users (for hg-shared, tooltool_cache, etc)
 md "C:\builds"
 $acl = Get-Acl -Path "C:\builds"
 $ace = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone","Full","ContainerInherit,ObjectInherit","None","Allow")
 $acl.AddAccessRule($ace)
 Set-Acl "C:\builds" $acl
+
+# GrantEveryoneSeCreateSymbolicLinkPrivilege
+Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity Everyone -Privilege SeCreateSymbolicLinkPrivilege}`"" -Wait -NoNewWindow
 
 # Ensure proper PATH setup
 [Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";C:\tools\msys64\usr\bin;C:\Python36;C:\Program Files\Git\bin", "Machine")
