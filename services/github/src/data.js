@@ -114,3 +114,15 @@ module.exports.CheckRuns = Entity.configure({
     checkRunId: Entity.types.String,
   },
 });
+
+module.exports.ChecksToTasks = Entity.configure({
+  version: 1,
+  partitionKey: Entity.keys.StringKey('checkSuiteId'),
+  rowKey: Entity.keys.StringKey('checkRunId'),
+  properties: {
+    taskGroupId: Entity.types.String,
+    taskId: Entity.types.String,
+    checkSuiteId: Entity.types.String,
+    checkRunId: Entity.types.String,
+  },
+});

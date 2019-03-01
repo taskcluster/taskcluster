@@ -503,6 +503,13 @@ async function statusHandler(message) {
         checkSuiteId: checkRun.data.check_suite.id.toString(),
         checkRunId: checkRun.data.id.toString(),
       });
+
+      await this.context.ChecksToTasks.create({
+        taskGroupId,
+        taskId,
+        checkSuiteId: checkRun.data.check_suite.id.toString(),
+        checkRunId: checkRun.data.id.toString(),
+      });
     }
   } catch (e) {
     debug(`Failed to update status: ${build.organization}/${build.repository}@${build.sha}`);
@@ -796,6 +803,16 @@ async function taskDefinedHandler(message) {
   debug(`Created check run for task ${taskId}, task group ${taskGroupId}. Now updating data base`);
 
   await this.context.CheckRuns.create({
+    taskGroupId,
+    taskId,
+    checkSuiteId: checkRun.data.check_suite.id.toString(),
+    checkRunId: checkRun.data.id.toString(),
+  }).catch(async (err) => {
+    await this.createExceptionComment({instGithub, organization, repository, sha, error: err});
+    throw err;
+  });
+
+  await this.context.ChecksToTasks.create({
     taskGroupId,
     taskId,
     checkSuiteId: checkRun.data.check_suite.id.toString(),

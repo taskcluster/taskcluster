@@ -9,6 +9,7 @@ defaults:
     buildsTableName: 'TaskclusterGithubBuilds'
     ownersDirectoryTableName: 'TaskclusterIntegrationOwners'
     checkRunsTableName: 'TaskclusterCheckRuns'
+    checksToTasksTableName: 'TaskclusterChecksToTasks'
     checkTaskRoute: 'checks'
     statusTaskRoute: 'statuses'
     publishMetaData: !env:bool PUBLISH_METADATA
@@ -93,6 +94,8 @@ staging:
     initialStatusQueue: 'checks-tasks'
     buildsTableName: 'TaskclusterGithubBuildsStaging'
     ownersDirectoryTableName: 'TaskclusterIntegrationOwnersStaging'
+    checkRunsTableName: 'TaskclusterCheckRunsStaging'
+    checksToTasksTableName: 'TaskclusterChecksToTasksStaging'
     name: 'tc-github-staging'
     statusContext: 'Taskcluster-Staging'
     botName: 'taskcluster-staging[bot]'
