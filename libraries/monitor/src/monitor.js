@@ -119,7 +119,7 @@ class Monitor {
     return (req, res, next) => {
       let sent = false;
       const start = process.hrtime();
-      const send = () => {
+      const send = async () => {
         try {
           // Avoid sending twice
           if (sent) {
@@ -131,6 +131,8 @@ class Monitor {
 
           this.log.expressTimer({
             name,
+            hasAuthed: req.hasAuthed,
+            clientId: req.hasAuthed ? await req.clientId() : '',
             statusCode: res.statusCode,
             duration: d[0] * 1000 + d[1] / 1000000,
           });

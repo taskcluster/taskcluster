@@ -130,22 +130,22 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     // so this is probably a fair policy for now. We can always allow more.
     if (req.headers && req.headers.authorization &&
         req.query && req.query.bewit) {
-      return Promise.resolve({
+      return {
         status: 'auth-failed',
         message: 'Cannot use two authentication schemes at once ' +
                   'this request has both bewit in querystring and ' +
                   'and \'authorization\' header',
-      });
+      };
     }
 
     // If no authentication is provided, we just return valid with zero scopes
     if ((!req.query || !req.query.bewit) &&
         (!req.headers || !req.headers.authorization)) {
-      return Promise.resolve({
+      return {
         status: 'no-auth',
         scheme: 'none',
         scopes: [],
-      });
+      };
     }
 
     // Parse host header
@@ -159,14 +159,14 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     }
 
     // Send input to signatureValidator (auth server or local validator)
-    let result = await Promise.resolve(signatureValidator({
+    let result = await signatureValidator({
       method: req.method.toLowerCase(),
       resource: req.originalUrl,
       host: host.name,
       port: parseInt(port, 10),
       authorization: req.headers.authorization,
       sourceIp: req.ip,
-    }));
+    });
 
     // Validate request hash if one is provided
     if (typeof result.hash === 'string' && result.scheme === 'hawk') {
@@ -213,9 +213,9 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
         // This lint can be disabled because authenticate() will always return the same value
         result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
         if (result.status !== 'auth-success') {
-          return Promise.resolve([]);
+          return [];
         }
-        return Promise.resolve(result.scopes || []);
+        return result.scopes || [];
       };
 
       req.clientId = async () => {
@@ -297,10 +297,6 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
             },
           });
         }
-
-        // TODO: log this in a structured format when structured logging is
-        // available https://bugzilla.mozilla.org/show_bug.cgi?id=1307271
-        authLog(`Authorized ${await req.clientId()} for ${req.method} access to ${req.originalUrl}`);
       };
 
       req.hasAuthed = false;

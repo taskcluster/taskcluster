@@ -32,6 +32,7 @@ module.exports = [
       name: 'The name of the endpoint.',
       statusCode: 'The http status code that the endpoint resolved with.',
       duration: 'The duration in ms of the endpoint.',
+      clientId: 'The clientId (if one exists) that called this endpoint.',
     },
   },
   {
