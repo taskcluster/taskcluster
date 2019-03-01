@@ -1,9 +1,7 @@
 import { hot } from 'react-hot-loader';
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { lowerCase } from 'change-case';
-import resolve from 'resolve-pathname';
 import catchLinks from 'catch-links';
 import 'prismjs';
 import 'prismjs/themes/prism.css';
@@ -13,8 +11,8 @@ import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-yaml';
 import 'prismjs/components/prism-markup';
 import Dashboard from '../../components/Dashboard';
-import HeaderWithAnchor from '../../components/HeaderWithAnchor';
 import NotFound from '../../components/NotFound';
+import components from './components';
 import ScrollToTop from '../../utils/ScrollToTop';
 import { DOCS_PATH_PREFIX, DOCS_MENU_ITEMS } from '../../utils/constants';
 import scrollToHash from '../../utils/scrollToHash';
@@ -26,12 +24,8 @@ import PageMeta from './PageMeta';
 @hot(module)
 @withStyles(
   theme => ({
-    innerHtml: {
-      ...theme.mixins.markdown,
-      '& .token.operator': {
-        color: 'none',
-        background: 'none',
-      },
+    documentation: {
+      fontFamily: theme.typography.fontFamily,
     },
   }),
   { withTheme: true }
@@ -79,31 +73,6 @@ export default class Documentation extends Component {
     this.load();
   }
 
-  anchorFactory = ({ href, children, ...props }) => {
-    if (href.startsWith('http')) {
-      return (
-        <a href={href} {...props} target="_blank" rel="noopener noreferrer">
-          {children}
-        </a>
-      );
-    }
-
-    const { location } = this.props;
-    const url = resolve(href, location.pathname);
-
-    return (
-      <Link to={url} {...props}>
-        {children}
-      </Link>
-    );
-  };
-
-  headingFactory = type => ({ children, id, ...props }) => (
-    <HeaderWithAnchor type={type} id={id} {...props}>
-      {children}
-    </HeaderWithAnchor>
-  );
-
   findChildFromRootNode(node) {
     const currentPath = window.location.pathname.replace(
       `${DOCS_PATH_PREFIX}/`,
@@ -142,19 +111,6 @@ export default class Documentation extends Component {
     return this.findChildFromRootNode(rootNode);
   }
 
-  // Returns a mapping between the HTML element and the desired component
-  components() {
-    return {
-      a: this.anchorFactory,
-      h1: this.headingFactory('h1'),
-      h2: this.headingFactory('h2'),
-      h3: this.headingFactory('h3'),
-      h4: this.headingFactory('h4'),
-      h5: this.headingFactory('h5'),
-      h6: this.headingFactory('h6'),
-    };
-  }
-
   async load() {
     try {
       const { params } = this.props.match;
@@ -174,7 +130,7 @@ export default class Documentation extends Component {
 
     return (
       <Dashboard
-        className={classes.innerHtml}
+        className={classes.documentation}
         docs
         title={
           pageInfo && pageInfo.data.title
@@ -185,7 +141,7 @@ export default class Documentation extends Component {
           {error ? (
             <NotFound isDocs />
           ) : (
-            Page && <Page components={this.components()} />
+            Page && <Page components={components} />
           )}
           {pageInfo && <PageMeta pageInfo={pageInfo} history={history} />}
         </ScrollToTop>

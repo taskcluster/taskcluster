@@ -39,7 +39,6 @@ import { route } from '../utils/prop-types';
     },
     'pre, :not(pre) > code': {
       ...theme.mixins.highlight,
-      fontSize: theme.typography.body2.fontSize,
     },
     '.json-inspector__leaf': {
       '&.json-inspector__leaf_root': {

@@ -73,6 +73,9 @@ const primaryTypographyProps = { variant: 'body1' };
       margin: `${theme.spacing.unit}px 0 ${theme.spacing.unit}px ${-theme
         .spacing.double}px`,
     },
+    functionStatusLabel: {
+      textAlign: 'center',
+    },
     scopesWrapper: {
       padding: theme.spacing.triple,
     },
@@ -128,7 +131,7 @@ export default class Entry extends Component {
           </div>
         </Grid>
         <Grid item xs={2}>
-          <div>
+          <div className={classes.functionStatusLabel}>
             <StatusLabel state={upperCase(entry.stability)} />
           </div>
         </Grid>

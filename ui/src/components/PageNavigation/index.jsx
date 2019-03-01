@@ -28,8 +28,9 @@ import Button from '../Button';
     textAlign: 'right',
   },
   link: {
+    textDecoration: 'none',
     '&:hover': {
-      textDecoration: 'none !important',
+      textDecoration: 'none',
     },
   },
 }))
