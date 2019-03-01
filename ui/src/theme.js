@@ -51,7 +51,8 @@ const createTheme = isDarkTheme => {
     H5: Roboto400,
     H6: Roboto500,
     SUBTITLE1: Roboto400,
-    BODY1: Roboto500,
+    SUBTITLE2: Roboto500,
+    BODY1: Roboto400,
     BODY2: Roboto400,
     CAPTION: Roboto400,
     BUTTON: Roboto500,
@@ -115,6 +116,7 @@ const createTheme = isDarkTheme => {
       h5: TYPOGRAPHY.H5,
       h6: TYPOGRAPHY.H6,
       subtitle1: TYPOGRAPHY.SUBTITLE1,
+      subtitle2: TYPOGRAPHY.SUBTITLE2,
       body1: TYPOGRAPHY.BODY1,
       body2: TYPOGRAPHY.BODY2,
       caption: TYPOGRAPHY.CAPTION,
@@ -134,12 +136,14 @@ const createTheme = isDarkTheme => {
     docsDrawerWidth: THEME.DRAWER_WIDTH + 125,
     mixins: {
       highlight: {
-        fontFamily: 'Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace',
         backgroundColor: isDarkTheme
           ? THEME.TEN_PERCENT_WHITE
           : THEME.TEN_PERCENT_BLACK,
-        paddingLeft: 4,
-        paddingRight: 4,
+        fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
+        lineHeight: 1.4,
+        display: 'inline-block',
+        fontSize: '0.875rem',
+        color: textPrimary,
       },
       listItemButton: {
         '& svg': {

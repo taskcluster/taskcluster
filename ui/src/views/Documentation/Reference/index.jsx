@@ -1,10 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import { object } from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
+import MDX from '@mdx-js/runtime';
 import Typography from '@material-ui/core/Typography';
 import Entry from './Entry';
-import Markdown from '../../../components/Markdown';
-import HeaderWithAnchor from '../../../components/HeaderWithAnchor';
+import components from '../components';
+import HeaderWithAnchor from '../components/HeaderWithAnchor';
 
 @withRouter
 export default class Reference extends Component {
@@ -24,12 +25,12 @@ export default class Reference extends Component {
     return (
       <div>
         {json.title && <HeaderWithAnchor>{json.title}</HeaderWithAnchor>}
-        {json.description && <Markdown>{json.description}</Markdown>}
+        {json.description && (
+          <MDX components={components}>{json.description}</MDX>
+        )}
         {topicExchangeEntries && Boolean(topicExchangeEntries.length) && (
           <Fragment>
-            <Typography gutterBottom component="h2" variant="h5">
-              Exchanges
-            </Typography>
+            <HeaderWithAnchor type="h3">Exchanges</HeaderWithAnchor>
             {topicExchangeEntries.map(entry => (
               <Entry
                 key={entry.name}
@@ -43,9 +44,7 @@ export default class Reference extends Component {
         )}
         {functionEntries && Boolean(functionEntries.length) && (
           <Fragment>
-            <Typography component="h2" variant="h5">
-              Functions
-            </Typography>
+            <HeaderWithAnchor type="h3">Functions</HeaderWithAnchor>
             <Typography>
               For more information on invoking the API methods described here,
               see <Link to="/docs/manual/apis">Using the APIs</Link> in the
