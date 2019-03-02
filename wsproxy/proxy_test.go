@@ -1196,7 +1196,7 @@ func TestProxyWebSocketPath(t *testing.T) {
 	_ = conn.Close()
 }
 
-// Simple test to ensure that proxy authenticates valid jwt and rejects other jwt
+// Simple test to ensure that proxy authenticates valid Audience claims in jwt
 func TestProxyAudClaim(t *testing.T) {
 	proxyConfig := Config{
 		Upgrader:   upgrader,
@@ -1218,6 +1218,7 @@ func TestProxyAudClaim(t *testing.T) {
 	wsURL := util.MakeWsURL(server.URL)
 	header := make(http.Header)
 
+	// anonymous function for generating jwt token with aud value
 	token := func(id string, aud string, secret []byte) string {
 		now := time.Now()
 		expires := now.Add(30 * 24 * time.Hour)
@@ -1245,7 +1246,7 @@ func TestProxyAudClaim(t *testing.T) {
 	}
 	_ = conn.Close()
 
-	wstoken := token("wsworker", "server", []byte("test-secret"))
+	wstoken := token("wsworker", "INVALID-AUD", []byte("test-secret"))
 	header.Set("Authorization", "Bearer "+wstoken)
 	header.Set("x-websocktunnel-id", "wsworker")
 

@@ -20,6 +20,7 @@ Configuration is via environment variables:
   If not given, the service will default to plain HTTP.
   This is not recommended for production usage!
 * `PORT` gives the port on which the HTTP server should run, defaulting to 443 (or if not using TLS, 80).
+* `AUDIENCE` (aud) claim identifies the recipients that the JWT is intended for. Use of this is OPTIONAL.
 
 In non-production mode, the service logs its activities to stdout in a human-readable format.
 
@@ -50,10 +51,12 @@ The token included in the `Authorization` header must be a [JWT](https://jwt.io/
  * `iat` -- issuance time (epoch timestamp)
  * `exp` -- expiration time
  * `nbf` -- not-before (set to some time before iat to allow clock skew)
+ * `aud` -- audience claim (identifies the recipients)
 
 It must use method `HS256` and be signed with either of the secrets in the service configuration.
 It must be valid at the current time, and must not be valid for more than 31 days (specifically, the `nbf` and `exp` claims must be less than 31 days apart).
 Its `tid` claim must match the client ID exactly.
+`aud` claim is optional,if set on server then must be present in JWT token and must match.
 
 ### Multiplexed Websockets
 
