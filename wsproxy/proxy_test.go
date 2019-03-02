@@ -1195,3 +1195,61 @@ func TestProxyWebSocketPath(t *testing.T) {
 	}
 	_ = conn.Close()
 }
+
+// Simple test to ensure that proxy authenticates valid jwt and rejects other jwt
+func TestProxyAudClaim(t *testing.T) {
+	proxyConfig := Config{
+		Upgrader:   upgrader,
+		JWTSecretA: []byte("test-secret"),
+		JWTSecretB: []byte("another-secret"),
+		Domain:     "localhost",
+		Port:       80,
+		Audience:   "ws-server",
+	}
+
+	proxy, err := New(proxyConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	server := httptest.NewServer(proxy)
+	defer server.Close()
+
+	wsURL := util.MakeWsURL(server.URL)
+	header := make(http.Header)
+
+	token := func(id string, aud string, secret []byte) string {
+		now := time.Now()
+		expires := now.Add(30 * 24 * time.Hour)
+
+		token := jwt.New(jwt.SigningMethodHS256)
+
+		token.Claims.(jwt.MapClaims)["iat"] = now.Unix()
+		token.Claims.(jwt.MapClaims)["nbf"] = now.Unix() - 300 // 5 minutes
+		token.Claims.(jwt.MapClaims)["iss"] = "taskcluster-auth"
+		token.Claims.(jwt.MapClaims)["exp"] = expires.Unix()
+		token.Claims.(jwt.MapClaims)["tid"] = id
+		token.Claims.(jwt.MapClaims)["aud"] = aud
+
+		tokString, _ := token.SignedString(secret)
+		return tokString
+	}
+
+	wsworker := token("wsworker", "ws-server", []byte("test-secret"))
+	header.Set("Authorization", "Bearer "+wsworker)
+	header.Set("x-websocktunnel-id", "wsworker")
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL, header)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = conn.Close()
+
+	wstoken := token("wsworker", "server", []byte("test-secret"))
+	header.Set("Authorization", "Bearer "+wstoken)
+	header.Set("x-websocktunnel-id", "wsworker")
+
+	if _, _, err := websocket.DefaultDialer.Dial(wsURL, header); err == nil {
+		t.Fatal("Wrong Audience Value accepted")
+	}
+}

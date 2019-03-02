@@ -86,11 +86,10 @@ func main() {
 			port = "80"
 		}
 	}
+
 	// load audience value
 	audience := os.Getenv("AUDIENCE")
-	if audience == "" {
-		audience = "wst-servers"
-	}
+
 	portNum, err := strconv.Atoi(port)
 	if err != nil {
 		panic(err)
