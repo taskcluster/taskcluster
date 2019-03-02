@@ -28,22 +28,6 @@ To test the components separately, run:
 - server: `<set the environment variables> node src/main.js server`
 - handlers: `<set the environment variables> node src/main.js worker`
 
-## Deploying
-
-This service will auto-deploy *to staging* in Heroku once merged into master
-and CI runs are successful. (You can install our staging integration [here](https://github.com/integration/taskcluster-staging).) If you need to force a deploy because we've broken
-CI in some way and this urgently needs to be deployed, you can do it from the
-[Heroku
-console](https://dashboard-preview.heroku.com/apps/taskcluster-github/deploy/github).
-
-Once the new version has been deployed to staging, you can verify it is working
-with `npm run checkStaging`.  Note that you will need an active SSH key with
-write access to https://github.com/taskcluster/taskcluster-github-testing to
-run this check (but, no other credentials!)
-
-After you confirm it works on stage, deploy to production with [the
-pipeline](https://dashboard.heroku.com/pipelines/b867da9f-e443-4ddd-b8b1-2209532897b4).
-
 ## Copyright notes
 Emoji fonts for this project were taken from:
 - [Mozilla Firefox OS Emojis](https://github.com/mozilla/fxemoji)

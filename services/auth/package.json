@@ -6,9 +6,7 @@
   "scripts": {
     "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
     "test": "mocha test/*_test.js",
-    "lint": "eslint src/*.js test/*.js",
-    "checkStagingSetup": "heroku run -a taskcluster-auth-staging node bin/make-check-client.js",
-    "checkStaging": "mocha test/check-staging.js"
+    "lint": "eslint src/*.js test/*.js"
   },
   "dependencies": {
     "aws-sdk": "^2.150.0",

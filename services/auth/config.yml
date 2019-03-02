@@ -166,5 +166,3 @@ test:
     env:                      development
     development:              true
     trustProxy:               true
-  checkStaging:
-    baseUrl:                  "https://taskcluster-auth-staging.herokuapp.com/v1/"
