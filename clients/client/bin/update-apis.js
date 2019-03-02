@@ -107,8 +107,8 @@ var updateDocs = function() {
     DOCS_END_MARKER,
   ]).join('\n');
 
-  // Load README.md
-  var readmePath = path.join(__dirname, '..', 'README.md');
+  // Load README.mdx
+  var readmePath = path.join(__dirname, '..', 'README.mdx');
   var readme = fs.readFileSync(readmePath, {encoding: 'utf-8'});
 
   // Split out docs and get text before and after docs, and write to readmeMD
@@ -196,7 +196,7 @@ program
 
 program
   .command('docs')
-  .description('Generate documentation in README.md')
+  .description('Generate documentation in README.mdx')
   .action(function() {
     updateDocs();
   });

@@ -10,7 +10,7 @@ const PULSE_CONNECTION_STRING = process.env.PULSE_CONNECTION_STRING;
 
 if (!PULSE_CONNECTION_STRING) {
   console.log('WARNING: $PULSE_CONNECTION_STRING is not set; skipping tests that require an active server');
-  console.log('see README.md for details');
+  console.log('see README.mdx for details');
 }
 
 const connectionTests = connectionString => {

@@ -52,7 +52,7 @@ async function getObjectsInStream(inStream) {
 
 function assertInTarball(shoulds, tarball) {
   shoulds.push('metadata.json');
-  shoulds.push('README.md');
+  shoulds.push('README.mdx');
   let contains = [];
   let extractor = tar.extract();
   extractor.on('entry', (header, stream, callback) => {
@@ -126,8 +126,8 @@ suite('documenter', () => {
       projectName: 'docs-testing',
     });
     let shoulds = [
-      'docs/example.md',
-      'docs/nested/nested-example.md',
+      'docs/example.mdx',
+      'docs/nested/nested-example.mdx',
     ];
     return assertInTarball(shoulds, await doc._tarballStream());
   });
@@ -141,8 +141,8 @@ suite('documenter', () => {
     let shoulds = [
       'schemas/foo.json',
       'schemas/bar.json',
-      'docs/documenting-non-services.md',
-      'docs/format.md',
+      'docs/documenting-non-services.mdx',
+      'docs/format.mdx',
     ];
     return assertInTarball(shoulds, await doc._tarballStream());
   });
@@ -156,8 +156,8 @@ suite('documenter', () => {
     let shoulds = [
       'references/api.json',
       'references/events.json',
-      'docs/documenting-non-services.md',
-      'docs/format.md',
+      'docs/documenting-non-services.mdx',
+      'docs/format.mdx',
     ];
     return assertInTarball(shoulds, await doc._tarballStream());
   });
@@ -168,8 +168,8 @@ suite('documenter', () => {
       projectName: 'docs-testing',
     });
     let shoulds = [
-      'docs/documenting-non-services.md',
-      'docs/format.md',
+      'docs/documenting-non-services.mdx',
+      'docs/format.mdx',
     ];
     return assertInTarball(shoulds, await doc._tarballStream());
   });
@@ -194,8 +194,8 @@ suite('documenter', () => {
   test('write() writes a directory', async function() {
     await withWrittenDocs(docsDir => {
       const shoulds = [
-        'docs/example.md',
-        'docs/nested/nested-example.md',
+        'docs/example.mdx',
+        'docs/nested/nested-example.mdx',
       ];
       shoulds.forEach(name =>
         assert(fs.existsSync(path.join(docsDir, name)), `${name} should exist`));

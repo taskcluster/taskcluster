@@ -64,7 +64,7 @@ async function createReferencesMarkup(svcDir) {
     const references = await readdir(referencesDir);
 
     return Promise.all(references.map(reference => {
-      const file = `${removeExtension(reference)}.md`;
+      const file = `${removeExtension(reference)}.mdx`;
       const content = createReferenceMarkupContent(reference);
 
       return writeFile(path.join(referencesDir, file), content);

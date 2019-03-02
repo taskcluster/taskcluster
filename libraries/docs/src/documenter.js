@@ -24,7 +24,7 @@ async function documenter(options) {
     tier: null,
     schemaset: null,
     menuIndex: 10,
-    readme: path.join(rootdir.get(), 'README.md'),
+    readme: path.join(rootdir.get(), 'README.mdx'),
     docsFolder: path.join(rootdir.get(), '/docs'),
     bucket: 'taskcluster-raw-docs',
     references: [],
@@ -106,14 +106,14 @@ class Documenter {
 
     try {
       tarball.entry(
-        headers('README.md'),
+        headers('README.mdx'),
         await fs.readFile(this.options.readme)
       );
     } catch (err) {
       if (err.code !== 'ENOENT') {
         throw err;
       }
-      debug('README.md does not exist. Continuing.');
+      debug('README.mdx does not exist. Continuing.');
     }
 
     try {
