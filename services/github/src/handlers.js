@@ -617,7 +617,7 @@ async function jobHandler(message) {
       });
 
       if (!isCollaborator) {
-        if (message.payload.details['event.type'].startsWith('pull_request.opened') && (this.getRepoPolicy(defaultBranchYml) === 'collaborators')) {
+        if (message.payload.details['event.type'].startsWith('pull_request.opened') && (this.getRepoPolicy(defaultBranchYml) !== 'collaborators_quiet')) {
           let body = [
             '<details>\n',
             '<summary>No Taskcluster jobs started for this pull request</summary>\n\n',
