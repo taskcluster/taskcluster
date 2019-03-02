@@ -11,7 +11,7 @@ const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
 const builder = new APIBuilder({
   title: 'Purge Cache API',
   context: [
-    'cfg', // A typed-env-config instance
+    'cfg', // A taskcluster-lib-config instance
     'CachePurge', // A data.CachePurge instance
     'cachePurgeCache', // An Promise for cacheing cachepurge responses
   ],

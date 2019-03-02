@@ -18,6 +18,7 @@
     "taskcluster-lib-api": "link:libraries/api",
     "taskcluster-lib-app": "link:libraries/app",
     "taskcluster-lib-azure": "link:libraries/azure",
+    "taskcluster-lib-config": "link:libraries/config",
     "taskcluster-lib-docs": "link:libraries/docs",
     "taskcluster-lib-iterate": "link:libraries/iterate",
     "taskcluster-lib-loader": "link:libraries/loader",
@@ -26,8 +27,7 @@
     "taskcluster-lib-references": "link:libraries/references",
     "taskcluster-lib-scopes": "link:libraries/scopes",
     "taskcluster-lib-urls": "^12.0.0",
-    "taskcluster-lib-validate": "link:libraries/validate",
-    "typed-env-config": "link:libraries/typed-env-config"
+    "taskcluster-lib-validate": "link:libraries/validate"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
@@ -83,7 +83,6 @@
     "taskcluster-lib-testing": "link:libraries/testing",
     "temporary": "^1.0.0",
     "tmp": "^0.0.33",
-    "typed-env-config": "link:libraries/typed-env-config",
     "url-join": "^4.0.0",
     "uuid": "^3.3.2",
     "webpack": "^4.25.1",

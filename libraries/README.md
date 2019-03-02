@@ -8,6 +8,7 @@ These are any packages that are used by Taskcluster services that aren't intende
 * [API Library](api#readme)
 * [App Library](app#readme)
 * [Azure Library](azure#readme)
+* [Config Library](config#readme)
 * [Docs Library](docs#readme)
 * [Iterate Library](iterate#readme)
 * [Loader Library](loader#readme)
@@ -16,6 +17,5 @@ These are any packages that are used by Taskcluster services that aren't intende
 * [References Library](references#readme)
 * [Scopes Library](scopes#readme)
 * [Testing Library](testing#readme)
-* [Typed-Env-Config Library](typed-env-config#readme)
 * [Validate Library](validate#readme)
 <!-- TOC END -->

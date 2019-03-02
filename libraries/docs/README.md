@@ -66,7 +66,7 @@ Example
 ```js
 let docs              = require('taskcluster-lib-docs');
 let v1                = require('./v1')  # the API declaration
-let config            = require('typed-env-config')
+let config            = require('taskcluster-lib-config')
 let SchemaSet         = require('taskcluster-lib-validate')
 let load = loader({
   cfg: {

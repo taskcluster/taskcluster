@@ -72,7 +72,7 @@ Secrets
 -------
 
 This class handles getting secrets for tests, and easily determining what
-secrets are available.  It integrates with `typed-env-config`.  Set it up by
+secrets are available.  It integrates with `taskcluster-lib-config`.  Set it up by
 in `test/helper.js`:
 
 ```javascript
@@ -104,7 +104,7 @@ exports.secrets = new Secrets({
 
 If a secret is defined in the loaded configuration, that value will be used even if the `env` key is also set.
 Secrets should not have any value set in `config.yml` (although `!env` is OK), or this class will not function properly.
-If the system you are testing does not use `typed-env-config`, simply do not specify the `cfg` properties to the constructor.
+If the system you are testing does not use `taskcluster-lib-config`, simply do not specify the `cfg` properties to the constructor.
 
 You can then call `await secrets.setup()`  to set up the secrets (reading from `cfg` if necessary).
 This *must* be called during Mocha's runtime, so either in a setup function or a test.

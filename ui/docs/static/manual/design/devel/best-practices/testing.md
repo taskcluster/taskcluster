@@ -36,7 +36,7 @@ In some cases, this can be accomplished with a `docker` command (e.g., to run Ra
 ## Getting Secrets
 
 For tests that require credentials, it should be possible to supply them in a `user-config.yml` file.
-The `typed-env-config` library makes this easy.
+The `taskcluster-lib-config` library makes this easy.
 
 The service repository should have a `user-config-example.yml` which has all the necessary settings filled with an illustrative example value or the string '...'.
 This helps people to know which credentials they need and how to set them up.

@@ -11,7 +11,7 @@ const monitorManager = require('./monitor');
 const App = require('taskcluster-lib-app');
 const docs = require('taskcluster-lib-docs');
 const taskcluster = require('taskcluster-client');
-const config = require('typed-env-config');
+const config = require('taskcluster-lib-config');
 const {sasCredentials} = require('taskcluster-lib-azure');
 
 let debug = Debug('secrets:server');
