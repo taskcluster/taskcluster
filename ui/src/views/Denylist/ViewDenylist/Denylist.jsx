@@ -22,7 +22,7 @@ import { VIEW_DENYLISTED_NOTIFICATIONS_PAGE_SIZE } from '../../../utils/constant
     },
   }),
 })
-export default class ViewDenylist extends PureComponent {
+export default class Denylist extends PureComponent {
   static propTypes = {
     searchTerm: string,
   };

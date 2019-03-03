@@ -7,6 +7,7 @@ import provisionerRoutes from '../views/Provisioners/routes';
 import clientRoutes from '../views/Clients/routes';
 import roleRoutes from '../views/Roles/routes';
 import hookRoutes from '../views/Hooks/routes';
+import denylistRoutes from '../views/Denylist/routes';
 import awsProvisionerRoutes from '../views/AwsProvisioner/routes';
 import cachePurgeRoutes from '../views/CachePurges/routes';
 import lazy from '../utils/lazy';
@@ -117,6 +118,11 @@ export default [
     route: cachePurgeRoutes('/purge-caches'),
   },
   {
+    component: Denylist,
+    path: '/denylist',
+    route: denylistRoutes('/denylist'),
+  },
+  {
     component: PulseMessages,
     path: '/pulse-messages',
   },
@@ -128,10 +134,6 @@ export default [
     component: Profile,
     path: '/profile',
   },
-  {
-    component: Denylist,
-    path: '/denylist',
-  }
   {
     component: Shell,
     path: '/shell',
