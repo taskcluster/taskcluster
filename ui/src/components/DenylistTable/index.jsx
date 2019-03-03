@@ -8,7 +8,6 @@ import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography';
-import DeleteIcon from 'mdi-react/DeleteIcon';
 import { notificationAddress, pageInfo } from '../../utils/prop-types';
 import { VIEW_DENYLISTED_NOTIFICATIONS_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
