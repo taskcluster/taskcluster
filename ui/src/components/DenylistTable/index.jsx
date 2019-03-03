@@ -16,11 +16,14 @@ import ConnectionDataTable from '../ConnectionDataTable';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.notificationAddress, b.node.notificationAddress)),
-  map(({ notificationAddress }) => notificationAddress)
+  map(({ node: { notificationAddress } }) => notificationAddress)
 );
-const tableHeaders = ['Notification Type', 'Destination', ''];
+const tableHeaders = ['Notification Type', 'Destination'];
 
 @withStyles(theme => ({
+  tableCell: {
+    textDecoration: 'none',
+  },
   listItemCell: {
     display: 'flex',
     justifyContent: 'flex-start',
@@ -46,8 +49,8 @@ export default class DenylistTable extends Component {
   };
 
   state = {
-    sortBy: null,
-    sortDirection: null,
+    sortBy: tableHeaders[1],
+    sortDirection: 'asc',
   };
 
   createSortedNotifications = memoize(
@@ -97,16 +100,15 @@ export default class DenylistTable extends Component {
   render() {
     const { classes, onPageChange, notificationsConnection } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const iconSize = 16;
-    const sortedortedNotificationsConnection = this.createSortedNotifications(
-        notificationsConnection,
-        sortBy,
-        sortDirection
-      );
+    const sortedNotificationsConnection = this.createSortedNotifications(
+      notificationsConnection,
+      sortBy,
+      sortDirection
+    );
 
     return (
       <ConnectionDataTable
-        connection={sortedortedNotificationsConnection}
+        connection={sortedNotificationsConnection}
         pageSize={VIEW_DENYLISTED_NOTIFICATIONS_PAGE_SIZE}
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
@@ -121,16 +123,15 @@ export default class DenylistTable extends Component {
               </div>
             </TableCell>
             <TableCell padding="dense">
-              <div className={classes.listItemCell}>
-                <Typography>{node.notificationAddress}</Typography>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div>
-                <Link to="./">
-                  <DeleteIcon size={iconSize} />
-                </Link>
-              </div>
+              <Link
+                className={classes.tableCell}
+                to={`/denylist/${encodeURIComponent(
+                  node.notificationAddress
+                )}`}>
+                <div className={classes.listItemCell}>
+                  <Typography>{node.notificationAddress}</Typography>
+                </div>
+              </Link>
             </TableCell>
           </TableRow>
         )}

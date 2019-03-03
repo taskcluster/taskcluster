@@ -1,0 +1,3 @@
+mutation DenylistedNotification ($address: NotificationAddressInput) {
+  deleteDenylistAddress(address: $address)
+}

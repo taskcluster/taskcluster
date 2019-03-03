@@ -1,56 +1,44 @@
 import { hot } from 'react-hot-loader';
-import React, { PureComponent } from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import PlusIcon from 'mdi-react/PlusIcon';
-import Denylist from './Denylist';
-import Dashboard from '../../components/Dashboard';
-import Search from '../../components/Search';
-import Button from '../../components/Button';
-import HelpView from '../../components/HelpView';
+import React, { lazy, Component } from 'react';
+import { Switch } from 'react-router-dom';
+import RouteWithProps from '../../components/RouteWithProps';
+
+const ViewDenylist = lazy(() =>
+  import(/* webpackChunkName: 'Denylist.ViewDenylist' */ './ViewDenylist')
+);
+const ViewDenylistAddress = lazy(() =>
+  import(/* webpackChunkName: 'Denylist.ViewDenylistAddress' */ './ViewDenylistAddress')
+);
 
 @hot(module)
-@withStyles(theme => ({
-  plusIconSpan: {
-    ...theme.mixins.fab,
-  },
-}))
-export default class ViewDenylist extends PureComponent {
-  state = {
-    notificationsSearch: '',
-  };
-
-  handleNotificationsSearchSubmit = notificationsSearch => {
-    this.setState({ notificationsSearch });
-  };
-
-  handleCreate = () => {
-    // this.props.history.push('/auth/roles/create');
-  };
-
+export default class Denylist extends Component {
   render() {
-    const { classes } = this.props;
-    const { notificationsSearch } = this.state;
+    const {
+      match: { path },
+      ...props
+    } = this.props;
 
     return (
-      <Dashboard
-        title="Notifications Denylist"
-        helpView={<HelpView description="description" />}
-        search={
-          <Search
-            onSubmit={this.handleNotificationsSearchSubmit}
-            placeholder="Notification address contains"
-          />
-        }>
-        <Denylist searchTerm={notificationsSearch} />
-        <Button
-          spanProps={{ className: classes.plusIconSpan }}
-          tooltipProps={{ title: 'Add new address to denylist' }}
-          onClick={this.handleCreate}
-          variant="round"
-          color="secondary">
-          <PlusIcon />
-        </Button>
-      </Dashboard>
+      <Switch>
+        <RouteWithProps
+          path={`${path}/add`}
+          isNewAddress
+          {...props}
+          component={ViewDenylistAddress}
+        />
+        <RouteWithProps
+          path={`${path}/:notificationAddress`}
+          {...props}
+          component={ViewDenylistAddress}
+        />
+        <RouteWithProps
+          path={path}
+          {...props}
+          component={ViewDenylist}
+          description="Manage the notifications denylist. This page allows you
+          to view, modify or delete the denylisted addresses."
+        />
+      </Switch>
     );
   }
 }

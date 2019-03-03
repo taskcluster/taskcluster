@@ -3,10 +3,10 @@ import { string } from 'prop-types';
 import { graphql } from 'react-apollo';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import dotProp from 'dot-prop-immutable';
-import DenylistTable from '../../components/DenylistTable';
-import ErrorPanel from '../../components/ErrorPanel';
+import DenylistTable from '../../../components/DenylistTable';
+import ErrorPanel from '../../../components/ErrorPanel';
 import notificationsQuery from './denylist.graphql';
-import { VIEW_DENYLISTED_NOTIFICATIONS_PAGE_SIZE } from '../../utils/constants';
+import { VIEW_DENYLISTED_NOTIFICATIONS_PAGE_SIZE } from '../../../utils/constants';
 
 @graphql(notificationsQuery, {
   options: props => ({
@@ -22,7 +22,7 @@ import { VIEW_DENYLISTED_NOTIFICATIONS_PAGE_SIZE } from '../../utils/constants';
     },
   }),
 })
-export default class Denylist extends PureComponent {
+export default class ViewDenylist extends PureComponent {
   static propTypes = {
     searchTerm: string,
   };
