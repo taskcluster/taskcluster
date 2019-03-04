@@ -145,10 +145,7 @@ let load = loader({
 
 // If this file is executed launch component from first argument
 if (!module.parent) {
-  load(process.argv[2]).catch(err => {
-    console.log(err.stack);
-    process.exit(1);
-  });
+  load.crashOnError(process.argv[2]);
 }
 
 module.exports = load;

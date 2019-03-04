@@ -103,7 +103,7 @@ function loader(componentDirectory, virtualComponents = {}) {
     setup: () => console.log(renderGraph(componentDirectory, topoSorted)),
   };
 
-  return function(target, options = {}) {
+  let load = function(target, options = {}) {
     options = Object.assign({}, options);
 
     if (typeof target !== 'string') {
@@ -131,15 +131,14 @@ function loader(componentDirectory, virtualComponents = {}) {
     Object.entries(options).forEach(([key, comp]) => {
       loaded[key] = Promise.resolve(comp);
     });
-
     // Load a component
-    function load(target) {
+    function recursiveLoad(target) {
       if (!loaded[target]) {
         var def = componentDirectory[target];
         // Initialize component, this won't cause an infinite loop because
         // we've already check that the componentDirectory is a DAG
         let requires = def.requires || [];
-        return loaded[target] = Promise.all(requires.map(load)).then(deps => {
+        return loaded[target] = Promise.all(requires.map(recursiveLoad)).then(deps => {
           let ctx = {};
           for (let i = 0; i < deps.length; i++) {
             ctx[def.requires[i]] = deps[i];
@@ -158,9 +157,16 @@ function loader(componentDirectory, virtualComponents = {}) {
       }
       return loaded[target];
     }
-
-    return load(target);
+    return recursiveLoad(target);
   };
+
+  load.crashOnError = function(target) {
+    load(target).catch(err => {
+      console.log(err.stack);
+      process.exit(1);
+    });
+  };
+  return load;
 }
 
 module.exports = loader;
