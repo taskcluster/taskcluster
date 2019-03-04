@@ -56,7 +56,7 @@ pacman --noconfirm -S patch unzip tar
 
 # install VisualStudio 2017 Community
 choco install -y visualstudio2017community --version 15.9.7.0 --package-parameters "--add Microsoft.VisualStudio.Workload.MSBuildTools;Microsoft.VisualStudio.Component.VC.140 --passive --locale en-US"
-choco install -y visualstudio2017buildtools --version 15.9.7.0 --package-parameters "--allWorkloads --includeRecommended --passive --locale en-US"
+choco install -y visualstudio2017buildtools --version 15.9.7.0 --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools;includeRecommended --add Microsoft.VisualStudio.Component.VC.140 --passive --locale en-US"
 
 # vcredist140 required at least for bazel
 choco install -y vcredist140 --version 14.16.27027.1
@@ -69,6 +69,19 @@ choco install -y nuget.commandline --version 4.9.3
 
 # Carbon for later
 choco install -y carbon --version 2.5.0
+
+# Prepare CUDA v9.0
+#$client.DownloadFile("https://developer.nvidia.com/compute/cuda/9.0/Prod/local_installers/cuda_9.0.176_win10-exe", "C:\cuda_9.0.176_win10.exe")
+#Start-Process -FilePath "C:\cuda_9.0.176_win10.exe" -ArgumentList "-s compiler_9.0 command_line_tools_9.0 cublas_dev_9.0 cudart_9.0 cufft_dev_9.0 curand_dev_9.0 cusolver_dev_9.0 cusparse_dev_9.0" -Wait -NoNewWindow
+$client.DownloadFile("https://developer.nvidia.com/compute/cuda/9.0/Prod/local_installers/cuda_9.0.176_windows-exe", "C:\cuda_9.0.176_windows.exe")
+Start-Process -FilePath "C:\cuda_9.0.176_windows.exe" -ArgumentList "-s compiler_9.0 command_line_tools_9.0 cublas_dev_9.0 cudart_9.0 cufft_dev_9.0 curand_dev_9.0 cusolver_dev_9.0 cusparse_dev_9.0" -Wait -NoNewWindow
+
+# CuDNN v7.3.1 for CUDA 9.0
+#Expand-ZIPFile -File "C:\cudnn-9.0-windows10-x64-v7.3.1.20.zip" -Destination "C:\CuDNN\" -Url "http://developer.download.nvidia.com/compute/redist/cudnn/v7.3.1/cudnn-9.0-windows10-x64-v7.3.1.20.zip"
+Expand-ZIPFile -File "C:\cudnn-9.0-windows10-x64-v7.3.1.20.zip" -Destination "C:\CuDNN\" -Url "http://developer.download.nvidia.com/compute/redist/cudnn/v7.3.1/cudnn-9.0-windows7-x64-v7.3.1.20.zip"
+cp "C:\CuDNN\cuda\include\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\include\"
+cp "C:\CuDNN\cuda\lib\x64\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\lib\x64\"
+cp "C:\CuDNN\cuda\bin\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\bin\"
 
 # Create C:\builds and give full access to all users (for hg-shared, tooltool_cache, etc)
 md "C:\builds"
