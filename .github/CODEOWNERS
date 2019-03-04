@@ -1,10 +1,5 @@
 * @taskcluster/services-reviewers
 
-services/queue @jhford
-services/worker-manager @jhford
 services/web-server @taskcluster/frontend-reviewers
 clients/client-web @taskcluster/frontend-reviewers
 ui @taskcluster/frontend-reviewers
-clients/client @jhford
-
-infrastructure/builder @djmitche
