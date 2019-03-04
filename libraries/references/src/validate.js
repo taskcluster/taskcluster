@@ -2,6 +2,49 @@ const regexEscape = require('regex-escape');
 const {URL} = require('url');
 const libUrls = require('taskcluster-lib-urls');
 
+/**
+ * Schemas that are not referenced from a service definition, but are otherwise
+ * allowed here for historical or documentary purposes
+ */
+const UNREFERENCED_SCHEMAS = [
+  /*
+     https://validate-root.example.com/schemas/index/v-1/list-tasks-request.json#
+     https://validate-root.example.com/schemas/login/v1/credentials-response.json#
+     https://validate-root.example.com/schemas/queue/v1/poll-task-urls-response.json#
+     https://validate-root.example.com/schemas/treeherder/v1/task-treeherder-config.json#
+     https://validate-root.example.com/schemas/worker-manager/v1/worker-configuration-result.json#
+     */
+  // schemas used in documentation
+  {service: 'github', schema: 'v1/taskcluster-github-config.json#'},
+  {service: 'github', schema: 'v1/taskcluster-github-config.v1.json#'},
+  {service: 'treeherder', schema: 'v1/task-treeherder-config.json#'},
+
+  // schemas for an unpublished, deprecated API methods
+  {service: 'index', schema: 'v1/list-namespaces-request.json#'},
+  {service: 'queue', schema: 'v1/poll-task-urls-response.json#'},
+];
+
+/**
+ * Recursively scan a schema for $ref's, calling cb(ref, path) for
+ * each one.
+ */
+const forAllRefs = (content, cb) => {
+  const recurse = (value, path) => {
+    if (Array.isArray(value)) {
+      value.forEach((v, i) => recurse(v, `${path}[${i}]`));
+    } else if (typeof value === 'object') {
+      if (value.$ref && Object.keys(value).length === 1) {
+        cb(value.$ref, path);
+      } else {
+        for (const [k, v] of Object.entries(value)) {
+          recurse(v, `${path}.${k}`);
+        }
+      }
+    }
+  };
+  recurse(content, 'schema');
+};
+
 exports.validate = (references) => {
   const problems = [];
 
@@ -64,23 +107,12 @@ exports.validate = (references) => {
         return refUrl.startsWith(refRoot) || refUrl.startsWith('http://json-schema.org/');
       };
 
-      const checkRefs = (value, path) => {
-        if (Array.isArray(value)) {
-          value.forEach((v, i) => checkRefs(v, `${path}[${i}]`));
-        } else if (typeof value === 'object') {
-          if (value.$ref && Object.keys(value).length === 1) {
-            if (!refOk(value.$ref)) {
-              problems.push(`schema ${filename} $ref at ${path} is not allowed`);
-            }
-          } else {
-            for (const [k, v] of Object.entries(value)) {
-              checkRefs(v, `${path}.${k}`);
-            }
-          }
-        }
-      };
       if (!content.$id.endsWith('metadata-metaschema.json#')) {
-        checkRefs(content, 'schema');
+        forAllRefs(content, (ref, path) => {
+          if (!refOk(ref)) {
+            problems.push(`schema ${filename} $ref at ${path} is not allowed`);
+          }
+        });
       }
     }
   }
@@ -123,7 +155,7 @@ exports.validate = (references) => {
   }
 
   // If we're still doing OK, let's check that the schema references from various
-  // reference entries are OK
+  // reference entries are correctly formatted
 
   if (!problems.length) {
     const metaschemaUrl = libUrls.schema(references.rootUrl, 'common', 'metaschema.json#');
@@ -170,6 +202,66 @@ exports.validate = (references) => {
         // TODO: Start validating fields with schemas?
       } else {
         problems.push(`${filename}: unknown metadata.name ${metadata.name}`);
+      }
+    }
+  }
+
+  // Still doing OK?  Let's check that all schemas are referenced somewhere (except
+  // common schemas, which can remain for historical purposes)
+  if (!problems.length) {
+    const seen = new Set();
+
+    const recurse = (schemaId) => {
+      const schemaDoc = schemaId.replace(/#.*$/, '');
+      if (seen.has(schemaDoc)) {
+        return;
+      }
+      seen.add(schemaId);
+      const schema = references.getSchema(schemaId, {skipValidation: true});
+
+      forAllRefs(schema, (ref, path) => {
+        const refId = new URL(ref, schemaId).toString();
+        recurse(refId);
+      });
+    };
+
+    for (let {content} of references.references) {
+      const metadata = references.getSchema(content.$schema, {skipValidation: true}).metadata;
+      if (metadata.name === 'api') {
+        content.entries.forEach(({input, output}) => {
+          if (input) {
+            const fullSchema = libUrls.schema(references.rootUrl, content.serviceName, input);
+            recurse(fullSchema);
+          }
+          if (output) {
+            const fullSchema = libUrls.schema(references.rootUrl, content.serviceName, output);
+            recurse(fullSchema);
+          }
+        });
+      } else if (metadata.name === 'exchanges') {
+        content.entries.forEach(({schema}) => {
+          const fullSchema = libUrls.schema(references.rootUrl, content.serviceName, schema);
+          recurse(fullSchema);
+        });
+      } else if (metadata.name === 'logs') {
+        // Nothing to do for now
+      }
+    }
+
+    // allow some un-referenced schemas that may be referenced from documentation or
+    // kept for historical purposes
+    for (let {service, schema} of UNREFERENCED_SCHEMAS) {
+      recurse(libUrls.schema(references.rootUrl, service, schema));
+    }
+
+    // look for schemas that were not seen..
+    const commonPrefix = libUrls.schema(references.rootUrl, 'common', '');
+    for (let {content} of references.schemas) {
+      if (content.$id.startsWith(commonPrefix)) {
+        continue;
+      }
+      if (!seen.has(content.$id)) {
+        problems.push(`schema ${content.$id} not referenced anywhere`);
       }
     }
   }

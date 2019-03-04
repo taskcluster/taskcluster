@@ -16,8 +16,8 @@ class RefBuilder {
     this.schemas.push({
       filename,
       content: omit(merge({
-        $schema: 'http://json-schema.org/draft-06/schema#',
-        $id: '/schemas/common/test.json#',
+        $schema: '/schemas/common/metaschema.json#',
+        $id: '/schemas/test/test.json#',
       }, content), omitPaths),
     });
     return this;
@@ -149,10 +149,11 @@ suite('validate_test.js', function() {
     assertProblems(references, ['schema test-schema.yml has no $schema']);
   });
 
-  test('schema with custom metaschema passes', function() {
+  test('common schema with custom metaschema passes', function() {
     const references = new RefBuilder()
       .schema({
-        $schema: '/schemas/common/metadata-metaschema.json#',
+        $id: '/schemas/common/some-format.json#',
+        $schema: '/schemas/common/metaschema.json#',
         metadata: {name: 'api', version: 1},
       })
       .end();
@@ -163,6 +164,8 @@ suite('validate_test.js', function() {
     const references = new RefBuilder()
       .schema({
         type: 'object',
+        additionalProperties: false,
+        required: ['abc'],
         properties: {
           abc: ['a'],
         },
@@ -173,7 +176,7 @@ suite('validate_test.js', function() {
     ]);
   });
 
-  test('invalid schema with custom metaschema passes', function() {
+  test('invalid schema with custom metaschema fails', function() {
     const references = new RefBuilder()
       .schema({
         $schema: '/schemas/common/metadata-metaschema.json#',
@@ -363,5 +366,28 @@ suite('validate_test.js', function() {
       .apiref({entries: [{output: 'v2/resource.json#'}]})
       .end();
     assertProblems(references, []);
+  });
+
+  test('service schema referenced by service passes', function() {
+    const references = new RefBuilder()
+      .schema({
+        $id: '/schemas/test/test.json#',
+      })
+      .apiref({
+        entries: [{input: 'test.json#'}],
+      })
+      .end();
+    assertProblems(references, []);
+  });
+
+  test('service schema *not* referenced by service fails', function() {
+    const references = new RefBuilder()
+      .schema({
+        $id: '/schemas/test/test.json#',
+      })
+      .end();
+    assertProblems(references, [
+      'schema https://tc-tests.example.com/schemas/test/test.json# not referenced anywhere',
+    ]);
   });
 });

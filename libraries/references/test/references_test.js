@@ -65,11 +65,33 @@ suite('references_test.js', function() {
   test('writes uri-structured', function() {
     mockFs({});
     const references = new References({
-      references: [],
+      references: [
+        {
+          filename: 'some-reference.yml',
+          content: {
+            $schema: '/schemas/common/api-reference-v0.json#',
+            apiVersion: 'v2',
+            serviceName: 'test',
+            title: 'Test Service',
+            description: 'Test Service',
+            entries: [{
+              type: 'function',
+              name: 'foo',
+              title: 'Foo',
+              description: 'Foo-bar',
+              method: 'get',
+              input: 'sch.json#',
+              route: '/foo',
+              args: [],
+              stability: 'experimental',
+            }],
+          },
+        },
+      ],
       schemas: getCommonSchemas().concat([{
         filename: 'foo.json',
         content: {
-          $schema: '/schemas/common/metadata-metaschema.json#',
+          $schema: '/schemas/common/metaschema.json#',
           $id: '/schemas/test/sch.json#',
           metadata: {name: 'api', version: 1},
           type: 'string',
@@ -80,7 +102,7 @@ suite('references_test.js', function() {
     references.writeUriStructured({directory: '/refdata'});
     assert.deepEqual(JSON.parse(fs.readFileSync('/refdata/schemas/test/sch.json')), {
       $id: '/schemas/test/sch.json#',
-      $schema: '/schemas/common/metadata-metaschema.json#',
+      $schema: '/schemas/common/metaschema.json#',
       metadata: {name: 'api', version: 1},
       type: 'string',
     });
