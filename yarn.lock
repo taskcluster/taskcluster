@@ -3581,6 +3581,14 @@ eslint-scope@^4.0.0:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
+eslint-scope@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/eslint-scope/-/eslint-scope-4.0.2.tgz#5f10cd6cabb1965bf479fa65745673439e21cb0e"
+  integrity sha512-5q1+B/ogmHl8+paxtOKx38Z8LtWkVGuNt3+GQNErqwLl6ViNp/gdJGMCjZNxZ8j/VYjDNZ2Fo+eQc1TAVPIzbg==
+  dependencies:
+    esrecurse "^4.1.0"
+    estraverse "^4.1.1"
+
 eslint-utils@^1.3.1:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/eslint-utils/-/eslint-utils-1.3.1.tgz#9a851ba89ee7c460346f97cf8939c7298827e512"
@@ -3591,10 +3599,10 @@ eslint-visitor-keys@^1.0.0:
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#3f3180fb2e291017716acb4c9d6d5b5c34a6a81d"
   integrity sha512-qzm/XxIbxm/FHyH341ZrbnMUpe+5Bocte9xkmFMzPMjRaZMcXww+MpBptFvtU+79L362nqiLhekCxCxDPaUMBQ==
 
-eslint@5.14.1:
-  version "5.14.1"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-5.14.1.tgz#490a28906be313685c55ccd43a39e8d22efc04ba"
-  integrity sha512-CyUMbmsjxedx8B0mr79mNOqetvkbij/zrXnFeK2zc3pGRn3/tibjiNAv/3UxFEyfMDjh+ZqTrJrEGBFiGfD5Og==
+eslint@5.15.0:
+  version "5.15.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-5.15.0.tgz#f313a2f7c7628d39adeefdba4a9c41f842012c9e"
+  integrity sha512-xwG7SS5JLeqkiR3iOmVgtF8Y6xPdtr6AAsN6ph7Q6R/fv+3UlKYoika8SmNzmb35qdRF+RfTY35kMEdtbi+9wg==
   dependencies:
     "@babel/code-frame" "^7.0.0"
     ajv "^6.9.1"
@@ -3602,7 +3610,7 @@ eslint@5.14.1:
     cross-spawn "^6.0.5"
     debug "^4.0.1"
     doctrine "^3.0.0"
-    eslint-scope "^4.0.0"
+    eslint-scope "^4.0.2"
     eslint-utils "^1.3.1"
     eslint-visitor-keys "^1.0.0"
     espree "^5.0.1"
@@ -8825,52 +8833,112 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:clients/client":
-  version "0.0.0"
-  uid ""
+  version "13.0.0"
+  dependencies:
+    debug "^4.0.0"
+    hawk "^7.0.10"
+    lodash "^4.17.4"
+    promise "^8.0.1"
+    slugid "^2.0.0"
+    superagent "^4.0.0"
+    taskcluster-lib-urls "^12.0.0"
 
 "taskcluster-lib-api@link:libraries/api":
-  version "0.0.0"
-  uid ""
+  version "12.8.1"
+  dependencies:
+    aws-sdk "^2.151.0"
+    body-parser "1.18.3"
+    debug "^4.0.0"
+    express "4.16.4"
+    hawk "^7.0.10"
+    lodash "^4.15.0"
+    promise "^8.0.1"
+    slugid "^2.0.0"
+    type-is "^1.6.15"
+    uuid "^3.1.0"
 
 "taskcluster-lib-app@link:libraries/app":
-  version "0.0.0"
-  uid ""
+  version "10.2.0"
+  dependencies:
+    content-security-policy "^0.3.0"
+    debug "^4.0.0"
+    express "4.16.4"
+    express-sslify "1.2.0"
+    hsts "^2.1.0"
+    lodash "4.17.11"
+    morgan "^1.0.0"
+    morgan-debug "^2.0.0"
+    promise "^8.0.1"
+    uuid "^3.3.2"
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "0.0.0"
-  uid ""
+  version "10.0.0"
 
 "taskcluster-lib-docs@link:libraries/docs":
-  version "0.0.0"
-  uid ""
+  version "11.0.0"
+  dependencies:
+    app-root-dir "^1.0.2"
+    aws-sdk "^2.147.0"
+    debug "^4.0.0"
+    lodash "^4.13.1"
+    mkdirp "^0.5.1"
+    mz "^2.7.0"
+    promisepipe "^3.0.0"
+    recursive-readdir-sync "^1.0.6"
+    s3-upload-stream "^1.0.7"
+    tar-stream "^2.0.0"
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "0.0.0"
-  uid ""
+  version "11.0.0"
+  dependencies:
+    debug "^4.1.0"
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "0.0.0"
-  uid ""
+  version "11.0.0"
+  dependencies:
+    assume "^2.1.0"
+    debug "^4.1.0"
+    topo-sort "^1.0.0"
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "0.0.0"
-  uid ""
+  version "11.1.1"
+  dependencies:
+    app-root-dir "^1.0.2"
+    chalk "^2.4.2"
+    debug "^4.1.1"
+    fast-json-stable-stringify "^2.0.0"
+    serialize-error "^3.0.0"
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "0.0.0"
-  uid ""
+  version "11.1.1"
+  dependencies:
+    amqplib "^0.5.2"
+    aws-sdk "^2.331.0"
+    debug "^4.0.0"
 
 "taskcluster-lib-references@link:libraries/references":
-  version "0.0.0"
-  uid ""
+  version "1.5.0"
+  dependencies:
+    ajv "^6.5.5"
+    js-yaml "^3.12.1"
+    lodash "^4.17.10"
+    mkdirp "^0.5.1"
+    regex-escape "^3.4.8"
+    rimraf "^2.6.2"
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "0.0.0"
-  uid ""
+  version "10.0.1"
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "0.0.0"
-  uid ""
+  version "12.1.2"
+  dependencies:
+    debug "^4.0.0"
+    express "4.16.4"
+    hawk "^7.0.10"
+    lodash "^4.17.10"
+    nock "^10.0.0"
+    promise "^8.0.1"
+    superagent "^4.0.0"
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -8878,8 +8946,18 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "0.0.0"
-  uid ""
+  version "12.0.0"
+  dependencies:
+    ajv "^6.5.0"
+    app-root-dir "^1.0.2"
+    aws-sdk "^2.142.0"
+    debug "^4.0.0"
+    js-yaml "^3.12.1"
+    lodash "^4.5.1"
+    mkdirp "^0.5.1"
+    promise "^8.0.1"
+    rimraf "^2.6.2"
+    walk "^2.3.9"
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"
@@ -9159,8 +9237,11 @@ typechecker@~2.0.1:
   integrity sha1-6D2oS7ZMWEzLNFg4V2xAsDN9uC4=
 
 "typed-env-config@link:libraries/typed-env-config":
-  version "0.0.0"
-  uid ""
+  version "3.0.0"
+  dependencies:
+    debug "^4.1.0"
+    js-yaml "^3.12.1"
+    lodash "^4.17.11"
 
 typedarray@^0.0.6:
   version "0.0.6"
