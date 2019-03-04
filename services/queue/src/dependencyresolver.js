@@ -45,12 +45,14 @@ class DependencyResolver {
     this._parallelism = options.parallelism;
 
     // do iteration
+    const pollingDelaySecs = this._pollingDelay / 1000;
+    const maxIterationTimeSecs = 600;
     this.iterator = new Iterate({
       maxFailures: 10,
-      waitTime: this._pollingDelay,
-      watchDog: this._pollingDelay,
+      waitTime: pollingDelaySecs,
+      watchDog: maxIterationTimeSecs + 1, // disable watchdog
       monitor: this.monitor,
-      maxIterationTime: 60,
+      maxIterationTime: maxIterationTimeSecs,
       handler: async () => {
         let loops = [];
         for (var i = 0; i < this._parallelism; i++) {
@@ -97,12 +99,11 @@ class DependencyResolver {
       }
     }));
 
-    if (messages.length === 0 && !this._stopping) {
+    if (messages.length === 0) {
       // Count that the queue is empty, we should have this happen regularly.
       // otherwise, we're not keeping up with the messages. We can setup
       // alerts to notify us if this doesn't happen for say 40 min.
       this.monitor.count('resolved-queue-empty');
-      await new Promise(accept => setTimeout(accept, this._pollingDelay));
     }
   }
 }
