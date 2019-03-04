@@ -3,7 +3,7 @@ import depthLimit from 'graphql-depth-limit';
 import { createComplexityLimitRule } from 'graphql-validation-complexity';
 import loader from 'taskcluster-lib-loader';
 import docs from 'taskcluster-lib-docs';
-import config from 'typed-env-config';
+import config from 'taskcluster-lib-config';
 import { createServer } from 'http';
 import { FakeClient, Client, pulseCredentials } from 'taskcluster-lib-pulse';
 import { ApolloServer } from 'apollo-server-express';

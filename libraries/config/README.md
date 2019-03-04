@@ -1,6 +1,6 @@
-# Typed-Env-Config Library
+# Config Library
 
-This module makes it easy to load configuration from YAML files, and allows
+This library makes it easy to load configuration from YAML files, and allows
 these YAML files to specify environment variables to substitute into the
 configuration.
 
@@ -59,7 +59,7 @@ provide credentials. So in most cases, services load load configuration with
 
 The default options are shown here:
 ```js
-var config = require('typed-env-config');
+var config = require('taskcluster-lib-config');
 
 var cfg = config({
   files: [                // Files to load configuration from

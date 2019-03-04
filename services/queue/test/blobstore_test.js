@@ -8,7 +8,7 @@ suite.skip('queue/tasks_store', function() {
   var request = require('superagent');
   var BlobUploader = require('./azure-blob-uploader-sas');
   var debug = require('debug')('test:blobstore_test');
-  var config = require('typed-env-config');
+  var config = require('taskcluster-lib-config');
 
   // Load configuration
   var cfg = config({profile: 'test'});

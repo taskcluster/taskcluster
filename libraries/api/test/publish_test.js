@@ -1,5 +1,5 @@
 const APIBuilder = require('../');
-const config = require('typed-env-config');
+const config = require('taskcluster-lib-config');
 const aws = require('aws-sdk');
 const assert = require('assert');
 const libUrls = require('taskcluster-lib-urls');

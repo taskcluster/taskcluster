@@ -1,5 +1,5 @@
 {
-  "name": "typed-env-config",
+  "name": "taskcluster-lib-config",
   "private": true,
   "version": "3.0.0",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",

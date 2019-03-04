@@ -42,7 +42,7 @@ tasks:
       - taskcluster-lib-references
       - taskcluster-lib-scopes
       - taskcluster-lib-testing
-      - typed-env-config
+      - taskcluster-lib-config
       - taskcluster-lib-validate
       - taskcluster-auth
       - taskcluster-built-in-workers

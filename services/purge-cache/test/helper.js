@@ -6,7 +6,7 @@ const data = require('../src/data');
 const taskcluster = require('taskcluster-client');
 const mocha = require('mocha');
 const load = require('../src/main');
-const config = require('typed-env-config');
+const config = require('taskcluster-lib-config');
 const {stickyLoader, Secrets, fakeauth} = require('taskcluster-lib-testing');
 const slugid = require('slugid');
 
