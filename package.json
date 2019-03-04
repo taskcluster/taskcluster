@@ -95,7 +95,7 @@
     "zurvan": "^0.5.2"
   },
   "scripts": {
-    "lint": "eslint --cache --ext js libraries services infrastructure clients/client",
+    "lint": "eslint --cache --ext js libraries services infrastructure clients/client test",
     "test": "yarn workspaces run test",
     "test:meta": "mocha test/*_test.js",
     "build": "node infrastructure/builder/src/main.js build",
