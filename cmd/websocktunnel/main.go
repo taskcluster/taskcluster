@@ -28,7 +28,7 @@ Environment:
  TASKCLUSTER_PROXY_SECRET_A                  JWT secret
  TASKCLUSTER_PROXY_SECRET_B                  alternate JWT secret
  SYSLOG_ADDR                                 address to which to send syslog output
- AUDIENCE									 JWT 'audience' claim 
+ AUDIENCE                                    JWT 'audience' claim
 
 Options:
 -h --help       Show help`
