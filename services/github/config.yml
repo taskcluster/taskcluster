@@ -94,8 +94,6 @@ staging:
     initialStatusQueue: 'checks-tasks'
     buildsTableName: 'TaskclusterGithubBuildsStaging'
     ownersDirectoryTableName: 'TaskclusterIntegrationOwnersStaging'
-    checkRunsTableName: 'TaskclusterCheckRunsStaging'
-    checksToTasksTableName: 'TaskclusterChecksToTasksStaging'
     name: 'tc-github-staging'
     statusContext: 'Taskcluster-Staging'
     botName: 'taskcluster-staging[bot]'

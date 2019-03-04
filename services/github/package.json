@@ -5,8 +5,7 @@
   "scripts": {
     "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
     "lint": "eslint src/*.js test/*.js",
-    "test": "mocha test/*_test.js",
-    "checkStaging": "node test/checkStaging.js"
+    "test": "mocha test/*_test.js"
   },
   "dependencies": {
     "@octokit/rest": "^16.15.0",

@@ -5,8 +5,7 @@
   "scripts": {
     "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
     "test": "mocha test/*_test.js",
-    "lint": "eslint src/*.js test/*.js",
-    "verify": "node bin/verify-prod"
+    "lint": "eslint src/*.js test/*.js"
   },
   "dependencies": {
     "azure-entities": "^5.2.0",

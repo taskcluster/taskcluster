@@ -24,13 +24,6 @@ Taskcluster will come to a screeching halt immediately.  Don't do that.
 This app auto-deploys from Github to the staging environment, which uses a
 different Azure backend.
 
-Happily, there's a nice, automated way of testing that staging environment
-before promoting it to production.  First, if you haven't already, run `npm run
-checkStagingSetup` and copy-paste the results into your `user-config.yml`.
-Note that you will need Heroku app access to do this!  Once your config is set
-up, just run `npm run checkStaging` to check the staging site for
-functionality.
-
 # Development
 
 To hack on this service, you can begin by cloning the repository and running `yarn --frozen-lockfile` to install its dependencies.
