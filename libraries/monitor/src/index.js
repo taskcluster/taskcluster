@@ -137,6 +137,8 @@ class MonitorManager {
     this.rootMonitor = new Monitor({
       logger,
       verify,
+      mock,
+      enable,
       types: this.types,
     });
 
@@ -205,6 +207,8 @@ class MonitorManager {
     return new Monitor({
       types: this.types,
       verify: this.verify,
+      mock: this.mock,
+      enable: this.enable,
       logger: new Logger({
         name: `taskcluster.${this.serviceName}.${prefix}`,
         service: this.serviceName,
