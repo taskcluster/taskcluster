@@ -1,10 +1,16 @@
 const fs = require('fs');
+const path = require('path');
 const References = require('taskcluster-lib-references');
 
 const build = (input, output, rootUrl) => {
   const serializable = JSON.parse(fs.readFileSync(input, {encoding: 'utf8'}));
   const refs = References.fromSerializable({serializable});
+
+  // write uri-structured data to the root where nginx will serve it
   refs.asAbsolute(rootUrl).writeUriStructured({directory: output});
+
+  // write out a single `references/references.json` containing the same data
+  fs.writeFileSync(path.join(output, 'references', 'references.json'), input);
 };
 
 if (!module.parent) {
