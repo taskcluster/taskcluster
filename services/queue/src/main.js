@@ -534,7 +534,7 @@ let load = loader({
       'cfg', 'Task', 'queueService', 'publisher', 'monitor',
       'dependencyTracker',
     ],
-    setup: ({
+    setup: async ({
       cfg, Task, queueService, publisher, dependencyTracker, monitor,
     }) => {
       let resolver = new DeadlineResolver({
@@ -543,7 +543,7 @@ let load = loader({
         parallelism: cfg.app.deadlineResolver.parallelism,
         monitor: monitor.monitor('deadline-resolver'),
       });
-      resolver.start();
+      await resolver.start();
       return resolver;
     },
   },
