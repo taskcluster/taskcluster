@@ -514,7 +514,7 @@ let load = loader({
       'cfg', 'Task', 'queueService', 'publisher', 'monitor',
       'dependencyTracker',
     ],
-    setup: ({
+    setup: async ({
       cfg, Task, queueService, publisher, dependencyTracker, monitor,
     }) => {
       let resolver = new ClaimResolver({
@@ -523,7 +523,7 @@ let load = loader({
         parallelism: cfg.app.claimResolver.parallelism,
         monitor: monitor.monitor('claim-resolver'),
       });
-      resolver.start();
+      await resolver.start();
       return resolver;
     },
   },
