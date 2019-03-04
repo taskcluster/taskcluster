@@ -19,7 +19,8 @@
       "title": "Owner",
       "description": "Email of the person or group responsible for this hook.",
       "type": "string",
-      "maxLength": 255
+      "maxLength": 255,
+      "format": "email"
     },
     "emailOnError": {
       "title": "Email on error",

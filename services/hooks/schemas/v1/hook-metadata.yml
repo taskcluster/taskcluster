@@ -17,6 +17,7 @@ properties:
     description: "Email of the person or group responsible for this hook."
     type: "string"
     maxLength: 255
+    format: email
   emailOnError:
     title: "Email on error"
     description: "Whether to email the owner on an error creating the task."
