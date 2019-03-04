@@ -518,7 +518,7 @@ suite('component loader', () => {
     assume(orderCalled).eql(['dep4', 'dep3', 'dep2', 'dep1', 'base']);
   });
 
-  it('should fail when specified component didn\'t load', async () => {
+  test('should fail when specified component didn\'t load', async () => {
     let load = subject({
       fail: {
         requires: [],
