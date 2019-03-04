@@ -448,17 +448,26 @@ exports.withPulse = (mock, skipping) => {
  * caller must stop the service *before* returning.
  */
 exports.withPollingServices = (mock, skipping) => {
+  let svc;
+
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
 
     helper.startPollingService = async service => {
-      const svc = await helper.load(service);
+      svc = await helper.load(service);
       // remove it right away, as it is started on load
       helper.load.remove(service);
       return svc;
     };
+  });
+
+  teardown(async function() {
+    if (svc) {
+      await svc.terminate();
+      svc = null;
+    }
   });
 
   suiteTeardown(async function() {
