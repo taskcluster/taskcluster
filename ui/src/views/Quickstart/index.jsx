@@ -27,7 +27,7 @@ import urls from '../../utils/urls';
 import ErrorPanel from '../../components/ErrorPanel';
 import githubQuery from './github.graphql';
 
-const initialYaml = {
+const taskDefinition = {
   version: 1,
   policy: {
     pullRequests: 'collaborators',
@@ -86,7 +86,7 @@ const getMatchCondition = events => {
   return condition;
 };
 
-const getNewYaml = state => {
+const getTaskDefinition = state => {
   const {
     access,
     commands,
@@ -97,22 +97,22 @@ const getNewYaml = state => {
   } = state;
 
   return safeDump({
-    ...initialYaml,
+    ...taskDefinition,
     policy: {
       pullRequests: access,
     },
     tasks: {
       $match: {
         [condition]: {
-          ...initialYaml.tasks.$match,
+          ...taskDefinition.tasks.$match,
           ...{
             metadata: {
-              ...initialYaml.tasks.$match.metadata,
+              ...taskDefinition.tasks.$match.metadata,
               name: taskName,
               description: taskDescription,
             },
             payload: {
-              ...initialYaml.tasks.$match.payload,
+              ...taskDefinition.tasks.$match.payload,
               image,
               command: commands,
             },
@@ -194,12 +194,15 @@ const cmdDirectory = (type, org = '<YOUR_ORG>', repo = '<YOUR_REPO>') =>
   },
 }))
 export default class QuickStart extends Component {
+  initialEvents = new Set([
+    'pull_request.opened',
+    'pull_request.reopened',
+    'pull_request.synchronize',
+  ]);
+
   initialState = {
-    events: new Set([
-      'pull_request.opened',
-      'pull_request.reopened',
-      'pull_request.synchronize',
-    ]),
+    events: this.initialEvents,
+    condition: getMatchCondition(this.initialEvents),
     owner: '',
     repo: '',
     access: 'collaborators',
@@ -211,10 +214,7 @@ export default class QuickStart extends Component {
     taskDescription: '',
   };
 
-  state = {
-    ...this.initialState,
-    condition: getMatchCondition(this.initialState.events),
-  };
+  state = this.initialState;
 
   getInstalledState = debounce(async (owner, repo) => {
     const { data } = await this.props.client.query({
@@ -286,12 +286,12 @@ export default class QuickStart extends Component {
 
     this.setState({
       ...resetState,
-      editorValue: getNewYaml(resetState),
+      editorValue: getTaskDefinition(resetState),
     });
   };
 
   renderEditor() {
-    const newYaml = getNewYaml(this.state);
+    const newYaml = getTaskDefinition(this.state);
 
     return (
       <CodeEditor
