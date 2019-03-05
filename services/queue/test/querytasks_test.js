@@ -138,11 +138,19 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       helper.queue.createTask(taskId2, taskDef),
     ]);
 
-    // const r1 = await helper.queue.pendingTasks(
-    //   'no-provisioner-extended-extended',
-    //   'query-test-worker-extended-extended',
-    // );
-    // assume(r1.pendingTasks).is.greaterThan(1);
+    const r1 = await helper.queue.lastConsumed(
+      'no-provisioner-extended-extended',
+      'query-test-worker-extended-extended',
+    );
+    assume(r1.lastConsumed).is("");
+
+    // TODO: claim a job
+
+    const r2 = await helper.queue.lastConsumed(
+      'no-provisioner-extended-extended',
+      'query-test-worker-extended-extended',
+    );
+    assume(r2.lastConsumed).is.equals("");
 
     // // Result is cached for 20 seconds, so adding one more and checking should
     // // give the same result, as we're not waiting for the timeout
