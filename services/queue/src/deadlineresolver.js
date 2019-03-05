@@ -5,6 +5,7 @@ let _ = require('lodash');
 let data = require('./data');
 let QueueService = require('./queueservice');
 let events = require('events');
+let Iterate = require('taskcluster-lib-iterate');
 
 /** State that are considered resolved */
 const RESOLVED_STATES = [
@@ -65,66 +66,60 @@ class DeadlineResolver {
     this.parallelism = options.parallelism;
     this.monitor = options.monitor;
 
-    // Promise that polling is done
-    this.done = null;
-    // Boolean that polling should stop
-    this.stopping = false;
+    const pollingDelaySecs = this.pollingDelay / 1000;
+    const maxIterationTimeSecs = 600;
+    this.iterator = new Iterate({
+      maxFailures: 10,
+      waitTime: pollingDelaySecs,
+      watchDog: maxIterationTimeSecs + 1, // disable watchdog
+      monitor: this.monitor,
+      maxIterationTime: maxIterationTimeSecs,
+      handler: async () => {
+        let loops = [];
+        for (var i = 0; i < this.parallelism; i++) {
+          loops.push(this.poll());
+        }
+        await Promise.all(loops);
+      },
+    });
   }
 
   /** Start polling */
-  start() {
-    if (this.done) {
-      return;
-    }
-    this.stopping = false;
-
-    // Start a loop for the amount of parallelism desired
-    var loops = [];
-    for (var i = 0; i < this.parallelism; i++) {
-      loops.push(this.poll());
-    }
-    // Create promise that we're done looping
-    this.done = Promise.all(loops).catch(async (err) => {
-      console.log('Crashing the process: %s, as json: %j', err, err);
-      // TODO: use this.monitor.reportError(err); when PR lands:
-      // https://github.com/taskcluster/taskcluster-lib-monitor/pull/27
-      await this.monitor.reportError(err, 'error', {});
-      // Crash the process
-      process.exit(1);
-    }).then(() => {
-      this.done = null;
+  async start() {
+    return new Promise((res, rej) => {
+      this.iterator.once('started', res);
+      this.iterator.start();
     });
   }
 
   /** Terminate iteration, returns promise that polling is stopped */
   terminate() {
-    this.stopping = true;
-    return this.done;
+    return new Promise((res, rej) => {
+      this.iterator.once('stopped', res);
+      this.iterator.stop();
+    });
   }
 
   /** Poll for messages and handle them in a loop */
   async poll() {
-    while (!this.stopping) {
-      var messages = await this.queueService.pollDeadlineQueue();
-      debug('Fetched %s messages', messages.length);
+    var messages = await this.queueService.pollDeadlineQueue();
+    debug('Fetched %s messages', messages.length);
 
-      await Promise.all(messages.map(async (message) => {
-        // Don't let a single task error break the loop, it'll be retried later
-        // as we don't remove message unless they are handled
-        try {
-          await this.handleMessage(message);
-        } catch (err) {
-          this.monitor.reportError(err, 'warning');
-        }
-      }));
-
-      if (messages.length === 0 && !this.stopping) {
-        // Count that the queue is empty, we should have this happen regularly.
-        // otherwise, we're not keeping up with the messages. We can setup
-        // alerts to notify us if this doesn't happen for say 40 min.
-        this.monitor.count('deadline-queue-empty');
-        await this.sleep(this.pollingDelay);
+    await Promise.all(messages.map(async (message) => {
+      // Don't let a single task error break the loop, it'll be retried later
+      // as we don't remove message unless they are handled
+      try {
+        await this.handleMessage(message);
+      } catch (err) {
+        this.monitor.reportError(err, 'warning');
       }
+    }));
+
+    if (messages.length === 0 && !this.stopping) {
+      // Count that the queue is empty, we should have this happen regularly.
+      // otherwise, we're not keeping up with the messages. We can setup
+      // alerts to notify us if this doesn't happen for say 40 min.
+      this.monitor.count('deadline-queue-empty');
     }
   }
 

@@ -75,7 +75,7 @@ helper.rootUrl = 'http://localhost:60401';
  * Fake time is only used when mock is true; in a real situation, we are interacting with
  * real services and must use the same clock they do.
  */
-helper.runWithFakeTime = (fn, mock, time=30000) => {
+helper.runWithFakeTime = (fn, mock, maxTime=30000) => {
   if (!mock) {
     // if not mocking, we can't use fake time as it will cause all sorts
     // of timeouts to occur immediately
@@ -92,7 +92,7 @@ helper.runWithFakeTime = (fn, mock, time=30000) => {
     fakingTime = true;
 
     let finished, err;
-    this.slow(time);
+    this.slow(maxTime);
     fn.apply(this, []).then(
       () => {
         finished = true;
@@ -104,6 +104,7 @@ helper.runWithFakeTime = (fn, mock, time=30000) => {
 
     // intermingle setImmediate calls with advanceTime calls, so that things zurvan cannot
     // successfully fake (like JS files internal to Node) get a chance to run.
+    let time = maxTime;
     while (time > 0 && !finished) {
       await zurvan.advanceTime(100);
       time -= 100;
@@ -116,7 +117,7 @@ helper.runWithFakeTime = (fn, mock, time=30000) => {
       throw err;
     }
     if (!finished) {
-      throw new Error(`test case not finished after faked passage of ${time}ms`);
+      throw new Error(`test case not finished after faked passage of ${maxTime}ms`);
     }
   };
 };
@@ -447,17 +448,26 @@ exports.withPulse = (mock, skipping) => {
  * caller must stop the service *before* returning.
  */
 exports.withPollingServices = (mock, skipping) => {
+  let svc;
+
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
 
     helper.startPollingService = async service => {
-      const svc = await helper.load(service);
+      svc = await helper.load(service);
       // remove it right away, as it is started on load
       helper.load.remove(service);
       return svc;
     };
+  });
+
+  teardown(async function() {
+    if (svc) {
+      await svc.terminate();
+      svc = null;
+    }
   });
 
   suiteTeardown(async function() {
