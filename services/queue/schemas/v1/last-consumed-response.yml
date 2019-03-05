@@ -1,0 +1,34 @@
+$schema: "/schemas/common/metaschema.json#"
+title:              "Count Pending Tasks Response"
+description: |
+  Response to a request for the number of pending tasks for a given
+  `provisionerId` and `workerType`.
+type:               object
+properties:
+  provisionerId:
+    title:          "Provisioner Id"
+    description: |
+      Unique identifier for the provisioner
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+  workerType:
+    title:          "Worker Type"
+    description: |
+      Identifier for worker type within the specified provisioner
+    type:           string
+    minLength:      {$const: identifier-min-length}
+    maxLength:      {$const: identifier-max-length}
+    pattern:        {$const: identifier-pattern}
+  lastConsumed:
+    type:           integer
+    minimum:        0
+    title:          "Timestamp When A Job Was Last Claimed"
+    description: |
+      The timestamp when a job was last claimed.
+additionalProperties: false
+required:
+  - provisionerId
+  - workerType
+  - lastConsumed

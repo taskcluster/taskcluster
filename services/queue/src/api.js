@@ -2133,7 +2133,7 @@ builder.declare({
   route: '/last_consumed/:provisionerId/:workerType',
   name: 'lastConsumed',
   stability: APIBuilder.stability.stable,
-  output: 'pending-tasks-response.yml',
+  output: 'last-consumed-response.yml',
   title: 'Get Seconds Since Last Claimed Task',
   description: [
     'Get an approximate number of seconds since a task was claimed for',
