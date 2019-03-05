@@ -106,7 +106,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   //   - check that initial value is empty as expected
   //   - claim task
   //   - verify that last_consumed value is expected
-  test('last_consumed works', async () => {
+  test('lastConsumed >= 1', async () => {
     const taskDef = {
       provisionerId: 'no-provisioner-extended-extended',
       workerType: 'query-test-worker-extended-extended',
