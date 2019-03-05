@@ -27,6 +27,7 @@ module "secrets_secrets" {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/secrets"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.secrets_access_token.result}"
     NODE_ENV                 = "production"
+    FORCE_SSL                = "false"
     MONITORING_ENABLE        = "false"
     PUBLISH_METADATA         = "false"
     AZURE_ACCOUNT            = "${azurerm_storage_account.base.name}"

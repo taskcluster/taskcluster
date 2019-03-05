@@ -15,6 +15,7 @@ module "web_ui" {
   source         = "modules/deployment"
   project_name   = "taskcluster-ui"
   service_name   = "ui"
+  proc_name      = "web"
   root_url       = "${var.root_url}"
   docker_image   = "${local.taskcluster_image_monoimage}"
   secret_name    = "${module.web_ui_secrets.secret_name}"
