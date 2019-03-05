@@ -5,6 +5,7 @@ let _ = require('lodash');
 let data = require('./data');
 let QueueService = require('./queueservice');
 let events = require('events');
+let Iterate = require('taskcluster-lib-iterate');
 
 /** State that are considered resolved */
 const RESOLVED_STATES = [
