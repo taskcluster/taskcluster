@@ -2127,6 +2127,38 @@ builder.declare({
   });
 });
 
+/** Count pending tasks for workerType */
+builder.declare({
+  method: 'get',
+  route: '/last_consumed/:provisionerId/:workerType',
+  name: 'lastConsumed',
+  stability: APIBuilder.stability.stable,
+  output: 'pending-tasks-response.yml',
+  title: 'Get Seconds Since Last Claimed Task',
+  description: [
+    'Get an approximate number of seconds since a task was claimed for',
+    'the given `provisionerId` and `workerType`.',
+    '',
+    'We cache the result in memory for 20 seconds. So consumers',
+    'should be no means expect this to be an accurate number.',
+  ].join('\n'),
+}, async function(req, res) {
+  var provisionerId = req.params.provisionerId;
+  var workerType = req.params.workerType;
+
+  // Get number of pending message
+  var count = await this.queueService.countPendingMessages(
+    provisionerId, workerType,
+  );
+
+  // Reply to call with count `pendingTasks`
+  return res.reply({
+    provisionerId: provisionerId,
+    workerType: workerType,
+    pendingTasks: count,
+  });
+});
+
 /** List worker-types for a given provisioner */
 builder.declare({
   method: 'get',
