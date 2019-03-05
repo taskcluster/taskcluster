@@ -23,7 +23,7 @@ implementations are completely different.
 
 Actions are defined at the provisioner level. To set the actions to a
 provisioner, perform a call to the queue's
-[declareProvisioner](/docs/reference/platform/taskcluster-queue/references/api#declareProvisioner)
+[declareProvisioner](/docs/reference/platform/taskcluster-queue/references/v1/api#declareProvisioner)
 method, supplying a list of actions.
 
 An action is comprised with the following properties:
@@ -50,9 +50,9 @@ specific to a context will only be returned by the appropriate API method.
 
 | `context`     | API Method                                                                             |
 |---------------|----------------------------------------------------------------------------------------|
-| `provisioner` | [getProvisioner](/docs/reference/platform/taskcluster-queue/references/api#getProvisioner)* |
-| `worker-type` | [getWorkerType](/docs/reference/platform/taskcluster-queue/references/api#getWorkerType)    |
-| `worker`      | [getWorker](/docs/reference/platform/taskcluster-queue/references/api#getWorker)            |
+| `provisioner` | [getProvisioner](/docs/reference/platform/taskcluster-queue/references/v1/api#getProvisioner)* |
+| `worker-type` | [getWorkerType](/docs/reference/platform/taskcluster-queue/references/v1/api#getWorkerType)    |
+| `worker`      | [getWorker](/docs/reference/platform/taskcluster-queue/references/v1/api#getWorker)            |
 
 Note that all actions are declared at the provisioner level, regardless of
 context.  For symmetry, `getProvisioner` also returns all actions, not just

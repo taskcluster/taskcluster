@@ -756,7 +756,7 @@ async function taskGroupCreationHandler(message) {
  * checks api function
  *
  * @param message - taskDefined exchange message
- *   https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/references/events#taskDefined
+ *   https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/references/v1/events#taskDefined
  * @returns {Promise<void>}
  */
 async function taskDefinedHandler(message) {

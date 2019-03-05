@@ -16,7 +16,7 @@ example, there is no active management of the
 `provisionerId`.
 
 Provisioners can be declared, and metadata associated with them, via the
-[declareProvisioner](/docs/reference/platform/taskcluster-queue/references/api#declareProvisioner)
+[declareProvisioner](/docs/reference/platform/taskcluster-queue/references/v1/api#declareProvisioner)
 API method.
 
 ## Worker Types
@@ -27,7 +27,7 @@ interchangeable workers that can all perform the same work. Tasks are queued
 for a specific worker type, and workers claim work for a single worker type.
 
 Worker types can be declared, and metadata associated with them, via the
-[declareWorkerType](/docs/reference/platform/taskcluster-queue/references/api#declareWorkerType)
+[declareWorkerType](/docs/reference/platform/taskcluster-queue/references/v1/api#declareWorkerType)
 API method.
 
 ## Workers
@@ -37,5 +37,5 @@ perform work, and are identified by `workerGroup/workerId`. A worker claims and
 performs work from a single worker type.
 
 Workers can be declared, and metadata associated with them, via the
-[declareWorker](/docs/reference/platform/taskcluster-queue/references/api#declareWorker)
+[declareWorker](/docs/reference/platform/taskcluster-queue/references/v1/api#declareWorker)
 API method.

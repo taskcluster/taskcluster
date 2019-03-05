@@ -44,8 +44,8 @@ But what you've really been waiting for is to know how to use this, so here's a 
 ### Setting Custom Messages
 
 In both irc and email you can set custom messages by adding fields to your task definition. The fields will be rendered with [jsone](https://taskcluster.github.io/json-e/)
-given a context of the [task definition](/docs/reference/platform/taskcluster-queue/references/api#get-task-definition)
-and the `status` section of [task status](/docs/reference/platform/taskcluster-queue/references/events#message-payload-4).
+given a context of the [task definition](/docs/reference/platform/taskcluster-queue/references/v1/api#get-task-definition)
+and the `status` section of [task status](/docs/reference/platform/taskcluster-queue/references/v1/events#message-payload-4).
 The task definition is in the context under the key `task` and the status is in the context under the key `status`.
 The fields you add to your task definition are all in the `task.extra` section under a key `notify`. They are as follows:
 

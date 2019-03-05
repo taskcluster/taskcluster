@@ -17,7 +17,7 @@ import SchemaTable from '../../../src/components/SchemaTable'
 ## Constructing a Task Definition
 
 To create a task we must construct a _task definition_, the API [reference
-documentation](/docs/reference/platform/taskcluster-queue/references/api) for the
+documentation](/docs/reference/platform/taskcluster-queue/references/v1/api) for the
 Queue service specifies a JSON schema for the `queue.createTask` method.  The
 payload for that method is:
 
@@ -244,7 +244,7 @@ Note that it may take a few minutes for this task to execute, as Taskcluster mus
 create a new Amazon EC2 instance to run it.
 
 If you are curious about the `createTask(taskId, payload)` method you can look
-it up in the [API docs](/docs/reference/platform/queue/reference/api-docs/) for the Queue. You should notice that
+it up in the [API docs](/docs/reference/platform/queue/reference/v1/api-docs/) for the Queue. You should notice that
 the API docs lists a `Signature` property, like
 `Signature: createTask(taskId, payload) : result`. These signatures are used to
 call methods in automatically generated client libraries. This allows for
