@@ -2146,14 +2146,15 @@ builder.declare({
   var provisionerId = req.params.provisionerId;
   var workerType = req.params.workerType;
 
-  // Get number of pending message
-  var count = await this.queueService.countPendingMessages(
-    provisionerId, workerType,
-  );
+  // // Get number of pending message
+  // var count = await this.queueService.countPendingMessages(
+  //   provisionerId, workerType,
+  // );
 
   // Reply to call with count `pendingTasks`
   return res.reply({
-    provisionerId: provisionerId,
+    // provisionerId: provisionerId,
+    provisionerId: 0,
     workerType: workerType,
     pendingTasks: count,
   });
