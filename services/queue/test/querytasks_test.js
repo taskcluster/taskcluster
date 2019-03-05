@@ -150,7 +150,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'no-provisioner-extended-extended',
       'query-test-worker-extended-extended',
     );
-    assume(r2.lastConsumed).is.not.equal("");
+    assume(r2.lastConsumed).is.not.equal(0);
 
     // // Result is cached for 20 seconds, so adding one more and checking should
     // // give the same result, as we're not waiting for the timeout
