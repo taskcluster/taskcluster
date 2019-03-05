@@ -56,7 +56,7 @@ pacman --noconfirm -S patch unzip tar
 
 # install VisualStudio 2017 Community
 choco install -y visualstudio2017community --version 15.9.7.0 --package-parameters "--add Microsoft.VisualStudio.Workload.MSBuildTools;Microsoft.VisualStudio.Component.VC.140 --passive --locale en-US"
-choco install -y visualstudio2017buildtools --version 15.9.7.0 --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools;includeRecommended --add Microsoft.VisualStudio.Component.VC.140 --passive --locale en-US"
+choco install -y visualstudio2017buildtools --version 15.9.7.0 --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools;includeRecommended --add Microsoft.VisualStudio.Component.VC.140 --add Microsoft.VisualStudio.Component.NuGet.BuildTools --add Microsoft.Net.Component.4.6.2.TargetingPack --passive --locale en-US"
 
 # vcredist140 required at least for bazel
 choco install -y vcredist140 --version 14.16.27027.1
