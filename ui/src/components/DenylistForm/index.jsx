@@ -99,6 +99,13 @@ export default class DenylistForm extends Component {
     });
   };
 
+  prettify = str =>
+    // remove underscores and capitalize first alphabet
+    str
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+
   render() {
     const { address, classes, isNewAddress, loading } = this.props;
     const { notificationType, notificationAddress } = this.state;
@@ -122,7 +129,7 @@ export default class DenylistForm extends Component {
                 </MenuItem>
                 {notificationTypes.map(type => (
                   <MenuItem key={type} value={type}>
-                    {type}
+                    {this.prettify(type)}
                   </MenuItem>
                 ))}
               </TextField>

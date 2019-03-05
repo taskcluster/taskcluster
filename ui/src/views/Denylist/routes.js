@@ -11,7 +11,7 @@ export default path => [
   {
     component: ViewDenylistAddress,
     path: `${path}/add`,
-    isNewClient: true,
+    isNewAddress: true,
   },
   {
     component: ViewDenylistAddress,

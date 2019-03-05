@@ -47,7 +47,7 @@ export default class Denylist extends PureComponent {
         },
         filter: {
           ...(searchTerm
-            ? { NotificationAddress: { $regex: searchTerm } }
+            ? { notificationAddress: { $regex: searchTerm } }
             : null),
         },
       },
