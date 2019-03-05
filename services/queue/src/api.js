@@ -2154,9 +2154,9 @@ builder.declare({
   // Reply to call with count `pendingTasks`
   return res.reply({
     // provisionerId: provisionerId,
-    provisionerId: 0,
+    provisionerId: provisionerId,
     workerType: workerType,
-    pendingTasks: count,
+    lastConsumed: 0,
   });
 });
 
