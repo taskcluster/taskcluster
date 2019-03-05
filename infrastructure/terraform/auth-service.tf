@@ -101,6 +101,8 @@ locals {
         "auth:azure-table-access:${azurerm_storage_account.base.name}/TaskclusterIntegrationOwners",
         "auth:azure-table:read-write:${azurerm_storage_account.base.name}/TaskclusterGithubBuilds",
         "auth:azure-table:read-write:${azurerm_storage_account.base.name}/TaskclusterIntegrationOwners",
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/TaskclusterChecksToTasks",
+        "auth:azure-table:read-write:${azurerm_storage_account.base.name}/TaskclusterCheckRuns",
       ]
     },
     {
