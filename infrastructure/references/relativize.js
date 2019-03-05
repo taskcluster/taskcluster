@@ -10,7 +10,7 @@ const build = (input, output, rootUrl) => {
   refs.asAbsolute(rootUrl).writeUriStructured({directory: output});
 
   // write out a single `references/references.json` containing the same data
-  fs.writeFileSync(path.join(output, 'references', 'references.json'), input);
+  fs.writeFileSync(path.join(output, 'references', 'references.json'), serializable);
 };
 
 if (!module.parent) {
