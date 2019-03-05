@@ -151,6 +151,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'query-test-worker-extended-extended',
     );
     assume(r2.lastConsumed).is.not.equal(0);
+    // TODO: add a more difficult test (verify it's a unix epoch or...?)
 
     // // Result is cached for 20 seconds, so adding one more and checking should
     // // give the same result, as we're not waiting for the timeout
