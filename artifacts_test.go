@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -48,8 +47,7 @@ func validateArtifacts(
 	}
 	artifacts := tr.PayloadArtifacts()
 
-	// compare expected vs actual artifacts by converting artifacts to strings...
-	if fmt.Sprintf("%q", artifacts) != fmt.Sprintf("%q", expected) {
+	if !reflect.DeepEqual(artifacts, expected) {
 		t.Fatalf("Expected different artifacts to be generated...\nExpected:\n%q\nActual:\n%q", expected, artifacts)
 	}
 }

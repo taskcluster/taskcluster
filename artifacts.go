@@ -109,7 +109,7 @@ func (errArtifact *ErrorArtifact) ResponseObject() interface{} {
 }
 
 func (errArtifact *ErrorArtifact) String() string {
-	return fmt.Sprintf("%q", *errArtifact)
+	return fmt.Sprintf("%v", *errArtifact)
 }
 
 // createTempFileForPUTBody gzip-compresses the file at path rawContentFile and writes
