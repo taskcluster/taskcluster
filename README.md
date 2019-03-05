@@ -448,6 +448,11 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v13.0.3 since v13.0.2
+========================
+
+* [Bug 1531457 - Don't replace existing generic-worker.config file on startup](https://bugzil.la/1531457)
+
 In v13.0.2 since v12.0.0
 ========================
 
