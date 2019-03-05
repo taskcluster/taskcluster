@@ -4684,7 +4684,6 @@
         },
         "owner": {
           "description": "Email of the person or group responsible for this hook.",
-          "format": "email",
           "maxLength": 255,
           "title": "Owner",
           "type": "string"
