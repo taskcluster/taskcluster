@@ -634,8 +634,8 @@
                 },
                 "name": "reference-format",
                 "next": {
-                  "path": "manual/design/devel",
-                  "title": "Development"
+                  "path": "manual/design/logs",
+                  "title": "Interpreting Log Types"
                 },
                 "path": "manual/design/apis/reference-format",
                 "prev": {
@@ -662,6 +662,29 @@
             "prev": {
               "path": "manual/design",
               "title": "System Design"
+            },
+            "up": {
+              "path": "manual/design",
+              "title": "System Design"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "filename": "design/logs/README.md",
+              "order": 10,
+              "title": "Interpreting Log Types"
+            },
+            "name": "logs",
+            "next": {
+              "path": "manual/design/devel",
+              "title": "Development"
+            },
+            "path": "manual/design/logs",
+            "prev": {
+              "path": "manual/design/apis/reference-format",
+              "title": "Reference Formats"
             },
             "up": {
               "path": "manual/design",
@@ -889,8 +912,8 @@
             },
             "path": "manual/design/devel",
             "prev": {
-              "path": "manual/design/apis/reference-format",
-              "title": "Reference Formats"
+              "path": "manual/design/logs",
+              "title": "Interpreting Log Types"
             },
             "up": {
               "path": "manual/design",
