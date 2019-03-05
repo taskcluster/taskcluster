@@ -385,9 +385,10 @@ and reports back results to the queue.
     74     Could not grant provided SID full control of interactive windows stations and
            desktop.
     75     Not able to create an ed25519 key pair.
-    76     Not able to save generic-worker config file after applying defaults and reading
-           config in from external sources, such as AWS/GCP metadata and taskcluster secrets.
-    77     Not able to secure the config file.
+    76     Not able to save generic-worker config file after fetching it from AWS provisioner
+           or Google Cloud metadata.
+    77     Not able to apply required file access permissions to the generic-worker config
+           file so that task users can't read from or write to it.
 `
 }
 
@@ -448,29 +449,52 @@ func main() {
 		configureForAWS = arguments["--configure-for-aws"].(bool)
 		configureForGCP = arguments["--configure-for-gcp"].(bool)
 		configFile = arguments["--config"].(string)
-		absConfigFile, err := filepath.Abs(configFile)
-		if err != nil {
-			log.Printf("Error resolving '%v' to an absolute path on the filesystem:", configFile)
-			log.Printf("%v", err)
-			os.Exit(int(CANT_LOAD_CONFIG))
-		}
-		configFile = absConfigFile
 		config, err = loadConfig(configFile, configureForAWS, configureForGCP)
-		// persist before checking for error, so we can see what the problem was...
-		if config != nil {
+
+		// We need to persist the generic-worker config file if we fetched it
+		// over the network, for example if the config is fetched from the AWS
+		// Provisioner (--configure-for-aws) or from the Google Cloud service
+		// (--configure-for-gcp). We delete taskcluster credentials from the
+		// AWS provisioner as soon as we've fetched them, so unless we persist
+		// the config on the first run, the worker will not work after reboots.
+		//
+		// We persist the config _before_ checking for an error from the
+		// loadConfig function call, so that if there was an error, we can see
+		// what the processed config looked like before the error occurred.
+		//
+		// Note, we only persist the config file if the file doesn't already
+		// exist. We don't want to overwrite an existing user-provided config.
+		// The full config is logged (with secrets obfuscated) in the server
+		// logs, so this should provide a reliable way to inspect what config
+		// was in the case of an unexpected failure, including default values
+		// for config settings not provided in the user-supplied config file.
+		if _, statError := os.Stat(configFile); os.IsNotExist(statError) && config != nil {
 			err = config.Persist(configFile)
 			if err != nil {
 				os.Exit(int(CANT_SAVE_CONFIG))
-			}
-			err = fileutil.SecureFiles([]string{configFile})
-			if err != nil {
-				os.Exit(int(CANT_SECURE_CONFIG))
 			}
 		}
 		if err != nil {
 			log.Printf("Error loading configuration: %v", err)
 			os.Exit(int(CANT_LOAD_CONFIG))
 		}
+
+		// Config known to be loaded successfully at this point...
+
+		// * If running tasks as dedicated OS users, we should take ownership
+		//   of generic-worker config file, and block access to task users, so
+		//   that tasks can't read from or write to it.
+		// * If running tasks under the same user account as the generic-worker
+		//   process, then we can't avoid that tasks can read the config file,
+		//   we can just hope that the config file is at least not writable by
+		//   the current user. In this case we won't change file permissions.
+		if !config.RunTasksAsCurrentUser {
+			secureError := fileutil.SecureFiles([]string{configFile})
+			if secureError != nil {
+				os.Exit(int(CANT_SECURE_CONFIG))
+			}
+		}
+
 		exitCode := RunWorker()
 		log.Printf("Exiting worker with exit code %v", exitCode)
 		switch exitCode {
