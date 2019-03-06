@@ -72,6 +72,10 @@ async function readGeneratedDocs() {
     Object.keys(mdFiles).forEach(oldKey => {
       const path = `reference/${metadata.tier}/${projectName}/${oldKey}`;
 
+      if(oldKey === "references/events" || oldKey === "references/api"){
+        path = `reference/${metadata.tier}/${projectName}/v1/${oldKey}`
+      }
+      
       delete Object.assign(mdFiles, {
         [removeExtension(path)]: Object.assign(mdFiles[oldKey]),
       })[oldKey];
