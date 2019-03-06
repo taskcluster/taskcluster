@@ -138,7 +138,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       helper.queue.createTask(taskId2, taskDef),
     ]);
 
-    const r1 = await helper.queue.lastConsumed(
+    const r1 = await helper.queue.lastClaimed(
       'no-provisioner-extended-extended',
       'query-test-worker-extended-extended',
     );
@@ -146,7 +146,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     // TODO: claim a job
 
-    const r2 = await helper.queue.lastConsumed(
+    const r2 = await helper.queue.lastClaimed(
       'no-provisioner-extended-extended',
       'query-test-worker-extended-extended',
     );
