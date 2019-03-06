@@ -709,7 +709,7 @@ class QueueService {
   }
 
   async logTaskClaimed(provisionerId, workerType) {
-    log.console("logTaskClaimed: entry");
+    console.log("logTaskClaimed: entry");
     let cacheKey = provisionerId + '/' + workerType;
     this.lastClaimedMap[cacheKey] = Date.now();
   }
