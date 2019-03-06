@@ -1348,7 +1348,7 @@ builder.declare({
   // Count claimWork calls - useful for primitive monitoring
   this.monitor.count(`claim-work.${provisionerId}.${workerType}`, count);
   //
-  console.log("HERE NOW!!!!!!!!!!!!!!!");
+  debug("HERE NOW!!!!!!!!!!!!!!!");
   await this.queueService.logTaskClaimed(provisionerId, workerType);
 
   // Allow request to abort their claim request, if the connection closes
@@ -2131,12 +2131,11 @@ builder.declare({
 });
 
 // aje
-/** Count pending tasks for workerType */
 builder.declare({
   method: 'get',
   route: '/last_claimed/:provisionerId/:workerType',
   name: 'lastClaimed',
-  stability: APIBuilder.stability.stable,
+  stability: APIBuilder.stability.experimental,
   output: 'last-claimed-response.yml',
   title: 'Get Seconds Since Last Claimed Task',
   description: [
