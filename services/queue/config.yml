@@ -142,9 +142,6 @@ defaults:
     region:           !env ARTIFACT_REGION
     apiVersion:       2014-01-01
 
-  monitor:
-    mock:             true
-
 # Configuration in production
 production:
   app:
@@ -169,8 +166,6 @@ production:
   server:
     env:              production
     trustProxy:       true
-  monitor:
-    mock:             false
 
 # Configuration of tests
 test:
@@ -203,6 +198,7 @@ test:
     publicArtifactBucketProxies:
       'us-east-1':    'proxy-for-us-east-1'
   monitoring:
+    level: warning
     enable: false
   server:
     port:             60401

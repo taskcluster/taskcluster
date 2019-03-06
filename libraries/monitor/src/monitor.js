@@ -4,9 +4,11 @@ const serializeError = require('serialize-error');
 const TimeKeeper = require('./timekeeper');
 
 class Monitor {
-  constructor({logger, verify = false, types = {}}) {
+  constructor({logger, mock, enable, verify = false, types = {}}) {
     this._log = logger;
     this.verify = verify;
+    this.mock = mock;
+    this.enable = enable;
     this.log = {};
     Object.entries(types).forEach(([name, meta]) => {
       this.register({name, ...meta});
@@ -190,7 +192,7 @@ class Monitor {
         exitStatus = 1;
       }
     } finally {
-      if (!this.mock || this.mock.allowExit) {
+      if (this.enable && (!this.mock || this.mock.allowExit)) {
         process.exit(exitStatus);
       }
     }
