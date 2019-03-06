@@ -2147,17 +2147,17 @@ builder.declare({
   var provisionerId = req.params.provisionerId;
   var workerType = req.params.workerType;
 
-  // // Get number of pending message
-  // var count = await this.queueService.countPendingMessages(
-  //   provisionerId, workerType,
-  // );
+  // // Get timestamp when last claimed
+  var timestamp = await this.queueService.getLastClaimed(
+    provisionerId, workerType,
+  );
 
   // Reply to call with count `pendingTasks`
   return res.reply({
     // provisionerId: provisionerId,
     provisionerId: provisionerId,
     workerType: workerType,
-    lastClaimed: 0,
+    lastClaimed: timestamp,
   });
 });
 
