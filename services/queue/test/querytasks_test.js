@@ -106,7 +106,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   //   - check that initial value is empty as expected
   //   - claim task
   //   - verify that last_consumed value is expected
-  test('lastConsumed >= 1', async () => {
+  test('lastClaimed >= 1', async () => {
     const taskDef = {
       provisionerId: 'no-provisioner-extended-extended',
       workerType: 'query-test-worker-extended-extended',
@@ -142,7 +142,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'no-provisioner-extended-extended',
       'query-test-worker-extended-extended',
     );
-    assume(r1.lastConsumed).is.equal(0);
+    assume(r1.lastClaimed).is.equal(0);
 
     // TODO: claim a job
 
@@ -150,7 +150,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'no-provisioner-extended-extended',
       'query-test-worker-extended-extended',
     );
-    assume(r2.lastConsumed).is.not.equal(0);
+    assume(r2.lastClaimed).is.not.equal(0);
     // TODO: add a more difficult test (verify it's a unix epoch or...?)
 
     // // Result is cached for 20 seconds, so adding one more and checking should

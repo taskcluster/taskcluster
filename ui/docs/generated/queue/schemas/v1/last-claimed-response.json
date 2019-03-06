@@ -1,0 +1,37 @@
+{
+  "$schema": "/schemas/common/metaschema.json#",
+  "title": "Count Pending Tasks Response",
+  "description": "Response to a request for the number of pending tasks for a given\n`provisionerId` and `workerType`.\n",
+  "type": "object",
+  "properties": {
+    "provisionerId": {
+      "title": "Provisioner Id",
+      "description": "Unique identifier for the provisioner\n",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 38,
+      "pattern": "^([a-zA-Z0-9-_]*)$"
+    },
+    "workerType": {
+      "title": "Worker Type",
+      "description": "Identifier for worker type within the specified provisioner\n",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 38,
+      "pattern": "^([a-zA-Z0-9-_]*)$"
+    },
+    "lastConsumed": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Timestamp When A Job Was Last Claimed",
+      "description": "The timestamp when a job was last claimed.\n"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "provisionerId",
+    "workerType",
+    "lastConsumed"
+  ],
+  "$id": "/schemas/queue/v1/last-claimed-response.json#"
+}

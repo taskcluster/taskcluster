@@ -2867,6 +2867,22 @@ module.exports = {
         },
         {
           "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "description": "Get an approximate number of seconds since a task was claimed for\nthe given `provisionerId` and `workerType`.\n\nWe cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.",
+          "method": "get",
+          "name": "lastClaimed",
+          "output": "v1/last-claimed-response.json#",
+          "query": [
+          ],
+          "route": "/last_claimed/<provisionerId>/<workerType>",
+          "stability": "stable",
+          "title": "Get Seconds Since Last Claimed Task",
+          "type": "function"
+        },
+        {
+          "args": [
             "provisionerId"
           ],
           "description": "Get all active worker-types for the given provisioner.\n\nThe response is paged. If this end-point returns a `continuationToken`, you\nshould call the end-point again with the `continuationToken` as a query-string\noption. By default this end-point will list up to 1000 worker-types in a single\npage. You may limit this with the query-string parameter `limit`.",

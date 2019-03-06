@@ -36,6 +36,7 @@ export default class Queue extends Client {
     this.getProvisioner.entry = {"args":["provisionerId"],"method":"get","name":"getProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.declareProvisioner.entry = {"args":["provisionerId"],"input":true,"method":"put","name":"declareProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":{"AllOf":[{"each":"queue:declare-provisioner:<provisionerId>#<property>","for":"property","in":"properties"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
     this.pendingTasks.entry = {"args":["provisionerId","workerType"],"method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<provisionerId>/<workerType>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lastClaimed.entry = {"args":["provisionerId","workerType"],"method":"get","name":"lastClaimed","output":true,"query":[],"route":"/last_claimed/<provisionerId>/<workerType>","stability":"stable","type":"function"}; // eslint-disable-line
     this.listWorkerTypes.entry = {"args":["provisionerId"],"method":"get","name":"listWorkerTypes","output":true,"query":["continuationToken","limit"],"route":"/provisioners/<provisionerId>/worker-types","stability":"experimental","type":"function"}; // eslint-disable-line
     this.getWorkerType.entry = {"args":["provisionerId","workerType"],"method":"get","name":"getWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.declareWorkerType.entry = {"args":["provisionerId","workerType"],"input":true,"method":"put","name":"declareWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":{"AllOf":[{"each":"queue:declare-worker-type:<provisionerId>/<workerType>#<property>","for":"property","in":"properties"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
@@ -551,6 +552,17 @@ export default class Queue extends Client {
     this.validate(this.pendingTasks.entry, args);
 
     return this.request(this.pendingTasks.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Get an approximate number of seconds since a task was claimed for
+  // the given `provisionerId` and `workerType`.
+  // We cache the result in memory for 20 seconds. So consumers
+  // should be no means expect this to be an accurate number.
+  /* eslint-enable max-len */
+  lastClaimed(...args) {
+    this.validate(this.lastClaimed.entry, args);
+
+    return this.request(this.lastClaimed.entry, args);
   }
   /* eslint-disable max-len */
   // Get all active worker-types for the given provisioner.

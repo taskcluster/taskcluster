@@ -3121,6 +3121,46 @@
   },
   {
     "content": {
+      "$id": "/schemas/queue/v1/last-claimed-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Response to a request for the number of pending tasks for a given\n`provisionerId` and `workerType`.\n",
+      "properties": {
+        "lastConsumed": {
+          "description": "The timestamp when a job was last claimed.\n",
+          "minimum": 0,
+          "title": "Timestamp When A Job Was Last Claimed",
+          "type": "integer"
+        },
+        "provisionerId": {
+          "description": "Unique identifier for the provisioner\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Provisioner Id",
+          "type": "string"
+        },
+        "workerType": {
+          "description": "Identifier for worker type within the specified provisioner\n",
+          "maxLength": 38,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_]*)$",
+          "title": "Worker Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provisionerId",
+        "workerType",
+        "lastConsumed"
+      ],
+      "title": "Count Pending Tasks Response",
+      "type": "object"
+    },
+    "filename": "schemas/queue/v1/last-claimed-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/queue/v1/create-task-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -9401,6 +9441,22 @@
           "route": "/pending/<provisionerId>/<workerType>",
           "stability": "stable",
           "title": "Get Number of Pending Tasks",
+          "type": "function"
+        },
+        {
+          "args": [
+            "provisionerId",
+            "workerType"
+          ],
+          "description": "Get an approximate number of seconds since a task was claimed for\nthe given `provisionerId` and `workerType`.\n\nWe cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.",
+          "method": "get",
+          "name": "lastClaimed",
+          "output": "v1/last-claimed-response.json#",
+          "query": [
+          ],
+          "route": "/last_claimed/<provisionerId>/<workerType>",
+          "stability": "stable",
+          "title": "Get Seconds Since Last Claimed Task",
           "type": "function"
         },
         {
