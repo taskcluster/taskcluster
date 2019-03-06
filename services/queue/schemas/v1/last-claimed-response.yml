@@ -21,7 +21,7 @@ properties:
     minLength:      {$const: identifier-min-length}
     maxLength:      {$const: identifier-max-length}
     pattern:        {$const: identifier-pattern}
-  lastConsumed:
+  lastClaimed:
     type:           integer
     minimum:        0
     title:          "Timestamp When A Job Was Last Claimed"
@@ -31,4 +31,4 @@ additionalProperties: false
 required:
   - provisionerId
   - workerType
-  - lastConsumed
+  - lastClaimed

@@ -2157,7 +2157,7 @@ builder.declare({
     // provisionerId: provisionerId,
     provisionerId: provisionerId,
     workerType: workerType,
-    lastConsumed: 0,
+    lastClaimed: 0,
   });
 });
 
