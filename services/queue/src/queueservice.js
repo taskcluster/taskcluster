@@ -711,37 +711,8 @@ class QueueService {
   // aje
   /** Returns promise for timestamp of last claimed work in pending task queue */
   async getLastClaimed(provisionerId, workerType) {
-    // TODO: do simple map lookup
-    return 0;
-
-    //   // Find cache entry
-    //   let cacheKey = provisionerId + '/' + workerType;
-    //   let entry = this.countPendingCache[cacheKey] || {
-    //     count: Promise.resolve(0),
-    //     lastUpdated: 0,
-    //   };
-    //   this.countPendingCache[cacheKey] = entry;
-
-    //   // Update count if more than 20 seconds old
-    //   if (Date.now() - entry.lastUpdated > 20 * 1000) {
-    //     entry.lastUpdated = Date.now();
-    //     entry.count = (async () => {
-    //       // Find name of azure queue
-    //       let queueNames = await this.ensurePendingQueue(provisionerId, workerType);
-
-    //       // Find messages count queues
-    //       let results = await Promise.all(_.map(queueNames, queueName => {
-    //         return this.client.getMetadata(queueName);
-    //       }));
-  
-    //       // Sum up the messageCount property
-    //       return _.sumBy(results, 'messageCount');
-    //     })();
-    //   }
-  
-    //   // Wait for result and return it
-    //   return await entry.count;
-    // }
+    let cacheKey = provisionerId + '/' + workerType;
+    return this.lastClaimedMap[cacheKey] || 0;
   }
 
   /** Returns promise for number of messages pending in pending task queue */
