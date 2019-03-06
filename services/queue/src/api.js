@@ -2127,13 +2127,14 @@ builder.declare({
   });
 });
 
+// aje
 /** Count pending tasks for workerType */
 builder.declare({
   method: 'get',
-  route: '/last_consumed/:provisionerId/:workerType',
-  name: 'lastConsumed',
+  route: '/last_claimed/:provisionerId/:workerType',
+  name: 'lastClaimed',
   stability: APIBuilder.stability.stable,
-  output: 'last-consumed-response.yml',
+  output: 'last-claimed-response.yml',
   title: 'Get Seconds Since Last Claimed Task',
   description: [
     'Get an approximate number of seconds since a task was claimed for',
