@@ -54,6 +54,9 @@ pacman --noconfirm -Su
 pacman --noconfirm -R bsdtar
 pacman --noconfirm -S patch unzip tar
 
+# install 7zip, since msys2 p7zip behaves erratically
+choco install -y 7zip --version 19.0
+
 # install VisualStudio 2017 Community
 choco install -y visualstudio2017community --version 15.9.7.0 --package-parameters "--add Microsoft.VisualStudio.Workload.MSBuildTools;Microsoft.VisualStudio.Component.VC.140 --passive --locale en-US"
 choco install -y visualstudio2017buildtools --version 15.9.7.0 --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools;includeRecommended --add Microsoft.VisualStudio.Component.VC.140 --add Microsoft.VisualStudio.Component.NuGet.BuildTools --add Microsoft.Net.Component.4.6.2.TargetingPack --passive --locale en-US"
@@ -147,6 +150,10 @@ Expand-ZIPFile -File "C:\ProcessExplorer.zip" -Destination "C:\ProcessExplorer" 
 # install ProcessMonitor (useful utility for troubleshooting, not required)
 md "C:\ProcessMonitor"
 Expand-ZIPFile -File "C:\ProcessMonitor.zip" -Destination "C:\ProcessMonitor" -Url "https://download.sysinternals.com/files/ProcessMonitor.zip"
+
+# install handle
+md "C:\Handle"
+Expand-ZIPFile -File "C:\Handle.zip" -Destination "C:\Handle" -Url "https://download.sysinternals.com/files/Handle.zip"
 
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead
