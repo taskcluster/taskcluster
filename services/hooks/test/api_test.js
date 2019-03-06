@@ -72,10 +72,10 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   }, hookWithTriggerSchema);
   const unique = new Date().getTime().toString();
   const hookWithBindings = _.defaults({
-    bindings: [{exchange: `exchanges/test/${unique}`, routingKeyPattern: 'amongst.rockets.wizards'}],
+    bindings: [{exchange: `exchange/test/${unique}`, routingKeyPattern: 'amongst.rockets.wizards'}],
   }, hookWithHookIds);
-  const hookWithNewBindings = _.defaults({
-    bindings: [{exchange: `exchanges/test-new/${unique}`, routingKeyPattern: 'amongst.new.rockets.and.wizards'}],
+  const hookWithDeniedBindings = _.defaults({
+    bindings: [{exchange: `exchange/taskcluster-queue/${unique}`, routingKeyPattern: 'amongst.new.rockets.and.wizards'}],
   }, hookWithHookIds);
 
   const setHookLastFire = async (hookGroupId, hookId, lastFire) => {
@@ -727,6 +727,17 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
         }, exchange: 'exchange/taskcluster-hooks/v1/hook-created',
       });
       assert(reconciledConsumers);
+    });
+    test('creating a hook with denied exchanges fails', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithDeniedBindings).then(
+        () => { throw new Error('Expected an error'); },
+        (err) => { assume(err.body.message).match(/exchanges below have been denied access to hooks/); });
+    });
+    test('updating a hook with new denied exchanges fails', async () => {
+      await helper.hooks.createHook('foo', 'bar', hookWithBindings);
+      await helper.hooks.updateHook('foo', 'bar', hookWithDeniedBindings).then(
+        () => { throw new Error('Expected an error'); },
+        (err) => { assume(err.body.message).match(/exchanges below have been denied access to hooks/); });
     });
   });
 });
