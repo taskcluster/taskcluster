@@ -3126,7 +3126,7 @@
       "additionalProperties": false,
       "description": "Response to a request for the number of pending tasks for a given\n`provisionerId` and `workerType`.\n",
       "properties": {
-        "lastConsumed": {
+        "lastClaimed": {
           "description": "The timestamp when a job was last claimed.\n",
           "minimum": 0,
           "title": "Timestamp When A Job Was Last Claimed",
@@ -3152,7 +3152,7 @@
       "required": [
         "provisionerId",
         "workerType",
-        "lastConsumed"
+        "lastClaimed"
       ],
       "title": "Count Pending Tasks Response",
       "type": "object"

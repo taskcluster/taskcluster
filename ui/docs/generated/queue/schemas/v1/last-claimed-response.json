@@ -20,7 +20,7 @@
       "maxLength": 38,
       "pattern": "^([a-zA-Z0-9-_]*)$"
     },
-    "lastConsumed": {
+    "lastClaimed": {
       "type": "integer",
       "minimum": 0,
       "title": "Timestamp When A Job Was Last Claimed",
@@ -31,7 +31,7 @@
   "required": [
     "provisionerId",
     "workerType",
-    "lastConsumed"
+    "lastClaimed"
   ],
   "$id": "/schemas/queue/v1/last-claimed-response.json#"
 }
