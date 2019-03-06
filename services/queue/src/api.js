@@ -1347,6 +1347,8 @@ builder.declare({
 
   // Count claimWork calls - useful for primitive monitoring
   this.monitor.count(`claim-work.${provisionerId}.${workerType}`, count);
+  //
+  await this.queueService.logTaskClaimed(provisionerId, workerType);
 
   // Allow request to abort their claim request, if the connection closes
   let aborted = new Promise(accept => {

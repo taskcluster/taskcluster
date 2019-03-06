@@ -708,6 +708,11 @@ class QueueService {
     });
   }
 
+  async logTaskClaimed(provisionerId, workerType) {
+    let cacheKey = provisionerId + '/' + workerType;
+    this.lastClaimedMap[cacheKey] = Date.now();
+  }
+
   // aje
   /** Returns promise for timestamp of last claimed work in pending task queue */
   async getLastClaimed(provisionerId, workerType) {
