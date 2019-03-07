@@ -708,6 +708,7 @@ class QueueService {
     });
   }
 
+  /** Returns promise that updates the lastClaimedMap */
   async logTaskClaimed(provisionerId, workerType) {
     let cacheKey = provisionerId + '/' + workerType;
     this.lastClaimedMap[cacheKey] = Date.now();
