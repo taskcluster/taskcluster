@@ -146,7 +146,7 @@ class QueueService {
     this.countPendingCache = {};
 
     // Keep a record of last claimed for each queue as mapping:
-    //    <provisionerId>/<workerType> -> {lastClaimed, count: promise}
+    //    <provisionerId>/<workerType> -> lastClaimed
     this.lastClaimedMap = {};
   }
 
