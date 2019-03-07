@@ -119,27 +119,22 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     const workerId = 'my-worker-extended-extended';
     await makeProvisioner({provisionerId});
 
-    let taskIds = [];
-
-    for (let i = 0; i < 4; i++) {
-      const taskId = slugid.v4();
-      taskIds.push(taskId);
-
-      const taskStatus = await helper.queue.createTask(taskIds[i], {
-        provisionerId,
-        workerType,
-        priority: 'normal',
-        created: taskcluster.fromNowJSON(),
-        deadline: taskcluster.fromNowJSON('30 min'),
-        payload: {},
-        metadata: {
-          name: 'Unit testing task',
-          description: 'Task created during unit tests',
-          owner: 'haali@mozilla.com',
-          source: 'https://github.com/taskcluster/taskcluster-queue',
-        },
-      });
-    }
+    // create a task
+    const taskId = slugid.v4();
+    const taskStatus = await helper.queue.createTask(taskId, {
+      provisionerId,
+      workerType,
+      priority: 'normal',
+      created: taskcluster.fromNowJSON(),
+      deadline: taskcluster.fromNowJSON('30 min'),
+      payload: {},
+      metadata: {
+        name: 'Unit testing task',
+        description: 'Task created during unit tests',
+        owner: 'haali@mozilla.com',
+        source: 'https://github.com/taskcluster/taskcluster-queue',
+      },
+    });
 
     const r1 = await helper.queue.lastClaimed(
       'no-provisioner-extended-extended',
@@ -157,7 +152,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       provisionerId,
       workerType,
     );
-    assume(r2.lastClaimed).is.not.equal(0);
-    // TODO: check that this is >= 13 chars
+    assume(r2.lastClaimed).is.not.equal(-1);
+    assume(r2.lastClaimed.toString().length).is.greaterThan(12);
   });
 });
