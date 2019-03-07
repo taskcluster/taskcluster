@@ -325,7 +325,7 @@ exports.createClient = function(reference, name) {
       }
 
       // Retry the request, after a delay depending on number of retries
-      var retryRequest = function() {
+      const retryRequest = function() {
         // Send request
         let sendRequest = function() {
           debug('Calling: %s, retry: %s', entry.name, attempts - 1);

@@ -11,7 +11,7 @@ const sleep = require('./sleep');
  * Return a promise that a promise form the `poll` function resolved without
  * error. This will return the first successful poll, and stop polling.
  */
-var poll = function(doPoll, iterations, delay) {
+const poll = function(doPoll, iterations, delay) {
   delay = delay || 250;
   iterations = iterations === undefined ? 20 : iterations;
   return doPoll().catch(function(err) {
