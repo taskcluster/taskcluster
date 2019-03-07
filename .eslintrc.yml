@@ -62,9 +62,9 @@ rules:
       ignoreRestSiblings: true
       varsIgnorePattern: ^_$
       argsIgnorePattern: ^_$
+  block-scoped-var: error
 
   # These are disabled for now and we will slowly turn them on
-  block-scoped-var: off
   require-await: off
   no-var: off
   no-case-declarations: off

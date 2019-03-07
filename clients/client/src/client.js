@@ -318,9 +318,10 @@ exports.createClient = function(reference, name) {
       var attempts = 0;
       var that = this;
 
+      let start;
       var monitor = this._options.monitor;
       if (monitor) {
-        var start = process.hrtime();
+        start = process.hrtime();
       }
 
       // Retry the request, after a delay depending on number of retries

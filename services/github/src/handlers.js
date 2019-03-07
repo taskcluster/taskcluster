@@ -374,10 +374,11 @@ async function deprecatedStatusHandler(message) {
     return;
   }
 
+  let instGithub;
   // Authenticating as installation.
   try {
     debug('Authenticating as installation in status handler...');
-    var instGithub = await this.context.github.getInstallationGithub(build.installationId);
+    instGithub = await this.context.github.getInstallationGithub(build.installationId);
     debug('Authorized as installation in status handler');
   } catch (e) {
     debug(`Error authenticating as installation in status handler! Error: ${e}`);
@@ -444,10 +445,11 @@ async function statusHandler(message) {
   // true means we'll get null if the record doesn't exist
   let checkRun = await this.context.CheckRuns.load({taskGroupId, taskId}, true);
 
+  let instGithub;
   // Authenticating as installation.
   try {
     debug('Authenticating as installation in status handler...');
-    var instGithub = await this.context.github.getInstallationGithub(installationId);
+    instGithub = await this.context.github.getInstallationGithub(installationId);
     debug('Authorized as installation in status handler');
   } catch (e) {
     debug(`Error authenticating as installation in status handler! Error: ${e}`);

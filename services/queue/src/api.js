@@ -647,6 +647,8 @@ builder.declare({
     deadline
   );
 
+  let task;
+
   // Try to create Task entity
   try {
     let runs = [];
@@ -658,7 +660,7 @@ builder.declare({
         scheduled: new Date().toJSON(),
       });
     }
-    var task = await this.Task.create({
+    task = await this.Task.create({
       taskId: taskId,
       provisionerId: taskDef.provisionerId,
       workerType: taskDef.workerType,
@@ -828,9 +830,11 @@ builder.declare({
     deadline
   );
 
+  let task;
+
   // Try to create Task entity
   try {
-    var task = await this.Task.create({
+    task = await this.Task.create({
       taskId: taskId,
       provisionerId: taskDef.provisionerId,
       workerType: taskDef.workerType,
