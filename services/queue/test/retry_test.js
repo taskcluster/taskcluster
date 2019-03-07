@@ -33,7 +33,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     },
   };
 
-  test('createTask, claimTask, claim-expired, retry, ...', async () => {
+  test('createTask, claimTask, claim-expired, retry, ...', helper.runWithFakeTime(async () => {
     const taskId = slugid.v4();
 
     debug('### Creating task');
@@ -93,9 +93,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     }, Infinity);
     helper.checkNoNextMessage('task-exception');
 
+    debug('### Stop claimResolver (again)');
+    await claimResolver.terminate();
+
     debug('### Task status (again)');
     const r5 = await helper.queue.status(taskId);
     // this time it's exception, since it's out of retries
     assume(r5.status.state).equals('exception');
-  });
+  }, mock));
 });

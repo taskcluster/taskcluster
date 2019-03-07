@@ -37,7 +37,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     return {taskId: slugid.v4(), task};
   };
 
-  test('Resolve unscheduled task deadline', async () => {
+  test('Resolve unscheduled task deadline', helper.runWithFakeTime(async () => {
     const {taskId, task} = makeTask();
 
     debug('### Define task');
@@ -59,12 +59,15 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       });
     }, Infinity);
 
+    debug('### Stop deadlineReaper');
+    await deadlineReaper.terminate();
+
     debug('### Validate task status');
     const r2 = await helper.queue.status(taskId);
     assume(r2.status.state).equals('exception');
-  });
+  }, mock));
 
-  test('Resolve pending task deadline', async () => {
+  test('Resolve pending task deadline', helper.runWithFakeTime(async () => {
     const {taskId, task} = makeTask();
 
     debug('### Creating task');
@@ -87,12 +90,15 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       assume(message.payload.status.runs[0].reasonResolved).equals('deadline-exceeded');
     });
 
+    debug('### Stop deadlineReaper');
+    await deadlineReaper.terminate();
+
     debug('### Validate task status');
     const r2 = await helper.queue.status(taskId);
     assume(r2.status.state).deep.equals('exception');
-  });
+  }, mock));
 
-  test('Resolve running task deadline', async () => {
+  test('Resolve running task deadline', helper.runWithFakeTime(async () => {
     const {taskId, task} = makeTask();
 
     debug('### Creating task');
@@ -122,12 +128,15 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       assume(message.payload.status.runs[0].reasonResolved).equals('deadline-exceeded');
     });
 
+    debug('### Stop deadlineReaper');
+    await deadlineReaper.terminate();
+
     debug('### Validate task status');
     const r3 = await helper.queue.status(taskId);
     assume(r3.status.state).deep.equals('exception');
-  });
+  }, mock));
 
-  test('Resolve completed task by deadline (no change)', async () => {
+  test('Resolve completed task by deadline (no change)', helper.runWithFakeTime(async () => {
     const {taskId, task} = makeTask();
 
     debug('### Creating task');
@@ -155,8 +164,11 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     await testing.sleep(1000); // give it time to poll
     assume(helper.messages.length).to.equal(0);
 
+    debug('### Stop deadlineReaper');
+    deadlineReaper.terminate();
+
     debug('### Validate task status');
     const r4 = await helper.queue.status(taskId);
     assume(r4.status).deep.equals(r3.status);
-  });
+  }, mock));
 });

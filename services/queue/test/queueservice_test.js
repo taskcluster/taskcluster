@@ -9,13 +9,13 @@ const debug = require('debug')('test:queueservice');
 const xml2js = require('xml2js');
 const assume = require('assume');
 const config = require('taskcluster-lib-config');
-const MonitorManager = require('taskcluster-lib-monitor');
+const Monitor = require('taskcluster-lib-monitor');
 const testing = require('taskcluster-lib-testing');
 const helper = require('./helper');
 
 helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
   let queueService;
-  let monitorManager;
+  let monitor;
 
   suiteSetup(async () => {
     if (skipping()) {
@@ -24,12 +24,9 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
 
     const cfg = await helper.load('cfg');
 
-    monitorManager = new MonitorManager({
-      serviceName: 'test',
-    });
-    monitorManager.setup({
-      enable: false,
-      level: 'warning',
+    monitor = new Monitor({
+      projectName: 'test',
+      mock: true,
       patchGlobal: false,
     });
 
@@ -42,7 +39,7 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
         deadlineQueue: cfg.app.deadlineQueue,
         pendingPollTimeout: 30 * 1000,
         deadlineDelay: 10,
-        monitor: monitorManager.monitor(),
+        monitor,
       });
     } else {
       queueService = new QueueService({
@@ -54,7 +51,7 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
         deadlineQueue: cfg.app.deadlineQueue,
         pendingPollTimeout: 30 * 1000,
         deadlineDelay: 1000,
-        monitor: monitorManager.monitor(),
+        monitor,
       });
     }
   });
@@ -64,7 +61,7 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
       return;
     }
 
-    monitorManager.reset();
+    monitor.reset();
 
     if (queueService) {
       queueService.terminate();
