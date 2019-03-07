@@ -51,8 +51,7 @@ defaults:
     password:       !env PULSE_PASSWORD
     hostname:       !env PULSE_HOSTNAME
     vhost:          !env PULSE_VHOST
-    denylist: 
-      exchanges: [taskcluster-queue, taskcluster-hooks]
+    denylist:       [taskcluster-queue, taskcluster-hooks]
 
 
 production:

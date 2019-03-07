@@ -129,7 +129,7 @@ const load = loader({
     requires: ['cfg', 'schemaset', 'Hook', 'LastFire', 'taskcreator', 'monitor', 'publisher', 'pulseClient'],
     setup: ({cfg, schemaset, Hook, LastFire, taskcreator, monitor, publisher, pulseClient}) => builder.build({
       rootUrl: cfg.taskcluster.rootUrl,
-      context: {Hook, LastFire, taskcreator, publisher, denyList: cfg.pulse.denylist.exchanges},
+      context: {Hook, LastFire, taskcreator, publisher, denylist: cfg.pulse.denylist},
       schemaset,
       publish: cfg.app.publishMetaData,
       aws: cfg.aws.validator,

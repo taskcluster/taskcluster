@@ -36,7 +36,7 @@ const builder = new APIBuilder({
     hookGroupId: /^[a-zA-Z0-9-_]{1,64}$/,
     hookId: /^[a-zA-Z0-9-_\/]{1,64}$/,
   },
-  context: ['Hook', 'LastFire', 'taskcreator', 'publisher', 'denyList'],
+  context: ['Hook', 'LastFire', 'taskcreator', 'publisher', 'denylist'],
 });
 
 module.exports = builder;
@@ -222,7 +222,7 @@ builder.declare({
 
   let denied = await isDeniedBinding({
     bindings: hookDef.bindings || [],
-    denyList: this.denyList,
+    denylist: this.denylist,
   });
   if (denied) {
     return res.reportError('InputError', '{{message}}', {
@@ -329,7 +329,7 @@ builder.declare({
 
   let denied = await isDeniedBinding({
     bindings: hookDef.bindings,
-    denyList: this.denyList,
+    denylist: this.denylist,
   });
   if (denied) {
     return res.reportError('InputError', '{{message}}', {
@@ -594,8 +594,8 @@ const triggerHookCommon = async function({req, res, hook, payload, clientId, fir
   }
 };
 
-const isDeniedBinding = async ({bindings, denyList}) => {
-  let denyPattern = new RegExp(`^exchange/(${denyList.join('|')})/`);
+const isDeniedBinding = async ({bindings, denylist}) => {
+  let denyPattern = new RegExp(`^exchange/(${denylist.join('|')})/`);
   let denied=false;
   bindings.forEach((binding) => {
     if (denyPattern.test(binding.exchange)) {
