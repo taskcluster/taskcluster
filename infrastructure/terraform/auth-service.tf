@@ -26,16 +26,6 @@ module "auth_user" {
               "${aws_s3_bucket.backups.arn}",
               "${aws_s3_bucket.backups.arn}/*"
             ]
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "kinesis:PutRecord",
-                "kinesis:DescribeStream"
-            ],
-            "Resource": [
-                "${var.audit_log_stream}"
-            ]
         }
     ]
 }
@@ -63,8 +53,6 @@ module "auth_rabbitmq_user" {
 }
 
 locals {
-  audit_log_name = "${element(split("stream/", var.audit_log_stream), 1)}"
-
   static_clients = [
     {
       clientId    = "static/taskcluster/secrets"
@@ -180,7 +168,6 @@ module "auth_secrets" {
     AZURE_CRYPTO_KEY  = "${base64encode(random_string.auth_table_crypto_key.result)}"
     AZURE_SIGNING_KEY = "${random_string.auth_table_signing_key.result}"
 
-    AUDIT_LOG               = "${local.audit_log_name}"
     FORCE_SSL               = "false"
     TRUST_PROXY             = "true"
     LOCK_ROLES              = "false"
