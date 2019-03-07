@@ -113,7 +113,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   });
 
   // aje
-  test('lastClaimed >= 1', async () => {
+  test('lastClaimed works', async () => {
     const provisionerId = 'no-provisioner';
     const workerType = 'gecko-b-1-android';
     const workerGroup = 'my-worker-group-extended-extended';
@@ -142,11 +142,11 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       });
     }
 
-    const r5 = await helper.queue.lastClaimed(
+    const r1 = await helper.queue.lastClaimed(
       'no-provisioner-extended-extended',
       'query-test-worker-extended-extended',
     );
-    assume(r5.lastClaimed).is.equal(0);
+    assume(r1.lastClaimed).is.equal(0);
 
     await helper.queue.claimWork(provisionerId, workerType, {
       workerGroup,
@@ -154,11 +154,11 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       tasks: 1,
     });
 
-    const r4 = await helper.queue.lastClaimed(
+    const r2 = await helper.queue.lastClaimed(
       provisionerId,
       workerType,
     );
-    assume(r4.lastClaimed).is.not.equal(0);
+    assume(r2.lastClaimed).is.not.equal(0);
     // TODO: check that this is >= 13 chars
   });
 });
