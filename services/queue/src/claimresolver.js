@@ -64,7 +64,7 @@ class ClaimResolver {
       maxIterationTime: maxIterationTimeSecs,
       handler: async () => {
         let loops = [];
-        for (var i = 0; i < this.parallelism; i++) {
+        for (let i = 0; i < this.parallelism; i++) {
           loops.push(this.poll());
         }
         await Promise.all(loops);
@@ -90,7 +90,7 @@ class ClaimResolver {
 
   /** Poll for messages and handle them in a loop */
   async poll() {
-    var messages = await this.queueService.pollClaimQueue();
+    let messages = await this.queueService.pollClaimQueue();
     debug('Fetched %s messages', messages.length);
 
     await Promise.all(messages.map(async (message) => {
@@ -125,7 +125,7 @@ class ClaimResolver {
     // property whenever a task is claimed, reclaimed. And task.takenUntil is
     // cleared whenever a run is resolved, so this conditional load should
     // significantly reduce the amount of task entities that we load.
-    var {entries: [task]} = await this.Task.query({
+    let {entries: [task]} = await this.Task.query({
       taskId: taskId, // Matches an exact entity
       takenUntil: takenUntil, // Load conditionally
     }, {
@@ -155,7 +155,7 @@ class ClaimResolver {
 
     // Ensure that all runs are resolved
     await task.modify((task) => {
-      var run = task.runs[runId];
+      let run = task.runs[runId];
       if (!run) {
         // The run might not have been created, if the claimTask operation
         // failed
@@ -207,7 +207,7 @@ class ClaimResolver {
     });
 
     // Find the run that we (may) have modified
-    var run = task.runs[runId];
+    let run = task.runs[runId];
 
     // If run isn't resolved to exception with 'claim-expired', we had
     // concurrency and we're done.
@@ -218,11 +218,11 @@ class ClaimResolver {
       return remove();
     }
 
-    var status = task.status();
+    let status = task.status();
 
     // If a newRun was created and it is a retry with state pending then we
     // better publish messages about it
-    var newRun = task.runs[runId + 1];
+    let newRun = task.runs[runId + 1];
     if (newRun &&
         task.runs.length - 1 === runId + 1 &&
         newRun.state === 'pending' &&

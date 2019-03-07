@@ -3,7 +3,7 @@ let taskcluster = require('taskcluster-client');
 /**
  * Creates temporary credentials for a task run.
  */
-var taskCredentials = function(taskId, runId, workerGroup, workerId, takenUntil, scopes, permaCreds) {
+let taskCredentials = function(taskId, runId, workerGroup, workerId, takenUntil, scopes, permaCreds) {
   let clientId = [
     'task-client',
     taskId,

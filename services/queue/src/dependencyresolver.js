@@ -50,7 +50,7 @@ class DependencyResolver {
       maxIterationTime: maxIterationTimeSecs,
       handler: async () => {
         let loops = [];
-        for (var i = 0; i < this._parallelism; i++) {
+        for (let i = 0; i < this._parallelism; i++) {
           loops.push(this._pollResolvedTasks());
         }
         await Promise.all(loops);

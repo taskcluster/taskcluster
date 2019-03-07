@@ -134,7 +134,7 @@ function loader(componentDirectory, virtualComponents = {}) {
     // Load a component
     function recursiveLoad(target) {
       if (!loaded[target]) {
-        var def = componentDirectory[target];
+        let def = componentDirectory[target];
         // Initialize component, this won't cause an infinite loop because
         // we've already check that the componentDirectory is a DAG
         let requires = def.requires || [];

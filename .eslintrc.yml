@@ -63,10 +63,10 @@ rules:
       varsIgnorePattern: ^_$
       argsIgnorePattern: ^_$
   block-scoped-var: error
+  no-var: error
 
   # These are disabled for now and we will slowly turn them on
   require-await: off
-  no-var: off
   no-case-declarations: off
   no-undef: off
   no-unreachable: off

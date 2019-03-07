@@ -13,7 +13,7 @@ const AZURE_QUEUE_TIMEOUT = 7 * 1000;
 
 /** Get seconds until `target` relative to now (by default) */
 let secondsTo = (target, relativeTo = new Date()) => {
-  var delta = Math.floor((target.getTime() - relativeTo.getTime()) / 1000);
+  let delta = Math.floor((target.getTime() - relativeTo.getTime()) / 1000);
   return Math.max(delta, 0); // never return negative time
 };
 
@@ -138,7 +138,7 @@ class QueueService {
   }
 
   _putMessage(queue, message, {visibility, ttl}) {
-    var text = Buffer.from(JSON.stringify(message)).toString('base64');
+    let text = Buffer.from(JSON.stringify(message)).toString('base64');
     return this.monitor.timer('putMessage', this.client.putMessage(queue, text, {
       visibilityTimeout: visibility,
       messageTTL: ttl,
@@ -146,7 +146,7 @@ class QueueService {
   }
 
   async _getMessages(queue, {visibility, count}) {
-    var messages = await this.monitor.timer('getMessages', this.client.getMessages(queue, {
+    let messages = await this.monitor.timer('getMessages', this.client.getMessages(queue, {
       visibilityTimeout: visibility,
       numberOfMessages: count,
     }));
@@ -177,7 +177,7 @@ class QueueService {
     if (this.claimQueueReady) {
       return this.claimQueueReady;
     }
-    var ready = this.client.createQueue(this.claimQueue).catch(err => {
+    let ready = this.client.createQueue(this.claimQueue).catch(err => {
       // Don't cache negative results
       this.claimQueueReady = null;
       throw err;
@@ -190,7 +190,7 @@ class QueueService {
     if (this.resolvedQueueReady) {
       return this.resolvedQueueReady;
     }
-    var ready = this.client.createQueue(this.resolvedQueue).catch(err => {
+    let ready = this.client.createQueue(this.resolvedQueue).catch(err => {
       // Don't cache negative results
       this.resolvedQueueReady = null;
       throw err;
@@ -203,7 +203,7 @@ class QueueService {
     if (this.deadlineQueueReady) {
       return this.deadlineQueueReady;
     }
-    var ready = this.client.createQueue(this.deadlineQueue).catch(err => {
+    let ready = this.client.createQueue(this.deadlineQueue).catch(err => {
       // Don't cache negative results
       this.deadlineQueueReady = null;
       throw err;
@@ -256,7 +256,7 @@ class QueueService {
     assert(isFinite(deadline), 'deadline must be a valid date');
 
     await this.ensureDeadlineQueue();
-    var delay = Math.floor(this.deadlineDelay / 1000);
+    let delay = Math.floor(this.deadlineDelay / 1000);
     debug('Put deadline message to be visible in %s seconds',
       secondsTo(deadline) + delay);
     return this._putMessage(this.deadlineQueue, {
@@ -293,7 +293,7 @@ class QueueService {
     await this.ensureClaimQueue();
 
     // Get messages
-    var messages = await this._getMessages(this.claimQueue, {
+    let messages = await this._getMessages(this.claimQueue, {
       visibility: 10 * 60,
       count: 32,
     });
@@ -332,7 +332,7 @@ class QueueService {
     await this.ensureResolvedQueue();
 
     // Get messages
-    var messages = await this._getMessages(this.resolvedQueue, {
+    let messages = await this._getMessages(this.resolvedQueue, {
       visibility: 10 * 60,
       count: 32,
     });
@@ -371,7 +371,7 @@ class QueueService {
     await this.ensureDeadlineQueue();
 
     // Get messages
-    var messages = await this._getMessages(this.deadlineQueue, {
+    let messages = await this._getMessages(this.deadlineQueue, {
       visibility: 10 * 60,
       count: 32,
     });
@@ -391,7 +391,7 @@ class QueueService {
   /** Ensure existence of a queue */
   ensurePendingQueue(provisionerId, workerType) {
     // Construct id, note that slash cannot be used in provisionerId, workerType
-    var id = provisionerId + '/' + workerType;
+    let id = provisionerId + '/' + workerType;
 
     // Find promise
     if (this.queues[id]) {
@@ -406,7 +406,7 @@ class QueueService {
 
     // Hash identifier to 24 characters
     let hashId = (id) => {
-      var h = crypto.createHash('sha256').update(id).digest();
+      let h = crypto.createHash('sha256').update(id).digest();
       return base32.encode(h.slice(0, 15)).toString('utf-8').toLowerCase();
     };
 
@@ -452,7 +452,7 @@ class QueueService {
       let {metadata} = await this.client.getMetadata(queue);
 
       // Check if meta-data is up-to-date
-      var lastUsed = new Date(metadata.last_used);
+      let lastUsed = new Date(metadata.last_used);
       if (metadata.provisioner_id === provisionerId
           && metadata.worker_type === workerType
           && isFinite(lastUsed)
@@ -524,7 +524,7 @@ class QueueService {
       // Find queues to delete
       queues = queues.filter(({metadata}) => {
         // If meta-data is missing or 10 days old, we mark it for deletion
-        var lastUsed = new Date(metadata.last_used);
+        let lastUsed = new Date(metadata.last_used);
         return (
           !metadata.provisioner_id
           || !metadata.worker_type
@@ -572,13 +572,13 @@ class QueueService {
     assert(typeof runId === 'number', 'Expected runId as number');
 
     // Find name of azure queue
-    var queueNames = await this.ensurePendingQueue(
+    let queueNames = await this.ensurePendingQueue(
       task.provisionerId,
       task.workerType,
     );
 
     // Find the time to deadline
-    var timeToDeadline = secondsTo(task.deadline);
+    let timeToDeadline = secondsTo(task.deadline);
     // If deadline is reached, we don't care to publish a message about the task
     // being pending.
     if (timeToDeadline === 0) {
@@ -603,18 +603,18 @@ class QueueService {
   /** Get signed URLs for polling and deleting from the azure queue */
   async signedPendingPollUrls(provisionerId, workerType) {
     // Find name of azure queue
-    var queueNames = await this.ensurePendingQueue(provisionerId, workerType);
+    let queueNames = await this.ensurePendingQueue(provisionerId, workerType);
 
     // Set start of the signature to 15 min in the past
-    var start = new Date();
+    let start = new Date();
     start.setMinutes(start.getMinutes() - 15);
 
     // Set the expiry of the signature to 30 min in the future
-    var expiry = new Date();
+    let expiry = new Date();
     expiry.setMinutes(expiry.getMinutes() + 30);
 
     // Find visibility timeout we'll encoding in signed poll URLs
-    var pendingPollTimeout = Math.floor(this.pendingPollTimeout / 1000);
+    let pendingPollTimeout = Math.floor(this.pendingPollTimeout / 1000);
 
     // For each queue name, return signed URLs for the queue
 
@@ -622,7 +622,7 @@ class QueueService {
       let queueName = queueNames[priority];
 
       // Create shared access signature
-      var sas = this.client.sas(queueName, {
+      let sas = this.client.sas(queueName, {
         start, expiry,
         permissions: {
           process: true,

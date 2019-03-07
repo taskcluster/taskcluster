@@ -17,7 +17,7 @@ class EC2RegionResolver {
 
   async loadIpRanges() {
     // Get IP ranges from AWS with really stupid retry logic
-    var {body} = await request.get(AWS_IP_RANGES_URL).catch(() => {
+    let {body} = await request.get(AWS_IP_RANGES_URL).catch(() => {
       return request.get(AWS_IP_RANGES_URL).catch(() => {
         return request.get(AWS_IP_RANGES_URL);
       });
@@ -38,12 +38,12 @@ class EC2RegionResolver {
 
   /** Get region that request originates from, or null if none */
   getRegion(req) {
-    var ip = requestIp.getClientIp(req);
+    let ip = requestIp.getClientIp(req);
     // discard ipv6 addresses
     if (!/^(:?\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
       return null;
     }
-    for (var {range, region} of this.ipRanges) {
+    for (let {range, region} of this.ipRanges) {
       if (range.contains(ip)) {
         return region;
       }

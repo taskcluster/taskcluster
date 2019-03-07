@@ -39,8 +39,8 @@ builder.declare({
 
 suite('fakeauth', function() {
   const rootUrl = 'http://localhost:1208';
-  var fakeauth = require('../src/fakeauth');
-  var server;
+  let fakeauth = require('../src/fakeauth');
+  let server;
 
   suiteSetup(async function() {
     const schemaset = new SchemaSet({
@@ -84,10 +84,10 @@ suite('fakeauth', function() {
     fakeauth.stop();
   });
 
-  var callApi = (clientId, extContent) => {
+  let callApi = (clientId, extContent) => {
     // We'll call both with auth headers and bewit
-    var reqUrl = libUrls.api(rootUrl, 'test', 'v1', 'test');
-    var content = {
+    let reqUrl = libUrls.api(rootUrl, 'test', 'v1', 'test');
+    let content = {
       ttlSec: 60 * 5,
       credentials: {
         id: clientId,
@@ -99,10 +99,10 @@ suite('fakeauth', function() {
       content['ext'] = Buffer.from(JSON.stringify(extContent)).toString('base64');
     }
 
-    var {header} = hawk.client.header(reqUrl, 'GET', content);
+    let {header} = hawk.client.header(reqUrl, 'GET', content);
 
-    var bewit = hawk.uri.getBewit(reqUrl, content);
-    var bewitUrl = reqUrl + '?bewit=' + bewit;
+    let bewit = hawk.uri.getBewit(reqUrl, content);
+    let bewitUrl = reqUrl + '?bewit=' + bewit;
     return Promise.all([
       request
         .get(reqUrl)
@@ -123,7 +123,7 @@ suite('fakeauth', function() {
   test('using a rawClientId', function() {
     fakeauth.start({client1: ['test.scope']}, {rootUrl});
     return callApi('client1').then(function(responses) {
-      for (var res of responses) {
+      for (let res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
       }
     });
@@ -143,7 +143,7 @@ suite('fakeauth', function() {
     return callApi('client1', {
       authorizedScopes: ['test.scope'],
     }).then(function(responses) {
-      for (var res of responses) {
+      for (let res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
       }
     });
@@ -151,7 +151,7 @@ suite('fakeauth', function() {
 
   test('using temp creds', function() {
     fakeauth.start({client1: ['some.other.scope']}, {rootUrl});
-    var tempCreds = taskcluster.createTemporaryCredentials({
+    let tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test.scope'],
       expiry: taskcluster.fromNow('1d'),
       credentials: {
@@ -162,7 +162,7 @@ suite('fakeauth', function() {
     return callApi('client1', {
       certificate: JSON.parse(tempCreds.certificate),
     }).then(function(responses) {
-      for (var res of responses) {
+      for (let res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
       }
     });

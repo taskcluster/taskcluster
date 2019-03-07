@@ -1,8 +1,8 @@
 suite('client credential handling', function() {
-  var taskcluster = require('../');
-  var assert = require('assert');
-  var request = require('superagent');
-  var _ = require('lodash');
+  let taskcluster = require('../');
+  let assert = require('assert');
+  let request = require('superagent');
+  let _ = require('lodash');
 
   // This suite exercises the credential-handling functionality of the client
   // against a the auth service's testAuthenticate endpoint.
@@ -77,7 +77,7 @@ suite('client credential handling', function() {
   });
 
   test('unnamed temporary credentials', async () => {
-    var credentials = taskcluster.createTemporaryCredentials({
+    let credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:specific'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
@@ -96,7 +96,7 @@ suite('client credential handling', function() {
   });
 
   test('unnamed temporary credentials, insufficient', async () => {
-    var credentials = taskcluster.createTemporaryCredentials({
+    let credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:something-else'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
@@ -111,7 +111,7 @@ suite('client credential handling', function() {
   });
 
   test('unnamed temporary credentials, bad authentication', async () => {
-    var credentials = taskcluster.createTemporaryCredentials({
+    let credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:specific'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
@@ -126,7 +126,7 @@ suite('client credential handling', function() {
   });
 
   test('named temporary credentials', async () => {
-    var credentials = taskcluster.createTemporaryCredentials({
+    let credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:specific'],
       clientId: 'my-temp-cred',
       expiry: taskcluster.fromNow('1 hour'),
@@ -148,7 +148,7 @@ suite('client credential handling', function() {
   });
 
   test('temporary credentials, authorizedScopes', async () => {
-    var credentials = taskcluster.createTemporaryCredentials({
+    let credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:subcategory:*'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
@@ -170,7 +170,7 @@ suite('client credential handling', function() {
   });
 
   test('temporary credentials, authorizedScopes, insufficient', async () => {
-    var credentials = taskcluster.createTemporaryCredentials({
+    let credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:subcategory:*'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
@@ -188,7 +188,7 @@ suite('client credential handling', function() {
   });
 
   test('temporary credentials, authorizedScopes, bad authentication', async () => {
-    var credentials = taskcluster.createTemporaryCredentials({
+    let credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:subcategory:*'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
@@ -206,7 +206,7 @@ suite('client credential handling', function() {
   });
 
   test('named temporary credentials, authorizedScopes', async () => {
-    var credentials = taskcluster.createTemporaryCredentials({
+    let credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:*'],
       clientId: 'my-temp-cred',
       expiry: taskcluster.fromNow('1 hour'),
@@ -269,7 +269,7 @@ suite('client credential handling', function() {
   });
 
   test('buildSignedUrl with temporary credentials', async () => {
-    var tempCreds = taskcluster.createTemporaryCredentials({
+    let tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test:authenticate-get', 'test:bar'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
@@ -286,7 +286,7 @@ suite('client credential handling', function() {
   });
 
   test('buildSignedUrl with temporary credentials and expiration', async () => {
-    var tempCreds = taskcluster.createTemporaryCredentials({
+    let tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test:authenticate-get'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
@@ -304,7 +304,7 @@ suite('client credential handling', function() {
   });
 
   test('buildSignedUrl with temporary credentials (expired)', async () => {
-    var tempCreds = taskcluster.createTemporaryCredentials({
+    let tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test:query', 'test:authenticate-get'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
@@ -324,7 +324,7 @@ suite('client credential handling', function() {
   });
 
   test('buildSignedUrl, temp creds + authedScopes ', async () => {
-    var tempCreds = taskcluster.createTemporaryCredentials({
+    let tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test:auth*'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {

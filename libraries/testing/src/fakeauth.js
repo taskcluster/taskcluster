@@ -1,10 +1,10 @@
-var url = require('url');
-var assert = require('assert');
-var debug = require('debug')('taskcluster-lib-testing:FakeAuth');
-var nock = require('nock');
-var hawk = require('hawk');
-var libUrls = require('taskcluster-lib-urls');
-var taskcluster = require('taskcluster-client');
+let url = require('url');
+let assert = require('assert');
+let debug = require('debug')('taskcluster-lib-testing:FakeAuth');
+let nock = require('nock');
+let hawk = require('hawk');
+let libUrls = require('taskcluster-lib-urls');
+let taskcluster = require('taskcluster-client');
 
 exports.start = function(clients, {rootUrl}={}) {
   assert(rootUrl, 'rootUrl option is required');

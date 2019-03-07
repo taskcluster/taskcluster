@@ -1,7 +1,7 @@
 suite('config', function() {
-  var config = require('../');
-  var path = require('path');
-  var assume = require('assume');
+  let config = require('../');
+  let path = require('path');
+  let assume = require('assume');
 
   test('load yaml', () => {
     let cfg = config({

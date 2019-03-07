@@ -1,8 +1,8 @@
-var {Exchanges} = require('taskcluster-lib-pulse');
-var assert = require('assert');
+let {Exchanges} = require('taskcluster-lib-pulse');
+let assert = require('assert');
 
 /** Declaration of exchanges offered by the queue */
-var exchanges = new Exchanges({
+let exchanges = new Exchanges({
   title: 'Queue AMQP Exchanges',
   projectName: 'taskcluster-queue',
   serviceName: 'queue',
@@ -62,7 +62,7 @@ var exchanges = new Exchanges({
 module.exports = exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
-var buildCommonRoutingKey = function(options) {
+let buildCommonRoutingKey = function(options) {
   options = options || {};
   return [
     {
@@ -127,7 +127,7 @@ var buildCommonRoutingKey = function(options) {
 };
 
 /** Build common routing key construct for task-group-messages for `exchanges.declare` */
-var buildTaskGroupRoutingKey = function(options) {
+let buildTaskGroupRoutingKey = function(options) {
   options = options || {};
   return [
     {
@@ -158,13 +158,13 @@ var buildTaskGroupRoutingKey = function(options) {
 };
 
 /** Build an AMQP compatible message from a message */
-var commonMessageBuilder = function(message) {
+let commonMessageBuilder = function(message) {
   message.version = 1;
   return message;
 };
 
 /** Build a message from message */
-var commonRoutingKeyBuilder = function(message, routing) {
+let commonRoutingKeyBuilder = function(message, routing) {
   return {
     taskId: message.status.taskId,
     runId: message.runId,
@@ -178,7 +178,7 @@ var commonRoutingKeyBuilder = function(message, routing) {
 };
 
 /** Build a message from message for task-group messages */
-var taskGroupRoutingKeyBuilder = function(message, routing) {
+let taskGroupRoutingKeyBuilder = function(message, routing) {
   return {
     schedulerId: message.schedulerId,
     taskGroupId: message.taskGroupId,
@@ -186,7 +186,7 @@ var taskGroupRoutingKeyBuilder = function(message, routing) {
 };
 
 /** Build list of routing keys to CC */
-var commonCCBuilder = function(message, routes) {
+let commonCCBuilder = function(message, routes) {
   assert(routes instanceof Array, 'Routes must be an array');
   return routes.map(route => 'route.' + route);
 };

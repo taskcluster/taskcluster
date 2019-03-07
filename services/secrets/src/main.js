@@ -13,7 +13,7 @@ const {sasCredentials} = require('taskcluster-lib-azure');
 
 let debug = Debug('secrets:server');
 
-var load = loader({
+let load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({profile}) => config({profile}),

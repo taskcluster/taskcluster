@@ -14,7 +14,7 @@ let assert = require('assert');
  *   }
  * }
  */
-var BlobStore = function(options) {
+let BlobStore = function(options) {
   assert(options.container, 'Container name must be given');
   this.container = options.container;
   // Documentation for the BlobService object can be found here:
@@ -49,7 +49,7 @@ BlobStore.prototype.createContainer = function() {
 
 /** Configure CORS on blob-store container */
 BlobStore.prototype.setupCORS = function() {
-  var that = this;
+  let that = this;
   return new Promise(function(accept, reject) {
     that.service.setServiceProperties({
       Cors: {
@@ -75,9 +75,9 @@ BlobStore.prototype.setupCORS = function() {
 
 /** Put JSON object and overwrite existing blob */
 BlobStore.prototype.put = function(key, json) {
-  var that = this;
+  let that = this;
   return new Promise(function(accept, reject) {
-    var payload = JSON.stringify(json);
+    let payload = JSON.stringify(json);
     that.service.createBlockBlobFromText(that.container, key, payload, {
       contentSettings: {
         contentType: 'application/json',
@@ -97,9 +97,9 @@ BlobStore.prototype.put = function(key, json) {
  * Causes and error with `code` 'BlobAlreadyExists' if the blob already exists.
  */
 BlobStore.prototype.putIfNotExists = function(key, json) {
-  var that = this;
+  let that = this;
   return new Promise(function(accept, reject) {
-    var payload = JSON.stringify(json);
+    let payload = JSON.stringify(json);
     that.service.createBlockBlobFromText(that.container, key, payload, {
       contentSettings: {
         contentType: 'application/json',
@@ -121,7 +121,7 @@ BlobStore.prototype.putIfNotExists = function(key, json) {
  * and contains JSON which doesn't satisfy match what we're putting
  */
 BlobStore.prototype.putOrMatch = function(key, json) {
-  var that = this;
+  let that = this;
   return that.putIfNotExists(key, json).catch(function(err) {
     // Handle error if we're getting a warning that the blob already exists
     if (err.code !== 'BlobAlreadyExists') {
@@ -141,7 +141,7 @@ BlobStore.prototype.putOrMatch = function(key, json) {
  * return null if it doesn't exists and `nullIfNotFound` is `true`.
  */
 BlobStore.prototype.get = function(key, nullIfNotFound) {
-  var that = this;
+  let that = this;
   return new Promise(function(accept, reject) {
     that.service.getBlobToText(that.container, key, function(err, result) {
       if (err) {
@@ -160,10 +160,10 @@ BlobStore.prototype.generateWriteSAS = function(key, options) {
   assert(options, 'Options are required');
   assert(options.expiry instanceof Date, 'options.expiry must be given');
   // Set start of the signature to 15 min in the past
-  var start = new Date();
+  let start = new Date();
   start.setMinutes(start.getMinutes() - 15);
   // Generate SAS
-  var sas = this.service.generateSharedAccessSignature(this.container, key, {
+  let sas = this.service.generateSharedAccessSignature(this.container, key, {
     AccessPolicy: {
       Start: start,
       Expiry: options.expiry,
@@ -179,10 +179,10 @@ BlobStore.prototype.createSignedGetUrl = function(key, options) {
   assert(options, 'Options are required');
   assert(options.expiry instanceof Date, 'options.expiry must be given');
   // Set start of the signature to 15 min in the past
-  var start = new Date();
+  let start = new Date();
   start.setMinutes(start.getMinutes() - 15);
   // Generate SAS
-  var sas = this.service.generateSharedAccessSignature(this.container, key, {
+  let sas = this.service.generateSharedAccessSignature(this.container, key, {
     AccessPolicy: {
       Start: start,
       Expiry: options.expiry,
@@ -196,7 +196,7 @@ BlobStore.prototype.createSignedGetUrl = function(key, options) {
 
 /** Delete a blob on azure blob storage */
 BlobStore.prototype.deleteBlob = function(key, ignoreIfNotExists) {
-  var that = this;
+  let that = this;
   return new Promise(function(accept, reject) {
     that.service.deleteBlob(that.container, key, function(err, result) {
       if (err) {

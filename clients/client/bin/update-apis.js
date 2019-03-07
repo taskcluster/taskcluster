@@ -1,42 +1,42 @@
 #!/usr/bin/env node
-var fs = require('fs');
-var path = require('path');
-var request = require('superagent');
-var cliff = require('cliff');
-var program = require('commander');
-var _ = require('lodash');
-var Promise = require('promise');
-var stringify = require('json-stable-stringify');
+let fs = require('fs');
+let path = require('path');
+let request = require('superagent');
+let cliff = require('cliff');
+let program = require('commander');
+let _ = require('lodash');
+let Promise = require('promise');
+let stringify = require('json-stable-stringify');
 
 // Markers for start and end of documentation section
-var DOCS_START_MARKER = '<!-- START OF GENERATED DOCS -->';
-var DOCS_END_MARKER = '<!-- END OF GENERATED DOCS -->';
+let DOCS_START_MARKER = '<!-- START OF GENERATED DOCS -->';
+let DOCS_END_MARKER = '<!-- END OF GENERATED DOCS -->';
 
 // Load apis
-var apis = require('../src/apis');
+let apis = require('../src/apis');
 
 /** Save APIs to apis.js */
-var saveApis = function() {
+let saveApis = function() {
   // Path to apis.js file
-  var apis_js = path.join(__dirname, '../src', 'apis.js');
+  let apis_js = path.join(__dirname, '../src', 'apis.js');
   // Create content
   // Use json-stable-stringify rather than JSON.stringify to guarantee
   // consistent ordering (see http://bugzil.la/1200519)
-  var content = '/* eslint-disable */\nmodule.exports = ' + stringify(apis, {
+  let content = '/* eslint-disable */\nmodule.exports = ' + stringify(apis, {
     space: '  ',
   }) + ';';
   fs.writeFileSync(apis_js, content, {encoding: 'utf-8'});
 };
 
 /** Find instance name by making first character lower-case */
-var instanceName = function(name) {
+let instanceName = function(name) {
   return name[0].toLowerCase() + name.substr(1);
 };
 
 /** Update documentation */
-var updateDocs = function() {
+let updateDocs = function() {
   // Start docs section with DOCS_START_MARKER
-  var docs = [
+  let docs = [
     DOCS_START_MARKER,
   ];
 
@@ -48,7 +48,7 @@ var updateDocs = function() {
       return entry.type === 'function';
     });
   }).map(function(name) {
-    var api = apis[name];
+    let api = apis[name];
     return [
       '',
       '### Methods in `taskcluster.' + name + '`',
@@ -60,14 +60,14 @@ var updateDocs = function() {
     ].concat(api.reference.entries.filter(function(entry) {
       return entry.type === 'function';
     }).map(function(entry) {
-      var args = entry.args.slice();
+      let args = entry.args.slice();
       if (entry.input) {
         args.push('payload');
       }
       if ((entry.query || []).length > 0) {
         args.push('[options]');
       }
-      var retval = 'void';
+      let retval = 'void';
       if (entry.output) {
         retval = 'result';
       }
@@ -84,7 +84,7 @@ var updateDocs = function() {
       return entry.type === 'topic-exchange';
     });
   }).map(function(name) {
-    var api = apis[name];
+    let api = apis[name];
     return [
       '',
       '### Exchanges in `taskcluster.' + name + '`',
@@ -108,12 +108,12 @@ var updateDocs = function() {
   ]).join('\n');
 
   // Load README.md
-  var readmePath = path.join(__dirname, '..', 'README.md');
-  var readme = fs.readFileSync(readmePath, {encoding: 'utf-8'});
+  let readmePath = path.join(__dirname, '..', 'README.md');
+  let readme = fs.readFileSync(readmePath, {encoding: 'utf-8'});
 
   // Split out docs and get text before and after docs, and write to readmeMD
-  var before = readme.split(DOCS_START_MARKER)[0];
-  var after = readme.split(DOCS_END_MARKER)[1];
+  let before = readme.split(DOCS_START_MARKER)[0];
+  let after = readme.split(DOCS_END_MARKER)[1];
   fs.writeFileSync(readmePath, before + docs + after, {encoding: 'utf-8'});
 };
 
@@ -121,7 +121,7 @@ program
   .command('list')
   .description('List API references and names stored')
   .action(function() {
-    var rows = [
+    let rows = [
       ['Name', 'referenceUrl'],
     ].concat(_.keys(apis).map(function(name) {
       return [name, apis[name].referenceUrl];
@@ -133,7 +133,7 @@ program
   .command('show <name>')
   .description('Show references for a specific API')
   .action(function(name, options) {
-    var api = apis[name];
+    let api = apis[name];
     if (api === undefined) {
       console.log('No API named: ' + name);
       process.exit(1);
@@ -146,12 +146,12 @@ program
   .description('Update all API references')
   .action(function() {
     // Fetch the Reference Manifest
-    var manifestUrl = 'http://references.taskcluster.net/manifest.json';
+    let manifestUrl = 'http://references.taskcluster.net/manifest.json';
     console.log('Fetching manifest reference from %s', manifestUrl);
-    var p = request.get(manifestUrl);
+    let p = request.get(manifestUrl);
 
     p = p.then(function(res) {
-      var manifest = res.body;
+      let manifest = res.body;
       return manifest;
     });
 

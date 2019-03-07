@@ -1,17 +1,17 @@
 suite.skip('queue/tasks_store', function() {
   return;
-  var slugid = require('slugid');
-  var assert = require('assert');
-  var BlobStore = require('../src/blobstore');
-  var _ = require('lodash');
-  var url = require('url');
-  var request = require('superagent');
-  var BlobUploader = require('./azure-blob-uploader-sas');
-  var debug = require('debug')('test:blobstore_test');
-  var config = require('taskcluster-lib-config');
+  let slugid = require('slugid');
+  let assert = require('assert');
+  let BlobStore = require('../src/blobstore');
+  let _ = require('lodash');
+  let url = require('url');
+  let request = require('superagent');
+  let BlobUploader = require('./azure-blob-uploader-sas');
+  let debug = require('debug')('test:blobstore_test');
+  let config = require('taskcluster-lib-config');
 
   // Load configuration
-  var cfg = config({profile: 'test'});
+  let cfg = config({profile: 'test'});
 
   // Check that we have an account
   let blobstore = null;
@@ -32,8 +32,8 @@ suite.skip('queue/tasks_store', function() {
 
   // Test that put works
   test('put', function() {
-    var key = slugid.v4();
-    var data = {message: 'Hello World', list: [1, 2, 3]};
+    let key = slugid.v4();
+    let data = {message: 'Hello World', list: [1, 2, 3]};
     return blobstore.put(key, data).then(function() {
       return blobstore.put(key, {message: 'Go away'});
     }).then(function() {
@@ -45,8 +45,8 @@ suite.skip('queue/tasks_store', function() {
 
   // Put if not exists
   test('putIfNotExists', function() {
-    var key = slugid.v4();
-    var data = {message: 'Hello World', list: [1, 2, 3]};
+    let key = slugid.v4();
+    let data = {message: 'Hello World', list: [1, 2, 3]};
     return blobstore.putIfNotExists(key, data).then(function() {
       return blobstore.putIfNotExists(key, data);
     }).then(function() {
@@ -58,8 +58,8 @@ suite.skip('queue/tasks_store', function() {
 
   // Test that we can get values
   test('get', function() {
-    var key = slugid.v4();
-    var data = {message: 'Hello World', list: [1, 2, 3]};
+    let key = slugid.v4();
+    let data = {message: 'Hello World', list: [1, 2, 3]};
     return blobstore.putIfNotExists(key, data).then(function() {
       return blobstore.get(key);
     }).then(function(result) {
@@ -69,8 +69,8 @@ suite.skip('queue/tasks_store', function() {
 
   // Test that put if not match
   test('putOrMatch (match)', function() {
-    var key = slugid.v4();
-    var data = {message: 'Hello World', list: [1, 2, 3]};
+    let key = slugid.v4();
+    let data = {message: 'Hello World', list: [1, 2, 3]};
     return blobstore.putOrMatch(key, data).then(function() {
       return blobstore.putOrMatch(key, data);
     });
@@ -78,8 +78,8 @@ suite.skip('queue/tasks_store', function() {
 
   // Test that put if not match
   test('putOrMatch (mismatch)', function() {
-    var key = slugid.v4();
-    var data = {message: 'Hello World', list: [1, 2, 3]};
+    let key = slugid.v4();
+    let data = {message: 'Hello World', list: [1, 2, 3]};
     return blobstore.putOrMatch(key, data).then(function() {
       return blobstore.putOrMatch(key, {message: 'Go away'});
     }).then(function() {
@@ -91,7 +91,7 @@ suite.skip('queue/tasks_store', function() {
 
   // Test that we can't key that doesn't exists
   test('get with nullIfNotFound', function() {
-    var key = slugid.v4();
+    let key = slugid.v4();
     return blobstore.get(key, true).then(function(result) {
       assert(result === null, 'Unexpected result');
     });
@@ -99,7 +99,7 @@ suite.skip('queue/tasks_store', function() {
 
   // Test that we can't key that doesn't exists
   test('get without nullIfNotFound', function() {
-    var key = slugid.v4();
+    let key = slugid.v4();
     return blobstore.get(key).then(function(result) {
       assert(false, 'Expected Error');
     }).catch(function(err) {
@@ -109,16 +109,16 @@ suite.skip('queue/tasks_store', function() {
 
   // Test that we can generate SAS with write access
   test('upload w. generateWriteSAS', function() {
-    var key = slugid.v4();
-    var expiry = new Date();
+    let key = slugid.v4();
+    let expiry = new Date();
     expiry.setMinutes(expiry.getMinutes() + 20);
-    var sas = blobstore.generateWriteSAS(key, {expiry: expiry});
+    let sas = blobstore.generateWriteSAS(key, {expiry: expiry});
     assert(sas, 'Failed to generate a signature');
 
     // Create BlobUploader
-    var uploader = new BlobUploader(sas);
-    var block1 = slugid.v4();
-    var block2 = slugid.v4();
+    let uploader = new BlobUploader(sas);
+    let block1 = slugid.v4();
+    let block2 = slugid.v4();
 
     return Promise.all([
       uploader.putBlock(block1, '{"block1_says": "Hello world",\n'),
@@ -135,27 +135,27 @@ suite.skip('queue/tasks_store', function() {
 
   // Test that we can't abuse SAS with write access
   test('no unauthorized upload w. generateWriteSAS', function() {
-    var key = slugid.v4();
-    var expiry = new Date();
+    let key = slugid.v4();
+    let expiry = new Date();
     expiry.setMinutes(expiry.getMinutes() + 20);
-    var sas = blobstore.generateWriteSAS(key, {expiry: expiry});
+    let sas = blobstore.generateWriteSAS(key, {expiry: expiry});
     assert(sas, 'Failed to generate a signature');
 
     // Make a new key and try it
     key = slugid.v4();
-    var sas2 = blobstore.generateWriteSAS(key, {expiry: expiry});
+    let sas2 = blobstore.generateWriteSAS(key, {expiry: expiry});
 
     // Update the first signed url to point at the second with the same query
     // params to test that we are using a restrictive enough permission set.
-    var parsedInvalidSasUrl = url.parse(sas, true);
-    var parsedValidSasUrl = url.parse(sas2, true);
+    let parsedInvalidSasUrl = url.parse(sas, true);
+    let parsedValidSasUrl = url.parse(sas2, true);
 
     // Keep the query params the same but change the blob it is pointing at.
     parsedInvalidSasUrl.pathname = parsedValidSasUrl.pathname;
 
     // Create BlobUploader
-    var uploader = new BlobUploader(url.format(parsedInvalidSasUrl));
-    var block1 = slugid.v4();
+    let uploader = new BlobUploader(url.format(parsedInvalidSasUrl));
+    let block1 = slugid.v4();
 
     return uploader.putBlock(block1, '{"').then(function() {
       assert(false, 'This should have failed');
@@ -166,11 +166,11 @@ suite.skip('queue/tasks_store', function() {
 
   // Test that signed get URLs work
   test('createSignedGetUrl', function() {
-    var key = slugid.v4();
+    let key = slugid.v4();
     return blobstore.put(key, {message: 'Hello'}).then(function() {
-      var expiry = new Date();
+      let expiry = new Date();
       expiry.setMinutes(expiry.getMinutes() + 5);
-      var url = blobstore.createSignedGetUrl(key, {expiry: expiry});
+      let url = blobstore.createSignedGetUrl(key, {expiry: expiry});
       return request
         .get(url)
         .then(function(res) {
@@ -183,8 +183,8 @@ suite.skip('queue/tasks_store', function() {
 
   // Test that we can delete a blob
   test('deleteBlob (blob exists)', function() {
-    var key = slugid.v4();
-    var data = {message: 'Hello World', list: [1, 2, 3]};
+    let key = slugid.v4();
+    let data = {message: 'Hello World', list: [1, 2, 3]};
     return blobstore.put(key, data).then(function() {
       return blobstore.deleteBlob(key);
     });
@@ -192,7 +192,7 @@ suite.skip('queue/tasks_store', function() {
 
   // Test that we can delete a blob that doesn't exist
   test('deleteBlob (blob does not exists)', function() {
-    var key = slugid.v4();
+    let key = slugid.v4();
     return blobstore.deleteBlob(key, true);
   });
 });

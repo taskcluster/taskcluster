@@ -1,5 +1,5 @@
-var parseTime = require('./parsetime');
-var slugid = require('slugid');
+let parseTime = require('./parsetime');
+let slugid = require('slugid');
 
 /**
  * Create a Date object offset = '1d 2h 3min' into the future
@@ -10,7 +10,7 @@ var slugid = require('slugid');
  * short hand `1d2h3min`, it's fairly tolerant of different spelling forms and
  * whitespace. But only really meant to be used with constants.
  */
-var fromNow = function(offset, reference) {
+let fromNow = function(offset, reference) {
   if (reference === undefined) {
     reference = new Date();
   }
@@ -19,7 +19,7 @@ var fromNow = function(offset, reference) {
   offset.days += 30 * offset.months;
   offset.days += 365 * offset.years;
 
-  var retval = new Date(
+  let retval = new Date(
     reference.getTime()
     //    + offset.years * 365 * 24 * 60 * 60 * 1000
     //   + offset.month  * 30 * 24 * 60 * 60 * 1000
@@ -48,7 +48,7 @@ exports.fromNow = fromNow;
  * short hand `1d2h3min`, it's fairly tolerant of different spelling forms and
  * whitespace. But only really meant to be used with constants.
  */
-var fromNowJSON = function(offset, reference) {
+let fromNowJSON = function(offset, reference) {
   return fromNow(offset, reference).toJSON();
 };
 

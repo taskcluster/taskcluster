@@ -1,6 +1,6 @@
-var Promise = require('promise');
-var debug = require('debug')('taskcluster-lib-testing:pulse');
-var taskcluster = require('taskcluster-client');
+let Promise = require('promise');
+let debug = require('debug')('taskcluster-lib-testing:pulse');
+let taskcluster = require('taskcluster-client');
 
 /**
  * A utility for test written in mocha, that makes very easy to listen for a
@@ -11,8 +11,8 @@ var taskcluster = require('taskcluster-client');
  *   password:     '...'   // Pulse password
  * }
  */
-var PulseTestReceiver = function(credentials, mocha) {
-  var that = this;
+let PulseTestReceiver = function(credentials, mocha) {
+  let that = this;
   this._connection = new taskcluster.PulseConnection(credentials);
   this._listeners = null;
   this._promisedMessages = null;
@@ -72,7 +72,7 @@ PulseTestReceiver.prototype.listenFor = function(name, binding) {
   // Create new listener using the existing PulseConnection, so no new TCP
   // connection is opened, it just creates an AMQP channel within the existing
   // TCP connection, this is much faster.
-  var listener = new taskcluster.PulseListener({
+  let listener = new taskcluster.PulseListener({
     connection: this._connection,
   });
 
@@ -80,7 +80,7 @@ PulseTestReceiver.prototype.listenFor = function(name, binding) {
   this._listeners.push(listener);
 
   // Create a promise that we got a message
-  var gotMessage = new Promise(function(accept, reject) {
+  let gotMessage = new Promise(function(accept, reject) {
     listener.on('message', accept);
     listener.on('error', reject);
   });

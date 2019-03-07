@@ -59,12 +59,12 @@ const PRIORITY_LEVELS = [
  */
 
 // Common patterns URL parameters
-var SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
-var GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
-var RUN_ID_PATTERN = /^[1-9]*[0-9]+$/;
+let SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
+let GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
+let RUN_ID_PATTERN = /^[1-9]*[0-9]+$/;
 
 /** API end-point for version v1/ */
-var builder = new APIBuilder({
+let builder = new APIBuilder({
   title: 'Queue API Documentation',
   description: [
     'The queue service is responsible for accepting tasks and track their state',
@@ -383,15 +383,15 @@ const authorizeTaskCreation = async function(req, taskId, taskDef) {
 };
 
 /** Construct default values and validate dates */
-var patchAndValidateTaskDef = function(taskId, taskDef) {
+let patchAndValidateTaskDef = function(taskId, taskDef) {
   // Set taskGroupId to taskId if not provided
   if (!taskDef.taskGroupId) {
     taskDef.taskGroupId = taskId;
   }
 
   // Ensure: created < now < deadline (with drift up to 15 min)
-  var created = new Date(taskDef.created);
-  var deadline = new Date(taskDef.deadline);
+  let created = new Date(taskDef.created);
+  let deadline = new Date(taskDef.deadline);
   if (created.getTime() < new Date().getTime() - 15 * 60 * 1000) {
     return {
       code: 'InputError',
@@ -421,7 +421,7 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
     };
   }
 
-  var msToDeadline = deadline.getTime() - new Date().getTime();
+  let msToDeadline = deadline.getTime() - new Date().getTime();
   // Validate that deadline is less than 5 days from now, allow 15 min drift
   if (msToDeadline > 5 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
     return {
@@ -433,7 +433,7 @@ var patchAndValidateTaskDef = function(taskId, taskDef) {
 
   // Set expires, if not defined
   if (!taskDef.expires) {
-    var expires = new Date(taskDef.deadline);
+    let expires = new Date(taskDef.deadline);
     expires.setFullYear(expires.getFullYear() + 1);
     taskDef.expires = expires.toJSON();
   }
@@ -614,13 +614,13 @@ builder.declare({
     'a `queue:scheduler-id:..` scope as well as scopes for the proper priority.',
   ].join('\n'),
 }, async function(req, res) {
-  var taskId = req.params.taskId;
-  var taskDef = req.body;
+  let taskId = req.params.taskId;
+  let taskDef = req.body;
 
   await authorizeTaskCreation(req, taskId, taskDef);
 
   // Patch default values and validate timestamps
-  var detail = patchAndValidateTaskDef(taskId, taskDef);
+  let detail = patchAndValidateTaskDef(taskId, taskDef);
   if (detail) {
     return res.reportError(detail.code, detail.message, detail.details);
   }
@@ -794,13 +794,13 @@ builder.declare({
     'This is only present for legacy.',
   ].join('\n'),
 }, async function(req, res) {
-  var taskId = req.params.taskId;
-  var taskDef = req.body;
+  let taskId = req.params.taskId;
+  let taskDef = req.body;
 
   await authorizeTaskCreation(req, taskId, taskDef);
 
   // Patch default values and validate timestamps
-  var detail = patchAndValidateTaskDef(taskId, taskDef);
+  let detail = patchAndValidateTaskDef(taskId, taskDef);
   if (detail) {
     return res.reportError(detail.code, detail.message, detail.details);
   }
@@ -950,8 +950,8 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   // Load Task entity
-  var taskId = req.params.taskId;
-  var task = await this.Task.load({taskId: taskId}, true);
+  let taskId = req.params.taskId;
+  let task = await this.Task.load({taskId: taskId}, true);
 
   // If task entity doesn't exists, we return ResourceNotFound
   if (!task) {
@@ -1021,8 +1021,8 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   // Load Task entity
-  var taskId = req.params.taskId;
-  var task = await this.Task.load({taskId: taskId}, true);
+  let taskId = req.params.taskId;
+  let task = await this.Task.load({taskId: taskId}, true);
 
   // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
@@ -1056,7 +1056,7 @@ builder.declare({
   // If creating a new one, then reset retriesLeft
   await task.modify((task) => {
     // Don't modify if there already is an active run
-    var state = (_.last(task.runs) || {state: 'unscheduled'}).state;
+    let state = (_.last(task.runs) || {state: 'unscheduled'}).state;
     if (state === 'pending' || state === 'running') {
       return;
     }
@@ -1074,14 +1074,14 @@ builder.declare({
     });
 
     // Calculate maximum number of retries allowed
-    var allowedRetries = MAX_RUNS_ALLOWED - task.runs.length;
+    let allowedRetries = MAX_RUNS_ALLOWED - task.runs.length;
 
     // Reset retries left
     task.retriesLeft = Math.min(task.retries, allowedRetries);
     task.takenUntil = new Date(0);
   });
 
-  var state = task.state();
+  let state = task.state();
 
   // If not running or pending, and we couldn't create more runs then we have
   // a conflict
@@ -1097,9 +1097,9 @@ builder.declare({
 
   // Put message in appropriate azure queue, and publish message to pulse,
   // if the initial run is pending
-  var status = task.status();
+  let status = task.status();
   if (state === 'pending') {
-    var runId = task.runs.length - 1;
+    let runId = task.runs.length - 1;
     await Promise.all([
       this.queueService.putPendingMessage(task, runId),
       this.publisher.taskPending({
@@ -1144,8 +1144,8 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   // Load Task entity
-  var taskId = req.params.taskId;
-  var task = await this.Task.load({taskId}, true);
+  let taskId = req.params.taskId;
+  let task = await this.Task.load({taskId}, true);
 
   // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
@@ -1176,8 +1176,8 @@ builder.declare({
 
   // Modify the task
   await task.modify(async (task) => {
-    var run = _.last(task.runs);
-    var state = (run || {state: 'unscheduled'}).state;
+    let run = _.last(task.runs);
+    let state = (run || {state: 'unscheduled'}).state;
 
     // If we have a pending task or running task, we cancel the ongoing run
     if (state === 'pending' || state === 'running') {
@@ -1191,7 +1191,7 @@ builder.declare({
     // instead of setting `reasonCreated` to 'scheduled', we set it 'exception',
     // because this run was made solely to communicate an exception.
     if (state === 'unscheduled') {
-      var now = new Date().toJSON();
+      let now = new Date().toJSON();
       task.runs.push({
         state: 'exception',
         reasonCreated: 'exception',
@@ -1206,7 +1206,7 @@ builder.declare({
   });
 
   // Get the last run, there should always be one
-  var run = _.last(task.runs);
+  let run = _.last(task.runs);
   if (!run) {
     let err = new Error('There should exist a run after cancelTask!');
     err.taskId = task.taskId;
@@ -1215,7 +1215,7 @@ builder.declare({
   }
 
   // Construct status object
-  var status = task.status();
+  let status = task.status();
 
   // If the last run was canceled, resolve dependencies and publish message
   if (run.state === 'exception' && run.reasonResolved === 'canceled') {
@@ -1260,12 +1260,12 @@ builder.declare({
     'with `claimTask`, and afterwards you should always delete the message.',
   ].join('\n'),
 }, async function(req, res) {
-  var provisionerId = req.params.provisionerId;
-  var workerType = req.params.workerType;
+  let provisionerId = req.params.provisionerId;
+  let workerType = req.params.workerType;
 
   // Construct signedUrl for accessing the azure queue for this
   // provisionerId and workerType
-  var {
+  let {
     queues,
     expiry,
   } = await this.queueService.signedPendingPollUrls(provisionerId, workerType);
@@ -1393,11 +1393,11 @@ builder.declare({
     'claim a task - never documented',
   ].join('\n'),
 }, async function(req, res) {
-  var taskId = req.params.taskId;
-  var runId = parseInt(req.params.runId, 10);
+  let taskId = req.params.taskId;
+  let runId = parseInt(req.params.runId, 10);
 
-  var workerGroup = req.body.workerGroup;
-  var workerId = req.body.workerId;
+  let workerGroup = req.body.workerGroup;
+  let workerId = req.body.workerId;
 
   // Load Task entity
   let task = await this.Task.load({taskId}, true);
@@ -1517,8 +1517,8 @@ builder.declare({
     'need to resolve the run or upload artifacts.',
   ].join('\n'),
 }, async function(req, res) {
-  var taskId = req.params.taskId;
-  var runId = parseInt(req.params.runId, 10);
+  let taskId = req.params.taskId;
+  let runId = parseInt(req.params.runId, 10);
 
   // Load Task entity
   let task = await this.Task.load({taskId}, true);
@@ -1534,7 +1534,7 @@ builder.declare({
   }
 
   // Handle cases where the run doesn't exist
-  var run = task.runs[runId];
+  let run = task.runs[runId];
   if (!run) {
     return res.reportError(
       'ResourceNotFound',
@@ -1565,12 +1565,12 @@ builder.declare({
   }
 
   // Set takenUntil to now + claimTimeout
-  var takenUntil = new Date();
+  let takenUntil = new Date();
   takenUntil.setSeconds(takenUntil.getSeconds() + this.claimTimeout);
 
-  var msgPut = false;
+  let msgPut = false;
   await task.modify(async (task) => {
-    var run = task.runs[runId];
+    let run = task.runs[runId];
 
     // No modifications required if there is no run or run isn't running
     if (task.runs.length - 1 !== runId || run.state !== 'running') {
@@ -1634,7 +1634,7 @@ builder.declare({
  * Resolve a run of a task as `target` ('completed' or 'failed').
  * This function assumes the same context as the API.
  */
-var resolveTask = async function(req, res, taskId, runId, target) {
+let resolveTask = async function(req, res, taskId, runId, target) {
   assert(target === 'completed' ||
          target === 'failed', 'Expected a valid target');
 
@@ -1651,7 +1651,7 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   }
 
   // Handle cases where the run doesn't exist
-  var run = task.runs[runId];
+  let run = task.runs[runId];
   if (!run) {
     return res.reportError('ResourceNotFound',
       'Run {{runId}} not found on task `{{taskId}}`.', {
@@ -1689,7 +1689,7 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   }
 
   await task.modify((task) => {
-    var run = task.runs[runId];
+    let run = task.runs[runId];
 
     // No modification if run isn't running or the run isn't last
     if (task.runs.length - 1 !== runId || run.state !== 'running') {
@@ -1728,7 +1728,7 @@ var resolveTask = async function(req, res, taskId, runId, target) {
   );
 
   // Construct status object
-  var status = task.status();
+  let status = task.status();
 
   // Post message about task resolution
   if (target === 'completed') {
@@ -1770,11 +1770,11 @@ builder.declare({
     'Report a task completed, resolving the run as `completed`.',
   ].join('\n'),
 }, function(req, res) {
-  var taskId = req.params.taskId;
-  var runId = parseInt(req.params.runId, 10);
+  let taskId = req.params.taskId;
+  let runId = parseInt(req.params.runId, 10);
   // Backwards compatibility with very old workers, should be dropped in the
   // future
-  var target = req.body.success === false ? 'failed' : 'completed';
+  let target = req.body.success === false ? 'failed' : 'completed';
 
   return resolveTask.call(this, req, res, taskId, runId, target);
 });
@@ -1805,8 +1805,8 @@ builder.declare({
     'exception, which should be reported with `reportException`.',
   ].join('\n'),
 }, function(req, res) {
-  var taskId = req.params.taskId;
-  var runId = parseInt(req.params.runId, 10);
+  let taskId = req.params.taskId;
+  let runId = parseInt(req.params.runId, 10);
 
   return resolveTask.call(this, req, res, taskId, runId, 'failed');
 });
@@ -1843,9 +1843,9 @@ builder.declare({
     'is temporarily unavailable worker should report task _failed_.',
   ].join('\n'),
 }, async function(req, res) {
-  var taskId = req.params.taskId;
-  var runId = parseInt(req.params.runId, 10);
-  var reason = req.body.reason;
+  let taskId = req.params.taskId;
+  let runId = parseInt(req.params.runId, 10);
+  let reason = req.body.reason;
 
   // Load Task entity
   let task = await this.Task.load({taskId}, true);
@@ -1860,7 +1860,7 @@ builder.declare({
   }
 
   // Handle cases where the run doesn't exist
-  var run = task.runs[runId];
+  let run = task.runs[runId];
   if (!run) {
     return res.reportError(
       'ResourceNotFound',
@@ -1879,7 +1879,7 @@ builder.declare({
   });
 
   await task.modify((task) => {
-    var run = task.runs[runId];
+    let run = task.runs[runId];
 
     // No modification if run isn't running or the run isn't last
     if (task.runs.length - 1 !== runId || run.state !== 'running') {
@@ -1930,13 +1930,13 @@ builder.declare({
     );
   }
 
-  var status = task.status();
+  let status = task.status();
 
   // If a newRun was created and it is a retry with state pending then we better
   // publish messages about it. And if we're not retrying the task, because then
   // the task is resolved as it has no more runs, and we publish a message about
   // task-exception.
-  var newRun = task.runs[runId + 1];
+  let newRun = task.runs[runId + 1];
   if (newRun &&
       task.runs.length - 1 === runId + 1 &&
       newRun.state === 'pending' &&
@@ -2112,11 +2112,11 @@ builder.declare({
     'It is, however, a solid estimate of the number of pending tasks.',
   ].join('\n'),
 }, async function(req, res) {
-  var provisionerId = req.params.provisionerId;
-  var workerType = req.params.workerType;
+  let provisionerId = req.params.provisionerId;
+  let workerType = req.params.workerType;
 
   // Get number of pending message
-  var count = await this.queueService.countPendingMessages(
+  let count = await this.queueService.countPendingMessages(
     provisionerId, workerType,
   );
 

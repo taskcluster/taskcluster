@@ -1,9 +1,9 @@
-var assert = require('assert');
-var debug = require('debug')('taskcluster-lib-testing:schemas');
-var fs = require('fs');
-var SchemaSet = require('taskcluster-lib-validate');
-var libUrls = require('taskcluster-lib-urls');
-var path = require('path');
+let assert = require('assert');
+let debug = require('debug')('taskcluster-lib-testing:schemas');
+let fs = require('fs');
+let SchemaSet = require('taskcluster-lib-validate');
+let libUrls = require('taskcluster-lib-urls');
+let path = require('path');
 
 /**
  * Test schemas with positive and negative test cases. This will call
@@ -23,7 +23,7 @@ var path = require('path');
  *   basePath:      path.join(__dirname, 'validate')  // basePath test cases
  * }
  */
-var schemas = function(options) {
+let schemas = function(options) {
   // Validate options
   assert(options.schemasetOptions, 'Options must be given for validator');
   assert(options.cases instanceof Array, 'Array of cases must be given');
@@ -39,19 +39,19 @@ var schemas = function(options) {
   options.cases.forEach(function(testCase) {
     test(testCase.path, function() {
       // Load test data
-      var filePath = testCase.path;
+      let filePath = testCase.path;
       // Prefix with basePath if a basePath is given
       if (options.basePath) {
         filePath = path.join(options.basePath, filePath);
       }
-      var data = fs.readFileSync(filePath, {encoding: 'utf-8'});
-      var json = JSON.parse(data);
+      let data = fs.readFileSync(filePath, {encoding: 'utf-8'});
+      let json = JSON.parse(data);
 
       // Find schema
-      var schema = libUrls.schema(libUrls.testRootUrl(), options.serviceName, testCase.schema);
+      let schema = libUrls.schema(libUrls.testRootUrl(), options.serviceName, testCase.schema);
 
       // Validate json
-      var error = validate(json, schema);
+      let error = validate(json, schema);
 
       // Test errors
       if (testCase.success) {

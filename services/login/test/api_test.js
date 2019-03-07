@@ -2,9 +2,9 @@ const libUrls = require('taskcluster-lib-urls');
 require('mocha');
 
 suite('API', function() {
-  var assume = require('assume');
-  var helper = require('./helper');
-  var request = require('superagent');
+  let assume = require('assume');
+  let helper = require('./helper');
+  let request = require('superagent');
 
   helper.setup();
 

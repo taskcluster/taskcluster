@@ -14,14 +14,14 @@ suite('retry-test', function() {
   let proxier;
 
   // Construct API
-  var builder = new APIBuilder({
+  let builder = new APIBuilder({
     title: 'Retry API',
     description: 'API that sometimes works by retrying things',
     serviceName: 'retrytest',
     apiVersion: 'v1',
   });
 
-  var getInternalErrorCount = 0;
+  let getInternalErrorCount = 0;
   builder.declare({
     method: 'get',
     route: '/internal-error',
@@ -38,7 +38,7 @@ suite('retry-test', function() {
       });
   });
 
-  var getOccasionalInternalErrorCount = 0;
+  let getOccasionalInternalErrorCount = 0;
   builder.declare({
     method: 'delete', // Just to ensure that delete works :)
     route: '/internal-error-sometimes',
@@ -63,7 +63,7 @@ suite('retry-test', function() {
     }
   });
 
-  var getUserErrorCount = 0;
+  let getUserErrorCount = 0;
   builder.declare({
     method: 'get',
     route: '/user-error',
@@ -80,7 +80,7 @@ suite('retry-test', function() {
       });
   });
 
-  var getConnectionErrorCount = 0;
+  let getConnectionErrorCount = 0;
   builder.declare({
     method: 'get',
     route: '/connection-error',
@@ -95,11 +95,11 @@ suite('retry-test', function() {
   });
 
   // Reference for test api server
-  var _apiServer = null;
+  let _apiServer = null;
 
-  var monitorManager = null;
-  var Server = null;
-  var server = null;
+  let monitorManager = null;
+  let Server = null;
+  let server = null;
 
   setup(async function() {
     assert(_apiServer === null, '_apiServer must be null');
@@ -211,7 +211,7 @@ suite('retry-test', function() {
       mock: true,
     });
     getOccasionalInternalErrorCount = 0;
-    var server2 = new Server({
+    let server2 = new Server({
       credentials: {
         clientId: 'test-client',
         accessToken: 'test-token',
@@ -226,7 +226,7 @@ suite('retry-test', function() {
   });
 
   test('Can set retries = 0', function() {
-    var server2 = new Server({
+    let server2 = new Server({
       credentials: {
         clientId: 'test-client',
         accessToken: 'test-token',
@@ -244,7 +244,7 @@ suite('retry-test', function() {
   });
 
   test('Can set retries = 1', function() {
-    var server2 = new Server({
+    let server2 = new Server({
       credentials: {
         clientId: 'test-client',
         accessToken: 'test-token',

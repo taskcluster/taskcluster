@@ -1,9 +1,9 @@
 suite('client requests/responses', function() {
-  var taskcluster = require('../');
-  var assert = require('assert');
-  var path = require('path');
-  var nock = require('nock');
-  var MonitorManager = require('taskcluster-lib-monitor');
+  let taskcluster = require('../');
+  let assert = require('assert');
+  let path = require('path');
+  let nock = require('nock');
+  let MonitorManager = require('taskcluster-lib-monitor');
 
   // This suite exercises the request and response functionality of
   // the client against a totally fake service defined by this reference
@@ -110,7 +110,7 @@ suite('client requests/responses', function() {
     },
   ];
 
-  var referenceBaseUrlStyle = {
+  let referenceBaseUrlStyle = {
     version: 0,
     $schema: 'http://schemas.taskcluster.net/base/v1/api-reference.json#',
     title: 'Fake API (with just baseUrl)',
@@ -118,7 +118,7 @@ suite('client requests/responses', function() {
     baseUrl: 'https://fake.taskcluster.net/v1',
     entries,
   };
-  var referenceBothStyle = {
+  let referenceBothStyle = {
     version: 0,
     $schema: 'http://schemas.taskcluster.net/base/v1/api-reference.json#',
     title: 'Fake API (with baseUrl and name)',
@@ -127,7 +127,7 @@ suite('client requests/responses', function() {
     name: 'fake1',
     entries,
   };
-  var referenceNameStyle = {
+  let referenceNameStyle = {
     version: 0,
     $schema: 'http://schemas.taskcluster.net/base/v1/api-reference.json#',
     title: 'Fake API (with just name)',

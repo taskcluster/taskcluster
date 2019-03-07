@@ -1,11 +1,11 @@
-var testing = require('taskcluster-lib-testing');
-var taskcluster = require('taskcluster-client');
-var slugid = require('slugid');
-var https = require('https');
-var http = require('http');
-var api = require('./api');
+let testing = require('taskcluster-lib-testing');
+let taskcluster = require('taskcluster-client');
+let slugid = require('slugid');
+let https = require('https');
+let http = require('http');
+let api = require('./api');
 
-var makeTask = () => {
+let makeTask = () => {
   return {
     provisionerId: 'no-provisioner',
     workerType: 'test-worker',
@@ -22,32 +22,32 @@ var makeTask = () => {
 };
 
 /** Launch server */
-var launch = async function(cfg) {
-  var fmt = (n) => {
+let launch = async function(cfg) {
+  let fmt = (n) => {
     return Math.round(n * 100) / 100;
   };
 
   const CYCLE_SECONDS = 3 * 60; //10 * 60; // Normally 3
 
-  var success = 0;
-  var failed = 0;
-  var summary = () => {
+  let success = 0;
+  let failed = 0;
+  let summary = () => {
     console.log('%s req/s success: %s, failed: %s',
       fmt(success / CYCLE_SECONDS), success, failed);
     success = 0;
     failed = 0;
   };
 
-  var loops = 0;
-  var exiting = false;
-  var startLoop = () => {
+  let loops = 0;
+  let exiting = false;
+  let startLoop = () => {
     loops += 1;
     (async () => {
-      var agent = new https.Agent({keepAlive: true});
+      let agent = new https.Agent({keepAlive: true});
       if (cfg.server.publicUrl.substr(0, 5) !== 'https') {
         agent = new http.Agent({keepAlive: true});
       }
-      var tempCreds = taskcluster.createTemporaryCredentials({
+      let tempCreds = taskcluster.createTemporaryCredentials({
         start: taskcluster.fromNow('- 15 min'),
         expiry: taskcluster.fromNow('4 hours'),
         scopes: [
@@ -62,7 +62,7 @@ var launch = async function(cfg) {
         baseUrl: cfg.server.publicUrl + '/v1',
       });
       let Queue = taskcluster.createClient(reference);
-      var queue = new Queue({
+      let queue = new Queue({
         credentials: tempCreds,
         retries: 0,
         baseUrl: cfg.server.publicUrl + '/v1',

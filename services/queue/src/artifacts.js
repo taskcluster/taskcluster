@@ -96,18 +96,18 @@ builder.declare({
     'reference artifacts your process has created.',
   ].join('\n'),
 }, async function(req, res) {
-  var taskId = req.params.taskId;
-  var runId = parseInt(req.params.runId, 10);
-  var name = req.params.name;
-  var input = req.body;
-  var storageType = input.storageType;
-  var contentType = input.contentType || 'application/json';
+  let taskId = req.params.taskId;
+  let runId = parseInt(req.params.runId, 10);
+  let name = req.params.name;
+  let input = req.body;
+  let storageType = input.storageType;
+  let contentType = input.contentType || 'application/json';
 
   // Find expiration date
-  var expires = new Date(input.expires);
+  let expires = new Date(input.expires);
 
   // Validate expires it is in the future
-  var past = new Date();
+  let past = new Date();
   past.setMinutes(past.getMinutes() - 15);
   if (expires.getTime() < past.getTime()) {
     return res.reportError('InputError',
@@ -116,7 +116,7 @@ builder.declare({
   }
 
   // Load Task entity
-  var task = await this.Task.load({taskId}, true);
+  let task = await this.Task.load({taskId}, true);
 
   // Handle cases where the task doesn't exist
   if (!task) {
@@ -126,7 +126,7 @@ builder.declare({
   }
 
   // Check presence of the run
-  var run = task.runs[runId];
+  let run = task.runs[runId];
   if (!run) {
     return res.reportError('InputError',
       'Run not found',
@@ -134,8 +134,8 @@ builder.declare({
   }
 
   // Get workerGroup and workerId
-  var workerGroup = run.workerGroup;
-  var workerId = run.workerId;
+  let workerGroup = run.workerGroup;
+  let workerId = run.workerId;
 
   // It is possible for these to be null if the task was
   // cancelled or otherwise never claimed
@@ -166,7 +166,7 @@ builder.declare({
 
   // Ensure that the run is running
   if (run.state !== 'running') {
-    var allow = false;
+    let allow = false;
     if (run.state === 'exception') {
       // If task was resolved exception, we'll allow artifacts to be uploaded
       // up to 25 min past resolution. This allows us to report exception as
@@ -188,8 +188,8 @@ builder.declare({
   }
 
   // Construct details for different storage types
-  var isPublic = /^public\//.test(name);
-  var details = {};
+  let isPublic = /^public\//.test(name);
+  let details = {};
   let present = false;
   let uploadId;
   switch (storageType) {
@@ -466,7 +466,7 @@ builder.declare({
   }
   case 'azure': {
     // Reply with SAS for azure
-    var expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
+    let expiry = new Date(new Date().getTime() + 30 * 60 * 1000);
     // Generate SAS
     let putUrl = this.blobStore.generateWriteSAS(
       artifact.details.path, {expiry},
@@ -489,7 +489,7 @@ builder.declare({
 });
 
 /** Reply to an artifact request using taskId, runId, name and context */
-var replyWithArtifact = async function(taskId, runId, name, req, res) {
+let replyWithArtifact = async function(taskId, runId, name, req, res) {
   // Load artifact meta-data from table storage
   let artifact = await this.Artifact.load({taskId, runId, name}, true);
 
@@ -537,12 +537,12 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
   // Handle S3 artifacts
   if (artifact.storageType === 's3') {
     // Find url
-    var url = null;
+    let url = null;
 
     // First, let's figure out which region the request is coming from
-    var region = this.regionResolver.getRegion(req);
-    var prefix = artifact.details.prefix;
-    var bucket = artifact.details.bucket;
+    let region = this.regionResolver.getRegion(req);
+    let prefix = artifact.details.prefix;
+    let bucket = artifact.details.bucket;
 
     if (bucket === this.publicBucket.bucket) {
 
@@ -577,10 +577,10 @@ var replyWithArtifact = async function(taskId, runId, name, req, res) {
       } else if (skipCache || !region) {
         url = this.publicBucket.createGetUrl(prefix, false);
       } else {
-        var canonicalArtifactUrl = this.publicBucket.createGetUrl(prefix, true);
+        let canonicalArtifactUrl = this.publicBucket.createGetUrl(prefix, true);
         // We need to build our url path appropriately.  Note that we URL
         // encode the artifact URL as required by the cloud-mirror api
-        var cloudMirrorPath = [
+        let cloudMirrorPath = [
           'v1',
           'redirect',
           's3',
@@ -698,7 +698,7 @@ builder.declare({
 
   // Ensure that the run is running
   if (run.state !== 'running') {
-    var allow = false;
+    let allow = false;
     if (run.state === 'exception') {
       // If task was resolved exception, we'll allow artifacts to be uploaded
       // up to 25 min past resolution. This allows us to report exception as
@@ -889,9 +889,9 @@ builder.declare({
     '(This feature may be disabled in the future, use is sparingly!)',
   ].join('\n'),
 }, async function(req, res) {
-  var taskId = req.params.taskId;
-  var runId = parseInt(req.params.runId, 10);
-  var name = req.params.name;
+  let taskId = req.params.taskId;
+  let runId = parseInt(req.params.runId, 10);
+  let name = req.params.name;
 
   await req.authorize({
     private: !/^public\//.test(name),
@@ -932,8 +932,8 @@ builder.declare({
     'the latest run. Otherwise, just us the most convenient API end-point.',
   ].join('\n'),
 }, async function(req, res) {
-  var taskId = req.params.taskId;
-  var name = req.params.name;
+  let taskId = req.params.taskId;
+  let name = req.params.name;
 
   await req.authorize({
     private: !/^public\//.test(name),
@@ -941,7 +941,7 @@ builder.declare({
   });
 
   // Load task status structure from table
-  var task = await this.Task.load({taskId}, true);
+  let task = await this.Task.load({taskId}, true);
 
   // Give a 404 if not found
   if (!task) {
@@ -954,7 +954,7 @@ builder.declare({
   }
 
   // Find highest runId
-  var runId = task.runs.length - 1;
+  let runId = task.runs.length - 1;
 
   // Reply
   return replyWithArtifact.call(this, taskId, runId, name, req, res);

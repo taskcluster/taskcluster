@@ -2,22 +2,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-var request = require('superagent');
-var debug = require('debug')('taskcluster-client');
-var _ = require('lodash');
-var assert = require('assert');
-var hawk = require('hawk');
-var url = require('url');
-var crypto = require('crypto');
-var slugid = require('slugid');
-var http = require('http');
-var https = require('https');
-var Promise = require('promise');
-var querystring = require('querystring');
-var tcUrl = require('taskcluster-lib-urls');
+let request = require('superagent');
+let debug = require('debug')('taskcluster-client');
+let _ = require('lodash');
+let assert = require('assert');
+let hawk = require('hawk');
+let url = require('url');
+let crypto = require('crypto');
+let slugid = require('slugid');
+let http = require('http');
+let https = require('https');
+let Promise = require('promise');
+let querystring = require('querystring');
+let tcUrl = require('taskcluster-lib-urls');
 
 /** Default options for our http/https global agents */
-var AGENT_OPTIONS = {
+let AGENT_OPTIONS = {
   maxSockets: 50,
   maxFreeSockets: 0,
   keepAlive: false,
@@ -28,7 +28,7 @@ var AGENT_OPTIONS = {
  * defaulting to the global node agents primarily so we can tweak this across
  * all our components if needed...
  */
-var DEFAULT_AGENTS = {
+let DEFAULT_AGENTS = {
   http: new http.Agent(AGENT_OPTIONS),
   https: new https.Agent(AGENT_OPTIONS),
 };
@@ -39,7 +39,7 @@ var DEFAULT_AGENTS = {
 exports.agents = DEFAULT_AGENTS;
 
 // Default options stored globally for convenience
-var _defaultOptions = {
+let _defaultOptions = {
   credentials: {
     clientId: undefined,
     accessToken: undefined,
@@ -73,7 +73,7 @@ var _defaultOptions = {
 };
 
 /** Make a request for a Client instance */
-var makeRequest = function(client, method, url, payload, query) {
+let makeRequest = function(client, method, url, payload, query) {
   // Add query to url if present
   if (query) {
     query = querystring.stringify(query);
@@ -83,7 +83,7 @@ var makeRequest = function(client, method, url, payload, query) {
   }
 
   // Construct request object
-  var req = request(method.toUpperCase(), url);
+  let req = request(method.toUpperCase(), url);
   // Set the http agent for this request, if supported in the current
   // environment (browser environment doesn't support http.Agent)
   if (req.agent) {
@@ -103,7 +103,7 @@ var makeRequest = function(client, method, url, payload, query) {
       client._options.credentials.clientId &&
       client._options.credentials.accessToken) {
     // Create hawk authentication header
-    var header = hawk.client.header(url, method.toUpperCase(), {
+    let header = hawk.client.header(url, method.toUpperCase(), {
       credentials: {
         id: client._options.credentials.clientId,
         key: client._options.credentials.accessToken,
@@ -151,7 +151,7 @@ exports.createClient = function(reference, name) {
   }
 
   // Client class constructor
-  var Client = function(options) {
+  let Client = function(options) {
     if (options && options.baseUrl) {
       throw new Error('baseUrl has been deprecated!');
     }
@@ -191,7 +191,7 @@ exports.createClient = function(reference, name) {
     }
 
     // Shortcut for which default agent to use...
-    var isHttps = this._options.rootUrl.indexOf('https') === 0;
+    let isHttps = this._options.rootUrl.indexOf('https') === 0;
 
     if (this._options.agent) {
       // We have explicit options for new agent create one...
@@ -213,7 +213,7 @@ exports.createClient = function(reference, name) {
     if (this._options.credentials &&
         this._options.credentials.clientId &&
         this._options.credentials.accessToken) {
-      var ext = {};
+      let ext = {};
 
       // If there is a certificate we have temporary credentials, and we
       // must provide the certificate
@@ -256,7 +256,7 @@ exports.createClient = function(reference, name) {
   };
 
   Client.prototype.use = function(optionsUpdates) {
-    var options = _.defaults({}, optionsUpdates, this._options);
+    let options = _.defaults({}, optionsUpdates, this._options);
     return new Client(options);
   };
 
@@ -265,29 +265,29 @@ exports.createClient = function(reference, name) {
     return entry.type === 'function';
   }).forEach(function(entry) {
     // Get number of arguments
-    var nb_args = entry.args.length;
+    let nb_args = entry.args.length;
     if (entry.input) {
       nb_args += 1;
     }
     // Get the query-string options taken
-    var optKeys = entry.query || [];
+    let optKeys = entry.query || [];
 
     // Create method on prototype
     Client.prototype[entry.name] = function() {
       // Convert arguments to actual array
-      var args = Array.prototype.slice.call(arguments);
+      let args = Array.prototype.slice.call(arguments);
       // Validate number of arguments
-      var N = args.length;
+      let N = args.length;
       if (N !== nb_args && (optKeys.length === 0 || N !== nb_args + 1)) {
         throw new Error('Function ' + entry.name + ' takes ' + nb_args +
                         ' arguments, but was given ' + N +
                         ' arguments');
       }
       // Substitute parameters into route
-      var endpoint = entry.route.replace(/<([^<>]+)>/g, function(text, arg) {
-        var index = entry.args.indexOf(arg);
+      let endpoint = entry.route.replace(/<([^<>]+)>/g, function(text, arg) {
+        let index = entry.args.indexOf(arg);
         if (index !== -1) {
-          var param = args[index];
+          let param = args[index];
           if (typeof param !== 'string' && typeof param !== 'number') {
             throw new Error('URL parameter ' + arg + ' must be a string, but ' +
                             'we received a: ' + typeof param);
@@ -297,14 +297,14 @@ exports.createClient = function(reference, name) {
         return text; // Preserve original
       });
       // Create url for the request
-      var url = tcUrl.api(this._options.rootUrl, this._options.serviceName, this._options.serviceVersion, endpoint);
+      let url = tcUrl.api(this._options.rootUrl, this._options.serviceName, this._options.serviceVersion, endpoint);
       // Add payload if one is given
-      var payload = undefined;
+      let payload = undefined;
       if (entry.input) {
         payload = args[nb_args - 1];
       }
       // Find query string options (if present)
-      var query = args[nb_args] || null;
+      let query = args[nb_args] || null;
       if (query) {
         _.keys(query).forEach(function(key) {
           if (!_.includes(optKeys, key)) {
@@ -315,11 +315,11 @@ exports.createClient = function(reference, name) {
       }
 
       // Count request attempts
-      var attempts = 0;
-      var that = this;
+      let attempts = 0;
+      let that = this;
 
       let start;
-      var monitor = this._options.monitor;
+      let monitor = this._options.monitor;
       if (monitor) {
         start = process.hrtime();
       }
@@ -327,7 +327,7 @@ exports.createClient = function(reference, name) {
       // Retry the request, after a delay depending on number of retries
       var retryRequest = function() {
         // Send request
-        var sendRequest = function() {
+        let sendRequest = function() {
           debug('Calling: %s, retry: %s', entry.name, attempts - 1);
           // Make request and handle response or error
           return makeRequest(
@@ -352,7 +352,7 @@ exports.createClient = function(reference, name) {
             return res.body;
           }, function(err) {
             // If we got a response we read the error code from the response
-            var res = err.response;
+            let res = err.response;
             if (res) {
               // Decide if we should retry
               if (attempts <= that._options.retries &&
@@ -365,7 +365,7 @@ exports.createClient = function(reference, name) {
               // If not retrying, construct error object and reject
               debug('Error calling: %s NOT retrying!, info: %j',
                 entry.name, res.body);
-              var message = 'Unknown Server Error';
+              let message = 'Unknown Server Error';
               if (res.status === 401) {
                 message = 'Authentication Error';
               }
@@ -379,7 +379,7 @@ exports.createClient = function(reference, name) {
               if (monitor) {
                 let d = process.hrtime(start);
 
-                var state = 'client-error';
+                let state = 'client-error';
                 if (res.statusCode >= 500) {
                   state = 'server-error';
                 }
@@ -414,12 +414,12 @@ exports.createClient = function(reference, name) {
         if (attempts === 1) {
           return sendRequest();
         } else {
-          var delay;
+          let delay;
           // First request is attempt = 1, so attempt = 2 is the first retry
           // we subtract one to get exponents: 1, 2, 3, 4, 5, ...
           delay = Math.pow(2, attempts - 1) * that._options.delayFactor;
           // Apply randomization factor
-          var rf = that._options.randomizationFactor;
+          let rf = that._options.randomizationFactor;
           delay *= Math.random() * 2 * rf + 1 - rf;
           // Always limit with a maximum delay
           delay = Math.min(delay, that._options.maxDelay);
@@ -436,7 +436,7 @@ exports.createClient = function(reference, name) {
       if (this._options.fake) {
         debug('Faking call to %s(%s)', entry.name, args.map(a => JSON.stringify(a, null, 2)).join(', '));
         // Add a call record to fakeCalls[<method>]
-        var record = {};
+        let record = {};
         if (payload !== undefined) {
           record.payload = _.cloneDeep(payload);
         }
@@ -480,7 +480,7 @@ exports.createClient = function(reference, name) {
         // Construct routingkey pattern as string from reference
         routingKeyPattern = entry.routingKey.map(function(key) {
           // Get value for key
-          var value = routingKeyPattern[key.name];
+          let value = routingKeyPattern[key.name];
           // Routing key constant entries cannot be modified
           if (key.constant) {
             value = key.constant;
@@ -519,26 +519,26 @@ exports.createClient = function(reference, name) {
   // input parameters
   Client.prototype.buildUrl = function() {
     // Convert arguments to actual array
-    var args = Array.prototype.slice.call(arguments);
+    let args = Array.prototype.slice.call(arguments);
     if (args.length === 0) {
       throw new Error('buildUrl(method, arg1, arg2, ...) takes a least one ' +
                         'argument!');
     }
     // Find the method
-    var method = args.shift();
-    var entry = method.entryReference;
+    let method = args.shift();
+    let entry = method.entryReference;
     if (!entry || entry.type !== 'function') {
       throw new Error('method in buildUrl(method, arg1, arg2, ...) must be ' +
                         'an API method from the same object!');
     }
 
     // Get the query-string options taken
-    var optKeys = entry.query || [];
-    var supportsOpts = optKeys.length !== 0;
+    let optKeys = entry.query || [];
+    let supportsOpts = optKeys.length !== 0;
 
     debug('build url for: ' + entry.name);
     // Validate number of arguments
-    var N = entry.args.length;
+    let N = entry.args.length;
     if (args.length !== N && (!supportsOpts || args.length !== N + 1)) {
       throw new Error('Function ' + entry.name + 'buildUrl() takes ' +
                         (N + 1) + ' arguments, but was given ' +
@@ -546,10 +546,10 @@ exports.createClient = function(reference, name) {
     }
 
     // Substitute parameters into route
-    var endpoint = entry.route.replace(/<([^<>]+)>/g, function(text, arg) {
-      var index = entry.args.indexOf(arg);
+    let endpoint = entry.route.replace(/<([^<>]+)>/g, function(text, arg) {
+      let index = entry.args.indexOf(arg);
       if (index !== -1) {
-        var param = args[index];
+        let param = args[index];
         if (typeof param !== 'string' && typeof param !== 'number') {
           throw new Error('URL parameter ' + arg + ' must be a string, but ' +
                             'we received a: ' + typeof param);
@@ -560,7 +560,7 @@ exports.createClient = function(reference, name) {
     });
 
     // Find query string options (if present)
-    var query = args[N] || '';
+    let query = args[N] || '';
     if (query) {
       _.keys(query).forEach(function(key) {
         if (!_.includes(optKeys, key)) {
@@ -581,33 +581,33 @@ exports.createClient = function(reference, name) {
   // Utility function to construct a bewit URL for GET requests
   Client.prototype.buildSignedUrl = function() {
     // Convert arguments to actual array
-    var args = Array.prototype.slice.call(arguments);
+    let args = Array.prototype.slice.call(arguments);
     if (args.length === 0) {
       throw new Error('buildSignedUrl(method, arg1, arg2, ..., [options]) ' +
                         'takes a least one argument!');
     }
 
     // Find method and reference entry
-    var method = args[0];
-    var entry = method.entryReference;
+    let method = args[0];
+    let entry = method.entryReference;
     if (entry.method !== 'get') {
       throw new Error('buildSignedUrl only works for GET requests');
     }
 
     // Default to 15 minutes before expiration
-    var expiration = 15 * 60;
+    let expiration = 15 * 60;
 
     // Check if method supports query-string options
-    var supportsOpts = (entry.query || []).length !== 0;
+    let supportsOpts = (entry.query || []).length !== 0;
 
     // if longer than method + args, then we have options too
-    var N = entry.args.length + 1;
+    let N = entry.args.length + 1;
     if (supportsOpts) {
       N += 1;
     }
     if (args.length > N) {
       // Get request options
-      var options = args.pop();
+      let options = args.pop();
 
       // Get expiration from options
       expiration = options.expiration || expiration;
@@ -619,7 +619,7 @@ exports.createClient = function(reference, name) {
     }
 
     // Build URL
-    var requestUrl = this.buildUrl.apply(this, args);
+    let requestUrl = this.buildUrl.apply(this, args);
 
     // Check that we have credentials
     if (!this._options.credentials.clientId) {
@@ -630,7 +630,7 @@ exports.createClient = function(reference, name) {
     }
 
     // Create bewit
-    var bewit = hawk.client.getBewit(requestUrl, {
+    let bewit = hawk.client.getBewit(requestUrl, {
       credentials: {
         id: this._options.credentials.clientId,
         key: this._options.credentials.accessToken,
@@ -641,7 +641,7 @@ exports.createClient = function(reference, name) {
     });
 
     // Add bewit to requestUrl
-    var urlParts = url.parse(requestUrl);
+    let urlParts = url.parse(requestUrl);
     if (urlParts.search) {
       urlParts.search += '&bewit=' + bewit;
     } else {
@@ -657,7 +657,7 @@ exports.createClient = function(reference, name) {
 };
 
 // Load data from apis.js
-var apis = require('./apis');
+let apis = require('./apis');
 
 // Instantiate clients
 _.forIn(apis, function(api, name) {
@@ -674,7 +674,7 @@ exports.config = function(options) {
 };
 
 exports.fromEnvVars = function() {
-  var results = {};
+  let results = {};
   for (let {env, path} of [
     {env: 'TASKCLUSTER_ROOT_URL', path: 'rootUrl'},
     {env: 'TASKCLUSTER_CLIENT_ID', path: 'credentials.clientId'},
@@ -712,7 +712,7 @@ exports.fromEnvVars = function() {
 exports.createTemporaryCredentials = function(options) {
   assert(options, 'options are required');
 
-  var now = new Date();
+  let now = new Date();
 
   // Set default options
   options = _.defaults({}, options, {
@@ -742,7 +742,7 @@ exports.createTemporaryCredentials = function(options) {
   assert(options.expiry.getTime() - options.start.getTime() <=
          31 * 24 * 60 * 60 * 1000, 'Credentials cannot span more than 31 days');
 
-  var isNamed = !!options.clientId;
+  let isNamed = !!options.clientId;
 
   if (isNamed) {
     assert(options.clientId !== options.credentials.clientId,
@@ -750,7 +750,7 @@ exports.createTemporaryCredentials = function(options) {
   }
 
   // Construct certificate
-  var cert = {
+  let cert = {
     version: 1,
     scopes: _.cloneDeep(options.scopes),
     start: options.start.getTime(),
@@ -763,7 +763,7 @@ exports.createTemporaryCredentials = function(options) {
   }
 
   // Construct signature
-  var sig = crypto.createHmac('sha256', options.credentials.accessToken);
+  let sig = crypto.createHmac('sha256', options.credentials.accessToken);
   sig.update('version:' + cert.version + '\n');
   if (isNamed) {
     sig.update('clientId:' + options.clientId + '\n');
@@ -777,7 +777,7 @@ exports.createTemporaryCredentials = function(options) {
   cert.signature = sig.digest('base64');
 
   // Construct temporary key
-  var accessToken = crypto
+  let accessToken = crypto
     .createHmac('sha256', options.credentials.accessToken)
     .update(cert.seed)
     .digest('base64')
@@ -813,8 +813,8 @@ exports.createTemporaryCredentials = function(options) {
  * }
  */
 exports.credentialInformation = function(rootUrl, credentials) {
-  var result = {};
-  var issuer = credentials.clientId;
+  let result = {};
+  let issuer = credentials.clientId;
 
   result.clientId = issuer;
   result.active = true;
@@ -822,7 +822,7 @@ exports.credentialInformation = function(rootUrl, credentials) {
   // distinguish permacreds from temporary creds
   if (credentials.certificate) {
     result.type = 'temporary';
-    var cert;
+    let cert;
     if (typeof credentials.certificate === 'string') {
       try {
         cert = JSON.parse(credentials.certificate);
@@ -843,9 +843,9 @@ exports.credentialInformation = function(rootUrl, credentials) {
     result.type = 'permanent';
   }
 
-  var anonClient = new exports.Auth({rootUrl});
-  var clientLookup = anonClient.client(issuer).then(function(client) {
-    var expires = new Date(client.expires);
+  let anonClient = new exports.Auth({rootUrl});
+  let clientLookup = anonClient.client(issuer).then(function(client) {
+    let expires = new Date(client.expires);
     if (!result.expiry || result.expiry > expires) {
       result.expiry = expires;
     }
@@ -854,14 +854,14 @@ exports.credentialInformation = function(rootUrl, credentials) {
     }
   });
 
-  var credClient = new exports.Auth({rootUrl, credentials});
-  var scopeLookup = credClient.currentScopes().then(function(response) {
+  let credClient = new exports.Auth({rootUrl, credentials});
+  let scopeLookup = credClient.currentScopes().then(function(response) {
     result.scopes = response.scopes;
   });
 
   return Promise.all([clientLookup, scopeLookup]).then(function() {
     // re-calculate "active" based on updated start/expiration
-    var now = new Date();
+    let now = new Date();
     if (result.start && result.start > now) {
       result.active = false;
     } else if (result.expiry && now > result.expiry) {

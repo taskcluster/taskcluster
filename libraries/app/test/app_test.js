@@ -1,14 +1,14 @@
-var assert = require('assert');
-var App = require('../');
-var request = require('superagent');
-var express = require('express');
-var isUUID = require('is-uuid');
+let assert = require('assert');
+let App = require('../');
+let request = require('superagent');
+let express = require('express');
+let isUUID = require('is-uuid');
 
 suite('app', function() {
 
   // Test app creation
   suite('app({port: 1459})', function() {
-    var server;
+    let server;
 
     suiteSetup(async function() {
       // this library expects an "api" to have an express method that sets it up..
@@ -40,39 +40,39 @@ suite('app', function() {
     });
 
     test('get /test', async function() {
-      var res = await request.get('http://localhost:1459/api/test/v1/test');
+      let res = await request.get('http://localhost:1459/api/test/v1/test');
       assert(res.ok, 'Got response');
       assert.equal(res.text, 'Okay this works', 'Got the right text');
     });
 
     test('hsts header', async function() {
-      var res = await request.get('http://localhost:1459/api/test/v1/test');
+      let res = await request.get('http://localhost:1459/api/test/v1/test');
       assert.equal(res.headers['strict-transport-security'], 'max-age=7776000000; includeSubDomains');
     });
 
     test('request ids', async function() {
-      var res = await request
+      let res = await request
         .get('http://localhost:1459/api/test/v1/req-id')
         .buffer();
-      var body = JSON.parse(res.text);
+      let body = JSON.parse(res.text);
       assert(isUUID.v4(res.headers['x-for-request-id']));
       assert(!isUUID.v4(body.header));
       assert(isUUID.v4(body.valueSet));
     });
 
     test('request ids (heroku)', async function() {
-      var res = await request
+      let res = await request
         .get('http://localhost:1459/api/test/v1/req-id')
         .set('X-Request-Id', 'TestingRequestId')
         .buffer();
-      var body = JSON.parse(res.text);
+      let body = JSON.parse(res.text);
       assert.equal(res.headers['x-for-request-id'], 'TestingRequestId');
       assert.equal(body.header, 'TestingRequestId');
       assert.equal(body.valueSet, 'TestingRequestId');
     });
 
     test('/robots.txt', async function() {
-      var res = await request.get('http://localhost:1459/robots.txt');
+      let res = await request.get('http://localhost:1459/robots.txt');
       assert(res.ok, 'Got response');
       assert.equal(res.text, 'User-Agent: *\nDisallow: /\n', 'Got the right text');
       assert.equal(res.headers['content-type'], 'text/plain; charset=utf-8');
