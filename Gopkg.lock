@@ -260,7 +260,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4ba5beb755e263557ce9b360cb9c982c497e6e7d2033db79e888c0d747411e56"
+  digest = "1:f841fd980e0671311886ae677c9185db7f4196ce3083df6d7cc2801ba524a765"
   name = "github.com/taskcluster/taskcluster-client-go"
   packages = [
     ".",
@@ -272,7 +272,15 @@
     "tcsecrets",
   ]
   pruneopts = "UT"
-  revision = "2daca33fe1fe6147e3611c86fd762d72281c5fd2"
+  revision = "a90df24e96eb57f4b55b7d3593639d2918605375"
+
+[[projects]]
+  digest = "1:4b61128f4f0ec9673dedd5e4d276f4399ee7e4087ea26582711c4a17911c2156"
+  name = "github.com/taskcluster/taskcluster-lib-urls"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "b6a71b141f997a5e74250bd63ea3a3f859af17d8"
+  version = "v12.0.0"
 
 [[projects]]
   branch = "master"
@@ -329,10 +337,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:cb9d8393b04732eb928c4121e2fe278d9dd1f565b334a702b918ca8d72a9f617"
+  digest = "1:80c9d9897f2cacea492c58df611ff4eeb5a09920fd28d4abd57de2d5f452e4fd"
   name = "golang.org/x/crypto"
   packages = [
     "cast5",
+    "ed25519",
+    "ed25519/internal/edwards25519",
     "openpgp",
     "openpgp/armor",
     "openpgp/clearsign",
@@ -414,6 +424,7 @@
     "github.com/taskcluster/taskcluster-client-go/tcqueue",
     "github.com/taskcluster/taskcluster-client-go/tcsecrets",
     "github.com/xeipuuv/gojsonschema",
+    "golang.org/x/crypto/ed25519",
     "golang.org/x/crypto/openpgp",
     "golang.org/x/crypto/openpgp/armor",
     "golang.org/x/crypto/openpgp/clearsign",
