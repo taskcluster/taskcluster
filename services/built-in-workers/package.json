@@ -6,8 +6,5 @@
     "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
     "test": "mocha test/*_test.js",
     "lint": "eslint src/*.js test/*.js"
-  },
-  "dependencies": {
-    "debug": "^4.1.0"
   }
 }

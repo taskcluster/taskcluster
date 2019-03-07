@@ -15,7 +15,6 @@
   "dependencies": {
     "app-root-dir": "^1.0.2",
     "chalk": "^2.4.2",
-    "debug": "^4.1.1",
     "fast-json-stable-stringify": "^2.0.0",
     "serialize-error": "^3.0.0"
   },
