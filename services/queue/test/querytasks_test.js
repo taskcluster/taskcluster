@@ -113,12 +113,6 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   });
 
   // aje
-  //
-  // process:
-  //   - add task
-  //   - check that initial value is empty as expected
-  //   - claim task
-  //   - verify that last_consumed value is expected
   test('lastClaimed >= 1', async () => {
     const provisionerId = 'no-provisioner';
     const workerType = 'gecko-b-1-android';
