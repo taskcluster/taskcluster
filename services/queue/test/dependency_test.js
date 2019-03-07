@@ -42,7 +42,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     }, taskDef());
 
     // Start dependency-resolver
-    const dependencyResolver = await helper.startPollingService('dependency-resolver');
+    await helper.startPollingService('dependency-resolver');
 
     debug('### Create taskA and taskB');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
@@ -98,7 +98,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       assume(d2.tasks).has.length(0);
     }
 
-    await dependencyResolver.terminate();
+    await helper.stopPollingService();
   }, mock));
 
   test('taskA <- taskB, taskC, taskD, taskE', helper.runWithFakeTime(async () => {
@@ -117,7 +117,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let taskE = _.cloneDeep(taskB);
 
     // Start dependency-resolver
-    const dependencyResolver = await helper.startPollingService('dependency-resolver');
+    await helper.startPollingService('dependency-resolver');
 
     debug('### Create taskA');
     await helper.queue.createTask(taskIdA, taskA);
@@ -184,7 +184,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     assume(tids).contains(taskIdD);
     assume(tids).contains(taskIdE);
 
-    await dependencyResolver.terminate();
+    await helper.stopPollingService();
   }, mock));
 
   test('taskA, taskB <- taskC && taskA <- taskD', helper.runWithFakeTime(async () => {
@@ -203,7 +203,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     }, taskDef());
 
     // Start dependency-resolver
-    const dependencyResolver = await helper.startPollingService('dependency-resolver');
+    await helper.startPollingService('dependency-resolver');
 
     debug('### Create taskA, taskB, taskC');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
@@ -253,7 +253,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       async () => helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdC)),
       Infinity);
 
-    await dependencyResolver.terminate();
+    await helper.stopPollingService();
   }, mock));
 
   test('taskA <- taskA (self-dependency)', helper.runWithFakeTime(async () => {
@@ -350,7 +350,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     }, taskDef());
 
     // Start dependency-resolver
-    const dependencyResolver = await helper.startPollingService('dependency-resolver');
+    await helper.startPollingService('dependency-resolver');
 
     debug('### Create taskA and taskB');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
@@ -371,7 +371,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let r3 = await helper.queue.status(taskIdB);
     assume(r3.status.state).equals('unscheduled');
 
-    await dependencyResolver.terminate();
+    await helper.stopPollingService();
   }, mock));
 
   test('taskA <- taskB (cancelTask)', helper.runWithFakeTime(async () => {
@@ -401,7 +401,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let r3 = await helper.queue.status(taskIdB);
     assume(r3.status.state).equals('unscheduled');
 
-    await dependencyResolver.terminate();
+    await helper.stopPollingService();
   }, mock));
 
   test('taskA <- taskB (reportFailed w. all-resolved)', helper.runWithFakeTime(async () => {
@@ -415,7 +415,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     }, taskDef());
 
     // Start dependency-resolver
-    const dependencyResolver = await helper.startPollingService('dependency-resolver');
+    await helper.startPollingService('dependency-resolver');
 
     debug('### Create taskA and taskB');
     let r1 = await helper.queue.createTask(taskIdA, taskA);
@@ -441,7 +441,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       async () => helper.checkNextMessage('task-pending', m => assert.equal(m.payload.status.taskId, taskIdB)),
       Infinity);
 
-    await dependencyResolver.terminate();
+    await helper.stopPollingService();
   }, mock));
 
   test('expiration of relationships', helper.runWithFakeTime(async () => {

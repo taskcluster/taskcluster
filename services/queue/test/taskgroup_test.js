@@ -74,7 +74,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-completed', message => message.payload.status.taskId === taskIdB);
 
     // dependencies are resolved by an out-of-band process, so wait for it to complete
-    const dependencyResolver = await helper.startPollingService('dependency-resolver');
+    await helper.startPollingService('dependency-resolver');
 
     await testing.poll(async () => {
       // When using real queues, we may get results from dependency resolution
@@ -92,7 +92,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     // note that depending on timing we are likely to get two such
     // messages; that's OK
 
-    await dependencyResolver.terminate();
+    await helper.stopPollingService();
   });
 
   test('schedulerId is fixed per taskGroupId', async () => {

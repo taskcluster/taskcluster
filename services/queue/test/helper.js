@@ -461,16 +461,21 @@ exports.withPollingServices = (mock, skipping) => {
       helper.load.remove(service);
       return svc;
     };
+    helper.stopPollingService = async () => {
+      if (svc) {
+        await svc.terminate();
+        svc = null;
+      }
+    };
   });
 
   teardown(async function() {
     if (svc) {
-      await svc.terminate();
-      svc = null;
+      throw new Error('Must call stopPollingService if you have started a service');
     }
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(function() {
     helper.startPollingService = null;
   });
 };

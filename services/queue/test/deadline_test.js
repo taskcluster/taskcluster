@@ -47,7 +47,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-defined');
 
     debug('### Start deadlineReaper');
-    const deadlineReaper = await helper.startPollingService('deadline-resolver');
+    await helper.startPollingService('deadline-resolver');
 
     debug('### Check for task-exception message');
     await testing.poll(async () => {
@@ -60,7 +60,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     }, Infinity);
 
     debug('### Stop deadlineReaper');
-    await deadlineReaper.terminate();
+    await helper.stopPollingService();
 
     debug('### Validate task status');
     const r2 = await helper.queue.status(taskId);
@@ -78,7 +78,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-pending');
 
     debug('### Start deadlineReaper');
-    const deadlineReaper = await helper.startPollingService('deadline-resolver');
+    await helper.startPollingService('deadline-resolver');
     await testing.poll(async () => assert(helper.messages.length >= 1), Infinity);
 
     debug('### Check for task-exception message');
@@ -91,7 +91,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     });
 
     debug('### Stop deadlineReaper');
-    await deadlineReaper.terminate();
+    await helper.stopPollingService();
 
     debug('### Validate task status');
     const r2 = await helper.queue.status(taskId);
@@ -116,7 +116,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-running');
 
     debug('### Start deadlineReaper');
-    const deadlineReaper = await helper.startPollingService('deadline-resolver');
+    await helper.startPollingService('deadline-resolver');
     await testing.poll(async () => assert(helper.messages.length >= 1), Infinity);
 
     debug('### Check for task-exception message');
@@ -129,7 +129,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     });
 
     debug('### Stop deadlineReaper');
-    await deadlineReaper.terminate();
+    await helper.stopPollingService();
 
     debug('### Validate task status');
     const r3 = await helper.queue.status(taskId);
@@ -158,14 +158,14 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-completed');
 
     debug('### Start deadlineReaper');
-    const deadlineReaper = await helper.startPollingService('deadline-resolver');
+    await helper.startPollingService('deadline-resolver');
 
     debug('### Ensure that we got no task-exception message');
     await testing.sleep(1000); // give it time to poll
     assume(helper.messages.length).to.equal(0);
 
     debug('### Stop deadlineReaper');
-    deadlineReaper.terminate();
+    await helper.stopPollingService();
 
     debug('### Validate task status');
     const r4 = await helper.queue.status(taskId);
