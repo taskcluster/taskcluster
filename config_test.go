@@ -1,10 +1,10 @@
 package main
 
 import (
-	"encoding/json"
-	"net"
+	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/taskcluster/generic-worker/gwconfig"
@@ -13,7 +13,7 @@ import (
 func TestMissingIPConfig(t *testing.T) {
 	file := filepath.Join("testdata", "config", "noip.json")
 	const setting = "publicIP"
-	config, err := loadConfig(file, false)
+	config, err := loadConfig(file, false, false)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -35,7 +35,7 @@ func TestValidConfig(t *testing.T) {
 	file := filepath.Join("testdata", "config", "valid.json")
 	const ipaddr = "2.1.2.1"
 	const workerType = "some-worker-type"
-	config, err := loadConfig(file, false)
+	config, err := loadConfig(file, false, false)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -53,53 +53,42 @@ func TestValidConfig(t *testing.T) {
 
 func TestInvalidIPConfig(t *testing.T) {
 	file := filepath.Join("testdata", "config", "invalid-ip.json")
-	_, err := loadConfig(file, false)
+	_, err := loadConfig(file, false, false)
 	if err == nil {
 		t.Fatal("Was expecting to get an error back due to an invalid IP address, but didn't get one!")
 	}
-	switch err.(type) {
-	case *net.ParseError:
-		// all ok
-	default:
-		t.Fatalf("Was expecting an error of type *net.ParseError but received error of type %T", err)
+	expectedErrorText := `invalid IP address: 257.1.2.1`
+	if !strings.Contains(err.Error(), expectedErrorText) {
+		t.Fatalf("Was expecting error text to include %q but it didn't: %v", expectedErrorText, err)
 	}
 }
 
 func TestInvalidJsonConfig(t *testing.T) {
 	file := filepath.Join("testdata", "config", "invalid-json.json")
-	_, err := loadConfig(file, false)
+	_, err := loadConfig(file, false, false)
 	if err == nil {
 		t.Fatal("Was expecting to get an error back due to an invalid JSON config, but didn't get one!")
 	}
-	switch err.(type) {
-	case *json.SyntaxError:
-		// all ok
-	default:
-		t.Fatalf("Was expecting an error of type *json.SyntaxError but received error of type %T", err)
+	expectedErrorText := `invalid character '"' after object key:value pair`
+	if !strings.Contains(err.Error(), expectedErrorText) {
+		t.Fatalf("Was expecting error text to include %q but it didn't: %v", expectedErrorText, err)
 	}
 }
 
 func TestMissingConfigFile(t *testing.T) {
 	file := filepath.Join("testdata", "config", "non-existent-json.json")
-	config, err := loadConfig(file, false)
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-	err = config.Validate()
+	_, err := loadConfig(file, false, false)
 	if err == nil {
-		t.Fatal("Was expecting to get an error back due to an invalid IP address, but didn't get one!")
+		t.Fatal("Was expecting an error when loading non existent config file without --configure-for-{aws,gcp} set")
 	}
-	switch err.(type) {
-	case gwconfig.MissingConfigError:
-		// all ok
-	default:
-		t.Fatalf("Was expecting an error of type gwconfig.MissingConfigError but received error of type %T", err)
+	if _, isPathError := err.(*os.PathError); !isPathError {
+		t.Fatalf("Was expecting an error of type *os.PathError but received error %#v", err)
 	}
 }
 
 func TestWorkerTypeMetadata(t *testing.T) {
 	file := filepath.Join("testdata", "config", "worker-type-metadata.json")
-	config, err := loadConfig(file, false)
+	config, err := loadConfig(file, false, false)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -123,14 +112,12 @@ func TestWorkerTypeMetadata(t *testing.T) {
 
 func TestBoolAsString(t *testing.T) {
 	file := filepath.Join("testdata", "config", "bool-as-string.json")
-	_, err := loadConfig(file, false)
+	_, err := loadConfig(file, false, false)
 	if err == nil {
 		t.Fatal("Was expecting to get an error back due to a bool being specified as a string, but didn't get one!")
 	}
-	switch err.(type) {
-	case *json.UnmarshalTypeError:
-		// all ok
-	default:
-		t.Fatalf("Was expecting an error of type *json.UnmarshalTypeError but received error of type %T", err)
+	expectedErrorText := `cannot unmarshal string into Go struct field Config.runTasksAsCurrentUser of type bool`
+	if !strings.Contains(err.Error(), expectedErrorText) {
+		t.Fatalf("Was expecting error text to include %q but it didn't: %v", expectedErrorText, err)
 	}
 }

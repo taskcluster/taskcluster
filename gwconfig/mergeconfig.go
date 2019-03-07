@@ -6,7 +6,13 @@ import (
 	"github.com/peterbourgon/mergemap"
 )
 
-func (c *Config) MergeInJSON(data []byte) error {
+// MergeInJSON merges config embedded inside a json.RawMessage into c.
+//
+// It does this by converting c to a map[string]interface, convering data to a
+// map[string]interface and calling extract against the result to return a
+// map[string]interface for its config portion, then merging the two
+// map[string]interfaces together and unmarshaling back into c.
+func (c *Config) MergeInJSON(data json.RawMessage, extract func(map[string]interface{}) map[string]interface{}) error {
 	// This is all HORRIBLE
 	// but it seems about the only reasonable way to properly merge
 	// the json schemas such that json objects are recursively merged.
@@ -16,21 +22,21 @@ func (c *Config) MergeInJSON(data []byte) error {
 	// the two map[string]interface{} objects can be merged. Finally
 	// convert the merge result to json again so that it can be
 	// marshaled back into the original Config type... Yuck!
-	m1 := new(map[string]interface{})
-	m2 := new(map[string]interface{})
+	m1 := make(map[string]interface{})
+	m2 := make(map[string]interface{})
 	m1bytes, err := json.Marshal(c)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(m1bytes, m1)
+	err = json.Unmarshal(m1bytes, &m1)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(data, m2)
+	err = json.Unmarshal(data, &m2)
 	if err != nil {
 		return err
 	}
-	merged := mergemap.Merge(*m1, *m2)
+	merged := mergemap.Merge(m1, extract(m2))
 	mergedBytes, err := json.Marshal(merged)
 	if err != nil {
 		return err

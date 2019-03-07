@@ -68,6 +68,9 @@ tasks:
       - generic-worker:cache:generic-worker-checkout
     payload:
       maxRunTime: 3600
+      env:
+        # once bug 1508383 is landed, this won't be required (the worker will supply it)
+        TASKCLUSTER_ROOT_URL: https://taskcluster.net
       command:
         - set CGO_ENABLED=0
         - set GOPATH=%CD%\gopath1.10.3
@@ -105,9 +108,9 @@ tasks:
         - set CGO_ENABLED=1
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
-        - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
+        - 'go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
         - set GW_TESTS_RUN_AS_TASK_USER=true
-        - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
+        - 'go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-amd64.exe
@@ -150,6 +153,9 @@ tasks:
       - generic-worker:cache:generic-worker-checkout
     payload:
       maxRunTime: 3600
+      env:
+        # once bug 1508383 is landed, this won't be required (the worker will supply it)
+        TASKCLUSTER_ROOT_URL: https://taskcluster.net
       command:
         - set CGO_ENABLED=0
         - set GOPATH=%CD%\gopath1.10.3
@@ -176,9 +182,9 @@ tasks:
         - go install -v -ldflags "-X main.revision=%revision%" ./...
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
-        - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v ./...'
+        - 'go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v ./...'
         - set GW_TESTS_RUN_AS_TASK_USER=true
-        - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v'
+        - 'go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v'
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-386.exe
@@ -221,6 +227,9 @@ tasks:
       - generic-worker:cache:generic-worker-checkout
     payload:
       maxRunTime: 3600
+      env:
+        # once bug 1508383 is landed, this won't be required (the worker will supply it)
+        TASKCLUSTER_ROOT_URL: https://taskcluster.net
       command:
         - set CGO_ENABLED=0
         - set GOPATH=%CD%\gopath1.10.3
@@ -258,9 +267,9 @@ tasks:
         - set CGO_ENABLED=1
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
-        - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
+        - 'go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race ./...'
         - set GW_TESTS_RUN_AS_TASK_USER=true
-        - 'go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
+        - 'go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v -race'
         - ineffassign .
       artifacts:
         - name: public/build/generic-worker-windows-amd64.exe
@@ -303,6 +312,9 @@ tasks:
       - generic-worker:cache:generic-worker-checkout
     payload:
       maxRunTime: 3600
+      env:
+        # once bug 1508383 is landed, this won't be required (the worker will supply it)
+        TASKCLUSTER_ROOT_URL: https://taskcluster.net
       command:
         - - /bin/bash
           - -vxec
@@ -331,7 +343,7 @@ tasks:
             go install -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
             # output of wc command can contain spaces on darwin, so no quotes around expression
             test $(git status --porcelain | wc -l) == 0
-            GORACE=history_size=7 CGO_ENABLED=1 go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v ./...
+            GORACE=history_size=7 CGO_ENABLED=1 go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v ./...
             ineffassign .
       artifacts:
         - name: public/build/generic-worker-darwin-amd64
@@ -403,7 +415,7 @@ tasks:
   #           go generate
   #           go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v -u -t ./...
   #           test "$(git status --porcelain | wc -l)" == 0
-  #           GORACE=history_size=7 go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
+  #           GORACE=history_size=7 go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
   #           ineffassign .
   #     artifacts:
   #       - name: public/build/generic-worker-linux-armv6l
@@ -445,6 +457,9 @@ tasks:
         taskclusterProxy: true
       maxRunTime: 3600
       image: golang
+      env:
+        # once bug 1508383 is landed, this won't be required (the worker will supply it)
+        TASKCLUSTER_ROOT_URL: https://taskcluster.net
       command:
         - /bin/bash
         - -vxec
@@ -470,7 +485,7 @@ tasks:
           go generate
           go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v -u -t ./...
           test "$(git status --porcelain | wc -l)" == 0
-          GORACE=history_size=7 CGO_ENABLED=1 go test -timeout 30m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
+          GORACE=history_size=7 CGO_ENABLED=1 go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -v -race ./...
           "${GOPATH}/bin/ineffassign" .
       artifacts:
         public/build/generic-worker-linux-amd64:

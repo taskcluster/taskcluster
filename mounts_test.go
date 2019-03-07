@@ -50,6 +50,22 @@ func TestMounts(t *testing.T) {
 			}`),
 		},
 
+		//file mount from raw
+		&FileMount{
+			File: filepath.Join("preloaded", "raw.txt"),
+			Content: json.RawMessage(`{
+				"raw": "Hello Raw!"
+			}`),
+		},
+
+		//file mount from base64
+		&FileMount{
+			File: filepath.Join("preloaded", "base64"),
+			Content: json.RawMessage(`{
+				"base64": "ZWNobyAnSGVsbG8gQmFzZTY0IScK"
+			}`),
+		},
+
 		// empty writable directory cache
 		&WritableDirectoryCache{
 			CacheName: "banana-cache",
@@ -307,7 +323,9 @@ func TestCachesCanBeModified(t *testing.T) {
 
 func Test32BitOverflow(t *testing.T) {
 	config = &gwconfig.Config{
-		RequiredDiskSpaceMegabytes: 1024 * 10,
+		PublicConfig: gwconfig.PublicConfig{
+			RequiredDiskSpaceMegabytes: 1024 * 10,
+		},
 	}
 	if requiredFreeSpace := requiredSpaceBytes(); requiredFreeSpace != 10737418240 {
 		t.Fatalf("Some kind of int overflow problem: requiredFreeSpace is %v but expected it to be 10737418240", requiredFreeSpace)

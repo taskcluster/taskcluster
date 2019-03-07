@@ -151,8 +151,7 @@ func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
 func (feature *MountsFeature) Initialise() error {
 	fileCaches.LoadFromFile("file-caches.json", config.CachesDir)
 	directoryCaches.LoadFromFile("directory-caches.json", config.DownloadsDir)
-	pc = tcpurgecache.New(nil)
-	pc.BaseURL = config.PurgeCacheBaseURL
+	pc = config.PurgeCache()
 	return nil
 }
 
@@ -178,9 +177,9 @@ type MountEntry interface {
 }
 
 // FSContent represents file system content - it is based on the auto-generated
-// type Content which is json.RawMessage, which can be ArtifactContent or
-// URLContent concrete types. This is the interface which represents these
-// underlying concrete types.
+// type Content which is json.RawMessage, which can be ArtifactContent,
+// URLContent, RawContent or Base64Content concrete types. This is the
+// interface which represents these underlying concrete types.
 type FSContent interface {
 	// Keep it simple and just return a []string, rather than scopes.Required
 	// since currently no easy way to "AND" scopes.Required types.
@@ -210,6 +209,15 @@ func (ac *ArtifactContent) RequiredScopes() []string {
 		return []string{}
 	}
 	return []string{"queue:get-artifact:" + ac.Artifact}
+}
+
+//No scopes required to mount files in a task
+func (rc *RawContent) RequiredScopes() []string {
+	return []string{}
+}
+
+func (bc *Base64Content) RequiredScopes() []string {
+	return []string{}
 }
 
 // Since mounts are protected by scopes per mount, no reason to have
@@ -378,14 +386,14 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 	}
 }
 
-// Writable caches require scope generic-worker:cache:<cacheName>. Preloaded caches
-// from an artifact may also require scopes - handled separately.
+// Writable caches require scope generic-worker:cache:<cacheName>. Preloaded
+// caches from an artifact may also require scopes - handled separately.
 func (w *WritableDirectoryCache) RequiredScopes() []string {
 	return []string{"generic-worker:cache:" + w.CacheName}
 }
 
-// Returns either a *URLContent or *ArtifactContent that is listed in the given
-// *WritableDirectoryCache
+// Returns either a *URLContent *ArtifactContent, *RawContent or *Base64Content
+// that is listed in the given *WritableDirectoryCache
 func (w *WritableDirectoryCache) FSContent() (FSContent, error) {
 	// no content if an empty cache folder, e.g. object directory
 	if w.Content != nil {
@@ -400,8 +408,8 @@ func (r *ReadOnlyDirectory) RequiredScopes() []string {
 	return []string{}
 }
 
-// Returns either a *URLContent or *ArtifactContent that is listed in the given
-// *ReadOnlyDirectory
+// Returns either a *URLContent, *ArtifactContent, *RawContent or
+// *Base64Content that is listed in the given *ReadOnlyDirectory
 func (r *ReadOnlyDirectory) FSContent() (FSContent, error) {
 	return FSContentFrom(r.Content)
 }
@@ -412,8 +420,8 @@ func (f *FileMount) RequiredScopes() []string {
 	return []string{}
 }
 
-// Returns either a *URLContent or *ArtifactContent that is listed in the given
-// *FileMount
+// Returns either a *URLContent, *ArtifactContent, *RawContent or
+// *Base64Content that is listed in the given *FileMount
 func (f *FileMount) FSContent() (FSContent, error) {
 	return FSContentFrom(f.Content)
 }
@@ -662,12 +670,14 @@ func extract(fsContent FSContent, format string, dir string, task *TaskRun) erro
 	return fmt.Errorf("Unsupported archive format %v", format)
 }
 
-// Returns either a *ArtifactContent or *URLContent based on the content
+// Returns either a *ArtifactContent or *URLContent or *RawContent or *Base64Content based on the content
 // (json.RawMessage)
 func FSContentFrom(c json.RawMessage) (FSContent, error) {
 	// c must be one of:
 	//   * ArtifactContent
 	//   * URLContent
+	//   * RawContent
+	//   * Base64Content
 	// We have to check keys to find out...
 	var m map[string]interface{}
 	if err := json.Unmarshal(c, &m); err != nil {
@@ -678,7 +688,12 @@ func FSContentFrom(c json.RawMessage) (FSContent, error) {
 		return UnmarshalInto(c, &ArtifactContent{})
 	case m["url"] != nil:
 		return UnmarshalInto(c, &URLContent{})
+	case m["raw"] != nil:
+		return UnmarshalInto(c, &RawContent{})
+	case m["base64"] != nil:
+		return UnmarshalInto(c, &Base64Content{})
 	}
+
 	return nil, errors.New("Unrecognised mount entry in payload")
 }
 
@@ -790,6 +805,75 @@ func downloadURLToFile(url, contentSource, file string, task *TaskRun) (sha256 s
 	}
 	task.Infof("[mounts] Downloaded %v bytes with SHA256 %v from %v to %v", contentSize, sha256, contentSource, file)
 	return
+}
+
+//RawContent to file
+func (rc *RawContent) Download(task *TaskRun) (file string, sha256 string, err error) {
+	basename := slugid.Nice()
+	file = filepath.Join(config.DownloadsDir, basename)
+	sha256 = ""
+	err = writeStringtoFile(rc.Raw, rc.String(), file, task)
+	return
+}
+
+func (rc *RawContent) String() string {
+	return "Raw (" + rc.Raw + ")"
+}
+
+func (rc *RawContent) UniqueKey() string {
+	return "Raw content: " + rc.Raw
+}
+
+func (rc *RawContent) RequiredSHA256() string {
+	return ""
+}
+
+func (rc *RawContent) TaskDependencies() []string {
+	return []string{}
+}
+
+//Base64Content to file
+func (bc *Base64Content) Download(task *TaskRun) (file string, sha256 string, err error) {
+	basename := slugid.Nice()
+	file = filepath.Join(config.DownloadsDir, basename)
+	sha256 = ""
+	err = writeStringtoFile(bc.Base64, bc.String(), file, task)
+	return
+}
+
+func (bc *Base64Content) String() string {
+	return "Base64 (" + bc.Base64 + ")"
+}
+
+func (bc *Base64Content) UniqueKey() string {
+	return "Base64 content: " + bc.Base64
+}
+
+func (bc *Base64Content) RequiredSHA256() string {
+	return ""
+}
+
+func (bc *Base64Content) TaskDependencies() []string {
+	return []string{}
+}
+
+//Copying String to File
+func writeStringtoFile(content, contentSource, file string, task *TaskRun) (err error) {
+	task.Infof("[mounts] Copying %v to %v", contentSource, file)
+	f, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		task.Errorf("[mounts] Could not open file %v: %v", file, err)
+		// permanent error!
+		return err
+	}
+	defer f.Close()
+	contentSize, err := f.WriteString(content)
+	if err != nil {
+		task.Errorf("[mounts] Could not copy %v to %v", contentSource, file)
+		return err
+	}
+	task.Infof("[mounts] Copied %v bytes from %v to %v", contentSize, contentSource, file)
+	return err
 }
 
 func (taskMount *TaskMount) purgeCaches() error {

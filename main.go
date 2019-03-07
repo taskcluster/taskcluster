@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -19,13 +20,11 @@ import (
 	"time"
 
 	docopt "github.com/docopt/docopt-go"
+	"github.com/taskcluster/generic-worker/fileutil"
 	"github.com/taskcluster/generic-worker/gwconfig"
 	"github.com/taskcluster/generic-worker/process"
 	"github.com/taskcluster/taskcluster-base-go/scopes"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcauth"
-	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
-	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -36,7 +35,9 @@ var (
 	// Current working directory of process
 	cwd = CwdOrPanic()
 	// Whether we are running under the aws provisioner
-	configureForAws bool
+	configureForAWS bool
+	// Whether we are running in GCP
+	configureForGCP bool
 	// General platform independent user settings, such as home directory, username...
 	// Platform specific data should be managed in plat_<platform>.go files
 	taskContext = &TaskContext{}
@@ -50,7 +51,7 @@ var (
 	logName = "public/logs/live_backing.log"
 	logPath = filepath.Join("generic-worker", "live_backing.log")
 
-	version  = "11.0.1"
+	version  = "13.0.3"
 	revision = "" // this is set during build with `-ldflags "-X main.revision=$(git rev-parse HEAD)"`
 )
 
@@ -59,7 +60,7 @@ type ExitCode int
 // These constants represent all possible exit codes from the generic-worker process.
 const (
 	TASKS_COMPLETE                           ExitCode = 0
-	CANT_LOAD_CONFIG                         ExitCode = 65
+	CANT_LOAD_CONFIG                         ExitCode = 64
 	CANT_INSTALL_GENERIC_WORKER              ExitCode = 65
 	CANT_CREATE_OPENPGP_KEYPAIR              ExitCode = 66
 	REBOOT_REQUIRED                          ExitCode = 67
@@ -70,6 +71,9 @@ const (
 	WORKER_SHUTDOWN                          ExitCode = 72
 	INVALID_CONFIG                           ExitCode = 73
 	CANT_GRANT_CONTROL_OF_WINSTA_AND_DESKTOP ExitCode = 74
+	CANT_CREATE_ED25519_KEYPAIR              ExitCode = 75
+	CANT_SAVE_CONFIG                         ExitCode = 76
+	CANT_SECURE_CONFIG                       ExitCode = 77
 )
 
 func usage(versionName string) string {
@@ -82,13 +86,14 @@ and reports back results to the queue.
 
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
-                                            [--configure-for-aws]
+                                            [--configure-for-aws | --configure-for-gcp]
     generic-worker install service          [--nssm           NSSM-EXE]
                                             [--service-name   SERVICE-NAME]
                                             [--config         CONFIG-FILE]
-                                            [--configure-for-aws]
+                                            [--configure-for-aws | --configure-for-gcp]
     generic-worker show-payload-schema
-    generic-worker new-openpgp-keypair      --file PRIVATE-KEY-FILE
+    generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
+    generic-worker new-openpgp-keypair      --file OPENPGP-PRIVATE-KEY-FILE
     generic-worker grant-winsta-access      --sid SID
     generic-worker --help
     generic-worker --version
@@ -112,6 +117,10 @@ and reports back results to the queue.
                                             after you have installed the service, and
                                             instead explicitly start the service when the
                                             preconditions have been met.
+    new-ed25519-keypair                     This will generate a fresh, new ed25519
+                                            compliant private/public key pair. The public
+                                            key will be written to stdout and the private
+                                            key will be written to the specified file.
     new-openpgp-keypair                     This will generate a fresh, new OpenPGP
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
@@ -135,6 +144,9 @@ and reports back results to the queue.
                                             to self-configure, based on AWS metadata, information
                                             from the provisioner, and the worker type definition
                                             that the provisioner holds for the worker type.
+    --configure-for-gcp                     This will create the CONFIG-FILE for a GCP
+                                            installation by querying the GCP environment
+                                            and setting appropriate values.
     --nssm NSSM-EXE                         The full path to nssm.exe to use for installing
                                             the service.
                                             [default: C:\nssm-2.24\win64\nssm.exe]
@@ -161,16 +173,22 @@ and reports back results to the queue.
 
           accessToken                       Taskcluster access token used by generic worker
                                             to talk to taskcluster queue.
-          clientId                          Taskcluster client id used by generic worker to
+          clientId                          Taskcluster client ID used by generic worker to
                                             talk to taskcluster queue.
+          ed25519SigningKeyLocation         The ed25519 signing key for signing artifacts with.
           livelogSecret                     This should match the secret used by the
                                             stateless dns server; see
                                             https://github.com/taskcluster/stateless-dns-server
+          openpgpSigningKeyLocation         The PGP signing key for signing artifacts with.
           publicIP                          The IP address for clients to be directed to
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
-          signingKeyLocation                The PGP signing key for signing artifacts with.
+                                            Also used by chain of trust.
+          rootURL                           The root URL of the taskcluster deployment to which
+                                            clientId and accessToken grant access. For example,
+                                            'https://taskcluster.net'. Individual services can
+                                            override this setting - see the *BaseURL settings.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.
@@ -178,7 +196,11 @@ and reports back results to the queue.
         ** OPTIONAL ** properties
         =========================
 
-          authBaseURL                       The base URL for API calls to the auth service.
+          authBaseURL                       The base URL for taskcluster auth API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://auth.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/auth/v1 for all other rootURLs
           availabilityZone                  The EC2 availability zone of the worker.
           cachesDir                         The directory where task caches should be stored on
                                             the worker. The directory will be created if it does
@@ -227,8 +249,8 @@ and reports back results to the queue.
                                             the idle state" - i.e. continue running
                                             indefinitely. See also shutdownMachineOnIdle.
                                             [default: 0]
-          instanceID                        The EC2 instance ID of the worker.
-          instanceType                      The EC2 instance Type of the worker.
+          instanceID                        The EC2 instance ID of the worker. Used by chain of trust.
+          instanceType                      The EC2 instance Type of the worker. Used by chain of trust.
           livelogCertificate                SSL certificate to be used by livelog for hosting
                                             logs over https. If not set, http will be used.
           livelogExecutable                 Filepath of LiveLog executable to use; see
@@ -243,15 +265,25 @@ and reports back results to the queue.
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           privateIP                         The private IP of the worker, used by chain of trust.
-          provisionerBaseURL                The base URL for API calls to the provisioner in
-                                            order to determine if there is a new deploymentId.
+          provisionerBaseURL                The base URL for aws-provisioner API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://aws-provisioner.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/aws-provisioner/v1 for all other rootURLs
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: test-provisioner]
-          purgeCacheBaseURL                 The base URL for API calls to the purge cache
-                                            service.
+          purgeCacheBaseURL                 The base URL for purge cache API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://purge-cache.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/purge-cache/v1 for all other rootURLs
           queueBaseURL                      The base URL for API calls to the queue service.
-          region                            The EC2 region of the worker.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://queue.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/queue/v1 for all other rootURLs
+          region                            The EC2 region of the worker. Used by chain of trust.
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
                                             when each task starts. If it cannot free enough
@@ -269,6 +301,11 @@ and reports back results to the queue.
                                             Administrator.
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
                                             the current OS user will be used. [default: ` + strconv.FormatBool(runtime.GOOS != "windows") + `]
+          secretsBaseURL                    The base URL for taskcluster secrets API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://secrets.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/secrets/v1 for all other rootURLs
           sentryProject                     The project name used in https://sentry.io for
                                             reporting worker crashes. Permission to publish
                                             crash reports is granted via the scope
@@ -322,7 +359,10 @@ and reports back results to the queue.
 
     0      Tasks completed successfully; no more tasks to run (see config setting
            numberOfTasksToRun).
-    64     Not able to load specified generic-worker config file.
+    64     Not able to load generic-worker config. This could be a problem reading the
+           generic-worker config file on the filesystem, a problem talking to AWS/GCP
+           metadata service, or a problem retrieving config/files from the taskcluster
+           secrets service.
     65     Not able to install generic-worker on the system.
     66     Not able to create an OpenPGP key pair.
     67     A task user has been created, and the generic-worker needs to reboot in order
@@ -344,6 +384,11 @@ and reports back results to the queue.
     73     The config provided to the worker is invalid.
     74     Could not grant provided SID full control of interactive windows stations and
            desktop.
+    75     Not able to create an ed25519 key pair.
+    76     Not able to save generic-worker config file after fetching it from AWS provisioner
+           or Google Cloud metadata.
+    77     Not able to apply required file access permissions to the generic-worker config
+           file so that task users can't read from or write to it.
 `
 }
 
@@ -401,25 +446,55 @@ func main() {
 		fmt.Println(taskPayloadSchema())
 
 	case arguments["run"]:
-		configureForAws = arguments["--configure-for-aws"].(bool)
+		configureForAWS = arguments["--configure-for-aws"].(bool)
+		configureForGCP = arguments["--configure-for-gcp"].(bool)
 		configFile = arguments["--config"].(string)
-		absConfigFile, err := filepath.Abs(configFile)
+		config, err = loadConfig(configFile, configureForAWS, configureForGCP)
+
+		// We need to persist the generic-worker config file if we fetched it
+		// over the network, for example if the config is fetched from the AWS
+		// Provisioner (--configure-for-aws) or from the Google Cloud service
+		// (--configure-for-gcp). We delete taskcluster credentials from the
+		// AWS provisioner as soon as we've fetched them, so unless we persist
+		// the config on the first run, the worker will not work after reboots.
+		//
+		// We persist the config _before_ checking for an error from the
+		// loadConfig function call, so that if there was an error, we can see
+		// what the processed config looked like before the error occurred.
+		//
+		// Note, we only persist the config file if the file doesn't already
+		// exist. We don't want to overwrite an existing user-provided config.
+		// The full config is logged (with secrets obfuscated) in the server
+		// logs, so this should provide a reliable way to inspect what config
+		// was in the case of an unexpected failure, including default values
+		// for config settings not provided in the user-supplied config file.
+		if _, statError := os.Stat(configFile); os.IsNotExist(statError) && config != nil {
+			err = config.Persist(configFile)
+			if err != nil {
+				os.Exit(int(CANT_SAVE_CONFIG))
+			}
+		}
 		if err != nil {
-			log.Printf("Error resolving '%v' to an absolute path on the filesystem:", configFile)
-			log.Printf("%v", err)
+			log.Printf("Error loading configuration: %v", err)
 			os.Exit(int(CANT_LOAD_CONFIG))
 		}
-		configFile = absConfigFile
-		config, err = loadConfig(configFile, configureForAws)
-		// persist before checking for error, so we can see what the problem was...
-		if config != nil {
-			config.Persist(configFile)
+
+		// Config known to be loaded successfully at this point...
+
+		// * If running tasks as dedicated OS users, we should take ownership
+		//   of generic-worker config file, and block access to task users, so
+		//   that tasks can't read from or write to it.
+		// * If running tasks under the same user account as the generic-worker
+		//   process, then we can't avoid that tasks can read the config file,
+		//   we can just hope that the config file is at least not writable by
+		//   the current user. In this case we won't change file permissions.
+		if !config.RunTasksAsCurrentUser {
+			secureError := fileutil.SecureFiles([]string{configFile})
+			if secureError != nil {
+				os.Exit(int(CANT_SECURE_CONFIG))
+			}
 		}
-		if err != nil {
-			log.Printf("Error loading configuration from file '%v':", configFile)
-			log.Printf("%v", err)
-			os.Exit(int(CANT_LOAD_CONFIG))
-		}
+
 		exitCode := RunWorker()
 		log.Printf("Exiting worker with exit code %v", exitCode)
 		switch exitCode {
@@ -454,6 +529,13 @@ func main() {
 			log.Printf("%#v\n", err)
 			os.Exit(int(CANT_CREATE_OPENPGP_KEYPAIR))
 		}
+	case arguments["new-ed25519-keypair"]:
+		err := generateEd25519Keypair(arguments["--file"].(string))
+		if err != nil {
+			log.Println("Error generating ed25519 keypair for worker:")
+			log.Printf("%#v\n", err)
+			os.Exit(int(CANT_CREATE_ED25519_KEYPAIR))
+		}
 	case arguments["grant-winsta-access"]:
 		sid := arguments["--sid"].(string)
 		err := GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid)
@@ -465,45 +547,43 @@ func main() {
 	}
 }
 
-func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
+func loadConfig(filename string, queryAWSUserData bool, queryGCPMetaData bool) (*gwconfig.Config, error) {
 	// TODO: would be better to have a json schema, and also define defaults in
 	// only one place if possible (defaults also declared in `usage`)
 
 	// first assign defaults
 	c := &gwconfig.Config{
-		AuthBaseURL:                    tcauth.DefaultBaseURL,
-		CachesDir:                      "caches",
-		CheckForNewDeploymentEverySecs: 1800,
-		CleanUpTaskDirs:                true,
-		DisableReboots:                 false,
-		DownloadsDir:                   "downloads",
-		IdleTimeoutSecs:                0,
-		LiveLogExecutable:              "livelog",
-		LiveLogGETPort:                 60023,
-		LiveLogPUTPort:                 60022,
-		NumberOfTasksToRun:             0,
-		ProvisionerBaseURL:             "",
-		ProvisionerID:                  "test-provisioner",
-		PurgeCacheBaseURL:              tcpurgecache.DefaultBaseURL,
-		QueueBaseURL:                   tcqueue.DefaultBaseURL,
-		RequiredDiskSpaceMegabytes:     10240,
-		RunAfterUserCreation:           "",
-		RunTasksAsCurrentUser:          runtime.GOOS != "windows",
-		SentryProject:                  "",
-		ShutdownMachineOnIdle:          false,
-		ShutdownMachineOnInternalError: false,
-		Subdomain:                      "taskcluster-worker.net",
-		TaskclusterProxyExecutable:     "taskcluster-proxy",
-		TaskclusterProxyPort:           80,
-		TasksDir:                       defaultTasksDir(),
-		WorkerGroup:                    "test-worker-group",
-		WorkerTypeMetadata:             map[string]interface{}{},
-	}
-
-	// now overlay with data from amazon, if applicable
-	if queryUserData {
-		// don't check errors, since maybe secrets are gone, but maybe we had them already from first run...
-		updateConfigWithAmazonSettings(c)
+		PublicConfig: gwconfig.PublicConfig{
+			AuthBaseURL:                    "",
+			CachesDir:                      "caches",
+			CheckForNewDeploymentEverySecs: 1800,
+			CleanUpTaskDirs:                true,
+			DisableReboots:                 false,
+			DownloadsDir:                   "downloads",
+			IdleTimeoutSecs:                0,
+			LiveLogExecutable:              "livelog",
+			LiveLogGETPort:                 60023,
+			LiveLogPUTPort:                 60022,
+			NumberOfTasksToRun:             0,
+			ProvisionerBaseURL:             "",
+			ProvisionerID:                  "test-provisioner",
+			PurgeCacheBaseURL:              "",
+			QueueBaseURL:                   "",
+			RequiredDiskSpaceMegabytes:     10240,
+			RootURL:                        "",
+			RunAfterUserCreation:           "",
+			RunTasksAsCurrentUser:          runtime.GOOS != "windows",
+			SecretsBaseURL:                 "",
+			SentryProject:                  "",
+			ShutdownMachineOnIdle:          false,
+			ShutdownMachineOnInternalError: false,
+			Subdomain:                      "taskcluster-worker.net",
+			TaskclusterProxyExecutable:     "taskcluster-proxy",
+			TaskclusterProxyPort:           80,
+			TasksDir:                       defaultTasksDir(),
+			WorkerGroup:                    "test-worker-group",
+			WorkerTypeMetadata:             map[string]interface{}{},
+		},
 	}
 
 	configFileAbs, err := filepath.Abs(filename)
@@ -512,12 +592,38 @@ func loadConfig(filename string, queryUserData bool) (*gwconfig.Config, error) {
 	}
 
 	log.Printf("Loading generic-worker config file '%v'...", configFileAbs)
-	configFileBytes, err := ioutil.ReadFile(filename)
-	// only overlay values if config file exists and could be read
-	if err == nil {
-		err = c.MergeInJSON(configFileBytes)
-		if err != nil {
+	configData, err := ioutil.ReadFile(configFileAbs)
+	// configFileAbs won't exist on the first run of generic-worker in gcp/aws
+	// so an error here could indicate that we need to fetch config externally
+	if err != nil {
+		// overlay with data from amazon/gcp, if applicable
+		switch {
+		case queryAWSUserData:
+			err = updateConfigWithAmazonSettings(c)
+		case queryGCPMetaData:
+			err = updateConfigWithGCPSettings(c)
+		default:
+			// don't wrap this with fmt.Errorf as different platforms produce different error text, so easier to process native error type
 			return nil, err
+		}
+		if err != nil {
+			return nil, fmt.Errorf("FATAL: problem retrieving config/secrets from aws/gcp: %v", err)
+		}
+	} else {
+		buffer := bytes.NewBuffer(configData)
+		decoder := json.NewDecoder(buffer)
+		decoder.DisallowUnknownFields()
+		var newConfig gwconfig.Config
+		err = decoder.Decode(&newConfig)
+		if err != nil {
+			// An error here is serious - it means the file existed but was invalid
+			return c, fmt.Errorf("Error unmarshaling generic worker config file %v as JSON: %v", configFileAbs, err)
+		}
+		err = c.MergeInJSON(configData, func(a map[string]interface{}) map[string]interface{} {
+			return a
+		})
+		if err != nil {
+			return c, fmt.Errorf("Error overlaying config file %v on top of defaults: %v", configFileAbs, err)
 		}
 	}
 
@@ -614,16 +720,9 @@ func RunWorker() (exitCode ExitCode) {
 		log.Printf("OH NO!!!\n\n%#v", err)
 		panic(err)
 	}
-	creds := &tcclient.Credentials{
-		ClientID:    config.ClientID,
-		AccessToken: config.AccessToken,
-		Certificate: config.Certificate,
-	}
 	// Queue is the object we will use for accessing queue api
-	queue = tcqueue.New(creds)
-	queue.BaseURL = config.QueueBaseURL
-	provisioner = tcawsprovisioner.New(creds)
-	provisioner.BaseURL = config.ProvisionerBaseURL
+	queue = config.Queue()
+	provisioner = config.AWSProvisioner()
 
 	err = initialiseFeatures()
 	if err != nil {
@@ -653,7 +752,7 @@ func RunWorker() (exitCode ExitCode) {
 		// See https://bugzil.la/1298010 - routinely check if this worker type is
 		// outdated, and shut down if a new deployment is required.
 		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
-		if configureForAws && time.Now().Round(0).Sub(lastQueriedProvisioner) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
+		if configureForAWS && time.Now().Round(0).Sub(lastQueriedProvisioner) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
 			lastQueriedProvisioner = time.Now()
 			if deploymentIDUpdated() {
 				return NONCURRENT_DEPLOYMENT_ID
@@ -698,7 +797,7 @@ func RunWorker() (exitCode ExitCode) {
 			log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
 			if remainingTasks == 0 {
 				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
-				if configureForAws && deploymentIDUpdated() {
+				if configureForAWS && deploymentIDUpdated() {
 					return NONCURRENT_DEPLOYMENT_ID
 				}
 				return TASKS_COMPLETE
@@ -783,8 +882,12 @@ func ClaimWork() *TaskRun {
 				AccessToken: taskResponse.Credentials.AccessToken,
 				Certificate: taskResponse.Credentials.Certificate,
 			},
+			config.RootURL,
 		)
-		taskQueue.BaseURL = config.QueueBaseURL
+		// if queueBaseURL is configured, this takes precedence over rootURL
+		if config.QueueBaseURL != "" {
+			taskQueue.BaseURL = config.QueueBaseURL
+		}
 		task := &TaskRun{
 			TaskID:            taskResponse.Status.TaskID,
 			RunID:             uint(taskResponse.RunID),
@@ -1162,7 +1265,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 			log.Printf("Creating task feature %v...", feature.Name())
 			taskFeature := feature.NewTaskFeature(task)
 			requiredScopes := taskFeature.RequiredScopes()
-			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, tcauth.New(nil))
+			scopesSatisfied, scopeValidationErr := scopes.Given(task.Definition.Scopes).Satisfies(requiredScopes, config.Auth())
 			if scopeValidationErr != nil {
 				// presumably we couldn't expand assume:* scopes due to auth
 				// service unavailability
@@ -1260,7 +1363,7 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	// with the reason `worker-shutdown`. Upon such report the queue will
 	// resolve the run as exception and create a new run, if the task has
 	// additional retries left.
-	if configureForAws {
+	if configureForAWS {
 		stopHandlingWorkerShutdown := handleWorkerShutdown(func() {
 			task.StatusManager.Abort(
 				&CommandExecutionError{
@@ -1304,6 +1407,7 @@ func loadFromJSONFile(obj interface{}, filename string) (err error) {
 		}
 	}()
 	d := json.NewDecoder(f)
+	d.DisallowUnknownFields()
 	err = d.Decode(obj)
 	if err == nil {
 		log.Printf("Loaded file %v", filename)

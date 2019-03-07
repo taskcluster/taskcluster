@@ -9,22 +9,32 @@ import (
 	"runtime"
 
 	"github.com/taskcluster/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster-client-go"
+	"github.com/taskcluster/taskcluster-client-go/tcauth"
+	"github.com/taskcluster/taskcluster-client-go/tcawsprovisioner"
+	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
+	"github.com/taskcluster/taskcluster-client-go/tcqueue"
+	"github.com/taskcluster/taskcluster-client-go/tcsecrets"
 )
 
 type (
 	// Generic Worker config
 	Config struct {
-		AccessToken                    string                 `json:"accessToken"`
+		PrivateConfig
+		PublicConfig
+	}
+
+	PublicConfig struct {
 		AuthBaseURL                    string                 `json:"authBaseURL"`
 		AvailabilityZone               string                 `json:"availabilityZone"`
 		CachesDir                      string                 `json:"cachesDir"`
-		Certificate                    string                 `json:"certificate"`
 		CheckForNewDeploymentEverySecs uint                   `json:"checkForNewDeploymentEverySecs"`
 		CleanUpTaskDirs                bool                   `json:"cleanUpTaskDirs"`
 		ClientID                       string                 `json:"clientId"`
 		DeploymentID                   string                 `json:"deploymentId"`
 		DisableReboots                 bool                   `json:"disableReboots"`
 		DownloadsDir                   string                 `json:"downloadsDir"`
+		Ed25519SigningKeyLocation      string                 `json:"ed25519SigningKeyLocation"`
 		IdleTimeoutSecs                uint                   `json:"idleTimeoutSecs"`
 		InstanceID                     string                 `json:"instanceId"`
 		InstanceType                   string                 `json:"instanceType"`
@@ -33,8 +43,8 @@ type (
 		LiveLogGETPort                 uint16                 `json:"livelogGETPort"`
 		LiveLogKey                     string                 `json:"livelogKey"`
 		LiveLogPUTPort                 uint16                 `json:"livelogPUTPort"`
-		LiveLogSecret                  string                 `json:"livelogSecret"`
 		NumberOfTasksToRun             uint                   `json:"numberOfTasksToRun"`
+		OpenPGPSigningKeyLocation      string                 `json:"openpgpSigningKeyLocation"`
 		PrivateIP                      net.IP                 `json:"privateIP"`
 		ProvisionerBaseURL             string                 `json:"provisionerBaseURL"`
 		ProvisionerID                  string                 `json:"provisionerId"`
@@ -43,12 +53,13 @@ type (
 		QueueBaseURL                   string                 `json:"queueBaseURL"`
 		Region                         string                 `json:"region"`
 		RequiredDiskSpaceMegabytes     uint                   `json:"requiredDiskSpaceMegabytes"`
+		RootURL                        string                 `json:"rootURL"`
 		RunAfterUserCreation           string                 `json:"runAfterUserCreation"`
 		RunTasksAsCurrentUser          bool                   `json:"runTasksAsCurrentUser"`
+		SecretsBaseURL                 string                 `json:"secretsBaseURL"`
 		SentryProject                  string                 `json:"sentryProject"`
 		ShutdownMachineOnIdle          bool                   `json:"shutdownMachineOnIdle"`
 		ShutdownMachineOnInternalError bool                   `json:"shutdownMachineOnInternalError"`
-		SigningKeyLocation             string                 `json:"signingKeyLocation"`
 		Subdomain                      string                 `json:"subdomain"`
 		TaskclusterProxyExecutable     string                 `json:"taskclusterProxyExecutable"`
 		TaskclusterProxyPort           uint16                 `json:"taskclusterProxyPort"`
@@ -57,6 +68,12 @@ type (
 		WorkerID                       string                 `json:"workerId"`
 		WorkerType                     string                 `json:"workerType"`
 		WorkerTypeMetadata             map[string]interface{} `json:"workerTypeMetadata"`
+	}
+
+	PrivateConfig struct {
+		AccessToken   string `json:"accessToken"`
+		Certificate   string `json:"certificate"`
+		LiveLogSecret string `json:"livelogSecret"`
 	}
 
 	MissingConfigError struct {
@@ -82,8 +99,7 @@ func (c *Config) String() string {
 }
 
 func (c *Config) Validate() error {
-	// TODO: could probably do this with reflection to avoid explicitly listing
-	// all members
+	// TODO: we should be using json schema here
 
 	fields := []struct {
 		value      interface{}
@@ -94,13 +110,15 @@ func (c *Config) Validate() error {
 		{value: c.CachesDir, name: "cachesDir", disallowed: ""},
 		{value: c.ClientID, name: "clientId", disallowed: ""},
 		{value: c.DownloadsDir, name: "downloadsDir", disallowed: ""},
+		{value: c.Ed25519SigningKeyLocation, name: "ed25519SigningKeyLocation", disallowed: ""},
 		{value: c.LiveLogExecutable, name: "livelogExecutable", disallowed: ""},
 		{value: c.LiveLogPUTPort, name: "livelogPUTPort", disallowed: 0},
 		{value: c.LiveLogGETPort, name: "livelogGETPort", disallowed: 0},
 		{value: c.LiveLogSecret, name: "livelogSecret", disallowed: ""},
+		{value: c.OpenPGPSigningKeyLocation, name: "openpgpSigningKeyLocation", disallowed: ""},
 		{value: c.ProvisionerID, name: "provisionerId", disallowed: ""},
 		{value: c.PublicIP, name: "publicIP", disallowed: net.IP(nil)},
-		{value: c.SigningKeyLocation, name: "signingKeyLocation", disallowed: ""},
+		{value: c.RootURL, name: "rootURL", disallowed: ""},
 		{value: c.Subdomain, name: "subdomain", disallowed: ""},
 		{value: c.TasksDir, name: "tasksDir", disallowed: ""},
 		{value: c.WorkerGroup, name: "workerGroup", disallowed: ""},
@@ -124,4 +142,58 @@ func (c *Config) Validate() error {
 
 func (err MissingConfigError) Error() string {
 	return "Config setting \"" + err.Setting + "\" has not been defined"
+}
+
+func (c *Config) Credentials() *tcclient.Credentials {
+	return &tcclient.Credentials{
+		AccessToken: c.AccessToken,
+		ClientID:    c.ClientID,
+		Certificate: c.Certificate,
+	}
+}
+
+func (c *Config) Auth() *tcauth.Auth {
+	auth := tcauth.New(c.Credentials(), c.RootURL)
+	// If authBaseURL provided, it should take precedence over rootURL
+	if c.AuthBaseURL != "" {
+		auth.BaseURL = c.AuthBaseURL
+	}
+	return auth
+}
+
+func (c *Config) Queue() *tcqueue.Queue {
+	queue := tcqueue.New(c.Credentials(), c.RootURL)
+	// If queueBaseURL provided, it should take precedence over rootURL
+	if c.QueueBaseURL != "" {
+		queue.BaseURL = c.QueueBaseURL
+	}
+	return queue
+}
+
+func (c *Config) AWSProvisioner() *tcawsprovisioner.AwsProvisioner {
+	awsProvisioner := tcawsprovisioner.New(c.Credentials())
+	awsProvisioner.BaseURL = tcclient.BaseURL(c.RootURL, "aws-provisioner", "v1")
+	// If provisionerBaseURL provided, it should take precedence over rootURL
+	if c.ProvisionerBaseURL != "" {
+		awsProvisioner.BaseURL = c.ProvisionerBaseURL
+	}
+	return awsProvisioner
+}
+
+func (c *Config) PurgeCache() *tcpurgecache.PurgeCache {
+	purgeCache := tcpurgecache.New(c.Credentials(), c.RootURL)
+	// If purgeCacheBaseURL provided, it should take precedence over rootURL
+	if c.PurgeCacheBaseURL != "" {
+		purgeCache.BaseURL = c.PurgeCacheBaseURL
+	}
+	return purgeCache
+}
+
+func (c *Config) Secrets() *tcsecrets.Secrets {
+	secrets := tcsecrets.New(c.Credentials(), c.RootURL)
+	// If secretsBaseURL provided, it should take precedence over rootURL
+	if c.SecretsBaseURL != "" {
+		secrets.BaseURL = c.SecretsBaseURL
+	}
+	return secrets
 }

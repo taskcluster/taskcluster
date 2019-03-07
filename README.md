@@ -14,15 +14,17 @@
 
 * Download the latest release for your platform from https://github.com/taskcluster/generic-worker/releases
 * Download the latest release of livelog for your platform from https://github.com/taskcluster/livelog/releases
+* Download the latest release of livelog for your platform from https://github.com/taskcluster/taskcluster-proxy/releases
 * For darwin/linux, make the binaries executable: `chmod a+x {generic-worker,livelog}*`
 
 # Build from source
 
 If you prefer not to use a prepackaged binary, or want to have the latest unreleased version from the development head:
 
-* Head over to https://golang.org/dl/ and follow the instructions for your platform. __Note, go 1.8 or higher is required__. Be sure to set your GOPATH to something appropriate.
+* Head over to https://golang.org/dl/ and follow the instructions for your platform. __NOTE: go 1.8 or higher is required__. Be sure to set your GOPATH to something appropriate.
 * Run `go get github.com/taskcluster/generic-worker`
 * Run `go get github.com/taskcluster/livelog`
+* Run `go get github.com/taskcluster/taskcluster-proxy`
 
 All being well, the binaries will be built under `${GOPATH}/bin`.
 
@@ -64,6 +66,7 @@ Once you have been granted the above scope:
 # Set up your env
 
 * Generate a GPG key pair with `generic-worker new-openpgp-keypair --file <file>` where `file` is where you want the generated GPG private key to be written to
+* Generate a GPG key pair with `generic-worker new-ed25519-keypair --file <file>` where `file` is where you want the generated ed25519 private key to be written to
 * Create a generic worker configuration file somewhere, with the following content:
 
 ```
@@ -71,10 +74,11 @@ Once you have been granted the above scope:
     "accessToken":                "<access token of your permanent credentials>",
     "certificate":                "",
     "clientId":                   "<client ID of your permanent credentials>",
+    "ed25519SigningKeyLocation":  "<file location you wrote ed25519 private key to>",
     "livelogSecret":              "<anything you like>",
+    "openpgpSigningKeyLocation":  "<file location you wrote gpg private key to>",
     "provisionerId":              "test-provisioner",
     "publicIP":                   "<ideally an IP address of one of your network interfaces>",
-    "signingKeyLocation":         "<file location you wrote gpg private key to>",
     "workerGroup":                "test-worker-group",
     "workerId":                   "test-worker-id",
     "workerType":                 "<a unique name that only you will use for your test worker(s)>"
@@ -84,7 +88,7 @@ Once you have been granted the above scope:
 To see a full description of all the config options available to you, run `generic-worker --help`:
 
 ```
-generic-worker 11.0.1
+generic-worker 13.0.3
 
 generic-worker is a taskcluster worker that can run on any platform that supports go (golang).
 See http://taskcluster.github.io/generic-worker/ for more details. Essentially, the worker is
@@ -93,13 +97,14 @@ and reports back results to the queue.
 
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
-                                            [--configure-for-aws]
+                                            [--configure-for-aws | --configure-for-gcp]
     generic-worker install service          [--nssm           NSSM-EXE]
                                             [--service-name   SERVICE-NAME]
                                             [--config         CONFIG-FILE]
-                                            [--configure-for-aws]
+                                            [--configure-for-aws | --configure-for-gcp]
     generic-worker show-payload-schema
-    generic-worker new-openpgp-keypair      --file PRIVATE-KEY-FILE
+    generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
+    generic-worker new-openpgp-keypair      --file OPENPGP-PRIVATE-KEY-FILE
     generic-worker grant-winsta-access      --sid SID
     generic-worker --help
     generic-worker --version
@@ -123,6 +128,10 @@ and reports back results to the queue.
                                             after you have installed the service, and
                                             instead explicitly start the service when the
                                             preconditions have been met.
+    new-ed25519-keypair                     This will generate a fresh, new ed25519
+                                            compliant private/public key pair. The public
+                                            key will be written to stdout and the private
+                                            key will be written to the specified file.
     new-openpgp-keypair                     This will generate a fresh, new OpenPGP
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
@@ -146,6 +155,9 @@ and reports back results to the queue.
                                             to self-configure, based on AWS metadata, information
                                             from the provisioner, and the worker type definition
                                             that the provisioner holds for the worker type.
+    --configure-for-gcp                     This will create the CONFIG-FILE for a GCP
+                                            installation by querying the GCP environment
+                                            and setting appropriate values.
     --nssm NSSM-EXE                         The full path to nssm.exe to use for installing
                                             the service.
                                             [default: C:\nssm-2.24\win64\nssm.exe]
@@ -172,16 +184,22 @@ and reports back results to the queue.
 
           accessToken                       Taskcluster access token used by generic worker
                                             to talk to taskcluster queue.
-          clientId                          Taskcluster client id used by generic worker to
+          clientId                          Taskcluster client ID used by generic worker to
                                             talk to taskcluster queue.
+          ed25519SigningKeyLocation         The ed25519 signing key for signing artifacts with.
           livelogSecret                     This should match the secret used by the
                                             stateless dns server; see
                                             https://github.com/taskcluster/stateless-dns-server
+          openpgpSigningKeyLocation         The PGP signing key for signing artifacts with.
           publicIP                          The IP address for clients to be directed to
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
                                             https://github.com/taskcluster/stateless-dns-server
-          signingKeyLocation                The PGP signing key for signing artifacts with.
+                                            Also used by chain of trust.
+          rootURL                           The root URL of the taskcluster deployment to which
+                                            clientId and accessToken grant access. For example,
+                                            'https://taskcluster.net'. Individual services can
+                                            override this setting - see the *BaseURL settings.
           workerId                          A name to uniquely identify your worker.
           workerType                        This should match a worker_type managed by the
                                             provisioner you have specified.
@@ -189,7 +207,11 @@ and reports back results to the queue.
         ** OPTIONAL ** properties
         =========================
 
-          authBaseURL                       The base URL for API calls to the auth service.
+          authBaseURL                       The base URL for taskcluster auth API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://auth.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/auth/v1 for all other rootURLs
           availabilityZone                  The EC2 availability zone of the worker.
           cachesDir                         The directory where task caches should be stored on
                                             the worker. The directory will be created if it does
@@ -238,8 +260,8 @@ and reports back results to the queue.
                                             the idle state" - i.e. continue running
                                             indefinitely. See also shutdownMachineOnIdle.
                                             [default: 0]
-          instanceID                        The EC2 instance ID of the worker.
-          instanceType                      The EC2 instance Type of the worker.
+          instanceID                        The EC2 instance ID of the worker. Used by chain of trust.
+          instanceType                      The EC2 instance Type of the worker. Used by chain of trust.
           livelogCertificate                SSL certificate to be used by livelog for hosting
                                             logs over https. If not set, http will be used.
           livelogExecutable                 Filepath of LiveLog executable to use; see
@@ -254,15 +276,25 @@ and reports back results to the queue.
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           privateIP                         The private IP of the worker, used by chain of trust.
-          provisionerBaseURL                The base URL for API calls to the provisioner in
-                                            order to determine if there is a new deploymentId.
+          provisionerBaseURL                The base URL for aws-provisioner API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://aws-provisioner.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/aws-provisioner/v1 for all other rootURLs
           provisionerId                     The taskcluster provisioner which is taking care
                                             of provisioning environments with generic-worker
                                             running on them. [default: test-provisioner]
-          purgeCacheBaseURL                 The base URL for API calls to the purge cache
-                                            service.
+          purgeCacheBaseURL                 The base URL for purge cache API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://purge-cache.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/purge-cache/v1 for all other rootURLs
           queueBaseURL                      The base URL for API calls to the queue service.
-          region                            The EC2 region of the worker.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://queue.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/queue/v1 for all other rootURLs
+          region                            The EC2 region of the worker. Used by chain of trust.
           requiredDiskSpaceMegabytes        The garbage collector will ensure at least this
                                             number of megabytes of disk space are available
                                             when each task starts. If it cannot free enough
@@ -280,6 +312,11 @@ and reports back results to the queue.
                                             Administrator.
           runTasksAsCurrentUser             If true, users will not be created for tasks, but
                                             the current OS user will be used. [default: true]
+          secretsBaseURL                    The base URL for taskcluster secrets API calls.
+                                            If not provided, the base URL for API calls is
+                                            instead derived from rootURL setting as follows:
+                                              * https://secrets.taskcluster.net/v1 for rootURL https://taskcluster.net
+                                              * <rootURL>/api/secrets/v1 for all other rootURLs
           sentryProject                     The project name used in https://sentry.io for
                                             reporting worker crashes. Permission to publish
                                             crash reports is granted via the scope
@@ -333,7 +370,10 @@ and reports back results to the queue.
 
     0      Tasks completed successfully; no more tasks to run (see config setting
            numberOfTasksToRun).
-    64     Not able to load specified generic-worker config file.
+    64     Not able to load generic-worker config. This could be a problem reading the
+           generic-worker config file on the filesystem, a problem talking to AWS/GCP
+           metadata service, or a problem retrieving config/files from the taskcluster
+           secrets service.
     65     Not able to install generic-worker on the system.
     66     Not able to create an OpenPGP key pair.
     67     A task user has been created, and the generic-worker needs to reboot in order
@@ -355,6 +395,11 @@ and reports back results to the queue.
     73     The config provided to the worker is invalid.
     74     Could not grant provided SID full control of interactive windows stations and
            desktop.
+    75     Not able to create an ed25519 key pair.
+    76     Not able to save generic-worker config file after fetching it from AWS provisioner
+           or Google Cloud metadata.
+    77     Not able to apply required file access permissions to the generic-worker config
+           file so that task users can't read from or write to it.
 ```
 
 # Start the generic worker
@@ -392,7 +437,7 @@ go test -v ./...
 Run the `release.sh` script like so:
 
 ```
-$ ./release.sh 11.0.1
+$ ./release.sh 13.0.3
 ```
 
 This will perform some checks, tag the repo, push the tag to github, which will then trigger travis-ci to run tests, and publish the new release.
@@ -402,6 +447,144 @@ This will perform some checks, tag the repo, push the tag to github, which will 
 See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/master/worker_types/README.md).
 
 # Release notes
+
+In v13.0.3 since v13.0.2
+========================
+
+* [Bug 1531457 - Don't replace existing generic-worker.config file on startup](https://bugzil.la/1531457)
+
+In v13.0.2 since v12.0.0
+========================
+
+The backwardly incompatible change for version 13 is that AWS provisioner worker type definitions no longer
+store generic-worker secrets. Instead, the secrets should be placed in a taskcluster secrets secret called
+`worker-type:aws-provisioner-v1/<workerType>`. The secret could look _something like this_:
+
+```
+config:
+  livelogSecret: <secret key>
+files:
+  - content: >-
+      <base64>
+    description: SSL certificate for livelog
+    encoding: base64
+    format: file
+    path: 'C:\generic-worker\livelog.crt'
+  - content: >-
+      <base64>
+    description: SSL key for livelog
+    encoding: base64
+    format: file
+    path: 'C:\generic-worker\livelog.key'
+```
+
+The `secrets` section of the AWS provisioner worker type definition should be an empty json object:
+
+```json
+  "secrets": {}
+```
+
+Now the `userdata` section of the worker type definition should contain the remaining (non-secret) configuration, e.g.
+
+```json
+  "userData": {
+    "genericWorker": {
+      "config": {
+        "deploymentId": "axlvK6p9SNa-HJgPCVXKEA",
+        "ed25519SigningKeyLocation": "C:\\generic-worker\\generic-worker-ed25519-signing-key.key",
+        "idleTimeoutSecs": 60,
+        "livelogCertificate": "C:\\generic-worker\\livelog.crt",
+        "livelogExecutable": "C:\\generic-worker\\livelog.exe",
+        "livelogKey": "C:\\generic-worker\\livelog.key",
+        "openpgpSigningKeyLocation": "C:\\generic-worker\\generic-worker-gpg-signing-key.key",
+        "shutdownMachineOnInternalError": false,
+        "subdomain": "taskcluster-worker.net",
+        "taskclusterProxyExecutable": "C:\\generic-worker\\taskcluster-proxy.exe",
+        "workerTypeMetadata": {
+          "machine-setup": {
+            "maintainer": "pmoore@mozilla.com",
+            "script": "https://raw.githubusercontent.com/taskcluster/generic-worker/53f1d934688f9e9c6ba60db6cc9185e5c9e9c0ce/worker_types/nss-win2012r2/userdata"
+          }
+        }
+      }
+    }
+  },
+
+```
+
+* [Bug 1375200 - [generic-worker] Remove support for reading secrets from AWS worker type definition](https://bugzil.la/1375200)
+* [Bug 1524630 - `generic-worker --help` should state that xxxBaseURL settings are optional overrides for the global rootURL setting](https://bugzil.la/1524630)
+* [Bug 1524792 - Bring GCP integration up-to-date with recent changes](https://bugzil.la/1524792)
+
+v13.0.1
+=======
+
+Please do not use this release! It is broken.
+
+v13.0.0
+=======
+
+Please do not use this release! It is broken.
+
+In v12.0.0 since v11.1.1
+========================
+
+The backwardly incompatible change for version 12 is that you need to create both a openpgp signing key
+_and_ an ed25519 signing key before running the worker.
+
+```
+    generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
+    generic-worker new-openpgp-keypair      --file OPENPGP-PRIVATE-KEY-FILE
+```
+
+Note, *both* are required.
+
+The config property `signingKeyLocation` has been renamed to `openpgpSigningKeyLocation` and the new config property
+`ed25519SigningKeyLocation` is needed. For _example_, could changes could look like this:
+
+```diff
+-        "signingKeyLocation": "C:\\generic-worker\\generic-worker-gpg-signing-key.key",
++        "openpgpSigningKeyLocation": "C:\\generic-worker\\generic-worker-gpg-signing-key.key",
++        "ed25519SigningKeyLocation": "C:\\generic-worker\\generic-worker-ed25519-signing-key.key",
+```
+
+* [Bug 1518913 - generic-worker: add ed25519 cot signature support; deprecate gpg](https://bugzil.la/1518913)
+
+In v11.1.1 since v11.1.0
+========================
+
+* [Bug 1428422 - Update go client for r14y](https://bugzil.la/1428422)
+* [Bug 1469614 - Upgrade generic-worker to use rootUrl](https://bugzil.la/1469614)
+
+In v11.1.0 since v11.0.1
+========================
+
+* [Bug 1495732 - Inline source for mounts](https://bugzil.la/1495732)
+* [Bug 1479415 - Executing non-executable file is task failure not worker panic](https://bugzil.la/1479415)
+* [Bug 1493688 - Avoid panic on Windows 10 Build 1803 if task directory not on default drive](https://bugzil.la/1493688)
+* [Bug 1506621 - Use new archiver library](https://bugzil.la/1506621)
+* [Bug 1516458 - Provide taskcluster-proxy with rootURL](https://bugzil.la/1516458)
+
+In v11.0.1 since v11.0.0
+========================
+
+* [Bug 1486800 - Don't start task timer until Purge Cache service interaction has completed](https://bugzil.la/1486800)
+
+In v11.0.0 since v10.11.3
+=========================
+
+The backwardly incompatible change for version 11 is that you need to specify `--configure-for-aws`
+at installation time, if the workers will run in AWS. Previously, this was assumed to always be
+the case.
+
+```
+    generic-worker install service          [--nssm           NSSM-EXE]
+                                            [--service-name   SERVICE-NAME]
+                                            [--config         CONFIG-FILE]
+                                            [--configure-for-aws]
+```
+
+* [Bug 1495435 - Require --configure-for-aws at installation time, if needed at runtime](https://bugzil.la/1495435)
 
 ### In v10.11.3 since v10.11.2
 

@@ -311,6 +311,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 			contents += "set " + envVar + "=" + envValue + "\r\n"
 		}
 		contents += "set TASK_ID=" + task.TaskID + "\r\n"
+		contents += "set TASKCLUSTER_ROOT_URL=" + config.RootURL + "\r\n"
 		contents += "cd \"" + taskContext.TaskDir + "\"" + "\r\n"
 
 		// Otherwise get the env from the previous command
@@ -396,6 +397,20 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	return nil
 }
 
+// Set an environment variable in each command.  This can be called from a feature's
+// NewTaskFeature method to set variables for the task.
+func (task *TaskRun) setVariable(variable string, value string) error {
+	for i := range task.Commands {
+		newEnv := []string{fmt.Sprintf("%s=%s", variable, value)}
+		combined, err := win32.MergeEnvLists(&task.Commands[i].Cmd.Env, &newEnv)
+		if err != nil {
+			return err
+		}
+		task.Commands[i].Cmd.Env = *combined
+	}
+	return nil
+}
+
 // Only return critical errors
 func purgeOldTasks() error {
 	if config.CleanUpTaskDirs {
@@ -424,18 +439,22 @@ func install(arguments map[string]interface{}) (err error) {
 	case arguments["service"]:
 		nssm := convertNilToEmptyString(arguments["--nssm"])
 		serviceName := convertNilToEmptyString(arguments["--service-name"])
-		configureForAws := arguments["--configure-for-aws"].(bool)
+		configureForAWS := arguments["--configure-for-aws"].(bool)
+		configureForGCP := arguments["--configure-for-gcp"].(bool)
 		dir := filepath.Dir(exePath)
-		return deployService(configFile, nssm, serviceName, exePath, dir, configureForAws)
+		return deployService(configFile, nssm, serviceName, exePath, dir, configureForAWS, configureForGCP)
 	}
 	log.Fatal("Unknown install target - only 'service' is allowed")
 	return nil
 }
 
-func CreateRunGenericWorkerBatScript(batScriptFilePath string, configureForAws bool) error {
+func CreateRunGenericWorkerBatScript(batScriptFilePath string, configureForAWS bool, configureForGCP bool) error {
 	runCommand := `.\generic-worker.exe run`
-	if configureForAws {
+	if configureForAWS {
 		runCommand += ` --configure-for-aws`
+	}
+	if configureForGCP {
+		runCommand += ` --configure-for-gcp`
 	}
 	runCommand += ` > .\generic-worker.log 2>&1`
 	batScriptContents := []byte(strings.Join([]string{
@@ -488,9 +507,9 @@ func SetAutoLogin(user *runtime.OSUser) error {
 // is required to install the service, specified as a file system path. The
 // serviceName is the service name given to the newly created service. if the
 // service already exists, it is simply updated.
-func deployService(configFile, nssm, serviceName, exePath, dir string, configureForAws bool) error {
+func deployService(configFile, nssm, serviceName, exePath, dir string, configureForAWS bool, configureForGCP bool) error {
 	targetScript := filepath.Join(filepath.Dir(exePath), "run-generic-worker.bat")
-	err := CreateRunGenericWorkerBatScript(targetScript, configureForAws)
+	err := CreateRunGenericWorkerBatScript(targetScript, configureForAWS, configureForGCP)
 	if err != nil {
 		return err
 	}
@@ -681,12 +700,20 @@ func (task *TaskRun) removeUserFromGroups(groups []string) (updatedGroups []stri
 	return
 }
 
-func RedirectAppData(hUser syscall.Token, folder string) (err error) {
-	err = win32.SetAndCreateFolder(hUser, &win32.FOLDERID_RoamingAppData, filepath.Join(folder, "Roaming"))
+func RedirectAppData(hUser syscall.Token, folder string) error {
+	RoamingAppDataFolder := filepath.Join(folder, "Roaming")
+	LocalAppDataFolder := filepath.Join(folder, "Local")
+	err := win32.SetAndCreateFolder(hUser, &win32.FOLDERID_RoamingAppData, RoamingAppDataFolder)
 	if err != nil {
-		return
+		log.Printf("%v", err)
+		log.Printf("WARNING: Not able to redirect Roaming App Data folder to %v - IGNORING!", RoamingAppDataFolder)
 	}
-	return win32.SetAndCreateFolder(hUser, &win32.FOLDERID_LocalAppData, filepath.Join(folder, "Local"))
+	err = win32.SetAndCreateFolder(hUser, &win32.FOLDERID_LocalAppData, LocalAppDataFolder)
+	if err != nil {
+		log.Printf("%v", err)
+		log.Printf("WARNING: Not able to redirect Local App Data folder to %v - IGNORING!", LocalAppDataFolder)
+	}
+	return nil
 }
 
 func defaultTasksDir() string {

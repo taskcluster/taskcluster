@@ -2,14 +2,16 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
-	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
 	"time"
 
+	"golang.org/x/crypto/ed25519"
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/clearsign"
 
@@ -45,8 +47,7 @@ func validateArtifacts(
 	}
 	artifacts := tr.PayloadArtifacts()
 
-	// compare expected vs actual artifacts by converting artifacts to strings...
-	if fmt.Sprintf("%q", artifacts) != fmt.Sprintf("%q", expected) {
+	if !reflect.DeepEqual(artifacts, expected) {
 		t.Fatalf("Expected different artifacts to be generated...\nExpected:\n%q\nActual:\n%q", expected, artifacts)
 	}
 }
@@ -410,6 +411,8 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/logs/live_backing.log")...)
 	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/logs/certified.log")...)
 	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/chainOfTrust.json.asc")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/chain-of-trust.json")...)
+	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/chain-of-trust.json.sig")...)
 	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/X.txt")...)
 	command = append(command, copyTestdataFileTo("SampleArtifacts/_/X.txt", "public/Y.txt")...)
 
@@ -434,6 +437,16 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 			},
 			{
 				Path:    "public/chainOfTrust.json.asc",
+				Expires: expires,
+				Type:    "file",
+			},
+			{
+				Path:    "public/chain-of-trust.json",
+				Expires: expires,
+				Type:    "file",
+			},
+			{
+				Path:    "public/chain-of-trust.json.sig",
 				Expires: expires,
 				Type:    "file",
 			},
@@ -469,8 +482,8 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 		t.Fatalf("Error listing artifacts: %v", err)
 	}
 
-	if l := len(artifacts.Artifacts); l != 6 {
-		t.Fatalf("Was expecting 5 artifacts, but got %v", l)
+	if l := len(artifacts.Artifacts); l != 8 {
+		t.Fatalf("Was expecting 8 artifacts, but got %v", l)
 	}
 
 	// use the artifact names as keys in a map, so we can look up that each key exists
@@ -491,6 +504,8 @@ func TestProtectedArtifactsReplaced(t *testing.T) {
 		"public/logs/live_backing.log",
 		"public/logs/certified.log",
 		"public/chainOfTrust.json.asc",
+		"public/chain-of-trust.json",
+		"public/chain-of-trust.json.sig",
 	} {
 		if !a[artifactName] {
 			t.Fatalf("Artifact %v missing in task %v", artifactName, taskID)
@@ -780,6 +795,22 @@ func TestUpload(t *testing.T) {
 			ContentEncoding: "gzip",
 			Expires:         td.Expires,
 		},
+		"public/chain-of-trust.json": {
+			// e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./%%%/v/X
+			// 8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f  ./_/X.txt
+			// a0ed21ab50992121f08da55365da0336062205fd6e7953dbff781a7de0d625b7  ./b/c/d.jpg
+			Extracts: []string{
+				"8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f",
+			},
+			ContentType:     "text/plain; charset=utf-8",
+			ContentEncoding: "gzip",
+			Expires:         td.Expires,
+		},
+		"public/chain-of-trust.json.sig": {
+			ContentType:     "application/octet-stream",
+			ContentEncoding: "gzip",
+			Expires:         td.Expires,
+		},
 		"public/chainOfTrust.json.asc": {
 			// e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./%%%/v/X
 			// 8308d593eb56527137532595a60255a3fcfbe4b6b068e29b22d99742bad80f6f  ./_/X.txt
@@ -814,29 +845,50 @@ func TestUpload(t *testing.T) {
 	if len(b) == 0 {
 		t.Fatalf("Could not retrieve content of public/chainOfTrust.json.asc")
 	}
-	pubKey, err := os.Open(filepath.Join("testdata", "public-openpgp-key"))
+	openpgpPubKey, err := os.Open(filepath.Join("testdata", "public-openpgp-key"))
 	if err != nil {
-		t.Fatalf("Error opening public key file")
+		t.Fatalf("Error opening openpgp public key file")
 	}
-	defer pubKey.Close()
-	entityList, err := openpgp.ReadArmoredKeyRing(pubKey)
+	defer openpgpPubKey.Close()
+	entityList, err := openpgp.ReadArmoredKeyRing(openpgpPubKey)
 	if err != nil {
-		t.Fatalf("Error decoding public key file")
+		t.Fatalf("Error decoding openpgp public key file")
 	}
-	block, _ := clearsign.Decode(b)
+	openpgpBlock, _ := clearsign.Decode(b)
 
 	// signer of public/chainOfTrust.json.asc
-	signer, err := openpgp.CheckDetachedSignature(entityList, bytes.NewBuffer(block.Bytes), block.ArmoredSignature.Body)
+	signer, err := openpgp.CheckDetachedSignature(entityList, bytes.NewBuffer(openpgpBlock.Bytes), openpgpBlock.ArmoredSignature.Body)
 	if err != nil {
 		t.Fatalf("Not able to validate openpgp signature of public/chainOfTrust.json.asc")
 	}
-	var cotCert ChainOfTrustData
-	err = json.Unmarshal(block.Plaintext, &cotCert)
+	var openpgpCotCert ChainOfTrustData
+	err = json.Unmarshal(openpgpBlock.Plaintext, &openpgpCotCert)
 	if err != nil {
 		t.Fatalf("Could not interpret public/chainOfTrust.json as json")
 	}
 	if signer.Identities["Generic-Worker <taskcluster-accounts+gpgsigning@mozilla.com>"] == nil {
 		t.Fatalf("Did not get correct signer identity in public/chainOfTrust.json.asc - %#v", signer.Identities)
+	}
+
+	cotUnsignedBytes, _, _, _ := getArtifactContent(t, taskID, "public/chain-of-trust.json")
+	var cotCert ChainOfTrustData
+	err = json.Unmarshal(cotUnsignedBytes, &cotCert)
+	if err != nil {
+		t.Fatalf("Could not interpret public/chain-of-trust.json as json")
+	}
+	cotSignature, _, _, _ := getArtifactContent(t, taskID, "public/chain-of-trust.json.sig")
+	var ed25519Pubkey ed25519.PublicKey
+	base64Ed25519Pubkey, err := ioutil.ReadFile(filepath.Join("testdata", "ed25519_public_key"))
+	if err != nil {
+		t.Fatalf("Error opening ed25519 public key file")
+	}
+	ed25519Pubkey, err = base64.StdEncoding.DecodeString(string(base64Ed25519Pubkey))
+	if err != nil {
+		t.Fatalf("Error converting ed25519 public key to a valid pubkey")
+	}
+	ed25519Verified := ed25519.Verify(ed25519Pubkey, cotUnsignedBytes, cotSignature)
+	if ed25519Verified != true {
+		t.Fatalf("Could not verify public/chain-of-trust.json.sig signature against public/chain-of-trust.json")
 	}
 
 	// This trickery is to convert a TaskDefinitionResponse into a
@@ -901,9 +953,11 @@ func TestUpload(t *testing.T) {
 	// blacklist is for artifacts that by design should not be included in
 	// chain of trust artifact list
 	blacklist := map[string]bool{
-		"public/logs/live.log":         true,
-		"public/logs/live_backing.log": true,
-		"public/chainOfTrust.json.asc": true,
+		"public/logs/live.log":           true,
+		"public/logs/live_backing.log":   true,
+		"public/chain-of-trust.json":     true,
+		"public/chain-of-trust.json.sig": true,
+		"public/chainOfTrust.json.asc":   true,
 	}
 	for artifactName := range expectedArtifacts {
 		if _, inBlacklist := blacklist[artifactName]; !inBlacklist {

@@ -85,11 +85,12 @@ func TestRunAsAdministratorMissingOSGroup(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
 }
 
+// the payload never actually runs, so we don't need to also cover ed25519.
 func TestChainOfTrustWithRunAsAdministrator(t *testing.T) {
 	defer setup(t)()
 	payload := GenericWorkerPayload{
 		Command: []string{
-			`type "` + config.SigningKeyLocation + `"`,
+			`type "` + config.Ed25519SigningKeyLocation + `"`,
 		},
 		MaxRunTime: 5,
 		OSGroups:   []string{"Administrators"},
@@ -123,7 +124,7 @@ func TestChainOfTrustWithoutRunAsAdministrator(t *testing.T) {
 	defer setup(t)()
 	payload := GenericWorkerPayload{
 		Command: []string{
-			`type "` + config.SigningKeyLocation + `"`,
+			`type "` + config.Ed25519SigningKeyLocation + `"`,
 		},
 		MaxRunTime: 5,
 		OSGroups:   []string{"Administrators"},

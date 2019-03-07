@@ -21,18 +21,18 @@ func generateOpenPGPKeypair(privateKeyFile string) error {
 	if err != nil {
 		return err
 	}
-	err = writePrivateKeyToFile(entity, privateKeyFile)
+	err = writeOpenPGPPrivateKeyToFile(entity, privateKeyFile)
 	if err != nil {
 		return err
 	}
-	err = writePublicKeyToLog(entity)
+	err = writeOpenPGPPublicKeyToLog(entity)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func writePublicKeyToLog(entity *openpgp.Entity) error {
+func writeOpenPGPPublicKeyToLog(entity *openpgp.Entity) error {
 	w, err := armor.Encode(
 		os.Stdout,
 		openpgp.PublicKeyType,
@@ -54,7 +54,7 @@ func writePublicKeyToLog(entity *openpgp.Entity) error {
 	return nil
 }
 
-func writePrivateKeyToFile(entity *openpgp.Entity, privateKeyFile string) error {
+func writeOpenPGPPrivateKeyToFile(entity *openpgp.Entity, privateKeyFile string) error {
 	privKey, err := os.OpenFile(privateKeyFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0400)
 	if err != nil {
 		return err

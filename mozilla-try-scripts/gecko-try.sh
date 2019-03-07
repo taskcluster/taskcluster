@@ -25,10 +25,11 @@ function open_browser_page {
   esac
 }
 
-NEW_VERSION="${1}"
+NEW_GW_VERSION="${1}"
+NEW_TP_VERSION="${2}"
 
-if [ -z "${NEW_VERSION}" ]; then
-  echo "Please specify version of generic-worker to use in gecko try push, e.g. '${0}' 10.4.1" >&2
+if [ -z "${NEW_GW_VERSION}" ] || [ -z "${NEW_TP_VERSION}" ]; then
+  echo "Please specify version of generic-worker and taskcluster-proxy to use in gecko try push, e.g. '${0}' 12.0.0 5.1.0" >&2
   exit 64
 fi
 
@@ -55,11 +56,13 @@ THIS_SCRIPT_DIR="$(pwd)"
 CHECKOUT="$(mktemp -d -t generic-worker-gecko-try.XXXXXXXXXX)"
 cd "${CHECKOUT}"
 
-for ARCH in 386 amd64
-do
-  echo "Waiting for generic-worker ${NEW_VERSION} ($ARCH) to be available on github..."
-  DOWNLOAD_URL="https://github.com/taskcluster/generic-worker/releases/download/v${NEW_VERSION}/generic-worker-windows-${ARCH}.exe"
-  LOCAL_FILE="generic-worker-windows-${ARCH}-v${NEW_VERSION}.exe"
+function add_github {
+  GITHUB_REPO="${1}"
+  RELEASE_VERSION="${2}"
+  LOCAL_FILE="${3}"
+  FILETYPE="${4}"
+  echo "Waiting for ${GITHUB_REPO} ${RELEASE_VERSION} (file ${LOCAL_FILE}) to be available on github..."
+  DOWNLOAD_URL="https://github.com/${GITHUB_REPO}/releases/download/v${RELEASE_VERSION}/${LOCAL_FILE}"
   while ! curl -s -I "${DOWNLOAD_URL}" | head -1 | grep -q '302 Found'; do
     sleep 3
     echo -n '.'
@@ -70,47 +73,55 @@ do
     sleep 3
   done
   "${THIS_SCRIPT_DIR}/lib/tooltool.py" add --visibility internal "${LOCAL_FILE}"
-done
+  # Bug 1460178 - sanity check binary downloads of generic-worker before publishing to tooltool...
+  if ! file "${LOCAL_FILE}" | grep -F "${FILETYPE}" | grep -F 'for MS Windows'; then
+    echo "Downloaded file doesn't appear to be '${FILETYPE}':" >&2
+    file "${LOCAL_FILE}" >&2
+    exit 69
+  fi
+}
 
-# Bug 1460178 - sanity check binary downloads of generic-worker before publishing to tooltool...
+function updateSHA512 {
+  LOCAL_FILE="${1}"
+  OCC_COMPONENT="${2}"
+  SHA512="$(jq --arg filename "${LOCAL_FILE}" '.[] | select(.filename == $filename) .digest' ../../../manifest.tt | sed 's/"//g')"
+  if [ ${#SHA512} != 128 ]; then
+    echo "NOOOOOOO - SHA512 is not 128 bytes: '${SHA512}'" >&2
+    exit 68
+  fi
+  jq --arg sha512 "${SHA512}" --arg componentName "${OCC_COMPONENT}" '(.Components[] | select(.ComponentName == $componentName) | .sha512) |= $sha512' "${MANIFEST}.bak" > "${MANIFEST}"
+}
 
-if ! file "generic-worker-windows-386-v${NEW_VERSION}.exe" | grep -F 'Intel 80386' | grep -F 'for MS Windows'; then
-  echo "Downloaded file doesn't appear to be 386 Windows executable:" >&2
-  file "generic-worker-windows-386-v${NEW_VERSION}.exe" >&2
-  exit 69
-fi
-
-if ! file "generic-worker-windows-amd64-v${NEW_VERSION}.exe" | grep -F 'x86-64' | grep -F 'for MS Windows'; then
-  echo "Downloaded file doesn't appear to be amd64 Windows executable:" >&2
-  file "generic-worker-windows-amd64-v${NEW_VERSION}.exe" >&2
-  exit 70
-fi
+add_github "taskcluster/generic-worker"    "${NEW_GW_VERSION}" "generic-worker-windows-386.exe"      "Intel 80386"
+add_github "taskcluster/generic-worker"    "${NEW_GW_VERSION}" "generic-worker-windows-amd64.exe"    "x86-64"
+add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-proxy-windows-386.exe"   "Intel 80386"
+add_github "taskcluster/taskcluster-proxy" "${NEW_TP_VERSION}" "taskcluster-proxy-windows-amd64.exe" "x86-64"
 
 cat manifest.tt
-"${THIS_SCRIPT_DIR}/lib/tooltool.py" upload -v --authentication-file="$(echo ~/.tooltool-upload)" --message "Upgrade *STAGING* worker types to use generic-worker ${NEW_VERSION}"
+"${THIS_SCRIPT_DIR}/lib/tooltool.py" upload -v --authentication-file="$(echo ~/.tooltool-upload)" --message "Upgrade *STAGING* worker types to use generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION}"
 
 git clone git@github.com:mozilla-releng/OpenCloudConfig.git
 cd OpenCloudConfig/userdata/Manifest
 for MANIFEST in *-b.json *-cu.json *-beta.json; do
   cat "${MANIFEST}" > "${MANIFEST}.bak"
-  cat "${MANIFEST}.bak" | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-windows-\\)_\\1${NEW_VERSION}\\2_" | sed "s_\\(\"generic-worker \\)[^ ]*\\(.*\\)\$_\\1${NEW_VERSION}\\2_" > "${MANIFEST}"
+  cat "${MANIFEST}.bak" \
+    | sed "s_\\(generic-worker/releases/download/v\\)[^/]*\\(/generic-worker-windows-\\)_\\1${NEW_GW_VERSION}\\2_" | sed "s_\\(\"generic-worker \\)[^ ]*\\(.*\\)\$_\\1${NEW_GW_VERSION}\\2_" \
+    | sed "s_\\(taskcluster-proxy/releases/download/v\\)[^/]*\\(/taskcluster-proxy-windows-\\)_\\1${NEW_TP_VERSION}\\2_" \
+    > "${MANIFEST}"
   cat "${MANIFEST}" > "${MANIFEST}.bak"
   THIS_ARCH="$(cat "${MANIFEST}" | sed -n 's/.*\/generic-worker-windows-\(.*\)\.exe.*/\1/p' | sort -u)"
-  if [ "${ARCH}" != "386" ] && [ "${ARCH}" != "amd64" ]; then
-    echo "NOOOOOOO - cannot recognise ARCH" >&2
+  if [ "${THIS_ARCH}" != "386" ] && [ "${THIS_ARCH}" != "amd64" ]; then
+    echo "NOOOOOOO - cannot recognise ARCH '${THIS_ARCH}'" >&2
     exit 67
   fi
-  SHA512="$(jq --arg filename "generic-worker-windows-${THIS_ARCH}-v${NEW_VERSION}.exe" '.[] | select(.filename == $filename) .digest' ../../../manifest.tt | sed 's/"//g')"
-  if [ ${#SHA512} != 128 ]; then
-    echo "NOOOOOOO - SHA512 is not 128 bytes: '${SHA512}'" >&2
-    exit 68
-  fi
-  jq --arg sha512 "${SHA512}" --arg componentName GenericWorkerDownload '(.Components[] | select(.ComponentName == $componentName) | .sha512) |= $sha512' "${MANIFEST}.bak" > "${MANIFEST}"
+  updateSHA512 "generic-worker-windows-${THIS_ARCH}.exe" "GenericWorkerDownload"
+  updateSHA512 "taskcluster-proxy-windows-${THIS_ARCH}.exe" "TaskClusterProxyDownload"
   rm "${MANIFEST}.bak"
 done
+
 DEPLOY="deploy: $(git status --porcelain | sed -n 's/^ M userdata\/Manifest\/\(.*\)\.json$/\1/p' | tr '\n' ' ')"
 git add .
-git commit -m "Testing generic-worker ${NEW_VERSION} on *STAGING*
+git commit -m "Testing generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION} on *STAGING*
 
 This change does _not_ affect any production workers. Commit made with:
 
@@ -135,7 +146,7 @@ go run "${THIS_SCRIPT_DIR}/waitforOCC.go" "${OCC_COMMIT}"
 
 hg pull -u -r default
 patch -p1 -i "${THIS_SCRIPT_DIR}/gecko.patch"
-hg commit -m "Testing generic-worker ${NEW_VERSION} on Windows; try: -b do -p win32,win64 -u all -t none"
+hg commit -m "Testing generic-worker ${NEW_GW_VERSION} / taskcluster-proxy ${NEW_TP_VERSION} on Windows; try: -b do -p win32,win64 -u all -t none"
 hg push -f ssh://hg.mozilla.org/try/ -r .
 
 open_browser_page 'https://treeherder.mozilla.org/#/jobs?repo=try'

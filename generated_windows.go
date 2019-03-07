@@ -76,6 +76,20 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
+	// Base64 encoded content of file/archive, up to 64KB (encoded) in size.
+	//
+	// Since: generic-worker 11.1.0
+	Base64Content struct {
+
+		// Base64 encoded content of file/archive, up to 64KB (encoded) in size.
+		//
+		// Since: generic-worker 11.1.0
+		//
+		// Syntax:     ^[A-Za-z0-9/+]+[=]{0,2}$
+		// Max length: 65536
+		Base64 string `json:"base64"`
+	}
+
 	// By default tasks will be resolved with `state/reasonResolved`: `completed/completed`
 	// if all task commands have a zero exit code, or `failed/failed` if any command has a
 	// non-zero exit code. This payload property allows customsation of the task resolution
@@ -142,6 +156,8 @@ type (
 		// One of:
 		//   * ArtifactContent
 		//   * URLContent
+		//   * RawContent
+		//   * Base64Content
 		Content json.RawMessage `json:"content"`
 
 		// The filesystem location to mount the file.
@@ -268,11 +284,26 @@ type (
 		SupersederURL string `json:"supersederUrl,omitempty"`
 	}
 
+	// Byte-for-byte literal inline content of file/archive, up to 64KB in size.
+	//
+	// Since: generic-worker 11.1.0
+	RawContent struct {
+
+		// Byte-for-byte literal inline content of file/archive, up to 64KB in size.
+		//
+		// Since: generic-worker 11.1.0
+		//
+		// Max length: 65536
+		Raw string `json:"raw"`
+	}
+
 	ReadOnlyDirectory struct {
 
 		// One of:
 		//   * ArtifactContent
 		//   * URLContent
+		//   * RawContent
+		//   * Base64Content
 		Content json.RawMessage `json:"content"`
 
 		// The filesystem location to mount the directory volume.
@@ -323,6 +354,8 @@ type (
 		// One of:
 		//   * ArtifactContent
 		//   * URLContent
+		//   * RawContent
+		//   * Base64Content
 		Content json.RawMessage `json:"content,omitempty"`
 
 		// The filesystem location to mount the directory volume.
@@ -409,6 +442,41 @@ func taskPayloadSchema() string {
             "url"
           ],
           "title": "URL Content",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+          "properties": {
+            "raw": {
+              "description": "Byte-for-byte literal inline content of file/archive, up to 64KB in size.\n\nSince: generic-worker 11.1.0",
+              "maxLength": 65536,
+              "title": "Raw",
+              "type": "string"
+            }
+          },
+          "required": [
+            "raw"
+          ],
+          "title": "Raw Content",
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0 ",
+          "properties": {
+            "base64": {
+              "description": "Base64 encoded content of file/archive, up to 64KB (encoded) in size.\n\nSince: generic-worker 11.1.0 ",
+              "maxLength": 65536,
+              "pattern": "^[A-Za-z0-9/+]+[=]{0,2}$",
+              "title": "Base64",
+              "type": "string"
+            }
+          },
+          "required": [
+            "base64"
+          ],
+          "title": "Base64 Content",
           "type": "object"
         }
       ]

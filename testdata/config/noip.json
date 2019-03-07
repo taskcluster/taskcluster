@@ -2,7 +2,10 @@
   "livelogSecret" : "this-is-a-secret",
   "clientId" : "test-client",
   "workerId" : "myworkerid",
+  "rootURL" : "https://tc-tests.example.com",
   "accessToken" : "V7w5mcc3Q3mQHp3ns0C7dA",
+  "ed25519SigningKeyLocation": "some-location",
+  "openpgpSigningKeyLocation": "some-location",
   "workerGroup" : "abcde",
   "workerType" : "some-worker-type"
 }

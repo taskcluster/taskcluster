@@ -23,8 +23,6 @@ import (
 	"github.com/taskcluster/httpbackoff"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
-	"github.com/taskcluster/taskcluster-client-go/tcauth"
-	"github.com/taskcluster/taskcluster-client-go/tcpurgecache"
 	"github.com/taskcluster/taskcluster-client-go/tcqueue"
 )
 
@@ -97,73 +95,79 @@ func setup(t *testing.T) (teardown func()) {
 	// configure the worker
 	testDir := filepath.Join(testdataDir, t.Name())
 	config = &gwconfig.Config{
-		AccessToken:      os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-		AuthBaseURL:      tcauth.DefaultBaseURL,
-		AvailabilityZone: "outer-space",
-		// Need common caches directory across tests, since files
-		// directory-caches.json and file-caches.json are not per-test.
-		CachesDir:                      filepath.Join(cwd, "caches"),
-		Certificate:                    os.Getenv("TASKCLUSTER_CERTIFICATE"),
-		CheckForNewDeploymentEverySecs: 0,
-		CleanUpTaskDirs:                false,
-		ClientID:                       os.Getenv("TASKCLUSTER_CLIENT_ID"),
-		DeploymentID:                   "",
-		DisableReboots:                 true,
-		// Need common downloads directory across tests, since files
-		// directory-caches.json and file-caches.json are not per-test.
-		DownloadsDir:       filepath.Join(cwd, "downloads"),
-		IdleTimeoutSecs:    60,
-		InstanceID:         "test-instance-id",
-		InstanceType:       "p3.enormous",
-		LiveLogCertificate: "",
-		LiveLogExecutable:  "livelog",
-		LiveLogGETPort:     30582,
-		LiveLogKey:         "",
-		LiveLogPUTPort:     43264,
-		LiveLogSecret:      "xyz",
-		NumberOfTasksToRun: 1,
-		PrivateIP:          net.ParseIP("87.65.43.21"),
-		ProvisionerBaseURL: "",
-		ProvisionerID:      "test-provisioner",
-		PublicIP:           net.ParseIP("12.34.56.78"),
-		PurgeCacheBaseURL:  tcpurgecache.DefaultBaseURL,
-		QueueBaseURL:       tcqueue.DefaultBaseURL,
-		Region:             "test-worker-group",
-		// should be enough for tests, and travis-ci.org CI environments don't
-		// have a lot of free disk
-		RequiredDiskSpaceMegabytes:     16,
-		RunAfterUserCreation:           "",
-		RunTasksAsCurrentUser:          os.Getenv("GW_TESTS_RUN_AS_TASK_USER") == "",
-		SentryProject:                  "generic-worker-tests",
-		ShutdownMachineOnIdle:          false,
-		ShutdownMachineOnInternalError: false,
-		SigningKeyLocation:             filepath.Join(testdataDir, "private-opengpg-key"),
-		Subdomain:                      "taskcluster-worker.net",
-		TaskclusterProxyExecutable:     "taskcluster-proxy",
-		TaskclusterProxyPort:           34569,
-		TasksDir:                       testDir,
-		WorkerGroup:                    "test-worker-group",
-		WorkerID:                       "test-worker-id",
-		WorkerType:                     slugid.Nice(),
-		WorkerTypeMetadata: map[string]interface{}{
-			"aws": map[string]string{
-				"ami-id":            "test-ami",
-				"availability-zone": "outer-space",
-				"instance-id":       "test-instance-id",
-				"instance-type":     "p3.enormous",
-				"local-ipv4":        "87.65.43.21",
-				"public-ipv4":       "12.34.56.78",
-			},
-			"generic-worker": map[string]string{
-				"go-arch":    runtime.GOARCH,
-				"go-os":      runtime.GOOS,
-				"go-version": runtime.Version(),
-				"release":    "test-release-url",
-				"version":    version,
-			},
-			"machine-setup": map[string]string{
-				"maintainer": "pmoore@mozilla.com",
-				"script":     "test-script-url",
+		PrivateConfig: gwconfig.PrivateConfig{
+			AccessToken:   os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+			Certificate:   os.Getenv("TASKCLUSTER_CERTIFICATE"),
+			LiveLogSecret: "xyz",
+		},
+		PublicConfig: gwconfig.PublicConfig{
+			AuthBaseURL:      "",
+			AvailabilityZone: "outer-space",
+			// Need common caches directory across tests, since files
+			// directory-caches.json and file-caches.json are not per-test.
+			CachesDir:                      filepath.Join(cwd, "caches"),
+			CheckForNewDeploymentEverySecs: 0,
+			CleanUpTaskDirs:                false,
+			ClientID:                       os.Getenv("TASKCLUSTER_CLIENT_ID"),
+			DeploymentID:                   "",
+			DisableReboots:                 true,
+			// Need common downloads directory across tests, since files
+			// directory-caches.json and file-caches.json are not per-test.
+			DownloadsDir:              filepath.Join(cwd, "downloads"),
+			Ed25519SigningKeyLocation: filepath.Join(testdataDir, "ed25519_private_key"),
+			IdleTimeoutSecs:           60,
+			InstanceID:                "test-instance-id",
+			InstanceType:              "p3.enormous",
+			LiveLogCertificate:        "",
+			LiveLogExecutable:         "livelog",
+			LiveLogGETPort:            30582,
+			LiveLogKey:                "",
+			LiveLogPUTPort:            43264,
+			NumberOfTasksToRun:        1,
+			OpenPGPSigningKeyLocation: filepath.Join(testdataDir, "private-opengpg-key"),
+			PrivateIP:                 net.ParseIP("87.65.43.21"),
+			ProvisionerBaseURL:        "",
+			ProvisionerID:             "test-provisioner",
+			PublicIP:                  net.ParseIP("12.34.56.78"),
+			PurgeCacheBaseURL:         "",
+			QueueBaseURL:              "",
+			Region:                    "test-worker-group",
+			// should be enough for tests, and travis-ci.org CI environments don't
+			// have a lot of free disk
+			RequiredDiskSpaceMegabytes:     16,
+			RootURL:                        os.Getenv("TASKCLUSTER_ROOT_URL"),
+			RunAfterUserCreation:           "",
+			RunTasksAsCurrentUser:          os.Getenv("GW_TESTS_RUN_AS_TASK_USER") == "",
+			SentryProject:                  "generic-worker-tests",
+			ShutdownMachineOnIdle:          false,
+			ShutdownMachineOnInternalError: false,
+			Subdomain:                      "taskcluster-worker.net",
+			TaskclusterProxyExecutable:     "taskcluster-proxy",
+			TaskclusterProxyPort:           34569,
+			TasksDir:                       testDir,
+			WorkerGroup:                    "test-worker-group",
+			WorkerID:                       "test-worker-id",
+			WorkerType:                     slugid.Nice(),
+			WorkerTypeMetadata: map[string]interface{}{
+				"aws": map[string]string{
+					"ami-id":            "test-ami",
+					"availability-zone": "outer-space",
+					"instance-id":       "test-instance-id",
+					"instance-type":     "p3.enormous",
+					"local-ipv4":        "87.65.43.21",
+					"public-ipv4":       "12.34.56.78",
+				},
+				"generic-worker": map[string]string{
+					"go-arch":    runtime.GOARCH,
+					"go-os":      runtime.GOOS,
+					"go-version": runtime.Version(),
+					"release":    "test-release-url",
+					"version":    version,
+				},
+				"machine-setup": map[string]string{
+					"maintainer": "pmoore@mozilla.com",
+					"script":     "test-script-url",
+				},
 			},
 		},
 	}
@@ -172,10 +176,14 @@ func setup(t *testing.T) (teardown func()) {
 
 func NewQueue(t *testing.T) *tcqueue.Queue {
 	// check we have all the env vars we need to run this test
-	if os.Getenv("TASKCLUSTER_CLIENT_ID") == "" || os.Getenv("TASKCLUSTER_ACCESS_TOKEN") == "" {
-		t.Skip("Skipping test since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
+	if os.Getenv("TASKCLUSTER_CLIENT_ID") == "" ||
+		os.Getenv("TASKCLUSTER_ACCESS_TOKEN") == "" ||
+		os.Getenv("TASKCLUSTER_ROOT_URL") == "" {
+		t.Skip("Skipping test since TASKCLUSTER_{CLIENT_ID,ACCESS_TOKEN,ROOT_URL} env vars not set")
 	}
-	return tcqueue.NewFromEnv()
+	// BaseURL shouldn't be proxy otherwise requests will use CI clientId
+	// rather than env var TASKCLUSTER_CLIENT_ID
+	return tcqueue.New(tcclient.CredentialsFromEnvVars(), os.Getenv("TASKCLUSTER_ROOT_URL"))
 }
 
 func scheduleTask(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) (taskID string) {

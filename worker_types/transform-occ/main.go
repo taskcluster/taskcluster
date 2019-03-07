@@ -85,6 +85,7 @@ func main() {
 	}
 	defer resp.Body.Close()
 	dec := json.NewDecoder(resp.Body)
+	dec.DisallowUnknownFields()
 	var o OCCManifest
 	err = dec.Decode(&o)
 	if err != nil {
@@ -223,7 +224,7 @@ func FilenameFromURL(url string, extension string) (filename string) {
 		log.Fatal("Could not reach URL " + url)
 	}
 	if filename == "" {
-		log.Fatalf("HEEEEEELLLLLLPPPPP")
+		log.Fatalf("FAIL: Got empty filename for content from url %v with extension %v - cannot proceed!", url, extension)
 	}
 	return
 }

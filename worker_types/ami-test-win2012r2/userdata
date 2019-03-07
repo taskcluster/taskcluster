@@ -103,7 +103,7 @@ New-NetFirewallRule -DisplayName "Allow livelog GET requests" -Direction Inbound
 
 # install go
 md "C:\gopath"
-Expand-ZIPFile -File "C:\go1.7.5.windows-amd64.zip" -Destination "C:\" -Url "https://storage.googleapis.com/golang/go1.7.5.windows-amd64.zip"
+Expand-ZIPFile -File "C:\go1.11.5.windows-amd64.zip" -Destination "C:\" -Url "https://storage.googleapis.com/golang/go1.11.5.windows-amd64.zip"
 
 # install PSTools
 # md "C:\PSTools"
@@ -146,7 +146,10 @@ Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "install startu
 $client.DownloadFile("https://raw.githubusercontent.com/petemoore/myscrapbook/master/run-generic-worker.bat", "C:\generic-worker\run-generic-worker.bat")
 
 # generate OpenPGP key
-Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "new-openpgp-keypair --file C:\generic-worker\generic-worker-gpg-signing-key.key" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\generate-signing-key.log -RedirectStandardError C:\generic-worker\generate-signing-key.err
+Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "new-openpgp-keypair --file C:\generic-worker\generic-worker-gpg-signing-key.key" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\generate-gpg-signing-key.log -RedirectStandardError C:\generic-worker\generate-gpg-signing-key.err
+
+# generate ed25519 key
+Start-Process C:\generic-worker\generic-worker.exe -ArgumentList "new-ed25519-keypair --file C:\generic-worker\generic-worker-ed25519-signing-key.key" -Wait -NoNewWindow -PassThru -RedirectStandardOutput C:\generic-worker\generate-signing-key.log -RedirectStandardError C:\generic-worker\generate-signing-key.err
 
 # download cygwin (not required, but useful)
 $client.DownloadFile("https://www.cygwin.com/setup-x86_64.exe", "C:\cygwin-setup-x86_64.exe")
