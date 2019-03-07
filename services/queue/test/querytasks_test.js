@@ -148,19 +148,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       });
     }
 
-    // let claimed = 0;
-    // let retries = 30;
-    // while (claimed < 4) {
-    //   if (!retries--) {
-    //     throw new Error('Could not claim all 4 tasks after multiple attempts');
-    //   }
-    //   const res = await helper.queue.claimWork(provisionerId, workerType, {
-    //     workerGroup,
-    //     workerId,
-    //     tasks: 4,
-    //   });
-    //   claimed += res.tasks.length;
-    // }
+    const r5 = await helper.queue.lastClaimed(
+      'no-provisioner-extended-extended',
+      'query-test-worker-extended-extended',
+    );
+    assume(r5.lastClaimed).is.equal(0);
+
     await helper.queue.claimWork(provisionerId, workerType, {
       workerGroup,
       workerId,
@@ -172,73 +165,6 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       workerType,
     );
     assume(r4.lastClaimed).is.not.equal(0);
-
-    // const result = await helper.queue.getWorker(provisionerId, workerType, workerGroup, workerId);
-    // const recentTasks = result.recentTasks;
-
-    // assert.equal(result.recentTasks.length, 20, 'expected to have 20 tasks');
-
-    // for (let i =0; i < 20; i++) {
-    //   assert(recentTasks[i].taskId === taskIds[i + 10], `expected taskId ${taskIds[i + 10]}`);
-    // }
-
-
-
-
-
-
-    return;
-    // the old test
-
-    const taskDef = {
-      provisionerId: 'no-provisioner-extended-extended',
-      workerType: 'query-test-worker-extended-extended',
-      schedulerId: 'my-scheduler',
-      taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
-      routes: [],
-      retries: 5,
-      created: taskcluster.fromNowJSON(),
-      deadline: taskcluster.fromNowJSON('2 minutes'),
-      scopes: [],
-      payload: {},
-      metadata: {
-        name: 'Unit testing task',
-        description: 'Task created during unit tests',
-        owner: 'jonsafj@mozilla.com',
-        source: 'https://github.com/taskcluster/taskcluster-queue',
-      },
-      tags: {
-        purpose: 'taskcluster-testing',
-      },
-    };
-
-    const taskId1 = slugid.v4();
-    const taskId2 = slugid.v4();
-
-    debug('### Create tasks');
-    await Promise.all([
-      helper.queue.createTask(taskId1, taskDef),
-      helper.queue.createTask(taskId2, taskDef),
-    ]);
-
-    const r1 = await helper.queue.lastClaimed(
-      'no-provisioner-extended-extended',
-      'query-test-worker-extended-extended',
-    );
-    assume(r1.lastClaimed).is.equal(0);
-
-    // claim a job
-    await helper.queue.claimTask(taskId1, 0, {
-      workerGroup: 'my-worker-group-extended-extended',
-      workerId: 'my-worker-extended-extended',
-    });
-
-    const r2 = await helper.queue.lastClaimed(
-      'no-provisioner-extended-extended',
-      'query-test-worker-extended-extended',
-    );
-    assume(r2.lastClaimed).is.not.equal(0);
-    // TODO: add a more difficult test (verify it's a unix epoch or...?)
-    // 1551842772
+    // TODO: check that this is >= 13 chars
   });
 });
