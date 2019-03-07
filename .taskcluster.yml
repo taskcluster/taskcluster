@@ -494,3 +494,49 @@ tasks:
           type: file
       cache:
         generic-worker-checkout: /go/src
+
+  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+    workerType: "{{ taskcluster.docker.workerType }}"
+    metadata:
+      name: dep-check
+      description: "Run 'dep check' to ensure dependencies are up to date"
+      owner: "{{ event.head.user.email }}" # the user who sent the pr/push e-mail will be inserted here
+      source: "{{ event.head.repo.url }}"  # the repo where the pr came from will be inserted here
+    extra:
+      github:
+        # Events that will trigger this task
+        events:
+          - pull_request.opened
+          - pull_request.synchronize
+          - push
+    scopes:
+      - secrets:get:repo:github.com/taskcluster/generic-worker
+      - docker-worker:cache:generic-worker-checkout
+    payload:
+      features:
+        taskclusterProxy: true
+      maxRunTime: 3600
+      image: golang:1.10
+      env:
+        # once bug 1508383 is landed, this won't be required (the worker will supply it)
+        TASKCLUSTER_ROOT_URL: https://taskcluster.net
+      command:
+        - /bin/bash
+        - -vxec
+        - |
+          export CGO_ENABLED=0
+          go version
+          go env
+          curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+          mkdir -p "${GOPATH}/src/github.com/taskcluster"
+          cd "${GOPATH}/src/github.com/taskcluster"
+          if [ ! -d generic-worker/.git ]; then rm -rf generic-worker; git clone '{{ event.head.repo.url }}' 'generic-worker'; fi
+          cd 'generic-worker'
+          git fetch '{{ event.head.repo.url }}' "+{{ event.head.ref }}:refs/heads/X${TASK_ID}"
+          git checkout -f "X${TASK_ID}"
+          git reset --hard '{{ event.head.sha }}'
+          git clean -fdx
+          git checkout -B tmp -t "X${TASK_ID}"
+          dep check
+      cache:
+        generic-worker-checkout: /go/src
