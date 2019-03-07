@@ -1,6 +1,4 @@
 const debug = require('debug')('test');
-const _ = require('lodash');
-const nock = require('nock');
 const hawk = require('hawk');
 const request = require('superagent');
 const SchemaSet = require('taskcluster-lib-validate');

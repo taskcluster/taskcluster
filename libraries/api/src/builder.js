@@ -1,15 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const Debug = require('debug');
 const assert = require('assert');
 const _ = require('lodash');
-const libUrls = require('taskcluster-lib-urls');
 const utils = require('./utils');
 const errors = require('./middleware/errors');
 const ScopeExpressionTemplate = require('./expressions');
 const API = require('./api');
-
-const debug = Debug('api');
 
 /**
  * A ping method, added automatically to every service

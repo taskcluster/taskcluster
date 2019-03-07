@@ -5,7 +5,6 @@ suite('expression expansion success', function() {
 
   function scenario(expr, params, result, shouldFail=false) {
     return () => {
-      let missing = [];
       try {
         assert.deepEqual(new ScopeExpressionTemplate(expr).render(params), result);
       } catch (err) {

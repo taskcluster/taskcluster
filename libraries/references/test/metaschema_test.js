@@ -1,6 +1,3 @@
-const assert = require('assert');
-const _ = require('lodash');
-const Ajv = require('ajv');
 const {getCommonSchemas} = require('../src/common-schemas');
 const References = require('..');
 const libUrls = require('taskcluster-lib-urls');

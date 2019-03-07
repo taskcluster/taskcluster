@@ -1,6 +1,5 @@
 const libTesting = require('../');
 const path = require('path');
-const libUrls = require('taskcluster-lib-urls');
 
 suite('testing.schema', function() {
   libTesting.schemas({

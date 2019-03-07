@@ -1,5 +1,4 @@
 const {Exchanges} = require('taskcluster-lib-pulse');
-const assert = require('assert');
 
 /** Declaration of exchanges offered by the auth */
 const exchanges = new Exchanges({

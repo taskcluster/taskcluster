@@ -1,4 +1,3 @@
-const assert = require('assert');
 const ScopeSetBuilder = require('./scopesetbuilder');
 
 // Construct character SUBSTITUTE used for representation of <..>

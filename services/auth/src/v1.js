@@ -1,5 +1,3 @@
-const debug = require('debug')('auth:api');
-const assert = require('assert');
 const APIBuilder = require('taskcluster-lib-api');
 const scopeUtils = require('taskcluster-lib-scopes');
 const slugid = require('slugid');
@@ -188,7 +186,6 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let prefix = req.query.prefix;
-  let continuationToken = req.query.continuationToken || undefined;
   let limit = parseInt(req.query.limit || 1000, 10);
   let Client = this.Client;
   let resolver = this.resolver;
@@ -362,7 +359,6 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let clientId = req.params.clientId;
-  let input = req.body;
 
   // Forbid changes to static clients
   if (clientId.startsWith('static/')) {
@@ -979,7 +975,6 @@ builder.declare({
     'and roles).',
   ].join('\n'),
 }, async function(req, res) {
-  let input = req.body;
   return res.reply({scopes: await req.scopes()});
 });
 

@@ -7,21 +7,14 @@ const _ = require('lodash');
 const data = require('../src/data');
 const builder = require('../src/v1');
 const taskcluster = require('taskcluster-client');
-const mocha = require('mocha');
 const load = require('../src/main');
-const exchanges = require('../src/exchanges');
 const slugid = require('slugid');
-const Config = require('taskcluster-lib-config');
 const azure = require('fast-azure-storage');
-const temporary = require('temporary');
-const mockAwsS3 = require('mock-aws-s3');
-const containers = require('../src/containers');
 const uuid = require('uuid');
 const Builder = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
 const App = require('taskcluster-lib-app');
-const libUrls = require('taskcluster-lib-urls');
-const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets} = require('taskcluster-lib-testing');
 const {FakeClient} = require('taskcluster-lib-pulse');
 
 exports.suiteName = path.basename;
@@ -152,7 +145,7 @@ exports.withRoles = (mock, skipping, options={}) => {
       return;
     }
 
-    const cfg = await exports.load('cfg');
+    await exports.load('cfg');
     exports.containerName = `auth-test-${uuid.v4()}`;
     exports.load.cfg('app.rolesContainerName', exports.containerName);
 
@@ -337,7 +330,7 @@ exports.withServers = (mock, skipping) => {
       return;
     }
     debug('starting servers');
-    const cfg = await exports.load('cfg');
+    await exports.load('cfg');
 
     exports.load.cfg('taskcluster.rootUrl', exports.rootUrl);
     exports.rootAccessToken = '-test-access-token-';

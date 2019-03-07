@@ -4,8 +4,6 @@
 
 const Writable = require('stream').Writable;
 
-let uploads;
-
 class MockS3UploadStream {
   constructor(client) {
     MockS3UploadStream.uploads = [];

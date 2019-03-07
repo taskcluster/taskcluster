@@ -1,5 +1,4 @@
 const assert = require('assert');
-const debug = require('debug')('test:roles');
 const helper = require('./helper');
 const slugid = require('slugid');
 const _ = require('lodash');

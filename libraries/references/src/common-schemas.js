@@ -1,6 +1,5 @@
 const yaml = require('js-yaml');
 const path = require('path');
-const util = require('util');
 const fs = require('fs');
 const assert = require('assert');
 

@@ -50,7 +50,6 @@ class IterateEvents {
 }
 
 suite('Iterate', () => {
-  let clock;
   let manager;
   let monitor;
 
@@ -145,8 +144,6 @@ suite('Iterate', () => {
   });
 
   test('should emit error when iteration watchdog expires', done => {
-    let iterations = 0;
-
     let i = new subject({
       maxIterationTime: 5,
       watchDog: 1,
@@ -174,8 +171,6 @@ suite('Iterate', () => {
   });
 
   test('should emit error when overall iteration limit is hit', done => {
-    let iterations = 0;
-
     let i = new subject({
       maxIterationTime: 1,
       watchDog: 100,
@@ -201,8 +196,6 @@ suite('Iterate', () => {
   });
 
   test('should emit error when iteration is too quick', done => {
-    let iterations = 0;
-
     let i = new subject({
       maxIterationTime: 12,
       minIterationTime: 10,
@@ -225,8 +218,6 @@ suite('Iterate', () => {
   });
 
   test('should emit error after too many failures', done => {
-    let iterations = 0;
-
     let i = new subject({
       maxIterationTime: 12,
       maxFailures: 1,
@@ -250,8 +241,6 @@ suite('Iterate', () => {
   });
 
   test('should cause uncaughtException when error event is unhandled', done => {
-    let iterations = 0;
-
     // NOTE: Mocha has it's own uncaught exception listener.  If we were to
     // leave it in force during this test, we'd end up getting two results from
     // the test.  One failure from the mocha handler and one pass from our own
@@ -340,8 +329,6 @@ suite('Iterate', () => {
   });
 
   test('should emit correct events for single iteration', done => {
-    let iterations = 0;
-
     let i = new subject({
       maxIterationTime: 3,
       watchDog: 2,
@@ -377,8 +364,6 @@ suite('Iterate', () => {
   });
 
   test('should emit correct events with maxIterations', done => {
-    let iterations = 0;
-
     let i = new subject({
       maxIterationTime: 3,
       maxIterations: 1,
@@ -422,8 +407,6 @@ suite('Iterate', () => {
   suite('event emission ordering', () => {
 
     test('should be correct with maxFailures and maxIterations', done => {
-      let iterations = 0;
-
       let i = new subject({
         maxIterationTime: 3,
         maxIterations: 1,
@@ -459,8 +442,6 @@ suite('Iterate', () => {
     });
 
     test('should be correct with maxFailures only', done => {
-      let iterations = 0;
-
       let i = new subject({
         maxIterationTime: 3,
         maxFailures: 1,
@@ -494,8 +475,6 @@ suite('Iterate', () => {
     });
 
     test('should be correct when handler takes too little time', done => {
-      let iterations = 0;
-
       let i = new subject({
         maxIterationTime: 3,
         minIterationTime: 100,
@@ -528,8 +507,6 @@ suite('Iterate', () => {
     });
 
     test('should be correct when handler takes too long (incremental watchdog)', done => {
-      let iterations = 0;
-
       let i = new subject({
         maxIterationTime: 5,
         maxFailures: 1,
@@ -563,8 +540,6 @@ suite('Iterate', () => {
     });
 
     test('should be correct when handler takes too long (overall time)', done => {
-      let iterations = 0;
-
       let i = new subject({
         maxIterationTime: 3,
         maxFailures: 1,

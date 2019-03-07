@@ -1,11 +1,10 @@
 const helper = require('./helper');
 const ScopeResolver = require('../src/scoperesolver');
 const exchanges = require('../src/exchanges');
-const {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
+const {scopeCompare} = require('taskcluster-lib-scopes');
 const MonitorManager = require('taskcluster-lib-monitor');
 const assert = require('assert');
 const _ = require('lodash');
-const fs = require('fs');
 const assume = require('assume');
 
 suite(helper.suiteName(__filename), () => {
@@ -407,7 +406,7 @@ suite(helper.suiteName(__filename), () => {
     const testResolver = (title, {roles, scopes, expected}) => {
       test(title, function() {
         let resolver = time('setup', () => scopeResolver.buildResolver(roles));
-        let result = time('execute', () => resolver(scopes));
+        time('execute', () => resolver(scopes));
         if (expected) {
           expected.sort(scopeCompare);
           assert.deepEqual(expected, resolver(scopes));

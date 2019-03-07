@@ -1,6 +1,5 @@
 const helper = require('./helper');
 const _ = require('lodash');
-const assume = require('assume');
 const taskcluster = require('taskcluster-client');
 const mocha = require('mocha');
 

@@ -1,5 +1,4 @@
 const assert = require('assert');
-const ErrorReply = require('../error-reply');
 
 /**
  * Handle API end-point request

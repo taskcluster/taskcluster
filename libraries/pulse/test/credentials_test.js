@@ -1,8 +1,6 @@
 const {pulseCredentials} = require('../src');
 const assert = require('assert');
 const assume = require('assume');
-const libUrls = require('taskcluster-lib-urls');
-const nock = require('nock');
 
 suite('pulseCredentials', function() {
   test('missing arguments are an error', async function() {

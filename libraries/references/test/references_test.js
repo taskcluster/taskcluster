@@ -1,14 +1,11 @@
 const assert = require('assert');
 const fs = require('fs');
 const {getCommonSchemas} = require('../src/common-schemas');
-const libUrls = require('taskcluster-lib-urls');
 const {makeSerializable} = require('../src/serializable');
 const mockFs = require('mock-fs');
 const References = require('..');
 
 suite('references_test.js', function() {
-  const rootUrl = libUrls.testRootUrl();
-
   teardown(function() {
     mockFs.restore();
   });

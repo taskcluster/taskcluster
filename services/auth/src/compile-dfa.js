@@ -4,7 +4,7 @@
 /**
  * Compile DFA to a function equivalent to `executeDFA.bind(null, dfa)`.
  */
-const compileDFA = (dfa) => {
+const compileDFA = (dfa) => { //eslint-disable-line no-unused-vars
   // Render a DFA state to code
   let renderDFA = (state, depth) => {
     let d = '';

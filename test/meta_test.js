@@ -21,7 +21,7 @@ suite('Repo Meta Tests', function() {
   test('All packages in CI', async function() {
     const configured = taskclusterYml.tasks.in.$let.packages;
 
-    const {stdout, stderr} = await exec('yarn workspaces info -s');
+    const {stdout} = await exec('yarn workspaces info -s');
     const existing = Object.keys(JSON.parse(stdout))
       // taskcluster-client is tested separately
       .filter(name => name !== 'taskcluster-client');

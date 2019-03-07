@@ -1,6 +1,5 @@
 let assume = require('assume');
 let subject = require('../src/loader');
-let debug = require('debug')('test:loader');
 let assert = require('assert');
 
 suite('component loader', () => {
@@ -99,7 +98,7 @@ suite('component loader', () => {
 
   test('should forbid undefined components', async () => {
     try {
-      let load = subject({
+      subject({
         test: {
           requires: ['dep'],
           setup: deps => {
@@ -250,7 +249,7 @@ suite('component loader', () => {
 
   test('should detect and bail on cyclic dependency', async () => {
     try {
-      let load = subject({
+      subject({
         dep1: {
           requires: ['dep2'],
           setup: () => true,
@@ -420,7 +419,7 @@ suite('component loader', () => {
 
   test('should fail when a virtual component is a dupe of a real one', () => {
     try {
-      let load = subject({
+      subject({
         dep1: 'string',
       }, {
         'dep1': null,

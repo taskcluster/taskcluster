@@ -1,5 +1,4 @@
 suite('Publish Tests', () => {
-  let assert = require('assert');
   let SchemaSet = require('../');
   let awsMock = require('mock-aws-s3');
   let os = require('os');
@@ -45,7 +44,6 @@ suite('Publish Tests', () => {
       'test-schema',
       'yml-test-schema',
     ];
-    let bads = [];
     for (let key of shoulds) {
       s3.getObject({
         Bucket: 'schemas.taskcluster.net',

@@ -1,7 +1,5 @@
 const assert = require('assert');
-const debug = require('debug')('test:client');
 const helper = require('./helper');
-const slugid = require('slugid');
 const _ = require('lodash');
 const assume = require('assume');
 const testing = require('taskcluster-lib-testing');
@@ -129,7 +127,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     let expires = taskcluster.fromNow('1 hour');
     let description = 'Test client...';
     let scopes = ['scope1', 'myapi:*'];
-    let client = await helper.apiClient.createClient(CLIENT_ID, {
+    await helper.apiClient.createClient(CLIENT_ID, {
       expires, description, scopes,
     });
 

@@ -1,5 +1,4 @@
 var assert = require('assert');
-var path = require('path');
 var App = require('../');
 var request = require('superagent');
 var express = require('express');

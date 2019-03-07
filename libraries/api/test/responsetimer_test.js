@@ -1,6 +1,5 @@
 const request = require('superagent');
 const assert = require('assert');
-const Promise = require('promise');
 const APIBuilder = require('../');
 const MonitorManager = require('taskcluster-lib-monitor');
 const helper = require('./helper');
@@ -46,7 +45,6 @@ suite('api/responsetimer', function() {
   });
 
   // Reference for test api server
-  let _apiServer = null;
   let monitorManager = null;
 
   // Create a mock authentication server

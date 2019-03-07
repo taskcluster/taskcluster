@@ -1,4 +1,3 @@
-const debug = require('debug')('auth:data');
 const Entity = require('azure-entities');
 const assert = require('assert');
 const _ = require('lodash');
@@ -188,7 +187,7 @@ Client.syncStaticClients = async function(clients = []) {
  */
 Client.purgeExpired = async function(now = new Date()) {
   let count = 0;
-  let expired = await this.scan({
+  await this.scan({
     expires: Entity.op.lessThan(now),
   }, {
     limit: 100,

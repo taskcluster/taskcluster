@@ -2,7 +2,6 @@ suite('Valid Schema Tests', () => {
   const assert = require('assert');
   const SchemaSet = require('../');
   const debug = require('debug')('test');
-  const _ = require('lodash');
   const libUrls = require('taskcluster-lib-urls');
 
   const rootUrl = libUrls.testRootUrl();
