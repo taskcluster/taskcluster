@@ -4,7 +4,6 @@ const path = require('path');
 const config = require('taskcluster-lib-config');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
-const {TerraformJson} = require('../formats/tf-json');
 const {TaskGraph, Lock, ConsoleRenderer, LogRenderer} = require('console-taskgraph');
 const generateRepoTasks = require('./repo');
 const generateMonoimageTasks = require('./monoimage');
@@ -58,10 +57,10 @@ class Build {
     }
     const context = await taskgraph.run();
 
-    // create a TerraformJson output based on the result of the build
-    const tfJson = new TerraformJson(context);
-    // ..and write it out
-    tfJson.write();
+    console.log(`Monoimage docker image: ${context['monoimage-docker-image']}`);
+    if (!this.cmdOptions.push) {
+      console.log('  NOTE: image not pushed (use --push)');
+    }
   }
 }
 
