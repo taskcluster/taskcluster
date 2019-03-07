@@ -1,15 +1,5 @@
 repositories:
 
-# microservices
-- name: events
-  kind: service
-  source: https://github.com/taskcluster/taskcluster-events#master
-  docs: generated
-  service:
-    buildtype: heroku-buildpack
-    stack: heroku-16
-    buildpack: https://github.com/heroku/heroku-buildpack-nodejs
-
 # workers
 - name: docker-worker
   kind: other

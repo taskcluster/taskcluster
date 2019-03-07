@@ -129,13 +129,6 @@ locals {
       ]
     },
     {
-      clientId    = "static/taskcluster/events"
-      accessToken = "${random_string.events_access_token.result}"
-      description = "..."
-
-      scopes = []
-    },
-    {
       clientId    = "static/taskcluster/built-in-workers"
       accessToken = "${random_string.built_in_workers_access_token.result}"
       description = "..."
