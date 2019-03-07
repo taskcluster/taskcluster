@@ -4,13 +4,6 @@ let data = require('./data');
 let QueueService = require('./queueservice');
 let Iterate = require('taskcluster-lib-iterate');
 
-/** State that are considered resolved */
-const RESOLVED_STATES = [
-  'completed',
-  'failed',
-  'exception',
-];
-
 /**
  * Facade that handles resolution of claims by takenUntil, using the advisory
  * messages from the azure queue. The azure queue messages takes the form:

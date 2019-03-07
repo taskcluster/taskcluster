@@ -6,8 +6,6 @@ const slugid = require('slugid');
 const _ = require('lodash');
 const request = require('superagent');
 const BlobUploader = require('./azure-blob-uploader-sas');
-const Bucket = require('../src/bucket');
-const data = require('../src/data');
 const taskcluster = require('taskcluster-client');
 const {Netmask} = require('netmask');
 const assume = require('assume');
@@ -364,9 +362,9 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       // Probably overkill because the schema should catch this but not the
       // worst idea
       for (let i of [0, 1, 2]) {
-        assume(response.requests[0]).to.have.property('url');
-        assume(response.requests[1]).to.have.property('method');
-        assume(response.requests[2]).to.have.property('headers');
+        assume(response.requests[i]).to.have.property('url');
+        assume(response.requests[i]).to.have.property('method');
+        assume(response.requests[i]).to.have.property('headers');
       }
 
       let uploadOutcome = await client.runUpload(response.requests, uploadInfo);
@@ -474,7 +472,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       // Just run the upload for posterity
       let uploadOutcome = await client.runUpload(secondResponse.requests, uploadInfo);
 
-      let response = await helper.queue.completeArtifact(taskId, 0, name, {
+      await helper.queue.completeArtifact(taskId, 0, name, {
         etags: uploadOutcome.etags,
       });
     });
@@ -857,7 +855,6 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('Post error artifact', async () => {
     const taskId = slugid.v4();
-    let artifactCreated;
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);

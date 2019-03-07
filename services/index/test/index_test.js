@@ -254,7 +254,7 @@ helper.secrets.mockSuite('index_test.js', ['taskcluster'], function(mock, skippi
 
   test('list top-level namespaces test limit and continuationToken params', async function() {
     const myns = slugid.v4();
-    const tasks = await insert10Tasks(myns);
+    await insert10Tasks(myns);
     debug('listNamespaces returns continuationToken after limit = 10');
 
     let i = 1;

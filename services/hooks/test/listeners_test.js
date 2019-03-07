@@ -176,7 +176,6 @@ helper.secrets.mockSuite('listeners_test.js', ['taskcluster'], function(mock, sk
 
     test('with deleted hook and active listener', async function() {
       const bindings = [{exchange: 'e', routingKeyPattern: 'foo.#'}];
-      const newBindings = [];
 
       await makeQueueEntities({hookId, bindings});
       hookListeners.listeners[qn(hookGroupId, hookId)] = true;

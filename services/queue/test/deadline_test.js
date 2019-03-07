@@ -108,7 +108,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-pending');
 
     debug('### Claim task');
-    const r2 = await helper.queue.claimTask(taskId, 0, {
+    await helper.queue.claimTask(taskId, 0, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
@@ -146,7 +146,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-pending');
 
     debug('### Claim task');
-    const r2 = await helper.queue.claimTask(taskId, 0, {
+    await helper.queue.claimTask(taskId, 0, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });

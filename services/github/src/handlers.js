@@ -8,18 +8,6 @@ const {consume} = require('taskcluster-lib-pulse');
 const debugPrefix = 'taskcluster-github:handlers';
 const debug = Debug(debugPrefix);
 
-const TITLES = { // maps github checkruns statuses and conclusions to titles to be displayed
-  success: 'Success',
-  failure: 'Failure',
-  neutral: 'It is neither good nor bad',
-  cancelled: 'Cancelled',
-  timed_out: 'Timed out',
-  action_required: 'Action required',
-  queued: 'Queued',
-  in_progress: 'In progress',
-  completed: 'Completed',
-};
-
 const CONCLUSIONS = { // maps status communicated by the queue service to github checkrun conclusions
   /*eslint-disable quote-props*/
   'completed': 'success',

@@ -3,7 +3,6 @@
 const assume = require('assume');
 const {BiddingStrategy} = require('../../lib/bidding-strategy');
 const {Bid} = require('../../lib/bid');
-const sinon = require('sinon');
 
 /**
  * This file contains tests runner for all implemenetations of a bidding
@@ -82,7 +81,6 @@ function createMockBid(overrides) {
 function testBiddingStrategy(subject, biddingStrategyData, runBefore, runAfter) {
   suite(`Bidding Strategy API Conformance for ${subject.constructor.name}`, () => {
     let workerType = 'workerType';
-    let sandbox = sinon.createSandbox();
 
     setup(async () => {
       if (runBefore) {

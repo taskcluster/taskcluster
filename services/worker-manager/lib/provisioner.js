@@ -3,8 +3,7 @@
 require('./shims');
 
 const Iterate = require('taskcluster-lib-iterate');
-const {WMObject, errors} = require('./base');
-const {Bid} = require('./bid');
+const {WMObject} = require('./base');
 const {Provider} = require('./provider');
 
 const {buildWorkerConfiguration} = require('./worker-config');

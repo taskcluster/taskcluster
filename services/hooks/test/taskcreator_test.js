@@ -3,7 +3,6 @@ const assume = require('assume');
 const taskcreator = require('../src/taskcreator');
 const debug = require('debug')('test:test_schedule_hooks');
 const helper = require('./helper');
-const {TaskCreator} = require('../src/taskcreator');
 const taskcluster = require('taskcluster-client');
 const _ = require('lodash');
 const hookDef = require('./test_definition');
@@ -147,7 +146,7 @@ suite('taskcreator_test.js', function() {
         },
       });
       let taskId = taskcluster.slugid();
-      let resp = await creator.fire(hook, {
+      await creator.fire(hook, {
         someValue: 42,
         numbers: [1, 2, [3, 4], [[5, 6]]],
         firedBy: 'schedule',
@@ -171,7 +170,7 @@ suite('taskcreator_test.js', function() {
       hook.task = {$if: 'false', then: hook.task};
       await helper.Hook.create(hook);
       let taskId = taskcluster.slugid();
-      let resp = await creator.fire(hook, {});
+      await creator.fire(hook, {});
       await assertNoTask(taskId);
     });
 
@@ -208,7 +207,7 @@ suite('taskcreator_test.js', function() {
       hook.task.then.expires = {$fromNow: '2 minutes'};
       await helper.Hook.create(hook);
       let taskId = taskcluster.slugid();
-      let resp = await creator.fire(hook, {firedBy: 'foo'}, {taskId});
+      await creator.fire(hook, {firedBy: 'foo'}, {taskId});
 
       const task = await fetchFiredTask(taskId);
       assume(new Date(task.deadline) - new Date(task.created)).to.equal(60000);
@@ -220,7 +219,7 @@ suite('taskcreator_test.js', function() {
       hook.task.then.taskGroupId = taskcluster.slugid();
       await helper.Hook.create(hook);
       let taskId = taskcluster.slugid();
-      let resp = await creator.fire(hook, {firedBy: 'foo'}, {taskId});
+      await creator.fire(hook, {firedBy: 'foo'}, {taskId});
 
       const task = await fetchFiredTask(taskId);
       assume(task.taskGroupId).equals(hook.task.then.taskGroupId);
@@ -232,7 +231,7 @@ suite('taskcreator_test.js', function() {
         firedBy: '${firedBy}',
       });
       let taskId = taskcluster.slugid();
-      let resp = await creator.fire(hook, {
+      await creator.fire(hook, {
         location: 'Belo Horizonte, MG',
         firedBy: 'schedule',
       }, {taskId});

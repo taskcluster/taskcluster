@@ -60,6 +60,7 @@ rules:
     - error
     - args: none
       ignoreRestSiblings: true
+      varsIgnorePattern: ^_$
       argsIgnorePattern: ^_$
 
   # These are disabled for now and we will slowly turn them on

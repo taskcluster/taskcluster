@@ -129,7 +129,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
-    const r1 = await helper.queue.createTask(taskIdA, _.defaults({
+    await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
     }, taskDef));
 
@@ -153,7 +153,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
-    const r1 = await helper.queue.createTask(taskIdA, _.defaults({
+    await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
     }, taskDef));
 
@@ -196,7 +196,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
-    const r1 = await helper.queue.createTask(taskIdA, _.defaults({
+    await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
     }, taskDef));
 
@@ -219,7 +219,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
-    const r1 = await helper.queue.createTask(taskIdA, _.defaults({
+    await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
       expires: taskcluster.fromNowJSON('10 days'),
     }, taskDef));
@@ -241,7 +241,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
-    const r1 = await helper.queue.createTask(taskIdA, _.defaults({
+    await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
     }, taskDef));
 
@@ -265,7 +265,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     let taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
-    const r1 = await helper.queue.createTask(taskIdA, _.defaults({
+    await helper.queue.createTask(taskIdA, _.defaults({
       taskGroupId,
       expires: taskcluster.fromNowJSON('10 days'),
     }, taskDef));

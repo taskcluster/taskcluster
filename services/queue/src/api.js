@@ -1,5 +1,3 @@
-let debug = require('debug')('app:api');
-let slugid = require('slugid');
 let assert = require('assert');
 let _ = require('lodash');
 let APIBuilder = require('taskcluster-lib-api');
@@ -2448,7 +2446,7 @@ builder.declare({
     properties: Object.keys(req.body),
   });
 
-  const [worker, wType, provisioner] = await Promise.all([
+  const [worker, _, provisioner] = await Promise.all([
     this.workerInfo.upsertWorker({provisionerId, workerType, workerGroup, workerId, expires}),
     this.workerInfo.upsertWorkerType({provisionerId, workerType}),
     this.workerInfo.upsertProvisioner({provisionerId}),

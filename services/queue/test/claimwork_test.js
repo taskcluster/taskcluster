@@ -239,7 +239,6 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-pending');
 
     debug('### Claim task');
-    let before = new Date();
     let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',

@@ -1,6 +1,5 @@
 const assert = require('assert');
 const slugid = require('slugid');
-const Entity = require('azure-entities');
 const taskcluster = require('taskcluster-client');
 const helper = require('./helper');
 
@@ -470,7 +469,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   test('queue.getProvisioner returns 404 when no such provisioner is found', async () => {
     let err;
     try {
-      const result = await helper.queue.getProvisioner('no-such');
+      await helper.queue.getProvisioner('no-such');
     } catch (e) {
       err = e;
     }
@@ -660,7 +659,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     let err;
     try {
-      const result = await helper.queue.getWorker(
+      await helper.queue.getWorker(
         wType.provisionerId,
         wType.workerType,
         'no-such', 'no-such');
@@ -673,12 +672,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('queue.getWorker returns 404 for an expired Worker', async () => {
     await makeProvisioner({});
-    const wType = await makeWorkerType({});
+    await makeWorkerType({});
     const worker = await makeWorker({expires: new Date('2001-01-01')});
 
     let err;
     try {
-      const result = await helper.queue.getWorker(
+      await helper.queue.getWorker(
         worker.provisionerId,
         worker.workerType,
         worker.workerGroup,
@@ -692,7 +691,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('queue.getWorker returns an expired Worker that is quarantined', async () => {
     await makeProvisioner({});
-    const wType = await makeWorkerType({});
+    await makeWorkerType({});
     const worker = await makeWorker({
       expires: new Date('2001-01-01'),
       quarantineUntil: new Date('3001-01-01'),
@@ -712,7 +711,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     let err;
     try {
-      const result = await helper.queue.getWorker(
+      await helper.queue.getWorker(
         worker.provisionerId,
         worker.workerType,
         worker.workerGroup,
@@ -730,7 +729,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
     let err;
     try {
-      const result = await helper.queue.getWorker(
+      await helper.queue.getWorker(
         worker.provisionerId,
         worker.workerType,
         worker.workerGroup,
@@ -832,7 +831,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     const workerId = 'my-worker-extended-extended';
     const taskId = slugid.v4();
 
-    const taskStatus = await helper.queue.createTask(taskId, {
+    await helper.queue.createTask(taskId, {
       provisionerId,
       workerType,
       priority: 'normal',
@@ -873,7 +872,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       const taskId = slugid.v4();
       taskIds.push(taskId);
 
-      const taskStatus = await helper.queue.createTask(taskIds[i], {
+      await helper.queue.createTask(taskIds[i], {
         provisionerId,
         workerType,
         priority: 'normal',

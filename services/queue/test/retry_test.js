@@ -35,7 +35,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     const taskId = slugid.v4();
 
     debug('### Creating task');
-    const r1 = await helper.queue.createTask(taskId, taskDef);
+    await helper.queue.createTask(taskId, taskDef);
     helper.checkNextMessage('task-defined');
     helper.checkNextMessage('task-pending');
 

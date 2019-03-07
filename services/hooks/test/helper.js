@@ -116,7 +116,7 @@ helper.withTaskCreator = function(mock, skipping) {
       return;
     }
 
-    const cfg = await helper.load('cfg');
+    await helper.load('cfg');
 
     helper.creator = new taskcreator.MockTaskCreator();
     helper.load.inject('taskcreator', helper.creator);
@@ -137,7 +137,6 @@ helper.withTaskCreator = function(mock, skipping) {
  * queue.
  */
 helper.withPulse = (mock, skipping) => {
-  let Listener;
   suiteSetup(async function() {
     if (skipping()) {
       return;
@@ -250,7 +249,7 @@ helper.withServer = (mock, skipping) => {
       return;
     }
 
-    const cfg = await helper.load('cfg');
+    await helper.load('cfg');
 
     helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
     fakeauth.start({

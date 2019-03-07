@@ -167,7 +167,6 @@ module.exports = class Handler {
     switch (this.eventMap[message.exchange]) {
     case 'pending':
       let runId = message.payload.runId;
-      let run = message.payload.status.runs[message.payload.runId];
       // If the task run was created for an infrastructure rerun, then resolve
       // the previous run as retried.
       if (runId > 0) {
@@ -292,7 +291,6 @@ module.exports = class Handler {
   }
 
   async handleTaskRerun(pushInfo, task, message) {
-    let run = message.status.runs[message.runId-1];
     let job = this.buildMessage(pushInfo, task, message.runId-1, message);
     job.state = 'completed';
     job.result = 'fail';
@@ -309,7 +307,6 @@ module.exports = class Handler {
   }
 
   async handleTaskRunning(pushInfo, task, message) {
-    let run = message.status.runs[message.runId];
     let job = this.buildMessage(pushInfo, task, message.runId, message);
     job.timeStarted = message.status.runs[message.runId].started;
     await this.publishJobMessage(pushInfo, job, message.status.taskId);

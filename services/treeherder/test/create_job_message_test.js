@@ -6,7 +6,7 @@ const parseRoute = require('../src/util/route_parser');
 const libUrls = require('taskcluster-lib-urls');
 const helper = require('./helper');
 
-let task, status, expected, pushInfo, cfg;
+let task, status, expected, pushInfo;
 
 suite('build job message', () => {
   helper.withLoader();

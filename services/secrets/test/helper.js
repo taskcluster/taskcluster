@@ -90,7 +90,7 @@ exports.withServer = (mock, skipping) => {
     if (skipping()) {
       return;
     }
-    const cfg = await exports.load('cfg');
+    await exports.load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that

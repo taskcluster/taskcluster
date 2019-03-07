@@ -52,7 +52,7 @@ exports.withEntities = (mock, skipping) => {
     }
 
     if (mock) {
-      const cfg = await exports.load('cfg');
+      await exports.load('cfg');
       await Promise.all(tables.map(async tbl => {
         exports.load.inject(tbl.name, data[tbl.className || tbl.name].setup({
           tableName: tbl.name,
@@ -137,7 +137,7 @@ exports.withServer = (mock, skipping) => {
     if (skipping()) {
       return;
     }
-    const cfg = await exports.load('cfg');
+    await exports.load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that

@@ -11,18 +11,6 @@ let slugid = require('slugid');
 /** Timeout for azure queue requests */
 const AZURE_QUEUE_TIMEOUT = 7 * 1000;
 
-/** Azure queue agent used for all instances of the queue client */
-let globalAzureQueueAgent = new azure.Agent({
-  keepAlive: true,
-  maxSockets: 100,
-  maxFreeSockets: 100,
-});
-
-/** Decode Url-safe base64, our identifiers satisfies these requirements */
-let decodeUrlSafeBase64 = data => {
-  return Buffer.from(data.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
-};
-
 /** Get seconds until `target` relative to now (by default) */
 let secondsTo = (target, relativeTo = new Date()) => {
   var delta = Math.floor((target.getTime() - relativeTo.getTime()) / 1000);

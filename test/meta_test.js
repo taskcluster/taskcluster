@@ -73,7 +73,7 @@ suite('Repo Meta Tests', function() {
     const rootPkg = require(path.join(ROOT_DIR, 'package.json'));
     const rootDeps = (Object.keys(rootPkg.dependencies || {})).concat((Object.keys(rootPkg.devDependencies || {})));
 
-    const {stdout, stderr} = await exec('yarn workspaces info -s');
+    const {stdout} = await exec('yarn workspaces info -s');
     const packages = Object.values(JSON.parse(stdout)).map(p => p.location);
     const unused = {};
     const missing = {};

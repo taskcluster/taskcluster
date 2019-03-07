@@ -92,7 +92,6 @@ suite.skip('queue/tasks_store', function() {
   // Test that we can't key that doesn't exists
   test('get with nullIfNotFound', function() {
     var key = slugid.v4();
-    var data = {message: 'Hello World', list: [1, 2, 3]};
     return blobstore.get(key, true).then(function(result) {
       assert(result === null, 'Unexpected result');
     });
@@ -101,7 +100,6 @@ suite.skip('queue/tasks_store', function() {
   // Test that we can't key that doesn't exists
   test('get without nullIfNotFound', function() {
     var key = slugid.v4();
-    var data = {message: 'Hello World', list: [1, 2, 3]};
     return blobstore.get(key).then(function(result) {
       assert(false, 'Expected Error');
     }).catch(function(err) {
@@ -158,7 +156,6 @@ suite.skip('queue/tasks_store', function() {
     // Create BlobUploader
     var uploader = new BlobUploader(url.format(parsedInvalidSasUrl));
     var block1 = slugid.v4();
-    var block2 = slugid.v4();
 
     return uploader.putBlock(block1, '{"').then(function() {
       assert(false, 'This should have failed');
