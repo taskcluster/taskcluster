@@ -42,7 +42,7 @@ done
 echo "${OUTPUT_ALL_PLATFORMS}"
 echo "${OUTPUT_TEST}"
 
-go get github.com/taskcluster/generic-worker/gw-codegen
+go install github.com/taskcluster/generic-worker/gw-codegen
 export PATH="$(go env GOPATH)/bin:${PATH}"
 go generate ./...
 
@@ -54,7 +54,7 @@ function install {
     GOOS="${1}" GOARCH="${2}" CGO_ENABLED=0 go test -c github.com/taskcluster/generic-worker
     GOOS="${1}" GOARCH="${2}" CGO_ENABLED=0 go test -c github.com/taskcluster/generic-worker/livelog
   else
-    CGO_ENABLED=0 go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
+    CGO_ENABLED=0 go install -ldflags "-X main.revision=$(git rev-parse HEAD)" -v ./...
     go vet ./...
     # note, this just builds tests, it doesn't run them!
     CGO_ENABLED=0 go test -c github.com/taskcluster/generic-worker

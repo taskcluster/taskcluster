@@ -7,7 +7,7 @@ pushd %~dp0
 
 go get github.com/taskcluster/livelog github.com/gordonklaus/ineffassign || exit /b %ERRORLEVEL%
 cd gw-codegen
-go get -v || exit /b %ERRORLEVEL%
+go install -v || exit /b %ERRORLEVEL%
 cd ..
 go generate || exit /b %ERRORLEVEL%
 go install -v ./... || exit /b %ERRORLEVEL%
