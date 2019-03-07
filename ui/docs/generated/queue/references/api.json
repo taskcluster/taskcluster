@@ -650,7 +650,7 @@
         "workerType"
       ],
       "name": "lastClaimed",
-      "stability": "stable",
+      "stability": "experimental",
       "title": "Get Seconds Since Last Claimed Task",
       "output": "v1/last-claimed-response.json#",
       "description": "Get an approximate number of seconds since a task was claimed for\nthe given `provisionerId` and `workerType`.\n\nWe cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number."

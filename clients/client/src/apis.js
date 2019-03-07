@@ -2877,7 +2877,7 @@ module.exports = {
           "query": [
           ],
           "route": "/last_claimed/<provisionerId>/<workerType>",
-          "stability": "stable",
+          "stability": "experimental",
           "title": "Get Seconds Since Last Claimed Task",
           "type": "function"
         },
