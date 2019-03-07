@@ -75,11 +75,6 @@ class Build {
       cmdOptions: this.cmdOptions,
     });
 
-    const target = [];
-    if (this.cmdOptions.targetService) {
-      target.push(`target-service-${this.cmdOptions.targetService}`);
-    }
-
     const taskgraph = new TaskGraph(tasks, {
       locks: {
         // limit ourselves to one docker process per CPU
@@ -90,22 +85,13 @@ class Build {
       renderer: process.stdout.isTTY ?
         new ConsoleRenderer({elideCompleted: true}) :
         new LogRenderer(),
-      target: target.length > 0 ? target : undefined,
     });
     const context = await taskgraph.run();
 
-    if (target.length > 0) {
-      // if targeting, just show the build results, since we don't have all the data to
-      // create a TerraformJson file.
-      target.forEach(tgt => {
-        console.log(`${tgt}: ${context[tgt]}`);
-      });
-    } else {
-      // create a TerraformJson output based on the result of the build
-      const tfJson = new TerraformJson(this.spec, context);
-      // ..and write it out
-      tfJson.write();
-    }
+    // create a TerraformJson output based on the result of the build
+    const tfJson = new TerraformJson(this.spec, context);
+    // ..and write it out
+    tfJson.write();
   }
 }
 
