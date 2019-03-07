@@ -3128,7 +3128,7 @@
       "properties": {
         "lastClaimed": {
           "description": "The timestamp when a job was last claimed.\n",
-          "minimum": 0,
+          "minimum": -1,
           "title": "Timestamp When A Job Was Last Claimed",
           "type": "integer"
         },
@@ -9448,7 +9448,7 @@
             "provisionerId",
             "workerType"
           ],
-          "description": "Get an approximate number of seconds since a task was claimed for\nthe given `provisionerId` and `workerType`.\n\nWe cache the result in memory for 20 seconds. So consumers\nshould be no means expect this to be an accurate number.",
+          "description": "Get a unix epoch time indicating when a task was claimed for the\ngiven `provisionerId` and `workerType`.\n\nThe call returns -1 if it has no record of a task being claimed.",
           "method": "get",
           "name": "lastClaimed",
           "output": "v1/last-claimed-response.json#",
@@ -9456,7 +9456,7 @@
           ],
           "route": "/last_claimed/<provisionerId>/<workerType>",
           "stability": "experimental",
-          "title": "Get Seconds Since Last Claimed Task",
+          "title": "Get Timestamp When Task Last Claimed",
           "type": "function"
         },
         {

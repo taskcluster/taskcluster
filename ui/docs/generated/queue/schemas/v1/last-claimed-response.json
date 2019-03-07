@@ -22,7 +22,7 @@
     },
     "lastClaimed": {
       "type": "integer",
-      "minimum": 0,
+      "minimum": -1,
       "title": "Timestamp When A Job Was Last Claimed",
       "description": "The timestamp when a job was last claimed.\n"
     }

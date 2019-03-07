@@ -554,10 +554,9 @@ export default class Queue extends Client {
     return this.request(this.pendingTasks.entry, args);
   }
   /* eslint-disable max-len */
-  // Get an approximate number of seconds since a task was claimed for
-  // the given `provisionerId` and `workerType`.
-  // We cache the result in memory for 20 seconds. So consumers
-  // should be no means expect this to be an accurate number.
+  // Get a unix epoch time indicating when a task was claimed for the
+  // given `provisionerId` and `workerType`.
+  // The call returns -1 if it has no record of a task being claimed.
   /* eslint-enable max-len */
   lastClaimed(...args) {
     this.validate(this.lastClaimed.entry, args);
