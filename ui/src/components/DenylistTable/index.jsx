@@ -17,7 +17,7 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.notificationAddress, b.node.notificationAddress)),
   map(({ node: { notificationAddress } }) => notificationAddress)
 );
-const tableHeaders = ['Notification Type', 'Destination'];
+const tableHeaders = ['Notification Type', 'Notification Address'];
 
 @withStyles(theme => ({
   tableCell: {
@@ -25,9 +25,12 @@ const tableHeaders = ['Notification Type', 'Destination'];
   },
   listItemCell: {
     display: 'flex',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     width: '100%',
     padding: theme.spacing.unit,
+    // ...theme.mixins.hover,
+  },
+  listItemRow: {
     ...theme.mixins.hover,
   },
 }))
@@ -96,6 +99,13 @@ export default class DenylistTable extends Component {
     this.setState({ sortBy, sortDirection });
   };
 
+  prettify = str =>
+    // remove underscores and capitalize first alphabet
+    str
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+
   render() {
     const { classes, onPageChange, notificationsConnection } = this.props;
     const { sortBy, sortDirection } = this.state;
@@ -115,16 +125,24 @@ export default class DenylistTable extends Component {
         sortByHeader={sortBy}
         sortDirection={sortDirection}
         renderRow={({ node }) => (
-          <TableRow key={node.notificationAddress}>
+          <TableRow key={node.notificationAddress} class={classes.listItemRow}>
             <TableCell>
-              <div>
-                <Typography>{node.notificationType}</Typography>
-              </div>
-            </TableCell>
-            <TableCell padding="dense">
               <Link
                 className={classes.tableCell}
-                to={`/denylist/${encodeURIComponent(
+                to={`/notify/denylist/${encodeURIComponent(
+                  node.notificationAddress
+                )}`}>
+                <div className={classes.listItemCell}>
+                  <Typography>
+                    {this.prettify(node.notificationType)}
+                  </Typography>
+                </div>
+              </Link>
+            </TableCell>
+            <TableCell>
+              <Link
+                className={classes.tableCell}
+                to={`/notify/denylist/${encodeURIComponent(
                   node.notificationAddress
                 )}`}>
                 <div className={classes.listItemCell}>

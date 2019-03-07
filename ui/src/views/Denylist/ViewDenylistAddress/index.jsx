@@ -45,7 +45,7 @@ export default class ViewDenylistAddress extends Component {
 
       this.setState({ error: null, loading: false });
 
-      this.props.history.push(`/denylist`);
+      this.props.history.push(`/notify/denylist`);
     } catch (error) {
       this.setState({ error, loading: false });
     }
@@ -67,7 +67,7 @@ export default class ViewDenylistAddress extends Component {
 
       this.setState({ error: null, loading: false });
 
-      const url = `/denylist/${encodeURIComponent(notificationAddress)}`;
+      const url = `/notify/denylist/${encodeURIComponent(notificationAddress)}`;
 
       this.props.history.push(url);
     } catch (error) {
@@ -97,7 +97,7 @@ export default class ViewDenylistAddress extends Component {
                 loading={loading}
                 address={data.listDenylistAddresses.edges[0].node}
                 onAddAddress={this.handleAddAddress}
-                onDeleteSecret={this.handleDeleteAddress}
+                onDeleteAddress={this.handleDeleteAddress}
               />
             )}
           </Fragment>

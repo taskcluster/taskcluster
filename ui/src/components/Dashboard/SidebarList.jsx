@@ -61,7 +61,7 @@ export default class SidebarList extends Component {
             icon={<ArrowExpandVerticalIcon />}>
             Expand Scopes
           </SidebarListItem>
-          <SidebarListItem to="/denylist" icon={<CancelIcon />}>
+          <SidebarListItem to="/notify/denylist" icon={<CancelIcon />}>
             Denylist
           </SidebarListItem>
         </SidebarListGroup>

@@ -24,7 +24,7 @@ export default class ViewDenylist extends PureComponent {
   };
 
   handleCreate = () => {
-    this.props.history.push('/denylist/add');
+    this.props.history.push('/notify/denylist/add');
   };
 
   render() {

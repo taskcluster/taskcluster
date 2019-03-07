@@ -119,8 +119,8 @@ export default [
   },
   {
     component: Denylist,
-    path: '/denylist',
-    route: denylistRoutes('/denylist'),
+    path: '/notify/denylist',
+    route: denylistRoutes('/notify/denylist'),
   },
   {
     component: PulseMessages,

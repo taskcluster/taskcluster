@@ -8,6 +8,7 @@ import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
+import { notificationAddress as address } from '../../utils/prop-types';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
 import Button from '../Button';
@@ -57,12 +58,14 @@ export default class DenylistForm extends Component {
     return {
       notificationType: address.notificationType,
       notificationAddress: address.notificationAddress,
+      prevAddress: address,
     };
   }
 
   static propTypes = {
-    /** A GraphQL address response. Not needed when adding a new address  */
-    // address,
+    /** A GraphQL address response. Not needed when adding a new
+    address  */
+    address,
     /** Set to `true` when adding a new address. */
     isNewaddress: bool,
     /** Callback function fired when an address is created. */
@@ -90,10 +93,10 @@ export default class DenylistForm extends Component {
     this.setState({ [name]: value });
   };
 
-  handleSaveAddress = () => {
+  handleAddAddress = () => {
     const { notificationType, notificationAddress } = this.state;
 
-    this.props.onSaveAddress({
+    this.props.onAddAddress({
       notificationType,
       notificationAddress,
     });
@@ -124,9 +127,6 @@ export default class DenylistForm extends Component {
                 value={notificationType}
                 onChange={this.handleInputChange}
                 name="notificationType">
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
                 {notificationTypes.map(type => (
                   <MenuItem key={type} value={type}>
                     {this.prettify(type)}
@@ -136,7 +136,7 @@ export default class DenylistForm extends Component {
             </ListItem>
             <ListItem>
               <TextField
-                label="Notification Destination"
+                label="Notification Address"
                 name="notificationAddress"
                 onChange={this.handleInputChange}
                 fullWidth
@@ -150,12 +150,12 @@ export default class DenylistForm extends Component {
             <ListItem>
               <ListItemText
                 primary="Notification Type"
-                secondary={notificationType}
+                secondary={this.prettify(notificationType)}
               />
             </ListItem>
             <ListItem>
               <ListItemText
-                primary="Destination"
+                primary="Notification Address"
                 secondary={notificationAddress}
               />
             </ListItem>
@@ -169,7 +169,7 @@ export default class DenylistForm extends Component {
             requiresAuth
             disabled={loading}
             variant="round"
-            onClick={this.handleSaveAddress}
+            onClick={this.handleAddAddress}
             classes={{ root: classes.saveIcon }}>
             <ContentSaveIcon />
           </Button>
