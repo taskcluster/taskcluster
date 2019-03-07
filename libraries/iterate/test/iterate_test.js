@@ -329,6 +329,8 @@ suite('Iterate', () => {
   });
 
   test('should emit correct events for single iteration', done => {
+    let iterations = 0; //eslint-disable-line no-unused-vars
+
     let i = new subject({
       maxIterationTime: 3,
       watchDog: 2,
@@ -364,6 +366,8 @@ suite('Iterate', () => {
   });
 
   test('should emit correct events with maxIterations', done => {
+    let iterations = 0; //eslint-disable-line no-unused-vars
+
     let i = new subject({
       maxIterationTime: 3,
       maxIterations: 1,
