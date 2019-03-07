@@ -715,7 +715,6 @@ class QueueService {
     debug("logTaskClaimed: %s: %s", cacheKey, this.lastClaimedMap[cacheKey]);
   }
 
-  // aje
   /** Returns promise for timestamp of last claimed work in pending task queue */
   async getLastClaimed(provisionerId, workerType) {
     debug("getLastClaimed: entry");

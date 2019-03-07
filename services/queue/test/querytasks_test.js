@@ -112,7 +112,6 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     assume(r2.pendingTasks).equals(0);
   });
 
-  // aje
   test('lastClaimed works', async () => {
     const provisionerId = 'no-provisioner';
     const workerType = 'gecko-b-1-android';
