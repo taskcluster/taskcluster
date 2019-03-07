@@ -32,7 +32,7 @@ const expressError = ({errorCodes, entry, monitor}) => {
       if (cleanPayload) {
         payload = cleanPayload(payload);
       }
-      err.payload = req.payload;
+      err.payload = payload;
       monitor.reportError(err, {method});
 
       // then formulate a generic error to send to the HTTP client
