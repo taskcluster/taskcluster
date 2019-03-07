@@ -34,7 +34,7 @@ const {
  *  All of this is done using a "hooks" approach to allow segmenting the various oddball bits of
  *  this process by theme.
  */
-const generateMonoimageTasks = ({tasks, baseDir, spec, cfg, cmdOptions}) => {
+const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
   const packageJson = JSON.parse(fs.readFileSync(path.join(appRootDir.get(), 'package.json')));
   const nodeVersion = packageJson.engines.node;
   const workDir = path.join(baseDir, 'monoimage');

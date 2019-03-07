@@ -129,26 +129,6 @@ locals {
       ]
     },
     {
-      clientId    = "static/taskcluster/gce-provider"
-      accessToken = "${random_string.gce_provider_access_token.result}"
-      description = "..."
-
-      scopes = [
-        "queue:claim-work:gce-provider/*",
-        "assume:worker-id:*",
-        "assume:worker-type:gce-provider/*",
-        "queue:worker-id:gce-worker-test/*",                               // TODO: Probably not right
-        "auth:create-client:worker/gce/${var.gce_provider_gcp_project}/*",
-      ]
-    },
-    {
-      clientId    = "static/taskcluster/events"
-      accessToken = "${random_string.events_access_token.result}"
-      description = "..."
-
-      scopes = []
-    },
-    {
       clientId    = "static/taskcluster/built-in-workers"
       accessToken = "${random_string.built_in_workers_access_token.result}"
       description = "..."

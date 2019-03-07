@@ -8,8 +8,8 @@ program.command('build')
   .option('-p, --push', 'Push images to docker hub')
   .option('--base-dir <base-dir>', 'Base directory for build (fast and big!; default /tmp/taskcluster-builder-build)')
   .option('--no-cache', 'Do not use any cached state, instead building everything from scratch')
+  .option('--dry-run', 'Do not run any tasks, but generate the list of tasks')
   .option('--ignore-uncommitted-files', 'Do not fail if there are un-committed files in the working copy')
-  .option('--target-service <service>', 'Target a specific service, rather than all services')
   .action((...options) => {
     if (options.length !== 1) {
       console.error('unexpected command-line arguments');
