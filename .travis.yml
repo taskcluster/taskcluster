@@ -20,8 +20,8 @@ script:
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || go generate"
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || git status"
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || test $(git status --porcelain | wc -l) == 0"
-  - "go get -ldflags \"-X main.revision=$(git rev-parse HEAD)\" -v -t ./..."
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || GORACE=history_size=7 travis_wait 45 ./gotestcover.sh coverage.report"
+  - "go install -ldflags \"-X main.revision=$(git rev-parse HEAD)\" -v ./..."
   - "test $GIMME_OS.$GIMME_ARCH != linux.amd64 || ${GOPATH}/bin/ineffassign ."
 
 after_script:

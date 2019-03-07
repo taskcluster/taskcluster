@@ -104,7 +104,7 @@ tasks:
           exit /b 0
         - git rev-parse HEAD > revision.txt
         - set /p revision=< revision.txt
-        - go get -ldflags "-X main.revision=%revision%" -v -u -t ./...
+        - go install -v -ldflags "-X main.revision=%revision%" ./...
         - set CGO_ENABLED=1
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
@@ -179,7 +179,7 @@ tasks:
         - cd ..
         - go generate
         - set revision={{ event.head.sha }}
-        - go get -ldflags "-X main.revision=%revision%" -v -u -t ./...
+        - go install -v -ldflags "-X main.revision=%revision%" ./...
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
         - 'go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=%revision%" -v ./...'
@@ -263,7 +263,7 @@ tasks:
           exit /b 0
         - git rev-parse HEAD > revision.txt
         - set /p revision=< revision.txt
-        - go get -ldflags "-X main.revision=%revision%" -v -u -t ./...
+        - go install -v -ldflags "-X main.revision=%revision%" ./...
         - set CGO_ENABLED=1
         - set GORACE=history_size=7
         - C:\generic-worker\generic-worker-test-creds.cmd
@@ -340,7 +340,7 @@ tasks:
             go get -v -u
             cd ..
             go generate
-            go get -ldflags "-X main.revision=$(git rev-parse HEAD)" -v -u -t ./...
+            go install -v -ldflags "-X main.revision=$(git rev-parse HEAD)" ./...
             # output of wc command can contain spaces on darwin, so no quotes around expression
             test $(git status --porcelain | wc -l) == 0
             GORACE=history_size=7 CGO_ENABLED=1 go test -timeout 45m -ldflags "-X github.com/taskcluster/generic-worker.revision=$(git rev-parse HEAD)" -race -v ./...
