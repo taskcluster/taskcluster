@@ -709,17 +709,13 @@ class QueueService {
   }
 
   async logTaskClaimed(provisionerId, workerType) {
-    debug("logTaskClaimed: entry");
     let cacheKey = provisionerId + '/' + workerType;
     this.lastClaimedMap[cacheKey] = Date.now();
-    debug("logTaskClaimed: %s: %s", cacheKey, this.lastClaimedMap[cacheKey]);
   }
 
   /** Returns promise for timestamp of last claimed work in pending task queue */
   async getLastClaimed(provisionerId, workerType) {
-    debug("getLastClaimed: entry");
     let cacheKey = provisionerId + '/' + workerType;
-    debug("getLastClaimed: %s: %s", cacheKey, this.lastClaimedMap[cacheKey] || 0);
     return this.lastClaimedMap[cacheKey] || 0;
   }
 
