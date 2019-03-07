@@ -10,25 +10,15 @@ const assert = require('assert');
 
 class TerraformJson {
   /**
-   * Construct a new TerraformJson from a clusterSpec and the
-   * context output of the build process.
+   * Construct a new TerraformJson from The context output of the build process.
    */
-  constructor(clusterSpec, buildContext) {
-    this.clusterSpec = clusterSpec;
+  constructor(buildContext) {
     this.buildContext = buildContext;
   }
 
   write() {
     const locals = {};
     const context = this.buildContext;
-
-    this.clusterSpec.build.repositories.forEach(r => {
-      if (r.kind === 'service') {
-        const img = context[`service-${r.name}-docker-image`];
-        assert(img, `no image found for repository ${r.name}`);
-        locals[`taskcluster_image_${r.name}`] = img;
-      }
-    });
 
     locals['taskcluster_image_monoimage'] = context['monoimage-docker-image'];
 
