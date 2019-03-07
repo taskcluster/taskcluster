@@ -422,6 +422,11 @@ Don't forget to submit the task by clicking the *Create Task* icon.
 
 If all is well, your local generic worker should pick up the job you submit, run it, and report back status.
 
+# Modify dependencies
+
+To add, remove, or update dependencies, use [dep](https://golang.github.io/dep/docs/installation.html).
+Do not manually edit anything under the `vendor/` directory!
+
 # Run the generic worker test suite
 
 For this you need to have the source files (you cannot run the tests from the binary package).
