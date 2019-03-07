@@ -2134,13 +2134,12 @@ builder.declare({
   name: 'lastClaimed',
   stability: APIBuilder.stability.experimental,
   output: 'last-claimed-response.yml',
-  title: 'Get Seconds Since Last Claimed Task',
+  title: 'Get Timestamp When Task Last Claimed',
   description: [
-    'Get an approximate number of seconds since a task was claimed for',
-    'the given `provisionerId` and `workerType`.',
+    'Get a unix epoch time indicating when a task was claimed for the',
+    'given `provisionerId` and `workerType`.',
     '',
-    'We cache the result in memory for 20 seconds. So consumers',
-    'should be no means expect this to be an accurate number.',
+    'The call returns -1 if it has no record of a task being claimed.',
   ].join('\n'),
 }, async function(req, res) {
   var provisionerId = req.params.provisionerId;
