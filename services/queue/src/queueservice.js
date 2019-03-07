@@ -712,6 +712,7 @@ class QueueService {
     debug("logTaskClaimed: entry");
     let cacheKey = provisionerId + '/' + workerType;
     this.lastClaimedMap[cacheKey] = Date.now();
+    return;
   }
 
   // aje

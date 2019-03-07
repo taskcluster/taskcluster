@@ -1312,6 +1312,7 @@ builder.declare({
     'simple implementation of "long polling".',
   ].join('\n'),
 }, async function(req, res) {
+  debug("claimWork: entry");
   let provisionerId = req.params.provisionerId;
   let workerType = req.params.workerType;
   let workerGroup = req.body.workerGroup;
@@ -1350,6 +1351,7 @@ builder.declare({
   //
   debug("HERE NOW!!!!!!!!!!!!!!!");
   await this.queueService.logTaskClaimed(provisionerId, workerType);
+  // await this.queueService.logTaskClaimed(provisionerId, workerType);
 
   // Allow request to abort their claim request, if the connection closes
   let aborted = new Promise(accept => {

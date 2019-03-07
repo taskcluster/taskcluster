@@ -16,6 +16,19 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   helper.withEntities(mock, skipping);
   helper.withServer(mock, skipping);
 
+  const makeProvisioner = async (opts) => {
+    const provisioner = Object.assign({
+      provisionerId: 'prov1-extended-extended-extended',
+      expires: new Date('3017-07-29'),
+      lastDateActive: new Date(),
+      description: 'test-provisioner',
+      stability: 'experimental',
+      actions: [],
+    }, opts);
+    await helper.Provisioner.create(provisioner);
+    return provisioner;
+  };
+
   test('pendingTasks >= 1', async () => {
     const taskDef = {
       provisionerId: 'no-provisioner-extended-extended',
@@ -107,6 +120,76 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
   //   - claim task
   //   - verify that last_consumed value is expected
   test('lastClaimed >= 1', async () => {
+    const provisionerId = 'no-provisioner';
+    const workerType = 'gecko-b-1-android';
+    const workerGroup = 'my-worker-group-extended-extended';
+    const workerId = 'my-worker-extended-extended';
+    await makeProvisioner({provisionerId});
+
+    let taskIds = [];
+
+    for (let i = 0; i < 4; i++) {
+      const taskId = slugid.v4();
+      taskIds.push(taskId);
+
+      const taskStatus = await helper.queue.createTask(taskIds[i], {
+        provisionerId,
+        workerType,
+        priority: 'normal',
+        created: taskcluster.fromNowJSON(),
+        deadline: taskcluster.fromNowJSON('30 min'),
+        payload: {},
+        metadata: {
+          name: 'Unit testing task',
+          description: 'Task created during unit tests',
+          owner: 'haali@mozilla.com',
+          source: 'https://github.com/taskcluster/taskcluster-queue',
+        },
+      });
+    }
+
+    // let claimed = 0;
+    // let retries = 30;
+    // while (claimed < 4) {
+    //   if (!retries--) {
+    //     throw new Error('Could not claim all 4 tasks after multiple attempts');
+    //   }
+    //   const res = await helper.queue.claimWork(provisionerId, workerType, {
+    //     workerGroup,
+    //     workerId,
+    //     tasks: 4,
+    //   });
+    //   claimed += res.tasks.length;
+    // }
+    await helper.queue.claimWork(provisionerId, workerType, {
+      workerGroup,
+      workerId,
+      tasks: 1,
+    });
+
+    const r4 = await helper.queue.lastClaimed(
+      'no-provisioner-extended-extended',
+      'query-test-worker-extended-extended',
+    );
+    assume(r4.lastClaimed).is.not.equal(0);
+
+    // const result = await helper.queue.getWorker(provisionerId, workerType, workerGroup, workerId);
+    // const recentTasks = result.recentTasks;
+
+    // assert.equal(result.recentTasks.length, 20, 'expected to have 20 tasks');
+
+    // for (let i =0; i < 20; i++) {
+    //   assert(recentTasks[i].taskId === taskIds[i + 10], `expected taskId ${taskIds[i + 10]}`);
+    // }
+
+
+
+
+
+
+    return;
+    // the old test
+
     const taskDef = {
       provisionerId: 'no-provisioner-extended-extended',
       workerType: 'query-test-worker-extended-extended',
