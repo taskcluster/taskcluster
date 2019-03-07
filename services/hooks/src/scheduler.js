@@ -7,7 +7,6 @@ const Promise = require('promise');
 const taskcluster = require('taskcluster-client');
 const nextDate = require('./nextdate');
 const taskcreator = require('./taskcreator');
-const _ = require('lodash');
 
 /**
  * The Scheduler will periodically check for tasks in azure storage that are

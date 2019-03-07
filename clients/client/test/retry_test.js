@@ -1,10 +1,6 @@
 suite('retry-test', function() {
   const taskcluster = require('../');
   const assert = require('assert');
-  const path = require('path');
-  const debug = require('debug')('test:retry_test');
-  const Promise = require('promise');
-  const _ = require('lodash');
   const SchemaSet = require('taskcluster-lib-validate');
   const MonitorManager = require('taskcluster-lib-monitor');
   const APIBuilder = require('taskcluster-lib-api');

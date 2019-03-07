@@ -1,5 +1,4 @@
 const APIBuilder = require('taskcluster-lib-api');
-const debug = require('debug')('notify');
 const Entity = require('azure-entities');
 
 const builder = new APIBuilder({

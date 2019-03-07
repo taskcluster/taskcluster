@@ -1,4 +1,3 @@
-const iterate = require('taskcluster-lib-iterate');
 const assert = require('assert');
 class TaskQueue {
   constructor(cfg, queue, type) {

@@ -1,6 +1,5 @@
 const path = require('path');
 const fs = require('fs');
-const assume = require('assume');
 const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const moment = require('moment');

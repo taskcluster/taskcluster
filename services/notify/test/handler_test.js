@@ -1,12 +1,6 @@
 const _ = require('lodash');
 const assert = require('assert');
-const mocha = require('mocha');
-const debug = require('debug')('test');
-const testing = require('taskcluster-lib-testing');
-const sinon = require('sinon');
 const helper = require('./helper');
-const load = require('../src/main');
-const RateLimit = require('../src/ratelimit');
 
 helper.secrets.mockSuite(helper.suiteName(__filename), ['aws'], function(mock, skipping) {
   helper.withFakeQueue(mock, skipping);

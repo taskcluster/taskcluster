@@ -3,7 +3,6 @@ const assume = require('assume');
 const taskcluster = require('taskcluster-client');
 const sinon = require('sinon');
 const helper = require('./helper');
-const HookListeners = require('../src/listeners');
 
 helper.secrets.mockSuite('listeners_test.js', ['taskcluster'], function(mock, skipping) {
   helper.withHook(mock, skipping);

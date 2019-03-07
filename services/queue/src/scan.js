@@ -15,7 +15,6 @@
  */
 
 let Entity = require('azure-entities');
-let _ = require('lodash');
 
 const SLUGID_CHARACTERS = (
   'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +

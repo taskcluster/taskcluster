@@ -1,7 +1,4 @@
-var _ = require('lodash');
 var assert = require('assert');
-var debug = require('debug')('index:helpers');
-var data = require('./data');
 
 /**
  * Insert task into `namespace` where:

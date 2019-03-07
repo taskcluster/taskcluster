@@ -1,8 +1,5 @@
 const taskcluster = require('taskcluster-client');
-const Entity = require('azure-entities');
 const assert = require('assert');
-const slugid = require('slugid');
-const _ = require('lodash');
 const debug = require('debug')('workerinfo');
 
 const DAY = 24 * 60 * 60 * 1000;

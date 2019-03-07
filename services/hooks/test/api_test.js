@@ -3,7 +3,6 @@ const assert = require('assert');
 const assume = require('assume');
 const debug = require('debug')('test:api:createhook');
 const taskcluster = require('taskcluster-client');
-const taskcreator = require('../src/taskcreator');
 const helper = require('./helper');
 
 helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping) {

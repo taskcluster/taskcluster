@@ -1,4 +1,3 @@
-const debug = require('debug')('notify');
 const aws = require('aws-sdk');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 const App = require('taskcluster-lib-app');

@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 let debug = require('debug')('app:main');
-let _ = require('lodash');
 let assert = require('assert');
-let path = require('path');
 let taskcluster = require('taskcluster-client');
 let builder = require('./api');
 let exchanges = require('./exchanges');

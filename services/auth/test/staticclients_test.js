@@ -1,11 +1,7 @@
 const assert = require('assert');
 const debug = require('debug')('test:static-clients');
 const helper = require('./helper');
-const slugid = require('slugid');
-const _ = require('lodash');
 const assume = require('assume');
-const testing = require('taskcluster-lib-testing');
-const taskcluster = require('taskcluster-client');
 
 helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], function(mock, skipping) {
   helper.withPulse(mock, skipping);

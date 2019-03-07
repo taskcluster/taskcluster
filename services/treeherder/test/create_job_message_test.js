@@ -1,6 +1,4 @@
-const taskcluster = require('taskcluster-client');
 const assert = require('assert');
-const Handler = require('../src/handler');
 const taskDefinition = require('./fixtures/task');
 const statusMessage = require('./fixtures/task_status');
 const jobMessage = require('./fixtures/job_message');

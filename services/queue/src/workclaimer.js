@@ -1,7 +1,6 @@
 let assert = require('assert');
 let _ = require('lodash');
 let events = require('events');
-let taskcluster = require('taskcluster-client');
 let taskCreds = require('./task-creds');
 
 /**

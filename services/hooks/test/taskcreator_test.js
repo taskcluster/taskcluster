@@ -3,7 +3,6 @@ const assume = require('assume');
 const taskcreator = require('../src/taskcreator');
 const debug = require('debug')('test:test_schedule_hooks');
 const helper = require('./helper');
-const data = require('../src/data');
 const {TaskCreator} = require('../src/taskcreator');
 const taskcluster = require('taskcluster-client');
 const _ = require('lodash');

@@ -1,5 +1,4 @@
 const parser = require('cron-parser');
-const debug = require('debug')('hooks:routes:v1');
 const Promise = require('promise');
 const taskcluster = require('taskcluster-client');
 const APIBuilder = require('taskcluster-lib-api');

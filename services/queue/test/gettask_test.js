@@ -1,7 +1,4 @@
-const debug = require('debug')('test:get');
-const assert = require('assert');
 const slugid = require('slugid');
-const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');

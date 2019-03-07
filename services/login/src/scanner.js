@@ -2,7 +2,6 @@ const taskcluster = require('taskcluster-client');
 const scopeUtils = require('taskcluster-lib-scopes');
 const {CLIENT_ID_PATTERN} = require('./utils');
 const Debug = require('debug');
-const _ = require('lodash');
 
 const debug = Debug('scanner');
 

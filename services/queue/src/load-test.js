@@ -1,7 +1,4 @@
-var debug = require('debug')('app:load-test');
 var testing = require('taskcluster-lib-testing');
-var path = require('path');
-var _ = require('lodash');
 var taskcluster = require('taskcluster-client');
 var slugid = require('slugid');
 var https = require('https');

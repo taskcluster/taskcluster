@@ -1,4 +1,3 @@
-const debug = require('debug')('hooks:nextdate');
 const parser = require('cron-parser');
 
 // Far in the future, but still within Azure's range

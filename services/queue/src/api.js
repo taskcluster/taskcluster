@@ -4,7 +4,6 @@ let assert = require('assert');
 let _ = require('lodash');
 let APIBuilder = require('taskcluster-lib-api');
 let Entity = require('azure-entities');
-let taskcluster = require('taskcluster-client');
 let taskCreds = require('./task-creds');
 
 // Maximum number runs allowed

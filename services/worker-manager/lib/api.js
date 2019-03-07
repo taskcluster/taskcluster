@@ -1,5 +1,4 @@
 const APIBuilder = require('taskcluster-lib-api');
-const slugid = require('slugid');
 
 const {buildWorkerConfiguration} = require('./worker-config');
 const {errors} = require('./base');

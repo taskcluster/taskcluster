@@ -2,7 +2,6 @@ let _ = require('lodash');
 let debug = require('debug')('app:queue');
 let assert = require('assert');
 let base32 = require('thirty-two');
-let querystring = require('querystring');
 let url = require('url');
 let azure = require('fast-azure-storage');
 let crypto = require('crypto');

@@ -1,4 +1,3 @@
-const path = require('path');
 const taskcluster = require('taskcluster-client');
 const Handler = require('./handler');
 const exchanges = require('./exchanges');

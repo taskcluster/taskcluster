@@ -1,10 +1,5 @@
 const assert = require('assert');
-const debug = require('debug')('test:auth');
 const helper = require('./helper');
-const slugid = require('slugid');
-const _ = require('lodash');
-const assume = require('assume');
-const taskcluster = require('taskcluster-client');
 
 const credentials = {
   clientId: 'tester',

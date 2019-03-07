@@ -1,5 +1,4 @@
 const assert = require('assert');
-const _ = require('lodash');
 const data = require('../src/data');
 const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
@@ -7,7 +6,6 @@ const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
 const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
 const {FakeClient} = require('taskcluster-lib-pulse');
-const slugid = require('slugid');
 
 const helper = module.exports;
 

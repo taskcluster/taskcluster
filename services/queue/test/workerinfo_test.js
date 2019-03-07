@@ -1,12 +1,8 @@
-const debug = require('debug')('test:claim-work');
 const assert = require('assert');
-const _ = require('lodash');
 const slugid = require('slugid');
 const Entity = require('azure-entities');
 const taskcluster = require('taskcluster-client');
-const assume = require('assume');
 const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);

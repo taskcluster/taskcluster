@@ -1,14 +1,11 @@
 const assert = require('assert');
 const path = require('path');
-const _ = require('lodash');
-const mocha = require('mocha');
 const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
 const {FakeClient} = require('taskcluster-lib-pulse');
 const config = require('taskcluster-lib-config');
 const {stickyLoader, Secrets, fakeauth} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
-const exchanges = require('../src/exchanges');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
 const slugid = require('slugid');

@@ -1,6 +1,5 @@
 const helper = require('./helper');
 const assert = require('assert');
-const debug = require('debug')('test:signaturevalidator');
 const hawk = require('hawk');
 const _ = require('lodash');
 const assume = require('assume');

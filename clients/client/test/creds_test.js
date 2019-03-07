@@ -1,8 +1,6 @@
 suite('client credential handling', function() {
   var taskcluster = require('../');
   var assert = require('assert');
-  var path = require('path');
-  var debug = require('debug')('test:client');
   var request = require('superagent');
   var _ = require('lodash');
 

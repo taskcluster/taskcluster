@@ -2,8 +2,6 @@ suite('client requests/responses', function() {
   var taskcluster = require('../');
   var assert = require('assert');
   var path = require('path');
-  var debug = require('debug')('test:client');
-  var _ = require('lodash');
   var nock = require('nock');
   var MonitorManager = require('taskcluster-lib-monitor');
 

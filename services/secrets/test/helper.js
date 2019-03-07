@@ -1,10 +1,6 @@
-const _ = require('lodash');
-const assert = require('assert');
 const taskcluster = require('taskcluster-client');
-const mocha = require('mocha');
 const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
 const load = require('../src/main');
-const config = require('taskcluster-lib-config');
 const slugid = require('slugid');
 const data = require('../src/data');
 const builder = require('../src/api.js');

@@ -1,11 +1,5 @@
-const debug = require('debug')('index:test:api_test');
 const helper = require('./helper');
 const slugid = require('slugid');
-const taskcluster = require('taskcluster-client');
-const request = require('superagent');
-const assume = require('assume');
-const libUrls = require('taskcluster-lib-urls');
-const Secrets = require('taskcluster-lib-testing');
 
 suite('TaskQueue_test.js', function() {
   helper.withFakeQueue();

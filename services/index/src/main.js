@@ -6,7 +6,6 @@ const Handlers = require('./handlers');
 const builder = require('./api');
 const Config = require('taskcluster-lib-config');
 const loader = require('taskcluster-lib-loader');
-const monitor = require('taskcluster-lib-monitor');
 const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const App = require('taskcluster-lib-app');
