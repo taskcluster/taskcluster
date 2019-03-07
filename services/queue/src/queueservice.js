@@ -716,7 +716,7 @@ class QueueService {
   /** Returns promise for timestamp of last claimed work in pending task queue */
   async getLastClaimed(provisionerId, workerType) {
     let cacheKey = provisionerId + '/' + workerType;
-    return this.lastClaimedMap[cacheKey] || 0;
+    return this.lastClaimedMap[cacheKey] || -1;
   }
 
   /** Returns promise for number of messages pending in pending task queue */

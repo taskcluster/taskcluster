@@ -145,7 +145,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'no-provisioner-extended-extended',
       'query-test-worker-extended-extended',
     );
-    assume(r1.lastClaimed).is.equal(0);
+    assume(r1.lastClaimed).is.equal(-1);
 
     await helper.queue.claimWork(provisionerId, workerType, {
       workerGroup,
