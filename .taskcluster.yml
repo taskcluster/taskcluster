@@ -56,7 +56,6 @@ tasks:
       - taskcluster-worker-manager
       - taskcluster-secrets
       - taskcluster-treeherder
-      - taskcluster-builder
       - taskcluster-web-server
       others:
       - name: lint
@@ -75,6 +74,8 @@ tasks:
                 git --no-pager diff;
                 exit 1;
             fi
+      - name: yarn build
+        command: yarn build --dry-run
       - name: taskcluster-client
         # taskcluster-client tests depend on a "production" install of the rest of the monorepo,
         # but only get devDependencies from the client's package.json

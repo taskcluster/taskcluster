@@ -6,7 +6,6 @@
   "description": "Build taskcluster images",
   "license": "MPL-2.0",
   "scripts": {
-    "lint": "eslint src/*.js src/*/*.js test/*.js test/*/*_test.js",
-    "test": "mocha test/*/*_test.js"
+    "lint": "eslint src/*.js src/*/*.js"
   }
 }

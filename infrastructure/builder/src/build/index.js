@@ -52,6 +52,10 @@ class Build {
         new ConsoleRenderer({elideCompleted: true}) :
         new LogRenderer(),
     });
+    if (this.cmdOptions.dryRun) {
+      console.log('Dry run successful.');
+      return;
+    }
     const context = await taskgraph.run();
 
     // create a TerraformJson output based on the result of the build
