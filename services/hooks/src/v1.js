@@ -36,7 +36,7 @@ const builder = new APIBuilder({
     hookGroupId: /^[a-zA-Z0-9-_]{1,64}$/,
     hookId: /^[a-zA-Z0-9-_\/]{1,64}$/,
   },
-  context: ['Hook', 'LastFire', 'taskcreator', 'publisher'],
+  context: ['Hook', 'LastFire', 'taskcreator', 'publisher', 'denylist'],
 });
 
 module.exports = builder;
@@ -259,6 +259,16 @@ builder.declare({
     });
   }
 
+  let denied = await isDeniedBinding({
+    bindings: hookDef.bindings || [],
+    denylist: this.denylist,
+  });
+  if (denied) {
+    return res.reportError('InputError', '{{message}}', {
+      message: 'One or more of the exchanges below have been denied access to hooks\n' + hookDef.bindings,
+    });
+  }
+
   // Try to create a Hook entity
   try {
     const hook = await this.Hook.create(
@@ -355,6 +365,17 @@ builder.declare({
     }
   }
   hookDef.bindings = _.defaultTo(hookDef.bindings, hook.bindings);
+
+  let denied = await isDeniedBinding({
+    bindings: hookDef.bindings,
+    denylist: this.denylist,
+  });
+  if (denied) {
+    return res.reportError('InputError', '{{message}}', {
+      message: 'One or more of the exchanges below have been denied access to hooks\n' + hookDef.bindings,
+    });
+  }
+
   await hook.modify((hook) => {
     hook.metadata = hookDef.metadata;
     hook.bindings = hookDef.bindings;
@@ -597,6 +618,16 @@ const triggerHookCommon = async function({req, res, hook, payload, clientId, fir
   }
 };
 
+const isDeniedBinding = async ({bindings, denylist}) => {
+  let denyPattern = new RegExp(`^exchange/(${denylist.join('|')})/`);
+  let denied=false;
+  bindings.forEach((binding) => {
+    if (denyPattern.test(binding.exchange)) {
+      denied = true;
+    }
+  });
+  return denied;
+};
 /**
  * Get information about recent fires of a hook
 */
