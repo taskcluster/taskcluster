@@ -168,8 +168,8 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     });
 
     const r4 = await helper.queue.lastClaimed(
-      'no-provisioner-extended-extended',
-      'query-test-worker-extended-extended',
+      provisionerId,
+      workerType,
     );
     assume(r4.lastClaimed).is.not.equal(0);
 

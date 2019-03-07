@@ -712,7 +712,7 @@ class QueueService {
     debug("logTaskClaimed: entry");
     let cacheKey = provisionerId + '/' + workerType;
     this.lastClaimedMap[cacheKey] = Date.now();
-    return;
+    debug("logTaskClaimed: %s: %s", cacheKey, this.lastClaimedMap[cacheKey]);
   }
 
   // aje
@@ -720,6 +720,7 @@ class QueueService {
   async getLastClaimed(provisionerId, workerType) {
     debug("getLastClaimed: entry");
     let cacheKey = provisionerId + '/' + workerType;
+    debug("getLastClaimed: %s: %s", cacheKey, this.lastClaimedMap[cacheKey] || 0);
     return this.lastClaimedMap[cacheKey] || 0;
   }
 
