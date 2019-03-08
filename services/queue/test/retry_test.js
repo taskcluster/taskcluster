@@ -33,7 +33,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     },
   };
 
-  test('createTask, claimTask, claim-expired, retry, ...', async () => {
+  test('createTask, claimTask, claim-expired, retry, ...', helper.runWithFakeTime(async () => {
     const taskId = slugid.v4();
 
     debug('### Creating task');
@@ -50,7 +50,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-running');
 
     debug('### Start claim-resolver');
-    let claimResolver = await helper.startPollingService('claim-resolver');
+    await helper.startPollingService('claim-resolver');
 
     debug('### Wait for task-pending message after reaping');
     await testing.poll(async () => {
@@ -64,7 +64,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNoNextMessage('task-exception');
 
     debug('### Stop claimResolver');
-    await claimResolver.terminate();
+    await helper.stopPollingService();
 
     debug('### Task status');
     const r3 = await helper.queue.status(taskId);
@@ -79,7 +79,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     debug(`claimed until ${r4.takenUntil}, ${new Date(r2.takenUntil) - new Date()}ms from now`);
 
     debug('### Start claimResolver (again)');
-    claimResolver = await helper.startPollingService('claim-resolver');
+    await helper.startPollingService('claim-resolver');
 
     debug('### Wait for task-exception message (again)');
     await testing.poll(async () => {
@@ -93,9 +93,12 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     }, Infinity);
     helper.checkNoNextMessage('task-exception');
 
+    debug('### Stop claimResolver (again)');
+    await helper.stopPollingService();
+
     debug('### Task status (again)');
     const r5 = await helper.queue.status(taskId);
     // this time it's exception, since it's out of retries
     assume(r5.status.state).equals('exception');
-  });
+  }, mock));
 });

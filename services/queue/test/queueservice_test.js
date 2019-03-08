@@ -30,7 +30,6 @@ helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {
     monitorManager.setup({
       enable: false,
       level: 'warning',
-      patchGlobal: false,
     });
 
     if (mock) {
