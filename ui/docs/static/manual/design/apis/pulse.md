@@ -43,10 +43,10 @@ Pulse (the server):
 
 * MUST support AMQP 0-9-1 and these RabbitMQ extensions:
 
- * Confirms
- * Consumer Prefetch
- * Queue Length Limit
- * Sender-selected Distribution
+  * Confirms
+  * Consumer Prefetch
+  * Queue Length Limit
+  * Sender-selected Distribution
 
 * SHOULD exhibit deliver-at-least-once semantics
 * MAY delete queues that grows beyond Pulse defined limits
