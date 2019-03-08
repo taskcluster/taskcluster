@@ -115,6 +115,7 @@ for MANIFEST in *-b.json *-cu.json *-beta.json; do
     exit 67
   fi
   updateSHA512 "generic-worker-windows-${THIS_ARCH}.exe" "GenericWorkerDownload"
+  cat "${MANIFEST}" > "${MANIFEST}.bak"
   updateSHA512 "taskcluster-proxy-windows-${THIS_ARCH}.exe" "TaskClusterProxyDownload"
   rm "${MANIFEST}.bak"
 done
