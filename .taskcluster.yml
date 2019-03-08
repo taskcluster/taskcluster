@@ -132,6 +132,7 @@ tasks:
             deadline: {$fromNow: '20 minutes'}
             scopes:
               - assume:project:taskcluster:tests:taskcluster
+              - docker-worker:cache:project-taskcluster-test-yarn-cache
             payload:
               features:
                 taskclusterProxy: true
@@ -141,7 +142,10 @@ tasks:
                   $if: 'job.name != "taskcluster-lib-testing"'
                   then: true
                 TEST_BUCKET: 'test-bucket-for-any-garbage' # TODO: Allow each project to specify its own env
+                YARN_CACHE_FOLDER: /yarn-cache
               maxRunTime: 1200
+              cache:
+                  project-taskcluster-test-yarn-cache: /yarn-cache
               image: ${job.image}
               command:
                 - "/bin/bash"
