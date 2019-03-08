@@ -461,6 +461,9 @@ exports.withPollingServices = (mock, skipping) => {
       helper.load.remove(service);
       return svc;
     };
+    // This needs to be done manually within the context of the test
+    // because if it happens in a teardown, it happens _after_ zurvan
+    // has slowed down time again and that breaks this somehow
     helper.stopPollingService = async () => {
       if (svc) {
         await svc.terminate();
