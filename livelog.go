@@ -41,7 +41,6 @@ func (feature *LiveLogFeature) IsEnabled(task *TaskRun) bool {
 
 type LiveLogTask struct {
 	liveLog        *livelog.LiveLog
-	exposer        expose.Exposer
 	exposure       expose.Exposure
 	task           *TaskRun
 	backingLogFile *os.File
@@ -75,29 +74,6 @@ func (l *LiveLogTask) Start() *CommandExecutionError {
 	updateErr := l.updateTaskLogWriter(liveLog.LogWriter)
 	if updateErr != nil {
 		return updateErr
-	}
-
-	// TODO: move this into main.go, pass it to this func
-	var expErr error
-	if config.LiveLogSecret != "" {
-		// add an extra 15 minutes, to adequately cover client/server clock drift or
-		// task initialisation delays
-		urlLifetime := time.Duration(l.task.Payload.MaxRunTime+900) * time.Second
-		l.exposer, expErr = expose.NewStatelessDNS(
-			config.PublicIP,
-			config.Subdomain,
-			config.LiveLogSecret,
-			urlLifetime,
-			config.LiveLogCertificate,
-			config.LiveLogKey)
-		if expErr != nil {
-			log.Printf("WARNING: could not expose livelog artifact: %s", expErr)
-		}
-	} else {
-		l.exposer, expErr = expose.NewLocal(config.PublicIP)
-		if expErr != nil {
-			log.Printf("WARNING: could not expose livelog artifact: %s", expErr)
-		}
 	}
 
 	err = l.uploadLiveLogArtifact()
@@ -183,7 +159,7 @@ func (l *LiveLogTask) reinstateBackingLog() {
 
 func (l *LiveLogTask) uploadLiveLogArtifact() error {
 	var err error
-	l.exposure, err = l.exposer.ExposeHTTP(config.LiveLogGETPort)
+	l.exposure, err = exposer.ExposeHTTP(config.LiveLogGETPort)
 	if err != nil {
 		return err
 	}
