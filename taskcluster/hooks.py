@@ -99,9 +99,11 @@ class Hooks(BaseClient):
         This endpoint will return the current status of the hook.  This represents a
         snapshot in time and may vary from one call to the next.
 
+        This method is deprecated in favor of listLastFires.
+
         This method gives output: ``v1/hook-status.json#``
 
-        This method is ``stable``
+        This method is ``deprecated``
         """
 
         return self._makeApiCall(self.funcinfo["getHookStatus"], *args, **kwargs)
@@ -115,7 +117,6 @@ class Hooks(BaseClient):
         The caller's credentials must include the role that will be used to
         create the task.  That role must satisfy task.scopes as well as the
         necessary scopes to add the task to the queue.
-
 
         This method takes input: ``v1/create-hook-request.json#``
 
@@ -165,7 +166,7 @@ class Hooks(BaseClient):
 
         This method takes input: ``v1/trigger-hook.json#``
 
-        This method gives output: ``v1/task-status.json#``
+        This method gives output: ``v1/trigger-hook-response.json#``
 
         This method is ``stable``
         """
@@ -212,12 +213,26 @@ class Hooks(BaseClient):
 
         This method takes input: ``v1/trigger-hook.json#``
 
-        This method gives output: ``v1/task-status.json#``
+        This method gives output: ``v1/trigger-hook-response.json#``
 
         This method is ``stable``
         """
 
         return self._makeApiCall(self.funcinfo["triggerHookWithToken"], *args, **kwargs)
+
+    def listLastFires(self, *args, **kwargs):
+        """
+        Get information about recent hook fires
+
+        This endpoint will return information about the the last few times this hook has been
+        fired, including whether the hook was fired successfully or not
+
+        This method gives output: ``v1/list-lastFires-response.json#``
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["listLastFires"], *args, **kwargs)
 
     funcinfo = {
         "createHook": {
@@ -235,7 +250,7 @@ class Hooks(BaseClient):
             'name': 'getHookStatus',
             'output': 'v1/hook-status.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/status',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "getTriggerToken": {
             'args': ['hookGroupId', 'hookId'],
@@ -269,6 +284,14 @@ class Hooks(BaseClient):
             'route': '/hooks/<hookGroupId>',
             'stability': 'stable',
         },
+        "listLastFires": {
+            'args': ['hookGroupId', 'hookId'],
+            'method': 'get',
+            'name': 'listLastFires',
+            'output': 'v1/list-lastFires-response.json#',
+            'route': '/hooks/<hookGroupId>/<hookId>/last-fires',
+            'stability': 'experimental',
+        },
         "ping": {
             'args': [],
             'method': 'get',
@@ -296,7 +319,7 @@ class Hooks(BaseClient):
             'input': 'v1/trigger-hook.json#',
             'method': 'post',
             'name': 'triggerHook',
-            'output': 'v1/task-status.json#',
+            'output': 'v1/trigger-hook-response.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/trigger',
             'stability': 'stable',
         },
@@ -305,7 +328,7 @@ class Hooks(BaseClient):
             'input': 'v1/trigger-hook.json#',
             'method': 'post',
             'name': 'triggerHookWithToken',
-            'output': 'v1/task-status.json#',
+            'output': 'v1/trigger-hook-response.json#',
             'route': '/hooks/<hookGroupId>/<hookId>/trigger/<token>',
             'stability': 'stable',
         },

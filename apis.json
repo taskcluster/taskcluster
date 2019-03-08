@@ -1,7 +1,7 @@
 {
   "Auth": {
     "reference": {
-      "$schema": "/schemas/common/api-reference-v0.json#",
+      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "Authentication related API end-points for Taskcluster and related\nservices. These API end-points are of interest if you wish to:\n  * Authorize a request signed with Taskcluster credentials,\n  * Manage clients and roles,\n  * Inspect or audit clients and roles,\n  * Gain access to various services guarded by this API.\n\nNote that in this service \"authentication\" refers to validating the\ncorrectness of the supplied credentials (that the caller posesses the\nappropriate access token). This service does not provide any kind of user\nauthentication (identifying a particular person).\n\n### Clients\nThe authentication service manages _clients_, at a high-level each client\nconsists of a `clientId`, an `accessToken`, scopes, and some metadata.\nThe `clientId` and `accessToken` can be used for authentication when\ncalling Taskcluster APIs.\n\nThe client's scopes control the client's access to Taskcluster resources.\nThe scopes are *expanded* by substituting roles, as defined below.\n\n### Roles\nA _role_ consists of a `roleId`, a set of scopes and a description.\nEach role constitutes a simple _expansion rule_ that says if you have\nthe scope: `assume:<roleId>` you get the set of scopes the role has.\nThink of the `assume:<roleId>` as a scope that allows a client to assume\na role.\n\nAs in scopes the `*` kleene star also have special meaning if it is\nlocated at the end of a `roleId`. If you have a role with the following\n`roleId`: `my-prefix*`, then any client which has a scope staring with\n`assume:my-prefix` will be allowed to assume the role.\n\n### Guarded Services\nThe authentication service also has API end-points for delegating access\nto some guarded service such as AWS S3, or Azure Table Storage.\nGenerally, we add API end-points to this server when we wish to use\nTaskcluster credentials to grant access to a third-party service used\nby many Taskcluster components.",
       "entries": [
@@ -163,6 +163,36 @@
           "output": "v1/list-roles-response.json#",
           "query": [],
           "route": "/roles/",
+          "stability": "stable",
+          "title": "List Roles",
+          "type": "function"
+        },
+        {
+          "args": [],
+          "description": "If no limit is given, the roleIds of all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
+          "method": "get",
+          "name": "listRoleIds",
+          "output": "v1/list-role-ids-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/roleids/",
+          "stability": "stable",
+          "title": "List Role IDs",
+          "type": "function"
+        },
+        {
+          "args": [],
+          "description": "If no limit is given, all roles are returned. Since this\nlist may become long, callers can use the `limit` and `continuationToken`\nquery arguments to page through the responses.",
+          "method": "get",
+          "name": "listRoles2",
+          "output": "v1/list-roles2-response.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/roles2/",
           "stability": "stable",
           "title": "List Roles",
           "type": "function"
@@ -442,15 +472,15 @@
         },
         {
           "args": [],
-          "description": "Get temporary `token` and `id` for connecting to webhooktunnel\nThe token is valid for 96 hours, clients should refresh after expiration.",
+          "description": "Get temporary `token` and `id` for connecting to websocktunnel\nThe token is valid for 96 hours, clients should refresh after expiration.",
           "method": "get",
-          "name": "webhooktunnelToken",
-          "output": "v1/webhooktunnel-token-response.json#",
+          "name": "websocktunnelToken",
+          "output": "v1/websocktunnel-token-response.json#",
           "query": [],
-          "route": "/webhooktunnel",
-          "scopes": "auth:webhooktunnel",
+          "route": "/websocktunnel",
+          "scopes": "auth:websocktunnel",
           "stability": "stable",
-          "title": "Get Token for Webhooktunnel Proxy",
+          "title": "Get Token for Websocktunnel Proxy",
           "type": "function"
         },
         {
@@ -499,7 +529,7 @@
   },
   "AuthEvents": {
     "reference": {
-      "$schema": "/schemas/common/exchanges-reference-v0.json#",
+      "$schema": "https://schemas.taskcluster.net/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The auth service is responsible for storing credentials, managing\nassignment of scopes, and validation of request signatures from other\nservices.\n\nThese exchanges provides notifications when credentials or roles are\nupdated. This is mostly so that multiple instances of the auth service\ncan purge their caches and synchronize state. But you are of course\nwelcome to use these for other purposes, monitoring changes for example.",
       "entries": [
@@ -937,8 +967,8 @@
   },
   "EC2Manager": {
     "reference": {
-      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "baseUrl": "https://ec2-manager.taskcluster.net/v1",
+      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
+      "apiVersion": "v1",
       "description": "A taskcluster service which manages EC2 instances.  This service does not understand any taskcluster concepts intrinsicaly other than using the name `workerType` to refer to a group of associated instances.  Unless you are working on building a provisioner for AWS, you almost certainly do not want to use this service",
       "entries": [
         {
@@ -1243,7 +1273,7 @@
   },
   "Github": {
     "reference": {
-      "$schema": "/schemas/common/api-reference-v0.json#",
+      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The github service is responsible for creating tasks in reposnse\nto GitHub events, and posting results to the GitHub UI.\n\nThis document describes the API end-point for consuming GitHub\nweb hooks, as well as some useful consumer APIs.\n\nWhen Github forbids an action, this service returns an HTTP 403\nwith code ForbiddenByGithub.",
       "entries": [
@@ -1374,7 +1404,7 @@
   },
   "GithubEvents": {
     "reference": {
-      "$schema": "/schemas/common/exchanges-reference-v0.json#",
+      "$schema": "https://schemas.taskcluster.net/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The github service publishes a pulse\nmessage for supported github events, translating Github webhook\nevents into pulse messages.\n\nThis document describes the exchange offered by the taskcluster\ngithub service",
       "entries": [
@@ -1472,9 +1502,9 @@
           "type": "topic-exchange"
         },
         {
-          "description": "used for creating status indicators in GitHub UI using Statuses API",
-          "exchange": "task-group-defined",
-          "name": "taskGroupDefined",
+          "description": "supposed to signal that taskCreate API has been called for every task in the task group\nfor this particular repo and this particular organization\ncurrently used for creating initial status indicators in GitHub UI using Statuses API.\nThis particular exchange can also be bound to RabbitMQ queues by custom routes - for that,\nPass in the array of routes as a second argument to the publish method. Currently, we do\nuse the statuses routes to bind the handler that creates the initial status.",
+          "exchange": "task-group-creation-requested",
+          "name": "taskGroupCreationRequested",
           "routingKey": [
             {
               "constant": "primary",
@@ -1496,8 +1526,8 @@
               "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
             }
           ],
-          "schema": "v1/task-group-defined-message.json#",
-          "title": "GitHub release Event",
+          "schema": "v1/task-group-creation-requested.json#",
+          "title": "tc-gh requested the Queue service to create all the tasks in a group",
           "type": "topic-exchange"
         }
       ],
@@ -1509,7 +1539,7 @@
   },
   "Hooks": {
     "reference": {
-      "$schema": "/schemas/common/api-reference-v0.json#",
+      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "Hooks are a mechanism for creating tasks in response to events.\n\nHooks are identified with a `hookGroupId` and a `hookId`.\n\nWhen an event occurs, the resulting task is automatically created.  The\ntask is created using the scope `assume:hook-id:<hookGroupId>/<hookId>`,\nwhich must have scopes to make the createTask call, including satisfying all\nscopes in `task.scopes`.  The new task has a `taskGroupId` equal to its\n`taskId`, as is the convention for decision tasks.\n\nHooks can have a \"schedule\" indicating specific times that new tasks should\nbe created.  Each schedule is in a simple cron format, per \nhttps://www.npmjs.com/package/cron-parser.  For example:\n * `['0 0 1 * * *']` -- daily at 1:00 UTC\n * `['0 0 9,21 * * 1-5', '0 0 12 * * 0,6']` -- weekdays at 9:00 and 21:00 UTC, weekends at noon\n\nThe task definition is used as a JSON-e template, with a context depending on how it is fired.  See\n[/docs/reference/core/taskcluster-hooks/docs/firing-hooks](firing-hooks)\nfor more information.",
       "entries": [
@@ -1570,13 +1600,13 @@
             "hookGroupId",
             "hookId"
           ],
-          "description": "This endpoint will return the current status of the hook.  This represents a\nsnapshot in time and may vary from one call to the next.",
+          "description": "This endpoint will return the current status of the hook.  This represents a\nsnapshot in time and may vary from one call to the next.\n\nThis method is deprecated in favor of listLastFires.",
           "method": "get",
           "name": "getHookStatus",
           "output": "v1/hook-status.json#",
           "query": [],
           "route": "/hooks/<hookGroupId>/<hookId>/status",
-          "stability": "stable",
+          "stability": "deprecated",
           "title": "Get hook status",
           "type": "function"
         },
@@ -1585,7 +1615,7 @@
             "hookGroupId",
             "hookId"
           ],
-          "description": "This endpoint will create a new hook.\n\nThe caller's credentials must include the role that will be used to\ncreate the task.  That role must satisfy task.scopes as well as the\nnecessary scopes to add the task to the queue.\n",
+          "description": "This endpoint will create a new hook.\n\nThe caller's credentials must include the role that will be used to\ncreate the task.  That role must satisfy task.scopes as well as the\nnecessary scopes to add the task to the queue.",
           "input": "v1/create-hook-request.json#",
           "method": "put",
           "name": "createHook",
@@ -1648,7 +1678,7 @@
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHook",
-          "output": "v1/task-status.json#",
+          "output": "v1/trigger-hook-response.json#",
           "query": [],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger",
           "scopes": "hooks:trigger-hook:<hookGroupId>/<hookId>",
@@ -1698,11 +1728,26 @@
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHookWithToken",
-          "output": "v1/task-status.json#",
+          "output": "v1/trigger-hook-response.json#",
           "query": [],
           "route": "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
           "stability": "stable",
           "title": "Trigger a hook with a token",
+          "type": "function"
+        },
+        {
+          "args": [
+            "hookGroupId",
+            "hookId"
+          ],
+          "description": "This endpoint will return information about the the last few times this hook has been\nfired, including whether the hook was fired successfully or not",
+          "method": "get",
+          "name": "listLastFires",
+          "output": "v1/list-lastFires-response.json#",
+          "query": [],
+          "route": "/hooks/<hookGroupId>/<hookId>/last-fires",
+          "stability": "experimental",
+          "title": "Get information about recent hook fires",
           "type": "function"
         }
       ],
@@ -1713,9 +1758,9 @@
   },
   "Index": {
     "reference": {
-      "$schema": "/schemas/common/api-reference-v0.json#",
+      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The task index, typically available at `index.taskcluster.net`, is\nresponsible for indexing tasks. The service ensures that tasks can be\nlocated by recency and/or arbitrary strings. Common use-cases include:\n\n * Locate tasks by git or mercurial `<revision>`, or\n * Locate latest task from given `<branch>`, such as a release.\n\n**Index hierarchy**, tasks are indexed in a dot (`.`) separated hierarchy\ncalled a namespace. For example a task could be indexed with the index path\n`some-app.<revision>.linux-64.release-build`. In this case the following\nnamespaces is created.\n\n 1. `some-app`,\n 1. `some-app.<revision>`, and,\n 2. `some-app.<revision>.linux-64`\n\nInside the namespace `some-app.<revision>` you can find the namespace\n`some-app.<revision>.linux-64` inside which you can find the indexed task\n`some-app.<revision>.linux-64.release-build`. This is an example of indexing\nbuilds for a given platform and revision.\n\n**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults\nto `0`). If another task is already indexed in the same namespace with\nlower or equal `rank`, the index for that task will be overwritten. For example\nconsider index path `mozilla-central.linux-64.release-build`. In\nthis case one might choose to use a UNIX timestamp or mercurial revision\nnumber as `rank`. This way the latest completed linux 64 bit release\nbuild is always available at `mozilla-central.linux-64.release-build`.\n\nNote that this does mean index paths are not immutable: the same path may\npoint to a different task now than it did a moment ago.\n\n**Indexed Data**, when a task is retrieved from the index the result includes\na `taskId` and an additional user-defined JSON blob that was indexed with\nthe task.\n\n**Entry Expiration**, all indexed entries must have an expiration date.\nTypically this defaults to one year, if not specified. If you are\nindexing tasks to make it easy to find artifacts, consider using the\nartifact's expiration date.\n\n**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be\nin the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and\nthat if you strictly want to put another character you can URL encode it.\n\n**Indexing Routes**, tasks can be indexed using the API below, but the\nmost common way to index tasks is adding a custom route to `task.routes` of the\nform `index.<namespace>`. In order to add this route to a task you'll\nneed the scope `queue:route:index.<namespace>`. When a task has\nthis route, it will be indexed when the task is **completed successfully**.\nThe task will be indexed with `rank`, `data` and `expires` as specified\nin `task.extra.index`. See the example below:\n\n```js\n{\n  payload:  { /* ... */ },\n  routes: [\n    // index.<namespace> prefixed routes, tasks CC'ed such a route will\n    // be indexed under the given <namespace>\n    \"index.mozilla-central.linux-64.release-build\",\n    \"index.<revision>.linux-64.release-build\"\n  ],\n  extra: {\n    // Optional details for indexing service\n    index: {\n      // Ordering, this taskId will overwrite any thing that has\n      // rank <= 4000 (defaults to zero)\n      rank:       4000,\n\n      // Specify when the entries expire (Defaults to 1 year)\n      expires:          new Date().toJSON(),\n\n      // A little informal data to store along with taskId\n      // (less 16 kb when encoded as JSON)\n      data: {\n        hgRevision:   \"...\",\n        commitMessae: \"...\",\n        whatever...\n      }\n    },\n    // Extra properties for other services...\n  }\n  // Other task properties...\n}\n```\n\n**Remark**, when indexing tasks using custom routes, it's also possible\nto listen for messages about these tasks. For\nexample one could bind to `route.index.some-app.*.release-build`,\nand pick up all messages about release builds. Hence, it is a\ngood idea to document task index hierarchies, as these make up extension\npoints in their own.",
+      "description": "The task index is responsible for indexing tasks. The service ensures that\ntasks can be located by recency and/or arbitrary strings. Common\nuse-cases include:\n\n * Locate tasks by git or mercurial `<revision>`, or\n * Locate latest task from given `<branch>`, such as a release.\n\n**Index hierarchy**, tasks are indexed in a dot (`.`) separated hierarchy\ncalled a namespace. For example a task could be indexed with the index path\n`some-app.<revision>.linux-64.release-build`. In this case the following\nnamespaces is created.\n\n 1. `some-app`,\n 1. `some-app.<revision>`, and,\n 2. `some-app.<revision>.linux-64`\n\nInside the namespace `some-app.<revision>` you can find the namespace\n`some-app.<revision>.linux-64` inside which you can find the indexed task\n`some-app.<revision>.linux-64.release-build`. This is an example of indexing\nbuilds for a given platform and revision.\n\n**Task Rank**, when a task is indexed, it is assigned a `rank` (defaults\nto `0`). If another task is already indexed in the same namespace with\nlower or equal `rank`, the index for that task will be overwritten. For example\nconsider index path `mozilla-central.linux-64.release-build`. In\nthis case one might choose to use a UNIX timestamp or mercurial revision\nnumber as `rank`. This way the latest completed linux 64 bit release\nbuild is always available at `mozilla-central.linux-64.release-build`.\n\nNote that this does mean index paths are not immutable: the same path may\npoint to a different task now than it did a moment ago.\n\n**Indexed Data**, when a task is retrieved from the index the result includes\na `taskId` and an additional user-defined JSON blob that was indexed with\nthe task.\n\n**Entry Expiration**, all indexed entries must have an expiration date.\nTypically this defaults to one year, if not specified. If you are\nindexing tasks to make it easy to find artifacts, consider using the\nartifact's expiration date.\n\n**Valid Characters**, all keys in a namespace `<key1>.<key2>` must be\nin the form `/[a-zA-Z0-9_!~*'()%-]+/`. Observe that this is URL-safe and\nthat if you strictly want to put another character you can URL encode it.\n\n**Indexing Routes**, tasks can be indexed using the API below, but the\nmost common way to index tasks is adding a custom route to `task.routes` of the\nform `index.<namespace>`. In order to add this route to a task you'll\nneed the scope `queue:route:index.<namespace>`. When a task has\nthis route, it will be indexed when the task is **completed successfully**.\nThe task will be indexed with `rank`, `data` and `expires` as specified\nin `task.extra.index`. See the example below:\n\n```js\n{\n  payload:  { /* ... */ },\n  routes: [\n    // index.<namespace> prefixed routes, tasks CC'ed such a route will\n    // be indexed under the given <namespace>\n    \"index.mozilla-central.linux-64.release-build\",\n    \"index.<revision>.linux-64.release-build\"\n  ],\n  extra: {\n    // Optional details for indexing service\n    index: {\n      // Ordering, this taskId will overwrite any thing that has\n      // rank <= 4000 (defaults to zero)\n      rank:       4000,\n\n      // Specify when the entries expire (Defaults to 1 year)\n      expires:          new Date().toJSON(),\n\n      // A little informal data to store along with taskId\n      // (less 16 kb when encoded as JSON)\n      data: {\n        hgRevision:   \"...\",\n        commitMessae: \"...\",\n        whatever...\n      }\n    },\n    // Extra properties for other services...\n  }\n  // Other task properties...\n}\n```\n\n**Remark**, when indexing tasks using custom routes, it's also possible\nto listen for messages about these tasks. For\nexample one could bind to `route.index.some-app.*.release-build`,\nand pick up all messages about release builds. Hence, it is a\ngood idea to document task index hierarchies, as these make up extension\npoints in their own.",
       "entries": [
         {
           "args": [],
@@ -1797,7 +1842,7 @@
             "indexPath",
             "name"
           ],
-          "description": "Find a task by index path and redirect to the artifact on the most recent\nrun with the given `name`.\n\nNote that multiple calls to this endpoint may return artifacts from differen tasks\nif a new task is inserted into the index between calls. Avoid using this method as\na stable link to multiple, connected files if the index path does not contain a\nunique identifier.  For example, the following two links may return unrelated files:\n* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/installer.exe`\n* https://index.taskcluster.net/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`\n\nThis problem be remedied by including the revision in the index path or by bundling both\ninstaller and debug symbols into a single artifact.\n\nIf no task exists for the given index path, this API end-point responds with 404.",
+          "description": "Find a task by index path and redirect to the artifact on the most recent\nrun with the given `name`.\n\nNote that multiple calls to this endpoint may return artifacts from differen tasks\nif a new task is inserted into the index between calls. Avoid using this method as\na stable link to multiple, connected files if the index path does not contain a\nunique identifier.  For example, the following two links may return unrelated files:\n* https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/installer.exe`\n* https://tc.example.com/api/index/v1/task/some-app.win64.latest.installer/artifacts/public/debug-symbols.zip`\n\nThis problem be remedied by including the revision in the index path or by bundling both\ninstaller and debug symbols into a single artifact.\n\nIf no task exists for the given index path, this API end-point responds with 404.",
           "method": "get",
           "name": "findArtifactFromTask",
           "query": [],
@@ -1818,7 +1863,7 @@
   },
   "Login": {
     "reference": {
-      "$schema": "/schemas/common/api-reference-v0.json#",
+      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The Login service serves as the interface between external authentication\nsystems and Taskcluster credentials.",
       "entries": [
@@ -1855,9 +1900,9 @@
   },
   "Notify": {
     "reference": {
-      "$schema": "/schemas/common/api-reference-v0.json#",
+      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The notification service, typically available at `notify.taskcluster.net`\nlistens for tasks with associated notifications and handles requests to\nsend emails and post pulse messages.",
+      "description": "The notification service listens for tasks with associated notifications\nand handles requests to send emails and post pulse messages.",
       "entries": [
         {
           "args": [],
@@ -1912,6 +1957,47 @@
           "stability": "experimental",
           "title": "Post IRC Message",
           "type": "function"
+        },
+        {
+          "args": [],
+          "description": "Add the given address to the notification denylist. The address\ncan be of either of the three supported address type namely pulse, email\nor IRC(user or channel). Addresses in the denylist will be ignored\nby the notification service.",
+          "input": "v1/notification-address.json#",
+          "method": "post",
+          "name": "addDenylistAddress",
+          "query": [],
+          "route": "/denylist/add",
+          "scopes": "notify:manage-denylist:<notificationType>/<notificationAddress>",
+          "stability": "experimental",
+          "title": "Denylist Given Address",
+          "type": "function"
+        },
+        {
+          "args": [],
+          "description": "Delete the specified address from the notification denylist.",
+          "input": "v1/notification-address.json#",
+          "method": "delete",
+          "name": "deleteDenylistAddress",
+          "query": [],
+          "route": "/denylist/delete",
+          "scopes": "notify:manage-denylist:<notificationType>/<notificationAddress>",
+          "stability": "experimental",
+          "title": "Delete Denylisted Address",
+          "type": "function"
+        },
+        {
+          "args": [],
+          "description": "Lists all the denylisted addresses.\n\nBy default this end-point will try to return up to 1000 addresses in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `list` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
+          "method": "get",
+          "name": "list",
+          "output": "v1/notification-address-list.json#",
+          "query": [
+            "continuationToken",
+            "limit"
+          ],
+          "route": "/denylist/list",
+          "stability": "experimental",
+          "title": "List Denylisted Notifications",
+          "type": "function"
         }
       ],
       "serviceName": "notify",
@@ -1919,82 +2005,9 @@
     },
     "referenceUrl": "https://references.taskcluster.net/notify/v1/api.json"
   },
-  "Pulse": {
-    "reference": {
-      "$schema": "http://schemas.taskcluster.net/base/v1/api-reference.json#",
-      "baseUrl": "https://pulse.taskcluster.net/v1/",
-      "description": "The taskcluster-pulse service, typically available at `pulse.taskcluster.net`\nmanages pulse credentials for taskcluster users.\n\nA service to manage Pulse credentials for anything using\nTaskcluster credentials. This allows for self-service pulse\naccess and greater control within the Taskcluster project.",
-      "entries": [
-        {
-          "args": [],
-          "description": "Respond without doing anything.\nThis endpoint is used to check that the service is up.",
-          "method": "get",
-          "name": "ping",
-          "query": [],
-          "route": "/ping",
-          "stability": "stable",
-          "title": "Ping Server",
-          "type": "function"
-        },
-        {
-          "args": [],
-          "description": "List the namespaces managed by this service.\n\nThis will list up to 1000 namespaces. If more namespaces are present a\n`continuationToken` will be returned, which can be given in the next\nrequest. For the initial request, do not provide continuation token.",
-          "method": "get",
-          "name": "listNamespaces",
-          "output": "v1/list-namespaces-response.json#",
-          "query": [
-            "limit",
-            "continuationToken"
-          ],
-          "route": "/namespaces",
-          "stability": "experimental",
-          "title": "List Namespaces",
-          "type": "function"
-        },
-        {
-          "args": [
-            "namespace"
-          ],
-          "description": "Get public information about a single namespace. This is the same information\nas returned by `listNamespaces`.",
-          "method": "get",
-          "name": "namespace",
-          "output": "v1/namespace.json#",
-          "query": [],
-          "route": "/namespace/<namespace>",
-          "stability": "experimental",
-          "title": "Get a namespace",
-          "type": "function"
-        },
-        {
-          "args": [
-            "namespace"
-          ],
-          "description": "Claim a namespace, returning a connection string with access to that namespace\ngood for use until the `reclaimAt` time in the response body. The connection\nstring can be used as many times as desired during this period, but must not\nbe used after `reclaimAt`.\n\nConnections made with this connection string may persist beyond `reclaimAt`,\nalthough it should not persist forever.  24 hours is a good maximum, and this\nservice will terminate connections after 72 hours (although this value is\nconfigurable).\n\nThe specified `expires` time updates any existing expiration times.  Connections\nfor expired namespaces will be terminated.",
-          "input": "v1/namespace-request.json#",
-          "method": "post",
-          "name": "claimNamespace",
-          "output": "v1/namespace-response.json#",
-          "query": [],
-          "route": "/namespace/<namespace>",
-          "scopes": {
-            "AllOf": [
-              "pulse:namespace:<namespace>"
-            ]
-          },
-          "stability": "experimental",
-          "title": "Claim a namespace",
-          "type": "function"
-        }
-      ],
-      "serviceName": "pulse",
-      "title": "Pulse Management Service",
-      "version": 0
-    },
-    "referenceUrl": "https://references.taskcluster.net/pulse/v1/api.json"
-  },
   "PurgeCache": {
     "reference": {
-      "$schema": "/schemas/common/api-reference-v0.json#",
+      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The purge-cache service is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the API end-point for publishing the pulse\nmessage. This is mainly intended to be used by tools.",
       "entries": [
@@ -2063,53 +2076,11 @@
     },
     "referenceUrl": "https://references.taskcluster.net/purge-cache/v1/api.json"
   },
-  "PurgeCacheEvents": {
-    "reference": {
-      "$schema": "http://schemas.taskcluster.net/base/v1/exchanges-reference.json#",
-      "description": "The purge-cache service, typically available at\n`purge-cache.taskcluster.net`, is responsible for publishing a pulse\nmessage for workers, so they can purge cache upon request.\n\nThis document describes the exchange offered for workers by the\ncache-purge service.",
-      "entries": [
-        {
-          "description": "When a cache purge is requested  a message will be posted on this\nexchange with designated `provisionerId` and `workerType` in the\nrouting-key and the name of the `cacheFolder` as payload",
-          "exchange": "purge-cache",
-          "name": "purgeCache",
-          "routingKey": [
-            {
-              "constant": "primary",
-              "multipleWords": false,
-              "name": "routingKeyKind",
-              "required": true,
-              "summary": "Identifier for the routing-key kind. This is always `'primary'` for the formalized routing key."
-            },
-            {
-              "multipleWords": false,
-              "name": "provisionerId",
-              "required": true,
-              "summary": "`provisionerId` under which to purge cache."
-            },
-            {
-              "multipleWords": false,
-              "name": "workerType",
-              "required": true,
-              "summary": "`workerType` for which to purge cache."
-            }
-          ],
-          "schema": "v1/purge-cache-message.json#",
-          "title": "Purge Cache Messages",
-          "type": "topic-exchange"
-        }
-      ],
-      "exchangePrefix": "exchange/taskcluster-purge-cache/v1/",
-      "serviceName": "purge-cache",
-      "title": "Purge-Cache Exchanges",
-      "version": 0
-    },
-    "referenceUrl": "https://references.taskcluster.net/purge-cache/v1/exchanges.json"
-  },
   "Queue": {
     "reference": {
-      "$schema": "/schemas/common/api-reference-v0.json#",
+      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.",
+      "description": "The queue service is responsible for accepting tasks and track their state\nas they are executed by workers. In order ensure they are eventually\nresolved.\n\nThis document describes the API end-points offered by the queue. These \nend-points targets the following audience:\n * Schedulers, who create tasks to be executed,\n * Workers, who execute tasks, and\n * Tools, that wants to inspect the state of a task.",
       "entries": [
         {
           "args": [],
@@ -2337,7 +2308,7 @@
           "args": [
             "taskId"
           ],
-          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nis not either `failed` or `completed`, this operation will just return\nthe current task status.",
+          "description": "This method _reruns_ a previously resolved task, even if it was\n_completed_. This is useful if your task completes unsuccessfully, and\nyou just want to run it from scratch again. This will also reset the\nnumber of `retries` allowed.\n\nThis method is deprecated in favour of creating a new task with the same\ntask definition (but with a new taskId).\n\nRemember that `retries` in the task status counts the number of runs that\nthe queue have started because the worker stopped responding, for example\nbecause a spot node died.\n\n**Remark** this operation is idempotent, if you try to rerun a task that\nis not either `failed` or `completed`, this operation will just return\nthe current task status.",
           "method": "post",
           "name": "rerunTask",
           "output": "v1/task-status-response.json#",
@@ -2897,9 +2868,9 @@
   },
   "QueueEvents": {
     "reference": {
-      "$schema": "/schemas/common/exchanges-reference-v0.json#",
+      "$schema": "https://schemas.taskcluster.net/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The queue, typically available at `queue.taskcluster.net`, is responsible\nfor accepting tasks and track their state as they are executed by\nworkers. In order ensure they are eventually resolved.\n\nThis document describes AMQP exchanges offered by the queue, which allows\nthird-party listeners to monitor tasks as they progress to resolution.\nThese exchanges targets the following audience:\n * Schedulers, who takes action after tasks are completed,\n * Workers, who wants to listen for new or canceled tasks (optional),\n * Tools, that wants to update their view as task progress.\n\nYou'll notice that all the exchanges in the document shares the same\nrouting key pattern. This makes it very easy to bind to all messages\nabout a certain kind tasks.\n\n**Task specific routes**, a task can define a task specific route using\nthe `task.routes` property. See task creation documentation for details\non permissions required to provide task specific routes. If a task has\nthe entry `'notify.by-email'` in as task specific route defined in\n`task.routes` all messages about this task will be CC'ed with the\nrouting-key `'route.notify.by-email'`.\n\nThese routes will always be prefixed `route.`, so that cannot interfere\nwith the _primary_ routing key as documented here. Notice that the\n_primary_ routing key is always prefixed `primary.`. This is ensured\nin the routing key reference, so API clients will do this automatically.\n\nPlease, note that the way RabbitMQ works, the message will only arrive\nin your queue once, even though you may have bound to the exchange with\nmultiple routing key patterns that matches more of the CC'ed routing\nrouting keys.\n\n**Delivery guarantees**, most operations on the queue are idempotent,\nwhich means that if repeated with the same arguments then the requests\nwill ensure completion of the operation and return the same response.\nThis is useful if the server crashes or the TCP connection breaks, but\nwhen re-executing an idempotent operation, the queue will also resend\nany related AMQP messages. Hence, messages may be repeated.\n\nThis shouldn't be much of a problem, as the best you can achieve using\nconfirm messages with AMQP is at-least-once delivery semantics. Hence,\nthis only prevents you from obtaining at-most-once delivery semantics.\n\n**Remark**, some message generated by timeouts maybe dropped if the\nserver crashes at wrong time. Ideally, we'll address this in the\nfuture. For now we suggest you ignore this corner case, and notify us\nif this corner case is of concern to you.",
+      "description": "The queue service is responsible for accepting tasks and track their state\nas they are executed by workers. In order ensure they are eventually\nresolved.\n\nThis document describes AMQP exchanges offered by the queue, which allows\nthird-party listeners to monitor tasks as they progress to resolution.\nThese exchanges targets the following audience:\n * Schedulers, who takes action after tasks are completed,\n * Workers, who wants to listen for new or canceled tasks (optional),\n * Tools, that wants to update their view as task progress.\n\nYou'll notice that all the exchanges in the document shares the same\nrouting key pattern. This makes it very easy to bind to all messages\nabout a certain kind tasks.\n\n**Task specific routes**, a task can define a task specific route using\nthe `task.routes` property. See task creation documentation for details\non permissions required to provide task specific routes. If a task has\nthe entry `'notify.by-email'` in as task specific route defined in\n`task.routes` all messages about this task will be CC'ed with the\nrouting-key `'route.notify.by-email'`.\n\nThese routes will always be prefixed `route.`, so that cannot interfere\nwith the _primary_ routing key as documented here. Notice that the\n_primary_ routing key is always prefixed `primary.`. This is ensured\nin the routing key reference, so API clients will do this automatically.\n\nPlease, note that the way RabbitMQ works, the message will only arrive\nin your queue once, even though you may have bound to the exchange with\nmultiple routing key patterns that matches more of the CC'ed routing\nrouting keys.\n\n**Delivery guarantees**, most operations on the queue are idempotent,\nwhich means that if repeated with the same arguments then the requests\nwill ensure completion of the operation and return the same response.\nThis is useful if the server crashes or the TCP connection breaks, but\nwhen re-executing an idempotent operation, the queue will also resend\nany related AMQP messages. Hence, messages may be repeated.\n\nThis shouldn't be much of a problem, as the best you can achieve using\nconfirm messages with AMQP is at-least-once delivery semantics. Hence,\nthis only prevents you from obtaining at-most-once delivery semantics.\n\n**Remark**, some message generated by timeouts maybe dropped if the\nserver crashes at wrong time. Ideally, we'll address this in the\nfuture. For now we suggest you ignore this corner case, and notify us\nif this corner case is of concern to you.",
       "entries": [
         {
           "description": "When a task is created or just defined a message is posted to this\nexchange.\n\nThis message exchange is mainly useful when tasks are scheduled by a\nscheduler that uses `defineTask` as this does not make the task\n`pending`. Thus, no `taskPending` message is published.\nPlease, note that messages are also published on this exchange if defined\nusing `createTask`.",
@@ -3442,7 +3413,7 @@
   },
   "Secrets": {
     "reference": {
-      "$schema": "/schemas/common/api-reference-v0.json#",
+      "$schema": "https://schemas.taskcluster.net/common/api-reference-v0.json#",
       "apiVersion": "v1",
       "description": "The secrets service provides a simple key/value store for small bits of secret\ndata.  Access is limited by scopes, so values can be considered secret from\nthose who do not have the relevant scopes.\n\nSecrets also have an expiration date, and once a secret has expired it can no\nlonger be read.  This is useful for short-term secrets such as a temporary\nservice credential or a one-time signing key.",
       "entries": [
@@ -3518,15 +3489,15 @@
         }
       ],
       "serviceName": "secrets",
-      "title": "TaskCluster Secrets API Documentation"
+      "title": "Taskcluster Secrets API Documentation"
     },
     "referenceUrl": "https://references.taskcluster.net/secrets/v1/api.json"
   },
   "TreeherderEvents": {
     "reference": {
-      "$schema": "/schemas/common/exchanges-reference-v0.json#",
+      "$schema": "https://schemas.taskcluster.net/common/exchanges-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The taskcluster-treeherder service is responsible for processing\ntask events published by TaskCluster Queue and producing job messages\nthat are consumable by Treeherder.\n\nThis exchange provides that job messages to be consumed by any queue that\nattached to the exchange.  This could be a production Treeheder instance,\na local development environment, or a custom dashboard.",
+      "description": "The taskcluster-treeherder service is responsible for processing\ntask events published by Taskcluster Queue and producing job messages\nthat are consumable by Treeherder.\n\nThis exchange provides that job messages to be consumed by any queue that\nattached to the exchange.  This could be a production Treeheder instance,\na local development environment, or a custom dashboard.",
       "entries": [
         {
           "description": "When a task run is scheduled or resolved, a message is posted to\nthis exchange in a Treeherder consumable format.",

@@ -4,11 +4,6 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import logging
-import hashlib
-import hmac
-import datetime
-import calendar
-import six
 from six.moves import urllib
 
 import mohawk
@@ -18,7 +13,7 @@ import asyncio
 
 from .. import exceptions
 from .. import utils
-from ..client import BaseClient
+from ..client import BaseClient, createTemporaryCredentials
 from . import asyncutils
 
 log = logging.getLogger(__name__)
@@ -316,81 +311,6 @@ def createApiClient(name, api):
         attributes[entry['name']] = f
 
     return type(utils.toStr(name), (BaseClient,), attributes)
-
-
-def createTemporaryCredentials(clientId, accessToken, start, expiry, scopes, name=None):
-    """ Create a set of temporary credentials
-
-    Callers should not apply any clock skew; clock drift is accounted for by
-    auth service.
-
-    clientId: the issuing clientId
-    accessToken: the issuer's accessToken
-    start: start time of credentials, seconds since epoch
-    expiry: expiration time of credentials, seconds since epoch
-    scopes: list of scopes granted
-    name: credential name (optional)
-
-    Returns a dictionary in the form:
-        { 'clientId': str, 'accessToken: str, 'certificate': str}
-    """
-
-    now = datetime.datetime.utcnow()
-    now = now - datetime.timedelta(minutes=10)  # Subtract 5 minutes for clock drift
-
-    for scope in scopes:
-        if not isinstance(scope, six.string_types):
-            raise exceptions.TaskclusterFailure('Scope must be string')
-
-    # Credentials can only be valid for 31 days.  I hope that
-    # this is validated on the server somehow...
-
-    if expiry - start > datetime.timedelta(days=31):
-        raise exceptions.TaskclusterFailure('Only 31 days allowed')
-
-    # We multiply times by 1000 because the auth service is JS and as a result
-    # uses milliseconds instead of seconds
-    cert = dict(
-        version=1,
-        scopes=scopes,
-        start=calendar.timegm(start.utctimetuple()) * 1000,
-        expiry=calendar.timegm(expiry.utctimetuple()) * 1000,
-        seed=utils.slugId() + utils.slugId(),
-    )
-
-    # if this is a named temporary credential, include the issuer in the certificate
-    if name:
-        cert['issuer'] = utils.toStr(clientId)
-
-    sig = ['version:' + utils.toStr(cert['version'])]
-    if name:
-        sig.extend([
-            'clientId:' + utils.toStr(name),
-            'issuer:' + utils.toStr(clientId),
-        ])
-    sig.extend([
-        'seed:' + utils.toStr(cert['seed']),
-        'start:' + utils.toStr(cert['start']),
-        'expiry:' + utils.toStr(cert['expiry']),
-        'scopes:'
-    ] + scopes)
-    sigStr = '\n'.join(sig).encode()
-
-    if isinstance(accessToken, six.text_type):
-        accessToken = accessToken.encode()
-    sig = hmac.new(accessToken, sigStr, hashlib.sha256).digest()
-
-    cert['signature'] = utils.encodeStringForB64Header(sig)
-
-    newToken = hmac.new(accessToken, cert['seed'], hashlib.sha256).digest()
-    newToken = utils.makeB64UrlSafe(utils.encodeStringForB64Header(newToken)).replace(b'=', b'')
-
-    return {
-        'clientId': name or clientId,
-        'accessToken': newToken,
-        'certificate': utils.dumpJson(cert),
-    }
-
 
 __all__ = [
     'createTemporaryCredentials',

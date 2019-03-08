@@ -227,6 +227,36 @@ class Auth(BaseClient):
 
         return self._makeApiCall(self.funcinfo["listRoles"], *args, **kwargs)
 
+    def listRoleIds(self, *args, **kwargs):
+        """
+        List Role IDs
+
+        If no limit is given, the roleIds of all roles are returned. Since this
+        list may become long, callers can use the `limit` and `continuationToken`
+        query arguments to page through the responses.
+
+        This method gives output: ``v1/list-role-ids-response.json#``
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["listRoleIds"], *args, **kwargs)
+
+    def listRoles2(self, *args, **kwargs):
+        """
+        List Roles
+
+        If no limit is given, all roles are returned. Since this
+        list may become long, callers can use the `limit` and `continuationToken`
+        query arguments to page through the responses.
+
+        This method gives output: ``v1/list-roles2-response.json#``
+
+        This method is ``stable``
+        """
+
+        return self._makeApiCall(self.funcinfo["listRoles2"], *args, **kwargs)
+
     def role(self, *args, **kwargs):
         """
         Get Role
@@ -533,19 +563,19 @@ class Auth(BaseClient):
 
         return self._makeApiCall(self.funcinfo["statsumToken"], *args, **kwargs)
 
-    def webhooktunnelToken(self, *args, **kwargs):
+    def websocktunnelToken(self, *args, **kwargs):
         """
-        Get Token for Webhooktunnel Proxy
+        Get Token for Websocktunnel Proxy
 
-        Get temporary `token` and `id` for connecting to webhooktunnel
+        Get temporary `token` and `id` for connecting to websocktunnel
         The token is valid for 96 hours, clients should refresh after expiration.
 
-        This method gives output: ``v1/webhooktunnel-token-response.json#``
+        This method gives output: ``v1/websocktunnel-token-response.json#``
 
         This method is ``stable``
         """
 
-        return self._makeApiCall(self.funcinfo["webhooktunnelToken"], *args, **kwargs)
+        return self._makeApiCall(self.funcinfo["websocktunnelToken"], *args, **kwargs)
 
     def authenticateHawk(self, *args, **kwargs):
         """
@@ -771,12 +801,30 @@ class Auth(BaseClient):
             'route': '/clients/',
             'stability': 'stable',
         },
+        "listRoleIds": {
+            'args': [],
+            'method': 'get',
+            'name': 'listRoleIds',
+            'output': 'v1/list-role-ids-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/roleids/',
+            'stability': 'stable',
+        },
         "listRoles": {
             'args': [],
             'method': 'get',
             'name': 'listRoles',
             'output': 'v1/list-roles-response.json#',
             'route': '/roles/',
+            'stability': 'stable',
+        },
+        "listRoles2": {
+            'args': [],
+            'method': 'get',
+            'name': 'listRoles2',
+            'output': 'v1/list-roles2-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/roles2/',
             'stability': 'stable',
         },
         "ping": {
@@ -853,12 +901,12 @@ class Auth(BaseClient):
             'route': '/roles/<roleId>',
             'stability': 'stable',
         },
-        "webhooktunnelToken": {
+        "websocktunnelToken": {
             'args': [],
             'method': 'get',
-            'name': 'webhooktunnelToken',
-            'output': 'v1/webhooktunnel-token-response.json#',
-            'route': '/webhooktunnel',
+            'name': 'websocktunnelToken',
+            'output': 'v1/websocktunnel-token-response.json#',
+            'route': '/websocktunnel',
             'stability': 'stable',
         },
     }

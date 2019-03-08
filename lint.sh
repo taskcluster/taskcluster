@@ -56,5 +56,5 @@ echo Linting generated python files
 $flake8 --ignore=E201,E128 --max-line-length=100000 $ignore_async $gen_to_lint && true
 gen_result=${PIPESTATUS[0]}
 echo Linting non-generated files
-$flake8 --max-line-length=120 $ignore_async $norm_to_lint
+$flake8 --max-line-length=140 $ignore_async $norm_to_lint
 exit $(( $? + $gen_result))

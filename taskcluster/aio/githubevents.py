@@ -150,13 +150,18 @@ class GithubEvents(AsyncBaseClient):
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
-    def taskGroupDefined(self, *args, **kwargs):
+    def taskGroupCreationRequested(self, *args, **kwargs):
         """
-        GitHub release Event
+        tc-gh requested the Queue service to create all the tasks in a group
 
-        used for creating status indicators in GitHub UI using Statuses API
+        supposed to signal that taskCreate API has been called for every task in the task group
+        for this particular repo and this particular organization
+        currently used for creating initial status indicators in GitHub UI using Statuses API.
+        This particular exchange can also be bound to RabbitMQ queues by custom routes - for that,
+        Pass in the array of routes as a second argument to the publish method. Currently, we do
+        use the statuses routes to bind the handler that creates the initial status.
 
-        This exchange outputs: ``v1/task-group-defined-message.json#``This exchange takes the following keys:
+        This exchange outputs: ``v1/task-group-creation-requested.json#``This exchange takes the following keys:
 
          * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
 
@@ -166,8 +171,8 @@ class GithubEvents(AsyncBaseClient):
         """
 
         ref = {
-            'exchange': 'task-group-defined',
-            'name': 'taskGroupDefined',
+            'exchange': 'task-group-creation-requested',
+            'name': 'taskGroupCreationRequested',
             'routingKey': [
                 {
                     'constant': 'primary',
@@ -183,7 +188,7 @@ class GithubEvents(AsyncBaseClient):
                     'name': 'repository',
                 },
             ],
-            'schema': 'v1/task-group-defined-message.json#',
+            'schema': 'v1/task-group-creation-requested.json#',
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 

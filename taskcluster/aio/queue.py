@@ -13,9 +13,9 @@ _defaultConfig = config
 
 class Queue(AsyncBaseClient):
     """
-    The queue, typically available at `queue.taskcluster.net`, is responsible
-    for accepting tasks and track their state as they are executed by
-    workers. In order ensure they are eventually resolved.
+    The queue service is responsible for accepting tasks and track their state
+    as they are executed by workers. In order ensure they are eventually
+    resolved.
 
     This document describes the API end-points offered by the queue. These
     end-points targets the following audience:
@@ -219,6 +219,9 @@ class Queue(AsyncBaseClient):
         _completed_. This is useful if your task completes unsuccessfully, and
         you just want to run it from scratch again. This will also reset the
         number of `retries` allowed.
+
+        This method is deprecated in favour of creating a new task with the same
+        task definition (but with a new taskId).
 
         Remember that `retries` in the task status counts the number of runs that
         the queue have started because the worker stopped responding, for example
