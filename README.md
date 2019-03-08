@@ -448,6 +448,11 @@ See [worker_types README.md](https://github.com/taskcluster/generic-worker/blob/
 
 # Release notes
 
+In v13.0.4 since v13.0.3
+========================
+
+* [Bug 1533402 - Fix for mounting archives in tasks which contain hard links](https://bugzil.la/1533402)
+
 In v13.0.3 since v13.0.2
 ========================
 
