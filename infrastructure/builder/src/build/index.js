@@ -1,11 +1,9 @@
 const os = require('os');
 const util = require('util');
-const path = require('path');
 const config = require('taskcluster-lib-config');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const {TaskGraph, Lock, ConsoleRenderer, LogRenderer} = require('console-taskgraph');
-const generateRepoTasks = require('./repo');
 const generateMonoimageTasks = require('./monoimage');
 
 class Build {
