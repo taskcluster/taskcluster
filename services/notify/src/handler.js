@@ -1,7 +1,5 @@
 const debug = require('debug')('notify');
 const _ = require('lodash');
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
 const jsone = require('json-e');
 const {consume} = require('taskcluster-lib-pulse');
 const libUrls = require('taskcluster-lib-urls');

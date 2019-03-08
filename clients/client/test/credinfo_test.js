@@ -1,16 +1,16 @@
 suite('taskcluster.credentialInfo', function() {
-  var taskcluster = require('../');
-  var assert = require('assert');
-  var nock = require('nock');
+  let taskcluster = require('../');
+  let assert = require('assert');
+  let nock = require('nock');
 
   teardown(function() {
     assert(nock.isDone());
     nock.cleanAll();
   });
 
-  var setupNocks = function(options) {
+  let setupNocks = function(options) {
     options = options || {};
-    var client = {
+    let client = {
       clientId: 'clid',
       description: 'TEST',
       expires: options.expires || '2100-02-17T05:00:00.000Z',
@@ -71,10 +71,10 @@ suite('taskcluster.credentialInfo', function() {
   });
 
   test('temporary', async function() {
-    var start = taskcluster.fromNow('-1 hour');
-    var expiry = taskcluster.fromNow('1 hour');
-    var scopes = ['scope1', 'scope2'];
-    var credentials = taskcluster.createTemporaryCredentials({
+    let start = taskcluster.fromNow('-1 hour');
+    let expiry = taskcluster.fromNow('1 hour');
+    let scopes = ['scope1', 'scope2'];
+    let credentials = taskcluster.createTemporaryCredentials({
       start, expiry, scopes,
       credentials: {
         clientId: 'clid',
@@ -95,10 +95,10 @@ suite('taskcluster.credentialInfo', function() {
   });
 
   test('temporary, expires after issuer', async function() {
-    var start = taskcluster.fromNow('-1 hour');
-    var expiry = taskcluster.fromNow('2 days');
-    var scopes = ['scope1', 'scope2'];
-    var credentials = taskcluster.createTemporaryCredentials({
+    let start = taskcluster.fromNow('-1 hour');
+    let expiry = taskcluster.fromNow('2 days');
+    let scopes = ['scope1', 'scope2'];
+    let credentials = taskcluster.createTemporaryCredentials({
       start, expiry, scopes,
       credentials: {
         clientId: 'clid',
@@ -106,7 +106,7 @@ suite('taskcluster.credentialInfo', function() {
       },
     });
 
-    var permaExpiry = taskcluster.fromNow('1 day');
+    let permaExpiry = taskcluster.fromNow('1 day');
     setupNocks({expires: permaExpiry.toJSON(), scopes});
     assert.deepEqual(
       await taskcluster.credentialInformation('https://taskcluster.net', credentials), {
@@ -120,10 +120,10 @@ suite('taskcluster.credentialInfo', function() {
   });
 
   test('temporary, certificate as object', async function() {
-    var start = taskcluster.fromNow('-1 hour');
-    var expiry = taskcluster.fromNow('2 days');
-    var scopes = ['scope1', 'scope2'];
-    var credentials = taskcluster.createTemporaryCredentials({
+    let start = taskcluster.fromNow('-1 hour');
+    let expiry = taskcluster.fromNow('2 days');
+    let scopes = ['scope1', 'scope2'];
+    let credentials = taskcluster.createTemporaryCredentials({
       start, expiry, scopes,
       credentials: {
         clientId: 'clid',
@@ -134,7 +134,7 @@ suite('taskcluster.credentialInfo', function() {
     // make certificate an object, since both forms are accepted.
     credentials.certificate = JSON.parse(credentials.certificate);
 
-    var permaExpiry = taskcluster.fromNow('1 day');
+    let permaExpiry = taskcluster.fromNow('1 day');
     setupNocks({expires: permaExpiry.toJSON(), scopes});
     assert.deepEqual(
       await taskcluster.credentialInformation('https://taskcluster.net', credentials), {

@@ -1,4 +1,3 @@
-const debug = require('debug');
 const assert = require('assert');
 const serializeError = require('serialize-error');
 const TimeKeeper = require('./timekeeper');

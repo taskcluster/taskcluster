@@ -8,7 +8,6 @@ const retryPlugin = (octokit, options) => {
   const sleep = timeout => new Promise(resolve => setTimeout(resolve, timeout));
 
   octokit.hook.wrap('request', async (request, options) => {
-    let response;
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         return await request(options);

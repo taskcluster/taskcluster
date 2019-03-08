@@ -6,9 +6,8 @@ const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const References = require('taskcluster-lib-references');
 const exec = util.promisify(require('child_process').execFile);
-const {REPO_ROOT, readFile, readJSON, writeJSON, writeFile, modifyFile, modifyJSON, removeExtension} = require('../util');
+const {REPO_ROOT, writeJSON, writeFile, removeExtension} = require('../util');
 
-const rename = util.promisify(fs.rename);
 const readdir = util.promisify(fs.readdir);
 
 /**

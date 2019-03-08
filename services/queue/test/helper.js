@@ -1,12 +1,8 @@
 const assert = require('assert');
-const assume = require('assume');
-const path = require('path');
 const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const libUrls = require('taskcluster-lib-urls');
-const mocha = require('mocha');
 const builder = require('../src/api');
-const exchanges = require('../src/exchanges');
 const load = require('../src/main');
 const data = require('../src/data');
 const temporary = require('temporary');
@@ -137,7 +133,7 @@ exports.withS3 = (mock, skipping) => {
       tmpDir = new temporary.Dir();
       mockAwsS3.config.basePath = tmpDir.path;
 
-      const cfg = await exports.load('cfg');
+      await exports.load('cfg');
       exports.load.cfg('aws.accessKeyId', undefined);
       exports.load.cfg('aws.secretAccessKey', undefined);
 
@@ -185,7 +181,7 @@ exports.withQueueService = (mock, skipping) => {
       // so that tests do not interfere with one another.  This prefix can only
       // be 6 characters long..
       const pfx = 'q' + new Date().getTime().toString().slice(-5);
-      const cfg = await helper.load('cfg');
+      await helper.load('cfg');
       helper.load.cfg('app.queuePrefix', pfx);
       helper.load.cfg('app.claimQueue', `${pfx}-claim`);
       helper.load.cfg('app.deadlineQueue', `${pfx}-deadline`);
@@ -283,7 +279,7 @@ exports.withEntities = (mock, skipping) => {
 
     if (mock) {
       helper.load.inject('publicArtifactBucket', {});
-      const cfg = await exports.load('cfg');
+      await exports.load('cfg');
       await Promise.all(tables.map(async tbl => {
         exports.load.inject(tbl.name, data[tbl.className || tbl.name].setup({
           tableName: tbl.name,
@@ -336,7 +332,7 @@ exports.withServer = (mock, skipping) => {
     if (skipping()) {
       return;
     }
-    const cfg = await exports.load('cfg');
+    await exports.load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that

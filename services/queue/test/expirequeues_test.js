@@ -1,9 +1,3 @@
-const debug = require('debug')('test:expireTasks');
-const assert = require('assert');
-const slugid = require('slugid');
-const _ = require('lodash');
-const taskcluster = require('taskcluster-client');
-const assume = require('assume');
 const helper = require('./helper');
 
 helper.secrets.mockSuite(__filename, ['azure'], function(mock, skipping) {

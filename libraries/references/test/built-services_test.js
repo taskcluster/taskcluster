@@ -1,4 +1,3 @@
-const fs = require('fs');
 const assert = require('assert');
 const {load} = require('../src/built-services');
 const mockFs = require('mock-fs');

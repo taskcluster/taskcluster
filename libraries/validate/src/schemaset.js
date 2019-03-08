@@ -1,7 +1,6 @@
 const debug = require('debug')('taskcluster-lib-validate');
 const _ = require('lodash');
 const fs = require('fs');
-const rimraf = require('rimraf');
 const path = require('path');
 const walk = require('walk');
 const yaml = require('js-yaml');

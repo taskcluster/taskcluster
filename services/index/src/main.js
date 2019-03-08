@@ -6,7 +6,6 @@ const Handlers = require('./handlers');
 const builder = require('./api');
 const Config = require('taskcluster-lib-config');
 const loader = require('taskcluster-lib-loader');
-const monitor = require('taskcluster-lib-monitor');
 const monitorManager = require('./monitor');
 const SchemaSet = require('taskcluster-lib-validate');
 const App = require('taskcluster-lib-app');
@@ -15,7 +14,7 @@ const {sasCredentials} = require('taskcluster-lib-azure');
 const {Client, pulseCredentials} = require('taskcluster-lib-pulse');
 
 // Create component loader
-var load = loader({
+let load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({profile}) => Config({profile}),
@@ -149,7 +148,7 @@ var load = loader({
   handlers: {
     requires: ['IndexedTask', 'Namespace', 'queue', 'queueEvents', 'cfg', 'monitor', 'pulseClient'],
     setup: async ({IndexedTask, Namespace, queue, queueEvents, cfg, monitor, pulseClient}) => {
-      var handlers = new Handlers({
+      let handlers = new Handlers({
         IndexedTask: IndexedTask,
         Namespace: Namespace,
         queue: queue,

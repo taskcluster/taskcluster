@@ -19,7 +19,7 @@ let assert = require('assert');
  *   monitor:            // base.monitor instance
  * }
  */
-var Bucket = function(options) {
+let Bucket = function(options) {
   assert(options, 'options must be given');
   assert(options.bucket, 'bucket must be specified');
   assert(options.credentials, 'credentials must be specified');
@@ -146,7 +146,7 @@ Bucket.prototype.deleteObjects = function(prefixes) {
 
 /** Setup CORS policy, so it can opened from a browser, when authenticated */
 Bucket.prototype.setupCORS = async function() {
-  var rules = [
+  let rules = [
     {
       AllowedOrigins: ['*'],
       AllowedMethods: ['GET', 'PUT', 'HEAD', 'POST', 'DELETE'],
@@ -157,7 +157,7 @@ Bucket.prototype.setupCORS = async function() {
   ];
   try {
     // Fetch CORS to see if they as expected already
-    var req = await this.s3.getBucketCors().promise();
+    let req = await this.s3.getBucketCors().promise();
     if (_.isEqual(req.CORSRules, rules)) {
       debug('CORS already set for bucket: %s', this.bucket);
       return;

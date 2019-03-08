@@ -5,10 +5,7 @@
  * across the Worker Manager codebase.
  */
 
-const util = require('util');
-const fs = require('fs');
 const pathlib = require('path');
-const [readdir, stat] = [fs.readdir, fs.stat].map(util.promisify);
 
 // These are the strings for which we want to generate matching error types.
 // They will also be set as the code property on the instances of each error

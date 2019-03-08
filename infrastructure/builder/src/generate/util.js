@@ -61,7 +61,7 @@ exports.modifyFile = async (filename, modifier) => {
 exports.modifyJSON = async (filename, modifier) => {
   return exports.modifyFile(filename, async contents => {
     const data = JSON.parse(contents);
-    const modified = await modifier(data);
+    await modifier(data);
     return JSON.stringify(data, null, 2) + '\n';
   });
 };

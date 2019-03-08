@@ -1,7 +1,4 @@
-var _ = require('lodash');
-var assert = require('assert');
-var debug = require('debug')('index:helpers');
-var data = require('./data');
+let assert = require('assert');
 
 /**
  * Insert task into `namespace` where:
@@ -20,7 +17,7 @@ var data = require('./data');
  *   Namespace:      // data.Namespace
  * }
  */
-var insertTask = function(namespace, input, options) {
+let insertTask = function(namespace, input, options) {
   // Validate input
   assert(input.expires instanceof Date, 'expires must be a Date object');
   assert(input.data instanceof Object, 'data must be an object');
@@ -35,11 +32,11 @@ var insertTask = function(namespace, input, options) {
   namespace = namespace.split('.');
 
   // Find name and namespace
-  var name = namespace.pop() || '';
+  let name = namespace.pop() || '';
   namespace = namespace.join('.');
 
   // Find expiration time and parse as date object
-  var expires = new Date(input.expires);
+  let expires = new Date(input.expires);
 
   // Attempt to load indexed task
   return options.IndexedTask.load({
@@ -95,7 +92,7 @@ exports.insertTask = insertTask;
 * }
 */
 
-var listTableEntries = async function({query, limit, continuation, key, Table}) {
+let listTableEntries = async function({query, limit, continuation, key, Table}) {
   let data = await Table.query(query, {limit, continuation});
   let retval = {};
 

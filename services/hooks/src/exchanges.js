@@ -23,7 +23,7 @@ let exchanges = new Exchanges({
 module.exports = exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
-var buildCommonRoutingKey = (options) => {
+let buildCommonRoutingKey = (options) => {
   return [
     {
       name: 'reserved',
@@ -37,21 +37,21 @@ var buildCommonRoutingKey = (options) => {
 };
 
 /** Build an AMQP compatible message from a message */
-var commonMessageBuilder = function(message) {
+let commonMessageBuilder = function(message) {
   return message;
 };
 
 /** Build a routingKey from message */
 /** Empty now, might be useful in the future */
 /** when this comment should be removed */
-var commonRoutingKeyBuilder = function(message, routing) {
+let commonRoutingKeyBuilder = function(message, routing) {
   return '';
 };
 
 /** Build list of routing keys to CC */
 /** Empty now, might be useful in the future */
 /** when this comment should be removed */
-var commonCCBuilder = function(message, routes) {
+let commonCCBuilder = function(message, routes) {
   return [];
 };
 

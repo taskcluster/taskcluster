@@ -278,9 +278,10 @@ builder.declare({
     throw e;
   }
 
+  let instGithub;
   try {
     debug(`Trying to authenticate as installation for ${eventType}`);
-    var instGithub = await this.github.getInstallationGithub(msg.installationId);
+    instGithub = await this.github.getInstallationGithub(msg.installationId);
   } catch (e) {
     debug('Error authenticating as installation');
     throw e;

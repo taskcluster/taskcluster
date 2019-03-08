@@ -2,9 +2,6 @@
 const Debug = require('debug');
 const builder = require('../src/api');
 const data = require('../src/data');
-const assert = require('assert');
-const path = require('path');
-const _ = require('lodash');
 const loader = require('taskcluster-lib-loader');
 const SchemaSet = require('taskcluster-lib-validate');
 const monitorManager = require('./monitor');
@@ -16,7 +13,7 @@ const {sasCredentials} = require('taskcluster-lib-azure');
 
 let debug = Debug('secrets:server');
 
-var load = loader({
+let load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({profile}) => config({profile}),

@@ -1,4 +1,3 @@
-const sinon = require('sinon');
 const assume = require('assume');
 
 const {errors} = require('../lib/base');
@@ -315,7 +314,7 @@ suite('buildWorkerConfiguration', () => {
 
     test('should throw without setting provisioner ids', () => {
       assume(() => {
-        let result = buildWorkerConfiguration({
+        buildWorkerConfiguration({
           id: 'worker-configuration-1',
           workerTypes: [{
             workerType: 'worker-type-1',
@@ -328,7 +327,7 @@ suite('buildWorkerConfiguration', () => {
 
     test('should throw without setting bidding strategy id', () => {
       assume(() => {
-        let result = buildWorkerConfiguration({
+        buildWorkerConfiguration({
           id: 'worker-configuration-1',
           workerTypes: [{
             workerType: 'worker-type-1',

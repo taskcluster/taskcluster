@@ -4,7 +4,7 @@ const Handler = require('../src/handler');
 const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
 const MonitorManager = require('taskcluster-lib-monitor');
-const {fakeauth, stickyLoader} = require('taskcluster-lib-testing');
+const {stickyLoader} = require('taskcluster-lib-testing');
 const {FakeClient} = require('taskcluster-lib-pulse');
 
 exports.load = stickyLoader(load);

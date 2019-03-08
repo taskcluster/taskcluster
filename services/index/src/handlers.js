@@ -20,7 +20,7 @@ const {consume} = require('taskcluster-lib-pulse');
  *   monitor:            // base.monitor({...})
  * }
  */
-var Handlers = function(options) {
+let Handlers = function(options) {
   // Validate options
   assert(options.IndexedTask, 'A subclass of data.IndexedTask is required');
   assert(options.Namespace, 'A subclass of data.Namespace is required');
@@ -74,10 +74,10 @@ Handlers.prototype.terminate = async function() {
 
 /** Handle notifications of completed messages */
 Handlers.prototype.completed = function(message) {
-  var that = this;
+  let that = this;
 
   // Find namespaces to index under
-  var namespaces = message.routes.filter(function(route) {
+  let namespaces = message.routes.filter(function(route) {
     return that.routeRegexp.test(route);
   }).map(function(route) {
     return that.routeRegexp.exec(route)[1];
@@ -95,7 +95,7 @@ Handlers.prototype.completed = function(message) {
   return this.queue.task(message.payload.status.taskId).then(function(task) {
 
     // Create default expiration date
-    var expires;
+    let expires;
     if (task.expires) {
       expires = new Date(task.expires);
     } else {
@@ -104,7 +104,7 @@ Handlers.prototype.completed = function(message) {
     }
 
     // Get `index` from `extra` section
-    var options = _.defaults({}, (task.extra || {}).index || {}, {
+    let options = _.defaults({}, (task.extra || {}).index || {}, {
       rank: 0,
       expires: expires.toJSON(),
       data: {},

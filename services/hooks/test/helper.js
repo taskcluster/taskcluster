@@ -4,8 +4,6 @@ const taskcreator = require('../src/taskcreator');
 const {stickyLoader, fakeauth, Secrets} = require('taskcluster-lib-testing');
 const builder = require('../src/v1');
 const load = require('../src/main');
-const config = require('taskcluster-lib-config');
-const _ = require('lodash');
 const libUrls = require('taskcluster-lib-urls');
 const {FakeClient} = require('taskcluster-lib-pulse');
 const slugid = require('slugid');
@@ -118,7 +116,7 @@ helper.withTaskCreator = function(mock, skipping) {
       return;
     }
 
-    const cfg = await helper.load('cfg');
+    await helper.load('cfg');
 
     helper.creator = new taskcreator.MockTaskCreator();
     helper.load.inject('taskcreator', helper.creator);
@@ -139,7 +137,6 @@ helper.withTaskCreator = function(mock, skipping) {
  * queue.
  */
 helper.withPulse = (mock, skipping) => {
-  let Listener;
   suiteSetup(async function() {
     if (skipping()) {
       return;
@@ -252,7 +249,7 @@ helper.withServer = (mock, skipping) => {
       return;
     }
 
-    const cfg = await helper.load('cfg');
+    await helper.load('cfg');
 
     helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
     fakeauth.start({

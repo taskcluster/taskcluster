@@ -4,7 +4,6 @@ const assume = require('assume');
 const {Provider} = require('../../lib/provider');
 const {Bid} = require('../../lib/bid');
 const {Worker} = require('../../lib/worker');
-const sinon = require('sinon');
 
 /****************
  *              *
@@ -15,8 +14,6 @@ const sinon = require('sinon');
  * This code has not been tested against a real provider, so it is expected
  * that fixes will be needed
  */
-
-const workerType = 'workerType';
 
 /**
  * Test a Provider.  `runBefore` and `runAfter` are methods which will be run
@@ -45,7 +42,6 @@ const workerType = 'workerType';
 function testProvider(subject, workerConfiguration, runBefore, runAfter) {
   suite(`Provider API Conformance for ${subject.constructor.name}`, () => {
     let workerType = 'workerType';
-    let sandbox = sinon.createSandbox();
 
     setup(async () => {
       if (runBefore) {

@@ -1,12 +1,10 @@
 const debug = require('debug')('notify');
 const _ = require('lodash');
 const path = require('path');
-const assert = require('assert');
 const crypto = require('crypto');
 const marked = require('marked');
 const Email = require('email-templates');
 const nodemailer = require('nodemailer');
-const RateLimit = require('./ratelimit');
 
 /**
  * Object to send notifications, so the logic can be re-used in both the pulse

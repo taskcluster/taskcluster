@@ -1,4 +1,3 @@
-let util = require('util');
 let events = require('events');
 let debug = require('debug')('watchdog');
 

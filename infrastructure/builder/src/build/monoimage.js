@@ -367,7 +367,6 @@ const generateMonoimageTasks = ({tasks, baseDir, cfg, cmdOptions}) => {
 
       utils.step({title: 'Building'});
 
-      const appDir = requirements['monoimage-built-app-dir'];
       const tarball = tar.pack(workDir, {
         // include the built app dir as app/
         entries: ['app', 'Dockerfile'],

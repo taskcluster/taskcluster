@@ -1,10 +1,8 @@
 let debug = require('debug')('app:deadline-resolver');
-let slugid = require('slugid');
 let assert = require('assert');
 let _ = require('lodash');
 let data = require('./data');
 let QueueService = require('./queueservice');
-let events = require('events');
 let Iterate = require('taskcluster-lib-iterate');
 
 /** State that are considered resolved */
@@ -76,7 +74,7 @@ class DeadlineResolver {
       maxIterationTime: maxIterationTimeSecs,
       handler: async () => {
         let loops = [];
-        for (var i = 0; i < this.parallelism; i++) {
+        for (let i = 0; i < this.parallelism; i++) {
           loops.push(this.poll());
         }
         await Promise.all(loops);
@@ -102,7 +100,7 @@ class DeadlineResolver {
 
   /** Poll for messages and handle them in a loop */
   async poll() {
-    var messages = await this.queueService.pollDeadlineQueue();
+    let messages = await this.queueService.pollDeadlineQueue();
     debug('Fetched %s messages', messages.length);
 
     await Promise.all(messages.map(async (message) => {
@@ -133,7 +131,7 @@ class DeadlineResolver {
     // Query for entity for which we have exact rowKey too, limit to 1, and
     // require that deadline matches. This is essentially a conditional load
     // operation
-    var {entries: [task]} = await this.Task.query({
+    let {entries: [task]} = await this.Task.query({
       taskId: taskId, // Matches an exact entity
       deadline: deadline, // Load conditionally
     }, {
@@ -167,7 +165,7 @@ class DeadlineResolver {
       // resolved. As this run is purely to signal an exception, we set
       // `reasonCreated: 'exception'`.
       if (task.runs.length === 0) {
-        var now = new Date().toJSON();
+        let now = new Date().toJSON();
         task.runs.push({
           state: 'exception',
           reasonCreated: 'exception',
@@ -205,7 +203,7 @@ class DeadlineResolver {
     });
 
     // Check if the last run was resolved here
-    var run = _.last(task.runs);
+    let run = _.last(task.runs);
     if (run.reasonResolved === 'deadline-exceeded' &&
         run.state === 'exception') {
       debug('Resolved taskId: %s, by deadline', taskId);

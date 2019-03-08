@@ -1,11 +1,9 @@
 const debug = require('debug')('test:claim-work');
 const assert = require('assert');
 const slugid = require('slugid');
-const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
@@ -241,7 +239,6 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-pending');
 
     debug('### Claim task');
-    let before = new Date();
     let r1 = await helper.queue.claimWork('no-provisioner-extended-extended', workerType, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',

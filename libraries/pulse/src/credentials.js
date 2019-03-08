@@ -1,5 +1,4 @@
 const assert = require('assert');
-const taskcluster = require('taskcluster-client');
 
 /**
  * Build Pulse ConnectionString, from options on the form:

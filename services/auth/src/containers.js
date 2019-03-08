@@ -1,5 +1,3 @@
-const _ = require('lodash');
-const assert = require('assert');
 const {DataContainer, DataBlockBlob} = require('azure-blob-storage');
 
 /**

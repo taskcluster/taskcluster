@@ -149,7 +149,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   });
 
   test('build badges', async function() {
-    var res;
+    let res;
 
     // status: failure
     res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'coolRepo', 'master'));
@@ -169,7 +169,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   });
 
   test('link for clickable badges', async function() {
-    var res;
+    let res;
 
     // check if the function returns a correct link
     try {

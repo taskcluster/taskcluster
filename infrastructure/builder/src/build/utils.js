@@ -226,7 +226,7 @@ class DemuxDockerStream extends Transform {
  * - utils -- taskgraph utils (waitFor, etc.)
  */
 exports.dockerPull = async ({baseDir, image, utils}) => {
-  const {docker, dockerRunOpts} = await _dockerSetup({baseDir});
+  const {docker} = await _dockerSetup({baseDir});
 
   utils.status({message: `docker pull ${image}`});
   const dockerStream = await new Promise(
@@ -280,7 +280,7 @@ exports.dockerPull = async ({baseDir, image, utils}) => {
  * - utils -- taskgraph utils (waitFor, etc.)
  */
 exports.dockerBuild = async ({baseDir, logfile, tag, tarball, utils}) => {
-  const {docker, dockerRunOpts} = await _dockerSetup({baseDir});
+  const {docker} = await _dockerSetup({baseDir});
 
   utils.status({progress: 0, message: `Building ${tag}`});
   const buildStream = await docker.buildImage(tarball, {t: tag});
@@ -347,8 +347,6 @@ exports.dockerRegistryCheck = async ({tag}) => {
  * - utils -- taskgraph utils (waitFor, etc.)
  */
 exports.dockerPush = async ({baseDir, tag, logfile, utils}) => {
-  const {docker, dockerRunOpts} = await _dockerSetup({baseDir});
-
   await utils.waitFor(new Observable(observer => {
     const push = spawn('docker', ['push', tag]);
     push.on('error', err => observer.error(err));

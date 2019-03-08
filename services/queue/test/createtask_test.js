@@ -140,7 +140,6 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
 
   test('defineTask and scheduleTask', async () => {
     const taskId = slugid.v4();
-    const taskIsScheduled = false;
 
     await helper.queue.defineTask(taskId, taskDef);
     helper.checkNextMessage('task-defined');

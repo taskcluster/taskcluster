@@ -370,7 +370,7 @@ class PulsePublisher {
    */
   _validateMessage(rootUrl, serviceName, validator, entry, message) {
     const schema = libUrls.schema(rootUrl, serviceName, entry.schema);
-    var err = validator(message, schema);
+    let err = validator(message, schema);
     if (err) {
       debug('Failed to validate message: %j against schema: %s, error: %j',
         message, entry.schema, err);

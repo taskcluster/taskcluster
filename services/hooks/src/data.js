@@ -1,8 +1,5 @@
 const Entity = require('azure-entities');
-const debug = require('debug')('hooks:data');
-const assert = require('assert');
 const Promise = require('promise');
-const taskcluster = require('taskcluster-client');
 const _ = require('lodash');
 
 /** Entity for tracking hooks and associated state **/

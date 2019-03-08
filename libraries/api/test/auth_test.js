@@ -2,7 +2,6 @@ const _ = require('lodash');
 const request = require('superagent');
 const hawk = require('hawk');
 const assert = require('assert');
-const Promise = require('promise');
 const SchemaSet = require('taskcluster-lib-validate');
 const makeApp = require('taskcluster-lib-app');
 const APIBuilder = require('../');

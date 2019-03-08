@@ -3,7 +3,6 @@ const assume = require('assume');
 const taskcluster = require('taskcluster-client');
 const sinon = require('sinon');
 const helper = require('./helper');
-const HookListeners = require('../src/listeners');
 
 helper.secrets.mockSuite('listeners_test.js', ['taskcluster'], function(mock, skipping) {
   helper.withHook(mock, skipping);
@@ -177,7 +176,6 @@ helper.secrets.mockSuite('listeners_test.js', ['taskcluster'], function(mock, sk
 
     test('with deleted hook and active listener', async function() {
       const bindings = [{exchange: 'e', routingKeyPattern: 'foo.#'}];
-      const newBindings = [];
 
       await makeQueueEntities({hookId, bindings});
       hookListeners.listeners[qn(hookGroupId, hookId)] = true;

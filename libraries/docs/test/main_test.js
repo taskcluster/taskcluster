@@ -1,10 +1,7 @@
 const assert = require('assert');
 const {documenter} = require('../');
-const debug = require('debug')('test');
 const fs = require('fs');
-const _ = require('lodash');
 const tar = require('tar-stream');
-const rootdir = require('app-root-dir');
 const zlib = require('zlib');
 const path = require('path');
 const SchemaSet = require('taskcluster-lib-validate');
@@ -12,43 +9,7 @@ const config = require('taskcluster-lib-config');
 const APIBuilder = require('taskcluster-lib-api');
 const {Exchanges} = require('taskcluster-lib-pulse');
 const MockS3UploadStream = require('./mockS3UploadStream');
-const awsMock = require('mock-aws-s3');
-const rimraf = require('rimraf');
 const tmp = require('tmp');
-
-async function getObjectsInStream(inStream) {
-  let output = {};
-  let extractor = tar.extract();
-
-  let downloadPromise = new Promise((resolve, reject) => {
-    extractor.on('entry', (header, stream, callback) => {
-      let data = [];
-
-      stream.on('data', function(chunk) {
-        data.push(chunk);
-      });
-
-      stream.on('end', () => {
-        output[header.name] = data.join('');
-        callback(); //ready for next entry
-      });
-
-      stream.resume(); //just auto drain the stream
-    });
-
-    extractor.on('finish', function() {
-      // all entries read
-      resolve();
-    });
-
-    extractor.on('error', function() {
-      reject();
-    });
-  });
-  inStream.pipe(extractor);
-  await downloadPromise;
-  return output;
-}
 
 function assertInTarball(shoulds, tarball) {
   shoulds.push('metadata.json');
@@ -230,7 +191,7 @@ suite('documenter', () => {
       options.rootUrl = 'https://taskcluster.net';
     }
 
-    const doc = await documenter(options);
+    await documenter(options);
 
     if (mock) {
       assert.deepEqual(MockS3UploadStream.uploads, [`${cfg.bucket}/docs-testing/latest.tar.gz`]);

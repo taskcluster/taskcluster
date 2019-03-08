@@ -1,5 +1,4 @@
 const APIBuilder = require('taskcluster-lib-api');
-const debug = require('debug')('notify');
 const Entity = require('azure-entities');
 
 const builder = new APIBuilder({
@@ -107,7 +106,6 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   let input = req.body;
-  let required = [];
   this.monitor.log.irc({dest: input.user || input.channel});
   await req.authorize({
     channelRequest: input.channel !== undefined,

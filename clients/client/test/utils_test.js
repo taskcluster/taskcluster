@@ -1,7 +1,7 @@
 suite('taskcluster utilities', function() {
-  var taskcluster = require('../');
-  var parseTime = require('../src/parsetime');
-  var assert = require('assert');
+  let taskcluster = require('../');
+  let parseTime = require('../src/parsetime');
+  let assert = require('assert');
 
   test('parseTime 1 year', function() {
     assert.equal(parseTime('1y').years, 1);
@@ -151,42 +151,42 @@ suite('taskcluster utilities', function() {
 
   suite('fromNow .. current time', function() {
     test('fromNow()', function() {
-      var d1 = new Date();
-      var d2 = taskcluster.fromNow();
+      let d1 = new Date();
+      let d2 = taskcluster.fromNow();
 
       // Allow for 10 ms margin
       assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
     });
 
     test('fromNow(2 hours)', function() {
-      var d1 = new Date();
+      let d1 = new Date();
       d1.setHours(d1.getHours() + 2);
-      var d2 = taskcluster.fromNow('2 hours');
+      let d2 = taskcluster.fromNow('2 hours');
 
       // Allow for 10 ms margin
       assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
     });
 
     test('fromNow(2 years 55 months)', function() {
-      var day = 24 * 60 * 60 * 1000;
-      var d1 = new Date(new Date().getTime() + 2 * 365 * day + 55 * 30 * day);
-      var d2 = taskcluster.fromNow('2 years 55mo');
+      let day = 24 * 60 * 60 * 1000;
+      let d1 = new Date(new Date().getTime() + 2 * 365 * day + 55 * 30 * day);
+      let d2 = taskcluster.fromNow('2 years 55mo');
 
       // Allow for 10ms margin
       assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
     });
 
     test('fromNow(240 months)', function() {
-      var d1 = new Date(new Date().getTime() + 240 * 30 * 24 * 60 * 60 * 1000);
-      var d2 = taskcluster.fromNow('240 months');
+      let d1 = new Date(new Date().getTime() + 240 * 30 * 24 * 60 * 60 * 1000);
+      let d2 = taskcluster.fromNow('240 months');
 
       // Allow for 10ms margin
       assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);
     });
 
     test('fromNow(-240 months)', function() {
-      var d1 = new Date(new Date().getTime() - 240 * 30 * 24 * 60 * 60 * 1000);
-      var d2 = taskcluster.fromNow('-240 months');
+      let d1 = new Date(new Date().getTime() - 240 * 30 * 24 * 60 * 60 * 1000);
+      let d2 = taskcluster.fromNow('-240 months');
 
       // Allow for 10ms margin
       assert(Math.abs(d2.getTime() - d1.getTime()) <= 10);

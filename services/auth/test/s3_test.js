@@ -1,6 +1,5 @@
 const assert = require('assert');
 const slugid = require('slugid');
-const _ = require('lodash');
 const aws = require('aws-sdk');
 const helper = require('./helper');
 const debug = require('debug')('s3_test');

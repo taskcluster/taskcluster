@@ -1,7 +1,6 @@
 const helper = require('./helper');
 const assume = require('assume');
 const _ = require('lodash');
-const debug = require('debug')('test:trie');
 const ScopeSetBuilder = require('../src/scopesetbuilder');
 const trie = require('../src/trie');
 const trietestcases = require('./trietestcases');

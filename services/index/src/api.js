@@ -133,14 +133,14 @@ builder.declare({
     'task exists for the given path, this API end-point will respond with a 404 status.',
   ].join('\n'),
 }, async function(req, res) {
-  var indexPath = req.params.indexPath || '';
+  let indexPath = req.params.indexPath || '';
 
   // Get namespace and ensure that we have a least one dot
   indexPath = indexPath.split('.');
 
   // Find name and namespace
-  var name = indexPath.pop() || '';
-  var namespace = indexPath.join('.');
+  let name = indexPath.pop() || '';
+  let namespace = indexPath.join('.');
 
   // Load indexed task
   let tasks;
@@ -186,8 +186,8 @@ builder.declare({
     'object.',
   ].join('\n'),
 }, async function(req, res) {
-  var that = this;
-  var namespace = req.params.namespace || '';
+  let that = this;
+  let namespace = req.params.namespace || '';
   let continuation = req.query.continuationToken || null;
   let limit = parseInt(req.query.limit || 1000, 10);
   let query = {
@@ -227,7 +227,7 @@ builder.declare({
     'object.',
   ].join('\n'),
 }, async function(req, res) {
-  var that = this;
+  let that = this;
   let namespace = req.params.namespace || '';
   let limit = req.body.limit;
   let continuation = req.body.continuationToken;
@@ -273,7 +273,7 @@ builder.declare({
     'services, as that makes little sense.',
   ].join('\n'),
 }, async function(req, res) {
-  var that = this;
+  let that = this;
   let namespace = req.params.namespace || '';
   let query = {
     namespace,
@@ -306,7 +306,7 @@ builder.declare({
     '(a version of listTasks with POST for backward compatibility; do not use)',
   ].join('\n'),
 }, async function(req, res) {
-  var that = this;
+  let that = this;
   let namespace = req.params.namespace || '';
   let query = {
     namespace,
@@ -345,9 +345,9 @@ builder.declare({
     'about indexing successfully completed tasks automatically using custom routes.',
   ].join('\n'),
 }, async function(req, res) {
-  var that = this;
-  var input = req.body;
-  var namespace = req.params.namespace || '';
+  let that = this;
+  let input = req.body;
+  let namespace = req.params.namespace || '';
 
   // Authenticate request by providing parameters
   await req.authorize({namespace});
@@ -390,9 +390,9 @@ builder.declare({
     'If no task exists for the given index path, this API end-point responds with 404.',
   ].join('\n'),
 }, async function(req, res) {
-  var that = this;
-  var indexPath = req.params.indexPath || '';
-  var artifactName = req.params.name;
+  let that = this;
+  let indexPath = req.params.indexPath || '';
+  let artifactName = req.params.name;
 
   await req.authorize({
     private: !/^public\//.test(artifactName),
@@ -403,8 +403,8 @@ builder.declare({
   indexPath = indexPath.split('.');
 
   // Find name and namespace
-  var name = indexPath.pop() || '';
-  var namespace = indexPath.join('.');
+  let name = indexPath.pop() || '';
+  let namespace = indexPath.join('.');
 
   // Load indexed task
   return that.IndexedTask.load({
@@ -413,7 +413,7 @@ builder.declare({
     expires: Entity.op.greaterThan(new Date()),
   }).then(function(task) {
     // Build signed url for artifact
-    var url = null;
+    let url = null;
     if (/^public\//.test(artifactName)) {
       url = that.queue.buildUrl(
         that.queue.getLatestArtifact,

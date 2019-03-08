@@ -1,5 +1,4 @@
 const APIBuilder = require('taskcluster-lib-api');
-const slugid = require('slugid');
 
 const {buildWorkerConfiguration} = require('./worker-config');
 const {errors} = require('./base');
@@ -188,7 +187,6 @@ builder.declare({
     'Retrieve a worker configuration as a set of rules',
   ].join('\n'),
 }, async function(req, res) {
-  let id = req.params.workerConfigurationId;
   res.reply(await this.datastore.list('worker-configurations'));
 });
 

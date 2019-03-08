@@ -1,7 +1,5 @@
-const debug = require('debug')('taskcluster-lib-validate');
 const _ = require('lodash');
 const url = require('url');
-const libUrls = require('taskcluster-lib-urls');
 
 /**
  * Render {$const: <key>} into JSON schema and update $ref

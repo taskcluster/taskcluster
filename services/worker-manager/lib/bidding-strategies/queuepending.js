@@ -41,8 +41,6 @@ class QueuePending extends BiddingStrategy {
       scalingRatio,
       minCapacity,
       maxCapacity,
-      minPrice,
-      maxPrice,
     } = biddingStrategyData;
 
     let pendingTasks = await this._getPendingTasks(workerType);

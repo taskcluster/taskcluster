@@ -3,7 +3,6 @@ const {makeSerializable, fromSerializable} = require('./serializable');
 const {writeUriStructured, readUriStructured} = require('./uri-structured');
 const {getCommonSchemas} = require('./common-schemas');
 const Ajv = require('ajv');
-const merge = require('lodash/merge');
 const regexEscape = require('regex-escape');
 const {validate} = require('./validate');
 

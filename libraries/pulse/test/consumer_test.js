@@ -240,7 +240,7 @@ suite('consumer_test.js', function() {
 
     test('no queueuName is an error', async function() {
       try {
-        const consumer = await consume({
+        await consume({
           client: new FakeClient(),
         }, messageInfo => {});
       } catch (err) {

@@ -1,14 +1,10 @@
 const assert = require('assert');
 const path = require('path');
-const _ = require('lodash');
-const mocha = require('mocha');
 const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
 const {FakeClient} = require('taskcluster-lib-pulse');
-const config = require('taskcluster-lib-config');
 const {stickyLoader, Secrets, fakeauth} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
-const exchanges = require('../src/exchanges');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
 const slugid = require('slugid');
@@ -18,9 +14,6 @@ const libUrls = require('taskcluster-lib-urls');
 // a suffix used to generate unique table names so that parallel test runs do not
 // interfere with one another.  We remove these at the end of the test run.
 const TABLE_SUFFIX = slugid.nice().replace(/[_-]/g, '');
-
-// Load configuration
-const cfg = config({profile: 'test'});
 
 const testclients = {
   'test-client': ['*'],
@@ -362,7 +355,7 @@ exports.withServer = (mock, skipping) => {
     if (skipping()) {
       return;
     }
-    const cfg = await exports.load('cfg');
+    await exports.load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
@@ -406,7 +399,7 @@ exports.withDenylist = (mock, skipping) => {
     }
 
     if (mock) {
-      const cfg = await exports.load('cfg');
+      await exports.load('cfg');
       exports.load.inject('DenylistedNotification', data.DenylistedNotification.setup({
         tableName: 'DenylistedNotification',
         credentials: 'inMemory',

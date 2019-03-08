@@ -3,7 +3,6 @@ const taskDefinition = require('./fixtures/task');
 const statusMessage = require('./fixtures/task_status');
 const jobMessage = require('./fixtures/job_message');
 const parseRoute = require('../src/util/route_parser');
-const taskcluster = require('taskcluster-client');
 const helper = require('./helper');
 
 let task, status, expected, pushInfo;

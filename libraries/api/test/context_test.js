@@ -74,7 +74,6 @@ suite('API (context)', function() {
       apiVersion: 'v1',
     });
 
-    const value = slugid.v4();
     const schemaset = new SchemaSet({
       serviceName: 'test',
       folder: path.join(__dirname, 'schemas'),
@@ -107,7 +106,6 @@ suite('API (context)', function() {
       apiVersion: 'v1',
     });
 
-    const value = slugid.v4();
     const schemaset = new SchemaSet({
       serviceName: 'test',
       folder: path.join(__dirname, 'schemas'),
@@ -133,7 +131,6 @@ suite('API (context)', function() {
       apiVersion: 'v1',
     });
 
-    const value = slugid.v4();
     const schemaset = new SchemaSet({
       serviceName: 'test',
       folder: path.join(__dirname, 'schemas'),

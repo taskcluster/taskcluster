@@ -1,10 +1,7 @@
-const debug = require('debug')('auth:signaturevalidator');
 const hawk = require('hawk');
 const assert = require('assert');
-const _ = require('lodash');
 // Someone should rename utils to scopes...
 const utils = require('taskcluster-lib-scopes');
-const https = require('https');
 const crypto = require('crypto');
 
 /**

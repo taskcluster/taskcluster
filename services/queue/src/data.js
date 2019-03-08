@@ -296,7 +296,7 @@ Task.prototype.hasClaim = function() {
  */
 Task.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
-  var count = 0;
+  let count = 0;
   await Entity.scan.call(this, {
     expires: Entity.op.lessThan(now),
   }, {
@@ -426,7 +426,7 @@ Artifact.prototype.json = function() {
  */
 Artifact.prototype.remove = function(ignoreError) {
   // Promise that deleted underlying artifact, and keep reference to context
-  var deleted = Promise.resolve();
+  let deleted = Promise.resolve();
 
   if (this.storageType === 'blob') {
     debug('Deleting expired s3 artifact from bucket: %s, key: %s',
@@ -497,7 +497,7 @@ Artifact.prototype.remove = function(ignoreError) {
  */
 Artifact.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
-  var count = 0;
+  let count = 0;
   await Entity.scan.call(this, {
     expires: Entity.op.lessThan(now),
   }, {
@@ -537,7 +537,7 @@ let TaskGroup = Entity.configure({
  */
 TaskGroup.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
-  var count = 0;
+  let count = 0;
   await Entity.scan.call(this, {
     expires: Entity.op.lessThan(now),
   }, {
@@ -577,7 +577,7 @@ let TaskGroupMember = Entity.configure({
  */
 TaskGroupMember.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
-  var count = 0;
+  let count = 0;
   await Entity.scan.call(this, {
     expires: Entity.op.lessThan(now),
   }, {
@@ -621,7 +621,7 @@ let TaskRequirement = Entity.configure({
  */
 TaskRequirement.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
-  var count = 0;
+  let count = 0;
   await Entity.scan.call(this, {
     expires: Entity.op.lessThan(now),
   }, {
@@ -666,7 +666,7 @@ let TaskDependency = Entity.configure({
  */
 TaskDependency.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
-  var count = 0;
+  let count = 0;
   await Entity.scan.call(this, {
     expires: Entity.op.lessThan(now),
   }, {

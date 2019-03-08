@@ -3,10 +3,10 @@ const utils = require('../src');
 
 suite('satisfaction', function() {
 
-  var mktest = function(scopePatterns, scopesets, matches) {
+  let mktest = function(scopePatterns, scopesets, matches) {
     return function() {
-      var res;
-      var exception;
+      let res;
+      let exception;
 
       try {
         res = utils.scopeMatch(scopePatterns, scopesets);

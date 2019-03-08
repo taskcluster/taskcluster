@@ -18,7 +18,6 @@
     "hawk": "^7.0.10",
     "jsonwebtoken": "^8.1.0",
     "lodash": "^4.17.4",
-    "morgan-debug": "^2.0.0",
     "quick-lru": "^2.0.0",
     "sentry-api": "^0.1.1",
     "slugid": "^2.0.0",

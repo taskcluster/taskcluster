@@ -1,10 +1,6 @@
 const _ = require('lodash');
-const assert = require('assert');
 const assume = require('assume');
-const Scheduler = require('../src/scheduler');
-const debug = require('debug')('test:test_schedule_hooks');
 const helper = require('./helper');
-const taskcreator = require('../src/taskcreator');
 const taskcluster = require('taskcluster-client');
 
 helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, skipping) {

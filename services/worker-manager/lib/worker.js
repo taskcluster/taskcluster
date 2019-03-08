@@ -46,3 +46,5 @@ class Worker extends WMObject {
     this.this.providerData = providerData;
   }
 }
+
+module.exports = Worker;

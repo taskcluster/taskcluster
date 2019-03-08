@@ -35,7 +35,6 @@ exports.tasks = [{
     const template = compile(await readFile('clients/client-web/templates/client.ejs'));
 
     for (let name of Object.keys(apis)) {
-      const client = apis[name];
       const {reference} = apis[name];
 
       utils.status({message: name});

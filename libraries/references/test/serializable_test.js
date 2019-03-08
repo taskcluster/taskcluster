@@ -1,6 +1,6 @@
 const assert = require('assert');
 const References = require('..');
-const {makeSerializable, fromSerializable} = require('../src/serializable');
+const {makeSerializable} = require('../src/serializable');
 const {getCommonSchemas} = require('../src/common-schemas');
 const libUrls = require('taskcluster-lib-urls');
 
@@ -48,18 +48,6 @@ suite('serializable_test.js', function() {
       },
     }],
   });
-
-  const sortedBy = (array, prop) => {
-    return array.map(({content}) => content).sort((a, b) => {
-      if (a[prop] < b[prop]) {
-        return -1;
-      } else if (a[prop] > b[prop]) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
-  };
 
   test('generates an abstract manifest', function() {
     const serializable = makeSerializable({references});
@@ -144,7 +132,7 @@ suite('serializable_test.js', function() {
   });
 
   test('References.fromSerializable', function() {
-    const unserialized = References.fromSerializable({
+    References.fromSerializable({
       serializable: [{
         filename: 'schemas/common/foo.json',
         content: {

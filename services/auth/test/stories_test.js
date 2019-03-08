@@ -1,8 +1,5 @@
 const assert = require('assert');
-const debug = require('debug')('test:client');
 const helper = require('./helper');
-const slugid = require('slugid');
-const _ = require('lodash');
 const assume = require('assume');
 const taskcluster = require('taskcluster-client');
 
@@ -131,7 +128,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     });
 
     test('root grants role3', async () => {
-      let newClient = await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
+      await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
         scopes: [
@@ -142,7 +139,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     });
 
     test('charlene revokes role3', async () => {
-      let newClient = await charlene.updateClient('test-users/charlene/travis-tests', {
+      await charlene.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
         scopes: [
@@ -152,7 +149,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     });
 
     test('root grants role3 again', async () => {
-      let newClient = await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
+      await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
         scopes: [
@@ -163,7 +160,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
     // TODO: bug 1242473
     test.skip('charlene replaces role3 with one of its constituent scopes', async () => {
-      let newClient = await charlene.updateClient('test-users/charlene/travis-tests', {
+      await charlene.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
         scopes: [

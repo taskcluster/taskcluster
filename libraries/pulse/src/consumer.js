@@ -1,5 +1,4 @@
 const debug = require('debug');
-const events = require('events');
 const amqplib = require('amqplib');
 const assert = require('assert');
 const slugid = require('slugid');

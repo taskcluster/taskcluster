@@ -1,7 +1,6 @@
 const debug = require('debug')('test:deadline');
 const assert = require('assert');
 const slugid = require('slugid');
-const _ = require('lodash');
 const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
@@ -109,7 +108,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-pending');
 
     debug('### Claim task');
-    const r2 = await helper.queue.claimTask(taskId, 0, {
+    await helper.queue.claimTask(taskId, 0, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });
@@ -147,7 +146,7 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
     helper.checkNextMessage('task-pending');
 
     debug('### Claim task');
-    const r2 = await helper.queue.claimTask(taskId, 0, {
+    await helper.queue.claimTask(taskId, 0, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
     });

@@ -1,10 +1,6 @@
-const _ = require('lodash');
-const assert = require('assert');
 const taskcluster = require('taskcluster-client');
-const mocha = require('mocha');
 const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
 const load = require('../src/main');
-const config = require('taskcluster-lib-config');
 const slugid = require('slugid');
 const data = require('../src/data');
 const builder = require('../src/api.js');
@@ -73,7 +69,7 @@ exports.withSecret = (mock, skipping) => {
 // Some clients for the tests, with differents scopes.  These are turned
 // into temporary credentials based on the main test credentials, so
 // the clientIds listed here are purely internal to the tests.
-var testClients = {
+let testClients = {
   'captain-write': ['secrets:set:captain:*'],
   'captain-read': ['secrets:get:captain:*'],
   'captain-read-write': ['secrets:set:captain:*', 'secrets:get:captain:*'],
@@ -94,7 +90,7 @@ exports.withServer = (mock, skipping) => {
     if (skipping()) {
       return;
     }
-    const cfg = await exports.load('cfg');
+    await exports.load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that

@@ -87,7 +87,7 @@ suite('QueuePending Bidding Strategy', () => {
   });
 
   async function selectsCorrectBid(good, bad) {
-    let {accept, reject} = await subject.selectBids({workerType: 'workerType',
+    let {accept} = await subject.selectBids({workerType: 'workerType',
       biddingStrategyData: {
         scalingRatio: 1,
         minCapacity: 1000,

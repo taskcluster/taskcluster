@@ -1,6 +1,4 @@
 const APIBuilder = require('taskcluster-lib-api');
-const slugid = require('slugid');
-const _ = require('lodash');
 const Entity = require('azure-entities');
 
 /** API end-point for version v1/

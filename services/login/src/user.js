@@ -1,5 +1,4 @@
 const taskcluster = require('taskcluster-client');
-const {encode} = require('./utils');
 const assert = require('assert');
 
 class User {

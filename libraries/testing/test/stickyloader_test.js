@@ -28,8 +28,8 @@ suite('stickyLoader', function() {
   });
 
   test('includes result in overwrites', async function() {
-    const first = await sticky('abc');
-    const second = await sticky('def');
+    await sticky('abc');
+    await sticky('def');
     assert.deepEqual(loads, [{
       component: 'abc',
       overwrites: [],
@@ -40,8 +40,8 @@ suite('stickyLoader', function() {
   });
 
   test('inject adds to overwrites', async function() {
-    const first = await sticky.inject('inj', {inj: true});
-    const second = await sticky('inj');
+    await sticky.inject('inj', {inj: true});
+    await sticky('inj');
     assert.deepEqual(loads, [{
       component: 'inj',
       overwrites: ['inj'],

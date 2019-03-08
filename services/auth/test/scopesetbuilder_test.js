@@ -1,7 +1,6 @@
 suite('ScopeSetBuilder', () => {
   const assume = require('assume');
   const _ = require('lodash');
-  const debug = require('debug')('test:scopesetbuilder');
   const {mergeScopeSets, scopeCompare} = require('taskcluster-lib-scopes');
   const ScopeSetBuilder = require('../src/scopesetbuilder');
 

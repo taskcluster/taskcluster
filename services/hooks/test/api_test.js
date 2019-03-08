@@ -3,7 +3,6 @@ const assert = require('assert');
 const assume = require('assume');
 const debug = require('debug')('test:api:createhook');
 const taskcluster = require('taskcluster-client');
-const taskcreator = require('../src/taskcreator');
 const helper = require('./helper');
 
 helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping) {
@@ -644,7 +643,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
       const r2 = await helper.hooks.resetTriggerToken('foo', 'bar');
       assume(r1).deep.not.equals(r2);
       const r3 = await helper.hooks.getTriggerToken('foo', 'bar');
-      assume(r2).deep.equals(r2);
+      assume(r2).deep.equals(r3);
     });
 
     test('fails for undefined hook', async () => {

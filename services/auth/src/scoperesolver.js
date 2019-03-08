@@ -4,17 +4,11 @@ const taskcluster = require('taskcluster-client');
 const events = require('events');
 const LRU = require('quick-lru');
 const debug = require('debug')('auth:ScopeResolver');
-const {scopeCompare, mergeScopeSets, normalizeScopeSet} = require('taskcluster-lib-scopes');
 const trie = require('./trie');
 const ScopeSetBuilder = require('./scopesetbuilder');
 const {consume} = require('taskcluster-lib-pulse');
-const slugid = require('slugid');
 
 const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
-const PARAMETERIZED_SCOPE = /^(:?|a|as|ass|assu|assum|assum|assume|assume:.*)<\.\.>/;
-const PARAMETER = /<\.\.\>/;
-const PARAMETER_G = /<\.\.\>/g;
-const PARAMETER_TO_END = /<\.\.>.*/;
 
 /** ZeroCache is an LRU cache instance that contains nothing for caching is disabled */
 const ZeroCache = {

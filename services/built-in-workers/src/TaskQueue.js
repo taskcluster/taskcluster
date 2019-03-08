@@ -1,4 +1,3 @@
-const iterate = require('taskcluster-lib-iterate');
 const assert = require('assert');
 class TaskQueue {
   constructor(cfg, queue, type) {
@@ -33,7 +32,7 @@ class TaskQueue {
         return await this.queue.reportFailed(task.status.taskId, task.runId);
       }
     } else {
-      var payload = {
+      let payload = {
         reason: 'malformed-payload',
       };
       return await this.queue.reportException(task.status.taskId, task.runId, payload);

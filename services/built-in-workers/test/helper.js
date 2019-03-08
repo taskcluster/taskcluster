@@ -1,9 +1,7 @@
 const assert = require('assert');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
-const slugid = require('slugid');
-const worker = require('../src/TaskQueue');
-const {stickyLoader, Secrets} = require('taskcluster-lib-testing');
+const {stickyLoader} = require('taskcluster-lib-testing');
 
 const helper = module.exports;
 

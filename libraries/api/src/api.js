@@ -4,7 +4,6 @@ const Debug = require('debug');
 const aws = require('aws-sdk');
 const assert = require('assert');
 const _ = require('lodash');
-const fs = require('fs');
 const libUrls = require('taskcluster-lib-urls');
 const taskcluster = require('taskcluster-client');
 const {buildReportErrorMethod} = require('./middleware/errors');

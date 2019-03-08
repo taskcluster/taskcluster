@@ -3,24 +3,18 @@ const Docs = require('taskcluster-lib-docs');
 const SchemaSet = require('taskcluster-lib-validate');
 const monitorManager = require('./monitor');
 const App = require('taskcluster-lib-app');
-const {sasCredentials} = require('taskcluster-lib-azure');
 const Config = require('taskcluster-lib-config');
 const data = require('./data');
 const containers = require('./containers');
 const builder = require('./v1');
-const path = require('path');
 const debug = require('debug')('server');
 const AWS = require('aws-sdk');
 const exchanges = require('./exchanges');
 const ScopeResolver = require('./scoperesolver');
 const signaturevalidator = require('./signaturevalidator');
 const taskcluster = require('taskcluster-client');
-const url = require('url');
 const SentryClient = require('sentry-api').Client;
 const SentryManager = require('./sentrymanager');
-const Statsum = require('statsum');
-const _ = require('lodash');
-const morganDebug = require('morgan-debug');
 const libPulse = require('taskcluster-lib-pulse');
 
 // Create component loader

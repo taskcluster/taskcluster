@@ -1,17 +1,17 @@
-var request = require('superagent');
-var url = require('url');
-var debug = require('debug')('test:azure-blob-uploader-sas');
-var assert = require('assert');
-var qs = require('querystring');
-var _ = require('lodash');
-var xmlbuilder = require('xmlbuilder');
+let request = require('superagent');
+let url = require('url');
+let debug = require('debug')('test:azure-blob-uploader-sas');
+let assert = require('assert');
+let qs = require('querystring');
+let _ = require('lodash');
+let xmlbuilder = require('xmlbuilder');
 
 /**
  * Utility to upload block blobs using an azure Shared-Access-Signature
  *
  * @param {String} url fully constructed sas endpoint.
  */
-var BlobUploader = function(url) {
+let BlobUploader = function(url) {
   this.url = url;
 };
 
@@ -21,7 +21,7 @@ module.exports = BlobUploader;
 /** Construct URL for azure blob storage */
 BlobUploader.prototype.buildUrl = function(queryString) {
   // Extend the query parameters if given....
-  var parsed = url.parse(this.url, true);
+  let parsed = url.parse(this.url, true);
   parsed.search = '?' + qs.stringify(
     _.defaults(queryString || {}, parsed.query));
 
@@ -34,7 +34,7 @@ BlobUploader.prototype.putBlock = function(blockId, block) {
   assert(block, 'block must be given');
 
   // Construct URL
-  var url = this.buildUrl({
+  let url = this.buildUrl({
     comp: 'block',
     blockid: Buffer.from('' + blockId).toString('base64'),
   });
@@ -59,19 +59,19 @@ BlobUploader.prototype.putBlockList = function(blockIds, contentType) {
   assert(blockIds instanceof Array, 'blockIds must be an array');
   assert(contentType, 'contentType must be given');
   // Construct URL
-  var url = this.buildUrl({
+  let url = this.buildUrl({
     comp: 'blocklist',
   });
   // Construct XML
-  var blockList = xmlbuilder.create('BlockList', {
+  let blockList = xmlbuilder.create('BlockList', {
     version: '1.0',
     encoding: 'utf-8',
   });
   blockIds.forEach(function(blockId) {
-    var id = Buffer.from('' + blockId).toString('base64');
+    let id = Buffer.from('' + blockId).toString('base64');
     blockList.element('Latest', id);
   });
-  var xml = blockList.end({
+  let xml = blockList.end({
     pretty: true,
   });
   // Send request

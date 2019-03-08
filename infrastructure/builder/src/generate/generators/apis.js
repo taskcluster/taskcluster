@@ -11,7 +11,6 @@ exports.tasks = [{
     const apis = {};
     refs.references.forEach(({filename, content}) => {
       const refSchema = refs.getSchema(content.$schema);
-      let name;
 
       if (refSchema.metadata.name !== 'api' && refSchema.metadata.name !== 'exchanges') {
         return; // ignore this reference

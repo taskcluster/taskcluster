@@ -3,8 +3,6 @@ const _ = require('lodash');
 const assert = require('assert');
 const nock = require('nock');
 
-const savedEnv = _.cloneDeep(process.env);
-
 suite('Secrets', function() {
   let oldTaskId;
   let savedEnv;

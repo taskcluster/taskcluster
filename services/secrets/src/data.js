@@ -37,7 +37,7 @@ Secret.prototype.isExpired = function() {
  */
 Secret.expire = async function(now) {
   assert(now instanceof Date, 'now must be given as option');
-  var count = 0;
+  let count = 0;
   await Entity.scan.call(this, {
     expires: Entity.op.lessThan(now),
   }, {

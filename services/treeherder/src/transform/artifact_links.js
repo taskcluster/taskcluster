@@ -1,5 +1,4 @@
 const path = require('path');
-const taskcluster = require('taskcluster-client');
 
 module.exports = async function(queue, monitor, taskId, runId, job) {
   let res;

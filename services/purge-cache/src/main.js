@@ -1,7 +1,4 @@
 const debug = require('debug')('purge-cache');
-const assert = require('assert');
-const path = require('path');
-const _ = require('lodash');
 const config = require('taskcluster-lib-config');
 const loader = require('taskcluster-lib-loader');
 const monitorManager = require('./monitor');

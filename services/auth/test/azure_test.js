@@ -1,7 +1,5 @@
 const assert = require('assert');
-const debug = require('debug')('auth:test:azure');
 const helper = require('./helper');
-const slugid = require('slugid');
 const _ = require('lodash');
 const azure = require('fast-azure-storage');
 const taskcluster = require('taskcluster-client');
@@ -141,7 +139,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('azureTableSAS (too high permission)', function() {
     // Restrict access a bit
-    let auth = helper.setupScopes(
+    helper.setupScopes(
       'auth:azure-table:read-only:' + helper.testaccount + '/allowedTable',
     );
     return helper.apiClient.azureTableSAS(
@@ -157,7 +155,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('azureTableSAS (unauthorized table)', function() {
     // Restrict access a bit
-    let auth = helper.setupScopes(
+    helper.setupScopes(
       'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable',
     );
     return helper.apiClient.azureTableSAS(

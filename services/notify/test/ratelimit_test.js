@@ -2,7 +2,6 @@ const _ = require('lodash');
 const assert = require('assert');
 const MockDate = require('mockdate');
 const RateLimit = require('../src/ratelimit');
-const load = require('../src/main');
 const helper = require('./helper');
 
 suite(helper.suiteName(__filename), function() {
