@@ -99,11 +99,6 @@ variable "github_webhook_secret" {
   description = "taskcluster-github webhook secret."
 }
 
-variable "audit_log_stream" {
-  type        = "string"
-  description = "kinesis stream for audit logs."
-}
-
 variable "gce_provider_gcp_project" {
   type        = "string"
   description = "Project in Google Cloud (used for gce_provider)."
