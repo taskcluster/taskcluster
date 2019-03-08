@@ -429,7 +429,6 @@ suite('component loader', () => {
       if (!e.message.match(/assertation failure/)) {
         throw e;
       }
-      return;
     }
     assert(false, 'Expected an error');
   });

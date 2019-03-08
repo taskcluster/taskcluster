@@ -265,7 +265,6 @@ const connectionTests = connectionString => {
             if (++failureCount < 3) {
               debug('fake failure number %s', failureCount);
               throw new Error('uhoh');
-              return;
             }
 
             consumer = chan.consume(queueName, (msg) => {
