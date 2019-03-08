@@ -91,7 +91,7 @@ class Handler {
       let ircMessage = `Task "${task.metadata.name}" complete with status '${status.state}'. Inspect: ${href}`;
 
       switch (route[1]) {
-      case 'irc-user':
+      case 'irc-user': {
         this.monitor.count('notification-requested.irc-user');
         if (_.has(task, 'extra.notify.ircUserMessage')) {
           ircMessage = this.renderMessage(task.extra.notify.ircUserMessage, {task, status});
@@ -100,8 +100,8 @@ class Handler {
           user: route[2],
           message: ircMessage,
         });
-
-      case 'irc-channel':
+      }
+      case 'irc-channel': {
         this.monitor.count('notification-requested.irc-channel');
         if (_.has(task, 'extra.notify.ircChannelMessage')) {
           ircMessage = this.renderMessage(task.extra.notify.ircChannelMessage, {task, status});
@@ -110,15 +110,15 @@ class Handler {
           channel: route[2],
           message: ircMessage,
         });
-
-      case 'pulse':
+      }
+      case 'pulse': {
         this.monitor.count('notification-requested.pulse');
         return this.notifier.pulse({
           routingKey: _.join(_.slice(route, 2, route.length - 1), '.'),
           message: status,
         });
-
-      case 'email':
+      }
+      case 'email': {
         this.monitor.count('notification-requested.email');
         let content = `
 Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHref}) is complete.
@@ -146,10 +146,10 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
           link,
           template,
         });
-
-      default:
-        return null;
       }
+      default: {
+        return null;
+      }}
     }));
   }
 }
