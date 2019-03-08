@@ -155,12 +155,12 @@
   version = "v0.1.0"
 
 [[projects]]
-  digest = "1:67b3e2eb7a5bcfe8374b617315f1a8dfdff3c131a451eb2c01664790ef6dd4e6"
+  digest = "1:d6f988e7296cebe16d9c405b73bee34da871b382f7438c811279614a725239ae"
   name = "github.com/mholt/archiver"
   packages = ["."]
   pruneopts = "UT"
-  revision = "d572b2e8b82726cee9476d1b9d63a7fe9b601ff1"
-  version = "v3.1.1"
+  revision = "de0d89e255e17c8d75a40122055763e743ab0593"
+  version = "v2.1.0"
 
 [[projects]]
   digest = "1:b93a939355dc613ca1c23bf39f6d4c207da431a31dd8af001cc334ad24cab9d3"
@@ -327,14 +327,6 @@
   pruneopts = "UT"
   revision = "f971f3cd73b2899de6923801c147f075263e0c50"
   version = "v1.1.0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:0dfba983988bcd90e6dd30b9bfdb9685ff530dbf61db3706e55372e975b1d8bc"
-  name = "github.com/xi2/xz"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "48954b6210f8d154cb5f8484d3a3e1f83489309e"
 
 [[projects]]
   branch = "master"
