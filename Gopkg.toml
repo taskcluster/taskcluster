@@ -55,7 +55,7 @@
 
 [[constraint]]
   name = "github.com/mholt/archiver"
-  version = "3.1.0"
+  version = "2.1.0"
 
 [[constraint]]
   branch = "master"
