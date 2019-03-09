@@ -42,6 +42,9 @@ choco install -y nodejs --version 8.15.0
 # install git
 choco install -y git --version 2.21.0
 
+# install python2 as well for node-gyp later
+choco install -y python2 --version 2.7.16
+
 # install python3.6
 choco install -y python --version 3.6.8
 
