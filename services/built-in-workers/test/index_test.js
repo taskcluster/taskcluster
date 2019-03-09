@@ -75,7 +75,7 @@ suite('TaskQueue_test.js', function() {
       ],
     });
     await tq.claimTask();
-    expectedPayload = {
+    const expectedPayload = {
       reason: 'malformed-payload',
     };
     helper.assertTaskResolved(taskId, {exception: expectedPayload});
@@ -103,6 +103,9 @@ suite('TaskQueue_test.js', function() {
         },
       ],
     });
+    const expectedPayload = {
+      reason: 'malformed-payload',
+    };
     await tq.claimTask();
     helper.assertTaskResolved(taskId, {exception: expectedPayload});
   });

@@ -243,7 +243,7 @@ const createSignatureValidator = function(options) {
   };
 
   return async function(req) {
-    let credentials, attributes, result;
+    let credentials, attributes, result, authResult;
 
     try {
       if (req.authorization) {

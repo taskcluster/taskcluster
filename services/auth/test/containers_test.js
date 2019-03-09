@@ -85,7 +85,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['azure'], function(mock,
 
   test('create a second DataContainer', async function() {
     // this verifies that creating a container doesn't erase the roles!
-    roles2 = new containers.Roles({
+    const roles2 = new containers.Roles({
       containerName,
       credentials,
     });

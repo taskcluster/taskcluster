@@ -68,8 +68,8 @@ async function createReferencesMarkup(svcDir) {
 
       return writeFile(path.join(referencesDir, file), content);
     }));
-  } catch(error) {
-    if (error.code !== 'ENOENT') {
+  } catch(err) {
+    if (err.code !== 'ENOENT') {
       throw err;
     }
   }

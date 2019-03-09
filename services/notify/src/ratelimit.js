@@ -28,7 +28,7 @@ class RateLimit {
    */
   stop() {
     if (this.periodicPurge) {
-      cancelInterval(this.periodicPurge);
+      this.periodicPurge.clearInterval();
       this.periodicPurge = null;
     }
   }

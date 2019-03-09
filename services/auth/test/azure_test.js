@@ -36,7 +36,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
     );
     let extra = {};
     do {
-      result = await helper.apiClient.azureTables(testaccount, extra);
+      const result = await helper.apiClient.azureTables(testaccount, extra);
       extra.continuationToken = result.continuationToken;
       if (result.tables.includes('TestTable')) {
         return;
@@ -209,7 +209,11 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('azureContainers', async function() {
     let extra = {};
     do {
+<<<<<<< HEAD
       result = await helper.apiClient.azureContainers(testaccount, extra);
+=======
+      const result = await helper.apiClient.azureContainers(helper.testaccount, extra);
+>>>>>>> Turn on no-undef
       extra.continuationToken = result.continuationToken;
       if (result.containers.includes('container-test')) {
         return;

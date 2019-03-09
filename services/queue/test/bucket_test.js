@@ -25,7 +25,7 @@ helper.secrets.mockSuite(__filename, ['aws'], function(mock, skipping) {
   // Test that put to signed url works
   test('createPutUrl', async function() {
     const key = slugid.v4();
-    url = await bucket.createPutUrl(key, {
+    const url = await bucket.createPutUrl(key, {
       contentType: 'application/json',
       expires: 60 * 10,
     });

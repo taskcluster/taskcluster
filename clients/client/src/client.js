@@ -448,7 +448,7 @@ exports.createClient = function(reference, name) {
         // Call fake[<method>]
         if (!this._options.fake[entry.name]) {
           return Promise.reject(new Error(
-            `Faked ${serviceName} object does not have an implementation of ${entry.name}`,
+            `Faked ${this._options.serviceName} object does not have an implementation of ${entry.name}`,
           ));
         }
         return this._options.fake[entry.name].apply(null, args);

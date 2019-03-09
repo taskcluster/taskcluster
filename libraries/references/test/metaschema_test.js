@@ -3,12 +3,14 @@ const References = require('..');
 const libUrls = require('taskcluster-lib-urls');
 
 suite('metaschema_test.js', function() {
+  let validate;
+
   suiteSetup('setup Ajv', function() {
     const references = new References({
       schemas: getCommonSchemas(),
       references: [],
     });
-    ajv = references.asAbsolute(libUrls.testRootUrl()).makeAjv();
+    const ajv = references.asAbsolute(libUrls.testRootUrl()).makeAjv();
 
     validate = (content, failureCheck) => {
       const problems = [];

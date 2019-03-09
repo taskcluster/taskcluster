@@ -66,10 +66,10 @@ rules:
   no-var: error
   no-case-declarations: error
   no-unreachable: error
+  no-undef: error
 
   # These are disabled for now and we will slowly turn them on
   require-await: off
-  no-undef: off
 
   # These we never want but are enabled by recommended
   no-console: off # We don't mind these being used for now until structured logging is available

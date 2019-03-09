@@ -4,7 +4,7 @@ const MonitorManager = require('../src');
 suite('Registry', function() {
 
   test('can add custom message types', function() {
-    manager = new MonitorManager({
+    const manager = new MonitorManager({
       serviceName: 'taskcluster-testing-service',
     });
     manager.register({
@@ -22,13 +22,13 @@ suite('Registry', function() {
       level: 'debug',
       mock: true,
     });
-    monitor = manager.monitor();
+    const monitor = manager.monitor();
     monitor.log.auditLog({foo: {}, bar: 'hi'});
     assert.equal(manager.messages.length, 1);
   });
 
   test('can verify custom types', function() {
-    manager = new MonitorManager({
+    const manager = new MonitorManager({
       serviceName: 'taskcluster-testing-service',
     });
     manager.register({
@@ -47,13 +47,13 @@ suite('Registry', function() {
       mock: true,
       verify: true,
     });
-    monitor = manager.monitor();
+    const monitor = manager.monitor();
     monitor.log.auditLog({foo: {}, bar: 'hi'});
     assert.throws(() => monitor.log.auditLog({foo: null}), /"auditLog" must include field "bar"/);
   });
 
   test('can publish types', function() {
-    manager = new MonitorManager({
+    const manager = new MonitorManager({
       serviceName: 'taskcluster-testing-service',
     });
     manager.register({

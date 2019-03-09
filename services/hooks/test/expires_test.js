@@ -47,10 +47,9 @@ suite('expires_test', function() {
         result: 'success',
         error: '',
       };
-      for (hookId of [hookId1, hookId2]) {
+      for (const hookId of [hookId1, hookId2]) {
         for(let i=0; i<12;i++) {
           hookIdToTaskIds[hookId].push(taskcluster.slugid());
-          time = new Date();
           await helper.LastFire.create({...entity, hookId,
             taskId: hookIdToTaskIds[hookId][i],
             taskCreateTime: new Date()});
@@ -61,13 +60,13 @@ suite('expires_test', function() {
       assume(count).to.equal(14);
 
       for (let hookId of [hookId1, hookId2] ) {
-        recentTaskIds = [];
+        const recentTaskIds = [];
         await helper.LastFire.query({
           hookGroupId,
           hookId },
         {
           handler: async lastFire => {
-            item = await lastFire.definition();
+            const item = await lastFire.definition();
             const { taskId } = item;
             recentTaskIds.push(taskId);
           },

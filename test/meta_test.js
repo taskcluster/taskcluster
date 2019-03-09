@@ -46,7 +46,7 @@ suite('Repo Meta Tests', function() {
     const Taskcluster = ["Task[C]luster", "Task [c]luster", "Task [C]luster"];
     for (let pattern of Taskcluster) {
       try {
-        res = await exec(`git grep '${pattern}'`);
+        const res = await exec(`git grep '${pattern}'`);
         // if the grep succeeded, then something matched
         throw new Error(`misspellings found: ${res.stdout}`);
       } catch (err) {
@@ -77,7 +77,7 @@ suite('Repo Meta Tests', function() {
     const packages = Object.values(JSON.parse(stdout)).map(p => p.location);
     const unused = {};
     const missing = {};
-    for (pkg of packages) {
+    for (const pkg of packages) {
       const leaf = await depcheck(path.join(ROOT_DIR, pkg), depOptions);
       if (leaf.dependencies.length !== 0) {
         unused[pkg] = leaf.dependencies;

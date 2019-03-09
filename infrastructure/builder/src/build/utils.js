@@ -93,7 +93,7 @@ exports.gitId = async ({dir, utils}) => {
  */
 const _dockerSetup = ({baseDir}) => {
   const inner = async ({baseDir}) => {
-    docker = new Docker();
+    const docker = new Docker();
     // when running a docker container, always remove the container when finished,
     // mount the workdir at /workdir, and run as the current (non-container) user
     // so that file ownership remains as expected.  Set up /etc/passwd and /etc/group
@@ -103,7 +103,7 @@ const _dockerSetup = ({baseDir}) => {
       `root:x:0:0:root:/root:/bin/bash\nbuilder:x:${uid}:${gid}:builder:/:/bin/bash\n`);
     fs.writeFileSync(path.join(baseDir, 'group'),
       `root:x:0:\nbuilder:x:${gid}:\n`);
-    dockerRunOpts = {
+    const dockerRunOpts = {
       AutoRemove: true,
       User: `${uid}:${gid}`,
       Env: [

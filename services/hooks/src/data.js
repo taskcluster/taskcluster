@@ -257,7 +257,7 @@ LastFire.expires = async function(Hook, now, n = 100) {
     },
   );
 
-  for ({ hookGroupId, hookId } of hookKeys) {
+  for (const { hookGroupId, hookId } of hookKeys) {
     const hookData = [];
     await this.scan({
       taskCreateTime: Entity.op.lessThan(now),

@@ -636,7 +636,7 @@ let replyWithArtifact = async function(taskId, runId, name, req, res) {
   }
 
   // We should never arrive here
-  let err = new Error('Unknown artifact storageType: ' + artifacts.storageType);
+  let err = new Error('Unknown artifact storageType: ' + artifact.storageType);
   err.artifact = artifact.json();
   this.monitor.reportError(err);
 };

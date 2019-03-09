@@ -80,7 +80,6 @@ helper.runWithFakeTime = (fn, mock, maxTime=30000) => {
       rejectOnCallbackFailure: true,
       fakeNodeDedicatedTimers: false, // so we can call a real timers.setImmediate
     });
-    fakingTime = true;
 
     let finished, err;
     this.slow(maxTime);
@@ -102,7 +101,6 @@ helper.runWithFakeTime = (fn, mock, maxTime=30000) => {
       await new Promise(resolve => timers.setImmediate(resolve));
     }
 
-    fakingTime = false;
     await zurvan.releaseTimers();
     if (err) {
       throw err;
