@@ -32,6 +32,8 @@ class IRCBot {
     assert(options.password, 'options.password is required');
     assert(options.aws, 'options.aws is required');
     assert(options.queueName, 'options.queueName is required');
+    assert(options.monitor, 'options.monitor is required');
+    this.monitor = options.monitor;
     this.client = new irc.Client(options.server, options.nick, {
       userName: options.userName,
       realName: options.realName,
@@ -42,11 +44,13 @@ class IRCBot {
       debug: options.debug || false,
       showErrors: true,
     });
-    this.client.on('error', err => {
-      if (err.command !== 'err_nosuchnick') {
-        throw err;
+    this.client.on('error', rpt => {
+      if (rpt.command !== 'err_nosuchnick') {
+        this.monitor.reportError(new Error('irc_error'), rpt);
       }
-      console.log('ignoring irc client error');
+    });
+    this.client.on('unhandled', msg => {
+      this.monitor.notice(msg);
     });
     this.sqs = new aws.SQS(options.aws);
     this.queueName = options.queueName;
