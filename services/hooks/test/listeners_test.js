@@ -5,8 +5,7 @@ const sinon = require('sinon');
 const helper = require('./helper');
 
 helper.secrets.mockSuite('listeners_test.js', ['taskcluster'], function(mock, skipping) {
-  helper.withHook(mock, skipping);
-  helper.withQueues(mock, skipping);
+  helper.withEntities(mock, skipping);
   helper.withTaskCreator(mock, skipping);
   helper.withPulse(mock, skipping);
 

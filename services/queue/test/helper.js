@@ -9,17 +9,12 @@ const temporary = require('temporary');
 const mockAwsS3 = require('mock-aws-s3');
 const nock = require('nock');
 const FakeBlobStore = require('./fake_blob_store');
-const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withEntity} = require('taskcluster-lib-testing');
 const zurvan = require('zurvan');
 const timers = require('timers');
 const {FakeClient} = require('taskcluster-lib-pulse');
-const slugid = require('slugid');
 
 const helper = module.exports;
-
-// a suffix used to generate unique table names so that parallel test runs do not
-// interfere with one another.  We remove these at the end of the test run.
-const TABLE_SUFFIX = slugid.nice().replace(/[_-]/g, '');
 
 exports.load = stickyLoader(load);
 
@@ -250,72 +245,17 @@ exports.withAmazonIPRanges = (mock, skipping) => {
  * Set helper.<Class> for each of the Azure entities used in the service
  */
 exports.withEntities = (mock, skipping) => {
-  const tables = [
-    {
-      name: 'Artifact',
-      context: async () => ({
-        blobStore: await helper.load('blobStore'),
-        publicBucket: await helper.load('publicArtifactBucket'),
-        privateBucket: await helper.load('privateArtifactBucket'),
-        monitor: await helper.load('monitor'),
-        s3Controller: await helper.load('s3Controller'),
-      }),
-    },
-    {name: 'Task'},
-    {name: 'TaskGroup'},
-    {name: 'TaskGroupMember'},
-    {name: 'TaskGroupActiveSet', className: 'TaskGroupMember'},
-    {name: 'TaskRequirement'},
-    {name: 'TaskDependency'},
-    {name: 'Provisioner'},
-    {name: 'WorkerType'},
-    {name: 'Worker'},
-  ];
-
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    if (mock) {
-      helper.load.inject('publicArtifactBucket', {});
-      await exports.load('cfg');
-      await Promise.all(tables.map(async tbl => {
-        exports.load.inject(tbl.name, data[tbl.className || tbl.name].setup({
-          tableName: tbl.name,
-          credentials: 'inMemory',
-          context: tbl.context ? await tbl.context() : undefined,
-        }));
-      }));
-    } else {
-      // suffix each ..TableName config with a short suffix so that parallel
-      // test runs have a good chance of not stepping on each others' feet
-      const cfg = await helper.load('cfg');
-      Object.keys(cfg.app).forEach(prop => {
-        if (prop.endsWith('TableName')) {
-          helper.load.cfg(`app.${prop}`, cfg.app[prop] + TABLE_SUFFIX);
-        }
-      });
-    }
-
-    await Promise.all(tables.map(async tbl => {
-      const table = await exports.load(tbl.name);
-      exports[tbl.name] = table;
-      await table.ensureTable();
-    }));
-  });
-
-  const cleanup = async () => {
-    if (skipping()) {
-      return;
-    }
-
-    await Promise.all(tables.map(async tbl => {
-      await exports[tbl.name].scan({}, {handler: e => e.remove()});
-    }));
-  };
-  setup(cleanup);
-  suiteTeardown(cleanup);
+  withEntity(mock, skipping, exports, 'Artifact', data.Artifact);
+  withEntity(mock, skipping, exports, 'Task', data.Task);
+  withEntity(mock, skipping, exports, 'TaskGroup', data.TaskGroup);
+  withEntity(mock, skipping, exports, 'TaskGroupMember', data.TaskGroupMember);
+  withEntity(mock, skipping, exports, 'TaskGroupActiveSet', data.TaskGroupMember);
+  withEntity(mock, skipping, exports, 'TaskRequirement', data.TaskRequirement);
+  withEntity(mock, skipping, exports, 'TaskDependency', data.TaskDependency);
+  withEntity(mock, skipping, exports, 'Provisioner', data.Provisioner);
+  withEntity(mock, skipping, exports, 'WorkerType', data.WorkerType);
+  withEntity(mock, skipping, exports, 'Worker', data.Worker);
+  //helper.load.inject('publicArtifactBucket', {});
 };
 
 /**

@@ -14,6 +14,12 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   helper.withServers(mock, skipping);
   helper.withCfg(mock, skipping);
 
+  let testaccount;
+  suiteSetup('get azure test account name', async function() {
+    const cfg = await helper.load('cfg');
+    testaccount = _.keys(cfg.app.azureAccounts)[0];
+  });
+
   test('azureAccounts', function() {
     return helper.apiClient.azureAccounts(
     ).then(function(result) {
@@ -24,13 +30,13 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('azureTables', async function() {
     // First make sure the table exists
     await helper.apiClient.azureTableSAS(
-      helper.testaccount,
+      testaccount,
       'TestTable',
       'read-write'
     );
     let extra = {};
     do {
-      result = await helper.apiClient.azureTables(helper.testaccount, extra);
+      result = await helper.apiClient.azureTables(testaccount, extra);
       extra.continuationToken = result.continuationToken;
       if (result.tables.includes('TestTable')) {
         return;
@@ -41,7 +47,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('azureTableSAS', function() {
     return helper.apiClient.azureTableSAS(
-      helper.testaccount,
+      testaccount,
       'TestTable',
       'read-write'
     ).then(function(result) {
@@ -53,7 +59,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('azureTableSAS (read-write)', async function() {
     let res = await helper.apiClient.azureTableSAS(
-      helper.testaccount,
+      testaccount,
       'TestTable',
       'read-write',
     ).then(function(result) {
@@ -63,7 +69,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
       return result;
     });
     let table = new azure.Table({
-      accountId: helper.testaccount,
+      accountId: testaccount,
       sas: res.sas,
     });
     // This should not error since this is read-write
@@ -72,7 +78,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('azureTableSAS (read-only)', async function() {
     let res = await helper.apiClient.azureTableSAS(
-      helper.testaccount,
+      testaccount,
       'TestTable',
       'read-only',
     ).then(function(result) {
@@ -82,7 +88,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
       return result;
     });
     let table = new azure.Table({
-      accountId: helper.testaccount,
+      accountId: testaccount,
       sas: res.sas,
     });
     // This should not error since this is read-write
@@ -95,7 +101,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('azureTableSAS (invalid level)', function() {
     return helper.apiClient.azureTableSAS(
-      helper.testaccount,
+      testaccount,
       'TestTable',
       'foo-bar-baz',
     ).then(function(result) {
@@ -108,10 +114,10 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('azureTableSAS (allowed table)', () => {
     // Restrict access a bit
     helper.setupScopes(
-      'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable',
+      `auth:azure-table:read-write:${testaccount}/allowedTable`,
     );
     return helper.apiClient.azureTableSAS(
-      helper.testaccount,
+      testaccount,
       'allowedTable',
       'read-write'
     ).then(function(result) {
@@ -124,10 +130,10 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('azureTableSAS (allowed table rw -> ro)', function() {
     // Restrict access a bit
     helper.setupScopes(
-      'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable',
+      `auth:azure-table:read-write:${testaccount}/allowedTable`,
     );
     return helper.apiClient.azureTableSAS(
-      helper.testaccount,
+      testaccount,
       'allowedTable',
       'read-only'
     ).then(function(result) {
@@ -140,10 +146,10 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('azureTableSAS (too high permission)', function() {
     // Restrict access a bit
     helper.setupScopes(
-      'auth:azure-table:read-only:' + helper.testaccount + '/allowedTable',
+      `auth:azure-table:read-only:${testaccount}/allowedTable`,
     );
     return helper.apiClient.azureTableSAS(
-      helper.testaccount,
+      testaccount,
       'allowedTable',
       'read-write'
     ).then(function(result) {
@@ -156,10 +162,10 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('azureTableSAS (unauthorized table)', function() {
     // Restrict access a bit
     helper.setupScopes(
-      'auth:azure-table:read-write:' + helper.testaccount + '/allowedTable',
+      `auth:azure-table:read-write:${testaccount}/allowedTable`,
     );
     return helper.apiClient.azureTableSAS(
-      helper.testaccount,
+      testaccount,
       'unauthorizedTable',
       'read-write'
     ).then(function(result) {
@@ -171,7 +177,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('azureContainerSAS', async () => {
     let result = await helper.apiClient.azureContainerSAS(
-      helper.testaccount,
+      testaccount,
       'container-test',
       'read-write'
     );
@@ -183,7 +189,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('azureContainerSAS (read-write)', async () => {
     let result = await helper.apiClient.azureContainerSAS(
-      helper.testaccount,
+      testaccount,
       'container-test',
       'read-write',
     );
@@ -192,7 +198,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
       'Expected expiry to be in the future');
 
     let blob = new azure.Blob({
-      accountId: helper.testaccount,
+      accountId: testaccount,
       sas: result.sas,
     });
 
@@ -203,7 +209,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('azureContainers', async function() {
     let extra = {};
     do {
-      result = await helper.apiClient.azureContainers(helper.testaccount, extra);
+      result = await helper.apiClient.azureContainers(testaccount, extra);
       extra.continuationToken = result.continuationToken;
       if (result.containers.includes('container-test')) {
         return;
@@ -214,7 +220,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('azureContainerSAS (read-only)', async () => {
     let result = await helper.apiClient.azureContainerSAS(
-      helper.testaccount,
+      testaccount,
       'container-test',
       'read-only',
     );
@@ -223,7 +229,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
       'Expected expiry to be in the future');
 
     let blob = new azure.Blob({
-      accountId: helper.testaccount,
+      accountId: testaccount,
       sas: result.sas,
     });
 
@@ -239,7 +245,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('azureContainerSAS (invalid level)', async () => {
     try {
       await helper.apiClient.azureContainerSAS(
-        helper.testaccount,
+        testaccount,
         'container-test',
         'foo-bar-baz',
       );
@@ -252,11 +258,11 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('azureContainerSAS (allowed container)', async () => {
     helper.setupScopes(
-      'auth:azure-container:read-write:' + helper.testaccount + '/allowed-container',
+      `auth:azure-container:read-write:${testaccount}/allowed-container`,
     );
 
     let result = await helper.apiClient.azureContainerSAS(
-      helper.testaccount,
+      testaccount,
       'allowed-container',
       'read-write'
     );
@@ -268,11 +274,11 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('azureContainerSAS (allowed read-write -> read-only)', async () => {
     helper.setupScopes(
-      'auth:azure-container:read-write:' + helper.testaccount + '/allowed-container',
+      `auth:azure-container:read-write:${testaccount}/allowed-container`,
     );
 
     let result = await helper.apiClient.azureContainerSAS(
-      helper.testaccount,
+      testaccount,
       'allowed-container',
       'read-only',
     );
@@ -283,11 +289,11 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('azureContainerSAS (unauthorized container)', async () => {
     helper.setupScopes(
-      'auth:azure-container:read-write:' + helper.testaccount + '/allowed-container',
+      `auth:azure-container:read-write:${testaccount}/allowed-container`,
     );
     try {
       await helper.apiClient.azureContainerSAS(
-        helper.testaccount,
+        testaccount,
         'unauthorized-container',
         'read-write'
       );

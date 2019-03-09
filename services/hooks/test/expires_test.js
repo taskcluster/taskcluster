@@ -4,8 +4,7 @@ const assume = require('assume');
 
 suite('expires_test', function() {
   helper.secrets.mockSuite('expires_test.js', ['taskcluster'], function(mock, skipping) {
-    helper.withHook(mock, skipping);
-    helper.withLastFire(mock, skipping);
+    helper.withEntities(mock, skipping);
 
     test('expire nothing', async function() {
       const count = await helper.LastFire.expires(helper.Hook, new Date());

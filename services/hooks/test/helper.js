@@ -1,19 +1,14 @@
 const data = require('../src/data');
 const taskcluster = require('taskcluster-client');
 const taskcreator = require('../src/taskcreator');
-const {stickyLoader, fakeauth, Secrets} = require('taskcluster-lib-testing');
+const {stickyLoader, fakeauth, Secrets, withEntity} = require('taskcluster-lib-testing');
 const builder = require('../src/v1');
 const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
 const {FakeClient} = require('taskcluster-lib-pulse');
-const slugid = require('slugid');
 const HookListeners = require('../src/listeners');
 
-const helper = module.exports = {};
-
-// a suffix used to generate unique table names so that parallel test runs do not
-// interfere with one another.
-const TABLE_SUFFIX = slugid.nice().replace(/[_-]/g, '');
+const helper = exports;
 
 helper.rootUrl = 'http://localhost:60401';
 
@@ -34,74 +29,10 @@ helper.secrets = new Secrets({
   },
 });
 
-/**
- * Set helper.Hook to a set-up Hook entity (and inject it into the loader)
- */
-helper.withHook = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    if (mock) {
-      const cfg = await helper.load('cfg');
-      helper.load.inject('Hook', data.Hook.setup({
-        tableName: cfg.app.hookTableName,
-        credentials: 'inMemory',
-        cryptoKey: cfg.azure.cryptoKey,
-        signingKey: cfg.azure.signingKey,
-      }));
-    } else {
-      // choose a unique name for the table, to avoid conflicting with other tests
-      const cfg = await helper.load('cfg');
-      helper.load.cfg('app.hookTableName', cfg.app.hookTableName + TABLE_SUFFIX);
-    }
-
-    helper.Hook = await helper.load('Hook');
-    await helper.Hook.ensureTable();
-  });
-
-  const cleanup = async () => {
-    if (!skipping()) {
-      await helper.Hook.scan({}, {handler: async (hook) => { await hook.remove();}});
-    }
-  };
-  setup(cleanup);
-  suiteTeardown(cleanup);
-};
-
-/**
- * Set helper.LastFire to a set-up LastFire entity (and inject it into the loader)
- */
-helper.withLastFire = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-    if (mock) {
-      const cfg = await helper.load('cfg');
-      helper.load.inject('LastFire', data.LastFire.setup({
-        tableName: cfg.app.lastFireTableName,
-        credentials: 'inMemory',
-        signingKey: cfg.azure.signingKey,
-      }));
-    } else {
-      // choose a unique name for the table, to avoid conflicting with other tests
-      const cfg = await helper.load('cfg');
-      helper.load.cfg('app.lastFireTableName', cfg.app.lastFireTableName + TABLE_SUFFIX);
-    }
-
-    helper.LastFire = await helper.load('LastFire');
-    await helper.LastFire.ensureTable();
-  });
-
-  const cleanup = async () => {
-    if (!skipping()) {
-      await helper.LastFire.scan({}, {handler: lastFire => lastFire.remove()});
-    }
-  };
-  setup(cleanup);
-  suiteTeardown(cleanup);
+helper.withEntities = (mock, skipping) => {
+  withEntity(mock, skipping, exports, 'Hook', data.Hook);
+  withEntity(mock, skipping, exports, 'LastFire', data.LastFire);
+  withEntity(mock, skipping, exports, 'Queues', data.Queues);
 };
 
 /**
@@ -197,41 +128,6 @@ helper.withPulse = (mock, skipping) => {
       helper.Listener = null;
     }
   });
-};
-
-/**
- * Set helper.Queues to a set-up Queues entity (and inject it into the loader)
- */
-helper.withQueues = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    if (mock) {
-      const cfg = await helper.load('cfg');
-      helper.load.inject('Queues', data.Queues.setup({
-        tableName: cfg.app.queuesTableName,
-        credentials: 'inMemory',
-        signingKey: cfg.azure.signingKey,
-      }));
-    } else {
-      // choose a unique name for the table, to avoid conflicting with other tests
-      const cfg = await helper.load('cfg');
-      helper.load.cfg('app.queuesTableName', cfg.app.queuesTableName + TABLE_SUFFIX);
-    }
-
-    helper.Queues = await helper.load('Queues');
-    await helper.Queues.ensureTable();
-  });
-
-  const cleanup = async () => {
-    if (!skipping()) {
-      await helper.Queues.scan({}, {handler: async (queue) => await queue.remove()});
-    }
-  };
-  setup(cleanup);
-  suiteTeardown(cleanup);
 };
 
 /**

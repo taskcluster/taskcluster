@@ -1,13 +1,9 @@
 const taskcluster = require('taskcluster-client');
 const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
 const load = require('../src/main');
-const slugid = require('slugid');
 const data = require('../src/data');
 const builder = require('../src/api.js');
-
-// a suffix used to generate unique table names so that parallel test runs do not
-// interfere with one another.  We remove these at the end of the test run.
-const TABLE_SUFFIX = slugid.nice().replace(/[_-]/g, '');
+const {withEntity} = require('taskcluster-lib-testing');
 
 exports.load = stickyLoader(load);
 
@@ -32,38 +28,8 @@ exports.secrets = new Secrets({
 /**
  * Set helper.Secret to a fully-configured Secret entity, and inject it into the loader
  */
-exports.withSecret = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    if (mock) {
-      const cfg = await exports.load('cfg');
-      exports.load.inject('Secret', data.Secret.setup({
-        tableName: 'Secret',
-        credentials: 'inMemory',
-        cryptoKey: cfg.azure.cryptoKey,
-        signingKey: cfg.azure.signingKey,
-      }));
-    } else {
-      // suffix the table name config with a short suffix so that parallel
-      // test runs have a good chance of not stepping on each others' feet
-      const cfg = await exports.load('cfg');
-      exports.load.cfg('azure.tableName', cfg.azure.tableName + TABLE_SUFFIX);
-    }
-
-    exports.Secret = await exports.load('Secret');
-    await exports.Secret.ensureTable();
-  });
-
-  const cleanup = async () => {
-    if (!skipping()) {
-      await exports.Secret.scan({}, {handler: secret => secret.remove()});
-    }
-  };
-  setup(cleanup);
-  suiteTeardown(cleanup);
+exports.withEntities = (mock, skipping) => {
+  withEntity(mock, skipping, exports, 'Secret', data.Secret);
 };
 
 // Some clients for the tests, with differents scopes.  These are turned

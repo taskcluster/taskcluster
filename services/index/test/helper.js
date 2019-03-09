@@ -4,14 +4,10 @@ const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const libUrls = require('taskcluster-lib-urls');
-const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withEntity} = require('taskcluster-lib-testing');
 const {FakeClient} = require('taskcluster-lib-pulse');
 
 const helper = module.exports;
-
-// a suffix used to generate unique table names so that parallel test runs do not
-// interfere with one another.  We remove these at the end of the test run.
-const TABLE_SUFFIX = 'abcdef'; //slugid.nice().replace(/[_-]/g, '');
 
 exports.load = stickyLoader(load);
 
@@ -41,53 +37,8 @@ helper.rootUrl = 'http://localhost:60020';
  * Set helper.<Class> for each of the Azure entities used in the service
  */
 exports.withEntities = (mock, skipping) => {
-  const tables = [
-    {name: 'IndexedTask'},
-    {name: 'Namespace'},
-  ];
-
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    if (mock) {
-      await exports.load('cfg');
-      await Promise.all(tables.map(async tbl => {
-        exports.load.inject(tbl.name, data[tbl.className || tbl.name].setup({
-          tableName: tbl.name,
-          credentials: 'inMemory',
-          context: tbl.context ? await tbl.context() : undefined,
-        }));
-      }));
-    } else {
-      // suffix each ..TableName config with a short suffix so that parallel
-      // test runs have a good chance of not stepping on each others' feet
-      const cfg = await helper.load('cfg');
-      Object.keys(cfg.app).forEach(prop => {
-        if (prop.endsWith('TableName')) {
-          helper.load.cfg(`app.${prop}`, cfg.app[prop] + TABLE_SUFFIX);
-        }
-      });
-    }
-
-    await Promise.all(tables.map(async tbl => {
-      exports[tbl.name] = await exports.load(tbl.name);
-      await exports[tbl.name].ensureTable();
-    }));
-  });
-
-  const cleanup = async () => {
-    if (skipping()) {
-      return;
-    }
-
-    await Promise.all(tables.map(async tbl => {
-      await exports[tbl.name].scan({}, {handler: e => e.remove()});
-    }));
-  };
-  setup(cleanup);
-  suiteTeardown(cleanup);
+  withEntity(mock, skipping, exports, 'IndexedTask', data.IndexedTask);
+  withEntity(mock, skipping, exports, 'Namespace', data.Namespace);
 };
 
 /**

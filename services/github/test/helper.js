@@ -1,14 +1,13 @@
 const http = require('http');
 const fs = require('fs');
 const _ = require('lodash');
-const slugid = require('slugid');
 const builder = require('../src/api');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
 const fakeGithubAuth = require('./github-auth');
 const data = require('../src/data');
 const libUrls = require('taskcluster-lib-urls');
-const {fakeauth, stickyLoader, Secrets} = require('taskcluster-lib-testing');
+const {fakeauth, stickyLoader, Secrets, withEntity} = require('taskcluster-lib-testing');
 const {FakeClient} = require('taskcluster-lib-pulse');
 
 exports.load = stickyLoader(load);
@@ -82,71 +81,13 @@ exports.withFakePublisher = (mock, skipping) => {
 };
 
 /**
- * Set helper.Builds and helper.OwnersDirectory to fully-configured entity
- * objects, and inject them into the loader. These tables are cleared at
- * suiteSetup, but not between test cases.
+ * Set helper.<name> for each entity class
  */
 exports.withEntities = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    // Need to generate these each time so that pushes and PRs can run at the same time
-    // Maybe at some point we should cook up a real solution to this.
-    const tableVersion = slugid.nice().replace(/[_-]/g, '');
-    exports.buildsTableName = `TaskclusterGithubBuildsV${tableVersion}`;
-    exports.ownersTableName = `TaskclusterIntegrationOwnersV${tableVersion}`;
-    exports.checkRunsTableName = `TaskclusterCheckRunsV${tableVersion}`;
-    exports.checksToTasksTableName = `TaskclusterChecksToTasksV${tableVersion}`;
-    exports.load.cfg('app.buildsTableName', exports.buildsTableName);
-    exports.load.cfg('app.ownersDirectoryTableName', exports.ownersTableName);
-    exports.load.cfg('app.checkRunsTableName', exports.checkRunsTableName);
-    exports.load.cfg('app.checksToTasksTableName', exports.checksToTasksTableName);
-
-    if (mock) {
-      await exports.load('cfg');
-      exports.load.inject('Builds', data.Builds.setup({
-        tableName: 'Builds',
-        credentials: 'inMemory',
-      }));
-      exports.load.inject('OwnersDirectory', data.OwnersDirectory.setup({
-        tableName: 'OwnersDirectory',
-        credentials: 'inMemory',
-      }));
-      exports.load.inject('CheckRuns', data.CheckRuns.setup({
-        tableName: 'CheckRuns',
-        credentials: 'inMemory',
-      }));
-      exports.load.inject('ChecksToTasks', data.ChecksToTasks.setup({
-        tableName: 'ChecksToTasks',
-        credentials: 'inMemory',
-      }));
-    }
-
-    exports.Builds = await exports.load('Builds');
-    await exports.Builds.ensureTable();
-
-    exports.OwnersDirectory = await exports.load('OwnersDirectory');
-    await exports.OwnersDirectory.ensureTable();
-
-    exports.CheckRuns = await exports.load('CheckRuns');
-    await exports.CheckRuns.ensureTable();
-
-    exports.ChecksToTasks = await exports.load('ChecksToTasks');
-    await exports.ChecksToTasks.ensureTable();
-  });
-
-  const cleanup = async () => {
-    if (!skipping()) {
-      await exports.Builds.scan({}, {handler: secret => secret.remove()});
-      await exports.OwnersDirectory.scan({}, {handler: secret => secret.remove()});
-      await exports.CheckRuns.scan({}, {handler: secret => secret.remove()});
-      await exports.ChecksToTasks.scan({}, {handler: secret => secret.remove()});
-    }
-  };
-  suiteSetup(cleanup);
-  suiteTeardown(cleanup);
+  withEntity(mock, skipping, exports, 'Builds', data.Builds, {orderedTests: true});
+  withEntity(mock, skipping, exports, 'OwnersDirectory', data.OwnersDirectory, {orderedTests: true});
+  withEntity(mock, skipping, exports, 'CheckRuns', data.CheckRuns, {orderedTests: true});
+  withEntity(mock, skipping, exports, 'ChecksToTasks', data.ChecksToTasks, {orderedTests: true});
 };
 
 /**

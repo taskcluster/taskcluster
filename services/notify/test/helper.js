@@ -3,17 +3,13 @@ const path = require('path');
 const aws = require('aws-sdk');
 const taskcluster = require('taskcluster-client');
 const {FakeClient} = require('taskcluster-lib-pulse');
-const {stickyLoader, Secrets, fakeauth} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, fakeauth, withEntity} = require('taskcluster-lib-testing');
 const builder = require('../src/api');
 const load = require('../src/main');
 const RateLimit = require('../src/ratelimit');
 const slugid = require('slugid');
 const data = require('../src/data');
 const libUrls = require('taskcluster-lib-urls');
-
-// a suffix used to generate unique table names so that parallel test runs do not
-// interfere with one another.  We remove these at the end of the test run.
-const TABLE_SUFFIX = slugid.nice().replace(/[_-]/g, '');
 
 const testclients = {
   'test-client': ['*'],
@@ -392,36 +388,6 @@ exports.withServer = (mock, skipping) => {
   });
 };
 
-exports.withDenylist = (mock, skipping) => {
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    if (mock) {
-      await exports.load('cfg');
-      exports.load.inject('DenylistedNotification', data.DenylistedNotification.setup({
-        tableName: 'DenylistedNotification',
-        credentials: 'inMemory',
-      }));
-    } else {
-      // suffix the table name config with a short suffix so that parallel
-      // test runs have a good chance of not stepping on each others' feet
-      const cfg = await exports.load('cfg');
-      exports.load.cfg('app.denylistedNotificationTableName',
-        cfg.app.denylistedNotificationTableName + TABLE_SUFFIX);
-    }
-
-    exports.DenylistedNotification = await exports.load('DenylistedNotification');
-    await exports.DenylistedNotification.ensureTable();
-  });
-
-  // Clear the table entries before each test
-  const cleanup = async () => {
-    if (!skipping()) {
-      await exports.DenylistedNotification.scan({}, {handler: address => address.remove()});
-    }
-  };
-  setup(cleanup);
-  suiteTeardown(cleanup);
+exports.withEntities = (mock, skipping) => {
+  withEntity(mock, skipping, exports, 'DenylistedNotification', data.DenylistedNotification);
 };

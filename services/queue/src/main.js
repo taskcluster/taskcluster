@@ -147,7 +147,7 @@ let load = loader({
     ],
     setup: async ({cfg, monitor, process, blobStore, publicArtifactBucket,
       privateArtifactBucket, s3Controller}) => {
-      let Artifact = data.Artifact.setup({
+      return data.Artifact.setup({
         tableName: cfg.app.artifactTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -166,8 +166,6 @@ let load = loader({
         },
         monitor: monitor.monitor('table.artifacts'),
       });
-      await Artifact.ensureTable();
-      return Artifact;
     },
   },
 
@@ -175,7 +173,7 @@ let load = loader({
   Task: {
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
-      let Task = data.Task.setup({
+      return data.Task.setup({
         tableName: cfg.app.taskTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -187,8 +185,6 @@ let load = loader({
         }),
         monitor: monitor.monitor('table.tasks'),
       });
-      await Task.ensureTable();
-      return Task;
     },
   },
 
@@ -196,7 +192,7 @@ let load = loader({
   TaskGroup: {
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
-      let TaskGroup = data.TaskGroup.setup({
+      return data.TaskGroup.setup({
         tableName: cfg.app.taskGroupTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -208,8 +204,6 @@ let load = loader({
         }),
         monitor: monitor.monitor('table.taskgroups'),
       });
-      await TaskGroup.ensureTable();
-      return TaskGroup;
     },
   },
 
@@ -217,7 +211,7 @@ let load = loader({
   TaskGroupMember: {
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
-      let TaskGroupMember = data.TaskGroupMember.setup({
+      return data.TaskGroupMember.setup({
         tableName: cfg.app.taskGroupMemberTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -229,8 +223,6 @@ let load = loader({
         }),
         monitor: monitor.monitor('table.taskgroupmembers'),
       });
-      await TaskGroupMember.ensureTable();
-      return TaskGroupMember;
     },
   },
 
@@ -240,7 +232,7 @@ let load = loader({
     setup: async ({cfg, monitor, process}) => {
       // NOTE: this uses the same entity type definition as TaskGroupMember,
       // but presence in either table indicates different things
-      let TaskGroupActiveSet = data.TaskGroupMember.setup({
+      return data.TaskGroupMember.setup({
         tableName: cfg.app.taskGroupActiveSetTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -252,8 +244,6 @@ let load = loader({
         }),
         monitor: monitor.monitor('table.taskgroupactivesets'),
       });
-      await TaskGroupActiveSet.ensureTable();
-      return TaskGroupActiveSet;
     },
   },
 
@@ -261,7 +251,7 @@ let load = loader({
   TaskRequirement: {
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
-      let TaskRequirement = data.TaskRequirement.setup({
+      return data.TaskRequirement.setup({
         tableName: cfg.app.taskRequirementTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -273,8 +263,6 @@ let load = loader({
         }),
         monitor: monitor.monitor('table.taskrequirements'),
       });
-      await TaskRequirement.ensureTable();
-      return TaskRequirement;
     },
   },
 
@@ -282,7 +270,7 @@ let load = loader({
   TaskDependency: {
     requires: ['cfg', 'monitor', 'process'],
     setup: async ({cfg, monitor, process}) => {
-      let TaskDependency = data.TaskDependency.setup({
+      return data.TaskDependency.setup({
         tableName: cfg.app.taskDependencyTableName,
         operationReportChance: cfg.app.azureReportChance,
         operationReportThreshold: cfg.app.azureReportThreshold,
@@ -294,8 +282,6 @@ let load = loader({
         }),
         monitor: monitor.monitor('table.taskdependencies'),
       });
-      await TaskDependency.ensureTable();
-      return TaskDependency;
     },
   },
 
