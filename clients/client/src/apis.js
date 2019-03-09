@@ -257,7 +257,7 @@ module.exports = {
           "args": [
             "roleId"
           ],
-          "description": "Update an existing role.\n\nThe caller's scopes must satisfy all of the new scopes being added, but\nneed not satisfy all of the client's existing scopes.\n\nAn update of a role that will generate an infinite expansion will result\nin an error response.",
+          "description": "Update an existing role.\n\nThe caller's scopes must satisfy all of the new scopes being added, but\nneed not satisfy all of the role's existing scopes.\n\nAn update of a role that will generate an infinite expansion will result\nin an error response.",
           "input": "v1/create-role-request.json#",
           "method": "post",
           "name": "updateRole",

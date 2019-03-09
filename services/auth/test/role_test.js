@@ -122,6 +122,66 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
       err => assert(err.statusCode === 400, 'Expected 400'));
   });
 
+  test('createRole twice with identical roles', async function() {
+    await helper.apiClient.createRole('double', {
+      description: 'double-add',
+      scopes: ['foo'],
+    });
+    await helper.apiClient.createRole('double', {
+      description: 'double-add',
+      scopes: ['foo'],
+    });
+
+    const matchingRoles = (await helper.apiClient.listRoles())
+      .filter(r => r.roleId === 'double');
+    assert.equal(matchingRoles.length, 1);
+
+    await helper.apiClient.deleteRole('double');
+  });
+
+  test('createRole twice with different roles', async function() {
+    await helper.apiClient.createRole('double', {
+      description: 'double-add',
+      scopes: ['foo'],
+    });
+    try {
+      await helper.apiClient.createRole('double', {
+        description: 'double-add',
+        scopes: ['DIFFERENT'],
+      });
+      throw new Error('expected exception');
+    } catch (err) {
+      if (err.statusCode !== 409) {
+        throw err;
+      }
+    }
+
+    const matchingRoles = (await helper.apiClient.listRoles())
+      .filter(r => r.roleId === 'double');
+    assert.equal(matchingRoles.length, 1);
+
+    await helper.apiClient.deleteRole('double');
+  });
+
+  test('createRole twice at the same time, with identical roles', async function() {
+    await Promise.all([
+      helper.apiClient.createRole('double', {
+        description: 'double-add',
+        scopes: ['foo'],
+      }),
+      helper.apiClient.createRole('double', {
+        description: 'double-add',
+        scopes: ['foo'],
+      }),
+    ]);
+
+    const matchingRoles = (await helper.apiClient.listRoles())
+      .filter(r => r.roleId === 'double');
+    assert.equal(matchingRoles.length, 1);
+
+    await helper.apiClient.deleteRole('double');
+  });
+
   test('getRole', async () => {
     let role = await helper.apiClient.role('thing-id:' + clientId);
     assume(role.expandedScopes.sort()).deep.equals([

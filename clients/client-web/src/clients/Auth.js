@@ -198,7 +198,7 @@ export default class Auth extends Client {
   /* eslint-disable max-len */
   // Update an existing role.
   // The caller's scopes must satisfy all of the new scopes being added, but
-  // need not satisfy all of the client's existing scopes.
+  // need not satisfy all of the role's existing scopes.
   // An update of a role that will generate an infinite expansion will result
   // in an error response.
   /* eslint-enable max-len */
