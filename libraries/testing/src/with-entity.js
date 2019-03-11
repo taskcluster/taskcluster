@@ -26,7 +26,7 @@ module.exports = (mock, skipping, helper, loaderComponent, cls,
     }
 
     const cfg = await helper.load('cfg');
-    oldSetup = cls.setup;
+    const oldSetup = cls.setup;
     cls.setup = function ({...options}) {
       if (mock) {
         options.credentials = 'inMemory';

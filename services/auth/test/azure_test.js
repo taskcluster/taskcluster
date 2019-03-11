@@ -209,11 +209,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
   test('azureContainers', async function() {
     let extra = {};
     do {
-<<<<<<< HEAD
-      result = await helper.apiClient.azureContainers(testaccount, extra);
-=======
-      const result = await helper.apiClient.azureContainers(helper.testaccount, extra);
->>>>>>> Turn on no-undef
+      const result = await helper.apiClient.azureContainers(testaccount, extra);
       extra.continuationToken = result.continuationToken;
       if (result.containers.includes('container-test')) {
         return;
