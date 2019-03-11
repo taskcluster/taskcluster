@@ -170,5 +170,5 @@ const load = loader(
 );
 
 if (!module.parent) {
-  load.crashOnError(process.argv[2]);
+  load.crashOnError(process.argv[2] || 'devServer');
 }
