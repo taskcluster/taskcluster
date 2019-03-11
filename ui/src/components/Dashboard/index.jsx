@@ -243,7 +243,7 @@ export default class Dashboard extends Component {
           </Typography>
         </div>
         <Divider />
-        {docs ? <UserMenu /> : <UserMenu navOpen />}
+        <UserMenu />
         <Divider />
         {docs ? <DocsSidebarList /> : <SidebarList />}
       </nav>
@@ -297,7 +297,7 @@ export default class Dashboard extends Component {
                 </IconButton>
               </Tooltip>
             )}
-            <UserMenu navOpen appBar />
+            <UserMenu appBar />
           </Toolbar>
         </AppBar>
         <Drawer

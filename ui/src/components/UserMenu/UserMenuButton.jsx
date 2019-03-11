@@ -12,12 +12,10 @@ import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
 
 @withStyles(theme => ({
-  icon: {
-    fill: theme.palette.common.white,
-  },
   avatarButton: {
     height: 6 * theme.spacing.unit,
     width: 6 * theme.spacing.unit,
+    padding: '0',
   },
 }))
 @withAuth
@@ -57,7 +55,7 @@ export default class UserMenuButton extends Component {
             onClick={onSignInDialogOpen}
             {...buttonProps}
             {...props}>
-            <ListItemIcon className={classes.icon}>
+            <ListItemIcon>
               <AccountCircleIcon />
             </ListItemIcon>
             Sign in
