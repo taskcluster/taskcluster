@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "aws-sdk": "^2.150.0",
-    "azure-blob-storage": "^3.0.0",
+    "azure-blob-storage": "^4.0.0",
     "azure-entities": "^5.2.0",
     "debug": "^4.0.0",
     "fast-azure-storage": "^2.3.0",
