@@ -170,10 +170,10 @@ const load = loader({
   irc: {
     requires: ['cfg', 'monitor'],
     setup: async ({cfg, monitor}) => {
-      monitor = monitor.monitor('irc');
       let client = new IRC(_.merge(cfg.irc, {
         aws: cfg.aws,
         queueName: cfg.app.sqsQueueName,
+        monitor: monitor.monitor('irc'),
       }));
       await client.start();
       return client;

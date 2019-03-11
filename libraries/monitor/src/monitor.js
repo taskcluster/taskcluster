@@ -267,7 +267,7 @@ class Monitor {
    *
    */
   reportError(err, level, extra = {}) {
-    if (!(err instanceof Error)) {
+    if (err.hasOwnProperty && !(err.hasOwnProperty('stack') || err.hasOwnProperty('message'))) {
       err = new Error(err);
     }
     if (level) {
