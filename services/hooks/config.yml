@@ -51,7 +51,13 @@ defaults:
     password:       !env PULSE_PASSWORD
     hostname:       !env PULSE_HOSTNAME
     vhost:          !env PULSE_VHOST
-    denylist:       [taskcluster-queue, taskcluster-hooks]
+    # a list of regular expressions for exchanges that are prohibited
+    denylist:
+     # triggering a hook on task-created could create a "task bomb" that just spews
+     # out tasks with no end, and isn't useful otherwise
+     - exchange/taskcluster-queue/v1/task-created
+     # changes to hooks themselves are internal and shouldn't trigger hooks
+     - exchange/taskcluster-hooks/.*
 
 
 production:

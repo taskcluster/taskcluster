@@ -74,7 +74,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     bindings: [{exchange: `exchange/test/${unique}`, routingKeyPattern: 'amongst.rockets.wizards'}],
   }, hookWithHookIds);
   const hookWithDeniedBindings = _.defaults({
-    bindings: [{exchange: `exchange/taskcluster-queue/${unique}`, routingKeyPattern: 'amongst.new.rockets.and.wizards'}],
+    bindings: [{exchange: 'exchange/taskcluster-queue/v1/task-created', routingKeyPattern: 'amongst.new.rockets.and.wizards'}],
   }, hookWithHookIds);
 
   const appendLastFire = async ({hookGroupId, hookId, taskId, taskCreateTime, firedBy, result, error}) => {
