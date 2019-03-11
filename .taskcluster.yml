@@ -4,7 +4,7 @@ policy:
   pullRequests: public
 tasks:
   $let:
-    node: '10.15.2'
+    node: '10.15.3'
   in:
     $let:
       debug:
