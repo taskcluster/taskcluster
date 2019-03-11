@@ -15,7 +15,7 @@ import { withAuth } from '../../utils/Auth';
   avatarButton: {
     height: 6 * theme.spacing.unit,
     width: 6 * theme.spacing.unit,
-    padding: '0',
+    padding: 0,
   },
 }))
 @withAuth
