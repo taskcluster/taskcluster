@@ -3,7 +3,6 @@ const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 const assume = require('assume');
 const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
 
 helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(mock, skipping) {
   helper.withAmazonIPRanges(mock, skipping);
@@ -65,22 +64,6 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'query-test-worker-extended-extended',
     );
     assume(r2.pendingTasks).is.equals(r1.pendingTasks);
-
-    // WARNING: The test below this point is not fast and certainly not robust
-    // enough to run all the time. But it can be easily activated if messing
-    // with queueservice.js and you want to ensure that it still works.
-    // Just comment out the return statement below.
-    return; // STOP TEST HERE
-    console.log('WARNING: Unstable test running, should be disabled on master');
-    await testing.poll(async () => {
-      // At some point in the future we have to got fetch a new result saying
-      // more tasks are now in the queue...
-      const r3 = await helper.queue.pendingTasks(
-        'no-provisioner-extended-extended',
-        'query-test-worker-extended-extended',
-      );
-      assume(r3.pendingTasks).is.greaterThan(r1.pendingTasks);
-    }, 30, 1000);
   });
 
   test('pendingTasks == 0', async () => {

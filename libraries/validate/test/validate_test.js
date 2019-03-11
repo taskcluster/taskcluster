@@ -80,19 +80,15 @@ suite('Valid Schema Tests', () => {
   });
 
   test('using constants.yml', async () => {
-    try {
-      let v = await validator({
-        folder: 'test/schemas',
-        constants: 'test/schemas/constants.yml',
-        serviceName: 'whatever',
-      });
-      let error = v(
-        {value: 43},
-        libUrls.schema(rootUrl, 'whatever', '/v1/yml-test-schema#'));
-      return assert.equal(error, null);
-    } catch (err) {
-      return err;
-    }
+    const s = new SchemaSet({
+      folder: 'test/schemas',
+      serviceName: 'whatever',
+    });
+    const v = await s.validator(libUrls.testRootUrl());
+    let error = v(
+      {value: 43},
+      libUrls.schema(rootUrl, 'whatever', '/v1/yml-test-schema#'));
+    assert.equal(error, null);
   });
 
   test('rejects poorly formed object', () => {

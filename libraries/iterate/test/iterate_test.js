@@ -419,7 +419,6 @@ suite('Iterate', () => {
         waitTime: 1,
         handler: async (watchdog, state) => {
           debug('iterate!');
-          iterations++;
           throw new Error('hi');
         },
       });
@@ -453,7 +452,6 @@ suite('Iterate', () => {
         waitTime: 1,
         handler: async (watchdog, state) => {
           debug('iterate!');
-          iterations++;
           throw new Error('hi');
         },
       });

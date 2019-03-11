@@ -171,7 +171,7 @@ helper.secrets.mockSuite('index_test.js', ['taskcluster'], function(mock, skippi
       data: {hello: 'world two'},
       expires: expiry.toJSON(),
     });
-    result = await helper.index.findTask(myns + '.my-task2');
+    const result = await helper.index.findTask(myns + '.my-task2');
     assert(result.taskId === taskId2, 'Wrong taskId');
 
     // Set now to one day in the past
@@ -216,7 +216,7 @@ helper.secrets.mockSuite('index_test.js', ['taskcluster'], function(mock, skippi
       data: {hello: 'world two'},
       expires: expiry.toJSON(),
     });
-    result = await helper.index.findTask(myns + '.another-ns.my-task');
+    let result = await helper.index.findTask(myns + '.another-ns.my-task');
     assert(result.taskId === taskId2, 'Wrong taskId');
     // Set now to one day in the past
     const now = new Date();

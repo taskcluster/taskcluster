@@ -549,9 +549,9 @@ async function jobHandler(message) {
     if (e.name === 'YAMLException') {
       return await this.createExceptionComment({
         instGithub,
-        organization: owner,
-        repository: repo,
-        sha: ref,
+        organization,
+        repository,
+        sha,
         error: e,
         pullNumber,
       });
@@ -656,7 +656,7 @@ async function jobHandler(message) {
       eventType: message.payload.details['event.type'],
       eventId: message.payload.eventId,
     });
-  } catch (e) {
+  } catch (err) {
     if (err.code !== 'EntityAlreadyExists') {
       throw err;
     }

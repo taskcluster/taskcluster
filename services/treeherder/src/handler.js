@@ -165,7 +165,7 @@ module.exports = class Handler {
     }
 
     switch (this.eventMap[message.exchange]) {
-    case 'pending':
+    case 'pending': {
       let runId = message.payload.runId;
       // If the task run was created for an infrastructure rerun, then resolve
       // the previous run as retried.
@@ -174,6 +174,7 @@ module.exports = class Handler {
       }
 
       return await this.handleTaskPending(parsedRoute, task, message.payload);
+    }
     case 'running':
       return await this.handleTaskRunning(parsedRoute, task, message.payload);
     case 'completed':

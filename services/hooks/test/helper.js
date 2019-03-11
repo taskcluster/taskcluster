@@ -1,3 +1,4 @@
+const assert = require('assert');
 const data = require('../src/data');
 const taskcluster = require('taskcluster-client');
 const taskcreator = require('../src/taskcreator');

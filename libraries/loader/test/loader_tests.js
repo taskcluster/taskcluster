@@ -424,9 +424,8 @@ suite('component loader', () => {
       }, {
         'dep1': null,
       });
-      throw new Error();
     } catch (e) {
-      if (!e.message.match(/assertation failure/)) {
+      if (!e.message.match(/assertation failure occured/)) {
         throw e;
       }
       return;

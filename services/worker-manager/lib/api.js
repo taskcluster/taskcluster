@@ -43,7 +43,7 @@ async function workerTypeAlreadyTracked(datastore, workerConfiguration) {
   let workerTypesToCheck = [];
   if (await datastore.has('worker-configurations', workerConfiguration.id)) {
     let oldWorkerConfiguration = await datastore.get('worker-configurations', workerConfiguration.id);
-    oldWorkerTypes = buildWorkerConfiguration(oldWorkerConfiguration).workerTypes();
+    const oldWorkerTypes = buildWorkerConfiguration(oldWorkerConfiguration).workerTypes();
     workerTypesToCheck = workerConfiguration.workerTypes().filter(x => !oldWorkerTypes.includes(x));
   } else {
     workerTypesToCheck = workerConfiguration.workerTypes();

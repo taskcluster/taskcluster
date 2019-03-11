@@ -13,7 +13,7 @@ suite('build job message', () => {
   helper.withHandler();
 
   suiteSetup(async () => {
-    cfg = await helper.load('cfg');
+    await helper.load('cfg');
     helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
   });
 

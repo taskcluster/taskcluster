@@ -74,6 +74,8 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     });
   });
 
+  let github;
+
   setup(async function() {
     github = await helper.load('github');
     github.inst(9090).setRepositories('coolRepo', 'anotherCoolRepo', 'awesomeRepo', 'nonTCGHRepo');

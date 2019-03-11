@@ -59,7 +59,7 @@ class BaseDatastore extends WMObject {
   }
 
   async listNamespaces() {
-    return this._listNamespaces(namespace);
+    return this._listNamespaces();
   }
 
   async list(namespace) {

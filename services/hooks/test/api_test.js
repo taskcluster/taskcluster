@@ -582,7 +582,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     });
 
     test('handle an invalid schema - createHook', async () => {
-      nHookDef = _.defaults({
+      const nHookDef = _.defaults({
         triggerSchema: {
           type: 'beer',
           properties: {
@@ -607,7 +607,7 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
     });
 
     test('handle an invalid schema - updateHook', async () => {
-      nHookDef = _.defaults({
+      const nHookDef = _.defaults({
         triggerSchema: {
           type: 'beer',
           properties: {
