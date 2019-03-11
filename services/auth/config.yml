@@ -129,6 +129,7 @@ test:
   app:
     publishMetaData:          false
     statsComponent:           auth-tests
+    clientTableName:          Clients
     # hardcoded into helper.js
     staticClients:
     - clientId:     static/taskcluster/root

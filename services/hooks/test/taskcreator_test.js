@@ -10,8 +10,7 @@ const libUrls = require('taskcluster-lib-urls');
 
 suite('taskcreator_test.js', function() {
   helper.secrets.mockSuite('TaskCreator', ['taskcluster'], function(mock, skipping) {
-    helper.withHook(mock, skipping);
-    helper.withLastFire(mock, skipping);
+    helper.withEntities(mock, skipping);
 
     this.slow(500);
 

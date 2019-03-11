@@ -2,7 +2,7 @@ const assert = require('assert');
 const helper = require('./helper');
 
 helper.secrets.mockSuite(helper.suiteName(__filename), ['taskcluster', 'aws'], function(mock, skipping) {
-  helper.withDenylist(mock, skipping);
+  helper.withEntities(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withSES(mock, skipping);
   helper.withSQS(mock, skipping);

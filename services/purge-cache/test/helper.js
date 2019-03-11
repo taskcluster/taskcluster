@@ -3,8 +3,7 @@ const builder = require('../src/api');
 const data = require('../src/data');
 const taskcluster = require('taskcluster-client');
 const load = require('../src/main');
-const {stickyLoader, Secrets, fakeauth} = require('taskcluster-lib-testing');
-const slugid = require('slugid');
+const {stickyLoader, Secrets, fakeauth, withEntity} = require('taskcluster-lib-testing');
 
 const testclients = {
   'test-client': ['*'],
@@ -13,10 +12,6 @@ const testclients = {
 
 exports.suiteName = path.basename;
 exports.rootUrl = 'http://localhost:60415';
-
-// a suffix used to generate unique table names so that parallel test runs do not
-// interfere with one another.  We remove these at the end of the test run.
-const TABLE_SUFFIX = slugid.nice().replace(/[_-]/g, '');
 
 exports.load = stickyLoader(load);
 
@@ -42,62 +37,7 @@ exports.secrets = new Secrets({
  * Set helper.<Class> for each of the Azure entities used in the service
  */
 exports.withEntities = (mock, skipping, options={}) => {
-  const tables = [
-    {name: 'CachePurge'},
-  ];
-
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-    exports.load.save();
-
-    await exports.load('cfg');
-
-    if (mock) {
-      await Promise.all(tables.map(async tbl => {
-        exports.load.inject(tbl.name, data[tbl.className || tbl.name].setup({
-          tableName: tbl.name,
-          credentials: 'inMemory',
-          context: tbl.context ? await tbl.context() : undefined,
-        }));
-      }));
-    } else {
-      // suffix each ..TableName config with a short suffix so that parallel
-      // test runs have a good chance of not stepping on each others' feet
-      const cfg = await exports.load('cfg');
-      Object.keys(cfg.app).forEach(prop => {
-        if (prop.endsWith('TableName')) {
-          exports.load.cfg(`app.${prop}`, cfg.app[prop] + TABLE_SUFFIX);
-        }
-      });
-    }
-
-    await Promise.all(tables.map(async tbl => {
-      exports[tbl.name] = await exports.load(tbl.name);
-      await exports[tbl.name].ensureTable();
-    }));
-  });
-
-  const cleanup = async () => {
-    if (skipping()) {
-      return;
-    }
-
-    await Promise.all(tables.map(async tbl => {
-      await exports[tbl.name].scan({}, {handler: e => e.remove()});
-    }));
-  };
-  if (!options.orderedTests) {
-    setup(cleanup);
-  }
-  suiteTeardown(async function() {
-    if (skipping()) {
-      return;
-    }
-    exports.load.restore();
-    await cleanup();
-  });
+  withEntity(mock, skipping, exports, 'CachePurge', data.CachePurge);
 };
 
 /**

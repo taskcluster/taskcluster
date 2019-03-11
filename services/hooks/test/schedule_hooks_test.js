@@ -14,8 +14,6 @@ suite('schedule_hooks_test.js', function() {
     helper.load.restore();
   });
 
-  helper.withHook(true, () => false); // always mock, since this is a simple setup
-
   test('schedule_hooks launches a scheduler', async () => {
     const scheduler = await helper.load('schedulerNoStart');
     assert(scheduler instanceof Scheduler);

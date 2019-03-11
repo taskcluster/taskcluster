@@ -4,7 +4,7 @@ const slugid = require('slugid');
 const taskcluster = require('taskcluster-client');
 
 helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping) {
-  helper.withSecret(mock, skipping);
+  helper.withEntities(mock, skipping);
   helper.withServer(mock, skipping);
 
   const SECRET_NAME = `captain:${slugid.v4()}`;

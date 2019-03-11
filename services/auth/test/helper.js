@@ -14,7 +14,7 @@ const uuid = require('uuid');
 const Builder = require('taskcluster-lib-api');
 const SchemaSet = require('taskcluster-lib-validate');
 const App = require('taskcluster-lib-app');
-const {stickyLoader, Secrets} = require('taskcluster-lib-testing');
+const {stickyLoader, Secrets, withEntity} = require('taskcluster-lib-testing');
 const {FakeClient} = require('taskcluster-lib-pulse');
 
 exports.suiteName = path.basename;
@@ -67,58 +67,22 @@ exports.withCfg = (mock, skipping) => {
 /**
  * Set helper.<Class> for each of the Azure entities used in the service
  */
-exports.withEntities = (mock, skipping, options={}) => {
-  const tables = [
-    {name: 'Client'},
-  ];
-
-  suiteSetup(async function() {
-    if (skipping()) {
-      return;
-    }
-
-    const cfg = await exports.load('cfg');
-    exports.testaccount = _.keys(cfg.app.azureAccounts)[0];
-    exports.clientTableName = `TestClients${Date.now()}v${slugid.nice().replace(/[_-]/g, '')}`;
-    exports.load.cfg('app.clientTableName', exports.clientTableName);
-
-    if (mock) {
-      await Promise.all(tables.map(async tbl => {
-        exports.load.inject(tbl.name, data[tbl.className || tbl.name].setup({
-          tableName: tbl.name,
-          credentials: 'inMemory',
-          context: tbl.context ? await tbl.context() : undefined,
-          cryptoKey: cfg.azure.cryptoKey,
-          signingKey: cfg.azure.signingKey,
-        }));
-      }));
-    }
-
-    await Promise.all(tables.map(async tbl => {
-      exports[tbl.name] = await exports.load(tbl.name);
-      await exports[tbl.name].ensureTable();
-    }));
-  });
-
+exports.withEntities = (mock, skipping, {orderedTests}={}) => {
   const cleanup = async () => {
-    if (skipping()) {
-      return;
-    }
-
-    await Promise.all(tables.map(async tbl => {
-      await exports[tbl.name].scan({}, {handler: async e => {
-        // This is assumed to exist accross tests in many places
-        if (tbl.name === 'Client' && e.clientId.startsWith('static/')) {
-          return;
-        }
-        await e.remove();
-      }});
-    }));
+    await exports.Client.scan({}, {handler: async e => {
+      // This is assumed to exist accross tests in many places
+      if (e.clientId.startsWith('static/')) {
+        return;
+      }
+      await e.remove();
+    }});
   };
-  if (!options.orderedTests) {
-    setup(cleanup);
-  }
-  suiteTeardown(cleanup);
+
+  withEntity(mock, skipping, exports, 'Client', data.Client, {
+    noSasCredentials: true, // this *is* the auth service!
+    orderedTests,
+    cleanup,
+  });
 };
 
 // fake "Roles" container

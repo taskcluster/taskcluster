@@ -4,7 +4,7 @@ const helper = require('./helper');
 const taskcluster = require('taskcluster-client');
 
 helper.secrets.mockSuite('scheduler_test.js', ['taskcluster'], function(mock, skipping) {
-  helper.withHook(mock, skipping);
+  helper.withEntities(mock, skipping);
   helper.withTaskCreator(mock, skipping);
 
   this.slow(500);

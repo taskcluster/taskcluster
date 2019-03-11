@@ -6,9 +6,7 @@ const taskcluster = require('taskcluster-client');
 const helper = require('./helper');
 
 helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping) {
-  helper.withHook(mock, skipping);
-  helper.withLastFire(mock, skipping);
-  helper.withQueues(mock, skipping);
+  helper.withEntities(mock, skipping);
   helper.withTaskCreator(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
