@@ -3,8 +3,8 @@ import { func, shape, arrayOf, string } from 'prop-types';
 import memoize from 'fast-memoize';
 import { sum, pipe, filter, map, sort as rSort } from 'ramda';
 import { lowerCase, title } from 'change-case';
-import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
+import { withStyles } from '@material-ui/core/styles';
 import amber from '@material-ui/core/colors/amber';
 import blue from '@material-ui/core/colors/blue';
 import grey from '@material-ui/core/colors/grey';
@@ -157,6 +157,9 @@ const getStatusCount = memoize(
       backgroundColor: blue[900],
     },
   },
+  noTasksButton: {
+    opacity: 0.3,
+  },
 }))
 export default class TaskGroupProgress extends Component {
   static defaultProps = {
@@ -282,6 +285,7 @@ export default class TaskGroupProgress extends Component {
         <Helmet state={taskGroupState} />
         {Object.keys(TASK_STATE).map(status => {
           const Icon = this.getStatusIcon(status);
+          const count = statusCount[lowerCase(status)];
 
           return (
             <ButtonBase
@@ -291,7 +295,10 @@ export default class TaskGroupProgress extends Component {
               onClick={onStatusClick}
               className={classNames(
                 classes[`${lowerCase(status)}Button`],
-                classes.statusButton
+                classes.statusButton,
+                {
+                  [classes.noTasksButton]: count === 0,
+                }
               )}>
               <div>
                 <Icon color="white" className={classes.statusIcon} size={32} />
@@ -301,7 +308,7 @@ export default class TaskGroupProgress extends Component {
                   align="right"
                   className={classes.statusButtonTypography}
                   variant="h4">
-                  {showDots ? '...' : statusCount[lowerCase(status)]}
+                  {showDots ? '...' : count}
                 </Typography>
                 <Typography
                   className={classNames(
