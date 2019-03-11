@@ -21,3 +21,4 @@ except:
     pass
 
 pipMain(['install', '--upgrade'] + setup.tests_require + setup.install_requires)
+pipMain(['freeze'])
