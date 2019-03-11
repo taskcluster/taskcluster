@@ -64,12 +64,6 @@ helper.secrets.mockSuite(__filename, ['taskcluster', 'aws', 'azure'], function(m
       'query-test-worker-extended-extended',
     );
     assume(r2.pendingTasks).is.equals(r1.pendingTasks);
-
-    // WARNING: The test below this point is not fast and certainly not robust
-    // enough to run all the time. But it can be easily activated if messing
-    // with queueservice.js and you want to ensure that it still works.
-    // Just comment out the return statement below.
-    return;
   });
 
   test('pendingTasks == 0', async () => {
