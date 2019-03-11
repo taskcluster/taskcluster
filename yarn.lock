@@ -1219,6 +1219,16 @@ ajv@6.10.0, ajv@^6.1.0, ajv@^6.5.0, ajv@^6.5.5, ajv@^6.8.1, ajv@^6.9.1, ajv@^6.9
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
+ajv@^5.5.0:
+  version "5.5.2"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.5.2.tgz#73b5eeca3fab653e3d3f9422b341ad42205dc965"
+  integrity sha1-c7Xuyj+rZT49P5Qis0GtQiBdyWU=
+  dependencies:
+    co "^4.6.0"
+    fast-deep-equal "^1.0.0"
+    fast-json-stable-stringify "^2.0.0"
+    json-schema-traverse "^0.3.0"
+
 align-text@^0.1.1, align-text@^0.1.3:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/align-text/-/align-text-0.1.4.tgz#0cd90a561093f35d0a99256c22b7069433fad117"
@@ -1756,16 +1766,17 @@ aws4@^1.8.0:
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.8.0.tgz#f0e003d9ca9e7f59c7a508945d7b2ef9a04a542f"
   integrity sha512-ReZxvNHIOv88FlT7rxcXIIC0fPt4KZqZbOlivyWtXLt8ESx84zd3kMC6iK5jVeS2qt+g7ftS7ye4fi06X5rtRQ==
 
-azure-blob-storage@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/azure-blob-storage/-/azure-blob-storage-4.0.0.tgz#4ddab57a56aed77f0fcea314893a1c25fef4a769"
-  integrity sha512-Z4YrDk2LCSRsDGPDQ/Ua3BQA+6FlcKBSU/r9XXbf/AUjXf/HbfsX9HTOIk9AmBKmJj8XdKQeiXh6jCRdLRTtFQ==
+azure-blob-storage@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/azure-blob-storage/-/azure-blob-storage-3.0.0.tgz#53fbc9f59c99e8f34ce170940be0ce17162bca7d"
+  integrity sha1-U/vJ9ZyZ6PNM4XCUC+DOFxYryn0=
   dependencies:
-    ajv "^6.9.2"
-    debug "^4.1.1"
-    fast-azure-storage "^2.3.1"
-    lodash "^4.17.11"
-    uuid "^3.3.2"
+    ajv "^5.5.0"
+    babel-runtime "^6.20.0"
+    debug "^3.1.0"
+    fast-azure-storage "^2.0.0"
+    source-map-support "^0.5.0"
+    uuid "^3.1.0"
 
 azure-entities@^5.2.0:
   version "5.4.0"
@@ -1822,7 +1833,7 @@ babel-merge@^2.0.1:
     deepmerge "^2.1.0"
     object.omit "^3.0.0"
 
-babel-runtime@^6.23.0, babel-runtime@^6.26.0:
+babel-runtime@^6.20.0, babel-runtime@^6.23.0, babel-runtime@^6.26.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-6.26.0.tgz#965c7058668e82b55d7bfe04ff2337bc8b5647fe"
   integrity sha1-llxwWGaOgrVde/4E/yM3vItWR/4=
@@ -3859,7 +3870,7 @@ falafel@^2.1.0:
     isarray "0.0.1"
     object-keys "^1.0.6"
 
-fast-azure-storage@^2.3.0, fast-azure-storage@^2.3.1:
+fast-azure-storage@^2.0.0, fast-azure-storage@^2.3.0, fast-azure-storage@^2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/fast-azure-storage/-/fast-azure-storage-2.3.1.tgz#fc3710c183cb56de7faa92dd9176c8b1f5107df1"
   integrity sha512-T3ZcU0/ufobmV9Ggf47wGojciBsvTTDZg55dqlGcjYcIvh71r1kyO7obsNinsZCbdba6vY2v0I7y7lP6m4XAXg==
@@ -3869,6 +3880,11 @@ fast-azure-storage@^2.3.0, fast-azure-storage@^2.3.1:
     promise "^8.0.1"
   optionalDependencies:
     libxmljs "^0.19.5"
+
+fast-deep-equal@^1.0.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-1.1.0.tgz#c053477817c86b51daa853c81e059b733d023614"
+  integrity sha1-wFNHeBfIa1HaqFPIHgWbcz0CNhQ=
 
 fast-deep-equal@^2.0.1:
   version "2.0.1"
@@ -5291,6 +5307,11 @@ json-parse-better-errors@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/json-parse-better-errors/-/json-parse-better-errors-1.0.2.tgz#bb867cfb3450e69107c131d1c514bab3dc8bcaa9"
   integrity sha512-mrqyZKfX5EhL7hvqcV6WG1yYjnjeuYDzDhhcAAUrq8Po85NBQBJP+ZDUT75qZQ98IkUoBqdkExkukOU7Ts2wrw==
+
+json-schema-traverse@^0.3.0:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/json-schema-traverse/-/json-schema-traverse-0.3.1.tgz#349a6d44c53a51de89b40805c5d5e59b417d3340"
+  integrity sha1-NJptRMU6Ud6JtAgFxdXlm0F9M0A=
 
 json-schema-traverse@^0.4.1:
   version "0.4.1"
@@ -8285,7 +8306,7 @@ source-map-resolve@^0.5.0:
     source-map-url "^0.4.0"
     urix "^0.1.0"
 
-source-map-support@^0.5.9, source-map-support@~0.5.9:
+source-map-support@^0.5.0, source-map-support@^0.5.9, source-map-support@~0.5.9:
   version "0.5.10"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.10.tgz#2214080bc9d51832511ee2bab96e3c2f9353120c"
   integrity sha512-YfQ3tQFTK/yzlGJuX8pTwa4tifQj4QS2Mj7UegOu8jAz59MqIiMGPXxQhVQiIMNzayuUSF/jEuVnfFF5JqybmQ==
@@ -8709,118 +8730,56 @@ tar@^4:
     yallist "^3.0.2"
 
 "taskcluster-client@link:clients/client":
-  version "13.0.0"
-  dependencies:
-    debug "^4.0.0"
-    hawk "^7.0.10"
-    lodash "^4.17.4"
-    promise "^8.0.1"
-    slugid "^2.0.0"
-    superagent "^4.0.0"
-    taskcluster-lib-urls "^12.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-api@link:libraries/api":
-  version "12.8.1"
-  dependencies:
-    aws-sdk "^2.151.0"
-    body-parser "1.18.3"
-    debug "^4.0.0"
-    express "4.16.4"
-    hawk "^7.0.10"
-    lodash "^4.15.0"
-    promise "^8.0.1"
-    slugid "^2.0.0"
-    type-is "^1.6.15"
-    uuid "^3.1.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-app@link:libraries/app":
-  version "10.2.0"
-  dependencies:
-    content-security-policy "^0.3.0"
-    debug "^4.0.0"
-    express "4.16.4"
-    express-sslify "1.2.0"
-    hsts "^2.1.0"
-    lodash "4.17.11"
-    morgan "^1.0.0"
-    morgan-debug "^2.0.0"
-    promise "^8.0.1"
-    uuid "^3.3.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-azure@link:libraries/azure":
-  version "10.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-config@link:libraries/config":
-  version "3.0.0"
-  dependencies:
-    debug "^4.1.0"
-    js-yaml "^3.12.1"
-    lodash "^4.17.11"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-docs@link:libraries/docs":
-  version "11.0.0"
-  dependencies:
-    app-root-dir "^1.0.2"
-    aws-sdk "^2.147.0"
-    debug "^4.0.0"
-    lodash "^4.13.1"
-    mkdirp "^0.5.1"
-    mz "^2.7.0"
-    promisepipe "^3.0.0"
-    recursive-readdir-sync "^1.0.6"
-    s3-upload-stream "^1.0.7"
-    tar-stream "^2.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-iterate@link:libraries/iterate":
-  version "11.0.0"
-  dependencies:
-    debug "^4.1.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-loader@link:libraries/loader":
-  version "11.0.0"
-  dependencies:
-    assume "^2.1.0"
-    debug "^4.1.0"
-    topo-sort "^1.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-monitor@link:libraries/monitor":
-  version "11.1.1"
-  dependencies:
-    app-root-dir "^1.0.2"
-    chalk "^2.4.2"
-    fast-json-stable-stringify "^2.0.0"
-    serialize-error "^3.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-pulse@link:libraries/pulse":
-  version "11.1.1"
-  dependencies:
-    amqplib "^0.5.2"
-    aws-sdk "^2.331.0"
-    debug "^4.0.0"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-references@link:libraries/references":
-  version "1.5.0"
-  dependencies:
-    ajv "^6.5.5"
-    js-yaml "^3.12.1"
-    lodash "^4.17.10"
-    mkdirp "^0.5.1"
-    regex-escape "^3.4.8"
-    rimraf "^2.6.2"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-scopes@link:libraries/scopes":
-  version "10.0.1"
+  version "0.0.0"
+  uid ""
 
 "taskcluster-lib-testing@link:libraries/testing":
-  version "12.1.2"
-  dependencies:
-    debug "^4.0.0"
-    express "4.16.4"
-    hawk "^7.0.10"
-    lodash "^4.17.10"
-    nock "^10.0.0"
-    promise "^8.0.1"
-    superagent "^4.0.0"
+  version "0.0.0"
+  uid ""
 
 taskcluster-lib-urls@^12.0.0:
   version "12.0.0"
@@ -8828,18 +8787,8 @@ taskcluster-lib-urls@^12.0.0:
   integrity sha512-OrEFE0m3p/+mGsmIwjttLhSKg3io6MpJLhYtPNjVSZA9Ix8Y5tprN3vM6a3MjWt5asPF6AKZsfT43cgpGwJB0g==
 
 "taskcluster-lib-validate@link:libraries/validate":
-  version "12.0.0"
-  dependencies:
-    ajv "^6.5.0"
-    app-root-dir "^1.0.2"
-    aws-sdk "^2.142.0"
-    debug "^4.0.0"
-    js-yaml "^3.12.1"
-    lodash "^4.5.1"
-    mkdirp "^0.5.1"
-    promise "^8.0.1"
-    rimraf "^2.6.2"
-    walk "^2.3.9"
+  version "0.0.0"
+  uid ""
 
 taskgroup@^4.0.5, taskgroup@^4.2.0:
   version "4.3.1"
