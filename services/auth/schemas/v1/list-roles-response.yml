@@ -3,6 +3,6 @@ title:                      "Get All Roles (no pagination)"
 description: |
   List of roles
 type:                       array
-uniqueItems: false
+uniqueItems: true
 items:
   $ref: 'get-role-response.json#'
