@@ -98,6 +98,7 @@
     "test:meta": "mocha test/*_test.js",
     "build": "node infrastructure/builder/src/main.js build",
     "generate": "node infrastructure/builder/src/main.js generate",
+    "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
     "heroku-postbuild": "echo Skip build on Heroku"
   },
   "renovate": {

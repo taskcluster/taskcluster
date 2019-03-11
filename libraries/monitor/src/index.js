@@ -57,7 +57,8 @@ class MonitorManager {
     resourceInterval = 60,
     mock = false,
     enable = true,
-    gitVersionFile = '.git-version',
+    gitVersion = undefined,
+    gitVersionFile = '../../.git-version', // To account for us being in a workspace
     processName = null,
     metadata = {},
     pretty = false,
@@ -81,6 +82,7 @@ class MonitorManager {
     this.bailOnUnhandledRejection = bailOnUnhandledRejection;
     this.verify = verify;
     this.levels = {};
+    this.gitVersion = gitVersion;
 
     if (level.includes(':')) {
       level.split(' ').reduce((o, conf) => {
@@ -116,12 +118,12 @@ class MonitorManager {
     }
 
     // read gitVersionFile, if gitVersion is not set
-    if (!metadata.gitVersion) {
+    if (this.gitVersion === undefined) {
       gitVersionFile = path.resolve(rootdir.get(), gitVersionFile);
       try {
-        metadata.gitVersion = fs.readFileSync(gitVersionFile).toString().trim();
+        this.gitVersion = fs.readFileSync(gitVersionFile).toString().trim();
       } catch (err) {
-        delete metadata.gitVersion;
+        // Do nothing, will just be undefined
       }
     }
 
@@ -132,6 +134,7 @@ class MonitorManager {
       pretty,
       destination: this.destination,
       metadata,
+      gitVersion,
     });
 
     this.rootMonitor = new Monitor({
@@ -216,6 +219,7 @@ class MonitorManager {
         pretty: this.pretty,
         destination: this.destination,
         metadata,
+        gitVersion: this.gitVersion,
       }),
     });
   }
