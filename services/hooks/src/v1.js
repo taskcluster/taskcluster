@@ -617,14 +617,16 @@ const triggerHookCommon = async function({req, res, hook, payload, clientId, fir
 };
 
 const isDeniedBinding = async ({bindings, denylist}) => {
-  let denyPattern = new RegExp(`^exchange/(${denylist.join('|')})/`);
-  let denied=false;
-  bindings.forEach((binding) => {
-    if (denyPattern.test(binding.exchange)) {
-      denied = true;
+  for (let deny of denylist) {
+    for (let binding of bindings) {
+      const denyPattern = new RegExp(`^${deny}`);
+      if (denyPattern.test(binding.exchange)) {
+        return true;
+      }
     }
-  });
-  return denied;
+  }
+
+  return false;
 };
 /**
  * Get information about recent fires of a hook
