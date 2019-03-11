@@ -98,7 +98,7 @@ exports.withEntities = (mock, skipping) => {
     exports.buildsTableName = `TaskclusterGithubBuildsV${tableVersion}`;
     exports.ownersTableName = `TaskclusterIntegrationOwnersV${tableVersion}`;
     exports.checkRunsTableName = `TaskclusterCheckRunsV${tableVersion}`;
-    exports.checksToTasksTableName = `TaskclustersToTasksV${tableVersion}`;
+    exports.checksToTasksTableName = `TaskclusterChecksToTasksV${tableVersion}`;
     exports.load.cfg('app.buildsTableName', exports.buildsTableName);
     exports.load.cfg('app.ownersDirectoryTableName', exports.ownersTableName);
     exports.load.cfg('app.checkRunsTableName', exports.checkRunsTableName);
