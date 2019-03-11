@@ -263,7 +263,7 @@ builder.declare({
   });
   if (denied) {
     return res.reportError('InputError', '{{message}}', {
-      message: 'One or more of the exchanges below have been denied access to hooks\n' + hookDef.bindings,
+      message: 'One or more of the exchanges below have been denied access to hooks\n' + JSON.stringify(hookDef.bindings),
     });
   }
 
@@ -370,7 +370,7 @@ builder.declare({
   });
   if (denied) {
     return res.reportError('InputError', '{{message}}', {
-      message: 'One or more of the exchanges below have been denied access to hooks\n' + hookDef.bindings,
+      message: 'One or more of the exchanges below have been denied access to hooks\n' + JSON.stringify(hookDef.bindings),
     });
   }
 
