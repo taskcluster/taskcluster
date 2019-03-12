@@ -16,7 +16,10 @@ async function scanner(cfg, handlers) {
 
   // NOTE: this function performs once auth operation at a time.  It is better
   // for scans to take longer than for the auth service to be overloaded.
-  let auth = new taskcluster.Auth({credentials: cfg.app.credentials});
+  let auth = new taskcluster.Auth({
+    credentials: cfg.app.credentials,
+    rootUrl: cfg.taskcluster.rootUrl,
+  });
 
   const scan = async h => {
     const handler = handlers[h];
