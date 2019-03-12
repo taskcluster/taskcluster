@@ -11,6 +11,8 @@ import Button from '../Button';
 import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
 
+@withAuth
+@withApollo
 @withStyles(theme => ({
   avatarButton: {
     height: 6 * theme.spacing.unit,
@@ -18,8 +20,6 @@ import { withAuth } from '../../utils/Auth';
     padding: 0,
   },
 }))
-@withAuth
-@withApollo
 export default class UserMenuButton extends Component {
   static propTypes = {
     avatarProps: object,

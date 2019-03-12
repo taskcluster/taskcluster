@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { bool, string } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
+import classNames from 'classnames';
 import { darken } from '@material-ui/core/styles/colorManipulator';
 import { withStyles } from '@material-ui/core/styles';
 import Menu from '@material-ui/core/Menu';
@@ -13,6 +14,8 @@ import UserMenuList from './UserMenuList';
 import UserMenuButton from './UserMenuButton';
 import { THEME } from '../../utils/constants';
 
+@withAuth
+@withApollo
 @withStyles(theme => ({
   leftIcon: {
     marginRight: theme.spacing.unit,
@@ -35,8 +38,6 @@ import { THEME } from '../../utils/constants';
     },
   },
 }))
-@withAuth
-@withApollo
 export default class UserMenu extends Component {
   static defaultProps = {
     user: '',
@@ -91,7 +92,7 @@ export default class UserMenu extends Component {
             buttonProps={{
               classes: { containedPrimary: classes.buttonContainedPrimary },
             }}
-            className={classes.userMenuButton}
+            className={classNames({ [classes.userMenuButton]: !user })}
             user={user}
             signInDialogOpen={signInDialogOpen}
             onSignInDialogClose={this.handleSignInDialogClose}

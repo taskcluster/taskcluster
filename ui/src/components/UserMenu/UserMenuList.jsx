@@ -10,6 +10,8 @@ import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
 
+@withAuth
+@withApollo
 @withStyles(theme => ({
   avatar: {
     backgroundColor: theme.palette.secondary.main,
@@ -32,8 +34,6 @@ import { withAuth } from '../../utils/Auth';
     textOverflow: 'ellipsis',
   },
 }))
-@withAuth
-@withApollo
 export default class UserMenuList extends Component {
   render() {
     const {
