@@ -130,6 +130,16 @@ tasks:
             workerType: github-worker
             created: {$fromNow: ''}
             deadline: {$fromNow: '20 minutes'}
+            extra:
+              notify:
+                email:
+                  subject: 'Failed: $${task.metadata.name} on taskcluster/taskcluster master'
+            routes:
+              $if: 'tasks_for == "github-push" && event["ref"] == "refs/heads/master"'
+              then:
+                - notify.email.${owner}.com.on-failed
+                - notify.email.${owner}.com.on-exception
+                - notify.irc-channel.#taskcluster-bots.on-any
             scopes:
               - assume:project:taskcluster:tests:taskcluster
               - docker-worker:cache:project-taskcluster-test-yarn-cache
