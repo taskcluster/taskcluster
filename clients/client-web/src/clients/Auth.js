@@ -37,7 +37,7 @@ export default class Auth extends Client {
     this.azureContainerSAS.entry = {"args":["account","container","level"],"method":"get","name":"azureContainerSAS","output":true,"query":[],"route":"/azure/<account>/containers/<container>/<level>","scopes":{"else":"auth:azure-container:read-write:<account>/<container>","if":"levelIsReadOnly","then":{"AnyOf":["auth:azure-container:read-only:<account>/<container>","auth:azure-container:read-write:<account>/<container>"]}},"stability":"stable","type":"function"}; // eslint-disable-line
     this.sentryDSN.entry = {"args":["project"],"method":"get","name":"sentryDSN","output":true,"query":[],"route":"/sentry/<project>/dsn","scopes":"auth:sentry:<project>","stability":"stable","type":"function"}; // eslint-disable-line
     this.statsumToken.entry = {"args":["project"],"method":"get","name":"statsumToken","output":true,"query":[],"route":"/statsum/<project>/token","scopes":"auth:statsum:<project>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.websocktunnelToken.entry = {"args":[],"method":"get","name":"websocktunnelToken","output":true,"query":[],"route":"/websocktunnel","scopes":"auth:websocktunnel","stability":"stable","type":"function"}; // eslint-disable-line
+    this.websocktunnelToken.entry = {"args":["wstAudience","wstClient"],"method":"get","name":"websocktunnelToken","output":true,"query":[],"route":"/websocktunnel/<wstAudience>/<wstClient>","scopes":"auth:websocktunnel-token:<wstAudience>/<wstClient>","stability":"stable","type":"function"}; // eslint-disable-line
     this.authenticateHawk.entry = {"args":[],"input":true,"method":"post","name":"authenticateHawk","output":true,"query":[],"route":"/authenticate-hawk","stability":"stable","type":"function"}; // eslint-disable-line
     this.testAuthenticate.entry = {"args":[],"input":true,"method":"post","name":"testAuthenticate","output":true,"query":[],"route":"/test-authenticate","stability":"stable","type":"function"}; // eslint-disable-line
     this.testAuthenticateGet.entry = {"args":[],"method":"get","name":"testAuthenticateGet","output":true,"query":[],"route":"/test-authenticate-get/","stability":"stable","type":"function"}; // eslint-disable-line
@@ -382,8 +382,14 @@ export default class Auth extends Client {
     return this.request(this.statsumToken.entry, args);
   }
   /* eslint-disable max-len */
-  // Get temporary `token` and `id` for connecting to websocktunnel
-  // The token is valid for 96 hours, clients should refresh after expiration.
+  // Get a temporary token suitable for use connecting to a
+  // [websocktunnel](https://github.com/taskcluster/websocktunnel) server.
+  // The resulting token will only be accepted by servers with a matching audience
+  // value.  Reaching such a server is the callers responsibility.  In general,
+  // a server URL or set of URLs should be provided to the caller as configuration
+  // along with the audience value.
+  // The token is valid for a limited time (on the scale of hours). Callers should
+  // refresh it before expiration.
   /* eslint-enable max-len */
   websocktunnelToken(...args) {
     this.validate(this.websocktunnelToken.entry, args);

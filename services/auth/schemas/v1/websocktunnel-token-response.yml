@@ -1,26 +1,36 @@
 $schema: "/schemas/common/metaschema.json#"
-title:                      "Websocktunnel Token Response"
+title: "Websocktunnel Token Response"
 description: |
     Token for connecting a worker to websocktunnel proxy
-type:                       object
+type: object
 properties:
-  tunnelId:
+  wstClient:
     type: string
-    title: Proxy Connection ID
+    title: Websocktunnel Client
+    pattern: {$const: "clientId"}
     description: |
-      id for proxy connection
+      Id for the websocktunnel client connection; this will be the same as the requested `wstClient`.
+  wstAudience:
+    type: string
+    title: Websocktunnel Audience
+    pattern: {$const: "identifier-pattern"}
+    description: |
+      Audience identifying the websocktunnel servers that will honor this token; this will be the
+      same as the requested `wstAudience`.
   token:
     type: string
-    title: Auth Token
+    title: Token
     description: |
-      jwt token to be used as `Bearer <token>` when connecting to proxy. 
-  proxyUrl:
+      The JWT to be used as `Bearer <token>` when connecting to the service.
+  expires:
     type: string
-    title: Proxy URL
+    format: date-time
+    title: Expires
     description: |
-      websocket url at which proxy is hosted
+      The time at which the JWT will expire.
 additionalProperties: false
 required:
+  - wstClient
+  - wstAudience
   - token
-  - tunnelId
-  - proxyUrl
+  - expires
