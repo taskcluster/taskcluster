@@ -349,8 +349,7 @@ const createSignatureValidator = function(options) {
         message: message.toString(),
       };
     }
-    options.monitor.notice('signature-validation', { // Let's do this at notice since they are more important than info
-      time: new Date(),
+    options.monitor.log.signatureValidation({
       expires: credentials? credentials.expires : '',
       scopes: credentials? credentials.scopes : [],
       clientId: credentials? credentials.clientId : '',

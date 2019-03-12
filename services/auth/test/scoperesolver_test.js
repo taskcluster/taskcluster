@@ -2,15 +2,14 @@ const helper = require('./helper');
 const ScopeResolver = require('../src/scoperesolver');
 const exchanges = require('../src/exchanges');
 const {scopeCompare} = require('taskcluster-lib-scopes');
-const MonitorManager = require('taskcluster-lib-monitor');
+const monitorManager = require('../src/monitor');
 const assert = require('assert');
 const _ = require('lodash');
 const assume = require('assume');
 
 suite(helper.suiteName(__filename), () => {
-  let monitor, monitorManager, scopeResolver;
+  let monitor, scopeResolver;
   setup(async () => {
-    monitorManager = new MonitorManager({serviceName: 'mock-auth'});
     monitorManager.setup({
       mock: true,
     });

@@ -276,11 +276,14 @@ class ScopeResolver extends events.EventEmitter {
       // such expansion we'll continue and compute one.
       const cacheKey = queue.join('\n');
       const cacheResult = lru.get(cacheKey);
+
+      this._monitor.log.scopeResolver({
+        cacheHit: cacheResult ? true : false,
+      });
+
       if (cacheResult) {
-        this._monitor.count('cache-hit', 1);
         return ScopeSetBuilder.mergeScopeSets(cacheResult, inputs);
       }
-      this._monitor.count('cache-miss', 1);
 
       // Build expansion of queue
       const result = new ScopeSetBuilder();

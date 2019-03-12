@@ -11436,6 +11436,33 @@
           },
           "type": "monitor.loggingError",
           "version": 1
+        },
+        {
+          "description": "Records results of authenticating a client.\nThis contains the verified hawk headers that were sent\nto auth in addition to info about the client.\n\nIn these fields, there are two requests that might be\nmentioned. The first is the original request from a\nclient to a service and the second is the request from\nthe service to auth itself.",
+          "fields": {
+            "clientId": "The clientId that was authenticated.",
+            "expires": "After this time the authentication is no longer valid.",
+            "hash": "The hash of the request payload, if there was one.",
+            "host": "The hostname of the authorizer of the request.",
+            "message": "A reason for failure if failed. Otherwise empty.",
+            "method": "HTTP method of the original request.",
+            "port": "The port of the request from the authorizer.",
+            "resource": "The path that the original request",
+            "scheme": "Currently always `hawk`.",
+            "scopes": "All scopes that this client has available.",
+            "sourceIp": "The ip address the original request came from.",
+            "status": "Whether or not the authentication was successful."
+          },
+          "type": "signature-validation",
+          "version": 1
+        },
+        {
+          "description": "Record of a scope resolution.",
+          "fields": {
+            "cacheHit": "True if the resolution was available in the cache."
+          },
+          "type": "scope-resolver",
+          "version": 1
         }
       ]
     },

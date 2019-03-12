@@ -17,6 +17,46 @@ class MonitorManager {
     builtins.forEach(builtin => this.register(builtin));
   }
 
+  /**
+   * Remove leading trailing cruft and dedent evenly any multiline
+   * strings that were passed in with their indentation intact.
+   *
+   * Example:
+   *
+   * let x = `Foo
+   *          bar
+   *          baz`;
+   *
+   * Normally this prints as:
+   *
+   * Foo
+   *         bar
+   *         baz
+   *
+   * But after using this, it is:
+   *
+   * Foo
+   * bar
+   * baz
+   */
+  cleanupDescription(desc) {
+    desc = desc.trim();
+    const spl = desc.split('\n');
+
+    if (spl.length < 2) {
+      return desc;
+    }
+
+    const match = /^\s+/.exec(spl[1]); // The first line has already been trimmed
+    if (match) {
+      const remove = match[0].length;
+      const fixed = spl.slice(1).map(l => l.slice(remove));
+      return [spl[0], ...fixed].join('\n');
+    }
+
+    return desc;
+  }
+
   /*
    * Register a new log message type
    */
@@ -29,20 +69,22 @@ class MonitorManager {
     fields = {}, // TODO: Consider making these defined with json-schema and validate only in dev or something
   }) {
     assert(/^[a-z][a-zA-Z0-9]*$/.test(name), `Invalid name type ${name}`);
-    assert(/^[a-z][a-z0-9.-_]*$/.test(type), `Invalid event type ${type}`);
+    assert(/^[a-z][a-zA-Z0-9.\-_]*$/.test(type), `Invalid event type ${type}`);
     assert(!this.types[name], `Cannot register event ${name} twice`);
     assert(LEVELS[level] !== undefined, `${level} is not a valid level.`);
     assert(Number.isInteger(version), 'Version must be an integer');
     assert(!fields['v'], '"v" is a reserved field for messages');
-    Object.entries(fields).forEach((field, desc) => {
+    const cleaned = {};
+    Object.entries(fields).forEach(([field, desc]) => {
       assert(/^[a-zA-Z0-9_]+$/.test(name), `Invalid field name ${name}.${field}`);
+      cleaned[field] = this.cleanupDescription(desc);
     });
     this.types[name] = {
       type,
       level,
       version,
-      description,
-      fields,
+      description: this.cleanupDescription(description),
+      fields: cleaned,
     };
   }
 
