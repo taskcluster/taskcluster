@@ -5,6 +5,7 @@ import HeaderWithAnchor from './HeaderWithAnchor';
 import Paragraph from './Paragraph';
 import Table from './Table';
 import ListItem from './ListItem';
+import List from './List';
 import InlineCode from './InlineCode';
 import Pre from './Pre';
 
@@ -21,6 +22,7 @@ const blockquote = props => <Blockquote {...props} />;
 const li = props => <ListItem {...props} />;
 const inlineCode = props => <InlineCode {...props} />;
 const pre = props => <Pre {...props} />;
+const ul = props => <List {...props} />;
 
 // Returns a mapping between the HTML element and the desired component
 export default {
@@ -37,4 +39,5 @@ export default {
   li,
   inlineCode,
   pre,
+  ul,
 };
