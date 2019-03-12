@@ -69,6 +69,10 @@ exports.withCfg = (mock, skipping) => {
  */
 exports.withEntities = (mock, skipping, {orderedTests}={}) => {
   const cleanup = async () => {
+    if (skipping()) {
+      return;
+    }
+
     await exports.Client.scan({}, {handler: async e => {
       // This is assumed to exist accross tests in many places
       if (e.clientId.startsWith('static/')) {
