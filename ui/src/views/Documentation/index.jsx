@@ -137,7 +137,7 @@ export default class Documentation extends Component {
             ? pageInfo.data.title
             : 'Documentation'
         }>
-        <ScrollToTop>
+        <ScrollToTop scrollKey={Page ? Page.toString() : null}>
           {error ? (
             <NotFound isDocs />
           ) : (
