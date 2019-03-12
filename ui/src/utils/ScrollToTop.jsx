@@ -1,16 +1,21 @@
 import { Component } from 'react';
-import { node } from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { string, node } from 'prop-types';
 
-@withRouter
-/** Scroll the window to the top when the pathname changes. */
+/** Scroll the window to the top when `scrollKey` changes. */
 export default class ScrollToTop extends Component {
   static propTypes = {
     children: node,
+    /* Restore scroll position when `scrollKey` changes. */
+    scrollKey: string,
+  };
+
+  static defaultProps = {
+    scrollKey: null,
+    children: null,
   };
 
   componentDidUpdate(prevProps) {
-    if (this.props.location.pathname !== prevProps.location.pathname) {
+    if (this.props.scrollKey !== prevProps.scrollKey) {
       window.scrollTo(0, 0);
     }
   }
