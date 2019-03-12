@@ -56,3 +56,6 @@ html, body {
 .font-stage-secondary .roboto500 {
   font-family: Roboto500, sans-serif;
 }
+
+::-moz-selection { background: rgb(200, 190, 200,0.9);}
+::selection { background: rgb(200, 190, 200,0.9);}
