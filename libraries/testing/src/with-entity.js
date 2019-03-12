@@ -76,11 +76,11 @@ module.exports = (mock, skipping, helper, loaderComponent, cls,
     setup(`withEntity for ${loaderComponent}`, cleanup);
   }
 
-  suiteTeardown(`withEntity for ${loaderComponent}`, function() {
+  suiteTeardown(`withEntity for ${loaderComponent}`, async function() {
     if (skipping()) {
       return;
     }
-    cleanup();
+    await cleanup();
 
     component = helper[loaderComponent] = null;
   });
