@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { string, node } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import resolve from 'resolve-pathname';
 
@@ -38,5 +39,10 @@ function Anchor({ classes, href, children, ...props }) {
     </Link>
   );
 }
+
+Anchor.propTypes = {
+  href: string.isRequired,
+  children: node.isRequired,
+};
 
 export default useStyles(Anchor);
