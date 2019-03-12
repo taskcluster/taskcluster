@@ -254,7 +254,15 @@
           "path": "manual/tasks/times",
           "title": "Times"
         },
-        "path": "manual/tasks"
+        "path": "manual/tasks",
+        "prev": {
+          "path": "manual",
+          "title": "Taskcluster Manual"
+        },
+        "up": {
+          "path": "manual",
+          "title": "Taskcluster Manual"
+        }
       },
       {
         "children": [
@@ -365,6 +373,10 @@
         "prev": {
           "path": "manual/tasks/messages",
           "title": "Messages"
+        },
+        "up": {
+          "path": "manual",
+          "title": "Taskcluster Manual"
         }
       },
       {
@@ -957,6 +969,10 @@
         "prev": {
           "path": "manual/task-execution/provisioning",
           "title": "Provisioning"
+        },
+        "up": {
+          "path": "manual",
+          "title": "Taskcluster Manual"
         }
       },
       {
@@ -1451,6 +1467,10 @@
         "prev": {
           "path": "manual/design/namespaces",
           "title": "Namespaces"
+        },
+        "up": {
+          "path": "manual",
+          "title": "Taskcluster Manual"
         }
       }
     ],
@@ -1458,7 +1478,12 @@
       "filename": "README.md",
       "order": 1000,
       "title": "Taskcluster Manual"
-    }
+    },
+    "next": {
+      "path": "manual/tasks",
+      "title": "Tasks"
+    },
+    "path": "manual"
   },
   "reference": {
     "children": [
@@ -2889,8 +2914,6 @@
           "title": "Libraries"
         },
         "name": "libraries",
-        "next": {
-        },
         "path": "reference/libraries/README",
         "prev": {
           "path": "reference/workers/README",
@@ -2944,10 +2967,6 @@
           "title": "API Tutorial"
         },
         "name": "apis",
-        "next": {
-          "path": "tutorial/authenticate",
-          "title": "Authenticating to Taskcluster"
-        },
         "path": "tutorial/apis"
       },
       {
@@ -2965,15 +2984,7 @@
           "title": "Authenticating to Taskcluster"
         },
         "name": "authenticate",
-        "next": {
-          "path": "tutorial/create-task-via-api",
-          "title": "Creating a task via API"
-        },
-        "path": "tutorial/authenticate",
-        "prev": {
-          "path": "tutorial/apis",
-          "title": "API Tutorial"
-        }
+        "path": "tutorial/authenticate"
       },
       {
         "children": [
@@ -2989,15 +3000,7 @@
           "title": "Creating a task via API"
         },
         "name": "create-task-via-api",
-        "next": {
-          "path": "tutorial/debug-task",
-          "title": "Debugging a Task"
-        },
-        "path": "tutorial/create-task-via-api",
-        "prev": {
-          "path": "tutorial/authenticate",
-          "title": "Authenticating to Taskcluster"
-        }
+        "path": "tutorial/create-task-via-api"
       },
       {
         "children": [
@@ -3007,15 +3010,7 @@
           "title": "Debugging a Task"
         },
         "name": "debug-task",
-        "next": {
-          "path": "tutorial/download-task-artifacts",
-          "title": "Download task artifacts via API"
-        },
-        "path": "tutorial/debug-task",
-        "prev": {
-          "path": "tutorial/create-task-via-api",
-          "title": "Creating a task via API"
-        }
+        "path": "tutorial/debug-task"
       },
       {
         "children": [
@@ -3032,15 +3027,7 @@
           "title": "Download task artifacts via API"
         },
         "name": "download-task-artifacts",
-        "next": {
-          "path": "tutorial/finding-tasks",
-          "title": "Finding Tasks"
-        },
-        "path": "tutorial/download-task-artifacts",
-        "prev": {
-          "path": "tutorial/debug-task",
-          "title": "Debugging a Task"
-        }
+        "path": "tutorial/download-task-artifacts"
       },
       {
         "children": [
@@ -3050,15 +3037,7 @@
           "title": "Finding Tasks"
         },
         "name": "finding-tasks",
-        "next": {
-          "path": "tutorial/gecko-decision-task",
-          "title": "Gecko Decision Task"
-        },
-        "path": "tutorial/finding-tasks",
-        "prev": {
-          "path": "tutorial/download-task-artifacts",
-          "title": "Download task artifacts via API"
-        }
+        "path": "tutorial/finding-tasks"
       },
       {
         "children": [
@@ -3073,15 +3052,7 @@
           "title": "Gecko Decision Task"
         },
         "name": "gecko-decision-task",
-        "next": {
-          "path": "tutorial/gecko-docker-images",
-          "title": "Docker Image Generation"
-        },
-        "path": "tutorial/gecko-decision-task",
-        "prev": {
-          "path": "tutorial/finding-tasks",
-          "title": "Finding Tasks"
-        }
+        "path": "tutorial/gecko-decision-task"
       },
       {
         "children": [
@@ -3097,15 +3068,7 @@
           "title": "Docker Image Generation"
         },
         "name": "gecko-docker-images",
-        "next": {
-          "path": "tutorial/gecko-new-job",
-          "title": "Adding a new job"
-        },
-        "path": "tutorial/gecko-docker-images",
-        "prev": {
-          "path": "tutorial/gecko-decision-task",
-          "title": "Gecko Decision Task"
-        }
+        "path": "tutorial/gecko-docker-images"
       },
       {
         "children": [
@@ -3117,15 +3080,7 @@
           "title": "Adding a new job"
         },
         "name": "gecko-new-job",
-        "next": {
-          "path": "tutorial/gecko-task-graph-howto",
-          "title": "Changing the Task Graph"
-        },
-        "path": "tutorial/gecko-new-job",
-        "prev": {
-          "path": "tutorial/gecko-docker-images",
-          "title": "Docker Image Generation"
-        }
+        "path": "tutorial/gecko-new-job"
       },
       {
         "children": [
@@ -3135,15 +3090,7 @@
           "title": "Changing the Task Graph"
         },
         "name": "gecko-task-graph-howto",
-        "next": {
-          "path": "tutorial/gecko-task-graph",
-          "title": "Gecko Task Graph Creation"
-        },
-        "path": "tutorial/gecko-task-graph-howto",
-        "prev": {
-          "path": "tutorial/gecko-new-job",
-          "title": "Adding a new job"
-        }
+        "path": "tutorial/gecko-task-graph-howto"
       },
       {
         "children": [
@@ -3159,15 +3106,7 @@
           "title": "Gecko Task Graph Creation"
         },
         "name": "gecko-task-graph",
-        "next": {
-          "path": "tutorial/gecko-tasks",
-          "title": "Gecko and Taskcluster"
-        },
-        "path": "tutorial/gecko-task-graph",
-        "prev": {
-          "path": "tutorial/gecko-task-graph-howto",
-          "title": "Changing the Task Graph"
-        }
+        "path": "tutorial/gecko-task-graph"
       },
       {
         "children": [
@@ -3184,15 +3123,7 @@
           "title": "Gecko and Taskcluster"
         },
         "name": "gecko-tasks",
-        "next": {
-          "path": "tutorial/hack-tc",
-          "title": "Hacking on Taskcluster"
-        },
-        "path": "tutorial/gecko-tasks",
-        "prev": {
-          "path": "tutorial/gecko-task-graph",
-          "title": "Gecko Task Graph Creation"
-        }
+        "path": "tutorial/gecko-tasks"
       },
       {
         "children": [
@@ -3207,15 +3138,7 @@
           "title": "Hacking on Taskcluster"
         },
         "name": "hack-tc",
-        "next": {
-          "path": "tutorial/hello-world",
-          "title": "Hello, World"
-        },
-        "path": "tutorial/hack-tc",
-        "prev": {
-          "path": "tutorial/gecko-tasks",
-          "title": "Gecko and Taskcluster"
-        }
+        "path": "tutorial/hack-tc"
       },
       {
         "children": [
@@ -3233,15 +3156,7 @@
           "title": "Hello, World"
         },
         "name": "hello-world",
-        "next": {
-          "path": "tutorial/monitor-task-status",
-          "title": "Monitor task status via API"
-        },
-        "path": "tutorial/hello-world",
-        "prev": {
-          "path": "tutorial/hack-tc",
-          "title": "Hacking on Taskcluster"
-        }
+        "path": "tutorial/hello-world"
       },
       {
         "children": [
@@ -3258,15 +3173,7 @@
           "title": "Monitor task status via API"
         },
         "name": "monitor-task-status",
-        "next": {
-          "path": "tutorial/reviews",
-          "title": "Taskcluster Reviews"
-        },
-        "path": "tutorial/monitor-task-status",
-        "prev": {
-          "path": "tutorial/hello-world",
-          "title": "Hello, World"
-        }
+        "path": "tutorial/monitor-task-status"
       },
       {
         "children": [
@@ -3276,15 +3183,7 @@
           "title": "Taskcluster Reviews"
         },
         "name": "reviews",
-        "next": {
-          "path": "tutorial/what-is-tc",
-          "title": "What is Taskcluster?"
-        },
-        "path": "tutorial/reviews",
-        "prev": {
-          "path": "tutorial/monitor-task-status",
-          "title": "Monitor task status via API"
-        }
+        "path": "tutorial/reviews"
       },
       {
         "children": [
@@ -3299,11 +3198,7 @@
           "title": "What is Taskcluster?"
         },
         "name": "what-is-tc",
-        "path": "tutorial/what-is-tc",
-        "prev": {
-          "path": "tutorial/reviews",
-          "title": "Taskcluster Reviews"
-        }
+        "path": "tutorial/what-is-tc"
       }
     ],
     "data": {
@@ -3320,9 +3215,6 @@
       },
       "order": 1000
     },
-    "prev": {
-      "path": "reference/libraries/README",
-      "title": "Libraries"
-    }
+    "path": "tutorial"
   }
 }

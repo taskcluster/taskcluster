@@ -112,7 +112,10 @@ function addNav(node, parentNode) {
 }
 
 function makeToc({ files, rootPath }) {
-  const nodes = { children: [] };
+  const nodes = {
+    children: [],
+    path: rootPath.replace(/\/$/, ''),
+  };
 
   Object.keys(files)
     .filter(path => path.startsWith(rootPath))
@@ -170,7 +173,10 @@ function makeToc({ files, rootPath }) {
     });
 
   sortChildren(nodes.children);
-  addNav(nodes, null);
+  // The tutorial section relies on "Next Steps" instead of next/previous page
+  if (rootPath !== 'tutorial/') {
+    addNav(nodes, null);
+  }
 
   return nodes;
 }
