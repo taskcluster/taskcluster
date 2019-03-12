@@ -5,7 +5,7 @@ import { THEME } from '../../../../utils/constants';
 const useStyles = withStyles(theme => ({
   pre: {
     width: '100%',
-    fontSize: '0.875rem',
+    fontSize: theme.typography.fontSize,
     '& code': {
       lineHeight: 1.4,
       '&[class*="language-"]': {
@@ -21,6 +21,7 @@ const useStyles = withStyles(theme => ({
     },
     '& code:not([class])': {
       ...theme.mixins.highlight,
+      fontSize: 'unset',
       backgroundColor: 'unset',
       color: THEME.PRIMARY_TEXT_DARK,
     },
