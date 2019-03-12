@@ -53,7 +53,7 @@ module.exports = (mock, skipping, helper, loaderComponent, cls,
     helper[loaderComponent] = component;
 
     // ensure the table exists (except when using SAS, where it is done for us)
-    if (mock || !noSasCredentials) {
+    if (mock || noSasCredentials) {
       await component.ensureTable();
     }
   });
