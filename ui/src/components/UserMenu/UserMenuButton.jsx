@@ -5,8 +5,6 @@ import { withApollo } from 'react-apollo';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
 import Button from '../Button';
 import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
@@ -50,14 +48,12 @@ export default class UserMenuButton extends Component {
         <Fragment>
           <Button
             className={className}
+            size="small"
             variant="contained"
             color="primary"
             onClick={onSignInDialogOpen}
             {...buttonProps}
             {...props}>
-            <ListItemIcon>
-              <AccountCircleIcon />
-            </ListItemIcon>
             Sign in
           </Button>
           <SignInDialog open={signInDialogOpen} onClose={onSignInDialogClose} />
