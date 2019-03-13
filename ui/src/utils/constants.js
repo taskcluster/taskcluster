@@ -48,6 +48,7 @@ export const THEME = {
   SECONDARY: '#4177a5',
   DRAWER_WIDTH: 240,
   DIVIDER: 'rgba(0, 0, 0, 0.12)',
+  TONAL_OFFSET: 0.2,
 };
 
 // eslint-disable-next-line max-len
