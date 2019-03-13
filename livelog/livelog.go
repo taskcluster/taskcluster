@@ -50,6 +50,9 @@ func New(liveLogExecutable string, putPort, getPort uint16) (*LiveLog, error) {
 	os.Setenv("ACCESS_TOKEN", l.secret)
 	os.Setenv("LIVELOG_GET_PORT", strconv.Itoa(int(l.GETPort)))
 	os.Setenv("LIVELOG_PUT_PORT", strconv.Itoa(int(l.PUTPort)))
+	// we want to explicitly prohibit the process to use TLS
+	os.Unsetenv("SERVER_KEY_FILE")
+	os.Unsetenv("SERVER_CRT_FILE")
 
 	type CommandResult struct {
 		b []byte
