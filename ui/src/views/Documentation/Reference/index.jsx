@@ -75,7 +75,7 @@ export default class Reference extends Component {
               see{' '}
               <Anchor href="/docs/manual/design/logs">
                 Interpreting Log Types
-              </Anchor>
+              </Anchor>{' '}
               in the manual.
             </Typography>
             <br />
