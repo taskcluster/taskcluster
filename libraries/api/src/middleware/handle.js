@@ -12,7 +12,7 @@ const callHandler = ({entry, context, monitor}) => {
     Promise.resolve(null).then(() => {
       return entry.handler.call(context, req, res);
     }).then(() => {
-      if (!req.hasAuthed) {
+      if (!req.public && !req.hasAuthed) {
         // Note: This will not fail the request since a response has already
         // been sent at this point. It will report to sentry however!
         // This is only to catch the case where people do not use res.reply()

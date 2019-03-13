@@ -1,5 +1,4 @@
 const uuid = require('uuid');
-const debug = require('debug')('api:errors');
 const ErrorReply = require('../error-reply');
 
 exports.isProduction = process.env.NODE_ENV === 'production';
@@ -20,11 +19,6 @@ const expressError = ({errorCodes, entry, monitor}) => {
     if (!(err instanceof ErrorReply)) {
       const incidentId = uuid.v4();
 
-      // report the actual error..
-      debug(
-        'Error occurred handling: %s, err: %s, as JSON: %j, incidentId: %s',
-        req.url, err, err, incidentId, err.stack
-      );
       err.incidentId = incidentId;
       err.method = method;
       err.params = req.params;
@@ -33,7 +27,7 @@ const expressError = ({errorCodes, entry, monitor}) => {
         payload = cleanPayload(payload);
       }
       err.payload = payload;
-      monitor.reportError(err, {method});
+      monitor.reportError(err);
 
       // then formulate a generic error to send to the HTTP client
       const details = {incidentId};

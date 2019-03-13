@@ -64,7 +64,7 @@ const validateSchemas = ({validator, absoluteSchemas, rootUrl, serviceName, entr
     // Add a reply method sending JSON replies, this will always reply with HTTP
     // code 200... errors should be sent with res.json(code, json)
     res.reply = (json) => {
-      if (!req.hasAuthed) {
+      if (!req.public && !req.hasAuthed) {
         throw new Error('Deferred auth was never checked!');
       }
       // If we're supposed to validate outgoing messages and output schema is
