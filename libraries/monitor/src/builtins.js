@@ -83,7 +83,7 @@ module.exports = [
   {
     name: 'errorReport',
     type: 'monitor.error',
-    level: 'err',
+    level: 'any',
     version: 1,
     description: 'A specifically formatted error report. Will have at least the following but can contain more.',
     fields: {

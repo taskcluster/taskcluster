@@ -56,7 +56,7 @@ class Logger {
     this.hostname = os.hostname();
     this.gitVersion = gitVersion;
 
-    level = level.trim();
+    level = level.trim().toLowerCase();
     assert(LEVELS[level] !== undefined, `Error levels must correspond to syslog severity levels. ${level} is invalid.`);
     this.level = LEVELS[level];
   }

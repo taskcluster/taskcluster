@@ -71,7 +71,7 @@ class MonitorManager {
     assert(/^[a-z][a-zA-Z0-9]*$/.test(name), `Invalid name type ${name}`);
     assert(/^[a-z][a-zA-Z0-9.\-_]*$/.test(type), `Invalid event type ${type}`);
     assert(!this.types[name], `Cannot register event ${name} twice`);
-    assert(LEVELS[level] !== undefined, `${level} is not a valid level.`);
+    assert(level === 'any' || LEVELS[level] !== undefined, `${level} is not a valid level.`);
     assert(Number.isInteger(version), 'Version must be an integer');
     assert(!fields['v'], '"v" is a reserved field for messages');
     const cleaned = {};

@@ -98,6 +98,17 @@ The `type` will be set in the event object as the `Type` field in the mozlog for
 We default to `info` logging level so normally `debug` logs will not be logged.
 
 If you leave out `type`, the first argument will be used for `fields`. If fields is a string or number, we will log it in a generic message.
+This is useful for something like simple debug logging:
+
+```js
+monitor.debug('Whatever you want to say');
+```
+
+results in
+
+```
+{Fields: {message: 'Whatever you want to say'}, ...}
+```
 
 ### Registering message types
 
@@ -120,8 +131,22 @@ manager.register({
   },
 });
 
+manager.register({
+  name: 'errorReport',
+  type: 'error-report',
+  version: 1,
+  level: 'any', // Notice that this is `any`
+  description: 'A generic error report.',
+  fields: {
+    stack: 'A stack trace.',
+  },
+});
+
 // And now after getting a monitor post-setup:
 monitor.log.email({address: req.body.address});
+
+// An example with an `any` level
+monitor.log.errorReport({stack: '...'}, {level: 'warning'});
 ```
 
 Each part is:
@@ -129,7 +154,8 @@ Each part is:
  * `name` - This will be made available on your monitor under a `.log` prefix.
  * `type` - This will be the `Type` field of the logged message.
  * `version` - This will end up in a `v` field of the `Fields` part of a logged message. Bump this if making a backwards-incompatible change
- * `level` - This will be the level that this message logs at.
+ * `level` - This will be the level that this message logs at. This must either be a syslog level or `any`. If it is `any`, you must pass an object with the
+    field `level` as the second argument to the logging function.
  * `description` - A description of what this logging message means
  * `fields`: An object where every key is the name of a required field to be logged. Corresponding values are documentation of the meaning of that field.
 
