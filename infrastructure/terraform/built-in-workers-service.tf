@@ -12,7 +12,7 @@ module "built_in_workers_secrets" {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/built-in-workers"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.built_in_workers_access_token.result}"
     NODE_ENV                 = "production"
-    MONITORING_ENABLE        = "false"
+    MONITORING_ENABLE        = "true"
     PUBLISH_METADATA         = "false"
   }
 }

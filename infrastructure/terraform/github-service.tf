@@ -19,7 +19,7 @@ module "github_secrets" {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/github"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.github_access_token.result}"
     NODE_ENV                 = "production"
-    MONITORING_ENABLE        = "false"
+    MONITORING_ENABLE        = "true"
     PUBLISH_METADATA         = "false"
     AZURE_ACCOUNT_NAME       = "${azurerm_storage_account.base.name}"
     PULSE_USERNAME           = "${module.github_rabbitmq_user.username}"
