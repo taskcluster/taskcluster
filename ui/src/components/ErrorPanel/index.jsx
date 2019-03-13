@@ -64,7 +64,9 @@ export default class ErrorPanel extends Component {
     return (
       error && (
         <MuiErrorPanel
-          className={classNames(classes.link, { [classes.warning]: Boolean(props.warning) })}
+          className={classNames(classes.link, {
+            [classes.warning]: Boolean(props.warning),
+          })}
           error={errorMessage}
           onClose={this.handleErrorClose}
           {...props}
