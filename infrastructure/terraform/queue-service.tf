@@ -66,7 +66,7 @@ module "queue_secrets" {
 
   secrets = {
     NODE_ENV                         = "production"
-    MONITORING_ENABLE                = "false"
+    MONITORING_ENABLE                = "true"
     PUBLISH_METADATA                 = "false"
     AWS_ACCESS_KEY_ID                = "${module.queue_user.access_key_id}"
     AWS_SECRET_ACCESS_KEY            = "${module.queue_user.secret_access_key}"

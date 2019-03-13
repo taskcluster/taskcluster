@@ -19,7 +19,7 @@ module "index_secrets" {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/index"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.index_access_token.result}"
     NODE_ENV                 = "production"
-    MONITORING_ENABLE        = "false"
+    MONITORING_ENABLE        = "true"
     PUBLISH_METADATA         = "false"
     AZURE_ACCOUNT            = "${azurerm_storage_account.base.name}"
     PULSE_USERNAME           = "${module.index_rabbitmq_user.username}"

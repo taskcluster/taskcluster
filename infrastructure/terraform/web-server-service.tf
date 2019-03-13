@@ -19,7 +19,7 @@ module "web_server_secrets" {
     TASKCLUSTER_CLIENT_ID    = "static/taskcluster/web-server"
     TASKCLUSTER_ACCESS_TOKEN = "${random_string.web_server_access_token.result}"
     NODE_ENV                 = "production"
-    MONITORING_ENABLE        = "false"
+    MONITORING_ENABLE        = "true"
     MONITORING_PROJECT       = "taskcluster-web-server"
     PULSE_USERNAME           = "${module.web_server_rabbitmq_user.username}"
     PULSE_PASSWORD           = "${module.web_server_rabbitmq_user.password}"
