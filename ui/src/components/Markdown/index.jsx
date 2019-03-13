@@ -5,7 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 
 const useStyles = withStyles(theme => ({
   markdown: {
-    '& a, & a code': {
+    '& a': {
       ...theme.mixins.link,
     },
   },

@@ -6,9 +6,7 @@ import resolve from 'resolve-pathname';
 
 const useStyles = withStyles(theme => ({
   link: {
-    '&, & code': {
-      ...theme.mixins.link,
-    },
+    ...theme.mixins.link,
   },
 }));
 
