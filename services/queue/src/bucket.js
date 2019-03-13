@@ -168,7 +168,7 @@ Bucket.prototype.setupCORS = async function() {
     this.monitor.reportError(err, 'warning');
   }
 
-  // Set CURS
+  // Set CORS
   return this.s3.putBucketCors({
     CORSConfiguration: {
       CORSRules: rules,

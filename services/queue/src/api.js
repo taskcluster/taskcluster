@@ -1346,9 +1346,6 @@ builder.declare({
     });
   }
 
-  // Count claimWork calls - useful for primitive monitoring
-  this.monitor.count(`claim-work.${provisionerId}.${workerType}`, count);
-
   // Allow request to abort their claim request, if the connection closes
   let aborted = new Promise(accept => {
     sleep20Seconds().then(accept);
@@ -1361,6 +1358,15 @@ builder.declare({
     ),
     this.workerInfo.seen(provisionerId, workerType, workerGroup, workerId),
   ]);
+
+  this.monitor.log.workClaimed({
+    provisionerId,
+    workerType,
+    workerGroup,
+    workerId,
+    requested: count,
+    tasks: result,
+  });
 
   await this.workerInfo.taskSeen(provisionerId, workerType, workerGroup, workerId, result);
 
