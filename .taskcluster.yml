@@ -462,7 +462,7 @@ tasks:
       features:
         taskclusterProxy: true
       maxRunTime: 3600
-      image: golang
+      image: golang:1.10
       env:
         # once bug 1508383 is landed, this won't be required (the worker will supply it)
         TASKCLUSTER_ROOT_URL: https://taskcluster.net
