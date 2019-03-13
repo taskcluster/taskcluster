@@ -10,6 +10,11 @@ import MuiErrorPanel from '@mozilla-frontend-infra/components/ErrorPanel';
       color: theme.palette.secondary.dark,
     },
   },
+  link: {
+    '& a': {
+      ...theme.mixins.link,
+    },
+  },
 }))
 export default class ErrorPanel extends Component {
   static propTypes = {
@@ -59,7 +64,9 @@ export default class ErrorPanel extends Component {
     return (
       error && (
         <MuiErrorPanel
-          className={classNames({ [classes.warning]: Boolean(props.warning) })}
+          className={classNames(classes.link, {
+            [classes.warning]: Boolean(props.warning),
+          })}
           error={errorMessage}
           onClose={this.handleErrorClose}
           {...props}
