@@ -20,7 +20,7 @@ import BookOpenPageVariantIcon from 'mdi-react/BookOpenPageVariantIcon';
 import LightBulbOnOutline from 'mdi-react/LightbulbOnOutlineIcon';
 import PageTitle from '../PageTitle';
 import Helmet from '../Helmet';
-import UserMenu from './UserMenu';
+import UserMenu from '../UserMenu';
 import SidebarList from './SidebarList';
 import { THEME, DOCS_PATH_PREFIX } from '../../utils/constants';
 import { withThemeToggler } from '../../utils/ToggleTheme';
@@ -121,7 +121,7 @@ import DocsSidebarList from './DocsSidebarList';
       },
       maxWidth: '60em',
     },
-    appBarButton: {
+    leftAppBarButton: {
       marginLeft: theme.spacing.unit,
     },
     appIcon: {
@@ -220,7 +220,7 @@ export default class Dashboard extends Component {
     } = this.props;
     const { error, navOpen, showHelpView, showLogo } = this.state;
     const drawer = (
-      <div>
+      <nav>
         <div className={classes.toolbar}>
           <Typography
             onMouseEnter={this.handleTitleToggle}
@@ -246,7 +246,7 @@ export default class Dashboard extends Component {
         <UserMenu />
         <Divider />
         {docs ? <DocsSidebarList /> : <SidebarList />}
-      </div>
+      </nav>
     );
     const isDocs = history.location.pathname.startsWith(DOCS_PATH_PREFIX);
     const isMobileView = width === 'sm' || width === 'xs';
@@ -276,7 +276,7 @@ export default class Dashboard extends Component {
             {search}
             <Tooltip placement="bottom" title="Toggle light/dark theme">
               <IconButton
-                className={classes.appBarButton}
+                className={classes.leftAppBarButton}
                 onClick={onToggleTheme}>
                 {theme.palette.type === 'dark' ? (
                   <LightBulbOn className={classes.appIcon} />
@@ -286,22 +286,18 @@ export default class Dashboard extends Component {
               </IconButton>
             </Tooltip>
             <Tooltip placement="bottom" title="Documentation">
-              <IconButton
-                className={classes.appBarButton}
-                component={Link}
-                to={DOCS_PATH_PREFIX}>
+              <IconButton component={Link} to={DOCS_PATH_PREFIX}>
                 <BookOpenPageVariantIcon className={classes.appIcon} />
               </IconButton>
             </Tooltip>
             {helpView && (
               <Tooltip placement="bottom" title="Page Information">
-                <IconButton
-                  onClick={this.handleHelpViewToggle}
-                  className={classes.appBarButton}>
+                <IconButton onClick={this.handleHelpViewToggle}>
                   <HelpIcon className={classes.appIcon} />
                 </IconButton>
               </Tooltip>
             )}
+            <UserMenu appBar />
           </Toolbar>
         </AppBar>
         <Drawer

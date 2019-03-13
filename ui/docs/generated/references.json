@@ -6727,7 +6727,7 @@
       },
       "title": "Get All Roles (no pagination)",
       "type": "array",
-      "uniqueItems": false
+      "uniqueItems": true
     },
     "filename": "schemas/auth/v1/list-roles-response.json"
   },

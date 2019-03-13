@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
-import { arrayOf, oneOf, shape } from 'prop-types';
-import { pipe, map, sort as rSort } from 'ramda';
+import { string, arrayOf, oneOf, shape } from 'prop-types';
+import { curry, pipe, map, sort as rSort } from 'ramda';
 import { lowerCase } from 'change-case';
 import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
@@ -39,13 +39,24 @@ const valueFromNode = (node, sortBy) => {
   return mapping[sortBy];
 };
 
+const filterTasksByState = curry((filter, tasks) =>
+  filter
+    ? tasks.filter(({ node: { status: { state } } }) => filter.includes(state))
+    : tasks
+);
+const filterTasksByName = curry((searchTerm, tasks) =>
+  searchTerm
+    ? tasks.filter(({ node: { metadata: { name } } }) =>
+        name.includes(searchTerm)
+      )
+    : tasks
+);
 const createSortedTasks = memoize(
-  (tasks, sortBy, sortDirection, filter) => {
-    const filteredTasks = filter
-      ? tasks.filter(({ node: { status: { state } } }) =>
-          filter.includes(state)
-        )
-      : tasks;
+  (tasks, sortBy, sortDirection, filter, searchTerm) => {
+    const filteredTasks = pipe(
+      filterTasksByState(filter),
+      filterTasksByName(searchTerm)
+    )(tasks);
 
     if (!sortBy) {
       return filteredTasks;
@@ -65,8 +76,10 @@ const createSortedTasks = memoize(
     });
   },
   {
-    serializer: ([tasks, sortBy, sortDirection, filter]) =>
-      `${tasks ? sorted(tasks) : ''}-${sortBy}-${sortDirection}-${filter}`,
+    serializer: ([tasks, sortBy, sortDirection, filter, searchTerm]) =>
+      `${
+        tasks ? sorted(tasks) : ''
+      }-${sortBy}-${sortDirection}-${filter}-${searchTerm}`,
   }
 );
 
@@ -90,7 +103,6 @@ const createSortedTasks = memoize(
     display: 'inline-block',
   },
   table: {
-    marginTop: theme.spacing.double,
     marginBottom: theme.spacing.unit,
   },
   tableHead: {
@@ -131,6 +143,7 @@ const createSortedTasks = memoize(
 export default class TaskGroupTable extends Component {
   static defaultProps = {
     filter: '',
+    searchTerm: '',
   };
 
   static propTypes = {
@@ -140,8 +153,10 @@ export default class TaskGroupTable extends Component {
       edges: arrayOf(client),
       pageInfo,
     }).isRequired,
-    /** A task state filter to narrow down results */
+    /** A task state filter to narrow down results. */
     filter: oneOf(Object.values(TASK_STATE)),
+    /** A task name search term to narrow down results. */
+    searchTerm: string,
   };
 
   state = {
@@ -183,9 +198,15 @@ export default class TaskGroupTable extends Component {
 
   render() {
     const { sortBy, sortDirection, tasks } = this.state;
-    const { classes, filter } = this.props;
+    const { classes, filter, searchTerm } = this.props;
     const iconSize = 16;
-    const items = createSortedTasks(tasks, sortBy, sortDirection, filter);
+    const items = createSortedTasks(
+      tasks,
+      sortBy,
+      sortDirection,
+      filter,
+      searchTerm
+    );
     const itemCount = items.length;
     const ItemRenderer = ({ index, style }) => {
       const taskGroup = items[index].node;

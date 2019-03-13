@@ -53,7 +53,7 @@ module.exports = (mock, skipping, helper, loaderComponent, cls,
     helper[loaderComponent] = component;
 
     // ensure the table exists (except when using SAS, where it is done for us)
-    if (mock || !noSasCredentials) {
+    if (mock || noSasCredentials) {
       await component.ensureTable();
     }
   });
@@ -76,11 +76,11 @@ module.exports = (mock, skipping, helper, loaderComponent, cls,
     setup(`withEntity for ${loaderComponent}`, cleanup);
   }
 
-  suiteTeardown(`withEntity for ${loaderComponent}`, function() {
+  suiteTeardown(`withEntity for ${loaderComponent}`, async function() {
     if (skipping()) {
       return;
     }
-    cleanup();
+    await cleanup();
 
     component = helper[loaderComponent] = null;
   });

@@ -4,8 +4,12 @@ import { func } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
-import AnchorOrLink from '../../components/AnchorOrLink';
+import Typography from '@material-ui/core/Typography';
 import PageNavigation from '../../components/PageNavigation';
+import HeaderWithAnchor from './components/HeaderWithAnchor';
+import Anchor from './components/Anchor';
+import List from './components/List';
+import ListItem from './components/ListItem';
 import { docsPageInfo } from '../../utils/prop-types';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import { DOCS_PATH_PREFIX } from '../../utils/constants';
@@ -53,15 +57,13 @@ export default class PageMeta extends Component {
 
     return (
       data.followup.links && (
-        <ul>
+        <List>
           {items.map(([link, text]) => (
-            <li key={text}>
-              <AnchorOrLink href={removeReadmeFromPath(link)}>
-                {text}
-              </AnchorOrLink>
-            </li>
+            <ListItem key={text}>
+              <Anchor href={removeReadmeFromPath(link)}>{text}</Anchor>
+            </ListItem>
           ))}
-        </ul>
+        </List>
       )
     );
   };
@@ -73,7 +75,7 @@ export default class PageMeta extends Component {
       return null;
     }
 
-    return <span>{data.followup.subtext}</span>;
+    return <Typography variant="subtitle1">{data.followup.subtext}</Typography>;
   };
 
   render() {
@@ -86,7 +88,7 @@ export default class PageMeta extends Component {
         {pageInfo.data && pageInfo.data.followup && (
           <Fragment>
             <Divider className={classes.divider} light />
-            <h2>Next Steps</h2>
+            <HeaderWithAnchor type="h2">Next Steps</HeaderWithAnchor>
           </Fragment>
         )}
         {this.renderSubtext()}
