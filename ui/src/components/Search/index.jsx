@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
-import { func, string, bool } from 'prop-types';
+import { object, func, string, bool } from 'prop-types';
+import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import FormControl from '@material-ui/core/FormControl';
@@ -20,6 +21,9 @@ import { THEME } from '../../utils/constants';
         width: 300,
       },
     },
+  },
+  formControl: {
+    width: '100%',
   },
   search: {
     width: theme.spacing.unit * 6,
@@ -62,6 +66,7 @@ export default class Search extends PureComponent {
     value: undefined,
     onChange: null,
     defaultValue: null,
+    formProps: {},
   };
 
   static propTypes = {
@@ -89,6 +94,10 @@ export default class Search extends PureComponent {
      * to initially be set to null.
      * */
     defaultValue: string,
+    /**
+     * Properties applied to the form element.
+     * */
+    formProps: object,
   };
 
   constructor(props) {
@@ -119,12 +128,23 @@ export default class Search extends PureComponent {
   };
 
   render() {
-    const { classes, onSubmit, onChange, spellCheck, ...props } = this.props;
+    const {
+      classes,
+      onSubmit,
+      onChange,
+      spellCheck,
+      className,
+      formProps,
+      ...props
+    } = this.props;
     const { value } = this.state;
 
     return (
-      <form onSubmit={this.handleInputSubmit} className={classes.root}>
-        <FormControl>
+      <form
+        onSubmit={this.handleInputSubmit}
+        {...formProps}
+        className={classNames(classes.root, formProps.className)}>
+        <FormControl className={classes.formControl}>
           <div className={classes.search}>
             <MagnifyIcon />
           </div>
@@ -132,7 +152,7 @@ export default class Search extends PureComponent {
             id="adornment-search"
             spellCheck={spellCheck}
             placeholder="Search"
-            className={classes.input}
+            className={classNames(classes.input, className)}
             type="text"
             value={value}
             onChange={this.handleInputChange}

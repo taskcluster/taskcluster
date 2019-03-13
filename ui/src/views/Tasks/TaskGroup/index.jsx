@@ -9,6 +9,7 @@ import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
 import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import HammerIcon from 'mdi-react/HammerIcon';
+import { fade } from '@material-ui/core/styles/colorManipulator';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import Dashboard from '../../../components/Dashboard';
@@ -68,6 +69,25 @@ let previousCursor;
   },
   dashboard: {
     overflow: 'hidden',
+  },
+  taskNameFormSearch: {
+    marginTop: theme.spacing.triple,
+    background: theme.palette.primary.main,
+    '&:hover': {
+      background: fade(theme.palette.primary.main, 0.9),
+    },
+    '& $input': {
+      transition: 'unset !important',
+      width: 'unset !important',
+      color: fade(theme.palette.text.primary, 0.5),
+      '&:focus': {
+        width: 'unset !important',
+        color: fade(theme.palette.text.primary, 0.9),
+      },
+    },
+    '& svg': {
+      fill: fade(theme.palette.text.primary, 0.5),
+    },
   },
 }))
 export default class TaskGroup extends Component {
@@ -141,6 +161,7 @@ export default class TaskGroup extends Component {
     selectedAction: null,
     dialogError: null,
     taskGroupLoaded: false,
+    searchTerm: null,
   };
 
   componentDidUpdate(prevProps) {
@@ -297,6 +318,10 @@ export default class TaskGroup extends Component {
     this.setState({ dialogError: null, actionLoading: true });
   };
 
+  handleSearchTaskSubmit = searchTerm => {
+    this.setState({ searchTerm });
+  };
+
   render() {
     const {
       groupActions,
@@ -307,6 +332,7 @@ export default class TaskGroup extends Component {
       actionInputs,
       dialogError,
       taskGroupLoaded,
+      searchTerm,
     } = this.state;
     const {
       description,
@@ -343,10 +369,21 @@ export default class TaskGroup extends Component {
             onStatusClick={this.handleStatusClick}
           />
         )}
+        {!loading && taskGroupLoaded && (
+          <Search
+            formProps={{ className: classes.taskNameFormSearch }}
+            placeholder="Name contains"
+            onSubmit={this.handleSearchTaskSubmit}
+          />
+        )}
         <br />
         {!error && !taskGroupLoaded && <Spinner loading />}
         {!loading && taskGroupLoaded && (
-          <TaskGroupTable filter={filter} taskGroupConnection={taskGroup} />
+          <TaskGroupTable
+            searchTerm={searchTerm}
+            filter={filter}
+            taskGroupConnection={taskGroup}
+          />
         )}
         {!loading && groupActions && groupActions.length ? (
           <SpeedDial>
