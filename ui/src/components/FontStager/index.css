@@ -57,5 +57,5 @@ html, body {
   font-family: Roboto500, sans-serif;
 }
 
-::-moz-selection { background: rgb(200, 190, 200,0.9);}
-::selection { background: rgb(200, 190, 200,0.9);}
+::-moz-selection { background: rgb(150, 190, 200,0.2);}
+::selection { background: rgb(150, 190, 200,0.2);}
