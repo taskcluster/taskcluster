@@ -62,6 +62,7 @@ tasks:
       github:
         # Events that will trigger this task
         events:
+          - pull_request.opened
           - pull_request.synchronize
           - push
     scopes:
@@ -147,6 +148,7 @@ tasks:
       github:
         # Events that will trigger this task
         events:
+          - pull_request.opened
           - pull_request.synchronize
           - push
     scopes:
@@ -221,6 +223,7 @@ tasks:
       github:
         # Events that will trigger this task
         events:
+          - pull_request.opened
           - pull_request.synchronize
           - push
     scopes:
@@ -306,6 +309,7 @@ tasks:
       github:
         # Events that will trigger this task
         events:
+          - pull_request.opened
           - pull_request.synchronize
           - push
     scopes:
@@ -381,6 +385,7 @@ tasks:
   #     github:
   #       # Events that will trigger this task
   #       events:
+  #         - pull_request.opened
   #         - pull_request.synchronize
   #         - push
   #   scopes:
@@ -447,6 +452,7 @@ tasks:
       github:
         # Events that will trigger this task
         events:
+          - pull_request.opened
           - pull_request.synchronize
           - push
     scopes:
