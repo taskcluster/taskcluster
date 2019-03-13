@@ -135,6 +135,17 @@ const createTheme = isDarkTheme => {
     drawerWidth: THEME.DRAWER_WIDTH,
     docsDrawerWidth: THEME.DRAWER_WIDTH + 125,
     mixins: {
+      link: {
+        color: textPrimary,
+        textDecoration: 'none',
+        borderBottom: `2px solid ${lighten(
+          THEME.SECONDARY,
+          THEME.TONAL_OFFSET
+        )}`,
+        '&:hover': {
+          borderBottom: `2px solid ${THEME.SECONDARY}`,
+        },
+      },
       highlight: {
         backgroundColor: isDarkTheme
           ? THEME.TEN_PERCENT_WHITE
@@ -229,163 +240,6 @@ const createTheme = isDarkTheme => {
       // to ensure other components (e.g., code editors) are not sitting on top.
       actionButton: {
         zIndex: 1050,
-      },
-      markdown: {
-        fontFamily: Roboto400.fontFamily,
-        color: textPrimary,
-        '& pre, & pre[class*="language-"]': {
-          margin: `${SPACING.TRIPLE}px 0`,
-          padding: '12px 18px',
-          backgroundColor: THEME.PRIMARY_DARK,
-          borderRadius: 3,
-          overflow: 'auto',
-        },
-        '& code': {
-          display: 'inline-block',
-          lineHeight: 1.4,
-          fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
-          color: textPrimary,
-          '&[class*="language-"]': {
-            textShadow: 'none',
-          },
-        },
-        '& pre:not([class]) code:not([class])': {
-          color: THEME.PRIMARY_TEXT_DARK,
-        },
-        '& p code, & ul code, & pre code': {
-          lineHeight: 1.4,
-        },
-        '& h1': {
-          ...TYPOGRAPHY.H3,
-          color: textPrimary,
-          margin: '0.7em 0',
-        },
-        '& h2': {
-          ...TYPOGRAPHY.H4,
-          color: textPrimary,
-          margin: '1em 0 0.7em',
-        },
-        '& h3': {
-          ...TYPOGRAPHY.H5,
-          color: textPrimary,
-          margin: '1em 0 0.7em',
-        },
-        '& h4': {
-          ...TYPOGRAPHY.H6,
-          color: textPrimary,
-          margin: '1em 0 0.7em',
-        },
-        '& p, & ul, & ol': {
-          lineHeight: 1.4,
-        },
-        '& h1, & h2, & h3, & h4': {
-          '& code': {
-            fontSize: 'inherit',
-            lineHeight: 'inherit',
-            // Remove scroll on small screens.
-            wordBreak: 'break-word',
-          },
-          '& .anchor-link-style': {
-            opacity: 0,
-            // To prevent the link to get the focus.
-            display: 'none',
-          },
-          '&:hover .anchor-link-style': {
-            display: 'inline-block',
-            opacity: 1,
-            padding: `0 ${SPACING.UNIT}px`,
-            color: textHint,
-            '&:hover': {
-              color: textPrimary,
-            },
-            '& svg': {
-              width: '0.55em',
-              height: '0.55em',
-              fill: 'currentColor',
-            },
-          },
-        },
-        '& table': {
-          width: '100%',
-          display: 'block',
-          overflowX: 'auto',
-          borderCollapse: 'collapse',
-          borderSpacing: 0,
-          overflow: 'hidden',
-          '& .prop-name': {
-            fontFamily: 'Consolas, "Liberation Mono", Menlo, monospace',
-          },
-          '& .required': {
-            color: isDarkTheme ? '#9bc89b' : '#006500',
-          },
-          '& .prop-type': {
-            fontFamily: 'Consolas, "Liberation Mono", Menlo, monospace',
-            color: isDarkTheme ? '#dbb0d0' : '#932981',
-          },
-          '& .prop-default': {
-            fontFamily: 'Consolas, "Liberation Mono", Menlo, monospace',
-            borderBottom: `1px dotted ${textHint}`,
-          },
-        },
-        '& thead': {
-          fontWeight: FONT_WEIGHTS.MEDIUM,
-          color: textPrimary,
-        },
-        '& tbody': {
-          lineHeight: 1.5,
-          color: textPrimary,
-        },
-        '& td': {
-          border: `1px solid ${THEME.DIVIDER}`,
-          padding: `${SPACING.UNIT}px ${SPACING.DOUBLE}px ${SPACING.UNIT}px ${
-            SPACING.UNIT
-          }px`,
-          textAlign: 'left',
-        },
-        '& td:last-child': {
-          paddingRight: SPACING.TRIPLE,
-        },
-        '& td compact': {
-          paddingRight: SPACING.TRIPLE,
-        },
-        '& td code': {
-          lineHeight: 1.4,
-        },
-        '& th': {
-          whiteSpace: 'pre',
-          border: `1px solid ${THEME.DIVIDER}`,
-          fontWeight: FONT_WEIGHTS.MEDIUM,
-          padding: `0 ${SPACING.DOUBLE}px 0 ${SPACING.UNIT}px`,
-          textAlign: 'left',
-        },
-        '& th:last-child': {
-          paddingRight: SPACING.TRIPLE,
-        },
-        '& tr': {
-          height: 48,
-        },
-        '& thead tr': {
-          height: 64,
-        },
-        '& strong': {
-          fontWeight: FONT_WEIGHTS.DARK,
-        },
-        '& blockquote': {
-          borderLeft: `5px solid ${textHint}`,
-          padding: `${SPACING.UNIT / 2}px ${SPACING.TRIPLE}px`,
-          margin: `${SPACING.TRIPLE}px 0`,
-        },
-        '& a, & a code': {
-          // Style taken from the Link component
-          color: THEME.SECONDARY,
-          textDecoration: 'none',
-          '&:hover': {
-            textDecoration: 'underline',
-          },
-        },
-        '& img': {
-          maxWidth: '100%',
-        },
       },
     },
     overrides: {

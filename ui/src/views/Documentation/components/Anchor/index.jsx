@@ -7,12 +7,7 @@ import resolve from 'resolve-pathname';
 const useStyles = withStyles(theme => ({
   link: {
     '&, & code': {
-      // Style taken from the Link component
-      color: theme.palette.secondary.main,
-      textDecoration: 'none',
-      '&:hover': {
-        textDecoration: 'underline',
-      },
+      ...theme.mixins.link,
     },
   },
 }));

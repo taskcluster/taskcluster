@@ -1,11 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import { object } from 'prop-types';
-import { Link, withRouter } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import MDX from '@mdx-js/runtime';
 import Typography from '@material-ui/core/Typography';
 import Entry from './Entry';
 import components from '../components';
 import HeaderWithAnchor from '../components/HeaderWithAnchor';
+import Anchor from '../components/Anchor';
 
 @withRouter
 export default class Reference extends Component {
@@ -51,7 +52,8 @@ export default class Reference extends Component {
             <HeaderWithAnchor type="h3">Functions</HeaderWithAnchor>
             <Typography>
               For more information on invoking the API methods described here,
-              see <Link to="/docs/manual/design/apis">Using the APIs</Link> in
+              see{' '}
+              <Anchor href="/docs/manual/design/apis">Using the APIs</Anchor> in
               the manual.
             </Typography>
             <br />
@@ -70,8 +72,10 @@ export default class Reference extends Component {
             <HeaderWithAnchor type="h3">Message Types</HeaderWithAnchor>
             <Typography>
               For more information on interpreting the log types described here,
-              see
-              <Link to="/docs/manual/design/logs">Interpreting Log Types</Link>
+              see{' '}
+              <Anchor href="/docs/manual/design/logs">
+                Interpreting Log Types
+              </Anchor>{' '}
               in the manual.
             </Typography>
             <br />

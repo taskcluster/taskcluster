@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { bool } from 'prop-types';
-import Markdown from '@mozilla-frontend-infra/components/Markdown';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -17,6 +16,7 @@ import DateDistance from '../DateDistance';
 import Button from '../Button';
 import StatusLabel from '../StatusLabel';
 import DialogAction from '../DialogAction';
+import Markdown from '../Markdown';
 import { provisioner } from '../../utils/prop-types';
 import { withAuth } from '../../utils/Auth';
 import { ACTION_CONTEXT } from '../../utils/constants';

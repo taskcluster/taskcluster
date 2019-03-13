@@ -4,7 +4,6 @@ import classNames from 'classnames';
 import { oneOf, object, string } from 'prop-types';
 import { upperCase } from 'change-case';
 import { toString } from 'ramda';
-import Markdown from '@mozilla-frontend-infra/components/Markdown';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
@@ -18,6 +17,7 @@ import TableCell from '@material-ui/core/TableCell';
 import Grid from '@material-ui/core/Grid';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import DataTable from '../../../components/DataTable';
+import Markdown from '../../../components/Markdown';
 import StatusLabel from '../../../components/StatusLabel';
 import SchemaTable from '../../../components/SchemaTable';
 
