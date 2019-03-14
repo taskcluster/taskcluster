@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { arrayOf, func, shape } from 'prop-types';
 import classNames from 'classnames';
+import Code from '@mozilla-frontend-infra/components/Code';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
@@ -14,7 +15,6 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import LockIcon from 'mdi-react/LockIcon';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
-import JsonInspector from '../JsonInspector';
 import { artifact, indexedTask, date, pageInfo } from '../../utils/prop-types';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
 import Link from '../../utils/Link';
@@ -154,7 +154,11 @@ export default class IndexedEntry extends Component {
             secondaryTypographyProps={{
               component: 'div',
             }}
-            secondary={<JsonInspector data={indexedTask.data} />}
+            secondary={
+              <Code language="json">
+                {JSON.stringify(indexedTask.data, null, 2)}
+              </Code>
+            }
           />
         </ListItem>
         <ListItem>
