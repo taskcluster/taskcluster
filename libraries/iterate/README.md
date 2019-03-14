@@ -17,23 +17,16 @@ i = new Iterate({
   maxIterationTime: 10000,
   watchDog: 5000,
   waitTime: 2000,
-  handler: (watchDog, state) => {
-    console.log(`do some work`);
-
-    watchDog.touch(); // tell Iterate that we`re doing work still
-
-    console.log(`still working`);
+  handler: async (watchDog, state) => {
+    await doSomeWork();
+    watchDog.touch();  // tell Iterate that we`re doing work still
+    await doMoreWork();
     watchDog.touch();
-
-    return new Promise((res, rej) => {
-      console.log(`Almost done`);
-      watchDog.touch();
-      setTimeout(res, 2);
-    });
   },
 });
 
-// starting the iterator will invoke the handler immediately
+// starting the iterator will invoke the handler immediately, but returns before
+// the iteration is complete.
 i.start();
 
 i.on(`stopped`, () => {
@@ -46,43 +39,37 @@ i.on(`stopped`, () => {
 The constructor for the `Iterate` class takes an options object, with the following properties.
 All times are in milliseconds.
 
-* `maxIterationTime`: the absolute upper bounds for an iteration interval.
+* `handler`: the async function to call repeatedly, called as `await handler(watchdog, state)`.
+  See details below.
+* `monitor` (optional): instance of a `taskcluster-lib-monitor` instance with a name appropriate for this iterate instance.
+  This is used to report errors.
+* `maxIterationTime`: the maximum allowable duration of an iteration interval.
+  An iteration longer than this is considered failed.
   This time is exclusive of the time we wait between iterations.
-* `watchDog`: this is the time within which `watchDog.touch` must be called or
-  the iteration is considered a failure.
-* `handler`: promise returning function which contains work to execute.
-  Is passed in a `watchDog` and a `state` object reference.  The `watchDog`
-  object has `.touch()` to mark when progress is made and should be reset and a
-  `.stop()` in case you really don't care about it.  The state object is
-  initially empty but can be used to persist information between calls to the
-  handler.
-* `waitTime`: time between the conclusion of one iteration and commencement of another.
+* `minIterationTime` (optional): the minimum allowable duration of an iteration interval.
+  An iteration shorter than this is considered failed.
+* `waitTime`: the time to wait between finishing an iteration and beginning the next.
 * `maxIterations` (optional, default infinite): Complete up to this many
   iterations and then successfully exit.  Failed iterations count.
-* `maxFailures` (optional, default 7): When this number of failures occur
-  in consecutive iterations, treat as an error
-* `minIterationTime` (optional): If the iteration takes less time than this, consider it failed.
-* `monitor` (optional): instance of `taskcluster-lib-monitor` prefix with a
-  name appropriate for this iterate instance.
+* `maxFailures` (optional, default 7): number of failures to tolerate before considering the iteration loop a failure by emitting an `error` event.
+  This provides a balance between quick recovery from transient errors and the crashing the process for persistent errors.
+* `watchDog`: this is the time within which `watchDog.touch` must be called or
+  the iteration is considered a failure.
 
-The code to run is called a handler.  A handler is a function which returns a
-promise (e.g. async function).  This function is passed in the arguments
-`(watchdog, state)`.
+The main function of the `Iterate` instance is to call `handler` repeatedly.
+This is an async function, receiving two parameters -- `(watchdog, state)`.
 
-The `watchdog` parameter is basically a ticking timebomb.  It has methods
-`.start()`, `.stop()` and `.touch()` and emits `started`, `expired`, `stopped`
-and `touched`.  What it allows an implementor is the abilty to say that while
-the absolute maximum iteration interval (`maxIterationTime`), incremental
-progress should be made.  The idea here is that after each chunk of work in the
-handler, you run `.touch()`.  This way, you can have a handler that can be
-marked as failing without waiting the full `maxIterationTime`.  The delay for
-this watch dog is the `watchDog` property on the constructor options.
+The `watchdog` parameter is basically a ticking timebomb that must be defused frequently by calling its `.touch()` method.
+It has methods `.start()`, `.stop()` and `.touch()` and emits `started`, `expired`, `stopped` and `touched`.
+What it allows an implementor is the abilty to say that while the absolute maximum iteration interval (`maxIterationTime`), incremental progress should be made.
+The idea here is that after each chunk of work in the handler, you run `.touch()`.
+If the `watchDog` duration elapses without a touch, then the iteration is considered faild.
+This way, you can have a handler that can be marked as failing without waiting the full `maxIterationTime`.
 
 The `state` parameter is an object that is passed in to the handler function.
 It allows each iteration to accumulate data and use on following iterations.
-Because this object is passed in by reference, changes to properties on the
-object are saved, but reassignment of the state variable will not be saved. In
-other words, do `state.data = {count: 1}` and not `state = {count:1}`.
+Because this object is passed in by reference, changes to properties on the object are saved, but reassignment of the state variable will not be saved.
+In other words, do `state.data = {count: 1}` and not `state = {count:1}`.
 
 ## Events
 
