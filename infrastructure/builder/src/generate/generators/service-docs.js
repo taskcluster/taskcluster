@@ -89,9 +89,7 @@ SERVICES.forEach(name => {
       await mkdirp(genDir);
       await rimraf(svcDir);
 
-      // worker-manager uses a different filename from the other services..
-      const main = name !== 'worker-manager' ? 'src/main.js' : 'lib/main.js';
-      await exec('node', [main, 'writeDocs'], {
+      await exec('node', ['src/main', 'writeDocs'], {
         cwd: path.join(REPO_ROOT, 'services', name),
         env: Object.assign({}, process.env, {
           NODE_ENV: 'production',

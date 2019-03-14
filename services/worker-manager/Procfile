@@ -1,2 +1,2 @@
-web: cd services/worker-manager && node lib/main.js server
-write-docs: cd services/worker-manager && node lib/main.js writeDocs
+web: cd services/worker-manager && node src/main.js server
+write-docs: cd services/worker-manager && node src/main.js writeDocs

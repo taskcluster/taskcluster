@@ -1,7 +1,7 @@
 const assume = require('assume');
 
-const {errors} = require('../lib/base');
-const {Ruleset, Rule, Conditions, assign} = require('../lib/rules');
+const {errors} = require('../src/base');
+const {Ruleset, Rule, Conditions, assign} = require('../src/rules');
 
 suite('assign()', () => {
   test('should be able to assign an empty object', () => {

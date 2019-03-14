@@ -1,8 +1,8 @@
 'use strict';
 
 const assume = require('assume');
-const {BiddingStrategy} = require('../../lib/bidding-strategy');
-const {Bid} = require('../../lib/bid');
+const {BiddingStrategy} = require('../../src/bidding-strategy');
+const {Bid} = require('../../src/bid');
 
 /**
  * This file contains tests runner for all implemenetations of a bidding

@@ -3,7 +3,7 @@ const fs = require('fs');
 const assume = require('assume');
 const {convert} = require('../bin/convert');
 
-const {buildWorkerConfiguration} = require('../lib/worker-config');
+const {buildWorkerConfiguration} = require('../src/worker-config');
 
 const memory = require('memory-streams');
 
