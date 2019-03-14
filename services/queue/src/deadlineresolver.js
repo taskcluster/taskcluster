@@ -64,14 +64,12 @@ class DeadlineResolver {
     this.parallelism = options.parallelism;
     this.monitor = options.monitor;
 
-    const pollingDelaySecs = this.pollingDelay / 1000;
-    const maxIterationTimeSecs = 600;
     this.iterator = new Iterate({
       maxFailures: 10,
-      waitTime: pollingDelaySecs,
-      watchDog: maxIterationTimeSecs + 1, // disable watchdog
+      waitTime: this.pollingDelay,
+      watchDog: 601 * 1000, // disable watchdog
       monitor: this.monitor,
-      maxIterationTime: maxIterationTimeSecs,
+      maxIterationTime: 601 * 1000,
       handler: async () => {
         let loops = [];
         for (let i = 0; i < this.parallelism; i++) {

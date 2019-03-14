@@ -89,7 +89,7 @@ suite('Provisioner', () => {
     let biddingStrategies = new Map([[biddingStrategy.id, biddingStrategy]]);
 
     provisioner = new Provisioner({
-      iterationGap: 1,
+      iterationGap: 1000,
       providers,
       biddingStrategies,
       datastore,

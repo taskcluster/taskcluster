@@ -14,9 +14,9 @@ var Iterate = require(`taskcluster-lib-iterate`);
 
 i = new Iterate({
   maxFailures: 5,
-  maxIterationTime: 10,
-  watchDog: 5,
-  waitTime: 2,
+  maxIterationTime: 10000,
+  watchDog: 5000,
+  waitTime: 2000,
   handler: (watchDog, state) => {
     console.log(`do some work`);
 
@@ -42,27 +42,26 @@ i.on(`stopped`, () => {
 ```
 
 ## Options:
-The constructor for the `Iterate` class takes an object.  The object interprets
-the following properties:
 
-* `maxIterationTime`: the absolute upper bounds for an iteration interval, in
-  seconds.  This time is exclusive of the time we wait between iterations.
-* `watchDog`: this is the number of seconds to wait inside the iteration
-  before marking as a failure.
+The constructor for the `Iterate` class takes an options object, with the following properties.
+All times are in milliseconds.
+
+* `maxIterationTime`: the absolute upper bounds for an iteration interval.
+  This time is exclusive of the time we wait between iterations.
+* `watchDog`: this is the time within which `watchDog.touch` must be called or
+  the iteration is considered a failure.
 * `handler`: promise returning function which contains work to execute.
   Is passed in a `watchDog` and a `state` object reference.  The `watchDog`
   object has `.touch()` to mark when progress is made and should be reset and a
   `.stop()` in case you really don't care about it.  The state object is
   initially empty but can be used to persist information between calls to the
   handler.
-* `waitTime`: number of seconds between the conclusion of one iteration
-  and commencement of another.
+* `waitTime`: time between the conclusion of one iteration and commencement of another.
 * `maxIterations` (optional, default infinite): Complete up to this many
   iterations and then successfully exit.  Failed iterations count.
 * `maxFailures` (optional, default 7): When this number of failures occur
   in consecutive iterations, treat as an error
-* `minIterationTime` (optional): If not at least this number of seconds
-  have passed, treat the iteration as a failure
+* `minIterationTime` (optional): If the iteration takes less time than this, consider it failed.
 * `waitTimeAfterFail` (optional, default waitTime): If an iteration fails,
   wait a different amount of seconds before the next iteration (currently not
   implemented)

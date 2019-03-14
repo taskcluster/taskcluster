@@ -66,22 +66,22 @@ class Iterate extends events.EventEmitter {
     if (typeof opts.maxIterationTime !== 'number') {
       throw new Error('maxIterationTime must be number');
     }
-    this.maxIterationTime = opts.maxIterationTime * 1000;
+    this.maxIterationTime = opts.maxIterationTime;
 
     if (typeof opts.minIterationTime !== 'number') {
       throw new Error('minIterationTime must be number');
     }
-    this.minIterationTime = opts.minIterationTime * 1000;
+    this.minIterationTime = opts.minIterationTime;
 
     if (typeof opts.watchDog !== 'number') {
       throw new Error('watchDog must be number');
     }
-    this.watchDogTime = opts.watchDog * 1000;
+    this.watchDogTime = opts.watchDog;
 
     if (typeof opts.waitTime !== 'number') {
       throw new Error('waitTime must be number');
     }
-    this.waitTime = opts.waitTime * 1000;
+    this.waitTime = opts.waitTime;
 
     if (typeof opts.waitTimeAfterFail !== 'number') {
       throw new Error('waitTimeAfterFail must be number');
@@ -160,7 +160,7 @@ class Iterate extends events.EventEmitter {
       }
 
       // TODO: do this timing the better way
-      let diff = (new Date() - start) / 1000;
+      let diff = new Date() - start;
 
       // Let's check that if we have a minimum threshold for handler activity
       // time, and mark as failure when we exceed it
