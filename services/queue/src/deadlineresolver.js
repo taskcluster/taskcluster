@@ -67,7 +67,7 @@ class DeadlineResolver {
     this.iterator = new Iterate({
       maxFailures: 10,
       waitTime: this.pollingDelay,
-      watchDog: 601 * 1000, // disable watchdog
+      watchdogTime: 601 * 1000, // disable watchdog
       monitor: this.monitor,
       maxIterationTime: 601 * 1000,
       handler: async () => {

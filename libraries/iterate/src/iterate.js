@@ -72,10 +72,10 @@ class Iterate extends events.EventEmitter {
     }
     this.minIterationTime = opts.minIterationTime;
 
-    if (typeof opts.watchDog !== 'number') {
-      throw new Error('watchDog must be number');
+    if (typeof opts.watchdogTime !== 'number') {
+      throw new Error('watchdogTime must be number');
     }
-    this.watchDogTime = opts.watchDog;
+    this.watchdogTime = opts.watchdogTime;
 
     if (typeof opts.waitTime !== 'number') {
       throw new Error('waitTime must be number');
@@ -91,10 +91,6 @@ class Iterate extends events.EventEmitter {
       throw new Error('monitor should be an object from taskcluster-lib-monitor if given');
     }
     this.monitor = opts.monitor;
-
-    // We add the times together since we're always going to have the watch dog
-    // running even when we're waiting for the next iteration
-    this.watchDog = new WatchDog(this.watchDogTime);
 
     // Count the iteration that we're on.
     this.currentIteration = 0;
@@ -123,15 +119,15 @@ class Iterate extends events.EventEmitter {
       debug('running handler');
       let start = new Date();
 
-      let watchDog = new WatchDog(this.watchDogTime);
+      let watchdog = new WatchDog(this.watchdogTime);
 
-      let watchDogRejector = new CommandPromise();
+      let watchdogRejector = new CommandPromise();
 
-      watchDog.on('expired', () => {
-        watchDogRejector.reject(new Error('watchDog exceeded'));
+      watchdog.on('expired', () => {
+        watchdogRejector.reject(new Error('watchdog exceeded'));
       });
 
-      watchDog.start();
+      watchdog.start();
       // Note that we're using a watch dog for the maxIterationTime guarding.
       let maxIterationTimeTimer, value;
       try {
@@ -142,15 +138,15 @@ class Iterate extends events.EventEmitter {
               rej(new Error('Iteration exceeded maximum time allowed'));
             }, this.maxIterationTime);
           }),
-          watchDogRejector.promise(),
-          this.handler(watchDog, this.sharedState).then(() => {
+          watchdogRejector.promise(),
+          this.handler(watchdog, this.sharedState).then(() => {
             clearTimeout(maxIterationTimeTimer);
-            watchDog.stop();
+            watchdog.stop();
           }),
         ]);
       } finally {
         clearTimeout(maxIterationTimeTimer);
-        watchDog.stop();
+        watchdog.stop();
       }
 
       // TODO: do this timing the better way

@@ -15,13 +15,13 @@ var Iterate = require(`taskcluster-lib-iterate`);
 i = new Iterate({
   maxFailures: 5,
   maxIterationTime: 10000,
-  watchDog: 5000,
+  watchdogTime: 5000,
   waitTime: 2000,
-  handler: async (watchDog, state) => {
+  handler: async (watchdog, state) => {
     await doSomeWork();
-    watchDog.touch();  // tell Iterate that we`re doing work still
+    watchdog.touch();  // tell Iterate that we`re doing work still
     await doMoreWork();
-    watchDog.touch();
+    watchdog.touch();
   },
 });
 
@@ -53,7 +53,7 @@ All times are in milliseconds.
   iterations and then successfully exit.  Failed iterations count.
 * `maxFailures` (optional, default 7): number of failures to tolerate before considering the iteration loop a failure by emitting an `error` event.
   This provides a balance between quick recovery from transient errors and the crashing the process for persistent errors.
-* `watchDog`: this is the time within which `watchDog.touch` must be called or
+* `watchdogTime`: this is the time within which `watchdog.touch` must be called or
   the iteration is considered a failure.
 
 The main function of the `Iterate` instance is to call `handler` repeatedly.
@@ -63,7 +63,7 @@ The `watchdog` parameter is basically a ticking timebomb that must be defused fr
 It has methods `.start()`, `.stop()` and `.touch()` and emits `started`, `expired`, `stopped` and `touched`.
 What it allows an implementor is the abilty to say that while the absolute maximum iteration interval (`maxIterationTime`), incremental progress should be made.
 The idea here is that after each chunk of work in the handler, you run `.touch()`.
-If the `watchDog` duration elapses without a touch, then the iteration is considered faild.
+If the `watchdogTime` duration elapses without a touch, then the iteration is considered faild.
 This way, you can have a handler that can be marked as failing without waiting the full `maxIterationTime`.
 
 The `state` parameter is an object that is passed in to the handler function.
