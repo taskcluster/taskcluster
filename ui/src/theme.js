@@ -164,7 +164,7 @@ const createTheme = isDarkTheme => {
             0.4
           ),
         },
-        '&:hover svg': {
+        '&:hover svg, &:focus svg': {
           fill: textPrimary,
         },
       },
