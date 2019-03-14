@@ -42,7 +42,7 @@ defaults:
 
   statelessHostname:
     enabled: false
-    secret: process.env.DNS_SERVER_SECRET
+    secret: !env DNS_SERVER_SECRET
     domain: 'taskcluster-worker.net'
 
   # Run test only teardown and logging events.

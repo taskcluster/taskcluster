@@ -1,5 +1,7 @@
 {
   "hvm-builder": [
+    "android-components-g",
+    "application-services-r",
     "android-api-15",
     "b2gbuild",
     "b2gtest",
