@@ -90,8 +90,10 @@ const createSortedTasks = memoize(
   listItemCell: {
     display: 'flex',
     width: '100%',
+    alignItems: 'center',
     padding: theme.spacing.unit,
     ...theme.mixins.hover,
+    ...theme.mixins.listItemButton,
   },
   taskGroupName: {
     marginRight: theme.spacing.unit,
@@ -212,8 +214,16 @@ export default class TaskGroupTable extends Component {
       const taskGroup = items[index].node;
 
       return (
-        <TableRow style={style} className={classes.tableRow}>
-          <TableCell padding="dense" className={classes.tableFirstCell}>
+        <TableRow
+          style={style}
+          className={classes.tableRow}
+          component="div"
+          role="row">
+          <TableCell
+            padding="dense"
+            className={classes.tableFirstCell}
+            component="div"
+            role="cell">
             <Link
               className={classes.tableCell}
               to={`/tasks/${taskGroup.status.taskId}`}>
@@ -225,7 +235,10 @@ export default class TaskGroupTable extends Component {
               </div>
             </Link>
           </TableCell>
-          <TableCell className={classes.tableSecondCell}>
+          <TableCell
+            className={classes.tableSecondCell}
+            component="div"
+            role="cell">
             <StatusLabel state={taskGroup.status.state} />
           </TableCell>
         </TableRow>
@@ -233,11 +246,20 @@ export default class TaskGroupTable extends Component {
     };
 
     return (
-      <Fragment>
-        <Table className={classes.table}>
-          <TableHead className={classes.tableHead}>
-            <TableRow className={classes.tableHeadRow}>
-              <TableCell className={classes.tableFirstCell}>
+      <div role="table">
+        <Table className={classes.table} component="div">
+          <TableHead
+            className={classes.tableHead}
+            component="div"
+            role="rowgroup">
+            <TableRow
+              className={classes.tableHeadRow}
+              component="div"
+              role="row">
+              <TableCell
+                className={classes.tableFirstCell}
+                component="div"
+                role="columnheader">
                 <TableSortLabel
                   id="Name"
                   active={sortBy === 'Name'}
@@ -246,7 +268,7 @@ export default class TaskGroupTable extends Component {
                   Name
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell component="div" role="columnheader">
                 <TableSortLabel
                   id="Status"
                   active={sortBy === 'Status'}
@@ -279,7 +301,7 @@ export default class TaskGroupTable extends Component {
             {filter ? ` ${lowerCase(filter)}` : ''} tasks available
           </Typography>
         )}
-      </Fragment>
+      </div>
     );
   }
 }
