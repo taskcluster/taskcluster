@@ -169,7 +169,7 @@ const createTheme = isDarkTheme => {
         },
       },
       hover: {
-        '&:hover': {
+        '&:hover, &:focus': {
           textDecoration: 'none',
           backgroundColor: fade(textPrimary, 0.08),
           // Reset on touch devices, it doesn't add specificity
