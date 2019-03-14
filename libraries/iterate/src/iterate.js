@@ -139,7 +139,7 @@ class Iterate extends events.EventEmitter {
             }, this.maxIterationTime);
           }),
           watchdogRejector.promise(),
-          this.handler(watchdog, this.sharedState).then(() => {
+          Promise.resolve(this.handler(watchdog, this.sharedState)).then(() => {
             clearTimeout(maxIterationTimeTimer);
             watchdog.stop();
           }),

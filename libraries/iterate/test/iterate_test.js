@@ -195,6 +195,46 @@ suite('Iterate', () => {
     i.start();
   });
 
+  test('should emit iteration-failure when async handler fails', done => {
+    let i = new subject({
+      maxIterationTime: 1000,
+      watchdogTime: 100000,
+      waitTime: 1000,
+      maxFailures: 100,
+      handler: async (watchdog, state) => {
+        throw new Error('uhoh');
+      },
+    });
+
+    i.on('iteration-failure', err => {
+      i.stop();
+      assume(i.keepGoing).is.not.ok();
+      done();
+    });
+
+    i.start();
+  });
+
+  test('should emit iteration-failure when sync handler fails', done => {
+    let i = new subject({
+      maxIterationTime: 1000,
+      watchdogTime: 100000,
+      waitTime: 1000,
+      maxFailures: 100,
+      handler: (watchdog, state) => {
+        throw new Error('uhoh');
+      },
+    });
+
+    i.on('iteration-failure', err => {
+      i.stop();
+      assume(i.keepGoing).is.not.ok();
+      done();
+    });
+
+    i.start();
+  });
+
   test('should emit error when iteration is too quick', done => {
     let i = new subject({
       maxIterationTime: 12000,
