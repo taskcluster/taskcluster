@@ -124,7 +124,7 @@ let load = loader({
     requires: ['providers', 'biddingStrategies', 'datastore'],
     setup: async ({providers, biddingStrategies, datastore}) => {
       return new Provisioner({
-        iterationGap: 60,
+        iterationGap: 60000,
         providers,
         biddingStrategies,
         datastore,

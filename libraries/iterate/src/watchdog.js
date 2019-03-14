@@ -1,51 +1,43 @@
 let events = require('events');
-let debug = require('debug')('watchdog');
 
 /**
- * This is a watch dog timer.  Think of it as a ticking
- * timebomb which will throw an explosion when it hasn't
- * been stopped or touched in `maxTime` seconds.  The
- * `WatchDog` will throw an `Error` with `msg` if the
- * timer is allowed to expire
+ * This is a watch dog timer.  Think of it as a ticking timebomb which will
+ * explode when it hasn't been stopped or touched in `maxTime` seconds.  The
+ * "explosion" in this case is just an 'expired' event.
  */
 class WatchDog extends events.EventEmitter {
   constructor(maxTime) {
     super();
     this.maxTime = maxTime;
-    events.EventEmitter.call(this);
-    this.action = () => {
-      let error = new Error('Watchdog expired!');
-      // A better way to make this mandatory?
-      if (this.listeners('expired').length > 0) {
-        debug('emitting expired event');
-        this.emit('expired', error);
-      } else {
-        // This is being safe rather than sorry
-        debug('exiting becase there is no expired event listener');
-        process.exit(1); // eslint-disable-line no-process-exit
-      }
-    };
+    this.timer = null;
+  }
+
+  _set() {
+    this._clear();
+    if (this.maxTime) {
+      this.timer = setTimeout(() => this.emit('expired'), this.maxTime);
+    }
+  }
+
+  _clear() {
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
   }
 
   /**
    * Start the timers
    */
   start() {
-    this.__watchDog = setTimeout(this.action, this.maxTime);
-    this.emit('started');
-    debug('started, emitted started event');
+    this._set();
   }
 
   /**
    * Stop the timer
    */
   stop() {
-    if (this.__watchDog) {
-      debug('clearing timeout');
-      clearTimeout(this.__watchDog);
-    }
-    this.emit('stopped');
-    debug('stopped, emitted stopped event');
+    this._clear();
   }
 
   /**
@@ -54,11 +46,7 @@ class WatchDog extends events.EventEmitter {
    * keeps running
    */
   touch() {
-    let oldWD = this.__watchDog;
-    this.__watchDog = setTimeout(this.action, this.maxTime);
-    clearTimeout(oldWD);
-    this.emit('touched');
-    debug('touched, reset timer');
+    this._set();
   }
 }
 module.exports = WatchDog;

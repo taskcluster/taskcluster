@@ -68,9 +68,8 @@ suite('Iterate', () => {
     let iterations = 0;
 
     let i = new subject({
-      maxIterationTime: 3,
-      watchDog: 2,
-      waitTime: 1,
+      maxIterationTime: 3000,
+      waitTime: 1000,
       handler: async (watchdog, state) => {
         // In order to get the looping stuff to work, I had to stop the
         // watchdog timer.  This will be tested in the tests for the
@@ -98,7 +97,6 @@ suite('Iterate', () => {
 
     setTimeout(() => {
       assume(iterations).equals(5);
-      assume(i.currentIteration).equals(5);
       assume(i.keepGoing).is.ok();
       i.stop();
       assume(i.keepGoing).is.not.ok();
@@ -114,9 +112,8 @@ suite('Iterate', () => {
     let iterations = 0;
 
     let i = new subject({
-      maxIterationTime: 3,
-      watchDog: 2,
-      waitTime: 1,
+      maxIterationTime: 3000,
+      waitTime: 10,
       maxIterations: 5,
       handler: async (watchdog, state) => {
         watchdog.on('expired', () => {
@@ -145,23 +142,22 @@ suite('Iterate', () => {
 
   test('should emit error when iteration watchdog expires', done => {
     let i = new subject({
-      maxIterationTime: 5,
-      watchDog: 1,
-      waitTime: 1,
+      maxIterationTime: 5000,
+      watchdogTime: 1000,
+      waitTime: 1000,
       maxFailures: 1,
       handler: async (watchdog, state) => {
         // In order to get the looping stuff to work, I had to stop the
         // watchdog timer.  This will be tested in the tests for the
         // Iterate.iterate method
         i.on('error', err => {
-          assume(i.currentIteration).equals(0);
           debug('correctly getting expired watchdog timer');
           i.stop();
           assume(i.keepGoing).is.not.ok();
           done();
         });
         return new Promise((res, rej) => {
-          setTimeout(res, 6000);
+          setTimeout(res, 2000);
         });
 
       },
@@ -172,9 +168,8 @@ suite('Iterate', () => {
 
   test('should emit error when overall iteration limit is hit', done => {
     let i = new subject({
-      maxIterationTime: 1,
-      watchDog: 100,
-      waitTime: 1,
+      maxIterationTime: 1000,
+      waitTime: 1000,
       maxFailures: 1,
       handler: async (watchdog, state) => {
         watchdog.stop();
@@ -195,12 +190,49 @@ suite('Iterate', () => {
     i.start();
   });
 
+  test('should emit iteration-failure when async handler fails', done => {
+    let i = new subject({
+      maxIterationTime: 1000,
+      waitTime: 1000,
+      maxFailures: 100,
+      handler: async (watchdog, state) => {
+        throw new Error('uhoh');
+      },
+    });
+
+    i.on('iteration-failure', err => {
+      i.stop();
+      assume(i.keepGoing).is.not.ok();
+      done();
+    });
+
+    i.start();
+  });
+
+  test('should emit iteration-failure when sync handler fails', done => {
+    let i = new subject({
+      maxIterationTime: 1000,
+      waitTime: 1000,
+      maxFailures: 100,
+      handler: (watchdog, state) => {
+        throw new Error('uhoh');
+      },
+    });
+
+    i.on('iteration-failure', err => {
+      i.stop();
+      assume(i.keepGoing).is.not.ok();
+      done();
+    });
+
+    i.start();
+  });
+
   test('should emit error when iteration is too quick', done => {
     let i = new subject({
-      maxIterationTime: 12,
-      minIterationTime: 10,
-      watchDog: 10,
-      waitTime: 1,
+      maxIterationTime: 12000,
+      minIterationTime: 10000,
+      waitTime: 1000,
       handler: async (watchdog, state) => {
         watchdog.stop();
         return 1;
@@ -219,10 +251,9 @@ suite('Iterate', () => {
 
   test('should emit error after too many failures', done => {
     let i = new subject({
-      maxIterationTime: 12,
+      maxIterationTime: 12000,
       maxFailures: 1,
-      watchDog: 10,
-      waitTime: 1,
+      waitTime: 1000,
       handler: async (watchdog, state) => {
         return new Promise((res, rej) => {
           rej(new Error('hi'));
@@ -263,10 +294,9 @@ suite('Iterate', () => {
     process.on('uncaughtException', uncaughtHandler);
 
     let i = new subject({
-      maxIterationTime: 12,
+      maxIterationTime: 12000,
       maxFailures: 1,
-      watchDog: 10,
-      waitTime: 1,
+      waitTime: 1000,
       handler: async (watchdog, state) => {
         return new Promise((res, rej) => {
           rej(new Error('hi'));
@@ -283,9 +313,8 @@ suite('Iterate', () => {
     let v = {a: 1};
 
     let i = new subject({
-      maxIterationTime: 3,
-      watchDog: 2,
-      waitTime: 1,
+      maxIterationTime: 3000,
+      waitTime: 1000,
       maxIterations: 2,
       maxFailures: 1,
       handler: async (watchdog, state) => {
@@ -332,9 +361,8 @@ suite('Iterate', () => {
     let iterations = 0; //eslint-disable-line no-unused-vars
 
     let i = new subject({
-      maxIterationTime: 3,
-      watchDog: 2,
-      waitTime: 1,
+      maxIterationTime: 3000,
+      waitTime: 1000,
       handler: async (watchdog, state) => {
         debug('iterate!');
         iterations++;
@@ -369,10 +397,9 @@ suite('Iterate', () => {
     let iterations = 0; //eslint-disable-line no-unused-vars
 
     let i = new subject({
-      maxIterationTime: 3,
+      maxIterationTime: 3000,
       maxIterations: 1,
-      watchDog: 2,
-      waitTime: 1,
+      waitTime: 1000,
       handler: async (watchdog, state) => {
         debug('iterate!');
         iterations++;
@@ -412,11 +439,10 @@ suite('Iterate', () => {
 
     test('should be correct with maxFailures and maxIterations', done => {
       let i = new subject({
-        maxIterationTime: 3,
+        maxIterationTime: 3000,
         maxIterations: 1,
         maxFailures: 1,
-        watchDog: 2,
-        waitTime: 1,
+        waitTime: 1000,
         handler: async (watchdog, state) => {
           debug('iterate!');
           throw new Error('hi');
@@ -446,10 +472,9 @@ suite('Iterate', () => {
 
     test('should be correct with maxFailures only', done => {
       let i = new subject({
-        maxIterationTime: 3,
+        maxIterationTime: 3000,
         maxFailures: 1,
-        watchDog: 2,
-        waitTime: 1,
+        waitTime: 1000,
         handler: async (watchdog, state) => {
           debug('iterate!');
           throw new Error('hi');
@@ -478,11 +503,10 @@ suite('Iterate', () => {
 
     test('should be correct when handler takes too little time', done => {
       let i = new subject({
-        maxIterationTime: 3,
-        minIterationTime: 100,
+        maxIterationTime: 3000,
+        minIterationTime: 100000,
         maxFailures: 1,
-        watchDog: 2,
-        waitTime: 1,
+        waitTime: 1000,
         handler: async (watchdog, state) => {
           return true;
         },
@@ -510,10 +534,10 @@ suite('Iterate', () => {
 
     test('should be correct when handler takes too long (incremental watchdog)', done => {
       let i = new subject({
-        maxIterationTime: 5,
+        maxIterationTime: 5000,
         maxFailures: 1,
-        watchDog: 1,
-        waitTime: 1,
+        watchdogTime: 100,
+        waitTime: 1000,
         handler: async (watchdog, state) => {
           return new Promise((res, rej) => {
             setTimeout(res, 3000);
@@ -543,12 +567,10 @@ suite('Iterate', () => {
 
     test('should be correct when handler takes too long (overall time)', done => {
       let i = new subject({
-        maxIterationTime: 3,
+        maxIterationTime: 3000,
         maxFailures: 1,
-        watchDog: 2,
-        waitTime: 1,
+        waitTime: 1000,
         handler: async (watchdog, state) => {
-          watchdog.stop();
           return new Promise((res, rej) => {
             setTimeout(res, 6000);
           });
@@ -579,11 +601,10 @@ suite('Iterate', () => {
       let iterations = 0;
 
       let i = new subject({
-        maxIterationTime: 3,
+        maxIterationTime: 3000,
         maxIterations: 6,
         maxFailures: 5,
-        watchDog: 2,
-        waitTime: 1,
+        waitTime: 1000,
         handler: async (watchdog, state) => {
           if (iterations++ % 2 === 0) {
             throw new Error('even, so failing');

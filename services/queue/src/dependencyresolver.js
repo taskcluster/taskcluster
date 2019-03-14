@@ -40,14 +40,11 @@ class DependencyResolver {
     this._parallelism = options.parallelism;
 
     // do iteration
-    const pollingDelaySecs = this._pollingDelay / 1000;
-    const maxIterationTimeSecs = 600;
     this.iterator = new Iterate({
       maxFailures: 10,
-      waitTime: pollingDelaySecs,
-      watchDog: maxIterationTimeSecs + 1, // disable watchdog
+      waitTime: this._pollingDelay,
       monitor: this.monitor,
-      maxIterationTime: maxIterationTimeSecs,
+      maxIterationTime: 600 * 1000,
       handler: async () => {
         let loops = [];
         for (let i = 0; i < this._parallelism; i++) {
