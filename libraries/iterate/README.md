@@ -62,9 +62,6 @@ All times are in milliseconds.
 * `maxFailures` (optional, default 7): When this number of failures occur
   in consecutive iterations, treat as an error
 * `minIterationTime` (optional): If the iteration takes less time than this, consider it failed.
-* `waitTimeAfterFail` (optional, default waitTime): If an iteration fails,
-  wait a different amount of seconds before the next iteration (currently not
-  implemented)
 * `monitor` (optional): instance of `taskcluster-lib-monitor` prefix with a
   name appropriate for this iterate instance.
 
@@ -105,13 +102,3 @@ exit with a non-zero exit code when it would otherwise be emitted.
 * `error`: when the iteration is considered to be concluded and provides
   list of iteration errors.  If there are no handlers and this event is
   emitted, an exception will be thrown in a process.nextTick callback.
-
-## TODO
-There are a couple things that I`d like to do to this library
-
-* implement `waitTimeAfterFail` functionality
-* use events internally so that all error handling is done with the same code
-* emit events like `stopped-success` and `stopped-failure` to make handling shut
-  down easier.  Right now, we emit `stopped` on success and `stopped` *and*
-  `error` on failure.  We should either emit only one of `stopped` and `error`
-  or have the above mentioned events

@@ -50,7 +50,6 @@ class Iterate extends events.EventEmitter {
       maxIterations: 0,
       maxFailures: 7,
       minIterationTime: 0,
-      waitTimeAfterFail: 0,
     }, opts);
 
     if (typeof opts.maxIterations !== 'number') {
@@ -82,11 +81,6 @@ class Iterate extends events.EventEmitter {
       throw new Error('waitTime must be number');
     }
     this.waitTime = opts.waitTime;
-
-    if (typeof opts.waitTimeAfterFail !== 'number') {
-      throw new Error('waitTimeAfterFail must be number');
-    }
-    this.waitTimeAfterFail = opts.waitTimeAfterFail || opts.waitTime;
 
     if (typeof opts.handler !== 'function') {
       throw new Error('handler must be a function');
