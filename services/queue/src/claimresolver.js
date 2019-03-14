@@ -1,4 +1,3 @@
-let debug = require('debug')('app:claim-resolver');
 let assert = require('assert');
 let data = require('./data');
 let QueueService = require('./queueservice');
@@ -101,7 +100,7 @@ class ClaimResolver {
       }
     }));
 
-    this.monitor.log.resolvedQueuePoll({
+    this.monitor.log.azureQueuePoll({
       messages: messages.length,
       failed,
       resolver: 'claim',

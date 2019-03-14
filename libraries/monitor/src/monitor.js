@@ -134,7 +134,7 @@ class Monitor {
 
           const d = process.hrtime(start);
 
-          this.log.expressTimer({
+          this.log.apiMethod({
             name,
             public: req.public,
             hasAuthed: req.hasAuthed,

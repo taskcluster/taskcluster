@@ -23,8 +23,8 @@ module.exports = [
     },
   },
   {
-    name: 'expressTimer',
-    type: 'monitor.express',
+    name: 'apiMethod',
+    type: 'monitor.apiMethod',
     level: 'notice',
     version: 1,
     description: `A timer and audit for express endpoints.

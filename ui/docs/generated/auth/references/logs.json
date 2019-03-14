@@ -22,7 +22,7 @@
       }
     },
     {
-      "type": "monitor.express",
+      "type": "monitor.apiMethod",
       "version": 1,
       "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
       "fields": {
@@ -119,17 +119,9 @@
         "hash": "The hash of the request payload, if there was one.",
         "host": "The hostname of the authorizer of the request.",
         "port": "The port of the request from the authorizer.",
-        "resource": "The path that the original request",
+        "resource": "The path of the original request",
         "method": "HTTP method of the original request.",
         "sourceIp": "The ip address the original request came from."
-      }
-    },
-    {
-      "type": "scope-resolver",
-      "version": 1,
-      "description": "Record of a scope resolution.",
-      "fields": {
-        "cacheHit": "True if the resolution was available in the cache."
       }
     }
   ]

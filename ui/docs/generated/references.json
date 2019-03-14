@@ -7535,7 +7535,7 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -7779,7 +7779,7 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -7934,7 +7934,7 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -8136,7 +8136,7 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -8215,9 +8215,9 @@
           "fields": {
             "failed": "Number of these messages that failed to be handled.",
             "messages": "Number of messages fetched.",
-            "resolver": "The name of the resolver that polled the queue."
+            "resolver": "The name of the queue being polled."
           },
-          "type": "resolved-queue-poll",
+          "type": "azure-queue-poll",
           "version": 1
         },
         {
@@ -9646,7 +9646,7 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -9835,7 +9835,7 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -10165,7 +10165,7 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -10319,7 +10319,7 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -10543,7 +10543,7 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -10952,7 +10952,7 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -11342,7 +11342,7 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -11456,7 +11456,7 @@
             "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -11540,21 +11540,13 @@
             "message": "A reason for failure if failed. Otherwise empty.",
             "method": "HTTP method of the original request.",
             "port": "The port of the request from the authorizer.",
-            "resource": "The path that the original request",
+            "resource": "The path of the original request",
             "scheme": "Currently always `hawk`.",
             "scopes": "All scopes that this client has available.",
             "sourceIp": "The ip address the original request came from.",
             "status": "Whether or not the authentication was successful."
           },
           "type": "signature-validation",
-          "version": 1
-        },
-        {
-          "description": "Record of a scope resolution.",
-          "fields": {
-            "cacheHit": "True if the resolution was available in the cache."
-          },
-          "type": "scope-resolver",
           "version": 1
         }
       ]

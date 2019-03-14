@@ -27,20 +27,9 @@ manager.register({
     hash: 'The hash of the request payload, if there was one.',
     host: 'The hostname of the authorizer of the request.',
     port: 'The port of the request from the authorizer.',
-    resource: 'The path that the original request',
+    resource: 'The path of the original request',
     method: 'HTTP method of the original request.',
     sourceIp: 'The ip address the original request came from.',
-  },
-});
-
-manager.register({
-  name: 'scopeResolver',
-  type: 'scope-resolver',
-  version: 1,
-  level: 'debug',
-  description: 'Record of a scope resolution.',
-  fields: {
-    cacheHit: 'True if the resolution was available in the cache.',
   },
 });
 

@@ -111,7 +111,7 @@ class DeadlineResolver {
       }
     }));
 
-    this.monitor.log.resolvedQueuePoll({
+    this.monitor.log.azureQueuePoll({
       messages: messages.length,
       failed,
       resolver: 'deadline',

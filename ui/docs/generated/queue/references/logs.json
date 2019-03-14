@@ -22,7 +22,7 @@
       }
     },
     {
-      "type": "monitor.express",
+      "type": "monitor.apiMethod",
       "version": 1,
       "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
       "fields": {
@@ -106,13 +106,13 @@
       "fields": {}
     },
     {
-      "type": "resolved-queue-poll",
+      "type": "azure-queue-poll",
       "version": 1,
       "description": "Report result of polling messages from an azure queue.",
       "fields": {
         "messages": "Number of messages fetched.",
         "failed": "Number of these messages that failed to be handled.",
-        "resolver": "The name of the resolver that polled the queue."
+        "resolver": "The name of the queue being polled."
       }
     },
     {

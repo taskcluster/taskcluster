@@ -25,7 +25,7 @@ export default class Reference extends Component {
     const topicExchangeEntries =
       json.entries &&
       json.entries.filter(({ type }) => type === 'topic-exchange');
-    const builtinLogTypes = json.types.filter(l =>
+    const commonLogTypes = json.types.filter(l =>
       l.type.startsWith('monitor.')
     );
     const serviceLogTypes = json.types.filter(
@@ -92,11 +92,9 @@ export default class Reference extends Component {
             ))}
           </Fragment>
         )}
-        {builtinLogTypes && Boolean(builtinLogTypes.length) && (
+        {commonLogTypes && Boolean(commonLogTypes.length) && (
           <Fragment>
-            <HeaderWithAnchor type="h3">
-              Cluster-Wide Message Types
-            </HeaderWithAnchor>
+            <HeaderWithAnchor type="h3">Common Message Types</HeaderWithAnchor>
             <Typography>
               For more information on interpreting the log types described here,
               see{' '}
@@ -106,7 +104,7 @@ export default class Reference extends Component {
               in the manual.
             </Typography>
             <br />
-            {builtinLogTypes.map(entry => (
+            {commonLogTypes.map(entry => (
               <Entry
                 key={`${entry.type}`}
                 type="logs"

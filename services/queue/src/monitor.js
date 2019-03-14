@@ -5,15 +5,15 @@ const manager = new MonitorManager({
 });
 
 manager.register({
-  name: 'resolvedQueuePoll',
-  type: 'resolved-queue-poll',
+  name: 'azureQueuePoll',
+  type: 'azure-queue-poll',
   version: 1,
   level: 'info',
   description: 'Report result of polling messages from an azure queue.',
   fields: {
     messages: 'Number of messages fetched.',
     failed: 'Number of these messages that failed to be handled.',
-    resolver: 'The name of the resolver that polled the queue.',
+    resolver: 'The name of the queue being polled.',
   },
 });
 

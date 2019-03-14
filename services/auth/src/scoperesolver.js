@@ -277,10 +277,6 @@ class ScopeResolver extends events.EventEmitter {
       const cacheKey = queue.join('\n');
       const cacheResult = lru.get(cacheKey);
 
-      this._monitor.log.scopeResolver({
-        cacheHit: cacheResult ? true : false,
-      });
-
       if (cacheResult) {
         return ScopeSetBuilder.mergeScopeSets(cacheResult, inputs);
       }
