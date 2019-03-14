@@ -59,14 +59,8 @@ class Iterate extends events.EventEmitter {
     }
     this.monitor = opts.monitor;
 
-    // Count the iteration that we're on.
-    this.currentIteration = 0;
-
     // Decide whether iteration should continue
     this.keepGoing = false;
-
-    // Store the list of exceptions of the last few iterations
-    this.failures = [];
 
     // We want to be able to share state between iterations
     this.sharedState = {};
@@ -76,103 +70,105 @@ class Iterate extends events.EventEmitter {
     this.currentTimeout = null;
   }
 
-  // run a single iteration, throwing any errors
-  async iterate() {
-    this.emit('iteration-start');
-    try {
-      debug('running handler');
-      let start = new Date();
-      let watchdog = new WatchDog(this.watchdogTime);
-      let maxIterationTimeTimer;
+  async single_iteration() {
+    debug('running handler');
+    let start = new Date();
+    let watchdog = new WatchDog(this.watchdogTime);
+    let maxIterationTimeTimer;
 
-      // build a promise that will reject when either the watchdog
-      // times out or the maxIterationTimeTimer expires
-      let timeoutRejector = new Promise((resolve, reject) => {
-        watchdog.on('expired', () => {
-          reject(new Error('watchdog exceeded'));
-        });
-
-        maxIterationTimeTimer = setTimeout(() => {
-          reject(new Error('Iteration exceeded maximum time allowed'));
-        }, this.maxIterationTime);
+    // build a promise that will reject when either the watchdog
+    // times out or the maxIterationTimeTimer expires
+    let timeoutRejector = new Promise((resolve, reject) => {
+      watchdog.on('expired', () => {
+        reject(new Error('watchdog exceeded'));
       });
 
+      maxIterationTimeTimer = setTimeout(() => {
+        reject(new Error('Iteration exceeded maximum time allowed'));
+      }, this.maxIterationTime);
+    });
+
+    try {
+      watchdog.start();
+      await Promise.race([
+        timeoutRejector,
+        Promise.resolve(this.handler(watchdog, this.sharedState)),
+      ]);
+    } finally {
+      // stop the timers regardless of success or failure
+      clearTimeout(maxIterationTimeTimer);
+      watchdog.stop();
+    }
+
+    let duration = new Date() - start;
+    if (this.minIterationTime > 0 && duration < this.minIterationTime) {
+      throw new Error('Handler duration was less than minIterationTime');
+    }
+  }
+
+  // run a single iteration, throwing any errors
+  async iterate() {
+    let currentIteration = 0;
+    let failures = [];
+    while (true) {
+      currentIteration++;
+      let iterError;
+
+      this.emit('iteration-start');
+
+      const start = process.hrtime();
       try {
-        watchdog.start();
-        await Promise.race([
-          timeoutRejector,
-          Promise.resolve(this.handler(watchdog, this.sharedState)),
-        ]);
-      } finally {
-        // stop the timers regardless of success or failure
-        clearTimeout(maxIterationTimeTimer);
-        watchdog.stop();
+        await this.single_iteration();
+      } catch (err) {
+        iterError = err;
       }
+      const d = process.hrtime(start);
+      const duration = d[0] * 1000 + d[1] / 1000000;
 
-      // TODO: do this timing the better way
-      let diff = new Date() - start;
-
-      // Let's check that if we have a minimum threshold for handler activity
-      // time, and mark as failure when we exceed it
-      if (this.minIterationTime > 0 && diff < this.minIterationTime) {
-        throw new Error('Minimum threshold for handler execution not met');
-      }
-
-      // Wait until we've done all the checks to emit success
-      this.emit('iteration-success');
-      debug(`ran handler in ${diff} seconds`);
+      this.emit(iterError ? 'iteration-failure' : 'iteration-success');
       if (this.monitor) {
         this.monitor.info('iteration', {
-          status: 'success',
-          duration: diff * 1000,
+          status: iterError ? 'failed' : 'success',
+          duration,
         });
       }
 
-      // We could probably safely just create a new Array every time since if
-      // we get to this point we want to reset the Array unconditionally, but I
-      // don't have timing on the costs... premature optimization!
-      if (this.failures.length > 0) {
-        this.failures = [];
-      }
-    } catch (err) {
-      this.emit('iteration-failure', err);
-      if (this.monitor) {
-        this.monitor.info('iteration', {
-          status: 'failed',
-        });
-        this.monitor.reportError(err, 'warning', {
-          consecutiveErrors: this.failures.length,
-        });
-      }
-      debug('experienced iteration failure');
-      this.failures.push(err);
-    }
-    this.emit('iteration-complete');
-
-    // We don't wand this watchdog timer to always run
-
-    // When we reach the end of a set number of iterations, we'll stop
-    if (this.maxIterations > 0 && this.currentIteration >= this.maxIterations - 1) {
-      debug(`reached max iterations of ${this.maxIterations}`);
-      this.stop();
-      this.emit('completed');
-    }
-
-    if (this.failures.length >= this.maxFailures) {
-      this.__emitFatalError();
-    } else if (this.keepGoing) {
-      debug('scheduling next iteration');
-      this.currentIteration++;
-      this.currentTimeout = setTimeout(async () => {
-        try {
-          await this.iterate();
-        } catch (err) {
-          console.error(err.stack || err);
+      if (iterError) {
+        if (this.monitor) {
+          this.monitor.reportError(iterError, 'warning', {
+            consecutiveErrors: failures.length,
+          });
         }
-      }, this.waitTime);
-    } else {
-      this.stop();
-      this.emit('stopped');
+        failures.push(iterError);
+      } else {
+        failures = [];
+      }
+
+      this.emit('iteration-complete');
+
+      // When we reach the end of a set number of iterations, we'll stop
+      if (this.maxIterations > 0 && currentIteration >= this.maxIterations) {
+        debug(`reached max iterations of ${this.maxIterations}`);
+        this.stop();
+        this.emit('completed');
+        // fall through to also send 'stopped'
+      }
+
+      if (failures.length >= this.maxFailures) {
+        this.__emitFatalError(failures);
+        return;
+      } else if (!this.keepGoing) {
+        this.stop();
+        this.emit('stopped');
+        return;
+      }
+
+      if (this.waitTime > 0) {
+        debug('waiting for next iteration');
+        await new Promise(resolve => {
+          this.currentTimeout = setTimeout(resolve, this.waitTime);
+        });
+      }
     }
   }
 
@@ -181,7 +177,7 @@ class Iterate extends events.EventEmitter {
    * unhandled exception where appropriate.  Also stop trying to iterate
    * further.
    */
-  __emitFatalError() {
+  __emitFatalError(failures) {
     if (this.currentTimeout) {
       clearTimeout(this.currentTimeout);
     }
@@ -189,19 +185,19 @@ class Iterate extends events.EventEmitter {
     this.emit('stopped');
     if (this.monitor) {
       let err = new Error('Fatal iteration error');
-      err.failures = this.failures;
+      err.failures = failures;
       this.monitor.reportError(err);
     }
     if (this.listeners('error').length > 0) {
-      this.emit('error', this.failures);
+      this.emit('error', failures);
     } else {
       debug('fatal error:');
-      for (let x of this.failures) {
+      for (let x of failures) {
         debug(`  * ${x.stack || x}`);
       }
       debug('trying to crash process');
       process.nextTick(() => {
-        throw new Error(`Errors:\n=====\n${this.failures.map(x => x.stack || x).join('=====\n')}`);
+        throw new Error(`Errors:\n=====\n${failures.map(x => x.stack || x).join('=====\n')}`);
       });
     }
   }

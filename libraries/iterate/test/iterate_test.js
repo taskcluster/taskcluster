@@ -97,7 +97,6 @@ suite('Iterate', () => {
 
     setTimeout(() => {
       assume(iterations).equals(5);
-      assume(i.currentIteration).equals(5);
       assume(i.keepGoing).is.ok();
       i.stop();
       assume(i.keepGoing).is.not.ok();
@@ -152,14 +151,13 @@ suite('Iterate', () => {
         // watchdog timer.  This will be tested in the tests for the
         // Iterate.iterate method
         i.on('error', err => {
-          assume(i.currentIteration).equals(0);
           debug('correctly getting expired watchdog timer');
           i.stop();
           assume(i.keepGoing).is.not.ok();
           done();
         });
         return new Promise((res, rej) => {
-          setTimeout(res, 6000);
+          setTimeout(res, 2000);
         });
 
       },
