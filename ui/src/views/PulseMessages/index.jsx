@@ -2,6 +2,7 @@ import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
 import classNames from 'classnames';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -16,6 +17,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import { parse, stringify } from 'qs';
 import PlayIcon from 'mdi-react/PlayIcon';
+import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import DownloadIcon from 'mdi-react/DownloadIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
 import StopIcon from 'mdi-react/StopIcon';
@@ -108,6 +110,14 @@ const getBindingsFromProps = props => {
   startStopIconSpan: {
     ...theme.mixins.fab,
     right: theme.spacing.unit * 11,
+  },
+  jsonInspectorContainer: {
+    display: 'flex',
+    alignItems: 'start',
+    justifyContent: 'space-between',
+  },
+  copyPayload: {
+    marginTop: -3,
   },
 }))
 export default class PulseMessages extends Component {
@@ -464,9 +474,21 @@ export default class PulseMessages extends Component {
                         component: 'div',
                       }}
                       secondary={
-                        <JsonInspector
-                          data={drawerMessage && drawerMessage.payload}
-                        />
+                        <div className={classes.jsonInspectorContainer}>
+                          <JsonInspector
+                            data={drawerMessage && drawerMessage.payload}
+                          />
+                          <CopyToClipboard
+                            title="Copy"
+                            text={
+                              drawerMessage &&
+                              JSON.stringify(drawerMessage.payload, null, 2)
+                            }>
+                            <IconButton className={classes.copyPayload}>
+                              <ContentCopyIcon />
+                            </IconButton>
+                          </CopyToClipboard>
+                        </div>
                       }
                     />
                   </ListItem>
