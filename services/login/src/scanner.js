@@ -41,11 +41,16 @@ async function scanner(cfg, handlers) {
 
     for (let client of clients) {
       debug('examining client', client.clientId);
-      if (!client.clientId.match(CLIENT_ID_PATTERN) || client.disabled) {
+
+      const patternMatch = client.clientId.match(CLIENT_ID_PATTERN);
+
+      if (!patternMatch || client.disabled) {
         continue;
       }
 
-      if (!user || user.identity !== handler.identityFromClientId(client.clientId)) {
+      const identity = patternMatch && patternMatch[1];
+
+      if (!user || user.identity !== identity) {
         user = await handler.userFromClientId(client.clientId);
 
         if (!user) {
