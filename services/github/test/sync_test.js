@@ -12,6 +12,10 @@ helper.secrets.mockSuite('syncInstallations', ['taskcluster'], function(mock, sk
   let github;
 
   suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+
     await helper.OwnersDirectory.scan({}, {
       handler: owner => owner.remove(),
     });
