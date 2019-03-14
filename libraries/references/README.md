@@ -181,7 +181,7 @@ library as a devDependency and add a test file like this:
 
 ```js
 # test/references_test.js
-const builder = require('../src/v1');
+const builder = require('../src/api');
 const exchanges = require('../src/exchanges');
 const helper = require('./helper');
 const References = require('taskcluster-lib-references');
