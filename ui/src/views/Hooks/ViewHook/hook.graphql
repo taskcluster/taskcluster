@@ -27,23 +27,6 @@ query Hook($hookGroupId: ID!, $hookId: ID!) {
       }
     }
     triggerSchema
-    task {
-      provisionerId
-      workerType
-      schedulerId
-      taskGroupId
-      routes
-      retries
-      scopes
-      payload
-      metadata {
-        name
-        description
-        owner
-        source
-      }
-      tags
-      extra
-    }
+    task
   }
 }
