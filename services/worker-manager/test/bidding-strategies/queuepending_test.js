@@ -1,6 +1,6 @@
 'use strict';
 
-const {QueuePending} = require('../../lib/bidding-strategies/queuepending');
+const {QueuePending} = require('../../src/bidding-strategies/queuepending');
 const {testBiddingStrategy, createMockBid} = require('./bidding-strategies_test.js');
 const sinon = require('sinon');
 const assume = require('assume');

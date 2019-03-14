@@ -3,17 +3,13 @@
   "private": true,
   "version": "11.0.0",
   "description": "A library to share iteration logic",
-  "main": "lib/iterate.js",
+  "main": "src/iterate.js",
   "scripts": {
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha"
   },
   "files": [
-    "lib/iterate.js",
-    "lib/watchdog.js",
-    "test/iterate_test.js",
-    "test/watchdog_testjs",
-    "test/mocha.opts"
+    "src/*"
   ],
   "keywords": [
     "taskcluster"

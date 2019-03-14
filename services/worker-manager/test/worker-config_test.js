@@ -1,12 +1,12 @@
 const assume = require('assume');
 
-const {errors} = require('../lib/base');
+const {errors} = require('../src/base');
 
-const {Ruleset} = require('../lib/rules');
+const {Ruleset} = require('../src/rules');
 const {
   WorkerConfiguration,
   buildWorkerConfiguration,
-} = require('../lib/worker-config.js');
+} = require('../src/worker-config.js');
 
 // Return a simple worker configuration which has a ruleset which
 // we can evaluate

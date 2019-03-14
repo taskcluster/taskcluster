@@ -1,7 +1,7 @@
 const {fakeauth} = require('taskcluster-lib-testing');
 const client = require('taskcluster-client');
-const builder = require('../lib/api');
-const main = require('../lib/main');
+const builder = require('../src/api');
+const main = require('../src/main');
 
 const clientId = 'test-user';
 

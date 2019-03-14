@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const azure = require('fast-azure-storage');
-const builder = require('./v1');
+const builder = require('./api');
 
 // keyed by account/tableName, the last time createTable was called for the
 // given table.  This is used to avoid lots of redundant calls to createTable

@@ -1,9 +1,9 @@
 'use strict';
 
 const assume = require('assume');
-const {Provider} = require('../../lib/provider');
-const {Bid} = require('../../lib/bid');
-const {Worker} = require('../../lib/worker');
+const {Provider} = require('../../src/provider');
+const {Bid} = require('../../src/bid');
+const {Worker} = require('../../src/worker');
 
 /****************
  *              *

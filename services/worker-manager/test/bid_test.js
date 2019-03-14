@@ -1,5 +1,5 @@
 const assume = require('assume');
-const {Bid} = require('../lib/bid');
+const {Bid} = require('../src/bid');
 
 suite('Bid', () => {
   test('should be able to create a Bid', () => {

@@ -1,4 +1,4 @@
-let subject = require('../lib/watchdog');
+let subject = require('../src/watchdog');
 let sinon = require('sinon');
 let assume = require('assume');
 
