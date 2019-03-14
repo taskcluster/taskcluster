@@ -47,6 +47,7 @@ class Iterate extends events.EventEmitter {
 
     // Set default values
     opts = Object.assign({}, {
+      watchdogTime: 0,
       maxIterations: 0,
       maxFailures: 7,
       minIterationTime: 0,

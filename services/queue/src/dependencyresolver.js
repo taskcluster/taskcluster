@@ -43,7 +43,6 @@ class DependencyResolver {
     this.iterator = new Iterate({
       maxFailures: 10,
       waitTime: this._pollingDelay,
-      watchdogTime: 601 * 1000, // disable watchdog
       monitor: this.monitor,
       maxIterationTime: 600 * 1000,
       handler: async () => {

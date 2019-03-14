@@ -51,7 +51,6 @@ class Provisioner extends WMObject {
     this.iterate = new Iterate({
       maxFailures: 30, // We really don't want it to crash
       maxIterationTime: 300000,
-      watchdogTime: 301000,
       waitTime: iterationGap,
       handler: async () => {
         await this.provision();

@@ -53,8 +53,8 @@ All times are in milliseconds.
   iterations and then successfully exit.  Failed iterations count.
 * `maxFailures` (optional, default 7): number of failures to tolerate before considering the iteration loop a failure by emitting an `error` event.
   This provides a balance between quick recovery from transient errors and the crashing the process for persistent errors.
-* `watchdogTime`: this is the time within which `watchdog.touch` must be called or
-  the iteration is considered a failure.
+* `watchdogTime`: this is the time within which `watchdog.touch` must be called or the iteration is considered a failure.
+  If this value is omitted or zero, the watchdog is disabled.
 
 The main function of the `Iterate` instance is to call `handler` repeatedly.
 This is an async function, receiving two parameters -- `(watchdog, state)`.
