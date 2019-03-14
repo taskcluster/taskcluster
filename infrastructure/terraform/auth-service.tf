@@ -78,6 +78,13 @@ locals {
       ]
     },
     {
+      clientId    = "static/taskcluster/worker-manager"
+      accessToken = "${random_string.worker_manager_access_token.result}"
+      description = "..."
+
+      scopes = []
+    },
+    {
       clientId    = "static/taskcluster/github"
       accessToken = "${random_string.github_access_token.result}"
       description = "..."
