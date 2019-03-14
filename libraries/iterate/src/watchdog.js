@@ -22,7 +22,7 @@ class WatchDog extends events.EventEmitter {
       } else {
         // This is being safe rather than sorry
         debug('exiting becase there is no expired event listener');
-        process.exit(1); // eslint-disable-line no-process-exit
+        //process.exit(1); // eslint-disable-line no-process-exit
       }
     };
   }
