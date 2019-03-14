@@ -36,10 +36,10 @@ spec:
             - {service_name: queue, project_name: taskcluster-queue}
             - {service_name: hooks, project_name: taskcluster-hooks}
             - {service_name: index, project_name: taskcluster-index}
-            - {service_name: gce-provider, project_name: gce-provider}
             - {service_name: events, project_name: taskcluster-events}
             - {service_name: notify, project_name: taskcluster-notify}
             - {service_name: github, project_name: taskcluster-github}
+            - {service_name: worker-manager, project_name: taskcluster-worker-manager}
           each(svc):
             $if: '!(svc.project_name in disabled_services)'
             then:
