@@ -1,2 +1,3 @@
 web: cd services/worker-manager && node lib/main.js server
+provisioner: cd services/worker-manager && node lib/main.js provisionerservice
 write-docs: cd services/worker-manager && node lib/main.js writeDocs
