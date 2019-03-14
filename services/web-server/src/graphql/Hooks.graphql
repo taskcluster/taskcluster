@@ -12,21 +12,6 @@ input HookMetadataInput {
   emailOnError: Boolean
 }
 
-type HookTask {
-  provisionerId: String!
-  workerType: String!
-  schedulerId: ID
-  taskGroupId: ID
-  routes: [String]
-  priority: TaskPriority
-  retries: Int
-  scopes: [String]
-  payload: JSON!
-  metadata: TaskMetadata!
-  tags: JSON
-  extra: JSON
-}
-
 enum HookFireResult {
   SUCCESS
   ERROR
@@ -67,7 +52,7 @@ type Hook {
   hookId: ID!
   metadata: HookMetadata!
   schedule: [String]!
-  task: HookTask!
+  task: JSON!
   expires: DateTime!
   deadline: DateTime!
   triggerSchema: JSON!

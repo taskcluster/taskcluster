@@ -1,74 +1,70 @@
-let subject = require('../lib/watchdog');
+let subject = require('../src/watchdog');
 let sinon = require('sinon');
 let assume = require('assume');
 
 suite('watchdog', function() {
+  let events, start;
+
   setup(function() {
     this.clock = sinon.useFakeTimers();
-    sinon.stub(process, 'exit');
-    process.exit.throws(new Error('process.exit'));
+    start = new Date();
   });
 
   teardown(function() {
     this.clock.restore();
-    process.exit.restore();
   });
 
-  test('should emit when starting', function(done) {
-    let w = new subject(10 * 1000);
-    w.on('started', function() {
-      done();
-    });
-    w.start();
-    w.stop();
-  });
+  const listen = w => {
+    events = [];
+    w.on('expired', () => events.push(['expired', new Date() - start]));
+  };
 
-  test('should emit when touched', function(done) {
-    let w = new subject(10 * 1000);
-    w.on('touched', function() {
-      done();
-    });
-    w.start();
-    w.touch();
-    w.stop();
-  });
-
-  test('should emit when stopped', function(done) {
-    let w = new subject(10 * 1000);
-    w.on('stopped', function() {
-      done();
-    });
-    w.start();
-    w.stop();
-  });
-
-  test('should emit expired event', function(done) {
+  test('should emit expired event', function() {
     let w = new subject(1 * 1000);
-    w.on('expired', () => {
-      done();
-    });
+    listen(w);
     w.start();
     this.clock.tick(1000);
+    assume(events).to.deeply.equal([
+      ['expired', 1000],
+    ]);
   });
 
-  test('should not throw early', function() {
+  test('should not expire early', function() {
     let w = new subject(1 * 1000);
+    listen(w);
     w.start();
     this.clock.tick(999);
     w.stop();
+    assume(events).to.deeply.equal([]);
   });
 
-  test('should throw on time', function() {
+  test('should expire on time', function() {
     let w = new subject(1 * 1000);
+    listen(w);
     w.start();
-    assume(() => {
-      this.clock.tick(1000);
-    }).throws('process.exit');
+    this.clock.tick(1000);
     w.stop();
+    assume(events).to.deeply.equal([
+      ['expired', 1000],
+    ]);
+  });
+
+  test('should not expire twice', function() {
+    let w = new subject(1 * 1000);
+    listen(w);
+    w.start();
+    this.clock.tick(1000);
+    this.clock.tick(1000);
+    this.clock.tick(1000);
+    w.stop();
+    assume(events).to.deeply.equal([
+      ['expired', 1000],
+    ]);
   });
 
   test('touching should reset timer', function() {
     let w = new subject(1 * 1000);
+    listen(w);
     w.start();
     // We do this three times to ensure that the
     // time period stays constant and doesn't grow
@@ -78,9 +74,10 @@ suite('watchdog', function() {
     this.clock.tick(999);
     w.touch();
     this.clock.tick(999);
-    assume(() => {
-      this.clock.tick(1);
-    }).throws('process.exit');
+    this.clock.tick(1);
     w.stop();
+    assume(events).to.deeply.equal([
+      ['expired', 2998],
+    ]);
   });
 });

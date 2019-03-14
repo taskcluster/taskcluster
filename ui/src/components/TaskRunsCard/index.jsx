@@ -28,7 +28,6 @@ import LockIcon from 'mdi-react/LockIcon';
 import LockOpenOutlineIcon from 'mdi-react/LockOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import Button from '../Button';
-import AnchorOrLink from '../AnchorOrLink';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
 import StatusLabel from '../StatusLabel';
@@ -242,9 +241,9 @@ export default class TaskRunsCard extends Component {
               }
             )}
             hover={!!artifact.url}>
-            <AnchorOrLink
+            <Link
               className={classes.artifactLink}
-              href={this.getArtifactUrl(artifact)}>
+              to={this.getArtifactUrl(artifact)}>
               <TableCell className={classes.artifactsTableCell}>
                 {artifact.isPublic && <LockOpenOutlineIcon />}
                 {!artifact.isPublic && artifact.url && <LockIcon />}
@@ -271,7 +270,7 @@ export default class TaskRunsCard extends Component {
                 {artifact.isPublic && <LinkIcon />}
                 {!artifact.isPublic && artifact.url && <OpenInNewIcon />}
               </TableCell>
-            </AnchorOrLink>
+            </Link>
           </TableRow>
         )}
       />

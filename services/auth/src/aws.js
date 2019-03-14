@@ -1,4 +1,4 @@
-const builder = require('./v1');
+const builder = require('./api');
 
 builder.declare({
   method: 'get',

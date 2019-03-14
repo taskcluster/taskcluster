@@ -78,7 +78,6 @@ const getBindingsFromProps = props => {
   infoButton: {
     marginLeft: -theme.spacing.double,
     marginRight: theme.spacing.unit,
-    padding: 4,
   },
   drawerContainer: {
     paddingTop: theme.spacing.double,

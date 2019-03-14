@@ -1,6 +1,6 @@
 const taskcluster = require('taskcluster-client');
 const {fakeauth, stickyLoader} = require('taskcluster-lib-testing');
-const builder = require('../src/v1');
+const builder = require('../src/api');
 const load = require('../src/main');
 
 const helper = module.exports = {};

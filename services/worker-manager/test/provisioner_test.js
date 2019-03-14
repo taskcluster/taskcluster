@@ -4,12 +4,12 @@ const sinon = require('sinon');
 const sandbox = sinon.createSandbox();
 const moment = require('moment');
 
-const {InMemoryDatastore} = require('../lib/data-storage');
-const {Provisioner} = require('../lib/provisioner');
-const {WorkerConfiguration} = require('../lib/worker-config');
-const {Bid} = require('../lib/bid');
-const {Provider} = require('../lib/provider.js');
-const {BiddingStrategy} = require('../lib/bidding-strategy.js');
+const {InMemoryDatastore} = require('../src/data-storage');
+const {Provisioner} = require('../src/provisioner');
+const {WorkerConfiguration} = require('../src/worker-config');
+const {Bid} = require('../src/bid');
+const {Provider} = require('../src/provider.js');
+const {BiddingStrategy} = require('../src/bidding-strategy.js');
 
 class FakeProvider extends Provider {
   constructor({region}) {
@@ -89,7 +89,7 @@ suite('Provisioner', () => {
     let biddingStrategies = new Map([[biddingStrategy.id, biddingStrategy]]);
 
     provisioner = new Provisioner({
-      iterationGap: 1,
+      iterationGap: 1000,
       providers,
       biddingStrategies,
       datastore,

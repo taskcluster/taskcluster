@@ -1,4 +1,4 @@
-const builder = require('./v1');
+const builder = require('./api');
 const slugid = require('slugid');
 const jwt = require('jsonwebtoken');
 

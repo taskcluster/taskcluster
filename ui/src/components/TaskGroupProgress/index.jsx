@@ -289,6 +289,7 @@ export default class TaskGroupProgress extends Component {
 
           return (
             <ButtonBase
+              focusRipple
               key={status}
               name={status}
               variant="contained"

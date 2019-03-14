@@ -5,7 +5,7 @@ const App = require('taskcluster-lib-app');
 const SchemaSet = require('taskcluster-lib-validate');
 const monitorManager = require('./monitor');
 const docs = require('taskcluster-lib-docs');
-const builder = require('./v1');
+const builder = require('./api');
 
 let load = loader({
   cfg: {

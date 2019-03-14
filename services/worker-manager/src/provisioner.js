@@ -41,7 +41,7 @@ let bidProxyHandler = {
  * Run all provisioning logic (e.g. Providers and Bidding Strategies)
  */
 class Provisioner extends WMObject {
-  constructor({iterationGap=30, providers, biddingStrategies, datastore}) {
+  constructor({iterationGap=30000, providers, biddingStrategies, datastore}) {
     super({id: 'provisioner'});
     this.providers = providers;
     this.biddingStrategies = biddingStrategies;
@@ -50,8 +50,7 @@ class Provisioner extends WMObject {
 
     this.iterate = new Iterate({
       maxFailures: 30, // We really don't want it to crash
-      maxIterationTime: 300,
-      watchDog: 301,
+      maxIterationTime: 300000,
       waitTime: iterationGap,
       handler: async () => {
         await this.provision();
