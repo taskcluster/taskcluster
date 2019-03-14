@@ -31,7 +31,6 @@ class WatchDog extends events.EventEmitter {
    */
   start() {
     this._set();
-    this.emit('started');
   }
 
   /**
@@ -39,7 +38,6 @@ class WatchDog extends events.EventEmitter {
    */
   stop() {
     this._clear();
-    this.emit('stopped');
   }
 
   /**
@@ -49,7 +47,6 @@ class WatchDog extends events.EventEmitter {
    */
   touch() {
     this._set();
-    this.emit('touched');
   }
 }
 module.exports = WatchDog;

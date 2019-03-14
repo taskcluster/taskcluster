@@ -60,7 +60,7 @@ The main function of the `Iterate` instance is to call `handler` repeatedly.
 This is an async function, receiving two parameters -- `(watchdog, state)`.
 
 The `watchdog` parameter is basically a ticking timebomb that must be defused frequently by calling its `.touch()` method.
-It has methods `.start()`, `.stop()` and `.touch()` and emits `started`, `expired`, `stopped` and `touched`.
+It has methods `.start()`, `.stop()` and `.touch()` and emits `expired` when it expires.
 What it allows an implementor is the abilty to say that while the absolute maximum iteration interval (`maxIterationTime`), incremental progress should be made.
 The idea here is that after each chunk of work in the handler, you run `.touch()`.
 If the `watchdogTime` duration elapses without a touch, then the iteration is considered faild.

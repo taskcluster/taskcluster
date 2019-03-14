@@ -16,35 +16,8 @@ suite('watchdog', function() {
 
   const listen = w => {
     events = [];
-    w.on('started', () => events.push(['started', new Date() - start]));
-    w.on('stopped', () => events.push(['stopped', new Date() - start]));
-    w.on('touched', () => events.push(['touched', new Date() - start]));
     w.on('expired', () => events.push(['expired', new Date() - start]));
   };
-
-  test('should emit when starting and stopping', function() {
-    let w = new subject(10 * 1000);
-    listen(w);
-    w.start();
-    w.stop();
-    assume(events).to.deeply.equal([
-      ['started', 0],
-      ['stopped', 0],
-    ]);
-  });
-
-  test('should emit when touched', function() {
-    let w = new subject(10 * 1000);
-    listen(w);
-    w.start();
-    w.touch();
-    w.stop();
-    assume(events).to.deeply.equal([
-      ['started', 0],
-      ['touched', 0],
-      ['stopped', 0],
-    ]);
-  });
 
   test('should emit expired event', function() {
     let w = new subject(1 * 1000);
@@ -52,7 +25,6 @@ suite('watchdog', function() {
     w.start();
     this.clock.tick(1000);
     assume(events).to.deeply.equal([
-      ['started', 0],
       ['expired', 1000],
     ]);
   });
@@ -63,22 +35,30 @@ suite('watchdog', function() {
     w.start();
     this.clock.tick(999);
     w.stop();
-    assume(events).to.deeply.equal([
-      ['started', 0],
-      ['stopped', 999],
-    ]);
+    assume(events).to.deeply.equal([]);
   });
 
-  test('should throw on time', function() {
+  test('should expire on time', function() {
     let w = new subject(1 * 1000);
     listen(w);
     w.start();
     this.clock.tick(1000);
     w.stop();
     assume(events).to.deeply.equal([
-      ['started', 0],
       ['expired', 1000],
-      ['stopped', 1000],
+    ]);
+  });
+
+  test('should not expire twice', function() {
+    let w = new subject(1 * 1000);
+    listen(w);
+    w.start();
+    this.clock.tick(1000);
+    this.clock.tick(1000);
+    this.clock.tick(1000);
+    w.stop();
+    assume(events).to.deeply.equal([
+      ['expired', 1000],
     ]);
   });
 
@@ -97,11 +77,7 @@ suite('watchdog', function() {
     this.clock.tick(1);
     w.stop();
     assume(events).to.deeply.equal([
-      ['started', 0],
-      ['touched', 999],
-      ['touched', 1998],
       ['expired', 2998],
-      ['stopped', 2998],
     ]);
   });
 });
