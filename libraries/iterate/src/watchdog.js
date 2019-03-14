@@ -12,7 +12,6 @@ class WatchDog extends events.EventEmitter {
   constructor(maxTime) {
     super();
     this.maxTime = maxTime;
-    events.EventEmitter.call(this);
     this.action = () => {
       let error = new Error('Watchdog expired!');
       // A better way to make this mandatory?
