@@ -2,40 +2,6 @@ let WatchDog = require('./watchdog');
 let debug = require('debug')('iterate');
 let events = require('events');
 
-class CommandPromise {
-
-  constructor() {
-    this.called = false;
-    this.p = new Promise((res, rej) => {
-      this.__res = res;
-      this.__rej = rej;
-    });
-  }
-
-  __throw() {
-    throw new Error('Already resolved or rejected');
-  }
-
-  reject(x) {
-    if (this.called) {
-      this.__throw();
-    }
-    this.__rej(x);
-  }
-
-  resolve(x) {
-    if (this.called) {
-      this.__throw();
-    }
-    this.__res(x);
-  }
-
-  promise() {
-    return this.p;
-  }
-
-}
-
 /**
  * The Iterate Class.  See README.md for explanation of constructor
  * arguments and events that are emitted
@@ -110,42 +76,35 @@ class Iterate extends events.EventEmitter {
     this.currentTimeout = null;
   }
 
+  // run a single iteration, throwing any errors
   async iterate() {
-    // We only run this watch dog for the actual iteration loop
     this.emit('iteration-start');
-
-    // Run the handler, pass in shared state so iterations can refer to
-    // previous iterations without being too janky
     try {
       debug('running handler');
       let start = new Date();
-
       let watchdog = new WatchDog(this.watchdogTime);
+      let maxIterationTimeTimer;
 
-      let watchdogRejector = new CommandPromise();
+      // build a promise that will reject when either the watchdog
+      // times out or the maxIterationTimeTimer expires
+      let timeoutRejector = new Promise((resolve, reject) => {
+        watchdog.on('expired', () => {
+          reject(new Error('watchdog exceeded'));
+        });
 
-      watchdog.on('expired', () => {
-        watchdogRejector.reject(new Error('watchdog exceeded'));
+        maxIterationTimeTimer = setTimeout(() => {
+          reject(new Error('Iteration exceeded maximum time allowed'));
+        }, this.maxIterationTime);
       });
 
-      watchdog.start();
-      // Note that we're using a watch dog for the maxIterationTime guarding.
-      let maxIterationTimeTimer, value;
       try {
-        value = await Promise.race([
-          new Promise((res, rej) => {
-            maxIterationTimeTimer = setTimeout(() => {
-              debug(`handler lost race to timeout ${this.maxIterationTime}ms`);
-              rej(new Error('Iteration exceeded maximum time allowed'));
-            }, this.maxIterationTime);
-          }),
-          watchdogRejector.promise(),
-          Promise.resolve(this.handler(watchdog, this.sharedState)).then(() => {
-            clearTimeout(maxIterationTimeTimer);
-            watchdog.stop();
-          }),
+        watchdog.start();
+        await Promise.race([
+          timeoutRejector,
+          Promise.resolve(this.handler(watchdog, this.sharedState)),
         ]);
       } finally {
+        // stop the timers regardless of success or failure
         clearTimeout(maxIterationTimeTimer);
         watchdog.stop();
       }
@@ -160,7 +119,7 @@ class Iterate extends events.EventEmitter {
       }
 
       // Wait until we've done all the checks to emit success
-      this.emit('iteration-success', value);
+      this.emit('iteration-success');
       debug(`ran handler in ${diff} seconds`);
       if (this.monitor) {
         this.monitor.info('iteration', {
@@ -192,7 +151,6 @@ class Iterate extends events.EventEmitter {
 
     // We don't wand this watchdog timer to always run
 
-    // TODO: double check this isn't an off by one
     // When we reach the end of a set number of iterations, we'll stop
     if (this.maxIterations > 0 && this.currentIteration >= this.maxIterations - 1) {
       debug(`reached max iterations of ${this.maxIterations}`);
