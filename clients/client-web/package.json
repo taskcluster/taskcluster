@@ -11,7 +11,6 @@
   ],
   "scripts": {
     "build": "webpack --mode production",
-    "lint": "eslint --cache --format codeframe --ext js src",
     "prepare": "yarn build",
     "test": "karma start --single-run"
   },

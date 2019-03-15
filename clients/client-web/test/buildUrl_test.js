@@ -35,8 +35,8 @@ describe('Building URLs', function() {
       // note that nothing in this suite actually verifies these, but it
       // exercises the request-signing code
       clientId: 'nobody',
-      accessToken: 'nothing'
-    }
+      accessToken: 'nothing',
+    },
   });
 
   it('should build URL', () => {

@@ -27,7 +27,7 @@ const spreader = (generator) => {
       const value = slug.charAt(j);
 
       if (k[j][value] === undefined) {
-        k[j][value] = 1
+        k[j][value] = 1;
       } else {
         k[j][value]++;
       }
@@ -44,7 +44,7 @@ const spreader = (generator) => {
 
     for (let x = 0; x < a.length; x++) {
       if (k[j][a[x]] > 0) {
-        actual[j] += a[x]
+        actual[j] += a[x];
       }
     }
 
@@ -65,7 +65,12 @@ describe('slugs', function() {
     const charsE = 'CGKOSWaeimquy26-'.split('').sort().join('');
     // 0, 16, 32, 48: 0bxx0000
     const charsF = 'AQgw'.split('').sort().join('');
-    const expected = [charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsD, charsAll, charsE, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsF];
+    const expected = [
+      charsAll, charsAll, charsAll, charsAll, charsAll, charsAll,
+      charsAll, charsAll, charsD, charsAll, charsE, charsAll, charsAll,
+      charsAll, charsAll, charsAll, charsAll, charsAll, charsAll,
+      charsAll, charsAll, charsF,
+    ];
     const actual = spreader(v4);
 
     expect(expected).to.deep.equal(actual);
@@ -81,7 +86,12 @@ describe('slugs', function() {
     const charsE = 'CGKOSWaeimquy26-'.split('').sort().join('');
     // 0, 16, 32, 48: 0bxx0000
     const charsF = 'AQgw'.split('').sort().join('');
-    const expected = [charsC, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsD, charsAll, charsE, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsF];
+    const expected = [
+      charsC, charsAll, charsAll, charsAll, charsAll,
+      charsAll, charsAll, charsAll, charsD, charsAll, charsE, charsAll,
+      charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll,
+      charsAll, charsAll, charsF,
+    ];
     const actual = spreader(nice);
 
     expect(expected).to.deep.equal(actual);

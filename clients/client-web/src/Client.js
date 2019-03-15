@@ -4,31 +4,23 @@ import hawk from 'hawk';
 import fetch from './fetch';
 
 export default class Client {
-  static defaults = {
-    credentials: null,
-    authorizedScopes: null,
-    timeout: 30 * 1000,
-    retries: 5,
-    delayFactor: 100,
-    randomizationFactor: 0.25,
-    maxDelay: 30 * 1000,
-    serviceName: '',
-    serviceVersion: 'v1',
-    exchangePrefix: '',
-    credentialAgent: null,
-  };
-
-  static create(reference) {
-    return class extends Client {
-      constructor(options) {
-        super({ ...options, reference });
-      }
-    };
-  }
-
   constructor(options = {}) {
+    this.defaults = {
+      credentials: null,
+      authorizedScopes: null,
+      timeout: 30 * 1000,
+      retries: 5,
+      delayFactor: 100,
+      randomizationFactor: 0.25,
+      maxDelay: 30 * 1000,
+      serviceName: '',
+      serviceVersion: 'v1',
+      exchangePrefix: '',
+      credentialAgent: null,
+    };
+
     this.options = {
-      ...Client.defaults,
+      ...this.defaults,
       ...options,
     };
 
@@ -373,3 +365,10 @@ export default class Client {
     return fetch(url, options);
   }
 }
+
+Client.create = (reference) =>
+  class extends Client {
+    constructor(options) {
+      super({ ...options, reference });
+    }
+  };

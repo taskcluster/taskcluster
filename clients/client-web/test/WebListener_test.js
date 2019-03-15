@@ -20,7 +20,7 @@ describe.skip('WebListener', function() {
 
         return listener
           .bind(queueEvents.taskDefined({
-            taskId: 'uTOskJejRr-DFMqUB_bpLw' // this doesn't exist
+            taskId: 'uTOskJejRr-DFMqUB_bpLw', // this doesn't exist
           }))
           .then(() => listener);
       })
