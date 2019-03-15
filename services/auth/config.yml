@@ -51,7 +51,6 @@ defaults:
 
     websocktunnel:
       secret:                   !env WEBSOCKTUNNEL_SECRET
-      proxyUrl:                 !env WEBSOCKTUNNEL_PROXY_URL
 
     # Overrides of s3 buckets for redeployability
     # Leave unset if running inside Heroku
@@ -151,7 +150,6 @@ test:
       baseUrl:                  'http://localhost.com'
     websocktunnel:
       secret:                   'test-secret'
-      proxyUrl:                 'ws://tcproxy.dev'
   azure:
     signingKey:          not-a-secret-so-you-cant-guess-it
     cryptoKey:           AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
