@@ -89,9 +89,9 @@ tasks:
       - name: taskcluster-client-web
         image: 'taskcluster/browser-test:${node}'
         command: |
+            yarn lint clients/client-web &&
             cd clients/client-web &&
             yarn &&
-            yarn lint &&
             { Xvfb :99 -screen 0 640x480x8 -nolisten tcp & } &&
             sleep 2 &&
             CHROME_BIN=firefox DISPLAY=:99 yarn test
