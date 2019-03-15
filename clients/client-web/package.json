@@ -13,6 +13,7 @@
   "scripts": {
     "build": "webpack --mode production",
     "prepare": "yarn build",
+    "lint": "eslint src/*.js test/*.js",
     "test": "karma start --single-run"
   },
   "devDependencies": {
