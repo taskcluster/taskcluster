@@ -6,7 +6,6 @@ module.exports = {
         name: 'taskcluster',
         env: {
           NODE_ENV: 'development',
-          MANIFEST_URL: 'http://references.taskcluster.net/manifest.json',
           TASKCLUSTER_ROOT_URL: 'https://taskcluster.net',
         },
         babel: {
