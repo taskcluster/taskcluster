@@ -26,7 +26,7 @@ import { THEME } from '../../utils/constants';
     width: '100%',
   },
   search: {
-    width: theme.spacing.unit * 6,
+    width: theme.spacing.unit * 5,
     height: '100%',
     position: 'absolute',
     pointerEvents: 'none',
@@ -42,7 +42,7 @@ import { THEME } from '../../utils/constants';
     paddingTop: theme.spacing.unit,
     paddingRight: theme.spacing.unit,
     paddingBottom: theme.spacing.unit,
-    paddingLeft: theme.spacing.unit * 7,
+    paddingLeft: theme.spacing.unit * 5,
     border: 0,
     display: 'block',
     verticalAlign: 'middle',
