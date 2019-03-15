@@ -91,7 +91,7 @@ cp "C:\CUDNN-9.0\cuda\bin\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA
 #$client.DownloadFile("https://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda_10.0.130_411.31_win10", "C:\cuda_10.0.130_411.31_win10.exe")
 #Start-Process -FilePath "C:\cuda_10.0.130_411.31_win10.exe" -ArgumentList "-s nvcc_10.0 cublas_dev_10.0 cudart_10.0 cufft_dev_10.0 curand_dev_10.0 cusolver_dev_10.0 cusparse_dev_10.0" -Wait -NoNewWindow
 $client.DownloadFile("https://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda_10.0.130_411.31_windows", "C:\cuda_10.0.130_411.31_windows.exe")
-Start-Process -FilePath "C:\cuda_10.0.130_411.31_windows.exe" -ArgumentList "-s nvcc_10.0 cublas_dev_10.0 cudart_10.0 cufft_dev_10.0 curand_dev_10.0 cusolver_dev_10.0 cusparse_dev_10.0 Display.Driver" -Wait -NoNewWindow
+Start-Process -FilePath "C:\cuda_10.0.130_411.31_windows.exe" -ArgumentList "-s nvcc_10.0 nvprune_10.0 cupti_10.0 gpu_library_advisor_10.0 memcheck_10.0 cublas_dev_10.0 cudart_10.0 cufft_dev_10.0 curand_dev_10.0 cusolver_dev_10.0 cusparse_dev_10.0 Display.Driver" -Wait -NoNewWindow
 
 # CuDNN v7.5.0 for CUDA 10.0
 #Expand-ZIPFile -File "C:\cudnn-10.0-windows10-x64-v7.5.0.56.zip" -Destination "C:\CUDNN-10.0\" -Url "http://developer.download.nvidia.com/compute/redist/cudnn/v7.5.0/cudnn-10.0-windows10-x64-v7.5.0.56.zip"
