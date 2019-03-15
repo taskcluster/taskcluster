@@ -4,7 +4,7 @@ const {WMObject, errors, loadPlugin} = require('./base');
 
 /**
  * A Provider implementation is a class which understands the details of a
- * secific resource pool.  For explaining the terms of the Provider model, an
+ * specific resource pool.  For explaining the terms of the Provider model, an
  * example of an EC2 region is used.  This is not to suggest it being
  * impossible for other systems.
  *
