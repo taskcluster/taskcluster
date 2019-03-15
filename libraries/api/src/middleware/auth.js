@@ -151,14 +151,14 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     }
 
     // Send input to signatureValidator (auth server or local validator)
-    let result = await signatureValidator({
+    let result = await Promise.resolve(signatureValidator({
       method: req.method.toLowerCase(),
       resource: req.originalUrl,
       host: host.name,
       port: parseInt(port, 10),
       authorization: req.headers.authorization,
       sourceIp: req.ip,
-    });
+    }));
 
     // Validate request hash if one is provided
     if (typeof result.hash === 'string' && result.scheme === 'hawk') {
