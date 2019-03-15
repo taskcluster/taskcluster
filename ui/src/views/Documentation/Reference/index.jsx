@@ -78,7 +78,9 @@ export default class Reference extends Component {
             <Typography>
               For more information on interpreting the log types described here,
               see
-              <Link to="/docs/manual/design/logs">Interpreting Log Types</Link>
+              <Anchor href="/docs/manual/design/logs">
+                Interpreting Log Types
+              </Anchor>
               in the manual.
             </Typography>
             <br />
