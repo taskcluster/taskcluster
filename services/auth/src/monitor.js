@@ -18,18 +18,18 @@ manager.register({
                 client to a service and the second is the request from
                 the service to auth itself.`,
   fields: {
+    clientId: 'The clientId that was authenticated.',
     expires: 'After this time the authentication is no longer valid.',
     scopes: 'All scopes that this client has available.',
-    clientId: 'The clientId that was authenticated.',
     status: 'Whether or not the authentication was successful.',
     scheme: 'Currently always `hawk`.',
     message: 'A reason for failure if failed. Otherwise empty.',
-    hash: 'The hash of the request payload, if there was one.',
     host: 'The hostname of the authorizer of the request.',
-    port: 'The port of the request from the authorizer.',
+    hash: 'The hash of the request payload of the original request, if there was one.',
+    port: 'The port of the original request.',
     resource: 'The path of the original request',
     method: 'HTTP method of the original request.',
-    sourceIp: 'The ip address the original request came from.',
+    sourceIp: 'The ip address of the original request.',
   },
 });
 

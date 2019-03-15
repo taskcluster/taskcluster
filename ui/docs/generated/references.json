@@ -11535,15 +11535,15 @@
           "fields": {
             "clientId": "The clientId that was authenticated.",
             "expires": "After this time the authentication is no longer valid.",
-            "hash": "The hash of the request payload, if there was one.",
+            "hash": "The hash of the request payload of the original request, if there was one.",
             "host": "The hostname of the authorizer of the request.",
             "message": "A reason for failure if failed. Otherwise empty.",
             "method": "HTTP method of the original request.",
-            "port": "The port of the request from the authorizer.",
+            "port": "The port of the original request.",
             "resource": "The path of the original request",
             "scheme": "Currently always `hawk`.",
             "scopes": "All scopes that this client has available.",
-            "sourceIp": "The ip address the original request came from.",
+            "sourceIp": "The ip address of the original request.",
             "status": "Whether or not the authentication was successful."
           },
           "type": "signature-validation",
