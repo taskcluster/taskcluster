@@ -116,7 +116,7 @@ defaults:
   server:
     port:             !env:number PORT
     env:              !env NODE_ENV
-    forceSSL:         !env:flag FORCE_SSL
+    forceSSL:         !env:bool FORCE_SSL
     trustProxy:       false
 
   # Azure credentials (for blob and queue storage)
@@ -203,6 +203,7 @@ test:
   server:
     port:             60401
     env:              development
+    forceSSL:         false
   azureTableAccount:  inMemory
 load-test:
   app:

@@ -33,9 +33,9 @@ defaults:
 
   server:
     port:       !env:number PORT
-    forceSSL:   !env:flag FORCE_SSL
+    forceSSL:   !env:bool FORCE_SSL
     env:        !env NODE_ENV
-    trustProxy: !env:flag TRUST_PROXY
+    trustProxy: !env:bool TRUST_PROXY
 production:
   handlers:
     mozilla-auth0:
@@ -59,6 +59,7 @@ test:
     port: 60174
     env: development
     forceSSL: false
+    trustProxy: true
 ngrok:
   handlers:
     test:
