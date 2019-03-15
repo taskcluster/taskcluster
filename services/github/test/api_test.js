@@ -14,6 +14,10 @@ helper.secrets.mockSuite('api_test.js', ['taskcluster'], function(mock, skipping
   helper.withServer(mock, skipping);
 
   suiteSetup(async function() {
+    if (skipping()) {
+      return;
+    }
+
     await helper.Builds.create({
       organization: 'abc123',
       repository: 'def456',
