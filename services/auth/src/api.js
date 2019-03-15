@@ -152,7 +152,7 @@ const builder = new APIBuilder({
     // Statsum configuration {secret, baseUrl}
     'statsum',
 
-    // The websocktunnel config (with properties `secret` and `proxyUrl`)
+    // The websocktunnel config (with property `secret`)
     'websocktunnel',
   ],
 });
