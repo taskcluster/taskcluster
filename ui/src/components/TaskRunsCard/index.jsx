@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Fragment, Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { func, number, string } from 'prop-types';
@@ -111,6 +111,10 @@ const DOTS_VARIANT_LIMIT = 5;
     },
     artifactNameWrapper: {
       display: 'inline-flex',
+    },
+    liveLogLabel: {
+      marginLeft: theme.spacing.unit / 2,
+      marginBottom: theme.spacing.unit / 2,
     },
   }),
   { withTheme: true }
@@ -425,7 +429,17 @@ export default class TaskRunsCard extends Component {
                     component={Link}
                     to={this.getArtifactUrl(liveLogArtifact)}>
                     <ListItemText
-                      primary="View Live Log"
+                      primary={
+                        <Fragment>
+                          View Live Log{' '}
+                          <Label
+                            status="info"
+                            mini
+                            className={classes.liveLogLabel}>
+                            LOG
+                          </Label>
+                        </Fragment>
+                      }
                       secondary={liveLogArtifact.name}
                     />
                     <LinkIcon />
