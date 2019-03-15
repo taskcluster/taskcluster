@@ -22,6 +22,7 @@ import StopIcon from 'mdi-react/StopIcon';
 import PlusIcon from 'mdi-react/PlusIcon';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
+import Code from '@mozilla-frontend-infra/components/Code';
 import urls from '../../utils/urls';
 import ErrorPanel from '../../components/ErrorPanel';
 import Dashboard from '../../components/Dashboard';
@@ -30,7 +31,6 @@ import Button from '../../components/Button';
 import SpeedDial from '../../components/SpeedDial';
 import SpeedDialAction from '../../components/SpeedDialAction';
 import DataTable from '../../components/DataTable';
-import JsonInspector from '../../components/JsonInspector';
 import pulseMessagesQuery from './pulseMessages.graphql';
 import removeKeys from '../../utils/removeKeys';
 
@@ -463,9 +463,11 @@ export default class PulseMessages extends Component {
                         component: 'div',
                       }}
                       secondary={
-                        <JsonInspector
-                          data={drawerMessage && drawerMessage.payload}
-                        />
+                        drawerMessage && (
+                          <Code language="json">
+                            {JSON.stringify(drawerMessage.payload, null, 2)}
+                          </Code>
+                        )
                       }
                     />
                   </ListItem>
