@@ -292,6 +292,7 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
       };
 
       req.hasAuthed = false;
+      req.public = false;
 
       // If authentication is deferred or satisfied, then we proceed,
       // substituting the request parameters by default
