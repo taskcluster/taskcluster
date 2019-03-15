@@ -53,13 +53,19 @@ choco install -y 7zip --version 19.0
 
 # install VisualStudio 2017 Community
 choco install -y visualstudio2017community --version 15.9.7.0 --package-parameters "--add Microsoft.VisualStudio.Workload.MSBuildTools;Microsoft.VisualStudio.Component.VC.140 --passive --locale en-US"
-choco install -y visualstudio2017buildtools --version 15.9.7.0 --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools;includeRecommended --add Microsoft.VisualStudio.Component.VC.140 --add Microsoft.VisualStudio.Component.NuGet.BuildTools --add Microsoft.Net.Component.4.6.2.TargetingPack --passive --locale en-US"
+choco install -y visualstudio2017buildtools --version 15.9.7.0 --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools;includeRecommended --add Microsoft.VisualStudio.Component.VC.140 --add Microsoft.VisualStudio.Component.NuGet.BuildTools  --add Microsoft.Net.Component.4.5.TargetingPack --add Microsoft.Net.Component.4.6.TargetingPack --add Microsoft.Net.Component.4.7.TargetingPack --passive --locale en-US"
 
 # vcredist140 required at least for bazel
 choco install -y vcredist140 --version 14.16.27027.1
 
+# .Net Framework v4.5.2
+choco install -y netfx-4.5.2-devpack --version 4.5.5165101.20180721
+
 # .Net Framework v4.6.2
 choco install -y netfx-4.6.2-devpack --version 4.6.01590.20170129
+
+# .Net Framework v4.7.2
+choco install -y netfx-4.7.2-devpack --version 4.7.2.20190225
 
 # NuGet
 choco install -y nuget.commandline --version 4.9.3
