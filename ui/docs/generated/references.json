@@ -6443,26 +6443,35 @@
       "additionalProperties": false,
       "description": "Token for connecting a worker to websocktunnel proxy\n",
       "properties": {
-        "proxyUrl": {
-          "description": "websocket url at which proxy is hosted\n",
-          "title": "Proxy URL",
+        "expires": {
+          "description": "The time at which the JWT will expire.\n",
+          "format": "date-time",
+          "title": "Expires",
           "type": "string"
         },
         "token": {
-          "description": "jwt token to be used as `Bearer <token>` when connecting to proxy. \n",
-          "title": "Auth Token",
+          "description": "The JWT to be used as `Bearer <token>` when connecting to the service.\n",
+          "title": "Token",
           "type": "string"
         },
-        "tunnelId": {
-          "description": "id for proxy connection\n",
-          "title": "Proxy Connection ID",
+        "wstAudience": {
+          "description": "Audience identifying the websocktunnel servers that will honor this token; this will be the\nsame as the requested `wstAudience`.\n",
+          "pattern": "^[a-zA-Z0-9_-]{1,38}$",
+          "title": "Websocktunnel Audience",
+          "type": "string"
+        },
+        "wstClient": {
+          "description": "Id for the websocktunnel client connection; this will be the same as the requested `wstClient`.\n",
+          "pattern": "^[A-Za-z0-9!@/:.+|_-]+$",
+          "title": "Websocktunnel Client",
           "type": "string"
         }
       },
       "required": [
+        "wstClient",
+        "wstAudience",
         "token",
-        "tunnelId",
-        "proxyUrl"
+        "expires"
       ],
       "title": "Websocktunnel Token Response",
       "type": "object"
@@ -12053,17 +12062,19 @@
         },
         {
           "args": [
+            "wstAudience",
+            "wstClient"
           ],
-          "description": "Get temporary `token` and `id` for connecting to websocktunnel\nThe token is valid for 96 hours, clients should refresh after expiration.",
+          "description": "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the callers responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
           "method": "get",
           "name": "websocktunnelToken",
           "output": "v1/websocktunnel-token-response.json#",
           "query": [
           ],
-          "route": "/websocktunnel",
-          "scopes": "auth:websocktunnel",
+          "route": "/websocktunnel/<wstAudience>/<wstClient>",
+          "scopes": "auth:websocktunnel-token:<wstAudience>/<wstClient>",
           "stability": "stable",
-          "title": "Get Token for Websocktunnel Proxy",
+          "title": "Get a client token for the Websocktunnel service",
           "type": "function"
         },
         {

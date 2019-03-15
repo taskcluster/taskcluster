@@ -4,27 +4,36 @@
   "description": "Token for connecting a worker to websocktunnel proxy\n",
   "type": "object",
   "properties": {
-    "tunnelId": {
+    "wstClient": {
       "type": "string",
-      "title": "Proxy Connection ID",
-      "description": "id for proxy connection\n"
+      "title": "Websocktunnel Client",
+      "pattern": "^[A-Za-z0-9!@/:.+|_-]+$",
+      "description": "Id for the websocktunnel client connection; this will be the same as the requested `wstClient`.\n"
+    },
+    "wstAudience": {
+      "type": "string",
+      "title": "Websocktunnel Audience",
+      "pattern": "^[a-zA-Z0-9_-]{1,38}$",
+      "description": "Audience identifying the websocktunnel servers that will honor this token; this will be the\nsame as the requested `wstAudience`.\n"
     },
     "token": {
       "type": "string",
-      "title": "Auth Token",
-      "description": "jwt token to be used as `Bearer <token>` when connecting to proxy. \n"
+      "title": "Token",
+      "description": "The JWT to be used as `Bearer <token>` when connecting to the service.\n"
     },
-    "proxyUrl": {
+    "expires": {
       "type": "string",
-      "title": "Proxy URL",
-      "description": "websocket url at which proxy is hosted\n"
+      "format": "date-time",
+      "title": "Expires",
+      "description": "The time at which the JWT will expire.\n"
     }
   },
   "additionalProperties": false,
   "required": [
+    "wstClient",
+    "wstAudience",
     "token",
-    "tunnelId",
-    "proxyUrl"
+    "expires"
   ],
   "$id": "/schemas/auth/v1/websocktunnel-token-response.json#"
 }

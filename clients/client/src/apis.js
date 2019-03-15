@@ -503,17 +503,19 @@ module.exports = {
         },
         {
           "args": [
+            "wstAudience",
+            "wstClient"
           ],
-          "description": "Get temporary `token` and `id` for connecting to websocktunnel\nThe token is valid for 96 hours, clients should refresh after expiration.",
+          "description": "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the callers responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
           "method": "get",
           "name": "websocktunnelToken",
           "output": "v1/websocktunnel-token-response.json#",
           "query": [
           ],
-          "route": "/websocktunnel",
-          "scopes": "auth:websocktunnel",
+          "route": "/websocktunnel/<wstAudience>/<wstClient>",
+          "scopes": "auth:websocktunnel-token:<wstAudience>/<wstClient>",
           "stability": "stable",
-          "title": "Get Token for Websocktunnel Proxy",
+          "title": "Get a client token for the Websocktunnel service",
           "type": "function"
         },
         {
