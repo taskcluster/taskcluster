@@ -17,7 +17,7 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.notificationAddress, b.node.notificationAddress)),
   map(({ node: { notificationAddress } }) => notificationAddress)
 );
-const tableHeaders = ['Notification Type', 'Notification Address'];
+const tableHeaders = ['Address', 'Type'];
 
 @withStyles(theme => ({
   tableCell: {
@@ -28,7 +28,6 @@ const tableHeaders = ['Notification Type', 'Notification Address'];
     justifyContent: 'space-between',
     width: '100%',
     padding: theme.spacing.unit,
-    // ...theme.mixins.hover,
   },
   listItemRow: {
     ...theme.mixins.hover,
@@ -103,7 +102,14 @@ export default class DenylistTable extends Component {
     // remove underscores and capitalize first alphabet
     str
       .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .map(word => {
+        const pretty =
+          word !== 'IRC'
+            ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            : word;
+
+        return pretty;
+      })
       .join(' ');
 
   render() {
@@ -133,9 +139,7 @@ export default class DenylistTable extends Component {
                   node.notificationAddress
                 )}`}>
                 <div className={classes.listItemCell}>
-                  <Typography>
-                    {this.prettify(node.notificationType)}
-                  </Typography>
+                  <Typography>{node.notificationAddress}</Typography>
                 </div>
               </Link>
             </TableCell>
@@ -146,7 +150,9 @@ export default class DenylistTable extends Component {
                   node.notificationAddress
                 )}`}>
                 <div className={classes.listItemCell}>
-                  <Typography>{node.notificationAddress}</Typography>
+                  <Typography>
+                    {this.prettify(node.notificationType)}
+                  </Typography>
                 </div>
               </Link>
             </TableCell>

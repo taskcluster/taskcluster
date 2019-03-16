@@ -61,9 +61,6 @@ export default class SidebarList extends Component {
             icon={<ArrowExpandVerticalIcon />}>
             Expand Scopes
           </SidebarListItem>
-          <SidebarListItem to="/notify/denylist" icon={<CancelIcon />}>
-            Denylist
-          </SidebarListItem>
         </SidebarListGroup>
 
         <SidebarListItem to="/aws-provisioner" icon={<AmazonIcon />}>
@@ -92,6 +89,10 @@ export default class SidebarList extends Component {
 
         <SidebarListItem to="/quickstart" icon={<GithubBoxIcon />}>
           GitHub Quickstart
+        </SidebarListItem>
+
+        <SidebarListItem to="/notify/denylist" icon={<CancelIcon />}>
+          Denylist Addresses
         </SidebarListItem>
       </List>
     );

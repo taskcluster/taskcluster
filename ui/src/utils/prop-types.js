@@ -10,6 +10,7 @@ import {
   shape,
   string,
 } from 'prop-types';
+import { DENYLISTED_NOTIFICATION_TYPES } from './constants';
 
 export const user = shape({
   name: string,
@@ -359,12 +360,7 @@ export const secrets = arrayOf(
   })
 );
 
-export const notificationType = oneOf([
-  'EMAIL',
-  'PULSE',
-  'IRC_CHANNEL',
-  'IRC_USER',
-]);
+export const notificationType = oneOf(DENYLISTED_NOTIFICATION_TYPES);
 
 export const notificationAddress = shape({
   notificationType,

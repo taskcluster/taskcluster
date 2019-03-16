@@ -3,8 +3,8 @@ import lazy from '../../utils/lazy';
 const ViewDenylistAddress = lazy(() =>
   import(/* webpackChunkName: 'Denylist.ViewDenylistAddress' */ './ViewDenylistAddress')
 );
-const ViewDenylist = lazy(() =>
-  import(/* webpackChunkName: 'Denylist.ViewDenylist' */ './ViewDenylist')
+const ViewDenylistAddresses = lazy(() =>
+  import(/* webpackChunkName: 'Denylist.ViewDenylistAddresses' */ './ViewDenylist')
 );
 
 export default path => [
@@ -18,9 +18,9 @@ export default path => [
     path: `${path}/:notificationAddress`,
   },
   {
-    component: ViewDenylist,
+    component: ViewDenylistAddresses,
     path,
     description:
-      'Manage the notifications denylist. This page allows you to view, modify or delete the denylisted addresses.',
+      'Manage the notifications denylist. This page allows you to view or delete the denylisted notification addresses.',
   },
 ];

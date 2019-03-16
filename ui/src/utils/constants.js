@@ -210,3 +210,10 @@ export const DOCS_MENU_ITEMS = [
     icon: OpenInNewIcon,
   },
 ];
+
+export const DENYLISTED_NOTIFICATION_TYPES = [
+  'EMAIL',
+  'PULSE',
+  'IRC_USER',
+  'IRC_CHANNEL',
+];

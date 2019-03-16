@@ -9,8 +9,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import { notificationAddress as address } from '../../utils/prop-types';
-import SpeedDial from '../SpeedDial';
-import SpeedDialAction from '../SpeedDialAction';
 import Button from '../Button';
 
 @withStyles(theme => ({
@@ -26,12 +24,6 @@ import Button from '../Button';
   deleteIcon: {
     ...theme.mixins.errorIcon,
   },
-  disableIcon: {
-    ...theme.mixins.warningIcon,
-  },
-  enableIcon: {
-    ...theme.mixins.successIcon,
-  },
   dropdown: {
     minWidth: 200,
     marginBottom: theme.spacing.double,
@@ -40,28 +32,6 @@ import Button from '../Button';
 
 /** A form to view/add a notification address to the denylist */
 export default class DenylistForm extends Component {
-  static defaultProps = {
-    isNewAddress: false,
-    address: null,
-    loading: false,
-    onDeleteAddress: null,
-  };
-
-  static getDerivedStateFromProps({ isNewAddress, address }, state) {
-    if (
-      isNewAddress ||
-      (state.notificationAddress && state.prevAddress === address)
-    ) {
-      return null;
-    }
-
-    return {
-      notificationType: address.notificationType,
-      notificationAddress: address.notificationAddress,
-      prevAddress: address,
-    };
-  }
-
   static propTypes = {
     /** A GraphQL address response. Not needed when adding a new
     address  */
@@ -76,12 +46,46 @@ export default class DenylistForm extends Component {
     loading: bool,
   };
 
+  static defaultProps = {
+    isNewAddress: false,
+    address: null,
+    loading: false,
+    onDeleteAddress: null,
+  };
+
   state = {
     notificationType: '',
     notificationAddress: '',
     // eslint-disable-next-line react/no-unused-state
     prevAddress: null,
+    validation: {
+      address: {
+        error: false,
+        message: '',
+      },
+    },
   };
+
+  static getDerivedStateFromProps({ isNewAddress, address }, state) {
+    if (
+      isNewAddress ||
+      (state.notificationAddress && state.prevAddress === address)
+    ) {
+      return null;
+    }
+
+    return {
+      notificationType: address.notificationType,
+      notificationAddress: address.notificationAddress,
+      prevAddress: address,
+      validation: {
+        address: {
+          error: false,
+          message: '',
+        },
+      },
+    };
+  }
 
   handleDeleteAddress = () => {
     const { notificationType, notificationAddress } = this.state;
@@ -91,6 +95,29 @@ export default class DenylistForm extends Component {
 
   handleInputChange = ({ target: { name, value } }) => {
     this.setState({ [name]: value });
+
+    if (name === 'notificationType' && value !== 'EMAIL') {
+      this.setState({
+        validation: {
+          address: {
+            error: false,
+            message: ' ',
+          },
+        },
+      });
+    }
+  };
+
+  handleAddressChange = e => {
+    this.setState({ notificationAddress: e.target.value });
+    this.setState({
+      validation: {
+        address: {
+          error: !e.currentTarget.validity.valid,
+          message: e.currentTarget.validationMessage,
+        },
+      },
+    });
   };
 
   handleAddAddress = () => {
@@ -102,16 +129,31 @@ export default class DenylistForm extends Component {
     });
   };
 
+  isFormValid = () => {
+    const { notificationType, notificationAddress, validation } = this.state;
+    const hasEmptyFields = !notificationAddress || !notificationType;
+    const isAddressValid = !validation.address.error;
+
+    return !hasEmptyFields && isAddressValid;
+  };
+
   prettify = str =>
     // remove underscores and capitalize first alphabet
     str
       .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .map(word => {
+        const pretty =
+          word !== 'IRC'
+            ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            : word;
+
+        return pretty;
+      })
       .join(' ');
 
   render() {
     const { address, classes, isNewAddress, loading } = this.props;
-    const { notificationType, notificationAddress } = this.state;
+    const { notificationType, notificationAddress, validation } = this.state;
     const notificationTypes = ['EMAIL', 'PULSE', 'IRC_USER', 'IRC_CHANNEL'];
 
     return (
@@ -120,10 +162,11 @@ export default class DenylistForm extends Component {
           <List>
             <ListItem>
               <TextField
+                required
                 disabled={loading}
                 className={classes.dropdown}
                 select
-                label="Notification Type"
+                label="Type"
                 value={notificationType}
                 onChange={this.handleInputChange}
                 name="notificationType">
@@ -136,9 +179,13 @@ export default class DenylistForm extends Component {
             </ListItem>
             <ListItem>
               <TextField
-                label="Notification Address"
+                error={validation.address.error}
+                required
+                label="Address"
                 name="notificationAddress"
-                onChange={this.handleInputChange}
+                type={notificationType === 'EMAIL' ? 'email' : 'text'}
+                helperText={validation.address.message}
+                onChange={this.handleAddressChange}
                 fullWidth
                 value={notificationAddress}
               />
@@ -167,24 +214,23 @@ export default class DenylistForm extends Component {
             spanProps={{ className: classes.fab }}
             tooltipProps={{ title: 'Add Address' }}
             requiresAuth
-            disabled={loading}
+            disabled={loading || !this.isFormValid()}
             variant="round"
             onClick={this.handleAddAddress}
             classes={{ root: classes.saveIcon }}>
             <ContentSaveIcon />
           </Button>
         ) : (
-          <SpeedDial>
-            <SpeedDialAction
-              requiresAuth
-              tooltipOpen
-              icon={<DeleteIcon />}
-              onClick={this.handleDeleteAddress}
-              className={classes.deleteIcon}
-              tooltipTitle="Delete"
-              ButtonProps={{ disabled: loading }}
-            />
-          </SpeedDial>
+          <Button
+            spanProps={{ className: classes.fab }}
+            tooltipProps={{ title: 'Delete Address' }}
+            requiresAuth
+            disabled={loading}
+            variant="round"
+            onClick={this.handleDeleteAddress}
+            classes={{ root: classes.deleteIcon }}>
+            <DeleteIcon />
+          </Button>
         )}
       </Fragment>
     );

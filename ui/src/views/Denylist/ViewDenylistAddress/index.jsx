@@ -67,9 +67,9 @@ export default class ViewDenylistAddress extends Component {
 
       this.setState({ error: null, loading: false });
 
-      const url = `/notify/denylist/${encodeURIComponent(notificationAddress)}`;
-
-      this.props.history.push(url);
+      this.props.history.push(
+        `/notify/denylist/${encodeURIComponent(notificationAddress)}`
+      );
     } catch (error) {
       this.setState({ error, loading: false });
     }
@@ -80,7 +80,8 @@ export default class ViewDenylistAddress extends Component {
     const { isNewAddress, data } = this.props;
 
     return (
-      <Dashboard title="Denylist Address">
+      <Dashboard
+        title={isNewAddress ? 'Add Denylist Address' : 'Denylist Address'}>
         <ErrorPanel error={formatError(error)} />
         {isNewAddress ? (
           <DenylistForm
