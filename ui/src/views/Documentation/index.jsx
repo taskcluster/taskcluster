@@ -1,6 +1,5 @@
 import { hot } from 'react-hot-loader';
 import React, { Component, Fragment } from 'react';
-import { Typography } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 import { lowerCase } from 'change-case';
 import catchLinks from 'catch-links';
