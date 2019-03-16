@@ -1,5 +1,6 @@
 import { hot } from 'react-hot-loader';
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
+import { Typography } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 import { lowerCase } from 'change-case';
 import catchLinks from 'catch-links';
@@ -127,21 +128,26 @@ export default class Documentation extends Component {
   render() {
     const { classes, history } = this.props;
     const { error, Page, pageInfo } = this.state;
+    const title = pageInfo && pageInfo.data.title
+      ? pageInfo.data.title
+      : 'Documentation';
+
+    const content =
+      <Fragment>
+        <h1>{title}</h1>
+        {Page && <Page components={components} />}
+      </Fragment>;
 
     return (
       <Dashboard
         className={classes.documentation}
         docs
-        title={
-          pageInfo && pageInfo.data.title
-            ? pageInfo.data.title
-            : 'Documentation'
-        }>
+        title={title}>
         <ScrollToTop scrollKey={Page ? Page.toString() : null}>
           {error ? (
             <NotFound isDocs />
           ) : (
-            Page && <Page components={components} />
+            content
           )}
           {pageInfo && <PageMeta pageInfo={pageInfo} history={history} />}
         </ScrollToTop>
