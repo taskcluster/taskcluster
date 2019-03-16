@@ -112,6 +112,13 @@ $ace = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone",
 $acl.AddAccessRule($ace)
 Set-Acl "C:\builds" $acl
 
+# Create Z:\builds and give full access to all users (for hg-shared, tooltool_cache, etc)
+md "Z:\builds"
+$acl = Get-Acl -Path "Z:\builds"
+$ace = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone","Full","ContainerInherit,ObjectInherit","None","Allow")
+$acl.AddAccessRule($ace)
+Set-Acl "Z:\builds" $acl
+
 # GrantEveryoneSeCreateSymbolicLinkPrivilege
 Start-Process "powershell" -ArgumentList "-command `"& {&'Import-Module' Carbon}`"; `"& {&'Grant-Privilege' -Identity Everyone -Privilege SeCreateSymbolicLinkPrivilege}`"" -Wait -NoNewWindow
 
