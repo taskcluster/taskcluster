@@ -84,14 +84,12 @@ const createSortedTasks = memoize(
 );
 
 @withStyles(theme => ({
-  tableCell: {
-    textDecoration: 'none',
-  },
   listItemCell: {
     display: 'flex',
     width: '100%',
     alignItems: 'center',
     padding: theme.spacing.unit,
+    textDecoration: 'none',
     ...theme.mixins.hover,
     ...theme.mixins.listItemButton,
   },
@@ -225,14 +223,12 @@ export default class TaskGroupTable extends Component {
             component="div"
             role="cell">
             <Link
-              className={classes.tableCell}
+              className={classes.listItemCell}
               to={`/tasks/${taskGroup.status.taskId}`}>
-              <div className={classes.listItemCell}>
-                <Typography className={classes.taskGroupName}>
-                  {taskGroup.metadata.name}
-                </Typography>
-                <LinkIcon size={iconSize} />
-              </div>
+              <Typography className={classes.taskGroupName}>
+                {taskGroup.metadata.name}
+              </Typography>
+              <LinkIcon size={iconSize} />
             </Link>
           </TableCell>
           <TableCell
