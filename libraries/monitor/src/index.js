@@ -134,7 +134,7 @@ class MonitorManager {
       pretty,
       destination: this.destination,
       metadata,
-      gitVersion,
+      gitVersion: this.gitVersion,
     });
 
     this.rootMonitor = new Monitor({
