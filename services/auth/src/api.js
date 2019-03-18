@@ -1135,7 +1135,7 @@ builder.declare({
   title: 'Query String',
   description: [
     'Get the query string passed in the url for authentication',
-    'A object will be query String present else null String would be received'
+    'A object will be query String present else null String would be received',
   ].join('\n'),
 }, async function(req, res) {
   let response = req.params.test_auth || '';
