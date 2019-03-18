@@ -1,19 +1,16 @@
 const util = require('util');
-const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
 const rimraf = util.promisify(require('rimraf'));
 const mkdirp = util.promisify(require('mkdirp'));
 const References = require('taskcluster-lib-references');
 const exec = util.promisify(require('child_process').execFile);
-const {REPO_ROOT, writeJSON, writeFile, removeExtension} = require('../util');
-
-const readdir = util.promisify(fs.readdir);
+const {REPO_ROOT, writeJSON} = require('../util');
 
 /**
- * This file defines a few tasks that generate all of the documentation and
- * reference output from each service and include it in generated/docs and
- * generated/references.json.
+ * This file defines a few tasks that call writeDocs for all services, then
+ * combine the result into references.json.  This could definitely be more
+ * efficient, and will be made so in later commits.
  */
 const SERVICES = glob.sync(
   'services/*/package.json',
@@ -22,8 +19,8 @@ const SERVICES = glob.sync(
   // this can't run writeDocs without 'yarn build', so ignore it for now.
   .filter(service => service !== 'web-server');
 
-const docsDir = path.join(REPO_ROOT, 'ui', 'docs');
-const genDir = path.join(docsDir, 'generated');
+const tempDir = path.join(REPO_ROOT, 'temp');
+const genDir = path.join(tempDir, 'generated');
 
 exports.tasks = [];
 
@@ -35,44 +32,6 @@ exports.tasks.push({
     await mkdirp(genDir);
   },
 });
-
-function createReferenceMarkupContent(reference) {
-  const order = reference.startsWith('api') ? 1 : 2;
-  const name = removeExtension(reference);
-
-  return [
-    '---',
-    `order: ${order}`,
-    'inline: true',
-    `title: ${name}`,
-    '---',
-    '',
-    'import Reference from \'taskcluster-ui/views/Documentation/Reference\'',
-    `import ${name} from './${reference}'`,
-    '',
-    `<Reference json={${name}} />`,
-    '',
-  ].join('\n');
-}
-
-async function createReferencesMarkup(svcDir) {
-  const referencesDir = path.join(svcDir, 'references');
-
-  try {
-    const references = await readdir(referencesDir);
-
-    return Promise.all(references.map(reference => {
-      const file = `${removeExtension(reference)}.md`;
-      const content = createReferenceMarkupContent(reference);
-
-      return writeFile(path.join(referencesDir, file), content);
-    }));
-  } catch(err) {
-    if (err.code !== 'ENOENT') {
-      throw err;
-    }
-  }
-}
 
 /**
  * Extract the docs/refs information from each service
@@ -97,8 +56,6 @@ SERVICES.forEach(name => {
         }),
       });
 
-      await createReferencesMarkup(svcDir);
-
       return {
         [`docs-tarball-${name}`]: svcDir,
       };
@@ -119,6 +76,9 @@ exports.tasks.push({
     const refs = References.fromBuiltServices({directory: genDir});
     const serializable = refs.makeSerializable();
 
+    // clean up the temp output
+    await rimraf(genDir);
+
     // sort the serializable output by filename to ensure consistency
     serializable.sort((a, b) => {
       if (a.filename < b.filename) {
@@ -131,7 +91,7 @@ exports.tasks.push({
     });
 
     await writeJSON('generated/references.json', serializable);
-    await writeJSON('ui/docs/generated/references.json', serializable);
+    await writeJSON('ui/docs/reference/references.json', serializable);
 
     return {
       'target-references': true,

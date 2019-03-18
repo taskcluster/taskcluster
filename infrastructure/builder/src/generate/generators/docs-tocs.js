@@ -1,16 +1,34 @@
 const { promisify } = require('util');
-const fs = require('fs');
 const md = require('md-directory');
 const { join } = require('path');
-const { removeExtension, readJSON, writeJSON } = require('../util');
+const { REPO_ROOT, writeJSON } = require('../util');
 
 const mdParseDir = promisify(md.parseDir);
-const readdir = promisify(fs.readdir);
 
-const DOCS_LOCATIONS = {
-  GENERATED: join('ui', 'docs', 'generated'),
-  STATIC: join('ui', 'docs', 'static'),
-};
+/**
+ * Generate a table-of-contents file containing a recursive data structure.  At
+ * the top level is an object with property names corresponding to top-level
+ * path components, and values having the structure
+ * {
+ *   name: ..     // Final URI component of this page
+ *   path: ..     // URI path to this page
+ *   data: {..}   // values from the markdown front-matter
+ *   next: {      // information about the next page in the documentation
+ *     path: ..   // URI path to the next page, if any
+ *     title: ..  // title of that page
+ *   },
+ *   prev: {}     // information about the previous page, if any, like next
+ *   up: {}       // information about the parent page, if any, like next
+ *   children: [
+ *     // further objects of the same structure
+ *   ],
+ * }
+ *
+ * Note that the top-level structure (with URI components as property names) is
+ * not repeated
+ */
+
+const DOCS_DIR = join(REPO_ROOT, 'ui', 'docs');
 
 // Sort doc files by the order property
 function sort(a, b) {
@@ -41,46 +59,6 @@ function sortChildren(children) {
   }
 
   children.sort(sort);
-}
-
-async function readGeneratedDocs() {
-  const projects = (await readdir(DOCS_LOCATIONS.GENERATED, { withFileTypes: true }))
-    .filter(dirent => dirent.isDirectory())
-    .map(({ name }) => name);
-
-  const generatedDocs = {};
-  const projectMetadata = {};
-
-  async function readProjectMetadata(name) {
-    if (!projectMetadata[name]) {
-      projectMetadata[name] = await readJSON(join(DOCS_LOCATIONS.GENERATED, name, 'metadata.json'));
-    }
-
-    return projectMetadata[name];
-  }
-
-  for (const projectName of projects) {
-    const [metadata, mdFiles] = await Promise.all([
-      readProjectMetadata(projectName),
-      mdParseDir(join(DOCS_LOCATIONS.GENERATED, projectName), {
-        dirnames: true,
-      }),
-    ]);
-
-    // Rename keys to include the section, tier and service name
-    // e.g., docs/intro -> reference/integrations/github/docs/intro
-    Object.keys(mdFiles).forEach(oldKey => {
-      const path = `reference/${metadata.tier}/${projectName}/${oldKey}`;
-
-      delete Object.assign(mdFiles, {
-        [removeExtension(path)]: Object.assign(mdFiles[oldKey]),
-      })[oldKey];
-    });
-
-    Object.assign(generatedDocs, mdFiles);
-  }
-
-  return generatedDocs;
 }
 
 let prevNode = null;
@@ -186,15 +164,7 @@ exports.tasks = [{
   requires: ['target-references'],
   provides: ['docs-toc'],
   run: async (requirements, utils) => {
-    const [generatedDocs, staticDocs] = await Promise.all([
-      readGeneratedDocs(),
-      await mdParseDir(DOCS_LOCATIONS.STATIC, { dirnames: true }),
-    ]);
-    // generated + static docs
-    const files = Object.assign(
-      staticDocs,
-      generatedDocs
-    );
+    const files = await mdParseDir(DOCS_DIR, { dirnames: true });
     const [gettingStarted, resources] = ['README', 'resources'].map(fileName =>
       Object.assign(files[fileName], {
         name: fileName,
