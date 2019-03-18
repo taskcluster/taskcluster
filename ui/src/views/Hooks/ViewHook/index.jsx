@@ -5,7 +5,6 @@ import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import HookForm from '../../../components/HookForm';
 import ErrorPanel from '../../../components/ErrorPanel';
-import Snackbar from '../../../components/Snackbar';
 import hookQuery from './hook.graphql';
 import createHookQuery from './createHook.graphql';
 import deleteHookQuery from './deleteHook.graphql';
@@ -29,11 +28,6 @@ export default class ViewHook extends Component {
     error: null,
     dialogError: null,
     dialogOpen: false,
-    snackbar: {
-      message: '',
-      variant: 'success',
-      open: false,
-    },
   };
 
   preRunningAction = () => {
@@ -51,14 +45,13 @@ export default class ViewHook extends Component {
           hookGroupId,
           payload,
         },
-        refetchQueries: ['Hook'],
-        awaitRefetchQueries: true,
       });
 
       this.props.history.push(
         `/hooks/${encodeURIComponent(hookGroupId)}/${hookId}`
       );
 
+      await this.props.data.refetch();
       this.setState({ error: null, actionLoading: false });
     } catch (error) {
       this.setState({ error, actionLoading: false });
@@ -94,10 +87,8 @@ export default class ViewHook extends Component {
         hookGroupId,
         payload,
       },
-      refetchQueries: ['Hook'],
-      awaitRefetchQueries: true,
     });
-    this.handleSnackbarOpen({ message: 'Hook Updated', open: true });
+    await this.props.data.refetch();
   };
 
   handleUpdateHook = async ({ hookGroupId, hookId, payload }) => {
@@ -111,12 +102,9 @@ export default class ViewHook extends Component {
           hookGroupId,
           payload,
         },
-        refetchQueries: ['Hook'],
-        awaitRefetchQueries: true,
       });
 
       this.setState({ error: null, actionLoading: false });
-      this.handleSnackbarOpen({ message: 'Hook Updated', open: true });
     } catch (error) {
       this.setState({ error, actionLoading: false });
     }
@@ -139,30 +127,15 @@ export default class ViewHook extends Component {
     this.setState({ dialogError: error, actionLoading: false });
   };
 
-  handleSnackbarOpen = ({ message, variant = 'success', open }) => {
-    this.setState({ snackbar: { message, variant, open } });
-  };
-
-  handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
-    this.setState({
-      snackbar: { message: '', variant: 'success', open: false },
-    });
-  };
-
   render() {
     const { isNewHook, data } = this.props;
-    const {
-      error: err,
-      dialogError,
-      actionLoading,
-      dialogOpen,
-      snackbar,
-    } = this.state;
+    const { error: err, dialogError, actionLoading, dialogOpen } = this.state;
     const error = (data && data.error) || err;
+    const hookLastFires =
+      data.hookLastFires &&
+      data.hookLastFires.sort(
+        (a, b) => new Date(b.taskCreateTime) - new Date(a.taskCreateTime)
+      );
 
     return (
       <Dashboard title={isNewHook ? 'Create Hook' : 'Hook'}>
@@ -184,6 +157,7 @@ export default class ViewHook extends Component {
                 dialogError={dialogError}
                 actionLoading={actionLoading}
                 hook={data.hook}
+                hookLastFires={hookLastFires}
                 dialogOpen={dialogOpen}
                 onTriggerHook={this.handleTriggerHook}
                 onUpdateHook={this.handleUpdateHook}
@@ -195,7 +169,6 @@ export default class ViewHook extends Component {
             )}
           </Fragment>
         )}
-        <Snackbar onClose={this.handleSnackbarClose} {...snackbar} />
       </Dashboard>
     );
   }

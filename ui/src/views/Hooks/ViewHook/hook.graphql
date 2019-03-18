@@ -27,6 +27,30 @@ query Hook($hookGroupId: ID!, $hookId: ID!) {
       }
     }
     triggerSchema
-    task
+    task {
+      provisionerId
+      workerType
+      schedulerId
+      taskGroupId
+      routes
+      retries
+      scopes
+      payload
+      metadata {
+        name
+        description
+        owner
+        source
+      }
+      tags
+      extra
+    }
+  },
+  hookLastFires(hookGroupId: $hookGroupId, hookId: $hookId) {
+        taskId
+        firedBy
+        taskCreateTime
+        result
+        error
   }
 }

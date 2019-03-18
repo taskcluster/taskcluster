@@ -1,36 +1,45 @@
+/* eslint-disable no-plusplus */
 import React, { Component, Fragment } from 'react';
-import { string, bool, func, oneOfType, object } from 'prop-types';
+import { Link } from 'react-router-dom';
+import { string, bool, func, oneOfType, object, array } from 'prop-types';
 import classNames from 'classnames';
 import { equals, assocPath } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import Code from '@mozilla-frontend-infra/components/Code';
+import Drawer from '@material-ui/core/Drawer';
+import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
+import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@material-ui/core/TableCell';
 import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
+import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import Typography from '@material-ui/core/Typography';
 import FlashIcon from 'mdi-react/FlashIcon';
 import PlusIcon from 'mdi-react/PlusIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
-import LinkIcon from 'mdi-react/LinkIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import { docs } from 'taskcluster-lib-urls';
+import Label from '@mozilla-frontend-infra/components/Label';
+import LinkIcon from 'mdi-react/LinkIcon';
+import ErrorPanel from '../ErrorPanel';
+import DataTable from '../DataTable';
 import Button from '../Button';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
 import DialogAction from '../DialogAction';
 import DateDistance from '../DateDistance';
-import { HOOKS_LAST_FIRE_TYPE } from '../../utils/constants';
+import TableCellListItem from '../TableCellListItem';
 import { hook } from '../../utils/prop-types';
-import Link from '../../utils/Link';
 import removeKeys from '../../utils/removeKeys';
 
 const initialHook = {
@@ -114,12 +123,37 @@ const initialHook = {
   subheader: {
     fontSize: theme.typography.pxToRem(16),
   },
+  displayBlock: {
+    display: 'block',
+  },
+  errorTableCell: {
+    whiteSpace: 'normal',
+  },
+  errorPanel: {
+    maxHeight: 300,
+    maxWidth: '75ch',
+    overflowY: 'scroll',
+  },
+  infoButton: {
+    marginLeft: -theme.spacing.double,
+    marginRight: theme.spacing.unit,
+  },
+  headline: {
+    paddingLeft: theme.spacing.triple,
+    paddingRight: theme.spacing.triple,
+  },
+  metadataContainer: {
+    paddingTop: theme.spacing.double,
+    paddingBottom: theme.spacing.double,
+    width: 400,
+  },
 }))
 /** A form to view/edit/create a hook */
 export default class HookForm extends Component {
   static defaultProps = {
     isNewHook: false,
     hook: initialHook,
+    hookLastFires: null,
     onTriggerHook: null,
     onCreateHook: null,
     onUpdateHook: null,
@@ -129,8 +163,12 @@ export default class HookForm extends Component {
   };
 
   static propTypes = {
-    /** A GraphQL hook response. Not needed when creating a new hook  */
+    /** Part of a GraphQL hook response containing info about that hook.
+     Not needed when creating a new hook */
     hook: hook.isRequired,
+    /** Part of the same Grahql hook response as above containing info
+     about some last hook fired attempts */
+    hookLastFires: array,
     /** Set to `true` when creating a new hook. */
     isNewHook: bool,
     /** Callback function fired when a hook is triggered. */
@@ -153,6 +191,7 @@ export default class HookForm extends Component {
 
   state = {
     hook: null,
+    hookLastFires: null,
     // eslint-disable-next-line react/no-unused-state
     previousHook: null,
     taskInput: '',
@@ -162,10 +201,15 @@ export default class HookForm extends Component {
     taskValidJson: true,
     triggerSchemaValidJson: true,
     validation: {},
+    drawerOpen: false,
+    drawerData: null,
   };
 
   static getDerivedStateFromProps(props, state) {
-    if (equals(props.hook, state.previousHook)) {
+    if (
+      equals(props.hook, state.previousHook) &&
+      equals(props.hookLastFires, state.hookLastFires)
+    ) {
       return null;
     }
 
@@ -173,6 +217,7 @@ export default class HookForm extends Component {
 
     return {
       hook: props.hook,
+      hookLastFires: props.hookLastFires,
       previousHook: props.hook,
       taskInput: JSON.stringify(
         removeKeys(cloneDeep(hook.task), ['__typename']),
@@ -395,6 +440,39 @@ export default class HookForm extends Component {
       ),
     });
 
+  handleDrawerClose = () => {
+    this.setState({
+      drawerOpen: false,
+      drawerData: null,
+    });
+  };
+
+  handleDrawerOpen = ({ target: { name } }) =>
+    memoize(
+      name => {
+        const { hookLastFires } = this.state;
+        let body;
+        const lastFiresLength = hookLastFires.length;
+
+        for (let i = 0; i < lastFiresLength; i++) {
+          const { taskId, error } = hookLastFires[i];
+
+          if (taskId === name) {
+            body = error;
+            break;
+          }
+        }
+
+        this.setState({
+          drawerOpen: true,
+          drawerData: { headline: name, body },
+        });
+      },
+      {
+        serializer: name => name,
+      }
+    )(name);
+
   render() {
     const {
       actionLoading,
@@ -412,11 +490,12 @@ export default class HookForm extends Component {
       triggerSchemaInput,
       triggerContextInput,
       hook,
+      hookLastFires,
       validation,
+      drawerOpen,
+      drawerData,
     } = this.state;
-    const isHookDirty = !equals(hook, this.props.hook);
-    /* eslint-disable-next-line no-underscore-dangle */
-    const lastFireTypeName = !isNewHook && hook.status.lastFire.__typename;
+    const iconSize = 16;
 
     return (
       <Fragment>
@@ -509,61 +588,79 @@ export default class HookForm extends Component {
               />
             </FormGroup>
           </ListItem>
+          <ListItem className={classes.displayBlock}>
+            <ListItemText
+              primary={
+                <Typography variant="subtitle1">Last Fired Results</Typography>
+              }
+            />
+            {hookLastFires && (
+              <DataTable
+                items={hookLastFires}
+                headers={[
+                  'Task ID',
+                  'Fired By',
+                  'Result',
+                  'Attempted',
+                  'Error',
+                ]}
+                isPaginate
+                renderRow={hookFire => (
+                  <TableRow key={hookFire.taskId}>
+                    <TableCell>
+                      {(hookFire.result === 'SUCCESS' && (
+                        <TableCellListItem
+                          button
+                          component={Link}
+                          to={`/tasks/${hookFire.taskId}`}>
+                          <ListItemText
+                            disableTypography
+                            primary={<Typography>{hookFire.taskId}</Typography>}
+                          />
+                          <LinkIcon size={iconSize} />
+                        </TableCellListItem>
+                      )) || <Typography>{hookFire.taskId}</Typography>}
+                    </TableCell>
+                    <TableCell>
+                      <Typography>{hookFire.firedBy}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Label mini status={hookFire.result.toLowerCase()}>
+                        {hookFire.result}
+                      </Label>
+                    </TableCell>
+                    <TableCell>
+                      <DateDistance from={hookFire.taskCreateTime} />
+                    </TableCell>
+                    <TableCell className={classes.errorTableCell}>
+                      {(hookFire.result === 'ERROR' && (
+                        <Button
+                          className={classes.infoButton}
+                          size="small"
+                          name={hookFire.taskId}
+                          onClick={this.handleDrawerOpen}>
+                          <InformationVariantIcon size={iconSize} />
+                        </Button>
+                      )) || <Typography>n/a</Typography>}
+                    </TableCell>
+                  </TableRow>
+                )}
+              />
+            )}
+          </ListItem>
           {!isNewHook && (
-            <Fragment>
-              <ListItem>
-                <ListItemText
-                  primary="Last Fired"
-                  secondary={
-                    lastFireTypeName === HOOKS_LAST_FIRE_TYPE.NO_FIRE ? (
-                      'n/a'
-                    ) : (
-                      <DateDistance from={hook.status.lastFire.time} />
-                    )
-                  }
-                />
-              </ListItem>
-              {lastFireTypeName === HOOKS_LAST_FIRE_TYPE.SUCCESSFUL_FIRE ? (
-                <ListItem
-                  button
-                  component={Link}
-                  className={classes.listItemButton}
-                  to={`/tasks/${hook.status.lastFire.taskId}`}>
-                  <ListItemText
-                    primary="Last Fired Result"
-                    secondary={hook.status.lastFire.taskId}
-                  />
-                  <LinkIcon />
-                </ListItem>
-              ) : (
-                <ListItem>
-                  <ListItemText
-                    primary="Last Fired Result"
-                    secondary={
-                      lastFireTypeName === HOOKS_LAST_FIRE_TYPE.NO_FIRE ? (
-                        'n/a'
-                      ) : (
-                        <pre>
-                          {JSON.stringify(hook.status.lastFire.error, null, 2)}
-                        </pre>
-                      )
-                    }
-                  />
-                </ListItem>
-              )}
-              <ListItem>
-                <ListItemText
-                  primary="Next Scheduled Fire"
-                  secondary={
-                    hook.status.nextScheduledDate ? (
-                      <DateDistance from={hook.status.nextScheduledDate} />
-                    ) : (
-                      'n/a'
-                    )
-                  }
-                />
-              </ListItem>
-            </Fragment>
+            <ListItem>
+              <ListItemText
+                primary="Next Scheduled Fire"
+                secondary={
+                  hook.status.nextScheduledDate ? (
+                    <DateDistance from={hook.status.nextScheduledDate} />
+                  ) : (
+                    'n/a'
+                  )
+                }
+              />
+            </ListItem>
           )}
           <List>
             <ListItem>
@@ -674,7 +771,7 @@ export default class HookForm extends Component {
             requiresAuth
             classes={{ root: classes.successIcon }}
             variant="round"
-            disabled={!this.validHook() || actionLoading || !isHookDirty}
+            disabled={!this.validHook() || actionLoading}
             onClick={this.handleCreateHook}>
             <ContentSaveIcon />
           </Button>
@@ -691,7 +788,7 @@ export default class HookForm extends Component {
               requiresAuth
               classes={{ root: classes.successIcon }}
               variant="round"
-              disabled={!this.validHook() || actionLoading || !isHookDirty}
+              disabled={!this.validHook() || actionLoading}
               onClick={this.handleUpdateHook}>
               <ContentSaveIcon />
             </Button>
@@ -765,6 +862,33 @@ export default class HookForm extends Component {
             }
           />
         )}
+        <Drawer
+          anchor="right"
+          open={drawerOpen}
+          onClose={this.handleDrawerClose}>
+          <div className={classes.metadataContainer}>
+            <Typography variant="h5" className={classes.headline}>
+              {drawerData && drawerData.headline}
+            </Typography>
+            <List>
+              <ListItem>
+                <ListItemText
+                  primary="Description"
+                  secondary={
+                    drawerData &&
+                    drawerData.body && (
+                      <ErrorPanel
+                        className={classes.errorPanel}
+                        error={drawerData && drawerData.body}
+                        onClose={null}
+                      />
+                    )
+                  }
+                />
+              </ListItem>
+            </List>
+          </div>
+        </Drawer>
       </Fragment>
     );
   }
