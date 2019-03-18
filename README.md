@@ -1,4 +1,5 @@
 <h1 align="center">
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors)
   <br>
   <img src="https://media.taskcluster.net/logo/logo.png" alt="Taskcluster" width="80">
   <br>
@@ -99,3 +100,15 @@ Do you need to reach a specific subset of the team? Use the team handles to ment
 | `@taskcluster/services-reviewers` | ping reviewers for changes to platform services and libraries  |
 | `@taskcluster/frontend-reviewers` | ping people who can review changes to frontend (and related) code in the services monorepo |
 | `@taskcluster/security-folks` | ping people who do security things |
+
+## Contributors
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore -->
+<table><tr><td align="center"><a href="http://code.v.igoro.us/"><img src="https://avatars3.githubusercontent.com/u/28673?v=4" width="100px;" alt="Dustin J. Mitchell"/><br /><sub><b>Dustin J. Mitchell</b></sub></a><br /><a href="https://github.com/taskcluster/taskcluster/commits?author=djmitche" title="Code">💻</a></td></tr></table>
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
