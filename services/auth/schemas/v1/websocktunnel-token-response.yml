@@ -7,7 +7,7 @@ properties:
   wstClient:
     type: string
     title: Websocktunnel Client
-    pattern: {$const: "clientId"}
+    pattern: "^[a-zA-Z0-9_~.%-]+$"
     description: |
       Id for the websocktunnel client connection; this will be the same as the requested `wstClient`.
   wstAudience:

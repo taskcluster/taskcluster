@@ -7,7 +7,7 @@
     "wstClient": {
       "type": "string",
       "title": "Websocktunnel Client",
-      "pattern": "^[A-Za-z0-9!@/:.+|_-]+$",
+      "pattern": "^[a-zA-Z0-9_~.%-]+$",
       "description": "Id for the websocktunnel client connection; this will be the same as the requested `wstClient`.\n"
     },
     "wstAudience": {

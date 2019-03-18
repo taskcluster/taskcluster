@@ -10,7 +10,7 @@ helper.secrets.mockSuite(helper.suiteName(__filename), ['app', 'azure'], functio
 
   test('websocktunnelToken', async () => {
     const wstAudience = 'websocktunnel-usw2';
-    const wstClient = 'my-group/my-id';
+    const wstClient = 'my-group-my-id';
     const resp = await helper.apiClient.websocktunnelToken(wstAudience, wstClient);
 
     assert.equal(resp.wstClient, wstClient);
