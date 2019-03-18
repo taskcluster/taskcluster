@@ -23,7 +23,7 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
-    "dotenv": "^6.0.0",
+    "dotenv": "^7.0.0",
     "karma-sourcemap-loader": "^0.3.7",
     "neutrino": "^8.2.3",
     "neutrino-preset-mozilla-frontend-infra": "^4.1.0"
