@@ -169,6 +169,19 @@ Expand-ZIPFile -File "C:\ProcessMonitor.zip" -Destination "C:\ProcessMonitor" -U
 md "C:\Handle"
 Expand-ZIPFile -File "C:\Handle.zip" -Destination "C:\Handle" -Url "https://download.sysinternals.com/files/Handle.zip"
 
+# Free some space
+Start-Process "cmd.exe" -ArgumentList "/c del C:\cuda_*" -Wait -NoNewWindow
+Start-Process "cmd.exe" -ArgumentList "/c del C:\cudnn*" -Wait -NoNewWindow
+Start-Process "cmd.exe" -ArgumentList "/c del C:\CUDNN*" -Wait -NoNewWindow
+
+$computersys = Get-WmiObject Win32_ComputerSystem -EnableAllPrivileges;
+$computersys.AutomaticManagedPagefile = $False;
+$computersys.Put();
+$pagefile = Get-WmiObject -Query "Select * From Win32_PageFileSetting Where Name like '%pagefile.sys'";
+$pagefile.InitialSize = 512;
+$pagefile.MaximumSize = 2048;
+$pagefile.Put();
+
 # now shutdown, in preparation for creating an image
 # Stop-Computer isn't working, also not when specifying -AsJob, so reverting to using `shutdown` command instead
 #   * https://www.reddit.com/r/PowerShell/comments/65250s/windows_10_creators_update_stopcomputer_not/dgfofug/?st=j1o3oa29&sh=e0c29c6d
