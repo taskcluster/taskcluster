@@ -18,8 +18,8 @@ class Build {
   async run() {
     this.cfg = config({
       files: [
-        'build-config.yml',
-        'user-build-config.yml',
+        {path: 'build-config.yml', required: true},
+        {path: 'user-build-config.yml', required: false},
       ],
       env: process.env,
     });

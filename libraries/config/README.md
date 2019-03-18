@@ -35,7 +35,6 @@ This library has support for the following syntax extensions:
  * `!env <NAME>`, load string from env variable `<NAME>`,
  * `!env:string <NAME>`, load string from env variable `<NAME>`.
  * `!env:number <NAME>`, load number from env variable `<NAME>`.
- * `!env:flag <NAME>`, load true if env variable `<NAME>` is defined,
  * `!env:bool <NAME>`, load boolean as /true/i or /false/i from env
     variable `<NAME>`,
  * `!env:json <NAME>`, load JSON object from env variable `<NAME>`, and,
@@ -62,12 +61,12 @@ The default options are shown here:
 var config = require('taskcluster-lib-config');
 
 var cfg = config({
-  files: [                // Files to load configuration from
-   'config.yml',          // These defaults are relative to process.cwd
-   'user-config.yml'
+  files: [ // Files to load configuration from
+   {path: 'config.yml', required: true}, // These defaults are relative to process.cwd
+   {path: 'user-config.yml', required: false},
   ]
-  profile:  undefined,    // Profile to apply (default to none)
-  env:      process.env   // Environment variables (mapping string to strings)
+  profile:  undefined, // Profile to apply (default to none)
+  env:      process.env, // Environment variables (mapping string to strings)
 });
 ```
 

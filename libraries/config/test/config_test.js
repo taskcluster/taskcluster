@@ -6,7 +6,7 @@ suite('config', function() {
   test('load yaml', () => {
     let cfg = config({
       files: [
-        path.join(__dirname, 'test.yml'),
+        {path: path.join(__dirname, 'test.yml'), required: true},
       ],
     });
 
@@ -18,7 +18,7 @@ suite('config', function() {
   test('load profile', () => {
     let cfg = config({
       files: [
-        path.join(__dirname, 'test-profile.yml'),
+        {path: path.join(__dirname, 'test-profile.yml'), required: true},
       ],
       profile: 'danish',
     });
@@ -31,7 +31,7 @@ suite('config', function() {
   test('load profile (default)', () => {
     let cfg = config({
       files: [
-        path.join(__dirname, 'test-profile.yml'),
+        {path: path.join(__dirname, 'test-profile.yml'), required: true},
       ],
     });
 
@@ -43,12 +43,11 @@ suite('config', function() {
   test('load !env', () => {
     let cfg = config({
       files: [
-        path.join(__dirname, 'test-env.yml'),
+        {path: path.join(__dirname, 'test-env.yml'), required: true},
       ],
       env: {
         ENV_VARIABLE: 'env-var-value',
         ENV_NUMBER: '32.4',
-        ENV_DEFINED: 'true',
         ENV_TRUE: 'true',
         ENV_FALSE: 'false',
         ENV_JSON: '{"test": 42}',
@@ -60,8 +59,6 @@ suite('config', function() {
       text: 'env-var-value',
       text2: 'env-var-value',
       number: 32.4,
-      unsetflag: false,
-      setflag: true,
       soTrue: true,
       unTrue: false,
       notThere: undefined,
@@ -71,20 +68,20 @@ suite('config', function() {
   });
 
   test('load missing file', () => {
-    let cfg = config({
-      files: [
-        path.join(__dirname, 'file-that-doesnt-exist.yml'),
-      ],
-    });
-
-    assume(cfg).deep.equals(undefined);
+    assume(() => {
+      config({
+        files: [
+          {path: path.join(__dirname, 'file-that-doesnt-exist.yml'), required: false},
+        ],
+      });
+    }).throws(/Must load at least one configuration/);
   });
 
   test('load yaml (merge missing file)', () => {
     let cfg = config({
       files: [
-        path.join(__dirname, 'test.yml'),
-        path.join(__dirname, 'file-that-doesnt-exist.yml'),
+        {path: path.join(__dirname, 'test.yml'), required: true},
+        {path: path.join(__dirname, 'file-that-doesnt-exist.yml'), required: false},
       ],
     });
 
@@ -96,13 +93,12 @@ suite('config', function() {
   test('load !env and overwrite text', () => {
     let cfg = config({
       files: [
-        path.join(__dirname, 'test.yml'),
-        path.join(__dirname, 'test-env.yml'),
+        {path: path.join(__dirname, 'test.yml'), required: true},
+        {path: path.join(__dirname, 'test-env.yml'), required: true},
       ],
       env: {
         ENV_VARIABLE: 'env-var-value',
         ENV_NUMBER: '32.4',
-        ENV_DEFINED: 'true',
         ENV_TRUE: 'true',
         ENV_FALSE: 'false',
         ENV_JSON: '{"test": 42}',
@@ -114,8 +110,6 @@ suite('config', function() {
       text: 'env-var-value',
       text2: 'env-var-value',
       number: 32.4,
-      unsetflag: false,
-      setflag: true,
       soTrue: true,
       unTrue: false,
       notThere: undefined,
@@ -127,12 +121,11 @@ suite('config', function() {
   test('load !env and fallback text', () => {
     let cfg = config({
       files: [
-        path.join(__dirname, 'test.yml'),
-        path.join(__dirname, 'test-env.yml'),
+        {path: path.join(__dirname, 'test.yml'), required: true},
+        {path: path.join(__dirname, 'test-env.yml'), required: true},
       ],
       env: {
         ENV_NUMBER: '32.4',
-        ENV_DEFINED: 'true',
         ENV_TRUE: 'true',
         ENV_FALSE: 'false',
         ENV_JSON: '{"test": 42}',
@@ -144,19 +137,11 @@ suite('config', function() {
       text: ['Hello', 'World'],
       text2: undefined,
       number: 32.4,
-      unsetflag: false,
-      setflag: true,
       soTrue: true,
       unTrue: false,
       notThere: undefined,
       json: {test: 42},
       list: ['abc', 'def', 'qouted string', ''],
     });
-  });
-
-  test('yell when options are wrong format', () => {
-    assume(() => {
-      config('oops');
-    }).throws('Options must be an object!');
   });
 });
