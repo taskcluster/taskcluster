@@ -1060,6 +1060,9 @@ builder.declare({
     req.clientId(),
     req.scopes(),
   ]);
+  //setting headers as purposed by bug 161375
+  req.params.test_auth = {clientId, scopes};
+  res.setHeader('X-test_auth', {clientId, scopes});
   res.reply({clientId, scopes});
 });
 

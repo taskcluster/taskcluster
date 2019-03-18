@@ -20,4 +20,9 @@ properties:
       type:                 string
       pattern: "^[\x20-\x7e]*$"
     uniqueItems:            true
+  queryString:
+    description: |
+      Query string for the testAuthenticate
+    type:                       string
+    additionalProperties:       false
 required: [clientId, scopes]
