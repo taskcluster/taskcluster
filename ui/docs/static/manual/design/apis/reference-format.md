@@ -5,6 +5,8 @@ order: 40
 ---
 import SchemaTable from '../../../../../src/components/SchemaTable'
 
+# Reference Formats
+
 Most Taskcluster services make heavy use of JSON schemas for validation of
 incoming and outgoing data, whether through APIs or AMQP exchanges. This makes
 the external API surface very reliable and consistent, and helps avoid a lot of

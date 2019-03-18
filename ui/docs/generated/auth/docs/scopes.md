@@ -3,6 +3,8 @@ title: Scopes and Satisfaction
 order: 10
 ---
 
+# Scopes and Satisfaction
+
 A scope is simply a string, limited to printable ASCII characters. Scopes
 generally travel in sets. A typical client will have a set of a few dozen
 scopes. For example:

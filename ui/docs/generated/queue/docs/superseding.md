@@ -3,6 +3,8 @@ title: Superseding
 order: 40
 ---
 
+# Superseding
+
 In many cases, executing some tasks in the queue can render others unnecessary.
 For example, if the test tasks for a later version-control revision succeed, then tests for earlier revisions can be skipped.
 Such earlier tasks are said to be "superseded" by the later task.

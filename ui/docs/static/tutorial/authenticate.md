@@ -7,6 +7,8 @@ followup:
     create-task-via-api: Create a task with createTask
 ---
 
+# Authenticating to Taskcluster
+
 Taskcluster uses its own kind of "credentials" to [authenticate API
 requests](/docs/manual/design/apis). These credentials can come from a variety of
 sources, but in this section we will create a client manually, using the Tools

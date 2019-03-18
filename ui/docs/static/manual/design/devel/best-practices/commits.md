@@ -4,6 +4,8 @@ title: Creating Good Commit Messages
 order: 50
 ---
 
+# Creating Good Commit Messages
+
 Having a well-crafted commit message will save you from using many tools to inspect changes
 in a project. Proper commit messages will make it easy to understand why a 
 change was made at a particular time. This page explains the approach we recommend using in

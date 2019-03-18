@@ -3,6 +3,8 @@ title: Action Specification
 order: 20
 ---
 
+# Action Specification
+
 This document specifies how actions exposed by the *[decision
 task](/docs/manual/using/task-graph)* are to be presented and triggered from
 Treeherder, or similar user interfaces.

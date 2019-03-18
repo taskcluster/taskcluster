@@ -5,6 +5,8 @@ followup:
     hello-world: Create a task to see Taskcluster in action!
 ---
 
+# What is Taskcluster?
+
 *Taskcluster* is a set of components that manages task queuing, scheduling,
 execution and provisioning of resources. It was designed to run automated
 builds and tests at Mozilla.

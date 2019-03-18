@@ -3,6 +3,8 @@ title: User Interface Considerations
 order: 30
 ---
 
+# User Interface Considerations
+
 The actions system decouples in-tree changes from user interface changes
 by taking advantage of graceful degradation. User interfaces, when
 presented with an unfamiliar action, fall back to a usable default

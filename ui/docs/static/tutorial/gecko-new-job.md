@@ -5,6 +5,8 @@ ejs: true
 ---
 import SchemaTable from '../../../src/components/SchemaTable'
 
+# Adding a New Job
+
 Taskcluster runs tasks.
 It's just as happy to run your new tasks as any of the already-defined tasks!
 All you need to do is add some configuration for your new tasks, then test it out in try.

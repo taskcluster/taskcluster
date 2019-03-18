@@ -4,6 +4,8 @@ title: Artifacts
 order: 35
 ---
 
+# Artifacts
+
 By far the most commonly used data from a run are its artifacts. These are
 HTTP entities containing output data from the task execution.
 

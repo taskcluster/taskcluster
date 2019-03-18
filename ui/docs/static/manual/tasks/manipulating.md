@@ -4,6 +4,8 @@ title: Manipulating Tasks
 order: 50
 ---
 
+# Manipulating Tasks
+
 For the most part, once a task is created it is left to run to its final
 resolution. However, there are a few API methods available to modify its
 behavior after creation.

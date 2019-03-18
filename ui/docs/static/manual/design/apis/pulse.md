@@ -4,6 +4,8 @@ title: Pulse
 order: 30
 ---
 
+# Pulse
+
 Pulse is a message bus: it allows participants to publish messages and other
 participants to subscribe to those messages. Taskcluster uses this bus to
 communicate between microservices, notifying interested parties when specific

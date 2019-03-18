@@ -3,6 +3,8 @@ filename: README.md
 title: Taskcluster Manual
 ---
 
+# Taskcluster Manual
+
 What does Taskcluster do?
 
 Fundamentally, it executes *tasks*. A task is defined in a JSON object, and

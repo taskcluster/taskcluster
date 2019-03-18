@@ -4,6 +4,8 @@ title: Frontend Applications
 order: 10
 ---
 
+# Frontend Applications
+
 A frontend application -- one which executes in the browser -- can easily make
 calls to Taskcluster APIs using the user's credentials.
 

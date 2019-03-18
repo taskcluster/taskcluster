@@ -8,6 +8,8 @@ followup:
     gecko-tasks: I'm a Firefox/Gecko developer - How do my commits get built?
 ---
 
+# Hello, World
+
 Let's start by seeing Taskcluster in action.
 
 ---

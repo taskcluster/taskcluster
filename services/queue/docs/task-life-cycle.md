@@ -6,6 +6,8 @@ order: 50
 import Image from '../../../../src/views/Documentation/Image'
 import taskLifeCycle from './task-life-cycle.svg'
 
+# Task Life-Cycle
+
 The diagram below outlines the task life-cycle. Transitions drawn by solid
 black lines are initiated by workers. While dashes transitions are initiated
 at the initiative of the queue, or its consumers.

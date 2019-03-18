@@ -4,6 +4,8 @@ title: Scopes and Roles
 order: 10
 ---
 
+# Scopes and Roles
+
 ## When To Require A Role
 
 When verifying the scopes for an API call or some other operation, the default behavior should be to check for appropriately-parameterized scopes.

@@ -4,6 +4,8 @@ title: Running Periodic Tasks
 order: 40
 ---
 
+# Running Periodic Tasks
+
 It is common to build a project on a nightly basis, or to "refresh" some output
 periodically. For example, this documentation site is regenerated several times
 per hour, combining documentation from all of the Taskcluster repositories.

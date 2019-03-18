@@ -4,6 +4,8 @@ title: Workers
 order: 20
 ---
 
+# Workers
+
 Workers are the component responsible for actually executing tasks. Taskcluster
 operates on the "pull" model, where workers pull tasks from queues as they have
 available capacity.

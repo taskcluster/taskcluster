@@ -3,6 +3,8 @@ title: Firing Hooks
 order: 10
 ---
 
+# Firing Hooks
+
 A hook can be "fired" in a variety of ways:
 
  * on a schedule

@@ -4,6 +4,8 @@ title: API Errors
 order: 20
 ---
 
+# API Errors
+
 API clients should be prepared to receive HTTP errors in response to API calls.
 
 ## Retries

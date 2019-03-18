@@ -4,6 +4,8 @@ title: Integrating with Github
 order: 10
 ---
 
+# Integrating with Github
+
 Taskcluster provides a convenient integration with Github to enable starting
 tasks when events occur on a github repository.  Setting up the integration is
 simple: add the integration to the Github organization and repository

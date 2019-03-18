@@ -2,6 +2,8 @@
 title: Debugging a Task
 ---
 
+# Debugging a Task
+
 Tasks which run in Docker can often be debugged locally, and any task can be
 debugged through Taskcluster.
 

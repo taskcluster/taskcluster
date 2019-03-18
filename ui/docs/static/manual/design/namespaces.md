@@ -4,6 +4,8 @@ title: Namespaces
 order: 30
 ---
 
+# Namespaces
+
 Taskcluster has a number of namespaces defined to allow multiple users to get
 along without interfering with one another.  The platform itself is agnostic to
 the structure of these namespaces, but infrastructure that interacts with the

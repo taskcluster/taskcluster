@@ -4,6 +4,8 @@ title: Client Libraries
 order: 50
 ---
 
+# Client Libraries
+
 The Taskcluster client libraries enable you to interface with Taskcluster in your automation.
 
 ### Node.js Client Library

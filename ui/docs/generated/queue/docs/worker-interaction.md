@@ -6,6 +6,8 @@ order: 60
 import Image from '../../../../src/views/Documentation/Image'
 import queueWorkerInteraction from './queue-worker-interaction.svg'
 
+# Queue-Worker Interaction
+
 _This document outlines how workers interact with the queue in-order to process
 tasks. This is intended as required reading for any worker-implementor._
 

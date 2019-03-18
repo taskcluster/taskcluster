@@ -4,6 +4,8 @@ title: Temporary Credentials
 order: 26
 ---
 
+# Temporary Credentials
+
 Any client with a `clientId` and an `accessToken` can issue temporary
 credentials. Temporary credentials consist of a `clientId`, `accessToken` and a
 certificate validating them. The scopes associated with temporary credentials
