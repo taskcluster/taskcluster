@@ -752,7 +752,7 @@ builder.declare({
       });
 
       if (urllib.parse(url).protocol !== 'https:') {
-        throw new Error('Only HTTPS is allowed for artifacts');
+        return res.reportError('InputError', 'Only HTTPS is allowed for artifacts');
       }
 
       let headRes = await this.s3Runner.run({
@@ -763,15 +763,22 @@ builder.declare({
         },
       });
 
+      if (headRes.statusCode >= 300 || headRes.statusCode < 200) {
+        return res.reportError('InternalServerError', [
+          `When attempting to do a HEAD request for the uploaded artifact ${url}`,
+          `a status code of ${headRes.statusCode} was returned.`,
+        ].join(' '), {});
+      }
+
       if (headRes.headers['x-amz-meta-content-sha256'] !== artifact.details.contentSha256) {
         let msg = [
           'Expected S3 object to have SHA256 of ',
           artifact.details.contentSha256,
-          ' but found it to have ',
+          ' but found its headers to have ',
           headRes.headers['x-amz-meta-content-sha256'] || 'no value',
           '',
         ].join('"');
-        throw new Error(msg);
+        return res.reportError('InputError', msg);
       }
 
       etag = input.etags[0];
