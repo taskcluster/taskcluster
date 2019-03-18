@@ -45,6 +45,10 @@ resource "random_string" "auth_root_access_token" {
   override_special = "_-"
 }
 
+resource "random_string" "auth_websocktunnel_secret" {
+  length = 66
+}
+
 module "auth_rabbitmq_user" {
   source         = "modules/rabbitmq-user"
   prefix         = "${var.prefix}"
@@ -175,21 +179,20 @@ module "auth_secrets" {
     AZURE_CRYPTO_KEY  = "${base64encode(random_string.auth_table_crypto_key.result)}"
     AZURE_SIGNING_KEY = "${random_string.auth_table_signing_key.result}"
 
-    FORCE_SSL               = "false"
-    TRUST_PROXY             = "true"
-    LOCK_ROLES              = "false"
-    MONITORING_ENABLE       = "true"
-    NODE_ENV                = "production"
-    OWNER_EMAIL             = "bstack@mozilla.com"
-    PROFILE                 = "production"
-    PUBLISH_METADATA        = "false"
-    SENTRY_API_KEY          = "TODO SENTRY 4"
-    SENTRY_DSN              = "TODO"
-    SENTRY_AUTH_TOKEN       = "TODO"
-    STATSUM_API_SECRET      = "TODO"
-    STATSUM_BASE_URL        = "TODO"
-    WEBHOOKTUNNEL_PROXY_URL = "TODO"
-    WEBHOOKTUNNEL_SECRET    = "TODO"
+    FORCE_SSL            = "false"
+    TRUST_PROXY          = "true"
+    LOCK_ROLES           = "false"
+    MONITORING_ENABLE    = "true"
+    NODE_ENV             = "production"
+    OWNER_EMAIL          = "bstack@mozilla.com"
+    PROFILE              = "production"
+    PUBLISH_METADATA     = "false"
+    SENTRY_API_KEY       = "TODO SENTRY 4"
+    SENTRY_DSN           = "TODO"
+    SENTRY_AUTH_TOKEN    = "TODO"
+    STATSUM_API_SECRET   = "TODO"
+    STATSUM_BASE_URL     = "TODO"
+    WEBSOCKTUNNEL_SECRET = "${random_string.auth_websocktunnel_secret.result}"
   }
 }
 
