@@ -5,7 +5,7 @@ import fetch from './fetch';
 
 export default class Client {
   constructor(options = {}) {
-    this.defaults = {
+    const defaults = {
       credentials: null,
       authorizedScopes: null,
       timeout: 30 * 1000,
@@ -20,7 +20,7 @@ export default class Client {
     };
 
     this.options = {
-      ...this.defaults,
+      ...defaults,
       ...options,
     };
 
