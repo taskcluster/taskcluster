@@ -3,6 +3,8 @@ title: Guidelines
 order: 5
 ---
 
+# Guidelines
+
 Before jumping in to the technical details, a few words of caution are required
 regarding integrating with Taskcluster, especially with user-provided
 credentials.

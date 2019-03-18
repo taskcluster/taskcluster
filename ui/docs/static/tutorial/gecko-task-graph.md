@@ -6,6 +6,8 @@ followup:
     gecko-task-graph-howto: I want to change something else
 ---
 
+# Gecko Task Graph Creation
+
 The decision task is responsible for creating the "task graph".
 This is the collection of all tasks required in response to the push, connected by dependencies.
 For example, a test task will depend on the build task producing the browser installer it should test.

@@ -4,6 +4,8 @@ title: Working With Artifacts
 order: 60
 ---
 
+# Working with Artifacts
+
 ## Creating Artifacts
 
 Most workers automatically produce a `public/logs/live.log` artifact containing

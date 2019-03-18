@@ -4,6 +4,8 @@ title: Provisioning
 order: 40
 ---
 
+# Provisioning
+
 In the simplest case, a worker implementation is installed and configured
 manually on a host and executes tasks indefinitely. For most purposes, it is
 far more cost-effective to dynamically adjust the pool of available workers

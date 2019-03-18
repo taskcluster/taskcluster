@@ -2,6 +2,8 @@
 title: Handling High Load
 ---
 
+# Handling High Load
+
 When worker capacity is constrained, such as in a fixed pool of hardware, the
 demand for work can outstrip available capacity.  When this occurs, Taskcluster
 provides a few tools that can help.

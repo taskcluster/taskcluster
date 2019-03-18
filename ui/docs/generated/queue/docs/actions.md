@@ -4,6 +4,8 @@ description: Queue Actions
 order: 40
 ---
 
+# Actions
+
 The queue allows users to define "actions" on [provisioner, worker type, and
 worker](worker-hierarchy) resources. These actions can then be executed by
 other components for their side-effects on the resources.  An example of an

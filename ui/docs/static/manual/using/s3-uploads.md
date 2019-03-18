@@ -3,6 +3,8 @@ title: Uploading to S3
 order: 70
 ---
 
+# Uploading to S3
+
 Many projects upload the result of their build or release process to Amazon S3
 for hosting.  For example, a package might upload its generated documentation
 to a bucket for hosting on a custom domain, or a blog site might upload the

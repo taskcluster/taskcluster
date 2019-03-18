@@ -4,6 +4,8 @@ title: Guiding Design Principles for Taskcluster
 order: 10
 ---
 
+# Guiding Design Principles for Taskcluster
+
 At the [2016 tc-worker workweek](http://www.chesnok.com/daily/2016/03/11/workweek-tc-worker-workweek-recap/) the Taskcluster Platform team laid out our _core design principles_. The four key principles are:
 
 * Self-service

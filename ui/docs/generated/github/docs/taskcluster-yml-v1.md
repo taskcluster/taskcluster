@@ -3,6 +3,8 @@ title: .taskcluster.yml version 1
 order: 20
 ---
 
+# Taskcluster Yml Version 1
+
 Your main interface to Taskcluster-Github is via `.taskcluster.yml` in the root of your project. This is a YAML file that specifies the tasks to run and when.
 
 The format of the file is shown below:

@@ -3,6 +3,8 @@ title: Worker Hierarchy
 order: 30
 ---
 
+# Worker Hierarchy
+
 The queue defines a hierarchy of resources that consume tasks from queues:
 
 ## Provisioners

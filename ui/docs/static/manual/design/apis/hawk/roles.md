@@ -4,6 +4,8 @@ title: Roles
 order: 24
 ---
 
+# Roles
+
 A _role_ consists of a `roleId`, a set of scopes, and a description. Each role
 constitutes a simple _expansion rule_ that says if you have the scope
 `assume:<roleId>` you get the set of scopes associated with the role named

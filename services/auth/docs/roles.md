@@ -3,6 +3,8 @@ title: Roles and Role Expansion
 order: 30
 ---
 
+# Roles and Role Expansion
+
 A _role_ consists of a `roleId`, a set of scopes, and a description. Each role
 constitutes a simple _expansion rule_ that says if you have the scope
 `assume:<roleId>` then your expanded roles also contain the set of scopes

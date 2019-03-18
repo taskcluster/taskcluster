@@ -2,6 +2,8 @@
 title: Getting User Credentials
 ---
 
+# Getting User Credentials
+
 If you are building a web application that will interact with Taskcluster on
 behalf of your user, you will need your users' Taskcluster credentials.
 

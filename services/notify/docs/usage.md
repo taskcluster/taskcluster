@@ -2,6 +2,8 @@
 title: Enable Notifications
 ---
 
+# Enable Notifications
+
 This service can also be used via a simple api, if you have the correct scopes.
 
 There are (as of today) three types of notifications and four types of filters possible on these notifications.

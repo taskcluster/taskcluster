@@ -3,6 +3,8 @@ title: Resources
 noAnchors: true
 ---
 
+# Resources
+
 ### [<span class="glyphicon glyphicon-blackboard" aria-hidden="true"></span> Presentations](/docs/presentations)
 
 View videos, screencasts, and slides given about Taskcluster.

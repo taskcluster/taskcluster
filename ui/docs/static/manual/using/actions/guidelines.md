@@ -3,6 +3,8 @@ title: Implementation Guidelines
 order: 10
 ---
 
+# Implementation Guidelines
+
 ### Choosing a Kind
 
 The "task" kind requires that the user invoking the task has all of the scopes

@@ -3,6 +3,8 @@ title: Caching on Workers
 order: 65
 ---
 
+# Caching on Workers
+
 As discussed elsewhere, Taskcluster supports a broad array of workers, including workers you implement yourself.
 So it's difficult to say anything about "all" workers, but the general-purpose workers that the Taskcluster team maintains do have some common functionality, including the ability to cache data between task executions.
 

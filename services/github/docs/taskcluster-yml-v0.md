@@ -3,6 +3,8 @@ title: .taskcluster.yml version 0
 order: 100
 ---
 
+# Taskcluster Yml Version 0
+
 **NOTE**: version-0 `.taskcluster.yml` files are deprecated. For any new
 projects, and to take full advantage of Taskcluster-Github features, use a
 [version 1](taskcluster-yml-v1) file.
