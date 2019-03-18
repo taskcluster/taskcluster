@@ -1119,3 +1119,25 @@ builder.declare({
   ]);
   res.reply({clientId, scopes});
 });
+
+/** Query string to authenticate **/
+builder.declare({
+  method: 'get',
+  route: '/test-authenticate?q={auth}',
+  query: {
+    prefix: /^[A-Za-z0-9!@/:.+|_-]+$/, // should match clientId above
+    continuationToken: /./,
+    limit: /^[0-9]+$/,
+  },
+  name: 'queryString',
+  output: 'test-authenticate-response.yml',
+  stability: 'stable',
+  title: 'Query String',
+  description: [
+    'Get the query string passed in the url for authentication',
+    'A object will be query String present else null String would be received'
+  ].join('\n'),
+}, async function(req, res) {
+  let response = req.params.test_auth || '';
+  res.reply(response);
+});
