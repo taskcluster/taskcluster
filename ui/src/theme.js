@@ -179,6 +179,8 @@ const createTheme = isDarkTheme => {
           '&:disabled': {
             backgroundColor: 'transparent',
           },
+          // Rely on background color instead
+          outline: 'none',
         },
       },
       fab: {
