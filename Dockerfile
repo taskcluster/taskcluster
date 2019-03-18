@@ -1,16 +1,15 @@
-FROM golang
+FROM golang:1.10 AS build
 
-RUN mkdir -p /go/src/github.com/
-WORKDIR /go/src/github.com/taskcluster/
-# clone and run websocktunnel
-RUN git clone http://github.com/taskcluster/websocktunnel
+ADD . /go/src/github.com/taskcluster/websocktunnel
 WORKDIR /go/src/github.com/taskcluster/websocktunnel
 
-# set envs 
-ENV HOSTNAME=tcproxy.dev
-ENV TASKCLUSTER_PROXY_SECRET_A=example-secret
-ENV TASKCLUSTER_PROXY_SECRET_B=another-example-secret
+# build without CGO to create a statically-linked binary
+RUN CGO_ENABLED=0 go install ./...
 
-RUN go get -v
-ENTRYPOINT ["go", "run", "main.go"]
-# expose ports when starting container
+RUN ls -al /go/bin
+
+FROM scratch
+
+COPY --from=build /go/bin/websocktunnel /websocktunnel
+
+ENTRYPOINT ["/websocktunnel"]
