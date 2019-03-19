@@ -12,11 +12,11 @@ const retryPlugin = (octokit, options) => {
       try {
         return await request(options);
       } catch (err) {
-        if (attempt === retries || err.name !== 'HttpError' || err.status < 500) {
-          throw err;
+        if (attempt < retries && err.name === 'HttpError' && (err.status >= 500 || err.status === 404)) {
+          debug(`Request getting retried for eventual consistency. attempt: ${attempt}`);
+          await sleep(baseBackoff * Math.pow(2, attempt));
         }
-        debug(`Request getting retried for eventual consistency. attempt: ${attempt}`);
-        await sleep(baseBackoff * Math.pow(2, attempt));
+        throw err;
       }
     }
   });
