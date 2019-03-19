@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { string, shape, func, arrayOf } from 'prop-types';
+import classNames from 'classnames';
 import { pipe, map, sort as rSort } from 'ramda';
 import memoize from 'fast-memoize';
-import { camelCase } from 'change-case/change-case';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography';
 import { notificationAddress, pageInfo } from '../../utils/prop-types';
-import { VIEW_DENYLISTED_NOTIFICATIONS_PAGE_SIZE } from '../../utils/constants';
+import { VIEW_DENYLIST_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
 import ConnectionDataTable from '../ConnectionDataTable';
 
@@ -29,7 +29,7 @@ const tableHeaders = ['Address', 'Type'];
     width: '100%',
     padding: theme.spacing.unit,
   },
-  listItemRow: {
+  listLinkCell: {
     ...theme.mixins.hover,
   },
 }))
@@ -50,17 +50,25 @@ export default class DenylistTable extends Component {
   };
 
   state = {
-    sortBy: tableHeaders[1],
+    sortBy: tableHeaders[0],
     sortDirection: 'asc',
+  };
+
+  propertyFromColName = colName => {
+    // property correspiinding to the column name
+    switch (colName) {
+      case 'Address':
+        return 'notificationAddress';
+      case 'Type':
+        return 'notificationType';
+      default:
+        return 'notificationAddress';
+    }
   };
 
   createSortedNotifications = memoize(
     (notificationsConnection, sortBy, sortDirection) => {
-      // if destination coulumn is clicked sort by notificationAddress property
-      const sortByProperty =
-        camelCase(sortBy) === 'destination'
-          ? 'notificationAddress'
-          : camelCase(sortBy);
+      const sortByProperty = this.propertyFromColName(sortBy);
 
       if (!sortBy) {
         return notificationsConnection;
@@ -124,37 +132,33 @@ export default class DenylistTable extends Component {
     return (
       <ConnectionDataTable
         connection={sortedNotificationsConnection}
-        pageSize={VIEW_DENYLISTED_NOTIFICATIONS_PAGE_SIZE}
+        pageSize={VIEW_DENYLIST_PAGE_SIZE}
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
         headers={tableHeaders}
         sortByHeader={sortBy}
         sortDirection={sortDirection}
         renderRow={({ node }) => (
-          <TableRow key={node.notificationAddress} class={classes.listItemRow}>
+          <TableRow key={node.notificationAddress}>
             <TableCell>
               <Link
                 className={classes.tableCell}
                 to={`/notify/denylist/${encodeURIComponent(
                   node.notificationAddress
                 )}`}>
-                <div className={classes.listItemCell}>
+                <div
+                  className={classNames(
+                    classes.listItemCell,
+                    classes.listLinkCell
+                  )}>
                   <Typography>{node.notificationAddress}</Typography>
                 </div>
               </Link>
             </TableCell>
             <TableCell>
-              <Link
-                className={classes.tableCell}
-                to={`/notify/denylist/${encodeURIComponent(
-                  node.notificationAddress
-                )}`}>
-                <div className={classes.listItemCell}>
-                  <Typography>
-                    {this.prettify(node.notificationType)}
-                  </Typography>
-                </div>
-              </Link>
+              <div className={classes.listItemCell}>
+                <Typography>{this.prettify(node.notificationType)}</Typography>
+              </div>
             </TableCell>
           </TableRow>
         )}

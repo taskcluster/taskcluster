@@ -1,3 +1,6 @@
 mutation AddDenylistAddress($address: NotificationAddressInput!) {
-  addDenylistAddress(address: $address)
+  addDenylistAddress(address: $address) {
+    notificationType
+    notificationAddress
+  }
 }

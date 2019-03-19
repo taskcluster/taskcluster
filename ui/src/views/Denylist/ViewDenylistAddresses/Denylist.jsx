@@ -6,13 +6,13 @@ import dotProp from 'dot-prop-immutable';
 import DenylistTable from '../../../components/DenylistTable';
 import ErrorPanel from '../../../components/ErrorPanel';
 import notificationsQuery from './denylist.graphql';
-import { VIEW_DENYLISTED_NOTIFICATIONS_PAGE_SIZE } from '../../../utils/constants';
+import { VIEW_DENYLIST_PAGE_SIZE } from '../../../utils/constants';
 
 @graphql(notificationsQuery, {
   options: props => ({
     variables: {
       notificationsConnection: {
-        limit: VIEW_DENYLISTED_NOTIFICATIONS_PAGE_SIZE,
+        limit: VIEW_DENYLIST_PAGE_SIZE,
       },
       filter: {
         ...(props.searchTerm
@@ -41,7 +41,7 @@ export default class Denylist extends PureComponent {
       query: notificationsQuery,
       variables: {
         notificationsConnection: {
-          limit: VIEW_DENYLISTED_NOTIFICATIONS_PAGE_SIZE,
+          limit: VIEW_DENYLIST_PAGE_SIZE,
           cursor,
           previousCursor,
         },

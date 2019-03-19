@@ -33,15 +33,17 @@ import Button from '../Button';
 /** A form to view/add a notification address to the denylist */
 export default class DenylistForm extends Component {
   static propTypes = {
-    /** A GraphQL address response. Not needed when adding a new
-    address  */
+    /**
+     * A GraphQL address response. Not needed when adding
+     * a new address.
+     */
     address,
     /** Set to `true` when adding a new address. */
     isNewaddress: bool,
     /** Callback function fired when an address is created. */
-    onAddAddress: func.isRequired,
+    onAddressAdd: func.isRequired,
     /** Callback function fired when an address is deleted. */
-    onDeleteAddress: func,
+    onAddressDelete: func,
     /** If true, form actions will be disabled. */
     loading: bool,
   };
@@ -50,7 +52,7 @@ export default class DenylistForm extends Component {
     isNewAddress: false,
     address: null,
     loading: false,
-    onDeleteAddress: null,
+    onAddressDelete: null,
   };
 
   state = {
@@ -90,7 +92,7 @@ export default class DenylistForm extends Component {
   handleDeleteAddress = () => {
     const { notificationType, notificationAddress } = this.state;
 
-    this.props.onDeleteAddress(notificationType, notificationAddress);
+    this.props.onAddressDelete(notificationType, notificationAddress);
   };
 
   handleInputChange = ({ target: { name, value } }) => {
@@ -109,8 +111,8 @@ export default class DenylistForm extends Component {
   };
 
   handleAddressChange = e => {
-    this.setState({ notificationAddress: e.target.value });
     this.setState({
+      notificationAddress: e.currentTarget.value,
       validation: {
         address: {
           error: !e.currentTarget.validity.valid,
@@ -123,10 +125,7 @@ export default class DenylistForm extends Component {
   handleAddAddress = () => {
     const { notificationType, notificationAddress } = this.state;
 
-    this.props.onAddAddress({
-      notificationType,
-      notificationAddress,
-    });
+    this.props.onAddressAdd(notificationType, notificationAddress);
   };
 
   isFormValid = () => {

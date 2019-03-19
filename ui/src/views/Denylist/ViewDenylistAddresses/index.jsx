@@ -16,11 +16,11 @@ import HelpView from '../../../components/HelpView';
 }))
 export default class ViewDenylist extends PureComponent {
   state = {
-    notificationsSearch: '',
+    searchTerm: '',
   };
 
-  handleNotificationsSearchSubmit = notificationsSearch => {
-    this.setState({ notificationsSearch });
+  handleSearchSubmit = searchTerm => {
+    this.setState({ searchTerm });
   };
 
   handleCreate = () => {
@@ -29,19 +29,19 @@ export default class ViewDenylist extends PureComponent {
 
   render() {
     const { classes, description } = this.props;
-    const { notificationsSearch } = this.state;
+    const { searchTerm } = this.state;
 
     return (
       <Dashboard
-        title="Notifications Denylist"
+        title="Denylist Addresses"
         helpView={<HelpView description={description} />}
         search={
           <Search
-            onSubmit={this.handleNotificationsSearchSubmit}
-            placeholder="Notification address contains"
+            onSubmit={this.handleSearchSubmit}
+            placeholder="Address contains"
           />
         }>
-        <Denylist searchTerm={notificationsSearch} />
+        <Denylist searchTerm={searchTerm} />
         <Button
           spanProps={{ className: classes.plusIconSpan }}
           tooltipProps={{ title: 'Add Address' }}

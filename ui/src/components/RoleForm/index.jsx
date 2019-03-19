@@ -44,9 +44,9 @@ export default class RoleForm extends Component {
     /** Set to `true` when creating a new role. */
     isNewRole: bool,
     /** Callback function fired when a role is created/updated. */
-    onSaveRole: func.isRequired,
+    onRoleSave: func.isRequired,
     /** Callback function fired when a role is deleted. */
-    onDeleteRole: func,
+    onRoleDelete: func,
     /** If true, form actions will be disabled. */
     loading: bool,
   };
@@ -54,7 +54,7 @@ export default class RoleForm extends Component {
   static defaultProps = {
     isNewRole: false,
     role: null,
-    onDeleteRole: null,
+    onRoleDelete: null,
     loading: null,
   };
 
@@ -83,7 +83,7 @@ export default class RoleForm extends Component {
   };
 
   handleDeleteRole = () => {
-    this.props.onDeleteRole(this.state.roleId);
+    this.props.onRoleDelete(this.state.roleId);
   };
 
   handleInputChange = ({ target: { name, value } }) => {
@@ -98,7 +98,7 @@ export default class RoleForm extends Component {
       description,
     };
 
-    this.props.onSaveRole(role, roleId);
+    this.props.onRoleSave(role, roleId);
   };
 
   render() {

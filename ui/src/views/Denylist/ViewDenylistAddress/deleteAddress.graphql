@@ -1,3 +1,6 @@
-mutation DenylistedNotification ($address: NotificationAddressInput) {
-  deleteDenylistAddress(address: $address)
+mutation DeleteDenylistAddress($address: NotificationAddressInput!) {
+  deleteDenylistAddress(address: $address) {
+    notificationType
+    notificationAddress
+  }
 }

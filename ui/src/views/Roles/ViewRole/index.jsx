@@ -79,7 +79,7 @@ export default class ViewRole extends Component {
             <RoleForm
               isNewRole
               loading={loading}
-              onSaveRole={this.handleSaveRole}
+              onRoleSave={this.handleSaveRole}
             />
           ) : (
             <Fragment>
@@ -89,8 +89,8 @@ export default class ViewRole extends Component {
                 <RoleForm
                   role={data.role}
                   loading={loading}
-                  onDeleteRole={this.handleDeleteRole}
-                  onSaveRole={this.handleSaveRole}
+                  onRoleDelete={this.handleDeleteRole}
+                  onRoleSave={this.handleSaveRole}
                 />
               )}
             </Fragment>

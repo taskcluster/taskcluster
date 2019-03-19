@@ -87,7 +87,7 @@ export default class ViewDenylistAddress extends Component {
           <DenylistForm
             loading={loading}
             isNewAddress
-            onAddAddress={this.handleAddAddress}
+            onAddressAdd={this.handleAddAddress}
           />
         ) : (
           <Fragment>
@@ -97,8 +97,8 @@ export default class ViewDenylistAddress extends Component {
               <DenylistForm
                 loading={loading}
                 address={data.listDenylistAddresses.edges[0].node}
-                onAddAddress={this.handleAddAddress}
-                onDeleteAddress={this.handleDeleteAddress}
+                onAddressAdd={this.handleAddAddress}
+                onAddressDelete={this.handleDeleteAddress}
               />
             )}
           </Fragment>
