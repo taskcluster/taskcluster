@@ -63,7 +63,6 @@ const (
 	TASKS_COMPLETE                           ExitCode = 0
 	CANT_LOAD_CONFIG                         ExitCode = 64
 	CANT_INSTALL_GENERIC_WORKER              ExitCode = 65
-	CANT_CREATE_OPENPGP_KEYPAIR              ExitCode = 66
 	REBOOT_REQUIRED                          ExitCode = 67
 	IDLE_TIMEOUT                             ExitCode = 68
 	INTERNAL_ERROR                           ExitCode = 69
@@ -94,7 +93,6 @@ and reports back results to the queue.
                                             [--configure-for-aws | --configure-for-gcp]
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
-    generic-worker new-openpgp-keypair      --file OPENPGP-PRIVATE-KEY-FILE
     generic-worker grant-winsta-access      --sid SID
     generic-worker --help
     generic-worker --version
@@ -119,10 +117,6 @@ and reports back results to the queue.
                                             instead explicitly start the service when the
                                             preconditions have been met.
     new-ed25519-keypair                     This will generate a fresh, new ed25519
-                                            compliant private/public key pair. The public
-                                            key will be written to stdout and the private
-                                            key will be written to the specified file.
-    new-openpgp-keypair                     This will generate a fresh, new OpenPGP
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
                                             key will be written to the specified file.
@@ -180,7 +174,6 @@ and reports back results to the queue.
           livelogSecret                     This should match the secret used by the
                                             stateless dns server; see
                                             https://github.com/taskcluster/stateless-dns-server
-          openpgpSigningKeyLocation         The PGP signing key for signing artifacts with.
           publicIP                          The IP address for clients to be directed to
                                             for serving live logs; see
                                             https://github.com/taskcluster/livelog and
@@ -365,7 +358,6 @@ and reports back results to the queue.
            metadata service, or a problem retrieving config/files from the taskcluster
            secrets service.
     65     Not able to install generic-worker on the system.
-    66     Not able to create an OpenPGP key pair.
     67     A task user has been created, and the generic-worker needs to reboot in order
            to log on as the new task user. Note, the reboot happens automatically unless
            config setting disableReboots is set to true - in either code this exit code will
@@ -522,13 +514,6 @@ func main() {
 			log.Println("Error installing generic worker:")
 			log.Printf("%#v\n", err)
 			os.Exit(int(CANT_INSTALL_GENERIC_WORKER))
-		}
-	case arguments["new-openpgp-keypair"]:
-		err := generateOpenPGPKeypair(arguments["--file"].(string))
-		if err != nil {
-			log.Println("Error generating OpenPGP keypair for worker:")
-			log.Printf("%#v\n", err)
-			os.Exit(int(CANT_CREATE_OPENPGP_KEYPAIR))
 		}
 	case arguments["new-ed25519-keypair"]:
 		err := generateEd25519Keypair(arguments["--file"].(string))
