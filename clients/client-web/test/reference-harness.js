@@ -28,7 +28,7 @@ export default {
       title: 'Test Post',
       description: 'Place we can call to test POST',
       scopes: [],
-      input: '/schemas/v1/nothing.json'
+      input: '/schemas/v1/nothing.json',
     },
     {
       type: 'function',
@@ -41,7 +41,7 @@ export default {
       title: 'Test Post Param',
       description: 'Place we can call to test POST with params',
       scopes: [],
-      input: 'https://taskcluster.net/schemas/nothing.json'
+      input: 'https://taskcluster.net/schemas/nothing.json',
     },
     {
       type: 'function',
@@ -54,7 +54,7 @@ export default {
       title: 'Test Post Param Query',
       description: 'Place we can call to test POST with params and a query',
       scopes: [],
-      input: 'http://taskcluster.net/schemas/nothing.json'
+      input: 'http://taskcluster.net/schemas/nothing.json',
     },
     {
       type: 'function',
@@ -103,6 +103,6 @@ export default {
       title: 'Test Query string options with params',
       description: 'Place we can call to test query string with params',
       scopes: [],
-    }
+    },
   ],
 };

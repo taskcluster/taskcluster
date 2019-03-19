@@ -19,7 +19,9 @@
  */
 
 export default class Emitter {
-  events = {};
+  constructor() {
+    this.events = {};
+  }
 
   on(eventName, handler) {
     if (

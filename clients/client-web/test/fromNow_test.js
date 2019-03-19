@@ -70,7 +70,7 @@ describe('fromNow', function() {
       { expr: '1 month', from: '2017-01-19T16:27:20.974Z', result: '2017-02-18T16:27:20.974Z' },
       { expr: '30 mo', from: '2017-01-19T16:27:20.974Z', result: '2019-07-08T16:27:20.974Z' },
       { expr: '-30 mo', from: '2017-01-19T16:27:20.974Z', result: '2014-08-03T16:27:20.974Z' },
-      { expr: '1 year', from: '2017-01-19T16:27:20.974Z', result: '2018-01-19T16:27:20.974Z' }
+      { expr: '1 year', from: '2017-01-19T16:27:20.974Z', result: '2018-01-19T16:27:20.974Z' },
     ].forEach(({ expr, from, result }) => {
       expect(fromNow(expr, new Date(from)).toJSON()).to.equal(result);
     });

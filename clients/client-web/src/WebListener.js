@@ -17,6 +17,9 @@ export default class WebListener {
 
     this._bindings = [];
     this._pendingPromises = [];
+
+    ['handleMessage', 'handleError', 'handleClose']
+      .map(method => this[method] = [method].bind(this));
   }
 
   on(eventName, handler) {
@@ -110,7 +113,7 @@ export default class WebListener {
   }
 
   // eslint-disable-next-line consistent-return
-  handleMessage = e => {
+  handleMessage(e) {
     let message;
 
     try {
@@ -144,21 +147,23 @@ export default class WebListener {
     });
 
     switch (message.event) {
-      case 'ready':
-      case 'bound':
-      case 'message':
-      case 'error':
-        return this.emitter.emit(message.event, message.payload || null);
-      default:
-        this.emit('error', new Error('Unknown event type from server'));
+    case 'ready':
+    case 'bound':
+    case 'message':
+    case 'error':
+      return this.emitter.emit(message.event, message.payload || null);
+    default:
+      this.emit('error', new Error('Unknown event type from server'));
     }
-  };
+  }
 
-  handleError = () => this.emitter.emit('error', new Error('WebSocket error'));
+  handleError() {
+    return this.emitter.emit('error', new Error('WebSocket error'));
+  }
 
-  handleClose = () => {
+  handleClose() {
     this.emitter.emit('close');
-  };
+  }
 
   bind(binding) {
     // Store the binding so we can connect, if not already there

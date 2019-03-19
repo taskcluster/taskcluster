@@ -10,8 +10,8 @@ export const failWith = (statusCode, statusText, message, body = {}) => {
     response: new Response(JSON.stringify(body), {
       ok: false,
       statusText,
-      status: statusCode
+      status: statusCode,
     }),
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   })));
 };

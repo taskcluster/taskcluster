@@ -13,8 +13,8 @@ describe('Auth', function() {
     rootUrl,
     credentials: {
       clientId: 'tester',
-      accessToken: 'no-secret'
-    }
+      accessToken: 'no-secret',
+    },
   });
 
   it('should successfully ping', () => {
@@ -40,7 +40,7 @@ describe('Auth', function() {
         clientId: 'tester',
         accessToken: 'no-secret',
       },
-      authorizedScopes: ['test:authenticate-get', 'test:foo']
+      authorizedScopes: ['test:authenticate-get', 'test:foo'],
     });
     return auth
       .buildSignedUrl(auth.testAuthenticateGet)
@@ -58,9 +58,9 @@ describe('Auth', function() {
         expiry: fromNow('1 hour'),
         credentials: {
           clientId: 'tester',
-          accessToken: 'no-secret'
-        }
-      })
+          accessToken: 'no-secret',
+        },
+      }),
     });
     return auth
       .buildSignedUrl(auth.testAuthenticateGet)
@@ -78,13 +78,13 @@ describe('Auth', function() {
         expiry: fromNow('1 hour'),
         credentials: {
           clientId: 'tester',
-          accessToken: 'no-secret'
-        }
-      })
+          accessToken: 'no-secret',
+        },
+      }),
     });
     return auth
       .buildSignedUrl(auth.testAuthenticateGet, { expiration: 600 })
-      then(url => request(url));
+      .then(url => request(url));
   });
 
   it('should fetch from signed URL with temporary credentials and authorized scopes', () => {
@@ -96,9 +96,9 @@ describe('Auth', function() {
         expiry: fromNow('1 hour'),
         credentials: {
           clientId: 'tester',
-          accessToken: 'no-secret'
-        }
-      })
+          accessToken: 'no-secret',
+        },
+      }),
     });
     return auth
       .buildSignedUrl(auth.testAuthenticateGet)
@@ -116,9 +116,9 @@ describe('Auth', function() {
         expiry: fromNow('1 hour'),
         credentials: {
           clientId: 'tester',
-          accessToken: 'no-secret'
-        }
-      })
+          accessToken: 'no-secret',
+        },
+      }),
     });
     return auth
       .buildSignedUrl(auth.testAuthenticateGet, { expiration: -600 })
@@ -139,7 +139,7 @@ describe('Auth', function() {
         clientId: 'tester',
         accessToken: 'no-secret',
       },
-      authorizedScopes: ['test:get'] // missing test:authenticate-get
+      authorizedScopes: ['test:get'], // missing test:authenticate-get
     });
     return auth
       .buildSignedUrl(auth.testAuthenticateGet)
@@ -157,7 +157,7 @@ describe('Auth', function() {
     return auth
       .testAuthenticate({
         clientScopes: [],
-        requiredScopes: []
+        requiredScopes: [],
       })
       .then(({ clientId, scopes }) => {
         expect(clientId).to.equal('tester');
@@ -176,15 +176,15 @@ describe('Auth', function() {
       rootUrl,
       credentials: {
         clientId: 'tester',
-        accessToken: 'no-secret'
+        accessToken: 'no-secret',
       },
-      authorizedScopes: ['test:param']
+      authorizedScopes: ['test:param'],
     });
 
     return auth
       .testAuthenticate({
         clientScopes: ['test:*'],
-        requiredScopes: ['test:param']
+        requiredScopes: ['test:param'],
       })
       .then(({ clientId, scopes }) => {
         expect(clientId).to.equal('tester');
@@ -197,15 +197,15 @@ describe('Auth', function() {
       rootUrl,
       credentials: {
         clientId: 'tester',
-        accessToken: 'no-secret'
+        accessToken: 'no-secret',
       },
-      authorizedScopes: ['test:params']
+      authorizedScopes: ['test:params'],
     });
 
     return auth
       .testAuthenticate({
         clientScopes: ['test:*'],
-        requiredScopes: ['test:something-else']
+        requiredScopes: ['test:something-else'],
       })
       .then(
         () => expect.fail('Expected request to fail'),
@@ -218,15 +218,15 @@ describe('Auth', function() {
       rootUrl,
       credentials: {
         clientId: 'tester',
-        accessToken: 'no-secret'
+        accessToken: 'no-secret',
       },
-      authorizedScopes: ['scopes:something-else']
+      authorizedScopes: ['scopes:something-else'],
     });
 
     return auth
       .testAuthenticate({
         clientScopes: ['scopes:*'],
-        requiredScopes: ['scopes:specific']
+        requiredScopes: ['scopes:specific'],
       })
       .then(
         () => expect.fail('Expected request to fail'),
@@ -245,15 +245,15 @@ describe('Auth', function() {
         expiry: fromNow('1 hour'),
         credentials: {
           clientId: 'tester',
-          accessToken: 'no-secret'
-        }
-      })
+          accessToken: 'no-secret',
+        },
+      }),
     });
 
     return auth
       .testAuthenticate({
         clientScopes: ['scopes:*'],
-        requiredScopes: ['scopes:specific']
+        requiredScopes: ['scopes:specific'],
       })
       .then(({ clientId, scopes }) => {
         expect(clientId).to.equal('tester');
@@ -269,15 +269,15 @@ describe('Auth', function() {
         expiry: fromNow('1 hour'),
         credentials: {
           clientId: 'tester',
-          accessToken: 'wrong-secret'
-        }
-      })
+          accessToken: 'wrong-secret',
+        },
+      }),
     });
 
     return auth
       .testAuthenticate({
         clientScopes: ['test:*'],
-        requiredScopes: ['test:something-else']
+        requiredScopes: ['test:something-else'],
       })
       .then(
         () => expect.fail('Expected request to fail'),
@@ -296,15 +296,15 @@ describe('Auth', function() {
         expiry: fromNow('1 hour'),
         credentials: {
           clientId: 'tester',
-          accessToken: 'no-secret'
-        }
-      })
+          accessToken: 'no-secret',
+        },
+      }),
     });
 
     return auth
       .testAuthenticate({
         clientScopes: ['scopes:*'],
-        requiredScopes: ['scopes:specific']
+        requiredScopes: ['scopes:specific'],
       })
       .then(
         () => expect.fail('Expected request to fail'),
@@ -322,8 +322,8 @@ describe('Auth', function() {
       expiry: fromNow('1 hour'),
       credentials: {
         clientId: 'tester',
-        accessToken: 'no-secret'
-      }
+        accessToken: 'no-secret',
+      },
     });
 
     expect(credentials.clientId).to.equal('my-temp-cred');
@@ -333,7 +333,7 @@ describe('Auth', function() {
     return auth
       .testAuthenticate({
         clientScopes: ['scopes:*', 'auth:create-client:my-temp-cred'],
-        requiredScopes: ['scopes:specific']
+        requiredScopes: ['scopes:specific'],
       })
       .then(({ clientId, scopes }) => {
         expect(clientId).to.equal('my-temp-cred');
@@ -348,8 +348,8 @@ describe('Auth', function() {
       expiry: fromNow('1 hour'),
       credentials: {
         clientId: 'tester',
-        accessToken: 'no-secret'
-      }
+        accessToken: 'no-secret',
+      },
     });
 
     expect(credentials.clientId).to.equal('my-temp-cred');
@@ -357,13 +357,13 @@ describe('Auth', function() {
     const auth = new Auth({
       rootUrl,
       credentials,
-      authorizedScopes: ['scopes:specific', 'scopes:another']
+      authorizedScopes: ['scopes:specific', 'scopes:another'],
     });
 
     return auth
       .testAuthenticate({
         clientScopes: ['scopes:*', 'auth:create-client:my-temp-cred'],
-        requiredScopes: ['scopes:specific']
+        requiredScopes: ['scopes:specific'],
       })
       .then(({ clientId, scopes }) => {
         expect(clientId).to.equal('my-temp-cred');
@@ -380,15 +380,15 @@ describe('Auth', function() {
         expiry: fromNow('1 hour'),
         credentials: {
           clientId: 'tester',
-          accessToken: 'no-secret'
-        }
-      })
+          accessToken: 'no-secret',
+        },
+      }),
     });
 
     return auth
       .testAuthenticate({
         clientScopes: ['scopes:*'],
-        requiredScopes: ['scopes:subcategory:specific']
+        requiredScopes: ['scopes:subcategory:specific'],
       })
       .then(({ clientId, scopes }) => {
         expect(clientId).to.equal('tester');
@@ -405,15 +405,15 @@ describe('Auth', function() {
         expiry: fromNow('1 hour'),
         credentials: {
           clientId: 'tester',
-          accessToken: 'no-secret'
-        }
-      })
+          accessToken: 'no-secret',
+        },
+      }),
     });
 
     return auth
       .testAuthenticate({
         clientScopes: ['scopes:*'],
-        requiredScopes: ['scopes:subcategory:specific']
+        requiredScopes: ['scopes:subcategory:specific'],
       })
       .then(
         () => expect.fail('Expected request to fail'),
@@ -421,7 +421,7 @@ describe('Auth', function() {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('InsufficientScopes');
         }
-      )
+      );
   });
 
   it('should fail fetch using temporary credentials with authorized but bad authentication', () => {
@@ -433,15 +433,15 @@ describe('Auth', function() {
         expiry: fromNow('1 hour'),
         credentials: {
           clientId: 'tester',
-          accessToken: 'wrong'
-        }
-      })
+          accessToken: 'wrong',
+        },
+      }),
     });
 
     return auth
       .testAuthenticate({
         clientScopes: ['scopes:*'],
-        requiredScopes: ['scopes:subcategory:specific']
+        requiredScopes: ['scopes:subcategory:specific'],
       })
       .then(
         () => expect.fail('Expected request to fail'),
@@ -449,7 +449,7 @@ describe('Auth', function() {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('AuthenticationFailed');
         }
-      )
+      );
   });
 
   it('should fail with bad authentication', () => {
@@ -457,14 +457,14 @@ describe('Auth', function() {
       rootUrl,
       credentials: {
         clientId: 'tester',
-        accessToken: 'wrong'
-      }
+        accessToken: 'wrong',
+      },
     });
 
     return auth
       .testAuthenticate({
         clientScopes: [],
-        requiredScopes: []
+        requiredScopes: [],
       })
       .then(
         () => expect.fail('Expected request to fail'),
@@ -479,7 +479,7 @@ describe('Auth', function() {
     return auth
       .testAuthenticate({
         clientScopes: ['some-scope'],
-        requiredScopes: ['another-scope']
+        requiredScopes: ['another-scope'],
       })
       .then(
         () => expect.fail('Expected request to fail'),
