@@ -21,14 +21,11 @@ import (
 // LiveLog provides access to a livelog process running on the OS. Use
 // New(liveLogExecutable string) to start a new livelog instance.
 type LiveLog struct {
-	SSLCert string
-	SSLKey  string
-	secret  string
-	PUTPort uint16
-	GETPort uint16
-	putURL  string
-	// The fully qualified HTTP GET URL where the log will be published.
+	secret    string
+	PUTPort   uint16
+	GETPort   uint16
 	GetURL    string
+	putURL    string
 	logReader io.ReadCloser
 	// The io.WriteCloser to write your log to
 	LogWriter io.WriteCloser
@@ -37,27 +34,14 @@ type LiveLog struct {
 }
 
 // New starts a livelog OS process using the executable specified, and returns
-// a *LiveLog. The *LiveLog provides access to the GetURL which can be used to
+// a *LiveLog. The *LiveLog provides an HTTP service on the getPort which can be used to
 // tail the log by multiple consumers in parallel, together with an
 // io.WriteCloser where the logs should be written to. It is envisanged that
 // the io.WriteCloser is passed on to the executing process.
-//
-// sslCert and sslKey should be used to specify the file location of a
-// suitable certificate and key on the local filesystem that can be used
-// for hosting the livelog service over https. If either is an empty string
-// the livelog will resort to running over http transport instead.
-//
-// Please note the GetURL is for the loopback interface - it is beyond the
-// scope of this library to transform this localhost URL into a URL with a
-// fully qualified hostname using package
-// github.com/taskcluster/stateless-dns-go/hostname since this package can be
-// used independently of the former one.
-func New(liveLogExecutable, sslCert, sslKey string, putPort, getPort uint16) (*LiveLog, error) {
+func New(liveLogExecutable string, putPort, getPort uint16) (*LiveLog, error) {
 	l := &LiveLog{
 		secret:  slugid.Nice(),
 		command: exec.Command(liveLogExecutable),
-		SSLCert: sslCert,
-		SSLKey:  sslKey,
 		PUTPort: putPort,
 		GETPort: getPort,
 	}
@@ -66,8 +50,9 @@ func New(liveLogExecutable, sslCert, sslKey string, putPort, getPort uint16) (*L
 	os.Setenv("ACCESS_TOKEN", l.secret)
 	os.Setenv("LIVELOG_GET_PORT", strconv.Itoa(int(l.GETPort)))
 	os.Setenv("LIVELOG_PUT_PORT", strconv.Itoa(int(l.PUTPort)))
-	os.Setenv("SERVER_CRT_FILE", l.SSLCert)
-	os.Setenv("SERVER_KEY_FILE", l.SSLKey)
+	// we want to explicitly prohibit the process to use TLS
+	os.Unsetenv("SERVER_KEY_FILE")
+	os.Unsetenv("SERVER_CRT_FILE")
 
 	type CommandResult struct {
 		b []byte
@@ -129,12 +114,9 @@ func (l *LiveLog) Terminate() error {
 }
 
 func (l *LiveLog) setRequestURLs() {
-	getScheme := "http"
-	if l.SSLCert != "" && l.SSLKey != "" {
-		getScheme = "https"
-	}
 	l.putURL = fmt.Sprintf("http://localhost:%v/log", l.PUTPort)
-	l.GetURL = fmt.Sprintf("%v://localhost:%v/log/%v", getScheme, l.GETPort, l.secret)
+	l.GetURL = fmt.Sprintf("http://localhost:%v/log/%v", l.GETPort, l.secret)
+
 }
 
 func (l *LiveLog) connectInputStream() error {

@@ -18,7 +18,7 @@ func TestLiveLog(t *testing.T) {
 	default:
 		executable = "livelog"
 	}
-	ll, err := New(executable, "", "", 34567, 34568)
+	ll, err := New(executable, 34567, 34568)
 	// Do defer before checking err since err could be a different error and
 	// process may have already started up.
 	//
