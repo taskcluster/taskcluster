@@ -226,7 +226,7 @@ func (feature *MountsFeature) IsEnabled(task *TaskRun) bool {
 	return true
 }
 
-// Reads payload and initialises state...
+// NewTaskFeature reads payload and initialises state...
 func (feature *MountsFeature) NewTaskFeature(task *TaskRun) TaskFeature {
 	tm := &TaskMount{
 		task:    task,
@@ -392,7 +392,7 @@ func (w *WritableDirectoryCache) RequiredScopes() []string {
 	return []string{"generic-worker:cache:" + w.CacheName}
 }
 
-// Returns either a *URLContent *ArtifactContent, *RawContent or *Base64Content
+// FSContent returns either a *URLContent *ArtifactContent, *RawContent or *Base64Content
 // that is listed in the given *WritableDirectoryCache
 func (w *WritableDirectoryCache) FSContent() (FSContent, error) {
 	// no content if an empty cache folder, e.g. object directory
@@ -408,7 +408,7 @@ func (r *ReadOnlyDirectory) RequiredScopes() []string {
 	return []string{}
 }
 
-// Returns either a *URLContent, *ArtifactContent, *RawContent or
+// FSContent returns either a *URLContent, *ArtifactContent, *RawContent or
 // *Base64Content that is listed in the given *ReadOnlyDirectory
 func (r *ReadOnlyDirectory) FSContent() (FSContent, error) {
 	return FSContentFrom(r.Content)
@@ -420,7 +420,7 @@ func (f *FileMount) RequiredScopes() []string {
 	return []string{}
 }
 
-// Returns either a *URLContent, *ArtifactContent, *RawContent or
+// FSContent returns either a *URLContent, *ArtifactContent, *RawContent or
 // *Base64Content that is listed in the given *FileMount
 func (f *FileMount) FSContent() (FSContent, error) {
 	return FSContentFrom(f.Content)
@@ -670,7 +670,7 @@ func extract(fsContent FSContent, format string, dir string, task *TaskRun) erro
 	return fmt.Errorf("Unsupported archive format %v", format)
 }
 
-// Returns either a *ArtifactContent or *URLContent or *RawContent or *Base64Content based on the content
+// FSContentFrom returns either a *ArtifactContent or *URLContent or *RawContent or *Base64Content based on the content
 // (json.RawMessage)
 func FSContentFrom(c json.RawMessage) (FSContent, error) {
 	// c must be one of:

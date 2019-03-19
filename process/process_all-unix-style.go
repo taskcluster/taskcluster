@@ -90,7 +90,7 @@ func NewCommand(commandLine []string, workingDirectory string, env []string) (*C
 	}, nil
 }
 
-// Returns the exit code, or
+// ExitCode returns the exit code, or
 //  -1 if the process has not exited
 //  -2 if the process crashed
 //  -3 it could not be established what happened

@@ -81,7 +81,7 @@ type (
 	}
 )
 
-// writes config to json file
+// Persist writes config to json file
 func (c *Config) Persist(file string) error {
 	log.Print("Creating file " + file + "...")
 	return fileutil.WriteToFileAsJSON(c, file)

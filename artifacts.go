@@ -259,7 +259,7 @@ func (s3Artifact *S3Artifact) String() string {
 	return fmt.Sprintf("S3 Artifact - Name: '%v', Path: '%v', Expires: %v, Content Encoding: '%v', MIME Type: '%v'", s3Artifact.Name, s3Artifact.Path, s3Artifact.Expires, s3Artifact.ContentEncoding, s3Artifact.ContentType)
 }
 
-// Returns the artifacts as listed in the payload of the task (note this does
+// PayloadArtifacts returns the artifacts as listed in the payload of the task (note this does
 // not include log files)
 func (task *TaskRun) PayloadArtifacts() []TaskArtifact {
 	artifacts := make([]TaskArtifact, 0)

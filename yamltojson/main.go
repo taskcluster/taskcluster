@@ -26,7 +26,7 @@ func main() {
 	fmt.Println(string(formatted))
 }
 
-// Takes json []byte input, unmarshals and then marshals, in order to get a
+// FormatJSON takes json []byte input, unmarshals and then marshals, in order to get a
 // canonical representation of json (i.e. formatted with objects ordered).
 // Ugly and perhaps inefficient, but effective! :p
 func FormatJSON(a []byte) ([]byte, error) {
