@@ -79,7 +79,6 @@ func main() {
 				LiveLogKey:                     "C:\\generic-worker\\livelog.key",
 				LiveLogPUTPort:                 1234,
 				NumberOfTasksToRun:             0,
-				OpenPGPSigningKeyLocation:      "",
 				SentryProject:                  "generic-worker",
 				ProvisionerID:                  "",
 				RequiredDiskSpaceMegabytes:     3,
