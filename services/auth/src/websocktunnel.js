@@ -6,7 +6,7 @@ builder.declare({
   route: '/websocktunnel/:wstAudience/:wstClient',
   params: {
     wstAudience: /^[a-zA-Z0-9_-]{1,38}$/, // identifier-token format
-    wstClient: /^[A-Za-z0-9!@/:.+|_-]+$/, // clientID format
+    wstClient: /^[a-zA-Z0-9_~.%-]+$/, // websocktunnel's clientId format
   },
   name: 'websocktunnelToken',
   output: 'websocktunnel-token-response.yml',
