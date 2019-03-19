@@ -41,6 +41,7 @@
     "deepmerge": "^2.1.1",
     "dexie": "^2.0.4",
     "docker-exec-websocket-server": "^1.3.5",
+    "docsearch.js": "^2.6.2",
     "dot-prop-immutable": "^1.4.0",
     "error-stack-parser": "^2.0.2",
     "fast-memoize": "^2.5.1",

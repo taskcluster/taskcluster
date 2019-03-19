@@ -12,6 +12,7 @@ import 'prismjs/components/prism-yaml';
 import 'prismjs/components/prism-markup';
 import Dashboard from '../../components/Dashboard';
 import NotFound from '../../components/NotFound';
+import DocSearch from '../../components/DocSearch';
 import components from './components';
 import ScrollToTop from '../../utils/ScrollToTop';
 import { DOCS_PATH_PREFIX, DOCS_MENU_ITEMS } from '../../utils/constants';
@@ -124,6 +125,10 @@ export default class Documentation extends Component {
     }
   }
 
+  handleSubmit = pathname => {
+    this.props.history.push(pathname);
+  };
+
   render() {
     const { classes, history } = this.props;
     const { error, Page, pageInfo } = this.state;
@@ -131,6 +136,7 @@ export default class Documentation extends Component {
     return (
       <Dashboard
         className={classes.documentation}
+        search={<DocSearch onSubmit={this.handleSubmit} />}
         docs
         title={
           pageInfo && pageInfo.data.title
