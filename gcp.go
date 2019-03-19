@@ -26,7 +26,6 @@ type GCPUserData struct {
 	CredentialURL             string `json:"credentialURL"`
 	Audience                  string `json:"audience"`
 	Ed25519SigningKeyLocation string `json:"ed25519SigningKeyLocation"`
-	OpenPGPSigningKeyLocation string `json:"openPGPSigningKeyLocation"`
 	RootURL                   string `json:"rootURL"`
 }
 
@@ -82,7 +81,6 @@ func updateConfigWithGCPSettings(c *gwconfig.Config) error {
 
 	c.RootURL = userData.RootURL
 	c.Ed25519SigningKeyLocation = userData.Ed25519SigningKeyLocation
-	c.OpenPGPSigningKeyLocation = userData.OpenPGPSigningKeyLocation
 
 	// Now we get taskcluster credentials via instance identity
 	// TODO: Disable getting instance identity after first run

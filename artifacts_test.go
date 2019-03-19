@@ -12,8 +12,6 @@ import (
 	"time"
 
 	"golang.org/x/crypto/ed25519"
-	"golang.org/x/crypto/openpgp"
-	"golang.org/x/crypto/openpgp/clearsign"
 
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster-client-go"
@@ -839,36 +837,6 @@ func TestUpload(t *testing.T) {
 	}
 
 	expectedArtifacts.Validate(t, taskID, 0)
-
-	// check openpgp signature is valid
-	b, _, _, _ := getArtifactContent(t, taskID, "public/chainOfTrust.json.asc")
-	if len(b) == 0 {
-		t.Fatalf("Could not retrieve content of public/chainOfTrust.json.asc")
-	}
-	openpgpPubKey, err := os.Open(filepath.Join("testdata", "public-openpgp-key"))
-	if err != nil {
-		t.Fatalf("Error opening openpgp public key file")
-	}
-	defer openpgpPubKey.Close()
-	entityList, err := openpgp.ReadArmoredKeyRing(openpgpPubKey)
-	if err != nil {
-		t.Fatalf("Error decoding openpgp public key file")
-	}
-	openpgpBlock, _ := clearsign.Decode(b)
-
-	// signer of public/chainOfTrust.json.asc
-	signer, err := openpgp.CheckDetachedSignature(entityList, bytes.NewBuffer(openpgpBlock.Bytes), openpgpBlock.ArmoredSignature.Body)
-	if err != nil {
-		t.Fatalf("Not able to validate openpgp signature of public/chainOfTrust.json.asc")
-	}
-	var openpgpCotCert ChainOfTrustData
-	err = json.Unmarshal(openpgpBlock.Plaintext, &openpgpCotCert)
-	if err != nil {
-		t.Fatalf("Could not interpret public/chainOfTrust.json as json")
-	}
-	if signer.Identities["Generic-Worker <taskcluster-accounts+gpgsigning@mozilla.com>"] == nil {
-		t.Fatalf("Did not get correct signer identity in public/chainOfTrust.json.asc - %#v", signer.Identities)
-	}
 
 	cotUnsignedBytes, _, _, _ := getArtifactContent(t, taskID, "public/chain-of-trust.json")
 	var cotCert ChainOfTrustData

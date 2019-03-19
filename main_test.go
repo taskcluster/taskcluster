@@ -226,8 +226,8 @@ func TestNonExistentCommandFailsTask(t *testing.T) {
 // See https://bugzil.la/1479415
 func TestNonExecutableBinaryFailsTask(t *testing.T) {
 	defer setup(t)()
-	commands := copyTestdataFile("public-openpgp-key")
-	commands = append(commands, singleCommandNoArgs(filepath.Join(taskContext.TaskDir, "public-openpgp-key"))...)
+	commands := copyTestdataFile("ed25519_public_key")
+	commands = append(commands, singleCommandNoArgs(filepath.Join(taskContext.TaskDir, "ed25519_public_key"))...)
 	payload := GenericWorkerPayload{
 		Command:    commands,
 		MaxRunTime: 10,
