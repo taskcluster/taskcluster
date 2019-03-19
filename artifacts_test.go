@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -840,7 +838,7 @@ func TestUpload(t *testing.T) {
 
 	cotUnsignedBytes, _, _, _ := getArtifactContent(t, taskID, "public/chain-of-trust.json")
 	var cotCert ChainOfTrustData
-	err = json.Unmarshal(cotUnsignedBytes, &cotCert)
+	err := json.Unmarshal(cotUnsignedBytes, &cotCert)
 	if err != nil {
 		t.Fatalf("Could not interpret public/chain-of-trust.json as json")
 	}
@@ -862,7 +860,7 @@ func TestUpload(t *testing.T) {
 	// This trickery is to convert a TaskDefinitionResponse into a
 	// TaskDefinitionRequest in order that we can compare. We cannot cast, so
 	// need to transform to json as an intermediary step.
-	b, err = json.Marshal(cotCert.Task)
+	b, err := json.Marshal(cotCert.Task)
 	if err != nil {
 		t.Fatalf("Cannot marshal task into json - %#v\n%v", cotCert.Task, err)
 	}

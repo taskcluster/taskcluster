@@ -1,12 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
-	"io"
 	"io/ioutil"
-	"log"
-	"os"
 	"path/filepath"
 
 	"golang.org/x/crypto/ed25519"
