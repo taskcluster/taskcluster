@@ -10,7 +10,6 @@ import (
 
 func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error {
 	signingKeyPaths := [2]string{
-		config.OpenPGPSigningKeyLocation,
 		config.Ed25519SigningKeyLocation,
 	}
 	for _, path := range signingKeyPaths {
