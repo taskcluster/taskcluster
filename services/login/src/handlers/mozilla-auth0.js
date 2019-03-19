@@ -149,29 +149,33 @@ class Handler {
   }
 
   identityFromProfile(profile) {
-    let identity;
+    const user_id = profile.user_id;
+    let identity = `${this.identityProviderId}/${encode(user_id)}`;
 
-    // Look for a profile.identities element we recognize.  In practice, this is a one-element
-    // array as we do not use Auth0 user linking.
-    profile.identities.forEach(({provider, connection}) => {
-      if (
-        (provider === 'ad' && connection === 'Mozilla-LDAP') ||
-        // The 'email' connection corresponds to a passwordless login.
-        (provider === 'email' && connection === 'email') ||
-        (provider === 'google-oauth2' && connection === 'google-oauth2')
-      ) {
-        assert(!profile.user_id.startsWith('github|'));
-        identity = `${this.identityProviderId}/${encode(profile.user_id)}`;
-      // we annotate some userids with `|nickname` since otherwise the userid
-      // is just numeric and difficult for humans to interpret
-      } else if (provider === 'github' && connection === 'github') {
-        assert(profile.user_id.startsWith('github|'));
-        identity = `${this.identityProviderId}/${encode(profile.user_id)}|${profile.nickname}`;
-      } else if (provider === 'oauth2' && connection === 'firefoxaccounts') {
-        assert(profile.user_id.startsWith('oauth2|firefoxaccounts|'));
-        identity = `${this.identityProviderId}/${encode(profile.user_id)}|${profile.nickname}`;
+    // if the identity is a github or firefox-accounts identity, then we want
+    // to add the username after a `|` character, to disambiguate the
+    // otherwise-numeric usernames
+    if (user_id.startsWith('github|')) {
+      for (let {provider, connection, profileData} of profile.identities) {
+        if (provider === 'github' && connection === 'github') {
+          // we expect the auth0 user_id to be `github|<githubUserId>`
+          assert(user_id.endsWith(profileData.user_id.toString()),
+            `Auth0 user_id ${user_id} not formatted as expected`);
+          identity += `|${profileData.nickname}`;
+          break;
+        }
       }
-    });
+    } else if (user_id.startsWith('oauth2|firefoxaccounts|')) {
+      for (let {provider, connection, profileData} of profile.identities) {
+        if (provider === 'oauth2' && connection === 'firefoxaccounts') {
+          // we expect the auth0 user_id to be `oauth|firefoxaccounts|<fxa_sub>`
+          assert(user_id.endsWith(profileData.fxa_sub),
+            `Auth0 user_id ${user_id} not formatted as expected`);
+          identity += `|${profileData.email}`;
+          break;
+        }
+      }
+    }
 
     return identity;
   }
