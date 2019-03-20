@@ -1365,7 +1365,7 @@ builder.declare({
     workerGroup,
     workerId,
     requested: count,
-    tasks: result,
+    tasks: result.map(({status}) => status.taskId),
   });
 
   await this.workerInfo.taskSeen(provisionerId, workerType, workerGroup, workerId, result);
