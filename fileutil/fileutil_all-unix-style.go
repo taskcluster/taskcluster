@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-// Take ownership of files, and then give them 0600 file permissions
+// SecureFiles takes ownership of files, and then give them 0600 file permissions
 func SecureFiles(filepaths []string) (err error) {
 	var currentUser *user.User
 	currentUser, err = user.Current()

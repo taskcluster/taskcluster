@@ -1146,7 +1146,7 @@ func (e *ExecutionErrors) Error() string {
 	return strings.Join(lines, "\n")
 }
 
-// Return true if any of the accumlated errors is a worker-shutdown
+// WorkerShutdown returns true if any of the accumlated errors is a worker-shutdown
 func (e *ExecutionErrors) WorkerShutdown() bool {
 	if !e.Occurred() {
 		return false

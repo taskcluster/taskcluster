@@ -110,7 +110,7 @@ func AddAceToWindowStation(winsta Hwinsta, sid *syscall.SID) error {
 	return SetAclTo(syscall.Handle(winsta), acl)
 }
 
-// Return byte slice of given size, aligned at given offset.
+// AlignedBuffer returns byte slice of given size, aligned at given offset.
 func AlignedBuffer(size, offset int) []byte {
 	buf := make([]byte, size+offset)
 	ofs := int((uintptr(offset) - uintptr(unsafe.Pointer(&buf[0]))%uintptr(offset)) % uintptr(offset))
