@@ -1,6 +1,5 @@
 /* eslint-disable no-plusplus */
 import React, { Component, Fragment } from 'react';
-import { Link } from 'react-router-dom';
 import { string, bool, func, oneOfType, object, array } from 'prop-types';
 import classNames from 'classnames';
 import { equals, assocPath } from 'ramda';
@@ -22,15 +21,15 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
-import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import Typography from '@material-ui/core/Typography';
+import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import FlashIcon from 'mdi-react/FlashIcon';
 import PlusIcon from 'mdi-react/PlusIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
+import LinkIcon from 'mdi-react/LinkIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import { docs } from 'taskcluster-lib-urls';
 import Label from '@mozilla-frontend-infra/components/Label';
-import LinkIcon from 'mdi-react/LinkIcon';
 import ErrorPanel from '../ErrorPanel';
 import DataTable from '../DataTable';
 import Button from '../Button';
@@ -40,6 +39,7 @@ import DialogAction from '../DialogAction';
 import DateDistance from '../DateDistance';
 import TableCellListItem from '../TableCellListItem';
 import { hook } from '../../utils/prop-types';
+import Link from '../../utils/Link';
 import removeKeys from '../../utils/removeKeys';
 
 const initialHook = {
@@ -164,10 +164,10 @@ export default class HookForm extends Component {
 
   static propTypes = {
     /** Part of a GraphQL hook response containing info about that hook.
-     Not needed when creating a new hook */
+    Not needed when creating a new hook */
     hook: hook.isRequired,
     /** Part of the same Grahql hook response as above containing info
-     about some last hook fired attempts */
+    about some last hook fired attempts */
     hookLastFires: array,
     /** Set to `true` when creating a new hook. */
     isNewHook: bool,
@@ -496,6 +496,7 @@ export default class HookForm extends Component {
       drawerData,
     } = this.state;
     const iconSize = 16;
+    const isHookDirty = !equals(hook, this.props.hook);
 
     return (
       <Fragment>
@@ -604,7 +605,7 @@ export default class HookForm extends Component {
                   'Attempted',
                   'Error',
                 ]}
-                isPaginate
+                paginate
                 renderRow={hookFire => (
                   <TableRow key={hookFire.taskId}>
                     <TableCell>
@@ -771,7 +772,7 @@ export default class HookForm extends Component {
             requiresAuth
             classes={{ root: classes.successIcon }}
             variant="round"
-            disabled={!this.validHook() || actionLoading}
+            disabled={!this.validHook() || actionLoading || !isHookDirty}
             onClick={this.handleCreateHook}>
             <ContentSaveIcon />
           </Button>
@@ -788,7 +789,7 @@ export default class HookForm extends Component {
               requiresAuth
               classes={{ root: classes.successIcon }}
               variant="round"
-              disabled={!this.validHook() || actionLoading}
+              disabled={!this.validHook() || actionLoading || !isHookDirty}
               onClick={this.handleUpdateHook}>
               <ContentSaveIcon />
             </Button>

@@ -19,12 +19,6 @@ import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
 
 @withStyles(() => ({
-  noDisplay: {
-    visibility: 'hidden',
-  },
-  table: {
-    minWidth: 1020,
-  },
   tableWrapper: {
     overflowX: 'auto',
   },
@@ -40,11 +34,8 @@ export default class DataTable extends Component {
     sortByHeader: null,
     sortDirection: 'desc',
     noItemsMessage: 'No items for this page.',
-    isPaginate: false,
-  };
-
-  state = {
-    page: 0,
+    paginate: false,
+    rowsPerPage: 5,
   };
 
   static propTypes = {
@@ -88,7 +79,15 @@ export default class DataTable extends Component {
     /**
      * Whether to paginate the table
      */
-    isPaginate: bool,
+    paginate: bool,
+    /**
+     * No. of rows to display per page of the table
+     */
+    rowsPerPage: number,
+  };
+
+  state = {
+    page: 0,
   };
 
   handleHeaderClick = ({ target }) => {
@@ -99,7 +98,7 @@ export default class DataTable extends Component {
     }
   };
 
-  handleChangePage = (event, page) => {
+  handlePageChange = (event, page) => {
     this.setState({ page });
   };
 
@@ -113,16 +112,16 @@ export default class DataTable extends Component {
       sortByHeader,
       sortDirection,
       noItemsMessage,
-      isPaginate,
+      rowsPerPage,
+      paginate,
     } = this.props;
     const colSpan = columnsSize || (headers && headers.length) || 0;
     const { page } = this.state;
-    const rowsPerPage = 5;
 
     return (
       <Fragment>
         <div className={classes.tableWrapper}>
-          <Table className={classes.table}>
+          <Table>
             {headers && (
               <TableHead>
                 <TableRow>
@@ -155,12 +154,9 @@ export default class DataTable extends Component {
             </TableBody>
           </Table>
         </div>
-        {isPaginate && (
+        {paginate && (
           <TablePagination
-            classes={{
-              spacer: classes.noDisplay,
-              caption: classes.noDisplay,
-            }}
+            labelDisplayedRows={() => ''}
             component="div"
             count={items.length}
             rowsPerPage={rowsPerPage}
@@ -172,7 +168,7 @@ export default class DataTable extends Component {
             nextIconButtonProps={{
               'aria-label': 'Next Page',
             }}
-            onChangePage={this.handleChangePage}
+            onChangePage={this.handlePageChange}
           />
         )}
       </Fragment>

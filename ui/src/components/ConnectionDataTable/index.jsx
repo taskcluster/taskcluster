@@ -212,6 +212,12 @@ export default class ConnectionDataTable extends Component {
             rowsPerPage={pageSize}
             rowsPerPageOptions={[pageSize]}
             page={page}
+            backIconButtonProps={{
+              'aria-label': 'Previous Page',
+            }}
+            nextIconButtonProps={{
+              'aria-label': 'Next Page',
+            }}
             onChangePage={this.handlePageChange}
           />
         )}
