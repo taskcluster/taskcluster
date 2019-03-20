@@ -10,28 +10,28 @@ import sys
 VERSION = '7.0.0'
 
 tests_require = [
-    'nose==1.3.7',
-    'nose-exclude==0.5.0',
-    'httmock==1.2.6',
-    'rednose==1.2.1',
-    'mock==1.0.1',
-    'setuptools-lint==0.3',
-    'flake8==2.5.0',
-    'psutil==2.1.3',
-    'hypothesis==3.6.1',
-    'tox==2.3.2',
-    'coverage==4.1b2',
-    'python-dateutil==2.6.0',
+    'nose',
+    'nose-exclude',
+    'httmock',
+    'rednose',
+    'mock',
+    'setuptools-lint',
+    'flake8',
+    'psutil',
+    'hypothesis',
+    'tox',
+    'coverage',
+    'python-dateutil',
 ]
 
 # requests has a policy of not breaking apis between major versions
 # http://docs.python-requests.org/en/latest/community/release-process/
 install_requires = [
-    'requests>=2.4.3,<3',
-    'mohawk>=0.3.4,<2.0',
-    'slugid>=2,<3',
-    'taskcluster-urls>=10.1.0,<12',
-    'six>=1.10.0,<2',
+    'requests>=2.4.3',
+    'mohawk>=0.3.4',
+    'slugid>=2',
+    'taskcluster-urls>=10.1.0',
+    'six>=1.10.0',
 ]
 
 # from http://testrun.org/tox/latest/example/basic.html
@@ -59,14 +59,14 @@ class Tox(TestCommand):
 
 if sys.version_info.major == 2:
     tests_require.extend([
-        'subprocess32==3.2.6',
+        'subprocess32',
     ])
 elif sys.version_info[:2] < (3, 5):
     raise Exception('This library does not support Python 3 versions below 3.5')
 elif sys.version_info[:2] >= (3, 5):
     install_requires.extend([
-        'aiohttp>=2.0.0,<4',
-        'async_timeout>=2.0.0,<4',
+        'aiohttp>=2.0.0',
+        'async_timeout>=2.0.0',
     ])
 
 if __name__ == '__main__':
@@ -74,8 +74,8 @@ if __name__ == '__main__':
         name='taskcluster',
         version=VERSION,
         description='Python client for Taskcluster',
-        author='John Ford',
-        author_email='jhford@mozilla.com',
+        author='Mozilla Taskcluster and Release Engineering',
+        author_email='release+python@mozilla.com',
         url='https://github.com/taskcluster/taskcluster-client.py',
         packages=['taskcluster', 'taskcluster.aio'],
         install_requires=install_requires,
@@ -85,5 +85,6 @@ if __name__ == '__main__':
         zip_safe=False,
         classifiers=['Programming Language :: Python :: 2.7',
                      'Programming Language :: Python :: 3.5',
-                     'Programming Language :: Python :: 3.6'],
+                     'Programming Language :: Python :: 3.6',
+                     'Programming Language :: Python :: 3.7'],
     )
