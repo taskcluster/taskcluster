@@ -4,15 +4,7 @@ const scopes = require('taskcluster-lib-scopes');
 const crypto = require('crypto');
 const utils = require('../utils');
 const ScopeExpressionTemplate = require('../expressions');
-const Debug = require('debug');
 const ErrorReply = require('../error-reply');
-
-/* In production, log authorizations so they are included in papertrail regardless of
- * DEBUG settings; otherwise, log with debug
- */
-const authLog = process.env.NODE_ENV === 'production' ?
-  (...args) => console.log(...args) :
-  Debug('api.authz');
 
 /**
  * Authenticate client using remote API end-point and validate that it satisfies
@@ -130,22 +122,22 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
     // so this is probably a fair policy for now. We can always allow more.
     if (req.headers && req.headers.authorization &&
         req.query && req.query.bewit) {
-      return Promise.resolve({
+      return {
         status: 'auth-failed',
         message: 'Cannot use two authentication schemes at once ' +
                   'this request has both bewit in querystring and ' +
                   'and \'authorization\' header',
-      });
+      };
     }
 
     // If no authentication is provided, we just return valid with zero scopes
     if ((!req.query || !req.query.bewit) &&
         (!req.headers || !req.headers.authorization)) {
-      return Promise.resolve({
+      return {
         status: 'no-auth',
         scheme: 'none',
         scopes: [],
-      });
+      };
     }
 
     // Parse host header
@@ -213,9 +205,9 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
         // This lint can be disabled because authenticate() will always return the same value
         result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
         if (result.status !== 'auth-success') {
-          return Promise.resolve([]);
+          return [];
         }
-        return Promise.resolve(result.scopes || []);
+        return result.scopes || [];
       };
 
       req.clientId = async () => {
@@ -297,18 +289,15 @@ const remoteAuthentication = ({signatureValidator, entry}) => {
             },
           });
         }
-
-        // TODO: log this in a structured format when structured logging is
-        // available https://bugzilla.mozilla.org/show_bug.cgi?id=1307271
-        authLog(`Authorized ${await req.clientId()} for ${req.method} access to ${req.originalUrl}`);
       };
 
       req.hasAuthed = false;
+      req.public = false;
 
       // If authentication is deferred or satisfied, then we proceed,
       // substituting the request parameters by default
       if (!entry.scopes) {
-        req.hasAuthed = true; // No need to check auth if there are no scopes
+        req.public = true; // No need to check auth if there are no scopes
         next();
       } else {
         // If url parameters is enough to parameterize we do it automatically

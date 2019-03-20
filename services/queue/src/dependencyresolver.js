@@ -1,4 +1,3 @@
-let debug = require('debug')('app:dependency-resolver');
 let assert = require('assert');
 let Iterate = require('taskcluster-lib-iterate');
 
@@ -74,29 +73,24 @@ class DependencyResolver {
   /** Poll for messages and handle them in a loop */
   async _pollResolvedTasks() {
     let messages = await this.queueService.pollResolvedQueue();
-    this.monitor.count('resolved-queue-poll-requests', 1);
-    this.monitor.count('resolved-queue-polled-messages', messages.length);
-    debug('Fetched %s messages', messages.length);
-
+    let failed = 0;
     await Promise.all(messages.map(async (m) => {
       // Don't let a single task error break the loop, it'll be retried later
       // as we don't remove message unless they are handled
       try {
         await this.dependencyTracker.resolveTask(m.taskId, m.taskGroupId, m.schedulerId, m.resolution);
         await m.remove();
-        this.monitor.count('handled-messages-success', 1);
       } catch (err) {
-        this.monitor.count('handled-messages-error', 1);
+        failed += 1;
         this.monitor.reportError(err, 'warning');
       }
     }));
 
-    if (messages.length === 0) {
-      // Count that the queue is empty, we should have this happen regularly.
-      // otherwise, we're not keeping up with the messages. We can setup
-      // alerts to notify us if this doesn't happen for say 40 min.
-      this.monitor.count('resolved-queue-empty');
-    }
+    this.monitor.log.azureQueuePoll({
+      messages: messages.length,
+      failed,
+      resolver: 'dependency',
+    });
   }
 }
 

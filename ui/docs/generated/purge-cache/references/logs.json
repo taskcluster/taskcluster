@@ -22,13 +22,18 @@
       }
     },
     {
-      "type": "monitor.express",
+      "type": "monitor.apiMethod",
       "version": 1,
-      "description": "A timer for express endpoints.",
+      "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
       "fields": {
         "name": "The name of the endpoint.",
+        "resource": "The path of the http request. Should match the one in auth audit log.",
+        "method": "The http method of the request. Should match the one in auth audit log.",
         "statusCode": "The http status code that the endpoint resolved with.",
-        "duration": "The duration in ms of the endpoint."
+        "duration": "The duration in ms of the endpoint.",
+        "public": "Will be true if the endpoint requires no scopes.",
+        "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+        "clientId": "The clientId that made the request if there was one."
       }
     },
     {

@@ -52,11 +52,15 @@ class Monitor {
   register({name, type, version, level, fields}) {
     assert(!this[name], `Cannot override "${name}" as custom message type.`);
     const requiredFields = Object.keys(fields);
-    this.log[name] = fields => {
+    this.log[name] = (fields, overrides={}) => {
       if (this.verify) {
+        assert(level !== 'any' || overrides.level !== undefined, 'Must provide `overrides.level` if registered level is `any`.');
         const providedFields = Object.keys(fields);
         assert(!providedFields.includes('v'), '"v" is a reserved field for logging messages.');
         requiredFields.forEach(f => assert(providedFields.includes(f), `Log message "${name}" must include field "${f}".`));
+      }
+      if (level === 'any') {
+        level = overrides.level;
       }
       this._log[level](type, {v: version, ...fields});
     };
@@ -120,7 +124,7 @@ class Monitor {
     return (req, res, next) => {
       let sent = false;
       const start = process.hrtime();
-      const send = () => {
+      const send = async () => {
         try {
           // Avoid sending twice
           if (sent) {
@@ -130,8 +134,13 @@ class Monitor {
 
           const d = process.hrtime(start);
 
-          this.log.expressTimer({
+          this.log.apiMethod({
             name,
+            public: req.public,
+            hasAuthed: req.hasAuthed,
+            resource: req.originalUrl,
+            method: req.method,
+            clientId: req.hasAuthed ? await req.clientId() : '',
             statusCode: res.statusCode,
             duration: d[0] * 1000 + d[1] / 1000000,
           });
@@ -266,18 +275,15 @@ class Monitor {
    * * extra: extra data to add to the serialized error
    *
    */
-  reportError(err, level, extra = {}) {
+  reportError(err, level = 'err', extra = {}) {
     if (err.hasOwnProperty && !(err.hasOwnProperty('stack') || err.hasOwnProperty('message'))) {
       err = new Error(err);
     }
-    if (level) {
-      if (typeof level === 'string') {
-        extra['legacyLevel'] = level;
-      } else {
-        extra = level;
-      }
+    if (typeof level !== 'string') {
+      extra = level;
+      level = 'err';
     }
-    this.log.errorReport(Object.assign({}, serializeError(err), extra));
+    this.log.errorReport(Object.assign({}, serializeError(err), extra), {level});
   }
 }
 

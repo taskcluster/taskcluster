@@ -66,7 +66,8 @@ class HintPoller {
     );
     // While we have requests for hints
     while (_.sumBy(this.requests, 'count') > 0) {
-      let claimed = 0; // Count hints claimed
+      let claimed = 0;
+      let released = 0;
 
       // In-order of priority, we poll hints from queues
       for (let poll of polls) {
@@ -87,16 +88,21 @@ class HintPoller {
 
           // Release remaining hints (this shouldn't happen often!)
           await Promise.all(hints.map(hint => hint.release()));
-          this.parent._monitor.count('hints-released', hints.length);
+          released += hints.length;
         }
       }
 
       // If nothing was claimed, we sleep 1000ms before polling again
-      this.parent._monitor.count('hint-poller-claimed', claimed);
+      let slept = false;
       if (claimed === 0) {
+        slept = true;
         await new Promise(resolve => setTimeout(resolve, 1000));
-        this.parent._monitor.count('hint-poller-sleep', 1);
       }
+      this.parent._monitor.log.hintPoller({
+        claimed,
+        released,
+        slept,
+      });
     }
 
     // No more requests, let's clean-up
@@ -180,7 +186,7 @@ class WorkClaimer extends events.EventEmitter {
           return result;
         } catch (err) {
           // Report error, don't block
-          this._monitor.reportError(err, 'error', {
+          this._monitor.reportError(err, {
             comment: 'claimTask from hint failed',
           });
           // Release hint (so it becomes visible again)

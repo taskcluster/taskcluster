@@ -22,13 +22,18 @@
       }
     },
     {
-      "type": "monitor.express",
+      "type": "monitor.apiMethod",
       "version": 1,
-      "description": "A timer for express endpoints.",
+      "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
       "fields": {
         "name": "The name of the endpoint.",
+        "resource": "The path of the http request. Should match the one in auth audit log.",
+        "method": "The http method of the request. Should match the one in auth audit log.",
         "statusCode": "The http status code that the endpoint resolved with.",
-        "duration": "The duration in ms of the endpoint."
+        "duration": "The duration in ms of the endpoint.",
+        "public": "Will be true if the endpoint requires no scopes.",
+        "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+        "clientId": "The clientId that made the request if there was one."
       }
     },
     {
@@ -99,6 +104,25 @@
       "version": 1,
       "description": "An internal type for reporting malformed logging calls.",
       "fields": {}
+    },
+    {
+      "type": "signature-validation",
+      "version": 1,
+      "description": "Records results of authenticating a client.\nThis contains the verified hawk headers that were sent\nto auth in addition to info about the client.\n\nIn these fields, there are two requests that might be\nmentioned. The first is the original request from a\nclient to a service and the second is the request from\nthe service to auth itself.",
+      "fields": {
+        "clientId": "The clientId that was authenticated.",
+        "expires": "After this time the authentication is no longer valid.",
+        "scopes": "All scopes that this client has available.",
+        "status": "Whether or not the authentication was successful.",
+        "scheme": "Currently always `hawk`.",
+        "message": "A reason for failure if failed. Otherwise empty.",
+        "host": "The hostname of the authorizer of the request.",
+        "hash": "The hash of the request payload of the original request, if there was one.",
+        "port": "The port of the original request.",
+        "resource": "The path of the original request",
+        "method": "HTTP method of the original request.",
+        "sourceIp": "The ip address of the original request."
+      }
     }
   ]
 }

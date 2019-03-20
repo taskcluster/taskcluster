@@ -1,4 +1,3 @@
-let debug = require('debug')('app:claim-resolver');
 let assert = require('assert');
 let data = require('./data');
 let QueueService = require('./queueservice');
@@ -88,7 +87,7 @@ class ClaimResolver {
   /** Poll for messages and handle them in a loop */
   async poll() {
     let messages = await this.queueService.pollClaimQueue();
-    debug('Fetched %s messages', messages.length);
+    let failed = 0;
 
     await Promise.all(messages.map(async (message) => {
       // Don't let a single task error break the loop, it'll be retried later
@@ -96,16 +95,16 @@ class ClaimResolver {
       try {
         await this.handleMessage(message);
       } catch (err) {
+        failed += 1;
         this.monitor.reportError(err, 'warning');
       }
     }));
 
-    if (messages.length === 0) {
-      // Count that the queue is empty, we should have this happen regularly.
-      // otherwise, we're not keeping up with the messages. We can setup
-      // alerts to notify us if this doesn't happen for say 40 min.
-      this.monitor.count('claim-queue-empty');
-    }
+    this.monitor.log.azureQueuePoll({
+      messages: messages.length,
+      failed,
+      resolver: 'claim',
+    });
   }
 
   /** Sleep for `delay` ms, returns a promise */

@@ -25,7 +25,12 @@ export default class Reference extends Component {
     const topicExchangeEntries =
       json.entries &&
       json.entries.filter(({ type }) => type === 'topic-exchange');
-    const logTypes = json.types;
+    const commonLogTypes = json.types.filter(l =>
+      l.type.startsWith('monitor.')
+    );
+    const serviceLogTypes = json.types.filter(
+      l => !l.type.startsWith('monitor.')
+    );
 
     return (
       <div>
@@ -67,9 +72,31 @@ export default class Reference extends Component {
             ))}
           </Fragment>
         )}
-        {logTypes && Boolean(logTypes.length) && (
+        {serviceLogTypes && Boolean(serviceLogTypes.length) && (
           <Fragment>
-            <HeaderWithAnchor type="h3">Message Types</HeaderWithAnchor>
+            <HeaderWithAnchor type="h3">Service Message Types</HeaderWithAnchor>
+            <Typography>
+              For more information on interpreting the log types described here,
+              see
+              <Anchor href="/docs/manual/design/logs">
+                Interpreting Log Types
+              </Anchor>
+              in the manual.
+            </Typography>
+            <br />
+            {serviceLogTypes.map(entry => (
+              <Entry
+                key={`${entry.type}`}
+                type="logs"
+                entry={entry}
+                serviceName={json.serviceName}
+              />
+            ))}
+          </Fragment>
+        )}
+        {commonLogTypes && Boolean(commonLogTypes.length) && (
+          <Fragment>
+            <HeaderWithAnchor type="h3">Common Message Types</HeaderWithAnchor>
             <Typography>
               For more information on interpreting the log types described here,
               see{' '}
@@ -79,7 +106,7 @@ export default class Reference extends Component {
               in the manual.
             </Typography>
             <br />
-            {logTypes.map(entry => (
+            {commonLogTypes.map(entry => (
               <Entry
                 key={`${entry.type}`}
                 type="logs"

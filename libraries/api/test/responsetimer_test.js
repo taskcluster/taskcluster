@@ -71,7 +71,7 @@ suite('api/responsetimer', function() {
     await request.get(u('/another-param/Another')).catch(err => {}),
     assert.equal(monitorManager.messages.length, 4);
     monitorManager.messages.forEach(event => {
-      assert.equal(event.Type, 'monitor.express');
+      assert.equal(event.Type, 'monitor.apiMethod');
       assert.equal(event.Logger, 'taskcluster.lib-api-test.root.api');
     });
     assert.equal(monitorManager.messages[0].Fields.name, 'testParam');

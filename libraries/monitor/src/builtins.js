@@ -23,15 +23,27 @@ module.exports = [
     },
   },
   {
-    name: 'expressTimer',
-    type: 'monitor.express',
-    level: 'info',
+    name: 'apiMethod',
+    type: 'monitor.apiMethod',
+    level: 'notice',
     version: 1,
-    description: 'A timer for express endpoints.',
+    description: `A timer and audit for express endpoints.
+                  You can combine this with auth audit logs to get
+                  a complete picture of what was authorized when.
+
+                  Here, anything that is not public should have authenticated
+                  and if it authenticated, we will tell the clientId here. Given
+                  that, it is not necessarily true that the endpoint was
+                  _authorized_. You can tell that by the statusCode.`,
     fields: {
       name: 'The name of the endpoint.',
+      resource: 'The path of the http request. Should match the one in auth audit log.',
+      method: 'The http method of the request. Should match the one in auth audit log.',
       statusCode: 'The http status code that the endpoint resolved with.',
       duration: 'The duration in ms of the endpoint.',
+      public: 'Will be true if the endpoint requires no scopes.',
+      hasAuthed: 'Will be true if the request had req.authorize() called on it.',
+      clientId: 'The clientId that made the request if there was one.',
     },
   },
   {
@@ -83,7 +95,7 @@ module.exports = [
   {
     name: 'errorReport',
     type: 'monitor.error',
-    level: 'err',
+    level: 'any',
     version: 1,
     description: 'A specifically formatted error report. Will have at least the following but can contain more.',
     fields: {

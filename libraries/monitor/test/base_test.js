@@ -295,6 +295,8 @@ suite('BaseMonitor', function() {
     test('should record errors', function() {
       monitor.reportError(new Error('oh no'));
       assert.equal(manager.messages.length, 1);
+      assert.equal(manager.messages[0].Severity, 3);
+      assert.equal(manager.messages[0].severity, 'ERROR');
       assert.equal(manager.messages[0].Fields.name, 'Error');
       assert.equal(manager.messages[0].Fields.message, 'oh no');
       assert(manager.messages[0].Fields.stack);
@@ -303,6 +305,8 @@ suite('BaseMonitor', function() {
     test('should record errors with extra', function() {
       monitor.reportError(new Error('oh no'), {foo: 5});
       assert.equal(manager.messages.length, 1);
+      assert.equal(manager.messages[0].Severity, 3);
+      assert.equal(manager.messages[0].severity, 'ERROR');
       assert.equal(manager.messages[0].Fields.name, 'Error');
       assert.equal(manager.messages[0].Fields.message, 'oh no');
       assert.equal(manager.messages[0].Fields.foo, 5);
@@ -312,10 +316,11 @@ suite('BaseMonitor', function() {
     test('should record errors with extra and level', function() {
       monitor.reportError(new Error('oh no'), 'warning', {foo: 5});
       assert.equal(manager.messages.length, 1);
+      assert.equal(manager.messages[0].Severity, 4);
+      assert.equal(manager.messages[0].severity, 'WARNING');
       assert.equal(manager.messages[0].Fields.name, 'Error');
       assert.equal(manager.messages[0].Fields.message, 'oh no');
       assert.equal(manager.messages[0].Fields.foo, 5);
-      assert.equal(manager.messages[0].Fields.legacyLevel, 'warning');
       assert(manager.messages[0].Fields.stack);
     });
 

@@ -7533,13 +7533,18 @@
           "version": 1
         },
         {
-          "description": "A timer for express endpoints.",
+          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
+            "clientId": "The clientId that made the request if there was one.",
             "duration": "The duration in ms of the endpoint.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request. Should match the one in auth audit log.",
             "name": "The name of the endpoint.",
+            "public": "Will be true if the endpoint requires no scopes.",
+            "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -7772,13 +7777,18 @@
           "version": 1
         },
         {
-          "description": "A timer for express endpoints.",
+          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
+            "clientId": "The clientId that made the request if there was one.",
             "duration": "The duration in ms of the endpoint.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request. Should match the one in auth audit log.",
             "name": "The name of the endpoint.",
+            "public": "Will be true if the endpoint requires no scopes.",
+            "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -7922,13 +7932,18 @@
           "version": 1
         },
         {
-          "description": "A timer for express endpoints.",
+          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
+            "clientId": "The clientId that made the request if there was one.",
             "duration": "The duration in ms of the endpoint.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request. Should match the one in auth audit log.",
             "name": "The name of the endpoint.",
+            "public": "Will be true if the endpoint requires no scopes.",
+            "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -8119,13 +8134,18 @@
           "version": 1
         },
         {
-          "description": "A timer for express endpoints.",
+          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
+            "clientId": "The clientId that made the request if there was one.",
             "duration": "The duration in ms of the endpoint.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request. Should match the one in auth audit log.",
             "name": "The name of the endpoint.",
+            "public": "Will be true if the endpoint requires no scopes.",
+            "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -8197,6 +8217,39 @@
           "fields": {
           },
           "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "Report result of polling messages from an azure queue.",
+          "fields": {
+            "failed": "Number of these messages that failed to be handled.",
+            "messages": "Number of messages fetched.",
+            "resolver": "The name of the queue being polled."
+          },
+          "type": "azure-queue-poll",
+          "version": 1
+        },
+        {
+          "description": "Results of a claimWork from a worker.",
+          "fields": {
+            "provisionerId": "Provisioner that provisioned the worker claiming work.",
+            "requested": "The number of tasks the worker requested.",
+            "tasks": "An array of taskId that were given to the worker.",
+            "workerGroup": "Group of worker claiming work.",
+            "workerId": "The id of the claiming worker.",
+            "workerType": "Type of worker claiming work."
+          },
+          "type": "work-claimed",
+          "version": 1
+        },
+        {
+          "description": "Metrics of an iteration of the hint poller.",
+          "fields": {
+            "claimed": "Number of hints claimed on an iteration.",
+            "released": "Number of hints released on an iteration. Should usually be 0.",
+            "slept": "If true, there were no hints to claim and the poller slept before claiming again."
+          },
+          "type": "hint-poller",
           "version": 1
         }
       ]
@@ -9591,13 +9644,18 @@
           "version": 1
         },
         {
-          "description": "A timer for express endpoints.",
+          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
+            "clientId": "The clientId that made the request if there was one.",
             "duration": "The duration in ms of the endpoint.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request. Should match the one in auth audit log.",
             "name": "The name of the endpoint.",
+            "public": "Will be true if the endpoint requires no scopes.",
+            "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -9775,13 +9833,18 @@
           "version": 1
         },
         {
-          "description": "A timer for express endpoints.",
+          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
+            "clientId": "The clientId that made the request if there was one.",
             "duration": "The duration in ms of the endpoint.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request. Should match the one in auth audit log.",
             "name": "The name of the endpoint.",
+            "public": "Will be true if the endpoint requires no scopes.",
+            "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -10100,13 +10163,18 @@
           "version": 1
         },
         {
-          "description": "A timer for express endpoints.",
+          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
+            "clientId": "The clientId that made the request if there was one.",
             "duration": "The duration in ms of the endpoint.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request. Should match the one in auth audit log.",
             "name": "The name of the endpoint.",
+            "public": "Will be true if the endpoint requires no scopes.",
+            "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -10249,13 +10317,18 @@
           "version": 1
         },
         {
-          "description": "A timer for express endpoints.",
+          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
+            "clientId": "The clientId that made the request if there was one.",
             "duration": "The duration in ms of the endpoint.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request. Should match the one in auth audit log.",
             "name": "The name of the endpoint.",
+            "public": "Will be true if the endpoint requires no scopes.",
+            "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -10468,13 +10541,18 @@
           "version": 1
         },
         {
-          "description": "A timer for express endpoints.",
+          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
+            "clientId": "The clientId that made the request if there was one.",
             "duration": "The duration in ms of the endpoint.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request. Should match the one in auth audit log.",
             "name": "The name of the endpoint.",
+            "public": "Will be true if the endpoint requires no scopes.",
+            "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -10872,13 +10950,18 @@
           "version": 1
         },
         {
-          "description": "A timer for express endpoints.",
+          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
+            "clientId": "The clientId that made the request if there was one.",
             "duration": "The duration in ms of the endpoint.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request. Should match the one in auth audit log.",
             "name": "The name of the endpoint.",
+            "public": "Will be true if the endpoint requires no scopes.",
+            "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -11257,13 +11340,18 @@
           "version": 1
         },
         {
-          "description": "A timer for express endpoints.",
+          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
+            "clientId": "The clientId that made the request if there was one.",
             "duration": "The duration in ms of the endpoint.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request. Should match the one in auth audit log.",
             "name": "The name of the endpoint.",
+            "public": "Will be true if the endpoint requires no scopes.",
+            "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -11366,13 +11454,18 @@
           "version": 1
         },
         {
-          "description": "A timer for express endpoints.",
+          "description": "A timer and audit for express endpoints.\nYou can combine this with auth audit logs to get\na complete picture of what was authorized when.\n\nHere, anything that is not public should have authenticated\nand if it authenticated, we will tell the clientId here. Given\nthat, it is not necessarily true that the endpoint was\n_authorized_. You can tell that by the statusCode.",
           "fields": {
+            "clientId": "The clientId that made the request if there was one.",
             "duration": "The duration in ms of the endpoint.",
+            "hasAuthed": "Will be true if the request had req.authorize() called on it.",
+            "method": "The http method of the request. Should match the one in auth audit log.",
             "name": "The name of the endpoint.",
+            "public": "Will be true if the endpoint requires no scopes.",
+            "resource": "The path of the http request. Should match the one in auth audit log.",
             "statusCode": "The http status code that the endpoint resolved with."
           },
-          "type": "monitor.express",
+          "type": "monitor.apiMethod",
           "version": 1
         },
         {
@@ -11444,6 +11537,25 @@
           "fields": {
           },
           "type": "monitor.loggingError",
+          "version": 1
+        },
+        {
+          "description": "Records results of authenticating a client.\nThis contains the verified hawk headers that were sent\nto auth in addition to info about the client.\n\nIn these fields, there are two requests that might be\nmentioned. The first is the original request from a\nclient to a service and the second is the request from\nthe service to auth itself.",
+          "fields": {
+            "clientId": "The clientId that was authenticated.",
+            "expires": "After this time the authentication is no longer valid.",
+            "hash": "The hash of the request payload of the original request, if there was one.",
+            "host": "The hostname of the authorizer of the request.",
+            "message": "A reason for failure if failed. Otherwise empty.",
+            "method": "HTTP method of the original request.",
+            "port": "The port of the original request.",
+            "resource": "The path of the original request",
+            "scheme": "Currently always `hawk`.",
+            "scopes": "All scopes that this client has available.",
+            "sourceIp": "The ip address of the original request.",
+            "status": "Whether or not the authentication was successful."
+          },
+          "type": "signature-validation",
           "version": 1
         }
       ]
