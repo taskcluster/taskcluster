@@ -128,7 +128,7 @@ tasks:
             provisionerId: aws-provisioner-v1
             workerType: github-worker
             created: {$fromNow: ''}
-            deadline: {$fromNow: '20 minutes'}
+            deadline: {$fromNow: '3 hours'}
             extra:
               notify:
                 email:
