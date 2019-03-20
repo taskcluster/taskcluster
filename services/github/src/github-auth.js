@@ -15,6 +15,7 @@ const retryPlugin = (octokit, options) => {
         if (attempt < retries && err.name === 'HttpError' && (err.status >= 500 || err.status === 404)) {
           debug(`Request getting retried for eventual consistency. attempt: ${attempt}`);
           await sleep(baseBackoff * Math.pow(2, attempt));
+          continue;
         }
         throw err;
       }
