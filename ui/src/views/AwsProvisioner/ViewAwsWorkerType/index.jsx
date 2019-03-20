@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import DeleteEmptyIcon from 'mdi-react/DeleteEmptyIcon';
+import { FixedSizeList } from 'react-window';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 import AwsProvisionerErrorsTable from '../../../components/AwsProvisionerErrorsTable';
@@ -17,7 +18,6 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import workerTypeQuery from './workerType.graphql';
 import terminateInstanceQuery from './terminateInstance.graphql';
 import terminateWorkerTypeQuery from './terminateWorkerType.graphql';
-import { FixedSizeList } from 'react-window';
 
 @hot(module)
 @withApollo
@@ -49,9 +49,10 @@ export default class ViewAwsWorkerType extends Component {
   };
 
   handleTabChange = (e, currentTab) => {
-    if(this.state.currentTab !== currentTab) {
-      this.setState({ currentTab, tabContentLoader: true})
+    if (this.state.currentTab !== currentTab) {
+      this.setState({ currentTab, tabContentLoader: true });
     }
+
     this.setState({ tabContentLoader: false });
   };
 
@@ -127,8 +128,6 @@ export default class ViewAwsWorkerType extends Component {
       tabContentLoader,
     } = this.state;
     const FIVE_SECONDS = 5000;
-    const windowHeight = window.innerHeight;
-    const tableHeight = windowHeight > 400 ? 0.6 * windowHeight : 400;
 
     return (
       <Dashboard title={`AWS Provisioner ${workerType}`}>
@@ -151,7 +150,7 @@ export default class ViewAwsWorkerType extends Component {
         )}
         {!error && !loading && currentTab === 2 && (
           <FixedSizeList>
-            <Spinner className={classes.spinner} tabContentLoader />
+            <Spinner className={classes.spinner} {...tabContentLoader} />
             <Ec2ResourcesTable
               onTerminateInstance={this.handleTerminateInstance}
               workerType={awsProvisionerWorkerType}
