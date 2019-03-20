@@ -5,6 +5,7 @@ import { equals, assocPath } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import Code from '@mozilla-frontend-infra/components/Code';
+import Markdown from "@mozilla-frontend-infra/components/Markdown";
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
