@@ -34,7 +34,7 @@ export default class Preview extends Component {
               onChange={onDescriptionChange}
               fullWidth
               multiline
-              rows={7}
+              rows={5}
               value={description}
             />
           )}
