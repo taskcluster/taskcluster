@@ -10,6 +10,8 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
 import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -162,6 +164,7 @@ export default class HookForm extends Component {
     taskValidJson: true,
     triggerSchemaValidJson: true,
     validation: {},
+    tabValue: 0
   };
 
   static getDerivedStateFromProps(props, state) {
@@ -395,6 +398,10 @@ export default class HookForm extends Component {
       ),
     });
 
+  handleTabChange = (event, value) => {
+    this.setState({ tabValue: value });
+  };
+
   render() {
     const {
       actionLoading,
@@ -413,6 +420,7 @@ export default class HookForm extends Component {
       triggerContextInput,
       hook,
       validation,
+      tabValue
     } = this.state;
     const isHookDirty = !equals(hook, this.props.hook);
     /* eslint-disable-next-line no-underscore-dangle */
@@ -485,17 +493,27 @@ export default class HookForm extends Component {
             />
           </ListItem>
           <ListItem>
-            <TextField
-              label="Description"
-              name="description"
-              placeholder="Hook description (markdown)"
-              onChange={this.handleDescriptionChange}
-              fullWidth
-              multiline
-              rows={5}
-              value={hook.metadata.description}
-            />
+            <Tabs value={tabValue} onChange={this.handleTabChange}>
+              <Tab label="Description" />
+              <Tab label="Preview" />
+            </Tabs>
           </ListItem>
+          <ListItem>
+            {tabValue === 0 && (
+              <TextField
+                name="description"
+                placeholder="Hook description (markdown)"
+                onChange={this.handleDescriptionChange}
+                fullWidth
+                multiline
+                rows={5}
+                value={hook.metadata.description}
+              />
+            )}
+            {tabValue === 1 && (
+              <Markdown>{hook.metadata.description}</Markdown>
+            )}
+            </ListItem>
           <ListItem>
             <FormGroup row>
               <FormControlLabel
