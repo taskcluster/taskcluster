@@ -69,7 +69,7 @@ class BaseClient(object):
                 if value and not isinstance(value, six.binary_type):
                     try:
                         credentials[x] = credentials[x].encode('ascii')
-                    except:
+                    except Exception:
                         s = '%s (%s) must be unicode encodable' % (x, credentials[x])
                         raise exceptions.TaskclusterAuthFailure(s)
 
@@ -516,7 +516,7 @@ class BaseClient(object):
                 data = {}
                 try:
                     data = response.json()
-                except:
+                except Exception:
                     pass  # Ignore JSON errors in error messages
                 # Find error message
                 message = "Unknown Server Error"

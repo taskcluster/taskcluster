@@ -236,7 +236,7 @@ class TestScopeMatch(TestCase):
         try:
             result = subject.scopeMatch(assumed, requiredScopeSets)
             self.assertEqual(result, expected)
-        except:
+        except Exception:
             if expected != 'exception':
                 raise
 

@@ -183,7 +183,7 @@ class AsyncBaseClient(BaseClient):
                 data = {}
                 try:
                     data = await response.json()
-                except:
+                except Exception:
                     pass  # Ignore JSON errors in error messages
                 # Find error message
                 message = "Unknown Server Error"
@@ -311,6 +311,7 @@ def createApiClient(name, api):
         attributes[entry['name']] = f
 
     return type(utils.toStr(name), (BaseClient,), attributes)
+
 
 __all__ = [
     'createTemporaryCredentials',
