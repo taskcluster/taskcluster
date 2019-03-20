@@ -37,11 +37,11 @@ defaults:
 
 development:
   app:
-    # this assumes that taskcluster-web's dev server is running on port 5080
+    # this assumes that taskcluster-ui's dev server is running on port 5080
     publicUrl: http://localhost:5080
     loginStrategies: []
   server:
-    # taskcluster-web's dev server assumes port 3050
+    # taskcluster-ui's dev server assumes port 3050
     port: 3050
   monitoring:
     level: warning

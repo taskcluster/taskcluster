@@ -8,7 +8,7 @@ superagent:   true
 docref:       true
 title:        Task Schema
 ---
-import SchemaTable from '../../../../src/components/SchemaTable'
+import SchemaTable from 'taskcluster-ui/components/SchemaTable'
 
 # Schema for `task.extra.treeherder`
 

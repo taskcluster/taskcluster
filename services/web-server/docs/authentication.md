@@ -36,6 +36,6 @@ Note that, as always, the certificate value should not be interpreted in any way
 The service supports "pluggable" login strategies.
 These provide a method for users to acquire Taskcluster credentials.
 
-Each strategy is implemented partly in this service, and partly in the paired `taskcluster-web` service.
+Each strategy is implemented partly in this service, and partly in the paired `taskcluster-ui` service.
 The details of the which service does what depend on the strategy and the flow required by the authorization system.
-Ultimately, `taskcluster-web` ends up with a set of Taskcluster credentials which it provides to the backend using the `Authorization` header as described above.
+Ultimately, `taskcluster-ui` ends up with a set of Taskcluster credentials which it provides to the backend using the `Authorization` header as described above.

@@ -7,7 +7,7 @@ Taskcluster.
 
 ## Web Server
 
-The taskcluster-web UI application relies on a server application in order to
+The taskcluster-ui application relies on a server application in order to
 perform queries to the Taskcluster APIs. That package is
 [web-server](https://github.com/taskcluster/taskcluster/tree/master/services/web-server).
 **Follow the instructions** for starting it prior to launching

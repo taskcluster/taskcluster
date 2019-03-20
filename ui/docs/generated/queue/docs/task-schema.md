@@ -9,7 +9,7 @@ docref:       true
 title:        "Task Schema"
 order: 100
 ---
-import SchemaTable from '../../../../src/components/SchemaTable'
+import SchemaTable from 'taskcluster-ui/components/SchemaTable'
 
 # Task Definition
 

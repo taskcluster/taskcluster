@@ -3,7 +3,7 @@ title: Queue-Worker Interaction
 description: How workers interacts with the queue to process tasks.
 order: 60
 ---
-import Image from '../../../../src/views/Documentation/Image'
+import Image from 'taskcluster-ui/views/Documentation/Image'
 import queueWorkerInteraction from './queue-worker-interaction.svg'
 
 # Queue-Worker Interaction

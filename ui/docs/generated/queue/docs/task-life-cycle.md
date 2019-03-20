@@ -3,7 +3,7 @@ title: Task Life-Cycle
 description: Phases of a task life-cycle.
 order: 50
 ---
-import Image from '../../../../src/views/Documentation/Image'
+import Image from 'taskcluster-ui/views/Documentation/Image'
 import taskLifeCycle from './task-life-cycle.svg'
 
 # Task Life-Cycle

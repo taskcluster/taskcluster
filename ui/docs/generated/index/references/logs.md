@@ -4,7 +4,7 @@ inline: true
 title: logs
 ---
 
-import Reference from '../../../../src/views/Documentation/Reference'
+import Reference from 'taskcluster-ui/views/Documentation/Reference'
 import logs from './logs.json'
 
 <Reference json={logs} />

@@ -47,8 +47,7 @@ function createReferenceMarkupContent(reference) {
     `title: ${name}`,
     '---',
     '',
-    // path is relative to <generated-dir>/<service-name>/references
-    'import Reference from \'../../../../src/views/Documentation/Reference\'',
+    'import Reference from \'taskcluster-ui/views/Documentation/Reference\'',
     `import ${name} from './${reference}'`,
     '',
     `<Reference json={${name}} />`,
