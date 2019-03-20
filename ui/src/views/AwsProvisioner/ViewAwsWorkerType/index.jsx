@@ -17,6 +17,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import workerTypeQuery from './workerType.graphql';
 import terminateInstanceQuery from './terminateInstance.graphql';
 import terminateWorkerTypeQuery from './terminateWorkerType.graphql';
+import { FixedSizeList } from 'react-window';
 
 @hot(module)
 @withApollo
@@ -44,10 +45,14 @@ export default class ViewAwsWorkerType extends Component {
     actionLoading: false,
     showTerminateAllInstancesSnackbar: false,
     showTerminateInstanceSnackbar: false,
+    tabContentLoader: false,
   };
 
   handleTabChange = (e, currentTab) => {
-    this.setState({ currentTab });
+    if(this.state.currentTab !== currentTab) {
+      this.setState({ currentTab, tabContentLoader: true})
+    }
+    this.setState({ tabContentLoader: false });
   };
 
   handleTerminateAllInstances = async () => {
@@ -119,8 +124,11 @@ export default class ViewAwsWorkerType extends Component {
       actionLoading,
       showTerminateAllInstancesSnackbar,
       showTerminateInstanceSnackbar,
+      tabContentLoader,
     } = this.state;
     const FIVE_SECONDS = 5000;
+    const windowHeight = window.innerHeight;
+    const tableHeight = windowHeight > 400 ? 0.6 * windowHeight : 400;
 
     return (
       <Dashboard title={`AWS Provisioner ${workerType}`}>
@@ -142,12 +150,15 @@ export default class ViewAwsWorkerType extends Component {
           <AwsProvisionerErrorsTable errors={awsProvisionerWorkerTypeErrors} />
         )}
         {!error && !loading && currentTab === 2 && (
-          <Ec2ResourcesTable
-            onTerminateInstance={this.handleTerminateInstance}
-            workerType={awsProvisionerWorkerType}
-            awsState={awsProvisionerWorkerTypeState}
-            actionLoading={actionLoading}
-          />
+          <FixedSizeList>
+            <Spinner className={classes.spinner} tabContentLoader />
+            <Ec2ResourcesTable
+              onTerminateInstance={this.handleTerminateInstance}
+              workerType={awsProvisionerWorkerType}
+              awsState={awsProvisionerWorkerTypeState}
+              actionLoading={actionLoading}
+            />
+          </FixedSizeList>
         )}
         {!error && !loading && currentTab === 2 && (
           <Button
