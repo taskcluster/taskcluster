@@ -31,6 +31,7 @@ module.exports = {
         'react/no-access-state-in-setstate': 'off',
         'babel/no-unused-expressions': 'off',
         'linebreak-style': 'off',
+        'no-underscore-dangle': 'off',
         'react-hooks/rules-of-hooks': 'error',
       },
     }],

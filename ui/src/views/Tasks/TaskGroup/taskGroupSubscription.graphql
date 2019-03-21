@@ -1,0 +1,107 @@
+subscription TaskGroupSubscription($taskGroupId: ID!, $subscriptions: [TaskSubscriptions]!) {
+  tasksSubscriptions(taskGroupId: $taskGroupId, subscriptions: $subscriptions) {
+    ...on TaskDefined {
+      status {
+        state
+        taskId
+        taskGroupId
+        task {
+          metadata {
+            name
+          }
+          taskGroupId
+          status {
+            taskId
+            state
+          }
+        }
+      }
+    }
+
+    ...on TaskPending {
+      status {
+        state
+        taskId
+        taskGroupId
+        task {
+          metadata {
+            name
+          }
+          taskGroupId
+          status {
+            taskId
+            state
+          }
+        }
+      }
+    }
+    ...on TaskRunning {
+      status {
+        state
+        taskId
+        taskGroupId
+        task {
+          metadata {
+            name
+          }
+          taskGroupId
+          status {
+            taskId
+            state
+          }
+        }
+      }
+    }
+    ...on TaskCompleted {
+      status {
+        state
+        taskId
+        taskGroupId
+        task {
+          metadata {
+            name
+          }
+          taskGroupId
+          status {
+            taskId
+            state
+          }
+        }
+      }
+    }
+    ...on TaskFailed {
+      status {
+        state
+        taskId
+        taskGroupId
+        task {
+          metadata {
+            name
+          }
+          taskGroupId
+          status {
+            taskId
+            state
+          }
+        }
+      }
+    }
+    ...on TaskException {
+      status {
+        state
+        taskId
+        taskGroupId
+        task {
+          metadata {
+            name
+          }
+          taskGroupId
+          status {
+            taskId
+            state
+          }
+        }
+      }
+    }
+  }
+}
