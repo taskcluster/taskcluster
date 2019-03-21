@@ -9,6 +9,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import { notificationAddress as address } from '../../utils/prop-types';
+import { DENYLIST_NOTIFICATION_TYPES } from '../../utils/constants';
 import Button from '../Button';
 
 @withStyles(theme => ({
@@ -98,7 +99,7 @@ export default class DenylistForm extends Component {
   handleInputChange = ({ target: { name, value } }) => {
     this.setState({ [name]: value });
 
-    if (name === 'notificationType' && value !== 'EMAIL') {
+    if (name === DENYLIST_NOTIFICATION_TYPES.EMAIL && value !== 'EMAIL') {
       this.setState({
         validation: {
           address: {
@@ -153,7 +154,6 @@ export default class DenylistForm extends Component {
   render() {
     const { address, classes, isNewAddress, loading } = this.props;
     const { notificationType, notificationAddress, validation } = this.state;
-    const notificationTypes = ['EMAIL', 'PULSE', 'IRC_USER', 'IRC_CHANNEL'];
 
     return (
       <Fragment>
@@ -169,7 +169,7 @@ export default class DenylistForm extends Component {
                 value={notificationType}
                 onChange={this.handleInputChange}
                 name="notificationType">
-                {notificationTypes.map(type => (
+                {Object.keys(DENYLIST_NOTIFICATION_TYPES).map(type => (
                   <MenuItem key={type} value={type}>
                     {this.prettify(type)}
                   </MenuItem>

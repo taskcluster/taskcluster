@@ -211,9 +211,9 @@ export const DOCS_MENU_ITEMS = [
   },
 ];
 
-export const DENYLIST_NOTIFICATION_TYPES = [
-  'EMAIL',
-  'PULSE',
-  'IRC_USER',
-  'IRC_CHANNEL',
-];
+export const DENYLIST_NOTIFICATION_TYPES = {
+  EMAIL: 'EMAIL',
+  PULSE: 'PULSE',
+  IRC_USER: 'IRC_USER',
+  IRC_CHANNEL: 'IRC_CHANNEL',
+};

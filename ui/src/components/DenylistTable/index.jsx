@@ -7,6 +7,7 @@ import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import LinkIcon from 'mdi-react/LinkIcon';
 import Typography from '@material-ui/core/Typography';
 import { notificationAddress, pageInfo } from '../../utils/prop-types';
 import { VIEW_DENYLIST_PAGE_SIZE } from '../../utils/constants';
@@ -123,6 +124,7 @@ export default class DenylistTable extends Component {
   render() {
     const { classes, onPageChange, notificationsConnection } = this.props;
     const { sortBy, sortDirection } = this.state;
+    const iconSize = 16;
     const sortedNotificationsConnection = this.createSortedNotifications(
       notificationsConnection,
       sortBy,
@@ -152,6 +154,7 @@ export default class DenylistTable extends Component {
                     classes.listLinkCell
                   )}>
                   <Typography>{node.notificationAddress}</Typography>
+                  <LinkIcon size={iconSize} />
                 </div>
               </Link>
             </TableCell>

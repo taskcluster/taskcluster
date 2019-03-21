@@ -360,7 +360,7 @@ export const secrets = arrayOf(
   })
 );
 
-export const notificationType = oneOf(DENYLIST_NOTIFICATION_TYPES);
+export const notificationType = oneOf(Object.keys(DENYLIST_NOTIFICATION_TYPES));
 
 export const notificationAddress = shape({
   notificationType,
