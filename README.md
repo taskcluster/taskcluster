@@ -647,7 +647,7 @@ await asyncAuth.createRole(payload, roleId='value') # -> result
 Update an existing role.
 
 The caller's scopes must satisfy all of the new scopes being added, but
-need not satisfy all of the client's existing scopes.
+need not satisfy all of the role's existing scopes.
 
 An update of a role that will generate an infinite expansion will result
 in an error response.
@@ -981,18 +981,34 @@ await asyncAuth.statsumToken(project) # -> result
 await asyncAuth.statsumToken(project='value') # -> result
 ```
 
-#### Get Token for Websocktunnel Proxy
-Get temporary `token` and `id` for connecting to websocktunnel
-The token is valid for 96 hours, clients should refresh after expiration.
+#### Get a client token for the Websocktunnel service
+Get a temporary token suitable for use connecting to a
+[websocktunnel](https://github.com/taskcluster/websocktunnel) server.
 
+The resulting token will only be accepted by servers with a matching audience
+value.  Reaching such a server is the callers responsibility.  In general,
+a server URL or set of URLs should be provided to the caller as configuration
+along with the audience value.
+
+The token is valid for a limited time (on the scale of hours). Callers should
+refresh it before expiration.
+
+
+
+Takes the following arguments:
+
+  * `wstAudience`
+  * `wstClient`
 
 Required [output schema](v1/websocktunnel-token-response.json#)
 
 ```python
 # Sync calls
-auth.websocktunnelToken() # -> result`
+auth.websocktunnelToken(wstAudience, wstClient) # -> result`
+auth.websocktunnelToken(wstAudience='value', wstClient='value') # -> result
 # Async call
-await asyncAuth.websocktunnelToken() # -> result
+await asyncAuth.websocktunnelToken(wstAudience, wstClient) # -> result
+await asyncAuth.websocktunnelToken(wstAudience='value', wstClient='value') # -> result
 ```
 
 #### Authenticate Hawk Request
