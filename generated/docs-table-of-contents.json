@@ -1523,10 +1523,10 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/platform/auth/references/events",
+                  "path": "reference/platform/auth/events",
                   "title": "events"
                 },
-                "path": "reference/platform/auth/references/api",
+                "path": "reference/platform/auth/api",
                 "prev": {
                   "path": "reference/platform/auth/README",
                   "title": "auth"
@@ -1546,12 +1546,12 @@
                 },
                 "name": "events",
                 "next": {
-                  "path": "reference/platform/auth/references/logs",
+                  "path": "reference/platform/auth/logs",
                   "title": "logs"
                 },
-                "path": "reference/platform/auth/references/events",
+                "path": "reference/platform/auth/events",
                 "prev": {
-                  "path": "reference/platform/auth/references/api",
+                  "path": "reference/platform/auth/api",
                   "title": "api"
                 },
                 "up": {
@@ -1569,12 +1569,12 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/platform/auth/docs/scopes",
+                  "path": "reference/platform/auth/scopes",
                   "title": "Scopes and Satisfaction"
                 },
-                "path": "reference/platform/auth/references/logs",
+                "path": "reference/platform/auth/logs",
                 "prev": {
-                  "path": "reference/platform/auth/references/events",
+                  "path": "reference/platform/auth/events",
                   "title": "events"
                 },
                 "up": {
@@ -1591,12 +1591,12 @@
                 },
                 "name": "scopes",
                 "next": {
-                  "path": "reference/platform/auth/docs/clients",
+                  "path": "reference/platform/auth/clients",
                   "title": "Clients"
                 },
-                "path": "reference/platform/auth/docs/scopes",
+                "path": "reference/platform/auth/scopes",
                 "prev": {
-                  "path": "reference/platform/auth/references/logs",
+                  "path": "reference/platform/auth/logs",
                   "title": "logs"
                 },
                 "up": {
@@ -1613,12 +1613,12 @@
                 },
                 "name": "clients",
                 "next": {
-                  "path": "reference/platform/auth/docs/roles",
+                  "path": "reference/platform/auth/roles",
                   "title": "Roles and Role Expansion"
                 },
-                "path": "reference/platform/auth/docs/clients",
+                "path": "reference/platform/auth/clients",
                 "prev": {
-                  "path": "reference/platform/auth/docs/scopes",
+                  "path": "reference/platform/auth/scopes",
                   "title": "Scopes and Satisfaction"
                 },
                 "up": {
@@ -1638,9 +1638,9 @@
                   "path": "reference/platform/queue/README",
                   "title": "queue"
                 },
-                "path": "reference/platform/auth/docs/roles",
+                "path": "reference/platform/auth/roles",
                 "prev": {
-                  "path": "reference/platform/auth/docs/clients",
+                  "path": "reference/platform/auth/clients",
                   "title": "Clients"
                 },
                 "up": {
@@ -1654,7 +1654,7 @@
             },
             "name": "auth",
             "next": {
-              "path": "reference/platform/auth/references/api",
+              "path": "reference/platform/auth/api",
               "title": "api"
             },
             "path": "reference/platform/auth/README",
@@ -1679,10 +1679,10 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/platform/queue/references/events",
+                  "path": "reference/platform/queue/events",
                   "title": "events"
                 },
-                "path": "reference/platform/queue/references/api",
+                "path": "reference/platform/queue/api",
                 "prev": {
                   "path": "reference/platform/queue/README",
                   "title": "queue"
@@ -1702,12 +1702,12 @@
                 },
                 "name": "events",
                 "next": {
-                  "path": "reference/platform/queue/references/logs",
+                  "path": "reference/platform/queue/logs",
                   "title": "logs"
                 },
-                "path": "reference/platform/queue/references/events",
+                "path": "reference/platform/queue/events",
                 "prev": {
-                  "path": "reference/platform/queue/references/api",
+                  "path": "reference/platform/queue/api",
                   "title": "api"
                 },
                 "up": {
@@ -1725,12 +1725,12 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/platform/queue/docs/worker-hierarchy",
+                  "path": "reference/platform/queue/worker-hierarchy",
                   "title": "Worker Hierarchy"
                 },
-                "path": "reference/platform/queue/references/logs",
+                "path": "reference/platform/queue/logs",
                 "prev": {
-                  "path": "reference/platform/queue/references/events",
+                  "path": "reference/platform/queue/events",
                   "title": "events"
                 },
                 "up": {
@@ -1747,12 +1747,12 @@
                 },
                 "name": "worker-hierarchy",
                 "next": {
-                  "path": "reference/platform/queue/docs/actions",
+                  "path": "reference/platform/queue/actions",
                   "title": "Actions"
                 },
-                "path": "reference/platform/queue/docs/worker-hierarchy",
+                "path": "reference/platform/queue/worker-hierarchy",
                 "prev": {
-                  "path": "reference/platform/queue/references/logs",
+                  "path": "reference/platform/queue/logs",
                   "title": "logs"
                 },
                 "up": {
@@ -1770,12 +1770,12 @@
                 },
                 "name": "actions",
                 "next": {
-                  "path": "reference/platform/queue/docs/superseding",
+                  "path": "reference/platform/queue/superseding",
                   "title": "Superseding"
                 },
-                "path": "reference/platform/queue/docs/actions",
+                "path": "reference/platform/queue/actions",
                 "prev": {
-                  "path": "reference/platform/queue/docs/worker-hierarchy",
+                  "path": "reference/platform/queue/worker-hierarchy",
                   "title": "Worker Hierarchy"
                 },
                 "up": {
@@ -1792,12 +1792,12 @@
                 },
                 "name": "superseding",
                 "next": {
-                  "path": "reference/platform/queue/docs/task-life-cycle",
+                  "path": "reference/platform/queue/task-life-cycle",
                   "title": "Task Life-Cycle"
                 },
-                "path": "reference/platform/queue/docs/superseding",
+                "path": "reference/platform/queue/superseding",
                 "prev": {
-                  "path": "reference/platform/queue/docs/actions",
+                  "path": "reference/platform/queue/actions",
                   "title": "Actions"
                 },
                 "up": {
@@ -1815,12 +1815,12 @@
                 },
                 "name": "task-life-cycle",
                 "next": {
-                  "path": "reference/platform/queue/docs/worker-interaction",
+                  "path": "reference/platform/queue/worker-interaction",
                   "title": "Queue-Worker Interaction"
                 },
-                "path": "reference/platform/queue/docs/task-life-cycle",
+                "path": "reference/platform/queue/task-life-cycle",
                 "prev": {
-                  "path": "reference/platform/queue/docs/superseding",
+                  "path": "reference/platform/queue/superseding",
                   "title": "Superseding"
                 },
                 "up": {
@@ -1838,12 +1838,12 @@
                 },
                 "name": "worker-interaction",
                 "next": {
-                  "path": "reference/platform/queue/docs/task-schema",
+                  "path": "reference/platform/queue/task-schema",
                   "title": "Task Schema"
                 },
-                "path": "reference/platform/queue/docs/worker-interaction",
+                "path": "reference/platform/queue/worker-interaction",
                 "prev": {
-                  "path": "reference/platform/queue/docs/task-life-cycle",
+                  "path": "reference/platform/queue/task-life-cycle",
                   "title": "Task Life-Cycle"
                 },
                 "up": {
@@ -1870,9 +1870,9 @@
                   "path": "reference/core/README",
                   "title": "Core Services"
                 },
-                "path": "reference/platform/queue/docs/task-schema",
+                "path": "reference/platform/queue/task-schema",
                 "prev": {
-                  "path": "reference/platform/queue/docs/worker-interaction",
+                  "path": "reference/platform/queue/worker-interaction",
                   "title": "Queue-Worker Interaction"
                 },
                 "up": {
@@ -1886,12 +1886,12 @@
             },
             "name": "queue",
             "next": {
-              "path": "reference/platform/queue/references/api",
+              "path": "reference/platform/queue/api",
               "title": "api"
             },
             "path": "reference/platform/queue/README",
             "prev": {
-              "path": "reference/platform/auth/docs/roles",
+              "path": "reference/platform/auth/roles",
               "title": "Roles and Role Expansion"
             },
             "up": {
@@ -1936,7 +1936,7 @@
                   "path": "reference/core/hooks/README",
                   "title": "hooks"
                 },
-                "path": "reference/core/built-in-workers/references/logs",
+                "path": "reference/core/built-in-workers/logs",
                 "prev": {
                   "path": "reference/core/built-in-workers/README",
                   "title": "built-in-workers"
@@ -1952,7 +1952,7 @@
             },
             "name": "built-in-workers",
             "next": {
-              "path": "reference/core/built-in-workers/references/logs",
+              "path": "reference/core/built-in-workers/logs",
               "title": "logs"
             },
             "path": "reference/core/built-in-workers/README",
@@ -1977,10 +1977,10 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/core/hooks/references/events",
+                  "path": "reference/core/hooks/events",
                   "title": "events"
                 },
-                "path": "reference/core/hooks/references/api",
+                "path": "reference/core/hooks/api",
                 "prev": {
                   "path": "reference/core/hooks/README",
                   "title": "hooks"
@@ -2000,12 +2000,12 @@
                 },
                 "name": "events",
                 "next": {
-                  "path": "reference/core/hooks/references/logs",
+                  "path": "reference/core/hooks/logs",
                   "title": "logs"
                 },
-                "path": "reference/core/hooks/references/events",
+                "path": "reference/core/hooks/events",
                 "prev": {
-                  "path": "reference/core/hooks/references/api",
+                  "path": "reference/core/hooks/api",
                   "title": "api"
                 },
                 "up": {
@@ -2023,12 +2023,12 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/hooks/docs/firing-hooks",
+                  "path": "reference/core/hooks/firing-hooks",
                   "title": "Firing Hooks"
                 },
-                "path": "reference/core/hooks/references/logs",
+                "path": "reference/core/hooks/logs",
                 "prev": {
-                  "path": "reference/core/hooks/references/events",
+                  "path": "reference/core/hooks/events",
                   "title": "events"
                 },
                 "up": {
@@ -2048,9 +2048,9 @@
                   "path": "reference/core/index/README",
                   "title": "index"
                 },
-                "path": "reference/core/hooks/docs/firing-hooks",
+                "path": "reference/core/hooks/firing-hooks",
                 "prev": {
-                  "path": "reference/core/hooks/references/logs",
+                  "path": "reference/core/hooks/logs",
                   "title": "logs"
                 },
                 "up": {
@@ -2064,12 +2064,12 @@
             },
             "name": "hooks",
             "next": {
-              "path": "reference/core/hooks/references/api",
+              "path": "reference/core/hooks/api",
               "title": "api"
             },
             "path": "reference/core/hooks/README",
             "prev": {
-              "path": "reference/core/built-in-workers/references/logs",
+              "path": "reference/core/built-in-workers/logs",
               "title": "logs"
             },
             "up": {
@@ -2089,10 +2089,10 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/core/index/references/logs",
+                  "path": "reference/core/index/logs",
                   "title": "logs"
                 },
-                "path": "reference/core/index/references/api",
+                "path": "reference/core/index/api",
                 "prev": {
                   "path": "reference/core/index/README",
                   "title": "index"
@@ -2115,9 +2115,9 @@
                   "path": "reference/core/notify/README",
                   "title": "notify"
                 },
-                "path": "reference/core/index/references/logs",
+                "path": "reference/core/index/logs",
                 "prev": {
-                  "path": "reference/core/index/references/api",
+                  "path": "reference/core/index/api",
                   "title": "api"
                 },
                 "up": {
@@ -2131,12 +2131,12 @@
             },
             "name": "index",
             "next": {
-              "path": "reference/core/index/references/api",
+              "path": "reference/core/index/api",
               "title": "api"
             },
             "path": "reference/core/index/README",
             "prev": {
-              "path": "reference/core/hooks/docs/firing-hooks",
+              "path": "reference/core/hooks/firing-hooks",
               "title": "Firing Hooks"
             },
             "up": {
@@ -2156,10 +2156,10 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/core/notify/references/events",
+                  "path": "reference/core/notify/events",
                   "title": "events"
                 },
-                "path": "reference/core/notify/references/api",
+                "path": "reference/core/notify/api",
                 "prev": {
                   "path": "reference/core/notify/README",
                   "title": "notify"
@@ -2179,12 +2179,12 @@
                 },
                 "name": "events",
                 "next": {
-                  "path": "reference/core/notify/references/logs",
+                  "path": "reference/core/notify/logs",
                   "title": "logs"
                 },
-                "path": "reference/core/notify/references/events",
+                "path": "reference/core/notify/events",
                 "prev": {
-                  "path": "reference/core/notify/references/api",
+                  "path": "reference/core/notify/api",
                   "title": "api"
                 },
                 "up": {
@@ -2202,12 +2202,12 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/notify/docs/usage",
+                  "path": "reference/core/notify/usage",
                   "title": "Enable Notifications"
                 },
-                "path": "reference/core/notify/references/logs",
+                "path": "reference/core/notify/logs",
                 "prev": {
-                  "path": "reference/core/notify/references/events",
+                  "path": "reference/core/notify/events",
                   "title": "events"
                 },
                 "up": {
@@ -2227,9 +2227,9 @@
                   "path": "reference/core/purge-cache/README",
                   "title": "purge-cache"
                 },
-                "path": "reference/core/notify/docs/usage",
+                "path": "reference/core/notify/usage",
                 "prev": {
-                  "path": "reference/core/notify/references/logs",
+                  "path": "reference/core/notify/logs",
                   "title": "logs"
                 },
                 "up": {
@@ -2243,12 +2243,12 @@
             },
             "name": "notify",
             "next": {
-              "path": "reference/core/notify/references/api",
+              "path": "reference/core/notify/api",
               "title": "api"
             },
             "path": "reference/core/notify/README",
             "prev": {
-              "path": "reference/core/index/references/logs",
+              "path": "reference/core/index/logs",
               "title": "logs"
             },
             "up": {
@@ -2268,10 +2268,10 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/core/purge-cache/references/logs",
+                  "path": "reference/core/purge-cache/logs",
                   "title": "logs"
                 },
-                "path": "reference/core/purge-cache/references/api",
+                "path": "reference/core/purge-cache/api",
                 "prev": {
                   "path": "reference/core/purge-cache/README",
                   "title": "purge-cache"
@@ -2294,9 +2294,9 @@
                   "path": "reference/core/secrets/README",
                   "title": "secrets"
                 },
-                "path": "reference/core/purge-cache/references/logs",
+                "path": "reference/core/purge-cache/logs",
                 "prev": {
-                  "path": "reference/core/purge-cache/references/api",
+                  "path": "reference/core/purge-cache/api",
                   "title": "api"
                 },
                 "up": {
@@ -2310,12 +2310,12 @@
             },
             "name": "purge-cache",
             "next": {
-              "path": "reference/core/purge-cache/references/api",
+              "path": "reference/core/purge-cache/api",
               "title": "api"
             },
             "path": "reference/core/purge-cache/README",
             "prev": {
-              "path": "reference/core/notify/docs/usage",
+              "path": "reference/core/notify/usage",
               "title": "Enable Notifications"
             },
             "up": {
@@ -2335,10 +2335,10 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/core/secrets/references/logs",
+                  "path": "reference/core/secrets/logs",
                   "title": "logs"
                 },
-                "path": "reference/core/secrets/references/api",
+                "path": "reference/core/secrets/api",
                 "prev": {
                   "path": "reference/core/secrets/README",
                   "title": "secrets"
@@ -2361,9 +2361,9 @@
                   "path": "reference/core/worker-manager/README",
                   "title": "worker-manager"
                 },
-                "path": "reference/core/secrets/references/logs",
+                "path": "reference/core/secrets/logs",
                 "prev": {
-                  "path": "reference/core/secrets/references/api",
+                  "path": "reference/core/secrets/api",
                   "title": "api"
                 },
                 "up": {
@@ -2377,12 +2377,12 @@
             },
             "name": "secrets",
             "next": {
-              "path": "reference/core/secrets/references/api",
+              "path": "reference/core/secrets/api",
               "title": "api"
             },
             "path": "reference/core/secrets/README",
             "prev": {
-              "path": "reference/core/purge-cache/references/logs",
+              "path": "reference/core/purge-cache/logs",
               "title": "logs"
             },
             "up": {
@@ -2402,10 +2402,10 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/core/worker-manager/references/logs",
+                  "path": "reference/core/worker-manager/logs",
                   "title": "logs"
                 },
-                "path": "reference/core/worker-manager/references/api",
+                "path": "reference/core/worker-manager/api",
                 "prev": {
                   "path": "reference/core/worker-manager/README",
                   "title": "worker-manager"
@@ -2428,9 +2428,9 @@
                   "path": "reference/integrations/README",
                   "title": "Integrations"
                 },
-                "path": "reference/core/worker-manager/references/logs",
+                "path": "reference/core/worker-manager/logs",
                 "prev": {
-                  "path": "reference/core/worker-manager/references/api",
+                  "path": "reference/core/worker-manager/api",
                   "title": "api"
                 },
                 "up": {
@@ -2444,12 +2444,12 @@
             },
             "name": "worker-manager",
             "next": {
-              "path": "reference/core/worker-manager/references/api",
+              "path": "reference/core/worker-manager/api",
               "title": "api"
             },
             "path": "reference/core/worker-manager/README",
             "prev": {
-              "path": "reference/core/secrets/references/logs",
+              "path": "reference/core/secrets/logs",
               "title": "logs"
             },
             "up": {
@@ -2469,7 +2469,7 @@
         },
         "path": "reference/core/README",
         "prev": {
-          "path": "reference/platform/queue/docs/task-schema",
+          "path": "reference/platform/queue/task-schema",
           "title": "Task Schema"
         },
         "up": {
@@ -2491,10 +2491,10 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/integrations/github/references/events",
+                  "path": "reference/integrations/github/events",
                   "title": "events"
                 },
-                "path": "reference/integrations/github/references/api",
+                "path": "reference/integrations/github/api",
                 "prev": {
                   "path": "reference/integrations/github/README",
                   "title": "github"
@@ -2514,12 +2514,12 @@
                 },
                 "name": "events",
                 "next": {
-                  "path": "reference/integrations/github/references/logs",
+                  "path": "reference/integrations/github/logs",
                   "title": "logs"
                 },
-                "path": "reference/integrations/github/references/events",
+                "path": "reference/integrations/github/events",
                 "prev": {
-                  "path": "reference/integrations/github/references/api",
+                  "path": "reference/integrations/github/api",
                   "title": "api"
                 },
                 "up": {
@@ -2537,12 +2537,12 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/integrations/github/docs/intro",
+                  "path": "reference/integrations/github/intro",
                   "title": "Using Taskcluster for Github Projects"
                 },
-                "path": "reference/integrations/github/references/logs",
+                "path": "reference/integrations/github/logs",
                 "prev": {
-                  "path": "reference/integrations/github/references/events",
+                  "path": "reference/integrations/github/events",
                   "title": "events"
                 },
                 "up": {
@@ -2559,12 +2559,12 @@
                 },
                 "name": "intro",
                 "next": {
-                  "path": "reference/integrations/github/docs/taskcluster-yml-v1",
+                  "path": "reference/integrations/github/taskcluster-yml-v1",
                   "title": ".taskcluster.yml version 1"
                 },
-                "path": "reference/integrations/github/docs/intro",
+                "path": "reference/integrations/github/intro",
                 "prev": {
-                  "path": "reference/integrations/github/references/logs",
+                  "path": "reference/integrations/github/logs",
                   "title": "logs"
                 },
                 "up": {
@@ -2581,12 +2581,12 @@
                 },
                 "name": "taskcluster-yml-v1",
                 "next": {
-                  "path": "reference/integrations/github/docs/taskcluster-yml-v0",
+                  "path": "reference/integrations/github/taskcluster-yml-v0",
                   "title": ".taskcluster.yml version 0"
                 },
-                "path": "reference/integrations/github/docs/taskcluster-yml-v1",
+                "path": "reference/integrations/github/taskcluster-yml-v1",
                 "prev": {
-                  "path": "reference/integrations/github/docs/intro",
+                  "path": "reference/integrations/github/intro",
                   "title": "Using Taskcluster for Github Projects"
                 },
                 "up": {
@@ -2606,9 +2606,9 @@
                   "path": "reference/integrations/login/README",
                   "title": "login"
                 },
-                "path": "reference/integrations/github/docs/taskcluster-yml-v0",
+                "path": "reference/integrations/github/taskcluster-yml-v0",
                 "prev": {
-                  "path": "reference/integrations/github/docs/taskcluster-yml-v1",
+                  "path": "reference/integrations/github/taskcluster-yml-v1",
                   "title": ".taskcluster.yml version 1"
                 },
                 "up": {
@@ -2622,7 +2622,7 @@
             },
             "name": "github",
             "next": {
-              "path": "reference/integrations/github/references/api",
+              "path": "reference/integrations/github/api",
               "title": "api"
             },
             "path": "reference/integrations/github/README",
@@ -2647,10 +2647,10 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/integrations/login/references/logs",
+                  "path": "reference/integrations/login/logs",
                   "title": "logs"
                 },
-                "path": "reference/integrations/login/references/api",
+                "path": "reference/integrations/login/api",
                 "prev": {
                   "path": "reference/integrations/login/README",
                   "title": "login"
@@ -2670,12 +2670,12 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/integrations/login/docs/getting-user-creds",
+                  "path": "reference/integrations/login/getting-user-creds",
                   "title": "Getting User Credentials"
                 },
-                "path": "reference/integrations/login/references/logs",
+                "path": "reference/integrations/login/logs",
                 "prev": {
-                  "path": "reference/integrations/login/references/api",
+                  "path": "reference/integrations/login/api",
                   "title": "api"
                 },
                 "up": {
@@ -2692,12 +2692,12 @@
                 },
                 "name": "getting-user-creds",
                 "next": {
-                  "path": "reference/integrations/login/docs/mozilla-auth0",
+                  "path": "reference/integrations/login/mozilla-auth0",
                   "title": "Mozilla-Auth0 logins"
                 },
-                "path": "reference/integrations/login/docs/getting-user-creds",
+                "path": "reference/integrations/login/getting-user-creds",
                 "prev": {
-                  "path": "reference/integrations/login/references/logs",
+                  "path": "reference/integrations/login/logs",
                   "title": "logs"
                 },
                 "up": {
@@ -2717,9 +2717,9 @@
                   "path": "reference/integrations/treeherder/README",
                   "title": "treeherder"
                 },
-                "path": "reference/integrations/login/docs/mozilla-auth0",
+                "path": "reference/integrations/login/mozilla-auth0",
                 "prev": {
-                  "path": "reference/integrations/login/docs/getting-user-creds",
+                  "path": "reference/integrations/login/getting-user-creds",
                   "title": "Getting User Credentials"
                 },
                 "up": {
@@ -2733,12 +2733,12 @@
             },
             "name": "login",
             "next": {
-              "path": "reference/integrations/login/references/api",
+              "path": "reference/integrations/login/api",
               "title": "api"
             },
             "path": "reference/integrations/login/README",
             "prev": {
-              "path": "reference/integrations/github/docs/taskcluster-yml-v0",
+              "path": "reference/integrations/github/taskcluster-yml-v0",
               "title": ".taskcluster.yml version 0"
             },
             "up": {
@@ -2758,10 +2758,10 @@
                 },
                 "name": "events",
                 "next": {
-                  "path": "reference/integrations/treeherder/references/logs",
+                  "path": "reference/integrations/treeherder/logs",
                   "title": "logs"
                 },
-                "path": "reference/integrations/treeherder/references/events",
+                "path": "reference/integrations/treeherder/events",
                 "prev": {
                   "path": "reference/integrations/treeherder/README",
                   "title": "treeherder"
@@ -2781,12 +2781,12 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/integrations/treeherder/docs/task-treeherder-config",
+                  "path": "reference/integrations/treeherder/task-treeherder-config",
                   "title": "Task Schema"
                 },
-                "path": "reference/integrations/treeherder/references/logs",
+                "path": "reference/integrations/treeherder/logs",
                 "prev": {
-                  "path": "reference/integrations/treeherder/references/events",
+                  "path": "reference/integrations/treeherder/events",
                   "title": "events"
                 },
                 "up": {
@@ -2813,9 +2813,9 @@
                   "path": "reference/operations/README",
                   "title": "Operations"
                 },
-                "path": "reference/integrations/treeherder/docs/task-treeherder-config",
+                "path": "reference/integrations/treeherder/task-treeherder-config",
                 "prev": {
-                  "path": "reference/integrations/treeherder/references/logs",
+                  "path": "reference/integrations/treeherder/logs",
                   "title": "logs"
                 },
                 "up": {
@@ -2829,12 +2829,12 @@
             },
             "name": "treeherder",
             "next": {
-              "path": "reference/integrations/treeherder/references/events",
+              "path": "reference/integrations/treeherder/events",
               "title": "events"
             },
             "path": "reference/integrations/treeherder/README",
             "prev": {
-              "path": "reference/integrations/login/docs/mozilla-auth0",
+              "path": "reference/integrations/login/mozilla-auth0",
               "title": "Mozilla-Auth0 logins"
             },
             "up": {
@@ -2854,7 +2854,7 @@
         },
         "path": "reference/integrations/README",
         "prev": {
-          "path": "reference/core/worker-manager/references/logs",
+          "path": "reference/core/worker-manager/logs",
           "title": "logs"
         },
         "up": {
@@ -2876,7 +2876,7 @@
         },
         "path": "reference/operations/README",
         "prev": {
-          "path": "reference/integrations/treeherder/docs/task-treeherder-config",
+          "path": "reference/integrations/treeherder/task-treeherder-config",
           "title": "Task Schema"
         },
         "up": {

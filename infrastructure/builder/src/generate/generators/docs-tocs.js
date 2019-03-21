@@ -108,18 +108,6 @@ function makeToc({ files, rootPath }) {
         .forEach((name, idx) => {
           path.push(name);
 
-          // for reference docs, ignore 'references' and 'docs'
-          // at the 3th position in the filename; these are just
-          // left out of the hierarchy as in
-          // `mv reference/taskcluster-foo/docs/* reference/taskcluster/foo`
-          if (
-            rootPath === 'reference/' &&
-            idx === 2 &&
-            (name === 'references' || name === 'docs')
-          ) {
-            return;
-          }
-
           let child = ptr.children.find(child => child.name === name);
 
           if (!child) {
