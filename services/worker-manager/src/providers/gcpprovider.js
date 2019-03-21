@@ -76,20 +76,29 @@ class GCPProvider extends Provider {
    * @returns {Promise<Array<Bid>>}
    */
   async proposeBids({workerType, workerConfiguration, demand}) {
-    console.log(`Got worker type: ${workerType}, worker config: ${workerConfiguration}, demand: ${demand}`);
+    console.log(`Got worker type: ${workerType}, worker config: ${JSON.stringify(workerConfiguration, null, 2)}, demand: ${demand}`);
+
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 1);
+
+    const estimatedDelay = 5;
+
+    // get list of available workers from gcp
+
+    //
+
     return [
       new Bid({
         providerId: this.id,
         workerType,
         workerConfigurationId: workerConfiguration.id,
-        expires, // ???
-        price, // ???
-        capacity, // ???
-        utilityFactor, // ???
-        firm, // ???
-        reliability, // ???
-        estimatedDelay, // ???
-        providerData, // ???
+        expires,
+        price, // price for the whole bid - calculated? hardcoded?
+        capacity, // divisor for price
+        utilityFactor, // some multiplier, not sure where would come from
+        firm, // true if it's smth like EC2 Reserved Instance
+        reliability, // some number ???
+        estimatedDelay, // this can be some static value
       }),
     ];
   }
