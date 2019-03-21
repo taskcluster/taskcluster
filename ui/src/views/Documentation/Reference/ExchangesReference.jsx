@@ -1,29 +1,42 @@
 import React, { Component, Fragment } from 'react';
-import { object } from 'prop-types';
+import { string } from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import MDX from '@mdx-js/runtime';
 import Entry from './Entry';
 import components from '../components';
 import HeaderWithAnchor from '../components/HeaderWithAnchor';
+import findRefDoc from '../../../utils/findRefDoc';
 
 @withRouter
 export default class ExchangesReference extends Component {
   static propTypes = {
-    // the parsed reference document
-    json: object.isRequired,
+    // the service name to document
+    serviceName: string.isRequired,
+    // the version of that service to document
+    apiVersion: string.isRequired,
   };
 
   render() {
-    const { json } = this.props;
+    const { serviceName, apiVersion } = this.props;
+    const { ref, version } = findRefDoc({
+      type: 'exchanges',
+      serviceName,
+      apiVersion,
+    });
+
+    if (version !== 0) {
+      throw new Error(`Reference document version ${version} not supported`);
+    }
+
     const topicExchangeEntries =
-      json.entries &&
-      json.entries.filter(({ type }) => type === 'topic-exchange');
+      ref.entries &&
+      ref.entries.filter(({ type }) => type === 'topic-exchange');
 
     return (
       <div>
-        {json.title && <HeaderWithAnchor>{json.title}</HeaderWithAnchor>}
-        {json.description && (
-          <MDX components={components}>{json.description}</MDX>
+        {ref.title && <HeaderWithAnchor>{ref.title}</HeaderWithAnchor>}
+        {ref.description && (
+          <MDX components={components}>{ref.description}</MDX>
         )}
         {topicExchangeEntries && Boolean(topicExchangeEntries.length) && (
           <Fragment>
@@ -33,8 +46,8 @@ export default class ExchangesReference extends Component {
                 key={entry.name}
                 type="topic-exchange"
                 entry={entry}
-                exchangePrefix={json.exchangePrefix}
-                serviceName={json.serviceName}
+                exchangePrefix={ref.exchangePrefix}
+                serviceName={ref.serviceName}
               />
             ))}
           </Fragment>

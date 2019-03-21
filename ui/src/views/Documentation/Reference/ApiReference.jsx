@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { object } from 'prop-types';
+import { string } from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import MDX from '@mdx-js/runtime';
 import Typography from '@material-ui/core/Typography';
@@ -7,24 +7,37 @@ import Entry from './Entry';
 import components from '../components';
 import HeaderWithAnchor from '../components/HeaderWithAnchor';
 import Anchor from '../components/Anchor';
+import findRefDoc from '../../../utils/findRefDoc';
 
 @withRouter
 export default class ApiReference extends Component {
   static propTypes = {
-    // the parsed reference document
-    json: object.isRequired,
+    // the service name to document
+    serviceName: string.isRequired,
+    // the version of that service to document
+    apiVersion: string.isRequired,
   };
 
   render() {
-    const { json } = this.props;
+    const { serviceName, apiVersion } = this.props;
+    const { ref, version } = findRefDoc({
+      type: 'api',
+      serviceName,
+      apiVersion,
+    });
+
+    if (version !== 0) {
+      throw new Error(`Reference document version ${version} not supported`);
+    }
+
     const functionEntries =
-      json.entries && json.entries.filter(({ type }) => type === 'function');
+      ref.entries && ref.entries.filter(({ type }) => type === 'function');
 
     return (
       <div>
-        {json.title && <HeaderWithAnchor>{json.title}</HeaderWithAnchor>}
-        {json.description && (
-          <MDX components={components}>{json.description}</MDX>
+        {ref.title && <HeaderWithAnchor>{ref.title}</HeaderWithAnchor>}
+        {ref.description && (
+          <MDX components={components}>{ref.description}</MDX>
         )}
         {functionEntries && Boolean(functionEntries.length) && (
           <Fragment>
@@ -41,7 +54,7 @@ export default class ApiReference extends Component {
                 key={`${entry.name}-${entry.query}`}
                 type="function"
                 entry={entry}
-                serviceName={json.serviceName}
+                serviceName={ref.serviceName}
               />
             ))}
           </Fragment>

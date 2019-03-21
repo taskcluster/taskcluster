@@ -5,6 +5,5 @@ title: api
 ---
 
 import ApiReference from 'taskcluster-ui/views/Documentation/Reference/ApiReference'
-import api from './api.json'
 
-<ApiReference json={api} />
+<ApiReference serviceName="index" apiVersion="v1" />
