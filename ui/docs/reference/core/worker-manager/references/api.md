@@ -4,7 +4,7 @@ inline: true
 title: api
 ---
 
-import Reference from 'taskcluster-ui/views/Documentation/Reference'
+import ApiReference from 'taskcluster-ui/views/Documentation/Reference/ApiReference'
 import api from './api.json'
 
-<Reference json={api} />
+<ApiReference json={api} />

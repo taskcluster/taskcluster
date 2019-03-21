@@ -9,22 +9,14 @@ import HeaderWithAnchor from '../components/HeaderWithAnchor';
 import Anchor from '../components/Anchor';
 
 @withRouter
-export default class Reference extends Component {
+export default class LogsReference extends Component {
   static propTypes = {
-    /**
-     * The JSON object representation of api.json,
-     * logs.json, or events.json.
-     */
+    // the parsed reference document
     json: object.isRequired,
   };
 
   render() {
     const { json } = this.props;
-    const functionEntries =
-      json.entries && json.entries.filter(({ type }) => type === 'function');
-    const topicExchangeEntries =
-      json.entries &&
-      json.entries.filter(({ type }) => type === 'topic-exchange');
     const commonLogTypes = json.types.filter(l =>
       l.type.startsWith('monitor.')
     );
@@ -37,40 +29,6 @@ export default class Reference extends Component {
         {json.title && <HeaderWithAnchor>{json.title}</HeaderWithAnchor>}
         {json.description && (
           <MDX components={components}>{json.description}</MDX>
-        )}
-        {topicExchangeEntries && Boolean(topicExchangeEntries.length) && (
-          <Fragment>
-            <HeaderWithAnchor type="h3">Exchanges</HeaderWithAnchor>
-            {topicExchangeEntries.map(entry => (
-              <Entry
-                key={entry.name}
-                type="topic-exchange"
-                entry={entry}
-                exchangePrefix={json.exchangePrefix}
-                serviceName={json.serviceName}
-              />
-            ))}
-          </Fragment>
-        )}
-        {functionEntries && Boolean(functionEntries.length) && (
-          <Fragment>
-            <HeaderWithAnchor type="h3">Functions</HeaderWithAnchor>
-            <Typography>
-              For more information on invoking the API methods described here,
-              see{' '}
-              <Anchor href="/docs/manual/design/apis">Using the APIs</Anchor> in
-              the manual.
-            </Typography>
-            <br />
-            {functionEntries.map(entry => (
-              <Entry
-                key={`${entry.name}-${entry.query}`}
-                type="function"
-                entry={entry}
-                serviceName={json.serviceName}
-              />
-            ))}
-          </Fragment>
         )}
         {serviceLogTypes && Boolean(serviceLogTypes.length) && (
           <Fragment>

@@ -4,7 +4,7 @@ inline: true
 title: events
 ---
 
-import Reference from 'taskcluster-ui/views/Documentation/Reference'
+import ExchangesReference from 'taskcluster-ui/views/Documentation/Reference/ExchangesReference'
 import events from './events.json'
 
-<Reference json={events} />
+<ExchangesReference json={events} />
