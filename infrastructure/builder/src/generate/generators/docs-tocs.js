@@ -32,8 +32,8 @@ const DOCS_DIR = join(REPO_ROOT, 'ui', 'docs');
 
 // Sort doc files by the order property
 function sort(a, b) {
-  const first = a.data.menuIndex || a.data.order;
-  const second = b.data.menuIndex || b.data.order;
+  const first = a.data.order;
+  const second = b.data.order;
 
   // Ensure the sort returns the same list when there are files with the same `order` value.
   // Otherwise we might have a different ordering of the TOC.
@@ -127,7 +127,7 @@ function makeToc({ files, rootPath }) {
               name,
               children: [],
               data: Object.assign(item.data, {
-                order: item.data.menuIndex || item.data.order || 1000,
+                order: item.data.order || 1000,
               }),
               path: `${rootPath}${path.join('/')}`,
             };
@@ -172,7 +172,7 @@ exports.tasks = [{
         children: [],
         content: undefined,
         data: Object.assign(files[fileName].data, {
-          order: files[fileName].data.menuIndex || files[fileName].data.order || 1000,
+          order: files[fileName].data.order || 1000,
         }),
       })
     );
