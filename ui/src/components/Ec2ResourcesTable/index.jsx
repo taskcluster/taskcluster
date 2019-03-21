@@ -12,6 +12,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 // import { awsProvisionerWorkerType } from '../../utils/prop-types';
+import { FixedSizeList } from 'react-window';
+import Spinner from '@mozilla-frontend-infra/components/Spinner';
 import sort from '../../utils/sort';
 import DataTable from '../DataTable';
 import TableCellListItem from '../TableCellListItem';
@@ -78,6 +80,87 @@ export default class Ec2ResourcesTable extends Component {
     }
   );
 
+  renderItems = () => {
+    const {
+      onTerminateInstance,
+      actionLoading,
+      awsState /* , workerType */,
+      tabContentLoader,
+      classes,
+    } = this.props;
+    const { sortBy, sortDirection } = this.state;
+    const sortedInstances = this.createSortedInstances(
+      awsState,
+      sortBy,
+      sortDirection
+    );
+    const iconSize = 16;
+
+    if (!tabContentLoader) {
+      return (
+        <DataTable
+          items={sortedInstances}
+          headers={[
+            'Instance ID',
+            'State',
+            // Blocked by https://bugzilla.mozilla.org/show_bug.cgi?id=1453649
+            // 'Instance Type',
+            'Availability Zone',
+            // Blocked by https://bugzilla.mozilla.org/show_bug.cgi?id=1453649
+            // 'AMI',
+            'Launch Time',
+            '',
+          ]}
+          sortByHeader={sortBy}
+          sortDirection={sortDirection}
+          onHeaderClick={this.handleHeaderClick}
+          noItemsMessage="No EC2 resources"
+          renderRow={instance => (
+            <TableRow key={instance.id}>
+              <TableCell>
+                <TableCellListItem
+                  button
+                  component="a"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={`${awsConsoleUrl}?region=${
+                    instance.region
+                  }#Images:visibility=owned-by-me;imageId=${
+                    instance.id
+                  };sort=name`}>
+                  <ListItemText primary={instance.id} />
+                  <OpenInNewIcon size={iconSize} />
+                </TableCellListItem>
+              </TableCell>
+              <TableCell>
+                <StatusLabel state={upper(instance.state)} />
+              </TableCell>
+              <TableCell>
+                <Typography>{instance.zone}</Typography>
+              </TableCell>
+              <TableCell>
+                <DateDistance from={instance.launch} />
+              </TableCell>
+              <TableCell>
+                <Tooltip placement="bottom" title="Terminate">
+                  <span>
+                    <IconButton
+                      disabled={actionLoading}
+                      onClick={() => onTerminateInstance(instance)}>
+                      <DeleteIcon size={18} />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              </TableCell>
+            </TableRow>
+          )}
+        />
+      );
+    }
+
+    return <Spinner className={classes.spinner} tabContentLoader />;
+  };
+
   handleHeaderClick = sortBy => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
@@ -97,77 +180,8 @@ export default class Ec2ResourcesTable extends Component {
   }
 
   render() {
-    const {
-      onTerminateInstance,
-      actionLoading,
-      awsState /* , workerType */,
-    } = this.props;
-    const { sortBy, sortDirection } = this.state;
-    const sortedInstances = this.createSortedInstances(
-      awsState,
-      sortBy,
-      sortDirection
-    );
-    const iconSize = 16;
+    const items = this.renderItems();
 
-    return (
-      <DataTable
-        items={sortedInstances}
-        headers={[
-          'Instance ID',
-          'State',
-          // Blocked by https://bugzilla.mozilla.org/show_bug.cgi?id=1453649
-          // 'Instance Type',
-          'Availability Zone',
-          // Blocked by https://bugzilla.mozilla.org/show_bug.cgi?id=1453649
-          // 'AMI',
-          'Launch Time',
-          '',
-        ]}
-        sortByHeader={sortBy}
-        sortDirection={sortDirection}
-        onHeaderClick={this.handleHeaderClick}
-        noItemsMessage="No EC2 resources"
-        renderRow={instance => (
-          <TableRow key={instance.id}>
-            <TableCell>
-              <TableCellListItem
-                button
-                component="a"
-                target="_blank"
-                rel="noopener noreferrer"
-                href={`${awsConsoleUrl}?region=${
-                  instance.region
-                }#Images:visibility=owned-by-me;imageId=${
-                  instance.id
-                };sort=name`}>
-                <ListItemText primary={instance.id} />
-                <OpenInNewIcon size={iconSize} />
-              </TableCellListItem>
-            </TableCell>
-            <TableCell>
-              <StatusLabel state={upper(instance.state)} />
-            </TableCell>
-            <TableCell>
-              <Typography>{instance.zone}</Typography>
-            </TableCell>
-            <TableCell>
-              <DateDistance from={instance.launch} />
-            </TableCell>
-            <TableCell>
-              <Tooltip placement="bottom" title="Terminate">
-                <span>
-                  <IconButton
-                    disabled={actionLoading}
-                    onClick={() => onTerminateInstance(instance)}>
-                    <DeleteIcon size={18} />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            </TableCell>
-          </TableRow>
-        )}
-      />
-    );
+    return <FixedSizeList>{items}</FixedSizeList>;
   }
 }

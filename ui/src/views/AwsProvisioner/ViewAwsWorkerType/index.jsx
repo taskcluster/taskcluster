@@ -6,7 +6,6 @@ import { withStyles } from '@material-ui/core/styles';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import DeleteEmptyIcon from 'mdi-react/DeleteEmptyIcon';
-import { FixedSizeList } from 'react-window';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 import AwsProvisionerErrorsTable from '../../../components/AwsProvisionerErrorsTable';
@@ -149,15 +148,14 @@ export default class ViewAwsWorkerType extends Component {
           <AwsProvisionerErrorsTable errors={awsProvisionerWorkerTypeErrors} />
         )}
         {!error && !loading && currentTab === 2 && (
-          <FixedSizeList>
-            <Spinner className={classes.spinner} {...tabContentLoader} />
-            <Ec2ResourcesTable
-              onTerminateInstance={this.handleTerminateInstance}
-              workerType={awsProvisionerWorkerType}
-              awsState={awsProvisionerWorkerTypeState}
-              actionLoading={actionLoading}
-            />
-          </FixedSizeList>
+          <Ec2ResourcesTable
+            onTerminateInstance={this.handleTerminateInstance}
+            workerType={awsProvisionerWorkerType}
+            awsState={awsProvisionerWorkerTypeState}
+            actionLoading={actionLoading}
+            tabContentLoader={tabContentLoader}
+            classes={classes}
+          />
         )}
         {!error && !loading && currentTab === 2 && (
           <Button
