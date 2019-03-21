@@ -1523,8 +1523,8 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/platform/auth/events",
-                  "title": "events"
+                  "path": "reference/platform/auth/exchanges",
+                  "title": "exchanges"
                 },
                 "path": "reference/platform/auth/api",
                 "prev": {
@@ -1542,14 +1542,14 @@
                 "data": {
                   "inline": true,
                   "order": 2,
-                  "title": "events"
+                  "title": "exchanges"
                 },
-                "name": "events",
+                "name": "exchanges",
                 "next": {
                   "path": "reference/platform/auth/logs",
                   "title": "logs"
                 },
-                "path": "reference/platform/auth/events",
+                "path": "reference/platform/auth/exchanges",
                 "prev": {
                   "path": "reference/platform/auth/api",
                   "title": "api"
@@ -1574,8 +1574,8 @@
                 },
                 "path": "reference/platform/auth/logs",
                 "prev": {
-                  "path": "reference/platform/auth/events",
-                  "title": "events"
+                  "path": "reference/platform/auth/exchanges",
+                  "title": "exchanges"
                 },
                 "up": {
                   "path": "reference/platform/auth/README",
@@ -1679,8 +1679,8 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/platform/queue/events",
-                  "title": "events"
+                  "path": "reference/platform/queue/exchanges",
+                  "title": "exchanges"
                 },
                 "path": "reference/platform/queue/api",
                 "prev": {
@@ -1698,14 +1698,14 @@
                 "data": {
                   "inline": true,
                   "order": 2,
-                  "title": "events"
+                  "title": "exchanges"
                 },
-                "name": "events",
+                "name": "exchanges",
                 "next": {
                   "path": "reference/platform/queue/logs",
                   "title": "logs"
                 },
-                "path": "reference/platform/queue/events",
+                "path": "reference/platform/queue/exchanges",
                 "prev": {
                   "path": "reference/platform/queue/api",
                   "title": "api"
@@ -1730,8 +1730,8 @@
                 },
                 "path": "reference/platform/queue/logs",
                 "prev": {
-                  "path": "reference/platform/queue/events",
-                  "title": "events"
+                  "path": "reference/platform/queue/exchanges",
+                  "title": "exchanges"
                 },
                 "up": {
                   "path": "reference/platform/queue/README",
@@ -1977,8 +1977,8 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/core/hooks/events",
-                  "title": "events"
+                  "path": "reference/core/hooks/exchanges",
+                  "title": "exchanges"
                 },
                 "path": "reference/core/hooks/api",
                 "prev": {
@@ -1996,14 +1996,14 @@
                 "data": {
                   "inline": true,
                   "order": 2,
-                  "title": "events"
+                  "title": "exchanges"
                 },
-                "name": "events",
+                "name": "exchanges",
                 "next": {
                   "path": "reference/core/hooks/logs",
                   "title": "logs"
                 },
-                "path": "reference/core/hooks/events",
+                "path": "reference/core/hooks/exchanges",
                 "prev": {
                   "path": "reference/core/hooks/api",
                   "title": "api"
@@ -2028,8 +2028,8 @@
                 },
                 "path": "reference/core/hooks/logs",
                 "prev": {
-                  "path": "reference/core/hooks/events",
-                  "title": "events"
+                  "path": "reference/core/hooks/exchanges",
+                  "title": "exchanges"
                 },
                 "up": {
                   "path": "reference/core/hooks/README",
@@ -2156,8 +2156,8 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/core/notify/events",
-                  "title": "events"
+                  "path": "reference/core/notify/exchanges",
+                  "title": "exchanges"
                 },
                 "path": "reference/core/notify/api",
                 "prev": {
@@ -2175,14 +2175,14 @@
                 "data": {
                   "inline": true,
                   "order": 2,
-                  "title": "events"
+                  "title": "exchanges"
                 },
-                "name": "events",
+                "name": "exchanges",
                 "next": {
                   "path": "reference/core/notify/logs",
                   "title": "logs"
                 },
-                "path": "reference/core/notify/events",
+                "path": "reference/core/notify/exchanges",
                 "prev": {
                   "path": "reference/core/notify/api",
                   "title": "api"
@@ -2207,8 +2207,8 @@
                 },
                 "path": "reference/core/notify/logs",
                 "prev": {
-                  "path": "reference/core/notify/events",
-                  "title": "events"
+                  "path": "reference/core/notify/exchanges",
+                  "title": "exchanges"
                 },
                 "up": {
                   "path": "reference/core/notify/README",
@@ -2491,8 +2491,8 @@
                 },
                 "name": "api",
                 "next": {
-                  "path": "reference/integrations/github/events",
-                  "title": "events"
+                  "path": "reference/integrations/github/exchanges",
+                  "title": "exchanges"
                 },
                 "path": "reference/integrations/github/api",
                 "prev": {
@@ -2510,14 +2510,14 @@
                 "data": {
                   "inline": true,
                   "order": 2,
-                  "title": "events"
+                  "title": "exchanges"
                 },
-                "name": "events",
+                "name": "exchanges",
                 "next": {
                   "path": "reference/integrations/github/logs",
                   "title": "logs"
                 },
-                "path": "reference/integrations/github/events",
+                "path": "reference/integrations/github/exchanges",
                 "prev": {
                   "path": "reference/integrations/github/api",
                   "title": "api"
@@ -2542,8 +2542,8 @@
                 },
                 "path": "reference/integrations/github/logs",
                 "prev": {
-                  "path": "reference/integrations/github/events",
-                  "title": "events"
+                  "path": "reference/integrations/github/exchanges",
+                  "title": "exchanges"
                 },
                 "up": {
                   "path": "reference/integrations/github/README",
@@ -2754,14 +2754,14 @@
                 "data": {
                   "inline": true,
                   "order": 2,
-                  "title": "events"
+                  "title": "exchanges"
                 },
-                "name": "events",
+                "name": "exchanges",
                 "next": {
                   "path": "reference/integrations/treeherder/logs",
                   "title": "logs"
                 },
-                "path": "reference/integrations/treeherder/events",
+                "path": "reference/integrations/treeherder/exchanges",
                 "prev": {
                   "path": "reference/integrations/treeherder/README",
                   "title": "treeherder"
@@ -2786,8 +2786,8 @@
                 },
                 "path": "reference/integrations/treeherder/logs",
                 "prev": {
-                  "path": "reference/integrations/treeherder/events",
-                  "title": "events"
+                  "path": "reference/integrations/treeherder/exchanges",
+                  "title": "exchanges"
                 },
                 "up": {
                   "path": "reference/integrations/treeherder/README",
@@ -2829,8 +2829,8 @@
             },
             "name": "treeherder",
             "next": {
-              "path": "reference/integrations/treeherder/events",
-              "title": "events"
+              "path": "reference/integrations/treeherder/exchanges",
+              "title": "exchanges"
             },
             "path": "reference/integrations/treeherder/README",
             "prev": {

@@ -1,9 +1,9 @@
 ---
 order: 2
 inline: true
-title: events
+title: exchanges
 ---
 
 import ExchangesReference from 'taskcluster-ui/views/Documentation/Reference/ExchangesReference'
 
-<ExchangesReference serviceName="hooks" apiVersion="v1" />
+<ExchangesReference serviceName="notify" apiVersion="v1" />
