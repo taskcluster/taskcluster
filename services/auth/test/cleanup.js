@@ -19,11 +19,6 @@ suite('Test Cleanup', function() {
     const tablePattern = /T([0-9]{8})T[a-zA-Z0-9]{8}$/;
     const yesterday = new Date(new Date() - 1000*3600*24).toJSON().split('T')[0].replace(/-/g, '');
     let nextTableName;
-    try {
-      await table.deleteTable('fooo');
-    } catch (err) {
-      console.log(Object.assign({}, err));
-    }
     while (1) {
       const result = await table.queryTables({nextTableName});
       for (let name of result.tables) {
