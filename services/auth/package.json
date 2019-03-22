@@ -5,6 +5,7 @@
   "main": "node src/server production",
   "scripts": {
     "test": "mocha test/*_test.js",
+    "test:cleanup": "mocha test/cleanup.js",
     "lint": "eslint src/*.js test/*.js"
   },
   "dependencies": {

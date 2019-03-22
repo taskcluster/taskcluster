@@ -62,6 +62,11 @@ tasks:
         command: yarn lint
       - name: test:meta
         command: yarn test:meta
+        # only do cleanup on pushes; no sense doing so on pull requests
+      - $if: 'tasks_for == "github-push" && event["ref"] == "refs/heads/master"'
+        then:
+          name: test:cleanup
+          command: yarn test:cleanup
       - name: taskcluster-terraform
         image: 'jonatanblue/gitlab-ci-terraform:latest'
         command: 'cd infrastructure/terraform; terraform fmt -check'
