@@ -485,11 +485,13 @@ export default class HookForm extends Component {
               value={hook.metadata.owner}
             />
           </ListItem>
-          <Preview
-            onDescriptionChange={this.handleDescriptionChange}
-            description={hook.metadata.description}
-            placeholder="Hook description (markdown)"
-          />
+          <ListItem>
+            <Preview
+              onValueChange={this.handleDescriptionChange}
+              value={hook.metadata.description}
+              placeholder="Hook description (markdown)"
+            />
+          </ListItem>
           <ListItem>
             <FormGroup row>
               <FormControlLabel
