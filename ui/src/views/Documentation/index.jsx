@@ -16,7 +16,6 @@ import components from './components';
 import ScrollToTop from '../../utils/ScrollToTop';
 import { DOCS_PATH_PREFIX, DOCS_MENU_ITEMS } from '../../utils/constants';
 import scrollToHash from '../../utils/scrollToHash';
-import readDocFile from '../../utils/readDocFile';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import docsTableOfContents from '../../../../generated/docs-table-of-contents';
 import PageMeta from './PageMeta';
@@ -111,11 +110,23 @@ export default class Documentation extends Component {
     return this.findChildFromRootNode(rootNode);
   }
 
+  async readDocFile(path) {
+    try {
+      return await import(/* webpackChunkName: 'Documentation.page' */ `../../../docs/${path}.md`);
+    } catch (err) {
+      if (err.code !== 'MODULE_NOT_FOUND') {
+        throw err;
+      }
+
+      return import(/* webpackChunkName: 'Documentation.page' */ `../../../docs/${path}/README.md`);
+    }
+  }
+
   async load() {
     try {
       const { params } = this.props.match;
       const pathname = params.path || 'README';
-      const { default: Page } = await readDocFile(`${pathname}.md`);
+      const { default: Page } = await this.readDocFile(pathname);
       const pageInfo = this.getPageInfo();
 
       this.setState({ Page, pageInfo, error: null });
