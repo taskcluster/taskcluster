@@ -8,6 +8,16 @@
   ],
   "imageSize": 100,
   "commit": false,
+  "types": {
+    "staff": {
+      "symbol": "🔧",
+      "description": "Current Mozilla employee on Taskcluster team"
+    },
+    "former-staff": {
+      "symbol": "👋",
+      "description": "Former Mozilla employee on Taskcluster team"
+    }
+  },
   "contributors": [
     {
       "login": "lightsofapollo",
@@ -15,7 +25,7 @@
       "avatar_url": "https://avatars3.githubusercontent.com/u/322957?v=4",
       "profile": "https://conduit.vc/",
       "contributions": [
-        "code"
+        "code", "former-staff"
       ]
     },
     {
@@ -24,7 +34,7 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/54803?v=4",
       "profile": "https://github.com/selenamarie",
       "contributions": [
-        "code"
+        "code", "former-staff"
       ]
     },
     {
@@ -33,7 +43,7 @@
       "avatar_url": "https://avatars3.githubusercontent.com/u/28673?v=4",
       "profile": "http://code.v.igoro.us/",
       "contributions": [
-        "code"
+        "code", "staff"
       ]
     },
     {
@@ -42,7 +52,7 @@
       "avatar_url": "https://avatars1.githubusercontent.com/u/611309?v=4",
       "profile": "https://walac.github.io",
       "contributions": [
-        "code"
+        "code", "staff"
       ]
     },
     {
@@ -51,7 +61,7 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/2592630?v=4",
       "profile": "https://github.com/gregarndt",
       "contributions": [
-        "code"
+        "code", "former-staff"
       ]
     },
     {
@@ -60,7 +70,7 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/190790?v=4",
       "profile": "http://petemoore.github.io/",
       "contributions": [
-        "code"
+        "code", "staff"
       ]
     },
     {
@@ -69,7 +79,7 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/3766511?v=4",
       "profile": "http://hassanali.me",
       "contributions": [
-        "code"
+        "code", "staff"
       ]
     },
     {
@@ -78,7 +88,7 @@
       "avatar_url": "https://avatars2.githubusercontent.com/u/127521?v=4",
       "profile": "https://imbstack.com",
       "contributions": [
-        "code"
+        "code", "staff"
       ]
     },
     {
@@ -87,7 +97,7 @@
       "avatar_url": "https://avatars3.githubusercontent.com/u/607353?v=4",
       "profile": "https://blog.johnford.org",
       "contributions": [
-        "code"
+        "code", "former-staff"
       ]
     },
     {
@@ -96,7 +106,7 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/285899?v=4",
       "profile": "http://eliperelman.com",
       "contributions": [
-        "code"
+        "code", "former-staff"
       ]
     },
     {
@@ -105,7 +115,16 @@
       "avatar_url": "https://avatars2.githubusercontent.com/u/149732?v=4",
       "profile": "https://jonasfj.dk/",
       "contributions": [
-        "code"
+        "code", "former-staff"
+      ]
+    },
+    {
+      "login": "owlishDeveloper",
+      "name": "owlishDeveloper",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/18102552?v=4",
+      "profile": "https://medium.com/@bugzeeeeee/",
+      "contributions": [
+        "code", "staff"
       ]
     },
     {
@@ -185,15 +204,6 @@
       "name": "Elena Solomon",
       "avatar_url": "https://avatars2.githubusercontent.com/u/7040792?v=4",
       "profile": "https://github.com/elenasolomon",
-      "contributions": [
-        "code"
-      ]
-    },
-    {
-      "login": "owlishDeveloper",
-      "name": "owlishDeveloper",
-      "avatar_url": "https://avatars1.githubusercontent.com/u/18102552?v=4",
-      "profile": "https://medium.com/@bugzeeeeee/",
       "contributions": [
         "code"
       ]
