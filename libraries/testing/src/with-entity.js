@@ -4,7 +4,8 @@ const slugid = require('slugid');
 // a suffix used to generate unique table names so that parallel test runs do not
 // interfere with one another.  The table name includes the date so that old tables
 // can be removed by an out-of-band process (as CI for services does not have
-// permission to remove tables).
+// permission to remove tables).  Note that this suffix corresponds to a regex
+// in services/auth/test/cleanup.js!
 const TABLE_SUFFIX = (() => {
   const date = new Date().toJSON().split('T')[0].replace(/-/g, '');
   const rand = slugid.nice().replace(/[_-]/g, '').slice(0, 8);

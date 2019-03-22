@@ -96,6 +96,7 @@
     "lint": "eslint --cache --ext js --ignore-pattern clients/client-web/build libraries services infrastructure clients test",
     "test": "yarn workspaces run test",
     "test:meta": "mocha test/*_test.js",
+    "test:cleanup": "yarn workspace taskcluster-auth test:cleanup",
     "build": "node infrastructure/builder/src/main.js build",
     "generate": "node infrastructure/builder/src/main.js generate",
     "heroku-prebuild": "echo $SOURCE_VERSION > .git-version",
