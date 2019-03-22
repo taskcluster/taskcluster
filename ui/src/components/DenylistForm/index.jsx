@@ -99,7 +99,10 @@ export default class DenylistForm extends Component {
   handleInputChange = ({ target: { name, value } }) => {
     this.setState({ [name]: value });
 
-    if (name === DENYLIST_NOTIFICATION_TYPES.EMAIL && value !== 'EMAIL') {
+    if (
+      name === 'notificationType' &&
+      value !== DENYLIST_NOTIFICATION_TYPES.EMAIL
+    ) {
       this.setState({
         validation: {
           address: {
@@ -169,7 +172,7 @@ export default class DenylistForm extends Component {
                 value={notificationType}
                 onChange={this.handleInputChange}
                 name="notificationType">
-                {Object.keys(DENYLIST_NOTIFICATION_TYPES).map(type => (
+                {Object.values(DENYLIST_NOTIFICATION_TYPES).map(type => (
                   <MenuItem key={type} value={type}>
                     {this.prettify(type)}
                   </MenuItem>
