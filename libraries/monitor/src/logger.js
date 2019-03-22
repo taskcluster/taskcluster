@@ -36,6 +36,37 @@ const LEVELS_REVERSE_COLOR = [
   chalk.magenta('DEBUG'),
 ];
 
+const ELIDED = new Set([
+  'credentials',
+  'accessToken',
+  'password',
+  'secretAccessKey',
+  'secret',
+  'secrets',
+]);
+
+/*
+ * We will never allow certain keys to be logged, no matter what the
+ * actual value is. If a user wishes to log something with these names,
+ * they should pick another one. This is not 100% safety but it does give
+ * a bit of a nice fuzzy blanket.
+ */
+const elideSecrets = fields => {
+  if (!fields) {
+    // Do nothing
+  } else if (Array.isArray(fields)) {
+    fields.forEach(elideSecrets);
+  } else if (fields.constructor === Object) { // Only plain objects, not strings, etc.
+    Object.entries(fields).forEach(([key, val]) => {
+      if (ELIDED.has(key)) {
+        fields[key] = '...';
+      } else {
+        elideSecrets(val);
+      }
+    });
+  }
+};
+
 /*
  * Implements the mozlog standard as defined in
  * https://wiki.mozilla.org/Firefox/Services/Logging
@@ -70,6 +101,9 @@ class Logger {
       fields = type;
       type = 'monitor.generic';
     }
+    if (Array.isArray(fields)) {
+      fields = {values: fields};
+    }
     if (typeof fields === 'string' || typeof fields === 'number') {
       fields = {message: fields};
     }
@@ -94,6 +128,8 @@ class Logger {
         orig: fields,
       };
     }
+
+    elideSecrets(fields);
 
     if (this.metadata) {
       fields.meta = this.metadata;
