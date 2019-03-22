@@ -60,6 +60,24 @@ suite('Logging', function() {
     JSON.parse(results[2]);
   });
 
+  test('simple eliding', function() {
+    monitor.info({credentials: 5});
+    assert.equal(manager.messages[0].Type, 'monitor.generic');
+    assert.equal(manager.messages[0].Fields.credentials, '...');
+  });
+
+  test('nested eliding', function() {
+    monitor.info({whatever: [{accessToken: 'hi'}]});
+    assert.equal(manager.messages[0].Type, 'monitor.generic');
+    assert.equal(manager.messages[0].Fields.whatever[0].accessToken, '...');
+  });
+
+  test('null eliding does not crash', function() {
+    monitor.info({something: null});
+    assert.equal(manager.messages[0].Type, 'monitor.generic');
+    assert.equal(manager.messages[0].Fields.something, null);
+  });
+
   test('empty data still logs', function() {
     monitor.info({whatever: 5});
     assert.equal(manager.messages[0].Type, 'monitor.generic');
