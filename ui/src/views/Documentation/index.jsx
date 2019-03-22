@@ -18,6 +18,7 @@ import { DOCS_PATH_PREFIX, DOCS_MENU_ITEMS } from '../../utils/constants';
 import scrollToHash from '../../utils/scrollToHash';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import docsTableOfContents from '../../../../generated/docs-table-of-contents';
+import ErrorPanel from '../../components/ErrorPanel';
 import PageMeta from './PageMeta';
 
 @hot(module)
@@ -149,11 +150,11 @@ export default class Documentation extends Component {
             : 'Documentation'
         }>
         <ScrollToTop scrollKey={Page ? Page.toString() : null}>
-          {error ? (
-            <NotFound isDocs />
-          ) : (
-            Page && <Page components={components} />
+          {error && error.code === 'MODULE_NOT_FOUND' && <NotFound isDocs />}
+          {error && error.code !== 'MODULE_NOT_FOUND' && (
+            <ErrorPanel error={error} />
           )}
+          {!error && Page && <Page components={components} />}
           {pageInfo && <PageMeta pageInfo={pageInfo} history={history} />}
         </ScrollToTop>
       </Dashboard>
