@@ -33,4 +33,6 @@ export default {
   MULTI_KEY: 'error',
   AND: 'info',
   OR: 'info',
+  SUCCESS: 'success',
+  ERROR: 'error',
 };
