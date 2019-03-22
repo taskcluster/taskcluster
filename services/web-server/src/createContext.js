@@ -20,6 +20,7 @@ export default ({ pulseEngine, rootUrl }) => ({ req, connection }) => {
   }
 
   if (connection) {
+    // subscriptions do not need credentials (all public data)
     const currentClients = clients({ rootUrl });
     const currentLoaders = loaders(
       currentClients,
@@ -29,7 +30,6 @@ export default ({ pulseEngine, rootUrl }) => ({ req, connection }) => {
     // if connection is set, this is for a subscription
     return {
       pulseEngine,
-      // subscriptions do not need credentials (all public data)
       clients: currentClients,
       loaders: currentLoaders,
     };

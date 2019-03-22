@@ -278,6 +278,9 @@ export default class TaskGroup extends Component {
       updateQuery(previousResult, { subscriptionData }) {
         const { tasksSubscriptions } = subscriptionData.data;
         const newTask = tasksSubscriptions.status.task;
+        // Make sure data is not from another task group which
+        // can happen when a message is in flight and a user searches for
+        // a different task group.
         const isFromSameTaskGroupId =
           newTask.status.taskGroupId === taskGroupId;
 
@@ -304,6 +307,7 @@ export default class TaskGroup extends Component {
 
         if (!taskExists) {
           const task = {
+            // eslint-disable-next-line no-underscore-dangle
             __typename: 'TasksEdge',
             node: {
               ...cloneDeep(newTask),

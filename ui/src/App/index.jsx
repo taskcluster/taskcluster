@@ -43,6 +43,7 @@ export default class App extends Component {
 
   cache = new InMemoryCache({
     fragmentMatcher: this.fragmentMatcher,
+    /* eslint-disable no-underscore-dangle */
     dataIdFromObject: object => {
       const taskId =
         object.taskId ||
@@ -86,6 +87,7 @@ export default class App extends Component {
         }
       }
     },
+    /* eslint-enable no-underscore-dangle */
   });
 
   persistence = new CachePersistor({
