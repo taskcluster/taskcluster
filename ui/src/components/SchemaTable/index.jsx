@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Table from 'react-schema-viewer/lib/SchemaTable';
 import ErrorPanel from '../ErrorPanel';
 import { THEME } from '../../utils/constants';
-import references from '../../../docs/generated/references.json';
+import references from '../../../../generated/references.json';
 
 @withRouter
 @withStyles(

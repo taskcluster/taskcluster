@@ -1,6 +1,6 @@
 # Web-Server Service
 
-A web server for supporting the taskcluster-web UI repository. Serves as a
+A web server for supporting the taskcluster-ui repository. Serves as a
 GraphQL gateway to the Taskcluster REST APIs, and should eventually support and
 improve user preferences and authentication flows.
 Helps make Taskcluster API communication consistent and offloads client refreshing
@@ -67,7 +67,7 @@ Open the interactive GraphQL Playground, schema explorer and docs in your browse
     http://localhost:3050
 ```
 
-The `taskcluster-web` service expects this service to run on port 3050.
+The `taskcluster-ui` service expects this service to run on port 3050.
 
 ### Passing Credentials in the Playground
 

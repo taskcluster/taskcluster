@@ -1,6 +1,6 @@
 const merge = require('deepmerge');
 const babelMerge = require('babel-merge');
-const { join } = require('path');
+const { join, resolve } = require('path');
 
 require('@babel/register')({
   presets: [require.resolve('@babel/preset-env')],
@@ -145,6 +145,10 @@ module.exports = {
             .end()
           .use('mdx-loader')
             .loader('mdx-loader');
+    },
+    (neutrino) => {
+      neutrino.config.resolve
+        .alias.set('taskcluster-ui', resolve(__dirname, 'src/'));
     },
     ['@neutrinojs/karma', {
       plugins: [
