@@ -31,20 +31,25 @@ export default class LogsReference extends Component {
 
     return (
       <div>
-        {ref.title && <HeaderWithAnchor>{ref.title}</HeaderWithAnchor>}
+        {ref.title && (
+          <HeaderWithAnchor>{ref.title || 'Logs'}</HeaderWithAnchor>
+        )}
         {ref.description && (
           <MDX components={components}>{ref.description}</MDX>
         )}
+        <Typography>
+          For more information on how to interpret logs, see{' '}
+          <Anchor href="/docs/manual/design/logs">
+            Interpreting Log Types
+          </Anchor>{' '}
+          in the manual
+        </Typography>
+        <br />
         {serviceLogTypes && Boolean(serviceLogTypes.length) && (
           <Fragment>
             <HeaderWithAnchor type="h3">Service Message Types</HeaderWithAnchor>
             <Typography>
-              For more information on interpreting the log types described here,
-              see
-              <Anchor href="/docs/manual/design/logs">
-                Interpreting Log Types
-              </Anchor>
-              in the manual.
+              These message types are defined by this service in particular.
             </Typography>
             <br />
             {serviceLogTypes.map(entry => (
@@ -55,18 +60,14 @@ export default class LogsReference extends Component {
                 serviceName={ref.serviceName}
               />
             ))}
+            <br />
           </Fragment>
         )}
         {commonLogTypes && Boolean(commonLogTypes.length) && (
           <Fragment>
             <HeaderWithAnchor type="h3">Common Message Types</HeaderWithAnchor>
             <Typography>
-              For more information on interpreting the log types described here,
-              see{' '}
-              <Anchor href="/docs/manual/design/logs">
-                Interpreting Log Types
-              </Anchor>{' '}
-              in the manual.
+              These message types are written by all Taskcluster services.
             </Typography>
             <br />
             {commonLogTypes.map(entry => (
@@ -77,6 +78,7 @@ export default class LogsReference extends Component {
                 serviceName={ref.serviceName}
               />
             ))}
+            <br />
           </Fragment>
         )}
       </div>
