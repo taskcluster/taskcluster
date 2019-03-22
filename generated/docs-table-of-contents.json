@@ -1485,6 +1485,16 @@
     },
     "path": "manual"
   },
+  "people": {
+    "children": [
+    ],
+    "data": {
+      "order": 1000,
+      "title": "People"
+    },
+    "name": "people",
+    "path": "people"
+  },
   "reference": {
     "children": [
       {

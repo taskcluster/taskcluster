@@ -145,6 +145,12 @@ module.exports = {
             .end()
           .use('mdx-loader')
             .loader('mdx-loader');
+
+      neutrino.config.module
+        .rule('all-contributors')
+          .test(/\.all-contributorsrc$/)
+          .use('json-loader')
+            .loader('json-loader');
     },
     (neutrino) => {
       neutrino.config.resolve

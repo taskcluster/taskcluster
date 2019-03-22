@@ -153,7 +153,7 @@ exports.tasks = [{
   provides: ['docs-toc'],
   run: async (requirements, utils) => {
     const files = await mdParseDir(DOCS_DIR, { dirnames: true });
-    const [gettingStarted, resources] = ['README', 'resources'].map(fileName =>
+    const [gettingStarted, resources, people] = ['README', 'resources', 'people'].map(fileName =>
       Object.assign(files[fileName], {
         name: fileName,
         path: fileName,
@@ -170,6 +170,7 @@ exports.tasks = [{
       reference: makeToc({ rootPath: 'reference/', files }),
       tutorial: makeToc({ rootPath: 'tutorial/', files }),
       resources,
+      people,
     };
 
     writeJSON('generated/docs-table-of-contents.json', docsToc);
