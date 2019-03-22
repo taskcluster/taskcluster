@@ -1,20 +1,16 @@
-/* eslint-disable no-plusplus */
 import React, { Component, Fragment } from 'react';
-import { string, bool, func, oneOfType, object, array } from 'prop-types';
+import { func, string, bool, oneOfType, object, array } from 'prop-types';
 import classNames from 'classnames';
 import { equals, assocPath } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import CodeEditor from '@mozilla-frontend-infra/components/CodeEditor';
 import Code from '@mozilla-frontend-infra/components/Code';
 import Drawer from '@material-ui/core/Drawer';
-import memoize from 'fast-memoize';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
 import TextField from '@material-ui/core/TextField';
 import Switch from '@material-ui/core/Switch';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -22,24 +18,19 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
-import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import FlashIcon from 'mdi-react/FlashIcon';
 import PlusIcon from 'mdi-react/PlusIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
-import LinkIcon from 'mdi-react/LinkIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import { docs } from 'taskcluster-lib-urls';
-import Label from '@mozilla-frontend-infra/components/Label';
 import ErrorPanel from '../ErrorPanel';
-import DataTable from '../DataTable';
 import Button from '../Button';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
 import DialogAction from '../DialogAction';
 import DateDistance from '../DateDistance';
-import TableCellListItem from '../TableCellListItem';
+import HookLastFiredTable from '../HookLastFiredTable';
 import { hook } from '../../utils/prop-types';
-import Link from '../../utils/Link';
 import removeKeys from '../../utils/removeKeys';
 
 const initialHook = {
@@ -123,20 +114,10 @@ const initialHook = {
   subheader: {
     fontSize: theme.typography.pxToRem(16),
   },
-  displayBlock: {
-    display: 'block',
-  },
-  errorTableCell: {
-    whiteSpace: 'normal',
-  },
   errorPanel: {
     maxHeight: 300,
     maxWidth: '75ch',
     overflowY: 'scroll',
-  },
-  infoButton: {
-    marginLeft: -theme.spacing.double,
-    marginRight: theme.spacing.unit,
   },
   headline: {
     paddingLeft: theme.spacing.triple,
@@ -447,31 +428,15 @@ export default class HookForm extends Component {
     });
   };
 
-  handleDrawerOpen = ({ target: { name } }) =>
-    memoize(
-      name => {
-        const { hookLastFires } = this.state;
-        let body;
-        const lastFiresLength = hookLastFires.length;
+  handleDrawerOpen = ({ currentTarget: { name } }) => {
+    const { hookLastFires } = this.state;
+    const hookLastFire = hookLastFires.find(({ taskId }) => taskId === name);
 
-        for (let i = 0; i < lastFiresLength; i++) {
-          const { taskId, error } = hookLastFires[i];
-
-          if (taskId === name) {
-            body = error;
-            break;
-          }
-        }
-
-        this.setState({
-          drawerOpen: true,
-          drawerData: { headline: name, body },
-        });
-      },
-      {
-        serializer: name => name,
-      }
-    )(name);
+    this.setState({
+      drawerOpen: true,
+      drawerData: hookLastFire,
+    });
+  };
 
   render() {
     const {
@@ -495,7 +460,6 @@ export default class HookForm extends Component {
       drawerOpen,
       drawerData,
     } = this.state;
-    const iconSize = 16;
     const isHookDirty = !equals(hook, this.props.hook);
 
     return (
@@ -589,66 +553,6 @@ export default class HookForm extends Component {
               />
             </FormGroup>
           </ListItem>
-          <ListItem className={classes.displayBlock}>
-            <ListItemText
-              primary={
-                <Typography variant="subtitle1">Last Fired Results</Typography>
-              }
-            />
-            {hookLastFires && (
-              <DataTable
-                items={hookLastFires}
-                headers={[
-                  'Task ID',
-                  'Fired By',
-                  'Result',
-                  'Attempted',
-                  'Error',
-                ]}
-                paginate
-                renderRow={hookFire => (
-                  <TableRow key={hookFire.taskId}>
-                    <TableCell>
-                      {(hookFire.result === 'SUCCESS' && (
-                        <TableCellListItem
-                          button
-                          component={Link}
-                          to={`/tasks/${hookFire.taskId}`}>
-                          <ListItemText
-                            disableTypography
-                            primary={<Typography>{hookFire.taskId}</Typography>}
-                          />
-                          <LinkIcon size={iconSize} />
-                        </TableCellListItem>
-                      )) || <Typography>{hookFire.taskId}</Typography>}
-                    </TableCell>
-                    <TableCell>
-                      <Typography>{hookFire.firedBy}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Label mini status={hookFire.result.toLowerCase()}>
-                        {hookFire.result}
-                      </Label>
-                    </TableCell>
-                    <TableCell>
-                      <DateDistance from={hookFire.taskCreateTime} />
-                    </TableCell>
-                    <TableCell className={classes.errorTableCell}>
-                      {(hookFire.result === 'ERROR' && (
-                        <Button
-                          className={classes.infoButton}
-                          size="small"
-                          name={hookFire.taskId}
-                          onClick={this.handleDrawerOpen}>
-                          <InformationVariantIcon size={iconSize} />
-                        </Button>
-                      )) || <Typography>n/a</Typography>}
-                    </TableCell>
-                  </TableRow>
-                )}
-              />
-            )}
-          </ListItem>
           {!isNewHook && (
             <ListItem>
               <ListItemText
@@ -663,6 +567,22 @@ export default class HookForm extends Component {
               />
             </ListItem>
           )}
+          <ListSubheader className={classes.subheader}>
+            Last Fired Results
+          </ListSubheader>
+          <ListItem>
+            <ListItemText
+              primary={
+                hookLastFires && (
+                  <HookLastFiredTable
+                    items={hookLastFires}
+                    onErrorClick={this.handleDrawerOpen}
+                    paginate
+                  />
+                )
+              }
+            />
+          </ListItem>
           <List>
             <ListItem>
               <ListItemText
@@ -868,19 +788,18 @@ export default class HookForm extends Component {
           open={drawerOpen}
           onClose={this.handleDrawerClose}>
           <div className={classes.metadataContainer}>
-            <Typography variant="h5" className={classes.headline}>
-              {drawerData && drawerData.headline}
+            <Typography variant="title" className={classes.headline}>
+              {drawerData && drawerData.taskId}
             </Typography>
             <List>
               <ListItem>
                 <ListItemText
-                  primary="Description"
-                  secondary={
+                  primary={
                     drawerData &&
-                    drawerData.body && (
+                    drawerData.error && (
                       <ErrorPanel
                         className={classes.errorPanel}
-                        error={drawerData && drawerData.body}
+                        error={drawerData && drawerData.error}
                         onClose={null}
                       />
                     )
