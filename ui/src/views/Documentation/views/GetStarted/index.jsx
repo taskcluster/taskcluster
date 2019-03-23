@@ -66,9 +66,8 @@ export default function GetStarted() {
       <br />
       <HeaderWithAnchor type="h2">People</HeaderWithAnchor>
       <Typography>
-        Find out more about the{' '}
-        <Anchor href="/docs/people">people</Anchor>{' '}
-        who make Taskcluster, and get involved yourself!
+        Find out more about the <Anchor href="/docs/people">people</Anchor> who
+        make Taskcluster, and get involved yourself!
       </Typography>
       <br />
       <br />
