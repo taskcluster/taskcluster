@@ -62,6 +62,7 @@ import { THEME } from '../../../utils/constants';
   },
   panelCard: {
     background: theme.palette.warning.dark,
+    marginBottom: theme.spacing.unit,
   },
   clearIcon: {
     fill: THEME.PRIMARY_TEXT_LIGHT,
@@ -71,12 +72,9 @@ export default class ViewClient extends Component {
   state = {
     loading: false,
     error: null,
-    accessToken: null,
-    accessTokenPanelOpen: true,
-  };
-
-  handleAccessTokenWarningClose = () => {
-    this.setState({ accessToken: null });
+    accessToken: this.props.location.state
+      ? this.props.location.state.accessToken
+      : null,
   };
 
   handleDeleteClient = async clientId => {
@@ -156,7 +154,7 @@ export default class ViewClient extends Component {
   };
 
   handleAccessTokenPanelClose = () => {
-    this.setState({ accessToken: null, accessTokenPanelOpen: false });
+    this.setState({ accessToken: null });
   };
 
   handleSaveClient = async (client, clientId) => {
@@ -165,7 +163,7 @@ export default class ViewClient extends Component {
     this.setState({ error: null, loading: true });
 
     try {
-      await this.props.client.mutate({
+      const result = await this.props.client.mutate({
         mutation: isNewClient ? createClientQuery : updateClientQuery,
         variables: {
           clientId,
@@ -173,12 +171,16 @@ export default class ViewClient extends Component {
         },
       });
 
-      this.setState({ error: null, loading: false });
+      this.setState({
+        error: null,
+        loading: false,
+      });
 
       if (isNewClient) {
-        this.props.history.push(
-          `/auth/clients/${encodeURIComponent(clientId)}`
-        );
+        this.props.history.push({
+          pathname: `/auth/clients/${encodeURIComponent(clientId)}`,
+          state: { accessToken: result.data.createClient.accessToken },
+        });
       }
     } catch (error) {
       this.setState({ error, loading: false });
@@ -186,14 +188,21 @@ export default class ViewClient extends Component {
   };
 
   render() {
-    const { error, loading, accessToken, accessTokenPanelOpen } = this.state;
-    const { isNewClient, data, classes } = this.props;
+    const { error, loading, accessToken } = this.state;
+    const { isNewClient, data, classes, location } = this.props;
+
+    if (location.state && location.state.accessToken) {
+      const state = { ...location.state };
+
+      delete state.accessToken;
+      this.props.history.replace({ state });
+    }
 
     return (
       <Dashboard title={isNewClient ? 'Create Client' : 'Client'}>
         <Fragment>
           <ErrorPanel error={error} />
-          <Collapse in={accessToken && accessTokenPanelOpen}>
+          <Collapse in={accessToken}>
             <Card classes={{ root: classes.panelCard }}>
               <CardHeader
                 classes={{
