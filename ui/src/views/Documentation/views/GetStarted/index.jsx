@@ -64,6 +64,14 @@ export default function GetStarted() {
       </Grid>
       <br />
       <br />
+      <HeaderWithAnchor type="h2">People</HeaderWithAnchor>
+      <Typography>
+        Find out more about the{' '}
+        <Anchor href="/docs/people">people</Anchor>{' '}
+        who make Taskcluster, and get involved yourself!
+      </Typography>
+      <br />
+      <br />
       <HeaderWithAnchor type="h2">Questions?</HeaderWithAnchor>
       <Typography>
         We&#39;re always happy to help with code or other questions you might
