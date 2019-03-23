@@ -13,7 +13,6 @@ import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import { join } from 'path';
 import { DOCS_MENU_ITEMS, DOCS_PATH_PREFIX } from '../../utils/constants';
-import removeExtension from '../../utils/removeExtension';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import docsTableOfContents from '../../../../generated/docs-table-of-contents';
 
@@ -158,7 +157,7 @@ export default class DocsSidebarList extends Component {
                     [classes.linkActive]: isLinkActive,
                   })}
                   component="span">
-                  {removeExtension(node.name)}
+                  {node.name}
                 </Typography>
               </Link>
             </Fragment>
