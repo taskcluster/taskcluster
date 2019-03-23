@@ -12,11 +12,14 @@ const config = ({
     {path: 'config.yml', required: true},
     {path: 'user-config.yml', required: false},
   ],
+  getEnvVars = false,
 }) => {
   assert(files instanceof Array, 'Expected an array of files');
   assert(typeof env === 'object', 'Expected env to be an object');
 
-  const schema = buildSchema(env);
+  const envVars = getEnvVars ? [] : null; // This will store the list of possible env vars
+
+  const schema = buildSchema(env, envVars);
 
   const cfgs = [];
   for (const file of files) {
@@ -37,6 +40,11 @@ const config = ({
       filename: file.path, // This just gets included in error messages
       schema,
     });
+
+    // If the user requested environment variables list, return it and stop
+    if (envVars) {
+      return envVars;
+    }
 
     // Add defaults to list of configurations if present
     if (data.defaults) {

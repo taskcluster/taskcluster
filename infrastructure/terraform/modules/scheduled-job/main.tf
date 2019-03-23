@@ -5,7 +5,7 @@ locals {
     deadline_seconds = "${var.deadline_seconds}"
     project_name     = "${var.project_name}"
     service_name     = "${var.service_name}"
-    job_name         = "${var.job_name}"
+    proc_name        = "${var.proc_name}"
     secret_keys      = "${var.secret_keys}"
     secrets_hash     = "${var.secrets_hash}"
     secret_name      = "${var.secret_name}"
@@ -13,6 +13,8 @@ locals {
     volume_mounts    = "${var.volume_mounts}"
     is_monoimage     = "${var.is_monoimage}"
   }
+
+  is_enabled = "${contains(var.disabled_services, var.project_name) ? 0 : 1}"
 }
 
 data "jsone_template" "cron_job" {
@@ -21,5 +23,6 @@ data "jsone_template" "cron_job" {
 }
 
 resource "k8s_manifest" "cron_job" {
+  count   = "${local.is_enabled}"
   content = "${data.jsone_template.cron_job.rendered}"
 }

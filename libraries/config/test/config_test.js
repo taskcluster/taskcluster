@@ -3,42 +3,6 @@ suite('config', function() {
   let path = require('path');
   let assume = require('assume');
 
-  test('load yaml', () => {
-    let cfg = config({
-      files: [
-        {path: path.join(__dirname, 'test.yml'), required: true},
-      ],
-    });
-
-    assume(cfg).deep.equals({
-      text: ['Hello', 'World'],
-    });
-  });
-
-  test('load profile', () => {
-    let cfg = config({
-      files: [
-        {path: path.join(__dirname, 'test-profile.yml'), required: true},
-      ],
-      profile: 'danish',
-    });
-
-    assume(cfg).deep.equals({
-      text: ['Hej', 'Verden'],
-    });
-  });
-
-  test('load profile (default)', () => {
-    let cfg = config({
-      files: [
-        {path: path.join(__dirname, 'test-profile.yml'), required: true},
-      ],
-    });
-
-    assume(cfg).deep.equals({
-      text: ['Hello', 'World'],
-    });
-  });
 
   test('load !env', () => {
     let cfg = config({
@@ -53,6 +17,7 @@ suite('config', function() {
         ENV_JSON: '{"test": 42}',
         ENV_LIST: 'abc def "qouted string" \'\'',
       },
+      getVars: true,
     });
 
     assume(cfg).deep.equals({

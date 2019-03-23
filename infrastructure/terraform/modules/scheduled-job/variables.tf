@@ -20,7 +20,7 @@ variable "service_name" {
   description = "The name of the service."
 }
 
-variable "job_name" {
+variable "proc_name" {
   type        = "string"
   description = "The process in the Procfile to run."
 }
@@ -60,4 +60,10 @@ variable "is_monoimage" {
   type        = "string"
   default     = "true"
   description = "True if this service runs from the monorepo"
+}
+
+variable "disabled_services" {
+  type        = "list"
+  description = "list of disabled services."
+  default     = []
 }

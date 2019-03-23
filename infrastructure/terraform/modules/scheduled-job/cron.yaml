@@ -1,7 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: ${project_name}-${lowercase(job_name)}
+  name: ${project_name}-${lowercase(proc_name)}
 spec:
   schedule: ${schedule}
   jobTemplate:
@@ -26,13 +26,13 @@ spec:
                     - key: ${mount.source}
                       path: ${mount.name}
           containers:
-          - name: ${project_name}-${lowercase(job_name)}
+          - name: ${project_name}-${lowercase(proc_name)}
             image: ${docker_image}
             imagePullPolicy: Always
             args:
               $if: is_monoimage == 'true' # terraform-style "boolean"
-              then: ['${service_name}/${job_name}']
-              else: ['${job_name}']
+              then: ['${service_name}/${proc_name}']
+              else: ['${proc_name}']
             resources:
               # TODO: Make configurable
               requests:
