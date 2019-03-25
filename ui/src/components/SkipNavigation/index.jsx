@@ -7,7 +7,7 @@ import Button from '../Button';
 @withStyles({
   skipButton: {
     position: 'absolute',
-    left: '-999px',
+    left: -999,
     '&:focus': {
       left: 'unset',
       zIndex: 999,
